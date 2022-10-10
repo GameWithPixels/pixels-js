@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Text,
   Link,
@@ -12,6 +11,8 @@ import {
   VStack,
   Box,
 } from "native-base";
+import React from "react";
+
 import NativeBaseIcon from "./components/NativeBaseIcon";
 
 // Define the config
@@ -57,7 +58,7 @@ export default function App() {
             <Text>and save to reload.</Text>
           </HStack>
           <Link href="https://docs.nativebase.io" isExternal>
-            <Text color="primary.500" underline fontSize={"xl"}>
+            <Text color="primary.500" underline fontSize="xl">
               Learn NativeBase
             </Text>
           </Link>

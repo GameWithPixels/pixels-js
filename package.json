@@ -7,5 +7,16 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "pixels:android": "yarn workspace pixels-app android",
+    "pixels:ios": "yarn workspace pixels-app ios",
+    "lint": "eslint . --cache"
+  },
+  "devDependencies": {
+    "eslint": "^8.25.0",
+    "eslint-config-universe": "^11.1.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
+  }
 }
