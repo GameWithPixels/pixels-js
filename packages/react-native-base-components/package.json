@@ -1,5 +1,5 @@
 {
-  "name": "react-native-base-components",
+  "name": "@systemic-games/react-native-base-components",
   "version": "0.1.0",
   "description": "Generic UI components using React Native + Native Base.",
   "main": "lib/commonjs/index",

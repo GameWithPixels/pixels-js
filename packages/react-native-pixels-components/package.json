@@ -1,5 +1,5 @@
 {
-  "name": "react-native-pixels-components",
+  "name": "@systemic-games/react-native-pixels-components",
   "version": "0.1.0",
   "description": "UI components with Pixels theming and specific features, using Expo + Native Base.",
   "main": "lib/commonjs/index",

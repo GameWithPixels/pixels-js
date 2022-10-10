@@ -9,8 +9,8 @@
     "packages/*"
   ],
   "scripts": {
-    "pixels:android": "yarn workspace pixels-app android",
-    "pixels:ios": "yarn workspace pixels-app ios",
+    "pixels:android": "yarn workspace @systemic-games/pixels-app android",
+    "pixels:ios": "yarn workspace @systemic-games/pixels-app ios",
     "lint": "eslint \"**/*.{js,ts,tsx}\" --cache",
     "lint:fix": "eslint \"**/*.{js,ts,tsx}\" --fix"
   },
