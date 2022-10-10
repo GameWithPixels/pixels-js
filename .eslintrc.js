@@ -1,6 +1,10 @@
 module.exports = {
   extends: ["universe/native", "universe/shared/typescript-analysis"],
   ignorePatterns: ["/android/", "/ios/"],
+  parserOptions: {
+    parser: "@babel/eslint-parser",
+    requireConfigFile: false,
+  },
   overrides: [
     {
       files: ["*.ts", "*.tsx", "*.d.ts"],

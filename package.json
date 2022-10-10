@@ -11,9 +11,11 @@
   "scripts": {
     "pixels:android": "yarn workspace pixels-app android",
     "pixels:ios": "yarn workspace pixels-app ios",
-    "lint": "eslint . --cache"
+    "lint": "eslint \"**/*.{js,ts,tsx}\" --cache",
+    "lint:fix": "eslint \"**/*.{js,ts,tsx}\" --fix"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.19.1",
     "eslint": "^8.25.0",
     "eslint-config-universe": "^11.1.0",
     "prettier": "^2.7.1",
