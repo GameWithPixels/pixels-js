@@ -1,0 +1,16 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      files: git diff --name-only @{push}
+      glob: "*.{js,ts,jsx,tsx}"
+      run: yarn lint
+    # types:
+    #   files: git diff --name-only @{push}
+    #   glob: "*.{js,ts, jsx, tsx}"
+    #   run: yarn typescript
+commit-msg:
+  parallel: true
+  commands:
+    commitlint:
+      run: yarn commitlint --edit
