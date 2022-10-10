@@ -1,3 +1,5 @@
-export function multiply(a: number, b: number): Promise<number> {
-  return Promise.resolve(a * b);
+import { multiply } from "@systemic-games/react-native-base-components";
+
+export function awesomeMultiply(a: number, b: number): number {
+  return multiply(a, b);
 }

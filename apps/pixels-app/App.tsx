@@ -1,3 +1,4 @@
+import { awesomeMultiply } from "@systemic-games/react-native-pixels-components";
 import {
   Text,
   Link,
@@ -61,6 +62,7 @@ export default function App() {
             <Text color="primary.500" underline fontSize="xl">
               Learn NativeBase
             </Text>
+            <Text>{awesomeMultiply(3, 4)}</Text>
           </Link>
           <ToggleDarkMode />
         </VStack>

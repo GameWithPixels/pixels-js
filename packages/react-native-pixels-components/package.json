@@ -46,6 +46,7 @@
   "devDependencies": {
     "@arkweid/lefthook": "^0.7.7",
     "@release-it/conventional-changelog": "^5.0.0",
+    "@systemic-games/react-native-base-components": "*",
     "@types/jest": "^28.1.2",
     "@types/react": "~17.0.21",
     "@types/react-native": "0.68.0",
