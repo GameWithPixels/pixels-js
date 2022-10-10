@@ -1,0 +1,11 @@
+{
+  "name": "pixels-js",
+  "version": "0.0.0",
+  "description": "Pixels Typescript/JavaScript libraries and apps.",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

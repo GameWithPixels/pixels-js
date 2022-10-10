@@ -1,2 +1,2 @@
 # pixels-js
-Pixels Typescript/Javascript libraries and apps.
+Pixels Typescript/JavaScript libraries and apps.
