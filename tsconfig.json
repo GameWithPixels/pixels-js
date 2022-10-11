@@ -24,6 +24,9 @@
     },
     {
       "path": "./apps/pixels-app"
+    },
+    {
+      "path": "./apps/pixels-toolbox"
     }
   ]
 }
