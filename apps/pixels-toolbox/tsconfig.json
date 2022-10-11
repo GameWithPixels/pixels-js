@@ -1,0 +1,29 @@
+{
+  "extends": "./../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "experimentalDecorators": true,
+    "baseUrl": "./src",
+    "paths": {
+      "~/*": [
+        "*"
+      ]
+    }
+  },
+  "files": [
+    "assets/default-profiles.json",
+    "assets/nice-profile.json"
+  ],
+  "include": [
+    "src/**/*",
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ],
+  "references": [
+    {
+      "path": "./../../packages/react-native-pixels-components"
+    }
+  ]
+}
