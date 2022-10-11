@@ -1,18 +1,34 @@
 # pixels-js
 Pixels Typescript/JavaScript libraries and apps.
 
-## Repo setup
+## Setup
 
 ```sh
-cd apps
-expo init pixels-app --template @native-base/expo-template-typescript
+yarn
+yarn pixels:android
 ```
 
+## Type checking and linting
+
 ```sh
-cd packages
-npx create-react-native-library@latest react-native-base-components
-npx create-react-native-library@latest react-native-pixels-components
+yarn ts
+yarn lint
 ```
+
+For automatically fixing problems with ESLint:
+```sh
+lint:fix
+```
+
+### Contents
+
+* `pixels-app` created with `expo init --template @native-base/expo-template-typescript`
+* `react-native-pixels-components` created with [`create-react-native-library`](
+    https://github.com/callstack/react-native-builder-bob
+)
+* `react-native-base-components` created with [`create-react-native-library`](
+    https://github.com/callstack/react-native-builder-bob
+)
 
 ## Development workflow
 
