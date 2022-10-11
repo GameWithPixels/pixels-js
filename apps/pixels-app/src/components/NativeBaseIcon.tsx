@@ -4,6 +4,7 @@ import { G, Path } from "react-native-svg";
 const NativeBaseIcon = () => {
   return (
     <Icon size="220px" viewBox="0 0 602.339 681.729">
+      {/* @ts-expect-error Typing error fixed in react-native-svg 12.4.4 */}
       <G
         id="Group_403"
         data-name="Group 403"

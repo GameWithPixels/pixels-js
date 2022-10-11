@@ -1,6 +1,21 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "./../../tsconfig.json",
   "compilerOptions": {
-    "strict": true
-  }
+    "outDir": "./dist",
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ],
+  "references": [
+    {
+      "path": "./../../packages/react-native-base-components"
+    },
+    {
+      "path": "./../../packages/react-native-pixels-components"
+    },
+  ]
 }

@@ -1,15 +1,21 @@
 module.exports = {
   extends: ["universe/native", "universe/shared/typescript-analysis"],
-  ignorePatterns: ["/android/", "/ios/"],
+  ignorePatterns: [
+    "/apps/*/android/",
+    "/apps/*/dist/",
+    "/apps/*/ios/",
+    "/packages/*/android/",
+    "/packages/*/dist/",
+    "/packages/*/ios/",
+  ],
   parserOptions: {
     parser: "@babel/eslint-parser",
-    requireConfigFile: false,
   },
   overrides: [
     {
       files: ["*.ts", "*.tsx", "*.d.ts"],
       parserOptions: {
-        project: "./tsconfig.json",
+        project: "./tsconfig.eslint.json",
       },
     },
   ],

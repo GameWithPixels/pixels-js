@@ -2,15 +2,12 @@ pre-commit:
   parallel: true
   commands:
     lint:
-      files: git diff --name-only @{push}
       glob: "*.{js,ts,jsx,tsx}"
-      run: yarn lint
-    # types:
-    #   files: git diff --name-only @{push}
-    #   glob: "*.{js,ts, jsx, tsx}"
-    #   run: yarn typescript
+      run: npx eslint {staged_files}
+    types:
+      run: npx tsc --build
 commit-msg:
   parallel: true
   commands:
     commitlint:
-      run: yarn commitlint --edit
+      run: npx commitlint --edit

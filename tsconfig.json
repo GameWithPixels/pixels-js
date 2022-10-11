@@ -1,6 +1,29 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "paths": {
+      "@systemic-games/*": [
+        "./packages/*/src"
+      ]
+    }
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/react-native-base-components"
+    },
+    {
+      "path": "./packages/react-native-pixels-components"
+    },
+    {
+      "path": "./apps/pixels-app"
+    }
+  ]
 }
