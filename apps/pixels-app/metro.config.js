@@ -1,4 +1,4 @@
-/* eslint-env node, node */
+/* eslint-env node */
 // Learn more https://docs.expo.dev/guides/monorepos
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
