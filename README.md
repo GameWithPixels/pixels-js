@@ -5,7 +5,18 @@ Pixels Typescript/JavaScript libraries and apps.
 
 ```sh
 yarn
+```
+
+## Apps
+
+Run the Pixels app:
+```sh
 yarn pixels:android
+```
+
+Build and run the Toolbox:
+```sh
+yarn toolbox:android
 ```
 
 ## Type checking and linting
@@ -17,12 +28,13 @@ yarn lint
 
 For automatically fixing problems with ESLint:
 ```sh
-lint:fix
+yarn lint:fix
 ```
 
 ### Contents
 
-* `pixels-app` created with `expo init --template @native-base/expo-template-typescript`
+* `pixels-app` created with Expo 44 `expo init --template @native-base/expo-template-typescript`
+* `pixels-toolbox` created with Expo 45 `expo init -t expo-template-blank-typescript`
 * `react-native-pixels-components` created with [`create-react-native-library`](
     https://github.com/callstack/react-native-builder-bob
 )
