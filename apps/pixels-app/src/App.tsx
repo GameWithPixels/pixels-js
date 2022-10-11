@@ -1,4 +1,8 @@
-import { awesomeMultiply } from "@systemic-games/react-native-pixels-components";
+import {
+  awesomeMultiply,
+  SuperCard,
+  Card,
+} from "@systemic-games/react-native-pixels-components";
 import {
   Text,
   Link,
@@ -39,6 +43,12 @@ export default function App() {
       >
         <VStack space={5} alignItems="center">
           <NativeBaseIcon />
+          <Card minWidth="200">
+            <Text>Inside card</Text>
+          </Card>
+          <SuperCard minWidth="200">
+            <Text>Inside super card</Text>
+          </SuperCard>
           <Heading size="lg">Welcome to NativeBase</Heading>
           <HStack space={2} alignItems="center">
             <Text>Edit</Text>
