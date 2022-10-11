@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "",
+  },
+  "references": [
+    {
+      "path": "./../react-native-base-components"
+    }
+  ]  
+}

@@ -14,7 +14,6 @@
     "ios",
     "cpp",
     "react-native-pixels-components.podspec",
-    "!lib/typescript/example",
     "!android/build",
     "!ios/build",
     "!**/__tests__",
@@ -23,7 +22,6 @@
   ],
   "scripts": {
     "test": "jest",
-    "typescript": "tsc --noEmit",
     "prepare": "bob build",
     "release": "release-it"
   },

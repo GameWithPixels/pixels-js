@@ -7,6 +7,7 @@ module.exports = {
     "/packages/*/android/",
     "/packages/*/dist/",
     "/packages/*/ios/",
+    "/packages/*/lib/",
   ],
   parserOptions: {
     parser: "@babel/eslint-parser",
