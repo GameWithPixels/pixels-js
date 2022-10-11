@@ -56,9 +56,6 @@
     "release-it": "^15.0.0",
     "typescript": "^4.5.2"
   },
-  "resolutions": {
-    "@types/react": "17.0.21"
-  },
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
