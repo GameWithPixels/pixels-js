@@ -1,15 +1,14 @@
 {
+  "extends": "./../../tsconfig.react.json",
   "compilerOptions": {
-    "types": [
-      "react",
-      "jest"
-    ],
-    "target": "es2016",
-    "strict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "outDir": "./dist",
     "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ]
 }

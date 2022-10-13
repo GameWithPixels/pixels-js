@@ -1,0 +1,17 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "paths": {
+      "@systemic-games/*": [
+        "./packages/*/src"
+      ]
+    }
+  }
+}

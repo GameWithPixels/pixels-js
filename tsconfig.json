@@ -1,5 +1,4 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "composite": true,
@@ -16,6 +15,21 @@
   },
   "files": [],
   "references": [
+    {
+      "path": "./packages/pixels-core-utils"
+    },
+    {
+      "path": "./packages/pixels-core-animation"
+    },
+    {
+      "path": "./packages/pixels-core-connect"
+    },
+    {
+      "path": "./packages/pixels-web-connect"
+    },
+    {
+      "path": "./packages/pixels-edit-animation"
+    },
     {
       "path": "./packages/react-native-base-components"
     },
