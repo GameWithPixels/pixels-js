@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "types": [
+      "react",
+      "jest"
+    ],
+    "target": "es2016",
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

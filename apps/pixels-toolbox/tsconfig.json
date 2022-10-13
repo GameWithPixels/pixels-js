@@ -1,5 +1,5 @@
 {
-  "extends": "./../../tsconfig.json",
+  "extends": "./../../tsconfig.expo.json",
   "compilerOptions": {
     "outDir": "./dist",
     "experimentalDecorators": true,

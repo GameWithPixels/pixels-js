@@ -1,16 +1,18 @@
 {
+  "extends": "./../../tsconfig.react.json",
   "compilerOptions": {
+    "outDir": "./dist",
     "types": [
       "react",
       "jest",
       "web-bluetooth"
-    ],    
-    "target": "es6",
-    "strict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true
+    ]
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ]
 }
