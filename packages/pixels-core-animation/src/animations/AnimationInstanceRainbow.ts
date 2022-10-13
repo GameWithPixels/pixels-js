@@ -1,9 +1,9 @@
-import AnimationInstance from "./AnimationInstance";
-import AnimationRainbow from "./AnimationRainbow";
 import * as Color32Utils from "../color/Color32Utils";
-import Constants from "./Constants";
 import * as GammaUtils from "../color/GammaUtils";
 import getFaceIndex from "../getFaceIndex";
+import AnimationInstance from "./AnimationInstance";
+import AnimationRainbow from "./AnimationRainbow";
+import Constants from "./Constants";
 
 export default class AnimationInstanceRainbow extends AnimationInstance {
   get preset(): AnimationRainbow {

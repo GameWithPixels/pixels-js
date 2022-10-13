@@ -1,4 +1,3 @@
-import Constants from "./Constants";
 import {
   assert,
   enumValue,
@@ -7,6 +6,8 @@ import {
   SerializationError,
   serialize,
 } from "@systemic-games/pixels-core-utils";
+
+import Constants from "./Constants";
 
 /**
  * Lists all the Pixel dice message types.

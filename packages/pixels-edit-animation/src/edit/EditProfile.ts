@@ -1,5 +1,6 @@
 import { DataSet, Profile } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
+
 import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRule from "./EditRule";

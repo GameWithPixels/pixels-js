@@ -1,22 +1,3 @@
-import Pixel, { PixelStatus, PixelEventMap, PixelError } from "./Pixel";
-export { PixelStatus, PixelEventMap, PixelError, Pixel };
-
-import PixelUuids from "./PixelUuids";
-export { PixelUuids };
-
-import PixelSession, {
-  PixelSessionConnectionStatus,
-  PixelSessionConnectionEvent,
-} from "./PixelSession";
-export {
-  PixelSession,
-  PixelSessionConnectionStatus,
-  PixelSessionConnectionEvent,
-};
-
-import autoReconnect from "./autoReconnect";
-export { autoReconnect };
-
 import {
   MessageTypeValues,
   type MessageType,
@@ -61,6 +42,22 @@ import {
   TransferInstantAnimationSetAck,
   PlayInstantAnimation,
 } from "./Messages";
+import Pixel, { PixelStatus, PixelEventMap, PixelError } from "./Pixel";
+import PixelSession, {
+  PixelSessionConnectionStatus,
+  PixelSessionConnectionEvent,
+} from "./PixelSession";
+import PixelUuids from "./PixelUuids";
+import autoReconnect from "./autoReconnect";
+
+export { PixelStatus, PixelEventMap, PixelError, Pixel };
+export { PixelUuids };
+export {
+  PixelSession,
+  PixelSessionConnectionStatus,
+  PixelSessionConnectionEvent,
+};
+export { autoReconnect };
 
 export {
   MessageTypeValues,

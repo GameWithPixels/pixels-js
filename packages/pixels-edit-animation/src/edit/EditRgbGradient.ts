@@ -1,4 +1,5 @@
 import { Color } from "@systemic-games/pixels-core-animation";
+
 import EditRgbKeyframe from "./EditRgbKeyframe";
 import Editable from "./Editable";
 

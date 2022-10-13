@@ -7,6 +7,7 @@ import {
   ConditionBatteryState,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
+
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
 import { name, widget, range, units } from "./decorators";

@@ -1,6 +1,7 @@
-import { enumValue, enumFlag } from "./enum";
 import assert, { AssertionError } from "./assert";
 import decodeUtf8 from "./decodeUtf8";
+import { enumValue, enumFlag } from "./enum";
+import safeAssign from "./safeAssign";
 import {
   SerializableProperty,
   type SerializedNumberFormat,
@@ -16,7 +17,6 @@ import {
   deserialize,
   align32bits,
 } from "./serializable";
-import safeAssign from "./safeAssign";
 
 export {
   enumValue,

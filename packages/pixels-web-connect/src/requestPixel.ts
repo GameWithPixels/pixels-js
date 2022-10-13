@@ -1,4 +1,5 @@
 import { Pixel, PixelUuids } from "@systemic-games/pixels-core-connect";
+
 import BleSession from "./BleSession";
 
 const _pixels = new Map<string, Pixel>();

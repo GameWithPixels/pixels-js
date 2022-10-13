@@ -28,7 +28,6 @@ export function getAnimationTypeDisplayName(
       return { name: "Simple Gradient", order: 2 };
     default:
       console.error(`Unknown value for AnimationType: ${animType}`);
-      return;
   }
 }
 
@@ -44,7 +43,6 @@ export function getActionTypeDisplayName(
       return { name: "Play Audio Clip", order: 1 };
     default:
       console.error(`Unknown value for ActionType: ${actionType}`);
-      return;
   }
 }
 
@@ -72,6 +70,5 @@ export function getConditionTypeDisplayName(
       return { name: "Pixel is idle for...", order: 7 };
     default:
       console.error(`Unknown value for ConditionType: ${conditionType}`);
-      return;
   }
 }
