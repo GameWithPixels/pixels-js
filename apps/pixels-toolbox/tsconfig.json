@@ -15,7 +15,7 @@
     "assets/nice-profile.json"
   ],
   "include": [
-    "src/**/*",
+    "src/**/*"
   ],
   "exclude": [
     "dist/",

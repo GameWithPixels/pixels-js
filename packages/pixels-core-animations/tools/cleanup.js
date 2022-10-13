@@ -1,7 +1,7 @@
-/* eslint-disable */
-const fs = require('fs')
-const Path = require('path')
-/* eslint-enable */
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
+const fs = require("fs");
+const Path = require("path");
 
 const deleteFolderRecursive = (path) => {
   if (fs.existsSync(path)) {

@@ -1,9 +1,9 @@
-/* eslint-disable */
-const fs = require('fs')
-const Path = require('path')
-const fileName = '../package.json'
-const file = require(fileName)
-/* eslint-enable */
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
+const fs = require("fs");
+const Path = require("path");
+const fileName = "../package.json";
+const file = require(fileName);
 
 const args = process.argv.slice(2);
 
