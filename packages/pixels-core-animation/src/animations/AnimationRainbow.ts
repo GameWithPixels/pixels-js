@@ -1,4 +1,5 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
+
 import AnimationBits from "./AnimationBits";
 import AnimationInstanceRainbow from "./AnimationInstanceRainbow";
 import AnimationPreset from "./AnimationPreset";

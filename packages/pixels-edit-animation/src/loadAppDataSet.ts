@@ -4,6 +4,8 @@ import {
   ConditionTypeValues,
   Color,
 } from "@systemic-games/pixels-core-animation";
+import { safeAssign } from "@systemic-games/pixels-core-utils";
+
 import AppDataSet from "./AppDataSet";
 import { ColorTypeValues } from "./edit/ColorType";
 import EditAction from "./edit/EditAction";
@@ -31,7 +33,6 @@ import EditProfile from "./edit/EditProfile";
 import EditRgbGradient from "./edit/EditRgbGradient";
 import EditRgbKeyframe from "./edit/EditRgbKeyframe";
 import EditRule from "./edit/EditRule";
-import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 export interface JsonRgbColor {
   r?: number;

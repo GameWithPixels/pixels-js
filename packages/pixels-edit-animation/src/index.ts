@@ -1,5 +1,5 @@
+import AppDataSet from "./AppDataSet";
 import { ColorTypeValues, type ColorType } from "./edit/ColorType";
-import Editable from "./edit/Editable";
 import EditAction from "./edit/EditAction";
 import EditActionPlayAnimation from "./edit/EditActionPlayAnimation";
 import EditActionPlayAudioClip from "./edit/EditActionPlayAudioClip";
@@ -28,6 +28,47 @@ import EditRgbGradient from "./edit/EditRgbGradient";
 import EditRgbKeyframe from "./edit/EditRgbKeyframe";
 import EditRgbTrack from "./edit/EditRgbTrack";
 import EditRule from "./edit/EditRule";
+import Editable from "./edit/Editable";
+import {
+  PropertyData,
+  NameProperty,
+  name,
+  getPropsWithName,
+  RangeProperty,
+  range,
+  getPropsWithRange,
+  type UnitsType,
+  UnitsProperty,
+  units,
+  getPropsWithUnits,
+  type WidgetType,
+  WidgetProperty,
+  widget,
+  getPropsWithWidget,
+  DisplayOrderProperty,
+  displayOrder,
+  getPropsWithDisplayOrder,
+  skipEnum,
+  getPropsWithSkipEnum,
+} from "./edit/decorators";
+import loadAppDataSet, {
+  JsonRgbColor,
+  JsonKeyframe,
+  JsonGradient,
+  JsonPattern,
+  JsonAudioClip,
+  JsonPreviewSettings,
+  JsonColor,
+  JsonAnimationData,
+  JsonAnimation,
+  JsonConditionData,
+  JsonCondition,
+  JsonActionData,
+  JsonAction,
+  JsonRule,
+  JsonProfile,
+  JsonDataSet,
+} from "./loadAppDataSet";
 
 export {
   ColorTypeValues,
@@ -63,29 +104,6 @@ export {
   EditRule,
 };
 
-import {
-  PropertyData,
-  NameProperty,
-  name,
-  getPropsWithName,
-  RangeProperty,
-  range,
-  getPropsWithRange,
-  type UnitsType,
-  UnitsProperty,
-  units,
-  getPropsWithUnits,
-  type WidgetType,
-  WidgetProperty,
-  widget,
-  getPropsWithWidget,
-  DisplayOrderProperty,
-  displayOrder,
-  getPropsWithDisplayOrder,
-  skipEnum,
-  getPropsWithSkipEnum,
-} from "./edit/decorators";
-
 export {
   PropertyData,
   NameProperty,
@@ -108,28 +126,7 @@ export {
   skipEnum,
   getPropsWithSkipEnum,
 };
-
-import AppDataSet from "./AppDataSet";
 export { AppDataSet };
-
-import loadAppDataSet, {
-  JsonRgbColor,
-  JsonKeyframe,
-  JsonGradient,
-  JsonPattern,
-  JsonAudioClip,
-  JsonPreviewSettings,
-  JsonColor,
-  JsonAnimationData,
-  JsonAnimation,
-  JsonConditionData,
-  JsonCondition,
-  JsonActionData,
-  JsonAction,
-  JsonRule,
-  JsonProfile,
-  JsonDataSet,
-} from "./loadAppDataSet";
 
 export {
   loadAppDataSet,

@@ -1,15 +1,16 @@
-import Profile from "./profiles/Profile";
-import Rule from "./profiles/Rule";
-import Action from "./profiles/Action";
-import Condition from "./profiles/Condition";
 import {
   assert,
   align32bits,
   byteSizeOf,
   serialize,
 } from "@systemic-games/pixels-core-utils";
+
 import AnimationBits from "./animations/AnimationBits";
 import AnimationPreset from "./animations/AnimationPreset";
+import Action from "./profiles/Action";
+import Condition from "./profiles/Condition";
+import Profile from "./profiles/Profile";
+import Rule from "./profiles/Rule";
 
 export default class DataSet {
   private readonly _animationBits: AnimationBits;

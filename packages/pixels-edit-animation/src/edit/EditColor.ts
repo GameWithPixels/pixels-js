@@ -1,4 +1,5 @@
 import { Constants, Color, gamma } from "@systemic-games/pixels-core-animation";
+
 import { ColorType, ColorTypeValues } from "./ColorType";
 import Editable from "./Editable";
 

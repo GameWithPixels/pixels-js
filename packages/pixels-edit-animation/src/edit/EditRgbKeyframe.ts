@@ -4,6 +4,7 @@ import {
   SimpleKeyframe,
   RgbKeyframe,
 } from "@systemic-games/pixels-core-animation";
+
 import EditColor from "./EditColor";
 import EditDataSet from "./EditDataSet";
 import Editable from "./Editable";

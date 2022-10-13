@@ -1,6 +1,6 @@
+import getFaceIndex from "../getFaceIndex";
 import AnimationInstance from "./AnimationInstance";
 import AnimationKeyframed from "./AnimationKeyframed";
-import getFaceIndex from "../getFaceIndex";
 
 export default class AnimationInstanceKeyframed extends AnimationInstance {
   get preset(): AnimationKeyframed {

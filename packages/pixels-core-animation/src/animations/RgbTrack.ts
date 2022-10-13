@@ -1,6 +1,7 @@
 import { assert, serializable } from "@systemic-games/pixels-core-utils";
-import AnimationBits from "./AnimationBits";
+
 import * as Color32Utils from "../color/Color32Utils";
+import AnimationBits from "./AnimationBits";
 import Constants from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 

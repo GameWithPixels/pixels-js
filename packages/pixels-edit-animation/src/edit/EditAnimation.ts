@@ -3,6 +3,7 @@ import {
   AnimationBits,
   AnimationPreset,
 } from "@systemic-games/pixels-core-animation";
+
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
 import Editable from "./Editable";

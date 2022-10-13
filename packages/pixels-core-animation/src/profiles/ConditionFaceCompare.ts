@@ -1,4 +1,5 @@
 import { enumFlag, serializable } from "@systemic-games/pixels-core-utils";
+
 import Condition from "./Condition";
 import { ConditionType, ConditionTypeValues } from "./ConditionType";
 

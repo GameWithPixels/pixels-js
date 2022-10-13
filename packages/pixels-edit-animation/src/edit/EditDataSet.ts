@@ -1,4 +1,5 @@
 import { DataSet } from "@systemic-games/pixels-core-animation";
+
 import EditAnimation from "./EditAnimation";
 import EditPattern from "./EditPattern";
 import EditProfile from "./EditProfile";

@@ -1,4 +1,5 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
+
 import Action from "./Action";
 import { ActionType, ActionTypeValues } from "./ActionType";
 

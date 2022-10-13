@@ -1,6 +1,6 @@
+import * as Color32Utils from "../color/Color32Utils";
 import AnimationInstance from "./AnimationInstance";
 import AnimationSimple from "./AnimationSimple";
-import * as Color32Utils from "../color/Color32Utils";
 import Constants from "./Constants";
 
 export default class AnimationInstanceSimple extends AnimationInstance {
