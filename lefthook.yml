@@ -4,7 +4,7 @@ pre-commit:
     lint:
       run: yarn lint
     types:
-      run: yarn ts
+      run: yarn types
 commit-msg:
   parallel: true
   commands:
