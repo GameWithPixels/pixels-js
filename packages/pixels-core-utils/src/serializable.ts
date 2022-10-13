@@ -178,11 +178,12 @@ function internalSerialize<T extends object>(
           case 8:
             if (isFloat) {
               dataView.setFloat64(byteOffset, Number(value), true);
-            } else if (isSigned) {
-              dataView.setBigInt64(byteOffset, BigInt(value), true);
-            } else {
-              dataView.setBigUint64(byteOffset, BigInt(value), true);
-            }
+            } else throw new SerializationError("BigInt not supported");
+            // if (isSigned) {
+            //   dataView.setBigInt64(byteOffset, BigInt(value), true);
+            // } else {
+            //   dataView.setBigUint64(byteOffset, BigInt(value), true);
+            // }
             break;
           default:
             throw new SerializationError(
@@ -250,11 +251,12 @@ function internalDeserialize<T extends object>(
             : dataView.getUint32(byteOffset, true);
           break;
         case 8:
-          newVal = isFloat
-            ? dataView.getFloat64(byteOffset, true)
-            : isSigned
-            ? dataView.getBigInt64(byteOffset, true)
-            : dataView.getBigUint64(byteOffset, true);
+          if (isFloat) {
+            newVal = dataView.getFloat64(byteOffset, true);
+          } else throw new SerializationError("BigInt not supported");
+          // : isSigned
+          // ? dataView.getBigInt64(byteOffset, true)
+          // : dataView.getBigUint64(byteOffset, true);
           break;
         default:
           throw new SerializationError(
