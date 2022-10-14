@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/pixels-edit-animation",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
