@@ -3375,13 +3375,6 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@systemic-games/react-native-bluetooth-le@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@systemic-games/react-native-bluetooth-le/-/react-native-bluetooth-le-0.7.0.tgz#6ebde651188d31e2e193b0d3a664e07907d05620"
-  integrity sha512-Zz8Qza2XxHbOTkieR5likAQ7j5tltbu2vk6Vi7YzYoHAdZ1eKyGMowemgOgnXJM+Tguec7kOVDors7slQnmzjQ==
-  dependencies:
-    events "^3.3.0"
-
 "@systemic-games/react-native-nordic-nrf5-dfu@^0.4.2":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@systemic-games/react-native-nordic-nrf5-dfu/-/react-native-nordic-nrf5-dfu-0.4.2.tgz#afce23ca2098768ed3e7bd38b841bfc74bc0fa9f"
