@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "types": [
-      "react",
       "jest"
     ],
     "target": "es2016",

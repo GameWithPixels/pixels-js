@@ -1,19 +1,24 @@
 {
-  "extends": "./../../tsconfig.react.json",
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "types": [
-      "react",
-      "jest",
-      "node" // For EventEmitter
-    ],
-    "experimentalDecorators": true
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "paths": {
+      "@systemic-games/*": [
+        "./../*/src"
+      ]
+    }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "dist/",
-    "**/*.test.ts?"
+  "references": [
+    {
+      "path": "./../pixels-core-utils"
+    },
+    {
+      "path": "./../pixels-core-animation"
+    }
   ]
 }
