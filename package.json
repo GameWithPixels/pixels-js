@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "description": "Pixels Typescript/JavaScript libraries and apps.",
   "license": "MIT",
-  "private": true,
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -30,5 +29,6 @@
     "eslint-plugin-jest": "^27.1.1",
     "prettier": "^2.7.1",
     "typescript": "^4.8.4"
-  }
+  },
+  "private": true
 }
