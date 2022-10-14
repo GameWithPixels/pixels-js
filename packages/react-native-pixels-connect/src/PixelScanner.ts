@@ -1,0 +1,191 @@
+import {
+  PixelDesignAndColorValues,
+  PixelRollStateValues,
+  PixelUuids,
+} from "@systemic-games/pixels-core-connect";
+import {
+  Central,
+  ScannedPeripheralEvent,
+} from "@systemic-games/react-native-bluetooth-le";
+
+import type ScannedPixel from "./ScannedPixel";
+import SequentialDataReader from "./SequentialDataReader";
+import SequentialPromiseQueue from "./SequentialPromiseQueue";
+import createTypedEventEmitter, {
+  EventReceiver,
+} from "./createTypedEventEmitter";
+
+export type PixelScannerEventMap = {
+  isScanning: boolean;
+  scannedPixel: ScannedPixel;
+  newScannedPixel: ScannedPixel;
+};
+
+const _queue = new SequentialPromiseQueue();
+let _globalScanCount = 0;
+
+export default class PixelScanner {
+  // Our event emitter
+  private readonly _evEmitter = createTypedEventEmitter<PixelScannerEventMap>();
+  // Map of system id to scanned Pixel
+  private readonly _scannedPixels: Map<string, ScannedPixel> = new Map();
+  private readonly _onScannedPeripheral: (p: ScannedPeripheralEvent) => void;
+  private _scanCount = 0;
+
+  get isScanning(): boolean {
+    return this._scanCount > 0;
+  }
+
+  get scannedPixels(): ScannedPixel[] {
+    return [...this._scannedPixels.values()];
+  }
+
+  constructor() {
+    this._onScannedPeripheral = this.onScannedPeripheral.bind(this);
+  }
+
+  addEventListener<K extends keyof PixelScannerEventMap>(
+    eventName: K,
+    listener: EventReceiver<PixelScannerEventMap[K]>
+  ): void {
+    this._evEmitter.addListener(eventName, listener);
+  }
+
+  removeEventListener<K extends keyof PixelScannerEventMap>(
+    eventName: K,
+    listener: EventReceiver<PixelScannerEventMap[K]>
+  ): void {
+    this._evEmitter.removeListener(eventName, listener);
+  }
+
+  start(): Promise<void> {
+    return _queue.run(async () => {
+      // Scan for Pixels
+      await Central.scanForPeripheralsWithServices(PixelUuids.serviceUuid);
+      // Increment counter once the scan has successfully started
+      ++_globalScanCount;
+
+      if (this._scanCount === 0) {
+        // Subscribe to scan events
+        Central.addScannedPeripheralEventListener(this._onScannedPeripheral);
+      }
+
+      // Update scanning state
+      this.updateScanCount("inc");
+    });
+  }
+
+  stop(): Promise<void> {
+    return _queue.run(async () => {
+      if (this._scanCount === 1) {
+        if (_globalScanCount === 1) {
+          await Central.stopScanning();
+        }
+        // Decrement counter once the scan has successfully stopped
+        if (_globalScanCount > 0) {
+          --_globalScanCount;
+        } else {
+          console.error("Invalid PixelScanner global scan count");
+        }
+
+        // Stop listening to stop scan events
+        Central.removeScannedPeripheralEventListener(this._onScannedPeripheral);
+
+        // Update scanning state
+        this.updateScanCount("dec");
+      }
+    });
+  }
+
+  clear(): Promise<void> {
+    return _queue.run(async () => {
+      this._scannedPixels.clear();
+    });
+  }
+
+  private onScannedPeripheral(ev: ScannedPeripheralEvent): void {
+    const scannedPixel = {
+      systemId: ev.peripheral.systemId,
+      pixelId: 0,
+      address: ev.peripheral.address,
+      name: ev.peripheral.name,
+      rssi: ev.peripheral.advertisementData.rssi,
+      ledCount: 0,
+      designAndColor: PixelDesignAndColorValues.Generic,
+      rollState: PixelRollStateValues.Unknown,
+      currentFace: 0,
+      batteryLevel: 0,
+      buildTimestamp: 0,
+    };
+
+    const manufacturerData =
+      ev.peripheral.advertisementData.manufacturersData?.[0];
+    // Check the manufacturers data, Pixels use to share some information
+    // in the advertisement packet: we should have at least 5 bytes of data
+    if (manufacturerData && manufacturerData.data?.length >= 5) {
+      // Create a Scanned Pixel object with some default values
+      const manufBuffer = new Uint8Array(manufacturerData.data);
+      const manufReader = new SequentialDataReader(
+        new DataView(manufBuffer.buffer)
+      );
+
+      // Check the services data, Pixels use to share some information
+      // in the scan response packet
+      const serviceData = ev.peripheral.advertisementData.servicesData?.[0];
+      if (serviceData && serviceData.data.length >= 8) {
+        // Update the Scanned Pixel with values from manufacturers and services data
+        const serviceBuffer = new Uint8Array(serviceData.data);
+        const serviceReader = new SequentialDataReader(
+          new DataView(serviceBuffer.buffer)
+        );
+
+        scannedPixel.pixelId = serviceReader.readU32();
+        scannedPixel.buildTimestamp = serviceReader.readU32();
+
+        scannedPixel.ledCount = manufReader.readU8();
+        scannedPixel.designAndColor = manufReader.readU8();
+        scannedPixel.rollState = manufReader.readU8();
+        scannedPixel.currentFace = manufReader.readU8() + 1;
+        scannedPixel.batteryLevel = manufReader.readU8();
+      } else if (manufacturerData.data.length === 7) {
+        // Update the Scanned Pixel with values from manufacturers data
+        // as advertised from before July 2022
+        const companyId = manufacturerData.companyId ?? 0;
+        // eslint-disable-next-line no-bitwise
+        scannedPixel.ledCount = (companyId >> 8) & 0xff;
+        // eslint-disable-next-line no-bitwise
+        scannedPixel.designAndColor = companyId & 0xff;
+
+        scannedPixel.pixelId = manufReader.readU32();
+        scannedPixel.rollState = manufReader.readU8();
+        scannedPixel.currentFace = manufReader.readU8() + 1;
+        scannedPixel.batteryLevel = manufReader.readU8();
+      }
+    }
+
+    if (scannedPixel.pixelId) {
+      const isNew = !this._scannedPixels.has(scannedPixel.systemId);
+      this._scannedPixels.set(scannedPixel.systemId, scannedPixel);
+      if (isNew) {
+        this._evEmitter.emit("newScannedPixel", scannedPixel);
+      }
+      this._evEmitter.emit("scannedPixel", scannedPixel);
+    } else {
+      console.error(
+        `Pixel ${ev.peripheral.name}: Received unsupported advertising data`
+      );
+    }
+  }
+
+  private updateScanCount(op: "inc" | "dec") {
+    const wasScanning = this.isScanning;
+    this._scanCount = Math.max(0, this._scanCount + (op === "inc" ? 1 : -1));
+    if (wasScanning !== this.isScanning) {
+      try {
+        this._evEmitter.emit("isScanning", this.isScanning);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+}

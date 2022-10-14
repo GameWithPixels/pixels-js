@@ -25,19 +25,19 @@
       "path": "./packages/pixels-core-connect"
     },
     {
+      "path": "./packages/pixels-edit-animation"
+    },
+    {
       "path": "./packages/pixels-web-connect"
     },
     {
-      "path": "./packages/pixels-edit-animation"
+      "path": "./packages/react-native-pixels-connect"
     },
     {
       "path": "./packages/react-native-base-components"
     },
     {
       "path": "./packages/react-native-pixels-components"
-    },
-    {
-      "path": "./apps/pixels-app"
     },
     {
       "path": "./apps/pixels-toolbox"

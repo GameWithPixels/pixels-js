@@ -3375,36 +3375,6 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@systemic-games/pixels-core-animation@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@systemic-games/pixels-core-animation/-/pixels-core-animation-0.4.1.tgz#a50f27ff515525dd137443076e060786f4b74987"
-  integrity sha512-e3Rj/nM2W/TGAu6OJoD0KAgC7QGQL1rgfZvxE9DkJ2cDfSvvzUE5dWTUwGoAHYunTfXkC30E4LX530YTFDUgrA==
-  dependencies:
-    "@systemic-games/pixels-core-utils" "^0.5.0"
-
-"@systemic-games/pixels-core-connect@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@systemic-games/pixels-core-connect/-/pixels-core-connect-0.3.1.tgz#550c90658519979da888540ba5cd80bfe3b402ff"
-  integrity sha512-7v3MqMKtqxOGgbpxXuFTHNImqui1gAf2/RpjobR0zhbcbb3c4a1l/XDYyyqKpb08Nc/PZFHlwxdJw+NzWOkWgA==
-  dependencies:
-    "@systemic-games/pixels-core-animation" "^0.4.1"
-    "@systemic-games/pixels-core-utils" "^0.5.0"
-
-"@systemic-games/pixels-core-utils@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@systemic-games/pixels-core-utils/-/pixels-core-utils-0.5.0.tgz#4dbbf7e01fb585bf7794399e70b46d80e239fe10"
-  integrity sha512-PgOOR/NVHn6/FcXoEmYTzO186k8JiZIo5P00K7pAjWFvpuIZ2jeFmdfOb+5MCqca/Q/O+MIwYQlsLFS/LcZ8nA==
-  dependencies:
-    reflect-metadata "^0.1.13"
-
-"@systemic-games/pixels-edit-animation@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@systemic-games/pixels-edit-animation/-/pixels-edit-animation-0.1.1.tgz#7a3da25c3a9fa1fc25a5e365cac97cb2b0d7f554"
-  integrity sha512-54ftNKFchZDQvuhCBV0so5+cyKBj0NpjiP+tWohdV/kUl+utdY8Dr6YE3XwH5MiW57Ta+XOQbGDFRbTk+oibvw==
-  dependencies:
-    "@systemic-games/pixels-core-animation" "^0.4.1"
-    "@systemic-games/pixels-core-utils" "^0.5.0"
-
 "@systemic-games/react-native-bluetooth-le@^0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@systemic-games/react-native-bluetooth-le/-/react-native-bluetooth-le-0.7.0.tgz#6ebde651188d31e2e193b0d3a664e07907d05620"
@@ -3416,16 +3386,6 @@
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@systemic-games/react-native-nordic-nrf5-dfu/-/react-native-nordic-nrf5-dfu-0.4.2.tgz#afce23ca2098768ed3e7bd38b841bfc74bc0fa9f"
   integrity sha512-fDjOEp1lgMGDYK5EmVY60tK4X15EvTIsNbK5vAaW312A57zH8QYdSKImPBq8yrw0F3bPkZ07Kf3qJs0a/NKVGA==
-
-"@systemic-games/react-native-pixels-connect@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@systemic-games/react-native-pixels-connect/-/react-native-pixels-connect-0.5.0.tgz#3f4eefcd4cb75c70e75cac447b09d28a341e6cbe"
-  integrity sha512-hQCwZ/cIh6EpCeqjMemzXGog9Au5ZSdg2817NLtipkiBY5cQlc9omXTFnSdZzQ+Y6cUz19F96uTuzr7qTPsfPg==
-  dependencies:
-    "@systemic-games/pixels-core-connect" "^0.3.1"
-    "@systemic-games/pixels-core-utils" "^0.5.0"
-    "@systemic-games/react-native-bluetooth-le" "^0.7.0"
-    events "^3.3.0"
 
 "@systemic-games/vision-camera-rgb-averages@^0.3.0":
   version "0.3.0"
@@ -3781,9 +3741,9 @@
     wonka "^4.0.14"
 
 "@urql/core@>=2.3.1":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@urql/core/-/core-3.0.3.tgz#da054babb4d4aed26dc4503806b310ba6dd6eea1"
-  integrity sha512-raQP51ERNtg5BvlN8x8mHVRvk4K0ugWQ69n53BdkjKpXVV5kuWp7trnwriGv1fQKa8HuiGNSCfyslUucc0OVQg==
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@urql/core/-/core-3.0.4.tgz#6eee0908f98c6f3d677e3abbe6f04e9fdbc0a498"
+  integrity sha512-7c12WLHKjmxcxM8nrVdtaYHQnS0WXSfYCf5lg28eRL2ySbo2rOPINLblblDo8UwGTeyrNzjSRVd0I0NlTN6XTA==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.1"
     wonka "^6.0.0"
