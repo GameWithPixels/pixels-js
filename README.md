@@ -3,20 +3,24 @@ Pixels Typescript/JavaScript libraries and apps.
 
 ## Setup
 
+Initialize projects and build packages:
 ```sh
 yarn
+yarn pk:all
 ```
 
 ## Apps
 
 Run the Pixels app:
 ```sh
-yarn pixels:android
+yarn px start
 ```
+
+*Note:* You may replace "start" by "android" or "ios" to target a specific platform.
 
 Build and run the Toolbox:
 ```sh
-yarn toolbox:android
+yarn tb android
 ```
 
 ## Type checking and linting

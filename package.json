@@ -8,12 +8,14 @@
     "packages/*"
   ],
   "scripts": {
-    "pixels:android": "yarn workspace @systemic-games/pixels-app android",
-    "pixels:ios": "yarn workspace @systemic-games/pixels-app ios",
-    "toolbox:android": "yarn workspace @systemic-games/pixels-toolbox android",
-    "toolbox:ios": "yarn workspace @systemic-games/pixels-toolbox ios",
-    "packages:web": "yarn workspace @systemic-games/pixels-core-utils build && yarn workspace @systemic-games/pixels-core-animation build&& yarn workspace @systemic-games/pixels-core-connect build&& yarn workspace @systemic-games/pixels-web-connect build&& yarn workspace @systemic-games/pixels-edit-animation build",
-    "packages:components": "yarn workspace @systemic-games/react-native-base-components prepare && yarn workspace @systemic-games/react-native-pixels-components prepare",
+    "px": "yarn workspace @systemic-games/pixels-app",
+    "tb": "yarn workspace @systemic-games/pixels-toolbox",
+    "pk:core": "yarn workspace @systemic-games/pixels-core-utils build && yarn workspace @systemic-games/pixels-core-animation build && yarn workspace @systemic-games/pixels-core-connect build && yarn workspace @systemic-games/pixels-edit-animation build",
+    "pk:web": "yarn workspace @systemic-games/pixels-web-connect build",
+    "pk:components": "yarn workspace @systemic-games/react-native-base-components prepare && yarn workspace @systemic-games/react-native-pixels-components prepare",
+    "pk:native": "yarn workspace @systemic-games/react-native-pixels-connect prepare",
+    "pk:all": "yarn pk:core && yarn pk:web && yarn pk:components && yarn pk:native",
+    "logcat": "adb logcat -s SystemicGames",
     "types": "tsc --build",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" --cache",
     "lint:fix": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix"

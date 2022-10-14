@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "",
+  },
+  "references": [
+    {
+      "path": "./../pixels-core-utils"
+    },
+    {
+      "path": "./../pixels-core-animation"
+    },
+    {
+      "path": "./../pixels-core-connect"
+    }
+  ]
+}

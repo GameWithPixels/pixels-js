@@ -1,0 +1,24 @@
+{
+  "extends": "./../../tsconfig.expo.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ],
+  "references": [
+    {
+      "path": "./../pixels-core-utils"
+    },
+    {
+      "path": "./../pixels-core-animation"
+    },
+    {
+      "path": "./../pixels-core-connect"
+    }
+  ]
+}
