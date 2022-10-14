@@ -1,0 +1,17 @@
+{
+  "extends": "./../../tsconfig.web.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "types": [
+      "jest",
+      "web-bluetooth"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ]
+}

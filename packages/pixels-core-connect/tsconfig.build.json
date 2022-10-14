@@ -1,0 +1,18 @@
+{
+  "extends": "./../../tsconfig.web.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "types": [
+      "jest",
+      "node" // For EventEmitter
+    ],
+    "experimentalDecorators": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ]
+}

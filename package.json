@@ -13,6 +13,8 @@
     "pixels:ios": "yarn workspace @systemic-games/pixels-app ios",
     "toolbox:android": "yarn workspace @systemic-games/pixels-toolbox android",
     "toolbox:ios": "yarn workspace @systemic-games/pixels-toolbox ios",
+    "packages:web": "yarn workspace @systemic-games/pixels-core-utils build && yarn workspace @systemic-games/pixels-core-animation build&& yarn workspace @systemic-games/pixels-core-connect build&& yarn workspace @systemic-games/pixels-web-connect build&& yarn workspace @systemic-games/pixels-edit-animation build",
+    "packages:components": "yarn workspace @systemic-games/react-native-base-components prepare && yarn workspace @systemic-games/react-native-pixels-components prepare",
     "types": "tsc --build",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" --cache",
     "lint:fix": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix"
@@ -25,6 +27,7 @@
     "@evilmartians/lefthook": "^1.1.2",
     "eslint": "^8.25.0",
     "eslint-config-universe": "^11.1.0",
+    "eslint-plugin-jest": "^27.1.1",
     "prettier": "^2.7.1",
     "typescript": "^4.8.4"
   }

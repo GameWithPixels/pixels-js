@@ -1,5 +1,9 @@
 module.exports = {
-  extends: ["universe/native", "universe/shared/typescript-analysis"],
+  extends: [
+    "universe/native",
+    "universe/web",
+    "universe/shared/typescript-analysis",
+  ],
   ignorePatterns: [
     "/apps/*/android/",
     "/apps/*/dist/",
@@ -12,6 +16,7 @@ module.exports = {
   parserOptions: {
     parser: "@babel/eslint-parser",
   },
+  plugins: ["jest"],
   overrides: [
     // Typescript
     {
