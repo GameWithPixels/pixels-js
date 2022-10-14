@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/react-native-pixels-components",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "UI components with Pixels theming and specific features, using Expo + Native Base.",
   "main": "dist/commonjs/index",
   "module": "dist/module/index",
