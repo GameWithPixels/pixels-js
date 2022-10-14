@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig",
+  "extends": "../tsconfig.build",
   "compilerOptions": {
     "declaration": true /* Generates corresponding '.d.ts' file. */,
     "emitDeclarationOnly": true,
