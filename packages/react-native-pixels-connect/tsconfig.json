@@ -1,7 +1,7 @@
 {
   "extends": "./../../tsconfig.expo",
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist"
   },
   "include": [
     "src/**/*"
