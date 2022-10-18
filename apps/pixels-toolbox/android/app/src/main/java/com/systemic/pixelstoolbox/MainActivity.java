@@ -1,4 +1,4 @@
-package com.systemicgames.pixelstoolbox;
+package com.systemic.pixelstoolbox;
 
 import android.os.Build;
 import android.os.Bundle;

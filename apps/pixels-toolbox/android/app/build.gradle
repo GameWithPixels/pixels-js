@@ -91,6 +91,8 @@ project.ext.react = [
 ]
 
 apply from: new File(reactNativeRoot, "react.gradle")
+apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
+
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -143,7 +145,7 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        applicationId 'com.systemicgames.pixelstoolbox'
+        applicationId 'com.systemic.pixelstoolbox'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

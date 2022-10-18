@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@systemic-games/react-native-pixels-components": "*",
-    "expo": "^46.0.0",
+    "expo": "~46.0.16",
     "expo-status-bar": "~1.4.0",
     "native-base": "~3.4.18",
     "react": "18.0.0",

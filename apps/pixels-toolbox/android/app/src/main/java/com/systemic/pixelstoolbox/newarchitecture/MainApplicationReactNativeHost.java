@@ -1,4 +1,4 @@
-package com.systemicgames.pixelstoolbox.newarchitecture;
+package com.systemic.pixelstoolbox.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -20,9 +20,9 @@ import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.fabric.ReactNativeConfig;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.systemicgames.pixelstoolbox.BuildConfig;
-import com.systemicgames.pixelstoolbox.newarchitecture.components.MainComponentsRegistry;
-import com.systemicgames.pixelstoolbox.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.systemic.pixelstoolbox.BuildConfig;
+import com.systemic.pixelstoolbox.newarchitecture.components.MainComponentsRegistry;
+import com.systemic.pixelstoolbox.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 

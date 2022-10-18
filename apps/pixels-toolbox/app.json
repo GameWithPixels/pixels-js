@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "PixelsToolbox",
+    "name": "Pixels Toolbox",
     "slug": "pixels-toolbox",
     "owner": "gamewithpixels",
     "version": "1.3.0",
@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#222222"
       },
-      "package": "com.systemicgames.pixelstoolbox",
+      "package": "com.systemic.pixelstoolbox",
       "permissions": [
         "android.permission.CAMERA"
       ]

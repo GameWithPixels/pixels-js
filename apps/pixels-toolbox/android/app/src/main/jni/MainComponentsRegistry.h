@@ -13,7 +13,7 @@ class MainComponentsRegistry
  public:
   // Adapt it to the package you used for your Java class.
   constexpr static auto kJavaDescriptor =
-      "Lcom/systemicgames/pixelstoolbox/newarchitecture/components/MainComponentsRegistry;";
+      "Lcom/systemic/pixelstoolbox/newarchitecture/components/MainComponentsRegistry;";
 
   static void registerNatives();
 
