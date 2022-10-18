@@ -4,8 +4,9 @@ const path = require("path");
 const blacklist = require("metro-config/src/defaults/exclusionList");
 const escape = require("escape-string-regexp");
 const pak = require("../package.json");
+const findWorkspaceRoot = require("find-yarn-workspace-root");
 
-const root = path.resolve(__dirname, "../../..");
+const root = findWorkspaceRoot(__dirname);
 
 const modules = Object.keys({
   ...pak.peerDependencies,
