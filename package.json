@@ -14,7 +14,7 @@
     "pk:core": "yarn workspace @systemic-games/pixels-core-utils build && yarn workspace @systemic-games/pixels-core-animation build && yarn workspace @systemic-games/pixels-core-connect build && yarn workspace @systemic-games/pixels-edit-animation build",
     "pk:web": "yarn workspace @systemic-games/pixels-web-connect build",
     "pk:components": "yarn workspace @systemic-games/react-native-base-components prepare && yarn workspace @systemic-games/react-native-pixels-components prepare",
-    "pk:native": "yarn workspace @systemic-games/react-native-pixels-connect prepare",
+    "pk:native": "cd packages/react-native-bluetooth-le && yarn",
     "pk:all": "yarn pk:core && yarn pk:web && yarn pk:components && yarn pk:native",
     "logcat": "adb logcat -s SystemicGames",
     "types": "tsc --build",

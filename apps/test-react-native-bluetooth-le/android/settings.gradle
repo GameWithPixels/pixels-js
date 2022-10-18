@@ -3,4 +3,4 @@ apply from: file("../node_modules/@react-native-community/cli-platform-android/n
 include ':app'
 
 include ':reactnativebluetoothle'
-project(':reactnativebluetoothle').projectDir = new File(rootProject.projectDir, '../../android')
+project(':reactnativebluetoothle').projectDir = new File(rootProject.projectDir, '../../../node_modules/@systemic-games/react-native-bluetooth-le/android')
