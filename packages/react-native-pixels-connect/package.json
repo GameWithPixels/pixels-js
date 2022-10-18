@@ -23,7 +23,7 @@
   "scripts": {
     "test": "jest",
     "prepare": "bob build",
-    "release": "release-it"
+    "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
@@ -41,7 +41,7 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-    "dependencies": {
+  "dependencies": {
       "events": "^3.3.0",
       "@systemic-games/pixels-core-connect": "*",
       "@systemic-games/pixels-core-utils": "*",
@@ -53,10 +53,9 @@
     "@types/react": "~18.0.0",
     "@types/react-native": "0.69.6",
     "jest": "^29.1.2",
-    "pod-install": "^0.1.0",
     "react": "18.0.0",
     "react-native": "0.69.6",
-    "react-native-builder-bob": "^0.18.3",
+    "react-native-builder-bob": "^0.20.0",
     "release-it": "^15.0.0"
   },
   "peerDependencies": {
