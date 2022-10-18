@@ -3,4 +3,4 @@ apply from: file("../node_modules/@react-native-community/cli-platform-android/n
 include ':app'
 
 include ':visioncamerargbaverages'
-project(':visioncamerargbaverages').projectDir = new File(rootProject.projectDir, '../../android')
+project(':visioncamerargbaverages').projectDir = new File(rootProject.projectDir, '../../../node_modules/@systemic-games/vision-camera-rgb-averages/android')

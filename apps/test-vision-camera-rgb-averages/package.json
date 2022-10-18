@@ -1,6 +1,6 @@
 {
-  "name": "vision-camera-rgb-averages-example",
-  "description": "Example app for vision-camera-rgb-averages",
+  "name": "@systemic-games/test-vision-camera-rgb-averages",
+  "description": "Test app for vision-camera-rgb-averages package.",
   "version": "0.0.0",
   "repository": "https://github.com/GameWithPixels/pixels-js",
   "author": "Systemic Games (https://gamewithpixels.com)",
