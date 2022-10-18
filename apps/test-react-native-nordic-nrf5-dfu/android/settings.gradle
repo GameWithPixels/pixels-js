@@ -5,4 +5,4 @@ apply from: file("../node_modules/@react-native-community/cli-platform-android/n
 include ':app'
 
 include ':reactnativenordicnrf5dfu'
-project(':reactnativenordicnrf5dfu').projectDir = new File(rootProject.projectDir, '../../android')
+project(':reactnativenordicnrf5dfu').projectDir = new File(rootProject.projectDir, '../../../node_modules/@systemic-games/react-native-nordic-nrf5-dfu/android')
