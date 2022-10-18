@@ -6,12 +6,7 @@
     "declarationMap": true,
     "incremental": true,
     "noEmit": false,
-    "emitDeclarationOnly": true,
-    "paths": {
-      "@systemic-games/*": [
-        "./../*/src"
-      ]
-    }
+    "emitDeclarationOnly": true
   },
   "references": [
     {
