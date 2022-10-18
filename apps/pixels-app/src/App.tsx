@@ -1,4 +1,9 @@
-import { awesomeMultiply } from "@systemic-games/react-native-pixels-components";
+import {
+  Toggle,
+  Pxtheme,
+  BatteryLevel,
+  RSSIStrength,
+} from "@systemic-games/react-native-pixels-components";
 import {
   Text,
   Link,
@@ -8,7 +13,6 @@ import {
   Switch,
   useColorMode,
   NativeBaseProvider,
-  extendTheme,
   VStack,
   Box,
 } from "native-base";
@@ -16,21 +20,9 @@ import React from "react";
 
 import NativeBaseIcon from "./components/NativeBaseIcon";
 
-// Define the config
-const config = {
-  useSystemColorMode: false,
-  initialColorMode: "dark",
-};
-
-// extend the theme
-export const theme = extendTheme({ config });
-type MyThemeType = typeof theme;
-declare module "native-base" {
-  interface ICustomTheme extends MyThemeType {}
-}
 export default function App() {
   return (
-    <NativeBaseProvider>
+    <NativeBaseProvider theme={Pxtheme}>
       <Center
         _dark={{ bg: "blueGray.900" }}
         _light={{ bg: "blueGray.50" }}
@@ -62,8 +54,10 @@ export default function App() {
             <Text color="primary.500" underline fontSize="xl">
               Learn NativeBase
             </Text>
-            <Text>{awesomeMultiply(3, 4)}</Text>
           </Link>
+          <Toggle text="Test Toggle" space={4} />
+          <BatteryLevel percentage={10} />
+          <RSSIStrength percentage={55} />
           <ToggleDarkMode />
         </VStack>
       </Center>
