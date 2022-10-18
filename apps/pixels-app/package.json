@@ -1,5 +1,6 @@
 {
   "name": "@systemic-games/pixels-app",
+  "description": "The official Pixels app.",
   "version": "0.1.0",
   "main": "index.js",
   "keywords": [
