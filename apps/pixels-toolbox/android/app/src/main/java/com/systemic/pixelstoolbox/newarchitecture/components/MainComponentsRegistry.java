@@ -1,4 +1,4 @@
-package com.systemicgames.pixelstoolbox.newarchitecture.components;
+package com.systemic.pixelstoolbox.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

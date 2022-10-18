@@ -1,4 +1,4 @@
-package com.systemicgames.pixelstoolbox.newarchitecture.modules;
+package com.systemic.pixelstoolbox.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

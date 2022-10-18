@@ -1,4 +1,4 @@
-package com.systemicgames.pixelstoolbox;
+package com.systemic.pixelstoolbox;
 
 import android.app.Application;
 import android.content.Context;
@@ -12,7 +12,7 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.soloader.SoLoader;
-import com.systemicgames.pixelstoolbox.newarchitecture.MainApplicationReactNativeHost;
+import com.systemic.pixelstoolbox.newarchitecture.MainApplicationReactNativeHost;
 
 import expo.modules.ApplicationLifecycleDispatcher;
 import expo.modules.ReactNativeHostWrapper;
@@ -88,7 +88,7 @@ public class MainApplication extends Application implements ReactApplication {
          We use reflection here to pick up the class that initializes Flipper,
         since Flipper library is not available in release mode
         */
-        Class<?> aClass = Class.forName("com.systemicgames.pixelstoolbox.ReactNativeFlipper");
+        Class<?> aClass = Class.forName("com.systemic.pixelstoolbox.ReactNativeFlipper");
         aClass
             .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
             .invoke(null, context, reactInstanceManager);
