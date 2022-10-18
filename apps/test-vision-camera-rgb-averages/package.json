@@ -1,0 +1,45 @@
+{
+  "name": "vision-camera-rgb-averages-example",
+  "description": "Example app for vision-camera-rgb-averages",
+  "version": "0.0.0",
+  "repository": "https://github.com/GameWithPixels/pixels-js",
+  "author": "Systemic Games (https://gamewithpixels.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GameWithPixels/pixels-js/issues"
+  },
+  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "workspaces": {
+    "nohoist": [
+      "react-native",
+      "react-native/**",
+      "@react-native-*",
+      "@react-native-*/**",
+      "jsc-android",
+      "jsc-android/**",
+      "hermes-*",
+      "hermes-*/**"
+    ]
+  },
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start"
+  },
+  "dependencies": {
+    "@systemic-games/vision-camera-rgb-averages": "*",
+    "react": "18.0.0",
+    "react-native": "0.69.6",
+    "react-native-reanimated": "~2.10.0",
+    "react-native-vision-camera": "~2.14.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.19.3",
+    "@babel/runtime": "^7.14.0",
+    "@types/react": "~18.0.0",
+    "@types/react-native": "0.69.6",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "metro-react-native-babel-preset": "~0.70.3"
+  },
+  "private": true
+}
