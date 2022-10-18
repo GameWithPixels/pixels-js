@@ -1,3 +1,14 @@
+import {
+  BluetoothLE,
+  Device,
+  ConnectionStatus,
+  AdvertisementData,
+  Characteristic,
+  BleScanResultEvent,
+  BleEvent,
+  BleConnectionEvent,
+  BleCharacteristicValueChangedEvent,
+} from "@systemic-games/react-native-bluetooth-le";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import {
@@ -12,18 +23,8 @@ import {
   Platform,
   PermissionsAndroid,
   ScrollView,
+  // eslint-disable-next-line import/namespace
 } from "react-native";
-import {
-  BluetoothLE,
-  Device,
-  ConnectionStatus,
-  AdvertisementData,
-  Characteristic,
-  BleScanResultEvent,
-  BleEvent,
-  BleConnectionEvent,
-  BleCharacteristicValueChangedEvent,
-} from "@systemic-games/react-native-bluetooth-le";
 
 // https://stackoverflow.com/a/34310051
 const toHexString = (arr: Iterable<number>) => {
@@ -245,7 +246,6 @@ class PixelBleHelper {
     } catch (error) {
       console.log(error);
     }
-    return;
   }
 
   async disconnectPixel(device: Device) {
@@ -465,7 +465,7 @@ export default function App() {
       {scanning && scannedDevices.length === 0 ? (
         <Text style={styles.textStatus}>Scanning...</Text>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={true}>
+        <ScrollView showsVerticalScrollIndicator>
           {scannedDevices.map((device) => (
             <View key={device.systemId} style={styles.deviceList}>
               {showDiceBox(device)}

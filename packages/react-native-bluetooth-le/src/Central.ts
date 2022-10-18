@@ -8,11 +8,12 @@ import {
   BleConnectionEvent,
   BleCharacteristicValueChangedEvent,
 } from "@systemic-games/react-native-bluetooth-le";
+// eslint-disable-next-line import/namespace
 import { NativeEventEmitter, EmitterSubscription } from "react-native";
 
 import Constants from "./Constants";
-import requestPermissions from "./requestPermissions";
 import createTypedEventEmitter from "./createTypedEventEmitter";
+import requestPermissions from "./requestPermissions";
 
 function toArray(strList?: string): string[] {
   return strList?.split(",") ?? [];

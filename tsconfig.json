@@ -44,6 +44,9 @@
     },
     {
       "path": "./apps/pixels-toolbox"
+    },
+    {
+      "path": "./apps/test-react-native-bluetooth-le"
     }
   ]
 }
