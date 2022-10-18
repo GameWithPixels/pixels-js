@@ -1,11 +1,10 @@
 {
-  "extends": "./tsconfig.build",
+  "extends": "./../../tsconfig.web",
   "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "incremental": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true,
-  }
+    "outDir": "./dist",
+    "experimentalDecorators": true
+  },
+  "include": [
+    "src/**/*"
+  ]
 }

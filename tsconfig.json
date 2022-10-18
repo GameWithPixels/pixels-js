@@ -14,6 +14,9 @@
     }
   },
   "files": [],
+  "exclude": [
+    "**/*.test.ts?"
+  ],
   "references": [
     {
       "path": "./packages/pixels-core-utils"
@@ -49,9 +52,6 @@
       "path": "./packages/react-native-pixels-components"
     },
     {
-      "path": "./apps/pixels-toolbox"
-    },
-    {
       "path": "./apps/test-react-native-bluetooth-le"
     },
     {
@@ -59,6 +59,12 @@
     },
     {
       "path": "./apps/test-vision-camera-rgb-averages"
-    }
+    },
+    {
+      "path": "./apps/pixels-app"
+    },
+    {
+      "path": "./apps/pixels-toolbox"
+    },
   ]
 }

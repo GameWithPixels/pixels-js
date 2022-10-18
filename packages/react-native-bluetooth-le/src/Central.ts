@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/namespace
+import { NativeEventEmitter, EmitterSubscription } from "react-native";
+
 import {
   BluetoothLE,
   ConnectionStatus,
@@ -7,10 +10,7 @@ import {
   BleScanResultEvent,
   BleConnectionEvent,
   BleCharacteristicValueChangedEvent,
-} from "@systemic-games/react-native-bluetooth-le";
-// eslint-disable-next-line import/namespace
-import { NativeEventEmitter, EmitterSubscription } from "react-native";
-
+} from "./BluetoothLE";
 import Constants from "./Constants";
 import createTypedEventEmitter from "./createTypedEventEmitter";
 import requestPermissions from "./requestPermissions";

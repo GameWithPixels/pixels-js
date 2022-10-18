@@ -6,10 +6,6 @@
   "include": [
     "src/**/*"
   ],
-  "exclude": [
-    "dist/",
-    "**/*.test.ts?"
-  ],
   "references": [
     {
       "path": "./../pixels-core-utils"

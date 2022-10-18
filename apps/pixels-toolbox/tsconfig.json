@@ -20,10 +20,6 @@
   "include": [
     "src/**/*"
   ],
-  "exclude": [
-    "dist/",
-    "**/*.test.ts?"
-  ],
   "references": [
     {
       "path": "./../../packages/react-native-pixels-components"

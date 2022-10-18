@@ -10,10 +10,6 @@
     "index.tsx",
     "src/**/*"
   ],
-  "exclude": [
-    "dist/",
-    "**/*.test.ts?"
-  ],
   "references": [
     {
       "path": "./../../packages/vision-camera-rgb-averages"

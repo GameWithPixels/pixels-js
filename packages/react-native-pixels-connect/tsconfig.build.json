@@ -1,20 +1,6 @@
 {
-  "extends": "./tsconfig",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "outDir": "",
-  },
-  "references": [
-    {
-      "path": "./../pixels-core-utils"
-    },
-    {
-      "path": "./../pixels-core-animation"
-    },
-    {
-      "path": "./../pixels-core-connect"
-    },
-    {
-      "path": "./../react-native-bluetooth-le"
-    }
-  ]
+    "noEmit": false
+  }
 }
