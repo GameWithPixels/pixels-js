@@ -34,6 +34,9 @@
       "path": "./packages/react-native-bluetooth-le"
     },
     {
+      "path": "./packages/react-native-nordic-nrf5-dfu"
+    },
+    {
       "path": "./packages/react-native-pixels-connect"
     },
     {
@@ -47,6 +50,9 @@
     },
     {
       "path": "./apps/test-react-native-bluetooth-le"
+    },
+    {
+      "path": "./apps/test-react-native-nordic-nrf5-dfu"
     }
   ]
 }

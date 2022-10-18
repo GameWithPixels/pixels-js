@@ -1,0 +1,105 @@
+{
+  "name": "@systemic-games/react-native-nordic-nrf5-dfu",
+  "version": "1.0.0",
+  "description": "React Native package for running DFUs on Nordic Semiconductor nRF5 devices.",
+  "main": "dist/commonjs/index",
+  "module": "dist/module/index",
+  "types": "dist/typescript/index.d.ts",
+  "react-native": "src/index",
+  "source": "src/index",
+  "files": [
+    "src",
+    "dist",
+    "android",
+    "ios",
+    "cpp",
+    "react-native-nordic-nrf5-dfu.podspec",
+    "!android/build",
+    "!ios/build",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__"
+  ],
+  "scripts": {
+    "test": "jest",
+    "prepare": "bob build",
+    "release": "release-it",
+    "bootstrap": "yarn && yarn pods"
+  },
+  "keywords": [
+    "react-native",
+    "android",
+    "bluetooth",
+    "Bluetooth Low Energy",
+    "BluetoothLE",
+    "BLE",
+    "Nordic",
+    "nRF5",
+    "Device Firmware Update",
+    "DFU"
+  ],
+  "repository": "https://github.com/GameWithPixels/pixels-js",
+  "author": "Systemic Games (https://gamewithpixels.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GameWithPixels/pixels-js/issues"
+  },
+  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "devDependencies": {
+    "@release-it/conventional-changelog": "^5.0.0",
+    "@types/jest": "^29.1.2",
+    "@types/react": "~18.0.0",
+    "@types/react-native": "0.69.6",
+    "jest": "^29.1.2",
+    "pod-install": "^0.1.0",
+    "react": "18.0.0",
+    "react-native": "0.69.6",
+    "react-native-builder-bob": "^0.18.3",
+    "release-it": "^15.0.0"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "jest": {
+    "preset": "react-native",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/dist/"
+    ]
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
+    },
+    "npm": {
+      "publish": true
+    },
+    "github": {
+      "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular"
+      }
+    }
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "dist",
+    "targets": [
+      "commonjs",
+      "module",
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
+}
