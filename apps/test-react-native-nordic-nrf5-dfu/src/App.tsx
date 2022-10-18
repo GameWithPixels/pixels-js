@@ -1,6 +1,11 @@
+import type { Device } from "@systemic-games/react-native-bluetooth-le";
+import {
+  startDfu,
+  DfuProgressEvent,
+  DfuStateEvent,
+} from "@systemic-games/react-native-nordic-nrf5-dfu";
 import * as React from "react";
 import { useCallback, useState } from "react";
-import DocumentPicker, { types } from "react-native-document-picker";
 import {
   StyleSheet,
   View,
@@ -8,14 +13,11 @@ import {
   Button,
   SafeAreaView,
   StatusBar,
+  // eslint-disable-next-line import/namespace
 } from "react-native";
-import {
-  startDfu,
-  DfuProgressEvent,
-  DfuStateEvent,
-} from "@systemic-games/react-native-nordic-nrf5-dfu";
-import type { Device } from "@systemic-games/react-native-bluetooth-le";
+import DocumentPicker, { types } from "react-native-document-picker";
 import RNFS from "react-native-fs";
+
 import bleHelper from "./pixel/PixelBleHelper";
 
 export default function App() {
@@ -127,7 +129,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle={"dark-content"} />
+      <StatusBar barStyle="dark-content" />
       <Text style={styles.textTitle}>Pixels DFU update</Text>
       <Text style={styles.text}>1. Select Zip File</Text>
       <Text style={styles.text}>2. Scan for BLE devices</Text>
@@ -137,7 +139,7 @@ export default function App() {
         <Text
           style={styles.textFilename}
           numberOfLines={1}
-          ellipsizeMode={"middle"}
+          ellipsizeMode="middle"
         >
           {`File: ${zipPath}`}
         </Text>
