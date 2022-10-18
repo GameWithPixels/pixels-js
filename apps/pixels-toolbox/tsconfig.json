@@ -36,6 +36,9 @@
     },
     {
       "path": "./../../packages/react-native-nordic-nrf5-dfu"
+    },
+    {
+      "path": "./../../packages/vision-camera-rgb-averages"
     }
   ]
 }

@@ -37,6 +37,9 @@
       "path": "./packages/react-native-nordic-nrf5-dfu"
     },
     {
+      "path": "./packages/vision-camera-rgb-averages"
+    },
+    {
       "path": "./packages/react-native-pixels-connect"
     },
     {
@@ -53,6 +56,9 @@
     },
     {
       "path": "./apps/test-react-native-nordic-nrf5-dfu"
+    },
+    {
+      "path": "./apps/test-vision-camera-rgb-averages"
     }
   ]
 }

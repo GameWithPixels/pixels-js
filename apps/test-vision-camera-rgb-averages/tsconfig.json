@@ -1,0 +1,22 @@
+{
+  "extends": "./../../tsconfig.expo",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "files": [
+    "app.json"
+  ],
+  "include": [
+    "index.tsx",
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ],
+  "references": [
+    {
+      "path": "./../../packages/vision-camera-rgb-averages"
+    }
+  ]
+}

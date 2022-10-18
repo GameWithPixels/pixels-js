@@ -1,0 +1,13 @@
+{
+  "extends": "./../../tsconfig.expo",
+  "compilerOptions": {
+    "outDir": "./dist",
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ]
+}
