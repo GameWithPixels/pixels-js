@@ -2,11 +2,6 @@
   "extends": "./../../tsconfig.expo",
   "compilerOptions": {
     "outDir": "./dist",
-    "paths": {
-      "@systemic-games/react-native-bluetooth-le": [
-        "./src/index"
-      ]
-    },
   },
   "include": [
     "src/**/*"
