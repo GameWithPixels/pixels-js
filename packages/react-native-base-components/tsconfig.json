@@ -1,5 +1,5 @@
 {
-  "extends": "./../../tsconfig.expo.json",
+  "extends": "./../../tsconfig.expo",
   "compilerOptions": {
     "outDir": "./dist"
   },
