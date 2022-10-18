@@ -1,7 +1,7 @@
 {
   "name": "@systemic-games/react-native-bluetooth-le",
   "version": "1.0.0",
-  "description": "React Native package adding support for Bluetooth LE",
+  "description": "React Native package adding support for Bluetooth LE.",
   "main": "dist/commonjs/index",
   "module": "dist/module/index",
   "types": "dist/typescript/index.d.ts",
