@@ -1,0 +1,29 @@
+{
+  "extends": "./../../tsconfig.expo.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "experimentalDecorators": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@systemic-games/*": [
+        "./../../../packages/*/src"
+      ]
+    }
+  },
+  "files": [
+    "app.json"
+  ],
+  "include": [
+    "index.tsx",
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist/",
+    "**/*.test.ts?"
+  ],
+  "references": [
+    {
+      "path": "./../../packages/react-native-bluetooth-le"
+    }
+  ]
+}

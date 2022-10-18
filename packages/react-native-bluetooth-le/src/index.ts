@@ -14,6 +14,16 @@ import {
   NativeBluetoothLE,
   BluetoothLE,
 } from "./BluetoothLE";
+import Central, {
+  ScanStatusEvent,
+  ScannedPeripheralEvent,
+  PeripheralConnectionEvent,
+  PeripheralCharacteristicValueChangedEvent,
+  type PeripheralOrSystemId,
+  ScannedPeripheral,
+} from "./Central";
+import Scanner from "./Scanner";
+import requestPermissions from "./requestPermissions";
 
 export {
   BleEvent,
@@ -31,15 +41,6 @@ export {
   NativeBluetoothLE,
   BluetoothLE,
 };
-
-import Central, {
-  ScanStatusEvent,
-  ScannedPeripheralEvent,
-  PeripheralConnectionEvent,
-  PeripheralCharacteristicValueChangedEvent,
-  type PeripheralOrSystemId,
-  ScannedPeripheral,
-} from "./Central";
 export {
   Central,
   ScanStatusEvent,
@@ -49,9 +50,5 @@ export {
   type PeripheralOrSystemId,
   ScannedPeripheral,
 };
-
-import requestPermissions from "./requestPermissions";
 export { requestPermissions };
-
-import Scanner from "./Scanner";
 export { Scanner };
