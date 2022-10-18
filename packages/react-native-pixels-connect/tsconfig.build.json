@@ -12,6 +12,9 @@
     },
     {
       "path": "./../pixels-core-connect"
+    },
+    {
+      "path": "./../react-native-bluetooth-le"
     }
   ]
 }
