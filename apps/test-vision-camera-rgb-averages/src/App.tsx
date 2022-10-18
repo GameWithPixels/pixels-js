@@ -1,5 +1,10 @@
+import {
+  getImageRgbAverages,
+  ImageRgbAverages,
+} from "@systemic-games/vision-camera-rgb-averages";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+// eslint-disable-next-line import/namespace
 import { StyleSheet, View, Text } from "react-native";
 import { runOnJS } from "react-native-reanimated";
 import {
@@ -8,10 +13,6 @@ import {
   useCameraDevices,
   useFrameProcessor,
 } from "react-native-vision-camera";
-import {
-  getImageRgbAverages,
-  ImageRgbAverages,
-} from "@systemic-games/vision-camera-rgb-averages";
 
 // Notes:
 // - Using alignContent or justifyContent on Camera parent View may cause the Camera to not render
