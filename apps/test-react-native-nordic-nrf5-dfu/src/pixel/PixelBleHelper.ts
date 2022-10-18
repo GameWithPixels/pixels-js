@@ -1,21 +1,21 @@
 import {
-  NativeEventEmitter,
-  EmitterSubscription,
-  Platform,
-  PermissionsAndroid,
-} from "react-native";
-import {
   BluetoothLE,
   Device,
   ConnectionStatus,
   AdvertisementData,
   Characteristic,
   BleEvent,
-  NativeError,
   BleScanResultEvent,
   BleConnectionEvent,
   BleCharacteristicValueChangedEvent,
 } from "@systemic-games/react-native-bluetooth-le";
+import {
+  NativeEventEmitter,
+  EmitterSubscription,
+  Platform,
+  PermissionsAndroid,
+  // eslint-disable-next-line import/namespace
+} from "react-native";
 
 import {
   Blink,
@@ -172,9 +172,8 @@ export class PixelBleHelper {
     // Start BLE scanning
     try {
       await this._ble.startScan(PixelBleHelper._serviceUuid);
-    } catch (error) {
-      const err = error as NativeError;
-      console.log(`Failed to start scan: ${err.code} => ${err.message}`);
+    } catch (error: any) {
+      console.log(`Failed to start scan: ${error.code} => ${error.message}`);
       return false;
     }
 
@@ -263,7 +262,6 @@ export class PixelBleHelper {
     } catch (error) {
       console.log(error);
     }
-    return;
   }
 
   async disconnectPixel(peripheral: Device): Promise<void> {

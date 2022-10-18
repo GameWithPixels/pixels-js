@@ -171,7 +171,6 @@ export function serializeMessage(
     dataView.setUint8(1, msg.animId);
     return new Uint8Array(dataView.buffer);
   }
-  return;
 }
 
 /**
