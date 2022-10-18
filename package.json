@@ -10,6 +10,7 @@
   "scripts": {
     "px": "yarn workspace @systemic-games/pixels-app",
     "tb": "yarn workspace @systemic-games/pixels-toolbox",
+    "test:rnble": "yarn workspace @systemic-games/test-react-native-bluetooth-le",
     "pk:core": "yarn workspace @systemic-games/pixels-core-utils build && yarn workspace @systemic-games/pixels-core-animation build && yarn workspace @systemic-games/pixels-core-connect build && yarn workspace @systemic-games/pixels-edit-animation build",
     "pk:web": "yarn workspace @systemic-games/pixels-web-connect build",
     "pk:components": "yarn workspace @systemic-games/react-native-base-components prepare && yarn workspace @systemic-games/react-native-pixels-components prepare",
