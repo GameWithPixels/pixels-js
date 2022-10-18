@@ -1,5 +1,4 @@
 {
-  "extends": "./tsconfig",
   "compilerOptions": {
     "types": [
       "jest"
@@ -9,5 +8,8 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "exclude": [
+    "**/*.test.ts?"
+  ]
 }

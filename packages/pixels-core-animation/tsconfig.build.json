@@ -1,14 +1,10 @@
 {
-  "extends": "./../../tsconfig.web",
+  "extends": "./../../tsconfig.web.build",
   "compilerOptions": {
     "outDir": "./dist",
     "experimentalDecorators": true
   },
   "include": [
     "src/**/*"
-  ],
-  "exclude": [
-    "dist/",
-    "**/*.test.ts?"
   ]
 }

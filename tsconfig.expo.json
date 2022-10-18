@@ -13,5 +13,8 @@
         "./packages/*/src"
       ]
     }
-  }
+  },
+  "exclude": [
+    "**/*.test.ts?"
+  ]
 }

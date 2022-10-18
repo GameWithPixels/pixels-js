@@ -1,13 +1,16 @@
 {
-  "extends": "./tsconfig.build",
+  "extends": "./../../tsconfig.web",
   "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "incremental": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true
+    "outDir": "./dist",
+    "types": [
+      "jest",
+      "node" // For EventEmitter
+    ],
+    "experimentalDecorators": true
   },
+  "include": [
+    "src/**/*"
+  ],
   "references": [
     {
       "path": "./../pixels-core-utils"
