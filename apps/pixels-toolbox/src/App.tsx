@@ -15,6 +15,7 @@ import DfuScreen from "~/screens/DfuScreen";
 import MenuScreen from "~/screens/MenuScreen";
 import SelectDfuFileScreen from "~/screens/SelectDfuFileScreen";
 import { sr } from "~/styles";
+import "./i18n";
 
 // Use Sentry for crash reporting
 Sentry.init({
