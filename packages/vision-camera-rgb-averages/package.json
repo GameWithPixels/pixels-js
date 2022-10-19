@@ -25,6 +25,10 @@
     "prepare": "bob build",
     "release": "release-it --only-version"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "keywords": [
     "react-native",
     "android",
@@ -32,17 +36,16 @@
     "camera",
     "rgb average"
   ],
-  "repository": "https://github.com/GameWithPixels/pixels-js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:GameWithPixels/pixels-js.git"
+  },
   "author": "Systemic Games (https://gamewithpixels.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
-  },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.1.2",

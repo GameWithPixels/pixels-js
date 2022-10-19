@@ -6,6 +6,9 @@
   "module": "dist/esm/index.js",
   "umd:main": "dist/umd/index.js",
   "types": "dist/types/index.d.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "yarn build:cjs && yarn build:esm && yarn build:umd && yarn build:types",
     "build:cjs": "node tools/cleanup cjs && tsc -p config/tsconfig.cjs.json",
@@ -20,11 +23,9 @@
     "test:cov": "jest --coverage --no-cache --runInBand"
   },
   "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "files": [
-    "dist"
-  ],
   "keywords": [
     "pixel",
     "pixels",
@@ -34,16 +35,16 @@
     "core",
     "utils"
   ],
-  "author": "Systemic Games (https://gamewithpixels.com)",
-  "license": "MIT",
-  "homepage": "https://github.com/GameWithPixels/TsPixelsCoreUtils",
   "repository": {
     "type": "git",
-    "url": "git@github.com:GameWithPixels/TsPixelsCoreUtils.git"
+    "url": "git@github.com:GameWithPixels/pixels-js.git"
   },
+  "author": "Systemic Games (https://gamewithpixels.com)",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/GameWithPixels/TsPixelsCoreUtils/issues"
+    "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
+  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
     "reflect-metadata": "^0.1.13"
   },
