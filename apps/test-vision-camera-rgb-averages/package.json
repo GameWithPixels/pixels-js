@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
-    "@babel/runtime": "^7.14.0",
+    "@babel/runtime": "^7.19.4",
     "@types/react": "~18.0.0",
     "@types/react-native": "0.69.6",
     "babel-plugin-module-resolver": "^4.1.0",
