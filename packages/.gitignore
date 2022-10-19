@@ -1,0 +1,3 @@
+# Packages node modules should stay empty except for binaries
+!/*/node_modules/
+/*/node_modules/.bin/
