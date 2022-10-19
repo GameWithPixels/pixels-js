@@ -1,5 +1,7 @@
 # Pixels Toolbox
 
+Internal app for testing Pixels dice and new software features.
+
 ## Running The App
 
 ### EAS
