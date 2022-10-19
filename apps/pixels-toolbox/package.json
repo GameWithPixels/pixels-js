@@ -3,25 +3,6 @@
   "description": "Internal app for working with and testing Pixels dice.",
   "version": "1.3.1",
   "main": "index.js",
-  "keywords": [
-    "react native",
-    "expo",
-    "typescript",
-    "pixels",
-    "electronic dice",
-    "toolbox"
-  ],
-  "repository": "https://github.com/GameWithPixels/pixels-js",
-  "author": "Systemic Games (https://gamewithpixels.com)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/GameWithPixels/pixels-js/issues"
-  },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
-  },
   "workspaces": {
     "nohoist": [
       "expo",
@@ -39,6 +20,28 @@
     "prebuild": "expo prebuild",
     "dev": "expo start --dev-client"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "keywords": [
+    "react native",
+    "expo",
+    "typescript",
+    "pixels",
+    "electronic dice",
+    "toolbox"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:GameWithPixels/pixels-js.git"
+  },
+  "author": "Systemic Games (https://gamewithpixels.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GameWithPixels/pixels-js/issues"
+  },
+  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
     "@react-native-community/slider": "4.2.3",
     "@react-navigation/native": "^6.0.12",
