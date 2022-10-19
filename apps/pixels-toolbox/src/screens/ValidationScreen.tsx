@@ -9,6 +9,7 @@ import {
 import { getImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
+import { useTranslation } from "react-i18next";
 import {
   StyleSheet,
   Text,
@@ -20,6 +21,7 @@ import {
   Camera,
   CameraDevice,
   CameraPermissionStatus,
+  Frame,
   useCameraDevices,
   useFrameProcessor,
 } from "react-native-vision-camera";
@@ -110,7 +112,8 @@ type AppStatuses =
   | "Test Passed"
   | "Test Failed";
 
-function ValidationPage() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function ValidationPageOld() {
   const errorHandler = useErrorHandler();
 
   // Camera
@@ -487,6 +490,296 @@ function ValidationPage() {
   );
 }
 
+type FrameProcessor = (frame: Frame) => void;
+
+function usePixelIdDecoderFrameProcessor(): [FrameProcessor, number] {
+  const errorHandler = useErrorHandler();
+
+  // PixelId decoder
+  const [decoderState, decoderDispatch] = usePixelIdDecoder();
+
+  // Get the average R, G and B for each image captured by the camera
+  const frameProcessor = useFrameProcessor(
+    (frame) => {
+      "worklet";
+      try {
+        const result = getImageRgbAverages(frame, {
+          subSamplingX: 4,
+          subSamplingY: 2,
+          // writeImage: false,
+          // writePlanes: false,
+        });
+        runOnJS(decoderDispatch)({ rgbAverages: result });
+      } catch (error) {
+        errorHandler(
+          new Error(
+            `Exception in frame processor "getImageRgbAverages": ${error}`
+          )
+        );
+      }
+    },
+    [decoderDispatch, errorHandler]
+  );
+
+  return [frameProcessor, decoderState.pixelId];
+}
+
+type CameraStatus =
+  | "initializing"
+  | "needPermission"
+  | "noParallelVideoProcessing"
+  | "ready";
+
+function DecodePage({
+  onDecodedPixelId,
+}: {
+  onDecodedPixelId?: (pixelId: number) => void;
+}) {
+  const { t } = useTranslation();
+  const errorHandler = useErrorHandler();
+
+  // Camera
+  const [cameraPermission, setCameraPermission] =
+    useState<CameraPermissionStatus>();
+  const devices = useCameraDevices("wide-angle-camera");
+  const cameraRef = useRef<Camera>(null);
+
+  // Camera permissions
+  useEffect(() => {
+    console.log("Requesting camera permission");
+    Camera.requestCameraPermission().then((perm) => {
+      console.log(`Camera permission: ${perm}`);
+      setCameraPermission(perm);
+      return perm;
+    });
+  }, []);
+
+  // We use the back camera
+  const device = devices.back;
+
+  // Camera status
+  const [cameraStatus, setCameraStatus] =
+    useState<CameraStatus>("initializing");
+
+  useEffect(() => {
+    if (cameraPermission === "denied") {
+      setCameraStatus("needPermission");
+      errorHandler(new Error(t("needCameraPermission")));
+    } else if (cameraPermission === "authorized" && device) {
+      if (!device.supportsParallelVideoProcessing) {
+        setCameraStatus("noParallelVideoProcessing");
+        errorHandler(new Error(t("incompatibleCamera")));
+      } else {
+        setCameraStatus("ready");
+      }
+    }
+  }, [cameraPermission, device, errorHandler, t]);
+
+  // Frame processor for decoding PixelId
+  const [frameProcessor, pixelId] = usePixelIdDecoderFrameProcessor();
+
+  useEffect(() => {
+    if (pixelId) {
+      onDecodedPixelId?.(pixelId);
+    }
+  }, [onDecodedPixelId, pixelId]);
+
+  return (
+    <>
+      {device && cameraStatus === "ready" ? (
+        <Camera
+          ref={cameraRef}
+          style={styles.camera}
+          device={device}
+          isActive
+          photo
+          hdr={false}
+          lowLightBoost={false}
+          frameProcessor={frameProcessor}
+          videoStabilizationMode="off"
+          // format={format} TODO can't get camera to switch to given resolution
+        />
+      ) : (
+        <Text style={styles.statusText}>{t("startingCamera")}</Text>
+      )}
+    </>
+  );
+}
+
+function GenericPage({
+  children,
+  text,
+  onCancel,
+}: {
+  children?: JSX.Element | JSX.Element[];
+  text: string;
+  onCancel?: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <Text style={styles.statusText}>{text}</Text>
+      {children}
+      <View style={styles.containerFooter}>
+        <Button
+          style={styles.button}
+          textStyle={styles.buttonText}
+          onPress={onCancel}
+        >
+          {t("cancel")}
+        </Button>
+      </View>
+    </>
+  );
+}
+
+function assertUnreachable(_: never): never {
+  throw new Error("Didn't expect to get here");
+}
+
+type ValidationSteps = "decode" | "connect" | "test" | "dfu" | "validated";
+
+function ValidationPage() {
+  const { t } = useTranslation();
+  const errorHandler = useErrorHandler();
+
+  // Current step and decoded pixel id
+  const [currentStep, setCurrentStep] = useState<ValidationSteps>("decode");
+  const [pixelId, setPixelId] = useState(0);
+
+  // Connection to Pixel
+  const [connectorState, connectorDispatch] = usePixelConnector();
+  useEffect(() => {
+    return () => connectorDispatch("disconnect");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (pixelId) {
+      connectorDispatch("connect", { pixelId });
+      setPixelId(0);
+    }
+  }, [connectorDispatch, pixelId]);
+
+  // DFU files
+  const [bootloaderPath, firmwarePath] = useDfuFiles(dfuFiles);
+  useEffect(() => {
+    if (bootloaderPath.length) {
+      console.log(
+        "DFU files loaded, version is",
+        toLocaleDateTimeString(getDfuFileInfo(firmwarePath).date ?? new Date())
+      );
+    }
+  }, [bootloaderPath, firmwarePath]);
+
+  // DFU state and progress
+  const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
+  const [dfuProgress, setDfuProgress] = useState(0);
+
+  // Reset progress when DFU completes
+  useEffect(() => {
+    if (dfuState === "dfuCompleted" || dfuState === "dfuAborted") {
+      setDfuProgress(0);
+    }
+  }, [dfuState]);
+
+  // Run tests
+  useEffect(() => {
+    if (connectorState.pixel && connectorState.scannedPixel) {
+      if (connectorState.status === "connected") {
+        const pixel = connectorState.pixel;
+        const address = connectorState.scannedPixel.address;
+        setCurrentStep((currentStep) => {
+          if (currentStep === "connect") {
+            currentStep = "test";
+            runValidationTests(pixel)
+              .then(() =>
+                setCurrentStep((currentStep) => {
+                  if (currentStep === "test") {
+                    currentStep = "dfu";
+                    console.log("DFU");
+                    updateFirmware(
+                      address,
+                      bootloaderPath,
+                      firmwarePath,
+                      setDfuState,
+                      setDfuProgress
+                    )
+                      .then(() =>
+                        setCurrentStep((currentStep) => {
+                          if (currentStep === "dfu") {
+                            currentStep = "validated";
+                          }
+                          return currentStep;
+                        })
+                      )
+                      .catch(errorHandler);
+                  }
+                  return currentStep;
+                })
+              )
+              .catch(errorHandler);
+          }
+          return currentStep;
+        });
+        // } else if (connectorState.status === "disconnected") {
+        //   setCurrentStep("decode");
+        //   errorHandler(new Error("Disconnected"));
+      }
+    }
+  }, [
+    bootloaderPath,
+    connectorState.pixel,
+    connectorState.scannedPixel,
+    connectorState.status,
+    errorHandler,
+    firmwarePath,
+  ]);
+
+  const onCancel = useCallback(() => {
+    console.warn("Validation tests canceled by user");
+    setPixelId(0);
+    connectorDispatch("disconnect");
+    setCurrentStep("decode");
+  }, [connectorDispatch]);
+
+  switch (currentStep) {
+    case "decode":
+      return (
+        <DecodePage
+          onDecodedPixelId={(pixelId) => {
+            console.log("Decode PixelId:", pixelId);
+            setPixelId(pixelId);
+            setCurrentStep("connect");
+          }}
+        />
+      );
+    case "connect":
+      return (
+        <GenericPage
+          text={
+            connectorState.status === "scanning"
+              ? t("scanningForPixel")
+              : t("connectingToPixel")
+          }
+          onCancel={onCancel}
+        />
+      );
+    case "test":
+      return <GenericPage text={t("runningTests")} onCancel={onCancel} />;
+    case "dfu":
+      return (
+        <GenericPage text={t("updatingFirmware")} onCancel={onCancel}>
+          <Text style={styles.infoText}>{`DFU state: ${dfuState}`}</Text>
+          <ProgressBar percent={dfuProgress} />
+        </GenericPage>
+      );
+    case "validated":
+      return <GenericPage text={t("pixelValidated")} onCancel={onCancel} />;
+  }
+  assertUnreachable(currentStep);
+}
+
 export default function () {
   return (
     <AppPage style={styles.container}>
@@ -516,6 +809,12 @@ const styles = StyleSheet.create({
   containerHoriz: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  containerFooter: {
+    height: sr(50),
+    bottom: sr(50),
+    width: "100%",
+    position: "absolute",
   },
   camera: {
     flex: 1,

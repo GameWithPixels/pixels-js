@@ -64,11 +64,12 @@ export default async function (pixel: Pixel): Promise<boolean> {
   }
 
   try {
+    console.log("Starting validation tests");
     await checkLedLoopback();
     await checkAccelerometer();
     await checkBatteryVoltage();
     await checkRssi();
-    console.log("Validation tests succeeded");
+    console.log("Validation tests successful");
     return true;
   } catch (error) {
     console.warn(`Validation test failed: ${error}`);

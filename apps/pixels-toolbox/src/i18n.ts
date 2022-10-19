@@ -20,7 +20,16 @@ i18n
     resources: {
       en: {
         translation: {
-          startingCamera: "Starting Camera",
+          internalError: "Internal error",
+          cancel: "Cancel",
+          startingCamera: "Starting camera",
+          needCameraPermission: "Enable camera permissions",
+          incompatibleCamera: "Incompatible camera",
+          scanningForPixel: "Scanning for Pixel",
+          connectingToPixel: "Connecting to Pixel",
+          runningTests: "Running tests",
+          updatingFirmware: "Updating firmware",
+          pixelValidated: "Pixel Validated",
         },
       },
       zh: {
