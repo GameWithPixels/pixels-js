@@ -1,0 +1,3 @@
+{
+  "extends": "./apps/pixels-app/node_modules/expo/tsconfig.base",
+}
