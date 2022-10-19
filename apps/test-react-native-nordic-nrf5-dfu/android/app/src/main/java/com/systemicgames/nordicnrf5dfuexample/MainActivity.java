@@ -1,4 +1,4 @@
-package com.systemicgames.nordicnrf5dfuexample;
+package com.systemic.testreactnativenordicnrf5dfu;
 
 import com.facebook.react.ReactActivity;
 
@@ -10,6 +10,6 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "NordicNrf5DfuExample";
+    return "TestReactNativeNordicNrf5Dfu";
   }
 }

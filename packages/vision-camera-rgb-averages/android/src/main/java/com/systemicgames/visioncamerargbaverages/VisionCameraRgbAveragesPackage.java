@@ -1,4 +1,4 @@
-package com.systemicgames.visioncamerargbaverages;
+package com.systemic.visioncamerargbaverages;
 
 import android.os.Environment;
 

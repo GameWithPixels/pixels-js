@@ -1,4 +1,4 @@
-package com.systemicgames.visioncamerargbaverages;
+package com.systemic.visioncamerargbaverages;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
