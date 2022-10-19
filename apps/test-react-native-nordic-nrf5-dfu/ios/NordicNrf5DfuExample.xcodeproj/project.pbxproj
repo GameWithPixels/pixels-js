@@ -623,7 +623,7 @@
           "-lc++",
           "$(inherited)",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.nordicnrf5dfuexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testreactnativenordicnrf5dfu";
         PRODUCT_NAME = "$(TARGET_NAME)";
         TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NordicNrf5DfuExample.app/NordicNrf5DfuExample";
       };
@@ -643,7 +643,7 @@
           "-lc++",
           "$(inherited)",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.nordicnrf5dfuexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testreactnativenordicnrf5dfu";
         PRODUCT_NAME = "$(TARGET_NAME)";
         TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NordicNrf5DfuExample.app/NordicNrf5DfuExample";
       };
@@ -664,7 +664,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.nordicnrf5dfuexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testreactnativenordicnrf5dfu";
         PRODUCT_NAME = NordicNrf5DfuExample;
         SWIFT_OPTIMIZATION_LEVEL = "-Onone";
         SWIFT_VERSION = 5.0;
@@ -686,7 +686,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.nordicnrf5dfuexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testreactnativenordicnrf5dfu";
         PRODUCT_NAME = NordicNrf5DfuExample;
         SWIFT_VERSION = 5.0;
         VERSIONING_SYSTEM = "apple-generic";

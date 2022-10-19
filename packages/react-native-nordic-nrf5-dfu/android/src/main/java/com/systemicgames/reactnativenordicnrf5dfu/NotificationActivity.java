@@ -1,4 +1,4 @@
-package com.systemicgames.reactnativenordicnrf5dfu;
+package com.systemic.reactnativenordicnrf5dfu;
 
 import android.app.Activity;
 import android.content.Intent;

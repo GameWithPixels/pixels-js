@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.systemicgames.reactnativenordicnrf5dfu">
+          package="com.systemic.reactnativenordicnrf5dfu">
     <application>
         <service android:name=".DfuService"/>
     </application>

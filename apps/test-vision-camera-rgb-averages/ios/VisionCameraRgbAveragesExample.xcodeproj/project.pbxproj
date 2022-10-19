@@ -623,7 +623,7 @@
           "-lc++",
           "$(inherited)",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.rgbaveragesexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testvisioncamerargbaverages";
         PRODUCT_NAME = "$(TARGET_NAME)";
         TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VisionCameraRgbAveragesExample.app/VisionCameraRgbAveragesExample";
       };
@@ -643,7 +643,7 @@
           "-lc++",
           "$(inherited)",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.rgbaveragesexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testvisioncamerargbaverages";
         PRODUCT_NAME = "$(TARGET_NAME)";
         TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VisionCameraRgbAveragesExample.app/VisionCameraRgbAveragesExample";
       };
@@ -664,7 +664,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.rgbaveragesexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testvisioncamerargbaverages";
         PRODUCT_NAME = VisionCameraRgbAveragesExample;
         SWIFT_OPTIMIZATION_LEVEL = "-Onone";
         SWIFT_VERSION = 5.0;
@@ -686,7 +686,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "com.systemicgames.rgbaveragesexample";
+        PRODUCT_BUNDLE_IDENTIFIER = "com.systemic.testvisioncamerargbaverages";
         PRODUCT_NAME = VisionCameraRgbAveragesExample;
         SWIFT_VERSION = 5.0;
         VERSIONING_SYSTEM = "apple-generic";
