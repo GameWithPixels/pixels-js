@@ -19,25 +19,23 @@ export interface PercentageDisplayProps {
 
 // Compute index based on the arraylength and the current percentage value
 function computeIndex(percentage: number, arrayLength: number): number {
-  let tempIndex = 0;
-  let ratio = 0;
-  let index = 0;
-
-  ratio = 100 / arrayLength;
-  tempIndex = Math.ceil(percentage / ratio);
-  index = tempIndex >= arrayLength ? tempIndex - 1 : tempIndex;
+  const ratio = arrayLength > 0 ? 100 / arrayLength : 1;
+  const tempIndex = Math.floor(percentage / ratio);
+  const index =
+    Math.max(0, tempIndex) >= arrayLength
+      ? Math.max(arrayLength - 1, 0)
+      : tempIndex;
   return index;
 }
 
 export function PercentageDisplayComponent({
-  colors = ["green.900", "orange.900", "red.900"],
+  colors = ["red.900", "orange.900", "green.900"],
   size,
   percentage,
   icons,
 }: PercentageDisplayProps) {
   const NbOfIcons = icons.length;
   const NbOfColors = colors.length;
-  // TODO compute icon and color index based on their respective array length
   const iconIndex = computeIndex(percentage, NbOfIcons);
   const colorIndex = computeIndex(percentage, NbOfColors);
   return (

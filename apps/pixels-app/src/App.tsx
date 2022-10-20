@@ -3,6 +3,8 @@ import {
   Pxtheme,
   BatteryLevel,
   RSSIStrength,
+  AppPage,
+  Card,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Text,
@@ -12,24 +14,28 @@ import {
   Heading,
   Switch,
   useColorMode,
-  NativeBaseProvider,
   VStack,
   Box,
+  NativeBaseProvider,
 } from "native-base";
 import React from "react";
 
 import NativeBaseIcon from "./components/NativeBaseIcon";
 
 export default function App() {
+  console.log("test");
+  console.log(2);
   return (
-    <NativeBaseProvider theme={Pxtheme}>
-      <Center
-        _dark={{ bg: "blueGray.900" }}
-        _light={{ bg: "blueGray.50" }}
-        px={4}
-        flex={1}
-      >
-        <VStack space={5} alignItems="center">
+    <NativeBaseProvider>
+      <AppPage theme={Pxtheme}>
+        <VStack space={4}>
+          <Card></Card>
+          <Card></Card>
+          <Toggle text="Hello toggle"></Toggle>
+          <Card></Card>
+          <Card></Card>
+        </VStack>
+        {/* <VStack space={5} alignItems="center">
           <NativeBaseIcon />
           <Heading size="lg">Welcome to NativeBase</Heading>
           <HStack space={2} alignItems="center">
@@ -59,8 +65,8 @@ export default function App() {
           <BatteryLevel percentage={10} />
           <RSSIStrength percentage={55} />
           <ToggleDarkMode />
-        </VStack>
-      </Center>
+        </VStack> */}
+      </AppPage>
     </NativeBaseProvider>
   );
 }

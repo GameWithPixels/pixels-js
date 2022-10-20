@@ -1,4 +1,5 @@
 import BaseActionSheet from "./BaseActionSheet";
+import BaseAppPage from "./BaseAppPage";
 import BaseBottomMenuBar from "./BaseBottomMenuBar";
 import BaseCard from "./BaseCard";
 import BaseSlider from "./BaseSlider";
@@ -22,5 +23,6 @@ export default {
   BaseBottomMenuBar,
   BaseToggle,
   BaseSlider,
+  BaseAppPage,
   Button,
 };

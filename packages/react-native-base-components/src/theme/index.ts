@@ -3,13 +3,13 @@ import { LinearGradient } from "react-native-svg";
 
 import components from "./components";
 
+// Theme configuration and functionalities
 interface createPixelThemeProps {
   primaryColors: any;
   secondaryColors?: any;
   tertiaryColors?: any;
   customColors?: any;
 }
-
 export function createPxTheme({
   primaryColors,
   secondaryColors,
