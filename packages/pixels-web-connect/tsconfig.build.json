@@ -1,0 +1,13 @@
+{
+  "extends": "./../../tsconfig.web.build",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "types": [
+      "jest",
+      "web-bluetooth"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

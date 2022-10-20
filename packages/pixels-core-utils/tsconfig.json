@@ -1,0 +1,10 @@
+{
+  "extends": "./../../tsconfig.web",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "experimentalDecorators": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

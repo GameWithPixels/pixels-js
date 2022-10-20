@@ -1,0 +1,24 @@
+{
+  "extends": "./../../tsconfig.web",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "types": [
+      "jest",
+      "web-bluetooth"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "references": [
+    {
+      "path": "./../pixels-core-utils"
+    },
+    {
+      "path": "./../pixels-core-animation"
+    },
+    {
+      "path": "./../pixels-core-connect"
+    }
+  ]
+}

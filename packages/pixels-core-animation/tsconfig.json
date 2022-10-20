@@ -1,0 +1,15 @@
+{
+  "extends": "./../../tsconfig.web",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "experimentalDecorators": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "references": [
+    {
+      "path": "./../pixels-core-utils"
+    }
+  ]
+}

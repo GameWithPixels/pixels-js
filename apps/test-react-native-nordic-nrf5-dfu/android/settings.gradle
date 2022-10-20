@@ -1,0 +1,8 @@
+rootProject.name = 'TestReactNativeNordicNrf5Dfu'
+include ':react-native-fs'
+project(':react-native-fs').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fs/android')
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
+include ':app'
+
+include ':reactnativenordicnrf5dfu'
+project(':reactnativenordicnrf5dfu').projectDir = new File(rootProject.projectDir, '../../../node_modules/@systemic-games/react-native-nordic-nrf5-dfu/android')

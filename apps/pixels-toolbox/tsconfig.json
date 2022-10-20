@@ -1,0 +1,40 @@
+{
+  "extends": "./../../tsconfig.expo",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "experimentalDecorators": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@systemic-games/*": [
+        "./../../../packages/*/src"
+      ],
+      "~/*": [
+        "*"
+      ]
+    }
+  },
+  "files": [
+    "assets/default-profiles.json",
+    "assets/nice-profile.json"
+  ],
+  "include": [
+    "src/**/*"
+  ],
+  "references": [
+    {
+      "path": "./../../packages/react-native-pixels-components"
+    },
+    {
+      "path": "./../../packages/react-native-pixels-connect"
+    },
+    {
+      "path": "./../../packages/pixels-edit-animation"
+    },
+    {
+      "path": "./../../packages/react-native-nordic-nrf5-dfu"
+    },
+    {
+      "path": "./../../packages/vision-camera-rgb-averages"
+    }
+  ]
+}

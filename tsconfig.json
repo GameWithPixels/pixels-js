@@ -1,5 +1,4 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "composite": true,
@@ -15,7 +14,37 @@
     }
   },
   "files": [],
+  "exclude": [
+    "**/*.test.ts?"
+  ],
   "references": [
+    {
+      "path": "./packages/pixels-core-utils"
+    },
+    {
+      "path": "./packages/pixels-core-animation"
+    },
+    {
+      "path": "./packages/pixels-core-connect"
+    },
+    {
+      "path": "./packages/pixels-edit-animation"
+    },
+    {
+      "path": "./packages/pixels-web-connect"
+    },
+    {
+      "path": "./packages/react-native-bluetooth-le"
+    },
+    {
+      "path": "./packages/react-native-nordic-nrf5-dfu"
+    },
+    {
+      "path": "./packages/vision-camera-rgb-averages"
+    },
+    {
+      "path": "./packages/react-native-pixels-connect"
+    },
     {
       "path": "./packages/react-native-base-components"
     },
@@ -23,7 +52,19 @@
       "path": "./packages/react-native-pixels-components"
     },
     {
+      "path": "./apps/test-react-native-bluetooth-le"
+    },
+    {
+      "path": "./apps/test-react-native-nordic-nrf5-dfu"
+    },
+    {
+      "path": "./apps/test-vision-camera-rgb-averages"
+    },
+    {
       "path": "./apps/pixels-app"
-    }
+    },
+    {
+      "path": "./apps/pixels-toolbox"
+    },
   ]
 }

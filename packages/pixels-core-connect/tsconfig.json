@@ -1,0 +1,22 @@
+{
+  "extends": "./../../tsconfig.web",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "types": [
+      "jest",
+      "node" // For EventEmitter
+    ],
+    "experimentalDecorators": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "references": [
+    {
+      "path": "./../pixels-core-utils"
+    },
+    {
+      "path": "./../pixels-core-animation"
+    }
+  ]
+}

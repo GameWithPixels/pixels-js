@@ -1,14 +1,15 @@
 {
-  "extends": "./../../tsconfig.json",
+  "extends": "./../../tsconfig.expo",
   "compilerOptions": {
     "outDir": "./dist",
+    "paths": {
+      "@systemic-games/*": [
+        "./../*/src"
+      ]
+    }
   },
   "include": [
     "src/**/*"
-  ],
-  "exclude": [
-    "dist/",
-    "**/*.test.ts?"
   ],
   "references": [
     {

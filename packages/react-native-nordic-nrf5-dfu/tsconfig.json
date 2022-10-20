@@ -1,0 +1,14 @@
+{
+  "extends": "./../../tsconfig.expo",
+  "compilerOptions": {
+    "outDir": "./dist",
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "references": [
+    {
+      "path": "./../react-native-bluetooth-le"
+    }
+  ]
+}

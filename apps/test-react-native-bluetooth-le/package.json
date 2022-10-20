@@ -1,0 +1,44 @@
+{
+  "name": "@systemic-games/test-react-native-bluetooth-le",
+  "description": "Test app for react-native-bluetooth-le package.",
+  "version": "0.0.0",
+  "workspaces": {
+    "nohoist": [
+      "react-native",
+      "react-native/**",
+      "@react-native-*",
+      "@react-native-*/**",
+      "jsc-android",
+      "jsc-android/**"
+    ]
+  },
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:GameWithPixels/pixels-js.git"
+  },
+  "author": "Systemic Games (https://gamewithpixels.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GameWithPixels/pixels-js/issues"
+  },
+  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "dependencies": {
+    "@systemic-games/react-native-bluetooth-le": "*",
+    "react": "18.0.0",
+    "react-native": "0.69.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.19.3",
+    "@babel/runtime": "^7.14.0",
+    "@types/react": "~18.0.0",
+    "@types/react-native": "0.69.6",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "metro-react-native-babel-preset": "~0.70.3"
+  },
+  "private": true
+}
