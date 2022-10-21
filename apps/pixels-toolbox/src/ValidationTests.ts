@@ -7,8 +7,8 @@ import {
   Telemetry,
 } from "@systemic-games/react-native-pixels-connect";
 
-export default async function (pixel: Pixel): Promise<boolean> {
-  async function checkLedLoopback() {
+const ValidationTests = {
+  checkLedLoopback: async (pixel: Pixel) => {
     const msg = await pixel.sendAndWaitForResponse(
       MessageTypeValues.TestLedLoopback,
       MessageTypeValues.LedLoopback
@@ -18,9 +18,9 @@ export default async function (pixel: Pixel): Promise<boolean> {
     if (!ledLoopback.value) {
       throw new Error(`Unexpected LED loopback value: ${ledLoopback.value}`);
     }
-  }
+  },
 
-  async function checkAccelerometer() {
+  checkAccelerometer: async (pixel: Pixel) => {
     // Turn on telemetry and wait for data
     const msg = await pixel.sendAndWaitForResponse(
       safeAssign(new RequestTelemetry(), { activate: true }),
@@ -40,9 +40,9 @@ export default async function (pixel: Pixel): Promise<boolean> {
     await pixel.sendMessage(
       safeAssign(new RequestTelemetry(), { activate: false })
     );
-  }
+  },
 
-  async function checkBatteryVoltage() {
+  checkBatteryVoltage: async (pixel: Pixel) => {
     const batteryLevel = await pixel.getBatteryLevel();
     const voltageStr = batteryLevel.voltage.toFixed(3);
     console.log(
@@ -53,26 +53,30 @@ export default async function (pixel: Pixel): Promise<boolean> {
     if (batteryLevel.voltage < 3 || batteryLevel.voltage > 5) {
       throw new Error(`Out of range battery voltage: ${voltageStr}`);
     }
-  }
+  },
 
-  async function checkRssi() {
+  checkRssi: async (pixel: Pixel) => {
     const rssi = await pixel.getRssi();
     console.log(`RSSI is ${rssi}`);
     if (rssi < -60) {
       throw new Error(`Out of range RSSI value: ${rssi}`);
     }
-  }
+  },
 
-  try {
-    console.log("Starting validation tests");
-    await checkLedLoopback();
-    await checkAccelerometer();
-    await checkBatteryVoltage();
-    await checkRssi();
-    console.log("Validation tests successful");
-    return true;
-  } catch (error) {
-    console.warn(`Validation test failed: ${error}`);
-    return false;
-  }
-}
+  checkAll: async (pixel: Pixel): Promise<boolean> => {
+    try {
+      console.log("Starting validation tests");
+      await ValidationTests.checkLedLoopback(pixel);
+      await ValidationTests.checkAccelerometer(pixel);
+      await ValidationTests.checkBatteryVoltage(pixel);
+      await ValidationTests.checkRssi(pixel);
+      console.log("Validation tests successful");
+      return true;
+    } catch (error) {
+      console.warn(`Validation test failed: ${error}`);
+      return false;
+    }
+  },
+} as const;
+
+export default ValidationTests;

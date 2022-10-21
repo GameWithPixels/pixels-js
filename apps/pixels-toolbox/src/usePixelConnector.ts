@@ -110,7 +110,11 @@ export default function (): [PixelConnectorState, PixelConnectorDispatch] {
     : pixelStatus === "ready"
     ? "connected"
     : "disconnected";
-  if (status !== stateRef.current.status || pixel !== stateRef.current.pixel) {
+  if (
+    status !== stateRef.current.status ||
+    pixel !== stateRef.current.pixel ||
+    scannedPixel !== stateRef.current.scannedPixel
+  ) {
     stateRef.current = { status, pixel, scannedPixel };
   }
   return [stateRef.current, dispatch];

@@ -21,7 +21,18 @@ i18n
       en: {
         translation: {
           internalError: "Internal error",
+          ok: "Ok",
           cancel: "Cancel",
+          back: "Back",
+          validateBoard: "Validate FPC Board",
+          validateDie: "Validate Casted Die",
+          d4: "D4",
+          d6: "D6",
+          pd6: "Pipped D6",
+          d8: "D8",
+          d10: "D10",
+          d12: "D12",
+          d20: "D20",
           startingCamera: "Starting camera",
           needCameraPermission: "Enable camera permissions",
           incompatibleCamera: "Incompatible camera",

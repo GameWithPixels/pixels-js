@@ -8,13 +8,14 @@ export interface ProgressBarProps {
 }
 
 export default function ({ percent }: ProgressBarProps) {
+  const clampedPercentage = Math.max(0, Math.min(100, percent));
   return (
     <View style={styles.progressBarBackground}>
       <View
         style={[
           styles.progressBarForeground,
           {
-            width: `${percent}%`,
+            width: `${clampedPercentage}%`,
           },
         ]}
       />

@@ -1,5 +1,4 @@
-import { useFocusEffect } from "@react-navigation/native";
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
   Color,
   MessageTypeValues,
@@ -7,19 +6,22 @@ import {
   PixelRollStateValues,
 } from "@systemic-games/react-native-pixels-connect";
 import { getImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
+import {
+  extendTheme,
+  useColorModeValue,
+  NativeBaseProvider,
+  Center,
+  VStack,
+  Text,
+  Button,
+  Box,
+} from "native-base";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
-import {
-  StyleSheet,
-  Text,
-  View,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
 import { runOnJS } from "react-native-reanimated";
 import {
   Camera,
-  CameraDevice,
   CameraPermissionStatus,
   Frame,
   useCameraDevices,
@@ -28,22 +30,21 @@ import {
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
 import TelemetryStats from "~/TelemetryStats";
+import ValidationTests from "~/ValidationTests";
 import AppPage from "~/components/AppPage";
-import Button from "~/components/Button";
 import ProgressBar from "~/components/ProgressBar";
+import TasksRunner, { TasksRunnerProps } from "~/components/TasksRunner";
 import delay from "~/delay";
 import getDfuFileInfo from "~/getDfuFileInfo";
-import runValidationTests from "~/runValidationTests";
 import standardProfile from "~/standardProfile";
-import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/toLocaleDateTimeString";
-import updateFirmware from "~/updateFirmware";
 import useDfuFiles from "~/useDfuFiles";
 import usePixelBattery from "~/usePixelBattery";
 import usePixelConnector from "~/usePixelConnector";
 import usePixelIdDecoder from "~/usePixelIdDecoder";
 import usePixelRssi from "~/usePixelRssi";
 import usePixelTelemetry from "~/usePixelTelemetry";
+import useUpdateFirmware from "~/useUpdateFirmware";
 
 function assert(condition: any, msg?: string): asserts condition {
   if (!condition) {
@@ -86,7 +87,7 @@ async function checkFaceUp(pixel: Pixel, face: number, timeout = 30000) {
 async function finalSetup(
   pixel: Pixel,
   transferProgressCallback?: (progress: number) => void
-) {
+): Promise<void> {
   transferProgressCallback?.(-1);
 
   // Upload profile
@@ -99,10 +100,10 @@ async function finalSetup(
   // Rename
   //await pixel.rename("Pixel");
 
-  // Back out validation mode
-  pixel.sendMessage(MessageTypeValues.ExitValidation);
+  // Back out validation mode, don't wait for response as die will restart
+  await pixel.sendMessage(MessageTypeValues.ExitValidation, true);
 }
-
+/*
 type AppStatuses =
   | "Initializing..."
   | "Identifying..."
@@ -112,7 +113,6 @@ type AppStatuses =
   | "Test Passed"
   | "Test Failed";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ValidationPageOld() {
   const errorHandler = useErrorHandler();
 
@@ -489,6 +489,56 @@ function ValidationPageOld() {
     </>
   );
 }
+*/
+
+type ValidationRun = "board" | "die";
+
+function SelectValidationRun({
+  onSelectRun,
+  onBack,
+}: {
+  onSelectRun: (run: ValidationRun) => void;
+  onBack?: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <VStack w="100%" h="100%" p="5" bg={useBackgroundColor()}>
+      <Button h="30%" my="15%" onPress={() => onSelectRun("board")}>
+        {t("validateBoard")}
+      </Button>
+      <Button h="30%" my="15%" onPress={() => onSelectRun("die")}>
+        {t("validateDie")}
+      </Button>
+    </VStack>
+  );
+}
+
+const DieTypes = ["d4", "d6", "pd6", "d8", "d10", "d12", "d20"] as const;
+type DieType = typeof DieTypes[number];
+
+function SelectDieType({
+  onSelectDieType: onSelectType,
+  onBack,
+}: {
+  onSelectDieType: (type: DieType) => void;
+  onBack?: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <VStack w="100%" h="100%" p="2" bg={useBackgroundColor()}>
+      <VStack h="90%" p="2" justifyContent="center">
+        {DieTypes.map((dt) => (
+          <Button key={dt} my="2" onPress={() => onSelectType(dt)}>
+            {t(dt)}
+          </Button>
+        ))}
+      </VStack>
+      <Button m="2" onPress={onBack}>
+        {t("back")}
+      </Button>
+    </VStack>
+  );
+}
 
 type FrameProcessor = (frame: Frame) => void;
 
@@ -532,11 +582,20 @@ type CameraStatus =
 
 function DecodePage({
   onDecodedPixelId,
+  validationRun,
+  dieType,
+  onBack,
 }: {
-  onDecodedPixelId?: (pixelId: number) => void;
+  onDecodedPixelId: (pixelId: number) => void;
+  validationRun: ValidationRun;
+  dieType: DieType;
+  onBack?: () => void;
 }) {
   const { t } = useTranslation();
   const errorHandler = useErrorHandler();
+
+  // TODO show message if no blinking colors detected
+  //setTimeout(() => onDecodedPixelId(1), 5000);
 
   // Camera
   const [cameraPermission, setCameraPermission] =
@@ -580,214 +639,471 @@ function DecodePage({
 
   useEffect(() => {
     if (pixelId) {
-      onDecodedPixelId?.(pixelId);
+      onDecodedPixelId(pixelId);
     }
   }, [onDecodedPixelId, pixelId]);
 
+  const bg = useBackgroundColor();
   return (
     <>
-      {device && cameraStatus === "ready" ? (
-        <Camera
-          ref={cameraRef}
-          style={styles.camera}
-          device={device}
-          isActive
-          photo
-          hdr={false}
-          lowLightBoost={false}
-          frameProcessor={frameProcessor}
-          videoStabilizationMode="off"
-          // format={format} TODO can't get camera to switch to given resolution
-        />
-      ) : (
-        <Text style={styles.statusText}>{t("startingCamera")}</Text>
-      )}
+      <Center w="100%" h="100%" bg={bg}>
+        {device && cameraStatus === "ready" ? (
+          <Camera
+            ref={cameraRef}
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+            device={device}
+            isActive
+            photo
+            hdr={false}
+            lowLightBoost={false}
+            frameProcessor={frameProcessor}
+            videoStabilizationMode="off"
+            // format={format} TODO can't get camera to switch to given resolution
+          />
+        ) : (
+          <Text>{t("startingCamera")}</Text>
+        )}
+        <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
+          <Text>{`Testing ${validationRun} for ${t(dieType)}`}</Text>
+          <Button w="100%" onPress={onBack}>
+            {t("back")}
+          </Button>
+        </Center>
+      </Center>
     </>
   );
 }
 
-function GenericPage({
-  children,
-  text,
-  onCancel,
-}: {
-  children?: JSX.Element | JSX.Element[];
-  text: string;
-  onCancel?: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <>
-      <Text style={styles.statusText}>{text}</Text>
-      {children}
-      <View style={styles.containerFooter}>
-        <Button
-          style={styles.button}
-          textStyle={styles.buttonText}
-          onPress={onCancel}
-        >
-          {t("cancel")}
-        </Button>
-      </View>
-    </>
-  );
+interface ValidationTestProps extends Omit<TasksRunnerProps, "tasks"> {
+  //pixel: Pixel;
 }
 
-function assertUnreachable(_: never): never {
-  throw new Error("Didn't expect to get here");
+type ValidationTestComponent = React.FC<ValidationTestProps>;
+
+interface ConnectPixelProps extends ValidationTestProps {
+  pixelId: number;
 }
 
-type ValidationSteps = "decode" | "connect" | "test" | "dfu" | "validated";
-
-function ValidationPage() {
-  const { t } = useTranslation();
-  const errorHandler = useErrorHandler();
-
-  // Current step and decoded pixel id
-  const [currentStep, setCurrentStep] = useState<ValidationSteps>("decode");
-  const [pixelId, setPixelId] = useState(0);
-
+function ConnectPixel2(props: ConnectPixelProps) {
   // Connection to Pixel
   const [connectorState, connectorDispatch] = usePixelConnector();
-  useEffect(() => {
-    return () => connectorDispatch("disconnect");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
+  const pixelId = props.pixelId;
   useEffect(() => {
     if (pixelId) {
       connectorDispatch("connect", { pixelId });
-      setPixelId(0);
     }
   }, [connectorDispatch, pixelId]);
 
-  // DFU files
-  const [bootloaderPath, firmwarePath] = useDfuFiles(dfuFiles);
-  useEffect(() => {
-    if (bootloaderPath.length) {
-      console.log(
-        "DFU files loaded, version is",
-        toLocaleDateTimeString(getDfuFileInfo(firmwarePath).date ?? new Date())
-      );
-    }
-  }, [bootloaderPath, firmwarePath]);
-
-  // DFU state and progress
-  const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
-  const [dfuProgress, setDfuProgress] = useState(0);
-
-  // Reset progress when DFU completes
-  useEffect(() => {
-    if (dfuState === "dfuCompleted" || dfuState === "dfuAborted") {
-      setDfuProgress(0);
-    }
-  }, [dfuState]);
-
-  // Run tests
-  useEffect(() => {
-    if (connectorState.pixel && connectorState.scannedPixel) {
-      if (connectorState.status === "connected") {
-        const pixel = connectorState.pixel;
-        const address = connectorState.scannedPixel.address;
-        setCurrentStep((currentStep) => {
-          if (currentStep === "connect") {
-            currentStep = "test";
-            runValidationTests(pixel)
-              .then(() =>
-                setCurrentStep((currentStep) => {
-                  if (currentStep === "test") {
-                    currentStep = "dfu";
-                    console.log("DFU");
-                    updateFirmware(
-                      address,
-                      bootloaderPath,
-                      firmwarePath,
-                      setDfuState,
-                      setDfuProgress
-                    )
-                      .then(() =>
-                        setCurrentStep((currentStep) => {
-                          if (currentStep === "dfu") {
-                            currentStep = "validated";
-                          }
-                          return currentStep;
-                        })
-                      )
-                      .catch(errorHandler);
-                  }
-                  return currentStep;
-                })
-              )
-              .catch(errorHandler);
-          }
-          return currentStep;
-        });
-        // } else if (connectorState.status === "disconnected") {
-        //   setCurrentStep("decode");
-        //   errorHandler(new Error("Disconnected"));
-      }
-    }
-  }, [
-    bootloaderPath,
-    connectorState.pixel,
-    connectorState.scannedPixel,
-    connectorState.status,
-    errorHandler,
-    firmwarePath,
-  ]);
-
-  const onCancel = useCallback(() => {
-    console.warn("Validation tests canceled by user");
-    setPixelId(0);
-    connectorDispatch("disconnect");
-    setCurrentStep("decode");
-  }, [connectorDispatch]);
-
-  switch (currentStep) {
-    case "decode":
-      return (
-        <DecodePage
-          onDecodedPixelId={(pixelId) => {
-            console.log("Decode PixelId:", pixelId);
-            setPixelId(pixelId);
-            setCurrentStep("connect");
-          }}
-        />
-      );
-    case "connect":
-      return (
-        <GenericPage
-          text={
-            connectorState.status === "scanning"
-              ? t("scanningForPixel")
-              : t("connectingToPixel")
-          }
-          onCancel={onCancel}
-        />
-      );
-    case "test":
-      return <GenericPage text={t("runningTests")} onCancel={onCancel} />;
-    case "dfu":
-      return (
-        <GenericPage text={t("updatingFirmware")} onCancel={onCancel}>
-          <Text style={styles.infoText}>{`DFU state: ${dfuState}`}</Text>
-          <ProgressBar percent={dfuProgress} />
-        </GenericPage>
-      );
-    case "validated":
-      return <GenericPage text={t("pixelValidated")} onCancel={onCancel} />;
-  }
-  assertUnreachable(currentStep);
-}
-
-export default function () {
-  return (
-    <AppPage style={styles.container}>
-      <ValidationPage />
-    </AppPage>
+  useFocusEffect(
+    useCallback(() => {
+      return () => connectorDispatch("disconnect");
+    }, [connectorDispatch])
   );
 }
 
+function ConnectPixel(props: ValidationTestProps) {
+  const [state, setState] = useState("Connecting to board");
+  const [tasks] = useState([
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => "☑️ Connected"),
+  ]);
+  return (
+    <TasksRunner {...props} tasks={tasks}>
+      <Text>{state}</Text>
+      <>{props.children}</>
+    </TasksRunner>
+  );
+}
+
+interface CheckBoardProps extends ValidationTestProps {}
+
+function CheckBoard(props: CheckBoardProps) {
+  const [state, setState] = useState("Checking board");
+  const [tasks] = useState([
+    //async () => await ValidationTests.checkLedLoopback(props.pixel),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    //async () => await ValidationTests.checkAccelerometer(props.pixel),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    //async () => await ValidationTests.checkBatteryVoltage(props.pixel),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    //async () => await ValidationTests.checkRssi(props.pixel),
+    async () => await delay(1000),
+    async () => setState((s) => "☑️ Board checked"),
+  ]);
+  return (
+    <TasksRunner {...props} tasks={tasks}>
+      <Text>{state}</Text>
+      <>{props.children}</>
+    </TasksRunner>
+  );
+}
+
+function FlickBoard(props: CheckBoardProps) {
+  const msg = "Please flick board ";
+  const [state, setState] = useState(msg);
+  const [tasks] = useState([
+    async () => setState(msg + "5s left"),
+    async () => await delay(1000),
+    async () => setState(msg + "4s left"),
+    async () => await delay(1000),
+    async () => setState(msg + "3s left"),
+    async () => await delay(1000),
+    async () => setState(msg + "2s left"),
+    async () => await delay(1000),
+    async () => setState(msg + "1s left"),
+    async () => await delay(1000),
+    async () => setState(msg + "0s left"),
+    async () => await delay(1000),
+    async () => setState((s) => "☑️ Board flicked"),
+  ]);
+  return (
+    <TasksRunner {...props} tasks={tasks}>
+      <Text>{state}</Text>
+      <>{props.children}</>
+    </TasksRunner>
+  );
+}
+
+function UpdateProfile(props: ValidationTestProps) {
+  const [state, setState] = useState("Updating profile...");
+  const [p, setP] = useState(0);
+  const [tasks] = useState([
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(1000),
+    async () => setP((p) => p + 10),
+    async () => await delay(200),
+    async () => setP((p) => p + 1),
+    async () => setState((s) => "☑️ Profile updated"),
+  ]);
+  return (
+    <TasksRunner {...props} tasks={tasks}>
+      <Text>{state}</Text>
+      <>
+        {p <= 100 && <ProgressBar percent={p} />}
+        {props.children}
+      </>
+    </TasksRunner>
+  );
+}
+
+function WaitForPixel(props: ValidationTestProps) {
+  const [state, setState] = useState("Waiting on die");
+  const [tasks] = useState([
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => s + "."),
+    async () => await delay(1000),
+    async () => setState((s) => "☑️ Die found"),
+  ]);
+  return (
+    <TasksRunner {...props} tasks={tasks}>
+      <Text>{state}</Text>
+      <>{props.children}</>
+    </TasksRunner>
+  );
+}
+
+// function TaskProfileUpdate(props: TaskProps) {
+//   return <Text key={props.key}>{props.text}</Text>;
+// }
+
+// function TaskFirmwareUpdate(props: TaskProps) {
+//   return <Text key={props.key}>{props.text}</Text>;
+// }
+
+function TestsPage({
+  pixelId,
+  validationRun,
+  dieType,
+  onDone,
+}: {
+  pixelId: number;
+  validationRun: ValidationRun;
+  dieType: DieType;
+  onDone?: (result: "success" | "failed" | "canceled") => void;
+}) {
+  const { t } = useTranslation();
+  const errorHandler = useErrorHandler();
+
+  // Firmware update
+  const [updateFirmware, dfuState, dfuProgress] = useUpdateFirmware(dfuFiles);
+
+  // Profile transfer
+  const [transferProgress, setTransferProgress] = useState(0);
+
+  // Test results
+  const [results, setResults] = useState<string[]>([]);
+
+  // Test queue
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // const [tasksState, tasksDispatch] = useReducer(tasksQueueReducer, {
+  //   components: [] as JSX.Element[],
+  //   setResults,
+  // });
+
+  const testToRunRef = useRef([
+    ConnectPixel,
+    CheckBoard,
+    FlickBoard,
+    UpdateProfile,
+    WaitForPixel,
+    // TaskFirmwareUpdate,
+    // TaskProfileUpdate,
+  ] as ValidationTestComponent[]);
+
+  const [tests, setTests] = useState([] as ValidationTestComponent[]);
+
+  // Start first test
+  useEffect(() => {
+    const firstTest = testToRunRef.current[0];
+    if (firstTest) {
+      setTests([firstTest]);
+    }
+  }, []);
+
+  // Run tests
+  /*useEffect(() => {
+    if (connectorState.pixel && connectorState.scannedPixel) {
+      const pixel = connectorState.pixel;
+      const address = connectorState.scannedPixel.address;
+      if (connectorState.status === "connected") {
+        tasksDispatch({
+          tasks: [
+            async () => {
+              await delay(3000)
+              // if (!(await runValidationTests(pixel))) {
+              //   throw new Error("Test failed");
+              // }
+            },
+            // "Starting DFU",
+            // () => updateFirmware(address),
+            // "DFU passed",
+            () => finalSetup(pixel, setTransferProgress),
+            //async () => onDone?.("success"),
+          ],
+          //errorHandler: () => onDone?.("failed"),
+          errorHandler: () => setResults((results) => [...results, "Failed!"]),
+        });
+      }
+    }
+  }, [
+    connectorState.pixel,
+    connectorState.scannedPixel,
+    connectorState.status,
+    onDone,
+    updateFirmware,
+  ]);*/
+
+  const [cancel, setCancel] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const onCompleted = useCallback(
+    (success: boolean) => {
+      // Assume all tests are completed in order
+      console.log("COMPLETED, cancel is", cancel, ", success is", success);
+      if (!cancel) {
+        setTests((tasks) => {
+          const nextTest = testToRunRef.current[tasks.length];
+          if (!nextTest) {
+            setDone(true);
+          }
+          return nextTest ? [...tasks, nextTest] : tasks;
+        });
+      }
+    },
+    [cancel]
+  );
+
+  const onUserCancel = useCallback(() => {
+    console.log("CANCEL");
+    setCancel((cancel) => {
+      if (!cancel) {
+        onDone?.("canceled");
+      }
+      return true;
+    });
+  }, [onDone]);
+
+  return (
+    <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
+      <Center w="100%">
+        {tests.map((task, i) => (
+          <Center w="100%" py="3" key={i}>
+            <Box
+              bg="coolGray.600"
+              w="95%"
+              borderColor="warmGray.400"
+              borderWidth="2"
+              p="2"
+              rounded="md"
+            >
+              {React.createElement(task, { cancel, onCompleted })}
+            </Box>
+          </Center>
+        ))}
+        {/* {results.map((text, i) => (
+        <Text key={i}>{text}</Text>
+      ))}
+      {!!dfuState && (
+        <>
+          <Text>{`DFU state: ${dfuState}`}</Text>
+          <ProgressBar percent={dfuProgress} />
+        </>
+      )}
+      {transferProgress > 0 && <ProgressBar percent={100 * transferProgress} />} */}
+      </Center>
+      <Center position="absolute" bottom="3" w="94%" left="3">
+        <Button w="100%" onPress={onUserCancel}>
+          {done ? t("ok") : t("cancel")}
+        </Button>
+      </Center>
+    </VStack>
+  );
+}
+
+function ValidationPage() {
+  const [validationRun, setValidationRun] = useState<ValidationRun>();
+  const [dieType, setDieType] = useState<DieType>();
+  const [pixelId, setPixelId] = useState(0);
+  const navigation = useNavigation();
+
+  return !validationRun ? (
+    <SelectValidationRun
+      onSelectRun={setValidationRun}
+      onBack={() => navigation.goBack()}
+    />
+  ) : !dieType ? (
+    <SelectDieType
+      onSelectDieType={setDieType}
+      onBack={() => setValidationRun(undefined)}
+    />
+  ) : !pixelId ? (
+    <DecodePage
+      validationRun={validationRun}
+      dieType={dieType}
+      onDecodedPixelId={(pixelId) => {
+        console.log("Decoded PixelId:", pixelId);
+        setPixelId(pixelId);
+      }}
+      onBack={() => setDieType(undefined)}
+    />
+  ) : (
+    <TestsPage
+      validationRun={validationRun}
+      dieType={dieType}
+      pixelId={pixelId}
+      onDone={(result) => {
+        console.warn("Validation tests result", result);
+        setPixelId(0);
+      }}
+    />
+  );
+}
+
+function useBackgroundColor() {
+  return useColorModeValue("warmGray.100", "coolGray.800");
+}
+
+const theme = extendTheme({
+  components: {
+    Text: {
+      baseStyle: {
+        fontSize: "2xl",
+        fontWeight: "bold",
+        _dark: {
+          color: "warmGray.200",
+        },
+        _light: {
+          color: "coolGray.700",
+        },
+      },
+    },
+    Button: {
+      variants: {
+        solid: {
+          _dark: {
+            bg: "coolGray.600",
+            _pressed: {
+              bg: "coolGray.700",
+            },
+            _text: {
+              color: "warmGray.200",
+            },
+          },
+          _light: {
+            bg: "warmGray.300",
+            _pressed: {
+              bg: "warmGray.200",
+            },
+            _text: {
+              color: "coolGray.700",
+            },
+          },
+        },
+      },
+      defaultProps: {
+        size: "lg",
+        _text: {
+          fontSize: "2xl",
+        },
+      },
+    },
+  },
+  config: {
+    initialColorMode: "dark",
+  },
+});
+
+export default function () {
+  return (
+    <AppPage style={{ flex: 1 }}>
+      <NativeBaseProvider theme={theme}>
+        <ValidationPage />
+      </NativeBaseProvider>
+    </AppPage>
+  );
+}
+/*
 // Our standard colors
 const Colors = {
   dark: "#100F1E",
@@ -855,3 +1171,4 @@ const styles = StyleSheet.create({
     height: sr(40),
   },
 });
+*/
