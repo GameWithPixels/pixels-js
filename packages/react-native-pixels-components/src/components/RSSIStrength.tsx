@@ -3,7 +3,7 @@ import {
   PercentageDisplayComponent,
   IconParams,
 } from "@systemic-games/react-native-base-components";
-import { Center, usePropsResolution } from "native-base";
+import { Center, HStack, Text, usePropsResolution } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
 
 interface PercentageDisplayProps {
@@ -22,15 +22,18 @@ const icons: IconParams[] = [
 
 export function RSSIStrength(props: PercentageDisplayProps) {
   const resolvedProps = usePropsResolution("RSSIStrength", props);
-  console.log(resolvedProps);
+  //console.log(resolvedProps);
   return (
     <Center>
-      <PercentageDisplayComponent
-        icons={icons}
-        colors={resolvedProps.colors}
-        percentage={resolvedProps.percentage}
-        size={resolvedProps.iconSize}
-      />
+      <HStack space={2} alignItems="center">
+        <PercentageDisplayComponent
+          icons={icons}
+          colors={resolvedProps.colors}
+          percentage={resolvedProps.percentage}
+          size={resolvedProps.iconSize}
+        />
+        <Text>{resolvedProps.percentage + "%"}</Text>
+      </HStack>
     </Center>
   );
 }

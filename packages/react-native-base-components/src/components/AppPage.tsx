@@ -18,6 +18,7 @@ export interface AppPageProps {
 
 export function AppPage(props: AppPageProps) {
   const resolvedProps = usePropsResolution("BaseAppPage", props);
+  console.log(resolvedProps.p);
   return (
     <NativeBaseProvider theme={props.theme}>
       <StatusBar />

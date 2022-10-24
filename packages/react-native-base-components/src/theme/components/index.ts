@@ -1,7 +1,7 @@
 import BaseActionSheet from "./BaseActionSheet";
 import BaseAppPage from "./BaseAppPage";
-import BaseBottomMenuBar from "./BaseBottomMenuBar";
 import BaseCard from "./BaseCard";
+import BaseNavigationMenuBar from "./BaseNavigationMenuBar";
 import BaseSlider from "./BaseSlider";
 import BaseToggle from "./BaseToggle";
 
@@ -20,7 +20,7 @@ const Button = {
 export default {
   BaseCard,
   BaseActionSheet,
-  BaseBottomMenuBar,
+  BaseNavigationMenuBar,
   BaseToggle,
   BaseSlider,
   BaseAppPage,

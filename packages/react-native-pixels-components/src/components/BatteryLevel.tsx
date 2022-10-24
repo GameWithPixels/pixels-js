@@ -3,8 +3,9 @@ import {
   PercentageDisplayComponent,
   IconParams,
 } from "@systemic-games/react-native-base-components";
-import { Center, usePropsResolution } from "native-base";
+import { Center, HStack, Text, usePropsResolution } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
+import React from "react";
 
 interface BatteryLevelProps {
   percentage: number;
@@ -24,12 +25,15 @@ export function BatteryLevel(props: BatteryLevelProps) {
   const resolvedProps = usePropsResolution("BatteryLevel", props);
   return (
     <Center>
-      <PercentageDisplayComponent
-        icons={icons}
-        colors={resolvedProps.colors}
-        percentage={resolvedProps.percentage}
-        size={resolvedProps.iconSize}
-      />
+      <HStack space={2} alignItems="center">
+        <PercentageDisplayComponent
+          icons={icons}
+          colors={resolvedProps.colors}
+          percentage={resolvedProps.percentage}
+          size={resolvedProps.iconSize}
+        />
+        <Text>{resolvedProps.percentage + "%"}</Text>
+      </HStack>
     </Center>
   );
 }

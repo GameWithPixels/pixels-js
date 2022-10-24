@@ -4,3 +4,4 @@ export * from "./components/Toggle";
 export * from "./components/PercentageDisplay";
 export * from "./components/ActionSheet";
 export * from "./components/AppPage";
+export * from "./components/BottomMenuBar";

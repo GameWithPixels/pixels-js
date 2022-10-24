@@ -1,4 +1,5 @@
 export default {
+  baseStyle: {},
   defaultProps: {
     p: 2.5,
     lightBg: "orange.500",
