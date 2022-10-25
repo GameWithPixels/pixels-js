@@ -15,6 +15,9 @@ import {
   Text,
   Button,
   Box,
+  ScrollView,
+  Spinner,
+  HStack,
 } from "native-base";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
@@ -33,7 +36,7 @@ import TelemetryStats from "~/TelemetryStats";
 import ValidationTests from "~/ValidationTests";
 import AppPage from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
-import TasksRunner, { TasksRunnerProps } from "~/components/TasksRunner";
+import Spacer from "~/components/Spacer";
 import delay from "~/delay";
 import getDfuFileInfo from "~/getDfuFileInfo";
 import standardProfile from "~/standardProfile";
@@ -44,6 +47,9 @@ import usePixelConnector from "~/usePixelConnector";
 import usePixelIdDecoder from "~/usePixelIdDecoder";
 import usePixelRssi from "~/usePixelRssi";
 import usePixelTelemetry from "~/usePixelTelemetry";
+import useRunTaskListWithFocus, {
+  TaskListStatus,
+} from "~/useRunTaskListWithFocus";
 import useUpdateFirmware from "~/useUpdateFirmware";
 
 function assert(condition: any, msg?: string): asserts condition {
@@ -595,7 +601,7 @@ function DecodePage({
   const errorHandler = useErrorHandler();
 
   // TODO show message if no blinking colors detected
-  //setTimeout(() => onDecodedPixelId(1), 5000);
+  setTimeout(() => onDecodedPixelId(1), 1000);
 
   // Camera
   const [cameraPermission, setCameraPermission] =
@@ -677,8 +683,11 @@ function DecodePage({
   );
 }
 
-interface ValidationTestProps extends Omit<TasksRunnerProps, "tasks"> {
+interface ValidationTestProps {
   //pixel: Pixel;
+  children?: JSX.Element | JSX.Element[];
+  cancel?: boolean;
+  onCompleted?: (status: TaskListStatus) => void;
 }
 
 type ValidationTestComponent = React.FC<ValidationTestProps>;
@@ -706,38 +715,63 @@ function ConnectPixel2(props: ConnectPixelProps) {
 }
 
 function ConnectPixel(props: ValidationTestProps) {
-  const [state, setState] = useState("Connecting to board");
-  const [tasks] = useState([
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    async () => await delay(1000),
-    async () => setState((s) => "☑️ Connected"),
+  const [step, setStep] = useState<"scanning" | "connecting" | "identifying">(
+    "scanning"
+  );
+  const status = useRunTaskListWithFocus(() => [
+    async () => await delay(3000),
+    async () => setStep("connecting"),
+    async () => await delay(4000),
+    async () => setStep("identifying"),
+    async () => await delay(2000),
   ]);
   return (
-    <TasksRunner {...props} tasks={tasks}>
-      <Text>{state}</Text>
+    <>
+      <Text bold>
+        {!status
+          ? "Scan & Connect"
+          : status === "success"
+          ? "☑️ Connected"
+          : "Error connecting"}
+      </Text>
+      {!status && (
+        <VStack>
+          {(step === "connecting" || step === "identifying") && (
+            <HStack>
+              <Center w="10%" ml="3%">
+                <Text>☑️</Text>
+              </Center>
+              <Text fontWeight="normal">Scanned</Text>
+            </HStack>
+          )}
+          {step === "identifying" && (
+            <HStack>
+              <Center w="10%" ml="3%">
+                <Text>☑️</Text>
+              </Center>
+              <Text fontWeight="normal">Connected</Text>
+            </HStack>
+          )}
+          <HStack>
+            <Center w="10%" ml="3%">
+              <Spinner />
+            </Center>
+            <Text fontWeight="normal">{`${step
+              .charAt(0)
+              .toLocaleUpperCase()}${step.slice(1)}...`}</Text>
+          </HStack>
+        </VStack>
+      )}
       <>{props.children}</>
-    </TasksRunner>
+    </>
   );
 }
 
 interface CheckBoardProps extends ValidationTestProps {}
-
+/*
 function CheckBoard(props: CheckBoardProps) {
   const [state, setState] = useState("Checking board");
-  const [tasks] = useState([
+  const status = useRunTaskListWithFocus([
     //async () => await ValidationTests.checkLedLoopback(props.pixel),
     async () => await delay(1000),
     async () => setState((s) => s + "."),
@@ -762,7 +796,7 @@ function CheckBoard(props: CheckBoardProps) {
 function FlickBoard(props: CheckBoardProps) {
   const msg = "Please flick board ";
   const [state, setState] = useState(msg);
-  const [tasks] = useState([
+  const status = useRunTaskListWithFocus([
     async () => setState(msg + "5s left"),
     async () => await delay(1000),
     async () => setState(msg + "4s left"),
@@ -842,7 +876,7 @@ function WaitForPixel(props: ValidationTestProps) {
     </TasksRunner>
   );
 }
-
+*/
 // function TaskProfileUpdate(props: TaskProps) {
 //   return <Text key={props.key}>{props.text}</Text>;
 // }
@@ -883,10 +917,10 @@ function TestsPage({
 
   const testToRunRef = useRef([
     ConnectPixel,
-    CheckBoard,
-    FlickBoard,
-    UpdateProfile,
-    WaitForPixel,
+    // CheckBoard,
+    // FlickBoard,
+    // UpdateProfile,
+    // WaitForPixel,
     // TaskFirmwareUpdate,
     // TaskProfileUpdate,
   ] as ValidationTestComponent[]);
@@ -938,9 +972,9 @@ function TestsPage({
   const [done, setDone] = useState(false);
 
   const onCompleted = useCallback(
-    (success: boolean) => {
+    (status: TaskListStatus) => {
       // Assume all tests are completed in order
-      console.log("COMPLETED, cancel is", cancel, ", success is", success);
+      console.log("COMPLETED, cancel is", cancel, ", status is", status);
       if (!cancel) {
         setTests((tasks) => {
           const nextTest = testToRunRef.current[tasks.length];
@@ -966,7 +1000,7 @@ function TestsPage({
 
   return (
     <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
-      <Center w="100%">
+      <ScrollView w="100%">
         {tests.map((task, i) => (
           <Center w="100%" py="3" key={i}>
             <Box
@@ -991,7 +1025,7 @@ function TestsPage({
         </>
       )}
       {transferProgress > 0 && <ProgressBar percent={100 * transferProgress} />} */}
-      </Center>
+      </ScrollView>
       <Center position="absolute" bottom="3" w="94%" left="3">
         <Button w="100%" onPress={onUserCancel}>
           {done ? t("ok") : t("cancel")}
@@ -1097,7 +1131,7 @@ const theme = extendTheme({
 export default function () {
   return (
     <AppPage style={{ flex: 1 }}>
-      <NativeBaseProvider theme={theme}>
+      <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
         <ValidationPage />
       </NativeBaseProvider>
     </AppPage>
