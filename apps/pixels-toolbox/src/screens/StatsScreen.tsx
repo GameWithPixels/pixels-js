@@ -19,7 +19,7 @@ import Spacer from "~/components/Spacer";
 import globalStyles from "~/styles";
 import usePixelStatus from "~/usePixelStatus";
 
-export default function () {
+function StatsPage() {
   const errorHandler = useErrorHandler();
   const [selectedPixel, setSelectedPixel] = useState<Pixel | undefined>();
   const status = usePixelStatus(selectedPixel);
@@ -76,6 +76,14 @@ export default function () {
           )}
         </>
       )}
+    </AppPage>
+  );
+}
+
+export default function () {
+  return (
+    <AppPage>
+      <StatsPage />
     </AppPage>
   );
 }
