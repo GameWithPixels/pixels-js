@@ -120,7 +120,7 @@ export default class Pixel {
 
   /** Shorthand for checking if Pixel status is "ready". */
   get ready(): boolean {
-    return this.status === "ready";
+    return this._status === "ready";
   }
 
   /** Gets the id assigned by the OS to Pixel Bluetooth peripheral. */
@@ -171,17 +171,18 @@ export default class Pixel {
     // Our connect function
     try {
       //TODO should we try to connect even if status is not disconnected?
-      if (this.status !== "disconnected") {
+      if (this._status !== "disconnected") {
         throw new PixelError(
           this,
-          `Can only connect when in disconnected state, not in ${this.status} state`
+          `Can only connect when in disconnected state, not in ${this._status} state`
         );
       }
 
+      // Immediately set status to connecting
+      this._status = "connecting";
       await this._session.connect();
 
-      // @ts-expect-error status was already tested above but should have changed since
-      if (this.status === "connecting") {
+      if (this._status === "connecting") {
         // Notify connected
         this._updateStatus("identifying");
 
@@ -197,7 +198,8 @@ export default class Pixel {
           MessageTypeValues.IAmADie
         );
 
-        if (this.status === "identifying") {
+        // @ts-expect-error status was already tested above but should have changed since
+        if (this._status === "identifying") {
           this._info = response as IAmADie;
           this._updateStatus("ready");
         }
@@ -205,10 +207,10 @@ export default class Pixel {
 
       //TODO also check status change counter
       // @ts-expect-error status was already tested above but should have changed since
-      if (this.status !== "ready") {
+      if (this._status !== "ready") {
         throw new PixelError(
           this,
-          `Status changed while connecting, now in ${this.status} state`
+          `Status changed while connecting, now in ${this._status} state`
         );
       }
       return this;
