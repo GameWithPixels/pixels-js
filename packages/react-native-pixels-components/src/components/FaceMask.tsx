@@ -8,14 +8,14 @@ import {
   Modal,
   Button,
   Checkbox,
+  usePropsResolution,
+  IModalProps,
 } from "native-base";
-import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 
-interface FaceMaskProps {
+interface FaceMaskProps extends IModalProps {
   diceFaces: number;
   onCloseAction?: any;
-  bg?: ColorType;
 }
 
 export function FaceMask(props: FaceMaskProps) {
@@ -26,6 +26,8 @@ export function FaceMask(props: FaceMaskProps) {
   for (let i = 0; i < props.diceFaces; ++i) {
     buttonsArray.push(i);
   }
+
+  const resolvedProps = usePropsResolution("FaceMask", props);
 
   return (
     <>
@@ -38,10 +40,10 @@ export function FaceMask(props: FaceMaskProps) {
         >
           <Box
             p="1"
-            minH="9"
-            w="100%"
-            rounded="lg"
-            bg={props.bg === undefined ? "primary.900" : props.bg}
+            minH={resolvedProps.boxMinH}
+            w={resolvedProps.boxW}
+            rounded={resolvedProps.boxRounded}
+            bg={resolvedProps.boxBg}
             alignContent="center"
           >
             <HStack alignSelf="center" space={1} flexWrap="wrap">
@@ -63,11 +65,13 @@ export function FaceMask(props: FaceMaskProps) {
           if (props.onCloseAction !== undefined) props.onCloseAction();
         }}
       >
-        <Modal.Content rounded="2xl">
+        <Modal.Content bg={resolvedProps.bg}>
           <Center>
-            <Modal.Header fontSize={20}>Select faces</Modal.Header>
+            <Modal.Header bg={resolvedProps.bg} fontSize={20}>
+              Select faces
+            </Modal.Header>
           </Center>
-          <Modal.Body>
+          <Modal.Body bg={resolvedProps.bg}>
             <Center>
               <Checkbox.Group
                 defaultValue={groupValue}
@@ -77,9 +81,9 @@ export function FaceMask(props: FaceMaskProps) {
               >
                 <HStack space={2} flexWrap="wrap">
                   {buttonsArray.map((i) => (
-                    <Box key={i} p="2">
+                    <Box key={i} p={resolvedProps.checkBoxP}>
                       <Checkbox
-                        size="lg"
+                        size={resolvedProps.checkBoxSize}
                         alignSelf="center"
                         key={i}
                         value={(i + 1).toString()}
@@ -93,9 +97,11 @@ export function FaceMask(props: FaceMaskProps) {
             </Center>
           </Modal.Body>
           <Center>
-            <Modal.Footer>
+            <Modal.Footer bg={resolvedProps.bg}>
               <Button.Group space={2}>
                 <Button
+                  h={10}
+                  w={60}
                   onPress={() => {
                     setShowModal(false);
                     const faces = [];
@@ -108,6 +114,8 @@ export function FaceMask(props: FaceMaskProps) {
                   All
                 </Button>
                 <Button
+                  h={10}
+                  w={60}
                   onPress={() => {
                     setShowModal(false);
                     setGroupValue([]);
