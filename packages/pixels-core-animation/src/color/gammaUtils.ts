@@ -2,7 +2,7 @@
 /// Helper static class that implements various gamma operations on colors.
 /// </summary>
 import Color from "./Color";
-import * as Color32Utils from "./Color32Utils";
+import * as Color32Utils from "./color32Utils";
 
 /// <summary>
 /// Returns the gamma of the given intensity.

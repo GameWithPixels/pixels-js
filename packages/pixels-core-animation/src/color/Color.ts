@@ -1,18 +1,23 @@
-export default class Color {
+import { IColor, colorToString, colorComponentToByte } from "./colorUtils";
+
+/**
+ * Represents an RGB color using values between O and 1 for each color component.
+ */
+export default class Color implements IColor {
   r = 0; // Normalized floating point value
   g = 0; // Normalized floating point value
   b = 0; // Normalized floating point value
 
   get rByte(): number {
-    return Color.componentToByte(this.r);
+    return colorComponentToByte(this.r);
   }
 
   get gByte(): number {
-    return Color.componentToByte(this.g);
+    return colorComponentToByte(this.g);
   }
 
   get bByte(): number {
-    return Color.componentToByte(this.b);
+    return colorComponentToByte(this.b);
   }
 
   constructor(r: number, g: number, b: number) {
@@ -44,12 +49,12 @@ export default class Color {
     return [dataView, byteOffset];
   }
 
-  static fromBytes(rByte: number, gByte: number, bByte: number): Color {
-    return new Color(rByte / 255, gByte / 255, bByte / 255);
+  toString(): string {
+    return colorToString(this);
   }
 
-  static componentToByte(c: number): number {
-    return Math.round(255 * Math.min(1, Math.max(0, c)));
+  static fromBytes(rByte: number, gByte: number, bByte: number): Color {
+    return new Color(rByte / 255, gByte / 255, bByte / 255);
   }
 
   // Black is LED off
