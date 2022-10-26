@@ -17,17 +17,6 @@ import RgbTrack from "./animations/RgbTrack";
 import SimpleKeyframe from "./animations/SimpleKeyframe";
 import Track from "./animations/Track";
 import Color from "./color/Color";
-import {
-  toColor32,
-  getRed,
-  getGreen,
-  getBlue,
-  combineColors,
-  interpolateColors,
-  interpolateIntensity,
-  modulateColor,
-} from "./color/Color32Utils";
-import { gamma8, gamma32, gamma, reverseGamma8 } from "./color/GammaUtils";
 import Action from "./profiles/Action";
 import ActionPlayAnimation from "./profiles/ActionPlayAnimation";
 import ActionPlayAudioClip from "./profiles/ActionPlayAudioClip";
@@ -79,21 +68,7 @@ export {
   Track,
 };
 
-export {
-  Color,
-  toColor32,
-  getRed,
-  getGreen,
-  getBlue,
-  combineColors,
-  interpolateColors,
-  interpolateIntensity,
-  modulateColor,
-  gamma8,
-  gamma32,
-  gamma,
-  reverseGamma8,
-};
+export { Color };
 
 export {
   ActionTypeValues,
@@ -126,3 +101,7 @@ export {
 };
 
 export { Rule, Profile };
+
+export * from "./color/colorUtils";
+export * from "./color/color32Utils";
+export * from "./color/gammaUtils";
