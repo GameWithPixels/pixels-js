@@ -66,6 +66,5 @@
     {
       "path": "./apps/pixels-toolbox"
     }
-  ],
-  "extends": "expo/tsconfig.base"
+  ]
 }
