@@ -1,15 +1,16 @@
 import BaseActionSheet from "./BaseActionSheet";
 import BaseAppPage from "./BaseAppPage";
+import BaseBottomNavigationMenu from "./BaseBottomNavigationMenu";
 import BaseCard from "./BaseCard";
-import BaseNavigationMenuBar from "./BaseNavigationMenuBar";
+import BaseProgressBar from "./BaseProgressBar";
 import BaseSlider from "./BaseSlider";
 import BaseToggle from "./BaseToggle";
 
 // Native Base components style & props default overriding
 const Button = {
   baseStyle: {
-    minW: 100,
-    minH: 10,
+    w: "2",
+    h: "2",
   },
   defaultProps: {
     bg: "primary.500",
@@ -20,9 +21,10 @@ const Button = {
 export default {
   BaseCard,
   BaseActionSheet,
-  BaseNavigationMenuBar,
+  BaseBottomNavigationMenu,
   BaseToggle,
   BaseSlider,
   BaseAppPage,
+  BaseProgressBar,
   Button,
 };

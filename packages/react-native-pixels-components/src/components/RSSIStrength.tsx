@@ -22,7 +22,6 @@ const icons: IconParams[] = [
 
 export function RSSIStrength(props: PercentageDisplayProps) {
   const resolvedProps = usePropsResolution("RSSIStrength", props);
-  //console.log(resolvedProps);
   return (
     <Center>
       <HStack space={2} alignItems="center">

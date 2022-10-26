@@ -1,35 +1,16 @@
 import "react-native-gesture-handler";
-import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import { NavigationContainer } from "@react-navigation/native";
 import {
   createStackNavigator,
-  StackNavigationProp,
+  TransitionPresets,
 } from "@react-navigation/stack";
-import {
-  Toggle,
-  Pxtheme,
-  BatteryLevel,
-  RSSIStrength,
-  AppPage,
-  Card,
-} from "@systemic-games/react-native-pixels-components";
-import {
-  Text,
-  Link,
-  HStack,
-  Center,
-  Heading,
-  Switch,
-  useColorMode,
-  VStack,
-  Box,
-  NativeBaseProvider,
-  Button,
-} from "native-base";
+import { Pxtheme } from "@systemic-games/react-native-pixels-components";
+import { NativeBaseProvider } from "native-base";
 import React from "react";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+// eslint-disable-next-line import/namespace
+import { LogBox } from "react-native";
 
-import NavigationMenuBar from "../../../packages/react-native-base-components/src/components/BottomMenuBar";
-import { RootStackParamList, ScreenProps } from "./Navigation";
+import { RootStackParamList } from "./Navigation";
 import { NavigationContainerComponent } from "./components/NavigationContainerComponent";
 import homeScreen from "./screens/homeScreen";
 import secondScreen from "./screens/secondScreen";
@@ -37,48 +18,35 @@ import ThirdScreen from "./screens/thirdScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-// function NavigateTo({ navigation }: ScreenProps, path: any) {
-//   navigation.navigate(path);
-// }
+// Disable this warning that comes from NativeBase
+LogBox.ignoreLogs(["EventEmitter.removeListener"]);
+LogBox.ignoreLogs([
+  "We can not support a function callback. See Github Issues for details https://github.com/adobe/react-spectrum/issues/2320",
+]);
 
 export default function App() {
   return (
     <NativeBaseProvider theme={Pxtheme}>
       <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="HomeScreen" component={homeScreen} />
-          <Stack.Screen name="SecondScreen" component={secondScreen} />
-          <Stack.Screen name="ThirdScreen" component={ThirdScreen} />
+        <Stack.Navigator screenOptions={{ animationTypeForReplace: "pop" }}>
+          <Stack.Screen
+            name="HomeScreen"
+            component={homeScreen}
+            options={{ ...TransitionPresets.SlideFromRightIOS }}
+          />
+          <Stack.Screen
+            name="SecondScreen"
+            component={secondScreen}
+            options={{ ...TransitionPresets.SlideFromRightIOS }}
+          />
+          <Stack.Screen
+            name="ThirdScreen"
+            component={ThirdScreen}
+            options={{ ...TransitionPresets.SlideFromRightIOS }}
+          />
         </Stack.Navigator>
-        {/* <AppPage theme={Pxtheme}>
-          <VStack space={4}>
-            <Card />
-            <Card />
-            <Toggle text="Hello toggle" />
-            <Card />
-            <Card />
-          </VStack>
-        </AppPage> */}
         <NavigationContainerComponent />
       </NavigationContainer>
     </NativeBaseProvider>
-  );
-}
-
-// Color Switch Component
-function ToggleDarkMode() {
-  const { colorMode, toggleColorMode } = useColorMode();
-  return (
-    <HStack space={2} alignItems="center">
-      <Text>Dark</Text>
-      <Switch
-        isChecked={colorMode === "light"}
-        onToggle={toggleColorMode}
-        aria-label={
-          colorMode === "light" ? "switch to dark mode" : "switch to light mode"
-        }
-      />
-      <Text>Light</Text>
-    </HStack>
   );
 }

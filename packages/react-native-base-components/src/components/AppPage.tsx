@@ -1,7 +1,8 @@
 import {
-  Center,
+  Box,
   ITheme,
   NativeBaseProvider,
+  ScrollView,
   StatusBar,
   usePropsResolution,
 } from "native-base";
@@ -18,14 +19,18 @@ export interface AppPageProps {
 
 export function AppPage(props: AppPageProps) {
   const resolvedProps = usePropsResolution("BaseAppPage", props);
-  console.log(resolvedProps.p);
   return (
     <NativeBaseProvider theme={props.theme}>
       <StatusBar />
       <SafeAreaProvider>
-        <Center p={resolvedProps.p} bg={resolvedProps.lightBg}>
-          {props.children}
-        </Center>
+        <Box
+          p={2}
+          bg={resolvedProps.lightBg}
+          h={resolvedProps.h}
+          w={resolvedProps.w}
+        >
+          <ScrollView>{props.children}</ScrollView>
+        </Box>
       </SafeAreaProvider>
     </NativeBaseProvider>
   );

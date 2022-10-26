@@ -17,7 +17,6 @@ interface CardProps extends IContainerProps {
 // Also I wonder if we should just define a style with rounded corners
 export function Card(props: CardProps) {
   const resolvedProps = usePropsResolution("BaseCard", props);
-  //console.log(resolvedProps.rounded);
   return (
     <Center>
       <Box

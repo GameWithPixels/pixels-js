@@ -41,15 +41,10 @@ export interface BottomMenuBarProps {
   bg?: ColorType;
 }
 
-export default function NavigationMenuBar(props: BottomMenuBarProps) {
-  // // TODO use boolean type
-
+export default function BottomNavigationMenu(props: BottomMenuBarProps) {
   const [selected, setSelected] = React.useState(1);
-  const resolvedProps = usePropsResolution("BaseNavigationMenuBar", props);
-
-  // console.log(resolvedProps.rounded);
+  const resolvedProps = usePropsResolution("BaseBottomNavigationMenu", props);
   return (
-    // TODO no hard coded values, use props
     <Box height={20} width="100%" maxW="100%" alignSelf="center">
       <HStack space={2} bg={resolvedProps.bg} alignItems="center">
         {props.itemsData.map((item, i) => (

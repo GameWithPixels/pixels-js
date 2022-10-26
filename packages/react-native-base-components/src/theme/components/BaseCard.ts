@@ -2,7 +2,7 @@ export default {
   baseStyle: {},
   defaultProps: {
     rounded: "lg",
-    bg: "primary.100",
+    bg: "primary.700",
     minW: 300,
     minH: 100,
     maxH: 600,

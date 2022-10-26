@@ -6,7 +6,7 @@ import components from "./components";
 export const Pxtheme = extendTheme(BaseTheme, {
   colors: {
     // @ts-expect-error : conflict between themes merging (type difference)
-    PixelColors: {
+    pixelColors: {
       dark: "#100F1E",
       light: "#1E213A",
       accent: "#6A78FF",

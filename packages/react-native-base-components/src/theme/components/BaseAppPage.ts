@@ -2,7 +2,9 @@ export default {
   baseStyle: {},
   defaultProps: {
     p: 2.5,
-    lightBg: "orange.500",
-    darkBg: "orange.500",
+    h: "100%",
+    w: "100%",
+    lightBg: "primary.400",
+    darkBg: "primary.100",
   },
 };
