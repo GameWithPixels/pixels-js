@@ -36,6 +36,14 @@ import TelemetryStats from "~/TelemetryStats";
 import ValidationTests from "~/ValidationTests";
 import AppPage from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
+import RunTaskList, {
+  TaskInfo,
+  TaskListResult,
+  TaskListResultComponent,
+  TaskListResultComponentProps,
+  TaskResultComponent,
+  TaskResultComponentProps,
+} from "~/components/RunTaskList";
 import Spacer from "~/components/Spacer";
 import delay from "~/delay";
 import getDfuFileInfo from "~/getDfuFileInfo";
@@ -45,6 +53,7 @@ import useDfuFiles from "~/useDfuFiles";
 import usePixelBattery from "~/usePixelBattery";
 import usePixelConnector from "~/usePixelConnector";
 import usePixelIdDecoder from "~/usePixelIdDecoder";
+import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 import usePixelRssi from "~/usePixelRssi";
 import usePixelTelemetry from "~/usePixelTelemetry";
 import useRunTaskListWithFocus, {
@@ -499,7 +508,7 @@ function ValidationPageOld() {
 
 type ValidationRun = "board" | "die";
 
-function SelectValidationRun({
+function SelectValidationRunPage({
   onSelectRun,
   onBack,
 }: {
@@ -522,7 +531,7 @@ function SelectValidationRun({
 const DieTypes = ["d4", "d6", "pd6", "d8", "d10", "d12", "d20"] as const;
 type DieType = typeof DieTypes[number];
 
-function SelectDieType({
+function SelectDieTypePage({
   onSelectDieType: onSelectType,
   onBack,
 }: {
@@ -546,40 +555,6 @@ function SelectDieType({
   );
 }
 
-type FrameProcessor = (frame: Frame) => void;
-
-function usePixelIdDecoderFrameProcessor(): [FrameProcessor, number] {
-  const errorHandler = useErrorHandler();
-
-  // PixelId decoder
-  const [decoderState, decoderDispatch] = usePixelIdDecoder();
-
-  // Get the average R, G and B for each image captured by the camera
-  const frameProcessor = useFrameProcessor(
-    (frame) => {
-      "worklet";
-      try {
-        const result = getImageRgbAverages(frame, {
-          subSamplingX: 4,
-          subSamplingY: 2,
-          // writeImage: false,
-          // writePlanes: false,
-        });
-        runOnJS(decoderDispatch)({ rgbAverages: result });
-      } catch (error) {
-        errorHandler(
-          new Error(
-            `Exception in frame processor "getImageRgbAverages": ${error}`
-          )
-        );
-      }
-    },
-    [decoderDispatch, errorHandler]
-  );
-
-  return [frameProcessor, decoderState.pixelId];
-}
-
 type CameraStatus =
   | "initializing"
   | "needPermission"
@@ -600,7 +575,10 @@ function DecodePage({
   const { t } = useTranslation();
   const errorHandler = useErrorHandler();
 
-  // TODO show message if no blinking colors detected
+  // TODO
+  // - show message if no blinking colors detected
+  // - show button to scan
+  // - remove timeout
   setTimeout(() => onDecodedPixelId(1), 1000);
 
   // Camera
@@ -714,53 +692,148 @@ function ConnectPixel2(props: ConnectPixelProps) {
   );
 }
 
-function ConnectPixel(props: ValidationTestProps) {
-  const [step, setStep] = useState<"scanning" | "connecting" | "identifying">(
-    "scanning"
-  );
-  const status = useRunTaskListWithFocus(() => [
-    async () => await delay(3000),
-    async () => setStep("connecting"),
-    async () => await delay(4000),
-    async () => setStep("identifying"),
-    async () => await delay(2000),
-  ]);
+interface TaskStatusProps {
+  children?: JSX.Element | JSX.Element[];
+  title: string;
+  result?: TaskListResult;
+  isSubTask?: boolean;
+}
+
+function TaskStatus({ children, title, result, isSubTask }: TaskStatusProps) {
   return (
     <>
-      <Text bold>
-        {!status
-          ? "Scan & Connect"
-          : status === "success"
-          ? "☑️ Connected"
-          : "Error connecting"}
-      </Text>
-      {!status && (
-        <VStack>
-          {(step === "connecting" || step === "identifying") && (
-            <HStack>
-              <Center w="10%" ml="3%">
-                <Text>☑️</Text>
-              </Center>
-              <Text fontWeight="normal">Scanned</Text>
-            </HStack>
+      <HStack>
+        <Center w="10%" ml={isSubTask ? "10%" : undefined}>
+          {!result ? (
+            <Spinner />
+          ) : (
+            <Text>
+              {result === "success" ? "☑️" : result === "cancel" ? "⚠️" : "❌"}
+            </Text>
           )}
-          {step === "identifying" && (
-            <HStack>
-              <Center w="10%" ml="3%">
-                <Text>☑️</Text>
-              </Center>
-              <Text fontWeight="normal">Connected</Text>
-            </HStack>
-          )}
-          <HStack>
-            <Center w="10%" ml="3%">
-              <Spinner />
-            </Center>
-            <Text fontWeight="normal">{`${step
-              .charAt(0)
-              .toLocaleUpperCase()}${step.slice(1)}...`}</Text>
-          </HStack>
-        </VStack>
+        </Center>
+        <Text fontWeight={isSubTask ? "normal" : undefined}>{title}</Text>
+      </HStack>
+      {children}
+    </>
+  );
+}
+
+// function RenderComponents({
+//   components,
+// }: {
+//   components: React.FunctionComponent[];
+// }) {
+//   return <>{components.map((c, i) => React.createElement(c, { key: i }))}</>;
+// }
+
+// ({ result: TaskResult }) => <TaskStatus title={t.title} result={result} isSubTask />
+
+function createTestStatusComponent(title: string): TaskListResultComponent {
+  return ({ children, result }: TaskListResultComponentProps) => {
+    return (
+      <>
+        <TaskStatus title={title} result={result} />
+        {result !== "success" && <>{children}</>}
+      </>
+    );
+  };
+}
+
+function createTestStepStatusComponent(title: string): TaskResultComponent {
+  return ({ children, result }: TaskResultComponentProps) => {
+    return (
+      <TaskStatus title={title} result={result} isSubTask children={children} />
+    );
+  };
+}
+
+interface TaskAndTitle {
+  title: string;
+  task: () => Promise<unknown>;
+}
+
+function createTestComponent(title: string, tasks: TaskAndTitle[]) {
+  return (props: ValidationTestProps) => {
+    const [taskList] = useState(() =>
+      tasks.map((t) => ({
+        task: t.task,
+        component: createTestStepStatusComponent(t.title),
+      }))
+    );
+    const [component] = useState(() => createTestStatusComponent(title));
+    return (
+      <RunTaskList
+        tasks={taskList}
+        component={component}
+        cancel={props.cancel}
+        onCompleted={props.onCompleted}
+      >
+        {props.children}
+      </RunTaskList>
+    );
+  };
+}
+
+function ConnectPixel(props: ValidationTestProps) {
+  const [component] = useState(() =>
+    createTestComponent("Scan & Connect", [
+      {
+        title: "Scan",
+        task: async () => await delay(3000),
+      },
+      {
+        title: "Connect",
+        task: async () => await delay(3000),
+      },
+      // {
+      //   title: "Plop",
+      //   task: async () => {
+      //     throw new Error("Plop");
+      //   },
+      // },
+      {
+        title: "Identify",
+        task: async () => await delay(2000),
+      },
+    ])
+  );
+  return React.createElement(component, props);
+}
+
+/*
+function ConnectPixel3(props: ValidationTestProps) {
+  const [result, setResult] = useState<TaskResult>();
+  const onResolvedRef = useRef<(result: TaskResult) => void>();
+  const [stepsToRun] = useState((): React.FunctionComponent[] => [
+    createStep("Coucou", async () => await delay(3000), onResolvedRef),
+    createStep("Ca roule", async () => await delay(4000), onResolvedRef),
+    createStep("A++", async () => await delay(2000), onResolvedRef),
+  ]);
+  const [steps, setSteps] = useState([stepsToRun[0]]);
+  onResolvedRef.current = useCallback(
+    (result: TaskResult) => {
+      if (result === "success") {
+        setSteps((steps) => {
+          const next = stepsToRun[steps.length];
+          if (next) {
+            return [...steps, next];
+          } else {
+            setResult(result);
+          }
+          return steps;
+        });
+      } else {
+        setResult(result);
+      }
+    },
+    [stepsToRun]
+  );
+  return (
+    <>
+      <TaskStatus title="Scan & Connect" result={result} />;
+      {!result && (
+        <VStack>{steps.map((s) => React.createElement(s, {}))}</VStack>
       )}
       <>{props.children}</>
     </>
@@ -927,14 +1000,6 @@ function TestsPage({
 
   const [tests, setTests] = useState([] as ValidationTestComponent[]);
 
-  // Start first test
-  useEffect(() => {
-    const firstTest = testToRunRef.current[0];
-    if (firstTest) {
-      setTests([firstTest]);
-    }
-  }, []);
-
   // Run tests
   /*useEffect(() => {
     if (connectorState.pixel && connectorState.scannedPixel) {
@@ -988,15 +1053,23 @@ function TestsPage({
     [cancel]
   );
 
-  const onUserCancel = useCallback(() => {
-    console.log("CANCEL");
-    setCancel((cancel) => {
-      if (!cancel) {
-        onDone?.("canceled");
+  // Start first test
+  useFocusEffect(
+    useCallback(() => {
+      const firstTest = testToRunRef.current[0];
+      if (firstTest) {
+        setTests([firstTest]);
       }
-      return true;
-    });
-  }, [onDone]);
+      return () => setCancel(true);
+    }, [])
+  );
+
+  useEffect(() => {
+    if (cancel) {
+      console.log("CANCEL");
+      //onDone?.("canceled");
+    }
+  }, [cancel, onDone]);
 
   return (
     <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
@@ -1027,7 +1100,7 @@ function TestsPage({
       {transferProgress > 0 && <ProgressBar percent={100 * transferProgress} />} */}
       </ScrollView>
       <Center position="absolute" bottom="3" w="94%" left="3">
-        <Button w="100%" onPress={onUserCancel}>
+        <Button w="100%" onPress={() => setCancel(true)}>
           {done ? t("ok") : t("cancel")}
         </Button>
       </Center>
@@ -1042,12 +1115,12 @@ function ValidationPage() {
   const navigation = useNavigation();
 
   return !validationRun ? (
-    <SelectValidationRun
+    <SelectValidationRunPage
       onSelectRun={setValidationRun}
       onBack={() => navigation.goBack()}
     />
   ) : !dieType ? (
-    <SelectDieType
+    <SelectDieTypePage
       onSelectDieType={setDieType}
       onBack={() => setValidationRun(undefined)}
     />
