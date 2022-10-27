@@ -8,6 +8,7 @@ export type RootStackParamList = {
   Animations: undefined;
   Validation: undefined;
   Stats: undefined;
+  Test: undefined;
 };
 
 export type DfuScreenParams = {

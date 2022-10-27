@@ -585,7 +585,7 @@ function DecodePage({
   // - show message if no blinking colors detected
   // - show button to scan
   // - remove timeout
-  setTimeout(() => onDecodedPixelId(1), 1000);
+  setTimeout(() => onDecodedPixelId(1), 5000);
 
   // Camera
   const [cameraPermission, setCameraPermission] =
@@ -714,11 +714,12 @@ function TaskStatus({ children, title, result, isSubTask }: TaskStatusProps) {
 }
 
 function createTestStatusComponent(title: string): TaskListResultComponent {
-  return ({ children, result }: TaskListResultComponentProps) => {
+  return ({ children, result, progress }: TaskListResultComponentProps) => {
     return (
       <>
         <TaskStatus title={title} result={result} />
         {result !== "success" && <>{children}</>}
+        {result !== "success" && !!progress && <ProgressBar percent={progress} />}
       </>
     );
   };
@@ -763,6 +764,7 @@ function createValidationTestComponent(
         component={component}
         cancel={props.cancel}
         onCompleted={props.onCompleted}
+        progress={props.progress}
       >
         {props.children}
       </RunTaskList>
@@ -829,11 +831,11 @@ function UpdateProfileTest(props: ValidationTestProps) {
       {
         title: "Upload Profile",
         task: async () => {
-          setProgress(1);
-          for (let i = 0; i < 10; ++i) {
-            await delay(100);
+          for (let i = 1; i <= 10; ++i) {
             setProgress(i * 10);
+            await delay(100);
           }
+          setProgress(undefined);
         },
       },
       {

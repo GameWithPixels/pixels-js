@@ -60,6 +60,8 @@ function MenuPage() {
           title="Go to Stats"
         />
         <Spacer />
+        <Button onPress={() => navigation.navigate("Test")} title="TEST" />
+        <Spacer />
       </View>
       <View style={styles.containerScanHeader}>
         <Text

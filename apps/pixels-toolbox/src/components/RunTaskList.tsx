@@ -19,6 +19,7 @@ export type TaskListResult = TaskResult | "cancel";
 export interface TaskListResultComponentProps {
   children?: JSX.Element | JSX.Element[];
   result?: TaskListResult;
+  progress?: number;
 }
 
 export type TaskListResultComponent = React.FC<TaskListResultComponentProps>;
@@ -29,6 +30,7 @@ export interface RunTaskListProps {
   component?: TaskListResultComponent;
   cancel?: boolean;
   onCompleted?: (status: TaskListResult) => void;
+  progress?: number;
 }
 
 // Tasks are read on first render and stored.
@@ -38,6 +40,7 @@ export default function ({
   component,
   cancel,
   onCompleted,
+  progress,
 }: RunTaskListProps) {
   const [result, setResult] = useState<TaskListResult>();
   const tasksToRunRef = useRef(tasks);
@@ -80,7 +83,7 @@ export default function ({
   );
   return (
     <>
-      {component?.({ result, children: tasksComponents })}
+      {component?.({ result, children: tasksComponents, progress })}
       {children}
     </>
   );

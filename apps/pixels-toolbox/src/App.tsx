@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Sentry from "sentry-expo";
 
 import StatsScreen from "./screens/StatsScreen";
+import TestScreen from "./screens/TestScreen";
 import ValidationScreen from "./screens/ValidationScreen";
 import useBluetooth from "./useBluetooth";
 
@@ -57,6 +58,7 @@ function App() {
           <Stack.Screen name="Animations" component={AnimationsScreen} />
           <Stack.Screen name="Validation" component={ValidationScreen} />
           <Stack.Screen name="Stats" component={StatsScreen} />
+          <Stack.Screen name="Test" component={TestScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
