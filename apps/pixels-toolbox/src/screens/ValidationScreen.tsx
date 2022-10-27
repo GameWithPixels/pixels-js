@@ -19,7 +19,13 @@ import {
   Spinner,
   HStack,
 } from "native-base";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 import { runOnJS } from "react-native-reanimated";
@@ -661,19 +667,7 @@ function DecodePage({
   );
 }
 
-interface ValidationTestProps {
-  //pixel: Pixel;
-  children?: JSX.Element | JSX.Element[];
-  cancel?: boolean;
-  onCompleted?: (status: TaskListStatus) => void;
-}
-
-type ValidationTestComponent = React.FC<ValidationTestProps>;
-
-interface ConnectPixelProps extends ValidationTestProps {
-  pixelId: number;
-}
-
+/*
 function ConnectPixel2(props: ConnectPixelProps) {
   // Connection to Pixel
   const [connectorState, connectorDispatch] = usePixelConnector();
@@ -691,7 +685,7 @@ function ConnectPixel2(props: ConnectPixelProps) {
     }, [connectorDispatch])
   );
 }
-
+*/
 interface TaskStatusProps {
   children?: JSX.Element | JSX.Element[];
   title: string;
@@ -719,16 +713,6 @@ function TaskStatus({ children, title, result, isSubTask }: TaskStatusProps) {
   );
 }
 
-// function RenderComponents({
-//   components,
-// }: {
-//   components: React.FunctionComponent[];
-// }) {
-//   return <>{components.map((c, i) => React.createElement(c, { key: i }))}</>;
-// }
-
-// ({ result: TaskResult }) => <TaskStatus title={t.title} result={result} isSubTask />
-
 function createTestStatusComponent(title: string): TaskListResultComponent {
   return ({ children, result }: TaskListResultComponentProps) => {
     return (
@@ -748,12 +732,23 @@ function createTestStepStatusComponent(title: string): TaskResultComponent {
   };
 }
 
-interface TaskAndTitle {
-  title: string;
-  task: () => Promise<unknown>;
+interface ValidationTestProps {
+  children?: JSX.Element | JSX.Element[];
+  pixel?: Pixel;
+  progress?: number;
+  cancel?: boolean;
+  onCompleted?: (status: TaskListStatus) => void;
 }
 
-function createTestComponent(title: string, tasks: TaskAndTitle[]) {
+type ValidationTestComponent = React.FC<ValidationTestProps>;
+
+function createValidationTestComponent(
+  title: string,
+  tasks: {
+    title: string;
+    task: () => Promise<unknown>;
+  }[]
+) {
   return (props: ValidationTestProps) => {
     const [taskList] = useState(() =>
       tasks.map((t) => ({
@@ -775,20 +770,26 @@ function createTestComponent(title: string, tasks: TaskAndTitle[]) {
   };
 }
 
-function ConnectPixel(props: ValidationTestProps) {
+interface ConnectPixelTestProps extends ValidationTestProps {
+  pixelId: number;
+  onPixelFound?: (pixel: Pixel) => void;
+}
+
+function ConnectPixelTest(props: ConnectPixelTestProps) {
   const [component] = useState(() =>
-    createTestComponent("Scan & Connect", [
+    createValidationTestComponent("Scan & Connect", [
       {
         title: "Scan",
-        task: async () => await delay(3000),
+        task: async () => await delay(1000),
       },
       {
         title: "Connect",
-        task: async () => await delay(3000),
+        task: async () => await delay(1000),
       },
       // {
       //   title: "Plop",
       //   task: async () => {
+      //     //await delay(5000);
       //     throw new Error("Plop");
       //   },
       // },
@@ -798,14 +799,57 @@ function ConnectPixel(props: ValidationTestProps) {
       },
     ])
   );
-  return React.createElement(component, props);
+  return component(props);
+}
+
+function CheckBoardTest(props: ValidationTestProps) {
+  const [component] = useState(() =>
+    createValidationTestComponent("Check Board", [
+      {
+        title: "Test1",
+        task: async () => await delay(1000),
+      },
+      {
+        title: "Test2",
+        task: async () => await delay(1000),
+      },
+    ])
+  );
+  return component(props);
+}
+
+function UpdateProfileTest(props: ValidationTestProps) {
+  const [progress, setProgress] = useState<number>();
+  const [component] = useState(() =>
+    createValidationTestComponent("Update Profile", [
+      {
+        title: "Prepare Profile",
+        task: async () => await delay(1000),
+      },
+      {
+        title: "Upload Profile",
+        task: async () => {
+          setProgress(1);
+          for (let i = 0; i < 10; ++i) {
+            await delay(100);
+            setProgress(i * 10);
+          }
+        },
+      },
+      {
+        title: "Check Profile",
+        task: async () => await delay(2000),
+      },
+    ])
+  );
+  return component({ ...props, progress });
 }
 
 /*
 function ConnectPixel3(props: ValidationTestProps) {
   const [result, setResult] = useState<TaskResult>();
   const onResolvedRef = useRef<(result: TaskResult) => void>();
-  const [stepsToRun] = useState((): React.FunctionComponent[] => [
+  const [stepsToRun] = useState((): React.FC[] => [
     createStep("Coucou", async () => await delay(3000), onResolvedRef),
     createStep("Ca roule", async () => await delay(4000), onResolvedRef),
     createStep("A++", async () => await delay(2000), onResolvedRef),
@@ -988,9 +1032,14 @@ function TestsPage({
   //   setResults,
   // });
 
-  const testToRunRef = useRef([
-    ConnectPixel,
-    // CheckBoard,
+  const [pixel, setPixel] = useState<Pixel>();
+
+  const testsToRunRef = useRef([
+    (props: ValidationTestProps) => (
+      <ConnectPixelTest pixelId={pixelId} onPixelFound={setPixel} {...props} />
+    ),
+    (props: ValidationTestProps) => <CheckBoardTest {...props} />,
+    (props: ValidationTestProps) => <UpdateProfileTest {...props} />,
     // FlickBoard,
     // UpdateProfile,
     // WaitForPixel,
@@ -1036,27 +1085,25 @@ function TestsPage({
   const [cancel, setCancel] = useState(false);
   const [done, setDone] = useState(false);
 
-  const onCompleted = useCallback(
-    (status: TaskListStatus) => {
-      // Assume all tests are completed in order
-      console.log("COMPLETED, cancel is", cancel, ", status is", status);
-      if (!cancel) {
-        setTests((tasks) => {
-          const nextTest = testToRunRef.current[tasks.length];
-          if (!nextTest) {
-            setDone(true);
-          }
-          return nextTest ? [...tasks, nextTest] : tasks;
-        });
-      }
-    },
-    [cancel]
-  );
+  const onCompleted = useCallback((status: TaskListStatus) => {
+    // Assume all tests are completed in order
+    if (status === "success") {
+      setTests((tasks) => {
+        const nextTest = testsToRunRef.current[tasks.length];
+        if (!nextTest) {
+          setDone(true);
+          return tasks;
+        } else {
+          return [...tasks, nextTest];
+        }
+      });
+    }
+  }, []);
 
   // Start first test
   useFocusEffect(
     useCallback(() => {
-      const firstTest = testToRunRef.current[0];
+      const firstTest = testsToRunRef.current[0];
       if (firstTest) {
         setTests([firstTest]);
       }
@@ -1066,8 +1113,7 @@ function TestsPage({
 
   useEffect(() => {
     if (cancel) {
-      console.log("CANCEL");
-      //onDone?.("canceled");
+      onDone?.("canceled");
     }
   }, [cancel, onDone]);
 
@@ -1084,7 +1130,7 @@ function TestsPage({
               p="2"
               rounded="md"
             >
-              {React.createElement(task, { cancel, onCompleted })}
+              {task({ cancel, onCompleted })}
             </Box>
           </Center>
         ))}
