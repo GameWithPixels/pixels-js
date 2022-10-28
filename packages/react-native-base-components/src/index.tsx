@@ -6,3 +6,4 @@ export * from "./components/ActionSheet";
 export * from "./components/AppPage";
 export * from "./components/BottomNavigationMenu";
 export * from "./components/ProgressBar";
+export * from "./colorWheelUtils";

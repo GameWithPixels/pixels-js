@@ -62,7 +62,7 @@ export function FaceMask(props: FaceMaskProps) {
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
-          if (props.onCloseAction !== undefined) props.onCloseAction();
+          if (props.onCloseAction) props.onCloseAction();
         }}
       >
         <Modal.Content bg={resolvedProps.bg}>
