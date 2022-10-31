@@ -20,7 +20,7 @@ export interface PercentageDisplayProps {
 // Compute index based on the arraylength and the current percentage value
 function computeIndex(percentage: number, arrayLength: number): number {
   const ratio = arrayLength > 0 ? 100 / arrayLength : 1;
-  const tempIndex = Math.floor(percentage / ratio);
+  const tempIndex = Math.round(percentage / ratio);
   const index =
     Math.max(0, tempIndex) >= arrayLength
       ? Math.max(arrayLength - 1, 0)

@@ -11,7 +11,7 @@ import {
   UsePxTheme,
   PopUpModal,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, Button, HStack, Text, VStack } from "native-base";
+import { Box, HStack, Text, VStack } from "native-base";
 import React from "react";
 
 const newThemeParameters = {
@@ -50,7 +50,7 @@ export default function HomeScreen() {
         <ColorSelection />
         <PopUpModal
           trigger={
-            <Box rounded={"lg"} p={2} bg={"primary.700"}>
+            <Box rounded="lg" p={2} bg="primary.700">
               <Text>Open popup</Text>
             </Box>
           }

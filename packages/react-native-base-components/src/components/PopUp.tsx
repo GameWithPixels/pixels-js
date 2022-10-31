@@ -1,13 +1,11 @@
 import {
   Center,
-  useColorModeValue,
   VStack,
   Modal,
   Button,
   Pressable,
   Text,
   IModalProps,
-  Box,
   usePropsResolution,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
@@ -29,7 +27,7 @@ export function PopUpModal(props: popUpProps) {
     <>
       {/* component that will open the popUp window */}
       <Pressable onPress={() => SetShowPopUp(true)}>
-          {resolvedProps.trigger}
+        {resolvedProps.trigger}
       </Pressable>
 
       {/* popUp window */}
