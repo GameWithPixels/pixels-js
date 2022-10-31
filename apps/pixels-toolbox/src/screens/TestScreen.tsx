@@ -5,9 +5,8 @@ import {
   VStack,
   Text,
   Button,
-  View,
 } from "native-base";
-import {
+import React, {
   FC,
   MutableRefObject,
   PropsWithChildren,
@@ -36,6 +35,18 @@ type AsyncOperation = () => Promise<unknown>;
 
 type TaskResultCallback = (result: TaskResult) => void;
 
+class CanceledError extends Error {
+  constructor(testName: string) {
+    super(`Task ${testName} canceled`);
+  }
+}
+
+class FaultedError extends Error {
+  constructor(testName: string) {
+    super(`Task ${testName} faulted`);
+  }
+}
+
 function useTask(
   asyncOp: AsyncOperation,
   taskComponent: TaskComponent,
@@ -52,7 +63,9 @@ function useTask(
         .then(() => !canceled && updateStatus("succeeded"))
         .catch((error) => {
           console.log(`Task error (with canceled: ${canceled})`, error);
-          if (!canceled) {
+          if (error instanceof CanceledError) {
+            updateStatus("canceled");
+          } else if (!canceled) {
             updateStatus("faulted");
           }
         });
@@ -121,11 +134,13 @@ class TaskChain {
   getComponentAt(index: number): FC<PropsWithChildren> | undefined {
     return this._tasksItems[index].component;
   }
-  render(): JSX.Element {
+  render(showPendingTasks = false): JSX.Element {
     return (
       <>
-        {this.components.map((c, key) => (
-          <View key={key}>{c({})}</View>
+        {this._tasksItems.map((ti, key) => (
+          <React.Fragment key={key}>
+            {(showPendingTasks || ti.status !== "pending") && ti.component({})}
+          </React.Fragment>
         ))}
       </>
     );
@@ -168,9 +183,18 @@ interface TestProps {
 
 interface MyTest1Props extends TestProps {
   something: string;
+  onSomeValue: (value: number) => void;
 }
 
-function MyTest1({ action, onResult, status, something }: MyTest1Props) {
+function MyTest1({
+  action,
+  onResult,
+  status,
+  something,
+  onSomeValue,
+}: MyTest1Props) {
+  const onSomeValueRef = useRef(onSomeValue);
+  onSomeValueRef.current = onSomeValue;
   const [value0, setValue0] = useState(0);
   const [value1, setValue1] = useState(0);
   const taskChain = useTaskChain(
@@ -194,6 +218,7 @@ function MyTest1({ action, onResult, status, something }: MyTest1Props) {
           await delay(1000);
         }
         //throw new Error("Fail1");
+        onSomeValueRef.current(123);
       }, []),
       useCallback(
         (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>,
@@ -203,9 +228,11 @@ function MyTest1({ action, onResult, status, something }: MyTest1Props) {
     .finally(onResult);
   return (
     <VStack>
-      <Text>{`Test ${something} => ${status}`}</Text>
+      <Text>
+        Test {something}: {status}
+      </Text>
       {taskChain.render()}
-      <Text>End Test</Text>
+      <Text>End Test {something}</Text>
     </VStack>
   );
 }
@@ -233,12 +260,13 @@ function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
   )
     .chainWith(
       useCallback(async () => {
+        console.log("Got somethingElse = " + somethingElse);
         for (let i = 1; i <= 2; ++i) {
           setValue1(i);
           await delay(1000);
         }
         //throw new Error("Fail3");
-      }, []),
+      }, [somethingElse]),
       useCallback(
         (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>,
         [value1]
@@ -247,14 +275,16 @@ function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
     .finally(onResult);
   return (
     <VStack>
-      <Text>{`Test ${somethingElse} => ${status}`}</Text>
+      <Text>
+        Test {somethingElse}: {status}
+      </Text>
       {taskChain.render()}
-      <Text>End Test</Text>
+      <Text>End Test {somethingElse}</Text>
     </VStack>
   );
 }
 
-function createTaskChainItemPromise(
+function createTaskPromise(
   testName: string,
   resultCallbacks: MutableRefObject<TaskResultCallback[]>
 ): Promise<void> {
@@ -262,7 +292,11 @@ function createTaskChainItemPromise(
     resultCallbacks.current.push((r: TaskResult) =>
       r === "succeeded"
         ? resolve()
-        : reject(new Error(testName + " errored with result " + r))
+        : reject(
+            r === "canceled"
+              ? new CanceledError(testName)
+              : new FaultedError(testName)
+          )
     );
   });
 }
@@ -275,11 +309,12 @@ function TestPage() {
   const resultCallbacks = useRef<TaskResultCallback[]>([]);
   const taskChain = useTaskChain(
     "run",
-    useCallback(() => createTaskChainItemPromise("Test1", resultCallbacks), []),
+    useCallback(() => createTaskPromise("Test1", resultCallbacks), []),
     useCallback(
       (p) => (
         <MyTest1
           something={something}
+          onSomeValue={setSomethingElse}
           action={cancel ? "cancel" : "run"}
           status={p.status}
           onResult={resultCallbacks.current[0]}
@@ -289,10 +324,7 @@ function TestPage() {
     )
   )
     .chainWith(
-      useCallback(
-        () => createTaskChainItemPromise("Test2", resultCallbacks),
-        []
-      ),
+      useCallback(() => createTaskPromise("Test2", resultCallbacks), []),
       useCallback(
         (p) => (
           <MyTest2
