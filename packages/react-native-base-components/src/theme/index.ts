@@ -5,13 +5,31 @@ import { LinearGradient } from "react-native-svg";
 import components from "./components";
 
 // Theme configuration and functionalities
-
+export interface UsePxThemeParams {
+  theme: ITheme;
+  primaryColors?: IColorHues;
+  secondaryColors?: IColorHues;
+  tertiaryColors?: IColorHues;
+}
 // UsePXTheme to create variations of the default components theme with new primary colors
-export function UsePxTheme(theme: ITheme, primaryColors: IColorHues) {
+/**
+ * UsePXTheme to create variations of the default components theme with new primary, secondary or tertiary colors
+ * @param theme The theme to override with new parameters
+ * @see UsePxThemeParams for the UsePxTheme other parameters
+ * @returns A new theme modified with the new selected colors
+ */
+export function UsePxTheme({
+  theme,
+  primaryColors = theme.colors.primary,
+  secondaryColors = theme.colors.secondary,
+  tertiaryColors = theme.colors.tertiary,
+}: UsePxThemeParams) {
   const newTheme = extendTheme(theme, {
     // @ts-expect-error
     colors: {
       primary: primaryColors,
+      secondary: secondaryColors,
+      tertiary: tertiaryColors,
     },
   });
   return newTheme;

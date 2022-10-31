@@ -2,8 +2,6 @@ export default {
   defaultProps: {
     // Modal
     bg: "primary.900",
-    h: "60%",
-    w: "100%",
     // trigger box
     boxMinH: "9",
     boxW: "100%",

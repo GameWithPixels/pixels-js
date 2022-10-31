@@ -1,5 +1,5 @@
 import {
-  AppPage,
+  BaseAppPage,
   Card,
   FaceMask,
   Pxtheme,
@@ -10,23 +10,26 @@ import {
 import { VStack, Text, HStack } from "native-base";
 import React from "react";
 
-const primaryColors = {
-  "50": "#f67bff",
-  "100": "#f454ff",
-  "200": "#f12cff",
-  "300": "#e80cf7",
-  "400": "#c707d5",
-  "500": "#ad0cb8",
-  "600": "#93109d",
-  "700": "#7b1283",
-  "800": "#65136a",
-  "900": "#4f1253",
+const newThemeParameters = {
+  theme: Pxtheme,
+  primaryColors: {
+    "50": "#f67bff",
+    "100": "#f454ff",
+    "200": "#f12cff",
+    "300": "#e80cf7",
+    "400": "#c707d5",
+    "500": "#ad0cb8",
+    "600": "#93109d",
+    "700": "#7b1283",
+    "800": "#65136a",
+    "900": "#4f1253",
+  },
 };
 
 export default function ThirdScreen() {
-  const newTheme = UsePxTheme(Pxtheme, primaryColors);
+  const newTheme = UsePxTheme(newThemeParameters);
   return (
-    <AppPage theme={newTheme}>
+    <BaseAppPage theme={newTheme}>
       <VStack space={4}>
         <Card bg="pixelColors.yellow">
           <Text bold>
@@ -45,6 +48,6 @@ export default function ThirdScreen() {
         </Card>
         <FaceMask bg="pixelColors.green" diceFaces={20} />
       </VStack>
-    </AppPage>
+    </BaseAppPage>
   );
 }

@@ -1,5 +1,5 @@
 import {
-  AppPage,
+  BaseAppPage,
   Card,
   Pxtheme,
   Toggle,
@@ -9,7 +9,7 @@ import React from "react";
 
 export default function SecondScreen() {
   return (
-    <AppPage theme={Pxtheme}>
+    <BaseAppPage theme={Pxtheme}>
       <VStack space={4}>
         <Card />
         <Card />
@@ -17,6 +17,6 @@ export default function SecondScreen() {
         <Card />
         <Card />
       </VStack>
-    </AppPage>
+    </BaseAppPage>
   );
 }

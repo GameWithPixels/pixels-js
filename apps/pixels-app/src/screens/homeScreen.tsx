@@ -1,35 +1,39 @@
 import {
-  ActionSheetComponent,
-  AppPage,
+  PxAppPage,
   BatteryLevel,
   Card,
   ColorSelection,
   FaceMask,
   ProgressBar,
   Pxtheme,
+  SliderComponent,
   Toggle,
   UsePxTheme,
+  PopUpModal,
 } from "@systemic-games/react-native-pixels-components";
-import { HStack, Text, VStack } from "native-base";
+import { Box, Button, HStack, Text, VStack } from "native-base";
 import React from "react";
 
-const primaryColors = {
-  "50": "#7eff7b",
-  "100": "#56ff54",
-  "200": "#2fff2c",
-  "300": "#10f70c",
-  "400": "#0ad507",
-  "500": "#0fb80c",
-  "600": "#129d10",
-  "700": "#148312",
-  "800": "#146a13",
-  "900": "#135312",
+const newThemeParameters = {
+  theme: Pxtheme,
+  primaryColors: {
+    "50": "#7eff7b",
+    "100": "#56ff54",
+    "200": "#2fff2c",
+    "300": "#10f70c",
+    "400": "#0ad507",
+    "500": "#0fb80c",
+    "600": "#129d10",
+    "700": "#148312",
+    "800": "#146a13",
+    "900": "#135312",
+  },
 };
 
 export default function HomeScreen() {
-  const newtheme = UsePxTheme(Pxtheme, primaryColors);
+  const newtheme = UsePxTheme(newThemeParameters);
   return (
-    <AppPage theme={newtheme}>
+    <PxAppPage theme={newtheme}>
       <VStack space={4}>
         <Card>
           <Text bold>Screen with custom theme from components package</Text>
@@ -44,10 +48,17 @@ export default function HomeScreen() {
           <Toggle text="First screen toggle" />
         </Card>
         <ColorSelection />
+        <PopUpModal
+          trigger={
+            <Box rounded={"lg"} p={2} bg={"primary.700"}>
+              <Text>Open popup</Text>
+            </Box>
+          }
+        />
+        <SliderComponent />
         <ProgressBar value={30} loadingText="Progress : " />
-        <ActionSheetComponent title="Test sheet" />
         <FaceMask diceFaces={20} />
       </VStack>
-    </AppPage>
+    </PxAppPage>
   );
 }

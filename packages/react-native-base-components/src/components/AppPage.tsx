@@ -13,11 +13,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 export interface AppPageProps {
   theme: ITheme;
   p?: number | string;
-  bg?: ColorType;
+  lightBg?: ColorType;
   children?: JSX.Element | JSX.Element[];
 }
 
-export function AppPage(props: AppPageProps) {
+function AppPage(props: AppPageProps) {
   const resolvedProps = usePropsResolution("BaseAppPage", props);
   return (
     <NativeBaseProvider theme={props.theme}>
@@ -35,3 +35,5 @@ export function AppPage(props: AppPageProps) {
     </NativeBaseProvider>
   );
 }
+
+export { AppPage as BaseAppPage };

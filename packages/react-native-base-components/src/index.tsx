@@ -7,3 +7,6 @@ export * from "./components/AppPage";
 export * from "./components/BottomNavigationMenu";
 export * from "./components/ProgressBar";
 export * from "./colorWheelUtils";
+export * from "./components/ColorWheel";
+export * from "./components/Slider";
+export * from "./components/PopUp";

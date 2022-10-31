@@ -1,5 +1,5 @@
 import {
-  AppPage,
+  BaseAppPage,
   Card,
   FaceMask,
   Pxtheme,
@@ -11,7 +11,7 @@ import React from "react";
 
 export default function SecondScreen() {
   return (
-    <AppPage theme={Pxtheme}>
+    <BaseAppPage theme={Pxtheme}>
       <VStack space={4}>
         <Card>
           <Text bold>Screen with default theme from components package</Text>
@@ -27,6 +27,6 @@ export default function SecondScreen() {
         </Card>
         <FaceMask diceFaces={20} />
       </VStack>
-    </AppPage>
+    </BaseAppPage>
   );
 }
