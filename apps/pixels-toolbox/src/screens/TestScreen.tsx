@@ -6,7 +6,13 @@ import {
   Text,
   Button,
 } from "native-base";
-import React, { MutableRefObject, useCallback, useRef, useState } from "react";
+import React, {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { TaskResult, TaskResultCallback } from "~/TaskChain";
 import AppPage from "~/components/AppPage";
@@ -125,18 +131,22 @@ function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
 
 function createTaskPromise(
   testName: string,
-  resultCallbacks: MutableRefObject<TaskResultCallback[]>
+  setResultCallbacks: (
+    setState: (callbacks: TaskResultCallback[]) => TaskResultCallback[]
+  ) => void
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    resultCallbacks.current.push((r: TaskResult) =>
+    const resultCallback = (r: TaskResult) =>
       r === "succeeded"
         ? resolve()
         : reject(
             r === "canceled"
               ? new CanceledError(testName)
               : new FaultedError(testName)
-          )
-    );
+          );
+    setResultCallbacks((callbacks: TaskResultCallback[]) => {
+      return [...callbacks, resultCallback];
+    });
   });
 }
 
@@ -145,10 +155,20 @@ function TestPage() {
   const [somethingElse, setSomethingElse] = useState(2);
   const [cancel, setCancel] = useState(false);
   const [result, setResult] = useState<TaskResult>();
-  const resultCallbacks = useRef<TaskResultCallback[]>([]);
+  const [resultCallbacks, setResultCallbacks] = useState<TaskResultCallback[]>(
+    []
+  );
+  useEffect(
+    () => () => {
+      // Reset state for hot reload
+      setResultCallbacks([]);
+      setResult(undefined);
+    },
+    []
+  );
   const taskChain = useTaskChain(
     "run",
-    useCallback(() => createTaskPromise("Test1", resultCallbacks), []),
+    useCallback(() => createTaskPromise("Test1", setResultCallbacks), []),
     useCallback(
       (p) => (
         <MyTest1
@@ -156,14 +176,14 @@ function TestPage() {
           onSomeValue={setSomethingElse}
           action={cancel ? "cancel" : "run"}
           status={p.status}
-          onResult={resultCallbacks.current[0]}
+          onResult={resultCallbacks[0]}
         />
       ),
-      [cancel, something]
+      [cancel, resultCallbacks, something]
     )
   )
     .chainWith(
-      useCallback(() => createTaskPromise("Test2", resultCallbacks), []),
+      useCallback(() => createTaskPromise("Test2", setResultCallbacks), []),
       useCallback(
         (p) => (
           <MyTest2
@@ -172,10 +192,10 @@ function TestPage() {
               cancel ? "cancel" : p.status === "pending" ? "reset" : "run"
             }
             status={p.status}
-            onResult={resultCallbacks.current[1]}
+            onResult={resultCallbacks[1]}
           />
         ),
-        [cancel, somethingElse]
+        [cancel, resultCallbacks, somethingElse]
       )
     )
     .finally(setResult);
