@@ -1,7 +1,7 @@
 export default {
   defaultProps: {
     listMinHeight: 200,
-    listMaxHeight: 600,
-    bgColor: "primary.500",
+    listMaxHeight: 700,
+    sheetBgColor: "primary.700",
   },
 };
