@@ -10,6 +10,7 @@ import {
   Toggle,
   UsePxTheme,
   PopUpModal,
+  LightingStyleSelection,
 } from "@systemic-games/react-native-pixels-components";
 import { Box, HStack, Text, VStack } from "native-base";
 import React from "react";
@@ -55,6 +56,7 @@ export default function HomeScreen() {
             </Box>
           }
         />
+        <LightingStyleSelection />
         <SliderComponent />
         <ProgressBar value={30} loadingText="Progress : " />
         <FaceMask diceFaces={20} />

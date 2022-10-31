@@ -41,7 +41,13 @@ export function ActionSheet(props: ActionSheetComponentProps) {
           </Box>
           <ScrollView width="full" height={200}>
             {props.itemsData?.map((item, i) => (
-              <Actionsheet.Item key={i} onPress={item.onPress}>
+              <Actionsheet.Item
+                key={i}
+                onPress={() => {
+                  if (item.onPress) item.onPress();
+                  onClose();
+                }}
+              >
                 {item.label}
               </Actionsheet.Item>
             ))}
