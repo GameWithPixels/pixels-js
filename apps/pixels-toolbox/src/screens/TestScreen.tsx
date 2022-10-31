@@ -2,14 +2,9 @@ import {
   extendTheme,
   useColorModeValue,
   NativeBaseProvider,
-  Center,
   VStack,
   Text,
   Button,
-  Box,
-  ScrollView,
-  Spinner,
-  HStack,
   View,
 } from "native-base";
 import {
@@ -20,14 +15,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { useErrorHandler } from "react-error-boundary";
 
 import AppPage from "~/components/AppPage";
 import delay from "~/delay";
 
-type Task = () => Promise<unknown>;
+type TaskResult = "succeeded" | "faulted" | "canceled";
 
-type TaskStatus = "pending" | "running" | "succeeded" | "faulted" | "canceled";
+type TaskStatus = "pending" | "running" | TaskResult;
 
 type TaskComponentProps = PropsWithChildren<{
   status: TaskStatus;
@@ -35,155 +29,172 @@ type TaskComponentProps = PropsWithChildren<{
 
 type TaskComponent = FC<TaskComponentProps>;
 
+type TaskAction = "cancel" | "reset";
+
+type AsyncOperation = () => Promise<unknown>;
+
+type TaskResultCallback = (result: TaskResult) => void;
+
 function useTask(
-  task: Task,
-  component: TaskComponent,
-  runNow = true
+  asyncOp: AsyncOperation,
+  taskComponent: TaskComponent,
+  action?: TaskAction
 ): [TaskStatus, FC<PropsWithChildren>] {
-  const [status, setStatus] = useState<TaskStatus>(
-    runNow ? "pending" : "running"
-  );
+  const [status, setStatus] = useState<TaskStatus>("pending");
   useEffect(() => {
-    if (runNow) {
+    if (!action) {
       setStatus("running");
+      const updateStatus = (newStatus: TaskStatus) =>
+        setStatus((status) => (status === "running" ? newStatus : status));
       let canceled = false;
-      task()
-        .then(() => !canceled && setStatus("succeeded"))
+      asyncOp()
+        .then(() => !canceled && updateStatus("succeeded"))
         .catch((error) => {
           console.log(`Task error (with canceled: ${canceled})`, error);
           if (!canceled) {
-            setStatus("faulted");
+            updateStatus("faulted");
           }
         });
       return () => {
         canceled = true;
-        setStatus("canceled");
+        updateStatus("canceled");
       };
+    } else if (action === "cancel") {
+      // Cancellation is done on unmounting the effect (see code above)
+    } else if (action === "reset") {
+      setStatus("pending");
     }
-  }, [task, runNow]);
-  return [status, ({ children }) => component({ children, status })];
+  }, [asyncOp, action]);
+  return [status, ({ children }) => taskComponent({ children, status })];
 }
 
-interface TaskItem {
-  task: Task;
-  component: TaskComponent;
+function useTaskChain(
+  asyncOp: AsyncOperation,
+  taskComponent: TaskComponent
+): TaskChain {
+  return new TaskChain(asyncOp, taskComponent);
 }
 
-function useTaskList(
-  taskItems: TaskItem[]
-): [TaskStatus, FC<PropsWithChildren>[]] {
-  const [status, setStatus] = useState<TaskStatus>("pending");
-  const [taskIndex, setTaskIndex] = useState(-1);
-  useEffect(() => {
-    if (taskItems.length) {
-      setStatus("running");
-      let canceled = false;
-      const runTask = (taskIndex: number) => {
-        console.log(`Task at ${taskIndex}: ${taskItems[taskIndex]}`);
-        if (taskItems[taskIndex]) {
-          setTaskIndex(taskIndex);
-          taskItems[taskIndex]
-            .task()
-            .then(() => !canceled && runTask(taskIndex + 1))
-            .catch((error) => {
-              console.log(
-                `TaskList error (with canceled: ${canceled}) at index ${taskIndex}`,
-                error
-              );
-              if (!canceled) {
-                setStatus("faulted");
-              }
-            });
-        } else {
-          setStatus("succeeded");
-          setTaskIndex(-1);
-        }
-      };
-      runTask(0);
-      return () => {
-        canceled = true;
-        setStatus("canceled");
-      };
+interface TaskChainItem {
+  status: TaskStatus;
+  component: FC<PropsWithChildren>;
+}
+
+class TaskChain {
+  private _tasksItems: TaskChainItem[] = [];
+  private readonly _isCanceled: boolean;
+  private _doCancel: () => void;
+  get tasksCount(): number {
+    return this._tasksItems.length;
+  }
+  get status(): TaskStatus {
+    const numTasks = this._tasksItems.length;
+    if (!numTasks) {
+      return "pending";
     }
-  }, [taskItems]);
-  return [
-    status,
-    taskItems.slice(0, taskIndex + 1).map(
-      (t) =>
-        ({ children }: PropsWithChildren) =>
-          t.component({ children, status })
-    ),
-  ];
+    // Find first task that is either faulted or canceled
+    const i = this._tasksItems.findIndex(
+      (ti) => ti.status === "faulted" || ti.status === "canceled"
+    );
+    if (i >= 0) {
+      return this._tasksItems[i].status; // Some task failed or was canceled
+    } else {
+      const status = this._tasksItems[numTasks - 1].status;
+      return status === "pending" ? "running" : status;
+    }
+  }
+  get components(): FC<PropsWithChildren>[] {
+    return this._tasksItems.map((ti) => ti.component);
+  }
+  constructor(asyncOp: AsyncOperation, taskComponent: TaskComponent) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [canceled, setCanceled] = useState(false);
+    this._isCanceled = canceled;
+    this._doCancel = () => setCanceled(true);
+    this.chainWith(asyncOp, taskComponent);
+  }
+  getStatusAt(index: number): TaskStatus | undefined {
+    return this._tasksItems[index].status;
+  }
+  getComponentAt(index: number): FC<PropsWithChildren> | undefined {
+    return this._tasksItems[index].component;
+  }
+  cancel(): void {
+    this._doCancel();
+  }
+  chainWith(asyncOp: AsyncOperation, taskComponent: TaskComponent): TaskChain {
+    const numTasks = this._tasksItems.length;
+    const prevTaskSucceeded = numTasks
+      ? this._tasksItems[numTasks - 1]?.status === "succeeded"
+      : true;
+    const action = !prevTaskSucceeded
+      ? "reset"
+      : this._isCanceled
+      ? "cancel"
+      : undefined; // Run now
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [status, component] = useTask(asyncOp, taskComponent, action);
+    this._tasksItems.push({ status, component });
+    return this;
+  }
+  finally(onResult: TaskResultCallback): TaskChain {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const onResultRef = useRef(onResult);
+    onResultRef.current = onResult; // Don't want to re-run onResult each time the callback changes
+    const status = this.status;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useEffect(() => {
+      if (
+        status === "succeeded" ||
+        status === "faulted" ||
+        status === "canceled"
+      ) {
+        onResultRef.current(status);
+      }
+    }, [status]);
+    return this;
+  }
 }
 
-interface ChildProps {
-  onCompleted: (success: boolean) => void;
+interface MyTestProps {
+  onResult: TaskResultCallback;
 }
 
-function Child({ onCompleted }: ChildProps) {
+function MyTest({ onResult }: MyTestProps) {
   const [value0, setValue0] = useState(0);
   const [value1, setValue1] = useState(0);
-  const [status, components] = useTaskList([
-    {
-      task: useCallback(async () => {
-        for (let i = 1; i <= 2; ++i) {
-          setValue0(i);
-          await delay(1000);
-        }
-        //throw new Error("Coucou0");
-      }, []),
-      component: useCallback(
-        (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>,
-        [value0]
-      ),
-    },
-    {
-      task: useCallback(async () => {
+  const taskChain = useTaskChain(
+    useCallback(async () => {
+      for (let i = 1; i <= 4; ++i) {
+        setValue0(i);
+        await delay(1000);
+      }
+      //throw new Error("Coucou0");
+    }, []),
+    useCallback(
+      (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>,
+      [value0]
+    )
+  )
+    .chainWith(
+      useCallback(async () => {
         for (let i = 1; i <= 3; ++i) {
           setValue1(i);
           await delay(1000);
         }
-        throw new Error("Coucou1");
+        //throw new Error("Coucou1");
       }, []),
-      component: useCallback(
+      useCallback(
         (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>,
         [value1]
-      ),
-    },
-  ]);
-
-  // const [status0, component0] = useTask(
-  //   useCallback(async () => {
-  //     for (let i = 1; i <= 2; ++i) {
-  //       setValue0(i);
-  //       await delay(1000);
-  //     }
-  //     //throw new Error("Coucou0");
-  //   }, []),
-  //   useCallback(
-  //     (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>,
-  //     [value0]
-  //   )
-  // );
-  // const [status1, component1] = useTask(
-  //   useCallback(async () => {
-  //     for (let i = 1; i <= 3; ++i) {
-  //       setValue1(i);
-  //       await delay(1000);
-  //     }
-  //     throw new Error("Coucou1");
-  //   }, []),
-  //   useCallback(
-  //     (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>,
-  //     [value1]
-  //   ),
-  //   status0 === "succeeded"
-  // );
+      )
+    )
+    .finally(onResult);
   return (
     <VStack>
-      <Text>Child</Text>
-      <Text>{status}</Text>
-      {components.map((c, key) => (
+      <Button onPress={() => taskChain.cancel()}>Cancel</Button>
+      <Text>Test</Text>
+      {taskChain.components.map((c, key) => (
         <View key={key}>{c({})}</View>
       ))}
       <Text>End</Text>
@@ -192,9 +203,10 @@ function Child({ onCompleted }: ChildProps) {
 }
 
 function TestPage() {
+  console.log("=========================");
   return (
     <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
-      <Child onCompleted={console.log} />
+      <MyTest onResult={(r) => console.log("Result", r)} />
     </VStack>
   );
 }
