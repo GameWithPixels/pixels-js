@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 // eslint-disable-next-line import/namespace
 import { StyleProp, View, ViewStyle } from "react-native";
@@ -12,7 +13,7 @@ export default function ({
   children,
   style,
 }: {
-  children?: React.ReactNode;
+  children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
   return (

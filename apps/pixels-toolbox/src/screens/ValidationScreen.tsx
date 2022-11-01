@@ -20,6 +20,7 @@ import {
   HStack,
 } from "native-base";
 import React, {
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -687,7 +688,7 @@ function ConnectPixel2(props: ConnectPixelProps) {
 }
 */
 interface TaskStatusProps {
-  children?: JSX.Element | JSX.Element[];
+  children?: ReactNode;
   title: string;
   result?: TaskListResult;
   isSubTask?: boolean;
@@ -719,7 +720,9 @@ function createTestStatusComponent(title: string): TaskListResultComponent {
       <>
         <TaskStatus title={title} result={result} />
         {result !== "success" && <>{children}</>}
-        {result !== "success" && !!progress && <ProgressBar percent={progress} />}
+        {result !== "success" && !!progress && (
+          <ProgressBar percent={progress} />
+        )}
       </>
     );
   };
@@ -734,7 +737,7 @@ function createTestStepStatusComponent(title: string): TaskResultComponent {
 }
 
 interface ValidationTestProps {
-  children?: JSX.Element | JSX.Element[];
+  children?: ReactNode;
   pixel?: Pixel;
   progress?: number;
   cancel?: boolean;

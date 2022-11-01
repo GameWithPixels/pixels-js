@@ -1,9 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 export type TaskResult = "success" | "fail";
 
 export interface TaskResultComponentProps {
-  children?: JSX.Element | JSX.Element[];
+  children?: ReactNode;
   result?: TaskResult;
 }
 
@@ -17,7 +23,7 @@ export interface TaskInfo {
 export type TaskListResult = TaskResult | "cancel";
 
 export interface TaskListResultComponentProps {
-  children?: JSX.Element | JSX.Element[];
+  children?: ReactNode;
   result?: TaskListResult;
   progress?: number;
 }
@@ -25,7 +31,7 @@ export interface TaskListResultComponentProps {
 export type TaskListResultComponent = React.FC<TaskListResultComponentProps>;
 
 export interface RunTaskListProps {
-  children?: JSX.Element | JSX.Element[];
+  children?: ReactNode;
   tasks: TaskInfo[];
   component?: TaskListResultComponent;
   cancel?: boolean;

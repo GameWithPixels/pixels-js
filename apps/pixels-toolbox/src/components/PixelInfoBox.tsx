@@ -3,6 +3,7 @@ import {
   Pixel,
   PixelDesignAndColorValues,
 } from "@systemic-games/react-native-pixels-connect";
+import { ReactNode } from "react";
 import {
   Text,
   StyleSheet,
@@ -14,7 +15,7 @@ import globalStyles from "~/styles";
 
 export interface PixelInfoBoxProps {
   pixel: Pixel | ScannedPixel;
-  children?: JSX.Element | JSX.Element[];
+  children?: ReactNode;
 }
 
 export default function ({ pixel, children }: PixelInfoBoxProps) {
