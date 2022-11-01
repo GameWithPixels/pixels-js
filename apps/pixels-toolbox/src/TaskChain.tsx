@@ -86,7 +86,7 @@ export default class TaskChain {
     return this;
   }
 
-  finally(onResult: TaskResultCallback): TaskChain {
+  onResult(onResult?: TaskResultCallback): TaskChain {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const onResultRef = useRef(onResult);
     onResultRef.current = onResult; // Don't want to re-run onResult each time the callback changes
@@ -98,7 +98,7 @@ export default class TaskChain {
         status === "faulted" ||
         status === "canceled"
       ) {
-        onResultRef.current(status);
+        onResultRef.current?.(status);
       }
     }, [status]);
     return this;

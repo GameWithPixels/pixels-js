@@ -6,24 +6,63 @@ import {
   Text,
   Button,
 } from "native-base";
-import React, {
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { TaskResult, TaskResultCallback } from "~/TaskChain";
 import AppPage from "~/components/AppPage";
 import delay from "~/delay";
-import { CanceledError, FaultedError, TaskAction, TaskStatus } from "~/useTask";
+import {
+  AsyncOperation,
+  CanceledError,
+  FaultedError,
+  TaskAction,
+  TaskComponent,
+  TaskComponentProps,
+} from "~/useTask";
 import useTaskChain from "~/useTaskChain";
 
-interface TestProps {
+interface TaskResultComponentProps extends TaskComponentProps {
+  onResult?: TaskResultCallback;
+}
+
+type TaskResultComponent = FC<TaskResultComponentProps>;
+
+function useTestComponent(
+  testName: string,
+  taskResultComponent: TaskResultComponent
+): [AsyncOperation, TaskComponent] {
+  // Can't store TaskResultCallback in a state because the setter gets confused
+  // and calls the new value (which is a function taking one argument) instead of storing it.
+  // So we store an array of one value instead.
+  const [onResult, setOnResult] = useState<TaskResultCallback[]>([]);
+  const asyncOp = useCallback(
+    () =>
+      new Promise<void>((resolve, reject) =>
+        setOnResult([
+          (r: TaskResult) =>
+            r === "succeeded"
+              ? resolve()
+              : reject(
+                  r === "canceled"
+                    ? new CanceledError(testName)
+                    : new FaultedError(testName)
+                ),
+        ])
+      ),
+    [testName]
+  );
+  return [
+    asyncOp,
+    useCallback(
+      (props: TaskComponentProps) =>
+        taskResultComponent({ ...props, onResult: onResult[0] }),
+      [onResult, taskResultComponent]
+    ),
+  ];
+}
+
+interface TestProps extends TaskResultComponentProps {
   action: TaskAction;
-  onResult: TaskResultCallback;
-  status: TaskStatus;
 }
 
 interface MyTest1Props extends TestProps {
@@ -70,7 +109,7 @@ function MyTest1({
         [value1]
       )
     )
-    .finally(onResult);
+    .onResult(onResult);
   return (
     <VStack>
       <Text>
@@ -92,12 +131,13 @@ function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
   const taskChain = useTaskChain(
     action,
     useCallback(async () => {
+      console.log("Got somethingElse = " + somethingElse);
       for (let i = 1; i <= 3; ++i) {
         setValue0(i);
         await delay(1000);
       }
       //throw new Error("Fail2");
-    }, []),
+    }, [somethingElse]),
     useCallback(
       (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>,
       [value0]
@@ -105,19 +145,19 @@ function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
   )
     .chainWith(
       useCallback(async () => {
-        console.log("Got somethingElse = " + somethingElse);
+        //console.log("Got somethingElse = " + somethingElse);
         for (let i = 1; i <= 2; ++i) {
           setValue1(i);
           await delay(1000);
         }
         //throw new Error("Fail3");
-      }, [somethingElse]),
+      }, []),
       useCallback(
         (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>,
         [value1]
       )
     )
-    .finally(onResult);
+    .onResult(onResult);
   return (
     <VStack>
       <Text>
@@ -129,76 +169,69 @@ function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
   );
 }
 
-function createTaskPromise(
-  testName: string,
-  setResultCallbacks: (
-    setState: (callbacks: TaskResultCallback[]) => TaskResultCallback[]
-  ) => void
-): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const resultCallback = (r: TaskResult) =>
-      r === "succeeded"
-        ? resolve()
-        : reject(
-            r === "canceled"
-              ? new CanceledError(testName)
-              : new FaultedError(testName)
-          );
-    setResultCallbacks((callbacks: TaskResultCallback[]) => {
-      return [...callbacks, resultCallback];
-    });
-  });
-}
-
 function TestPage() {
   const [something, setSomething] = useState("1");
   const [somethingElse, setSomethingElse] = useState(2);
   const [cancel, setCancel] = useState(false);
   const [result, setResult] = useState<TaskResult>();
-  const [resultCallbacks, setResultCallbacks] = useState<TaskResultCallback[]>(
-    []
-  );
   useEffect(
     () => () => {
       // Reset state for hot reload
-      setResultCallbacks([]);
       setResult(undefined);
     },
     []
   );
   const taskChain = useTaskChain(
     "run",
-    useCallback(() => createTaskPromise("Test1", setResultCallbacks), []),
-    useCallback(
-      (p) => (
-        <MyTest1
-          something={something}
-          onSomeValue={setSomethingElse}
-          action={cancel ? "cancel" : "run"}
-          status={p.status}
-          onResult={resultCallbacks[0]}
-        />
-      ),
-      [cancel, resultCallbacks, something]
+    ...useTestComponent(
+      "Test1",
+      useCallback(
+        (p) => (
+          <MyTest1
+            {...p}
+            something={something}
+            onSomeValue={setSomethingElse}
+            action={cancel ? "cancel" : "run"}
+          />
+        ),
+        [cancel, something]
+      )
     )
   )
     .chainWith(
-      useCallback(() => createTaskPromise("Test2", setResultCallbacks), []),
-      useCallback(
-        (p) => (
-          <MyTest2
-            somethingElse={somethingElse}
-            action={
-              cancel ? "cancel" : p.status === "pending" ? "reset" : "run"
-            }
-            status={p.status}
-            onResult={resultCallbacks[1]}
-          />
-        ),
-        [cancel, resultCallbacks, somethingElse]
+      ...useTestComponent(
+        "Test2",
+        useCallback(
+          (p) => (
+            <MyTest2
+              {...p}
+              somethingElse={somethingElse}
+              action={
+                cancel ? "cancel" : p.status === "pending" ? "reset" : "run"
+              }
+            />
+          ),
+          [cancel, somethingElse]
+        )
       )
     )
-    .finally(setResult);
+    .chainWith(
+      ...useTestComponent(
+        "Test3",
+        useCallback(
+          (p) => (
+            <MyTest1
+              {...p}
+              something={something}
+              onSomeValue={setSomethingElse}
+              action={cancel ? "cancel" : "run"}
+            />
+          ),
+          [cancel, something]
+        )
+      )
+    )
+    .onResult(setResult);
 
   return (
     <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
