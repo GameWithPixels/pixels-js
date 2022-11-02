@@ -690,7 +690,7 @@ export class SetDesignAndColor implements PixelMessage {
 export class SetName implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.SetDesignAndColor;
+  readonly type = MessageTypeValues.SetName;
 
   /** The name to set. */
   @serializable(Constants.maxMessageSize)
