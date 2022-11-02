@@ -30,16 +30,6 @@ LogBox.ignoreLogs([
   "We can not support a function callback. See Github Issues for details https://github.com/adobe/react-spectrum/issues/2320",
 ]);
 
-function CustomNavigationHeader() {
-  return (
-    <Box h="100%" w={400} p={2} bg="primary.500">
-      <HStack>
-        <Text>This is the navigation header</Text>
-      </HStack>
-    </Box>
-  );
-}
-
 export default function App() {
   return (
     <NativeBaseProvider theme={Pxtheme}>

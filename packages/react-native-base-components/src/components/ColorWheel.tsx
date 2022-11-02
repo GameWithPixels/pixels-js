@@ -1,7 +1,7 @@
 import { IColor } from "@systemic-games/pixels-core-animation";
-import { Center } from "native-base";
+import { Box, Center } from "native-base";
 import React, { useState } from "react";
-import Svg, { Polygon } from "react-native-svg";
+import Svg, { Defs, Polygon, RadialGradient, Stop } from "react-native-svg";
 
 import {
   findColorWheelSlice,
@@ -28,7 +28,9 @@ export function toStringColor(color: IColor): string {
  * Props for customizing the colorWheel and its behavior
  */
 export interface ColorWheelProps {
+  initialColor?: string;
   onSelectColor: React.Dispatch<React.SetStateAction<string>>; // action to initiate after selecting a color on the wheel
+  onSelectColor2: () => void | null | undefined;
 }
 /**
  * Generate the color wheel by drawing the colors polygons and the selector
@@ -39,7 +41,7 @@ export function ColorWheel(props: ColorWheelProps) {
     x: 50,
     y: 50,
     radius: 49,
-    startRadius: 10,
+    innerRadius: 10,
     sliceCount: 16,
     layerCount: 3,
     segmentCount: 16,
@@ -55,15 +57,41 @@ export function ColorWheel(props: ColorWheelProps) {
     return (
       <>
         {shapes.map((s) => (
-          <Polygon
-            points={toStringPath(s.points)}
-            fill={toStringColor(s.color)}
-            onPress={() => {
-              setSelectedColor(s.color);
-              console.log(toStringColor(s.color));
-              props.onSelectColor(toStringColor(s.color));
-            }}
-          />
+          <Box>
+            <Defs>
+            {/* @ts-expect-error */}
+              <RadialGradient
+                id={toStringColor(s.color)}
+                cx="50%"
+                cy="50%"
+                r="1"
+              >
+                <Stop
+                  offset="0%"
+                  stopColor={toStringColor({
+                    r: s.color.r / 2,
+                    g: s.color.g / 2,
+                    b: s.color.b / 2,
+                  })}
+                  stopOpacity="1"
+                />
+                <Stop
+                  offset="100%"
+                  stopColor={toStringColor(s.color)}
+                  stopOpacity="1"
+                />
+              </RadialGradient>
+            </Defs>
+            <Polygon
+              points={toStringPath(s.points)}
+              fill={`url(#${toStringColor(s.color)})`}
+              onPress={() => {
+                setSelectedColor(s.color);
+                props.onSelectColor(toStringColor(s.color));
+                //props.onSelectColor2();
+              }}
+            />
+          </Box>
         ))}
       </>
     );

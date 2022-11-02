@@ -1,10 +1,5 @@
-import { IColor } from "@systemic-games/pixels-core-animation";
-import {
-  ColorWheel,
-  findColorWheelSlice,
-  generateColorWheel,
-  Point,
-} from "@systemic-games/react-native-base-components";
+import { Ionicons } from "@expo/vector-icons";
+import { ColorWheel } from "@systemic-games/react-native-base-components";
 import {
   Text,
   HStack,
@@ -12,7 +7,6 @@ import {
   VStack,
   Modal,
   Button,
-  AddIcon,
   usePropsResolution,
   IModalProps,
 } from "native-base";
@@ -20,7 +14,7 @@ import {
   ColorType,
   SizeType,
 } from "native-base/lib/typescript/components/types";
-import React, { useState } from "react";
+import React from "react";
 // eslint-disable-next-line import/namespace
 import { GestureResponderEvent } from "react-native";
 
@@ -70,9 +64,7 @@ export function ColorSelection(props: ColorSelectionProps) {
             w={resolvedProps.triggerW}
             h={resolvedProps.triggerH}
           >
-            <HStack space={2} alignItems="center">
-              <AddIcon size="md" color="black" />
-            </HStack>
+            <Ionicons name="color-palette-outline" size={24} color="white" />
           </Button>
         </HStack>
         {/* CheckBox override face component would be here */}
@@ -97,7 +89,11 @@ export function ColorSelection(props: ColorSelectionProps) {
           </Center>
           <Modal.Body bg={resolvedProps.bg}>
             <VStack space={2}>
-              <ColorWheel onSelectColor={setSelectedColor} />
+              <ColorWheel
+                initialColor={SelectedColor}
+                onSelectColor={setSelectedColor}
+                onSelectColor2={() => console.log("hello")}
+              />
             </VStack>
           </Modal.Body>
           <Center>

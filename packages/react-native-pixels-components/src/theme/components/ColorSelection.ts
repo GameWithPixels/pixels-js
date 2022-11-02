@@ -1,7 +1,7 @@
 export default {
   defaultProps: {
     w: "100%",
-    triggerH: "10",
+    triggerH: "12",
     triggerW: "100%",
     bg: "primary.700",
     headerFontSize: "lg",
