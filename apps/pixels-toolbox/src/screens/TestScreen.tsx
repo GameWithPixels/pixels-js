@@ -37,10 +37,7 @@ function MyTest1({
       }
       //throw new Error("Fail0");
     }, []),
-    useCallback(
-      (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>,
-      [value0]
-    )
+    (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>
   )
     .chainWith(
       useCallback(async () => {
@@ -51,10 +48,7 @@ function MyTest1({
         //throw new Error("Fail1");
         onSomeValueRef.current(123);
       }, []),
-      useCallback(
-        (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>,
-        [value1]
-      )
+      (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>
     )
     .withStatusChanged(onTaskStatus);
   return (
@@ -85,10 +79,7 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
       }
       //throw new Error("Fail2");
     }, [somethingElse]),
-    useCallback(
-      (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>,
-      [value0]
-    )
+    (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>
   )
     .chainWith(
       useCallback(async () => {
@@ -99,10 +90,7 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
         }
         //throw new Error("Fail3");
       }, []),
-      useCallback(
-        (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>,
-        [value1]
-      )
+      (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>
     )
     .withStatusChanged(onTaskStatus);
   return (
@@ -119,53 +107,26 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
 function TestPage() {
   const [something, setSomething] = useState("1");
   const [somethingElse, setSomethingElse] = useState(2);
-  const [run, setRun] = useState(true);
+  const [cancel, setCancel] = useState(false);
   const taskChain = useTaskChain(
-    run ? "run" : "cancel",
-    ...useTestComponent(
-      "Test1",
-      run,
-      useCallback(
-        (p) => (
-          <MyTest1
-            {...p}
-            something={something}
-            onSomeValue={setSomethingElse}
-          />
-        ),
-        [something]
-      )
-    )
+    cancel ? "cancel" : "run",
+    ...useTestComponent("Test1", cancel, (p) => (
+      <MyTest1 {...p} something={something} onSomeValue={setSomethingElse} />
+    ))
   )
     .chainWith(
-      ...useTestComponent(
-        "Test2",
-        run,
-        useCallback(
-          (p) => <MyTest2 {...p} somethingElse={somethingElse} />,
-          [somethingElse]
-        )
-      )
+      ...useTestComponent("Test2", cancel, (p) => (
+        <MyTest2 {...p} somethingElse={somethingElse} />
+      ))
     )
     .chainWith(
-      ...useTestComponent(
-        "Test3",
-        run,
-        useCallback(
-          (p) => (
-            <MyTest1
-              {...p}
-              something={something}
-              onSomeValue={setSomethingElse}
-            />
-          ),
-          [something]
-        )
-      )
+      ...useTestComponent("Test3", cancel, (p) => (
+        <MyTest1 {...p} something={something} onSomeValue={setSomethingElse} />
+      ))
     );
   return (
     <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
-      <Button onPress={() => setRun(false)}>Cancel</Button>
+      <Button onPress={() => setCancel(true)}>Cancel</Button>
       {taskChain.render()}
       <Text>The end</Text>
       <Button onPress={() => setSomething((s) => s + "@")}>Change Test1</Button>

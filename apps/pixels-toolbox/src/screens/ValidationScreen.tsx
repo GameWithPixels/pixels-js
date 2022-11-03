@@ -4,6 +4,7 @@ import {
   MessageTypeValues,
   Pixel,
   PixelRollStateValues,
+  ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { getImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
 import {
@@ -20,6 +21,8 @@ import {
   HStack,
 } from "native-base";
 import React, {
+  FC,
+  PropsWithChildren,
   ReactNode,
   useCallback,
   useEffect,
@@ -39,19 +42,9 @@ import {
 } from "react-native-vision-camera";
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
-import TelemetryStats from "~/TelemetryStats";
 import ValidationTests from "~/ValidationTests";
 import AppPage from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
-import RunTaskList, {
-  TaskInfo,
-  TaskListResult,
-  TaskListResultComponent,
-  TaskListResultComponentProps,
-  TaskResultComponent,
-  TaskResultComponentProps,
-} from "~/components/RunTaskList";
-import Spacer from "~/components/Spacer";
 import delay from "~/delay";
 import getDfuFileInfo from "~/getDfuFileInfo";
 import standardProfile from "~/standardProfile";
@@ -63,9 +56,9 @@ import usePixelIdDecoder from "~/usePixelIdDecoder";
 import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 import usePixelRssi from "~/usePixelRssi";
 import usePixelTelemetry from "~/usePixelTelemetry";
-import useRunTaskListWithFocus, {
-  TaskListStatus,
-} from "~/useRunTaskListWithFocus";
+import useTask, { TaskRenderer, TaskStatus } from "~/useTask";
+import useTaskChain from "~/useTaskChain";
+import useTestComponent, { TaskComponentProps } from "~/useTaskComponent";
 import useUpdateFirmware from "~/useUpdateFirmware";
 
 function assert(condition: any, msg?: string): asserts condition {
@@ -104,26 +97,6 @@ async function checkFaceUp(pixel: Pixel, face: number, timeout = 30000) {
       await pixel.stopAllAnimations();
     } catch {}
   }
-}
-
-async function finalSetup(
-  pixel: Pixel,
-  transferProgressCallback?: (progress: number) => void
-): Promise<void> {
-  transferProgressCallback?.(-1);
-
-  // Upload profile
-  try {
-    await pixel.transferDataSet(standardProfile, transferProgressCallback);
-  } finally {
-    transferProgressCallback?.(-1);
-  }
-
-  // Rename
-  //await pixel.rename("Pixel");
-
-  // Back out validation mode, don't wait for response as die will restart
-  await pixel.sendMessage(MessageTypeValues.ExitValidation, true);
 }
 /*
 type AppStatuses =
@@ -586,7 +559,7 @@ function DecodePage({
   // - show message if no blinking colors detected
   // - show button to scan
   // - remove timeout
-  setTimeout(() => onDecodedPixelId(1), 5000);
+  // setTimeout(() => onDecodedPixelId(1), 5000);
 
   // Camera
   const [cameraPermission, setCameraPermission] =
@@ -658,7 +631,7 @@ function DecodePage({
           <Text>{t("startingCamera")}</Text>
         )}
         <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
-          <Text>{`Testing ${validationRun} for ${t(dieType)}`}</Text>
+          <Text>{`Testing ${t(dieType)} ${validationRun}`}</Text>
           <Button w="100%" onPress={onBack}>
             {t("back")}
           </Button>
@@ -668,317 +641,273 @@ function DecodePage({
   );
 }
 
-/*
-function ConnectPixel2(props: ConnectPixelProps) {
-  // Connection to Pixel
-  const [connectorState, connectorDispatch] = usePixelConnector();
-
-  const pixelId = props.pixelId;
-  useEffect(() => {
-    if (pixelId) {
-      connectorDispatch("connect", { pixelId });
-    }
-  }, [connectorDispatch, pixelId]);
-
-  useFocusEffect(
-    useCallback(() => {
-      return () => connectorDispatch("disconnect");
-    }, [connectorDispatch])
-  );
-}
-*/
-interface TaskStatusProps {
-  children?: ReactNode;
+interface TaskStatusComponentProps extends PropsWithChildren {
   title: string;
-  result?: TaskListResult;
+  taskStatus: TaskStatus;
   isSubTask?: boolean;
 }
 
-function TaskStatus({ children, title, result, isSubTask }: TaskStatusProps) {
-  return (
-    <>
+function TaskStatusComponent({
+  children,
+  title,
+  taskStatus,
+  isSubTask,
+}: TaskStatusComponentProps) {
+  return taskStatus === "pending" ? (
+    <></>
+  ) : (
+    <VStack ml={isSubTask ? "10%" : undefined}>
       <HStack>
-        <Center w="10%" ml={isSubTask ? "10%" : undefined}>
-          {!result ? (
+        <Center w="10%">
+          {taskStatus === "running" ? (
             <Spinner />
           ) : (
             <Text>
-              {result === "success" ? "☑️" : result === "cancel" ? "⚠️" : "❌"}
+              {taskStatus === "succeeded"
+                ? "☑️"
+                : taskStatus === "faulted"
+                ? "❌"
+                : "⚠️"}
             </Text>
           )}
         </Center>
         <Text fontWeight={isSubTask ? "normal" : undefined}>{title}</Text>
       </HStack>
       {children}
-    </>
+    </VStack>
   );
 }
 
-function createTestStatusComponent(title: string): TaskListResultComponent {
-  return ({ children, result, progress }: TaskListResultComponentProps) => {
-    return (
-      <>
-        <TaskStatus title={title} result={result} />
-        {result !== "success" && <>{children}</>}
-        {result !== "success" && !!progress && (
-          <ProgressBar percent={progress} />
-        )}
-      </>
-    );
-  };
-}
-
-function createTestStepStatusComponent(title: string): TaskResultComponent {
-  return ({ children, result }: TaskResultComponentProps) => {
-    return (
-      <TaskStatus title={title} result={result} isSubTask children={children} />
-    );
-  };
-}
-
-interface ValidationTestProps {
-  children?: ReactNode;
-  pixel?: Pixel;
-  progress?: number;
-  cancel?: boolean;
-  onCompleted?: (status: TaskListStatus) => void;
-}
-
-type ValidationTestComponent = React.FC<ValidationTestProps>;
-
-function createValidationTestComponent(
+function createTaskStatusComponent(
   title: string,
-  tasks: {
-    title: string;
-    task: () => Promise<unknown>;
-  }[]
-) {
-  return (props: ValidationTestProps) => {
-    const [taskList] = useState(() =>
-      tasks.map((t) => ({
-        task: t.task,
-        component: createTestStepStatusComponent(t.title),
-      }))
-    );
-    const [component] = useState(() => createTestStatusComponent(title));
-    return (
-      <RunTaskList
-        tasks={taskList}
-        component={component}
-        cancel={props.cancel}
-        onCompleted={props.onCompleted}
-        progress={props.progress}
+  children?: ReactNode
+): TaskRenderer {
+  return (props) => (
+    <TaskStatusComponent title={title} taskStatus={props.status} isSubTask>
+      {children}
+    </TaskStatusComponent>
+  );
+}
+
+interface TaskGroupComponentProps extends PropsWithChildren {
+  title: string;
+  taskStatus: TaskStatus;
+}
+
+function TaskGroupComponent({
+  children,
+  title,
+  taskStatus,
+}: TaskGroupComponentProps) {
+  return (
+    <Center w="100%" py="3">
+      <Box
+        bg="coolGray.600"
+        w="95%"
+        borderColor="warmGray.400"
+        borderWidth="2"
+        p="2"
+        rounded="md"
       >
-        {props.children}
-      </RunTaskList>
-    );
-  };
+        <TaskStatusComponent title={title} taskStatus={taskStatus} />
+        {taskStatus === "running" && <VStack>{children}</VStack>}
+      </Box>
+    </Center>
+  );
 }
 
-interface ConnectPixelTestProps extends ValidationTestProps {
+interface ConnectPixelProps extends TaskComponentProps {
   pixelId: number;
-  onPixelFound?: (pixel: Pixel) => void;
+  onPixelScanned: (pixel: ScannedPixel) => void;
+  onPixelConnected: (pixel: Pixel) => void;
 }
 
-function ConnectPixelTest(props: ConnectPixelTestProps) {
-  const [component] = useState(() =>
-    createValidationTestComponent("Scan & Connect", [
-      {
-        title: "Scan",
-        task: async () => await delay(1000),
-      },
-      {
-        title: "Connect",
-        task: async () => await delay(1000),
-      },
-      // {
-      //   title: "Plop",
-      //   task: async () => {
-      //     //await delay(5000);
-      //     throw new Error("Plop");
-      //   },
-      // },
-      {
-        title: "Identify",
-        task: async () => await delay(2000),
-      },
-    ])
-  );
-  return component(props);
-}
+function ConnectPixel({
+  action,
+  onTaskStatus,
+  pixelId,
+  onPixelScanned,
+  onPixelConnected,
+}: ConnectPixelProps) {
+  // TODO scan timeout
+  // TODO catch connection error
+  // Connection to Pixel
+  const [connectorState, connectorDispatch] = usePixelConnector();
 
-function CheckBoardTest(props: ValidationTestProps) {
-  const [component] = useState(() =>
-    createValidationTestComponent("Check Board", [
-      {
-        title: "Test1",
-        task: async () => await delay(1000),
-      },
-      {
-        title: "Test2",
-        task: async () => await delay(1000),
-      },
-    ])
-  );
-  return component(props);
-}
-
-function UpdateProfileTest(props: ValidationTestProps) {
-  const [progress, setProgress] = useState<number>();
-  const [component] = useState(() =>
-    createValidationTestComponent("Update Profile", [
-      {
-        title: "Prepare Profile",
-        task: async () => await delay(1000),
-      },
-      {
-        title: "Upload Profile",
-        task: async () => {
-          for (let i = 1; i <= 10; ++i) {
-            setProgress(i * 10);
-            await delay(100);
-          }
-          setProgress(undefined);
-        },
-      },
-      {
-        title: "Check Profile",
-        task: async () => await delay(2000),
-      },
-    ])
-  );
-  return component({ ...props, progress });
-}
-
-/*
-function ConnectPixel3(props: ValidationTestProps) {
-  const [result, setResult] = useState<TaskResult>();
-  const onResolvedRef = useRef<(result: TaskResult) => void>();
-  const [stepsToRun] = useState((): React.FC[] => [
-    createStep("Coucou", async () => await delay(3000), onResolvedRef),
-    createStep("Ca roule", async () => await delay(4000), onResolvedRef),
-    createStep("A++", async () => await delay(2000), onResolvedRef),
-  ]);
-  const [steps, setSteps] = useState([stepsToRun[0]]);
-  onResolvedRef.current = useCallback(
-    (result: TaskResult) => {
-      if (result === "success") {
-        setSteps((steps) => {
-          const next = stepsToRun[steps.length];
-          if (next) {
-            return [...steps, next];
-          } else {
-            setResult(result);
-          }
-          return steps;
-        });
-      } else {
-        setResult(result);
+  useFocusEffect(
+    useCallback(() => {
+      if (action === "run" && pixelId) {
+        connectorDispatch("connect", { pixelId });
+        return () => connectorDispatch("disconnect");
       }
-    },
-    [stepsToRun]
+    }, [action, connectorDispatch, pixelId])
   );
+
+  useEffect(() => {
+    if (connectorState.status === "scanning") {
+      onTaskStatus("running");
+      const timeoutId = setTimeout(() => {
+        console.warn("Scan timeout!");
+        connectorDispatch("disconnect");
+      }, 3000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [connectorDispatch, connectorState.status, onTaskStatus]);
+
+  useEffect(() => {
+    if (connectorState.scannedPixel) {
+      onPixelScanned(connectorState.scannedPixel);
+    }
+  }, [connectorState.scannedPixel, onPixelScanned]);
+
+  useEffect(() => {
+    if (connectorState.pixel && connectorState.status === "connected") {
+      onTaskStatus("succeeded");
+      onPixelConnected(connectorState.pixel);
+    }
+    // TODO faulted state
+  }, [
+    connectorState.pixel,
+    connectorState.status,
+    onPixelConnected,
+    onTaskStatus,
+  ]);
+
+  const s = connectorState.status;
+  const taskStatus = s === "connected" ? "succeeded" : "running";
+  const scanningStatus =
+    s === "disconnected"
+      ? "pending"
+      : s === "scanning"
+      ? "running"
+      : "succeeded";
+  const connectingStatus =
+    s === "connecting"
+      ? "running"
+      : s === "connected"
+      ? "succeeded"
+      : "pending";
   return (
-    <>
-      <TaskStatus title="Scan & Connect" result={result} />;
-      {!result && (
-        <VStack>{steps.map((s) => React.createElement(s, {}))}</VStack>
-      )}
-      <>{props.children}</>
-    </>
+    <TaskGroupComponent title="Scan & Connect" taskStatus={taskStatus}>
+      <TaskStatusComponent
+        title="Scanning"
+        taskStatus={scanningStatus}
+        isSubTask
+      />
+      <TaskStatusComponent
+        title="Connecting"
+        taskStatus={connectingStatus}
+        isSubTask
+      />
+    </TaskGroupComponent>
   );
 }
 
-interface CheckBoardProps extends ValidationTestProps {}
-/*
-function CheckBoard(props: CheckBoardProps) {
-  const [state, setState] = useState("Checking board");
-  const status = useRunTaskListWithFocus([
-    //async () => await ValidationTests.checkLedLoopback(props.pixel),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    //async () => await ValidationTests.checkAccelerometer(props.pixel),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    //async () => await ValidationTests.checkBatteryVoltage(props.pixel),
-    async () => await delay(1000),
-    async () => setState((s) => s + "."),
-    //async () => await ValidationTests.checkRssi(props.pixel),
-    async () => await delay(1000),
-    async () => setState((s) => "☑️ Board checked"),
-  ]);
+interface ValidationTestProps extends TaskComponentProps {
+  pixel: Pixel;
+}
+
+function CheckBoard({ action, onTaskStatus, pixel }: ValidationTestProps) {
+  const taskChain = useTaskChain(
+    action,
+    useCallback(() => ValidationTests.checkLedLoopback(pixel), [pixel]),
+    createTaskStatusComponent("LED Loopback")
+  )
+    .chainWith(
+      useCallback(() => ValidationTests.checkAccelerometer(pixel), [pixel]),
+      createTaskStatusComponent("Accelerometer")
+    )
+    .chainWith(
+      useCallback(() => ValidationTests.checkBatteryVoltage(pixel), [pixel]),
+      createTaskStatusComponent("Battery Voltage")
+    )
+    .chainWith(
+      useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
+      createTaskStatusComponent("RSSI")
+    )
+    .withStatusChanged(onTaskStatus);
+
   return (
-    <TasksRunner {...props} tasks={tasks}>
-      <Text>{state}</Text>
-      <>{props.children}</>
-    </TasksRunner>
+    <TaskGroupComponent title="Check Board" taskStatus={taskChain.status}>
+      {taskChain.render()}
+    </TaskGroupComponent>
   );
 }
 
-function FlickBoard(props: CheckBoardProps) {
-  const msg = "Please flick board ";
-  const [state, setState] = useState(msg);
-  const status = useRunTaskListWithFocus([
-    async () => setState(msg + "5s left"),
-    async () => await delay(1000),
-    async () => setState(msg + "4s left"),
-    async () => await delay(1000),
-    async () => setState(msg + "3s left"),
-    async () => await delay(1000),
-    async () => setState(msg + "2s left"),
-    async () => await delay(1000),
-    async () => setState(msg + "1s left"),
-    async () => await delay(1000),
-    async () => setState(msg + "0s left"),
-    async () => await delay(1000),
-    async () => setState((s) => "☑️ Board flicked"),
-  ]);
+function FlickBoard({ action, onTaskStatus, pixel }: ValidationTestProps) {
+  const taskChain = useTaskChain(
+    action,
+    useCallback(() => ValidationTests.waitForBoardFlicked(pixel), [pixel]),
+    () => <></>
+  ).withStatusChanged(onTaskStatus);
+
   return (
-    <TasksRunner {...props} tasks={tasks}>
-      <Text>{state}</Text>
-      <>{props.children}</>
-    </TasksRunner>
+    <TaskGroupComponent title="Flick Board" taskStatus={taskChain.status}>
+      {taskChain.render()}
+    </TaskGroupComponent>
   );
 }
 
-function UpdateProfile(props: ValidationTestProps) {
-  const [state, setState] = useState("Updating profile...");
-  const [p, setP] = useState(0);
-  const [tasks] = useState([
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(1000),
-    async () => setP((p) => p + 10),
-    async () => await delay(200),
-    async () => setP((p) => p + 1),
-    async () => setState((s) => "☑️ Profile updated"),
-  ]);
-  return (
-    <TasksRunner {...props} tasks={tasks}>
-      <Text>{state}</Text>
+function UpdateFirmware({
+  action,
+  onTaskStatus,
+  address,
+}: TaskComponentProps & { address: number }) {
+  // Firmware update
+  const [updateFirmware, dfuState, dfuProgress] = useUpdateFirmware(dfuFiles);
+  const taskChain = useTaskChain(
+    action,
+    useCallback(async () => {
+      await delay(1000); // TODO wait for file to load
+      await updateFirmware(address);
+    }, [address, updateFirmware]),
+    (p) => (
       <>
-        {p <= 100 && <ProgressBar percent={p} />}
-        {props.children}
+        <Text>DFU State: {dfuState}</Text>
+        <ProgressBar percent={dfuProgress} />
       </>
-    </TasksRunner>
+    )
+  ).withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskGroupComponent title="Update Firmware" taskStatus={taskChain.status}>
+      {taskChain.render()}
+    </TaskGroupComponent>
   );
 }
 
+function PrepareDie({ action, onTaskStatus, pixel }: ValidationTestProps) {
+  const [progress, setProgress] = useState(-1);
+  const taskChain = useTaskChain(
+    action,
+    useCallback(
+      () => ValidationTests.updateProfile(pixel, standardProfile, setProgress),
+      [pixel]
+    ),
+    createTaskStatusComponent(
+      "Update Profile",
+      <ProgressBar percent={100 * progress} />
+    )
+  )
+    .chainWith(
+      useCallback(() => ValidationTests.renameDie(pixel), [pixel]),
+      createTaskStatusComponent("Rename Die")
+    )
+    // TODO
+    // .chainWith(
+    //   useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
+    //   (p) => <Text>{`exitValidationMode status: ${p.status}`}</Text>
+    // )
+    .withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskGroupComponent title="Prepare Die" taskStatus={taskChain.status}>
+      {taskChain.render()}
+    </TaskGroupComponent>
+  );
+}
+
+/*
 function WaitForPixel(props: ValidationTestProps) {
   const [state, setState] = useState("Waiting on die");
   const [tasks] = useState([
@@ -999,163 +928,109 @@ function WaitForPixel(props: ValidationTestProps) {
   );
 }
 */
-// function TaskProfileUpdate(props: TaskProps) {
-//   return <Text key={props.key}>{props.text}</Text>;
-// }
-
-// function TaskFirmwareUpdate(props: TaskProps) {
-//   return <Text key={props.key}>{props.text}</Text>;
-// }
 
 function TestsPage({
   pixelId,
   validationRun,
   dieType,
-  onDone,
+  onResult,
 }: {
   pixelId: number;
   validationRun: ValidationRun;
   dieType: DieType;
-  onDone?: (result: "success" | "failed" | "canceled") => void;
+  onResult?: (result: "succeeded" | "faulted" | "canceled") => void;
 }) {
   const { t } = useTranslation();
-  const errorHandler = useErrorHandler();
-
-  // Firmware update
-  const [updateFirmware, dfuState, dfuProgress] = useUpdateFirmware(dfuFiles);
-
-  // Profile transfer
-  const [transferProgress, setTransferProgress] = useState(0);
-
-  // Test results
-  const [results, setResults] = useState<string[]>([]);
-
-  // Test queue
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const [tasksState, tasksDispatch] = useReducer(tasksQueueReducer, {
-  //   components: [] as JSX.Element[],
-  //   setResults,
-  // });
-
   const [pixel, setPixel] = useState<Pixel>();
-
-  const testsToRunRef = useRef([
-    (props: ValidationTestProps) => (
-      <ConnectPixelTest pixelId={pixelId} onPixelFound={setPixel} {...props} />
-    ),
-    (props: ValidationTestProps) => <CheckBoardTest {...props} />,
-    (props: ValidationTestProps) => <UpdateProfileTest {...props} />,
-    // FlickBoard,
-    // UpdateProfile,
-    // WaitForPixel,
-    // TaskFirmwareUpdate,
-    // TaskProfileUpdate,
-  ] as ValidationTestComponent[]);
-
-  const [tests, setTests] = useState([] as ValidationTestComponent[]);
-
-  // Run tests
-  /*useEffect(() => {
-    if (connectorState.pixel && connectorState.scannedPixel) {
-      const pixel = connectorState.pixel;
-      const address = connectorState.scannedPixel.address;
-      if (connectorState.status === "connected") {
-        tasksDispatch({
-          tasks: [
-            async () => {
-              await delay(3000)
-              // if (!(await runValidationTests(pixel))) {
-              //   throw new Error("Test failed");
-              // }
-            },
-            // "Starting DFU",
-            // () => updateFirmware(address),
-            // "DFU passed",
-            () => finalSetup(pixel, setTransferProgress),
-            //async () => onDone?.("success"),
-          ],
-          //errorHandler: () => onDone?.("failed"),
-          errorHandler: () => setResults((results) => [...results, "Failed!"]),
-        });
-      }
-    }
-  }, [
-    connectorState.pixel,
-    connectorState.scannedPixel,
-    connectorState.status,
-    onDone,
-    updateFirmware,
-  ]);*/
-
+  const [scannedPixel, setScannedPixel] = useState<ScannedPixel>();
   const [cancel, setCancel] = useState(false);
-  const [done, setDone] = useState(false);
+  const taskChain = useTaskChain(
+    cancel ? "cancel" : "run",
+    ...useTestComponent(
+      "ConnectPixel",
+      cancel,
+      useCallback(
+        (p) => (
+          <ConnectPixel
+            {...p}
+            pixelId={pixelId}
+            onPixelScanned={setScannedPixel}
+            onPixelConnected={setPixel}
+          />
+        ),
+        [pixelId]
+      )
+    )
+  )
+    .chainWith(
+      ...useTestComponent(
+        "CheckBoard",
+        cancel,
+        useCallback(
+          (p) => <>{pixel && <CheckBoard {...p} pixel={pixel} />}</>,
+          [pixel]
+        )
+      )
+    )
+    .chainWith(
+      ...useTestComponent(
+        "FlickBoard",
+        cancel,
+        useCallback(
+          (p) => <>{pixel && <FlickBoard {...p} pixel={pixel} />}</>,
+          [pixel]
+        )
+      )
+    )
+    // .chainWith(
+    //   ...useTestComponent(
+    //     "UpdateFirmware",
+    //     cancel,
+    //     useCallback(
+    //       (p) => (
+    //         <>
+    //           {scannedPixel && (
+    //             <UpdateFirmware {...p} address={scannedPixel.address} />
+    //           )}
+    //         </>
+    //       ),
+    //       [scannedPixel]
+    //     )
+    //   )
+    // )
+    .chainWith(
+      ...useTestComponent(
+        "PrepareDie",
+        cancel,
+        useCallback(
+          (p) => <>{pixel && <PrepareDie {...p} pixel={pixel} />}</>,
+          [pixel]
+        )
+      )
+    );
 
-  const onCompleted = useCallback((status: TaskListStatus) => {
-    // Assume all tests are completed in order
-    if (status === "success") {
-      setTests((tasks) => {
-        const nextTest = testsToRunRef.current[tasks.length];
-        if (!nextTest) {
-          setDone(true);
-          return tasks;
-        } else {
-          return [...tasks, nextTest];
-        }
-      });
+  const isDone =
+    taskChain.status !== "pending" && taskChain.status !== "running";
+  const onOkCancel = () => {
+    if (!isDone) {
+      setCancel(true);
+      onResult?.("canceled");
+    } else {
+      onResult?.(taskChain.status);
     }
-  }, []);
-
-  // Start first test
-  useFocusEffect(
-    useCallback(() => {
-      const firstTest = testsToRunRef.current[0];
-      if (firstTest) {
-        setTests([firstTest]);
-      }
-      return () => setCancel(true);
-    }, [])
-  );
-
-  useEffect(() => {
-    if (cancel) {
-      onDone?.("canceled");
-    }
-  }, [cancel, onDone]);
-
+  };
   return (
-    <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
-      <ScrollView w="100%">
-        {tests.map((task, i) => (
-          <Center w="100%" py="3" key={i}>
-            <Box
-              bg="coolGray.600"
-              w="95%"
-              borderColor="warmGray.400"
-              borderWidth="2"
-              p="2"
-              rounded="md"
-            >
-              {task({ cancel, onCompleted })}
-            </Box>
-          </Center>
-        ))}
-        {/* {results.map((text, i) => (
-        <Text key={i}>{text}</Text>
-      ))}
-      {!!dfuState && (
-        <>
-          <Text>{`DFU state: ${dfuState}`}</Text>
-          <ProgressBar percent={dfuProgress} />
-        </>
-      )}
-      {transferProgress > 0 && <ProgressBar percent={100 * transferProgress} />} */}
+    <>
+      {/* TODO scroll view should expand */}
+      <ScrollView w="100%" h="90%" bg={useBackgroundColor()} px="3" py="1">
+        {taskChain.render()}
       </ScrollView>
-      <Center position="absolute" bottom="3" w="94%" left="3">
-        <Button w="100%" onPress={() => setCancel(true)}>
-          {done ? t("ok") : t("cancel")}
+      <Center position="absolute" bottom="2%" w="94%" left="3%">
+        <Button w="100%" onPress={onOkCancel}>
+          {isDone ? t("ok") : t("cancel")}
         </Button>
       </Center>
-    </VStack>
+    </>
   );
 }
 
@@ -1190,8 +1065,8 @@ function ValidationPage() {
       validationRun={validationRun}
       dieType={dieType}
       pixelId={pixelId}
-      onDone={(result) => {
-        console.warn("Validation tests result", result);
+      onResult={(result) => {
+        console.log("Validation tests result:", result);
         setPixelId(0);
       }}
     />

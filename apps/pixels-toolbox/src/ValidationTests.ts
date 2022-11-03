@@ -5,10 +5,11 @@ import {
   MessageTypeValues,
   RequestTelemetry,
   Telemetry,
+  DataSet,
 } from "@systemic-games/react-native-pixels-connect";
 
 const ValidationTests = {
-  checkLedLoopback: async (pixel: Pixel) => {
+  checkLedLoopback: async (pixel: Pixel): Promise<void> => {
     const msg = await pixel.sendAndWaitForResponse(
       MessageTypeValues.TestLedLoopback,
       MessageTypeValues.LedLoopback
@@ -20,29 +21,60 @@ const ValidationTests = {
     }
   },
 
-  checkAccelerometer: async (pixel: Pixel) => {
+  checkAccelerometer: async (pixel: Pixel): Promise<void> => {
     // Turn on telemetry and wait for data
     const msg = await pixel.sendAndWaitForResponse(
       safeAssign(new RequestTelemetry(), { activate: true }),
       MessageTypeValues.Telemetry
     );
-    const telemetry = msg as Telemetry;
-    const accVectStr =
-      `(${telemetry.accX.toFixed(3)},` +
-      ` ${telemetry.accY.toFixed(3)},` +
-      ` ${telemetry.accZ.toFixed(3)})`;
-    console.log(`Acceleration: ${accVectStr}`);
-    // Check that the acceleration is close enough to -Z
-    if (telemetry.accZ < -1 || telemetry.accZ > -0.9) {
-      throw new Error(`Out of range accelerometer value: ${accVectStr}`);
+    try {
+      const telemetry = msg as Telemetry;
+      const accVectStr =
+        `(${telemetry.accX.toFixed(3)},` +
+        ` ${telemetry.accY.toFixed(3)},` +
+        ` ${telemetry.accZ.toFixed(3)})`;
+      console.log(`Acceleration: ${accVectStr}`);
+      // Check that the acceleration is close enough to -Z
+      if (telemetry.accZ < -1 || telemetry.accZ > -0.9) {
+        throw new Error(`Out of range accelerometer value: ${accVectStr}`);
+      }
+    } finally {
+      // Turn off telemetry
+      await pixel.sendMessage(
+        safeAssign(new RequestTelemetry(), { activate: false })
+      );
     }
-    // Turn off telemetry
-    await pixel.sendMessage(
-      safeAssign(new RequestTelemetry(), { activate: false })
-    );
   },
 
-  checkBatteryVoltage: async (pixel: Pixel) => {
+  waitForBoardFlicked: async (pixel: Pixel): Promise<void> => {
+    // Turn on telemetry and wait for data
+    await pixel.sendMessage(
+      safeAssign(new RequestTelemetry(), { activate: true })
+    );
+    try {
+      const promise = new Promise<void>((resolve, reject) => {
+        pixel.addMessageListener("Telemetry", (msg) => {
+          const telemetry = msg as Telemetry;
+          const accVectStr =
+            `(${telemetry.accX.toFixed(3)},` +
+            ` ${telemetry.accY.toFixed(3)},` +
+            ` ${telemetry.accZ.toFixed(3)})`;
+          console.log(`Acceleration: ${accVectStr}`);
+          if (telemetry.accZ > 0) {
+            resolve();
+          }
+        });
+      });
+      await promise;
+    } finally {
+      // Turn off telemetry
+      await pixel.sendMessage(
+        safeAssign(new RequestTelemetry(), { activate: false })
+      );
+    }
+  },
+
+  checkBatteryVoltage: async (pixel: Pixel): Promise<void> => {
     const batteryLevel = await pixel.getBatteryLevel();
     const voltageStr = batteryLevel.voltage.toFixed(3);
     console.log(
@@ -55,12 +87,36 @@ const ValidationTests = {
     }
   },
 
-  checkRssi: async (pixel: Pixel) => {
+  checkRssi: async (pixel: Pixel): Promise<void> => {
     const rssi = await pixel.getRssi();
     console.log(`RSSI is ${rssi}`);
     if (rssi < -60) {
       throw new Error(`Out of range RSSI value: ${rssi}`);
     }
+  },
+
+  updateProfile: async (
+    pixel: Pixel,
+    profile: DataSet,
+    progressCallback?: (progress: number) => void
+  ): Promise<void> => {
+    progressCallback?.(-1);
+
+    // Upload profile
+    try {
+      await pixel.transferDataSet(profile, progressCallback);
+    } finally {
+      progressCallback?.(-1);
+    }
+  },
+
+  renameDie: async (pixel: Pixel, name = "Pixel"): Promise<void> => {
+    //await pixel.rename(name);
+  },
+
+  exitValidationMode: async (pixel: Pixel): Promise<void> => {
+    // Back out validation mode, don't wait for response as die will restart
+    await pixel.sendMessage(MessageTypeValues.ExitValidation, true);
   },
 
   checkAll: async (pixel: Pixel): Promise<boolean> => {

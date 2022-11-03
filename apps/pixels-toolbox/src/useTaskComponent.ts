@@ -20,7 +20,7 @@ export type TaskComponent = FC<TaskComponentProps>;
 
 export default function (
   testName: string,
-  run: boolean,
+  cancel: boolean,
   taskComponent: TaskComponent
 ): [AsyncOperation, FC] {
   // Can't store TaskResultCallback in a state because the setter gets confused
@@ -68,10 +68,10 @@ export default function (
       (props: PropsWithChildren) =>
         taskComponent({
           ...props,
-          action: run ? "run" : "cancel",
+          action: cancel ? "cancel" : "run",
           onTaskStatus: onTaskStatus[0],
         }),
-      [run, onTaskStatus, taskComponent]
+      [cancel, onTaskStatus, taskComponent]
     ),
   ];
 }
