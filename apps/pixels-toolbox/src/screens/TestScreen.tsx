@@ -8,7 +8,7 @@ import {
 } from "native-base";
 import React, { FC, useCallback, useEffect, useRef, useState } from "react";
 
-import { TaskResult, TaskResultCallback } from "~/TaskChain";
+import assertUnreachable from "~/assertUnreachable";
 import AppPage from "~/components/AppPage";
 import delay from "~/delay";
 import {
@@ -18,11 +18,14 @@ import {
   TaskAction,
   TaskComponent,
   TaskComponentProps,
+  TaskStatus,
 } from "~/useTask";
 import useTaskChain from "~/useTaskChain";
 
+type TaskStatusCallback = (status: TaskStatus) => void;
+
 interface TaskResultComponentProps extends TaskComponentProps {
-  onResult?: TaskResultCallback;
+  onTaskStatus?: TaskStatusCallback;
 }
 
 type TaskResultComponent = FC<TaskResultComponentProps>;
@@ -34,29 +37,48 @@ function useTestComponent(
   // Can't store TaskResultCallback in a state because the setter gets confused
   // and calls the new value (which is a function taking one argument) instead of storing it.
   // So we store an array of one value instead.
-  const [onResult, setOnResult] = useState<TaskResultCallback[]>([]);
-  const asyncOp = useCallback(
-    () =>
-      new Promise<void>((resolve, reject) =>
-        setOnResult([
-          (r: TaskResult) =>
-            r === "succeeded"
-              ? resolve()
-              : reject(
-                  r === "canceled"
+  const [onTaskStatus, setOnTaskStatus] = useState<TaskStatusCallback[]>([]);
+  const [resetCounter, setResetCounter] = useState(0);
+  const asyncOp = useCallback(() => {
+    let hasCompleted = false;
+    return new Promise<void>((resolve, reject) =>
+      setOnTaskStatus([
+        (s: TaskStatus) => {
+          switch (s) {
+            case "pending":
+            case "running":
+              if (hasCompleted) {
+                // TODO not a great way of having the callback to be recreated
+                setResetCounter(resetCounter + 1);
+              }
+              break;
+            case "succeeded":
+            case "faulted":
+            case "canceled":
+              hasCompleted = true;
+              if (s === "succeeded") {
+                resolve();
+              } else {
+                reject(
+                  s === "canceled"
                     ? new CanceledError(testName)
                     : new FaultedError(testName)
-                ),
-        ])
-      ),
-    [testName]
-  );
+                );
+              }
+              break;
+            default:
+              assertUnreachable(s);
+          }
+        },
+      ])
+    );
+  }, [resetCounter, testName]);
   return [
     asyncOp,
     useCallback(
       (props: TaskComponentProps) =>
-        taskResultComponent({ ...props, onResult: onResult[0] }),
-      [onResult, taskResultComponent]
+        taskResultComponent({ ...props, onTaskStatus: onTaskStatus[0] }),
+      [onTaskStatus, taskResultComponent]
     ),
   ];
 }
@@ -72,7 +94,7 @@ interface MyTest1Props extends TestProps {
 
 function MyTest1({
   action,
-  onResult,
+  onTaskStatus,
   status,
   something,
   onSomeValue,
@@ -109,7 +131,7 @@ function MyTest1({
         [value1]
       )
     )
-    .onResult(onResult);
+    .onStatusChanged(onTaskStatus);
   return (
     <VStack>
       <Text>
@@ -125,7 +147,12 @@ interface MyTest2Props extends TestProps {
   somethingElse: number;
 }
 
-function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
+function MyTest2({
+  action,
+  onTaskStatus,
+  status,
+  somethingElse,
+}: MyTest2Props) {
   const [value0, setValue0] = useState(0);
   const [value1, setValue1] = useState(0);
   const taskChain = useTaskChain(
@@ -157,7 +184,7 @@ function MyTest2({ action, onResult, status, somethingElse }: MyTest2Props) {
         [value1]
       )
     )
-    .onResult(onResult);
+    .onStatusChanged(onTaskStatus);
   return (
     <VStack>
       <Text>
@@ -173,11 +200,11 @@ function TestPage() {
   const [something, setSomething] = useState("1");
   const [somethingElse, setSomethingElse] = useState(2);
   const [cancel, setCancel] = useState(false);
-  const [result, setResult] = useState<TaskResult>();
+  const [taskStatus, setTaskStatus] = useState<TaskStatus>();
   useEffect(
     () => () => {
       // Reset state for hot reload
-      setResult(undefined);
+      setTaskStatus(undefined);
     },
     []
   );
@@ -231,7 +258,7 @@ function TestPage() {
         )
       )
     )
-    .onResult(setResult);
+    .onStatusChanged(setTaskStatus);
 
   return (
     <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
@@ -242,7 +269,7 @@ function TestPage() {
       <Button onPress={() => setSomethingElse((i) => i + 1)}>
         Change Test2
       </Button>
-      {result && <Text>Result: {result}</Text>}
+      {taskStatus && <Text>Status: {taskStatus}</Text>}
     </VStack>
   );
 }

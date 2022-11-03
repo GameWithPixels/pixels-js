@@ -1,4 +1,4 @@
-import { FC, Fragment, PropsWithChildren, useEffect, useRef } from "react";
+import { FC, Fragment, PropsWithChildren, useEffect } from "react";
 
 import useTask, {
   AsyncOperation,
@@ -6,10 +6,6 @@ import useTask, {
   TaskComponent,
   TaskStatus,
 } from "~/useTask";
-
-export type TaskResult = "succeeded" | "faulted" | "canceled";
-
-export type TaskResultCallback = (result: TaskResult) => void;
 
 interface TaskChainItem {
   status: TaskStatus;
@@ -26,15 +22,20 @@ export default class TaskChain {
 
   get status(): TaskStatus {
     const numTasks = this._tasksItems.length;
-    if (!numTasks) {
+    if (!numTasks || this._tasksItems[0].status === "pending") {
       return "pending";
     }
-    // Find first task that is either faulted or canceled
+    // Check if some task is running
+    if (this._tasksItems.findIndex((ti) => ti.status === "running") >= 0) {
+      return "running";
+    }
+    // Otherwise find first task that is either faulted or canceled
     const i = this._tasksItems.findIndex(
       (ti) => ti.status === "faulted" || ti.status === "canceled"
     );
     if (i >= 0) {
-      return this._tasksItems[i].status; // Some task failed or was canceled
+      // Some task failed or was canceled
+      return this._tasksItems[i].status;
     } else {
       const status = this._tasksItems[numTasks - 1].status;
       return status === "pending" ? "running" : status;
@@ -86,21 +87,12 @@ export default class TaskChain {
     return this;
   }
 
-  onResult(onResult?: TaskResultCallback): TaskChain {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const onResultRef = useRef(onResult);
-    onResultRef.current = onResult; // Don't want to re-run onResult each time the callback changes
+  onStatusChanged(onStatusChanged?: (result: TaskStatus) => void): TaskChain {
     const status = this.status;
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
-      if (
-        status === "succeeded" ||
-        status === "faulted" ||
-        status === "canceled"
-      ) {
-        onResultRef.current?.(status);
-      }
-    }, [status]);
+      onStatusChanged?.(status);
+    }, [onStatusChanged, status]);
     return this;
   }
 }
