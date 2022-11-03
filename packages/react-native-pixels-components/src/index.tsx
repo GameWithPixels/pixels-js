@@ -1,4 +1,4 @@
-export { Pxtheme } from "./theme";
+export { PixelTheme } from "./theme";
 
 export { BatteryLevel } from "./components/BatteryLevel";
 export { RSSIStrength } from "./components/RSSIStrength";

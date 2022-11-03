@@ -21,13 +21,11 @@ export interface SliderProps extends ISliderProps {
   sliderThumbColor?: ColorType;
   sliderTrackColor?: ColorType;
   sliderBoxColor?: ColorType;
+  OnSelectedValue?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export function SliderComponent(props: SliderProps) {
   const [onChangeValue, setOnChangeValue] = React.useState(0.1);
-  // TODO `selectedValue` never used, this is a problem
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedValue, setSelectedValue] = React.useState(0.1);
   const resolvedProps = usePropsResolution("BaseSlider", props);
   return (
     <VStack space={1}>
@@ -41,6 +39,7 @@ export function SliderComponent(props: SliderProps) {
           bg={resolvedProps.boxColor}
         >
           <Slider
+            {...resolvedProps}
             defaultValue={resolvedProps.defaultValue}
             minValue={resolvedProps.minValue}
             maxValue={resolvedProps.maxValue}
@@ -50,7 +49,7 @@ export function SliderComponent(props: SliderProps) {
               setOnChangeValue(v);
             }}
             onChangeEnd={(v) => {
-              setSelectedValue(Math.floor(v));
+              resolvedProps.OnSelectedValue(Math.floor(v));
             }}
           >
             <Slider.Track shadow={1}>

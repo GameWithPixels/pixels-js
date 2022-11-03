@@ -2,7 +2,7 @@ import {
   BaseAppPage,
   Card,
   FaceMask,
-  Pxtheme,
+  PixelTheme,
   RSSIStrength,
   Toggle,
 } from "@systemic-games/react-native-pixels-components";
@@ -11,7 +11,7 @@ import React from "react";
 
 export default function SecondScreen() {
   return (
-    <BaseAppPage theme={Pxtheme}>
+    <BaseAppPage theme={PixelTheme}>
       <VStack space={4}>
         <Card>
           <Text bold>Screen with default theme from components package</Text>

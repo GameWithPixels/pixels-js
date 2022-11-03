@@ -4,14 +4,8 @@ import {
   createStackNavigator,
   TransitionPresets,
 } from "@react-navigation/stack";
-import { Pxtheme } from "@systemic-games/react-native-pixels-components";
-import {
-  Box,
-  ChevronLeftIcon,
-  HStack,
-  NativeBaseProvider,
-  Text,
-} from "native-base";
+import { PixelTheme } from "@systemic-games/react-native-pixels-components";
+import { ChevronLeftIcon, NativeBaseProvider } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
 import { LogBox } from "react-native";
@@ -32,7 +26,7 @@ LogBox.ignoreLogs([
 
 export default function App() {
   return (
-    <NativeBaseProvider theme={Pxtheme}>
+    <NativeBaseProvider theme={PixelTheme}>
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{

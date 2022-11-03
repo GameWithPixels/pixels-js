@@ -6,7 +6,7 @@ import {
 import { Center, HStack, Text, usePropsResolution } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
 
-interface PercentageDisplayProps {
+interface RSSIStrengthProps {
   percentage: number;
   iconSize?: SizeType;
 }
@@ -20,7 +20,7 @@ const icons: IconParams[] = [
   { category: MaterialCommunityIcons, iconName: "signal-cellular-3" },
 ];
 
-export function RSSIStrength(props: PercentageDisplayProps) {
+export function RSSIStrength(props: RSSIStrengthProps) {
   const resolvedProps = usePropsResolution("RSSIStrength", props);
   return (
     <Center>

@@ -5,18 +5,18 @@ import {
   ColorSelection,
   FaceMask,
   ProgressBar,
-  Pxtheme,
+  PixelTheme,
   SliderComponent,
   Toggle,
-  UsePxTheme,
+  createPixelTheme,
   PopUpModal,
   LightingStyleSelection,
 } from "@systemic-games/react-native-pixels-components";
 import { Box, HStack, Text, VStack } from "native-base";
 import React from "react";
 
-const newThemeParameters = {
-  theme: Pxtheme,
+const greenPixelThemeParams = {
+  theme: PixelTheme,
   primaryColors: {
     "50": "#7eff7b",
     "100": "#56ff54",
@@ -31,10 +31,10 @@ const newThemeParameters = {
   },
 };
 
+const greenPixelTheme = createPixelTheme(greenPixelThemeParams);
 export default function HomeScreen() {
-  const newtheme = UsePxTheme(newThemeParameters);
   return (
-    <PxAppPage theme={newtheme}>
+    <PxAppPage theme={greenPixelTheme}>
       <VStack space={4}>
         <Card>
           <Text bold>Screen with custom theme from components package</Text>

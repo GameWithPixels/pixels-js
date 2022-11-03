@@ -11,14 +11,14 @@ export interface UsePxThemeParams {
   secondaryColors?: IColorHues;
   tertiaryColors?: IColorHues;
 }
-// UsePXTheme to create variations of the default components theme with new primary colors
+
 /**
  * UsePXTheme to create variations of the default components theme with new primary, secondary or tertiary colors
  * @param theme The theme to override with new parameters
  * @see UsePxThemeParams for the UsePxTheme other parameters
  * @returns A new theme modified with the new selected colors
  */
-export function UsePxTheme({
+export function createPixelTheme({
   theme,
   primaryColors = theme.colors.primary,
   secondaryColors = theme.colors.secondary,

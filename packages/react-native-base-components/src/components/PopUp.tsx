@@ -2,36 +2,30 @@ import {
   Center,
   VStack,
   Modal,
-  Button,
-  Pressable,
   Text,
   IModalProps,
   usePropsResolution,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
-import React from "react";
+import React, { ReactNode } from "react";
 
 export interface popUpProps extends IModalProps {
   header?: string;
-  children?: JSX.Element | JSX.Element[];
-  footerChildren?: JSX.Element | JSX.Element[];
+  children?: ReactNode | ReactNode[];
+  footerChildren?: ReactNode | ReactNode[];
   trigger: JSX.Element;
   bg?: ColorType;
   closeButtonTitle?: string;
+  isOpen?: boolean;
 }
 
 export function PopUpModal(props: popUpProps) {
-  const [ShowPopUp, SetShowPopUp] = React.useState(false);
   const resolvedProps = usePropsResolution("BasePopUp", props);
+  const showPopUp = resolvedProps.isOpen;
   return (
     <>
-      {/* component that will open the popUp window */}
-      <Pressable onPress={() => SetShowPopUp(true)}>
-        {resolvedProps.trigger}
-      </Pressable>
-
       {/* popUp window */}
-      <Modal isOpen={ShowPopUp}>
+      <Modal {...resolvedProps} isOpen={showPopUp}>
         <Modal.Content
           bg={resolvedProps.bg}
           borderColor={resolvedProps.borderColor}
@@ -47,9 +41,6 @@ export function PopUpModal(props: popUpProps) {
           </Modal.Body>
           <Modal.Footer bg={resolvedProps.bg}>
             {resolvedProps.footerChildren}
-            <Button onPress={() => SetShowPopUp(false)}>
-              <Text>{resolvedProps.closeButtonTitle}</Text>
-            </Button>
           </Modal.Footer>
         </Modal.Content>
       </Modal>

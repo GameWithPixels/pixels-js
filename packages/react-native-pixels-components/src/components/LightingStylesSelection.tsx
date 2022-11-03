@@ -3,7 +3,6 @@ import { ActionSheet } from "@systemic-games/react-native-base-components";
 import {
   Box,
   Text,
-  ChevronDownIcon,
   HStack,
   ChevronRightIcon,
   Spacer,
@@ -27,18 +26,8 @@ function TriggerElement(props: triggerProps) {
   );
 }
 
-// TODO eslint annotation shouldn't be needed here, also function name should start with lower case
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function LightingStyleSelection() {
   const [lightingTypeText, SetLightingType] = React.useState("Simple Flashes");
-  // TODO just remove unused code
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selected, setSelected] = React.useState(1);
-  // TODO just remove unused code
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [buttonIcon, SetChevronIcon] = React.useState(
-    <ChevronDownIcon alignSelf="center" />
-  );
   return (
     <>
       <VStack space={1}>

@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
-import BottomNavigationMenu from "../../../../packages/react-native-base-components/src/components/BottomNavigationMenu";
+import BottomToolbar from "../../../../packages/react-native-base-components/src/components/BottomToolbar";
 import { RootStackParamList } from "../Navigation";
 
 function NavigateTo(path: string, navigation: any) {
@@ -12,11 +12,11 @@ export function NavigationContainerComponent() {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "HomeScreen">>();
   return (
-    <BottomNavigationMenu
+    <BottomToolbar
       itemsData={[
         {
           label: "Settings",
-          NavigateToFunction: () => {
+          onPress: () => {
             NavigateTo("SecondScreen", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/home-line-25.png"),
@@ -25,7 +25,7 @@ export function NavigationContainerComponent() {
         },
         {
           label: "Profiles",
-          NavigateToFunction: () => {
+          onPress: () => {
             NavigateTo("ThirdScreen", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/id-card.png"),
@@ -34,7 +34,7 @@ export function NavigationContainerComponent() {
         },
         {
           label: "Patterns",
-          NavigateToFunction: () => {
+          onPress: () => {
             NavigateTo("HomeScreen", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/pixels-line.png"),
@@ -43,7 +43,7 @@ export function NavigationContainerComponent() {
         },
         {
           label: "Presets",
-          NavigateToFunction: () => {
+          onPress: () => {
             NavigateTo("SecondScreen", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/diagram.png"),
@@ -52,7 +52,7 @@ export function NavigationContainerComponent() {
         },
         {
           label: "Dice Bag",
-          NavigateToFunction: () => {
+          onPress: () => {
             NavigateTo("SecondScreen", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/D10.png"),

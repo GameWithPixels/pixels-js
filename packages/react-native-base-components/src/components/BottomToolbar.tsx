@@ -16,13 +16,12 @@ import {
 import React from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // Data of any item/page icon that will be displayed in the component
 export interface BottomMenuBarItemData {
   label?: string;
   tintColor?: ColorType;
-  NavigateToFunction: () => void | null | undefined; // functions to call and navigate to function
+  onPress: (() => void) | null | undefined; // functions to call and navigate to function
   ImageRequirePath?: ImageSourcePropType; // Item image path. Need to return a require path ex: require(../assets/[...]image.png)
   size?: SizeType;
   alt?: string;
@@ -41,9 +40,9 @@ export interface BottomMenuBarProps {
   bg?: ColorType;
 }
 
-export default function BottomNavigationMenu(props: BottomMenuBarProps) {
+export default function BottomToolbar(props: BottomMenuBarProps) {
   const [selected, setSelected] = React.useState(1);
-  const resolvedProps = usePropsResolution("BaseBottomNavigationMenu", props);
+  const resolvedProps = usePropsResolution("BaseBottomToolBar", props);
   return (
     <Box height={20} width="100%" maxW="100%" alignSelf="center">
       <HStack space={2} bg={resolvedProps.bg} alignItems="center">
@@ -53,7 +52,7 @@ export default function BottomNavigationMenu(props: BottomMenuBarProps) {
             flex={1}
             key={i}
             onPress={() => {
-              item.NavigateToFunction();
+              if (item.onPress) item.onPress();
               setSelected(i);
             }}
           >
@@ -68,28 +67,26 @@ export default function BottomNavigationMenu(props: BottomMenuBarProps) {
               rounded={resolvedProps.itemsRounded}
               p={1}
             >
-              <SafeAreaProvider>
-                <VStack>
-                  <Image
-                    width={6}
-                    height={6}
-                    source={item.ImageRequirePath}
-                    size={item.size}
-                    alt={item.alt === undefined ? "Menu item" : item.alt}
-                    alignSelf="center"
-                    tintColor={
-                      item.tintColor !== undefined
-                        ? item.tintColor
-                        : resolvedProps.itemsTintColor
-                    }
-                    opacity={selected === i ? 1 : 0.5}
-                  />
-                  <Spacer />
-                  <Text textAlign="center" fontSize={props.textSize}>
-                    {item.label}
-                  </Text>
-                </VStack>
-              </SafeAreaProvider>
+              <VStack>
+                <Image
+                  width={6}
+                  height={6}
+                  source={item.ImageRequirePath}
+                  size={item.size}
+                  alt={item.alt === undefined ? "Menu item" : item.alt}
+                  alignSelf="center"
+                  tintColor={
+                    item.tintColor !== undefined
+                      ? item.tintColor
+                      : resolvedProps.itemsTintColor
+                  }
+                  opacity={selected === i ? 1 : 0.5}
+                />
+                <Spacer />
+                <Text textAlign="center" fontSize={props.textSize}>
+                  {item.label}
+                </Text>
+              </VStack>
             </Center>
           </Pressable>
         ))}

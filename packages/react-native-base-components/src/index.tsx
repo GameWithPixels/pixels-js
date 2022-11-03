@@ -1,10 +1,10 @@
-export { theme, UsePxTheme } from "./theme";
+export { theme, createPixelTheme } from "./theme";
 export * from "./components/Card";
 export * from "./components/Toggle";
 export * from "./components/PercentageDisplay";
 export * from "./components/ActionSheet";
 export * from "./components/AppPage";
-export * from "./components/BottomNavigationMenu";
+export * from "./components/BottomToolbar";
 export * from "./components/ProgressBar";
 export * from "./colorWheelUtils";
 export * from "./components/ColorWheel";

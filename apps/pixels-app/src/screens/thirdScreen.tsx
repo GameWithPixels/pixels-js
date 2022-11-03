@@ -2,16 +2,16 @@ import {
   BaseAppPage,
   Card,
   FaceMask,
-  Pxtheme,
+  PixelTheme,
   RSSIStrength,
   Toggle,
-  UsePxTheme,
+  createPixelTheme,
 } from "@systemic-games/react-native-pixels-components";
 import { VStack, Text, HStack } from "native-base";
 import React from "react";
 
-const newThemeParameters = {
-  theme: Pxtheme,
+const purpleThemeParams = {
+  theme: PixelTheme,
   primaryColors: {
     "50": "#f67bff",
     "100": "#f454ff",
@@ -27,9 +27,9 @@ const newThemeParameters = {
 };
 
 export default function ThirdScreen() {
-  const newTheme = UsePxTheme(newThemeParameters);
+  const purpleTheme = createPixelTheme(purpleThemeParams);
   return (
-    <BaseAppPage theme={newTheme}>
+    <BaseAppPage theme={purpleTheme}>
       <VStack space={4}>
         <Card bg="pixelColors.yellow">
           <Text bold>

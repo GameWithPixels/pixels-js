@@ -30,7 +30,6 @@ export function toStringColor(color: IColor): string {
 export interface ColorWheelProps {
   initialColor?: string;
   onSelectColor: React.Dispatch<React.SetStateAction<string>>; // action to initiate after selecting a color on the wheel
-  onSelectColor2: () => void | null | undefined;
 }
 /**
  * Generate the color wheel by drawing the colors polygons and the selector
@@ -59,7 +58,7 @@ export function ColorWheel(props: ColorWheelProps) {
         {shapes.map((s) => (
           <Box>
             <Defs>
-            {/* @ts-expect-error */}
+              {/* @ts-expect-error */}
               <RadialGradient
                 id={toStringColor(s.color)}
                 cx="50%"

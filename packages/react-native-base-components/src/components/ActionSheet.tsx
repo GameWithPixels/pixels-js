@@ -5,7 +5,6 @@ import {
   Text,
   ScrollView,
   usePropsResolution,
-  Button,
   useDisclose,
   Pressable,
   Center,
@@ -17,7 +16,7 @@ import React from "react";
 export interface ActionSheetItemData {
   label: string;
   // onPress?: ((event: GestureResponderEvent) => void) | null | undefined;
-  onPress?: () => void | null | undefined;
+  onPress?: (() => void) | null | undefined;
 }
 
 export interface ActionSheetComponentProps extends IActionsheetProps {

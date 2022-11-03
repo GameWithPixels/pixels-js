@@ -37,7 +37,7 @@ interface ColorSelectionProps extends IModalProps {
   triggerBg?: ColorType; // modal trigger element initial background color
   triggerH?: SizeType; // trigger element height
   triggerW?: SizeType; // trigger element width
-  OnColorSelected?: () => void | null | undefined; // action when a color was selected trough the color selection component
+  onColorSelected?: (() => void) | null | undefined; // action when a color was selected trough the color selection component
 }
 /**
  * Color selection component used for selecting a single color shade from a color wheel / color picker.
@@ -72,11 +72,9 @@ export function ColorSelection(props: ColorSelectionProps) {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
         <Modal.Content
+          {...resolvedProps}
           minH={resolvedProps.modalMinH}
           minW={resolvedProps.modalMinW}
-          h={resolvedProps.h}
-          w={resolvedProps.w}
-          bg={resolvedProps.bg}
         >
           <Center>
             <Modal.Header
@@ -92,7 +90,6 @@ export function ColorSelection(props: ColorSelectionProps) {
               <ColorWheel
                 initialColor={SelectedColor}
                 onSelectColor={setSelectedColor}
-                onSelectColor2={() => console.log("hello")}
               />
             </VStack>
           </Modal.Body>

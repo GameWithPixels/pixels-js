@@ -5,33 +5,22 @@ import {
   IContainerProps,
   usePropsResolution,
 } from "native-base";
-import React from "react";
+import React, { ReactNode } from "react";
 
 interface CardProps extends IContainerProps {
-  children?: JSX.Element | JSX.Element[];
+  children?: ReactNode | ReactNode[];
   borderWidth?: number;
-  Vspace?: number;
+  verticalSpace?: number;
 }
 
-// TODO name props like native base: minW, maxW, etc.
-// Also I wonder if we should just define a style with rounded corners
 export function Card(props: CardProps) {
   const resolvedProps = usePropsResolution("BaseCard", props);
   return (
     <Center>
-      <Box
-        {...resolvedProps}
-        rounded={resolvedProps.rounded}
-        minW={resolvedProps.minW}
-        maxW="100%"
-        maxH={resolvedProps.maxH}
-        minH={resolvedProps.minH}
-        bg={resolvedProps.bg}
-        borderColor={resolvedProps.borderColor}
-        borderWidth={resolvedProps.borderWidth}
-        p="4"
-      >
-        <VStack space={resolvedProps.Vspace}>{resolvedProps.children}</VStack>
+      <Box {...resolvedProps} rounded={resolvedProps.rounded} maxW="100%" p="4">
+        <VStack space={resolvedProps.verticalSpace}>
+          {resolvedProps.children}
+        </VStack>
       </Box>
     </Center>
   );

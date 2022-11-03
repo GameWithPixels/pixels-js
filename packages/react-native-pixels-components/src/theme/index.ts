@@ -39,7 +39,7 @@ type PixelThemeType =
   | { colors: { pixelColors: typeof pixelColors } }
   | { components: typeof components };
 
-export const Pxtheme = extendTheme<PixelThemeType>(BaseTheme, {
+export const PixelTheme = extendTheme<PixelThemeType>(BaseTheme, {
   colors: {
     pixelColors,
   },

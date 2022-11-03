@@ -1,26 +1,21 @@
 import { Box, Progress, Text, usePropsResolution } from "native-base";
-import { IProgressProps } from "native-base/lib/typescript/components/composites";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 
-interface progressBarProps extends IProgressProps {
+interface ProgressBarProps {
+  value: number;
   loadingText?: string;
   boxBg?: ColorType;
   filledTrackBg?: ColorType;
   onProgressEnd?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function ProgressBar(props: progressBarProps) {
-  // TODO add and use resolvedProps from theme
-  // TODO progressValue never changed, this is a problem
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [progressValue, setProgressValue] = React.useState(props.value);
+export function ProgressBar(props: ProgressBarProps) {
   const resolvedProps = usePropsResolution("BaseProgressBar", props);
-
   return (
     <Box bg={resolvedProps.boxBg} p="3" rounded="lg">
       <Progress
-        value={progressValue}
+        value={props.value}
         size={resolvedProps.size}
         _filledTrack={{
           bg: resolvedProps.filledTrackBg,
@@ -28,8 +23,8 @@ export function ProgressBar(props: progressBarProps) {
       />
       <Text>
         {props.loadingText
-          ? props.loadingText + progressValue + "%"
-          : progressValue + "%"}
+          ? props.loadingText + props.value + "%"
+          : props.value + "%"}
       </Text>
     </Box>
   );
