@@ -1,10 +1,10 @@
 import TaskChain from "~/TaskChain";
-import { AsyncOperation, TaskAction, TaskComponent } from "~/useTask";
+import { AsyncOperation, TaskAction, TaskRenderer } from "~/useTask";
 
 export default function (
   action: TaskAction,
   asyncOp: AsyncOperation,
-  taskComponent: TaskComponent
+  taskRenderer: TaskRenderer
 ): TaskChain {
-  return new TaskChain(action, asyncOp, taskComponent);
+  return new TaskChain(action, asyncOp, taskRenderer);
 }

@@ -3,7 +3,7 @@ import { FC, Fragment, PropsWithChildren, useEffect } from "react";
 import useTask, {
   AsyncOperation,
   TaskAction,
-  TaskComponent,
+  TaskRenderer,
   TaskStatus,
 } from "~/useTask";
 
@@ -49,10 +49,10 @@ export default class TaskChain {
   constructor(
     action: TaskAction,
     asyncOp: AsyncOperation,
-    taskComponent: TaskComponent
+    taskRenderer: TaskRenderer
   ) {
     this._action = action;
-    this.chainWith(asyncOp, taskComponent);
+    this.chainWith(asyncOp, taskRenderer);
   }
 
   getStatusAt(index: number): TaskStatus | undefined {
@@ -75,19 +75,19 @@ export default class TaskChain {
     );
   }
 
-  chainWith(asyncOp: AsyncOperation, taskComponent: TaskComponent): TaskChain {
+  chainWith(asyncOp: AsyncOperation, taskRenderer: TaskRenderer): TaskChain {
     const numTasks = this._tasksItems.length;
     const prevTaskSucceeded = numTasks
       ? this._tasksItems[numTasks - 1]?.status === "succeeded"
       : true;
     const action = !prevTaskSucceeded ? "reset" : this._action;
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [status, component] = useTask(asyncOp, taskComponent, action);
+    const [status, component] = useTask(asyncOp, taskRenderer, action);
     this._tasksItems.push({ status, component });
     return this;
   }
 
-  onStatusChanged(onStatusChanged?: (result: TaskStatus) => void): TaskChain {
+  withStatusChanged(onStatusChanged?: (result: TaskStatus) => void): TaskChain {
     const status = this.status;
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {

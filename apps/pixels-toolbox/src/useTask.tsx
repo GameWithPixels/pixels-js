@@ -9,11 +9,11 @@ export type TaskStatus =
 
 export type TaskAction = "run" | "cancel" | "reset";
 
-export type TaskComponentProps = PropsWithChildren<{
+export type TaskRendererProps = PropsWithChildren<{
   status: TaskStatus;
 }>;
 
-export type TaskComponent = FC<TaskComponentProps>;
+export type TaskRenderer = FC<TaskRendererProps>;
 
 export type AsyncOperation = () => Promise<unknown>;
 
@@ -31,7 +31,7 @@ export class FaultedError extends Error {
 
 export default function (
   asyncOp: AsyncOperation,
-  taskComponent: TaskComponent,
+  taskRenderer: TaskRenderer,
   action: TaskAction = "run"
 ): [TaskStatus, FC<PropsWithChildren>] {
   const [status, setStatus] = useState<TaskStatus>("pending");
@@ -61,5 +61,5 @@ export default function (
       setStatus("pending");
     }
   }, [asyncOp, action]);
-  return [status, ({ children }) => taskComponent({ children, status })];
+  return [status, ({ children }) => taskRenderer({ children, status })];
 }
