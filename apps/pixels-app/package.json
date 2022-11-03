@@ -54,7 +54,8 @@
   "devDependencies": {
     "@babel/core": "^7.19.3",
     "@types/react": "~18.0.0",
-    "@types/react-native": "0.69.6"
+    "@types/react-native": "0.69.6",
+    "babel-plugin-root-import": "^6.6.0"
   },
   "resolutions": {
     "@types/react": "~18.0.0"

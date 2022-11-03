@@ -1,7 +1,16 @@
 {
   "extends": "./../../tsconfig.expo",
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "paths": {
+      "@systemic-games/*": [
+        "./../../../packages/*/src"
+      ],
+      "~/*": [
+        "*"
+      ]
+    }
   },
   "include": [
     "src/**/*"
