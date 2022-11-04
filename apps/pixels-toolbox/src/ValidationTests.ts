@@ -1,4 +1,4 @@
-import { safeAssign } from "@systemic-games/pixels-core-utils";
+import { assert, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   LedLoopback,
@@ -6,7 +6,11 @@ import {
   RequestTelemetry,
   Telemetry,
   DataSet,
+  Color,
+  PixelRollStateValues,
 } from "@systemic-games/react-native-pixels-connect";
+
+import delay from "./delay";
 
 const ValidationTests = {
   checkLedLoopback: async (pixel: Pixel): Promise<void> => {
@@ -90,7 +94,7 @@ const ValidationTests = {
   checkRssi: async (pixel: Pixel): Promise<void> => {
     const rssi = await pixel.getRssi();
     console.log(`RSSI is ${rssi}`);
-    if (rssi < -60) {
+    if (rssi < -70) {
       throw new Error(`Out of range RSSI value: ${rssi}`);
     }
   },
@@ -107,6 +111,39 @@ const ValidationTests = {
       await pixel.transferDataSet(profile, progressCallback);
     } finally {
       progressCallback?.(-1);
+    }
+  },
+
+  waitFaceUp: async (pixel: Pixel, face: number): Promise<void> => {
+    assert(face > 0);
+    try {
+      const waitTimeout = async (timeout = 30000) => {
+        const abortTime = Date.now() + timeout;
+
+        await pixel.blink(Color.dimMagenta, {
+          count: timeout / 2000,
+          duration: 30000,
+          faceMask: 1 << (face - 1),
+        });
+
+        let rollState = await pixel.getRollState();
+        while (
+          rollState.state !== PixelRollStateValues.OnFace ||
+          rollState.faceIndex !== face - 1
+        ) {
+          await delay(200);
+          rollState = await pixel.getRollState();
+          if (Date.now() > abortTime) {
+            return false;
+          }
+        }
+        return true;
+      };
+      while (!(await waitTimeout()));
+    } finally {
+      try {
+        await pixel.stopAllAnimations();
+      } catch {}
     }
   },
 
