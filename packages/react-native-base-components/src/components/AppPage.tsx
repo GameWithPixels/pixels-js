@@ -17,7 +17,7 @@ export interface AppPageProps extends PropsWithChildren {
 }
 
 function AppPage(props: AppPageProps) {
-  const resolvedProps = usePropsResolution("BaseAppPage", props);
+  const resolvedProps = usePropsResolution("AppPage", props);
   return (
     <NativeBaseProvider theme={props.theme}>
       <StatusBar />

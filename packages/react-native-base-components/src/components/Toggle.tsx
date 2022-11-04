@@ -14,7 +14,7 @@ interface ToggleProps extends ISwitchProps {
 }
 
 export function Toggle(props: ToggleProps) {
-  const resolvedProps = usePropsResolution("BaseToggle", props);
+  const resolvedProps = usePropsResolution("Toggle", props);
   return (
     <HStack space={resolvedProps.space} alignItems="center">
       <Text>{props.text}</Text>

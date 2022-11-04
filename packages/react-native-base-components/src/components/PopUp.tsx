@@ -5,6 +5,7 @@ import {
   Text,
   IModalProps,
   usePropsResolution,
+  Button,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React, { ReactNode } from "react";
@@ -12,18 +13,18 @@ import React, { ReactNode } from "react";
 export interface PopUpProps extends IModalProps {
   title?: string;
   footerChildren?: ReactNode | ReactNode[];
-  trigger: ReactNode;
   bg?: ColorType;
   closeButtonTitle?: string;
   isOpen?: boolean;
 }
 
-export function PopUpModal(props: PopUpProps) {
-  const resolvedProps = usePropsResolution("BasePopUp", props);
+export function PopUp(props: PopUpProps) {
+  const resolvedProps = usePropsResolution("PopUp", props);
+  const [showPopUp, SetShowPopUp] = React.useState(resolvedProps.isOpen);
   return (
     <>
       {/* popUp window */}
-      <Modal {...resolvedProps} isOpen={resolvedProps.isOpen}>
+      <Modal {...resolvedProps} isOpen={showPopUp}>
         <Modal.Content
           bg={resolvedProps.bg}
           borderColor={resolvedProps.borderColor}
@@ -40,6 +41,9 @@ export function PopUpModal(props: PopUpProps) {
           <Modal.Footer bg={resolvedProps.bg}>
             {resolvedProps.footerChildren}
           </Modal.Footer>
+          <Button onPress={() => SetShowPopUp(false)}>
+            <Text>Close</Text>
+          </Button>
         </Modal.Content>
       </Modal>
     </>

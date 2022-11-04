@@ -29,7 +29,7 @@ export interface ActionSheetComponentProps extends IActionsheetProps {
 }
 
 export function ActionSheet(props: ActionSheetComponentProps) {
-  const resolvedProps = usePropsResolution("BaseActionSheet", props);
+  const resolvedProps = usePropsResolution("ActionSheet", props);
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>

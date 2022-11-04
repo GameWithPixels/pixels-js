@@ -9,10 +9,9 @@ import {
   SliderComponent,
   Toggle,
   createPixelTheme,
-  PopUpModal,
   LightingStyleSelection,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, HStack, Text, VStack } from "native-base";
+import { HStack, Text, VStack } from "native-base";
 import React from "react";
 
 const greenPixelThemeParams = {
@@ -49,13 +48,6 @@ export default function HomeScreen() {
           <Toggle text="First screen toggle" />
         </Card>
         <ColorSelection />
-        <PopUpModal
-          trigger={
-            <Box rounded="lg" p={2} bg="primary.700">
-              <Text>Open popup</Text>
-            </Box>
-          }
-        />
         <LightingStyleSelection />
         <SliderComponent />
         <ProgressBar value={30} loadingText="Progress : " />

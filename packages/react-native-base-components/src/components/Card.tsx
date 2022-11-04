@@ -13,7 +13,7 @@ interface CardProps extends IContainerProps {
 }
 
 export function Card(props: CardProps) {
-  const resolvedProps = usePropsResolution("BaseCard", props);
+  const resolvedProps = usePropsResolution("Card", props);
   return (
     <Center>
       <Box {...resolvedProps} rounded={resolvedProps.rounded} maxW="100%" p="4">

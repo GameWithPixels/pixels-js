@@ -26,7 +26,7 @@ export interface SliderProps extends ISliderProps {
 
 export function SliderComponent(props: SliderProps) {
   const [onChangeValue, setOnChangeValue] = React.useState(0.1);
-  const resolvedProps = usePropsResolution("BaseSlider", props);
+  const resolvedProps = usePropsResolution("Slider", props);
   return (
     <VStack space={1}>
       <Text bold>{resolvedProps.sliderTitle}</Text>

@@ -11,7 +11,7 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar(props: ProgressBarProps) {
-  const resolvedProps = usePropsResolution("BaseProgressBar", props);
+  const resolvedProps = usePropsResolution("ProgressBar", props);
   return (
     <Box bg={resolvedProps.boxBg} p="3" rounded="lg">
       <Progress

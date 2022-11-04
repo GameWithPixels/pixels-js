@@ -42,7 +42,7 @@ export interface BottomMenuBarProps {
 
 export function BottomToolbar(props: BottomMenuBarProps) {
   const [selected, setSelected] = React.useState(1);
-  const resolvedProps = usePropsResolution("BaseBottomToolBar", props);
+  const resolvedProps = usePropsResolution("BottomToolBar", props);
   return (
     <Box height={20} width="100%" maxW="100%" alignSelf="center">
       <HStack space={2} bg={resolvedProps.bg} alignItems="center">
