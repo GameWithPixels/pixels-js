@@ -28,7 +28,7 @@ export interface BottomMenuBarItemData {
 }
 
 export interface BottomMenuBarProps {
-  itemsData: BottomMenuBarItemData[];
+  itemsData?: BottomMenuBarItemData[];
   itemsTintColor?: ColorType;
   selectionHighlightColor?: ColorType;
   height?: number | string;
@@ -36,17 +36,21 @@ export interface BottomMenuBarProps {
   maxWidth?: number | string;
   itemsHeight?: number | string;
   itemsWidth?: number | string;
+  itemsRounded?: SizeType;
   textSize?: number | string | SizeType;
   bg?: ColorType;
 }
 
 export function BottomToolbar(props: BottomMenuBarProps) {
   const [selected, setSelected] = React.useState(1);
-  const resolvedProps = usePropsResolution("BottomToolBar", props);
+  const resolvedProps = usePropsResolution(
+    "BottomToolBar",
+    props
+  ) as BottomMenuBarProps;
   return (
     <Box height={20} width="100%" maxW="100%" alignSelf="center">
       <HStack space={2} bg={resolvedProps.bg} alignItems="center">
-        {props.itemsData.map((item, i) => (
+        {props.itemsData?.map((item, i) => (
           <Pressable
             py="2"
             flex={1}

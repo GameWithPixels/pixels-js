@@ -1,5 +1,6 @@
+import { AppPageProps } from "../../components/AppPage";
+
 export default {
-  baseStyle: {},
   defaultProps: {
     p: 2.5,
     h: "100%",
@@ -7,4 +8,4 @@ export default {
     lightBg: "primary.400",
     darkBg: "primary.100",
   },
-};
+} as AppPageProps;

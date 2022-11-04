@@ -7,14 +7,14 @@ import {
 } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
 
-interface ToggleProps extends ISwitchProps {
-  text: string;
+export interface ToggleProps extends ISwitchProps {
+  text?: string;
   toggleSize?: SizeType;
   space?: number | string;
 }
 
 export function Toggle(props: ToggleProps) {
-  const resolvedProps = usePropsResolution("Toggle", props);
+  const resolvedProps = usePropsResolution("Toggle", props) as ToggleProps;
   return (
     <HStack space={resolvedProps.space} alignItems="center">
       <Text>{props.text}</Text>

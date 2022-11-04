@@ -11,13 +11,15 @@ import { PropsWithChildren } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export interface AppPageProps extends PropsWithChildren {
-  theme: ITheme;
+  theme?: ITheme;
+  h?: number;
+  w?: number;
   p?: number | string;
   lightBg?: ColorType;
 }
 
 function AppPage(props: AppPageProps) {
-  const resolvedProps = usePropsResolution("AppPage", props);
+  const resolvedProps = usePropsResolution("AppPage", props) as AppPageProps;
   return (
     <NativeBaseProvider theme={props.theme}>
       <StatusBar />

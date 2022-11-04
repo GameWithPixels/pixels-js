@@ -15,11 +15,10 @@ export interface PopUpProps extends IModalProps {
   footerChildren?: ReactNode | ReactNode[];
   bg?: ColorType;
   closeButtonTitle?: string;
-  isOpen?: boolean;
 }
 
 export function PopUp(props: PopUpProps) {
-  const resolvedProps = usePropsResolution("PopUp", props);
+  const resolvedProps = usePropsResolution("PopUp", props) as PopUpProps;
   const [showPopUp, SetShowPopUp] = React.useState(resolvedProps.isOpen);
   return (
     <>

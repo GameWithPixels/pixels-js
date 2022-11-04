@@ -49,7 +49,8 @@ export function SliderComponent(props: SliderProps) {
               setOnChangeValue(v);
             }}
             onChangeEnd={(v) => {
-              resolvedProps.OnSelectedValue(Math.floor(v));
+              if (resolvedProps.onSelectedValue)
+                resolvedProps.OnSelectedValue(Math.floor(v));
             }}
           >
             <Slider.Track shadow={1}>

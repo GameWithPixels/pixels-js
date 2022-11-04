@@ -7,13 +7,13 @@ import {
 } from "native-base";
 import React from "react";
 
-interface CardProps extends IContainerProps {
+export interface CardProps extends IContainerProps {
   borderWidth?: number;
   verticalSpace?: number;
 }
 
 export function Card(props: CardProps) {
-  const resolvedProps = usePropsResolution("Card", props);
+  const resolvedProps = usePropsResolution("Card", props) as CardProps;
   return (
     <Center>
       <Box {...resolvedProps} rounded={resolvedProps.rounded} maxW="100%" p="4">

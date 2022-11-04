@@ -1,3 +1,5 @@
+import { CardProps } from "../../components/Card";
+
 export default {
   baseStyle: {},
   defaultProps: {
@@ -11,4 +13,4 @@ export default {
     borderWidth: 0,
     Vspace: 2,
   },
-};
+} as CardProps;
