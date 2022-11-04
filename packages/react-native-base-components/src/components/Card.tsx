@@ -5,10 +5,9 @@ import {
   IContainerProps,
   usePropsResolution,
 } from "native-base";
-import React, { ReactNode } from "react";
+import React from "react";
 
 interface CardProps extends IContainerProps {
-  children?: ReactNode | ReactNode[];
   borderWidth?: number;
   verticalSpace?: number;
 }

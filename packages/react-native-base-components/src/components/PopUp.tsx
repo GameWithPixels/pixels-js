@@ -10,10 +10,9 @@ import { ColorType } from "native-base/lib/typescript/components/types";
 import React, { ReactNode } from "react";
 
 export interface popUpProps extends IModalProps {
-  header?: string;
-  children?: ReactNode | ReactNode[];
+  title?: string;
   footerChildren?: ReactNode | ReactNode[];
-  trigger: JSX.Element;
+  trigger: ReactNode;
   bg?: ColorType;
   closeButtonTitle?: string;
   isOpen?: boolean;
@@ -21,11 +20,10 @@ export interface popUpProps extends IModalProps {
 
 export function PopUpModal(props: popUpProps) {
   const resolvedProps = usePropsResolution("BasePopUp", props);
-  const showPopUp = resolvedProps.isOpen;
   return (
     <>
       {/* popUp window */}
-      <Modal {...resolvedProps} isOpen={showPopUp}>
+      <Modal {...resolvedProps} isOpen={resolvedProps.isOpen}>
         <Modal.Content
           bg={resolvedProps.bg}
           borderColor={resolvedProps.borderColor}

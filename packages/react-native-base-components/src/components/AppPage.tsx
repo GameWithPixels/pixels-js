@@ -7,14 +7,13 @@ import {
   usePropsResolution,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
-import React, { ReactNode } from "react";
+import { PropsWithChildren } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-export interface AppPageProps {
+export interface AppPageProps extends PropsWithChildren {
   theme: ITheme;
   p?: number | string;
   lightBg?: ColorType;
-  children?: ReactNode | ReactNode[];
 }
 
 function AppPage(props: AppPageProps) {

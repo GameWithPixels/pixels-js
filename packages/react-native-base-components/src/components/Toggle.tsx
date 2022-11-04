@@ -6,13 +6,11 @@ import {
   usePropsResolution,
 } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
-import React, { ReactNode } from "react";
 
 interface ToggleProps extends ISwitchProps {
   text: string;
   toggleSize?: SizeType;
   space?: number | string;
-  children?: ReactNode | ReactNode[];
 }
 
 export function Toggle(props: ToggleProps) {

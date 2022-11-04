@@ -21,7 +21,7 @@ export interface SliderProps extends ISliderProps {
   sliderThumbColor?: ColorType;
   sliderTrackColor?: ColorType;
   sliderBoxColor?: ColorType;
-  OnSelectedValue?: React.Dispatch<React.SetStateAction<number>>;
+  onSelectedValue?: (value: number) => void;
 }
 
 export function SliderComponent(props: SliderProps) {

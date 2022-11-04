@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { BottomToolbar } from "@systemic-games/react-native-base-components";
 
-import BottomToolbar from "../../../../packages/react-native-base-components/src/components/BottomToolbar";
 import { RootStackParamList } from "../Navigation";
 
 function NavigateTo(path: string, navigation: any) {

@@ -1,7 +1,6 @@
 {
   "extends": "./../../tsconfig.expo",
   "compilerOptions": {
-    "jsx": "react",
     "outDir": "./dist",
     "paths": {
       "@systemic-games/*": [

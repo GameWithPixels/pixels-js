@@ -40,7 +40,7 @@ export interface BottomMenuBarProps {
   bg?: ColorType;
 }
 
-export default function BottomToolbar(props: BottomMenuBarProps) {
+export function BottomToolbar(props: BottomMenuBarProps) {
   const [selected, setSelected] = React.useState(1);
   const resolvedProps = usePropsResolution("BaseBottomToolBar", props);
   return (
@@ -52,7 +52,7 @@ export default function BottomToolbar(props: BottomMenuBarProps) {
             flex={1}
             key={i}
             onPress={() => {
-              if (item.onPress) item.onPress();
+              item.onPress?.();
               setSelected(i);
             }}
           >
