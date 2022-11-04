@@ -1,6 +1,6 @@
 export default {
   defaultProps: {
-    header: "PopUp",
+    title: "PopUp",
     closeButtonTitle: "Close",
     bg: "primary.700",
     borderWidth: 0,

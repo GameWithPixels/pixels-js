@@ -31,7 +31,7 @@ export function PopUpModal(props: PopUpProps) {
         >
           <Modal.Header bg={resolvedProps.bg}>
             <Center>
-              <Text>{resolvedProps.header}</Text>
+              <Text>{resolvedProps.title}</Text>
             </Center>
           </Modal.Header>
           <Modal.Body>
