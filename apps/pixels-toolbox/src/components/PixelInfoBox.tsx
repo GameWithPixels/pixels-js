@@ -3,7 +3,7 @@ import {
   Pixel,
   PixelDesignAndColorValues,
 } from "@systemic-games/react-native-pixels-connect";
-import { ReactNode } from "react";
+import { PropsWithChildren } from "react";
 import {
   Text,
   StyleSheet,
@@ -13,12 +13,11 @@ import {
 import getPixelEnumName from "~/getPixelEnumName";
 import globalStyles from "~/styles";
 
-export interface PixelInfoBoxProps {
+export interface PixelInfoBoxProps extends PropsWithChildren {
   pixel: Pixel | ScannedPixel;
-  children?: ReactNode;
 }
 
-export default function ({ pixel, children }: PixelInfoBoxProps) {
+export default function ({ children, pixel }: PixelInfoBoxProps) {
   const pixIdHex = pixel.pixelId.toString(16).toLocaleUpperCase();
   const scanned = pixel instanceof Pixel ? undefined : pixel;
   const design = getPixelEnumName(

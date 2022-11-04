@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 // eslint-disable-next-line import/namespace
 import { StyleProp, View, ViewStyle } from "react-native";
@@ -12,10 +12,9 @@ import styles from "~/styles";
 export default function ({
   children,
   style,
-}: {
-  children?: ReactNode;
+}: PropsWithChildren<{
   style?: StyleProp<ViewStyle>;
-}) {
+}>) {
   return (
     <View style={style ?? styles.container}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
