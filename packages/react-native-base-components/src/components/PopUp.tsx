@@ -9,7 +9,7 @@ import {
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React, { ReactNode } from "react";
 
-export interface popUpProps extends IModalProps {
+export interface PopUpProps extends IModalProps {
   title?: string;
   footerChildren?: ReactNode | ReactNode[];
   trigger: ReactNode;
@@ -18,7 +18,7 @@ export interface popUpProps extends IModalProps {
   isOpen?: boolean;
 }
 
-export function PopUpModal(props: popUpProps) {
+export function PopUpModal(props: PopUpProps) {
   const resolvedProps = usePropsResolution("BasePopUp", props);
   return (
     <>
