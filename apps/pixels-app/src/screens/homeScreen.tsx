@@ -11,8 +11,23 @@ import {
   createPixelTheme,
   LightingStyleSelection,
 } from "@systemic-games/react-native-pixels-components";
-import { HStack, Text, VStack } from "native-base";
+import { Button, HStack, Text, VStack } from "native-base";
 import React from "react";
+
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
+
+function ReduxExample() {
+  const appDispatch = useAppDispatch();
+  const { themeMode } = useAppSelector((state) => state.themeMode);
+  return (
+    <HStack>
+      <Text>{themeMode}</Text>
+      <Button onPress={() => appDispatch(setLightMode())}>Light</Button>
+      <Button onPress={() => appDispatch(setDarkMode())}>Dark</Button>
+    </HStack>
+  );
+}
 
 const greenPixelThemeParams = {
   theme: PixelTheme,
@@ -48,6 +63,8 @@ export default function HomeScreen() {
           <Toggle text="First screen toggle" />
         </Card>
         <ColorSelection />
+        <ReduxExample />
+        <ReduxExample />
         <LightingStyleSelection />
         <SliderComponent />
         <ProgressBar value={30} loadingText="Progress : " />
