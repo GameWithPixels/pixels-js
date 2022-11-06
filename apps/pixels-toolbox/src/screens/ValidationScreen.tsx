@@ -619,6 +619,10 @@ function DecodePage({
         ) : (
           <Text>{t("startingCamera")}</Text>
         )}
+        <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
+          <Text>Reset board / die using magnet</Text>
+          <Text>and point at camera at it</Text>
+        </Center>
         <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
           <Text>{`Testing ${t(dieType)} ${validationRun}`}</Text>
           <Button w="100%" onPress={onBack}>
@@ -844,7 +848,11 @@ function CheckBoard({ action, onTaskStatus, pixel }: ValidationTestProps) {
   );
 }
 
-function CheckLeds({ action, onTaskStatus, pixel }: ValidationTestProps) {
+interface CheckLedsProps extends ValidationTestProps {
+  dieType: DieType;
+}
+
+function CheckLeds({ action, onTaskStatus, pixel, dieType }: CheckLedsProps) {
   const [resolvePromise, setResolvePromise] = useState<(() => void)[]>([]);
   const taskChain = useTaskChain(
     action,
@@ -879,12 +887,26 @@ function CheckLeds({ action, onTaskStatus, pixel }: ValidationTestProps) {
 
   return (
     <TaskGroupComponent title="Check LEDs" taskStatus={taskChain.status}>
+      {taskChain.status === "running" && (
+        <Text ml="10%" italic fontWeight="1xl">
+          Check that all {getLedCount(dieType)} LEDs are on and fully white
+        </Text>
+      )}
       {taskChain.render()}
     </TaskGroupComponent>
   );
 }
 
-function FlickBoard({ action, onTaskStatus, pixel }: ValidationTestProps) {
+interface FlickBoardProps extends ValidationTestProps {
+  validationRun: ValidationRun;
+}
+
+function FlickBoard({
+  action,
+  onTaskStatus,
+  pixel,
+  validationRun,
+}: FlickBoardProps) {
   const taskChain = useTaskChain(
     action,
     useCallback(() => ValidationTests.waitForBoardFlicked(pixel), [pixel]),
@@ -895,6 +917,13 @@ function FlickBoard({ action, onTaskStatus, pixel }: ValidationTestProps) {
 
   return (
     <TaskGroupComponent title="Flick Board" taskStatus={taskChain.status}>
+      {taskChain.status === "running" && (
+        <Text ml="10%" italic fontWeight="1xl">
+          {`${
+            validationRun === "board" ? "Flick board" : "Shake die"
+          } to test accelerometer`}
+        </Text>
+      )}
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -908,8 +937,7 @@ function WaitFaceUp({ action, onTaskStatus, pixel, dieType }: WaitFaceUpProps) {
   const taskChain = useTaskChain(
     action,
     useCallback(
-      () => ValidationTests.waitFaceUp(pixel, 4),
-      // TOOD getLedCount(dieType)),
+      () => ValidationTests.waitFaceUp(pixel, getLedCount(dieType)),
       [dieType, pixel]
     ),
     () => <></>
@@ -919,6 +947,11 @@ function WaitFaceUp({ action, onTaskStatus, pixel, dieType }: WaitFaceUpProps) {
 
   return (
     <TaskGroupComponent title="Wait Face Up" taskStatus={taskChain.status}>
+      {taskChain.status === "running" && (
+        <Text ml="10%" italic fontWeight="1xl">
+          Place Die with blinking face up
+        </Text>
+      )}
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -939,7 +972,9 @@ function UpdateFirmware({
     }, [address, updateFirmware]),
     (p) => (
       <>
-        <Text>DFU State: {dfuState}</Text>
+        <Text ml="10%" italic fontWeight="1xl">
+          DFU State: {dfuState}
+        </Text>
         <ProgressBar percent={dfuProgress} />
       </>
     )
@@ -1026,6 +1061,11 @@ function WaitTurnOff({
 
   return (
     <TaskGroupComponent title="Wait Turn Off" taskStatus={taskChain.status}>
+      {taskChain.status === "running" && (
+        <Text ml="10%" italic fontWeight="1xl">
+          Place die in charging case and close the lid
+        </Text>
+      )}
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -1080,92 +1120,10 @@ function TestsPage({
         "FlickBoard",
         cancel,
         useCallback(
-          (p) => <>{pixel && <FlickBoard {...p} pixel={pixel} />}</>,
-          [pixel]
-        )
-      )
-    )
-    .chainWith(
-      ...useTestComponent(
-        "CheckLeds",
-        cancel,
-        useCallback(
-          (p) => <>{pixel && <CheckLeds {...p} pixel={pixel} />}</>,
-          [pixel]
-        )
-      )
-    )
-    .chainWith(
-      ...useTestComponent(
-        "WaitFaceUp",
-        cancel,
-        useCallback(
-          (p) => (
-            <>
-              {pixel && <WaitFaceUp {...p} pixel={pixel} dieType={dieType} />}
-            </>
-          ),
-          [dieType, pixel]
-        )
-      )
-    )
-    // .chainWith(
-    //   ...useTestComponent(
-    //     "UpdateFirmware",
-    //     cancel,
-    //     useCallback(
-    //       (p) => (
-    //         <>
-    //           {scannedPixel && (
-    //             <UpdateFirmware {...p} address={scannedPixel.address} />
-    //           )}
-    //         </>
-    //       ),
-    //       [scannedPixel]
-    //     )
-    //   )
-    // )
-    .chainWith(
-      ...useTestComponent(
-        "PrepareDie",
-        cancel,
-        useCallback(
-          (p) => (
-            <>
-              {pixel && <PrepareDie {...p} pixel={pixel} dieType={dieType} />}
-            </>
-          ),
-          [dieType, pixel]
-        )
-      )
-    )
-    .chainWith(
-      ...useTestComponent(
-        "ConnectPixel",
-        cancel,
-        useCallback(
-          (p) => (
-            <ConnectPixel
-              {...p}
-              pixelId={pixelId}
-              dieType={dieType}
-              onPixelScanned={setScannedPixel}
-              onPixelConnected={setPixel}
-            />
-          ),
-          [dieType, pixelId]
-        )
-      )
-    )
-    .chainWith(
-      ...useTestComponent(
-        "WaitTurnOff",
-        cancel,
-        useCallback(
           (p) => (
             <>
               {pixel && (
-                <WaitTurnOff
+                <FlickBoard
                   {...p}
                   pixel={pixel}
                   validationRun={validationRun}
@@ -1176,7 +1134,115 @@ function TestsPage({
           [pixel, validationRun]
         )
       )
+    )
+    .chainWith(
+      ...useTestComponent(
+        "CheckLeds",
+        cancel,
+        useCallback(
+          (p) => (
+            <>{pixel && <CheckLeds {...p} pixel={pixel} dieType={dieType} />}</>
+          ),
+          [dieType, pixel]
+        )
+      )
     );
+  if (validationRun === "board") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTestComponent(
+        "UpdateFirmware",
+        cancel,
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        useCallback(
+          (p) => (
+            <>
+              {scannedPixel && (
+                <UpdateFirmware {...p} address={scannedPixel.address} />
+              )}
+            </>
+          ),
+          [scannedPixel]
+        )
+      )
+    );
+  } else {
+    taskChain
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTestComponent(
+          "WaitFaceUp",
+          cancel,
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          useCallback(
+            (p) => (
+              <>
+                {pixel && <WaitFaceUp {...p} pixel={pixel} dieType={dieType} />}
+              </>
+            ),
+            [dieType, pixel]
+          )
+        )
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTestComponent(
+          "PrepareDie",
+          cancel,
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          useCallback(
+            (p) => (
+              <>
+                {pixel && <PrepareDie {...p} pixel={pixel} dieType={dieType} />}
+              </>
+            ),
+            [dieType, pixel]
+          )
+        )
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTestComponent(
+          "ConnectPixel",
+          cancel,
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          useCallback(
+            (p) => (
+              <ConnectPixel
+                {...p}
+                pixelId={pixelId}
+                dieType={dieType}
+                onPixelScanned={setScannedPixel}
+                onPixelConnected={setPixel}
+              />
+            ),
+            [dieType, pixelId]
+          )
+        )
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTestComponent(
+          "WaitTurnOff",
+          cancel,
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          useCallback(
+            (p) => (
+              <>
+                {pixel && (
+                  <WaitTurnOff
+                    {...p}
+                    pixel={pixel}
+                    validationRun={validationRun}
+                  />
+                )}
+              </>
+            ),
+            [pixel, validationRun]
+          )
+        )
+      );
+  }
 
   const isDone =
     taskChain.status !== "pending" && taskChain.status !== "running";
