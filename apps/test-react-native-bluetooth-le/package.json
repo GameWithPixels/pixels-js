@@ -30,7 +30,7 @@
   "dependencies": {
     "@systemic-games/react-native-bluetooth-le": "*",
     "react": "18.0.0",
-    "react-native": "0.69.6"
+    "react-native": "0.69.7"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
