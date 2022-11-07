@@ -114,8 +114,8 @@ export default function (
   options?: UsePixelScannerOptions
 ): [ScannedPixel[], (action: PixelScannerAction) => Promise<void>] {
   // Apply options default values
-  const refreshInterval = options?.refreshInterval ?? 1000;
   const sortedByName = options?.sortedByName ?? false;
+  const refreshInterval = options?.refreshInterval ?? 1000;
 
   // Store list of Pixels in a state
   const [pixels, setPixels] = useState<ScannedPixel[]>([]);
@@ -123,17 +123,17 @@ export default function (
   const stateRef = useRef<ScanState>();
 
   // Setup batch updates
-  const isScanning = stateRef.current?.scanner.isScanning;
+  //const isScanning = stateRef.current?.scanner.isScanning;
   useEffect(() => {
-    if (isScanning) {
+    //if (isScanning) {
       const intervalId = setInterval(() => {
         if (stateRef.current?.lastPixels.length) {
           // Keep the list of newly scanned Pixels
           const lastPixels = options?.scanFilter
             ? stateRef.current.lastPixels.filter(options?.scanFilter)
-            : stateRef.current.lastPixels;
-          // And reset the list store in the state
-          stateRef.current.lastPixels = [];
+            : [...stateRef.current.lastPixels];
+          // And reset the stored list
+          stateRef.current.lastPixels.length = 0;
           if (lastPixels.length) {
             setPixels((scannedPixels) => {
               // Create a new array so to always update state
@@ -156,8 +156,8 @@ export default function (
       return () => {
         clearInterval(intervalId);
       };
-    }
-  }, [isScanning, options?.scanFilter, sortedByName, refreshInterval]);
+    //}
+  }, [/*isScanning,*/ options?.scanFilter, sortedByName, refreshInterval]);
 
   // Clean up
   useEffect(() => {

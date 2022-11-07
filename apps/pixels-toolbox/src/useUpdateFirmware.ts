@@ -23,13 +23,13 @@ export default function (
 
   // DFU state and progress
   const [dfuState, setDfuState] = useState<DfuState>();
-  const [dfuProgress, setDfuProgress] = useState(0);
+  const [dfuProgress, setDfuProgress] = useState(-1);
 
   // Reset progress when DFU completes
   useEffect(() => {
     if (dfuState === "dfuCompleted" || dfuState === "dfuAborted") {
       setDfuState(undefined);
-      setDfuProgress(0);
+      setDfuProgress(-1);
     }
   }, [dfuState]);
 

@@ -25,7 +25,7 @@ i18n
           cancel: "Cancel",
           back: "Back",
           validateBoard: "Validate FPC Board",
-          validateDie: "Validate Casted Die",
+          validateDie: "Validate Resin Die",
           d4: "D4",
           d6: "D6",
           pd6: "Pipped D6",

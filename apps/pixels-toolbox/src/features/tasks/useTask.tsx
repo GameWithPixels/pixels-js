@@ -15,22 +15,22 @@ export type TaskRendererProps = PropsWithChildren<{
 
 export type TaskRenderer = FC<TaskRendererProps>;
 
-export type AsyncOperation = () => Promise<unknown>;
+export type TaskOperation = (abortSignal: AbortSignal) => Promise<unknown>;
 
-export class CanceledError extends Error {
+export class TaskCanceledError extends Error {
   constructor(testName: string) {
     super(`Task ${testName} canceled`);
   }
 }
 
-export class FaultedError extends Error {
+export class TaskFaultedError extends Error {
   constructor(testName: string) {
     super(`Task ${testName} faulted`);
   }
 }
 
 export default function (
-  asyncOp: AsyncOperation,
+  asyncOp: TaskOperation,
   taskRenderer: TaskRenderer,
   action: TaskAction = "run"
 ): [TaskStatus, FC<PropsWithChildren>] {
@@ -39,20 +39,23 @@ export default function (
     if (action === "run") {
       setStatus("running");
       const updateStatus = (newStatus: TaskStatus) =>
-        setStatus((status) => (status === "running" ? newStatus : status));
-      let canceled = false;
-      asyncOp()
-        .then(() => !canceled && updateStatus("succeeded"))
+        setStatus((status) => (status !== "running" ? status : newStatus));
+      const abortCtrl = new AbortController();
+      asyncOp(abortCtrl.signal)
+        .then(() => !abortCtrl.signal.aborted && updateStatus("succeeded"))
         .catch((error) => {
-          console.log(`Task error (with canceled: ${canceled})`, error);
-          if (error instanceof CanceledError) {
+          console.log(
+            `Task error (with aborted: ${abortCtrl.signal.aborted})`,
+            error
+          );
+          if (error instanceof TaskCanceledError) {
             updateStatus("canceled");
-          } else if (!canceled) {
+          } else if (!abortCtrl.signal.aborted) {
             updateStatus("faulted");
           }
         });
       return () => {
-        canceled = true;
+        abortCtrl.abort();
         updateStatus("canceled");
       };
     } else if (action === "cancel") {

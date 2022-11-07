@@ -26,7 +26,7 @@ export default function ({
         rounded="md"
       >
         <TaskContainer title={title} taskStatus={taskStatus}>
-          {children}
+          {taskStatus !== "succeeded" && children}
         </TaskContainer>
       </VStack>
     </Center>

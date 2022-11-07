@@ -30,7 +30,6 @@ const styles = StyleSheet.create({
     height: sr(20),
     width: "90%",
     alignSelf: "center",
-    margin: sr(10),
   },
   progressBarForeground: {
     backgroundColor: "blue",

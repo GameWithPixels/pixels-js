@@ -5,8 +5,8 @@ import { getTaskResultEmoji } from "~/features/tasks/TaskResult";
 import { TaskStatus } from "~/features/tasks/useTask";
 
 export interface TaskContainerProps extends PropsWithChildren {
+  taskStatus: TaskStatus;
   title?: string;
-  taskStatus?: TaskStatus;
   isSubTask?: boolean;
 }
 
@@ -32,7 +32,7 @@ export default function ({
           <Text fontWeight={isSubTask ? "normal" : undefined}>{title}</Text>
         </HStack>
       )}
-      {children}
+      {taskStatus === "running" && children}
     </VStack>
   );
 }

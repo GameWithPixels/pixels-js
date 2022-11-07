@@ -1,7 +1,7 @@
 import { FC, Fragment, PropsWithChildren, useEffect } from "react";
 
 import useTask, {
-  AsyncOperation,
+  TaskOperation,
   TaskAction,
   TaskRenderer,
   TaskStatus,
@@ -48,7 +48,7 @@ export default class TaskChain {
 
   constructor(
     action: TaskAction,
-    asyncOp: AsyncOperation,
+    asyncOp: TaskOperation,
     taskRenderer: TaskRenderer
   ) {
     this._action = action;
@@ -75,7 +75,7 @@ export default class TaskChain {
     );
   }
 
-  chainWith(asyncOp: AsyncOperation, taskRenderer: TaskRenderer): TaskChain {
+  chainWith(asyncOp: TaskOperation, taskRenderer: TaskRenderer): TaskChain {
     const numTasks = this._tasksItems.length;
     const prevTaskSucceeded = numTasks
       ? this._tasksItems[numTasks - 1]?.status === "succeeded"

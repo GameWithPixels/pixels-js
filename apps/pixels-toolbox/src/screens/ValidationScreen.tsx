@@ -27,8 +27,8 @@ import {
   CheckBoard,
   CheckLeds,
   ConnectPixel,
-  FlickBoard,
   PrepareDie,
+  ShakeDevice,
   TestInfo,
   UpdateFirmware,
   ValidationRunType,
@@ -42,7 +42,7 @@ import {
   TaskResult,
 } from "~/features/tasks/TaskResult";
 import useTaskChain from "~/features/tasks/useTaskChain";
-import useTestComponent from "~/features/tasks/useTaskComponent";
+import useTaskComponent from "~/features/tasks/useTaskComponent";
 import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 
 function SelectValidationRunPage({
@@ -179,8 +179,8 @@ function DecodePage({
           <Text>{t("startingCamera")}</Text>
         )}
         <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
-          <Text variant="comment">Reset board / die using magnet</Text>
-          <Text variant="comment">and point at camera at it</Text>
+          <Text variant="comment">Reset {validationRun} using magnet</Text>
+          <Text variant="comment">and point camera at it</Text>
         </Center>
         <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
           <Text>{`Testing ${t(dieType)} ${validationRun}`}</Text>
@@ -208,7 +208,7 @@ function TestsPage({
   const [cancel, setCancel] = useState(false);
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
-    ...useTestComponent("ConnectPixel", cancel, (p) => (
+    ...useTaskComponent("ConnectPixel", cancel, (p) => (
       <ConnectPixel
         {...p}
         pixelId={pixelId}
@@ -219,24 +219,24 @@ function TestsPage({
     ))
   )
     .chainWith(
-      ...useTestComponent("CheckBoard", cancel, (p) => (
+      ...useTaskComponent("CheckBoard", cancel, (p) => (
         <>{pixel && <CheckBoard {...p} pixel={pixel} testInfo={testInfo} />}</>
       ))
     )
     .chainWith(
-      ...useTestComponent("FlickBoard", cancel, (p) => (
-        <>{pixel && <FlickBoard {...p} pixel={pixel} testInfo={testInfo} />}</>
+      ...useTaskComponent("ShakeDevice", cancel, (p) => (
+        <>{pixel && <ShakeDevice {...p} pixel={pixel} testInfo={testInfo} />}</>
       ))
     )
     .chainWith(
-      ...useTestComponent("CheckLeds", cancel, (p) => (
+      ...useTaskComponent("CheckLeds", cancel, (p) => (
         <>{pixel && <CheckLeds {...p} pixel={pixel} testInfo={testInfo} />}</>
       ))
     );
   if (testInfo.validationRun === "board") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      ...useTestComponent("UpdateFirmware", cancel, (p) => (
+      ...useTaskComponent("UpdateFirmware", cancel, (p) => (
         <>
           {scannedPixel && (
             <UpdateFirmware {...p} address={scannedPixel.address} />
@@ -248,7 +248,7 @@ function TestsPage({
     taskChain
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent("WaitFaceUp", cancel, (p) => (
+        ...useTaskComponent("WaitFaceUp", cancel, (p) => (
           <>
             {pixel && <WaitFaceUp {...p} pixel={pixel} testInfo={testInfo} />}
           </>
@@ -256,7 +256,7 @@ function TestsPage({
       )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent("PrepareDie", cancel, (p) => (
+        ...useTaskComponent("PrepareDie", cancel, (p) => (
           <>
             {pixel && <PrepareDie {...p} pixel={pixel} testInfo={testInfo} />}
           </>
@@ -264,7 +264,7 @@ function TestsPage({
       )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent("ConnectPixel", cancel, (p) => (
+        ...useTaskComponent("ConnectPixel", cancel, (p) => (
           <ConnectPixel
             {...p}
             pixelId={pixelId}
@@ -276,7 +276,7 @@ function TestsPage({
       )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent("WaitTurnOff", cancel, (p) => (
+        ...useTaskComponent("WaitTurnOff", cancel, (p) => (
           <>
             {pixel && <WaitTurnOff {...p} pixel={pixel} testInfo={testInfo} />}
           </>
