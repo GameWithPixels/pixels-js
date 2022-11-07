@@ -10,7 +10,7 @@ export type TaskStatus =
 export type TaskAction = "run" | "cancel" | "reset";
 
 export type TaskRendererProps = PropsWithChildren<{
-  status: TaskStatus;
+  taskStatus: TaskStatus;
 }>;
 
 export type TaskRenderer = FC<TaskRendererProps>;
@@ -64,5 +64,8 @@ export default function (
       setStatus("pending");
     }
   }, [asyncOp, action]);
-  return [status, ({ children }) => taskRenderer({ children, status })];
+  return [
+    status,
+    ({ children }) => taskRenderer({ children, taskStatus: status }),
+  ];
 }

@@ -1,11 +1,9 @@
 import { Center, VStack, Text, Spinner, HStack } from "native-base";
-import { PropsWithChildren } from "react";
 
 import { getTaskResultEmoji } from "~/features/tasks/TaskResult";
-import { TaskStatus } from "~/features/tasks/useTask";
+import { TaskRendererProps } from "~/features/tasks/useTask";
 
-export interface TaskContainerProps extends PropsWithChildren {
-  taskStatus: TaskStatus;
+export interface TaskContainerProps extends TaskRendererProps {
   title?: string;
   isSubTask?: boolean;
 }
@@ -32,7 +30,7 @@ export default function ({
           <Text fontWeight={isSubTask ? "normal" : undefined}>{title}</Text>
         </HStack>
       )}
-      {taskStatus === "running" && children}
+      {taskStatus !== "succeeded" && children}
     </VStack>
   );
 }

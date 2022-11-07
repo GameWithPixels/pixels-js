@@ -141,6 +141,7 @@ export function CheckBoard({
   action,
   onTaskStatus,
   pixel,
+  testInfo,
 }: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
@@ -168,12 +169,15 @@ export function CheckBoard({
     .chainWith(
       useCallback(() => ValidationTests.checkBatteryVoltage(pixel), [pixel]),
       createTaskStatusContainer("Battery Voltage")
-    )
-    .chainWith(
+    );
+  if (testInfo.validationRun !== "board") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
       createTaskStatusContainer("RSSI")
-    )
-    .withStatusChanged(onTaskStatus);
+    );
+  }
+  taskChain.withStatusChanged(onTaskStatus);
 
   return (
     <TaskGroupComponent title="Check Board" taskStatus={taskChain.status}>
@@ -240,7 +244,7 @@ export function CheckLeds({
       [pixel]
     ),
     (p) => (
-      <TaskContainer taskStatus={p.status} isSubTask>
+      <TaskContainer taskStatus={p.taskStatus} isSubTask>
         <Text variant="comment">
           Check that all {getLedCount(testInfo.dieType)} LEDs are on and fully
           white
@@ -275,7 +279,7 @@ export function WaitFaceUp({
       [pixel, testInfo.dieType]
     ),
     (p) => (
-      <TaskContainer taskStatus={p.status} isSubTask>
+      <TaskContainer taskStatus={p.taskStatus} isSubTask>
         <Text variant="comment">Place die with blinking face up</Text>
       </TaskContainer>
     )
@@ -302,7 +306,7 @@ export function UpdateFirmware({
       await updateFirmware(address);
     }, [address, updateFirmware]),
     (p) => (
-      <TaskContainer taskStatus={p.status} isSubTask>
+      <TaskContainer taskStatus={p.taskStatus} isSubTask>
         <Text variant="comment">DFU State: {dfuState}</Text>
         {dfuProgress >= 0 && <ProgressBar percent={dfuProgress} />}
       </TaskContainer>
@@ -368,7 +372,7 @@ export function WaitTurnOff({
       [pixel]
     ),
     (p) => (
-      <TaskContainer taskStatus={p.status} isSubTask>
+      <TaskContainer taskStatus={p.taskStatus} isSubTask>
         <Text variant="comment">
           Place die in charging case and close the lid
         </Text>

@@ -39,7 +39,7 @@ function MyTest1({
       }
       //throw new Error("Fail0");
     }, []),
-    (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>
+    (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
   )
     .chainWith(
       useCallback(async () => {
@@ -50,7 +50,7 @@ function MyTest1({
         //throw new Error("Fail1");
         onSomeValueRef.current(123);
       }, []),
-      (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>
+      (p) => <Text>{`2. Status: ${p.taskStatus}, value: ${value1}`}</Text>
     )
     .withStatusChanged(onTaskStatus);
   return (
@@ -81,7 +81,7 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
       }
       //throw new Error("Fail2");
     }, [somethingElse]),
-    (p) => <Text>{`1. Status: ${p.status}, value: ${value0}`}</Text>
+    (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
   )
     .chainWith(
       useCallback(async () => {
@@ -92,7 +92,7 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
         }
         //throw new Error("Fail3");
       }, []),
-      (p) => <Text>{`2. Status: ${p.status}, value: ${value1}`}</Text>
+      (p) => <Text>{`2. Status: ${p.taskStatus}, value: ${value1}`}</Text>
     )
     .withStatusChanged(onTaskStatus);
   return (

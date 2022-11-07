@@ -11,7 +11,6 @@ import {
   PixelStatus,
   MessageOrType,
 } from "@systemic-games/react-native-pixels-connect";
-import { acc } from "react-native-reanimated";
 
 import delay from "../delay";
 import { TaskCanceledError, TaskFaultedError } from "./tasks/useTask";
@@ -237,15 +236,18 @@ const ValidationTests = {
   ) => {
     const litForever = async () => {
       const duration = 20000;
-      // TODO use SetAllLEDsToColor message
-      while (!abortSignal.aborted) {
-        await pixel.blink(new Color(0.1, 0.1, 0.1), {
-          count: 1,
-          duration: 2 * duration,
-        }); // TODO abortSignal
-        await delay(duration, abortSignal);
-        //await Promise.allSettled([blink(), wait()]);
-        await pixel.stopAllAnimations(); // TODO use blink `count = 0` instead
+      // TODO use blink `count = 0` instead, or better SetAllLEDsToColor message
+      try {
+        while (!abortSignal.aborted) {
+          const start = Date.now();
+          await pixel.blink(new Color(0.1, 0.1, 0.1), {
+            count: 1,
+            duration: 2 * duration,
+          }); // TODO abortSignal
+          await delay(duration - (Date.now() - start), abortSignal);
+        }
+      } finally {
+        await pixel.stopAllAnimations();
       }
     };
     litForever().catch(() => {});
@@ -281,6 +283,7 @@ const ValidationTests = {
         `Pixel is not ready, status is ${pixel.status}`
       );
     }
+    // TODO use blink `count = 0` instead, or better SetAllLEDsToColor message
     await pixel.blink(new Color(0.03, 0.2, 0), {
       count: 1,
       duration: 40000,

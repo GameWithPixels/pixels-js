@@ -6,11 +6,12 @@ import TaskContainer from "~/components/TaskContainer";
 
 export function createTaskStatusContainer(
   title?: string,
-  children?: ReactNode
+  children?: ReactNode,
+  alwaysShowChildren = false
 ): TaskRenderer {
   return (props) => (
-    <TaskContainer title={title} taskStatus={props.status} isSubTask>
-      {children}
+    <TaskContainer title={title} {...props} isSubTask>
+      {(alwaysShowChildren || props.taskStatus === "running") && children}
     </TaskContainer>
   );
 }
