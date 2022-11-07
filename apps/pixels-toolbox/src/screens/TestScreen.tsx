@@ -10,8 +10,10 @@ import React, { useCallback, useRef, useState } from "react";
 
 import AppPage from "~/components/AppPage";
 import delay from "~/delay";
-import useTaskChain from "~/useTaskChain";
-import useTestComponent, { TaskComponentProps } from "~/useTaskComponent";
+import useTaskChain from "~/features/tasks/useTaskChain";
+import useTestComponent, {
+  TaskComponentProps,
+} from "~/features/tasks/useTaskComponent";
 
 interface MyTest1Props extends TaskComponentProps {
   something: string;

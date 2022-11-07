@@ -10,7 +10,7 @@ import {
   PixelRollStateValues,
 } from "@systemic-games/react-native-pixels-connect";
 
-import delay from "./delay";
+import delay from "../delay";
 
 const ValidationTests = {
   checkLedLoopback: async (pixel: Pixel): Promise<void> => {

@@ -5,7 +5,7 @@ import useTask, {
   TaskAction,
   TaskRenderer,
   TaskStatus,
-} from "~/useTask";
+} from "./useTask";
 
 interface TaskChainItem {
   status: TaskStatus;
