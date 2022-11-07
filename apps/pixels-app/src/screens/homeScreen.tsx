@@ -10,6 +10,8 @@ import {
   Toggle,
   createPixelTheme,
   LightingStyleSelection,
+  PixelInfoComponent,
+  PixelInfo,
 } from "@systemic-games/react-native-pixels-components";
 import { Button, HStack, Text, VStack } from "native-base";
 import React from "react";
@@ -45,6 +47,41 @@ const greenPixelThemeParams = {
   },
 };
 
+const pixel: PixelInfo = {
+  name: "Brookly",
+  rssi: 100,
+  batteryLevel: 100,
+  ledCount: 20,
+  firmwareDate: new Date(),
+  profileName: "Arsène",
+};
+// const pixels: PixelInfo[] = [
+//   {
+//     name: "Bob",
+//     rssi: -60,
+//     batteryLevel: 0.85,
+//     ledCount: 20,
+//     firmwareDate: new Date(),
+//     profileName: "Rainbow",
+//   },
+//   {
+//     name: "Sarah",
+//     rssi: -54,
+//     batteryLevel: 0.5,
+//     ledCount: 8,
+//     firmwareDate: new Date(),
+//     profileName: "Custom",
+//   },
+//   {
+//     name: "Luke",
+//     rssi: -45,
+//     batteryLevel: 0.15,
+//     ledCount: 12,
+//     firmwareDate: new Date(),
+//     profileName: "Speak Numbers",
+//   },
+// ];
+
 const greenPixelTheme = createPixelTheme(greenPixelThemeParams);
 export default function HomeScreen() {
   return (
@@ -63,6 +100,7 @@ export default function HomeScreen() {
           <Toggle text="First screen toggle" />
         </Card>
         <ColorSelection />
+        <PixelInfoComponent pixel={pixel} />
         <ReduxExample />
         <ReduxExample />
         <LightingStyleSelection />
