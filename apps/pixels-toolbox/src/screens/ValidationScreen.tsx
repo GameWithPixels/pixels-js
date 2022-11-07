@@ -90,6 +90,13 @@ function getLedCount(dieType: DieType) {
   }
 }
 
+type ValidationRun = "board" | "die";
+
+interface TestInfo {
+  validationRun: ValidationRun;
+  dieType: DieType;
+}
+
 /*
 type AppStatuses =
   | "Initializing..."
@@ -478,8 +485,6 @@ function ValidationPageOld() {
 }
 */
 
-type ValidationRun = "board" | "die";
-
 function SelectValidationRunPage({
   onSelectRun,
   onBack,
@@ -640,6 +645,21 @@ interface TaskStatusComponentProps extends PropsWithChildren {
   isSubTask?: boolean;
 }
 
+function getTaskResult(
+  taskStatus: TaskStatus
+): "succeeded" | "faulted" | "canceled" | undefined {
+  switch (taskStatus) {
+    case "succeeded":
+    case "faulted":
+    case "canceled":
+      return taskStatus;
+  }
+}
+
+function isTaskCompleted(taskStatus: TaskStatus) {
+  return !!getTaskResult(taskStatus);
+}
+
 function getTaskStatusEmoji(taskStatus: TaskStatus): string {
   return taskStatus === "succeeded"
     ? "☑️"
@@ -715,7 +735,7 @@ function TaskGroupComponent({
 
 interface ConnectPixelProps extends TaskComponentProps {
   pixelId: number;
-  dieType: DieType;
+  testInfo: TestInfo;
   onPixelScanned: (pixel: ScannedPixel) => void;
   onPixelConnected: (pixel: Pixel) => void;
 }
@@ -724,7 +744,7 @@ function ConnectPixel({
   action,
   onTaskStatus,
   pixelId,
-  dieType,
+  testInfo,
   onPixelScanned,
   onPixelConnected,
 }: ConnectPixelProps) {
@@ -787,12 +807,12 @@ function ConnectPixel({
           throw new FaultedError("Empty scanned Pixel");
         }
         const ledCount = scannedPixelRef.current.ledCount;
-        if (ledCount !== getLedCount(dieType)) {
+        if (ledCount !== getLedCount(testInfo.dieType)) {
           throw new FaultedError(
-            `Incorrect die type, expected ${dieType} but got ${ledCount} LEDs`
+            `Incorrect die type, expected ${testInfo.dieType} but got ${ledCount} LEDs`
           );
         }
-      }, [dieType]),
+      }, [testInfo.dieType]),
       createTaskStatusComponent("Check Type")
     )
     .chainWith(
@@ -817,6 +837,7 @@ function ConnectPixel({
 
 interface ValidationTestProps extends TaskComponentProps {
   pixel: Pixel;
+  testInfo: TestInfo;
 }
 
 function CheckBoard({ action, onTaskStatus, pixel }: ValidationTestProps) {
@@ -848,11 +869,12 @@ function CheckBoard({ action, onTaskStatus, pixel }: ValidationTestProps) {
   );
 }
 
-interface CheckLedsProps extends ValidationTestProps {
-  dieType: DieType;
-}
-
-function CheckLeds({ action, onTaskStatus, pixel, dieType }: CheckLedsProps) {
+function CheckLeds({
+  action,
+  onTaskStatus,
+  pixel,
+  testInfo,
+}: ValidationTestProps) {
   const [resolvePromise, setResolvePromise] = useState<(() => void)[]>([]);
   const taskChain = useTaskChain(
     action,
@@ -887,9 +909,10 @@ function CheckLeds({ action, onTaskStatus, pixel, dieType }: CheckLedsProps) {
 
   return (
     <TaskGroupComponent title="Check LEDs" taskStatus={taskChain.status}>
-      {taskChain.status === "running" && (
+      {!isTaskCompleted(taskChain.status) && (
         <Text ml="10%" italic fontWeight="1xl">
-          Check that all {getLedCount(dieType)} LEDs are on and fully white
+          Check that all {getLedCount(testInfo.dieType)} LEDs are on and fully
+          white
         </Text>
       )}
       {taskChain.render()}
@@ -897,16 +920,12 @@ function CheckLeds({ action, onTaskStatus, pixel, dieType }: CheckLedsProps) {
   );
 }
 
-interface FlickBoardProps extends ValidationTestProps {
-  validationRun: ValidationRun;
-}
-
 function FlickBoard({
   action,
   onTaskStatus,
   pixel,
-  validationRun,
-}: FlickBoardProps) {
+  testInfo,
+}: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
     useCallback(() => ValidationTests.waitForBoardFlicked(pixel), [pixel]),
@@ -915,13 +934,15 @@ function FlickBoard({
 
   // TODO effect to stop sending acc data
 
+  const title =
+    testInfo.validationRun === "board" ? "Flick Board" : "Shake Die";
+  const comment =
+    testInfo.validationRun === "board" ? "Flick board" : "Shake die";
   return (
-    <TaskGroupComponent title="Flick Board" taskStatus={taskChain.status}>
-      {taskChain.status === "running" && (
+    <TaskGroupComponent title={title} taskStatus={taskChain.status}>
+      {!isTaskCompleted(taskChain.status) && (
         <Text ml="10%" italic fontWeight="1xl">
-          {`${
-            validationRun === "board" ? "Flick board" : "Shake die"
-          } to test accelerometer`}
+          {comment + " to test accelerometer"}
         </Text>
       )}
       {taskChain.render()}
@@ -929,16 +950,17 @@ function FlickBoard({
   );
 }
 
-interface WaitFaceUpProps extends ValidationTestProps {
-  dieType: DieType;
-}
-
-function WaitFaceUp({ action, onTaskStatus, pixel, dieType }: WaitFaceUpProps) {
+function WaitFaceUp({
+  action,
+  onTaskStatus,
+  pixel,
+  testInfo,
+}: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
     useCallback(
-      () => ValidationTests.waitFaceUp(pixel, getLedCount(dieType)),
-      [dieType, pixel]
+      () => ValidationTests.waitFaceUp(pixel, getLedCount(testInfo.dieType)),
+      [pixel, testInfo.dieType]
     ),
     () => <></>
   ).withStatusChanged(onTaskStatus);
@@ -947,7 +969,7 @@ function WaitFaceUp({ action, onTaskStatus, pixel, dieType }: WaitFaceUpProps) {
 
   return (
     <TaskGroupComponent title="Wait Face Up" taskStatus={taskChain.status}>
-      {taskChain.status === "running" && (
+      {!isTaskCompleted(taskChain.status) && (
         <Text ml="10%" italic fontWeight="1xl">
           Place Die with blinking face up
         </Text>
@@ -987,11 +1009,12 @@ function UpdateFirmware({
   );
 }
 
-interface PrepareDieProps extends ValidationTestProps {
-  dieType: DieType;
-}
-
-function PrepareDie({ action, onTaskStatus, pixel, dieType }: PrepareDieProps) {
+function PrepareDie({
+  action,
+  onTaskStatus,
+  pixel,
+  testInfo,
+}: ValidationTestProps) {
   const [progress, setProgress] = useState(-1);
   const taskChain = useTaskChain(
     action,
@@ -1006,12 +1029,13 @@ function PrepareDie({ action, onTaskStatus, pixel, dieType }: PrepareDieProps) {
   )
     .chainWith(
       useCallback(
-        () => ValidationTests.renameDie(pixel, `Pixel ${dieType}`),
-        [pixel, dieType]
+        () => ValidationTests.renameDie(pixel, `Pixel ${testInfo.dieType}`),
+        [pixel, testInfo.dieType]
       ),
       createTaskStatusComponent("Rename Die")
     )
     .chainWith(
+      //useCallback(() => pixel.disconnect(), [pixel]),
       useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
       createTaskStatusComponent("Exit Validation Mode")
     )
@@ -1024,16 +1048,12 @@ function PrepareDie({ action, onTaskStatus, pixel, dieType }: PrepareDieProps) {
   );
 }
 
-interface WaitTurnOffProps extends ValidationTestProps {
-  validationRun: ValidationRun;
-}
-
 function WaitTurnOff({
   action,
   onTaskStatus,
   pixel,
-  validationRun,
-}: WaitTurnOffProps) {
+  testInfo,
+}: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
     useCallback(async () => {
@@ -1054,14 +1074,14 @@ function WaitTurnOff({
         pixel.addEventListener("status", statusListener);
       });
     }, [pixel]),
-    createTaskStatusComponent(`Turn ${validationRun} off`)
+    createTaskStatusComponent(`Turn ${testInfo.validationRun} off`)
   ).withStatusChanged(onTaskStatus);
 
   // TODO effect to stop listening to status events
 
   return (
     <TaskGroupComponent title="Wait Turn Off" taskStatus={taskChain.status}>
-      {taskChain.status === "running" && (
+      {!isTaskCompleted(taskChain.status) && (
         <Text ml="10%" italic fontWeight="1xl">
           Place die in charging case and close the lid
         </Text>
@@ -1073,13 +1093,11 @@ function WaitTurnOff({
 
 function TestsPage({
   pixelId,
-  validationRun,
-  dieType,
+  testInfo,
   onResult,
 }: {
   pixelId: number;
-  validationRun: ValidationRun;
-  dieType: DieType;
+  testInfo: TestInfo;
   onResult?: (result: "succeeded" | "faulted" | "canceled") => void;
 }) {
   const { t } = useTranslation();
@@ -1088,170 +1106,89 @@ function TestsPage({
   const [cancel, setCancel] = useState(false);
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
-    ...useTestComponent(
-      "ConnectPixel",
-      cancel,
-      useCallback(
-        (p) => (
-          <ConnectPixel
-            {...p}
-            pixelId={pixelId}
-            dieType={dieType}
-            onPixelScanned={setScannedPixel}
-            onPixelConnected={setPixel}
-          />
-        ),
-        [dieType, pixelId]
-      )
-    )
+    ...useTestComponent("ConnectPixel", cancel, (p) => (
+      <ConnectPixel
+        {...p}
+        pixelId={pixelId}
+        testInfo={testInfo}
+        onPixelScanned={setScannedPixel}
+        onPixelConnected={setPixel}
+      />
+    ))
   )
     .chainWith(
-      ...useTestComponent(
-        "CheckBoard",
-        cancel,
-        useCallback(
-          (p) => <>{pixel && <CheckBoard {...p} pixel={pixel} />}</>,
-          [pixel]
-        )
-      )
+      ...useTestComponent("CheckBoard", cancel, (p) => (
+        <>{pixel && <CheckBoard {...p} pixel={pixel} testInfo={testInfo} />}</>
+      ))
     )
     .chainWith(
-      ...useTestComponent(
-        "FlickBoard",
-        cancel,
-        useCallback(
-          (p) => (
-            <>
-              {pixel && (
-                <FlickBoard
-                  {...p}
-                  pixel={pixel}
-                  validationRun={validationRun}
-                />
-              )}
-            </>
-          ),
-          [pixel, validationRun]
-        )
-      )
+      ...useTestComponent("FlickBoard", cancel, (p) => (
+        <>{pixel && <FlickBoard {...p} pixel={pixel} testInfo={testInfo} />}</>
+      ))
     )
     .chainWith(
-      ...useTestComponent(
-        "CheckLeds",
-        cancel,
-        useCallback(
-          (p) => (
-            <>{pixel && <CheckLeds {...p} pixel={pixel} dieType={dieType} />}</>
-          ),
-          [dieType, pixel]
-        )
-      )
+      ...useTestComponent("CheckLeds", cancel, (p) => (
+        <>{pixel && <CheckLeds {...p} pixel={pixel} testInfo={testInfo} />}</>
+      ))
     );
-  if (validationRun === "board") {
+  if (testInfo.validationRun === "board") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      ...useTestComponent(
-        "UpdateFirmware",
-        cancel,
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useCallback(
-          (p) => (
-            <>
-              {scannedPixel && (
-                <UpdateFirmware {...p} address={scannedPixel.address} />
-              )}
-            </>
-          ),
-          [scannedPixel]
-        )
-      )
+      ...useTestComponent("UpdateFirmware", cancel, (p) => (
+        <>
+          {scannedPixel && (
+            <UpdateFirmware {...p} address={scannedPixel.address} />
+          )}
+        </>
+      ))
     );
   } else {
     taskChain
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent(
-          "WaitFaceUp",
-          cancel,
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          useCallback(
-            (p) => (
-              <>
-                {pixel && <WaitFaceUp {...p} pixel={pixel} dieType={dieType} />}
-              </>
-            ),
-            [dieType, pixel]
-          )
-        )
+        ...useTestComponent("WaitFaceUp", cancel, (p) => (
+          <>
+            {pixel && <WaitFaceUp {...p} pixel={pixel} testInfo={testInfo} />}
+          </>
+        ))
       )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent(
-          "PrepareDie",
-          cancel,
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          useCallback(
-            (p) => (
-              <>
-                {pixel && <PrepareDie {...p} pixel={pixel} dieType={dieType} />}
-              </>
-            ),
-            [dieType, pixel]
-          )
-        )
+        ...useTestComponent("PrepareDie", cancel, (p) => (
+          <>
+            {pixel && <PrepareDie {...p} pixel={pixel} testInfo={testInfo} />}
+          </>
+        ))
       )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent(
-          "ConnectPixel",
-          cancel,
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          useCallback(
-            (p) => (
-              <ConnectPixel
-                {...p}
-                pixelId={pixelId}
-                dieType={dieType}
-                onPixelScanned={setScannedPixel}
-                onPixelConnected={setPixel}
-              />
-            ),
-            [dieType, pixelId]
-          )
-        )
+        ...useTestComponent("ConnectPixel", cancel, (p) => (
+          <ConnectPixel
+            {...p}
+            pixelId={pixelId}
+            testInfo={testInfo}
+            onPixelScanned={setScannedPixel}
+            onPixelConnected={setPixel}
+          />
+        ))
       )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTestComponent(
-          "WaitTurnOff",
-          cancel,
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          useCallback(
-            (p) => (
-              <>
-                {pixel && (
-                  <WaitTurnOff
-                    {...p}
-                    pixel={pixel}
-                    validationRun={validationRun}
-                  />
-                )}
-              </>
-            ),
-            [pixel, validationRun]
-          )
-        )
+        ...useTestComponent("WaitTurnOff", cancel, (p) => (
+          <>
+            {pixel && <WaitTurnOff {...p} pixel={pixel} testInfo={testInfo} />}
+          </>
+        ))
       );
   }
 
-  const isDone =
-    taskChain.status !== "pending" && taskChain.status !== "running";
+  const result = getTaskResult(taskChain.status);
   const onOkCancel = () => {
-    if (!isDone) {
+    if (result) {
+      onResult?.(result);
+    } else {
       setCancel(true);
       onResult?.("canceled");
-    } else {
-      onResult?.(taskChain.status);
     }
   };
   const scrollRef = useRef<any>();
@@ -1262,18 +1199,18 @@ function TestsPage({
   });
   return (
     <Center w="100%" h="100%" p="2%" bg={useBackgroundColor()}>
-      <Text>{`Testing ${t(dieType)} ${validationRun}`}</Text>
+      <Text>{`Testing ${t(testInfo.dieType)} ${testInfo.validationRun}`}</Text>
       {/* TODO scroll view should expand */}
       <ScrollView w="100%" ref={scrollRef}>
         <>{taskChain.render()}</>
-        {isDone && (
+        {result && (
           <Text mb="10%" fontSize={150} textAlign="center">
             {getTaskStatusEmoji(taskChain.status)}
           </Text>
         )}
       </ScrollView>
       <Button w="100%" onPress={onOkCancel}>
-        {isDone ? t("ok") : t("cancel")}
+        {result ? t("ok") : t("cancel")}
       </Button>
     </Center>
   );
@@ -1307,8 +1244,7 @@ function ValidationPage() {
     />
   ) : (
     <TestsPage
-      validationRun={validationRun}
-      dieType={dieType}
+      testInfo={{ validationRun, dieType }}
       pixelId={pixelId}
       onResult={(result) => {
         console.log("Validation tests result:", result);
