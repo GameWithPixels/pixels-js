@@ -1,7 +1,7 @@
 {
   "name": "@systemic-games/pixels-toolbox",
   "description": "Internal app for testing Pixels dice and new software features.",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "main": "index.js",
   "workspaces": {
     "nohoist": [
