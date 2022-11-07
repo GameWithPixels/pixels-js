@@ -145,7 +145,7 @@ export function CheckBoard({
   const taskChain = useTaskChain(
     action,
     useCallback(
-      (abortSignal) => ValidationTests.waitCharging(pixel, false /* TODO */, abortSignal),
+      (abortSignal) => ValidationTests.waitCharging(pixel, true, abortSignal),
       [pixel]
     ),
     createTaskStatusContainer(
