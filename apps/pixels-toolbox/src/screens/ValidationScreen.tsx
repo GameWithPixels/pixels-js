@@ -1,14 +1,11 @@
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import {
   Color,
   getPixel,
-  MessageTypeValues,
   Pixel,
-  PixelRollStateValues,
   PixelStatus,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
-import { getImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
 import {
   extendTheme,
   useColorModeValue,
@@ -23,24 +20,19 @@ import {
   HStack,
 } from "native-base";
 import React, {
-  FC,
   PropsWithChildren,
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
-import { runOnJS } from "react-native-reanimated";
 import {
   Camera,
   CameraPermissionStatus,
-  Frame,
   useCameraDevices,
-  useFrameProcessor,
 } from "react-native-vision-camera";
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
@@ -48,20 +40,11 @@ import ValidationTests from "~/ValidationTests";
 import assertUnreachable from "~/assertUnreachable";
 import AppPage from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
-import SelectPixel from "~/components/SelectPixel";
 import delay from "~/delay";
-import getDfuFileInfo from "~/getDfuFileInfo";
 import standardProfile from "~/standardProfile";
-import toLocaleDateTimeString from "~/toLocaleDateTimeString";
-import useDfuFiles from "~/useDfuFiles";
-import usePixelBattery from "~/usePixelBattery";
-import usePixelConnector from "~/usePixelConnector";
-import usePixelIdDecoder from "~/usePixelIdDecoder";
 import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
-import usePixelRssi from "~/usePixelRssi";
 import usePixelScanner from "~/usePixelScanner";
-import usePixelTelemetry from "~/usePixelTelemetry";
-import useTask, { FaultedError, TaskRenderer, TaskStatus } from "~/useTask";
+import { FaultedError, TaskRenderer, TaskStatus } from "~/useTask";
 import useTaskChain from "~/useTaskChain";
 import useTestComponent, { TaskComponentProps } from "~/useTaskComponent";
 import useUpdateFirmware from "~/useUpdateFirmware";
@@ -96,394 +79,6 @@ interface TestInfo {
   validationRun: ValidationRun;
   dieType: DieType;
 }
-
-/*
-type AppStatuses =
-  | "Initializing..."
-  | "Identifying..."
-  | "Searching..."
-  | "Connecting..."
-  | "Testing..."
-  | "Test Passed"
-  | "Test Failed";
-
-function ValidationPageOld() {
-  const errorHandler = useErrorHandler();
-
-  // Camera
-  const [cameraPermission, setCameraPermission] =
-    useState<CameraPermissionStatus>();
-  const devices = useCameraDevices("wide-angle-camera");
-  const cameraRef = useRef<Camera>(null);
-
-  // Camera permissions
-  useEffect(() => {
-    console.log("Requesting camera permission");
-    Camera.requestCameraPermission().then((perm) => {
-      console.log(`Camera permission: ${perm}`);
-      setCameraPermission(perm);
-      return perm;
-    });
-  }, []);
-
-  // We use the back camera
-  const device = devices.back;
-  const cameraReady = cameraPermission === "authorized" && device;
-  useEffect(() => {
-    if (cameraReady) {
-      setStatusText("Identifying...");
-    }
-  }, [cameraReady]);
-
-  // PixelId decoder
-  const [decoderState, decoderDispatch] = usePixelIdDecoder();
-
-  // Get the average R, G and B for each image captured by the camera
-  const frameProcessor = useFrameProcessor(
-    (frame) => {
-      "worklet";
-      try {
-        const result = getImageRgbAverages(frame, {
-          subSamplingX: 4,
-          subSamplingY: 2,
-          // writeImage: false,
-          // writePlanes: false,
-        });
-        runOnJS(decoderDispatch)({ rgbAverages: result });
-      } catch (error) {
-        errorHandler(
-          new Error(
-            `Exception in frame processor "getImageRgbAverages": ${error}`
-          )
-        );
-      }
-    },
-    [decoderDispatch, errorHandler]
-  );
-
-  // Connection to Pixel
-  const [connectorState, connectorDispatch] = usePixelConnector();
-
-  // Reset decoder when status is back to identifying
-  // useEffect(() => {
-  //   console.log("Status: " + statusText);
-  //   if (statusText === "Identifying...") {
-  //     console.log("Resetting device id decoding");
-  //     decoderDispatch({ reset: true });
-  //   }
-  // }, [decoderDispatch, statusText]);
-
-  // Connect when pixel id is found
-  useEffect(() => {
-    const pixelId = decoderState.pixelId;
-    if (pixelId) {
-      connectorDispatch("connect", { pixelId });
-    }
-  }, [connectorDispatch, decoderState.pixelId]);
-
-  // And disconnect when loosing focus
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        connectorDispatch("disconnect");
-      };
-    }, [connectorDispatch])
-  );
-
-  // Overall status
-  const [statusText, setStatusText] = useState<AppStatuses>("Initializing...");
-
-  // Refresh battery level and RSSI
-  const [rssi, rssiDispatch] = usePixelRssi(connectorState.pixel);
-  const [battery, batteryDispatch] = usePixelBattery(connectorState.pixel);
-  const [telemetry, telemetryDispatch] = usePixelTelemetry(
-    connectorState.pixel
-  );
-
-  const telemetryStatsRef = useRef<TelemetryStats>(new TelemetryStats());
-  useEffect(() => {
-    if (telemetry) {
-      telemetryStatsRef.current.push(telemetry);
-    }
-  }, [telemetry]);
-
-  // Update status text based Pixel connector status
-  useEffect(() => {
-    switch (connectorState.status) {
-      case "scanning":
-        setStatusText("Searching...");
-        break;
-      case "connecting":
-        setStatusText("Connecting...");
-        break;
-      case "connected":
-        if (connectorState.pixel && connectorState.scannedPixel) {
-          const pixel = connectorState.pixel;
-          const firmwareDate = new Date(
-            connectorState.scannedPixel.buildTimestamp * 1000
-          );
-          console.log(
-            "Connected to Pixel",
-            pixel.name,
-            "firmware version is",
-            toLocaleDateTimeString(firmwareDate),
-            "running validation tests..."
-          );
-          setStatusText("Testing...");
-          runValidationTests(pixel)
-            .then((success) => {
-              setStatusText((status) => {
-                if (status === "Testing...") {
-                  return success ? "Test Passed" : "Test Failed";
-                }
-                return status;
-              });
-            })
-            .catch(errorHandler)
-            .then(() => {
-              rssiDispatch("start");
-              batteryDispatch("start");
-              telemetryDispatch("start");
-            });
-        }
-        break;
-      case "disconnected":
-        setStatusText((statusText) => {
-          if (statusText !== "Initializing...") {
-            decoderDispatch({ reset: true });
-            return "Identifying...";
-          }
-          return statusText;
-        });
-        break;
-      default: {
-        const check: never = connectorState.status;
-        throw new Error(check);
-      }
-    }
-  }, [
-    batteryDispatch,
-    connectorState,
-    decoderDispatch,
-    errorHandler,
-    rssiDispatch,
-    telemetryDispatch,
-  ]);
-
-  // DFU files
-  const [bootloaderPath, firmwarePath] = useDfuFiles(dfuFiles);
-  useEffect(() => {
-    if (bootloaderPath.length) {
-      console.log(
-        "DFU files loaded, version is",
-        toLocaleDateTimeString(getDfuFileInfo(firmwarePath).date ?? new Date())
-      );
-    }
-  }, [bootloaderPath, firmwarePath]);
-
-  // DFU state and progress
-  const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
-  const [dfuProgress, setDfuProgress] = useState(0);
-
-  // Reset progress when DFU completes
-  useEffect(() => {
-    if (dfuState === "dfuCompleted" || dfuState === "dfuAborted") {
-      setDfuProgress(0);
-    }
-  }, [dfuState]);
-
-  // Profile transfer
-  const [profileTransferProgress, setProfileTransferProgress] = useState(-1);
-
-  const renderMainUI = (device: CameraDevice) => {
-    const isConnectingOrConnected =
-      connectorState.status === "connecting" ||
-      connectorState.status === "connected";
-    const pixel = connectorState.pixel;
-    const isConnected = pixel && connectorState.status === "connected";
-    const testDone =
-      statusText === "Test Passed" || statusText === "Test Failed";
-
-    // https://mrousavy.com/react-native-vision-camera/docs/api/interfaces/CameraDeviceFormat/
-    // const w = 720; // 1280, 720, 640, 320
-    // const h = 480; // 720, 480, 480, 240
-    // const format: CameraDeviceFormat = {
-    //   photoWidth: w,
-    //   photoHeight: h,
-    //   videoWidth: w,
-    //   videoHeight: h,
-    //   frameRateRanges: [{ minFrameRate: 30, maxFrameRate: 30 }],
-    //   colorSpaces: ["yuv"],
-    //   pixelFormat: "420v",
-    // };
-    // const arr: number[] = [];
-    // device.formats.forEach(f => {
-    //   //if (f.videoWidth >= 640 && f.videoWidth <= 1280 && f.colorSpaces[0] === "yuv") {
-    //   f.frameRateRanges.forEach(r => {
-    //     const c = r.maxFrameRate;
-    //     if (!arr.includes(c)) {
-    //       arr.push(c)
-    //       console.log(c);
-    //     }
-    //   })
-    // });
-    return (
-      <>
-        <Camera
-          ref={cameraRef}
-          style={styles.camera}
-          device={device}
-          isActive
-          photo
-          hdr={false}
-          lowLightBoost={false}
-          frameProcessor={
-            device.supportsParallelVideoProcessing ? frameProcessor : undefined
-          }
-          videoStabilizationMode="off"
-          // format={format} TODO can't get camera to switch to given resolution
-        />
-        {dfuState !== "dfuCompleted" && dfuState !== "dfuAborted" ? (
-          <>
-            <Text style={styles.infoText}>{`DFU state: ${dfuState}`}</Text>
-            <ProgressBar percent={dfuProgress} />
-          </>
-        ) : (
-          isConnectingOrConnected && (
-            <View>
-              {profileTransferProgress >= 0 && (
-                <ProgressBar percent={100 * profileTransferProgress} />
-              )}
-              {telemetry && (
-                <>
-                  <Text style={styles.infoText}>
-                    {"Acc: " +
-                      telemetry.accX.toFixed(2) +
-                      ", " +
-                      telemetry.accY.toFixed(2) +
-                      ", " +
-                      telemetry.accZ.toFixed(2)}
-                  </Text>
-                  <Text style={styles.infoText}>
-                    {" => min=" +
-                      telemetryStatsRef.current.minAccMagnitude.toFixed(2) +
-                      ", max=" +
-                      telemetryStatsRef.current.maxAccMagnitude.toFixed(2)}
-                  </Text>
-                </>
-              )}
-              {rssi && (
-                <Text
-                  style={styles.infoText}
-                >{`RSSI: ${rssi.value} dBm, channel: ${rssi.channelIndex}`}</Text>
-              )}
-              {battery && (
-                <Text style={styles.infoText}>
-                  {`Battery: ${battery.voltage.toFixed(2)} V, charging:` +
-                    ` ${battery.charging ? "yes" : "no"}`}
-                </Text>
-              )}
-              {isConnected ? (
-                <View style={styles.containerHoriz}>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() =>
-                      pixel
-                        ?.blink(new Color(0.1, 0.1, 0.1), { duration: 10000 })
-                        .catch(errorHandler)
-                    }
-                  >
-                    White
-                  </Button>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() => checkFaceUp(pixel, 4).catch(errorHandler)}
-                  >
-                    4 up
-                  </Button>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() =>
-                      finalSetup(pixel, setProfileTransferProgress).catch(
-                        errorHandler
-                      )
-                    }
-                  >
-                    Setup
-                  </Button>
-                </View>
-              ) : (
-                <></>
-              )}
-              {testDone ? (
-                <View style={styles.containerHoriz}>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() => {
-                      if (connectorState.pixel && connectorState.scannedPixel) {
-                        rssiDispatch("stop");
-                        batteryDispatch("stop");
-                        telemetryDispatch("stop");
-                        updateFirmware(
-                          connectorState.scannedPixel.address,
-                          bootloaderPath,
-                          firmwarePath,
-                          setDfuState,
-                          setDfuProgress
-                        ).catch(errorHandler);
-                      }
-                    }}
-                  >
-                    DFU
-                  </Button>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() =>
-                      connectorState.pixel?.turnOff().catch(errorHandler)
-                    }
-                  >
-                    Done
-                  </Button>
-                </View>
-              ) : (
-                <Button
-                  style={styles.button}
-                  textStyle={styles.buttonText}
-                  onPress={() => connectorDispatch("disconnect")}
-                >
-                  Cancel
-                </Button>
-              )}
-            </View>
-          )
-        )}
-        <View
-          style={[
-            styles.scanColorIndicator,
-            {
-              backgroundColor: decoderState.scanColor
-                ? decoderState.scanColor
-                : "white",
-            },
-          ]}
-        />
-      </>
-    );
-  };
-
-  return (
-    <>
-      <Text style={styles.statusText}>{statusText}</Text>
-      {cameraReady && renderMainUI(device)}
-    </>
-  );
-}
-*/
 
 function SelectValidationRunPage({
   onSelectRun,
@@ -1317,72 +912,3 @@ export default function () {
     </AppPage>
   );
 }
-/*
-// Our standard colors
-const Colors = {
-  dark: "#100F1E",
-  light: "#1E213A",
-  accent: "#6A78FF",
-  text: "#8194AE",
-  lightText: "#D1D1D1",
-  darkText: "#536077",
-} as const;
-
-const styles = StyleSheet.create({
-  //...globalStyles,
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: Colors.dark,
-    padding: sr(8),
-  },
-  containerHoriz: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  containerFooter: {
-    height: sr(50),
-    bottom: sr(50),
-    width: "100%",
-    position: "absolute",
-  },
-  camera: {
-    flex: 1,
-  },
-  button: {
-    flex: 1,
-    backgroundColor: Colors.light,
-    padding: sr(5),
-    margin: sr(5),
-    borderRadius: sr(5),
-  },
-  buttonText: {
-    fontSize: sr(22),
-    color: Colors.lightText,
-  },
-  statusText: {
-    fontSize: sr(40),
-    color: Colors.text,
-    alignSelf: "center",
-  },
-  deviceIdText: {
-    fontSize: sr(25),
-    color: Colors.lightText,
-    fontStyle: "italic",
-    alignSelf: "center",
-    paddingBottom: sr(10),
-  },
-  infoText: {
-    fontSize: sr(25),
-    color: Colors.text,
-    alignSelf: "center",
-  },
-  scanColorIndicator: {
-    position: "absolute",
-    top: sr(10),
-    left: sr(10),
-    width: sr(40),
-    height: sr(40),
-  },
-});
-*/
