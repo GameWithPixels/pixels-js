@@ -1,11 +1,11 @@
-import { Box, Center, VStack } from "native-base";
+import { Center, VStack } from "native-base";
 import { PropsWithChildren } from "react";
 
-import TaskStatusComponent from "./TaskStatusComponent";
+import TaskContainer from "./TaskContainer";
 
 import { TaskStatus } from "~/features/tasks/useTask";
 
-export interface TaskGroupComponentProps extends PropsWithChildren {
+export interface TaskGroupContainerProps extends PropsWithChildren {
   title: string;
   taskStatus: TaskStatus;
 }
@@ -14,10 +14,10 @@ export default function ({
   children,
   title,
   taskStatus,
-}: TaskGroupComponentProps) {
+}: TaskGroupContainerProps) {
   return (
     <Center w="100%" py="3">
-      <Box
+      <VStack
         bg="coolGray.600"
         w="95%"
         borderColor="warmGray.400"
@@ -25,9 +25,10 @@ export default function ({
         p="2"
         rounded="md"
       >
-        <TaskStatusComponent title={title} taskStatus={taskStatus} />
-        {taskStatus !== "succeeded" && <VStack>{children}</VStack>}
-      </Box>
+        <TaskContainer title={title} taskStatus={taskStatus}>
+          {children}
+        </TaskContainer>
+      </VStack>
     </Center>
   );
 }

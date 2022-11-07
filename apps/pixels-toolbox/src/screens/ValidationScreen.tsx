@@ -179,8 +179,8 @@ function DecodePage({
           <Text>{t("startingCamera")}</Text>
         )}
         <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
-          <Text>Reset board / die using magnet</Text>
-          <Text>and point at camera at it</Text>
+          <Text variant="comment">Reset board / die using magnet</Text>
+          <Text variant="comment">and point at camera at it</Text>
         </Center>
         <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
           <Text>{`Testing ${t(dieType)} ${validationRun}`}</Text>
@@ -371,6 +371,12 @@ const theme = extendTheme({
         },
         _light: {
           color: "coolGray.700",
+        },
+      },
+      variants: {
+        comment: {
+          italic: true,
+          fontWeight: "1xl",
         },
       },
     },

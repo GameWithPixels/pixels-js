@@ -9,14 +9,14 @@ import { Button, Text } from "native-base";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import ProgressBar from "./ProgressBar";
-import TaskGroupComponent from "./TaskGroupComponent";
-import { createTaskStatusComponent } from "./TaskStatusComponent";
+import TaskContainer from "./TaskContainer";
+import TaskGroupComponent from "./TaskGroupContainer";
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
 import delay from "~/delay";
 import { DieType, getLedCount } from "~/features/DieType";
 import ValidationTests from "~/features/ValidationTests";
-import { isTaskCompleted } from "~/features/tasks/TaskResult";
+import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { FaultedError } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
@@ -97,7 +97,7 @@ export function ConnectPixel({
         await scannerDispatch("stop");
       }
     }, [pixelId, scannerDispatch]),
-    createTaskStatusComponent("BLE Scan")
+    createTaskStatusContainer("BLE Scan")
   )
     .chainWith(
       useCallback(async () => {
@@ -111,7 +111,7 @@ export function ConnectPixel({
           );
         }
       }, [testInfo.dieType]),
-      createTaskStatusComponent("Check Type")
+      createTaskStatusContainer("Check Type")
     )
     .chainWith(
       useCallback(async () => {
@@ -122,7 +122,7 @@ export function ConnectPixel({
         await pixel.connect();
         setPixel(pixel);
       }, []),
-      createTaskStatusComponent("Connect")
+      createTaskStatusContainer("Connect")
     )
     .withStatusChanged(onTaskStatus);
 
@@ -146,19 +146,19 @@ export function CheckBoard({
   const taskChain = useTaskChain(
     action,
     useCallback(() => ValidationTests.checkLedLoopback(pixel), [pixel]),
-    createTaskStatusComponent("LED Loopback")
+    createTaskStatusContainer("LED Loopback")
   )
     .chainWith(
       useCallback(() => ValidationTests.checkAccelerometer(pixel), [pixel]),
-      createTaskStatusComponent("Accelerometer")
+      createTaskStatusContainer("Accelerometer")
     )
     .chainWith(
       useCallback(() => ValidationTests.checkBatteryVoltage(pixel), [pixel]),
-      createTaskStatusComponent("Battery Voltage")
+      createTaskStatusContainer("Battery Voltage")
     )
     .chainWith(
       useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
-      createTaskStatusComponent("RSSI")
+      createTaskStatusContainer("RSSI")
     )
     .withStatusChanged(onTaskStatus);
 
@@ -166,6 +166,36 @@ export function CheckBoard({
 
   return (
     <TaskGroupComponent title="Check Board" taskStatus={taskChain.status}>
+      {taskChain.render()}
+    </TaskGroupComponent>
+  );
+}
+
+export function FlickBoard({
+  action,
+  onTaskStatus,
+  pixel,
+  testInfo,
+}: ValidationTestProps) {
+  const taskChain = useTaskChain(
+    action,
+    useCallback(() => ValidationTests.waitForBoardFlicked(pixel), [pixel]),
+    () => (
+      <TaskContainer isSubTask>
+        <Text variant="comment">
+          {(testInfo.validationRun === "board" ? "Flick board" : "Shake die") +
+            " to test accelerometer"}
+        </Text>
+      </TaskContainer>
+    )
+  ).withStatusChanged(onTaskStatus);
+
+  // TODO effect to stop sending acc data
+
+  const title =
+    testInfo.validationRun === "board" ? "Flick Board" : "Shake Die";
+  return (
+    <TaskGroupComponent title={title} taskStatus={taskChain.status}>
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -199,11 +229,15 @@ export function CheckLeds({
       });
     }, [pixel]),
     () => (
-      <>
+      <TaskContainer isSubTask>
+        <Text variant="comment">
+          Check that all {getLedCount(testInfo.dieType)} LEDs are on and fully
+          white
+        </Text>
         {resolvePromise[0] && (
           <Button onPress={() => resolvePromise[0]()}>OK</Button>
         )}
-      </>
+      </TaskContainer>
     )
   ).withStatusChanged(onTaskStatus);
 
@@ -211,42 +245,6 @@ export function CheckLeds({
 
   return (
     <TaskGroupComponent title="Check LEDs" taskStatus={taskChain.status}>
-      {!isTaskCompleted(taskChain.status) && (
-        <Text ml="10%" italic fontWeight="1xl">
-          Check that all {getLedCount(testInfo.dieType)} LEDs are on and fully
-          white
-        </Text>
-      )}
-      {taskChain.render()}
-    </TaskGroupComponent>
-  );
-}
-
-export function FlickBoard({
-  action,
-  onTaskStatus,
-  pixel,
-  testInfo,
-}: ValidationTestProps) {
-  const taskChain = useTaskChain(
-    action,
-    useCallback(() => ValidationTests.waitForBoardFlicked(pixel), [pixel]),
-    () => <></>
-  ).withStatusChanged(onTaskStatus);
-
-  // TODO effect to stop sending acc data
-
-  const title =
-    testInfo.validationRun === "board" ? "Flick Board" : "Shake Die";
-  const comment =
-    testInfo.validationRun === "board" ? "Flick board" : "Shake die";
-  return (
-    <TaskGroupComponent title={title} taskStatus={taskChain.status}>
-      {!isTaskCompleted(taskChain.status) && (
-        <Text ml="10%" italic fontWeight="1xl">
-          {comment + " to test accelerometer"}
-        </Text>
-      )}
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -264,18 +262,17 @@ export function WaitFaceUp({
       () => ValidationTests.waitFaceUp(pixel, getLedCount(testInfo.dieType)),
       [pixel, testInfo.dieType]
     ),
-    () => <></>
+    () => (
+      <TaskContainer isSubTask>
+        <Text variant="comment">Place die with blinking face up</Text>
+      </TaskContainer>
+    )
   ).withStatusChanged(onTaskStatus);
 
   // TODO abort task on cancel
 
   return (
     <TaskGroupComponent title="Wait Face Up" taskStatus={taskChain.status}>
-      {!isTaskCompleted(taskChain.status) && (
-        <Text ml="10%" italic fontWeight="1xl">
-          Place die with blinking face up
-        </Text>
-      )}
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -295,12 +292,10 @@ export function UpdateFirmware({
       await updateFirmware(address);
     }, [address, updateFirmware]),
     (p) => (
-      <>
-        <Text ml="10%" italic fontWeight="1xl">
-          DFU State: {dfuState}
-        </Text>
+      <TaskContainer isSubTask>
+        <Text variant="comment">DFU State: {dfuState}</Text>
         <ProgressBar percent={dfuProgress} />
-      </>
+      </TaskContainer>
     )
   ).withStatusChanged(onTaskStatus);
 
@@ -324,7 +319,7 @@ export function PrepareDie({
       () => ValidationTests.updateProfile(pixel, standardProfile, setProgress),
       [pixel]
     ),
-    createTaskStatusComponent(
+    createTaskStatusContainer(
       "Update Profile",
       <ProgressBar percent={100 * progress} />
     )
@@ -334,12 +329,12 @@ export function PrepareDie({
         () => ValidationTests.renameDie(pixel, `Pixel ${testInfo.dieType}`),
         [pixel, testInfo.dieType]
       ),
-      createTaskStatusComponent("Rename Die")
+      createTaskStatusContainer("Rename Die")
     )
     .chainWith(
       //useCallback(() => pixel.disconnect(), [pixel]),
       useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
-      createTaskStatusComponent("Exit Validation Mode")
+      createTaskStatusContainer("Exit Validation Mode")
     )
     .withStatusChanged(onTaskStatus);
 
@@ -376,18 +371,20 @@ export function WaitTurnOff({
         pixel.addEventListener("status", statusListener);
       });
     }, [pixel]),
-    createTaskStatusComponent(`Turn ${testInfo.validationRun} off`)
+    () => (
+      <TaskContainer isSubTask>
+        <Text variant="comment">
+          Place die in charging case and close the lid
+        </Text>
+      </TaskContainer>
+    )
   ).withStatusChanged(onTaskStatus);
 
   // TODO effect to stop listening to status events
 
+  const title = `Wait Turn ${testInfo.validationRun} Off`;
   return (
-    <TaskGroupComponent title="Wait Turn Off" taskStatus={taskChain.status}>
-      {!isTaskCompleted(taskChain.status) && (
-        <Text ml="10%" italic fontWeight="1xl">
-          Place die in charging case and close the lid
-        </Text>
-      )}
+    <TaskGroupComponent title={title} taskStatus={taskChain.status}>
       {taskChain.render()}
     </TaskGroupComponent>
   );

@@ -16,7 +16,7 @@ export function isTaskCompleted(taskStatus: TaskStatus) {
 }
 
 export function getTaskResultEmoji(
-  taskStatus: TaskStatus | TaskResult
+  taskStatus?: TaskStatus | TaskResult
 ): string {
   return taskStatus === "succeeded"
     ? "☑️"
