@@ -235,7 +235,7 @@ export function CheckLeds({
         ValidationTests.checkLedsLitUp(
           pixel,
           isBoard(settings.formFactor)
-            ? new Color(0.01, 0.01, 0.01)
+            ? new Color(0.03, 0.03, 0.03)
             : new Color(0.1, 0.1, 0.1),
           (r) => setResolvePromise(() => r),
           abortSignal
