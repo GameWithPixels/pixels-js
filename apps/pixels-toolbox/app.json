@@ -3,7 +3,7 @@
     "name": "Pixels Toolbox",
     "slug": "pixels-toolbox",
     "owner": "gamewithpixels",
-    "version": "1.4.3",
+    "version": "1.4.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
