@@ -29,11 +29,13 @@ import {
   CheckLeds,
   ConnectPixel,
   PrepareDie,
-  ShakeDevice,
+  ShakeDie,
   ValidationTestsSettings,
   UpdateFirmware,
   WaitFaceUp,
-  WaitTurnOff,
+  WaitDieInCase,
+  WaitNotCharging,
+  TurnOffDevice,
 } from "~/components/ValidationTestsComponents";
 import { DieType, DieTypes } from "~/features/DieType";
 import {
@@ -259,41 +261,95 @@ function RunTestsPage({
         onPixelConnected={setPixel}
       />
     ))
-  )
-    .chainWith(
-      ...useTaskComponent("CheckBoard", cancel, (p) => (
-        <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
-      ))
-    )
-    .chainWith(
-      ...useTaskComponent("ShakeDevice", cancel, (p) => (
-        <>{pixel && <ShakeDevice {...p} pixel={pixel} settings={settings} />}</>
-      ))
-    )
-    .chainWith(
-      ...useTaskComponent("CheckLeds", cancel, (p) => (
-        <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
-      ))
-    );
+  ).chainWith(
+    ...useTaskComponent("CheckBoard", cancel, (p) => (
+      <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
+    ))
+  );
   if (settings.formFactor === "board") {
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      ...useTaskComponent("UpdateFirmware", cancel, (p) => (
-        <>
-          {scannedPixel && (
-            <UpdateFirmware {...p} scannedPixel={scannedPixel} />
-          )}
-        </>
-      ))
-    );
+    taskChain
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("UpdateFirmware", cancel, (p) => (
+          <>
+            {pixel && scannedPixel && (
+              <UpdateFirmware
+                {...p}
+                pixel={pixel}
+                scannedPixel={scannedPixel}
+              />
+            )}
+          </>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("ConnectPixel", cancel, (p) => (
+          <ConnectPixel
+            {...p}
+            pixelId={pixelId}
+            settings={settings}
+            onPixelScanned={setScannedPixel}
+            onPixelConnected={setPixel}
+          />
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("CheckLeds", cancel, (p) => (
+          <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("WaitNotCharging", cancel, (p) => (
+          <>
+            {pixel && (
+              <WaitNotCharging {...p} pixel={pixel} settings={settings} />
+            )}
+          </>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("TurnOffDevice", cancel, (p) => (
+          <>
+            {pixel && (
+              <TurnOffDevice {...p} pixel={pixel} settings={settings} />
+            )}
+          </>
+        ))
+      );
   } else {
     taskChain
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("CheckLeds", cancel, (p) => (
+          <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("WaitNotCharging", cancel, (p) => (
+          <>
+            {pixel && (
+              <WaitNotCharging {...p} pixel={pixel} settings={settings} />
+            )}
+          </>
+        ))
+      )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
         ...useTaskComponent("WaitFaceUp", cancel, (p) => (
           <>
             {pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}
           </>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("ShakeDie", cancel, (p) => (
+          <>{pixel && <ShakeDie {...p} pixel={pixel} settings={settings} />}</>
         ))
       )
       .chainWith(
@@ -318,9 +374,11 @@ function RunTestsPage({
       )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitTurnOff", cancel, (p) => (
+        ...useTaskComponent("WaitDieInCase", cancel, (p) => (
           <>
-            {pixel && <WaitTurnOff {...p} pixel={pixel} settings={settings} />}
+            {pixel && (
+              <WaitDieInCase {...p} pixel={pixel} settings={settings} />
+            )}
           </>
         ))
       );

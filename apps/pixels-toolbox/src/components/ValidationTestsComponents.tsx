@@ -186,13 +186,11 @@ export function CheckBoard({
   );
 }
 
-export function ShakeDevice({
+export function WaitNotCharging({
   action,
   onTaskStatus,
   pixel,
-  settings,
 }: ValidationTestProps) {
-  const title = settings.formFactor === "board" ? "Flick Board" : "Shake Die";
   const taskChain = useTaskChain(
     action,
     useCallback(
@@ -203,22 +201,10 @@ export function ShakeDevice({
       "Waiting For Not Charging",
       <Text variant="comment">Remove coil from charger</Text>
     )
-  )
-    .chainWith(
-      useCallback(
-        (abortSignal) =>
-          ValidationTests.checkAccelerationShake(pixel, abortSignal),
-        [pixel]
-      ),
-      createTaskStatusContainer(
-        title,
-        <Text variant="comment">Test accelerometer by shaking device</Text>
-      )
-    )
-    .withStatusChanged(onTaskStatus);
+  ).withStatusChanged(onTaskStatus);
 
   return (
-    <TaskGroupComponent title={title} taskStatus={taskChain.status}>
+    <TaskGroupComponent title="Wait Not Charging" taskStatus={taskChain.status}>
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -260,6 +246,62 @@ export function CheckLeds({
   );
 }
 
+export function ShakeDie({
+  action,
+  onTaskStatus,
+  pixel,
+  settings,
+}: ValidationTestProps) {
+  const taskChain = useTaskChain(
+    action,
+    useCallback(
+      (abortSignal) =>
+        ValidationTests.checkAccelerationShake(pixel, abortSignal),
+      [pixel]
+    ),
+    (p) => (
+      <TaskContainer taskStatus={p.taskStatus} isSubTask>
+        <Text variant="comment">Test accelerometer by shaking die</Text>
+      </TaskContainer>
+    )
+  ).withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskGroupComponent
+      title="Wait For Shake Die"
+      taskStatus={taskChain.status}
+    >
+      {taskChain.render()}
+    </TaskGroupComponent>
+  );
+}
+
+export function TurnOffDevice({
+  action,
+  onTaskStatus,
+  pixel,
+}: ValidationTestProps) {
+  const taskChain = useTaskChain(
+    action,
+    useCallback(() => pixel.turnOff(), [pixel]),
+    createTaskStatusContainer("Turning Off")
+  )
+    .chainWith(
+      useCallback(
+        (abortSignal) => ValidationTests.waitDisconnected(pixel, abortSignal),
+        [pixel]
+      ),
+      createTaskStatusContainer("Waiting For Device To Disconnect")
+    )
+    .withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskGroupComponent title="Wait Shutdown" taskStatus={taskChain.status}>
+      {taskChain.render()}
+    </TaskGroupComponent>
+  );
+}
+
 export function WaitFaceUp({
   action,
   onTaskStatus,
@@ -292,12 +334,14 @@ export function WaitFaceUp({
 }
 
 interface UpdateFirmwareProps extends TaskComponentProps {
+  pixel: Pixel;
   scannedPixel: ScannedPixel;
 }
 
 export function UpdateFirmware({
   action,
   onTaskStatus,
+  pixel,
   scannedPixel,
 }: UpdateFirmwareProps) {
   // Firmware update
@@ -326,17 +370,27 @@ export function UpdateFirmware({
         "On device firmware build timestamp is",
         toLocaleDateTimeString(onDeviceFwDate)
       );
+      // Disconnect
+      await pixel.disconnect();
       // Start DFU
       const mostRecent = Math.max(blDate.getTime(), fwDate.getTime());
       if (mostRecent > onDeviceFwDate.getTime()) {
         await updateFirmware(scannedPixel.address, blPath, fwPath);
+        // TODO Scan and reconnect
       } else {
         console.log("Skipping firmware update");
       }
-    }, [scannedPixel.address, scannedPixel.buildTimestamp, updateFirmware]),
+    }, [
+      pixel,
+      scannedPixel.address,
+      scannedPixel.buildTimestamp,
+      updateFirmware,
+    ]),
     (p) => (
       <TaskContainer taskStatus={p.taskStatus} isSubTask>
-        {dfuState && <Text variant="comment">DFU State: {dfuState}</Text>}
+        <Text variant="comment">
+          {dfuState ? `DFU State: ${dfuState}` : "Preparing..."}
+        </Text>
         {dfuProgress >= 0 && <ProgressBar percent={dfuProgress} />}
       </TaskContainer>
     )
@@ -388,7 +442,7 @@ export function PrepareDie({
   );
 }
 
-export function WaitTurnOff({
+export function WaitDieInCase({
   action,
   onTaskStatus,
   pixel,

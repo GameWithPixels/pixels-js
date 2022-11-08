@@ -187,15 +187,18 @@ const ValidationTests = {
   ): Promise<void> => {
     assert(face > 0);
 
+    let isDone = false;
     const blinkForever = async () => {
       try {
-        while (!abortSignal.aborted) {
+        while (!isDone && !abortSignal.aborted) {
           await pixel.blink(Color.dimMagenta, {
             count: 1,
             duration: 1000,
             faceMask: 1 << (face - 1),
-          });
-          await delay(1000, abortSignal);
+          }); // TODO abortSignal
+          if (!isDone) {
+            await delay(1000, abortSignal);
+          }
         }
       } finally {
         await pixel.stopAllAnimations();
@@ -221,6 +224,7 @@ const ValidationTests = {
           }
           if (!abortSignal.aborted) {
             abortSignal.removeEventListener("abort", abort);
+            isDone = true;
             resolve();
           }
         };
@@ -234,17 +238,21 @@ const ValidationTests = {
     setResolve: (resolve: () => void) => void,
     abortSignal: AbortSignal
   ) => {
+    let isDone = false;
     const litForever = async () => {
+      await pixel.stopAllAnimations();
       const duration = 20000;
-      // TODO use blink `count = 0` instead, or better SetAllLEDsToColor message
+      // TODO use SetAllLEDsToColor message
       try {
-        while (!abortSignal.aborted) {
-          const start = Date.now();
+        while (!isDone && !abortSignal.aborted) {
           await pixel.blink(new Color(0.1, 0.1, 0.1), {
             count: 1,
             duration: 2 * duration,
           }); // TODO abortSignal
-          await delay(duration - (Date.now() - start), abortSignal);
+          if (!isDone) {
+            await delay(duration, abortSignal);
+            //await Promise.allSettled([blink(), wait()]);
+          }
         }
       } finally {
         await pixel.stopAllAnimations();
@@ -253,13 +261,16 @@ const ValidationTests = {
     litForever().catch(() => {});
 
     await new Promise<void>((resolve, reject) => {
-      const abort = () => reject(new TaskCanceledError("checkLedsWhite"));
+      const abort = () => {
+        reject(new TaskCanceledError("checkLedsWhite"));
+      };
       if (abortSignal.aborted) {
         abort();
       } else {
         abortSignal.addEventListener("abort", abort);
         setResolve(() => {
           if (!abortSignal.aborted) {
+            isDone = true;
             abortSignal.removeEventListener("abort", abort);
             resolve();
           }
@@ -283,11 +294,24 @@ const ValidationTests = {
         `Pixel is not ready, status is ${pixel.status}`
       );
     }
-    // TODO use blink `count = 0` instead, or better SetAllLEDsToColor message
-    await pixel.blink(new Color(0.03, 0.2, 0), {
-      count: 1,
-      duration: 40000,
-    });
+
+    let isDone = false;
+    const blinkForever = async () => {
+      try {
+        while (!isDone && !abortSignal.aborted) {
+          await pixel.blink(new Color(0.03, 0.2, 0), {
+            count: 1,
+            duration: 1000,
+          }); // TODO abortSignal
+          if (!isDone) {
+            await delay(1000, abortSignal);
+          }
+        }
+      } finally {
+        await pixel.stopAllAnimations();
+      }
+    };
+    blinkForever().catch(() => {});
 
     let statusListener: ((status: PixelStatus) => void) | undefined;
     try {
@@ -300,6 +324,7 @@ const ValidationTests = {
           statusListener = (status: PixelStatus) => {
             if (status === "disconnected") {
               abortSignal.removeEventListener("abort", abort);
+              isDone = true;
               resolve();
             }
           };
