@@ -1,7 +1,4 @@
-import {
-  Pixel,
-  ScannedPixel,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import {
   extendTheme,
   useColorModeValue,
@@ -32,9 +29,9 @@ import {
   ShakeDie,
   ValidationTestsSettings,
   UpdateFirmware,
-  WaitFaceUp,
+  WaitCharging,
   WaitDieInCase,
-  WaitNotCharging,
+  WaitFaceUp,
   TurnOffDevice,
 } from "~/components/ValidationTestsComponents";
 import { DieType, DieTypes } from "~/features/DieType";
@@ -45,39 +42,52 @@ import {
 } from "~/features/tasks/TaskResult";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import useTaskComponent from "~/features/tasks/useTaskComponent";
+import {
+  getBoardOrDie,
+  getFormFactorNiceName,
+  ValidationFormFactor,
+} from "~/features/validation/ValidationFormFactor";
 import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 
 function SelectFormFactorPage({
-  onSelectFormFactor: onSelectRun,
+  onSelected,
 }: {
-  onSelectFormFactor: (run: "board" | "die") => void;
+  onSelected: (formFactor: ValidationFormFactor) => void;
 }) {
   const { t } = useTranslation();
   return (
     <VStack w="100%" h="100%" p="5" bg={useBackgroundColor()}>
-      <Button h="30%" my="15%" onPress={() => onSelectRun("board")}>
-        {t("validateBoard")}
+      <Button h="20%" my="10%" onPress={() => onSelected("boardNoCoil")}>
+        {t("validateBoardNoCoil")}
       </Button>
-      <Button h="30%" my="15%" onPress={() => onSelectRun("die")}>
-        {t("validateDie")}
+      <Button h="20%" my="10%" onPress={() => onSelected("board")}>
+        {t("validateFullBoard")}
+      </Button>
+      <Button h="20%" my="10%" onPress={() => onSelected("die")}>
+        {t("validateCastDie")}
       </Button>
     </VStack>
   );
 }
 
 function SelectDieTypePage({
-  onSelectDieType: onSelectType,
+  formFactor,
+  onSelectDieType,
   onBack,
 }: {
+  formFactor: ValidationFormFactor;
   onSelectDieType: (type: DieType) => void;
   onBack?: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <VStack w="100%" h="100%" p="2" bg={useBackgroundColor()}>
-      <VStack h="90%" p="2" justifyContent="center">
+      <Text textAlign="center">
+        Testing {getFormFactorNiceName(formFactor)}
+      </Text>
+      <VStack h="85%" p="2" justifyContent="center">
         {DieTypes.map((dt) => (
-          <Button key={dt} my="2" onPress={() => onSelectType(dt)}>
+          <Button key={dt} my="2" onPress={() => onSelectDieType(dt)}>
             {t(dt)}
           </Button>
         ))}
@@ -182,6 +192,8 @@ function DecodePixelIdPage({
   // Scan list
   const [showScanList, setShowScanList] = useState(false);
 
+  const boardOrDie = getBoardOrDie(settings.formFactor);
+  const formFactor = getFormFactorNiceName(settings.formFactor);
   const bg = useBackgroundColor();
   return showScanList ? (
     <PixelScanList
@@ -213,9 +225,7 @@ function DecodePixelIdPage({
           <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
             <HStack>
               <VStack>
-                <Text variant="comment">
-                  Reset {settings.formFactor} using magnet
-                </Text>
+                <Text variant="comment">Reset {boardOrDie} using magnet</Text>
                 <Text variant="comment">and point camera at it</Text>
               </VStack>
               <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
@@ -226,7 +236,7 @@ function DecodePixelIdPage({
         )}
         <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
           <Text>
-            Testing {t(settings.dieType)} {settings.formFactor}
+            Testing {t(settings.dieType)} {formFactor}
           </Text>
           <Button w="100%" onPress={onBack}>
             {t("back")}
@@ -248,96 +258,74 @@ function RunTestsPage({
 }) {
   const { t } = useTranslation();
   const [pixel, setPixel] = useState<Pixel>();
-  const [scannedPixel, setScannedPixel] = useState<ScannedPixel>();
   const [cancel, setCancel] = useState(false);
+
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
+    ...useTaskComponent("UpdateFirmware", cancel, (p) => (
+      <>
+        <UpdateFirmware {...p} pixelId={pixelId} />
+      </>
+    ))
+  ).chainWith(
     ...useTaskComponent("ConnectPixel", cancel, (p) => (
       <ConnectPixel
         {...p}
         pixelId={pixelId}
         settings={settings}
-        onPixelScanned={setScannedPixel}
         onPixelConnected={setPixel}
       />
     ))
-  ).chainWith(
-    ...useTaskComponent("CheckBoard", cancel, (p) => (
-      <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
-    ))
   );
-  if (settings.formFactor === "board") {
-    taskChain
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("UpdateFirmware", cancel, (p) => (
-          <>
-            {pixel && scannedPixel && (
-              <UpdateFirmware
-                {...p}
-                pixel={pixel}
-                scannedPixel={scannedPixel}
-              />
-            )}
-          </>
-        ))
-      )
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("ConnectPixel", cancel, (p) => (
-          <ConnectPixel
-            {...p}
-            pixelId={pixelId}
-            settings={settings}
-            onPixelScanned={setScannedPixel}
-            onPixelConnected={setPixel}
-          />
-        ))
-      )
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("CheckLeds", cancel, (p) => (
-          <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
-        ))
-      )
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitNotCharging", cancel, (p) => (
-          <>
-            {pixel && (
-              <WaitNotCharging {...p} pixel={pixel} settings={settings} />
-            )}
-          </>
-        ))
-      )
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("TurnOffDevice", cancel, (p) => (
-          <>
-            {pixel && (
-              <TurnOffDevice {...p} pixel={pixel} settings={settings} />
-            )}
-          </>
-        ))
-      );
+  if (settings.formFactor !== "boardNoCoil") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("WaitCharging", cancel, (p) => (
+        <>
+          {pixel && <WaitCharging {...p} pixel={pixel} settings={settings} />}
+        </>
+      ))
+    );
+  }
+  taskChain
+    .chainWith(
+      ...useTaskComponent("CheckBoard", cancel, (p) => (
+        <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
+      ))
+    )
+    .chainWith(
+      ...useTaskComponent("CheckLeds", cancel, (p) => (
+        <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
+      ))
+    );
+  if (settings.formFactor !== "boardNoCoil") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("WaitNotCharging", cancel, (p) => (
+        <>
+          {pixel && (
+            <WaitCharging
+              {...p}
+              pixel={pixel}
+              settings={settings}
+              notCharging
+            />
+          )}
+        </>
+      ))
+    );
+  }
+  if (settings.formFactor !== "die") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("TurnOffDevice", cancel, (p) => (
+        <>
+          {pixel && <TurnOffDevice {...p} pixel={pixel} settings={settings} />}
+        </>
+      ))
+    );
   } else {
     taskChain
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("CheckLeds", cancel, (p) => (
-          <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
-        ))
-      )
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitNotCharging", cancel, (p) => (
-          <>
-            {pixel && (
-              <WaitNotCharging {...p} pixel={pixel} settings={settings} />
-            )}
-          </>
-        ))
-      )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
         ...useTaskComponent("WaitFaceUp", cancel, (p) => (
@@ -367,7 +355,6 @@ function RunTestsPage({
             {...p}
             pixelId={pixelId}
             settings={settings}
-            onPixelScanned={setScannedPixel}
             onPixelConnected={setPixel}
           />
         ))
@@ -399,10 +386,11 @@ function RunTestsPage({
       scrollRef.current.scrollToEnd();
     }
   });
+
+  const formFactor = getFormFactorNiceName(settings.formFactor);
   return (
     <Center w="100%" h="100%" p="2%" bg={useBackgroundColor()}>
-      <Text>{`Testing ${t(settings.dieType)} ${settings.formFactor}`}</Text>
-      {/* TODO scroll view should expand */}
+      <Text>{`Testing ${t(settings.dieType)} ${formFactor}`}</Text>
       <ScrollView w="100%" ref={scrollRef}>
         <>{taskChain.render()}</>
         {result && (
@@ -419,14 +407,15 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
-  const [formFactor, setFormFactor] = useState<"board" | "die">();
+  const [formFactor, setFormFactor] = useState<ValidationFormFactor>();
   const [dieType, setDieType] = useState<DieType>();
   const [pixelId, setPixelId] = useState(0);
 
   return !formFactor ? (
-    <SelectFormFactorPage onSelectFormFactor={setFormFactor} />
+    <SelectFormFactorPage onSelected={setFormFactor} />
   ) : !dieType ? (
     <SelectDieTypePage
+      formFactor={formFactor}
       onSelectDieType={setDieType}
       onBack={() => setFormFactor(undefined)}
     />

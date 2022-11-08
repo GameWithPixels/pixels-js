@@ -1,4 +1,5 @@
 import {
+  Color,
   getPixel,
   Pixel,
   ScannedPixel,
@@ -7,12 +8,10 @@ import { Button, Text } from "native-base";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import ProgressBar from "./ProgressBar";
-import TaskContainer from "./TaskContainer";
 import TaskGroupComponent from "./TaskGroupContainer";
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
 import { DieType, getLedCount } from "~/features/DieType";
-import ValidationTests from "~/features/ValidationTests";
 import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
@@ -20,20 +19,25 @@ import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer"
 import { TaskFaultedError } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
+import {
+  isBoard,
+  ValidationFormFactor,
+} from "~/features/validation/ValidationFormFactor";
+import ValidationTests from "~/features/validation/ValidationTests";
 import standardProfile from "~/standardProfile";
 import toLocaleDateTimeString from "~/toLocaleDateTimeString";
 import usePixelScanner from "~/usePixelScanner";
 
 export interface ValidationTestsSettings {
-  formFactor: "board" | "die";
+  formFactor: ValidationFormFactor;
   dieType: DieType;
 }
 
 export interface ConnectPixelProps extends TaskComponentProps {
   pixelId: number;
   settings: ValidationTestsSettings;
-  onPixelScanned: (pixel: ScannedPixel) => void;
-  onPixelConnected: (pixel: Pixel) => void;
+  onPixelScanned?: (pixel: ScannedPixel) => void;
+  onPixelConnected?: (pixel: Pixel) => void;
 }
 
 export function ConnectPixel({
@@ -44,6 +48,7 @@ export function ConnectPixel({
   onPixelScanned,
   onPixelConnected,
 }: ConnectPixelProps) {
+  // BLE Scan
   const scanFilter = useCallback(
     (pixel: ScannedPixel) => pixel.pixelId === pixelId,
     [pixelId]
@@ -55,14 +60,15 @@ export function ConnectPixel({
     if (scannedPixels[0] && resolveScanPromise) {
       scannedPixelRef.current = scannedPixels[0];
       resolveScanPromise();
-      onPixelScanned(scannedPixels[0]);
+      onPixelScanned?.(scannedPixels[0]);
     }
   }, [onPixelScanned, resolveScanPromise, scannedPixels]);
 
+  // Pixel
   const [pixel, setPixel] = useState<Pixel>();
   useEffect(() => {
     if (pixel && pixel.status === "ready") {
-      onPixelConnected(pixel);
+      onPixelConnected?.(pixel);
     }
     return () => {
       pixel?.disconnect().catch(console.log);
@@ -96,7 +102,7 @@ export function ConnectPixel({
         await scannerDispatch("stop");
       }
     }, [pixelId, scannerDispatch]),
-    createTaskStatusContainer("BLE Scan")
+    createTaskStatusContainer("Bluetooth Scan")
   )
     .chainWith(
       useCallback(async () => {
@@ -145,19 +151,9 @@ export function CheckBoard({
 }: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
-    useCallback(
-      (abortSignal) => ValidationTests.waitCharging(pixel, true, abortSignal),
-      [pixel]
-    ),
-    createTaskStatusContainer(
-      "Waiting For Charging Signal",
-      <Text variant="comment">Place coil on charger</Text>
-    )
+    useCallback(() => ValidationTests.checkLedLoopback(pixel), [pixel]),
+    createTaskStatusContainer("LED Loopback")
   )
-    .chainWith(
-      useCallback(() => ValidationTests.checkLedLoopback(pixel), [pixel]),
-      createTaskStatusContainer("LED Loopback")
-    )
     .chainWith(
       useCallback(
         (abortSignal) =>
@@ -170,7 +166,7 @@ export function CheckBoard({
       useCallback(() => ValidationTests.checkBatteryVoltage(pixel), [pixel]),
       createTaskStatusContainer("Battery Voltage")
     );
-  if (settings.formFactor !== "board") {
+  if (settings.formFactor === "die") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
       useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
@@ -186,25 +182,40 @@ export function CheckBoard({
   );
 }
 
-export function WaitNotCharging({
+export function WaitCharging({
   action,
   onTaskStatus,
   pixel,
-}: ValidationTestProps) {
+  settings,
+  notCharging,
+}: ValidationTestProps & { notCharging?: boolean }) {
   const taskChain = useTaskChain(
     action,
     useCallback(
-      (abortSignal) => ValidationTests.waitCharging(pixel, false, abortSignal),
-      [pixel]
+      (abortSignal) =>
+        ValidationTests.waitCharging(pixel, !notCharging, abortSignal),
+      [notCharging, pixel]
     ),
-    createTaskStatusContainer(
-      "Waiting For Not Charging",
-      <Text variant="comment">Remove coil from charger</Text>
-    )
+    createTaskStatusContainer({
+      children: (
+        <Text variant="comment">
+          {isBoard(settings.formFactor)
+            ? notCharging
+              ? "Remove coil from charger"
+              : "Place coil on charger"
+            : notCharging
+            ? "Remove die From Charger"
+            : "Place die On Charger"}
+        </Text>
+      ),
+    })
   ).withStatusChanged(onTaskStatus);
 
   return (
-    <TaskGroupComponent title="Wait Not Charging" taskStatus={taskChain.status}>
+    <TaskGroupComponent
+      title={`Wait ${notCharging ? "Not " : ""}Charging`}
+      taskStatus={taskChain.status}
+    >
       {taskChain.render()}
     </TaskGroupComponent>
   );
@@ -221,22 +232,29 @@ export function CheckLeds({
     action,
     useCallback(
       (abortSignal) =>
-        ValidationTests.checkLedsWhite(
+        ValidationTests.checkLedsLitUp(
           pixel,
+          isBoard(settings.formFactor)
+            ? new Color(0.01, 0.01, 0.01)
+            : new Color(0.1, 0.1, 0.1),
           (r) => setResolvePromise(() => r),
           abortSignal
         ),
-      [pixel]
+      [pixel, settings.formFactor]
     ),
-    (p) => (
-      <TaskContainer taskStatus={p.taskStatus} isSubTask>
-        <Text variant="comment">
-          Check that all {getLedCount(settings.dieType)} LEDs are on and fully
-          white
-        </Text>
-        {resolvePromise && <Button onPress={() => resolvePromise()}>OK</Button>}
-      </TaskContainer>
-    )
+    createTaskStatusContainer({
+      children: (
+        <>
+          <Text variant="comment">
+            Check that all {getLedCount(settings.dieType)} LEDs are on and fully
+            white
+          </Text>
+          {resolvePromise && (
+            <Button onPress={() => resolvePromise()}>OK</Button>
+          )}
+        </>
+      ),
+    })
   ).withStatusChanged(onTaskStatus);
 
   return (
@@ -259,11 +277,11 @@ export function ShakeDie({
         ValidationTests.checkAccelerationShake(pixel, abortSignal),
       [pixel]
     ),
-    (p) => (
-      <TaskContainer taskStatus={p.taskStatus} isSubTask>
+    createTaskStatusContainer({
+      children: (
         <Text variant="comment">Test accelerometer by shaking die</Text>
-      </TaskContainer>
-    )
+      ),
+    })
   ).withStatusChanged(onTaskStatus);
 
   return (
@@ -280,6 +298,7 @@ export function TurnOffDevice({
   action,
   onTaskStatus,
   pixel,
+  settings,
 }: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
@@ -288,8 +307,15 @@ export function TurnOffDevice({
   )
     .chainWith(
       useCallback(
-        (abortSignal) => ValidationTests.waitDisconnected(pixel, abortSignal),
-        [pixel]
+        (abortSignal) =>
+          ValidationTests.waitDisconnected(
+            pixel,
+            isBoard(settings.formFactor)
+              ? new Color(0.003, 0.01, 0)
+              : new Color(0.03, 0.1, 0),
+            abortSignal
+          ),
+        [pixel, settings.formFactor]
       ),
       createTaskStatusContainer("Waiting For Device To Disconnect")
     )
@@ -319,11 +345,9 @@ export function WaitFaceUp({
         ),
       [pixel, settings.dieType]
     ),
-    (p) => (
-      <TaskContainer taskStatus={p.taskStatus} isSubTask>
-        <Text variant="comment">Place die with blinking face up</Text>
-      </TaskContainer>
-    )
+    createTaskStatusContainer({
+      children: <Text variant="comment">Place die with blinking face up</Text>,
+    })
   ).withStatusChanged(onTaskStatus);
 
   return (
@@ -334,67 +358,111 @@ export function WaitFaceUp({
 }
 
 interface UpdateFirmwareProps extends TaskComponentProps {
-  pixel: Pixel;
-  scannedPixel: ScannedPixel;
+  pixelId: number;
 }
 
 export function UpdateFirmware({
   action,
   onTaskStatus,
-  pixel,
-  scannedPixel,
+  pixelId,
 }: UpdateFirmwareProps) {
+  // BLE Scan
+  const scanFilter = useCallback(
+    (pixel: ScannedPixel) => pixel.pixelId === pixelId,
+    [pixelId]
+  );
+  const [scannedPixels, scannerDispatch] = usePixelScanner({ scanFilter });
+  const [resolveScanPromise, setResolveScanPromise] = useState<() => void>();
+  const scannedPixelRef = useRef<ScannedPixel>();
+  useEffect(() => {
+    if (scannedPixels[0] && resolveScanPromise) {
+      scannedPixelRef.current = scannedPixels[0];
+      resolveScanPromise();
+    }
+  }, [resolveScanPromise, scannedPixels]);
+
   // Firmware update
   const [updateFirmware, dfuState, dfuProgress] = useUpdateFirmware();
   const taskChain = useTaskChain(
     action,
     useCallback(async () => {
-      // DFU files
-      const [blPath, fwPath] = await extractDfuFiles(dfuFiles);
-      const fwDate = getDfuFileInfo(fwPath).date;
-      if (!fwDate) {
-        throw new TaskFaultedError("DFU firmware file has no date: " + fwPath);
+      if (!pixelId) {
+        throw new TaskFaultedError("Empty Pixel Id");
       }
-      const blDate = getDfuFileInfo(blPath).date;
-      if (!blDate) {
-        throw new TaskFaultedError("DFU firmware file has no date: " + blPath);
+      await scannerDispatch("start");
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const onTimeout = () => {
+            reject(
+              new TaskFaultedError(
+                `Timeout scanning for Pixel with id ${pixelId}`
+              )
+            );
+          };
+          const timeoutId = setTimeout(onTimeout, 5000);
+          setResolveScanPromise(() => () => {
+            clearTimeout(timeoutId);
+            resolve();
+          });
+        });
+      } finally {
+        await scannerDispatch("stop");
       }
-      console.log(
-        "DFU files loaded, firmware version is",
-        toLocaleDateTimeString(blDate),
-        " and bootloader version is",
-        toLocaleDateTimeString(blDate)
-      );
-      const onDeviceFwDate = new Date(scannedPixel.buildTimestamp * 1000);
-      console.log(
-        "On device firmware build timestamp is",
-        toLocaleDateTimeString(onDeviceFwDate)
-      );
-      // Disconnect
-      await pixel.disconnect();
-      // Start DFU
-      const mostRecent = Math.max(blDate.getTime(), fwDate.getTime());
-      if (mostRecent > onDeviceFwDate.getTime()) {
-        await updateFirmware(scannedPixel.address, blPath, fwPath);
-        // TODO Scan and reconnect
-      } else {
-        console.log("Skipping firmware update");
-      }
-    }, [
-      pixel,
-      scannedPixel.address,
-      scannedPixel.buildTimestamp,
-      updateFirmware,
-    ]),
-    (p) => (
-      <TaskContainer taskStatus={p.taskStatus} isSubTask>
-        <Text variant="comment">
-          {dfuState ? `DFU State: ${dfuState}` : "Preparing..."}
-        </Text>
-        {dfuProgress >= 0 && <ProgressBar percent={dfuProgress} />}
-      </TaskContainer>
+    }, [pixelId, scannerDispatch]),
+    createTaskStatusContainer("Bluetooth Scan")
+  )
+    .chainWith(
+      useCallback(async () => {
+        const scannedPixel = scannedPixelRef.current;
+        if (!scannedPixel) {
+          throw new TaskFaultedError("No scanned Pixel");
+        }
+        // DFU files
+        const [blPath, fwPath] = await extractDfuFiles(dfuFiles);
+        const fwDate = getDfuFileInfo(fwPath).date;
+        if (!fwDate) {
+          throw new TaskFaultedError(
+            "DFU firmware file has no date: " + fwPath
+          );
+        }
+        const blDate = getDfuFileInfo(blPath).date;
+        if (!blDate) {
+          throw new TaskFaultedError(
+            "DFU firmware file has no date: " + blPath
+          );
+        }
+        console.log(
+          "DFU files loaded, firmware version is",
+          toLocaleDateTimeString(blDate),
+          " and bootloader version is",
+          toLocaleDateTimeString(blDate)
+        );
+        const onDeviceFwDate = new Date(scannedPixel.buildTimestamp * 1000);
+        console.log(
+          "On device firmware build timestamp is",
+          toLocaleDateTimeString(onDeviceFwDate)
+        );
+        // Start DFU
+        const mostRecent = Math.max(blDate.getTime(), fwDate.getTime());
+        if (mostRecent > onDeviceFwDate.getTime()) {
+          await updateFirmware(scannedPixel.address, blPath, fwPath);
+        } else {
+          console.log("Skipping firmware update");
+        }
+      }, [updateFirmware]),
+      createTaskStatusContainer({
+        title: "Firmware Update",
+        children: (
+          <>
+            <Text variant="comment">
+              {dfuState ? `DFU State: ${dfuState}` : "Preparing..."}
+            </Text>
+            {dfuProgress >= 0 && <ProgressBar percent={dfuProgress} />}
+          </>
+        ),
+      })
     )
-  ).withStatusChanged(onTaskStatus);
+    .withStatusChanged(onTaskStatus);
 
   return (
     <TaskGroupComponent title="Update Firmware" taskStatus={taskChain.status}>
@@ -416,10 +484,12 @@ export function PrepareDie({
       () => ValidationTests.updateProfile(pixel, standardProfile, setProgress),
       [pixel]
     ),
-    createTaskStatusContainer(
-      "Update Profile",
-      <>{progress >= 0 && <ProgressBar percent={100 * progress} />}</>
-    )
+    createTaskStatusContainer({
+      title: "Update Profile",
+      children: (
+        <>{progress >= 0 && <ProgressBar percent={100 * progress} />}</>
+      ),
+    })
   )
     .chainWith(
       useCallback(
@@ -429,8 +499,9 @@ export function PrepareDie({
       createTaskStatusContainer("Rename Die")
     )
     .chainWith(
-      // TODO for internal testing only: useCallback(() => pixel.disconnect(), [pixel]),
-      useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
+      // TODO for internal testing only:
+      useCallback(() => pixel.disconnect(), [pixel]),
+      //useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
       createTaskStatusContainer("Exit Validation Mode")
     )
     .withStatusChanged(onTaskStatus);
@@ -451,21 +522,25 @@ export function WaitDieInCase({
   const taskChain = useTaskChain(
     action,
     useCallback(
-      (abortSignal) => ValidationTests.waitDisconnected(pixel, abortSignal),
+      (abortSignal) =>
+        ValidationTests.waitDisconnected(
+          pixel,
+          new Color(0, 0.03, 0.1),
+          abortSignal
+        ),
       [pixel]
     ),
-    (p) => (
-      <TaskContainer taskStatus={p.taskStatus} isSubTask>
+    createTaskStatusContainer({
+      children: (
         <Text variant="comment">
           Place die in charging case and close the lid
         </Text>
-      </TaskContainer>
-    )
+      ),
+    })
   ).withStatusChanged(onTaskStatus);
 
-  const title = `Wait Turn ${settings.formFactor} Off`;
   return (
-    <TaskGroupComponent title={title} taskStatus={taskChain.status}>
+    <TaskGroupComponent title="Wait Die In Case" taskStatus={taskChain.status}>
       {taskChain.render()}
     </TaskGroupComponent>
   );
