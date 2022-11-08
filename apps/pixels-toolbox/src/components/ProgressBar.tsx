@@ -29,12 +29,12 @@ const styles = StyleSheet.create({
     borderRadius: sr(5),
     height: sr(20),
     width: "100%",
+    padding: sr(2),
     alignSelf: "center",
   },
   progressBarForeground: {
     backgroundColor: "blue",
     borderRadius: sr(5),
-    height: "80%",
-    margin: sr(2),
+    height: "100%",
   },
 });
