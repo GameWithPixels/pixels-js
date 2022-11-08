@@ -44,12 +44,10 @@ import useTaskChain from "~/features/tasks/useTaskChain";
 import useTaskComponent from "~/features/tasks/useTaskComponent";
 import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 
-function SelectValidationRunPage({
-  onSelectRun,
-  onBack,
+function SelectFormFactorPage({
+  onSelectFormFactor: onSelectRun,
 }: {
-  onSelectRun: (run: "board" | "die") => void;
-  onBack?: () => void;
+  onSelectFormFactor: (run: "board" | "die") => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -326,8 +324,8 @@ function ValidationPage() {
   const navigation = useNavigation();
 
   return !formFactor ? (
-    <SelectValidationRunPage
-      onSelectRun={setFormFactor}
+    <SelectFormFactorPage
+      onSelectFormFactor={setFormFactor}
       onBack={() => navigation.goBack()}
     />
   ) : !dieType ? (
