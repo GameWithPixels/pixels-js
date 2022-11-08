@@ -24,16 +24,14 @@ import standardProfile from "~/standardProfile";
 import toLocaleDateTimeString from "~/toLocaleDateTimeString";
 import usePixelScanner from "~/usePixelScanner";
 
-export type ValidationRunType = "board" | "die";
-
-export interface TestInfo {
-  validationRun: ValidationRunType;
+export interface ValidationTestsSettings {
+  formFactor: "board" | "die";
   dieType: DieType;
 }
 
 export interface ConnectPixelProps extends TaskComponentProps {
   pixelId: number;
-  testInfo: TestInfo;
+  settings: ValidationTestsSettings;
   onPixelScanned: (pixel: ScannedPixel) => void;
   onPixelConnected: (pixel: Pixel) => void;
 }
@@ -42,7 +40,7 @@ export function ConnectPixel({
   action,
   onTaskStatus,
   pixelId,
-  testInfo,
+  settings,
   onPixelScanned,
   onPixelConnected,
 }: ConnectPixelProps) {
@@ -106,12 +104,12 @@ export function ConnectPixel({
           throw new TaskFaultedError("Empty scanned Pixel");
         }
         const ledCount = scannedPixelRef.current.ledCount;
-        if (ledCount !== getLedCount(testInfo.dieType)) {
+        if (ledCount !== getLedCount(settings.dieType)) {
           throw new TaskFaultedError(
-            `Incorrect die type, expected ${testInfo.dieType} but got ${ledCount} LEDs`
+            `Incorrect die type, expected ${settings.dieType} but got ${ledCount} LEDs`
           );
         }
-      }, [testInfo.dieType]),
+      }, [settings.dieType]),
       createTaskStatusContainer("Check Type")
     )
     .chainWith(
@@ -136,14 +134,14 @@ export function ConnectPixel({
 
 export interface ValidationTestProps extends TaskComponentProps {
   pixel: Pixel;
-  testInfo: TestInfo;
+  settings: ValidationTestsSettings;
 }
 
 export function CheckBoard({
   action,
   onTaskStatus,
   pixel,
-  testInfo,
+  settings,
 }: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
@@ -172,7 +170,7 @@ export function CheckBoard({
       useCallback(() => ValidationTests.checkBatteryVoltage(pixel), [pixel]),
       createTaskStatusContainer("Battery Voltage")
     );
-  if (testInfo.validationRun !== "board") {
+  if (settings.formFactor !== "board") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
       useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
@@ -192,10 +190,9 @@ export function ShakeDevice({
   action,
   onTaskStatus,
   pixel,
-  testInfo,
+  settings,
 }: ValidationTestProps) {
-  const title =
-    testInfo.validationRun === "board" ? "Flick Board" : "Shake Die";
+  const title = settings.formFactor === "board" ? "Flick Board" : "Shake Die";
   const taskChain = useTaskChain(
     action,
     useCallback(
@@ -231,7 +228,7 @@ export function CheckLeds({
   action,
   onTaskStatus,
   pixel,
-  testInfo,
+  settings,
 }: ValidationTestProps) {
   const [resolvePromise, setResolvePromise] = useState<() => void>();
   const taskChain = useTaskChain(
@@ -248,7 +245,7 @@ export function CheckLeds({
     (p) => (
       <TaskContainer taskStatus={p.taskStatus} isSubTask>
         <Text variant="comment">
-          Check that all {getLedCount(testInfo.dieType)} LEDs are on and fully
+          Check that all {getLedCount(settings.dieType)} LEDs are on and fully
           white
         </Text>
         {resolvePromise && <Button onPress={() => resolvePromise()}>OK</Button>}
@@ -267,7 +264,7 @@ export function WaitFaceUp({
   action,
   onTaskStatus,
   pixel,
-  testInfo,
+  settings,
 }: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
@@ -275,10 +272,10 @@ export function WaitFaceUp({
       (abortSignal) =>
         ValidationTests.waitFaceUp(
           pixel,
-          getLedCount(testInfo.dieType),
+          getLedCount(settings.dieType),
           abortSignal
         ),
-      [pixel, testInfo.dieType]
+      [pixel, settings.dieType]
     ),
     (p) => (
       <TaskContainer taskStatus={p.taskStatus} isSubTask>
@@ -356,7 +353,7 @@ export function PrepareDie({
   action,
   onTaskStatus,
   pixel,
-  testInfo,
+  settings,
 }: ValidationTestProps) {
   const [progress, setProgress] = useState(-1);
   const taskChain = useTaskChain(
@@ -372,8 +369,8 @@ export function PrepareDie({
   )
     .chainWith(
       useCallback(
-        () => ValidationTests.renameDie(pixel, `Pixel ${testInfo.dieType}`),
-        [pixel, testInfo.dieType]
+        () => ValidationTests.renameDie(pixel, `Pixel ${settings.dieType}`),
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer("Rename Die")
     )
@@ -395,7 +392,7 @@ export function WaitTurnOff({
   action,
   onTaskStatus,
   pixel,
-  testInfo,
+  settings,
 }: ValidationTestProps) {
   const taskChain = useTaskChain(
     action,
@@ -412,7 +409,7 @@ export function WaitTurnOff({
     )
   ).withStatusChanged(onTaskStatus);
 
-  const title = `Wait Turn ${testInfo.validationRun} Off`;
+  const title = `Wait Turn ${settings.formFactor} Off`;
   return (
     <TaskGroupComponent title={title} taskStatus={taskChain.status}>
       {taskChain.render()}

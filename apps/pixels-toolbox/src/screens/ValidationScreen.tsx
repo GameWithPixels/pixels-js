@@ -29,12 +29,11 @@ import {
   ConnectPixel,
   PrepareDie,
   ShakeDevice,
-  TestInfo,
+  ValidationTestsSettings,
   UpdateFirmware,
-  ValidationRunType,
   WaitFaceUp,
   WaitTurnOff,
-} from "~/components/ValidationTestComponents";
+} from "~/components/ValidationTestsComponents";
 import { DieType, DieTypes } from "~/features/DieType";
 import {
   getTaskResult,
@@ -49,7 +48,7 @@ function SelectValidationRunPage({
   onSelectRun,
   onBack,
 }: {
-  onSelectRun: (run: ValidationRunType) => void;
+  onSelectRun: (run: "board" | "die") => void;
   onBack?: () => void;
 }) {
   const { t } = useTranslation();
@@ -95,15 +94,13 @@ type CameraStatus =
   | "noParallelVideoProcessing"
   | "ready";
 
-function DecodePage({
+function DecodePixelIdPage({
   onDecodedPixelId,
-  validationRun,
-  dieType,
+  settings,
   onBack,
 }: {
   onDecodedPixelId: (pixelId: number) => void;
-  validationRun: ValidationRunType;
-  dieType: DieType;
+  settings: ValidationTestsSettings;
   onBack?: () => void;
 }) {
   const { t } = useTranslation();
@@ -179,11 +176,15 @@ function DecodePage({
           <Text>{t("startingCamera")}</Text>
         )}
         <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
-          <Text variant="comment">Reset {validationRun} using magnet</Text>
+          <Text variant="comment">
+            Reset {settings.formFactor} using magnet
+          </Text>
           <Text variant="comment">and point camera at it</Text>
         </Center>
         <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
-          <Text>{`Testing ${t(dieType)} ${validationRun}`}</Text>
+          <Text>
+            Testing {t(settings.dieType)} {settings.formFactor}
+          </Text>
           <Button w="100%" onPress={onBack}>
             {t("back")}
           </Button>
@@ -193,13 +194,13 @@ function DecodePage({
   );
 }
 
-function TestsPage({
+function RunTestsPage({
   pixelId,
-  testInfo,
+  settings,
   onResult,
 }: {
   pixelId: number;
-  testInfo: TestInfo;
+  settings: ValidationTestsSettings;
   onResult?: (result: TaskResult) => void;
 }) {
   const { t } = useTranslation();
@@ -212,7 +213,7 @@ function TestsPage({
       <ConnectPixel
         {...p}
         pixelId={pixelId}
-        testInfo={testInfo}
+        settings={settings}
         onPixelScanned={setScannedPixel}
         onPixelConnected={setPixel}
       />
@@ -220,20 +221,20 @@ function TestsPage({
   )
     .chainWith(
       ...useTaskComponent("CheckBoard", cancel, (p) => (
-        <>{pixel && <CheckBoard {...p} pixel={pixel} testInfo={testInfo} />}</>
+        <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
       ))
     )
     .chainWith(
       ...useTaskComponent("ShakeDevice", cancel, (p) => (
-        <>{pixel && <ShakeDevice {...p} pixel={pixel} testInfo={testInfo} />}</>
+        <>{pixel && <ShakeDevice {...p} pixel={pixel} settings={settings} />}</>
       ))
     )
     .chainWith(
       ...useTaskComponent("CheckLeds", cancel, (p) => (
-        <>{pixel && <CheckLeds {...p} pixel={pixel} testInfo={testInfo} />}</>
+        <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
       ))
     );
-  if (testInfo.validationRun === "board") {
+  if (settings.formFactor === "board") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
       ...useTaskComponent("UpdateFirmware", cancel, (p) => (
@@ -250,7 +251,7 @@ function TestsPage({
         // eslint-disable-next-line react-hooks/rules-of-hooks
         ...useTaskComponent("WaitFaceUp", cancel, (p) => (
           <>
-            {pixel && <WaitFaceUp {...p} pixel={pixel} testInfo={testInfo} />}
+            {pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}
           </>
         ))
       )
@@ -258,7 +259,7 @@ function TestsPage({
         // eslint-disable-next-line react-hooks/rules-of-hooks
         ...useTaskComponent("PrepareDie", cancel, (p) => (
           <>
-            {pixel && <PrepareDie {...p} pixel={pixel} testInfo={testInfo} />}
+            {pixel && <PrepareDie {...p} pixel={pixel} settings={settings} />}
           </>
         ))
       )
@@ -268,7 +269,7 @@ function TestsPage({
           <ConnectPixel
             {...p}
             pixelId={pixelId}
-            testInfo={testInfo}
+            settings={settings}
             onPixelScanned={setScannedPixel}
             onPixelConnected={setPixel}
           />
@@ -278,7 +279,7 @@ function TestsPage({
         // eslint-disable-next-line react-hooks/rules-of-hooks
         ...useTaskComponent("WaitTurnOff", cancel, (p) => (
           <>
-            {pixel && <WaitTurnOff {...p} pixel={pixel} testInfo={testInfo} />}
+            {pixel && <WaitTurnOff {...p} pixel={pixel} settings={settings} />}
           </>
         ))
       );
@@ -301,7 +302,7 @@ function TestsPage({
   });
   return (
     <Center w="100%" h="100%" p="2%" bg={useBackgroundColor()}>
-      <Text>{`Testing ${t(testInfo.dieType)} ${testInfo.validationRun}`}</Text>
+      <Text>{`Testing ${t(settings.dieType)} ${settings.formFactor}`}</Text>
       {/* TODO scroll view should expand */}
       <ScrollView w="100%" ref={scrollRef}>
         <>{taskChain.render()}</>
@@ -319,25 +320,24 @@ function TestsPage({
 }
 
 function ValidationPage() {
-  const [validationRun, setValidationRun] = useState<ValidationRunType>();
+  const [formFactor, setFormFactor] = useState<"board" | "die">();
   const [dieType, setDieType] = useState<DieType>();
   const [pixelId, setPixelId] = useState(0);
   const navigation = useNavigation();
 
-  return !validationRun ? (
+  return !formFactor ? (
     <SelectValidationRunPage
-      onSelectRun={setValidationRun}
+      onSelectRun={setFormFactor}
       onBack={() => navigation.goBack()}
     />
   ) : !dieType ? (
     <SelectDieTypePage
       onSelectDieType={setDieType}
-      onBack={() => setValidationRun(undefined)}
+      onBack={() => setFormFactor(undefined)}
     />
   ) : !pixelId ? (
-    <DecodePage
-      validationRun={validationRun}
-      dieType={dieType}
+    <DecodePixelIdPage
+      settings={{ formFactor, dieType }}
       onDecodedPixelId={(pixelId) => {
         console.log("Decoded PixelId:", pixelId);
         setPixelId(pixelId);
@@ -345,8 +345,8 @@ function ValidationPage() {
       onBack={() => setDieType(undefined)}
     />
   ) : (
-    <TestsPage
-      testInfo={{ validationRun, dieType }}
+    <RunTestsPage
+      settings={{ formFactor, dieType }}
       pixelId={pixelId}
       onResult={(result) => {
         console.log("Validation tests result:", result);
