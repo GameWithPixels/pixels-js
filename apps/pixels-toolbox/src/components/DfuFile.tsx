@@ -3,7 +3,7 @@ import { Text, StyleSheet } from "react-native";
 
 import Spacer from "./Spacer";
 
-import { DfuFileInfo } from "~/getDfuFileInfo";
+import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import globalStyles from "~/styles";
 import toLocaleDateTimeString from "~/toLocaleDateTimeString";
 

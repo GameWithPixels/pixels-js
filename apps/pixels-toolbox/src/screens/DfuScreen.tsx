@@ -30,7 +30,7 @@ import AppPage from "~/components/AppPage";
 import DfuFile from "~/components/DfuFile";
 import PixelInfoBox from "~/components/PixelInfoBox";
 import Spacer from "~/components/Spacer";
-import getDfuFileInfo from "~/getDfuFileInfo";
+import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import { DfuScreenProps } from "~/navigation";
 import globalStyles, { sr } from "~/styles";
 import toLocaleDateTimeString from "~/toLocaleDateTimeString";

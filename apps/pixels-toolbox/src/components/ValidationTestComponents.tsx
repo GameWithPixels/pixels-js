@@ -11,16 +11,18 @@ import TaskContainer from "./TaskContainer";
 import TaskGroupComponent from "./TaskGroupContainer";
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
-import delay from "~/delay";
 import { DieType, getLedCount } from "~/features/DieType";
 import ValidationTests from "~/features/ValidationTests";
+import extractDfuFiles from "~/features/dfu/extractDfuFiles";
+import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
+import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import standardProfile from "~/standardProfile";
+import toLocaleDateTimeString from "~/toLocaleDateTimeString";
 import usePixelScanner from "~/usePixelScanner";
-import useUpdateFirmware from "~/useUpdateFirmware";
 
 export type ValidationRunType = "board" | "die";
 
@@ -150,7 +152,7 @@ export function CheckBoard({
       [pixel]
     ),
     createTaskStatusContainer(
-      "Battery Charging",
+      "Waiting For Charging Signal",
       <Text variant="comment">Place coil on charger</Text>
     )
   )
@@ -201,7 +203,7 @@ export function ShakeDevice({
       [pixel]
     ),
     createTaskStatusContainer(
-      "Battery Not Charging",
+      "Waiting For Not Charging",
       <Text variant="comment">Remove coil from charger</Text>
     )
   )
@@ -292,22 +294,52 @@ export function WaitFaceUp({
   );
 }
 
+interface UpdateFirmwareProps extends TaskComponentProps {
+  scannedPixel: ScannedPixel;
+}
+
 export function UpdateFirmware({
   action,
   onTaskStatus,
-  address,
-}: TaskComponentProps & { address: number }) {
+  scannedPixel,
+}: UpdateFirmwareProps) {
   // Firmware update
-  const [updateFirmware, dfuState, dfuProgress] = useUpdateFirmware(dfuFiles);
+  const [updateFirmware, dfuState, dfuProgress] = useUpdateFirmware();
   const taskChain = useTaskChain(
     action,
     useCallback(async () => {
-      await delay(1000); // TODO wait for file to load
-      await updateFirmware(address);
-    }, [address, updateFirmware]),
+      // DFU files
+      const [blPath, fwPath] = await extractDfuFiles(dfuFiles);
+      const fwDate = getDfuFileInfo(fwPath).date;
+      if (!fwDate) {
+        throw new TaskFaultedError("DFU firmware file has no date: " + fwPath);
+      }
+      const blDate = getDfuFileInfo(blPath).date;
+      if (!blDate) {
+        throw new TaskFaultedError("DFU firmware file has no date: " + blPath);
+      }
+      console.log(
+        "DFU files loaded, firmware version is",
+        toLocaleDateTimeString(blDate),
+        " and bootloader version is",
+        toLocaleDateTimeString(blDate)
+      );
+      const onDeviceFwDate = new Date(scannedPixel.buildTimestamp * 1000);
+      console.log(
+        "On device firmware build timestamp is",
+        toLocaleDateTimeString(onDeviceFwDate)
+      );
+      // Start DFU
+      const mostRecent = Math.max(blDate.getTime(), fwDate.getTime());
+      if (mostRecent > onDeviceFwDate.getTime()) {
+        await updateFirmware(scannedPixel.address, blPath, fwPath);
+      } else {
+        console.log("Skipping firmware update");
+      }
+    }, [scannedPixel.address, scannedPixel.buildTimestamp, updateFirmware]),
     (p) => (
       <TaskContainer taskStatus={p.taskStatus} isSubTask>
-        <Text variant="comment">DFU State: {dfuState}</Text>
+        {dfuState && <Text variant="comment">DFU State: {dfuState}</Text>}
         {dfuProgress >= 0 && <ProgressBar percent={dfuProgress} />}
       </TaskContainer>
     )

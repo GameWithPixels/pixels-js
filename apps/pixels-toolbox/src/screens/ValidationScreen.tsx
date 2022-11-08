@@ -239,7 +239,7 @@ function TestsPage({
       ...useTaskComponent("UpdateFirmware", cancel, (p) => (
         <>
           {scannedPixel && (
-            <UpdateFirmware {...p} address={scannedPixel.address} />
+            <UpdateFirmware {...p} scannedPixel={scannedPixel} />
           )}
         </>
       ))

@@ -17,10 +17,10 @@ import dfuFiles from "~/../assets/dfu-files.zip";
 import AppPage from "~/components/AppPage";
 import DfuFile from "~/components/DfuFile";
 import Spacer from "~/components/Spacer";
-import getDfuFileInfo from "~/getDfuFileInfo";
+import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import { type RootStackParamList } from "~/navigation";
 import globalStyles, { sr } from "~/styles";
-import unzipDfuFiles from "~/unzipDfuFiles";
+import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 
 function SelectDfuFilePage() {
   const errorHandler = useErrorHandler();
