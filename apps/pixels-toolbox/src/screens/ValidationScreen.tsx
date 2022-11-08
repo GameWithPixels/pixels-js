@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import {
   Pixel,
   ScannedPixel,
@@ -6,12 +5,13 @@ import {
 import {
   extendTheme,
   useColorModeValue,
-  NativeBaseProvider,
-  Center,
-  VStack,
-  Text,
   Button,
+  Center,
+  HStack,
+  NativeBaseProvider,
   ScrollView,
+  Text,
+  VStack,
 } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
@@ -23,6 +23,7 @@ import {
 } from "react-native-vision-camera";
 
 import AppPage from "~/components/AppPage";
+import PixelScanList from "~/components/PixelScanList";
 import {
   CheckBoard,
   CheckLeds,
@@ -127,6 +128,7 @@ function DecodePixelIdPage({
   const [cameraStatus, setCameraStatus] =
     useState<CameraStatus>("initializing");
 
+  // Update camera status
   useEffect(() => {
     if (cameraPermission === "denied") {
       setCameraStatus("needPermission");
@@ -142,16 +144,49 @@ function DecodePixelIdPage({
   }, [cameraPermission, device, errorHandler, t]);
 
   // Frame processor for decoding PixelId
-  const [frameProcessor, pixelId] = usePixelIdDecoderFrameProcessor();
+  const [frameProcessor, pixelId, lastColor] =
+    usePixelIdDecoderFrameProcessor();
 
+  // Notify when pixel id has been decoded
   useEffect(() => {
     if (pixelId) {
       onDecodedPixelId(pixelId);
     }
   }, [onDecodedPixelId, pixelId]);
 
+  // Monitor color changes
+  const lastColorChangesRef = useRef<number[]>([]);
+  const [readingColors, setReadingColors] = useState(false);
+  useEffect(() => {
+    const lastColorsChanges = lastColorChangesRef.current;
+    if (lastColor) {
+      const now = Date.now();
+      lastColorsChanges.push(now);
+      if (lastColorsChanges.length >= 5) {
+        lastColorsChanges.shift();
+        const maxDelay = 1000;
+        const readingColors = now - lastColorsChanges[0] < maxDelay;
+        setReadingColors(readingColors);
+        if (readingColors) {
+          const timeoutId = setTimeout(() => {
+            setReadingColors(false);
+          }, maxDelay);
+          return () => clearTimeout(timeoutId);
+        }
+      }
+    }
+  }, [lastColor]);
+
+  // Scan list
+  const [showScanList, setShowScanList] = useState(false);
+
   const bg = useBackgroundColor();
-  return (
+  return showScanList ? (
+    <PixelScanList
+      onSelected={(p) => onDecodedPixelId(p.pixelId)}
+      onClose={() => setShowScanList(false)}
+    />
+  ) : (
     <>
       <Center w="100%" h="100%" bg={bg}>
         {device && cameraStatus === "ready" ? (
@@ -168,17 +203,25 @@ function DecodePixelIdPage({
             lowLightBoost={false}
             frameProcessor={frameProcessor}
             videoStabilizationMode="off"
-            // format={format} TODO can't get camera to switch to given resolution
           />
         ) : (
           <Text>{t("startingCamera")}</Text>
         )}
-        <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
-          <Text variant="comment">
-            Reset {settings.formFactor} using magnet
-          </Text>
-          <Text variant="comment">and point camera at it</Text>
-        </Center>
+        {!readingColors && (
+          <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
+            <HStack>
+              <VStack>
+                <Text variant="comment">
+                  Reset {settings.formFactor} using magnet
+                </Text>
+                <Text variant="comment">and point camera at it</Text>
+              </VStack>
+              <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
+                Scan
+              </Button>
+            </HStack>
+          </Center>
+        )}
         <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
           <Text>
             Testing {t(settings.dieType)} {settings.formFactor}
@@ -321,13 +364,9 @@ function ValidationPage() {
   const [formFactor, setFormFactor] = useState<"board" | "die">();
   const [dieType, setDieType] = useState<DieType>();
   const [pixelId, setPixelId] = useState(0);
-  const navigation = useNavigation();
 
   return !formFactor ? (
-    <SelectFormFactorPage
-      onSelectFormFactor={setFormFactor}
-      onBack={() => navigation.goBack()}
-    />
+    <SelectFormFactorPage onSelectFormFactor={setFormFactor} />
   ) : !dieType ? (
     <SelectDieTypePage
       onSelectDieType={setDieType}

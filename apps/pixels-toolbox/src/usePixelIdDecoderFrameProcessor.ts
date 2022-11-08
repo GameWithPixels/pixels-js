@@ -3,11 +3,12 @@ import { useErrorHandler } from "react-error-boundary";
 import { runOnJS } from "react-native-reanimated";
 import { Frame, useFrameProcessor } from "react-native-vision-camera";
 
+import { RbgColor } from "./PixelIdDecoder";
 import usePixelIdDecoder from "./usePixelIdDecoder";
 
 export type FrameProcessor = (frame: Frame) => void;
 
-export default function (): [FrameProcessor, number] {
+export default function (): [FrameProcessor, number, RbgColor | undefined] {
   const errorHandler = useErrorHandler();
 
   // PixelId decoder
@@ -36,5 +37,5 @@ export default function (): [FrameProcessor, number] {
     [decoderDispatch, errorHandler]
   );
 
-  return [frameProcessor, decoderState.pixelId];
+  return [frameProcessor, decoderState.pixelId, decoderState.scanColor];
 }
