@@ -16,6 +16,7 @@ import AnimationsScreen from "~/screens/AnimationsScreen";
 import ConnectScreen from "~/screens/ConnectScreen";
 import DfuScreen from "~/screens/DfuScreen";
 import MenuScreen from "~/screens/MenuScreen";
+import RollScreen from "~/screens/RollScreen";
 import SelectDfuFileScreen from "~/screens/SelectDfuFileScreen";
 import { sr } from "~/styles";
 import "./i18n";
@@ -58,7 +59,7 @@ function App() {
           <Stack.Screen name="Animations" component={AnimationsScreen} />
           <Stack.Screen name="Validation" component={ValidationScreen} />
           <Stack.Screen name="Stats" component={StatsScreen} />
-          <Stack.Screen name="Test" component={TestScreen} />
+          <Stack.Screen name="Roll" component={RollScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

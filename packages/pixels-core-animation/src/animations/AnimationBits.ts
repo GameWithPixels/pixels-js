@@ -5,7 +5,7 @@ import {
 } from "@systemic-games/pixels-core-utils";
 
 import Color from "../color/Color";
-import * as Color32Utils from "../color/Color32Utils";
+import * as Color32Utils from "../color/color32Utils";
 import Constants from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 import RgbTrack from "./RgbTrack";

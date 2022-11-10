@@ -35,6 +35,13 @@ For automatically fixing problems with ESLint:
 yarn lint:fix
 ```
 
+## Publish
+
+Build the Toolbox on EAS:
+```sh
+yarn tb:eas-android preview
+```
+
 ### Contents
 
 * `pixels-app` created with Expo 44 `expo init --template @native-base/expo-template-typescript`

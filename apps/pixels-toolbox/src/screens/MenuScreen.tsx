@@ -60,7 +60,10 @@ function MenuPage() {
           title="Go to Stats"
         />
         <Spacer />
-        <Button onPress={() => navigation.navigate("Test")} title="TEST" />
+        <Button
+          onPress={() => navigation.navigate("Roll")}
+          title="Go to Roll"
+        />
         <Spacer />
       </View>
       <View style={styles.containerScanHeader}>

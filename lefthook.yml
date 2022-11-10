@@ -2,7 +2,8 @@ pre-commit:
   parallel: true
   commands:
     lint:
-      run: yarn lint
+      glob: "*.{js,ts,jsx,tsx}"
+      run: yarn eslint --max-warnings 0 {staged_files}
     types:
       run: yarn types
 commit-msg:
