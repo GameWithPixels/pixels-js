@@ -1,0 +1,7 @@
+{
+  "entryPointStrategy": "packages",
+  "entryPoints": [
+    "packages/*",
+  ],
+  "out": "docs"
+}
