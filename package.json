@@ -10,6 +10,7 @@
   "scripts": {
     "px": "yarn workspace @systemic-games/pixels-app",
     "tb": "yarn workspace @systemic-games/pixels-toolbox",
+    "tb:eas-android": "cd apps && cd pixels-toolbox && eas build -p android --profile",
     "test:rn-ble": "yarn workspace @systemic-games/test-react-native-bluetooth-le",
     "test:rn-dfu": "yarn workspace @systemic-games/test-react-native-nordic-nrf5-dfu",
     "test:rn-rgb": "yarn workspace @systemic-games/test-vision-camera-rgb-averages",
