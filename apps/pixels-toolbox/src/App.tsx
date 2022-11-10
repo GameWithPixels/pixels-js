@@ -7,7 +7,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Sentry from "sentry-expo";
 
 import StatsScreen from "./screens/StatsScreen";
-import TestScreen from "./screens/TestScreen";
 import ValidationScreen from "./screens/ValidationScreen";
 import useBluetooth from "./useBluetooth";
 
