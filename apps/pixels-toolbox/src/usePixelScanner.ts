@@ -100,6 +100,7 @@ async function scanAction(
  */
 export interface UsePixelScannerOptions {
   sortedByName?: boolean; // Whether to sort Pixels by name
+  scanFilter?: (scannedPixel: ScannedPixel) => boolean; // Optional filter for returned scanned Pixels.
   refreshInterval?: number; // Minimum interval between two state updates
 }
 
@@ -112,8 +113,8 @@ export interface UsePixelScannerOptions {
 export default function (
   options?: UsePixelScannerOptions
 ): [ScannedPixel[], (action: PixelScannerAction) => Promise<void>] {
-  // Get options
-  const sortedByName = options?.sortedByName;
+  // Apply options default values
+  const sortedByName = options?.sortedByName ?? false;
   const refreshInterval = options?.refreshInterval ?? 1000;
 
   // Store list of Pixels in a state
@@ -126,30 +127,35 @@ export default function (
     const intervalId = setInterval(() => {
       if (stateRef.current?.lastPixels.length) {
         // Keep the list of newly scanned Pixels
-        const lastPixels = stateRef.current.lastPixels;
-        // And reset the list store in the state
-        stateRef.current.lastPixels = [];
-        setPixels((scannedPixels) => {
-          // Create a new array so to always update state
-          scannedPixels = [...scannedPixels];
-          // Add or update last scanned pixels
-          lastPixels.forEach((p) => updateScannedPixels(scannedPixels, p));
-          // Sort
-          if (sortedByName) {
-            // Note: we sort even if no new entry was added as a die name
-            // could have changed since the last sort
-            scannedPixels.sort((p1, p2) =>
-              getUniquePixelName(p1).localeCompare(getUniquePixelName(p2))
-            );
-          }
-          return scannedPixels;
-        });
+        const lastPixels = options?.scanFilter
+          ? stateRef.current.lastPixels.filter(options?.scanFilter)
+          : [...stateRef.current.lastPixels];
+        // And reset the stored list
+        stateRef.current.lastPixels.length = 0;
+        // TODO check stateRef.current?.scanner.isScanning
+        if (lastPixels.length) {
+          setPixels((scannedPixels) => {
+            // Create a new array so to always update state
+            scannedPixels = [...scannedPixels];
+            // Add or update last scanned pixels
+            lastPixels.forEach((p) => updateScannedPixels(scannedPixels, p));
+            // Sort
+            if (sortedByName) {
+              // Note: we sort even if no new entry was added as a die name
+              // could have changed since the last sort
+              scannedPixels.sort((p1, p2) =>
+                getUniquePixelName(p1).localeCompare(getUniquePixelName(p2))
+              );
+            }
+            return scannedPixels;
+          });
+        }
       }
     }, refreshInterval);
     return () => {
       clearInterval(intervalId);
     };
-  }, [refreshInterval, sortedByName]);
+  }, [options?.scanFilter, sortedByName, refreshInterval]);
 
   // Clean up
   useEffect(() => {

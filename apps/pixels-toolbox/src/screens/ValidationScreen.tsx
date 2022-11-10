@@ -1,116 +1,120 @@
-import { useFocusEffect } from "@react-navigation/native";
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import {
-  Color,
-  MessageTypeValues,
-  Pixel,
-  PixelRollStateValues,
-} from "@systemic-games/react-native-pixels-connect";
-import { getImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useErrorHandler } from "react-error-boundary";
-import {
-  StyleSheet,
+  extendTheme,
+  useColorModeValue,
+  Button,
+  Center,
+  HStack,
+  NativeBaseProvider,
+  ScrollView,
   Text,
-  View,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
-import { runOnJS } from "react-native-reanimated";
+  VStack,
+} from "native-base";
+import React, { useEffect, useRef, useState } from "react";
+import { useErrorHandler } from "react-error-boundary";
+import { useTranslation } from "react-i18next";
 import {
   Camera,
-  CameraDevice,
   CameraPermissionStatus,
   useCameraDevices,
-  useFrameProcessor,
 } from "react-native-vision-camera";
 
-import dfuFiles from "~/../assets/factory-dfu-files.zip";
-import TelemetryStats from "~/TelemetryStats";
 import AppPage from "~/components/AppPage";
-import Button from "~/components/Button";
-import ProgressBar from "~/components/ProgressBar";
-import delay from "~/delay";
-import getDfuFileInfo from "~/getDfuFileInfo";
-import runValidationTests from "~/runValidationTests";
-import standardProfile from "~/standardProfile";
-import { sr } from "~/styles";
-import toLocaleDateTimeString from "~/toLocaleDateTimeString";
-import updateFirmware from "~/updateFirmware";
-import useDfuFiles from "~/useDfuFiles";
-import usePixelBattery from "~/usePixelBattery";
-import usePixelConnector from "~/usePixelConnector";
-import usePixelIdDecoder from "~/usePixelIdDecoder";
-import usePixelRssi from "~/usePixelRssi";
-import usePixelTelemetry from "~/usePixelTelemetry";
+import PixelScanList from "~/components/PixelScanList";
+import {
+  CheckBoard,
+  CheckLeds,
+  ConnectPixel,
+  PrepareDie,
+  ShakeDie,
+  ValidationTestsSettings,
+  UpdateFirmware,
+  WaitCharging,
+  WaitDieInCase,
+  WaitFaceUp,
+  TurnOffDevice,
+} from "~/components/ValidationTestsComponents";
+import { DieType, DieTypes } from "~/features/DieType";
+import {
+  getTaskResult,
+  getTaskResultEmoji,
+  TaskResult,
+} from "~/features/tasks/TaskResult";
+import useTaskChain from "~/features/tasks/useTaskChain";
+import useTaskComponent from "~/features/tasks/useTaskComponent";
+import {
+  getBoardOrDie,
+  getFormFactorNiceName,
+  ValidationFormFactor,
+} from "~/features/validation/ValidationFormFactor";
+import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 
-function assert(condition: any, msg?: string): asserts condition {
-  if (!condition) {
-    throw new Error(msg ?? "Assertion error");
-  }
+function SelectFormFactorPage({
+  onSelected,
+}: {
+  onSelected: (formFactor: ValidationFormFactor) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <VStack w="100%" h="100%" p="5" bg={useBackgroundColor()}>
+      <Button h="20%" my="10%" onPress={() => onSelected("boardNoCoil")}>
+        {t("validateBoardNoCoil")}
+      </Button>
+      <Button h="20%" my="10%" onPress={() => onSelected("board")}>
+        {t("validateFullBoard")}
+      </Button>
+      <Button h="20%" my="10%" onPress={() => onSelected("die")}>
+        {t("validateCastDie")}
+      </Button>
+    </VStack>
+  );
 }
 
-async function checkFaceUp(pixel: Pixel, face: number, timeout = 30000) {
-  assert(face > 0);
-  try {
-    const abortTime = Date.now() + timeout;
-
-    await pixel.blink(Color.dimMagenta, {
-      count: timeout / 2000,
-      duration: 30000,
-      faceMask: 1 << (face - 1),
-    });
-
-    const checkFace = async () => {
-      let rollState = await pixel.getRollState();
-      while (
-        rollState.state !== PixelRollStateValues.OnFace ||
-        rollState.faceIndex !== face - 1
-      ) {
-        await delay(0.5);
-        rollState = await pixel.getRollState();
-        if (Date.now() > abortTime) {
-          throw new Error(`Timeout waiting for face ${face} up`);
-        }
-      }
-    };
-    await checkFace();
-  } finally {
-    try {
-      await pixel.stopAllAnimations();
-    } catch {}
-  }
+function SelectDieTypePage({
+  formFactor,
+  onSelectDieType,
+  onBack,
+}: {
+  formFactor: ValidationFormFactor;
+  onSelectDieType: (type: DieType) => void;
+  onBack?: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <VStack w="100%" h="100%" p="2" bg={useBackgroundColor()}>
+      <Text textAlign="center">
+        Testing {getFormFactorNiceName(formFactor)}
+      </Text>
+      <VStack h="85%" p="2" justifyContent="center">
+        {DieTypes.map((dt) => (
+          <Button key={dt} my="2" onPress={() => onSelectDieType(dt)}>
+            {t(dt)}
+          </Button>
+        ))}
+      </VStack>
+      <Button m="2" onPress={onBack}>
+        {t("back")}
+      </Button>
+    </VStack>
+  );
 }
 
-async function finalSetup(
-  pixel: Pixel,
-  transferProgressCallback?: (progress: number) => void
-) {
-  transferProgressCallback?.(-1);
+type CameraStatus =
+  | "initializing"
+  | "needPermission"
+  | "noParallelVideoProcessing"
+  | "ready";
 
-  // Upload profile
-  try {
-    await pixel.transferDataSet(standardProfile, transferProgressCallback);
-  } finally {
-    transferProgressCallback?.(-1);
-  }
-
-  // Rename
-  //await pixel.rename("Pixel");
-
-  // Back out validation mode
-  pixel.sendMessage(MessageTypeValues.ExitValidation);
-}
-
-type AppStatuses =
-  | "Initializing..."
-  | "Identifying..."
-  | "Searching..."
-  | "Connecting..."
-  | "Testing..."
-  | "Test Passed"
-  | "Test Failed";
-
-function ValidationPage() {
+function DecodePixelIdPage({
+  onDecodedPixelId,
+  settings,
+  onBack,
+}: {
+  onDecodedPixelId: (pixelId: number) => void;
+  settings: ValidationTestsSettings;
+  onBack?: () => void;
+}) {
+  const { t } = useTranslation();
   const errorHandler = useErrorHandler();
 
   // Camera
@@ -131,428 +135,377 @@ function ValidationPage() {
 
   // We use the back camera
   const device = devices.back;
-  const cameraReady = cameraPermission === "authorized" && device;
+
+  // Camera status
+  const [cameraStatus, setCameraStatus] =
+    useState<CameraStatus>("initializing");
+
+  // Update camera status
   useEffect(() => {
-    if (cameraReady) {
-      setStatusText("Identifying...");
-    }
-  }, [cameraReady]);
-
-  // PixelId decoder
-  const [decoderState, decoderDispatch] = usePixelIdDecoder();
-
-  // Get the average R, G and B for each image captured by the camera
-  const frameProcessor = useFrameProcessor(
-    (frame) => {
-      "worklet";
-      try {
-        const result = getImageRgbAverages(frame, {
-          subSamplingX: 4,
-          subSamplingY: 2,
-          // writeImage: false,
-          // writePlanes: false,
-        });
-        runOnJS(decoderDispatch)({ rgbAverages: result });
-      } catch (error) {
-        errorHandler(
-          new Error(
-            `Exception in frame processor "getImageRgbAverages": ${error}`
-          )
-        );
+    if (cameraPermission === "denied") {
+      setCameraStatus("needPermission");
+      errorHandler(new Error(t("needCameraPermission")));
+    } else if (cameraPermission === "authorized" && device) {
+      if (!device.supportsParallelVideoProcessing) {
+        setCameraStatus("noParallelVideoProcessing");
+        errorHandler(new Error(t("incompatibleCamera")));
+      } else {
+        setCameraStatus("ready");
       }
-    },
-    [decoderDispatch, errorHandler]
-  );
+    }
+  }, [cameraPermission, device, errorHandler, t]);
 
-  // Connection to Pixel
-  const [connectorState, connectorDispatch] = usePixelConnector();
+  // Frame processor for decoding PixelId
+  const [frameProcessor, pixelId, lastColor] =
+    usePixelIdDecoderFrameProcessor();
 
-  // Reset decoder when status is back to identifying
-  // useEffect(() => {
-  //   console.log("Status: " + statusText);
-  //   if (statusText === "Identifying...") {
-  //     console.log("Resetting device id decoding");
-  //     decoderDispatch({ reset: true });
-  //   }
-  // }, [decoderDispatch, statusText]);
-
-  // Connect when pixel id is found
+  // Notify when pixel id has been decoded
   useEffect(() => {
-    const pixelId = decoderState.pixelId;
     if (pixelId) {
-      connectorDispatch("connect", { pixelId });
+      onDecodedPixelId(pixelId);
     }
-  }, [connectorDispatch, decoderState.pixelId]);
+  }, [onDecodedPixelId, pixelId]);
 
-  // And disconnect when loosing focus
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        connectorDispatch("disconnect");
-      };
-    }, [connectorDispatch])
-  );
-
-  // Overall status
-  const [statusText, setStatusText] = useState<AppStatuses>("Initializing...");
-
-  // Refresh battery level and RSSI
-  const [rssi, rssiDispatch] = usePixelRssi(connectorState.pixel);
-  const [battery, batteryDispatch] = usePixelBattery(connectorState.pixel);
-  const [telemetry, telemetryDispatch] = usePixelTelemetry(
-    connectorState.pixel
-  );
-
-  const telemetryStatsRef = useRef<TelemetryStats>(new TelemetryStats());
+  // Monitor color changes
+  const lastColorChangesRef = useRef<number[]>([]);
+  const [readingColors, setReadingColors] = useState(false);
   useEffect(() => {
-    if (telemetry) {
-      telemetryStatsRef.current.push(telemetry);
-    }
-  }, [telemetry]);
-
-  // Update status text based Pixel connector status
-  useEffect(() => {
-    switch (connectorState.status) {
-      case "scanning":
-        setStatusText("Searching...");
-        break;
-      case "connecting":
-        setStatusText("Connecting...");
-        break;
-      case "connected":
-        if (connectorState.pixel && connectorState.scannedPixel) {
-          const pixel = connectorState.pixel;
-          const firmwareDate = new Date(
-            connectorState.scannedPixel.buildTimestamp * 1000
-          );
-          console.log(
-            "Connected to Pixel",
-            pixel.name,
-            "firmware version is",
-            toLocaleDateTimeString(firmwareDate),
-            "running validation tests..."
-          );
-          setStatusText("Testing...");
-          runValidationTests(pixel)
-            .then((success) => {
-              setStatusText((status) => {
-                if (status === "Testing...") {
-                  return success ? "Test Passed" : "Test Failed";
-                }
-                return status;
-              });
-            })
-            .catch(errorHandler)
-            .then(() => {
-              rssiDispatch("start");
-              batteryDispatch("start");
-              telemetryDispatch("start");
-            });
+    const lastColorsChanges = lastColorChangesRef.current;
+    if (lastColor) {
+      const now = Date.now();
+      lastColorsChanges.push(now);
+      if (lastColorsChanges.length >= 5) {
+        lastColorsChanges.shift();
+        const maxDelay = 1000;
+        const readingColors = now - lastColorsChanges[0] < maxDelay;
+        setReadingColors(readingColors);
+        if (readingColors) {
+          const timeoutId = setTimeout(() => {
+            setReadingColors(false);
+          }, maxDelay);
+          return () => clearTimeout(timeoutId);
         }
-        break;
-      case "disconnected":
-        setStatusText((statusText) => {
-          if (statusText !== "Initializing...") {
-            decoderDispatch({ reset: true });
-            return "Identifying...";
-          }
-          return statusText;
-        });
-        break;
-      default: {
-        const check: never = connectorState.status;
-        throw new Error(check);
       }
     }
-  }, [
-    batteryDispatch,
-    connectorState,
-    decoderDispatch,
-    errorHandler,
-    rssiDispatch,
-    telemetryDispatch,
-  ]);
+  }, [lastColor]);
 
-  // DFU files
-  const [bootloaderPath, firmwarePath] = useDfuFiles(dfuFiles);
-  useEffect(() => {
-    if (bootloaderPath.length) {
-      console.log(
-        "DFU files loaded, version is",
-        toLocaleDateTimeString(getDfuFileInfo(firmwarePath).date ?? new Date())
-      );
-    }
-  }, [bootloaderPath, firmwarePath]);
+  // Scan list
+  const [showScanList, setShowScanList] = useState(false);
 
-  // DFU state and progress
-  const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
-  const [dfuProgress, setDfuProgress] = useState(0);
-
-  // Reset progress when DFU completes
-  useEffect(() => {
-    if (dfuState === "dfuCompleted" || dfuState === "dfuAborted") {
-      setDfuProgress(0);
-    }
-  }, [dfuState]);
-
-  // Profile transfer
-  const [profileTransferProgress, setProfileTransferProgress] = useState(-1);
-
-  const renderMainUI = (device: CameraDevice) => {
-    const isConnectingOrConnected =
-      connectorState.status === "connecting" ||
-      connectorState.status === "connected";
-    const pixel = connectorState.pixel;
-    const isConnected = pixel && connectorState.status === "connected";
-    const testDone =
-      statusText === "Test Passed" || statusText === "Test Failed";
-
-    // https://mrousavy.com/react-native-vision-camera/docs/api/interfaces/CameraDeviceFormat/
-    // const w = 720; // 1280, 720, 640, 320
-    // const h = 480; // 720, 480, 480, 240
-    // const format: CameraDeviceFormat = {
-    //   photoWidth: w,
-    //   photoHeight: h,
-    //   videoWidth: w,
-    //   videoHeight: h,
-    //   frameRateRanges: [{ minFrameRate: 30, maxFrameRate: 30 }],
-    //   colorSpaces: ["yuv"],
-    //   pixelFormat: "420v",
-    // };
-    // const arr: number[] = [];
-    // device.formats.forEach(f => {
-    //   //if (f.videoWidth >= 640 && f.videoWidth <= 1280 && f.colorSpaces[0] === "yuv") {
-    //   f.frameRateRanges.forEach(r => {
-    //     const c = r.maxFrameRate;
-    //     if (!arr.includes(c)) {
-    //       arr.push(c)
-    //       console.log(c);
-    //     }
-    //   })
-    // });
-    return (
-      <>
-        <Camera
-          ref={cameraRef}
-          style={styles.camera}
-          device={device}
-          isActive
-          photo
-          hdr={false}
-          lowLightBoost={false}
-          frameProcessor={
-            device.supportsParallelVideoProcessing ? frameProcessor : undefined
-          }
-          videoStabilizationMode="off"
-          // format={format} TODO can't get camera to switch to given resolution
-        />
-        {dfuState !== "dfuCompleted" && dfuState !== "dfuAborted" ? (
-          <>
-            <Text style={styles.infoText}>{`DFU state: ${dfuState}`}</Text>
-            <ProgressBar percent={dfuProgress} />
-          </>
-        ) : (
-          isConnectingOrConnected && (
-            <View>
-              {profileTransferProgress >= 0 && (
-                <ProgressBar percent={100 * profileTransferProgress} />
-              )}
-              {telemetry && (
-                <>
-                  <Text style={styles.infoText}>
-                    {"Acc: " +
-                      telemetry.accX.toFixed(2) +
-                      ", " +
-                      telemetry.accY.toFixed(2) +
-                      ", " +
-                      telemetry.accZ.toFixed(2)}
-                  </Text>
-                  <Text style={styles.infoText}>
-                    {" => min=" +
-                      telemetryStatsRef.current.minAccMagnitude.toFixed(2) +
-                      ", max=" +
-                      telemetryStatsRef.current.maxAccMagnitude.toFixed(2)}
-                  </Text>
-                </>
-              )}
-              {rssi && (
-                <Text
-                  style={styles.infoText}
-                >{`RSSI: ${rssi.value} dBm, channel: ${rssi.channelIndex}`}</Text>
-              )}
-              {battery && (
-                <Text style={styles.infoText}>
-                  {`Battery: ${battery.voltage.toFixed(2)} V, charging:` +
-                    ` ${battery.charging ? "yes" : "no"}`}
-                </Text>
-              )}
-              {isConnected ? (
-                <View style={styles.containerHoriz}>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() =>
-                      pixel
-                        ?.blink(new Color(0.1, 0.1, 0.1), { duration: 10000 })
-                        .catch(errorHandler)
-                    }
-                  >
-                    White
-                  </Button>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() => checkFaceUp(pixel, 4).catch(errorHandler)}
-                  >
-                    4 up
-                  </Button>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() =>
-                      finalSetup(pixel, setProfileTransferProgress).catch(
-                        errorHandler
-                      )
-                    }
-                  >
-                    Setup
-                  </Button>
-                </View>
-              ) : (
-                <></>
-              )}
-              {testDone ? (
-                <View style={styles.containerHoriz}>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() => {
-                      if (connectorState.pixel && connectorState.scannedPixel) {
-                        rssiDispatch("stop");
-                        batteryDispatch("stop");
-                        telemetryDispatch("stop");
-                        updateFirmware(
-                          connectorState.scannedPixel.address,
-                          bootloaderPath,
-                          firmwarePath,
-                          setDfuState,
-                          setDfuProgress
-                        ).catch(errorHandler);
-                      }
-                    }}
-                  >
-                    DFU
-                  </Button>
-                  <Button
-                    style={styles.button}
-                    textStyle={styles.buttonText}
-                    onPress={() =>
-                      connectorState.pixel?.turnOff().catch(errorHandler)
-                    }
-                  >
-                    Done
-                  </Button>
-                </View>
-              ) : (
-                <Button
-                  style={styles.button}
-                  textStyle={styles.buttonText}
-                  onPress={() => connectorDispatch("disconnect")}
-                >
-                  Cancel
-                </Button>
-              )}
-            </View>
-          )
-        )}
-        <View
-          style={[
-            styles.scanColorIndicator,
-            {
-              backgroundColor: decoderState.scanColor
-                ? decoderState.scanColor
-                : "white",
-            },
-          ]}
-        />
-      </>
-    );
-  };
-
-  return (
+  const boardOrDie = getBoardOrDie(settings.formFactor);
+  const formFactor = getFormFactorNiceName(settings.formFactor);
+  const bg = useBackgroundColor();
+  return showScanList ? (
+    <PixelScanList
+      onSelected={(p) => onDecodedPixelId(p.pixelId)}
+      onClose={() => setShowScanList(false)}
+    />
+  ) : (
     <>
-      <Text style={styles.statusText}>{statusText}</Text>
-      {cameraReady && renderMainUI(device)}
+      <Center w="100%" h="100%" bg={bg}>
+        {device && cameraStatus === "ready" ? (
+          <Camera
+            ref={cameraRef}
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+            device={device}
+            isActive
+            photo
+            hdr={false}
+            lowLightBoost={false}
+            frameProcessor={frameProcessor}
+            videoStabilizationMode="off"
+          />
+        ) : (
+          <Text>{t("startingCamera")}</Text>
+        )}
+        {!readingColors && (
+          <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
+            <HStack>
+              <VStack>
+                <Text variant="comment">Reset {boardOrDie} using magnet</Text>
+                <Text variant="comment">and point camera at it</Text>
+              </VStack>
+              <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
+                Scan
+              </Button>
+            </HStack>
+          </Center>
+        )}
+        <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
+          <Text>
+            Testing {t(settings.dieType)} {formFactor}
+          </Text>
+          <Button w="100%" onPress={onBack}>
+            {t("back")}
+          </Button>
+        </Center>
+      </Center>
     </>
   );
 }
 
-export default function () {
+function RunTestsPage({
+  pixelId,
+  settings,
+  onResult,
+}: {
+  pixelId: number;
+  settings: ValidationTestsSettings;
+  onResult?: (result: TaskResult) => void;
+}) {
+  const { t } = useTranslation();
+  const [pixel, setPixel] = useState<Pixel>();
+  const [cancel, setCancel] = useState(false);
+
+  const taskChain = useTaskChain(
+    cancel ? "cancel" : "run",
+    ...useTaskComponent("UpdateFirmware", cancel, (p) => (
+      <>
+        <UpdateFirmware {...p} pixelId={pixelId} />
+      </>
+    ))
+  ).chainWith(
+    ...useTaskComponent("ConnectPixel", cancel, (p) => (
+      <ConnectPixel
+        {...p}
+        pixelId={pixelId}
+        settings={settings}
+        onPixelConnected={setPixel}
+      />
+    ))
+  );
+  if (settings.formFactor !== "boardNoCoil") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("WaitCharging", cancel, (p) => (
+        <>
+          {pixel && <WaitCharging {...p} pixel={pixel} settings={settings} />}
+        </>
+      ))
+    );
+  }
+  taskChain
+    .chainWith(
+      ...useTaskComponent("CheckBoard", cancel, (p) => (
+        <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
+      ))
+    )
+    .chainWith(
+      ...useTaskComponent("CheckLeds", cancel, (p) => (
+        <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
+      ))
+    );
+  if (settings.formFactor !== "boardNoCoil") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("WaitNotCharging", cancel, (p) => (
+        <>
+          {pixel && (
+            <WaitCharging
+              {...p}
+              pixel={pixel}
+              settings={settings}
+              notCharging
+            />
+          )}
+        </>
+      ))
+    );
+  }
+  if (settings.formFactor !== "die") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("TurnOffDevice", cancel, (p) => (
+        <>
+          {pixel && <TurnOffDevice {...p} pixel={pixel} settings={settings} />}
+        </>
+      ))
+    );
+  } else {
+    taskChain
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("WaitFaceUp", cancel, (p) => (
+          <>
+            {pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}
+          </>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("ShakeDie", cancel, (p) => (
+          <>{pixel && <ShakeDie {...p} pixel={pixel} settings={settings} />}</>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("PrepareDie", cancel, (p) => (
+          <>
+            {pixel && <PrepareDie {...p} pixel={pixel} settings={settings} />}
+          </>
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("ConnectPixel", cancel, (p) => (
+          <ConnectPixel
+            {...p}
+            pixelId={pixelId}
+            settings={settings}
+            onPixelConnected={setPixel}
+          />
+        ))
+      )
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("WaitDieInCase", cancel, (p) => (
+          <>
+            {pixel && (
+              <WaitDieInCase {...p} pixel={pixel} settings={settings} />
+            )}
+          </>
+        ))
+      );
+  }
+
+  const result = getTaskResult(taskChain.status);
+  const onOkCancel = () => {
+    if (result) {
+      onResult?.(result);
+    } else {
+      setCancel(true);
+      onResult?.("canceled");
+    }
+  };
+  const scrollRef = useRef<any>();
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollToEnd();
+    }
+  });
+
+  const formFactor = getFormFactorNiceName(settings.formFactor);
   return (
-    <AppPage style={styles.container}>
-      <ValidationPage />
-    </AppPage>
+    <Center w="100%" h="100%" p="2%" bg={useBackgroundColor()}>
+      <Text>{`Testing ${t(settings.dieType)} ${formFactor}`}</Text>
+      <ScrollView w="100%" ref={scrollRef}>
+        <>{taskChain.render()}</>
+        {result && (
+          <Text mb="10%" fontSize={150} textAlign="center">
+            {getTaskResultEmoji(taskChain.status)}
+          </Text>
+        )}
+      </ScrollView>
+      <Button w="100%" onPress={onOkCancel}>
+        {result ? t("ok") : t("cancel")}
+      </Button>
+    </Center>
   );
 }
 
-// Our standard colors
-const Colors = {
-  dark: "#100F1E",
-  light: "#1E213A",
-  accent: "#6A78FF",
-  text: "#8194AE",
-  lightText: "#D1D1D1",
-  darkText: "#536077",
-} as const;
+function ValidationPage() {
+  const [formFactor, setFormFactor] = useState<ValidationFormFactor>();
+  const [dieType, setDieType] = useState<DieType>();
+  const [pixelId, setPixelId] = useState(0);
 
-const styles = StyleSheet.create({
-  //...globalStyles,
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: Colors.dark,
-    padding: sr(8),
+  return !formFactor ? (
+    <SelectFormFactorPage onSelected={setFormFactor} />
+  ) : !dieType ? (
+    <SelectDieTypePage
+      formFactor={formFactor}
+      onSelectDieType={setDieType}
+      onBack={() => setFormFactor(undefined)}
+    />
+  ) : !pixelId ? (
+    <DecodePixelIdPage
+      settings={{ formFactor, dieType }}
+      onDecodedPixelId={(pixelId) => {
+        console.log("Decoded PixelId:", pixelId);
+        setPixelId(pixelId);
+      }}
+      onBack={() => setDieType(undefined)}
+    />
+  ) : (
+    <RunTestsPage
+      settings={{ formFactor, dieType }}
+      pixelId={pixelId}
+      onResult={(result) => {
+        console.log("Validation tests result:", result);
+        setPixelId(0);
+      }}
+    />
+  );
+}
+
+function useBackgroundColor() {
+  return useColorModeValue("warmGray.100", "coolGray.800");
+}
+
+const theme = extendTheme({
+  components: {
+    Text: {
+      baseStyle: {
+        fontSize: "2xl",
+        fontWeight: "bold",
+        _dark: {
+          color: "warmGray.200",
+        },
+        _light: {
+          color: "coolGray.700",
+        },
+      },
+      variants: {
+        comment: {
+          italic: true,
+          fontWeight: "1xl",
+        },
+      },
+    },
+    Button: {
+      variants: {
+        solid: {
+          _dark: {
+            bg: "coolGray.600",
+            _pressed: {
+              bg: "coolGray.700",
+            },
+            _text: {
+              color: "warmGray.200",
+            },
+          },
+          _light: {
+            bg: "warmGray.300",
+            _pressed: {
+              bg: "warmGray.200",
+            },
+            _text: {
+              color: "coolGray.700",
+            },
+          },
+        },
+      },
+      defaultProps: {
+        size: "lg",
+        _text: {
+          fontSize: "2xl",
+        },
+      },
+    },
   },
-  containerHoriz: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  camera: {
-    flex: 1,
-  },
-  button: {
-    flex: 1,
-    backgroundColor: Colors.light,
-    padding: sr(5),
-    margin: sr(5),
-    borderRadius: sr(5),
-  },
-  buttonText: {
-    fontSize: sr(22),
-    color: Colors.lightText,
-  },
-  statusText: {
-    fontSize: sr(40),
-    color: Colors.text,
-    alignSelf: "center",
-  },
-  deviceIdText: {
-    fontSize: sr(25),
-    color: Colors.lightText,
-    fontStyle: "italic",
-    alignSelf: "center",
-    paddingBottom: sr(10),
-  },
-  infoText: {
-    fontSize: sr(25),
-    color: Colors.text,
-    alignSelf: "center",
-  },
-  scanColorIndicator: {
-    position: "absolute",
-    top: sr(10),
-    left: sr(10),
-    width: sr(40),
-    height: sr(40),
+  config: {
+    initialColorMode: "dark",
   },
 });
+
+export default function () {
+  return (
+    <AppPage style={{ flex: 1 }}>
+      <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
+        <ValidationPage />
+      </NativeBaseProvider>
+    </AppPage>
+  );
+}
