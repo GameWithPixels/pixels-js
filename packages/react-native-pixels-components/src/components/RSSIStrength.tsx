@@ -22,16 +22,17 @@ const icons: IconParams[] = [
 
 export function RSSIStrength(props: RSSIStrengthProps) {
   const resolvedProps = usePropsResolution("RSSIStrength", props);
+  const rssiStrength = 100 + resolvedProps.percentage;
   return (
     <Center>
       <HStack space={2} alignItems="center">
         <PercentageDisplayComponent
           icons={icons}
           colors={resolvedProps.colors}
-          percentage={resolvedProps.percentage}
+          percentage={rssiStrength}
           size={resolvedProps.iconSize}
         />
-        <Text>{resolvedProps.percentage + "%"}</Text>
+        <Text>{rssiStrength + "%"}</Text>
       </HStack>
     </Center>
   );
