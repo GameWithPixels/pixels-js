@@ -39,6 +39,8 @@ import {
   NotifyUserAck,
   serializeMessage,
   SetName,
+  PixelDesignAndColor,
+  PixelDesignAndColorValues,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import createTypedEventEmitter, {
@@ -93,11 +95,23 @@ export class PixelError extends Error {
 }
 
 /**
+ * Common accessible values for all Pixel implementations.
+ */
+export interface IPixel {
+  readonly systemId: string;
+  readonly pixelId: number;
+  readonly name: string;
+  readonly ledCount: number;
+  designAndColor: PixelDesignAndColor;
+  readonly buildTimestamp: number;
+}
+
+/**
  * Represents a Pixel die.
  * Most of its methods require that the instance is connected to the Pixel device.
  * Call the {@link connect} method to initiate a connection.
  */
-export default class Pixel {
+export default class Pixel implements IPixel {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
@@ -141,6 +155,16 @@ export default class Pixel {
   /** Gets the number of LEDs for this Pixel die, may be 0 until connected to device. */
   get ledCount(): number {
     return this._info?.ledCount ?? 0;
+  }
+
+  /** Gets the Pixel design and color. */
+  get designAndColor(): PixelDesignAndColor {
+    return this._info?.designAndColor ?? PixelDesignAndColorValues.Unknown;
+  }
+
+  /** Gets the Pixel firmware build timestamp (Unix epoch). */
+  get buildTimestamp(): number {
+    return this._info?.buildTimestamp ?? 0;
   }
 
   /**
