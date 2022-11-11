@@ -1,14 +1,16 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { delay } from "@systemic-games/pixels-core-utils";
 import {
   EditAnimationRainbow,
   EditDataSet,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  ScannedPixel,
+  getPixel,
+  getPixelUniqueName,
+  Color,
   Pixel,
   PixelStatus,
-  getPixel,
-  Color,
+  ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ErrorBoundary, useErrorHandler } from "react-error-boundary";
@@ -28,8 +30,6 @@ import AppPage from "~/components/AppPage";
 import ErrorFallback from "~/components/ErrorFallback";
 import PixelInfoBox from "~/components/PixelInfoBox";
 import Spacer from "~/components/Spacer";
-import delay from "~/delay";
-import getUniquePixelName from "~/getUniquePixelName";
 import standardProfile from "~/standardProfile";
 import globalStyles, { sr } from "~/styles";
 import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
@@ -324,8 +324,8 @@ function ConnectPage() {
             )
           )
           .sort((p1, p2) =>
-            getUniquePixelName(p1.pixelOrScanned).localeCompare(
-              getUniquePixelName(p2.pixelOrScanned)
+            getPixelUniqueName(p1.pixelOrScanned).localeCompare(
+              getPixelUniqueName(p2.pixelOrScanned)
             )
           )
       ),

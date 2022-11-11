@@ -1,11 +1,11 @@
 import {
+  getPixelUniqueName,
   PixelScanner,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import SequentialPromiseQueue from "./SequentialPromiseQueue";
-import getUniquePixelName from "./getUniquePixelName";
 
 // Return whether 2 scanned dice are the same
 // Note: we can't rely on the name as it may change overtime
@@ -144,7 +144,7 @@ export default function (
               // Note: we sort even if no new entry was added as a die name
               // could have changed since the last sort
               scannedPixels.sort((p1, p2) =>
-                getUniquePixelName(p1).localeCompare(getUniquePixelName(p2))
+                getPixelUniqueName(p1).localeCompare(getPixelUniqueName(p2))
               );
             }
             return scannedPixels;

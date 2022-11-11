@@ -1,3 +1,4 @@
+import { delay } from "@systemic-games/pixels-core-utils";
 import {
   extendTheme,
   useColorModeValue,
@@ -9,7 +10,6 @@ import {
 import React, { useCallback, useRef, useState } from "react";
 
 import AppPage from "~/components/AppPage";
-import delay from "~/delay";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import useTestComponent, {
   TaskComponentProps,

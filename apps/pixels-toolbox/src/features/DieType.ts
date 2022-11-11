@@ -1,4 +1,4 @@
-import assertUnreachable from "~/assertUnreachable";
+import { assertUnreachable } from "@systemic-games/pixels-core-utils";
 
 export const DieTypes = ["d4", "d6", "pd6", "d8", "d10", "d12", "d20"] as const;
 export type DieType = typeof DieTypes[number];

@@ -8,6 +8,7 @@ import {
   DfuState,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
+  toFullUuid,
   PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelUuids,
@@ -34,7 +35,6 @@ import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import { DfuScreenProps } from "~/navigation";
 import globalStyles, { sr } from "~/styles";
 import toLocaleDateTimeString from "~/toLocaleDateTimeString";
-import toUuid128bits from "~/toUuid128bits";
 import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
 
 type ExtendedDfuState = DfuState | "Initializing";
@@ -64,7 +64,7 @@ function DfuPage({ route }: DfuScreenProps) {
     if (dfuTargetScan) {
       scannerDispatch("stop");
       setScannedDfuTargets([]);
-      Scanner.start(toUuid128bits(PixelUuids.dfuServiceShortUuid), (p) => {
+      Scanner.start(toFullUuid(PixelUuids.dfuServiceShortUuid), (p) => {
         setScannedDfuTargets((targets) => {
           if (targets.every((target) => target.address !== p.address)) {
             return [...targets, p];

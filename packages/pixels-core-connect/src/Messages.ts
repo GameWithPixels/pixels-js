@@ -297,7 +297,7 @@ export class IAmADie implements PixelMessage {
   @serializable(4)
   pixelId = 0;
   @serializable(2)
-  availableFlash = 0;
+  availableFlashSize = 0;
   @serializable(4)
   buildTimestamp = 0;
 }

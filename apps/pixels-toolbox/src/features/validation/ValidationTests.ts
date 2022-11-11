@@ -1,4 +1,4 @@
-import { assert, safeAssign } from "@systemic-games/pixels-core-utils";
+import { assert, delay, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   LedLoopback,
@@ -12,7 +12,6 @@ import {
   MessageOrType,
 } from "@systemic-games/react-native-pixels-connect";
 
-import delay from "../../delay";
 import { TaskCanceledError, TaskFaultedError } from "../tasks/useTask";
 
 function vectNorm(x: number, y: number, z: number): number {

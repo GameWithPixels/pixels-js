@@ -1,7 +1,8 @@
 import {
-  ScannedPixel,
+  getPixelEnumName,
   Pixel,
   PixelDesignAndColorValues,
+  ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { PropsWithChildren } from "react";
 import {
@@ -10,7 +11,6 @@ import {
   // eslint-disable-next-line import/namespace
 } from "react-native";
 
-import getPixelEnumName from "~/getPixelEnumName";
 import globalStyles from "~/styles";
 
 export interface PixelInfoBoxProps extends PropsWithChildren {
