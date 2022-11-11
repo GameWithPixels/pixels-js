@@ -16,10 +16,16 @@ import {
 export function toStringPath(points?: Point[]) {
   return points?.map(({ x, y }) => `${x},${y}`).join(" ");
 }
+
+/**
+ * Convert a color object to a HTML color code.
+ * @param color RBG color object.
+ * @returns A HTML color code.
+ */
 export function toStringColor(color: IColor): string {
   function toHex(v: number) {
     const byte = Math.max(0, Math.min(255, Math.round(255 * v)));
-    return ("0" + byte.toString(16)).slice(-2);
+    return byte.toString(16).padStart(2, "0");
   }
   return "#" + toHex(color.r) + toHex(color.g) + toHex(color.b);
 }
@@ -31,6 +37,7 @@ export interface ColorWheelProps {
   initialColor?: string;
   onSelectColor: React.Dispatch<React.SetStateAction<string>>; // action to initiate after selecting a color on the wheel
 }
+
 /**
  * Generate the color wheel by drawing the colors polygons and the selector
  */
