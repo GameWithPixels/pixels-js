@@ -1,8 +1,10 @@
-import { StackNavigationProp } from "@react-navigation/stack";
 export type RootStackParamList = {
+  Home: undefined;
   HomeScreen: undefined;
   SecondScreen: undefined;
   ThirdScreen: undefined;
 };
 
-export type ScreenProps = StackNavigationProp<RootStackParamList, "HomeScreen">;
+export type HomeScreenStackParamList = {
+  PixelDetailScreen: undefined;
+};

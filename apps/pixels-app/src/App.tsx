@@ -14,7 +14,7 @@ import { Provider } from "react-redux";
 import { RootStackParamList } from "./Navigation";
 import { store } from "./app/store";
 import { NavigationContainerComponent } from "./components/NavigationContainerComponent";
-import homeScreen from "./screens/homeScreen";
+import Home from "./screens/home";
 import secondScreen from "./screens/secondScreen";
 import ThirdScreen from "./screens/thirdScreen";
 
@@ -39,7 +39,8 @@ export default function App() {
               animationTypeForReplace: "pop",
             }}
           >
-            <Stack.Screen name="HomeScreen" component={homeScreen} />
+            {/* <Stack.Screen name="HomeScreen" component={homeScreen} /> */}
+            <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="SecondScreen" component={secondScreen} />
             <Stack.Screen name="ThirdScreen" component={ThirdScreen} />
           </Stack.Navigator>

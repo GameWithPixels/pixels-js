@@ -1,21 +1,21 @@
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   PxAppPage,
-  BatteryLevel,
-  Card,
-  ColorSelection,
-  FaceMask,
-  ProgressBar,
   PixelTheme,
-  SliderComponent,
   Toggle,
   createPixelTheme,
   LightingStyleSelection,
-  PixelInfoComponent,
+  PairedPixelInfoComponent,
   PixelInfo,
+  ScannedPixelInfoComponent,
+  SquarePairedPixelInfo,
+  FaceMask,
 } from "@systemic-games/react-native-pixels-components";
-import { Button, HStack, Text, VStack } from "native-base";
+import { Box, Button, Center, HStack, Spacer, Text, VStack } from "native-base";
 import React from "react";
 
+import { HomeScreenStackParamList } from "~/Navigation";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
 
@@ -31,82 +31,270 @@ function ReduxExample() {
   );
 }
 
-const greenPixelThemeParams = {
+const paleBluePixelThemeParams = {
   theme: PixelTheme,
   primaryColors: {
-    "50": "#7eff7b",
-    "100": "#56ff54",
-    "200": "#2fff2c",
-    "300": "#10f70c",
-    "400": "#0ad507",
-    "500": "#0fb80c",
-    "600": "#129d10",
-    "700": "#148312",
-    "800": "#146a13",
-    "900": "#135312",
+    "50": "#1b94ff",
+    "100": "#0081f2",
+    "200": "#006cca",
+    "300": "#0256a0",
+    "400": "#024178",
+    "500": "#04345e",
+    "600": "#062846",
+    "700": "#051b2e",
+    "800": "#040f18",
+    "900": "#010204",
   },
 };
 
-const pixel: PixelInfo = {
-  name: "Brookly",
-  rssi: 100,
-  batteryLevel: 100,
-  ledCount: 20,
-  firmwareDate: new Date(),
-  profileName: "Arsène",
-};
-// const pixels: PixelInfo[] = [
-//   {
-//     name: "Bob",
-//     rssi: -60,
-//     batteryLevel: 0.85,
-//     ledCount: 20,
-//     firmwareDate: new Date(),
-//     profileName: "Rainbow",
-//   },
-//   {
-//     name: "Sarah",
-//     rssi: -54,
-//     batteryLevel: 0.5,
-//     ledCount: 8,
-//     firmwareDate: new Date(),
-//     profileName: "Custom",
-//   },
-//   {
-//     name: "Luke",
-//     rssi: -45,
-//     batteryLevel: 0.15,
-//     ledCount: 12,
-//     firmwareDate: new Date(),
-//     profileName: "Speak Numbers",
-//   },
-// ];
+const pairedPixelsinfo: PixelInfo[] = [
+  // {
+  //   name: "Bob",
+  //   rssi: -60,
+  //   batteryLevel: 0.85,
+  //   ledCount: 20,
+  //   firmwareDate: new Date(),
+  //   profileName: "Rainbow",
+  // },
+  // {
+  //   name: "Sarah",
+  //   rssi: -54,
+  //   batteryLevel: 0.49,
+  //   ledCount: 8,
+  //   firmwareDate: new Date(),
+  //   profileName: "Custom",
+  // },
+  // {
+  //   name: "Luke",
+  //   rssi: -45,
+  //   batteryLevel: 0.15,
+  //   ledCount: 12,
+  //   firmwareDate: new Date(),
+  //   profileName: "Speak Numbers",
+  // },
+  // {
+  //   name: "Henry",
+  //   rssi: -25,
+  //   batteryLevel: 0.9,
+  //   ledCount: 10,
+  //   firmwareDate: new Date(),
+  //   profileName: "Speak Numbers",
+  // },
+];
 
-const greenPixelTheme = createPixelTheme(greenPixelThemeParams);
+const scannedPixelsinfo: PixelInfo[] = [
+  {
+    name: "John",
+    rssi: -60,
+    batteryLevel: 0.85,
+    ledCount: 20,
+    firmwareDate: new Date(),
+    profileName: "Rainbow",
+  },
+  {
+    name: "Franck",
+    rssi: -54,
+    batteryLevel: 0.49,
+    ledCount: 8,
+    firmwareDate: new Date(),
+    profileName: "Custom",
+  },
+  {
+    name: "Julie",
+    rssi: -45,
+    batteryLevel: 0.15,
+    ledCount: 12,
+    firmwareDate: new Date(),
+    profileName: "Speak Numbers 123412341234",
+  },
+  {
+    name: "Alice",
+    rssi: -25,
+    batteryLevel: 0.9,
+    ledCount: 10,
+    firmwareDate: new Date(),
+    profileName: "Speak Numbers",
+  },
+];
+
+// const enum ScannedPixelsDisplay {
+//   FLATLIST,
+//   SQUARELIST,
+// }
+
+interface PairedPixelListProps {
+  pairedPixels: PixelInfo[];
+  navigation: any;
+}
+function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
+  const [PixelsDisplay, SwitchPixelsDisplay] = React.useState(false);
+  return (
+    <Center>
+      <VStack space={2} w="100%">
+        <HStack alignItems="center">
+          <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
+            <Text bold fontSize="md" letterSpacing="xl">
+              Paired Pixels :
+            </Text>
+          </Box>
+          <Spacer />
+          {/* Switch scanned display toggle */}
+          <Toggle
+            text="Switch display"
+            onToggle={() => {
+              SwitchPixelsDisplay(!PixelsDisplay);
+              console.log(PixelsDisplay);
+            }}
+            isChecked={PixelsDisplay}
+            //value={scannedPixelsDisplay}
+          />
+        </HStack>
+        <Box rounded="md" p={2} bg="gray.700">
+          {pairedPixels.length < 1 ? (
+            <Text> No PIXEL paired yet !</Text>
+          ) : (
+            [
+              PixelsDisplay === false ? (
+                <HStack flexWrap="wrap">
+                  {pairedPixels.map((pixelInfo) => (
+                    <Box p={1}>
+                      <PairedPixelInfoComponent pixel={pixelInfo} />
+                    </Box>
+                  ))}
+                </HStack>
+              ) : (
+                [
+                  <Center>
+                    <HStack flexWrap="wrap" justifyContent="flex-start" px={4}>
+                      {pairedPixels.map((pixelInfo) => (
+                        <Box p={1} alignSelf="center">
+                          <SquarePairedPixelInfo
+                            pixel={pixelInfo}
+                            onPress={() => {
+                              navigation.navigate("PixelDetailScreen");
+                            }}
+                          />
+                        </Box>
+                      ))}
+                    </HStack>
+                  </Center>,
+                ]
+              ),
+            ]
+          )}
+        </Box>
+      </VStack>
+    </Center>
+  );
+}
+interface NearbyPixelListProps {
+  scannedPixels: PixelInfo[];
+  pairedPixels: PixelInfo[];
+  setPairedPixels: React.Dispatch<React.SetStateAction<PixelInfo[]>>;
+  onPress?: (() => void) | null | undefined;
+}
+function NearbyPixelsList({
+  scannedPixels,
+  pairedPixels,
+  setPairedPixels,
+  onPress, // any function to execute when pressing a pixel info
+}: NearbyPixelListProps) {
+  const [hideNearbyPixels, SetHideNearbyPixels] = React.useState(false);
+  function addToPaired(pixelToAdd: PixelInfo) {
+    const pixelName = pixelToAdd.name;
+    scannedPixels.splice(
+      scannedPixels.findIndex((pixel) => {
+        return pixel.name === pixelName;
+      }),
+      1
+    );
+    setPairedPixels([...pairedPixels, pixelToAdd]);
+  }
+  return (
+    <Center>
+      <VStack space={2} w="100%">
+        <HStack alignItems="center">
+          <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
+            <Text bold fontSize="md" letterSpacing="xl">
+              Nearby pixels :
+            </Text>
+          </Box>
+          <Spacer />
+          {/* Hide nearby Pixels toggle */}
+          <Toggle
+            text="Hide"
+            onToggle={() => {
+              SetHideNearbyPixels(!hideNearbyPixels);
+              console.log(hideNearbyPixels);
+            }}
+            isChecked={hideNearbyPixels}
+            value={hideNearbyPixels}
+          />
+        </HStack>
+
+        <Box rounded="md" p={2} bg="gray.700">
+          {/* <FlatList
+            data={scannedPixels}
+            renderItem={({ item }) => (
+              <Box p={1}>
+                <ScannedPixelInfoComponent
+                  pixel={item}
+                  onPress={() => {
+                    if (onPress) onPress();
+                    addToPaired(item);
+                  }}
+                />
+              </Box>
+            )}
+          /> */}
+          {!hideNearbyPixels && (
+            <HStack flexWrap="wrap">
+              {scannedPixels.map((pixelInfo) => (
+                <Box p={1}>
+                  <ScannedPixelInfoComponent
+                    pixel={pixelInfo}
+                    onPress={() => {
+                      if (onPress) onPress();
+                      addToPaired(pixelInfo);
+                    }}
+                  />
+                </Box>
+              ))}
+            </HStack>
+          )}
+        </Box>
+      </VStack>
+    </Center>
+  );
+}
+
+const greenPixelTheme = createPixelTheme(paleBluePixelThemeParams);
 export default function HomeScreen() {
+  const [pairedPixels, SetPairedPixels] = React.useState(pairedPixelsinfo);
+  const [scannedPixels] = React.useState(scannedPixelsinfo);
+  const navigation =
+    useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
   return (
     <PxAppPage theme={greenPixelTheme}>
+      <Box p={4}>
+        <Text bold fontSize="2xl" letterSpacing="xl">
+          PIXELS
+        </Text>
+      </Box>
+
+      {/* //Paired pixels list */}
       <VStack space={4}>
-        <Card>
-          <Text bold>Screen with custom theme from components package</Text>
-        </Card>
-        <Card>
-          <HStack alignItems="center" space={2}>
-            <Text> Battery level : </Text>
-            <BatteryLevel percentage={100} iconSize="10" />
-          </HStack>
-        </Card>
-        <Card>
-          <Toggle text="First screen toggle" />
-        </Card>
-        <ColorSelection />
-        <PixelInfoComponent pixel={pixel} />
+        <PairedPixelList pairedPixels={pairedPixels} navigation={navigation} />
+        {/* //Nearby pixels list */}
+        <NearbyPixelsList
+          pairedPixels={pairedPixels}
+          scannedPixels={scannedPixels}
+          setPairedPixels={SetPairedPixels}
+        />
+        <FaceMask diceFaces={20} />
         <ReduxExample />
         <ReduxExample />
         <LightingStyleSelection />
-        <SliderComponent />
-        <ProgressBar value={30} loadingText="Progress : " />
-        <FaceMask diceFaces={20} />
       </VStack>
     </PxAppPage>
   );

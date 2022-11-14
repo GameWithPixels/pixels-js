@@ -25,7 +25,7 @@ export function Toggle(props: ToggleProps) {
         offThumbColor={resolvedProps.offThumbColor}
         onTrackColor={resolvedProps.onTrackColor}
         size={resolvedProps.toggleSize}
-        onChange={props.onToggle}
+        onValueChange={props.onToggle}
         defaultIsChecked={false}
       />
     </HStack>

@@ -16,7 +16,7 @@ export function Card(props: CardProps) {
   const resolvedProps = usePropsResolution("Card", props) as CardProps;
   return (
     <Center>
-      <Box {...resolvedProps} rounded={resolvedProps.rounded} maxW="100%">
+      <Box {...resolvedProps} rounded={resolvedProps.rounded}>
         <VStack space={resolvedProps.verticalSpace}>
           {resolvedProps.children}
         </VStack>

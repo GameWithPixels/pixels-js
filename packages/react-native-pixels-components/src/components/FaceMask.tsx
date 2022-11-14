@@ -83,6 +83,7 @@ export function FaceMask(props: FaceMaskProps) {
                   {buttonsArray.map((i) => (
                     <Box key={i} p={resolvedProps.checkBoxP}>
                       <Checkbox
+                        w={50}
                         size={resolvedProps.checkBoxSize}
                         alignSelf="center"
                         key={i}
