@@ -2,6 +2,7 @@ import {
   assert,
   align32bits,
   byteSizeOf,
+  bernsteinHash,
   serialize,
 } from "@systemic-games/pixels-core-utils";
 
@@ -64,20 +65,6 @@ export default class DataSet {
       byteSizeOf(this._rules) +
       (this._profile ? byteSizeOf(this._profile) : 0)
     );
-  }
-
-  //TODO uplift
-  // D. J. Bernstein hash function
-  static computeHash(data: Uint8Array): number {
-    let hash = 5381;
-    for (let i = 0; i < data.length; ++i) {
-      hash = (33 * hash) ^ data[i];
-    }
-    return hash;
-  }
-
-  computeHash(): number {
-    return DataSet.computeHash(this.toByteArray());
   }
 
   toSingleAnimationByteArray(): Uint8Array {
@@ -216,5 +203,9 @@ export default class DataSet {
     }
 
     return [dataView, byteOffset];
+  }
+
+  static computeHash(bytes: Uint8Array): number {
+    return bernsteinHash(bytes);
   }
 }
