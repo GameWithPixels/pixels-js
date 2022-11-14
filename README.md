@@ -1,5 +1,6 @@
 # pixels-js
-Pixels Typescript/JavaScript libraries and apps.
+
+Monorepo for Pixels Typescript/JavaScript libraries and apps.
 
 ## Setup
 

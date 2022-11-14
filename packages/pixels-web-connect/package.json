@@ -64,6 +64,7 @@
     "@systemic-games/pixels-core-utils": "*"
   },
   "typedoc": {
-    "entryPoint": "./src/index.ts"
+    "entryPoint": "./src/index.ts",
+    "readmeFile": "./DOC.md"
   }
 }
