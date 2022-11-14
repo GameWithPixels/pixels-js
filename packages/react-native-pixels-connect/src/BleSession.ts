@@ -47,7 +47,7 @@ export default class BleSession extends PixelSession {
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {
     // if (!this._notify) {
-    //   throw new Error("No connected");
+    //   throw new Error("Not connected");
     // }
     const internalListener = (
       ev: PeripheralCharacteristicValueChangedEvent
@@ -80,7 +80,7 @@ export default class BleSession extends PixelSession {
     timeoutMs?: number // TODO default should be Constants.defaultRequestTimeout
   ): Promise<void> {
     // if (!this._write) {
-    //   throw new Error("No connected");
+    //   throw new Error("Not connected");
     // }
     await Central.writeCharacteristic(
       this.pixelSystemId,

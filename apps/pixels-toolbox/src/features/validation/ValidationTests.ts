@@ -1,15 +1,17 @@
 import { assert, delay, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
+  Color,
   Pixel,
+  PixelStatus,
   LedLoopback,
   MessageTypeValues,
   RequestTelemetry,
   Telemetry,
   DataSet,
-  Color,
-  PixelRollStateValues,
-  PixelStatus,
   MessageOrType,
+  BatteryLevel,
+  RollState,
+  PixelRollStateValues,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { TaskCanceledError, TaskFaultedError } from "../tasks/useTask";
@@ -58,8 +60,8 @@ async function blinkForever(
 const ValidationTests = {
   checkLedLoopback: async (pixel: Pixel): Promise<void> => {
     const msg = await pixel.sendAndWaitForResponse(
-      MessageTypeValues.TestLedLoopback,
-      MessageTypeValues.LedLoopback
+      MessageTypeValues.testLedLoopback,
+      MessageTypeValues.ledLoopback
     );
     const ledLoopback = msg as LedLoopback;
     console.log(`LED loopback value: ${ledLoopback.value}`);
@@ -69,7 +71,11 @@ const ValidationTests = {
   },
 
   checkBatteryVoltage: async (pixel: Pixel): Promise<void> => {
-    const batteryLevel = await pixel.getBatteryLevel();
+    const response = await pixel.sendAndWaitForResponse(
+      MessageTypeValues.requestBatteryLevel,
+      MessageTypeValues.batteryLevel
+    );
+    const batteryLevel = response as BatteryLevel;
     const voltageStr = batteryLevel.voltage.toFixed(3);
     console.log(
       `Battery voltage: ${voltageStr} V,` +
@@ -82,7 +88,7 @@ const ValidationTests = {
   },
 
   checkRssi: async (pixel: Pixel): Promise<void> => {
-    const rssi = await pixel.getRssi();
+    const rssi = await pixel.queryRssi();
     console.log(`RSSI is ${rssi}`);
     if (rssi < -70) {
       throw new Error(`Out of range RSSI value: ${rssi}`);
@@ -101,13 +107,13 @@ const ValidationTests = {
       } else {
         abortSignal.addEventListener("abort", abort);
         const wait = async () => {
-          let batteryLevel = await pixel.getBatteryLevel();
+          let batteryLevel = await pixel.queryBatteryState();
           while (
             !abortSignal.aborted &&
-            batteryLevel.charging !== shouldBeCharging
+            batteryLevel.isCharging !== shouldBeCharging
           ) {
             await delay(200, abortSignal);
-            batteryLevel = await pixel.getBatteryLevel(); // TODO abortSignal
+            batteryLevel = await pixel.queryBatteryState(); // TODO abortSignal
           }
           if (!abortSignal.aborted) {
             abortSignal.removeEventListener("abort", abort);
@@ -152,12 +158,12 @@ const ValidationTests = {
               reject(error);
             }
           };
-          pixel.addMessageListener("Telemetry", onTelemetry);
+          pixel.addMessageListener("telemetry", onTelemetry);
         }
       });
     } finally {
       if (onTelemetry) {
-        pixel.removeMessageListener("Telemetry", onTelemetry);
+        pixel.removeMessageListener("telemetry", onTelemetry);
       }
       // Turn off telemetry
       await pixel.sendMessage(
@@ -239,14 +245,20 @@ const ValidationTests = {
         blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
         // Wait on face
         const waitOnFace = async () => {
-          let rollState = await pixel.getRollState();
+          let rollState = (await pixel.sendAndWaitForResponse(
+            MessageTypeValues.requestRollState,
+            MessageTypeValues.rollState
+          )) as RollState;
           while (
             !abortSignal.aborted &&
-            (rollState.state !== PixelRollStateValues.OnFace ||
+            (rollState.state !== PixelRollStateValues.onFace ||
               rollState.faceIndex !== face - 1)
           ) {
             await delay(200, abortSignal);
-            rollState = await pixel.getRollState(); // TODO abortSignal
+            rollState = (await pixel.sendAndWaitForResponse(
+              MessageTypeValues.requestRollState,
+              MessageTypeValues.rollState
+            )) as RollState; // TODO subscribe on "roll" events
           }
           if (!abortSignal.aborted) {
             abortSignal.removeEventListener("abort", abort);
@@ -302,7 +314,7 @@ const ValidationTests = {
 
   exitValidationMode: async (pixel: Pixel): Promise<void> => {
     // Back out validation mode, don't wait for response as die will restart
-    await pixel.sendMessage(MessageTypeValues.ExitValidation, true);
+    await pixel.sendMessage(MessageTypeValues.exitValidation, true);
   },
 
   waitDisconnected: async (

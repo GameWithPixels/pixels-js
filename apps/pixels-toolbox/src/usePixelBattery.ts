@@ -22,19 +22,19 @@ export default function (
     if (pixel && (active || alwaysActive)) {
       const batteryLevelListener = (msg: MessageOrType) =>
         setBatteryLevel(msg as BatteryLevel);
-      pixel.addMessageListener("BatteryLevel", batteryLevelListener);
+      pixel.addMessageListener("batteryLevel", batteryLevelListener);
       const id = setInterval(() => {
         if (pixel.status === "ready") {
           // Send request and ignore any error as the connection state
           // might change at any moment and make sendMessage throw an exception
           pixel
-            .sendMessage(MessageTypeValues.RequestBatteryLevel)
+            .sendMessage(MessageTypeValues.requestBatteryLevel)
             .catch(() => {});
         }
       }, refreshPeriod);
       return () => {
         clearInterval(id);
-        pixel.removeMessageListener("BatteryLevel", batteryLevelListener);
+        pixel.removeMessageListener("batteryLevel", batteryLevelListener);
         setBatteryLevel(undefined);
       };
     }

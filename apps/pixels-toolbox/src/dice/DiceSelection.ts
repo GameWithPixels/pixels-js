@@ -1,9 +1,9 @@
 import {
   Pixel,
-  autoReconnect,
+  repeatConnect,
 } from "@systemic-games/react-native-pixels-connect";
 
-const autoReconnectFunc = autoReconnect;
+const repeatConnectFunc = repeatConnect;
 
 export interface RollResult {
   face: number;
@@ -61,7 +61,7 @@ export class DiceSelection extends EventTarget {
   }
 
   get ready() {
-    return this.diceCount > 0 && this._dice.every((dd) => dd.pixel.ready);
+    return this.diceCount > 0 && this._dice.every((dd) => dd.pixel.isReady);
   }
 
   get lastRolls() {
@@ -85,11 +85,11 @@ export class DiceSelection extends EventTarget {
       .toString()})`;
   }
 
-  async connectAll(autoReconnect?: boolean) {
+  async connectAll(repeatConnect?: boolean) {
     return Promise.allSettled(
       this._dice.map((dd) => {
-        if (autoReconnect) {
-          autoReconnectFunc(dd.pixel);
+        if (repeatConnect) {
+          repeatConnectFunc(dd.pixel);
         } else {
           dd.pixel.connect();
         }

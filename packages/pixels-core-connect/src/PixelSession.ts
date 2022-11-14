@@ -11,7 +11,7 @@ export type PixelSessionConnectionStatus =
 export interface PixelSessionConnectionEvent {
   pixelSystemId: string;
   connectionStatus: PixelSessionConnectionStatus;
-  //TODO add reason
+  // TODO add reason
 }
 
 /**

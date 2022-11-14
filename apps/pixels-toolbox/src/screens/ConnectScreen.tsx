@@ -116,15 +116,19 @@ function PixelItem({
   const [transferProgress, setTransferProgress] = useState<number>();
   // Subscribe to notify user event
   useEffect(() => {
-    function notifyUserListener(
-      message: string,
-      withCancel: boolean,
-      response: (okCancel: boolean) => void
-    ): void {
+    function notifyUserListener({
+      message,
+      withCancel,
+      response,
+    }: {
+      message: string;
+      withCancel: boolean;
+      response: (okCancel: boolean) => void;
+    }): void {
       notifyUser(pixel, message, withCancel, response);
     }
-    pixel.addNotifyUserListener(notifyUserListener);
-    return () => pixel.removeNotifyUserListener(notifyUserListener);
+    pixel.addEventListener("userMessage", notifyUserListener);
+    return () => pixel.removeEventListener("userMessage", notifyUserListener);
   }, [pixel]);
   return (
     <View style={styles.box}>

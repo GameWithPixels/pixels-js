@@ -16,77 +16,77 @@ import Constants from "./Constants";
  * @enum
  */
 export const MessageTypeValues = {
-  None: enumValue(0),
-  WhoAreYou: enumValue(),
-  IAmADie: enumValue(),
-  RollState: enumValue(),
-  Telemetry: enumValue(),
-  BulkSetup: enumValue(),
-  BulkSetupAck: enumValue(),
-  BulkData: enumValue(),
-  BulkDataAck: enumValue(),
-  TransferAnimationSet: enumValue(),
-  TransferAnimationSetAck: enumValue(),
-  TransferAnimationSetFinished: enumValue(),
-  TransferSettings: enumValue(),
-  TransferSettingsAck: enumValue(),
-  TransferSettingsFinished: enumValue(),
-  TransferTestAnimationSet: enumValue(),
-  TransferTestAnimationSetAck: enumValue(),
-  TransferTestAnimationSetFinished: enumValue(),
-  DebugLog: enumValue(),
-  PlayAnimation: enumValue(),
-  PlayAnimationEvent: enumValue(),
-  StopAnimation: enumValue(),
-  PlaySound: enumValue(),
-  RequestRollState: enumValue(),
-  RequestAnimationSet: enumValue(),
-  RequestSettings: enumValue(),
-  RequestTelemetry: enumValue(),
-  ProgramDefaultAnimationSet: enumValue(),
-  ProgramDefaultAnimationSetFinished: enumValue(),
-  Blink: enumValue(),
-  BlinkFinished: enumValue(),
-  RequestDefaultAnimationSetColor: enumValue(),
-  DefaultAnimationSetColor: enumValue(),
-  RequestBatteryLevel: enumValue(),
-  BatteryLevel: enumValue(),
-  RequestRssi: enumValue(),
-  Rssi: enumValue(),
-  Calibrate: enumValue(),
-  CalibrateFace: enumValue(),
-  NotifyUser: enumValue(),
-  NotifyUserAck: enumValue(),
-  TestHardware: enumValue(),
-  TestLedLoopback: enumValue(),
-  LedLoopback: enumValue(),
-  SetTopLevelState: enumValue(),
-  ProgramDefaultParameters: enumValue(),
-  ProgramDefaultParametersFinished: enumValue(),
-  SetDesignAndColor: enumValue(),
-  SetDesignAndColorAck: enumValue(),
-  SetCurrentBehavior: enumValue(),
-  SetCurrentBehaviorAck: enumValue(),
-  SetName: enumValue(),
-  SetNameAck: enumValue(),
-  Sleep: enumValue(),
-  ExitValidation: enumValue(),
-  TransferInstantAnimationSet: enumValue(),
-  TransferInstantAnimationSetAck: enumValue(),
-  TransferInstantAnimationSetFinished: enumValue(),
-  PlayInstantAnimation: enumValue(),
-  StopAllAnimations: enumValue(),
+  none: enumValue(0),
+  whoAreYou: enumValue(),
+  iAmADie: enumValue(),
+  rollState: enumValue(),
+  telemetry: enumValue(),
+  bulkSetup: enumValue(),
+  bulkSetupAck: enumValue(),
+  bulkData: enumValue(),
+  bulkDataAck: enumValue(),
+  transferAnimationSet: enumValue(),
+  transferAnimationSetAck: enumValue(),
+  transferAnimationSetFinished: enumValue(),
+  transferSettings: enumValue(),
+  transferSettingsAck: enumValue(),
+  transferSettingsFinished: enumValue(),
+  transferTestAnimationSet: enumValue(),
+  transferTestAnimationSetAck: enumValue(),
+  transferTestAnimationSetFinished: enumValue(),
+  debugLog: enumValue(),
+  playAnimation: enumValue(),
+  playAnimationEvent: enumValue(),
+  stopAnimation: enumValue(),
+  playSound: enumValue(),
+  requestRollState: enumValue(),
+  requestAnimationSet: enumValue(),
+  requestSettings: enumValue(),
+  requestTelemetry: enumValue(),
+  programDefaultAnimationSet: enumValue(),
+  programDefaultAnimationSetFinished: enumValue(),
+  blink: enumValue(),
+  blinkFinished: enumValue(),
+  requestDefaultAnimationSetColor: enumValue(),
+  defaultAnimationSetColor: enumValue(),
+  requestBatteryLevel: enumValue(),
+  batteryLevel: enumValue(),
+  requestRssi: enumValue(),
+  rssi: enumValue(),
+  calibrate: enumValue(),
+  calibrateFace: enumValue(),
+  notifyUser: enumValue(),
+  notifyUserAck: enumValue(),
+  testHardware: enumValue(),
+  testLedLoopback: enumValue(),
+  ledLoopback: enumValue(),
+  setTopLevelState: enumValue(),
+  programDefaultParameters: enumValue(),
+  programDefaultParametersFinished: enumValue(),
+  setDesignAndColor: enumValue(),
+  setDesignAndColorAck: enumValue(),
+  setCurrentBehavior: enumValue(),
+  setCurrentBehaviorAck: enumValue(),
+  setName: enumValue(),
+  setNameAck: enumValue(),
+  sleep: enumValue(),
+  exitValidation: enumValue(),
+  transferInstantAnimationSet: enumValue(),
+  transferInstantAnimationSetAck: enumValue(),
+  transferInstantAnimationSetFinished: enumValue(),
+  playInstantAnimation: enumValue(),
+  stopAllAnimations: enumValue(),
 
   // Testing
-  TestBulkSend: enumValue(),
-  TestBulkReceive: enumValue(),
-  SetAllLEDsToColor: enumValue(),
-  AttractMode: enumValue(),
-  PrintNormals: enumValue(),
-  PrintA2DReadings: enumValue(),
-  LightUpFace: enumValue(),
-  SetLEDToColor: enumValue(),
-  DebugAnimationController: enumValue(),
+  testBulkSend: enumValue(),
+  testBulkReceive: enumValue(),
+  setAllLedsToColor: enumValue(),
+  attractMode: enumValue(),
+  printNormals: enumValue(),
+  printA2DReadings: enumValue(),
+  lightUpFace: enumValue(),
+  setLedToColor: enumValue(),
+  debugAnimationController: enumValue(),
 } as const;
 
 /** The "enum" type for {@link MessageTypeValues}. */
@@ -134,7 +134,7 @@ function _getMessageClassType(msgClass: MessageClass): MessageType {
       _getMessageClasses().map((m) => [m, new m().type])
     );
   }
-  return _reverseMessageClassesLookup.get(msgClass) ?? MessageTypeValues.None;
+  return _reverseMessageClassesLookup.get(msgClass) ?? MessageTypeValues.none;
 }
 
 /**
@@ -251,7 +251,7 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
 export class GenericPixelMessage implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.IAmADie;
+  readonly type = MessageTypeValues.iAmADie;
 
   constructor(type: MessageType) {
     this.type = type;
@@ -263,19 +263,19 @@ export class GenericPixelMessage implements PixelMessage {
  * @enum
  */
 export const PixelDesignAndColorValues = {
-  Unknown: enumValue(0),
-  Generic: enumValue(),
-  V3_Orange: enumValue(),
-  V4_BlackClear: enumValue(),
-  V4_WhiteClear: enumValue(),
-  V5_Grey: enumValue(),
-  V5_White: enumValue(),
-  V5_Black: enumValue(),
-  V5_Gold: enumValue(),
-  Onyx_Back: enumValue(),
-  Hematite_Grey: enumValue(),
-  Midnight_Galaxy: enumValue(),
-  Aurora_Sky: enumValue(),
+  unknown: enumValue(0),
+  generic: enumValue(),
+  v3Orange: enumValue(),
+  v4BlackClear: enumValue(),
+  v4WhiteClear: enumValue(),
+  v5Grey: enumValue(),
+  v5White: enumValue(),
+  v5Black: enumValue(),
+  v5Gold: enumValue(),
+  onyxBlack: enumValue(),
+  hematiteGrey: enumValue(),
+  midnightGalaxy: enumValue(),
+  auroraSky: enumValue(),
 } as const;
 
 /** The "enum" type for {@link PixelDesignAndColorValues}. */
@@ -286,12 +286,12 @@ export type PixelDesignAndColor =
 export class IAmADie implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.IAmADie;
+  readonly type = MessageTypeValues.iAmADie;
 
   @serializable(1)
   ledCount = 0;
   @serializable(1, { padding: 1 })
-  designAndColor = PixelDesignAndColorValues.Generic;
+  designAndColor = PixelDesignAndColorValues.generic;
   @serializable(4)
   dataSetHash = 0;
   @serializable(4)
@@ -308,19 +308,19 @@ export class IAmADie implements PixelMessage {
  */
 export const PixelRollStateValues = {
   // The Pixel roll state could not be determined.
-  Unknown: enumValue(0),
+  unknown: enumValue(0),
 
   // The Pixel is resting in a position with a face up.
-  OnFace: enumValue(),
+  onFace: enumValue(),
 
   // The Pixel is being handled.
-  Handling: enumValue(),
+  handling: enumValue(),
 
   // The Pixel is rolling.
-  Rolling: enumValue(),
+  rolling: enumValue(),
 
   // The Pixel is resting in a crooked position.
-  Crooked: enumValue(),
+  crooked: enumValue(),
 } as const;
 
 /** The "enum" type for {@link PixelRollStateValues}. */
@@ -331,40 +331,22 @@ export type PixelRollState =
 export class RollState implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.RollState;
+  readonly type = MessageTypeValues.rollState;
 
   /** Current roll state. */
   @serializable(1)
-  state = PixelRollStateValues.Unknown;
+  state = PixelRollStateValues.unknown;
 
   /** Face number (if applicable), starts at 0. */
   @serializable(1)
   faceIndex = 0;
 }
 
-// export interface Vector3 {
-//   x: number; // float
-//   y: number; // float
-//   z: number; // float
-// }
-
-// export interface AccelerationFrame {
-//   acc: Vector3;
-//   jerk: Vector3;
-//   smoothAcc: Vector3;
-//   sigma: number; // float
-//   faceConfidence: number; // float
-//   face: number; // 32bits
-//   time: number; // unsigned 32 bits
-// }
-
 /** Message send by a Pixel to notify of its telemetry data. */
 export class Telemetry implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.Telemetry;
-
-  //accelFrame: AccelerationFrame;
+  readonly type = MessageTypeValues.telemetry;
 
   @serializable(4, { numberFormat: "float" })
   accX = 0;
@@ -408,7 +390,7 @@ export class Telemetry implements PixelMessage {
 export class BulkSetup implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.BulkSetup;
+  readonly type = MessageTypeValues.bulkSetup;
 
   @serializable(2)
   size = 0;
@@ -421,7 +403,7 @@ export class BulkSetup implements PixelMessage {
 export class BulkData implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.BulkData;
+  readonly type = MessageTypeValues.bulkData;
 
   @serializable(1)
   size = 0;
@@ -435,7 +417,7 @@ export class BulkData implements PixelMessage {
 export class BulkDataAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.BulkDataAck;
+  readonly type = MessageTypeValues.bulkDataAck;
 
   @serializable(2)
   offset = 0;
@@ -448,7 +430,7 @@ export class BulkDataAck implements PixelMessage {
 export class TransferAnimationSet implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.TransferAnimationSet;
+  readonly type = MessageTypeValues.transferAnimationSet;
 
   @serializable(2)
   paletteSize = 0;
@@ -480,7 +462,7 @@ export class TransferAnimationSet implements PixelMessage {
 export class TransferAnimationSetAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.TransferAnimationSetAck;
+  readonly type = MessageTypeValues.transferAnimationSetAck;
 
   @serializable(1)
   result = 0;
@@ -493,7 +475,7 @@ export class TransferAnimationSetAck implements PixelMessage {
 export class TransferTestAnimationSet implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.TransferTestAnimationSet;
+  readonly type = MessageTypeValues.transferTestAnimationSet;
 
   @serializable(2)
   paletteSize = 0;
@@ -513,9 +495,9 @@ export class TransferTestAnimationSet implements PixelMessage {
 
 /** Transfer animation ack values. */
 export const TransferInstantAnimationsSetAckTypeValues = {
-  Download: enumValue(0),
-  UpToDate: enumValue(),
-  NoMemory: enumValue(),
+  download: enumValue(0),
+  upToDate: enumValue(),
+  noMemory: enumValue(),
 } as const;
 
 /** The "enum" type for {@link TransferInstantAnimationsSetAckTypeValues}. */
@@ -526,18 +508,18 @@ export type TransferInstantAnimationSetAckType =
 export class TransferTestAnimationSetAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.TransferTestAnimationSetAck;
+  readonly type = MessageTypeValues.transferTestAnimationSetAck;
 
   /** The expected action to be taken upon receiving this message. */
   @serializable(1)
-  ackType = TransferInstantAnimationsSetAckTypeValues.Download;
+  ackType = TransferInstantAnimationsSetAckTypeValues.download;
 }
 
 /** Message send by a Pixel to report a log message to the application. */
 export class DebugLog implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.DebugLog;
+  readonly type = MessageTypeValues.debugLog;
 
   /** The message to log. */
   @serializable(Constants.maxMessageSize)
@@ -548,7 +530,7 @@ export class DebugLog implements PixelMessage {
 export class PlaySound implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.PlaySound;
+  readonly type = MessageTypeValues.playSound;
 
   /** The id for the clip. */
   @serializable(2)
@@ -559,7 +541,7 @@ export class PlaySound implements PixelMessage {
 export class RequestTelemetry implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.RequestTelemetry;
+  readonly type = MessageTypeValues.requestTelemetry;
 
   /** The id for the clip. */
   @serializable(1)
@@ -570,7 +552,7 @@ export class RequestTelemetry implements PixelMessage {
 export class Blink implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.Blink;
+  readonly type = MessageTypeValues.blink;
 
   /** Number of flashes. */
   @serializable(1)
@@ -597,7 +579,7 @@ export class Blink implements PixelMessage {
 export class BatteryLevel implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.BatteryLevel;
+  readonly type = MessageTypeValues.batteryLevel;
 
   /** The battery charge level, floating value between 0 and 1. */
   @serializable(4, { numberFormat: "float" })
@@ -616,7 +598,7 @@ export class BatteryLevel implements PixelMessage {
 export class Rssi implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.Rssi;
+  readonly type = MessageTypeValues.rssi;
 
   /** The RSSI value, in dBm. */
   @serializable(1, { numberFormat: "signed" })
@@ -634,7 +616,7 @@ export class Rssi implements PixelMessage {
 export class NotifyUser implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.NotifyUser;
+  readonly type = MessageTypeValues.notifyUser;
 
   /** Timeout after which the die won't listen for an answer. */
   @serializable(1)
@@ -657,7 +639,7 @@ export class NotifyUser implements PixelMessage {
 export class NotifyUserAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.NotifyUserAck;
+  readonly type = MessageTypeValues.notifyUserAck;
 
   /** Whether the use selected OK or Cancel. */
   @serializable(1)
@@ -668,7 +650,7 @@ export class NotifyUserAck implements PixelMessage {
 export class LedLoopback implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.LedLoopback;
+  readonly type = MessageTypeValues.ledLoopback;
 
   /** Some value. */
   @serializable(1)
@@ -679,7 +661,7 @@ export class LedLoopback implements PixelMessage {
 export class SetDesignAndColor implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.SetDesignAndColor;
+  readonly type = MessageTypeValues.setDesignAndColor;
 
   /** A value from the @see PixelDesignAndColorValues enumeration.*/
   @serializable(1)
@@ -690,7 +672,7 @@ export class SetDesignAndColor implements PixelMessage {
 export class SetName implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.SetDesignAndColor;
+  readonly type = MessageTypeValues.setName;
 
   /** The name to set. */
   @serializable(Constants.maxMessageSize)
@@ -704,7 +686,7 @@ export class SetName implements PixelMessage {
 export class TransferInstantAnimationSet implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.TransferInstantAnimationSet;
+  readonly type = MessageTypeValues.transferInstantAnimationSet;
 
   @serializable(2)
   paletteSize = 0;
@@ -728,18 +710,18 @@ export class TransferInstantAnimationSet implements PixelMessage {
 export class TransferInstantAnimationSetAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.TransferInstantAnimationSetAck;
+  readonly type = MessageTypeValues.transferInstantAnimationSetAck;
 
   /** The expected action to be taken upon receiving this message. */
   @serializable(1)
-  ackType = TransferInstantAnimationsSetAckTypeValues.Download;
+  ackType = TransferInstantAnimationsSetAckTypeValues.download;
 }
 
 /** Message send to a Pixel to have it play an already uploaded instant animation. */
 export class PlayInstantAnimation implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.PlayInstantAnimation;
+  readonly type = MessageTypeValues.playInstantAnimation;
 
   /** Animation index to play. */
   @serializable(1)
@@ -776,6 +758,7 @@ function _getMessageClasses(): MessageClass[] {
     NotifyUserAck,
     LedLoopback,
     SetDesignAndColor,
+    SetName,
     TransferInstantAnimationSet,
     TransferInstantAnimationSetAck,
     PlayInstantAnimation,

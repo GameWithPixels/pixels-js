@@ -96,7 +96,7 @@ async function scanAction(
 }
 
 /**
- * Available options for @see usePixelScanner().
+ * Available options for {@link usePixelScanner}.
  */
 export interface UsePixelScannerOptions {
   sortedByName?: boolean; // Whether to sort Pixels by name
@@ -105,7 +105,7 @@ export interface UsePixelScannerOptions {
 }
 
 /**
- * React hook that instantiates and controls a @see PixelScanner
+ * React hook that instantiates and controls a  {@link PixelScanner}
  * @param options See @UsePixelScannerOptions
  * @returns The list of @ScannedPixel and stable reducer like function
  * to trigger actions on the scanner.

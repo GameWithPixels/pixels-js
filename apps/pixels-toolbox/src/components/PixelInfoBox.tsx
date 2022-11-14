@@ -21,7 +21,7 @@ export default function ({ children, pixel }: PixelInfoBoxProps) {
   const pixIdHex = pixel.pixelId.toString(16).toLocaleUpperCase();
   const scanned = pixel instanceof Pixel ? undefined : pixel;
   const design = getPixelEnumName(
-    scanned?.designAndColor ?? PixelDesignAndColorValues.Unknown,
+    scanned?.designAndColor ?? PixelDesignAndColorValues.unknown,
     PixelDesignAndColorValues
   );
   const batteryLevel = Math.round((scanned?.batteryLevel ?? 0) / 2.55);

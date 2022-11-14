@@ -32,9 +32,9 @@ function StatsPage() {
       }
     };
     selectedPixel?.connect().catch(errorHandler);
-    selectedPixel?.addMessageListener("BatteryLevel", batteryListener);
+    selectedPixel?.addMessageListener("batteryLevel", batteryListener);
     return () => {
-      selectedPixel?.removeMessageListener("BatteryLevel", batteryListener);
+      selectedPixel?.removeMessageListener("batteryLevel", batteryListener);
       selectedPixel?.disconnect().catch(console.log);
     };
   }, [errorHandler, selectedPixel]);
@@ -67,7 +67,7 @@ function StatsPage() {
               <Button
                 onPress={() =>
                   selectedPixel
-                    .sendMessage(MessageTypeValues.RequestBatteryLevel)
+                    .sendMessage(MessageTypeValues.requestBatteryLevel)
                     .catch(errorHandler)
                 }
                 title="Request Battery Level"

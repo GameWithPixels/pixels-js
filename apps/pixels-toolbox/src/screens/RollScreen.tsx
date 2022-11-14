@@ -46,7 +46,7 @@ function RollPage() {
       ? "yellow"
       : status !== "ready"
       ? "red"
-      : rollState !== PixelRollStateValues.OnFace
+      : rollState !== PixelRollStateValues.onFace
       ? "blue"
       : "green";
   return (

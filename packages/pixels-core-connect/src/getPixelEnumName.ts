@@ -1,13 +1,13 @@
 /**
  * Return the name corresponding to a given Pixel enum value.
  */
-export default function <EnumType>(
+export default function <EnumType, EnumNames extends string>(
   value: EnumType,
-  enumValues: { [s: string]: EnumType }
-): string | undefined {
+  enumValues: { [key in EnumNames]: EnumType }
+): EnumNames | undefined {
   for (const [key, val] of Object.entries(enumValues)) {
     if (val === value) {
-      return key;
+      return key as EnumNames;
     }
   }
 }

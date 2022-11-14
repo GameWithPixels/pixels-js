@@ -78,7 +78,7 @@ export default class BleSession extends PixelSession {
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {
     if (!this._notify) {
-      throw new Error("No connected");
+      throw new Error("Not connected");
     }
     function internalListener(this: BluetoothRemoteGATTCharacteristic) {
       if (this.value?.buffer?.byteLength) {
@@ -105,7 +105,7 @@ export default class BleSession extends PixelSession {
     _timeoutMs?: number // Default is Constants.defaultRequestTimeout
   ): Promise<void> {
     if (!this._write) {
-      throw new Error("No connected");
+      throw new Error("Not connected");
     }
     if (withoutResponse) {
       await this._write.writeValueWithoutResponse(data);

@@ -41,21 +41,18 @@ import {
   SetName,
   PixelDesignAndColor,
   PixelDesignAndColorValues,
+  PixelRollStateValues,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import createTypedEventEmitter, {
   EventReceiver,
 } from "./createTypedEventEmitter";
+import getPixelEnumName from "./getPixelEnumName";
 
-function to2(n: number): string {
-  return n < 10 ? `0${n}` : n.toString();
-}
-
-function to3(n: number): string {
-  return n < 100 ? `0${to2(n)}` : n.toString();
-}
-
+// Returns a string with the current time with a millisecond precision
 function getTime(): string {
+  const to2 = (n: number) => n.toString().padStart(2, "0");
+  const to3 = (n: number) => n.toString().padStart(3, "0");
   const d = new Date();
   return (
     to2(d.getHours()) +
@@ -79,6 +76,16 @@ export type PixelStatus =
 export interface PixelEventMap {
   status: PixelStatus;
   message: MessageOrType;
+  rollState: {
+    face: number;
+    state: keyof typeof PixelRollStateValues;
+  };
+  roll: number;
+  userMessage: {
+    message: string;
+    withCancel: boolean;
+    response: (okCancel: boolean) => Promise<void>;
+  };
 }
 
 export class PixelError extends Error {
@@ -102,7 +109,7 @@ export interface IPixel {
   readonly pixelId: number;
   readonly name: string;
   readonly ledCount: number;
-  designAndColor: PixelDesignAndColor;
+  readonly designAndColor: PixelDesignAndColor;
   readonly buildTimestamp: number;
 }
 
@@ -115,17 +122,20 @@ export default class Pixel implements IPixel {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
-  private _notifyUserListener?: (message: MessageOrType) => void;
 
   // Log function
   private readonly _logFunc: (msg: unknown) => void;
 
   // Connection data
-  private _status: PixelStatus;
   private readonly _session: PixelSession;
+  private _status: PixelStatus;
 
   // Pixel data
   private _info?: IAmADie = undefined;
+  private _rollState: {
+    face: number;
+    state: keyof typeof PixelRollStateValues;
+  };
 
   /** Indicates whether the Pixel is in the process of being connected.*/
   get status(): PixelStatus {
@@ -133,7 +143,7 @@ export default class Pixel implements IPixel {
   }
 
   /** Shorthand for checking if Pixel status is "ready". */
-  get ready(): boolean {
+  get isReady(): boolean {
     return this.status === "ready";
   }
 
@@ -159,12 +169,19 @@ export default class Pixel implements IPixel {
 
   /** Gets the Pixel design and color. */
   get designAndColor(): PixelDesignAndColor {
-    return this._info?.designAndColor ?? PixelDesignAndColorValues.Unknown;
+    return this._info?.designAndColor ?? PixelDesignAndColorValues.unknown;
   }
 
   /** Gets the Pixel firmware build timestamp (Unix epoch). */
   get buildTimestamp(): number {
     return this._info?.buildTimestamp ?? 0;
+  }
+
+  get rollState(): {
+    face: number;
+    state: keyof typeof PixelRollStateValues;
+  } {
+    return { ...this._rollState };
   }
 
   /**
@@ -184,6 +201,34 @@ export default class Pixel implements IPixel {
     });
     this._session = session;
     this._status = "disconnected"; //TODO use the getLastConnectionStatus()
+    this._rollState = { face: 0, state: "unknown" };
+    // Subscribe to roll messages and emit roll event
+    this.addMessageListener("rollState", (msgOrType) => {
+      const msg = msgOrType as RollState;
+      this._rollState = {
+        face: msg.faceIndex + 1,
+        state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
+      };
+      this._evEmitter.emit("rollState", this.rollState);
+      if (msg.state === PixelRollStateValues.onFace) {
+        this._evEmitter.emit("roll", msg.faceIndex + 1);
+      }
+    });
+    // Subscribe to user message notification
+    this.addMessageListener("notifyUser", (message: MessageOrType) => {
+      const msg = message as NotifyUser;
+      this._evEmitter.emit("userMessage", {
+        message: msg.message,
+        withCancel: msg.cancel,
+        response: (okCancel: boolean) => {
+          return this.sendMessage(
+            safeAssign(new NotifyUserAck(), {
+              okCancel,
+            })
+          );
+        },
+      });
+    });
   }
 
   /**
@@ -191,7 +236,7 @@ export default class Pixel implements IPixel {
    * @returns A promise resolving to this instance.
    */
   async connect(): Promise<Pixel> {
-    //TODO timeout?
+    //TODO add timeout
     // Our connect function
     try {
       //TODO should we try to connect even if status is not disconnected?
@@ -217,12 +262,20 @@ export default class Pixel implements IPixel {
         // Identify Pixel
         this._log("Waiting on identification message");
         const response = await this.sendAndWaitForResponse(
-          MessageTypeValues.WhoAreYou,
-          MessageTypeValues.IAmADie
+          MessageTypeValues.whoAreYou,
+          MessageTypeValues.iAmADie
         );
 
         if (this.status === "identifying") {
           this._info = response as IAmADie;
+
+          // Query roll state
+          await this.sendAndWaitForResponse(
+            MessageTypeValues.requestRollState,
+            MessageTypeValues.rollState
+          );
+
+          // We're ready!
           this._updateStatus("ready");
         }
       }
@@ -257,14 +310,14 @@ export default class Pixel implements IPixel {
   addEventListener<K extends keyof PixelEventMap>(
     eventName: K,
     listener: EventReceiver<PixelEventMap[K]>
-  ) {
+  ): void {
     this._evEmitter.addListener(eventName, listener);
   }
 
   removeEventListener<K extends keyof PixelEventMap>(
     eventName: K,
     listener: EventReceiver<PixelEventMap[K]>
-  ) {
+  ): void {
     this._evEmitter.removeListener(eventName, listener);
   }
 
@@ -302,43 +355,6 @@ export default class Pixel implements IPixel {
       }`,
       listener
     );
-  }
-
-  addNotifyUserListener(
-    listener: (
-      message: string,
-      withCancel: boolean,
-      response: (okCancel: boolean) => Promise<void>
-    ) => void
-  ) {
-    if (this._notifyUserListener) {
-      this.removeMessageListener("NotifyUser", this._notifyUserListener);
-    }
-    this._notifyUserListener = (message: MessageOrType) => {
-      const msg = message as NotifyUser;
-      listener(msg.message, msg.cancel, (okCancel: boolean) => {
-        return this.sendMessage(
-          safeAssign(new NotifyUserAck(), {
-            okCancel,
-          })
-        );
-      });
-    };
-    this.addMessageListener("NotifyUser", this._notifyUserListener);
-  }
-
-  removeNotifyUserListener(
-    _listener: (
-      message: string,
-      withCancel: boolean,
-      response: (okCancel: boolean) => Promise<void>
-    ) => void
-  ) {
-    //TODO use event target or else
-    if (this._notifyUserListener) {
-      this.removeMessageListener("NotifyUser", this._notifyUserListener);
-      this._notifyUserListener = undefined;
-    }
   }
 
   /**
@@ -404,7 +420,7 @@ export default class Pixel implements IPixel {
     if (name.length) {
       await this.sendAndWaitForResponse(
         safeAssign(new SetName(), { name }),
-        MessageTypeValues.SetNameAck
+        MessageTypeValues.setNameAck
       );
     }
   }
@@ -413,41 +429,33 @@ export default class Pixel implements IPixel {
    * Request Pixel to start faces calibration sequence.
    */
   async startCalibration(): Promise<void> {
-    await this.sendMessage(MessageTypeValues.Calibrate);
-  }
-
-  /**
-   * Asynchronously retrieves the roll state.
-   * @returns A promise revolving to an object with the roll state information.
-   */
-  async getRollState(): Promise<RollState> {
-    const response = await this.sendAndWaitForResponse(
-      MessageTypeValues.RequestRollState,
-      MessageTypeValues.RollState
-    );
-    return response as RollState;
+    await this.sendMessage(MessageTypeValues.calibrate);
   }
 
   /**
    * Asynchronously gets the battery level.
    * @returns A promise revolving to an object with the batter level information.
    */
-  async getBatteryLevel(): Promise<BatteryLevel> {
+  async queryBatteryState(): Promise<{ level: number; isCharging: boolean }> {
     const response = await this.sendAndWaitForResponse(
-      MessageTypeValues.RequestBatteryLevel,
-      MessageTypeValues.BatteryLevel
+      MessageTypeValues.requestBatteryLevel,
+      MessageTypeValues.batteryLevel
     );
-    return response as BatteryLevel;
+    const msg = response as BatteryLevel;
+    return {
+      level: 100 * msg.level,
+      isCharging: msg.charging,
+    };
   }
 
   /**
    * Asynchronously gets the RSSI.
    * @returns A promise revolving to the RSSI value, between 0 and 65535.
    */
-  async getRssi(): Promise<number> {
+  async queryRssi(): Promise<number> {
     const response = await this.sendAndWaitForResponse(
-      MessageTypeValues.RequestRssi,
-      MessageTypeValues.Rssi
+      MessageTypeValues.requestRssi,
+      MessageTypeValues.rssi
     );
     return (response as Rssi).value;
   }
@@ -457,7 +465,7 @@ export default class Pixel implements IPixel {
    */
   async turnOff(): Promise<void> {
     await this.sendMessage(
-      MessageTypeValues.Sleep,
+      MessageTypeValues.sleep,
       true // withoutResponse
     );
   }
@@ -489,7 +497,7 @@ export default class Pixel implements IPixel {
     });
     await this.sendAndWaitForResponse(
       blinkMsg,
-      MessageTypeValues.BlinkFinished
+      MessageTypeValues.blinkFinished
     );
   }
 
@@ -497,7 +505,7 @@ export default class Pixel implements IPixel {
    * Requests the Pixel to stop all animations currently playing.
    */
   async stopAllAnimations(): Promise<void> {
-    await this.sendMessage(MessageTypeValues.StopAllAnimations);
+    await this.sendMessage(MessageTypeValues.stopAllAnimations);
   }
 
   /**
@@ -554,7 +562,7 @@ export default class Pixel implements IPixel {
       );
 
       await this._uploadBulkDataWithAck(
-        MessageTypeValues.TransferAnimationSetFinished,
+        MessageTypeValues.transferAnimationSetFinished,
         data,
         progressCallback
       );
@@ -598,7 +606,7 @@ export default class Pixel implements IPixel {
     );
 
     switch (ack.ackType) {
-      case TransferInstantAnimationsSetAckTypeValues.Download:
+      case TransferInstantAnimationsSetAckTypeValues.download:
         {
           // Upload data
           const hashStr = (hash >>> 0).toString(16).toUpperCase();
@@ -608,14 +616,14 @@ export default class Pixel implements IPixel {
               `and hash 0x${hashStr}`
           );
           await this._uploadBulkDataWithAck(
-            MessageTypeValues.TransferTestAnimationSetFinished,
+            MessageTypeValues.transferTestAnimationSetFinished,
             data,
             progressCallback
           );
         }
         break;
 
-      case TransferInstantAnimationsSetAckTypeValues.UpToDate:
+      case TransferInstantAnimationsSetAckTypeValues.upToDate:
         // Nothing to do
         this._log("Test animation is already up-to-date");
         break;
@@ -661,7 +669,7 @@ export default class Pixel implements IPixel {
     );
 
     switch (ack.ackType) {
-      case TransferInstantAnimationsSetAckTypeValues.Download:
+      case TransferInstantAnimationsSetAckTypeValues.download:
         {
           // Upload data
           const hashStr = (hash >>> 0).toString(16).toUpperCase();
@@ -671,14 +679,14 @@ export default class Pixel implements IPixel {
               `and hash 0x${hashStr}`
           );
           await this._uploadBulkDataWithAck(
-            MessageTypeValues.TransferInstantAnimationSetFinished,
+            MessageTypeValues.transferInstantAnimationSetFinished,
             data,
             progressCallback
           );
         }
         break;
 
-      case TransferInstantAnimationsSetAckTypeValues.UpToDate:
+      case TransferInstantAnimationsSetAckTypeValues.upToDate:
         // Nothing to do
         this._log("Instant animations are already up-to-date");
         break;
@@ -834,7 +842,7 @@ export default class Pixel implements IPixel {
     // Send setup message
     const setupMsg = new BulkSetup();
     setupMsg.size = remainingSize;
-    await this.sendAndWaitForResponse(setupMsg, MessageTypeValues.BulkSetupAck);
+    await this.sendAndWaitForResponse(setupMsg, MessageTypeValues.bulkSetupAck);
     this._log("Ready for receiving data");
 
     // Then transfer data
@@ -846,7 +854,7 @@ export default class Pixel implements IPixel {
       dataMsg.data = data.slice(offset, offset + dataMsg.size);
 
       //TODO test disconnecting die in middle of transfer
-      await this.sendAndWaitForResponse(dataMsg, MessageTypeValues.BulkDataAck);
+      await this.sendAndWaitForResponse(dataMsg, MessageTypeValues.bulkDataAck);
 
       remainingSize -= dataMsg.size;
       offset += dataMsg.size;
