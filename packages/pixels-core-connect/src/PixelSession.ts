@@ -1,4 +1,4 @@
-/** List of possible connection statuses for a @see PixelSession. */
+/** List of possible connection statuses for a {@link PixelSession}. */
 export type PixelSessionConnectionStatus =
   | "connecting"
   | "connected"

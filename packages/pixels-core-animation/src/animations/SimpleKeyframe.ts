@@ -1,5 +1,8 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
 
+/**
+ * @category Animation
+ */
 export default class SimpleKeyframe {
   @serializable(2)
   timeAndIntensity = 0;

@@ -12,6 +12,9 @@ import RgbTrack from "./RgbTrack";
 import SimpleKeyframe from "./SimpleKeyframe";
 import Track from "./Track";
 
+/**
+ * @category Animation
+ */
 export default class AnimationBits {
   readonly palette: Color[] = [];
   readonly rgbKeyframes: RgbKeyframe[] = [];

@@ -1,6 +1,9 @@
 import AnimationBits from "./AnimationBits";
 import AnimationPreset from "./AnimationPreset";
 
+/**
+ * @category Animation Instance
+ */
 export default abstract class AnimationInstance {
   private _animationPreset: AnimationPreset;
   private _animationBits: AnimationBits;

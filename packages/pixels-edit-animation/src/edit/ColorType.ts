@@ -1,5 +1,8 @@
 import { enumValue } from "@systemic-games/pixels-core-utils";
 
+/**
+ * @enum
+ */
 export const ColorTypeValues = {
   Rgb: enumValue(0),
   Face: enumValue(),

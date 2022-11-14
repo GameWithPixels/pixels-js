@@ -13,6 +13,10 @@ import Color from "./Color";
 /// <param name="green">The green component as a byte value.</param>
 /// <param name="blue">The blue component as a byte value.</param>
 /// <returns>A 32 bits color value.</returns>
+
+/**
+ * @category Color32
+ */
 export function toColor32(
   redOrColor: number | Color,
   green = 0,
@@ -31,6 +35,10 @@ export function toColor32(
 /// </summary>
 /// <param name="color32">The 32 bits color value.</param>
 /// <returns>The red component of the color.</returns>
+
+/**
+ * @category Color32
+ */
 export function getRed(color32: number): number {
   return (color32 >> 16) & 0xff;
 }
@@ -40,6 +48,10 @@ export function getRed(color32: number): number {
 /// </summary>
 /// <param name="color32">The 32 bits color value.</param>
 /// <returns>The green component of the color.</returns>
+
+/**
+ * @category Color32
+ */
 export function getGreen(color32: number): number {
   return (color32 >> 8) & 0xff;
 }
@@ -49,6 +61,10 @@ export function getGreen(color32: number): number {
 /// </summary>
 /// <param name="color32">The 32 bits color value.</param>
 /// <returns>The blue component of the color.</returns>
+
+/**
+ * @category Color32
+ */
 export function getBlue(color32: number): number {
   return color32 & 0xff;
 }
@@ -59,6 +75,10 @@ export function getBlue(color32: number): number {
 /// <param name="color32">The first color to combine.</param>
 /// <param name="otherColor32">The second color to combine.</param>
 /// <returns></returns>
+
+/**
+ * @category Color32
+ */
 export function combineColors(color32: number, secondColor32: number): number {
   const red = Math.max(getRed(color32), getRed(secondColor32));
   const green = Math.max(getGreen(color32), getGreen(secondColor32));
@@ -75,6 +95,10 @@ export function combineColors(color32: number, secondColor32: number): number {
 /// <param name="secondTimestamp">The timestamp for the second color.</param>
 /// <param name="time">The time for which to calculate the color.</param>
 /// <returns>The color for the given time.</returns>
+
+/**
+ * @category Color32
+ */
 export function interpolateColors(
   color32: number,
   timestamp: number,
@@ -111,6 +135,10 @@ export function interpolateColors(
 /// <param name="timestamp2">The timestamp for the second intensity.</param>
 /// <param name="time">The time for which to calculate the intensity.</param>
 /// <returns>The intensity for the given time.</returns>
+
+/**
+ * @category Color32
+ */
 export function interpolateIntensity(
   intensity1: number,
   timestamp1: number,
@@ -134,6 +162,10 @@ export function interpolateIntensity(
 /// <param name="color">The color to modulate.</param>
 /// <param name="intensity">The intensity to apply.</param>
 /// <returns></returns>
+
+/**
+ * @category Color32
+ */
 export function modulateColor(color32: number, intensity: number): number {
   const red = (getRed(color32) * intensity) / 255;
   const green = (getGreen(color32) * intensity) / 255;
@@ -148,6 +180,10 @@ export function modulateColor(color32: number, intensity: number): number {
 /// <param name="position">Position on the rainbow wheel.</param>
 /// <param name="intensity">Intensity of the returned color.</param>
 /// <returns>A color.</returns>
+
+/**
+ * @category Color32
+ */
 export function rainbowWheel(position: number, intensity: number): number {
   if (position < 85) {
     return toColor32(

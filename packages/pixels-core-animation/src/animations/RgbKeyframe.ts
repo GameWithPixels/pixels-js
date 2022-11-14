@@ -2,6 +2,9 @@ import { serializable } from "@systemic-games/pixels-core-utils";
 
 import AnimationBits from "./AnimationBits";
 
+/**
+ * @category Animation
+ */
 export default class RgbKeyframe {
   @serializable(2)
   timeAndColor = 0;

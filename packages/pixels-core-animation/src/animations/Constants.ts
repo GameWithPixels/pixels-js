@@ -1,3 +1,6 @@
+/**
+ * @category Animation
+ */
 const Constants = {
   maxLedsCount: 20,
   paletteColorFromFace: 127,

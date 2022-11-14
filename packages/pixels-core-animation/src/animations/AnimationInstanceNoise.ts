@@ -1,6 +1,9 @@
 import AnimationGradient from "./AnimationGradient";
 import AnimationInstance from "./AnimationInstance";
 
+/**
+ * @category Animation Instance
+ */
 export default class AnimationInstanceNoise extends AnimationInstance {
   get preset(): AnimationGradient {
     return this.animationPreset as AnimationGradient;

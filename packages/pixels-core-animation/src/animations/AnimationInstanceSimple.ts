@@ -3,6 +3,9 @@ import AnimationInstance from "./AnimationInstance";
 import AnimationSimple from "./AnimationSimple";
 import Constants from "./Constants";
 
+/**
+ * @category Animation Instance
+ */
 export default class AnimationInstanceSimple extends AnimationInstance {
   private _rgb = 0;
 

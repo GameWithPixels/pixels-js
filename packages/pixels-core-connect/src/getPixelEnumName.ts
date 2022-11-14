@@ -1,5 +1,8 @@
 /**
- * Return the name corresponding to a given Pixel enum value.
+ * Returns the name corresponding for a given Pixel enum value.
+ * @param value The Pixel enum value.
+ * @param enumValues The object with for the Pixel enum.
+ * @returns A string with the name corresponding to the enum value.
  */
 export default function <EnumType, EnumNames extends string>(
   value: EnumType,

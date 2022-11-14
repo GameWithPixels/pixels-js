@@ -14,6 +14,7 @@ import Constants from "./Constants";
  * The value is used for the first byte of data in a Pixel message to identify it's type.
  * These message identifiers have to match up with the ones on the firmware.
  * @enum
+ * @category Message
  */
 export const MessageTypeValues = {
   none: enumValue(0),
@@ -89,7 +90,10 @@ export const MessageTypeValues = {
   debugAnimationController: enumValue(),
 } as const;
 
-/** The "enum" type for {@link MessageTypeValues}. */
+/**
+ * The "enum" type for {@link MessageTypeValues}.
+ * @category Message
+ */
 export type MessageType =
   typeof MessageTypeValues[keyof typeof MessageTypeValues];
 
@@ -97,6 +101,7 @@ export type MessageType =
  * Base type for all Pixels messages.
  * Note: messages that have no specific data don't require a class,
  * a {@link MessageTypeValue} is used instead.
+ * @category Message
  */
 export interface PixelMessage {
   /** Type of the message. */
@@ -107,11 +112,13 @@ export interface PixelMessage {
  * Union type of {@link PixelMessage} and {@link MessageType} types.
  * Messages without parameter have no {@link PixelMessage} class to represent them,
  * instead they are represent by the corresponding {@link MessageTypeValue}.
+ * @category Message
  */
 export type MessageOrType = PixelMessage | MessageType;
 
 /**
  * Type representing a PixelMessage constructor.
+ * @category Message
  */
 export type MessageClass = new () => PixelMessage;
 
@@ -141,6 +148,7 @@ function _getMessageClassType(msgClass: MessageClass): MessageType {
  * Gets the type of the given message or message type value.
  * @param msgOrTypeOrClass A message or a message type value.
  * @returns The message type.
+ * @category Message
  */
 export function getMessageType(
   msgOrTypeOrClass: MessageOrType | MessageClass
@@ -156,6 +164,7 @@ export function getMessageType(
  * Type predicate for {@link PixelMessage} class.
  * @param obj Any object.
  * @returns Whether the given object is a {@link PixelMessage}.
+ * @category Message
  */
 export function isMessage(obj: unknown): obj is PixelMessage {
   return (obj as PixelMessage).type !== undefined;
@@ -165,6 +174,7 @@ export function isMessage(obj: unknown): obj is PixelMessage {
  * Get the message name (as listed in {@link MessageTypeValues}).
  * @param msgOrType A message or a message type value.
  * @returns The message name.
+ * @category Message
  */
 export function getMessageName(
   msgOrType: MessageOrType
@@ -182,6 +192,7 @@ export function getMessageName(
  * Creates a message object for the given message type.
  * @param type Type of message.
  * @returns A PixelMessage object with the given message type.
+ * @category Message
  */
 export function instantiateMessage(type: MessageType): PixelMessage {
   const ctor = _getMessageClass(type);
@@ -196,6 +207,7 @@ export function instantiateMessage(type: MessageType): PixelMessage {
  * Serialize the given Pixel message.
  * @param msgOrType A message or a message type value.
  * @returns The serialized data.
+ * @category Message
  */
 export function serializeMessage(msgOrType: MessageOrType): ArrayBuffer {
   if (typeof msgOrType === "number") {
@@ -216,6 +228,7 @@ export function serializeMessage(msgOrType: MessageOrType): ArrayBuffer {
  * Attempts to deserialize the data of the given buffer into a Pixel message.
  * @param buffer The data to deserialize the message from.
  * @returns The deserialized message or just its type value (for messages with no class).
+ * @category Message
  */
 export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
   if (!buffer?.byteLength) {
@@ -247,6 +260,8 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
 
 /**
  * Generic class representing any message without any data.
+ * @category Message
+ * @category Message
  */
 export class GenericPixelMessage implements PixelMessage {
   /** Type of the message. */
@@ -261,6 +276,7 @@ export class GenericPixelMessage implements PixelMessage {
 /**
  * Available combinations of Pixel designs and colors.
  * @enum
+ * @category Message
  */
 export const PixelDesignAndColorValues = {
   unknown: enumValue(0),
@@ -278,11 +294,16 @@ export const PixelDesignAndColorValues = {
   auroraSky: enumValue(),
 } as const;
 
-/** The "enum" type for {@link PixelDesignAndColorValues}. */
+/**The "enum" type for {@link PixelDesignAndColorValues}.
+ * @category Message
+ */
 export type PixelDesignAndColor =
   typeof PixelDesignAndColorValues[keyof typeof PixelDesignAndColorValues];
 
-/** Message send by a Pixel after receiving a "WhoAmI". */
+/**
+ * Message send by a Pixel after receiving a "WhoAmI".
+ * @category Message
+ */
 export class IAmADie implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -305,6 +326,7 @@ export class IAmADie implements PixelMessage {
 /**
  * Pixel roll states.
  * @enum
+ * @category Message
  */
 export const PixelRollStateValues = {
   // The Pixel roll state could not be determined.
@@ -323,11 +345,17 @@ export const PixelRollStateValues = {
   crooked: enumValue(),
 } as const;
 
-/** The "enum" type for {@link PixelRollStateValues}. */
+/**
+ * The "enum" type for {@link PixelRollStateValues}.
+ * @category Message
+ */
 export type PixelRollState =
   typeof PixelRollStateValues[keyof typeof PixelRollStateValues];
 
-/** Message send by a Pixel to notify of its rolling state. */
+/**
+ * Message send by a Pixel to notify of its rolling state.
+ * @category Message
+ */
 export class RollState implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -342,7 +370,10 @@ export class RollState implements PixelMessage {
   faceIndex = 0;
 }
 
-/** Message send by a Pixel to notify of its telemetry data. */
+/**
+ * Message send by a Pixel to notify of its telemetry data.
+ * @category Message
+ */
 export class Telemetry implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -386,6 +417,7 @@ export class Telemetry implements PixelMessage {
  * Message send to a Pixel to request a transfer of data.
  * This is usually done after initiating an animation transfer request
  * and followed by BulkData messages with the actual data.
+ * @category Message
  */
 export class BulkSetup implements PixelMessage {
   /** Type of the message. */
@@ -399,6 +431,7 @@ export class BulkSetup implements PixelMessage {
 /**
  * Message send to a Pixel to request to transfer a piece of data.
  * A BulkSetup message must be send first.
+ * @category Message
  */
 export class BulkData implements PixelMessage {
   /** Type of the message. */
@@ -413,7 +446,10 @@ export class BulkData implements PixelMessage {
   data?: ArrayBufferLike;
 }
 
-/** Message send by a Pixel after receiving a BulkData request. */
+/**
+ * Message send by a Pixel after receiving a BulkData request.
+ * @category Message
+ */
 export class BulkDataAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -426,6 +462,7 @@ export class BulkDataAck implements PixelMessage {
 /**
  * Message send to a Pixel to request a transfer of a
  * full animation data set (stored in flash memory).
+ * @category Message
  */
 export class TransferAnimationSet implements PixelMessage {
   /** Type of the message. */
@@ -458,7 +495,10 @@ export class TransferAnimationSet implements PixelMessage {
   ruleCount = 0;
 }
 
-/** Message send by a Pixel after receiving a TransferAnimationSet request. */
+/**
+ * Message send by a Pixel after receiving a TransferAnimationSet request.
+ * @category Message
+ */
 export class TransferAnimationSetAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -471,6 +511,7 @@ export class TransferAnimationSetAck implements PixelMessage {
 /**
  * Message send to a Pixel to request a transfer of a
  * test animation (stored in RAM memory).
+ * @category Message
  */
 export class TransferTestAnimationSet implements PixelMessage {
   /** Type of the message. */
@@ -493,18 +534,28 @@ export class TransferTestAnimationSet implements PixelMessage {
   hash = 0;
 }
 
-/** Transfer animation ack values. */
+/**
+ * Transfer animation ack values.
+ * @enum
+ * @category Message
+ */
 export const TransferInstantAnimationsSetAckTypeValues = {
   download: enumValue(0),
   upToDate: enumValue(),
   noMemory: enumValue(),
 } as const;
 
-/** The "enum" type for {@link TransferInstantAnimationsSetAckTypeValues}. */
+/**
+ * The "enum" type for {@link TransferInstantAnimationsSetAckTypeValues}.
+ * @category Message
+ */
 export type TransferInstantAnimationSetAckType =
   typeof TransferInstantAnimationsSetAckTypeValues[keyof typeof TransferInstantAnimationsSetAckTypeValues];
 
-/** Message send by a Pixel after receiving a TransferTestAnimationSet request. */
+/**
+ * Message send by a Pixel after receiving a TransferTestAnimationSet request.
+ * @category Message
+ */
 export class TransferTestAnimationSetAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -515,7 +566,10 @@ export class TransferTestAnimationSetAck implements PixelMessage {
   ackType = TransferInstantAnimationsSetAckTypeValues.download;
 }
 
-/** Message send by a Pixel to report a log message to the application. */
+/**
+ * Message send by a Pixel to report a log message to the application.
+ * @category Message
+ */
 export class DebugLog implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -526,7 +580,10 @@ export class DebugLog implements PixelMessage {
   message = "";
 }
 
-/** Message send by a Pixel to request playing a specific sound clip. */
+/**
+ * Message send by a Pixel to request playing a specific sound clip.
+ * @category Message
+ */
 export class PlaySound implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -537,7 +594,10 @@ export class PlaySound implements PixelMessage {
   clipId = 0;
 }
 
-/** Message send to a Pixel to have it start or stop sending telemetry messages. */
+/**
+ * Message send to a Pixel to have it start or stop sending telemetry messages.
+ * @category Message
+ */
 export class RequestTelemetry implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -548,7 +608,10 @@ export class RequestTelemetry implements PixelMessage {
   activate = false;
 }
 
-/** Message send to a Pixel to have it blink its LEDs. */
+/**
+ * Message send to a Pixel to have it blink its LEDs.
+ * @category Message
+ */
 export class Blink implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -575,7 +638,10 @@ export class Blink implements PixelMessage {
   fade = 0;
 }
 
-/** Message send by a Pixel to notify of its battery level and state. */
+/**
+ * Message send by a Pixel to notify of its battery level and state.
+ * @category Message
+ */
 export class BatteryLevel implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -594,7 +660,10 @@ export class BatteryLevel implements PixelMessage {
   charging = false;
 }
 
-/** Message send by a Pixel to notify of its measured RSSI. */
+/**
+ * Message send by a Pixel to notify of its measured RSSI.
+ * @category Message
+ */
 export class Rssi implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -612,6 +681,7 @@ export class Rssi implements PixelMessage {
 /**
  * Message send by a Pixel to request the application to show
  * a message to the user, and with optionally a required action.
+ * @category Message
  */
 export class NotifyUser implements PixelMessage {
   /** Type of the message. */
@@ -635,7 +705,10 @@ export class NotifyUser implements PixelMessage {
   message = "";
 }
 
-/** Message send to a Pixel in response to getting a NotifyUser request. */
+/**
+ * Message send to a Pixel in response to getting a NotifyUser request.
+ * @category Message
+ */
 export class NotifyUserAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -646,7 +719,10 @@ export class NotifyUserAck implements PixelMessage {
   okCancel = false;
 }
 
-/** Message send by a Pixel to notify of its measured LED loopback value. */
+/**
+ * Message send by a Pixel to notify of its measured LED loopback value.
+ * @category Message
+ */
 export class LedLoopback implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -657,18 +733,24 @@ export class LedLoopback implements PixelMessage {
   value = 0;
 }
 
-/** Message send to a Pixel to configure the die design and color. */
+/**
+ * Message send to a Pixel to configure the die design and color.
+ * @category Message
+ */
 export class SetDesignAndColor implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
   readonly type = MessageTypeValues.setDesignAndColor;
 
-  /** A value from the @see PixelDesignAndColorValues enumeration.*/
+  /** A value from the {@link PixelDesignAndColorValues} enumeration.*/
   @serializable(1)
   designAndColor: PixelDesignAndColor = 0;
 }
 
-/** Message send to a Pixel to change its Bluetooth name. */
+/**
+ * Message send to a Pixel to change its Bluetooth name.
+ * @category Message
+ */
 export class SetName implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -682,6 +764,7 @@ export class SetName implements PixelMessage {
 /**
  * Message send to a Pixel to request a transfer of a set of
  * instant animations (stored in RAM memory)
+ * @category Message
  */
 export class TransferInstantAnimationSet implements PixelMessage {
   /** Type of the message. */
@@ -706,7 +789,10 @@ export class TransferInstantAnimationSet implements PixelMessage {
   hash = 0;
 }
 
-/** Message send by a Pixel after receiving a TransferInstantAnimationSet request. */
+/**
+ * Message send by a Pixel after receiving a TransferInstantAnimationSet request.
+ * @category Message
+ */
 export class TransferInstantAnimationSetAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -717,7 +803,10 @@ export class TransferInstantAnimationSetAck implements PixelMessage {
   ackType = TransferInstantAnimationsSetAckTypeValues.download;
 }
 
-/** Message send to a Pixel to have it play an already uploaded instant animation. */
+/**
+ * Message send to a Pixel to have it play an already uploaded instant animation.
+ * @category Message
+ */
 export class PlayInstantAnimation implements PixelMessage {
   /** Type of the message. */
   @serializable(1)

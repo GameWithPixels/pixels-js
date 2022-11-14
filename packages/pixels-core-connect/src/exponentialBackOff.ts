@@ -1,13 +1,10 @@
 import { delay } from "@systemic-games/pixels-core-utils";
 
 /**
- * This function keeps calling the executor until the promise it returns has resolved
+ * Repeatedly calls the executor until the later returns a resolved promise
  * or it has reached the maximum number or retries.
- * A retry is attempted after getting an exception from the executor and once past the given
- * delay (starting at the time of the exception).
- *
- * See auto-reconnect code from Google:
- * https://googlechrome.github.io/samples/web-bluetooth/automatic-reconnect-async-await.html
+ * A retry is attempted after getting an exception from the executor and once
+ * past the given delay (starting at the time of the exception).
  *
  * @param retries Maximum number of retries.
  * @param delayMs Delay in milliseconds between getting an exception and attempting a retry.

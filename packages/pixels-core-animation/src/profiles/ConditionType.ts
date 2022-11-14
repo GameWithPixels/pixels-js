@@ -1,5 +1,9 @@
 import { enumValue } from "@systemic-games/pixels-core-utils";
 
+/**
+ * @category Profile Condition
+ * @enum
+ */
 export const ConditionTypeValues = {
   Unknown: enumValue(0),
   HelloGoodbye: enumValue(),
@@ -12,6 +16,9 @@ export const ConditionTypeValues = {
   Idle: enumValue(),
 } as const;
 
-/** The "enum" type for {@link ConditionTypeValues}. */
+/**
+ * The "enum" type for {@link ConditionTypeValues}.
+ * @category Profile Condition
+ */
 export type ConditionType =
   typeof ConditionTypeValues[keyof typeof ConditionTypeValues];

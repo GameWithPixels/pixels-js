@@ -3,9 +3,11 @@ import { enumFlag, serializable } from "@systemic-games/pixels-core-utils";
 import Condition from "./Condition";
 import { ConditionType, ConditionTypeValues } from "./ConditionType";
 
-/// <summary>
-/// Indicates which battery event the condition should trigger on
-/// </summary>
+/**
+ * Indicates which battery event the condition should trigger on.
+ * @category Profile Condition
+ * @enum
+ */
 export const BatteryStateFlagsValues = {
   Ok: enumFlag(0),
   Low: enumFlag(),
@@ -13,13 +15,17 @@ export const BatteryStateFlagsValues = {
   Done: enumFlag(),
 } as const;
 
-/** The "enum" type for {@link BatteryStateFlagsValues}. */
+/**
+ * The "enum" type for {@link BatteryStateFlagsValues}.
+ * @category Profile Condition
+ */
 export type BatteryStateFlags =
   typeof BatteryStateFlagsValues[keyof typeof BatteryStateFlagsValues];
 
-/// <summary>
-/// Condition that triggers on battery state events
-/// </summary>
+/**
+ * Condition that triggers on battery state events.
+ * @category Profile Condition
+ */
 export default class ConditionBatteryState implements Condition {
   @serializable(1)
   type: ConditionType = ConditionTypeValues.BatteryState;

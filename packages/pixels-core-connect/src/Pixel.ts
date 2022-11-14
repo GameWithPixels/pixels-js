@@ -65,6 +65,10 @@ function getTime(): string {
   );
 }
 
+/**
+ * List of possible Pixel statuses.
+ * @category Pixel
+ */
 export type PixelStatus =
   | "disconnected"
   | "connecting"
@@ -72,15 +76,23 @@ export type PixelStatus =
   | "ready"
   | "disconnecting";
 
-/** Event map for {@link Pixel} class. */
+/**
+ * Event map for {@link Pixel} class.
+ * @category Pixel
+ */
 export interface PixelEventMap {
+  /** Connection status update. */
   status: PixelStatus;
+  /** Message notification. */
   message: MessageOrType;
+  /** Roll state changed notification. */
   rollState: {
     face: number;
     state: keyof typeof PixelRollStateValues;
   };
+  /** Roll value notification. */
   roll: number;
+  /** User message notification. */
   userMessage: {
     message: string;
     withCancel: boolean;
@@ -88,6 +100,10 @@ export interface PixelEventMap {
   };
 }
 
+/**
+ * Class used by {@link Pixel} to throw errors.
+ * @category Pixel
+ */
 export class PixelError extends Error {
   private _pixel: Pixel;
 
@@ -103,6 +119,7 @@ export class PixelError extends Error {
 
 /**
  * Common accessible values for all Pixel implementations.
+ * @category Pixel
  */
 export interface IPixel {
   readonly systemId: string;
@@ -117,6 +134,7 @@ export interface IPixel {
  * Represents a Pixel die.
  * Most of its methods require that the instance is connected to the Pixel device.
  * Call the {@link connect} method to initiate a connection.
+ * @category Pixel
  */
 export default class Pixel implements IPixel {
   // Our events emitter
@@ -137,7 +155,7 @@ export default class Pixel implements IPixel {
     state: keyof typeof PixelRollStateValues;
   };
 
-  /** Indicates whether the Pixel is in the process of being connected.*/
+  /** Gets this Pixel's last known connection status.*/
   get status(): PixelStatus {
     return this._status;
   }
@@ -177,6 +195,7 @@ export default class Pixel implements IPixel {
     return this._info?.buildTimestamp ?? 0;
   }
 
+  /** Gets the Pixel last know roll state. */
   get rollState(): {
     face: number;
     state: keyof typeof PixelRollStateValues;
@@ -307,6 +326,12 @@ export default class Pixel implements IPixel {
     return this;
   }
 
+  /**
+   * Adds the given listener function to the end of the listeners array
+   * for the event with the given name.
+   * @param eventName The name of the event.
+   * @param listener The callback function.
+   */
   addEventListener<K extends keyof PixelEventMap>(
     eventName: K,
     listener: EventReceiver<PixelEventMap[K]>
@@ -314,6 +339,12 @@ export default class Pixel implements IPixel {
     this._evEmitter.addListener(eventName, listener);
   }
 
+  /**
+   * Removes the specified listener function from the listener array
+   * for the event with the given name.
+   * @param eventName The name of the event.
+   * @param listener The callback function to unregister.
+   */
   removeEventListener<K extends keyof PixelEventMap>(
     eventName: K,
     listener: EventReceiver<PixelEventMap[K]>
@@ -322,10 +353,9 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Register a listener to be invoked on receiving messages of a given type.
-   *
+   * Register a listener to be invoked on receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
-   * @param listener The listener that will be invoked when a message of the given type is received.
+   * @param listener The callback function.
    */
   addMessageListener(
     msgType: MessageType | keyof typeof MessageTypeValues,
@@ -340,10 +370,9 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Unregister a listener invoked on receiving messages of the same type.
-   *
+   * Unregister a listener invoked on receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
-   * @param listener The listener to unregister.
+   * @param listener The callback function to unregister.
    */
   removeMessageListener(
     msgType: MessageType | keyof typeof MessageTypeValues,
@@ -433,8 +462,9 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Asynchronously gets the battery level.
-   * @returns A promise revolving to an object with the batter level information.
+   * Asynchronously gets the battery state.
+   * @returns A promise revolving to an object with the batter level in
+   *          percentage and flag indicating whether it is charging or not.
    */
   async queryBatteryState(): Promise<{ level: number; isCharging: boolean }> {
     const response = await this.sendAndWaitForResponse(
@@ -449,7 +479,7 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Asynchronously gets the RSSI.
+   * Asynchronously gets the RSSI value.
    * @returns A promise revolving to the RSSI value, between 0 and 65535.
    */
   async queryRssi(): Promise<number> {

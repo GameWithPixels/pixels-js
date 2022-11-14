@@ -5,6 +5,9 @@ import AnimationBits from "./AnimationBits";
 import Constants from "./Constants";
 import SimpleKeyframe from "./SimpleKeyframe";
 
+/**
+ * @category Animation
+ */
 export default class Track {
   @serializable(2)
   keyframesOffset = 0; // offset into a global keyframe buffer
@@ -30,10 +33,11 @@ export default class Track {
     return bits.getKeyframe(this.keyframesOffset + keyframeIndex);
   }
 
-  /// <summary>
-  /// Evaluate an animation track's for a given time, in milliseconds, and fills returns arrays of led indices and colors
-  /// Values outside the track's range are clamped to first or last keyframe value.
-  /// </summary>
+  /**
+   * Evaluates an animation track's for a given time, in milliseconds,
+   * and fills returns arrays of led indices and colors values outside
+   * the track's range are clamped to first or last keyframe value.
+   */
   evaluate(
     bits: AnimationBits,
     color: number,
@@ -59,10 +63,10 @@ export default class Track {
     return currentCount;
   }
 
-  /// <summary>
-  /// Evaluate an animation track's for a given time, in milliseconds
-  /// Values outside the track's range are clamped to first or last keyframe value.
-  /// </summary>
+  /**
+   * Evaluates an animation track's for a given time, in milliseconds
+   * Values outside the track's range are clamped to first or last keyframe value.
+   */
   modulateColor(bits: AnimationBits, color: number, time: number): number {
     // Find the first keyframe
     let nextIndex = 0;
@@ -103,9 +107,9 @@ export default class Track {
     return Color32Utils.modulateColor(color, intensity);
   }
 
-  /// <summary>
-  /// Extracts the LED indices from the led bit mask
-  /// </summary>
+  /**
+   * Extracts the LED indices from the led bit mask.
+   */
   extractLEDIndices(retIndices: number[]): number {
     // Fill the return arrays
     let currentCount = 0;

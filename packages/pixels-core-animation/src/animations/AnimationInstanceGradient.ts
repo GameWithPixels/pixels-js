@@ -2,6 +2,9 @@ import AnimationGradient from "./AnimationGradient";
 import AnimationInstance from "./AnimationInstance";
 import Constants from "./Constants";
 
+/**
+ * @category Animation Instance
+ */
 export default class AnimationInstanceGradient extends AnimationInstance {
   get preset(): AnimationGradient {
     return this.animationPreset as AnimationGradient;

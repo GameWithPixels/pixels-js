@@ -15,7 +15,7 @@ export interface UsePxThemeParams {
 /**
  * UsePXTheme to create variations of the default components theme with new primary, secondary or tertiary colors
  * @param theme The theme to override with new parameters
- * @see UsePxThemeParams for the UsePxTheme other parameters
+ * See {@link UsePxThemeParams} for the UsePxTheme other parameters
  * @returns A new theme modified with the new selected colors
  */
 export function createPixelTheme({

@@ -2,6 +2,9 @@ import AnimationGradientPattern from "./AnimationGradientPattern";
 import AnimationInstance from "./AnimationInstance";
 import Constants from "./Constants";
 
+/**
+ * @category Animation Instance
+ */
 export default class AnimationInstanceGradientPattern extends AnimationInstance {
   private _rgb = 0;
 

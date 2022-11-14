@@ -5,6 +5,9 @@ import AnimationBits from "./AnimationBits";
 import Constants from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 
+/**
+ * @category Animation
+ */
 export default class RgbTrack {
   @serializable(2)
   keyframesOffset = 0; // offset into a global keyframe buffer

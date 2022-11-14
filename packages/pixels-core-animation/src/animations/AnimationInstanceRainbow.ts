@@ -5,6 +5,9 @@ import AnimationInstance from "./AnimationInstance";
 import AnimationRainbow from "./AnimationRainbow";
 import Constants from "./Constants";
 
+/**
+ * @category Animation Instance
+ */
 export default class AnimationInstanceRainbow extends AnimationInstance {
   get preset(): AnimationRainbow {
     return this.animationPreset as AnimationRainbow;

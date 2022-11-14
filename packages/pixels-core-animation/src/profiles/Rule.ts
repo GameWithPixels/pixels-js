@@ -1,5 +1,8 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
 
+/**
+ * @category Profile
+ */
 export default class Rule {
   @serializable(2)
   condition = 0;
