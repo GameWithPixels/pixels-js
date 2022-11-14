@@ -7,4 +7,5 @@ export { ColorSelection } from "./components/ColorSelection";
 export { AppPage as PxAppPage } from "./components/AppPage";
 export { LightingStyleSelection } from "./components/LightingStylesSelection";
 export * from "./components/DiceInfo";
+export * from "./components/ProfilesScrollList";
 export * from "@systemic-games/react-native-base-components";

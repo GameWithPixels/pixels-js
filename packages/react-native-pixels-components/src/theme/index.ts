@@ -17,7 +17,7 @@ const pixelColors = {
   boxBGLight: "#E2E8F0",
   boxBGLight2: "#CBD5E1",
   appBGDark: "#100F1E",
-  higlhightGray: "#404040",
+  highlightGray: "#404040",
   lightHighlightGray: "#DBDCDE",
   softBlack: "#222222",
   purple: "#932788",

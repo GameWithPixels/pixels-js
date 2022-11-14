@@ -3,12 +3,14 @@ import {
   PercentageDisplayComponent,
   IconParams,
 } from "@systemic-games/react-native-base-components";
-import { Center, HStack, Text, usePropsResolution } from "native-base";
+import { Box, Center, HStack, Text, usePropsResolution } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
 import React from "react";
 
 interface BatteryLevelProps {
   percentage: number;
+  isCharging?: boolean;
+  textSize?: SizeType;
   iconSize?: SizeType;
 }
 
@@ -26,14 +28,36 @@ export function BatteryLevel(props: BatteryLevelProps) {
   const batteryLevel = resolvedProps.percentage * 100;
   return (
     <Center>
-      <HStack space={2} alignItems="center">
-        <PercentageDisplayComponent
-          icons={icons}
-          colors={resolvedProps.colors}
-          percentage={batteryLevel}
-          size={resolvedProps.iconSize}
-        />
-        <Text>{batteryLevel + "%"}</Text>
+      <HStack space={3} alignItems="center">
+        <Box>
+          <PercentageDisplayComponent
+            icons={icons}
+            colors={resolvedProps.colors}
+            percentage={batteryLevel}
+            size={resolvedProps.iconSize}
+          />
+        </Box>
+        {/* <ZStack alignItems={"center"} justifyItems="center">
+          <Box>
+            <PercentageDisplayComponent
+              icons={icons}
+              colors={resolvedProps.colors}
+              percentage={batteryLevel}
+              size={resolvedProps.iconSize}
+            />
+          </Box>
+          {resolvedProps.isCharging && (
+            <Icon
+              as={MaterialCommunityIcons}
+              name="lightning-bolt"
+              color="black"
+              size={10}
+            />
+          )}
+        </ZStack> */}
+        <Text bold fontSize={resolvedProps.textSize}>
+          {batteryLevel + "%"}
+        </Text>
       </HStack>
     </Center>
   );

@@ -1,39 +1,75 @@
+import { FontAwesome5 } from "@expo/vector-icons";
 import {
   BatteryLevel,
-  Card,
   PixelTheme,
+  ProfilesScrollList,
   PxAppPage,
   RSSIStrength,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, Center, Text, VStack, Image, HStack } from "native-base";
+import {
+  Box,
+  Center,
+  Text,
+  VStack,
+  Image,
+  HStack,
+  Input,
+  Spacer,
+  Divider,
+  Button,
+} from "native-base";
 
 export default function PixelDetailScreen() {
   return (
     <PxAppPage theme={PixelTheme}>
-      <Center>
-        <Card w="100%">
-          <VStack space={4}>
-            <Text>Rename Pixel</Text>
-            <Box alignItems="center">
-              {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-              <Image
-                size={20}
-                source={require("../../../../apps/pixels-app/assets/UI_Icons/D10.png")}
-                alt="placeHolder"
-              />
+      <VStack space={5}>
+        <Center bg="white" rounded="lg" px={2}>
+          <Input
+            InputRightElement={
+              <FontAwesome5 name="pen" size={20} color="black" />
+            }
+            size="2xl"
+            variant="unstyled"
+            placeholder="DICE NAME"
+            color="black"
+          />
+        </Center>
+        <Center>
+          <HStack space={20} alignItems="center">
+            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
+            <Image
+              size={40}
+              source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
+              alt="placeHolder"
+            />
+            <VStack space={2}>
+              <BatteryLevel iconSize="50" textSize="lg" percentage={0.8} />
+              <RSSIStrength iconSize="50" textSize="lg" percentage={-40} />
+            </VStack>
+          </HStack>
+        </Center>
+        <ProfilesScrollList
+          availableProfiles={[
+            { profileName: "Rainbow" },
+            { profileName: "Waterfall" },
+            { profileName: "Red to Blue" },
+            { profileName: "My favorite profile" },
+            { profileName: "customProfile" },
+          ]}
+        />
+        <Divider />
+        <VStack space={2}>
+          <HStack alignItems="center" rounded="md" maxW="100%" space={2}>
+            <Text bold>Firmware date :</Text>
+            <Spacer />
+            <Box bg="gray.500" rounded="lg" p={2}>
+              <Text>{new Date().toUTCString()}</Text>
             </Box>
-            <HStack space={5}>
-              <BatteryLevel iconSize="2xl" percentage={1} />
-              <RSSIStrength iconSize="2xl" percentage={-60} />
-            </HStack>
-            <Text>Blink</Text>
-            <Text>Change profile</Text>
-            <Text>Stats</Text>
-            <Text>Frimware date</Text>
-            <Text>Advanced settings</Text>
-          </VStack>
-        </Card>
-      </Center>
+          </HStack>
+          <Button>Update</Button>
+        </VStack>
+        <Divider />
+      </VStack>
     </PxAppPage>
   );
 }
