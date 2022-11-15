@@ -226,7 +226,7 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         const facesGroups = [
           range(1, 8),
           range(8, 15),
-          [...range(15, 20), Constants.faceMaskAllLeds],
+          [...range(15, 20), Constants.faceMaskAllLEDs],
         ];
         return (
           <>

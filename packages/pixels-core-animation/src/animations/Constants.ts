@@ -2,10 +2,10 @@
  * @category Animation
  */
 const Constants = {
-  maxLedsCount: 20,
+  maxLEDsCount: 20,
   paletteColorFromFace: 127,
   paletteColorFromRandom: 126,
-  faceMaskAllLeds: 0xffffffff,
+  faceMaskAllLEDs: 0xffffffff,
   keyframeTimeResolutionMs: 2,
 } as const;
 

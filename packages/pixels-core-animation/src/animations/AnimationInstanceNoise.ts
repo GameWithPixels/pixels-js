@@ -9,7 +9,7 @@ export default class AnimationInstanceNoise extends AnimationInstance {
     return this.animationPreset as AnimationGradient;
   }
 
-  updateLeds(
+  updateLEDs(
     _ms: number,
     _retIndices: number[],
     _retColors32: number[]

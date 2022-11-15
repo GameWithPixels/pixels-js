@@ -221,7 +221,7 @@ export function WaitCharging({
   );
 }
 
-export function CheckLeds({
+export function CheckLEDs({
   action,
   onTaskStatus,
   pixel,
@@ -232,7 +232,7 @@ export function CheckLeds({
     action,
     useCallback(
       (abortSignal) =>
-        ValidationTests.checkLedsLitUp(
+        ValidationTests.checkLEDsLitUp(
           pixel,
           isBoard(settings.formFactor)
             ? new Color(0.03, 0.03, 0.03)

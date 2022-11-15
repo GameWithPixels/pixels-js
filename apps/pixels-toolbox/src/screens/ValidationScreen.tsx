@@ -23,7 +23,7 @@ import AppPage from "~/components/AppPage";
 import PixelScanList from "~/components/PixelScanList";
 import {
   CheckBoard,
-  CheckLeds,
+  CheckLEDs,
   ConnectPixel,
   PrepareDie,
   ShakeDie,
@@ -294,8 +294,8 @@ function RunTestsPage({
       ))
     )
     .chainWith(
-      ...useTaskComponent("CheckLeds", cancel, (p) => (
-        <>{pixel && <CheckLeds {...p} pixel={pixel} settings={settings} />}</>
+      ...useTaskComponent("CheckLEDs", cancel, (p) => (
+        <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
       ))
     );
   if (settings.formFactor !== "boardNoCoil") {

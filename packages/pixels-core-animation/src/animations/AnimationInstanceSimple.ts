@@ -18,7 +18,7 @@ export default class AnimationInstanceSimple extends AnimationInstance {
     this._rgb = this.animationBits.getColor32(this.preset.colorIndex);
   }
 
-  updateLeds(ms: number, retIndices: number[], retColors32: number[]): number {
+  updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
     const preset = this.preset;
 
     // Compute color
@@ -55,7 +55,7 @@ export default class AnimationInstanceSimple extends AnimationInstance {
 
     // Fill the indices and colors for the anim controller to know how to update LEDs
     let retCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((preset.faceMask & (1 << i)) !== 0) {
         retIndices[retCount] = i;
         retColors32[retCount] = color;
@@ -68,7 +68,7 @@ export default class AnimationInstanceSimple extends AnimationInstance {
   stop(retIndices: number[]): number {
     const preset = this.preset;
     let retCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((preset.faceMask & (1 << i)) !== 0) {
         retIndices[retCount] = i;
         retCount++;

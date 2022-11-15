@@ -51,7 +51,7 @@ export default class RgbTrack {
 
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         retColors32[currentCount] = color;
@@ -115,7 +115,7 @@ export default class RgbTrack {
   extractLEDIndices(retIndices: number[]): number {
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         currentCount++;

@@ -61,7 +61,7 @@ export default class EditAnimationSimple extends EditAnimation {
     super(options?.name);
     const color = options?.color ?? Color.red;
     this._duration = options?.duration ?? 1;
-    this.faces = options?.faces ?? Constants.faceMaskAllLeds;
+    this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
     this.color = color instanceof Color ? EditColor.fromColor(color) : color;
     this.count = options?.count ?? 1;
     this.fade = options?.fade ?? 0.1;

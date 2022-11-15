@@ -23,7 +23,7 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
   /// Computes the list of LEDs that need to be on, and what their intensities should be
   /// based on the different tracks of this animation.
   /// </summary>
-  updateLeds(ms: number, retIndices: number[], retColors32: number[]): number {
+  updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
     const time = ms - this.startTime;
     const preset = this.preset;
 

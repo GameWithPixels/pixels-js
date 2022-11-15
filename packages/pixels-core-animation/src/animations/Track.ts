@@ -53,7 +53,7 @@ export default class Track {
 
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         retColors32[currentCount] = modColor;
@@ -113,7 +113,7 @@ export default class Track {
   extractLEDIndices(retIndices: number[]): number {
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         currentCount++;

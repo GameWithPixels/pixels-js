@@ -271,7 +271,7 @@ const ValidationTests = {
     });
   },
 
-  checkLedsLitUp: async (
+  checkLEDsLitUp: async (
     pixel: Pixel,
     color: Color,
     setResolve: (resolve: () => void) => void,
@@ -281,7 +281,7 @@ const ValidationTests = {
       const blinkAbortController = new AbortController();
       const abort = () => {
         blinkAbortController.abort();
-        reject(new TaskCanceledError("checkLedsLitUp"));
+        reject(new TaskCanceledError("checkLEDsLitUp"));
       };
       if (abortSignal.aborted) {
         abort();

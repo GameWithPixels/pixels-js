@@ -81,7 +81,7 @@ export const MessageTypeValues = {
   // Testing
   testBulkSend: enumValue(),
   testBulkReceive: enumValue(),
-  setAllLedsToColor: enumValue(),
+  setAllLEDsToColor: enumValue(),
   attractMode: enumValue(),
   printNormals: enumValue(),
   printA2DReadings: enumValue(),

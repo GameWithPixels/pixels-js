@@ -43,7 +43,7 @@ export default abstract class AnimationInstance {
   }
 
   // "virtual" method
-  abstract updateLeds(
+  abstract updateLEDs(
     ms: number,
     retIndices: number[],
     retColors32: number[]
