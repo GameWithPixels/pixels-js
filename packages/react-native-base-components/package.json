@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/react-native-base-components",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Generic UI components using React Native + Native Base.",
   "main": "dist/commonjs/index",
   "module": "dist/module/index",
@@ -46,7 +46,7 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
-    "@systemic-games/pixels-core-animation": "*",
+    "@systemic-games/pixels-core-animation": "1.0.2",
     "@types/jest": "^29.1.2",
     "@types/react": "~18.0.0",
     "@types/react-native": "0.69.6",
