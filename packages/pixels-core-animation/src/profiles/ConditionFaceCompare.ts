@@ -17,11 +17,17 @@ export const FaceCompareFlagsValues = {
 } as const;
 
 /**
+ * The names for the "enum" type {@link FaceCompareFlagsValues}.
+ * @category Profile Condition
+ */
+export type FaceCompareFlagsNames = keyof typeof FaceCompareFlagsValues;
+
+/**
  * The "enum" type for {@link FaceCompareFlagsValues}.
  * @category Profile Condition
  */
 export type FaceCompareFlags =
-  typeof FaceCompareFlagsValues[keyof typeof FaceCompareFlagsValues];
+  typeof FaceCompareFlagsValues[FaceCompareFlagsNames];
 
 /**
  * Condition that triggers when the Pixel has landed on a face.

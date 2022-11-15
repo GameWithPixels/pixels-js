@@ -17,8 +17,13 @@ export const ConditionTypeValues = {
 } as const;
 
 /**
+ * The names for the "enum" type {@link ConditionTypeValues}.
+ * @category Profile Condition
+ */
+export type ConditionTypeNames = keyof typeof ConditionTypeValues;
+
+/**
  * The "enum" type for {@link ConditionTypeValues}.
  * @category Profile Condition
  */
-export type ConditionType =
-  typeof ConditionTypeValues[keyof typeof ConditionTypeValues];
+export type ConditionType = typeof ConditionTypeValues[ConditionTypeNames];

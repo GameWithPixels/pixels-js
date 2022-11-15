@@ -9,5 +9,10 @@ export const ColorTypeValues = {
   Random: enumValue(),
 } as const;
 
+/**
+ * The names for the "enum" type {@link ColorTypeValues}.
+ */
+export type ColorTypeNames = keyof typeof ColorTypeValues;
+
 /** The "enum" type for {@link ColorTypeValues}. */
-export type ColorType = typeof ColorTypeValues[keyof typeof ColorTypeValues];
+export type ColorType = typeof ColorTypeValues[ColorTypeNames];

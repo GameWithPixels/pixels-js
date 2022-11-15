@@ -15,11 +15,17 @@ export const HelloGoodbyeFlagsValues = {
 } as const;
 
 /**
+ * The names for the "enum" type {@link HelloGoodbyeFlagsValues}.
+ * @category Profile Condition
+ */
+export type HelloGoodbyeFlagsNames = keyof typeof HelloGoodbyeFlagsValues;
+
+/**
  * The "enum" type for {@link HelloGoodbyeFlagsValues}.
  * @category Profile Condition
  */
 export type HelloGoodbyeFlags =
-  typeof HelloGoodbyeFlagsValues[keyof typeof HelloGoodbyeFlagsValues];
+  typeof HelloGoodbyeFlagsValues[HelloGoodbyeFlagsNames];
 
 /**
  * Condition that triggers on a life state event

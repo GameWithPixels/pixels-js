@@ -91,11 +91,16 @@ export const MessageTypeValues = {
 } as const;
 
 /**
+ * The names for the "enum" type {@link MessageTypeValues}.
+ * @category Message
+ */
+export type MessageTypeNames = keyof typeof MessageTypeValues;
+
+/**
  * The "enum" type for {@link MessageTypeValues}.
  * @category Message
  */
-export type MessageType =
-  typeof MessageTypeValues[keyof typeof MessageTypeValues];
+export type MessageType = typeof MessageTypeValues[MessageTypeNames];
 
 /**
  * Base type for all Pixels messages.
@@ -294,11 +299,17 @@ export const PixelDesignAndColorValues = {
   auroraSky: enumValue(),
 } as const;
 
+/**
+ * The names for the "enum" type {@link PixelDesignAndColorValues}.
+ * @category Message
+ */
+export type PixelDesignAndColorNames = keyof typeof PixelDesignAndColorValues;
+
 /**The "enum" type for {@link PixelDesignAndColorValues}.
  * @category Message
  */
 export type PixelDesignAndColor =
-  typeof PixelDesignAndColorValues[keyof typeof PixelDesignAndColorValues];
+  typeof PixelDesignAndColorValues[PixelDesignAndColorNames];
 
 /**
  * Message send by a Pixel after receiving a "WhoAmI".
@@ -346,11 +357,16 @@ export const PixelRollStateValues = {
 } as const;
 
 /**
+ * The names for the "enum" type {@link PixelRollStateValues}.
+ * @category Message
+ */
+export type PixelRollStateNames = keyof typeof PixelRollStateValues;
+
+/**
  * The "enum" type for {@link PixelRollStateValues}.
  * @category Message
  */
-export type PixelRollState =
-  typeof PixelRollStateValues[keyof typeof PixelRollStateValues];
+export type PixelRollState = typeof PixelRollStateValues[PixelRollStateNames];
 
 /**
  * Message send by a Pixel to notify of its rolling state.
@@ -546,11 +562,18 @@ export const TransferInstantAnimationsSetAckTypeValues = {
 } as const;
 
 /**
+ * The names for the "enum" type {@link TransferInstantAnimationsSetAckTypeValues}.
+ * @category Message
+ */
+export type TransferInstantAnimationsSetAckTypeNames =
+  keyof typeof TransferInstantAnimationsSetAckTypeValues;
+
+/**
  * The "enum" type for {@link TransferInstantAnimationsSetAckTypeValues}.
  * @category Message
  */
 export type TransferInstantAnimationSetAckType =
-  typeof TransferInstantAnimationsSetAckTypeValues[keyof typeof TransferInstantAnimationsSetAckTypeValues];
+  typeof TransferInstantAnimationsSetAckTypeValues[TransferInstantAnimationsSetAckTypeNames];
 
 /**
  * Message send by a Pixel after receiving a TransferTestAnimationSet request.

@@ -42,6 +42,7 @@ import {
   PixelDesignAndColor,
   PixelDesignAndColorValues,
   PixelRollStateValues,
+  PixelRollStateNames,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import createTypedEventEmitter, {
@@ -77,6 +78,25 @@ export type PixelStatus =
   | "disconnecting";
 
 /**
+ * Data for the "rollState" event.
+ * @category Pixel
+ */
+export interface RollStateEventData {
+  face: number;
+  state: PixelRollStateNames;
+}
+
+/**
+ * Data for the "userMessage" event.
+ * @category Pixel
+ */
+export interface UserMessageEventData {
+  message: string;
+  withCancel: boolean;
+  response: (okCancel: boolean) => Promise<void>;
+}
+
+/**
  * Event map for {@link Pixel} class.
  * @category Pixel
  */
@@ -86,18 +106,11 @@ export interface PixelEventMap {
   /** Message notification. */
   message: MessageOrType;
   /** Roll state changed notification. */
-  rollState: {
-    face: number;
-    state: keyof typeof PixelRollStateValues;
-  };
+  rollState: RollStateEventData;
   /** Roll value notification. */
   roll: number;
   /** User message notification. */
-  userMessage: {
-    message: string;
-    withCancel: boolean;
-    response: (okCancel: boolean) => Promise<void>;
-  };
+  userMessage: UserMessageEventData;
 }
 
 /**
@@ -152,7 +165,7 @@ export default class Pixel implements IPixel {
   private _info?: IAmADie = undefined;
   private _rollState: {
     face: number;
-    state: keyof typeof PixelRollStateValues;
+    state: PixelRollStateNames;
   };
 
   /** Gets this Pixel's last known connection status.*/
@@ -198,7 +211,7 @@ export default class Pixel implements IPixel {
   /** Gets the Pixel last know roll state. */
   get rollState(): {
     face: number;
-    state: keyof typeof PixelRollStateValues;
+    state: PixelRollStateNames;
   } {
     return { ...this._rollState };
   }
@@ -329,6 +342,8 @@ export default class Pixel implements IPixel {
   /**
    * Adds the given listener function to the end of the listeners array
    * for the event with the given name.
+   * See {@link PixelEventMap} for the list of events and their associated
+   * data.
    * @param eventName The name of the event.
    * @param listener The callback function.
    */
@@ -342,6 +357,8 @@ export default class Pixel implements IPixel {
   /**
    * Removes the specified listener function from the listener array
    * for the event with the given name.
+   * See {@link PixelEventMap} for the list of events and their associated
+   * data.
    * @param eventName The name of the event.
    * @param listener The callback function to unregister.
    */

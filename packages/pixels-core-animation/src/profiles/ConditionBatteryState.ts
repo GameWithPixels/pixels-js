@@ -16,11 +16,17 @@ export const BatteryStateFlagsValues = {
 } as const;
 
 /**
+ * The names for the "enum" type {@link BatteryStateFlagsValues}.
+ * @category Profile Condition
+ */
+export type BatteryStateFlagsNames = keyof typeof BatteryStateFlagsValues;
+
+/**
  * The "enum" type for {@link BatteryStateFlagsValues}.
  * @category Profile Condition
  */
 export type BatteryStateFlags =
-  typeof BatteryStateFlagsValues[keyof typeof BatteryStateFlagsValues];
+  typeof BatteryStateFlagsValues[BatteryStateFlagsNames];
 
 /**
  * Condition that triggers on battery state events.

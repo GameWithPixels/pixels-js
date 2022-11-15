@@ -14,11 +14,17 @@ export const ConnectionStateFlagsValues = {
 };
 
 /**
+ * The names for the "enum" type {@link ConnectionStateFlagsValues}.
+ * @category Profile Condition
+ */
+export type ConnectionStateFlagsNames = keyof typeof ConnectionStateFlagsValues;
+
+/**
  * The "enum" type for {@link ConnectionStateFlagsValues}.
  * @category Profile Condition
  */
 export type ConnectionStateFlags =
-  typeof ConnectionStateFlagsValues[keyof typeof ConnectionStateFlagsValues];
+  typeof ConnectionStateFlagsValues[ConnectionStateFlagsNames];
 
 /**
  * Condition that triggers on connection events.
