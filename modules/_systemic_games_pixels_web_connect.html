@@ -16,7 +16,7 @@
 <li><a href="_systemic_games_pixels_web_connect.html">@systemic-games/pixels-web-connect</a></li></ul>
 <h1>Module @systemic-games/pixels-web-connect</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/5ebb3d3/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/8bf2d55/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
 <section class="tsd-panel-group">
 <section class="tsd-panel tsd-typography">
 <a href="#pixels-web-connect" id="pixels-web-connect" style="color: inherit; text-decoration: none;">
@@ -88,7 +88,7 @@ possible outcome.</p>
 will result in an exception being thrown by one of the asynchronous call made
 to the Pixels package.</p>
 <p>Additionally the user might just cancel the request to connect to a die which
-will result in the call to <code>requestPixel()</code> throwing an exception.</p>
+will result in the call to <a href="../functions/_systemic_games_pixels_web_connect.requestPixel.html"><code>requestPixel()</code></a> throwing an exception.</p>
 
 <a href="#user-experience" id="user-experience" style="color: inherit; text-decoration: none;">
   <h2>User Experience</h2>
@@ -104,6 +104,20 @@ respond to such events.</p>
 offering the user the option to either retry the operation or fallback to
 another option (like a virtual roll) when there is a failure to communicate
 with the die.</p>
+<p>Other unexpected events will inevitably happen while using Pixels dice. For
+example the user might re-roll their die or roll the wrong one (in case of a
+multi dice setup).</p>
+<p>The overall quality of the user experience will depend as much on the quality
+of the Pixels dice as on how the user interface responds to physical events.
+It is one of the main challenges of integrating a physical device with a piece
+of software. For this link to feel true to the user, the software needs to
+reflect as much as possible what is happening in the physical world.</p>
+<p>In the case of Pixels dice, the key is in handling and responding to connection
+and roll events.</p>
+<p><em>Note:</em></p>
+<p>In order to lessen the burden on developers, we are working on higher level
+library features that will integrate in their design language the handling of
+dice connection and roll events with one or more die at a time.</p>
 
 <a href="#reading-rolls" id="reading-rolls" style="color: inherit; text-decoration: none;">
   <h2>Reading Rolls</h2>
@@ -111,8 +125,8 @@ with the die.</p>
 <p>Pixels dice automatically send their roll state when connected.
 The <a href="../classes/_systemic_games_pixels_web_connect.Pixel.html"><code>Pixel</code></a> class offer several ways to access that value:</p>
 <ul>
-<li>Get the last known roll state value with the <code>rollState</code> accessor.</li>
-<li>Subscribe to &quot;roll&quot; or &quot;rollState&quot; events with <code>addEventListener()</code>.</li>
+<li>Get the last known roll state value with the <a href="../classes/_systemic_games_pixels_web_connect.Pixel.html#rollState"><code>rollState</code></a> accessor.</li>
+<li>Subscribe to &quot;roll&quot; or &quot;rollState&quot; events with <a href="../classes/_systemic_games_pixels_web_connect.Pixel.html#addEventListener"><code>addEventListener()</code></a>.</li>
 </ul>
 <p>The <code>rollState</code> accessor is only useful when needing to query the last know
 roll state. However when waiting for a roll to happen, the preferred way is to
@@ -158,8 +172,6 @@ not working properly has the roll result displayed on screen will not match the
 physical die.</p>
 <p>When multiple users are involved, we recommend that they are shown the same
 information regarding roll results and re-rolls as the one actually rolling dice.</p>
-<p>We are currently working on adding dice management features to this library
-that will help regarding handling dice disconnection and multi-dice management.</p>
 
 <a href="#pixels-connection-status" id="pixels-connection-status" style="color: inherit; text-decoration: none;">
   <h2>Pixels Connection Status</h2>
@@ -170,7 +182,7 @@ rather the one at the instant the call is made. Because of the nature of
 wireless communications, there is a delay before the Bluetooth stack
 acknowledges that an unintended disconnection has occurred (such as one caused
 by an out of range device or a power loss).</p>
-<p>It&#39;s also worth noting that even if the returned <code>status</code> was to be accurate
+<p>It is also worth noting that even if the returned <code>status</code> was to be accurate
 the die might still be disconnected the next instant.</p>
 <p>As a consequence the following code may still result in the call to
 <code>queryRssi()</code> throwing an exception.</p>
@@ -301,8 +313,7 @@ Currently all our testing is being done with Chrome on Windows.</p>
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Other</h3>
-<div class="tsd-index-list"><a href="../classes/_systemic_games_pixels_web_connect.DataSet.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Data<wbr/>Set</span></a>
-<a href="../classes/_systemic_games_pixels_web_connect.PixelSession.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Pixel<wbr/>Session</span></a>
+<div class="tsd-index-list"><a href="../classes/_systemic_games_pixels_web_connect.PixelSession.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Pixel<wbr/>Session</span></a>
 <a href="../interfaces/_systemic_games_pixels_web_connect.PixelSessionConnectionEvent.html" class="tsd-index-link tsd-kind-interface tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Pixel<wbr/>Session<wbr/>Connection<wbr/>Event</span></a>
 <a href="../types/_systemic_games_pixels_web_connect.PixelSessionConnectionStatus.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Pixel<wbr/>Session<wbr/>Connection<wbr/>Status</span></a>
 <a href="../variables/_systemic_games_pixels_web_connect.PixelUuids.html" class="tsd-index-link tsd-kind-variable tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg><span>Pixel<wbr/>Uuids</span></a>
@@ -322,7 +333,8 @@ Currently all our testing is being done with Chrome on Windows.</p>
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Profile</h3>
-<div class="tsd-index-list"><a href="../classes/_systemic_games_pixels_web_connect.Profile.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Profile</span></a>
+<div class="tsd-index-list"><a href="../classes/_systemic_games_pixels_web_connect.DataSet.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Data<wbr/>Set</span></a>
+<a href="../classes/_systemic_games_pixels_web_connect.Profile.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Profile</span></a>
 <a href="../classes/_systemic_games_pixels_web_connect.Rule.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Rule</span></a>
 </div></section>
 <section class="tsd-index-section">
