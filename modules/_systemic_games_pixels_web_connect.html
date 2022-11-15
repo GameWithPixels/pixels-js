@@ -16,7 +16,7 @@
 <li><a href="_systemic_games_pixels_web_connect.html">@systemic-games/pixels-web-connect</a></li></ul>
 <h1>Module @systemic-games/pixels-web-connect</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/f031ed8/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/5ebb3d3/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
 <section class="tsd-panel-group">
 <section class="tsd-panel tsd-typography">
 <a href="#pixels-web-connect" id="pixels-web-connect" style="color: inherit; text-decoration: none;">
@@ -136,15 +136,20 @@ challenges. In particular the user interface should allow to mix Pixels dice
 with virtual ones, as not every user might have all the required Pixels dice.</p>
 <p>When waiting on the user to roll their dice:</p>
 <ul>
-<li>The user might roll their die one by one or all at a time. It is usually best to display the roll results as they come in rather than waiting for all them before displaying anything.</li>
-<li>Some die might disconnect while others have already been rolled, so it should be possible for the user to reconnect to any die or to roll a virtual die without loosing the rolls already made.</li>
-<li>The user might re-roll a die, accidentally or not, before rolling all the requested dice.</li>
+<li>The user might roll their die one by one or all at a time. It is usually
+best to display the roll results as they come in rather than waiting for all
+them before displaying anything.</li>
+<li>Some die might disconnect while others have already been rolled, so it
+should be possible for the user to reconnect to any die or to roll a virtual
+die without loosing the rolls already made.</li>
+<li>The user might re-roll a die, accidentally or not, before rolling all the
+requested dice.</li>
 </ul>
 <p>Regarding the last item (some dice being re-rolled), different situations may
 call for different UX decisions. It is preferable to ask the user if the
 re-roll was intended rather then force the decision on them (which can be
 frustrating).</p>
-<p>Regardless of the decision, it is strongly recommended to inform the user which
+<p>Regardless of the decision, we strongly recommend to inform the user which
 dice have been re-rolled and whether or not the new roll was taken into
 account.</p>
 <p>For example, one user may accidentally bump an already rolled die and not
@@ -182,13 +187,9 @@ It&#39;s best to always catch exceptions when invoking asynchronous methods of a
 </a>
 <p>This package relies on the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API"><em>Web Bluetooth API</em></a> for accessing Bluetooth from the browser.
 At the time of writing only Chromium based browsers such as Chrome, Edge
-and Opera have support for these APIs.</p>
-<p>Some Bluetooth APIs such as <code>getDevice()</code> are still <a href="https://chromestatus.com/feature/4797798639730688">behind</a> a flag so the library to work properly, you may need to enable Chrome&#39;s
-experimental Web Platform features:
-<code>chrome://flags/#enable-experimental-web-platform-features</code>.</p>
-<p>However be careful as it would be risky to browse the web with this flag turned
+and Opera have support for these APIs.
 on as it enables many other experimental web platform features.</p>
-<p>On Linux, you also need to enable Web Bluetooth support with this flag:
+<p>On Linux, you need to enable Web Bluetooth support with this flag:
 <code>chrome://flags/#enable-web-bluetooth</code>.</p>
 <p><em>Note:</em>
 Currently all our testing is being done with Chrome on Windows.</p>
@@ -284,9 +285,13 @@ Currently all our testing is being done with Chrome on Windows.</p>
 <a href="../types/_systemic_games_pixels_web_connect.MessageClass.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Message<wbr/>Class</span></a>
 <a href="../types/_systemic_games_pixels_web_connect.MessageOrType.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Message<wbr/>Or<wbr/>Type</span></a>
 <a href="../types/_systemic_games_pixels_web_connect.MessageType.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Message<wbr/>Type</span></a>
+<a href="../types/_systemic_games_pixels_web_connect.MessageTypeNames.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Message<wbr/>Type<wbr/>Names</span></a>
 <a href="../types/_systemic_games_pixels_web_connect.PixelDesignAndColor.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Pixel<wbr/>Design<wbr/>And<wbr/>Color</span></a>
+<a href="../types/_systemic_games_pixels_web_connect.PixelDesignAndColorNames.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Pixel<wbr/>Design<wbr/>And<wbr/>Color<wbr/>Names</span></a>
 <a href="../types/_systemic_games_pixels_web_connect.PixelRollState.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Pixel<wbr/>Roll<wbr/>State</span></a>
+<a href="../types/_systemic_games_pixels_web_connect.PixelRollStateNames.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Pixel<wbr/>Roll<wbr/>State<wbr/>Names</span></a>
 <a href="../types/_systemic_games_pixels_web_connect.TransferInstantAnimationSetAckType.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Transfer<wbr/>Instant<wbr/>Animation<wbr/>Set<wbr/>Ack<wbr/>Type</span></a>
+<a href="../types/_systemic_games_pixels_web_connect.TransferInstantAnimationsSetAckTypeNames.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Transfer<wbr/>Instant<wbr/>Animations<wbr/>Set<wbr/>Ack<wbr/>Type<wbr/>Names</span></a>
 <a href="../functions/_systemic_games_pixels_web_connect.deserializeMessage.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>deserialize<wbr/>Message</span></a>
 <a href="../functions/_systemic_games_pixels_web_connect.getMessageName.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Message<wbr/>Name</span></a>
 <a href="../functions/_systemic_games_pixels_web_connect.getMessageType.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Message<wbr/>Type</span></a>
@@ -467,11 +472,15 @@ Currently all our testing is being done with Chrome on Windows.</p>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.MessageClass.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Message<wbr/>Class</a></li>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.MessageOrType.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Message<wbr/>Or<wbr/>Type</a></li>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.MessageType.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Message<wbr/>Type</a></li>
+<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.MessageTypeNames.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Message<wbr/>Type<wbr/>Names</a></li>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.PixelDesignAndColor.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Pixel<wbr/>Design<wbr/>And<wbr/>Color</a></li>
+<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.PixelDesignAndColorNames.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Pixel<wbr/>Design<wbr/>And<wbr/>Color<wbr/>Names</a></li>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.PixelRollState.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Pixel<wbr/>Roll<wbr/>State</a></li>
+<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.PixelRollStateNames.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Pixel<wbr/>Roll<wbr/>State<wbr/>Names</a></li>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.PixelSessionConnectionStatus.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Pixel<wbr/>Session<wbr/>Connection<wbr/>Status</a></li>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.PixelStatus.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Pixel<wbr/>Status</a></li>
 <li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.TransferInstantAnimationSetAckType.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Transfer<wbr/>Instant<wbr/>Animation<wbr/>Set<wbr/>Ack<wbr/>Type</a></li>
+<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="../types/_systemic_games_pixels_web_connect.TransferInstantAnimationsSetAckTypeNames.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Transfer<wbr/>Instant<wbr/>Animations<wbr/>Set<wbr/>Ack<wbr/>Type<wbr/>Names</a></li>
 <li class="tsd-kind-variable tsd-parent-kind-module"><a href="../variables/_systemic_games_pixels_web_connect.Constants.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg>Constants</a></li>
 <li class="tsd-kind-variable tsd-parent-kind-module"><a href="../variables/_systemic_games_pixels_web_connect.PixelUuids.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg>Pixel<wbr/>Uuids</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_pixels_web_connect.colorComponentToByte.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>color<wbr/>Component<wbr/>To<wbr/>Byte</a></li>
