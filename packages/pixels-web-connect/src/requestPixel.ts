@@ -1,6 +1,7 @@
-import { Pixel, PixelUuids } from "@systemic-games/pixels-core-connect";
+import { Pixel } from "@systemic-games/pixels-core-connect";
 
 import BleSession from "./BleSession";
+import PixelDevices from "./PixelDevices";
 
 const _pixels = new Map<string, Pixel>();
 
@@ -13,16 +14,7 @@ const _pixels = new Map<string, Pixel>();
 export default async function (
   logFunc?: (msg: unknown) => void
 ): Promise<Pixel> {
-  if (!navigator?.bluetooth?.requestDevice) {
-    throw new Error(
-      "Bluetooth is not available, check that you're running in a secure environment" +
-        " and that Web Bluetooth is enabled."
-    );
-  }
-  // Request user to select a Pixel
-  const device = await navigator.bluetooth.requestDevice({
-    filters: [{ services: [PixelUuids.serviceUuid] }],
-  });
+  const device = await PixelDevices.requestDevice();
   // Keep Pixel instances
   let pixel = _pixels.get(device.id);
   if (!pixel) {

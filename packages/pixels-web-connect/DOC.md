@@ -152,16 +152,21 @@ challenges. In particular the user interface should allow to mix Pixels dice
 with virtual ones, as not every user might have all the required Pixels dice.
 
 When waiting on the user to roll their dice:
-- The user might roll their die one by one or all at a time. It is usually best to display the roll results as they come in rather than waiting for all them before displaying anything.
-- Some die might disconnect while others have already been rolled, so it should be possible for the user to reconnect to any die or to roll a virtual die without loosing the rolls already made.
-- The user might re-roll a die, accidentally or not, before rolling all the requested dice.
+- The user might roll their die one by one or all at a time. It is usually
+  best to display the roll results as they come in rather than waiting for all
+  them before displaying anything.
+- Some die might disconnect while others have already been rolled, so it
+  should be possible for the user to reconnect to any die or to roll a virtual
+  die without loosing the rolls already made.
+- The user might re-roll a die, accidentally or not, before rolling all the
+  requested dice.
 
 Regarding the last item (some dice being re-rolled), different situations may
 call for different UX decisions. It is preferable to ask the user if the
 re-roll was intended rather then force the decision on them (which can be
 frustrating).
 
-Regardless of the decision, it is strongly recommended to inform the user which
+Regardless of the decision, we strongly recommend to inform the user which
 dice have been re-rolled and whether or not the new roll was taken into
 account.
 
@@ -225,17 +230,9 @@ This package relies on the [*Web Bluetooth API*](
 ) for accessing Bluetooth from the browser.
 At the time of writing only Chromium based browsers such as Chrome, Edge
 and Opera have support for these APIs.
-
-Some Bluetooth APIs such as `getDevice()` are still [behind](
-    https://chromestatus.com/feature/4797798639730688
-) a flag so the library to work properly, you may need to enable Chrome's
-experimental Web Platform features:
-`chrome://flags/#enable-experimental-web-platform-features`.
-
-However be careful as it would be risky to browse the web with this flag turned
 on as it enables many other experimental web platform features.
 
-On Linux, you also need to enable Web Bluetooth support with this flag:
+On Linux, you need to enable Web Bluetooth support with this flag:
 `chrome://flags/#enable-web-bluetooth`.
 
 *Note:*

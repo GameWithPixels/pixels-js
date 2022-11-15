@@ -1,15 +1,6 @@
 import { PixelSession, PixelUuids } from "@systemic-games/pixels-core-connect";
 
-// Chrome: chrome://flags/#enable-experimental-web-platform-features
-// /!\ This flag might need to be set multiple time depending on how your run chrome
-// (normally v.s. from a debug session with VS Code for example)
-
-async function findBluetoothDevice(
-  systemId: string
-): Promise<BluetoothDevice | undefined> {
-  const devices = await navigator?.bluetooth?.getDevices();
-  return devices.find((d) => d.id === systemId);
-}
+import PixelDevices from "./PixelDevices";
 
 /**
  * Represents a Bluetooth session with a Pixel die,
@@ -17,26 +8,33 @@ async function findBluetoothDevice(
  */
 export default class BleSession extends PixelSession {
   private _name = "";
+  private _device: BluetoothDevice;
   private _notify?: BluetoothRemoteGATTCharacteristic;
   private _write?: BluetoothRemoteGATTCharacteristic;
+
+  constructor(deviceSystemId: string) {
+    super(deviceSystemId);
+    const device = PixelDevices.getDevice(deviceSystemId);
+    if (!device) {
+      throw new Error(
+        `No known Bluetooth device with system id: ${deviceSystemId}`
+      );
+    }
+    this._device = device;
+  }
 
   get pixelName(): string {
     return this._name;
   }
 
   async connect(): Promise<void> {
-    const device = await findBluetoothDevice(this.pixelSystemId);
-    if (!device) {
-      throw new Error("Device not found");
-    }
-
     // Update name
-    this._name = device.name ?? "";
+    this._name = this._device.name ?? "";
 
     // Subscribe to disconnect event
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const mySession = this;
-    device.addEventListener("gattserverdisconnected", (/*ev: Event*/) => {
+    this._device.addEventListener("gattserverdisconnected", (/*ev: Event*/) => {
       // let reason: ConnectionEventReason = ConnectionEventReasonValues.Success;
       // if (this._connected) {
       //   // Disconnect not called by user code
@@ -49,7 +47,7 @@ export default class BleSession extends PixelSession {
       mySession._notifyConnectionEvent("disconnected");
     });
 
-    const server = device.gatt;
+    const server = this._device.gatt;
     if (server) {
       if (!server.connected) {
         // Attempt to connect.
@@ -72,8 +70,7 @@ export default class BleSession extends PixelSession {
   }
 
   async disconnect(): Promise<void> {
-    const device = await findBluetoothDevice(this.pixelSystemId);
-    device?.gatt?.disconnect();
+    this._device.gatt?.disconnect();
   }
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {

@@ -20,16 +20,7 @@ This package relies on the [*Web Bluetooth API*](
 At the time of writing only Chromium based browsers such as Chrome, Edge
 and Opera have support for these APIs.
 
-Some Bluetooth APIs such as `getDevice()` are still [behind](
-    https://chromestatus.com/feature/4797798639730688
-) a flag so the library to work properly, you may need to enable Chrome's
-experimental Web Platform features:
-`chrome://flags/#enable-experimental-web-platform-features`.
-
-However be careful as it would be risky to browse the web with this flag turned
-on as it enables many other experimental web platform features.
-
-On Linux, you also need to enable Web Bluetooth support with this flag:
+On Linux, you need to enable Web Bluetooth support with this flag:
 `chrome://flags/#enable-web-bluetooth`.
 
 *Note:*
