@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/react-native-pixels-connect",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Connect to Pixels dice using React Native.",
   "main": "dist/commonjs/index",
   "module": "dist/module/index",
@@ -46,9 +46,9 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
       "events": "^3.3.0",
-      "@systemic-games/pixels-core-connect": "*",
-      "@systemic-games/pixels-core-utils": "*",
-      "@systemic-games/react-native-bluetooth-le": "*"
+      "@systemic-games/pixels-core-connect": "1.0.2",
+      "@systemic-games/pixels-core-utils": "1.0.2",
+      "@systemic-games/react-native-bluetooth-le": "1.0.0"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
