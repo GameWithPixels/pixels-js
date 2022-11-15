@@ -16,7 +16,7 @@
 <li><a href="_systemic_games_pixels_web_connect.html">@systemic-games/pixels-web-connect</a></li></ul>
 <h1>Module @systemic-games/pixels-web-connect</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/ad2c8e5/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/f031ed8/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
 <section class="tsd-panel-group">
 <section class="tsd-panel tsd-typography">
 <a href="#pixels-web-connect" id="pixels-web-connect" style="color: inherit; text-decoration: none;">
@@ -32,7 +32,7 @@ using Bluetooth Low Energy.</p>
 <p>To learn more about Pixels dice please checkout our <a href="https://www.kickstarter.com/projects/pixels-dice/pixels-the-electronic-dice">Kickstarter</a> page.</p>
 <p>Please open a <a href="https://github.com/GameWithPixels/PixelsWebPackage/issues">ticket</a> in GitHub if you&#39;re having any issue.</p>
 <p>We also have libraries for React Native, Unity, .NET, C++ and python.
-See our [GitHub] main page for more information.</p>
+See our <a href="https://github.com/GameWithPixels">GitHub</a> main page for more information.</p>
 
 <a href="#an-open-source-ecosystem" id="an-open-source-ecosystem" style="color: inherit; text-decoration: none;">
   <h2>An Open Source Ecosystem</h2>
@@ -44,8 +44,8 @@ communication.</p>
 <p>To communicate with a Pixels die, one has to connect to it using the Bluetooth
 Low Energy protocol, and then retrieve the two Bluetooth characteristics that
 the die is using to communicate with other Bluetooth devices (note: a Bluetooth
-characteristic is a like wireless communication channel).</p>
-<p>One of a characteristic is used to send messages to the die and the other one
+characteristic is like a wireless communication channel).</p>
+<p>One of the two characteristics is used to send messages to the die and the other one
 to receive messages from it.</p>
 <p>The open source Pixels <a href="https://github.com/GameWithPixels/DiceFirmware/">firmware</a> lists all the supported messages and their associated data structure.</p>
 <p>This open knowledge and reliance on the Bluetooth standard enables developers
@@ -56,7 +56,7 @@ stack.</p>
 Pixels within their project. So we&#39;ve picked a selection of platforms for which we provide support libraries, such as this one.</p>
 <p>Those libraries encapsulate the details of the Bluetooth protocol and Pixels
 message serialization so the developer only need to write a few lines of code
-without priori knowledge to start communicating with Pixels dice.</p>
+without prior knowledge to start communicating with Pixels dice.</p>
 
 <a href="#the-challenge-of-wireless-communications" id="the-challenge-of-wireless-communications" style="color: inherit; text-decoration: none;">
   <h2>The Challenge Of Wireless Communications</h2>
@@ -73,8 +73,8 @@ asynchronously so this code might take longer than anticipated to execute.</p>
 milliseconds to get its roll state. But there are a number of reasons such as
 interferences or the distance between devices that may slow down
 communications.</p>
-<p>The above code might also never completes as wireless communications are by
-nature not reliable. The Bluetooth protocol is designed to help with that but
+<p>The above code might also never complete as wireless communications are by
+nature unreliable. The Bluetooth protocol is designed to help with that but
 there are a number of things that may happen and for which failure is the only
 possible outcome.</p>
 <p>Here is a short list of the most common cause of communication failures:</p>
@@ -82,13 +82,13 @@ possible outcome.</p>
 <li>Device is taken out of range of by the user.</li>
 <li>Device is turned off or restarted by the user.</li>
 <li>Device ran out of battery.</li>
-<li>Too much wireless interferences.</li>
+<li>Too much wireless interference.</li>
 </ul>
-<p>Any of those issue might happen while our code sample is being executed and
-will result with an exception being thrown by one of the asynchronous call made
+<p>Any of these issues might happen while our code sample is being executed and
+will result in an exception being thrown by one of the asynchronous call made
 to the Pixels package.</p>
-<p>Also the user might just cancel the request to connect to a die which results
-with the call to <code>requestPixel()</code> throwing an exception.</p>
+<p>Additionally the user might just cancel the request to connect to a die which
+will result in the call to <code>requestPixel()</code> throwing an exception.</p>
 
 <a href="#user-experience" id="user-experience" style="color: inherit; text-decoration: none;">
   <h2>User Experience</h2>
@@ -111,7 +111,7 @@ with the die.</p>
 <p>Pixels dice automatically send their roll state when connected.
 The <a href="../classes/_systemic_games_pixels_web_connect.Pixel.html"><code>Pixel</code></a> class offer several ways to access that value:</p>
 <ul>
-<li>Get the last know roll state value with the <code>rollState</code> accessor.</li>
+<li>Get the last known roll state value with the <code>rollState</code> accessor.</li>
 <li>Subscribe to &quot;roll&quot; or &quot;rollState&quot; events with <code>addEventListener()</code>.</li>
 </ul>
 <p>The <code>rollState</code> accessor is only useful when needing to query the last know
