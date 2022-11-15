@@ -15,7 +15,9 @@ Please open a [ticket](
 ) in GitHub if you're having any issue.
 
 We also have libraries for React Native, Unity, .NET, C++ and python.
-See our [GitHub] main page for more information.
+See our [GitHub](
+    https://github.com/GameWithPixels
+) main page for more information.
 
 ## An Open Source Ecosystem
 
@@ -27,9 +29,9 @@ communication.
 To communicate with a Pixels die, one has to connect to it using the Bluetooth
 Low Energy protocol, and then retrieve the two Bluetooth characteristics that
 the die is using to communicate with other Bluetooth devices (note: a Bluetooth
-characteristic is a like wireless communication channel).
+characteristic is like a wireless communication channel).
 
-One of a characteristic is used to send messages to the die and the other one
+One of the two characteristics is used to send messages to the die and the other one
 to receive messages from it.
 
 The open source Pixels [firmware](
@@ -46,7 +48,7 @@ Pixels within their project. So we've picked a selection of platforms for which 
 
 Those libraries encapsulate the details of the Bluetooth protocol and Pixels
 message serialization so the developer only need to write a few lines of code
-without priori knowledge to start communicating with Pixels dice.
+without prior knowledge to start communicating with Pixels dice.
 
 ## The Challenge Of Wireless Communications
 
@@ -74,8 +76,8 @@ milliseconds to get its roll state. But there are a number of reasons such as
 interferences or the distance between devices that may slow down
 communications.
 
-The above code might also never completes as wireless communications are by
-nature not reliable. The Bluetooth protocol is designed to help with that but
+The above code might also never complete as wireless communications are by
+nature unreliable. The Bluetooth protocol is designed to help with that but
 there are a number of things that may happen and for which failure is the only
 possible outcome.
 
@@ -83,14 +85,14 @@ Here is a short list of the most common cause of communication failures:
 - Device is taken out of range of by the user.
 - Device is turned off or restarted by the user.
 - Device ran out of battery.
-- Too much wireless interferences.
+- Too much wireless interference.
 
-Any of those issue might happen while our code sample is being executed and
-will result with an exception being thrown by one of the asynchronous call made
+Any of these issues might happen while our code sample is being executed and
+will result in an exception being thrown by one of the asynchronous call made
 to the Pixels package.
 
-Also the user might just cancel the request to connect to a die which results
-with the call to `requestPixel()` throwing an exception.
+Additionally the user might just cancel the request to connect to a die which
+will result in the call to `requestPixel()` throwing an exception.
 
 ## User Experience
 
@@ -114,7 +116,7 @@ Pixels dice automatically send their roll state when connected.
 The [`Pixel`](
     ../classes/_systemic_games_pixels_web_connect.Pixel.html    
 ) class offer several ways to access that value:
-- Get the last know roll state value with the `rollState` accessor.
+- Get the last known roll state value with the `rollState` accessor.
 - Subscribe to "roll" or "rollState" events with `addEventListener()`.
 
 The `rollState` accessor is only useful when needing to query the last know
