@@ -92,7 +92,9 @@ will result in an exception being thrown by one of the asynchronous call made
 to the Pixels package.
 
 Additionally the user might just cancel the request to connect to a die which
-will result in the call to `requestPixel()` throwing an exception.
+will result in the call to [`requestPixel()`](
+    ../functions/_systemic_games_pixels_web_connect.requestPixel.html
+) throwing an exception.
 
 ## User Experience
 
@@ -110,14 +112,37 @@ offering the user the option to either retry the operation or fallback to
 another option (like a virtual roll) when there is a failure to communicate
 with the die.
 
+Other unexpected events will inevitably happen while using Pixels dice. For
+example the user might re-roll their die or roll the wrong one (in case of a
+multi dice setup).
+
+The overall quality of the user experience will depend as much on the quality
+of the Pixels dice as on how the user interface responds to physical events.
+It is one of the main challenges of integrating a physical device with a piece
+of software. For this link to feel true to the user, the software needs to
+reflect as much as possible what is happening in the physical world.
+
+In the case of Pixels dice, the key is in handling and responding to connection
+and roll events.
+
+*Note:*
+
+In order to lessen the burden on developers, we are working on higher level
+library features that will integrate in their design language the handling of
+dice connection and roll events with one or more die at a time.
+
 ## Reading Rolls
 
 Pixels dice automatically send their roll state when connected.
 The [`Pixel`](
     ../classes/_systemic_games_pixels_web_connect.Pixel.html    
 ) class offer several ways to access that value:
-- Get the last known roll state value with the `rollState` accessor.
-- Subscribe to "roll" or "rollState" events with `addEventListener()`.
+- Get the last known roll state value with the [`rollState`](
+    ../classes/_systemic_games_pixels_web_connect.Pixel.html#rollState
+) accessor.
+- Subscribe to "roll" or "rollState" events with [`addEventListener()`](
+    ../classes/_systemic_games_pixels_web_connect.Pixel.html#addEventListener
+).
 
 The `rollState` accessor is only useful when needing to query the last know
 roll state. However when waiting for a roll to happen, the preferred way is to
@@ -178,9 +203,6 @@ physical die.
 When multiple users are involved, we recommend that they are shown the same
 information regarding roll results and re-rolls as the one actually rolling dice.
 
-We are currently working on adding dice management features to this library
-that will help regarding handling dice disconnection and multi-dice management.
-
 ## Pixels Connection Status
 
 The `Pixel` class lets the developer check for the die connection [status](
@@ -193,7 +215,7 @@ wireless communications, there is a delay before the Bluetooth stack
 acknowledges that an unintended disconnection has occurred (such as one caused
 by an out of range device or a power loss).
 
-It's also worth noting that even if the returned `status` was to be accurate
+It is also worth noting that even if the returned `status` was to be accurate
 the die might still be disconnected the next instant.
 
 As a consequence the following code may still result in the call to
