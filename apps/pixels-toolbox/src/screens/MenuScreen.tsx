@@ -15,9 +15,9 @@ import {
 import AppPage from "~/components/AppPage";
 import PixelInfoBox from "~/components/PixelInfoBox";
 import Spacer from "~/components/Spacer";
+import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
 import { type RootStackParamList } from "~/navigation";
 import globalStyles, { sr } from "~/styles";
-import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
 
 function MenuPage() {
   const navigation =

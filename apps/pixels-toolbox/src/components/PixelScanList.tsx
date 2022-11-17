@@ -11,8 +11,8 @@ import {
 
 import PixelInfoBox from "~/components/PixelInfoBox";
 import Spacer from "~/components/Spacer";
+import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
 import globalStyles, { sr } from "~/styles";
-import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
 
 export default function ({
   onSelected,

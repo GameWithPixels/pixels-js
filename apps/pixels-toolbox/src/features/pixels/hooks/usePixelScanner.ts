@@ -5,7 +5,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import SequentialPromiseQueue from "./SequentialPromiseQueue";
+import SequentialPromiseQueue from "~/utils/SequentialPromiseQueue";
 
 // Return whether 2 scanned dice are the same
 // Note: we can't rely on the name as it may change overtime

@@ -3,7 +3,7 @@ import { useErrorHandler } from "react-error-boundary";
 import { runOnJS } from "react-native-reanimated";
 import { Frame, useFrameProcessor } from "react-native-vision-camera";
 
-import { RbgColor } from "./PixelIdDecoder";
+import { RbgColor } from "./../PixelIdDecoder";
 import usePixelIdDecoder from "./usePixelIdDecoder";
 
 export type FrameProcessor = (frame: Frame) => void;

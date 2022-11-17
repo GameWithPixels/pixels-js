@@ -41,9 +41,9 @@ import defaultProfilesJson from "~/../assets/default-profiles.json";
 import AppPage from "~/components/AppPage";
 import SelectPixel from "~/components/SelectPixel";
 import Spacer from "~/components/Spacer";
-import range from "~/range";
+import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
-import usePixelStatus from "~/usePixelStatus";
+import range from "~/utils/range";
 
 // function test() {
 //   try {

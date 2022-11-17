@@ -11,10 +11,11 @@ import ProgressBar from "./ProgressBar";
 import TaskGroupComponent from "./TaskGroupContainer";
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
-import { DieType, getLedCount } from "~/features/DieType";
 import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
+import { DieType, getLedCount } from "~/features/pixels/DieType";
+import usePixelScanner from "~/features/pixels/hooks/usePixelScanner";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
@@ -25,8 +26,7 @@ import {
 } from "~/features/validation/ValidationFormFactor";
 import ValidationTests from "~/features/validation/ValidationTests";
 import standardProfile from "~/standardProfile";
-import toLocaleDateTimeString from "~/toLocaleDateTimeString";
-import usePixelScanner from "~/usePixelScanner";
+import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 export interface ValidationTestsSettings {
   formFactor: ValidationFormFactor;

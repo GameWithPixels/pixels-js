@@ -13,9 +13,9 @@ import {
 
 import AppPage from "~/components/AppPage";
 import SelectPixel from "~/components/SelectPixel";
+import usePixelRoll from "~/features/pixels/hooks/usePixelRoll";
+import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
-import usePixelRoll from "~/usePixelRoll";
-import usePixelStatus from "~/usePixelStatus";
 
 function RollPage() {
   const errorHandler = useErrorHandler();

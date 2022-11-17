@@ -11,8 +11,8 @@ import {
 import PixelInfoBox from "./PixelInfoBox";
 import Spacer from "./Spacer";
 
+import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
 import globalStyles, { sr } from "~/styles";
-import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
 
 interface SelectPixelProps {
   setSelectedPixel: (pixel: Pixel) => void;

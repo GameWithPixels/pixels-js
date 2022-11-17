@@ -5,7 +5,7 @@ import Spacer from "./Spacer";
 
 import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import globalStyles from "~/styles";
-import toLocaleDateTimeString from "~/toLocaleDateTimeString";
+import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 export interface DfuFileProps {
   fileInfo: DfuFileInfo;

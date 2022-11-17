@@ -6,10 +6,7 @@ import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Sentry from "sentry-expo";
 
-import StatsScreen from "./screens/StatsScreen";
-import ValidationScreen from "./screens/ValidationScreen";
-import useBluetooth from "./useBluetooth";
-
+import useBluetooth from "~/features/pixels/hooks/useBluetooth";
 import { type RootStackParamList } from "~/navigation";
 import AnimationsScreen from "~/screens/AnimationsScreen";
 import ConnectScreen from "~/screens/ConnectScreen";
@@ -17,8 +14,10 @@ import DfuScreen from "~/screens/DfuScreen";
 import MenuScreen from "~/screens/MenuScreen";
 import RollScreen from "~/screens/RollScreen";
 import SelectDfuFileScreen from "~/screens/SelectDfuFileScreen";
+import StatsScreen from "~/screens/StatsScreen";
+import ValidationScreen from "~/screens/ValidationScreen";
 import { sr } from "~/styles";
-import "./i18n";
+import "~/i18n";
 
 // Disable this warning that comes from NativeBase
 LogBox.ignoreLogs(["EventEmitter.removeListener"]);

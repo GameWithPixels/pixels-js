@@ -30,10 +30,10 @@ import AppPage from "~/components/AppPage";
 import ErrorFallback from "~/components/ErrorFallback";
 import PixelInfoBox from "~/components/PixelInfoBox";
 import Spacer from "~/components/Spacer";
+import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
+import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import standardProfile from "~/standardProfile";
 import globalStyles, { sr } from "~/styles";
-import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
-import usePixelStatus from "~/usePixelStatus";
 
 const rainbowEditDataSet = new EditDataSet({
   animations: [

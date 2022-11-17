@@ -34,7 +34,8 @@ import {
   WaitFaceUp,
   TurnOffDevice,
 } from "~/components/ValidationTestsComponents";
-import { DieType, DieTypes } from "~/features/DieType";
+import { DieType, DieTypes } from "~/features/pixels/DieType";
+import usePixelIdDecoderFrameProcessor from "~/features/pixels/hooks/usePixelIdDecoderFrameProcessor";
 import {
   getTaskResult,
   getTaskResultEmoji,
@@ -47,7 +48,6 @@ import {
   getFormFactorNiceName,
   ValidationFormFactor,
 } from "~/features/validation/ValidationFormFactor";
-import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 
 function SelectFormFactorPage({
   onSelected,

@@ -32,10 +32,10 @@ import DfuFile from "~/components/DfuFile";
 import PixelInfoBox from "~/components/PixelInfoBox";
 import Spacer from "~/components/Spacer";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
+import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
 import { DfuScreenProps } from "~/navigation";
 import globalStyles, { sr } from "~/styles";
-import toLocaleDateTimeString from "~/toLocaleDateTimeString";
-import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
+import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 type ExtendedDfuState = DfuState | "Initializing";
 

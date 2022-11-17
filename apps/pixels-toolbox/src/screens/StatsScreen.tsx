@@ -16,8 +16,8 @@ import {
 import AppPage from "~/components/AppPage";
 import SelectPixel from "~/components/SelectPixel";
 import Spacer from "~/components/Spacer";
+import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles from "~/styles";
-import usePixelStatus from "~/usePixelStatus";
 
 function StatsPage() {
   const errorHandler = useErrorHandler();

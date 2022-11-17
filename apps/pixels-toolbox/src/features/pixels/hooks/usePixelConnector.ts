@@ -6,9 +6,10 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 
-import SequentialPromiseQueue from "./SequentialPromiseQueue";
 import usePixelScanner from "./usePixelScanner";
 import usePixelStatus from "./usePixelStatus";
+
+import SequentialPromiseQueue from "~/utils/SequentialPromiseQueue";
 
 export interface PixelConnectorState {
   status: "disconnected" | "scanning" | "connecting" | "connected";
