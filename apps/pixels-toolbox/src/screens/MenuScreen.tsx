@@ -2,11 +2,16 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import {
-  StyleSheet,
-  Text,
-  View,
+  IButtonProps,
+  Box,
   Button,
+  Center,
   FlatList,
+  HStack,
+  Text,
+} from "native-base";
+import { useState, useEffect } from "react";
+import {
   Platform,
   useWindowDimensions,
   // eslint-disable-next-line import/namespace
@@ -14,115 +19,107 @@ import {
 
 import AppPage from "~/components/AppPage";
 import PixelInfoBox from "~/components/PixelInfoBox";
-import Spacer from "~/components/Spacer";
 import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
 import { type RootStackParamList } from "~/navigation";
-import globalStyles, { sr } from "~/styles";
+import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+
+const fwDate = new Date();
+
+function EmojiButton(props: IButtonProps) {
+  return (
+    <Button
+      size="xs"
+      _text={{ fontSize: "xl" }}
+      p="1%"
+      variant="emoji"
+      {...props}
+    />
+  );
+}
 
 function MenuPage() {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "Menu">>();
+  useEffect(() => {
+    navigation.setOptions({ title: `Toolbox v${Constants.manifest?.version}` });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const window = useWindowDimensions();
   const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
     sortedByName: true,
   });
-
+  const [showInfo, setShowInfo] = useState(false);
   return (
     <>
-      <Spacer />
-      <View style={styles.box}>
-        <Text
-          style={styles.textBold}
-        >{`Toolbox v${Constants.manifest?.version}`}</Text>
-        <Spacer />
+      {/* Takes all available space except for footer (see after this Box) */}
+      <Box flex={1} alignItems="center">
         <Button
-          onPress={() => navigation.navigate("Connect")}
-          title="Go to Connect"
-        />
-        <Spacer />
-        <Button
-          onPress={() => navigation.navigate("SelectDfuFile")}
-          title="Go to DFU"
-        />
-        <Spacer />
-        <Button
-          onPress={() => navigation.navigate("Animations")}
-          title="Go to Animations"
-        />
-        <Spacer />
-        <Button
+          variant="solid"
           onPress={() => navigation.navigate("Validation")}
-          title="Go to Validation"
-        />
-        <Spacer />
-        <Button
-          onPress={() => navigation.navigate("Stats")}
-          title="Go to Stats"
-        />
-        <Spacer />
-        <Button
-          onPress={() => navigation.navigate("Roll")}
-          title="Go to Roll"
-        />
-        <Spacer />
-      </View>
-      <View style={styles.containerScanHeader}>
-        <Text
-          style={styles.textBold}
-        >{`Scanned Pixels (${scannedPixels.length}):`}</Text>
-        <Spacer />
-        <Button
-          onPress={() => scannerDispatch("clear")}
-          title="Clear Scan List"
-        />
-      </View>
-      <View style={styles.containerScanList}>
+        >
+          Go To Validation
+        </Button>
+        <Center flexDirection="row" mb="3%">
+          <Text>Selected firmware:</Text>
+          <Text italic>{toLocaleDateTimeString(fwDate)}</Text>
+          <SmallButton
+            ml="3%"
+            onPress={() => navigation.navigate("SelectDfuFile")}
+          >
+            📂
+          </SmallButton>
+        </Center>
+        <Center flexDirection="row" mb="3%">
+          <Text
+            variant="h2"
+            mt="3%"
+          >{`Scanned Pixels (${scannedPixels.length}):`}</Text>
+          <SmallButton ml="3%" onPress={() => scannerDispatch("clear")}>
+            🔄
+          </SmallButton>
+          <SmallButton ml="3%" onPress={() => setShowInfo((b) => !b)}>
+            ℹ️
+          </SmallButton>
+        </Center>
         {scannedPixels.length ? (
           <FlatList
-            ItemSeparatorComponent={Spacer}
-            data={scannedPixels}
+            w="90%"
+            data={Array(10)
+              .fill(scannedPixels[0])
+              .map((p, i) => {
+                return { ...p, pixelId: i.toString() };
+              })}
             renderItem={(itemInfo) => (
-              <View style={styles.box}>
-                <PixelInfoBox pixel={itemInfo.item} />
-              </View>
+              <PixelInfoBox
+                pixel={itemInfo.item}
+                showInfo={showInfo}
+                onConnectPressed={() => {}}
+                onDfuPressed={() => {}}
+              />
             )}
             keyExtractor={(p) => p.pixelId.toString()}
-            contentContainerStyle={{ flexGrow: 1 }}
+            ItemSeparatorComponent={() => <Box h="2%" />}
           />
         ) : (
-          <Text style={styles.text}>No Pixel found so far...</Text>
+          <Text italic>No Pixel found so far...</Text>
         )}
-      </View>
+      </Box>
       {/* Footer showing app and system info */}
-      <View style={styles.containerFooter}>
-        <Text style={styles.textItalic}>
+      <Center mt="2%">
+        <Text italic>
           {`Screen: ${Math.round(window.width)}` +
             `x${Math.round(window.height)} - ` +
             `OS: ${Platform.OS} ${Platform.Version}`}
         </Text>
-      </View>
+      </Center>
     </>
   );
 }
 
 export default function () {
   return (
-    <AppPage style={styles.container}>
+    <AppPage>
       <MenuPage />
     </AppPage>
   );
 }
-
-const styles = StyleSheet.create({
-  ...globalStyles,
-  containerScanHeader: {
-    margin: sr(20),
-  },
-  containerScanList: {
-    alignItems: "center",
-    justifyContent: "flex-start",
-    margin: sr(10),
-    flex: 1,
-    flexGrow: 1,
-  },
-});

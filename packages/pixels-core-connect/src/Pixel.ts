@@ -39,10 +39,10 @@ import {
   NotifyUserAck,
   serializeMessage,
   SetName,
-  PixelDesignAndColor,
   PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelRollStateNames,
+  PixelDesignAndColorNames,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import createTypedEventEmitter, {
@@ -139,8 +139,12 @@ export interface IPixel {
   readonly pixelId: number;
   readonly name: string;
   readonly ledCount: number;
-  readonly designAndColor: PixelDesignAndColor;
+  readonly designAndColor: PixelDesignAndColorNames;
   readonly buildTimestamp: number;
+  readonly rssi: number;
+  readonly batteryLevel: number; // Percentage
+  readonly rollState: PixelRollStateNames;
+  readonly currentFace: number; // Face value (not index)
 }
 
 /**
@@ -199,8 +203,11 @@ export default class Pixel implements IPixel {
   }
 
   /** Gets the Pixel design and color. */
-  get designAndColor(): PixelDesignAndColor {
-    return this._info?.designAndColor ?? PixelDesignAndColorValues.unknown;
+  get designAndColor(): PixelDesignAndColorNames {
+    return (
+      getPixelEnumName(this._info?.designAndColor, PixelDesignAndColorValues) ??
+      "unknown"
+    );
   }
 
   /** Gets the Pixel firmware build timestamp (Unix epoch). */
@@ -208,12 +215,21 @@ export default class Pixel implements IPixel {
     return this._info?.buildTimestamp ?? 0;
   }
 
+  get rssi(): number {
+    return 0;
+  }
+
+  get batteryLevel(): number {
+    return 0;
+  }
+
   /** Gets the Pixel last know roll state. */
-  get rollState(): {
-    face: number;
-    state: PixelRollStateNames;
-  } {
-    return { ...this._rollState };
+  get rollState(): PixelRollStateNames {
+    return this._rollState.state;
+  }
+
+  get currentFace(): number {
+    return this._rollState.face;
   }
 
   /**
@@ -241,7 +257,7 @@ export default class Pixel implements IPixel {
         face: msg.faceIndex + 1,
         state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
       };
-      this._evEmitter.emit("rollState", this.rollState);
+      this._evEmitter.emit("rollState", { ...this._rollState });
       if (msg.state === PixelRollStateValues.onFace) {
         this._evEmitter.emit("roll", msg.faceIndex + 1);
       }

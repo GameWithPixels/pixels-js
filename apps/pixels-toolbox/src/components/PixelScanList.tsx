@@ -1,18 +1,9 @@
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
+import { Button, Center, FlatList, Spacer, Text } from "native-base";
 import { useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  FlatList,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
 
 import PixelInfoBox from "~/components/PixelInfoBox";
-import Spacer from "~/components/Spacer";
 import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
-import globalStyles, { sr } from "~/styles";
 
 export default function ({
   onSelected,
@@ -28,55 +19,35 @@ export default function ({
     scannerDispatch("start");
   }, [scannerDispatch]);
   return (
-    <>
-      <View style={styles.containerScanHeader}>
-        <Text
-          style={styles.textBold}
-        >{`Scanned Pixels (${scannedPixels.length}):`}</Text>
-        <Spacer />
-        <Button onPress={onClose} title="Close" />
-        <Spacer />
-        <Button
-          onPress={() => scannerDispatch("clear")}
-          title="Clear Scan List"
-        />
-      </View>
-      <View style={styles.containerScanList}>
+    <Center>
+      <Center>
+        <Text bold>{`Scanned Pixels (${scannedPixels.length}):`}</Text>
+        <Button onPress={onClose}>Close</Button>
+        <Button onPress={() => scannerDispatch("clear")}>
+          Clear Scan List
+        </Button>
+      </Center>
+      <Center>
         {scannedPixels.length ? (
           <FlatList
             ItemSeparatorComponent={Spacer}
             data={scannedPixels}
             renderItem={(itemInfo) => (
-              <View style={styles.box}>
+              <Center>
                 <PixelInfoBox pixel={itemInfo.item}>
-                  <Button
-                    onPress={() => onSelected(itemInfo.item)}
-                    title="Select"
-                  />
+                  <Button onPress={() => onSelected(itemInfo.item)}>
+                    Select
+                  </Button>
                 </PixelInfoBox>
-              </View>
+              </Center>
             )}
             keyExtractor={(p) => p.pixelId.toString()}
             contentContainerStyle={{ flexGrow: 1 }}
           />
         ) : (
-          <Text style={styles.text}>No Pixel found so far...</Text>
+          <Text>No Pixel found so far...</Text>
         )}
-      </View>
-    </>
+      </Center>
+    </Center>
   );
 }
-
-const styles = StyleSheet.create({
-  ...globalStyles,
-  containerScanHeader: {
-    margin: sr(20),
-  },
-  containerScanList: {
-    alignItems: "center",
-    justifyContent: "flex-start",
-    margin: sr(10),
-    flex: 1,
-    flexGrow: 1,
-  },
-});
