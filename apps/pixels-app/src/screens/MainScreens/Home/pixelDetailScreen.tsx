@@ -3,7 +3,8 @@ import {
   AntDesign,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   BatteryLevel,
   Card,
@@ -26,9 +27,84 @@ import {
   Button,
   ChevronRightIcon,
   Pressable,
+  AddIcon,
 } from "native-base";
 
-import { PixelDetailScreenRouteProp } from "~/Navigation";
+import {
+  PixelDetailScreenParamList,
+  PixelDetailScreenRouteProp,
+} from "~/Navigation";
+
+function DiceRolls() {
+  return (
+    <Card
+      minW={10}
+      w="180px"
+      maxW="200px"
+      verticalSpace={2}
+      alignItems="center"
+      bg="primary.300"
+    >
+      <HStack alignItems="center" space={3}>
+        <FontAwesome5 name="dice" size={24} color="black" />
+        <Text bold fontSize="xl">
+          Rolls
+        </Text>
+      </HStack>
+      <HStack space={2} alignItems="center" p={2}>
+        <Box w="50%">
+          <Text>Session</Text>
+          <Divider bg="white" />
+          <Text fontSize="xl">26</Text>
+        </Box>
+        <Box w="50%">
+          <Text>Lifetime</Text>
+          <Divider bg="white" />
+          <Text isTruncated fontSize="xl">
+            285
+          </Text>
+        </Box>
+      </HStack>
+    </Card>
+  );
+}
+function DiceUseTime() {
+  return (
+    <Card
+      minW={10}
+      w="180px"
+      maxW="200px"
+      verticalSpace={2}
+      alignItems="center"
+      bg="primary.300"
+    >
+      <HStack alignItems="center" space={3}>
+        <MaterialCommunityIcons name="clock" size={24} color="black" />
+        <Text bold fontSize="xl">
+          Use Time
+        </Text>
+      </HStack>
+      <HStack space={2} alignItems="center" p={2}>
+        <Box w="50%">
+          <Text>Session</Text>
+          <Divider bg="white" />
+          <HStack alignItems="baseline">
+            <Text fontSize="xl">32 </Text>
+            <Text>min</Text>
+          </HStack>
+        </Box>
+        <Box w="50%">
+          <Text>Lifetime</Text>
+          <Divider bg="white" />
+          <HStack alignItems="baseline">
+            <Text fontSize="xl">3.5 </Text>
+            <Text>h</Text>
+          </HStack>
+        </Box>
+      </HStack>
+    </Card>
+  );
+}
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -49,8 +125,8 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 export default function PixelDetailScreen() {
   //Will be used when the correct nested screen are in place
-  // const navigation =
-  //   useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
+  const navigation =
+    useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
   const route = useRoute<PixelDetailScreenRouteProp>();
   const { pixelName } = route.params;
   return (
@@ -97,83 +173,42 @@ export default function PixelDetailScreen() {
             </VStack>
           </HStack>
         </Center>
-        <ProfilesScrollList
-          availableProfiles={[
-            { profileName: "Rainbow" },
-            { profileName: "Waterfall" },
-            { profileName: "Red to Blue" },
-            { profileName: "Speak Numbers" },
-            { profileName: "Custom Profile" },
-            { profileName: "Flashy" },
-            { profileName: "Explosion" },
-          ]}
-        />
+
+        {/* {Profiles horizontal scroll list} */}
+        <Box>
+          <HStack alignItems="center" space={2} paddingBottom={2}>
+            <AntDesign name="profile" size={24} color="white" />
+            <Text bold>Recent profiles :</Text>
+            <Spacer />
+            <Pressable
+              onPress={() => {
+                navigation.navigate("ProfilesScreen");
+              }}
+            >
+              <HStack alignItems="center" space={1}>
+                <Text>More profiles </Text>
+                <AddIcon />
+              </HStack>
+            </Pressable>
+          </HStack>
+          <ProfilesScrollList
+            availableProfiles={[
+              { profileName: "Rainbow" },
+              { profileName: "Waterfall" },
+              { profileName: "Red to Blue" },
+              { profileName: "Speak Numbers" },
+              { profileName: "Custom Profile" },
+              { profileName: "Flashy" },
+              { profileName: "Explosion" },
+            ]}
+          />
+        </Box>
 
         {/* {DiceStats} */}
         <Center width="100%" maxW="100%" h="150px">
           <HStack space={4}>
-            <Card
-              minW={10}
-              w="180px"
-              maxW="200px"
-              verticalSpace={2}
-              alignItems="center"
-              bg="primary.300"
-            >
-              <HStack alignItems="center" space={3}>
-                <FontAwesome5 name="dice" size={24} color="black" />
-                <Text bold fontSize="xl">
-                  Rolls
-                </Text>
-              </HStack>
-              <HStack space={2} alignItems="center" p={2}>
-                <Box w="50%">
-                  <Text>Session</Text>
-                  <Divider bg="white" />
-                  <Text fontSize="xl">26</Text>
-                </Box>
-                <Box w="50%">
-                  <Text>Lifetime</Text>
-                  <Divider bg="white" />
-                  <Text isTruncated fontSize="xl">
-                    285
-                  </Text>
-                </Box>
-              </HStack>
-            </Card>
-            <Card
-              minW={10}
-              w="180px"
-              maxW="200px"
-              verticalSpace={2}
-              alignItems="center"
-              bg="primary.300"
-            >
-              <HStack alignItems="center" space={3}>
-                <MaterialCommunityIcons name="clock" size={24} color="black" />
-                <Text bold fontSize="xl">
-                  Use Time
-                </Text>
-              </HStack>
-              <HStack space={2} alignItems="center" p={2}>
-                <Box w="50%">
-                  <Text>Session</Text>
-                  <Divider bg="white" />
-                  <HStack alignItems="baseline">
-                    <Text fontSize="xl">32 </Text>
-                    <Text>min</Text>
-                  </HStack>
-                </Box>
-                <Box w="50%">
-                  <Text>Lifetime</Text>
-                  <Divider bg="white" />
-                  <HStack alignItems="baseline">
-                    <Text fontSize="xl">3.5 </Text>
-                    <Text>h</Text>
-                  </HStack>
-                </Box>
-              </HStack>
-            </Card>
+            {DiceRolls()}
+            {DiceUseTime()}
           </HStack>
         </Center>
 

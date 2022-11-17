@@ -13,20 +13,32 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "native-base";
-import { ColorType } from "native-base/lib/typescript/components/types";
+import {
+  ColorType,
+  SizeType,
+} from "native-base/lib/typescript/components/types";
 import React from "react";
 
 interface ProfileCardProps {
   profileName: string;
   bg?: ColorType;
-  profileIndexInList?: number; // The profile index within all the currently available profiles
-  selectedProfileIndex?: number; // the currently selected profile in the list
-  onSelected?: React.Dispatch<React.SetStateAction<number | undefined>>; // set the currently selected profile with the profile card index
+  w?: number | string;
+  h?: number | string;
+  borderWidth?: number;
+  imageSize?: number | SizeType | string;
+  textSize?: number | SizeType | string;
   onPress?: (() => void) | null | undefined;
+  //To be used with the list in which the cards are placed and displayed for selection highlight
+  profileIndexInList?: number; // The card profile index within all the currently available profiles in the list
+  selectedProfileIndex?: number; // the index of the currently selected profile in the list
+  selectable?: boolean; // used to disable the selection highlight (used until actual selection system is done)
+  onSelected?: React.Dispatch<React.SetStateAction<number | undefined>>; // set the currently selected profile with the profile card index
 }
-function ProfileCard(props: ProfileCardProps) {
+export function ProfileCard(props: ProfileCardProps) {
   const selectedProfileIndex = props.selectedProfileIndex;
-  const isSelected = selectedProfileIndex === props.profileIndexInList;
+  const isSelected = props.selectable
+    ? selectedProfileIndex === props.profileIndexInList
+    : false;
   return (
     <Pressable
       onPress={() => {
@@ -35,27 +47,29 @@ function ProfileCard(props: ProfileCardProps) {
       }}
     >
       <Card
-        p={3}
-        minW="100px"
-        w="140px"
-        bg={props.bg}
-        borderWidth={isSelected ? 1.5 : 0}
+        bg={null}
+        p={2}
+        minW="50px"
+        minH="50px"
+        w={props.w}
+        h={props.h}
+        borderWidth={isSelected ? 1.5 : props.borderWidth}
       >
-        <HStack h="20px">
+        <HStack h="15px">
           <Spacer />
           {isSelected && (
-            <AntDesign name="checkcircleo" size={18} color="white" />
+            <AntDesign name="checkcircleo" size={12} color="white" />
           )}
         </HStack>
         <Center>
           <VStack space={2} alignItems="center">
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
-              size={20}
+              size={props.imageSize}
               source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               alt="placeHolder"
             />
-            <Text isTruncated bold>
+            <Text isTruncated fontSize={props.textSize} bold>
               {props.profileName}
             </Text>
           </VStack>
@@ -73,34 +87,36 @@ export interface ProfilesScrollListProps {
   availableProfiles: ProfileInfo[];
 }
 export function ProfilesScrollList(props: ProfilesScrollListProps) {
+  //   const navigation =
+  //     useNavigation<StackNavigationProp<{props.ScreenParamList}>>();
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   return (
     <VStack space={2}>
-      <HStack alignItems="baseline" space={2}>
-        <AntDesign name="profile" size={24} color="white" />
-        <Text bold>Available profiles :</Text>
-      </HStack>
-      <Center bg="pixelColors.highlightGray" h="180px" rounded="lg" p={2}>
+      <Center bg="pixelColors.highlightGray" h="125px" rounded="lg" p={2}>
         <HStack alignItems="center">
           <ChevronLeftIcon />
-          <Box w="300">
+          <Box w="360">
             <ScrollView
               horizontal
               width="100%"
               snapToAlignment="start"
-              snapToInterval={150}
+              snapToInterval={115}
               fadingEdgeLength={20}
-              decelerationRate="fast"
+              decelerationRate="normal"
             >
-              <HStack space={3}>
+              <HStack space={2}>
                 {props.availableProfiles.map((profile, i) => (
                   <ProfileCard
                     key={i}
-                    bg="primary.700"
+                    w="110px"
+                    h="100px"
+                    imageSize="9"
+                    textSize="xs"
                     profileName={profile.profileName}
                     profileIndexInList={i}
                     onSelected={SetSelectedProfile}
                     selectedProfileIndex={selectedProfile}
+                    selectable
                   />
                 ))}
               </HStack>

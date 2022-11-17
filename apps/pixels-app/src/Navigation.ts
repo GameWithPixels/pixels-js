@@ -12,6 +12,7 @@ export type HomeScreenStackParamList = {
 
 export type PixelDetailScreenParamList = {
   AdvancedSettingsScreen: undefined;
+  ProfilesScreen: undefined;
   PixelDetail: {
     pixelName: string;
   };
