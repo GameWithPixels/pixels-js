@@ -10,6 +10,8 @@ import {
   Box,
   Pressable,
   Spacer,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
@@ -46,14 +48,16 @@ function ProfileCard(props: ProfileCardProps) {
           )}
         </HStack>
         <Center>
-          <VStack space={1} alignItems="center">
+          <VStack space={2} alignItems="center">
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={20}
               source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               alt="placeHolder"
             />
-            <Text isTruncated>{props.profileName}</Text>
+            <Text isTruncated bold>
+              {props.profileName}
+            </Text>
           </VStack>
         </Center>
       </Card>
@@ -72,36 +76,38 @@ export function ProfilesScrollList(props: ProfilesScrollListProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   return (
     <VStack space={2}>
-      <Text bold>Available profiles</Text>
-      <Center bg="pixelColors.highlightGray" rounded="lg" p={2}>
-        <Box w="300">
-          <ScrollView
-            horizontal
-            width="100%"
-            snapToAlignment="start"
-            snapToInterval={150}
-            fadingEdgeLength={20}
-            decelerationRate="fast"
-            persistentScrollbar
-          >
-            <HStack space={3}>
-              {/* <ProfileCard bg="pixelColors.softBlack" />
-              <ProfileCard bg="pixelColors.softBlack" />
-              <ProfileCard bg="pixelColors.softBlack" />
-              <ProfileCard bg="pixelColors.softBlack" />
-              <ProfileCard bg="pixelColors.softBlack" /> */}
-              {props.availableProfiles.map((profile, i) => (
-                <ProfileCard
-                  bg="pixelColors.softBlack"
-                  profileName={profile.profileName}
-                  profileIndexInList={i}
-                  onSelected={SetSelectedProfile}
-                  selectedProfileIndex={selectedProfile}
-                />
-              ))}
-            </HStack>
-          </ScrollView>
-        </Box>
+      <HStack alignItems="baseline" space={2}>
+        <AntDesign name="profile" size={24} color="white" />
+        <Text bold>Available profiles :</Text>
+      </HStack>
+      <Center bg="pixelColors.highlightGray" h="180px" rounded="lg" p={2}>
+        <HStack alignItems="center">
+          <ChevronLeftIcon />
+          <Box w="300">
+            <ScrollView
+              horizontal
+              width="100%"
+              snapToAlignment="start"
+              snapToInterval={150}
+              fadingEdgeLength={20}
+              decelerationRate="fast"
+            >
+              <HStack space={3}>
+                {props.availableProfiles.map((profile, i) => (
+                  <ProfileCard
+                    key={i}
+                    bg="primary.700"
+                    profileName={profile.profileName}
+                    profileIndexInList={i}
+                    onSelected={SetSelectedProfile}
+                    selectedProfileIndex={selectedProfile}
+                  />
+                ))}
+              </HStack>
+            </ScrollView>
+          </Box>
+          <ChevronRightIcon />
+        </HStack>
       </Center>
     </VStack>
   );

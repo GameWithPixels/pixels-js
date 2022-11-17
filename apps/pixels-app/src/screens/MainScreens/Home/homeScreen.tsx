@@ -156,9 +156,9 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
             [
               PixelsDisplay === false ? (
                 <HStack flexWrap="wrap">
-                  {pairedPixels.map((pixelInfo) => (
-                    <Box p={1}>
-                      <PairedPixelInfoComponent pixel={pixelInfo} />
+                  {pairedPixels.map((pixelInfo, i) => (
+                    <Box p={1} key={i}>
+                      <PairedPixelInfoComponent pixel={pixelInfo} key={i} />
                     </Box>
                   ))}
                 </HStack>
@@ -166,12 +166,15 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
                 [
                   <Center>
                     <HStack flexWrap="wrap" justifyContent="flex-start" px={4}>
-                      {pairedPixels.map((pixelInfo) => (
-                        <Box p={1} alignSelf="center">
+                      {pairedPixels.map((pixelInfo, i) => (
+                        <Box p={1} alignSelf="center" key={i}>
                           <SquarePairedPixelInfo
+                            key={i}
                             pixel={pixelInfo}
                             onPress={() => {
-                              navigation.navigate("PixelDetailScreen");
+                              navigation.navigate("PixelDetailScreen", {
+                                pixelName: pixelInfo.name,
+                              });
                             }}
                           />
                         </Box>
@@ -233,24 +236,10 @@ function NearbyPixelsList({
         </HStack>
 
         <Box rounded="md" p={2} bg="gray.700">
-          {/* <FlatList
-            data={scannedPixels}
-            renderItem={({ item }) => (
-              <Box p={1}>
-                <ScannedPixelInfoComponent
-                  pixel={item}
-                  onPress={() => {
-                    if (onPress) onPress();
-                    addToPaired(item);
-                  }}
-                />
-              </Box>
-            )}
-          /> */}
           {!hideNearbyPixels && (
             <HStack flexWrap="wrap">
-              {scannedPixels.map((pixelInfo) => (
-                <Box p={1}>
+              {scannedPixels.map((pixelInfo, i) => (
+                <Box p={1} key={i}>
                   <ScannedPixelInfoComponent
                     pixel={pixelInfo}
                     onPress={() => {
@@ -268,14 +257,14 @@ function NearbyPixelsList({
   );
 }
 
-const greenPixelTheme = createPixelTheme(paleBluePixelThemeParams);
+const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 export default function HomeScreen() {
   const [pairedPixels, SetPairedPixels] = React.useState(pairedPixelsinfo);
   const [scannedPixels] = React.useState(scannedPixelsinfo);
   const navigation =
     useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
   return (
-    <PxAppPage theme={greenPixelTheme}>
+    <PxAppPage theme={paleBluePixelTheme}>
       <Box p={4}>
         <Text bold fontSize="2xl" letterSpacing="xl">
           PIXELS

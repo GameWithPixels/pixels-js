@@ -14,9 +14,10 @@ import { Provider } from "react-redux";
 import { RootStackParamList } from "./Navigation";
 import { store } from "./app/store";
 import { NavigationContainerComponent } from "./components/NavigationContainerComponent";
-import Home from "./screens/home";
-import secondScreen from "./screens/secondScreen";
-import ThirdScreen from "./screens/thirdScreen";
+import secondScreen from "./screens/MainScreens/secondScreen";
+import ThirdScreen from "./screens/MainScreens/thirdScreen";
+
+import Home from "~/screens/MainScreens/Home/home";
 
 const Stack = createStackNavigator<RootStackParamList>();
 

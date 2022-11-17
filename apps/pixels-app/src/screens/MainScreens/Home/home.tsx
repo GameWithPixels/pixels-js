@@ -5,8 +5,8 @@ import PixelDetailScreen from "./pixelDetailScreen";
 const Stack = createStackNavigator();
 export default function Home() {
   return (
-    <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Home" component={HomeScreen} />
+    <Stack.Navigator initialRouteName="HomeScreen">
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="PixelDetailScreen" component={PixelDetailScreen} />
     </Stack.Navigator>
   );

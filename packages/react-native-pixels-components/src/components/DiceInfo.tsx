@@ -71,7 +71,7 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
     <>
       <Pressable
         onPress={() => {
-          if (onPress) onPress();
+          onPress?.();
           onOpen();
         }}
       >
