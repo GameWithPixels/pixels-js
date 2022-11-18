@@ -3,8 +3,7 @@ import {
   AntDesign,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { useRoute, useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { useRoute } from "@react-navigation/native";
 import {
   BatteryLevel,
   Card,
@@ -13,6 +12,7 @@ import {
   ProfilesScrollList,
   PxAppPage,
   RSSIStrength,
+  ProfilesListPopUp,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
@@ -27,13 +27,9 @@ import {
   Button,
   ChevronRightIcon,
   Pressable,
-  AddIcon,
 } from "native-base";
 
-import {
-  PixelDetailScreenParamList,
-  PixelDetailScreenRouteProp,
-} from "~/Navigation";
+import { PixelDetailScreenRouteProp } from "~/Navigation";
 
 function DiceRolls() {
   return (
@@ -125,8 +121,8 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 export default function PixelDetailScreen() {
   //Will be used when the correct nested screen are in place
-  const navigation =
-    useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
+  // const navigation =
+  //   useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
   const route = useRoute<PixelDetailScreenRouteProp>();
   const { pixelName } = route.params;
   return (
@@ -152,6 +148,13 @@ export default function PixelDetailScreen() {
               alt="placeHolder"
             />
             <VStack space={3} p={2} rounded="md" w="40%">
+              <Button>
+                <MaterialCommunityIcons
+                  name="lightbulb-on-outline"
+                  size={24}
+                  color="white"
+                />
+              </Button>
               <VStack bg="pixelColors.highlightGray" rounded="md">
                 <BatteryLevel iconSize="50" textSize="lg" percentage={0.8} />
                 <RSSIStrength iconSize="50" textSize="lg" percentage={-40} />
@@ -180,16 +183,41 @@ export default function PixelDetailScreen() {
             <AntDesign name="profile" size={24} color="white" />
             <Text bold>Recent profiles :</Text>
             <Spacer />
-            <Pressable
+            {/* <Pressable
               onPress={() => {
                 navigation.navigate("ProfilesScreen");
               }}
             >
-              <HStack alignItems="center" space={1}>
+              <HStack
+                alignItems="center"
+                space={1}
+                bg="pixelColors.highlightGray"
+                p={1}
+                rounded="md"
+              >
                 <Text>More profiles </Text>
                 <AddIcon />
               </HStack>
-            </Pressable>
+            </Pressable> */}
+            <ProfilesListPopUp
+              ProfilesInfo={[
+                { profileName: "test" },
+                { profileName: "test2" },
+                { profileName: "test3" },
+                { profileName: "test4" },
+                { profileName: "test5" },
+                { profileName: "test6" },
+                { profileName: "test7" },
+                { profileName: "test8" },
+                { profileName: "test9" },
+                { profileName: "test10" },
+                { profileName: "test11" },
+                { profileName: "test12" },
+                { profileName: "test13" },
+                { profileName: "test14" },
+                { profileName: "test15" },
+              ]}
+            />
           </HStack>
           <ProfilesScrollList
             availableProfiles={[
@@ -210,6 +238,13 @@ export default function PixelDetailScreen() {
             {DiceRolls()}
             {DiceUseTime()}
           </HStack>
+        </Center>
+
+        <Center rounded="lg" bg="pixelColors.highlightGray" p={2}>
+          <Image
+            source={require("../../../../assets/RollsStatsPlaceHolder1.png")}
+            alt="placeHolder"
+          />
         </Center>
 
         {/* {Firmware infos} */}

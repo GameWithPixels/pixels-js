@@ -1,4 +1,3 @@
-import { AntDesign } from "@expo/vector-icons";
 import { Card } from "@systemic-games/react-native-base-components";
 import {
   Center,
@@ -9,7 +8,6 @@ import {
   Text,
   Box,
   Pressable,
-  Spacer,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "native-base";
@@ -24,6 +22,8 @@ interface ProfileCardProps {
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
+  p?: number | string;
+  verticalSpace?: number;
   borderWidth?: number;
   imageSize?: number | SizeType | string;
   textSize?: number | SizeType | string;
@@ -48,21 +48,22 @@ export function ProfileCard(props: ProfileCardProps) {
     >
       <Card
         bg={null}
-        p={2}
+        p={props.p}
         minW="50px"
         minH="50px"
         w={props.w}
         h={props.h}
-        borderWidth={isSelected ? 1.5 : props.borderWidth}
+        verticalSpace={props.verticalSpace}
+        borderWidth={isSelected ? 2 : props.borderWidth}
       >
-        <HStack h="15px">
+        {/* <HStack h="15px">
           <Spacer />
           {isSelected && (
             <AntDesign name="checkcircleo" size={12} color="white" />
           )}
-        </HStack>
+        </HStack> */}
         <Center>
-          <VStack space={2} alignItems="center">
+          <VStack space={props.verticalSpace} alignItems="center">
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={props.imageSize}
@@ -87,8 +88,6 @@ export interface ProfilesScrollListProps {
   availableProfiles: ProfileInfo[];
 }
 export function ProfilesScrollList(props: ProfilesScrollListProps) {
-  //   const navigation =
-  //     useNavigation<StackNavigationProp<{props.ScreenParamList}>>();
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   return (
     <VStack space={2}>
@@ -110,7 +109,8 @@ export function ProfilesScrollList(props: ProfilesScrollListProps) {
                     key={i}
                     w="110px"
                     h="100px"
-                    imageSize="9"
+                    verticalSpace={2}
+                    imageSize="12"
                     textSize="xs"
                     profileName={profile.profileName}
                     profileIndexInList={i}

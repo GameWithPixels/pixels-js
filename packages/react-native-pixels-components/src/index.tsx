@@ -8,4 +8,5 @@ export { AppPage as PxAppPage } from "./components/AppPage";
 export { LightingStyleSelection } from "./components/LightingStylesSelection";
 export * from "./components/DiceInfo";
 export * from "./components/ProfilesScrollList";
+export * from "./components/ProfilesListPopUp";
 export * from "@systemic-games/react-native-base-components";

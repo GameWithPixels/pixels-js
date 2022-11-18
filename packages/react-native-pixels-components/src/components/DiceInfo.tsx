@@ -81,29 +81,27 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
           minW={165}
           maxW={165}
           minH="40"
-          verticalSpace={2}
+          verticalSpace={1}
         >
           <Text bold alignSelf="center">
             {pixel.name}
           </Text>
-          <Box alignItems="center">
+          <Box alignItems="center" paddingBottom={2}>
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
-              size="10"
-              source={require("../../../../apps/pixels-app/assets/UI_Icons/D10.png")}
+              size={65}
+              source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               alt="placeHolder"
             />
           </Box>
           <Text isTruncated fontSize="xs">
             Profile : {pixel.profileName}
           </Text>
-          <Box rounded="lg" p={1}>
-            <Text fontSize="xs">Face {pixel.ledCount} is up</Text>
-            <HStack space={2}>
-              <BatteryLevel percentage={pixel.batteryLevel} />
-              <RSSIStrength percentage={pixel.rssi} />
-            </HStack>
-          </Box>
+          <Text fontSize="xs">Face {pixel.ledCount} is up</Text>
+          <HStack space={2}>
+            <BatteryLevel percentage={pixel.batteryLevel} />
+            <RSSIStrength percentage={pixel.rssi} />
+          </HStack>
         </Card>
       </Pressable>
 

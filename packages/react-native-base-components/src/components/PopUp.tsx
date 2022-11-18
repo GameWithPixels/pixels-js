@@ -6,43 +6,60 @@ import {
   IModalProps,
   usePropsResolution,
   Button,
+  HStack,
 } from "native-base";
-import { ColorType } from "native-base/lib/typescript/components/types";
-import React, { ReactNode } from "react";
+import React from "react";
 
 export interface PopUpProps extends IModalProps {
   title?: string;
-  footerChildren?: ReactNode | ReactNode[];
-  bg?: ColorType;
-  closeButtonTitle?: string;
+  buttons?: string | string[];
+  onClose?: (result?: string) => void;
 }
 
-export function PopUp(props: PopUpProps) {
+export function PopUp({ title, buttons, onClose, ...props }: PopUpProps) {
   const resolvedProps = usePropsResolution("PopUp", props) as PopUpProps;
-  const [showPopUp, SetShowPopUp] = React.useState(resolvedProps.isOpen);
+  // const { isOpen, onOpen, onClose } = useDisclose(resolvedProps.isOpen);
   return (
     <>
       {/* popUp window */}
-      <Modal {...resolvedProps} isOpen={showPopUp}>
+      <Modal isOpen={props.isOpen}>
         <Modal.Content
+          w={resolvedProps.w}
           bg={resolvedProps.bg}
           borderColor={resolvedProps.borderColor}
           borderWidth={resolvedProps.borderWidth}
+          // {...resolvedProps}
         >
           <Modal.Header bg={resolvedProps.bg}>
             <Center>
-              <Text>{resolvedProps.title}</Text>
+              <Text bold fontSize="md">
+                {title}
+              </Text>
             </Center>
           </Modal.Header>
           <Modal.Body>
             <VStack space={2}>{resolvedProps.children}</VStack>
           </Modal.Body>
           <Modal.Footer bg={resolvedProps.bg}>
-            {resolvedProps.footerChildren}
+            <HStack w="100%" space={2}>
+              {!buttons || typeof buttons === "string" ? (
+                <Button
+                  flex={1}
+                  onPress={() => {
+                    onClose?.(buttons);
+                  }}
+                >
+                  <Text>{`${buttons ?? "Close"}`}</Text>
+                </Button>
+              ) : (
+                buttons.map((title, i) => (
+                  <Button flex={1} key={i} onPress={() => onClose?.(title)}>
+                    {title}
+                  </Button>
+                ))
+              )}
+            </HStack>
           </Modal.Footer>
-          <Button onPress={() => SetShowPopUp(false)}>
-            <Text>Close</Text>
-          </Button>
         </Modal.Content>
       </Modal>
     </>
