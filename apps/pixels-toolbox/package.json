@@ -10,7 +10,8 @@
       "@expo",
       "@expo/**",
       "expo-*",
-      "expo-*/**"
+      "expo-*/**",
+      "react-native-vision-camera"
     ]
   },
   "scripts": {
