@@ -16,9 +16,13 @@ import {
   SizeType,
 } from "native-base/lib/typescript/components/types";
 import React from "react";
+// eslint-disable-next-line import/namespace
+import { ImageSourcePropType } from "react-native";
 
 interface ProfileCardProps {
   profileName: string;
+  //Temporary
+  imageRequirePath?: ImageSourcePropType;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -67,7 +71,8 @@ export function ProfileCard(props: ProfileCardProps) {
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={props.imageSize}
-              source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
+              //source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
+              source={props.imageRequirePath}
               alt="placeHolder"
             />
             <Text isTruncated fontSize={props.textSize} bold>
@@ -82,6 +87,8 @@ export function ProfileCard(props: ProfileCardProps) {
 
 export interface ProfileInfo {
   profileName: string;
+  //Temporary for image until 3d render
+  imageRequirePath?: ImageSourcePropType;
 }
 
 export interface ProfilesScrollListProps {
@@ -117,6 +124,7 @@ export function ProfilesScrollList(props: ProfilesScrollListProps) {
                     onSelected={SetSelectedProfile}
                     selectedProfileIndex={selectedProfile}
                     selectable
+                    imageRequirePath={profile.imageRequirePath}
                   />
                 ))}
               </HStack>

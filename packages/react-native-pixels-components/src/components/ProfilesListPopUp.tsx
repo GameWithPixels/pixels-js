@@ -10,7 +10,6 @@ export interface ProfilesPopUpListProps {
 export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   const [showPopUp, SetShowPopUp] = React.useState(false);
-  console.log(showPopUp);
   return (
     <>
       <Button
@@ -25,21 +24,20 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
         w="100%"
         title="Available Profiles"
         isOpen={showPopUp}
-        buttons={["cancel", "apply", "close"]}
+        buttons={["Apply", "Cancel"]}
         onClose={(result) => {
           SetShowPopUp(false);
-          console.log("result :" + result);
           //Here check "result" and use corresponding action
         }}
       >
         <HStack flexWrap="wrap">
           {props.ProfilesInfo?.map((profileInfo, i) => (
-            <Box key={i} p={2}>
+            <Box key={i} p={1}>
               <ProfileCard
-                w="100px"
+                w="105px"
                 h="130px"
-                verticalSpace={0}
-                imageSize={20}
+                verticalSpace={1}
+                imageSize={70}
                 selectable
                 profileIndexInList={i}
                 selectedProfileIndex={selectedProfile}

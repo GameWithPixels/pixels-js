@@ -42,9 +42,18 @@ export function ActionSheet(props: ActionSheetComponentProps) {
       <Pressable onPress={onOpen}>
         <Center>{resolvedProps.trigger}</Center>
       </Pressable>
-      <Actionsheet {...resolvedProps} onClose={onClose} isOpen={isOpen}>
-        <Actionsheet.Content bg={resolvedProps.sheetBgColor}>
-          <Box w="100%" h={60} px={4}>
+      <Actionsheet
+        {...resolvedProps}
+        onClose={onClose}
+        isOpen={isOpen}
+        maxHeight="100%"
+      >
+        <Actionsheet.Content
+          maxHeight="100%"
+          height="650px"
+          bg={resolvedProps.sheetBgColor}
+        >
+          <Box w="100%" px={4}>
             <Text bold fontSize="16">
               {resolvedProps.title}
             </Text>
