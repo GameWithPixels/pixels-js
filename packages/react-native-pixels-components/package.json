@@ -44,6 +44,9 @@
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "dependencies": {
+    "@systemic-games/react-native-base-components": "1.0.0"
+  },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.1.2",
@@ -52,7 +55,7 @@
     "jest": "^29.1.2",
     "native-base": "~3.4.18",
     "react": "18.0.0",
-    "react-native": "0.69.6",
+    "react-native": "0.69.7",
     "react-native-builder-bob": "^0.20.0",
     "react-native-safe-area-context": "4.3.1",
     "react-native-svg": "12.3.0",
@@ -99,5 +102,8 @@
         }
       ]
     ]
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.tsx"
   }
 }

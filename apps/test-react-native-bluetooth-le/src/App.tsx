@@ -30,7 +30,7 @@ import {
 const toHexString = (arr: Iterable<number>) => {
   return Array.from(arr, function (byte) {
     // eslint-disable-next-line no-bitwise
-    return ("0" + (byte & 0xff).toString(16)).slice(-2);
+    return (byte & 0xff).toString(16).padStart(2, "0");
   }).join(",");
 };
 

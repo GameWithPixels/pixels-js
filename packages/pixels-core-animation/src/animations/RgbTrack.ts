@@ -5,23 +5,39 @@ import AnimationBits from "./AnimationBits";
 import Constants from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 
+/**
+ * Represents of a series of RGB keyframes which together make
+ * an animation curve for an RGB color.
+ * @category Animation
+ */
 export default class RgbTrack {
   @serializable(2)
-  keyframesOffset = 0; // offset into a global keyframe buffer
+  keyframesOffset = 0; /** Offset into a global keyframe buffer. */
 
   @serializable(1, { padding: 1 })
-  keyFrameCount = 0; // Keyframe count
+  keyFrameCount = 0; /** Keyframe count. */
 
   @serializable(4)
-  ledMask = 0; // Each bit indicates whether the led is included in the animation track
+  ledMask = 0; /** Each bit indicates whether the led is included in the animation track. */
 
+  /**
+   * Gets the track duration.
+   * @param bits The animation bits with the RGB keyframes data.
+   * @returns The track duration.
+   */
   getDuration(bits: AnimationBits): number {
     const kf = bits.getRgbKeyframe(
       this.keyframesOffset + this.keyFrameCount - 1
     );
-    return kf.time();
+    return kf.time;
   }
 
+  /**
+   * Gets the data of the RGB keyframe at the given index.
+   * @param bits The animation bits with the RGB keyframes data.
+   * @param keyframeIndex The index of the keyframe.
+   * @returns The RGB keyframe data.
+   */
   getKeyframe(bits: AnimationBits, keyframeIndex: number): RgbKeyframe {
     assert(
       keyframeIndex < this.keyFrameCount,
@@ -30,10 +46,18 @@ export default class RgbTrack {
     return bits.getRgbKeyframe(this.keyframesOffset + keyframeIndex);
   }
 
-  /// <summary>
-  /// Evaluate an animation track's for a given time, in milliseconds, and fills returns arrays of led indices and colors
-  /// Values outside the track's range are clamped to first or last keyframe value.
-  /// </summary>
+  /**
+   * Evaluate an animation track's for a given time, in milliseconds,
+   * and fills returns arrays of led indices and colors.
+   * The returned colors are the color of the track for the given time.
+   * Values outside the track's range are clamped to first or last keyframe
+   * value.
+   * @param bits The animation bits with the RGB keyframes data and color palette.
+   * @param time The time at which to evaluate the track.
+   * @param retIndices Array of LED indices to be updated.
+   * @param retColors32 Array of 32 bits colors to be updated.
+   * @returns The number of LED indices that have been set in the returned arrays.
+   */
   evaluate(
     bits: AnimationBits,
     time: number,
@@ -48,7 +72,7 @@ export default class RgbTrack {
 
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         retColors32[currentCount] = color;
@@ -58,10 +82,14 @@ export default class RgbTrack {
     return currentCount;
   }
 
-  /// <summary>
-  /// Evaluate an animation track's for a given time, in milliseconds
-  /// Values outside the track's range are clamped to first or last keyframe value.
-  /// </summary>
+  /**
+   * Evaluate an animation track's color for a given time, in milliseconds.
+   * Values outside the track's range are clamped to first or last keyframe
+   * value.
+   * @param bits The animation bits with the RGB keyframes data and color palette.
+   * @param time The time at which to evaluate the track.
+   * @returns The modulated color.
+   */
   evaluateColor(bits: AnimationBits, time: number): number {
     if (this.keyFrameCount === 0) {
       return 0;
@@ -71,7 +99,7 @@ export default class RgbTrack {
     let nextIndex = 0;
     while (
       nextIndex < this.keyFrameCount &&
-      this.getKeyframe(bits, nextIndex).time() < time
+      this.getKeyframe(bits, nextIndex).time < time
     ) {
       nextIndex++;
     }
@@ -79,19 +107,19 @@ export default class RgbTrack {
     let color = 0;
     if (nextIndex === 0) {
       // The first keyframe is already after the requested time, clamp to first value
-      color = this.getKeyframe(bits, nextIndex).color(bits);
+      color = this.getKeyframe(bits, nextIndex).getColor(bits);
     } else if (nextIndex === this.keyFrameCount) {
       // The last keyframe is still before the requested time, clamp to the last value
-      color = this.getKeyframe(bits, nextIndex - 1).color(bits);
+      color = this.getKeyframe(bits, nextIndex - 1).getColor(bits);
     } else {
       // Grab the prev and next keyframes
       const nextKeyframe = this.getKeyframe(bits, nextIndex);
-      const nextKeyframeTime = nextKeyframe.time();
-      const nextKeyframeColor = nextKeyframe.color(bits);
+      const nextKeyframeTime = nextKeyframe.time;
+      const nextKeyframeColor = nextKeyframe.getColor(bits);
 
       const prevKeyframe = this.getKeyframe(bits, nextIndex - 1);
-      const prevKeyframeTime = prevKeyframe.time();
-      const prevKeyframeColor = prevKeyframe.color(bits);
+      const prevKeyframeTime = prevKeyframe.time;
+      const prevKeyframeColor = prevKeyframe.getColor(bits);
 
       // Compute the interpolation parameter
       color = Color32Utils.interpolateColors(
@@ -106,13 +134,15 @@ export default class RgbTrack {
     return color;
   }
 
-  /// <summary>
-  /// Extracts the LED indices from the led bit mask
-  /// </summary>
+  /**
+   * Extracts the LED indices from the LED bit mask.
+   * @param retIndices Array of LED indices to be updated.
+   * @returns he number of LED indices that have been set in the returned arrays.
+   */
   extractLEDIndices(retIndices: number[]): number {
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         currentCount++;
@@ -121,6 +151,11 @@ export default class RgbTrack {
     return currentCount;
   }
 
+  /**
+   * Compares two RgbTrack instances.
+   * @param other The RgbTrack instance to compare with.
+   * @returns Whether the two RgbTrack instances have the same data.
+   */
   equals(other: RgbTrack): boolean {
     return (
       this.keyframesOffset === other.keyframesOffset &&

@@ -49,7 +49,7 @@ export default class EditAnimationGradient extends EditAnimation {
   }) {
     super(options?.name);
     this._duration = options?.duration ?? 1;
-    this.faces = options?.faces ?? Constants.faceMaskAllLeds;
+    this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
     this.gradient = options?.gradient;
   }
 

@@ -9,6 +9,10 @@ import * as Color32Utils from "./color32Utils";
 /// </summary>
 /// <param name="intensity"></param>
 /// <returns>The gamma value.</returns>
+
+/**
+ * @category Color Gamma
+ */
 export function gamma8(intensity: number): number {
   return _gammaTable[intensity & 255]; // 0-255 in, 0-255 out
 }
@@ -18,6 +22,10 @@ export function gamma8(intensity: number): number {
 /// </summary>
 /// <param name="color32">The color to transform.</param>
 /// <returns>The gamma transformed color.</returns>
+
+/**
+ * @category Color Gamma
+ */
 export function gamma32(color32: number): number {
   const r = gamma8(Color32Utils.getRed(color32));
   const g = gamma8(Color32Utils.getGreen(color32));
@@ -30,6 +38,10 @@ export function gamma32(color32: number): number {
 /// </summary>
 /// <param name="color">The color to transform.</param>
 /// <returns>The gamma transformed color.</returns>
+
+/**
+ * @category Color Gamma
+ */
 export function gamma(color: Color): Color {
   const r = gamma8(color.rByte);
   const g = gamma8(color.gByte);
@@ -42,6 +54,10 @@ export function gamma(color: Color): Color {
 /// </summary>
 /// <param name="gamma">A gamma value.</param>
 /// <returns>The intensity for the gamma value.</returns>
+
+/**
+ * @category Color Gamma
+ */
 export function reverseGamma8(gamma: number): number {
   return _reverseGammaTable[Math.floor(gamma)]; // 0-255 in, 0-255 out
 }

@@ -5,6 +5,9 @@ import AnimationInstanceGradientPattern from "./AnimationInstanceGradientPattern
 import AnimationPreset from "./AnimationPreset";
 import { AnimationType, AnimationTypeValues } from "./AnimationType";
 
+/**
+ * @category Animation
+ */
 export default class AnimationGradientPattern implements AnimationPreset {
   @serializable(1, { padding: 1 })
   readonly type: AnimationType = AnimationTypeValues.GradientPattern;

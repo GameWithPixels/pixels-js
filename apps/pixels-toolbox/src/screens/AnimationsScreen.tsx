@@ -20,10 +20,11 @@ import {
   EditRgbKeyframe,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  Pixel,
+  getPixelEnumName,
   AnimationTypeValues,
   Color,
   Constants,
+  Pixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useEffect, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
@@ -40,7 +41,6 @@ import defaultProfilesJson from "~/../assets/default-profiles.json";
 import AppPage from "~/components/AppPage";
 import SelectPixel from "~/components/SelectPixel";
 import Spacer from "~/components/Spacer";
-import getPixelEnumName from "~/getPixelEnumName";
 import range from "~/range";
 import globalStyles, { sr } from "~/styles";
 import usePixelStatus from "~/usePixelStatus";
@@ -226,7 +226,7 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         const facesGroups = [
           range(1, 8),
           range(8, 15),
-          [...range(15, 20), Constants.faceMaskAllLeds],
+          [...range(15, 20), Constants.faceMaskAllLEDs],
         ];
         return (
           <>

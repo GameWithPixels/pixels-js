@@ -2,6 +2,7 @@ import {
   assert,
   align32bits,
   byteSizeOf,
+  bernsteinHash,
   serialize,
 } from "@systemic-games/pixels-core-utils";
 
@@ -12,6 +13,14 @@ import Condition from "./profiles/Condition";
 import Profile from "./profiles/Profile";
 import Rule from "./profiles/Rule";
 
+/**
+ * Data Set is the set of a profile, conditions, rules, animations and colors
+ * stored in the memory of a Pixel die. This data gets transferred straight to the dice.
+ * For that purpose, the data is essentially 'exploded' into flat buffers. i.e. all
+ * the key-frames of all the animations are stored in a single key-frame array, and
+ * individual tracks reference 'their' key-frames using an offset and count into that array.
+ * @category Profile
+ */
 export default class DataSet {
   private readonly _animationBits: AnimationBits;
   private readonly _animations: AnimationPreset[] = [];
@@ -64,20 +73,6 @@ export default class DataSet {
       byteSizeOf(this._rules) +
       (this._profile ? byteSizeOf(this._profile) : 0)
     );
-  }
-
-  //TODO uplift
-  // D. J. Bernstein hash function
-  static computeHash(data: Uint8Array): number {
-    let hash = 5381;
-    for (let i = 0; i < data.length; ++i) {
-      hash = (33 * hash) ^ data[i];
-    }
-    return hash;
-  }
-
-  computeHash(): number {
-    return DataSet.computeHash(this.toByteArray());
   }
 
   toSingleAnimationByteArray(): Uint8Array {
@@ -216,5 +211,9 @@ export default class DataSet {
     }
 
     return [dataView, byteOffset];
+  }
+
+  static computeHash(bytes: Uint8Array): number {
+    return bernsteinHash(bytes);
   }
 }

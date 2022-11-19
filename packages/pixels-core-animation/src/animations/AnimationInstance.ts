@@ -1,6 +1,9 @@
 import AnimationBits from "./AnimationBits";
 import AnimationPreset from "./AnimationPreset";
 
+/**
+ * @category Animation Instance
+ */
 export default abstract class AnimationInstance {
   private _animationPreset: AnimationPreset;
   private _animationBits: AnimationBits;
@@ -40,7 +43,7 @@ export default abstract class AnimationInstance {
   }
 
   // "virtual" method
-  abstract updateLeds(
+  abstract updateLEDs(
     ms: number,
     retIndices: number[],
     retColors32: number[]

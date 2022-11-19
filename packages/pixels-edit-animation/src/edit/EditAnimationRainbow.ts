@@ -58,7 +58,7 @@ export default class EditAnimationRainbow extends EditAnimation {
   }) {
     super(options?.name);
     this._duration = options?.duration ?? 1;
-    this.faces = options?.faces ?? Constants.faceMaskAllLeds;
+    this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
     this.count = options?.count ?? 1;
     this.fade = options?.fade ?? 0;
     this.traveling = options?.traveling ?? true;

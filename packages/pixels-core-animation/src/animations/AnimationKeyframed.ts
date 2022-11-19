@@ -5,6 +5,9 @@ import AnimationInstanceKeyframed from "./AnimationInstanceKeyframed";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationType, AnimationTypeValues } from "./AnimationType";
 
+/**
+ * @category Animation
+ */
 export default class AnimationKeyframed implements AnimationPreset {
   @serializable(1, { padding: 1 })
   readonly type: AnimationType = AnimationTypeValues.Keyframed;

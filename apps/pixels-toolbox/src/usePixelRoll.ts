@@ -4,7 +4,6 @@ import {
   RollState,
   PixelRollState,
   PixelRollStateValues,
-  PixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import { useEffect, useState } from "react";
 
@@ -14,16 +13,9 @@ export default function (pixel?: Pixel): [number, PixelRollState] {
     if (pixel) {
       const rollListener = (msg: MessageOrType) =>
         setRollState(msg as RollState);
-      pixel.addMessageListener("RollState", rollListener);
-      const statusListener = (status: PixelStatus) => {
-        if (status === "ready") {
-          pixel.getRollState().catch(() => {});
-        }
-      };
-      pixel.addEventListener("status", statusListener);
+      pixel.addMessageListener("rollState", rollListener);
       return () => {
-        pixel.removeMessageListener("RollState", rollListener);
-        pixel.removeEventListener("status", statusListener);
+        pixel.removeMessageListener("rollState", rollListener);
         setRollState(undefined);
       };
     }
@@ -31,6 +23,6 @@ export default function (pixel?: Pixel): [number, PixelRollState] {
 
   return [
     rollState ? rollState.faceIndex + 1 : 0,
-    rollState?.state ?? PixelRollStateValues.Unknown,
+    rollState?.state ?? PixelRollStateValues.unknown,
   ];
 }

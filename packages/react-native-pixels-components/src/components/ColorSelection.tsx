@@ -41,7 +41,7 @@ interface ColorSelectionProps extends IModalProps {
 }
 /**
  * Color selection component used for selecting a single color shade from a color wheel / color picker.
- * @see ColorSelectionProps for the component props to customize some elements.
+ * {@link ColorSelectionProps} for the component props to customize some elements.
  * @return A ColorSelection JSX element.
  */
 export function ColorSelection(props: ColorSelectionProps) {

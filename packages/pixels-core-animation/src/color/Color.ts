@@ -1,7 +1,9 @@
 import { IColor, colorToString, colorComponentToByte } from "./colorUtils";
 
 /**
- * Represents an RGB color using values between O and 1 for each color component.
+ * Represents an RGB color using values between O and 1
+ * for each color component.
+ * @category Color
  */
 export default class Color implements IColor {
   r = 0; // Normalized floating point value

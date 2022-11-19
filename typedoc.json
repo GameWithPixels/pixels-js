@@ -1,0 +1,12 @@
+{
+  "entryPointStrategy": "packages",
+  "entryPoints": [
+    "packages/*",
+  ],
+  "out": "docs",
+  "navigationLinks": {
+    "GitHub": "https://github.com/GameWithPixels/pixels-js",
+    "Pixels Website": "https://gamewithpixels.com/"
+  },
+  "categorizeByGroup": false
+}

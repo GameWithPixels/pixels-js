@@ -32,13 +32,13 @@
   "dependencies": {
     "@systemic-games/vision-camera-rgb-averages": "*",
     "react": "18.0.0",
-    "react-native": "0.69.6",
+    "react-native": "0.69.7",
     "react-native-reanimated": "~2.10.0",
-    "react-native-vision-camera": "~2.14.1"
+    "react-native-vision-camera": "~2.15.2"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
-    "@babel/runtime": "^7.14.0",
+    "@babel/runtime": "^7.19.4",
     "@types/react": "~18.0.0",
     "@types/react-native": "0.69.6",
     "babel-plugin-module-resolver": "^4.1.0",

@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { BottomToolbar } from "@systemic-games/react-native-base-components";
+import { BottomToolbar } from "@systemic-games/react-native-pixels-components";
 
 import { RootStackParamList } from "../Navigation";
 

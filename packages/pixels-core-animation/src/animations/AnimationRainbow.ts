@@ -5,6 +5,9 @@ import AnimationInstanceRainbow from "./AnimationInstanceRainbow";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationType, AnimationTypeValues } from "./AnimationType";
 
+/**
+ * @category Animation
+ */
 export default class AnimationRainbow implements AnimationPreset {
   @serializable(1, { padding: 1 })
   readonly type: AnimationType = AnimationTypeValues.Rainbow;

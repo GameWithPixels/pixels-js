@@ -5,6 +5,9 @@ import AnimationInstanceSimple from "./AnimationInstanceSimple";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationType, AnimationTypeValues } from "./AnimationType";
 
+/**
+ * @category Animation
+ */
 export default class AnimationSimple implements AnimationPreset {
   @serializable(1, { padding: 1 })
   readonly type: AnimationType = AnimationTypeValues.Simple;
