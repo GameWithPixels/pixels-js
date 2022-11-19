@@ -2,6 +2,7 @@ import {
   FontAwesome5,
   AntDesign,
   MaterialCommunityIcons,
+  Ionicons,
 } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import {
@@ -28,8 +29,83 @@ import {
   ChevronRightIcon,
   Pressable,
 } from "native-base";
+import React from "react";
+import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
 import { PixelDetailScreenRouteProp } from "~/Navigation";
+
+interface HistogramProps {
+  rolls: number[];
+  viewRatio: number;
+}
+
+function Histogram({ rolls }: HistogramProps) {
+  const [size, setSize] = React.useState({ w: 100, h: 100 });
+  const fontSize = 4;
+  const numGradValues = 5;
+  const gradCellWidth = 10;
+  const barCellWidth = (size.w - gradCellWidth) / rolls.length;
+  const barWidthRatio = 0.9;
+  const barsMaxHeight = size.h - 6;
+  return (
+    <Box
+      style={{ width: "100%", height: "100%" }}
+      onLayout={(event) => {
+        const l = event.nativeEvent.layout;
+        setSize({ w: 100, h: (100 / l.width) * l.height });
+      }}
+    >
+      <Svg width="100%" height="100%" viewBox={`0 0 ${size.w} ${size.h}`}>
+        {rolls.map((r, i) => {
+          const h = (barsMaxHeight * r) / Math.max(...rolls);
+          return (
+            <Rect
+              x={gradCellWidth + i * barCellWidth}
+              y={barsMaxHeight - h}
+              width={barCellWidth * barWidthRatio}
+              height={h}
+              fill="white"
+            />
+          );
+        })}
+        {rolls.map((_, i) => (
+          /* @ts-expect-error*/
+          <SvgText
+            transform={`translate(${
+              (i + 0.5 - (0.3 * fontSize) / barCellWidth) * barCellWidth +
+              gradCellWidth
+            },${size.h - 3}) rotate(90)`}
+            fill="white"
+            fontSize={fontSize}
+            fontWeight="bold"
+            textAnchor="middle"
+          >
+            {i + 1}
+          </SvgText>
+        ))}
+        {[...Array(numGradValues).keys()].map((i) => (
+          /* @ts-expect-error */
+          <SvgText
+            x={gradCellWidth / 2}
+            y={
+              0.8 * fontSize +
+              ((barsMaxHeight - 0.5 * fontSize) * i) / (numGradValues - 1)
+            }
+            fill="white"
+            fontSize={fontSize}
+            fontWeight="bold"
+            textAnchor="middle"
+          >
+            {Math.round(
+              (Math.max(...rolls) * (numGradValues - 1 - i)) /
+                (numGradValues - 1)
+            )}
+          </SvgText>
+        ))}
+      </Svg>
+    </Box>
+  );
+}
 
 function DiceRolls() {
   return (
@@ -139,15 +215,18 @@ export default function PixelDetailScreen() {
             color="black"
           />
         </Center>
-        <Center>
-          <HStack space={12} alignItems="center">
+        <Center w="100%">
+          <HStack space={0} alignItems="center" paddingLeft={5}>
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Image
-              size={40}
-              source={require("../../../../assets/DieImageTransparent.png")}
-              alt="placeHolder"
-            />
-            <VStack space={3} p={2} rounded="md" w="40%">
+            <Box flex={2.5} paddingLeft={0}>
+              <Image
+                size={180}
+                source={require("../../../../assets/DieImageTransparent.png")}
+                alt="placeHolder"
+              />
+            </Box>
+            <Spacer />
+            <VStack flex={2} space={3} p={2} rounded="md" w="40%">
               <Button>
                 <MaterialCommunityIcons
                   name="lightbulb-on-outline"
@@ -164,12 +243,16 @@ export default function PixelDetailScreen() {
                   <HStack>
                     <Text bold>Face up : </Text>
                     <Spacer />
-                    <Text>10</Text>
+                    <Text bold color="green.500" fontSize="md">
+                      10
+                    </Text>
                   </HStack>
                   <HStack>
                     <Text bold>Status : </Text>
                     <Spacer />
-                    <Text>on face</Text>
+                    <Text bold color="green.500">
+                      On Face
+                    </Text>
                   </HStack>
                 </VStack>
               </Box>
@@ -201,33 +284,54 @@ export default function PixelDetailScreen() {
             </Pressable> */}
             <ProfilesListPopUp
               ProfilesInfo={[
-                { profileName: "test" },
-                { profileName: "test2" },
-                { profileName: "test3" },
-                { profileName: "test4" },
-                { profileName: "test5" },
-                { profileName: "test6" },
-                { profileName: "test7" },
-                { profileName: "test8" },
-                { profileName: "test9" },
-                { profileName: "test10" },
-                { profileName: "test11" },
-                { profileName: "test12" },
-                { profileName: "test13" },
-                { profileName: "test14" },
-                { profileName: "test15" },
+                { profileName: "Profile 1" },
+                { profileName: "Profile 2" },
+                { profileName: "Profile 3" },
+                { profileName: "Profile 4" },
+                { profileName: "Profile 5" },
+                { profileName: "Profile 6" },
+                { profileName: "Profile 7" },
+                { profileName: "Profile 8" },
+                { profileName: "Profile 9" },
+                { profileName: "Profile 10" },
+                { profileName: "Profile 11" },
+                { profileName: "Profile 12" },
+                { profileName: "Profile 13" },
+                { profileName: "Profile 14" },
+                { profileName: "Profile 15" },
               ]}
             />
           </HStack>
           <ProfilesScrollList
             availableProfiles={[
-              { profileName: "Rainbow" },
-              { profileName: "Waterfall" },
-              { profileName: "Red to Blue" },
-              { profileName: "Speak Numbers" },
-              { profileName: "Custom Profile" },
-              { profileName: "Flashy" },
-              { profileName: "Explosion" },
+              {
+                profileName: "Rainbow",
+                imageRequirePath: require("~/../assets/RainbowDice.png"),
+              },
+              {
+                profileName: "Waterfall",
+                imageRequirePath: require("~/../assets/BlueDice.png"),
+              },
+              {
+                profileName: "Red to Blue",
+                imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+              },
+              {
+                profileName: "Speak Numbers",
+                imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+              },
+              {
+                profileName: "Custom Profile",
+                imageRequirePath: require("~/../assets/RainbowDice.png"),
+              },
+              {
+                profileName: "Flashy",
+                imageRequirePath: require("~/../assets/YellowDice.png"),
+              },
+              {
+                profileName: "Explosion",
+                imageRequirePath: require("~/../assets/YellowDice.png"),
+              },
             ]}
           />
         </Box>
@@ -240,15 +344,32 @@ export default function PixelDetailScreen() {
           </HStack>
         </Center>
 
-        <Center rounded="lg" bg="pixelColors.highlightGray" p={2}>
+        {/* <Center rounded="lg" bg="pixelColors.highlightGray" p={2}>
           <Image
             source={require("../../../../assets/RollsStatsPlaceHolder1.png")}
             alt="placeHolder"
           />
-        </Center>
+        </Center> */}
+        <Card bg="primary.300" verticalSpace={4}>
+          <HStack space={3} alignItems="baseline">
+            <Ionicons name="stats-chart" size={30} color="black" />
+            <Text bold fontSize="xl">
+              Lifetime rolls per face
+            </Text>
+          </HStack>
+          <Center width="300" h="150" alignSelf="center">
+            <Histogram
+              viewRatio={2}
+              rolls={[
+                30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45, 91,
+                12, 56, 35, 45,
+              ]}
+            />
+          </Center>
+        </Card>
 
         {/* {Firmware infos} */}
-        <Divider bg="primary.200" width="90%" alignSelf="center" />
+        {/* <Divider bg="primary.200" width="90%" alignSelf="center" />
         <Box maxWidth="100%">
           <VStack space={4} p={3} rounded="md" maxWidth="100%">
             <HStack
@@ -274,7 +395,7 @@ export default function PixelDetailScreen() {
               <Text bold>Update firmware</Text>
             </Button>
           </VStack>
-        </Box>
+        </Box> */}
 
         {/* {Advanced Settings infos} */}
         <Divider bg="primary.200" width="90%" alignSelf="center" />

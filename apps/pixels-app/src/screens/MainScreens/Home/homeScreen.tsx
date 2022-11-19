@@ -90,6 +90,8 @@ const scannedPixelsinfo: PixelInfo[] = [
     ledCount: 20,
     firmwareDate: new Date(),
     profileName: "Rainbow",
+    imageRequirePath: require("~/../assets/RainbowDice.png"),
+    pixelId: 123364872364,
   },
   {
     name: "Franck",
@@ -98,6 +100,8 @@ const scannedPixelsinfo: PixelInfo[] = [
     ledCount: 8,
     firmwareDate: new Date(),
     profileName: "Custom",
+    imageRequirePath: require("~/../assets/YellowDice.png"),
+    pixelId: 198273918,
   },
   {
     name: "Julie",
@@ -106,6 +110,8 @@ const scannedPixelsinfo: PixelInfo[] = [
     ledCount: 12,
     firmwareDate: new Date(),
     profileName: "Speak Numbers 123412341234",
+    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+    pixelId: 983479238,
   },
   {
     name: "Alice",
@@ -113,7 +119,9 @@ const scannedPixelsinfo: PixelInfo[] = [
     batteryLevel: 0.9,
     ledCount: 10,
     firmwareDate: new Date(),
-    profileName: "Speak Numbers",
+    profileName: "Red To Blue",
+    imageRequirePath: require("~/../assets/BlueDice.png"),
+    pixelId: 73647812634,
   },
 ];
 
@@ -143,7 +151,6 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
             text="Switch display"
             onToggle={() => {
               SwitchPixelsDisplay(!PixelsDisplay);
-              console.log(PixelsDisplay);
             }}
             isChecked={PixelsDisplay}
             //value={scannedPixelsDisplay}
@@ -152,38 +159,31 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
         <Box rounded="md" p={2} bg="gray.700">
           {pairedPixels.length < 1 ? (
             <Text> No PIXEL paired yet !</Text>
+          ) : PixelsDisplay === false ? (
+            <HStack flexWrap="wrap">
+              {pairedPixels.map((pixelInfo) => (
+                <Box p={1} key={pixelInfo.pixelId}>
+                  <PairedPixelInfoComponent pixel={pixelInfo} />
+                </Box>
+              ))}
+            </HStack>
           ) : (
-            [
-              PixelsDisplay === false ? (
-                <HStack flexWrap="wrap">
-                  {pairedPixels.map((pixelInfo, i) => (
-                    <Box p={1} key={i}>
-                      <PairedPixelInfoComponent pixel={pixelInfo} key={i} />
-                    </Box>
-                  ))}
-                </HStack>
-              ) : (
-                [
-                  <Center>
-                    <HStack flexWrap="wrap" justifyContent="flex-start" px={4}>
-                      {pairedPixels.map((pixelInfo, i) => (
-                        <Box p={1} alignSelf="center" key={i}>
-                          <SquarePairedPixelInfo
-                            key={i}
-                            pixel={pixelInfo}
-                            onPress={() => {
-                              navigation.navigate("PixelDetailScreen", {
-                                pixelName: pixelInfo.name,
-                              });
-                            }}
-                          />
-                        </Box>
-                      ))}
-                    </HStack>
-                  </Center>,
-                ]
-              ),
-            ]
+            <Center>
+              <HStack flexWrap="wrap" justifyContent="flex-start" px={4}>
+                {pairedPixels.map((pixelInfo) => (
+                  <Box p={1} alignSelf="center" key={pixelInfo.pixelId}>
+                    <SquarePairedPixelInfo
+                      pixel={pixelInfo}
+                      onPress={() => {
+                        navigation.navigate("PixelDetailScreen", {
+                          pixelName: pixelInfo.name,
+                        });
+                      }}
+                    />
+                  </Box>
+                ))}
+              </HStack>
+            </Center>
           )}
         </Box>
       </VStack>
@@ -228,7 +228,6 @@ function NearbyPixelsList({
             text="Hide"
             onToggle={() => {
               SetHideNearbyPixels(!hideNearbyPixels);
-              console.log(hideNearbyPixels);
             }}
             isChecked={hideNearbyPixels}
             value={hideNearbyPixels}
@@ -238,8 +237,8 @@ function NearbyPixelsList({
         <Box rounded="md" p={2} bg="gray.700">
           {!hideNearbyPixels && (
             <HStack flexWrap="wrap">
-              {scannedPixels.map((pixelInfo, i) => (
-                <Box p={1} key={i}>
+              {scannedPixels.map((pixelInfo) => (
+                <Box p={1} key={pixelInfo.pixelId}>
                   <ScannedPixelInfoComponent
                     pixel={pixelInfo}
                     onPress={() => {

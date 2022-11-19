@@ -11,6 +11,8 @@ import {
   useDisclose,
 } from "native-base";
 import React from "react";
+// eslint-disable-next-line import/namespace
+import { ImageSourcePropType } from "react-native";
 
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
@@ -22,6 +24,10 @@ export interface PixelInfo {
   ledCount: number;
   firmwareDate: Date;
   profileName: string;
+  pixelId: number;
+
+  //Temporary for showing different images until 3d render
+  imageRequirePath?: ImageSourcePropType;
 }
 
 export interface PixelInfoProps {
@@ -37,8 +43,9 @@ export function PairedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
           <Box alignItems="center">
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
-              size="10"
-              source={require("../../../../apps/pixels-app/assets/UI_Icons/D10.png")}
+              size={50}
+              // source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
+              source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
@@ -90,7 +97,8 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={65}
-              source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
+              //source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
+              source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
@@ -104,23 +112,6 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
           </HStack>
         </Card>
       </Pressable>
-
-      {/* Pixel Details menu */}
-      {/* <Modal isOpen={isOpen} onClose={onClose}>
-        <Modal.Content w="90%" h="100%">
-          <Modal.CloseButton />
-          <Modal.Header>
-            <Text bold fontSize="xl">
-              {pixel.name}
-            </Text>
-          </Modal.Header>
-          <Modal.Body>
-            <Center h={400} bg="gray.700">
-              <Text>test</Text>
-            </Center>
-          </Modal.Body>
-        </Modal.Content>
-      </Modal> */}
     </>
   );
 }
@@ -143,12 +134,13 @@ export function ScannedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
         h={height}
         alignItems="center"
       >
-        <HStack space={8} alignItems="center" maxW="100%">
+        <HStack space={10} alignItems="center" maxW="100%">
           <Box alignItems="center">
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
-              size="10"
-              source={require("../../../../apps/pixels-app/assets/UI_Icons/D10.png")}
+              size={65}
+              //source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
+              source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
