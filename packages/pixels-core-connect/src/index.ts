@@ -1,105 +1,20 @@
-import {
-  MessageTypeValues,
-  type MessageType,
-  PixelMessage,
-  type MessageOrType,
-  type MessageClass,
-  getMessageType,
-  isMessage,
-  getMessageName,
-  instantiateMessage,
-  serializeMessage,
-  deserializeMessage,
-  GenericPixelMessage,
-  PixelDesignAndColorValues,
-  type PixelDesignAndColor,
-  IAmADie,
-  PixelRollStateValues,
-  type PixelRollState,
-  RollState,
-  Telemetry,
-  BulkSetup,
-  BulkData,
-  BulkDataAck,
-  TransferAnimationSet,
-  TransferAnimationSetAck,
-  TransferTestAnimationSet,
-  TransferInstantAnimationsSetAckTypeValues,
-  type TransferInstantAnimationSetAckType,
-  TransferTestAnimationSetAck,
-  DebugLog,
-  PlaySound,
-  RequestTelemetry,
-  Blink,
-  BatteryLevel,
-  Rssi,
-  NotifyUser,
-  NotifyUserAck,
-  LedLoopback,
-  SetDesignAndColor,
-  SetName,
-  TransferInstantAnimationSet,
-  TransferInstantAnimationSetAck,
-  PlayInstantAnimation,
-} from "./Messages";
-import Pixel, { PixelStatus, PixelEventMap, PixelError } from "./Pixel";
+import Pixel, { IPixel, PixelStatus, PixelEventMap, PixelError } from "./Pixel";
 import PixelSession, {
   PixelSessionConnectionStatus,
   PixelSessionConnectionEvent,
 } from "./PixelSession";
 import PixelUuids from "./PixelUuids";
-import autoReconnect from "./autoReconnect";
+import getPixelEnumName from "./getPixelEnumName";
+import getPixelUniqueName from "./getPixelUniqueName";
+import repeatConnect from "./repeatConnect";
+import toFullUuid from "./toFullUuid";
+export * from "./Messages";
 
-export { PixelStatus, PixelEventMap, PixelError, Pixel };
+export { IPixel, PixelStatus, PixelEventMap, PixelError, Pixel };
 export { PixelUuids };
 export {
   PixelSession,
   PixelSessionConnectionStatus,
   PixelSessionConnectionEvent,
 };
-export { autoReconnect };
-
-export {
-  MessageTypeValues,
-  type MessageType,
-  PixelMessage,
-  type MessageOrType,
-  type MessageClass,
-  getMessageType,
-  isMessage,
-  getMessageName,
-  instantiateMessage,
-  serializeMessage,
-  deserializeMessage,
-  GenericPixelMessage,
-  PixelDesignAndColorValues,
-  type PixelDesignAndColor,
-  IAmADie,
-  PixelRollStateValues,
-  type PixelRollState,
-  RollState,
-  Telemetry,
-  BulkSetup,
-  BulkData,
-  BulkDataAck,
-  TransferAnimationSet,
-  TransferAnimationSetAck,
-  TransferTestAnimationSet,
-  TransferInstantAnimationsSetAckTypeValues,
-  type TransferInstantAnimationSetAckType,
-  TransferTestAnimationSetAck,
-  DebugLog,
-  PlaySound,
-  RequestTelemetry,
-  Blink,
-  BatteryLevel,
-  Rssi,
-  NotifyUser,
-  NotifyUserAck,
-  LedLoopback,
-  SetDesignAndColor,
-  SetName,
-  TransferInstantAnimationSet,
-  TransferInstantAnimationSetAck,
-  PlayInstantAnimation,
-};
+export { getPixelEnumName, getPixelUniqueName, repeatConnect, toFullUuid };

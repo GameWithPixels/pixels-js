@@ -10,6 +10,7 @@
   "scripts": {
     "px": "yarn workspace @systemic-games/pixels-app",
     "tb": "yarn workspace @systemic-games/pixels-toolbox",
+    "tb:eas-android": "cd apps && cd pixels-toolbox && eas build -p android --profile",
     "test:rn-ble": "yarn workspace @systemic-games/test-react-native-bluetooth-le",
     "test:rn-dfu": "yarn workspace @systemic-games/test-react-native-nordic-nrf5-dfu",
     "test:rn-rgb": "yarn workspace @systemic-games/test-vision-camera-rgb-averages",
@@ -22,11 +23,14 @@
     "pk:rn-px": "yarn workspace @systemic-games/react-native-pixels-connect prepare",
     "pk:native": "yarn pk:rn-ble && yarn pk:rn-dfu && yarn pk:rn-rgb && yarn pk:rn-px",
     "pk:all": "yarn pk:core && yarn pk:web && yarn pk:components && yarn pk:native",
+    "pub:core": "yarn pk:core && yarn workspace @systemic-games/pixels-core-utils publish && yarn workspace @systemic-games/pixels-core-animation publish && yarn workspace @systemic-games/pixels-core-connect publish && yarn workspace @systemic-games/pixels-edit-animation publish",
+    "pub:web": "yarn pk:web && yarn workspace @systemic-games/pixels-web-connect publish",
     "prepare": "yarn pk:all",
     "logcat": "adb logcat -s SystemicGames",
     "types": "tsc --build",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" --cache",
-    "lint:fix": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix"
+    "lint:fix": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix",
+    "docs": "yarn types && yarn typedoc"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
@@ -42,5 +46,8 @@
     "prettier": "^2.7.1",
     "typescript": "^4.8.4"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "typedoc": "^0.23.20"
+  }
 }

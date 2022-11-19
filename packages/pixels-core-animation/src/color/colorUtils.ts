@@ -1,17 +1,26 @@
+/**
+ * @category Color
+ */
 export interface IColor {
   r: number; // Normalized floating point value
   g: number; // Normalized floating point value
   b: number; // Normalized floating point value
 }
 
+/**
+ * @category Color
+ */
 export interface IColorHsv {
   h: number; // Normalized floating point value
   s: number; // Normalized floating point value
   v: number; // Normalized floating point value
 }
 
-// Adapted from https://gist.github.com/mjackson/5311256
+/**
+ * @category Color
+ */
 export function hsvToRgb({ h, s, v }: IColorHsv): IColor {
+  // Adapted from https://gist.github.com/mjackson/5311256
   const i = Math.floor(h * 6);
   const f = h * 6 - i;
   const p = v * (1 - s);
@@ -35,8 +44,11 @@ export function hsvToRgb({ h, s, v }: IColorHsv): IColor {
   }
 }
 
-// Adapted from https://gist.github.com/mjackson/5311256
+/**
+ * @category Color
+ */
 export function rgbToHsv({ r, g, b }: IColor): IColorHsv {
+  // Adapted from https://gist.github.com/mjackson/5311256
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const d = max - min;
@@ -60,14 +72,23 @@ export function rgbToHsv({ r, g, b }: IColor): IColorHsv {
   }
 }
 
+/**
+ * @category Color
+ */
 export function colorComponentToByte(c: number): number {
   return Math.round(255 * Math.min(1, Math.max(0, c)));
 }
 
+/**
+ * @category Color
+ */
 export function colorComponentToHex(v: number) {
   return ("0" + colorComponentToByte(v).toString(16)).slice(-2);
 }
 
+/**
+ * @category Color
+ */
 export function colorToString(color: IColor): string {
   return (
     "#" +

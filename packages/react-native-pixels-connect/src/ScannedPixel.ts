@@ -1,9 +1,10 @@
 import type {
+  IPixel,
   PixelDesignAndColor,
   PixelRollState,
 } from "@systemic-games/pixels-core-connect";
 
-export default interface ScannedPixel {
+export default interface ScannedPixel extends IPixel {
   readonly systemId: string;
   readonly pixelId: number;
   readonly address: number;

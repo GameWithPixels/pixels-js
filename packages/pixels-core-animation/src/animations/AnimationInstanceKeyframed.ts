@@ -2,6 +2,9 @@ import getFaceIndex from "../getFaceIndex";
 import AnimationInstance from "./AnimationInstance";
 import AnimationKeyframed from "./AnimationKeyframed";
 
+/**
+ * @category Animation Instance
+ */
 export default class AnimationInstanceKeyframed extends AnimationInstance {
   get preset(): AnimationKeyframed {
     return this.animationPreset as AnimationKeyframed;
@@ -11,7 +14,7 @@ export default class AnimationInstanceKeyframed extends AnimationInstance {
   /// Computes the list of LEDs that need to be on, and what their intensities should be
   /// based on the different tracks of this animation.
   /// </summary>
-  updateLeds(ms: number, retIndices: number[], retColors32: number[]): number {
+  updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
     const time = ms - this.startTime;
     const preset = this.preset;
 

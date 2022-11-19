@@ -1,5 +1,6 @@
 # pixels-js
-Pixels Typescript/JavaScript libraries and apps.
+
+Monorepo for Pixels Typescript/JavaScript libraries and apps.
 
 ## Setup
 
@@ -33,6 +34,13 @@ yarn lint
 For automatically fixing problems with ESLint:
 ```sh
 yarn lint:fix
+```
+
+## Publish
+
+Build the Toolbox on EAS:
+```sh
+yarn tb:eas-android preview
 ```
 
 ### Contents

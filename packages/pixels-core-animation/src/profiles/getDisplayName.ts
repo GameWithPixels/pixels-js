@@ -5,11 +5,17 @@ import {
 import { ActionType, ActionTypeValues } from "./ActionType";
 import { ConditionType, ConditionTypeValues } from "./ConditionType";
 
+/**
+ * @category Profile
+ */
 export interface NameAndOrder {
   name: string;
   order: number;
 }
 
+/**
+ * @category Profile
+ */
 export function getAnimationTypeDisplayName(
   animType: AnimationType
 ): NameAndOrder | undefined {
@@ -31,6 +37,9 @@ export function getAnimationTypeDisplayName(
   }
 }
 
+/**
+ * @category Profile
+ */
 export function getActionTypeDisplayName(
   actionType: ActionType
 ): NameAndOrder | undefined {
@@ -46,6 +55,9 @@ export function getActionTypeDisplayName(
   }
 }
 
+/**
+ * @category Profile
+ */
 export function getConditionTypeDisplayName(
   conditionType: ConditionType
 ): NameAndOrder | undefined {

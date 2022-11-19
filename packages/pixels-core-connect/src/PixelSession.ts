@@ -1,4 +1,4 @@
-/** List of possible connection statuses for a @see PixelSession. */
+/** List of possible connection statuses for a {@link PixelSession}. */
 export type PixelSessionConnectionStatus =
   | "connecting"
   | "connected"
@@ -11,7 +11,7 @@ export type PixelSessionConnectionStatus =
 export interface PixelSessionConnectionEvent {
   pixelSystemId: string;
   connectionStatus: PixelSessionConnectionStatus;
-  //TODO add reason
+  // TODO add reason
 }
 
 /**

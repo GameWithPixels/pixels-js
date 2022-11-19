@@ -39,21 +39,21 @@ import {
   NotifyUserAck,
   serializeMessage,
   SetName,
+  PixelDesignAndColor,
+  PixelDesignAndColorValues,
+  PixelRollStateValues,
+  PixelRollStateNames,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import createTypedEventEmitter, {
   EventReceiver,
 } from "./createTypedEventEmitter";
+import getPixelEnumName from "./getPixelEnumName";
 
-function to2(n: number): string {
-  return n < 10 ? `0${n}` : n.toString();
-}
-
-function to3(n: number): string {
-  return n < 100 ? `0${to2(n)}` : n.toString();
-}
-
+// Returns a string with the current time with a millisecond precision
 function getTime(): string {
+  const to2 = (n: number) => n.toString().padStart(2, "0");
+  const to3 = (n: number) => n.toString().padStart(3, "0");
   const d = new Date();
   return (
     to2(d.getHours()) +
@@ -66,6 +66,10 @@ function getTime(): string {
   );
 }
 
+/**
+ * List of possible Pixel statuses.
+ * @category Pixel
+ */
 export type PixelStatus =
   | "disconnected"
   | "connecting"
@@ -73,12 +77,46 @@ export type PixelStatus =
   | "ready"
   | "disconnecting";
 
-/** Event map for {@link Pixel} class. */
-export interface PixelEventMap {
-  status: PixelStatus;
-  message: MessageOrType;
+/**
+ * Data for the "rollState" event.
+ * @category Pixel
+ */
+export interface RollStateEventData {
+  face: number;
+  state: PixelRollStateNames;
 }
 
+/**
+ * Data for the "userMessage" event.
+ * @category Pixel
+ */
+export interface UserMessageEventData {
+  message: string;
+  withCancel: boolean;
+  response: (okCancel: boolean) => Promise<void>;
+}
+
+/**
+ * Event map for {@link Pixel} class.
+ * @category Pixel
+ */
+export interface PixelEventMap {
+  /** Connection status update. */
+  status: PixelStatus;
+  /** Message notification. */
+  message: MessageOrType;
+  /** Roll state changed notification. */
+  rollState: RollStateEventData;
+  /** Roll value notification. */
+  roll: number;
+  /** User message notification. */
+  userMessage: UserMessageEventData;
+}
+
+/**
+ * Class used by {@link Pixel} to throw errors.
+ * @category Pixel
+ */
 export class PixelError extends Error {
   private _pixel: Pixel;
 
@@ -93,34 +131,51 @@ export class PixelError extends Error {
 }
 
 /**
+ * Common accessible values for all Pixel implementations.
+ * @category Pixel
+ */
+export interface IPixel {
+  readonly systemId: string;
+  readonly pixelId: number;
+  readonly name: string;
+  readonly ledCount: number;
+  readonly designAndColor: PixelDesignAndColor;
+  readonly buildTimestamp: number;
+}
+
+/**
  * Represents a Pixel die.
  * Most of its methods require that the instance is connected to the Pixel device.
  * Call the {@link connect} method to initiate a connection.
+ * @category Pixel
  */
-export default class Pixel {
+export default class Pixel implements IPixel {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
-  private _notifyUserListener?: (message: MessageOrType) => void;
 
   // Log function
   private readonly _logFunc: (msg: unknown) => void;
 
   // Connection data
-  private _status: PixelStatus;
   private readonly _session: PixelSession;
+  private _status: PixelStatus;
 
   // Pixel data
   private _info?: IAmADie = undefined;
+  private _rollState: {
+    face: number;
+    state: PixelRollStateNames;
+  };
 
-  /** Indicates whether the Pixel is in the process of being connected.*/
+  /** Gets this Pixel's last known connection status.*/
   get status(): PixelStatus {
     return this._status;
   }
 
   /** Shorthand for checking if Pixel status is "ready". */
-  get ready(): boolean {
-    return this._status === "ready";
+  get isReady(): boolean {
+    return this.status === "ready";
   }
 
   /** Gets the id assigned by the OS to Pixel Bluetooth peripheral. */
@@ -143,6 +198,24 @@ export default class Pixel {
     return this._info?.ledCount ?? 0;
   }
 
+  /** Gets the Pixel design and color. */
+  get designAndColor(): PixelDesignAndColor {
+    return this._info?.designAndColor ?? PixelDesignAndColorValues.unknown;
+  }
+
+  /** Gets the Pixel firmware build timestamp (Unix epoch). */
+  get buildTimestamp(): number {
+    return this._info?.buildTimestamp ?? 0;
+  }
+
+  /** Gets the Pixel last know roll state. */
+  get rollState(): {
+    face: number;
+    state: PixelRollStateNames;
+  } {
+    return { ...this._rollState };
+  }
+
   /**
    * Instantiates a Pixel.
    */
@@ -160,6 +233,34 @@ export default class Pixel {
     });
     this._session = session;
     this._status = "disconnected"; //TODO use the getLastConnectionStatus()
+    this._rollState = { face: 0, state: "unknown" };
+    // Subscribe to roll messages and emit roll event
+    this.addMessageListener("rollState", (msgOrType) => {
+      const msg = msgOrType as RollState;
+      this._rollState = {
+        face: msg.faceIndex + 1,
+        state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
+      };
+      this._evEmitter.emit("rollState", this.rollState);
+      if (msg.state === PixelRollStateValues.onFace) {
+        this._evEmitter.emit("roll", msg.faceIndex + 1);
+      }
+    });
+    // Subscribe to user message notification
+    this.addMessageListener("notifyUser", (message: MessageOrType) => {
+      const msg = message as NotifyUser;
+      this._evEmitter.emit("userMessage", {
+        message: msg.message,
+        withCancel: msg.cancel,
+        response: (okCancel: boolean) => {
+          return this.sendMessage(
+            safeAssign(new NotifyUserAck(), {
+              okCancel,
+            })
+          );
+        },
+      });
+    });
   }
 
   /**
@@ -167,22 +268,21 @@ export default class Pixel {
    * @returns A promise resolving to this instance.
    */
   async connect(): Promise<Pixel> {
-    //TODO timeout?
+    //TODO add timeout
     // Our connect function
     try {
       //TODO should we try to connect even if status is not disconnected?
-      if (this._status !== "disconnected") {
+      if (this.status !== "disconnected") {
         throw new PixelError(
           this,
-          `Can only connect when in disconnected state, not in ${this._status} state`
+          `Can only connect when in disconnected state, not in ${this.status} state`
         );
       }
 
-      // Immediately set status to connecting
-      this._status = "connecting";
       await this._session.connect();
 
-      if (this._status === "connecting") {
+      // @ts-expect-error status was already tested above but should have changed since
+      if (this.status === "connecting") {
         // Notify connected
         this._updateStatus("identifying");
 
@@ -194,23 +294,30 @@ export default class Pixel {
         // Identify Pixel
         this._log("Waiting on identification message");
         const response = await this.sendAndWaitForResponse(
-          MessageTypeValues.WhoAreYou,
-          MessageTypeValues.IAmADie
+          MessageTypeValues.whoAreYou,
+          MessageTypeValues.iAmADie
         );
 
-        // @ts-expect-error status was already tested above but should have changed since
-        if (this._status === "identifying") {
+        if (this.status === "identifying") {
           this._info = response as IAmADie;
+
+          // Query roll state
+          await this.sendAndWaitForResponse(
+            MessageTypeValues.requestRollState,
+            MessageTypeValues.rollState
+          );
+
+          // We're ready!
           this._updateStatus("ready");
         }
       }
 
       //TODO also check status change counter
       // @ts-expect-error status was already tested above but should have changed since
-      if (this._status !== "ready") {
+      if (this.status !== "ready") {
         throw new PixelError(
           this,
-          `Status changed while connecting, now in ${this._status} state`
+          `Status changed while connecting, now in ${this.status} state`
         );
       }
       return this;
@@ -232,25 +339,40 @@ export default class Pixel {
     return this;
   }
 
+  /**
+   * Adds the given listener function to the end of the listeners array
+   * for the event with the given name.
+   * See {@link PixelEventMap} for the list of events and their associated
+   * data.
+   * @param eventName The name of the event.
+   * @param listener The callback function.
+   */
   addEventListener<K extends keyof PixelEventMap>(
     eventName: K,
     listener: EventReceiver<PixelEventMap[K]>
-  ) {
+  ): void {
     this._evEmitter.addListener(eventName, listener);
   }
 
+  /**
+   * Removes the specified listener function from the listener array
+   * for the event with the given name.
+   * See {@link PixelEventMap} for the list of events and their associated
+   * data.
+   * @param eventName The name of the event.
+   * @param listener The callback function to unregister.
+   */
   removeEventListener<K extends keyof PixelEventMap>(
     eventName: K,
     listener: EventReceiver<PixelEventMap[K]>
-  ) {
+  ): void {
     this._evEmitter.removeListener(eventName, listener);
   }
 
   /**
-   * Register a listener to be invoked on receiving messages of a given type.
-   *
+   * Register a listener to be invoked on receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
-   * @param listener The listener that will be invoked when a message of the given type is received.
+   * @param listener The callback function.
    */
   addMessageListener(
     msgType: MessageType | keyof typeof MessageTypeValues,
@@ -265,10 +387,9 @@ export default class Pixel {
   }
 
   /**
-   * Unregister a listener invoked on receiving messages of the same type.
-   *
+   * Unregister a listener invoked on receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
-   * @param listener The listener to unregister.
+   * @param listener The callback function to unregister.
    */
   removeMessageListener(
     msgType: MessageType | keyof typeof MessageTypeValues,
@@ -280,43 +401,6 @@ export default class Pixel {
       }`,
       listener
     );
-  }
-
-  addNotifyUserListener(
-    listener: (
-      message: string,
-      withCancel: boolean,
-      response: (okCancel: boolean) => Promise<void>
-    ) => void
-  ) {
-    if (this._notifyUserListener) {
-      this.removeMessageListener("NotifyUser", this._notifyUserListener);
-    }
-    this._notifyUserListener = (message: MessageOrType) => {
-      const msg = message as NotifyUser;
-      listener(msg.message, msg.cancel, (okCancel: boolean) => {
-        return this.sendMessage(
-          safeAssign(new NotifyUserAck(), {
-            okCancel,
-          })
-        );
-      });
-    };
-    this.addMessageListener("NotifyUser", this._notifyUserListener);
-  }
-
-  removeNotifyUserListener(
-    _listener: (
-      message: string,
-      withCancel: boolean,
-      response: (okCancel: boolean) => Promise<void>
-    ) => void
-  ) {
-    //TODO use event target or else
-    if (this._notifyUserListener) {
-      this.removeMessageListener("NotifyUser", this._notifyUserListener);
-      this._notifyUserListener = undefined;
-    }
   }
 
   /**
@@ -382,7 +466,7 @@ export default class Pixel {
     if (name.length) {
       await this.sendAndWaitForResponse(
         safeAssign(new SetName(), { name }),
-        MessageTypeValues.SetNameAck
+        MessageTypeValues.setNameAck
       );
     }
   }
@@ -391,41 +475,34 @@ export default class Pixel {
    * Request Pixel to start faces calibration sequence.
    */
   async startCalibration(): Promise<void> {
-    await this.sendMessage(MessageTypeValues.Calibrate);
+    await this.sendMessage(MessageTypeValues.calibrate);
   }
 
   /**
-   * Asynchronously retrieves the roll state.
-   * @returns A promise revolving to an object with the roll state information.
+   * Asynchronously gets the battery state.
+   * @returns A promise revolving to an object with the batter level in
+   *          percentage and flag indicating whether it is charging or not.
    */
-  async getRollState(): Promise<RollState> {
+  async queryBatteryState(): Promise<{ level: number; isCharging: boolean }> {
     const response = await this.sendAndWaitForResponse(
-      MessageTypeValues.RequestRollState,
-      MessageTypeValues.RollState
+      MessageTypeValues.requestBatteryLevel,
+      MessageTypeValues.batteryLevel
     );
-    return response as RollState;
+    const msg = response as BatteryLevel;
+    return {
+      level: 100 * msg.level,
+      isCharging: msg.charging,
+    };
   }
 
   /**
-   * Asynchronously gets the battery level.
-   * @returns A promise revolving to an object with the batter level information.
-   */
-  async getBatteryLevel(): Promise<BatteryLevel> {
-    const response = await this.sendAndWaitForResponse(
-      MessageTypeValues.RequestBatteryLevel,
-      MessageTypeValues.BatteryLevel
-    );
-    return response as BatteryLevel;
-  }
-
-  /**
-   * Asynchronously gets the RSSI.
+   * Asynchronously gets the RSSI value.
    * @returns A promise revolving to the RSSI value, between 0 and 65535.
    */
-  async getRssi(): Promise<number> {
+  async queryRssi(): Promise<number> {
     const response = await this.sendAndWaitForResponse(
-      MessageTypeValues.RequestRssi,
-      MessageTypeValues.Rssi
+      MessageTypeValues.requestRssi,
+      MessageTypeValues.rssi
     );
     return (response as Rssi).value;
   }
@@ -435,7 +512,7 @@ export default class Pixel {
    */
   async turnOff(): Promise<void> {
     await this.sendMessage(
-      MessageTypeValues.Sleep,
+      MessageTypeValues.sleep,
       true // withoutResponse
     );
   }
@@ -467,7 +544,7 @@ export default class Pixel {
     });
     await this.sendAndWaitForResponse(
       blinkMsg,
-      MessageTypeValues.BlinkFinished
+      MessageTypeValues.blinkFinished
     );
   }
 
@@ -475,7 +552,7 @@ export default class Pixel {
    * Requests the Pixel to stop all animations currently playing.
    */
   async stopAllAnimations(): Promise<void> {
-    await this.sendMessage(MessageTypeValues.StopAllAnimations);
+    await this.sendMessage(MessageTypeValues.stopAllAnimations);
   }
 
   /**
@@ -532,7 +609,7 @@ export default class Pixel {
       );
 
       await this._uploadBulkDataWithAck(
-        MessageTypeValues.TransferAnimationSetFinished,
+        MessageTypeValues.transferAnimationSetFinished,
         data,
         progressCallback
       );
@@ -576,7 +653,7 @@ export default class Pixel {
     );
 
     switch (ack.ackType) {
-      case TransferInstantAnimationsSetAckTypeValues.Download:
+      case TransferInstantAnimationsSetAckTypeValues.download:
         {
           // Upload data
           const hashStr = (hash >>> 0).toString(16).toUpperCase();
@@ -586,14 +663,14 @@ export default class Pixel {
               `and hash 0x${hashStr}`
           );
           await this._uploadBulkDataWithAck(
-            MessageTypeValues.TransferTestAnimationSetFinished,
+            MessageTypeValues.transferTestAnimationSetFinished,
             data,
             progressCallback
           );
         }
         break;
 
-      case TransferInstantAnimationsSetAckTypeValues.UpToDate:
+      case TransferInstantAnimationsSetAckTypeValues.upToDate:
         // Nothing to do
         this._log("Test animation is already up-to-date");
         break;
@@ -639,7 +716,7 @@ export default class Pixel {
     );
 
     switch (ack.ackType) {
-      case TransferInstantAnimationsSetAckTypeValues.Download:
+      case TransferInstantAnimationsSetAckTypeValues.download:
         {
           // Upload data
           const hashStr = (hash >>> 0).toString(16).toUpperCase();
@@ -649,14 +726,14 @@ export default class Pixel {
               `and hash 0x${hashStr}`
           );
           await this._uploadBulkDataWithAck(
-            MessageTypeValues.TransferInstantAnimationSetFinished,
+            MessageTypeValues.transferInstantAnimationSetFinished,
             data,
             progressCallback
           );
         }
         break;
 
-      case TransferInstantAnimationsSetAckTypeValues.UpToDate:
+      case TransferInstantAnimationsSetAckTypeValues.upToDate:
         // Nothing to do
         this._log("Instant animations are already up-to-date");
         break;
@@ -812,7 +889,7 @@ export default class Pixel {
     // Send setup message
     const setupMsg = new BulkSetup();
     setupMsg.size = remainingSize;
-    await this.sendAndWaitForResponse(setupMsg, MessageTypeValues.BulkSetupAck);
+    await this.sendAndWaitForResponse(setupMsg, MessageTypeValues.bulkSetupAck);
     this._log("Ready for receiving data");
 
     // Then transfer data
@@ -824,7 +901,7 @@ export default class Pixel {
       dataMsg.data = data.slice(offset, offset + dataMsg.size);
 
       //TODO test disconnecting die in middle of transfer
-      await this.sendAndWaitForResponse(dataMsg, MessageTypeValues.BulkDataAck);
+      await this.sendAndWaitForResponse(dataMsg, MessageTypeValues.bulkDataAck);
 
       remainingSize -= dataMsg.size;
       offset += dataMsg.size;

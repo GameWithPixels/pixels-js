@@ -5,12 +5,15 @@ import AnimationInstance from "./AnimationInstance";
 import AnimationRainbow from "./AnimationRainbow";
 import Constants from "./Constants";
 
+/**
+ * @category Animation Instance
+ */
 export default class AnimationInstanceRainbow extends AnimationInstance {
   get preset(): AnimationRainbow {
     return this.animationPreset as AnimationRainbow;
   }
 
-  updateLeds(ms: number, retIndices: number[], retColors32: number[]): number {
+  updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
     const preset = this.preset;
 
     // Compute color
@@ -31,12 +34,12 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
     let retCount = 0;
     if (preset.traveling !== 0) {
       // Fill the indices and colors for the anim controller to know how to update LEDs
-      for (let i = 0; i < Constants.maxLedsCount; ++i) {
+      for (let i = 0; i < Constants.maxLEDsCount; ++i) {
         if ((preset.faceMask & (1 << i)) !== 0) {
           retIndices[retCount] = getFaceIndex(i);
           retColors32[retCount] = GammaUtils.gamma32(
             Color32Utils.rainbowWheel(
-              (wheelPos + (i * 256) / Constants.maxLedsCount) % 256,
+              (wheelPos + (i * 256) / Constants.maxLEDsCount) % 256,
               intensity
             )
           );
@@ -50,7 +53,7 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
       );
 
       // Fill the indices and colors for the anim controller to know how to update LEDs
-      for (let i = 0; i < Constants.maxLedsCount; ++i) {
+      for (let i = 0; i < Constants.maxLEDsCount; ++i) {
         if ((preset.faceMask & (1 << i)) !== 0) {
           retIndices[retCount] = i;
           retColors32[retCount] = color;
@@ -65,7 +68,7 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
   stop(retIndices: number[]): number {
     const preset = this.preset;
     let retCount = 0;
-    for (let i = 0; i < Constants.maxLedsCount; ++i) {
+    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
       if ((preset.faceMask & (1 << i)) !== 0) {
         retIndices[retCount] = i;
         retCount++;

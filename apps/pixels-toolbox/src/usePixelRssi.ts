@@ -21,17 +21,17 @@ export default function (
   useEffect(() => {
     if (pixel && (active || alwaysActive)) {
       const rssiListener = (msg: MessageOrType) => setRssi(msg as Rssi);
-      pixel.addMessageListener("Rssi", rssiListener);
+      pixel.addMessageListener("rssi", rssiListener);
       const id = setInterval(() => {
         if (pixel.status === "ready") {
           // Send request and ignore any error as the connection state
           // might change at any moment and make sendMessage throw an exception
-          pixel.sendMessage(MessageTypeValues.RequestRssi).catch(() => {});
+          pixel.sendMessage(MessageTypeValues.requestRssi).catch(() => {});
         }
       }, refreshPeriod);
       return () => {
         clearInterval(id);
-        pixel.removeMessageListener("Rssi", rssiListener);
+        pixel.removeMessageListener("rssi", rssiListener);
         setRssi(undefined);
       };
     }

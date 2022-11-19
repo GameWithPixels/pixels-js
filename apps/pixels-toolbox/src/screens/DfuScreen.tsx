@@ -8,6 +8,7 @@ import {
   DfuState,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
+  toFullUuid,
   PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelUuids,
@@ -30,11 +31,10 @@ import AppPage from "~/components/AppPage";
 import DfuFile from "~/components/DfuFile";
 import PixelInfoBox from "~/components/PixelInfoBox";
 import Spacer from "~/components/Spacer";
-import getDfuFileInfo from "~/getDfuFileInfo";
+import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import { DfuScreenProps } from "~/navigation";
 import globalStyles, { sr } from "~/styles";
 import toLocaleDateTimeString from "~/toLocaleDateTimeString";
-import toUuid128bits from "~/toUuid128bits";
 import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
 
 type ExtendedDfuState = DfuState | "Initializing";
@@ -64,7 +64,7 @@ function DfuPage({ route }: DfuScreenProps) {
     if (dfuTargetScan) {
       scannerDispatch("stop");
       setScannedDfuTargets([]);
-      Scanner.start(toUuid128bits(PixelUuids.dfuServiceShortUuid), (p) => {
+      Scanner.start(toFullUuid(PixelUuids.dfuServiceShortUuid), (p) => {
         setScannedDfuTargets((targets) => {
           if (targets.every((target) => target.address !== p.address)) {
             return [...targets, p];
@@ -157,8 +157,8 @@ function DfuPage({ route }: DfuScreenProps) {
                 name: p.name,
                 rssi: 0,
                 ledCount: 0,
-                designAndColor: PixelDesignAndColorValues.Unknown,
-                rollState: PixelRollStateValues.Unknown,
+                designAndColor: PixelDesignAndColorValues.unknown,
+                rollState: PixelRollStateValues.unknown,
                 currentFace: 0,
                 batteryLevel: 0,
                 buildTimestamp: 0,

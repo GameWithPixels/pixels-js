@@ -1,5 +1,9 @@
 import { enumValue } from "@systemic-games/pixels-core-utils";
 
+/**
+ * @category Animation
+ * @enum
+ */
 export const AnimationTypeValues = {
   Unknown: enumValue(0),
   Simple: enumValue(),
@@ -12,6 +16,14 @@ export const AnimationTypeValues = {
   Name: enumValue(),
 } as const;
 
-/** The "enum" type for {@link AnimationTypeValues}. */
-export type AnimationType =
-  typeof AnimationTypeValues[keyof typeof AnimationTypeValues];
+/**
+ * The names for the "enum" type {@link AnimationTypeValues}.
+ * @category Animation
+ */
+export type AnimationTypeNames = keyof typeof AnimationTypeValues;
+
+/**
+ * The "enum" type for {@link AnimationTypeValues}.
+ * @category Animation
+ */
+export type AnimationType = typeof AnimationTypeValues[AnimationTypeNames];

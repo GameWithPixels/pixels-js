@@ -24,14 +24,14 @@ export default function (
     if (pixel && status === "ready" && (active || alwaysActive)) {
       const telemetryListener = (msg: MessageOrType) =>
         setTelemetry(msg as Telemetry);
-      pixel.addMessageListener("Telemetry", telemetryListener);
+      pixel.addMessageListener("telemetry", telemetryListener);
       // Send request and ignore any error as the connection state
       // might change at any moment and make sendMessage throw an exception
       const msg = new RequestTelemetry();
       msg.activate = true;
       pixel.sendMessage(msg).catch(() => {});
       return () => {
-        pixel.removeMessageListener("Telemetry", telemetryListener);
+        pixel.removeMessageListener("telemetry", telemetryListener);
         pixel.sendMessage(new RequestTelemetry()).catch(() => {});
         setTelemetry(undefined);
       };

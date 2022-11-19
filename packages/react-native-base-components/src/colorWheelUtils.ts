@@ -128,7 +128,7 @@ export interface ColorWheelParams {
 
 /**
  * Generates the shapes of the different colored parts of a color wheel.
- * @see ColorWheelParams for the parameters.
+ * See {@link ColorWheelParams} for the parameters.
  * @returns A list of shapes.
  */
 export function generateColorWheel({

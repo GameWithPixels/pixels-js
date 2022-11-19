@@ -1,27 +1,27 @@
 import {
-  ScannedPixel,
+  getPixelEnumName,
   Pixel,
   PixelDesignAndColorValues,
+  ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
+import { PropsWithChildren } from "react";
 import {
   Text,
   StyleSheet,
   // eslint-disable-next-line import/namespace
 } from "react-native";
 
-import getPixelEnumName from "~/getPixelEnumName";
 import globalStyles from "~/styles";
 
-export interface PixelInfoBoxProps {
+export interface PixelInfoBoxProps extends PropsWithChildren {
   pixel: Pixel | ScannedPixel;
-  children?: JSX.Element | JSX.Element[];
 }
 
-export default function ({ pixel, children }: PixelInfoBoxProps) {
+export default function ({ children, pixel }: PixelInfoBoxProps) {
   const pixIdHex = pixel.pixelId.toString(16).toLocaleUpperCase();
   const scanned = pixel instanceof Pixel ? undefined : pixel;
   const design = getPixelEnumName(
-    scanned?.designAndColor ?? PixelDesignAndColorValues.Unknown,
+    scanned?.designAndColor ?? PixelDesignAndColorValues.unknown,
     PixelDesignAndColorValues
   );
   const batteryLevel = Math.round((scanned?.batteryLevel ?? 0) / 2.55);
