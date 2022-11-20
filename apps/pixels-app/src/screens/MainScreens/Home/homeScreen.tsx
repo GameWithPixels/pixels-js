@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
@@ -5,31 +6,29 @@ import {
   PixelTheme,
   Toggle,
   createPixelTheme,
-  LightingStyleSelection,
   PairedPixelInfoComponent,
   PixelInfo,
   ScannedPixelInfoComponent,
   SquarePairedPixelInfo,
-  FaceMask,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, Button, Center, HStack, Spacer, Text, VStack } from "native-base";
+import { Box, Center, HStack, Spacer, Text, VStack } from "native-base";
 import React from "react";
 
 import { HomeScreenStackParamList } from "~/Navigation";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
+// import { useAppDispatch, useAppSelector } from "~/app/hooks";
+// import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
 
-function ReduxExample() {
-  const appDispatch = useAppDispatch();
-  const { themeMode } = useAppSelector((state) => state.themeMode);
-  return (
-    <HStack>
-      <Text>{themeMode}</Text>
-      <Button onPress={() => appDispatch(setLightMode())}>Light</Button>
-      <Button onPress={() => appDispatch(setDarkMode())}>Dark</Button>
-    </HStack>
-  );
-}
+// function ReduxExample() {
+//   const appDispatch = useAppDispatch();
+//   const { themeMode } = useAppSelector((state) => state.themeMode);
+//   return (
+//     <HStack>
+//       <Text>{themeMode}</Text>
+//       <Button onPress={() => appDispatch(setLightMode())}>Light</Button>
+//       <Button onPress={() => appDispatch(setDarkMode())}>Dark</Button>
+//     </HStack>
+//   );
+// }
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -148,13 +147,21 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
           <Spacer />
           {/* Switch scanned display toggle */}
           <Toggle
-            text="Switch display"
+            space={0}
             onToggle={() => {
               SwitchPixelsDisplay(!PixelsDisplay);
             }}
             isChecked={PixelsDisplay}
+            Icon={
+              <MaterialIcons
+                name="panorama-horizontal"
+                size={24}
+                color="white"
+              />
+            }
             //value={scannedPixelsDisplay}
           />
+          <MaterialIcons name="panorama-vertical" size={22} color="white" />
         </HStack>
         <Box rounded="md" p={2} bg="gray.700">
           {pairedPixels.length < 1 ? (
@@ -175,7 +182,7 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
                     <SquarePairedPixelInfo
                       pixel={pixelInfo}
                       onPress={() => {
-                        navigation.navigate("PixelDetailScreen", {
+                        navigation.navigate("Pixel Details", {
                           pixelName: pixelInfo.name,
                         });
                       }}
@@ -279,10 +286,10 @@ export default function HomeScreen() {
           scannedPixels={scannedPixels}
           setPairedPixels={SetPairedPixels}
         />
-        <FaceMask diceFaces={20} />
+        {/* <FaceMask diceFaces={20} />
         <ReduxExample />
         <ReduxExample />
-        <LightingStyleSelection />
+        <LightingStyleSelection /> */}
       </VStack>
     </PxAppPage>
   );

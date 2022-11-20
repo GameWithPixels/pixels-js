@@ -3,6 +3,7 @@ import {
   AntDesign,
   MaterialCommunityIcons,
   Ionicons,
+  Octicons,
 } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import {
@@ -13,7 +14,7 @@ import {
   ProfilesScrollList,
   PxAppPage,
   RSSIStrength,
-  ProfilesListPopUp,
+  Toggle,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
@@ -60,6 +61,7 @@ function Histogram({ rolls }: HistogramProps) {
           const h = (barsMaxHeight * r) / Math.max(...rolls);
           return (
             <Rect
+              key={i}
               x={gradCellWidth + i * barCellWidth}
               y={barsMaxHeight - h}
               width={barCellWidth * barWidthRatio}
@@ -71,6 +73,7 @@ function Histogram({ rolls }: HistogramProps) {
         {rolls.map((_, i) => (
           /* @ts-expect-error*/
           <SvgText
+            key={i}
             transform={`translate(${
               (i + 0.5 - (0.3 * fontSize) / barCellWidth) * barCellWidth +
               gradCellWidth
@@ -86,6 +89,7 @@ function Histogram({ rolls }: HistogramProps) {
         {[...Array(numGradValues).keys()].map((i) => (
           /* @ts-expect-error */
           <SvgText
+            key={i}
             x={gradCellWidth / 2}
             y={
               0.8 * fontSize +
@@ -178,6 +182,56 @@ function DiceUseTime() {
   );
 }
 
+function DiceStats() {
+  const [showStats, SetShowStats] = React.useState(true);
+  return (
+    <Box>
+      <HStack alignItems="center" space={2}>
+        <Octicons name="graph" size={24} color="white" />
+        <Text bold>Dice Stats</Text>
+        <Spacer />
+        <Toggle
+          text="Hide Stats"
+          onToggle={() => {
+            SetShowStats(!showStats);
+          }}
+          isChecked={showStats}
+        />
+      </HStack>
+      {/* {DiceStats} */}
+      <Box rounded="md" bg="pixelColors.highlightGray" minH="20px">
+        {!showStats && (
+          <VStack p={2} space={4}>
+            <Center width="100%" maxW="100%" h="150px">
+              <HStack space={4}>
+                {DiceRolls()}
+                {DiceUseTime()}
+              </HStack>
+            </Center>
+            <Card bg="primary.300" verticalSpace={4}>
+              <HStack space={3} alignItems="baseline">
+                <Ionicons name="stats-chart" size={30} color="black" />
+                <Text bold fontSize="xl">
+                  Lifetime rolls per face
+                </Text>
+              </HStack>
+              <Center width="300" h="150" alignSelf="center">
+                <Histogram
+                  viewRatio={2}
+                  rolls={[
+                    30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45,
+                    91, 12, 56, 35, 45,
+                  ]}
+                />
+              </Center>
+            </Card>
+          </VStack>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
   primaryColors: {
@@ -221,7 +275,7 @@ export default function PixelDetailScreen() {
             <Box flex={2.5} paddingLeft={0}>
               <Image
                 size={180}
-                source={require("../../../../assets/DieImageTransparent.png")}
+                source={require("~/../assets/RainbowDice.png")}
                 alt="placeHolder"
               />
             </Box>
@@ -265,42 +319,6 @@ export default function PixelDetailScreen() {
           <HStack alignItems="center" space={2} paddingBottom={2}>
             <AntDesign name="profile" size={24} color="white" />
             <Text bold>Recent profiles :</Text>
-            <Spacer />
-            {/* <Pressable
-              onPress={() => {
-                navigation.navigate("ProfilesScreen");
-              }}
-            >
-              <HStack
-                alignItems="center"
-                space={1}
-                bg="pixelColors.highlightGray"
-                p={1}
-                rounded="md"
-              >
-                <Text>More profiles </Text>
-                <AddIcon />
-              </HStack>
-            </Pressable> */}
-            <ProfilesListPopUp
-              ProfilesInfo={[
-                { profileName: "Profile 1" },
-                { profileName: "Profile 2" },
-                { profileName: "Profile 3" },
-                { profileName: "Profile 4" },
-                { profileName: "Profile 5" },
-                { profileName: "Profile 6" },
-                { profileName: "Profile 7" },
-                { profileName: "Profile 8" },
-                { profileName: "Profile 9" },
-                { profileName: "Profile 10" },
-                { profileName: "Profile 11" },
-                { profileName: "Profile 12" },
-                { profileName: "Profile 13" },
-                { profileName: "Profile 14" },
-                { profileName: "Profile 15" },
-              ]}
-            />
           </HStack>
           <ProfilesScrollList
             availableProfiles={[
@@ -336,37 +354,8 @@ export default function PixelDetailScreen() {
           />
         </Box>
 
-        {/* {DiceStats} */}
-        <Center width="100%" maxW="100%" h="150px">
-          <HStack space={4}>
-            {DiceRolls()}
-            {DiceUseTime()}
-          </HStack>
-        </Center>
-
-        {/* <Center rounded="lg" bg="pixelColors.highlightGray" p={2}>
-          <Image
-            source={require("../../../../assets/RollsStatsPlaceHolder1.png")}
-            alt="placeHolder"
-          />
-        </Center> */}
-        <Card bg="primary.300" verticalSpace={4}>
-          <HStack space={3} alignItems="baseline">
-            <Ionicons name="stats-chart" size={30} color="black" />
-            <Text bold fontSize="xl">
-              Lifetime rolls per face
-            </Text>
-          </HStack>
-          <Center width="300" h="150" alignSelf="center">
-            <Histogram
-              viewRatio={2}
-              rolls={[
-                30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45, 91,
-                12, 56, 35, 45,
-              ]}
-            />
-          </Center>
-        </Card>
+        {/* Dice Stats is used without params until we switch to real data */}
+        {DiceStats()}
 
         {/* {Firmware infos} */}
         {/* <Divider bg="primary.200" width="90%" alignSelf="center" />

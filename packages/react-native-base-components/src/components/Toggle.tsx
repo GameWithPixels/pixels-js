@@ -6,11 +6,13 @@ import {
   usePropsResolution,
 } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
+import { ReactNode } from "react";
 
 export interface ToggleProps extends ISwitchProps {
   text?: string;
   toggleSize?: SizeType;
   space?: number | string;
+  Icon?: ReactNode | ReactNode[];
 }
 
 export function Toggle(props: ToggleProps) {
@@ -18,7 +20,7 @@ export function Toggle(props: ToggleProps) {
   return (
     <HStack space={resolvedProps.space} alignItems="center">
       <Text>{props.text}</Text>
-      {props.children}
+      {props.Icon}
       <Switch
         {...resolvedProps}
         onThumbColor={resolvedProps.onThumbColor}

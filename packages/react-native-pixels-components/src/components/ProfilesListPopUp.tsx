@@ -1,8 +1,9 @@
-import { PopUp } from "@systemic-games/react-native-base-components";
-import { AddIcon, Box, Button, HStack } from "native-base";
+import { Feather } from "@expo/vector-icons";
+import { Card, PopUp } from "@systemic-games/react-native-base-components";
+import { Box, Center, HStack, Pressable, Text } from "native-base";
 import React from "react";
 
-import { ProfileCard, ProfileInfo } from "./ProfilesScrollList";
+import { ProfileCard, ProfileInfo } from "./ProfileCard";
 
 export interface ProfilesPopUpListProps {
   ProfilesInfo?: ProfileInfo[];
@@ -12,13 +13,32 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
   const [showPopUp, SetShowPopUp] = React.useState(false);
   return (
     <>
-      <Button
+      {/* <Button
         bg="pixelColors.highlightGray"
         rightIcon={<AddIcon />}
         onPress={() => SetShowPopUp(true)}
       >
         More profiles
-      </Button>
+      </Button> */}
+      <Pressable onPress={() => SetShowPopUp(true)}>
+        <Card
+          minW="10px"
+          minH="10px"
+          w="110px"
+          h="100px"
+          alignItems="center"
+          verticalSpace={4}
+        >
+          <Center>
+            <Text bold fontSize="xs">
+              More Profiles
+            </Text>
+          </Center>
+          <Center>
+            <Feather name="more-horizontal" size={35} color="white" />
+          </Center>
+        </Card>
+      </Pressable>
       <PopUp
         bg="pixelColors.softBlack"
         w="100%"
@@ -43,6 +63,7 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
                 selectedProfileIndex={selectedProfile}
                 onSelected={SetSelectedProfile}
                 profileName={profileInfo.profileName}
+                imageRequirePath={profileInfo.imageRequirePath}
               />
             </Box>
           ))}
