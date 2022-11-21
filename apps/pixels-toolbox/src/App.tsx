@@ -2,8 +2,6 @@ import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider } from "native-base";
-// eslint-disable-next-line import/namespace
-import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Sentry from "sentry-expo";
 
@@ -21,9 +19,6 @@ import StatsScreen from "~/screens/StatsScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
 import { sr } from "~/styles";
 import "~/i18n";
-
-// Disable this warning that comes from NativeBase
-LogBox.ignoreLogs(["EventEmitter.removeListener"]);
 
 // Use Sentry for crash reporting
 Sentry.init({
