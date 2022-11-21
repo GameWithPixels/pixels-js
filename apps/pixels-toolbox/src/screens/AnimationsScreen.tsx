@@ -40,7 +40,6 @@ import {
 import defaultProfilesJson from "~/../assets/default-profiles.json";
 import AppPage from "~/components/AppPage";
 import SelectPixel from "~/components/SelectPixel";
-import Spacer from "~/components/Spacer";
 import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
 import range from "~/utils/range";

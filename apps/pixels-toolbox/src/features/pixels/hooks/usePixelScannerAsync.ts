@@ -1,3 +1,4 @@
+import { assertUnreachable } from "@systemic-games/pixels-core-utils";
 import {
   getPixelUniqueName,
   PixelScanner,
@@ -71,6 +72,25 @@ async function scanAction(
           scanner.addEventListener("scannedPixel", listener);
           // Update state once all operations have completed successfully
           state.listener = listener;
+          state.listener = (p: ScannedPixel) => {};
+          setTimeout(
+            () =>
+              updateScannedPixels(state.lastPixels, {
+                systemId: "systemId",
+                pixelId: 123456,
+                address: 7890123,
+                name: "pixel",
+                ledCount: 20,
+                designAndColor: "auroraSky",
+                firmwareDate: new Date(123456),
+                rssi: -20,
+                batteryLevel: 15,
+                isCharging: false,
+                rollState: "handling",
+                currentFace: 12,
+              }),
+            1000
+          );
         }
         break;
       case "stop":
@@ -87,10 +107,8 @@ async function scanAction(
       case "clear":
         state.lastPixels.length = 0;
         break;
-      default: {
-        const check: never = action;
-        throw new Error(check);
-      }
+      default:
+        assertUnreachable(action);
     }
   });
 }

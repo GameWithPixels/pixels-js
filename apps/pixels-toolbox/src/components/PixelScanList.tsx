@@ -2,8 +2,8 @@ import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import { Button, Center, FlatList, Spacer, Text } from "native-base";
 import { useEffect } from "react";
 
-import PixelInfoBox from "~/components/PixelInfoBox";
-import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
+import PixelInfoBox from "~/components/PixelInfoCard";
+import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
 
 export default function ({
   onSelected,

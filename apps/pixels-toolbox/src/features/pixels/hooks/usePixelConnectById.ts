@@ -1,45 +1,54 @@
+import { assertUnreachable } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   getPixel,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useErrorHandler } from "react-error-boundary";
 
-import usePixelScanner from "./usePixelScanner";
+import usePixelScanner from "./usePixelScannerAsync";
 import usePixelStatus from "./usePixelStatus";
 
 import SequentialPromiseQueue from "~/utils/SequentialPromiseQueue";
 
-export interface PixelConnectorState {
+export interface PixelConnectByIdState {
   status: "disconnected" | "scanning" | "connecting" | "connected";
   pixel?: Pixel;
   scannedPixel?: ScannedPixel;
 }
 
-export type PixelConnectorAction = "connect" | "disconnect";
+export type PixelConnectByIdAction = "connect" | "disconnect";
 
-export interface PixelConnectorOptions {
+export interface PixelConnectByIdOptions {
   pixelId: number;
 }
 
-export type PixelConnectorDispatch = (
-  action: PixelConnectorAction,
-  options?: PixelConnectorOptions
+export type PixelConnectByIdDispatch = (
+  action: PixelConnectByIdAction,
+  options?: PixelConnectByIdOptions
 ) => void;
 
-export default function (): [PixelConnectorState, PixelConnectorDispatch] {
-  const errorHandler = useErrorHandler();
+// Returned dispatch function is stable
+export default function (): [
+  PixelConnectByIdState,
+  PixelConnectByIdDispatch,
+  Error?
+] {
+  const [lastError, setLastError] = useState<Error>();
   const [scannedPixels, scannerDispatchAsync] = usePixelScanner();
   const [pixelId, setPixelId] = useState<number>(0);
   const [scannedPixel, setScannedPixel] = useState<ScannedPixel>();
   const [pixel, setPixel] = useState<Pixel>();
   const [queue] = useState(() => new SequentialPromiseQueue());
   const pixelStatus = usePixelStatus(pixel);
-  const stateRef = useRef<PixelConnectorState>({ status: "disconnected" });
+  const stateRef = useRef<PixelConnectByIdState>({ status: "disconnected" });
 
   const dispatch = useCallback(
-    (action: PixelConnectorAction, options?: PixelConnectorOptions): void => {
+    (
+      action: PixelConnectByIdAction,
+      options?: PixelConnectByIdOptions
+    ): void => {
+      setLastError(undefined);
       switch (action) {
         case "connect":
           if (options?.pixelId) {
@@ -52,10 +61,8 @@ export default function (): [PixelConnectorState, PixelConnectorDispatch] {
           setPixel(undefined);
           setScannedPixel(undefined);
           break;
-        default: {
-          const check: never = action;
-          throw new Error(check);
-        }
+        default:
+          assertUnreachable(action);
       }
     },
     []
@@ -70,8 +77,8 @@ export default function (): [PixelConnectorState, PixelConnectorDispatch] {
       } else {
         await scannerDispatchAsync("stop");
       }
-    })().catch(errorHandler);
-  }, [errorHandler, pixelId, scannerDispatchAsync]);
+    })().catch(setLastError);
+  }, [pixelId, scannerDispatchAsync]);
 
   // Assign Pixel
   useEffect(() => {
@@ -83,7 +90,7 @@ export default function (): [PixelConnectorState, PixelConnectorDispatch] {
         setScannedPixel(scannedPixels[i]);
       }
     }
-  }, [errorHandler, pixelId, scannedPixels]);
+  }, [pixelId, scannedPixels]);
 
   // Clean up
   useEffect(() => {
@@ -92,16 +99,16 @@ export default function (): [PixelConnectorState, PixelConnectorDispatch] {
         .run(async () => {
           await pixel.connect();
         })
-        .catch(errorHandler);
+        .catch(setLastError);
       return () => {
         queue
           .run(async () => {
             await pixel.disconnect();
           })
-          .catch(errorHandler);
+          .catch(setLastError);
       };
     }
-  }, [errorHandler, pixel, queue]);
+  }, [pixel, queue]);
 
   // Status isn't store in a state so to not trigger another state update when pixelStatus changes
   const status = pixelId
@@ -118,5 +125,5 @@ export default function (): [PixelConnectorState, PixelConnectorDispatch] {
   ) {
     stateRef.current = { status, pixel, scannedPixel };
   }
-  return [stateRef.current, dispatch];
+  return [stateRef.current, dispatch, lastError];
 }

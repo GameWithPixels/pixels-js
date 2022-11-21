@@ -15,7 +15,7 @@ import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import { DieType, getLedCount } from "~/features/pixels/DieType";
-import usePixelScanner from "~/features/pixels/hooks/usePixelScanner";
+import usePixelScanner from "~/features/pixels/hooks/usePixelScannerAsync";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";

@@ -8,19 +8,26 @@ import { useCallback, useEffect, useState } from "react";
 
 import usePixelStatus from "./usePixelStatus";
 
+// Returned dispatch function is stable
 export default function (
   pixel?: Pixel,
   alwaysActive = false
-): [Telemetry | undefined, (action: "start" | "stop") => void] {
+): [
+  Telemetry | undefined,
+  (action: "start" | "stop") => void,
+  Error | undefined
+] {
+  const [lastError, setLastError] = useState<Error>();
   const [telemetry, setTelemetry] = useState<Telemetry>();
   const [active, setActive] = useState(false);
   const status = usePixelStatus(pixel);
   const dispatch = useCallback(
     (action: "start" | "stop") => setActive(action === "start"),
-    [setActive]
+    []
   );
 
   useEffect(() => {
+    setLastError(undefined);
     if (pixel && status === "ready" && (active || alwaysActive)) {
       const telemetryListener = (msg: MessageOrType) =>
         setTelemetry(msg as Telemetry);
@@ -29,14 +36,14 @@ export default function (
       // might change at any moment and make sendMessage throw an exception
       const msg = new RequestTelemetry();
       msg.activate = true;
-      pixel.sendMessage(msg).catch(() => {});
+      pixel.sendMessage(msg).catch(setLastError);
       return () => {
         pixel.removeMessageListener("telemetry", telemetryListener);
-        pixel.sendMessage(new RequestTelemetry()).catch(() => {});
+        pixel.sendMessage(new RequestTelemetry()).catch(setLastError);
         setTelemetry(undefined);
       };
     }
   }, [active, alwaysActive, pixel, status]);
 
-  return [telemetry, dispatch];
+  return [telemetry, dispatch, lastError];
 }

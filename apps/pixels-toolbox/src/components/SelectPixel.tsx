@@ -8,10 +8,9 @@ import {
   // eslint-disable-next-line import/namespace
 } from "react-native";
 
-import PixelInfoBox from "./PixelInfoBox";
-import Spacer from "./Spacer";
+import PixelInfoBox from "./PixelInfoCard";
 
-import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
+import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
 import globalStyles, { sr } from "~/styles";
 
 interface SelectPixelProps {

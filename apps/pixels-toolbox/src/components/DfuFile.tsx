@@ -1,8 +1,6 @@
 // eslint-disable-next-line import/namespace
 import { Text, StyleSheet } from "react-native";
 
-import Spacer from "./Spacer";
-
 import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import globalStyles from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";

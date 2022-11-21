@@ -16,7 +16,6 @@ import {
 import dfuFiles from "~/../assets/dfu-files.zip";
 import AppPage from "~/components/AppPage";
 import DfuFile from "~/components/DfuFile";
-import Spacer from "~/components/Spacer";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 import { type RootStackParamList } from "~/navigation";

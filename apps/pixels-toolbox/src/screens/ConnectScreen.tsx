@@ -28,9 +28,8 @@ import {
 
 import AppPage from "~/components/AppPage";
 import ErrorFallback from "~/components/ErrorFallback";
-import PixelInfoBox from "~/components/PixelInfoBox";
-import Spacer from "~/components/Spacer";
-import usePixelScannerWithFocus from "~/features/pixels/hooks/usePixelScannerWithFocus";
+import PixelInfoBox from "~/components/PixelInfoCard";
+import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
 import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import standardProfile from "~/standardProfile";
 import globalStyles, { sr } from "~/styles";
@@ -164,7 +163,6 @@ function PixelItem({
               </>
             )}
           </View>
-          <Spacer />
           {status === "ready" && (
             <>
               <View style={styles.containerHorizontal}>
@@ -390,22 +388,18 @@ function ConnectPage() {
 
   return (
     <>
-      <Spacer />
       <View style={styles.containerHorizontal}>
         <Text style={styles.text}>Scan for Pixels</Text>
         <Switch onValueChange={setIsScanning} value={isScanning} />
       </View>
-      <Spacer />
       {allPixels.length ? (
         <>
           {connectablePixels.length ? (
             <>
-              <Spacer />
               <Button
                 onPress={() => scannerDispatch("clear")}
                 title="Clear Not Connected"
               />
-              <Spacer />
               <Button
                 onPress={connectAll}
                 title={`Connect All (${connectablePixels.length})`}
@@ -418,12 +412,10 @@ function ConnectPage() {
           )}
           {pixels.length ? (
             <>
-              <Spacer />
               <Button
                 onPress={disconnectAll}
                 title={`Disconnect All (${pixels.length})`}
               />
-              <Spacer />
               <Text style={styles.text}>Rainbow All</Text>
               <View style={styles.containerHorizontal}>
                 <Button
@@ -443,7 +435,6 @@ function ConnectPage() {
           ) : (
             <Text style={styles.textBold}>All disconnected</Text>
           )}
-          <Spacer />
           {transferCounter > 0 && (
             <View style={styles.boxYellow}>
               <Text style={styles.textBold}>Transfer in progress!</Text>
@@ -460,10 +451,8 @@ function ConnectPage() {
             </View>
           )}
           <Text style={styles.textBold}>{`Pixels (${allPixels.length}):`}</Text>
-          <Spacer />
           <View style={styles.containerScanList}>
             <FlatList
-              ItemSeparatorComponent={Spacer}
               data={allPixels}
               renderItem={(itemInfo) => (
                 <HybridPixelItem

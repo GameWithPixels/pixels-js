@@ -6,10 +6,11 @@ import { useErrorHandler } from "react-error-boundary";
 import usePixelScanner, {
   PixelScannerAction,
   UsePixelScannerOptions,
-} from "./usePixelScanner";
+} from "./usePixelScannerAsync";
 
 interface UsePixelScannerWithFocusOptions extends UsePixelScannerOptions {}
 
+// Returned dispatch function is stable
 export default function (
   options?: UsePixelScannerWithFocusOptions
 ): [ScannedPixel[], (action: PixelScannerAction) => void] {

@@ -1,10 +1,13 @@
-import { NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
+import { NativeBaseProvider } from "native-base";
 // eslint-disable-next-line import/namespace
 import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Sentry from "sentry-expo";
+
+import theme from "./theme";
 
 import useBluetooth from "~/features/pixels/hooks/useBluetooth";
 import { type RootStackParamList } from "~/navigation";
@@ -38,28 +41,33 @@ function App() {
   useBluetooth();
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerTitleStyle: {
-              fontWeight: "bold",
-              fontSize: sr(26),
-              alignSelf: "center",
-            },
-            headerTitleAlign: "center",
-          }}
-        >
-          <Stack.Screen name="Menu" component={MenuScreen} />
-          <Stack.Screen name="Connect" component={ConnectScreen} />
-          <Stack.Screen name="SelectDfuFile" component={SelectDfuFileScreen} />
-          <Stack.Screen name="Dfu" component={DfuScreen} />
-          <Stack.Screen name="Animations" component={AnimationsScreen} />
-          <Stack.Screen name="Validation" component={ValidationScreen} />
-          <Stack.Screen name="Stats" component={StatsScreen} />
-          <Stack.Screen name="Roll" component={RollScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <StatusBar style="light" />
+      <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
+        <NavigationContainer theme={DarkTheme}>
+          <Stack.Navigator
+            screenOptions={{
+              headerTitleStyle: {
+                fontWeight: "bold",
+                fontSize: sr(26),
+                alignSelf: "center",
+              },
+              headerTitleAlign: "center",
+            }}
+          >
+            <Stack.Screen name="Menu" component={MenuScreen} />
+            <Stack.Screen name="Connect" component={ConnectScreen} />
+            <Stack.Screen
+              name="SelectDfuFile"
+              component={SelectDfuFileScreen}
+            />
+            <Stack.Screen name="Dfu" component={DfuScreen} />
+            <Stack.Screen name="Animations" component={AnimationsScreen} />
+            <Stack.Screen name="Validation" component={ValidationScreen} />
+            <Stack.Screen name="Stats" component={StatsScreen} />
+            <Stack.Screen name="Roll" component={RollScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </NativeBaseProvider>
     </SafeAreaProvider>
   );
 }

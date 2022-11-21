@@ -13,6 +13,7 @@ export interface PixelIdDecoderAction {
   reset?: boolean;
 }
 
+// Returned dispatch function is stable
 export default function (): [
   PixelIdDecoderState,
   (action: PixelIdDecoderAction) => void
