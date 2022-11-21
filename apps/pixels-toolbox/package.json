@@ -68,7 +68,7 @@
     "expo-system-ui": "~1.3.0",
     "expo-updates": "~0.14.6",
     "i18next": "^22.0.0",
-    "native-base": "~3.4.18",
+    "native-base": "~3.4.22",
     "react": "18.0.0",
     "react-dom": "18.0.0",
     "react-error-boundary": "^3.1.4",
