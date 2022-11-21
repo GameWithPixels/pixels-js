@@ -49,11 +49,11 @@
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.1.2",
-    "@types/react": "~18.0.0",
-    "@types/react-native": "0.69.6",
+    "@types/react": "~18.0.25",
+    "@types/react-native": "0.70.6",
     "jest": "^29.1.2",
-    "react": "18.0.0",
-    "react-native": "0.69.7",
+    "react": "18.1.0",
+    "react-native": "0.70.6",
     "react-native-builder-bob": "^0.20.0",
     "react-native-vision-camera": "~2.15.2",
     "release-it": "^15.0.0"
