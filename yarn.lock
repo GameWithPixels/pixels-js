@@ -1440,7 +1440,7 @@
     node-forge "^1.2.1"
     nullthrows "^1.1.1"
 
-"@expo/config-plugins@5.0.4", "@expo/config-plugins@^5.0.3", "@expo/config-plugins@~5.0.3":
+"@expo/config-plugins@5.0.4", "@expo/config-plugins@~5.0.3", "@expo/config-plugins@~5.0.4":
   version "5.0.4"
   resolved "https://registry.yarnpkg.com/@expo/config-plugins/-/config-plugins-5.0.4.tgz#216fea6558fe66615af1370de55193f4181cb23e"
   integrity sha512-vzUcVpqOMs3h+hyRdhGwk+eGIOhXa5xYdd92yO17RMNHav3v/+ekMbs7XA2c3lepMO8Yd4/5hqmRw9ZTL6jGzg==
@@ -11209,14 +11209,6 @@ react-native-screens@~3.18.0:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
 
-react-native-svg@12.4.0:
-  version "12.4.0"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-12.4.0.tgz#934a89d3da7936aa76361b748e4ba58a1bcb9bf5"
-  integrity sha512-m2Hn5FMC7wF/BSwxrbZFVElOMAJZXLJl2bBMDXvs/fFy2v4oLBfcw8MwaBTlaIyk0p24WRC9lWv51kSA/Plj5w==
-  dependencies:
-    css-select "^5.1.0"
-    css-tree "^1.1.3"
-
 react-native-svg@13.4.0:
   version "13.4.0"
   resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-13.4.0.tgz#82399ba0956c454144618aa581e2d748dd3f010a"
@@ -11904,7 +11896,7 @@ send@0.18.0, send@^0.18.0:
     range-parser "~1.2.1"
     statuses "2.0.1"
 
-sentry-expo@~5.0.0:
+sentry-expo@~5.0.3:
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/sentry-expo/-/sentry-expo-5.0.3.tgz#97d7d5b88e42c694bcb83670d9607710ffc25c26"
   integrity sha512-LtCPNu2kuicjLjnOP9yfTbit7PH8r+L4m1QZDj7EIkMTXP1KkCMh6tIwAIVTdSSZpstJLi6bWZ+hsPbEdNj47Q==
