@@ -140,9 +140,10 @@ export interface IPixel {
   readonly name: string;
   readonly ledCount: number;
   readonly designAndColor: PixelDesignAndColorNames;
-  readonly buildTimestamp: number;
+  readonly firmwareDate: Date;
   readonly rssi: number;
   readonly batteryLevel: number; // Percentage
+  readonly isCharging: boolean;
   readonly rollState: PixelRollStateNames;
   readonly currentFace: number; // Face value (not index)
 }
@@ -210,17 +211,24 @@ export default class Pixel implements IPixel {
     );
   }
 
-  /** Gets the Pixel firmware build timestamp (Unix epoch). */
-  get buildTimestamp(): number {
-    return this._info?.buildTimestamp ?? 0;
+  /** Gets the Pixel firmware build date. */
+  get firmwareDate(): Date {
+    return new Date(1000 * (this._info?.buildTimestamp ?? 0));
   }
 
+  /** Gets the last measured RSSI value. */
   get rssi(): number {
     return 0;
   }
 
+  /** Gets the last know read battery level (percentage). */
   get batteryLevel(): number {
     return 0;
+  }
+
+  /** Gets the last know battery charging state. */
+  get isCharging(): boolean {
+    return false;
   }
 
   /** Gets the Pixel last know roll state. */
@@ -228,6 +236,7 @@ export default class Pixel implements IPixel {
     return this._rollState.state;
   }
 
+  /** Gets the Pixel last know face up. */
   get currentFace(): number {
     return this._rollState.face;
   }

@@ -11,9 +11,10 @@ export default interface ScannedPixel extends IPixel {
   readonly name: string;
   readonly ledCount: number;
   readonly designAndColor: PixelDesignAndColorNames;
-  readonly buildTimestamp: number;
+  readonly firmwareDate: Date;
   readonly rssi: number;
   readonly batteryLevel: number; // Percentage
+  readonly isCharging: boolean;
   readonly rollState: PixelRollStateNames;
   readonly currentFace: number; // Face value (not index)
 }
