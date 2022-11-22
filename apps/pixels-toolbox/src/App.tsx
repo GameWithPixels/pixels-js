@@ -3,16 +3,17 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider } from "native-base";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Provider } from "react-redux";
 import * as Sentry from "sentry-expo";
 
+import { store } from "./app/store";
 import theme from "./theme";
 
 import useBluetooth from "~/features/pixels/hooks/useBluetooth";
 import { type RootStackParamList } from "~/navigation";
 import HomeScreen from "~/screens/HomeScreen";
 import RollScreen from "~/screens/RollScreen";
-import SelectDfuFileScreen from "~/screens/SelectDfuFileScreen";
-import StatsScreen from "~/screens/StatsScreen";
+import SelectDfuFilesScreen from "~/screens/SelectDfuFilesScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
 import { sr } from "~/styles";
 import "~/i18n";
@@ -32,31 +33,33 @@ const Stack = createStackNavigator<RootStackParamList>();
 function App() {
   useBluetooth();
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
-        <NavigationContainer theme={DarkTheme}>
-          <Stack.Navigator
-            screenOptions={{
-              headerTitleStyle: {
-                fontWeight: "bold",
-                fontSize: sr(26),
-                alignSelf: "center",
-              },
-              headerTitleAlign: "center",
-            }}
-          >
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen
-              name="SelectDfuFile"
-              component={SelectDfuFileScreen}
-            />
-            <Stack.Screen name="Validation" component={ValidationScreen} />
-            <Stack.Screen name="Roll" component={RollScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </NativeBaseProvider>
-    </SafeAreaProvider>
+    <Provider store={store}>
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
+          <NavigationContainer theme={DarkTheme}>
+            <Stack.Navigator
+              screenOptions={{
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  fontSize: sr(26),
+                  alignSelf: "center",
+                },
+                headerTitleAlign: "center",
+              }}
+            >
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen
+                name="SelectDfuFiles"
+                component={SelectDfuFilesScreen}
+              />
+              <Stack.Screen name="Validation" component={ValidationScreen} />
+              <Stack.Screen name="Roll" component={RollScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </NativeBaseProvider>
+      </SafeAreaProvider>
+    </Provider>
   );
 }
 
