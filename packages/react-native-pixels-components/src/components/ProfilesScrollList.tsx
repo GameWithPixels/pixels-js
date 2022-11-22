@@ -15,6 +15,7 @@ import { ProfilesListPopUp } from "./ProfilesListPopUp";
 
 export interface ProfilesScrollListProps {
   availableProfiles: ProfileInfo[];
+  onPress?: (() => void) | null | undefined;
 }
 export function ProfilesScrollList(props: ProfilesScrollListProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
@@ -44,6 +45,7 @@ export function ProfilesScrollList(props: ProfilesScrollListProps) {
                     profileName={profile.profileName}
                     profileIndexInList={i}
                     onSelected={SetSelectedProfile}
+                    onPress={props.onPress}
                     selectedProfileIndex={selectedProfile}
                     selectable
                     imageRequirePath={profile.imageRequirePath}

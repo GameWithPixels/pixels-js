@@ -247,7 +247,7 @@ function NearbyPixelsList({
                   <ScannedPixelInfoComponent
                     pixel={pixelInfo}
                     onPress={() => {
-                      if (onPress) onPress();
+                      onPress?.();
                       addToPaired(pixelInfo);
                     }}
                   />
@@ -267,6 +267,7 @@ export default function HomeScreen() {
   const [scannedPixels] = React.useState(scannedPixelsinfo);
   const navigation =
     useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
+
   return (
     <PxAppPage theme={paleBluePixelTheme}>
       <Box p={4}>
@@ -274,7 +275,6 @@ export default function HomeScreen() {
           PIXELS
         </Text>
       </Box>
-
       {/* //Paired pixels list */}
       <VStack space={4}>
         <PairedPixelList pairedPixels={pairedPixels} navigation={navigation} />

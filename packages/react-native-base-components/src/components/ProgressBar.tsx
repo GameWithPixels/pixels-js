@@ -6,7 +6,7 @@ import {
 import React from "react";
 
 export interface ProgressBarProps {
-  value?: number;
+  progress?: number;
   loadingText?: string;
   boxBg?: ColorType;
   size?: SizeType;
@@ -22,7 +22,7 @@ export function ProgressBar(props: ProgressBarProps) {
   return (
     <Box bg={resolvedProps.boxBg} p="3" rounded="lg">
       <Progress
-        value={props.value}
+        value={props.progress}
         size={resolvedProps.size}
         _filledTrack={{
           bg: resolvedProps.filledTrackBg,
@@ -30,8 +30,8 @@ export function ProgressBar(props: ProgressBarProps) {
       />
       <Text>
         {props.loadingText
-          ? props.loadingText + props.value + "%"
-          : props.value + "%"}
+          ? props.loadingText + props.progress + "%"
+          : props.progress + "%"}
       </Text>
     </Box>
   );

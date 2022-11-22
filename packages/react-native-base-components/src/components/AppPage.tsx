@@ -7,7 +7,9 @@ import {
   usePropsResolution,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
-import { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useState } from "react";
+// eslint-disable-next-line import/namespace
+import { RefreshControl } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export interface AppPageProps extends PropsWithChildren {
@@ -16,9 +18,21 @@ export interface AppPageProps extends PropsWithChildren {
   w?: number;
   p?: number | string;
   lightBg?: ColorType;
+  onRefresh?: (() => void) | null | undefined;
 }
 
+const wait = (timeout: number) => {
+  return new Promise((resolve) => setTimeout(resolve, timeout));
+};
+
 function AppPage(props: AppPageProps) {
+  const [refreshing, setRefreshing] = useState(false);
+
+  //Example to use and see the refresh function
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
   const resolvedProps = usePropsResolution("AppPage", props) as AppPageProps;
   return (
     <NativeBaseProvider theme={props.theme}>
@@ -30,7 +44,13 @@ function AppPage(props: AppPageProps) {
           h={resolvedProps.h}
           w={resolvedProps.w}
         >
-          <ScrollView>{props.children}</ScrollView>
+          <ScrollView
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            {props.children}
+          </ScrollView>
         </Box>
       </SafeAreaProvider>
     </NativeBaseProvider>

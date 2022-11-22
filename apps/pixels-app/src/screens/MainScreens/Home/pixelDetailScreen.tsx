@@ -11,6 +11,7 @@ import {
   BatteryLevel,
   Card,
   createPixelTheme,
+  LoadingPopup,
   PixelTheme,
   ProfilesScrollList,
   PxAppPage,
@@ -336,6 +337,7 @@ export default function PixelDetailScreen() {
     useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
   const route = useRoute<PixelDetailScreenRouteProp>();
   const pixelInfo = route.params;
+  const [showLoadingPopup, SetShowLoadingPopup] = React.useState(false);
   return (
     <PxAppPage theme={paleBluePixelTheme}>
       <VStack space={6} width="100%" maxW="100%">
@@ -411,6 +413,9 @@ export default function PixelDetailScreen() {
             <Text bold>Recent profiles :</Text>
           </HStack>
           <ProfilesScrollList
+            onPress={() => {
+              SetShowLoadingPopup(true);
+            }}
             availableProfiles={[
               {
                 profileName: "Rainbow",
@@ -475,6 +480,7 @@ export default function PixelDetailScreen() {
         >
           <Text bold>Unpair Dice</Text>
         </Button>
+        <LoadingPopup title="Loading" progress={20} isOpen={showLoadingPopup} />
       </VStack>
     </PxAppPage>
   );
