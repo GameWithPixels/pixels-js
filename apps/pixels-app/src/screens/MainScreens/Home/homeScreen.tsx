@@ -80,14 +80,14 @@ const pairedPixelsinfo: PixelInfo[] = [
   //   profileName: "Speak Numbers",
   // },
 ];
-
+const date = new Date();
 const scannedPixelsinfo: PixelInfo[] = [
   {
     name: "John",
     rssi: -60,
     batteryLevel: 0.85,
     ledCount: 20,
-    firmwareDate: new Date(),
+    firmwareDate: date.toDateString(),
     profileName: "Rainbow",
     imageRequirePath: require("~/../assets/RainbowDice.png"),
     pixelId: 123364872364,
@@ -97,7 +97,7 @@ const scannedPixelsinfo: PixelInfo[] = [
     rssi: -54,
     batteryLevel: 0.49,
     ledCount: 8,
-    firmwareDate: new Date(),
+    firmwareDate: date.toDateString(),
     profileName: "Custom",
     imageRequirePath: require("~/../assets/YellowDice.png"),
     pixelId: 198273918,
@@ -107,7 +107,7 @@ const scannedPixelsinfo: PixelInfo[] = [
     rssi: -45,
     batteryLevel: 0.15,
     ledCount: 12,
-    firmwareDate: new Date(),
+    firmwareDate: date.toDateString(),
     profileName: "Speak Numbers 123412341234",
     imageRequirePath: require("~/../assets/DieImageTransparent.png"),
     pixelId: 983479238,
@@ -117,7 +117,7 @@ const scannedPixelsinfo: PixelInfo[] = [
     rssi: -25,
     batteryLevel: 0.9,
     ledCount: 10,
-    firmwareDate: new Date(),
+    firmwareDate: date.toDateString(),
     profileName: "Red To Blue",
     imageRequirePath: require("~/../assets/BlueDice.png"),
     pixelId: 73647812634,
@@ -182,9 +182,7 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
                     <SquarePairedPixelInfo
                       pixel={pixelInfo}
                       onPress={() => {
-                        navigation.navigate("Pixel Details", {
-                          pixelName: pixelInfo.name,
-                        });
+                        navigation.navigate("Pixel Details", pixelInfo);
                       }}
                     />
                   </Box>

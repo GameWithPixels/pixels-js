@@ -10,6 +10,7 @@ import { ReactNode } from "react";
 
 export interface ToggleProps extends ISwitchProps {
   text?: string;
+  textSize?: string | number | SizeType;
   toggleSize?: SizeType;
   space?: number | string;
   Icon?: ReactNode | ReactNode[];
@@ -19,7 +20,7 @@ export function Toggle(props: ToggleProps) {
   const resolvedProps = usePropsResolution("Toggle", props) as ToggleProps;
   return (
     <HStack space={resolvedProps.space} alignItems="center">
-      <Text>{props.text}</Text>
+      <Text fontSize={props.textSize}>{props.text}</Text>
       {props.Icon}
       <Switch
         {...resolvedProps}

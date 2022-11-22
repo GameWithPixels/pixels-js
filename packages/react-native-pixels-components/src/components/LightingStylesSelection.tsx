@@ -35,7 +35,6 @@ export function LightingStyleSelection() {
         <ActionSheet
           trigger={<TriggerElement title={lightingTypeText} />}
           title={lightingTypeText}
-          triggerLabel={lightingTypeText}
           itemsData={[
             {
               label: "Simple Flashes",

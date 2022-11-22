@@ -22,7 +22,7 @@ export interface PixelInfo {
   rssi: number;
   batteryLevel: number;
   ledCount: number;
-  firmwareDate: Date;
+  firmwareDate: string; //date.toString
   profileName: string;
   pixelId: number;
 
@@ -57,9 +57,7 @@ export function PairedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
               <BatteryLevel iconSize="2xl" percentage={pixel.batteryLevel} />
             </VStack>
             <VStack space={1} alignItems="baseline" maxW={150}>
-              <Text fontSize="2xs">
-                Firmware : {pixel.firmwareDate.toDateString()}
-              </Text>
+              <Text fontSize="2xs">Firmware : {pixel.firmwareDate}</Text>
               <Text isTruncated fontSize="xs">
                 Profile : {pixel.profileName}
               </Text>

@@ -1,6 +1,15 @@
 import { Feather } from "@expo/vector-icons";
-import { Card, PopUp } from "@systemic-games/react-native-base-components";
-import { Box, Center, HStack, Pressable, Text } from "native-base";
+import { Card } from "@systemic-games/react-native-base-components";
+import {
+  Actionsheet,
+  Box,
+  Center,
+  HStack,
+  Pressable,
+  ScrollView,
+  Text,
+  useDisclose,
+} from "native-base";
 import React from "react";
 
 import { ProfileCard, ProfileInfo } from "./ProfileCard";
@@ -10,17 +19,14 @@ export interface ProfilesPopUpListProps {
 }
 export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
-  const [showPopUp, SetShowPopUp] = React.useState(false);
+  const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      {/* <Button
-        bg="pixelColors.highlightGray"
-        rightIcon={<AddIcon />}
-        onPress={() => SetShowPopUp(true)}
+      <Pressable
+        onPress={() => {
+          onOpen();
+        }}
       >
-        More profiles
-      </Button> */}
-      <Pressable onPress={() => SetShowPopUp(true)}>
         <Card
           minW="10px"
           minH="10px"
@@ -39,14 +45,14 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
           </Center>
         </Card>
       </Pressable>
-      <PopUp
+      {/* <PopUp
         bg="pixelColors.softBlack"
         w="100%"
         title="Available Profiles"
-        isOpen={showPopUp}
+        isOpen={showProfiles}
         buttons={["Apply", "Cancel"]}
         onClose={(result) => {
-          SetShowPopUp(false);
+          SetShowProfiles(false);
           //Here check "result" and use corresponding action
         }}
       >
@@ -68,7 +74,35 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
             </Box>
           ))}
         </HStack>
-      </PopUp>
+      </PopUp> */}
+
+      <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
+        <Actionsheet.Content maxH="100%" h="630px">
+          <Text bold paddingBottom={5}>
+            Available Profiles
+          </Text>
+          <ScrollView>
+            <HStack flexWrap="wrap" w="100%">
+              {props.ProfilesInfo?.map((profileInfo, i) => (
+                <Box key={i} p={1}>
+                  <ProfileCard
+                    w="105px"
+                    h="130px"
+                    verticalSpace={1}
+                    imageSize={70}
+                    selectable
+                    profileIndexInList={i}
+                    selectedProfileIndex={selectedProfile}
+                    onSelected={SetSelectedProfile}
+                    profileName={profileInfo.profileName}
+                    imageRequirePath={profileInfo.imageRequirePath}
+                  />
+                </Box>
+              ))}
+            </HStack>
+          </ScrollView>
+        </Actionsheet.Content>
+      </Actionsheet>
     </>
   );
 }

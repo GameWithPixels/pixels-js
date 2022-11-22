@@ -5,7 +5,8 @@ import {
   Ionicons,
   Octicons,
 } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   BatteryLevel,
   Card,
@@ -33,7 +34,10 @@ import {
 import React from "react";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
-import { PixelDetailScreenRouteProp } from "~/Navigation";
+import {
+  PixelDetailScreenParamList,
+  PixelDetailScreenRouteProp,
+} from "~/Navigation";
 
 interface HistogramProps {
   rolls: number[];
@@ -111,122 +115,199 @@ function Histogram({ rolls }: HistogramProps) {
   );
 }
 
-function DiceRolls() {
-  return (
-    <Card
-      minW={10}
-      w="180px"
-      maxW="200px"
-      verticalSpace={2}
-      alignItems="center"
-      bg="primary.300"
-    >
-      <HStack alignItems="center" space={3}>
-        <FontAwesome5 name="dice" size={24} color="black" />
-        <Text bold fontSize="xl">
-          Rolls
-        </Text>
-      </HStack>
-      <HStack space={2} alignItems="center" p={2}>
-        <Box w="50%">
-          <Text>Session</Text>
-          <Divider bg="white" />
-          <Text fontSize="xl">26</Text>
-        </Box>
-        <Box w="50%">
-          <Text>Lifetime</Text>
-          <Divider bg="white" />
-          <Text isTruncated fontSize="xl">
-            285
-          </Text>
-        </Box>
-      </HStack>
-    </Card>
-  );
-}
-function DiceUseTime() {
-  return (
-    <Card
-      minW={10}
-      w="180px"
-      maxW="200px"
-      verticalSpace={2}
-      alignItems="center"
-      bg="primary.300"
-    >
-      <HStack alignItems="center" space={3}>
-        <MaterialCommunityIcons name="clock" size={24} color="black" />
-        <Text bold fontSize="xl">
-          Use Time
-        </Text>
-      </HStack>
-      <HStack space={2} alignItems="center" p={2}>
-        <Box w="50%">
-          <Text>Session</Text>
-          <Divider bg="white" />
-          <HStack alignItems="baseline">
-            <Text fontSize="xl">32 </Text>
-            <Text>min</Text>
-          </HStack>
-        </Box>
-        <Box w="50%">
-          <Text>Lifetime</Text>
-          <Divider bg="white" />
-          <HStack alignItems="baseline">
-            <Text fontSize="xl">3.5 </Text>
-            <Text>h</Text>
-          </HStack>
-        </Box>
-      </HStack>
-    </Card>
-  );
-}
+// function DiceRolls() {
+//   return (
+//     <Card
+//       minW={10}
+//       w="180px"
+//       maxW="200px"
+//       verticalSpace={2}
+//       alignItems="center"
+//       bg="primary.300"
+//     >
+//       <HStack alignItems="center" space={3}>
+//         <FontAwesome5 name="dice" size={24} color="black" />
+//         <Text bold fontSize="xl">
+//           Rolls
+//         </Text>
+//       </HStack>
+//       <HStack space={2} alignItems="center" p={2}>
+//         <Box w="50%">
+//           <Text>Session</Text>
+//           <Divider bg="white" />
+//           <Text fontSize="xl">26</Text>
+//         </Box>
+//         <Box w="50%">
+//           <Text>Lifetime</Text>
+//           <Divider bg="white" />
+//           <Text isTruncated fontSize="xl">
+//             285
+//           </Text>
+//         </Box>
+//       </HStack>
+//     </Card>
+//   );
+// }
+// function DiceUseTime() {
+//   return (
+//     <Card
+//       minW={10}
+//       w="180px"
+//       maxW="200px"
+//       verticalSpace={2}
+//       alignItems="center"
+//       bg="primary.300"
+//     >
+//       <HStack alignItems="center" space={3}>
+//         <MaterialCommunityIcons name="clock" size={24} color="black" />
+//         <Text bold fontSize="xl">
+//           Use Time
+//         </Text>
+//       </HStack>
+//       <HStack space={2} alignItems="center" p={2}>
+//         <Box w="50%">
+//           <Text>Session</Text>
+//           <Divider bg="white" />
+//           <HStack alignItems="baseline">
+//             <Text fontSize="xl">32 </Text>
+//             <Text>min</Text>
+//           </HStack>
+//         </Box>
+//         <Box w="50%">
+//           <Text>Lifetime</Text>
+//           <Divider bg="white" />
+//           <HStack alignItems="baseline">
+//             <Text fontSize="xl">3.5 </Text>
+//             <Text>h</Text>
+//           </HStack>
+//         </Box>
+//       </HStack>
+//     </Card>
+//   );
+// }
 
 function DiceStats() {
-  const [showStats, SetShowStats] = React.useState(true);
+  const [showSessionStats, SetShowSessionStats] = React.useState(true);
   return (
     <Box>
       <HStack alignItems="center" space={2}>
         <Octicons name="graph" size={24} color="white" />
         <Text bold>Dice Stats</Text>
         <Spacer />
-        <Toggle
-          text="Hide Stats"
-          onToggle={() => {
-            SetShowStats(!showStats);
-          }}
-          isChecked={showStats}
-        />
+        <HStack alignItems="center" space={1}>
+          <Toggle
+            textSize="xs"
+            text="Lifetime"
+            onToggle={() => {
+              SetShowSessionStats(!showSessionStats);
+            }}
+            isChecked={showSessionStats}
+          />
+          <Text fontSize="xs">Session</Text>
+        </HStack>
       </HStack>
       {/* {DiceStats} */}
       <Box rounded="md" bg="pixelColors.highlightGray" minH="20px">
-        {!showStats && (
-          <VStack p={2} space={4}>
-            <Center width="100%" maxW="100%" h="150px">
-              <HStack space={4}>
-                {DiceRolls()}
-                {DiceUseTime()}
-              </HStack>
+        <VStack p={2} space={4}>
+          <Center width="100%" maxW="100%" h="150px">
+            <HStack space={4}>
+              {/* {DiceRolls()} */}
+
+              <Card
+                minW={10}
+                w="180px"
+                maxW="200px"
+                verticalSpace={2}
+                alignItems="center"
+                bg="primary.300"
+              >
+                <HStack alignItems="center" space={3}>
+                  <FontAwesome5 name="dice" size={24} color="black" />
+                  <Text bold fontSize="xl">
+                    Rolls
+                  </Text>
+                </HStack>
+                <HStack space={2} alignItems="center" p={2}>
+                  {showSessionStats ? (
+                    <Box w="100%">
+                      <Text>Session</Text>
+                      <Divider bg="white" />
+                      <Text fontSize="xl">26</Text>
+                    </Box>
+                  ) : (
+                    <Box w="100%">
+                      <Text>Lifetime</Text>
+                      <Divider bg="white" />
+                      <Text isTruncated fontSize="xl">
+                        285
+                      </Text>
+                    </Box>
+                  )}
+                </HStack>
+              </Card>
+
+              {/* {DiceUseTime()} */}
+
+              <Card
+                minW={10}
+                w="180px"
+                maxW="200px"
+                verticalSpace={2}
+                alignItems="center"
+                bg="primary.300"
+              >
+                <HStack alignItems="center" space={3}>
+                  <MaterialCommunityIcons
+                    name="clock"
+                    size={24}
+                    color="black"
+                  />
+                  <Text bold fontSize="xl">
+                    Use Time
+                  </Text>
+                </HStack>
+                <HStack space={2} alignItems="center" p={2}>
+                  {showSessionStats ? (
+                    <Box w="100%">
+                      <Text>Session</Text>
+                      <Divider bg="white" />
+                      <HStack alignItems="baseline">
+                        <Text fontSize="xl">32 </Text>
+                        <Text>min</Text>
+                      </HStack>
+                    </Box>
+                  ) : (
+                    <Box w="100%">
+                      <Text>Lifetime</Text>
+                      <Divider bg="white" />
+                      <HStack alignItems="baseline">
+                        <Text fontSize="xl">3.5 </Text>
+                        <Text>h</Text>
+                      </HStack>
+                    </Box>
+                  )}
+                </HStack>
+              </Card>
+            </HStack>
+          </Center>
+          <Card bg="primary.300" verticalSpace={4}>
+            <HStack space={3} alignItems="baseline">
+              <Ionicons name="stats-chart" size={30} color="black" />
+              <Text bold fontSize="xl">
+                Lifetime rolls per face
+              </Text>
+            </HStack>
+            <Center width="300" h="150" alignSelf="center">
+              <Histogram
+                viewRatio={2}
+                rolls={[
+                  30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45,
+                  91, 12, 56, 35, 45,
+                ]}
+              />
             </Center>
-            <Card bg="primary.300" verticalSpace={4}>
-              <HStack space={3} alignItems="baseline">
-                <Ionicons name="stats-chart" size={30} color="black" />
-                <Text bold fontSize="xl">
-                  Lifetime rolls per face
-                </Text>
-              </HStack>
-              <Center width="300" h="150" alignSelf="center">
-                <Histogram
-                  viewRatio={2}
-                  rolls={[
-                    30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45,
-                    91, 12, 56, 35, 45,
-                  ]}
-                />
-              </Center>
-            </Card>
-          </VStack>
-        )}
+          </Card>
+        </VStack>
       </Box>
     </Box>
   );
@@ -251,10 +332,10 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 export default function PixelDetailScreen() {
   //Will be used when the correct nested screen are in place
-  // const navigation =
-  //   useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
+  const navigation =
+    useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
   const route = useRoute<PixelDetailScreenRouteProp>();
-  const { pixelName } = route.params;
+  const pixelInfo = route.params;
   return (
     <PxAppPage theme={paleBluePixelTheme}>
       <VStack space={6} width="100%" maxW="100%">
@@ -265,7 +346,7 @@ export default function PixelDetailScreen() {
             }
             size="2xl"
             variant="unstyled"
-            placeholder={pixelName}
+            placeholder={pixelInfo.name}
             color="black"
           />
         </Center>
@@ -275,7 +356,8 @@ export default function PixelDetailScreen() {
             <Box flex={2.5} paddingLeft={0}>
               <Image
                 size={180}
-                source={require("~/../assets/RainbowDice.png")}
+                // source={require("~/../assets/RainbowDice.png")}
+                source={pixelInfo.imageRequirePath}
                 alt="placeHolder"
               />
             </Box>
@@ -289,8 +371,16 @@ export default function PixelDetailScreen() {
                 />
               </Button>
               <VStack bg="pixelColors.highlightGray" rounded="md">
-                <BatteryLevel iconSize="50" textSize="lg" percentage={0.8} />
-                <RSSIStrength iconSize="50" textSize="lg" percentage={-40} />
+                <BatteryLevel
+                  iconSize="50"
+                  textSize="lg"
+                  percentage={pixelInfo.batteryLevel}
+                />
+                <RSSIStrength
+                  iconSize="50"
+                  textSize="lg"
+                  percentage={pixelInfo.rssi}
+                />
               </VStack>
               <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
                 <VStack space={2}>
@@ -301,13 +391,13 @@ export default function PixelDetailScreen() {
                       10
                     </Text>
                   </HStack>
-                  <HStack>
+                  {/* <HStack>
                     <Text bold>Status : </Text>
                     <Spacer />
                     <Text bold color="green.500">
                       On Face
                     </Text>
-                  </HStack>
+                  </HStack> */}
                 </VStack>
               </Box>
             </VStack>
@@ -356,45 +446,19 @@ export default function PixelDetailScreen() {
 
         {/* Dice Stats is used without params until we switch to real data */}
         {DiceStats()}
-
-        {/* {Firmware infos} */}
-        {/* <Divider bg="primary.200" width="90%" alignSelf="center" />
-        <Box maxWidth="100%">
-          <VStack space={4} p={3} rounded="md" maxWidth="100%">
-            <HStack
-              alignItems="center"
-              rounded="md"
-              flex={1}
-              space={2}
-              maxW="100%"
-            >
-              <Text isTruncated bold>
-                Firmware date :
-              </Text>
-              <Spacer />
-              <Box bg="gray.400" rounded="md" p={2} maxW="100%">
-                <Text isTruncated>{new Date().toUTCString()}</Text>
-              </Box>
-            </HStack>
-            <Button
-              leftIcon={
-                <MaterialCommunityIcons name="update" size={24} color="white" />
-              }
-            >
-              <Text bold>Update firmware</Text>
-            </Button>
-          </VStack>
-        </Box> */}
-
         {/* {Advanced Settings infos} */}
         <Divider bg="primary.200" width="90%" alignSelf="center" />
-        <Pressable>
+        <Pressable
+          onPress={() => {
+            navigation.navigate("PixelAdvancedSettingsScreen");
+          }}
+        >
           <HStack
             alignItems="center"
             bg="primary.500"
             p={3}
             rounded="md"
-            w="90%"
+            w="100%"
             alignSelf="center"
           >
             <Text bold>Advanced Settings</Text>
@@ -406,7 +470,7 @@ export default function PixelDetailScreen() {
         <Divider bg="primary.200" width="90%" alignSelf="center" />
         <Button
           leftIcon={<AntDesign name="disconnect" size={24} color="white" />}
-          w="90%"
+          w="100%"
           alignSelf="center"
         >
           <Text bold>Unpair Dice</Text>

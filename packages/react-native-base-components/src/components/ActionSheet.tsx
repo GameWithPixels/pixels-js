@@ -10,22 +10,21 @@ import {
   Center,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
-import React from "react";
+import React, { ReactNode } from "react";
 
 // Data of every item that will appear in the actionsheet drawer
 export interface ActionSheetItemData {
-  label: string;
-  // onPress?: ((event: GestureResponderEvent) => void) | null | undefined;
+  label?: string;
   onPress?: (() => void) | null | undefined;
+  item?: ReactNode;
 }
 
 export interface ActionSheetComponentProps extends IActionsheetProps {
-  // Array of items to display
+  // Array of items data to display inside classic ActionSheet.item objects
   itemsData?: ActionSheetItemData[];
   sheetBgColor?: ColorType;
   title?: string;
-  trigger?: JSX.Element;
-  triggerLabel?: string;
+  trigger?: ReactNode;
 }
 
 export function ActionSheet(props: ActionSheetComponentProps) {
@@ -36,9 +35,6 @@ export function ActionSheet(props: ActionSheetComponentProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      {/* <Button onPress={onOpen}>
-        <Text>{resolvedProps.triggerLabel}</Text>
-      </Button> */}
       <Pressable onPress={onOpen}>
         <Center>{resolvedProps.trigger}</Center>
       </Pressable>
@@ -59,18 +55,30 @@ export function ActionSheet(props: ActionSheetComponentProps) {
             </Text>
           </Box>
           <ScrollView width="full" height={300}>
-            {props.itemsData?.map((item, i) => (
-              <Actionsheet.Item
-                bg={resolvedProps.sheetBgColor}
-                key={i}
-                onPress={() => {
-                  if (item.onPress) item.onPress();
-                  onClose();
-                }}
-              >
-                {item.label}
-              </Actionsheet.Item>
-            ))}
+            {props.itemsData?.map((itemData, i) =>
+              !itemData.item ? (
+                <Actionsheet.Item
+                  bg={resolvedProps.sheetBgColor}
+                  key={i}
+                  onPress={() => {
+                    itemData.onPress?.();
+                    onClose();
+                  }}
+                >
+                  {itemData.label}
+                </Actionsheet.Item>
+              ) : (
+                <Pressable
+                  key={i}
+                  onPress={() => {
+                    itemData.onPress?.();
+                    onClose();
+                  }}
+                >
+                  {itemData.item}
+                </Pressable>
+              )
+            )}
           </ScrollView>
         </Actionsheet.Content>
       </Actionsheet>
