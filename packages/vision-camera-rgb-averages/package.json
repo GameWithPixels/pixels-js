@@ -55,7 +55,7 @@
     "react": "18.1.0",
     "react-native": "0.70.6",
     "react-native-builder-bob": "^0.20.0",
-    "react-native-vision-camera": "~2.15.2",
+    "react-native-vision-camera": "~2.14.1",
     "release-it": "^15.0.0"
   },
   "peerDependencies": {
