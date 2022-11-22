@@ -4,7 +4,7 @@ import {
   Pixel,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
-import { Button, Text } from "native-base";
+import { Button, HStack, Text } from "native-base";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import ProgressBar from "./ProgressBar";
@@ -228,19 +228,27 @@ export function CheckLEDs({
   settings,
 }: ValidationTestProps) {
   const [resolvePromise, setResolvePromise] = useState<() => void>();
+  const [abortController] = useState(() => new AbortController());
   const taskChain = useTaskChain(
     action,
     useCallback(
-      (abortSignal) =>
-        ValidationTests.checkLEDsLitUp(
-          pixel,
-          isBoard(settings.formFactor)
-            ? new Color(0.03, 0.03, 0.03)
-            : new Color(0.1, 0.1, 0.1),
-          (r) => setResolvePromise(() => r),
-          abortSignal
-        ),
-      [pixel, settings.formFactor]
+      (abortSignal) => {
+        const abort = () => abortController.abort();
+        abortSignal.addEventListener("abort", abort);
+        try {
+          return ValidationTests.checkLEDsLitUp(
+            pixel,
+            isBoard(settings.formFactor)
+              ? new Color(0.03, 0.03, 0.03)
+              : new Color(0.1, 0.1, 0.1),
+            (r) => setResolvePromise(() => r),
+            abortController.signal
+          );
+        } finally {
+          abortSignal.removeEventListener("abort", abort);
+        }
+      },
+      [abortController, pixel, settings.formFactor]
     ),
     createTaskStatusContainer({
       children: (
@@ -250,7 +258,12 @@ export function CheckLEDs({
             white
           </Text>
           {resolvePromise && (
-            <Button onPress={() => resolvePromise()}>OK</Button>
+            <HStack>
+              <Button mr="5%" onPress={() => resolvePromise()}>
+                ☑️
+              </Button>
+              <Button onPress={() => abortController.abort()}>❌</Button>
+            </HStack>
           )}
         </>
       ),
@@ -437,14 +450,13 @@ export function UpdateFirmware({
           " and bootloader version is",
           toLocaleDateTimeString(blDate)
         );
-        const onDeviceFwDate = new Date(scannedPixel.buildTimestamp * 1000);
         console.log(
           "On device firmware build timestamp is",
-          toLocaleDateTimeString(onDeviceFwDate)
+          toLocaleDateTimeString(scannedPixel.firmwareDate)
         );
         // Start DFU
         const mostRecent = Math.max(blDate.getTime(), fwDate.getTime());
-        if (mostRecent > onDeviceFwDate.getTime()) {
+        if (mostRecent > scannedPixel.firmwareDate.getTime()) {
           await updateFirmware(scannedPixel.address, blPath, fwPath);
         } else {
           console.log("Skipping firmware update");

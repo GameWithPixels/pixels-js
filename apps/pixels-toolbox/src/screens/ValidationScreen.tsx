@@ -394,9 +394,12 @@ function RunTestsPage({
       <ScrollView w="100%" ref={scrollRef}>
         <>{taskChain.render()}</>
         {result && (
-          <Text mb="10%" fontSize={150} textAlign="center">
-            {getTaskResultEmoji(taskChain.status)}
-          </Text>
+          <Center>
+            <Text my="3%">Battery: {pixel?.batteryLevel}%</Text>
+            <Text mb="10%" fontSize={150} textAlign="center">
+              {getTaskResultEmoji(taskChain.status)}
+            </Text>
+          </Center>
         )}
       </ScrollView>
       <Button w="100%" onPress={onOkCancel}>
