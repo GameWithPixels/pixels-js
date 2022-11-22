@@ -1,5 +1,3 @@
-import { PopUpProps } from "../../components/PopUp";
-
 export default {
   defaultProps: {
     title: "PopUp",
@@ -8,4 +6,4 @@ export default {
     borderWidth: 0,
     borderColor: "primary.300",
   },
-} as PopUpProps;
+};

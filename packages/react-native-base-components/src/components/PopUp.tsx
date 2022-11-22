@@ -3,21 +3,32 @@ import {
   VStack,
   Modal,
   Text,
-  IModalProps,
   usePropsResolution,
   Button,
   HStack,
 } from "native-base";
 import React from "react";
 
-export interface PopUpProps extends IModalProps {
-  title?: string;
-  buttons?: string | string[];
-  onClose?: (result?: string) => void;
+// export interface PopUpProps extends IModalProps {
+//   title?: string;
+//   buttons?: string | string[];
+//   onClose?: (result?: string) => void;
+// }
+
+export interface PopupProps<T extends string> {
+  title: string;
+  buttons?: Map<T, string> | T;
+  onClose?: (result: T) => void;
+  isOpen?: boolean;
 }
 
-export function PopUp({ title, buttons, onClose, ...props }: PopUpProps) {
-  const resolvedProps = usePropsResolution("PopUp", props) as PopUpProps;
+export function PopUp<T extends string>({
+  title,
+  buttons,
+  onClose,
+  ...props
+}: PopupProps<T>) {
+  const resolvedProps = usePropsResolution("PopUp", props);
   // const { isOpen, onOpen, onClose } = useDisclose(resolvedProps.isOpen);
   return (
     <>
@@ -42,7 +53,7 @@ export function PopUp({ title, buttons, onClose, ...props }: PopUpProps) {
           </Modal.Body>
           <Modal.Footer bg={resolvedProps.bg}>
             <HStack w="100%" space={2}>
-              {!buttons || typeof buttons === "string" ? (
+              {/* {!buttons || typeof buttons === "string" ? (
                 <Button
                   flex={1}
                   onPress={() => {
@@ -56,6 +67,15 @@ export function PopUp({ title, buttons, onClose, ...props }: PopUpProps) {
                   <Button flex={1} key={i} onPress={() => onClose?.(title)}>
                     {title}
                   </Button>
+                ))
+              )} */}
+              {!buttons ? (
+                <Button onPress={() => onClose?.("Close" as T)}>Close</Button>
+              ) : typeof buttons === "string" ? (
+                <Button onPress={() => onClose?.(buttons)}>{buttons}</Button>
+              ) : (
+                Array.from(buttons).map(([id, label]) => (
+                  <Button onPress={() => onClose?.(id)}>{label}</Button>
                 ))
               )}
             </HStack>
