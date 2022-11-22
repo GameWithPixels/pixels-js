@@ -21,38 +21,55 @@ import {
   // eslint-disable-next-line import/namespace
 } from "react-native";
 
+import { useAppSelector } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
 import EmojiButton from "~/components/EmojiButton";
 import PixelConnectCard from "~/components/PixelConnectCard";
+import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
 import { type RootStackParamList } from "~/navigation";
 import { sr } from "~/styles";
+import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function HeaderComponent({ title }: { title: string }) {
+  const navigation =
+    useNavigation<StackNavigationProp<RootStackParamList, "Home">>();
   return (
     <HStack width="100%" height="100%" alignItems="center">
-      <Center position="absolute" top={0} height="100%">
+      <Center position="absolute" top={0} width={sr(40)} height={sr(40)}>
         <Menu
+          // TODO see variant "cardWithBorder"
+          borderRadius="xl"
+          borderWidth="1"
+          _dark={{
+            backgroundColor: "coolGray.800",
+            borderColor: "warmGray.500",
+          }}
+          _light={{
+            backgroundColor: "warmGray.100",
+            borderColor: "coolGray.400",
+          }}
           trigger={(triggerProps) => {
             return (
               <Pressable
                 accessibilityLabel="More options menu"
+                width="100%"
+                height="100%"
                 {...triggerProps}
               >
-                <HamburgerIcon />
+                <Center width="100%" height="100%">
+                  <HamburgerIcon />
+                </Center>
               </Pressable>
             );
           }}
         >
-          <Menu.Item onPress={() => console.log("Validation!")}>
-            Validation
+          <Menu.Item onPress={() => navigation.navigate("Validation")}>
+            Factory Validation
           </Menu.Item>
-          <Menu.Item onPress={() => console.log("Firmware!")}>
-            Select Firmware
-          </Menu.Item>
-          <Menu.Item onPress={() => console.log("Roll!")}>
+          {/* TODO <Menu.Item onPress={() => navigation.navigate("Roll")}>
             Roll Screen
-          </Menu.Item>
+          </Menu.Item> */}
         </Menu>
       </Center>
       <Center width="100%" height="100%">
@@ -69,6 +86,9 @@ function HomePage() {
     navigation.setOptions({
       title: `Toolbox v${Constants.manifest?.version}`,
       headerTitle: ({ children }) => <HeaderComponent title={children} />,
+      headerStyle: {
+        height: sr(40) + Constants.statusBarHeight,
+      },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -78,12 +98,40 @@ function HomePage() {
   });
   const [showInfo, setShowInfo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
   const applyAllActionSheet = useDisclose();
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
       <Box flex={1} alignItems="center" left="2%" width="96%">
-        <Center flexDir="row" mb={sr(8)} width="100%" alignItems="baseline">
+        <Box width="100%" alignItems="center" flexDir="row">
+          <EmojiButton
+            mr={sr(5)}
+            onPress={() => navigation.navigate("SelectDfuFiles")}
+          >
+            📁
+          </EmojiButton>
+          <Center width="100%" alignItems="baseline">
+            <Text>
+              <Text>Selected Firmware: </Text>
+              <Text italic>
+                {dfuFiles
+                  ? dfuFiles
+                      .map((p) => getDfuFileInfo(p).type ?? "unknown")
+                      .join(", ")
+                  : "unavailable"}
+              </Text>
+            </Text>
+            {dfuFiles?.length > 0 && (
+              <Text>
+                {toLocaleDateTimeString(
+                  getDfuFileInfo(dfuFiles[0]).date ?? new Date(0)
+                )}
+              </Text>
+            )}
+          </Center>
+        </Box>
+        <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
           <EmojiButton onPress={() => setShowInfo((b) => !b)}>ℹ️</EmojiButton>
           <Center flex={1}>
             <Text variant="h2">{`${scannedPixels.length} Pixels`}</Text>
@@ -93,13 +141,12 @@ function HomePage() {
         {scannedPixels.length ? (
           <FlatList
             width="100%"
-            data={Array(10)
-              .fill(scannedPixels[0])
-              .map((p, i) => {
-                return { ...p, pixelId: i.toString() };
-              })}
+            data={scannedPixels}
             renderItem={(itemInfo) => (
-              <PixelConnectCard pixel={itemInfo.item} showInfo={showInfo} />
+              <PixelConnectCard
+                scannedPixel={itemInfo.item}
+                showInfo={showInfo}
+              />
             )}
             keyExtractor={(p) => p.pixelId.toString()}
             ItemSeparatorComponent={() => <Box h={sr(8)} />}

@@ -171,7 +171,12 @@ export default class Pixel implements IPixel {
   private _rollState: {
     face: number;
     state: PixelRollStateNames;
-  };
+  } = { face: 0, state: "unknown" };
+  private _batteryState: {
+    level: number;
+    isCharging: boolean;
+  } = { level: 0, isCharging: false };
+  private _rssi = 0;
 
   /** Gets this Pixel's last known connection status.*/
   get status(): PixelStatus {
@@ -218,17 +223,17 @@ export default class Pixel implements IPixel {
 
   /** Gets the last measured RSSI value. */
   get rssi(): number {
-    return 0;
+    return this._rssi;
   }
 
   /** Gets the last know read battery level (percentage). */
   get batteryLevel(): number {
-    return 0;
+    return this._batteryState.level;
   }
 
   /** Gets the last know battery charging state. */
   get isCharging(): boolean {
-    return false;
+    return this._batteryState.isCharging;
   }
 
   /** Gets the Pixel last know roll state. */
@@ -258,7 +263,6 @@ export default class Pixel implements IPixel {
     });
     this._session = session;
     this._status = "disconnected"; //TODO use the getLastConnectionStatus()
-    this._rollState = { face: 0, state: "unknown" };
     // Subscribe to roll messages and emit roll event
     this.addMessageListener("rollState", (msgOrType) => {
       const msg = msgOrType as RollState;
@@ -331,6 +335,9 @@ export default class Pixel implements IPixel {
             MessageTypeValues.requestRollState,
             MessageTypeValues.rollState
           );
+
+          // Query battery level
+          await this.queryBatteryState();
 
           // We're ready!
           this._updateStatus("ready");
@@ -514,10 +521,11 @@ export default class Pixel implements IPixel {
       MessageTypeValues.batteryLevel
     );
     const msg = response as BatteryLevel;
-    return {
+    this._batteryState = {
       level: 100 * msg.level,
       isCharging: msg.charging,
     };
+    return { ...this._batteryState };
   }
 
   /**
@@ -529,7 +537,8 @@ export default class Pixel implements IPixel {
       MessageTypeValues.requestRssi,
       MessageTypeValues.rssi
     );
-    return (response as Rssi).value;
+    this._rssi = (response as Rssi).value;
+    return this._rssi;
   }
 
   /**

@@ -72,25 +72,6 @@ async function scanAction(
           scanner.addEventListener("scannedPixel", listener);
           // Update state once all operations have completed successfully
           state.listener = listener;
-          state.listener = (p: ScannedPixel) => {};
-          setTimeout(
-            () =>
-              updateScannedPixels(state.lastPixels, {
-                systemId: "systemId",
-                pixelId: 123456,
-                address: 7890123,
-                name: "pixel",
-                ledCount: 20,
-                designAndColor: "auroraSky",
-                firmwareDate: new Date(123456),
-                rssi: -20,
-                batteryLevel: 15,
-                isCharging: false,
-                rollState: "handling",
-                currentFace: 12,
-              }),
-            1000
-          );
         }
         break;
       case "stop":

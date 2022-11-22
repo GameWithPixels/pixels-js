@@ -10,6 +10,7 @@ import usePixelStatus from "./usePixelStatus";
 // Returned dispatch function is stable
 export default function (): [
   PixelStatus | undefined,
+  Pixel | undefined,
   (action: "connect" | "disconnect", pixel?: Pixel) => void,
   Error?
 ] {
@@ -46,5 +47,5 @@ export default function (): [
     []
   );
 
-  return [usePixelStatus(pixel), dispatch, lastError];
+  return [usePixelStatus(pixel), pixel, dispatch, lastError];
 }
