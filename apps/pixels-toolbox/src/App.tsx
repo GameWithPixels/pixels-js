@@ -9,10 +9,7 @@ import theme from "./theme";
 
 import useBluetooth from "~/features/pixels/hooks/useBluetooth";
 import { type RootStackParamList } from "~/navigation";
-import AnimationsScreen from "~/screens/AnimationsScreen";
-import ConnectScreen from "~/screens/ConnectScreen";
-import DfuScreen from "~/screens/DfuScreen";
-import MenuScreen from "~/screens/MenuScreen";
+import HomeScreen from "~/screens/HomeScreen";
 import RollScreen from "~/screens/RollScreen";
 import SelectDfuFileScreen from "~/screens/SelectDfuFileScreen";
 import StatsScreen from "~/screens/StatsScreen";
@@ -49,16 +46,12 @@ function App() {
               headerTitleAlign: "center",
             }}
           >
-            <Stack.Screen name="Menu" component={MenuScreen} />
-            <Stack.Screen name="Connect" component={ConnectScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen
               name="SelectDfuFile"
               component={SelectDfuFileScreen}
             />
-            <Stack.Screen name="Dfu" component={DfuScreen} />
-            <Stack.Screen name="Animations" component={AnimationsScreen} />
             <Stack.Screen name="Validation" component={ValidationScreen} />
-            <Stack.Screen name="Stats" component={StatsScreen} />
             <Stack.Screen name="Roll" component={RollScreen} />
           </Stack.Navigator>
         </NavigationContainer>

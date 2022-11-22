@@ -47,11 +47,11 @@ function HeaderComponent({ title }: { title: string }) {
           <Menu.Item onPress={() => console.log("Validation!")}>
             Validation
           </Menu.Item>
-          <Menu.Item onPress={() => console.log("Roll!")}>
-            Roll Screen
-          </Menu.Item>
           <Menu.Item onPress={() => console.log("Firmware!")}>
             Select Firmware
+          </Menu.Item>
+          <Menu.Item onPress={() => console.log("Roll!")}>
+            Roll Screen
           </Menu.Item>
         </Menu>
       </Center>
@@ -62,9 +62,9 @@ function HeaderComponent({ title }: { title: string }) {
   );
 }
 
-function MenuPage() {
+function HomePage() {
   const navigation =
-    useNavigation<StackNavigationProp<RootStackParamList, "Menu">>();
+    useNavigation<StackNavigationProp<RootStackParamList, "Home">>();
   useEffect(() => {
     navigation.setOptions({
       title: `Toolbox v${Constants.manifest?.version}`,
@@ -103,6 +103,7 @@ function MenuPage() {
             )}
             keyExtractor={(p) => p.pixelId.toString()}
             ItemSeparatorComponent={() => <Box h={sr(8)} />}
+            contentContainerStyle={{ flexGrow: 1 }}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -129,12 +130,13 @@ function MenuPage() {
             `OS: ${Platform.OS} ${Platform.Version}`}
         </Text>
       </Center>
+      {/* Action sheet with list of operations to run on all Pixels */}
       <Actionsheet
         isOpen={applyAllActionSheet.isOpen}
         onClose={applyAllActionSheet.onClose}
       >
         <Actionsheet.Content>
-          <Text variant="h3">Operation To Run On All Pixels</Text>
+          <Text variant="h3">Run On All Pixels:</Text>
           <Actionsheet.Item>Connect</Actionsheet.Item>
           <Actionsheet.Item>Disconnect</Actionsheet.Item>
           <Actionsheet.Item>Update Profile</Actionsheet.Item>
@@ -148,7 +150,7 @@ function MenuPage() {
 export default function () {
   return (
     <AppPage>
-      <MenuPage />
+      <HomePage />
     </AppPage>
   );
 }

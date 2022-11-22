@@ -1,27 +1,22 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useAssets } from "expo-asset";
-import React, { useEffect, useState } from "react";
+import { Box, Button, Center, FlatList, Text } from "native-base";
+import { useEffect, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  FlatList,
-  ListRenderItemInfo,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
 
 import dfuFiles from "~/../assets/dfu-files.zip";
 import AppPage from "~/components/AppPage";
 import DfuFile from "~/components/DfuFile";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
-import { type RootStackParamList } from "~/navigation";
-import globalStyles, { sr } from "~/styles";
+import {
+  SelectDfuFileScreenProps,
+  type RootStackParamList,
+} from "~/navigation";
+import { sr } from "~/styles";
 
-function SelectDfuFilePage() {
+function SelectDfuFilePage({ route }: SelectDfuFileScreenProps) {
   const errorHandler = useErrorHandler();
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "SelectDfuFile">>();
@@ -44,57 +39,40 @@ function SelectDfuFilePage() {
     }
   }, [assets, assetsError, errorHandler]);
 
-  const selectDfuFile = (dfuFilePath: string) => {
-    navigation.navigate("Dfu", { dfuFilePath });
-  };
-
-  const renderDfuFile = (itemInfo: ListRenderItemInfo<string>) => {
-    const dfuFilePath = itemInfo.item;
-    return (
-      <View style={styles.box} key={dfuFilePath}>
-        <DfuFile fileInfo={getDfuFileInfo(dfuFilePath)} />
-        <Spacer />
-        <Button onPress={() => selectDfuFile(dfuFilePath)} title="Select" />
-        <Spacer />
-      </View>
-    );
-  };
-
   return (
-    <>
-      <Text style={styles.textBold}>Select File for DFU:</Text>
-      <Spacer />
+    <Center left="2%" width="96%">
+      <Text variant="h2">Select File for DFU:</Text>
       {firmwareFiles.length ? (
-        <View style={styles.containerScanList}>
-          <FlatList
-            ItemSeparatorComponent={Spacer}
-            data={firmwareFiles}
-            renderItem={renderDfuFile}
-            contentContainerStyle={{ flexGrow: 1 }}
-          />
-        </View>
+        <FlatList
+          ItemSeparatorComponent={() => <Box h={sr(8)} />}
+          data={firmwareFiles}
+          renderItem={(i) => (
+            <Center>
+              <DfuFile fileInfo={getDfuFileInfo(i.item)} />
+              <Button
+                onPress={() => {
+                  route.params.onDfuFileSelected(i.item);
+                  navigation.goBack();
+                }}
+              >
+                Select
+              </Button>
+            </Center>
+          )}
+          keyExtractor={(f) => f}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
       ) : (
-        <Text style={styles.text}>No files found in assets/dfu-files.zip</Text>
+        <Text bold>No files found in assets/dfu-files.zip!</Text>
       )}
-    </>
+    </Center>
   );
 }
 
-export default function () {
+export default function (props: SelectDfuFileScreenProps) {
   return (
-    <AppPage style={styles.container}>
-      <SelectDfuFilePage />
+    <AppPage>
+      <SelectDfuFilePage {...props} />
     </AppPage>
   );
 }
-
-const styles = StyleSheet.create({
-  ...globalStyles,
-  containerScanList: {
-    alignItems: "center",
-    justifyContent: "flex-start",
-    margin: sr(10),
-    flex: 1,
-    flexGrow: 1,
-  },
-});

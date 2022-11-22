@@ -1,18 +1,18 @@
 import { StackScreenProps } from "@react-navigation/stack";
 
 export type RootStackParamList = {
-  Menu: undefined;
-  Connect: undefined;
-  SelectDfuFile: undefined;
-  Dfu: DfuScreenParams;
-  Animations: undefined;
+  Home: undefined;
+  SelectDfuFile: SelectDfuFileScreenParams;
   Validation: undefined;
   Stats: undefined;
   Roll: undefined;
 };
 
-export type DfuScreenParams = {
-  dfuFilePath: string;
+export type SelectDfuFileScreenParams = {
+  onDfuFileSelected: (path: string) => void;
 };
 
-export type DfuScreenProps = StackScreenProps<RootStackParamList, "Dfu">;
+export type SelectDfuFileScreenProps = StackScreenProps<
+  RootStackParamList,
+  "SelectDfuFile"
+>;
