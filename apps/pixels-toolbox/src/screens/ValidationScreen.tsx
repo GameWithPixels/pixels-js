@@ -395,9 +395,11 @@ function RunTestsPage({
         <>{taskChain.render()}</>
         {result && (
           <Center>
-            <Text my="3%">Battery: {pixel?.batteryLevel}%</Text>
-            <Text mb="10%" fontSize={150} textAlign="center">
+            <Text fontSize={150} textAlign="center">
               {getTaskResultEmoji(taskChain.status)}
+            </Text>
+            <Text mb="8%">
+              Battery: {Math.round(pixel?.batteryLevel ?? 0)}%
             </Text>
           </Center>
         )}
@@ -447,8 +449,45 @@ function useBackgroundColor() {
   return useColorModeValue("warmGray.100", "coolGray.800");
 }
 
+function containerVariants() {
+  return {
+    background: {
+      _dark: {
+        backgroundColor: "coolGray.800",
+      },
+      _light: {
+        backgroundColor: "warmGray.100",
+      },
+    },
+    card: {
+      rounded: "md",
+      borderWidth: "2",
+      _dark: {
+        borderColor: "warmGray.400",
+        backgroundColor: "coolGray.700",
+      },
+      _light: {
+        borderColor: "coolGray.500",
+        backgroundColor: "warmGray.200",
+      },
+    },
+  };
+}
+
 const theme = extendTheme({
   components: {
+    Box: {
+      variants: containerVariants(),
+    },
+    Center: {
+      variants: containerVariants(),
+    },
+    VStack: {
+      variants: containerVariants(),
+    },
+    HStack: {
+      variants: containerVariants(),
+    },
     Text: {
       baseStyle: {
         fontSize: "2xl",
@@ -470,8 +509,11 @@ const theme = extendTheme({
     Button: {
       variants: {
         solid: {
+          rounded: "sm",
+          borderWidth: "1",
           _dark: {
             bg: "coolGray.600",
+            borderColor: "coolGray.400",
             _pressed: {
               bg: "coolGray.700",
             },
@@ -481,6 +523,7 @@ const theme = extendTheme({
           },
           _light: {
             bg: "warmGray.300",
+            borderColor: "warmGray.500",
             _pressed: {
               bg: "warmGray.200",
             },
@@ -505,7 +548,7 @@ const theme = extendTheme({
 
 export default function () {
   return (
-    <AppPage style={{ flex: 1 }}>
+    <AppPage>
       <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
         <ValidationPage />
       </NativeBaseProvider>

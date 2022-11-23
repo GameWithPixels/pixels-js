@@ -1,6 +1,6 @@
 import { extendTheme } from "native-base";
 
-function viewVariants() {
+function containerVariants() {
   return {
     background: {
       _dark: {
@@ -36,16 +36,16 @@ function viewVariants() {
 const theme = extendTheme({
   components: {
     Box: {
-      variants: viewVariants(),
+      variants: containerVariants(),
     },
     Center: {
-      variants: viewVariants(),
+      variants: containerVariants(),
     },
     VStack: {
-      variants: viewVariants(),
+      variants: containerVariants(),
     },
     HStack: {
-      variants: viewVariants(),
+      variants: containerVariants(),
     },
     Text: {
       baseStyle: {

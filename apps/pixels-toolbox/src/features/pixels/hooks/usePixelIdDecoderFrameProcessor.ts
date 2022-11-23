@@ -19,7 +19,6 @@ export default function (): [FrameProcessor, number, RbgColor?, Error?] {
     (frame) => {
       "worklet";
       try {
-        setLastError(undefined);
         const result = getImageRgbAverages(frame, {
           subSamplingX: 4,
           subSamplingY: 2,
@@ -28,7 +27,7 @@ export default function (): [FrameProcessor, number, RbgColor?, Error?] {
         });
         runOnJS(decoderDispatch)({ rgbAverages: result });
       } catch (error) {
-        setLastError(
+        runOnJS(setLastError)(
           new Error(
             `Exception in frame processor "getImageRgbAverages": ${error}`
           )

@@ -17,14 +17,7 @@ export default function ({
 }: TaskGroupContainerProps) {
   return (
     <Center w="100%" py="3">
-      <VStack
-        bg="coolGray.600"
-        w="95%"
-        borderColor="warmGray.400"
-        borderWidth="2"
-        p="2"
-        rounded="md"
-      >
+      <VStack variant="card" w="95%" p="2">
         <TaskContainer title={title} taskStatus={taskStatus}>
           {taskStatus !== "succeeded" && children}
         </TaskContainer>

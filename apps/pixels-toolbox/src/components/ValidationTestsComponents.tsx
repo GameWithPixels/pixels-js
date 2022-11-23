@@ -189,24 +189,80 @@ export function WaitCharging({
   settings,
   notCharging,
 }: ValidationTestProps & { notCharging?: boolean }) {
+  // Timeout before asking user option to abort
+  const [isTimedOut, setIsTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isTimedOut) {
+      const timeoutId = setTimeout(() => setIsTimedOut(true), 5000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isTimedOut]);
+
+  const [userAbort, setUserAbort] = useState<() => void>();
   const taskChain = useTaskChain(
     action,
     useCallback(
-      (abortSignal) =>
-        ValidationTests.waitCharging(pixel, !notCharging, abortSignal),
+      async (abortSignal) => {
+        let userAborted = false;
+        const abortController = new AbortController();
+        setUserAbort(() => () => {
+          userAborted = true;
+          abortController.abort();
+        });
+        const abort = () => abortController.abort();
+        abortSignal.addEventListener("abort", abort);
+        try {
+          await ValidationTests.waitCharging(
+            pixel,
+            !notCharging,
+            abortController.signal
+          );
+        } catch (error: any) {
+          if (userAborted) {
+            throw new Error("Task waitCharging aborted by user");
+          } else {
+            throw error;
+          }
+        } finally {
+          abortSignal.removeEventListener("abort", abort);
+        }
+      },
       [notCharging, pixel]
     ),
     createTaskStatusContainer({
       children: (
-        <Text variant="comment">
-          {isBoard(settings.formFactor)
-            ? notCharging
-              ? "Remove coil from charger"
-              : "Place coil on charger"
-            : notCharging
-            ? "Remove die From Charger"
-            : "Place die On Charger"}
-        </Text>
+        <>
+          {!isTimedOut ? (
+            <Text variant="comment">
+              {isBoard(settings.formFactor)
+                ? notCharging
+                  ? "Remove coil from charger"
+                  : "Place coil on charger"
+                : notCharging
+                ? "Remove die from charger"
+                : "Place die on charger"}
+            </Text>
+          ) : (
+            <>
+              <Text variant="comment">{`Is ${
+                isBoard(settings.formFactor) ? "coil" : "die"
+              } properly ${
+                notCharging ? "removed from" : "placed on"
+              } charger?`}</Text>
+              <HStack>
+                <Button onPress={() => userAbort?.()}>Yes</Button>
+                <Button
+                  ml="3%"
+                  onPress={() => {
+                    setIsTimedOut(false);
+                  }}
+                >
+                  No
+                </Button>
+              </HStack>
+            </>
+          )}
+        </>
       ),
     })
   ).withStatusChanged(onTaskStatus);
@@ -228,15 +284,21 @@ export function CheckLEDs({
   settings,
 }: ValidationTestProps) {
   const [resolvePromise, setResolvePromise] = useState<() => void>();
-  const [abortController] = useState(() => new AbortController());
+  const [userAbort, setUserAbort] = useState<() => void>();
   const taskChain = useTaskChain(
     action,
     useCallback(
-      (abortSignal) => {
+      async (abortSignal) => {
+        let userAborted = false;
+        const abortController = new AbortController();
+        setUserAbort(() => () => {
+          userAborted = true;
+          abortController.abort();
+        });
         const abort = () => abortController.abort();
         abortSignal.addEventListener("abort", abort);
         try {
-          return ValidationTests.checkLEDsLitUp(
+          await ValidationTests.checkLEDsLitUp(
             pixel,
             isBoard(settings.formFactor)
               ? new Color(0.03, 0.03, 0.03)
@@ -244,25 +306,30 @@ export function CheckLEDs({
             (r) => setResolvePromise(() => r),
             abortController.signal
           );
+        } catch (error: any) {
+          if (userAborted) {
+            throw new Error("Task checkLEDsLitUp aborted by user");
+          } else {
+            throw error;
+          }
         } finally {
           abortSignal.removeEventListener("abort", abort);
         }
       },
-      [abortController, pixel, settings.formFactor]
+      [pixel, settings.formFactor]
     ),
     createTaskStatusContainer({
       children: (
         <>
           <Text variant="comment">
-            Check that all {getLedCount(settings.dieType)} LEDs are on and fully
-            white
+            Are all {getLedCount(settings.dieType)} LEDs fully white?
           </Text>
           {resolvePromise && (
             <HStack>
               <Button mr="5%" onPress={() => resolvePromise()}>
                 ☑️
               </Button>
-              <Button onPress={() => abortController.abort()}>❌</Button>
+              <Button onPress={() => userAbort?.()}>❌</Button>
             </HStack>
           )}
         </>

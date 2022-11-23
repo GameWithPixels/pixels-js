@@ -4,6 +4,7 @@ import Constants from "expo-constants";
 import {
   Actionsheet,
   Box,
+  Button,
   Center,
   FlatList,
   HamburgerIcon,
@@ -104,6 +105,17 @@ function HomePage() {
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
       <Box flex={1} alignItems="center" left="2%" width="96%">
+        <Button
+          py={sr(10)}
+          size="lg"
+          _text={{
+            fontSize: "2xl",
+            fontWeight: "bold",
+          }}
+          onPress={() => navigation.navigate("Validation")}
+        >
+          Validation
+        </Button>
         <Box width="100%" alignItems="center" flexDir="row">
           <EmojiButton
             mr={sr(5)}
