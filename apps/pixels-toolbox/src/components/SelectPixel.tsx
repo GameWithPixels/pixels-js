@@ -24,16 +24,13 @@ export default function ({ setSelectedPixel }: SelectPixelProps) {
   return (
     <>
       <Text style={styles.text}>Select Pixel</Text>
-      <Spacer />
       <Button
         onPress={() => scannerDispatch("clear")}
         title="Clear Scan List"
       />
-      <Spacer />
       {scannedPixels.length ? (
         <View style={styles.containerScanList}>
           <FlatList
-            ItemSeparatorComponent={Spacer}
             data={scannedPixels}
             renderItem={(itemInfo) => (
               <View style={styles.box}>

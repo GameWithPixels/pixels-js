@@ -1,10 +1,26 @@
 // eslint-disable-next-line import/namespace
 import { StyleSheet, Dimensions } from "react-native";
 
-const screenRatio = Dimensions.get("window").width / 400;
+// TODO update on window size change
+const windowWidth = Dimensions.get("window").width;
+const virtualWidth = 400;
+const screenRatio = windowWidth / virtualWidth;
 
-export function sr(value: number) {
-  return value * screenRatio;
+export function sr(value: number | string) {
+  if (typeof value === "number") {
+    return value * screenRatio;
+  } else {
+    const n = Number(value);
+    if (!isNaN(n)) {
+      return n;
+    } else if (value.charAt(value.length - 1) === "%") {
+      const p = Number(value.slice(0, -1));
+      if (!isNaN(p)) {
+        return (p / 100) * windowWidth;
+      }
+    }
+    throw new Error(`Unknown value for sr(): ${value}`);
+  }
 }
 
 export default StyleSheet.create({

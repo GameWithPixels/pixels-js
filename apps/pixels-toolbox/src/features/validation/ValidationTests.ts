@@ -115,8 +115,8 @@ const ValidationTests = {
             await delay(200, abortSignal);
             batteryLevel = await pixel.queryBatteryState(); // TODO abortSignal
           }
+          abortSignal.removeEventListener("abort", abort);
           if (!abortSignal.aborted) {
-            abortSignal.removeEventListener("abort", abort);
             resolve();
           }
         };

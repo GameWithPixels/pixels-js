@@ -172,6 +172,9 @@ export default class PixelScanner {
         "unknown";
       scannedPixel.rollState =
         getPixelEnumName(rollState, PixelRollStateValues) ?? "unknown";
+      scannedPixel.batteryLevel = Math.round(
+        (scannedPixel.batteryLevel / 255) * 100
+      );
     }
 
     if (scannedPixel.pixelId) {

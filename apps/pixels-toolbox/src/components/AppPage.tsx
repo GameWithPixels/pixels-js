@@ -8,7 +8,7 @@ import ErrorFallback from "./ErrorFallback";
 // rendering the AppPage as it will crash when handling an error.
 export default function ({ children }: PropsWithChildren) {
   return (
-    <VStack w="100%" h="100%" variant="background">
+    <VStack width="100%" height="100%" variant="background">
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         {children}
       </ErrorBoundary>

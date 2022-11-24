@@ -330,13 +330,13 @@ export default class Pixel implements IPixel {
         if (this.status === "identifying") {
           this._info = response as IAmADie;
 
-          // Query roll state
+          // Update roll state
           await this.sendAndWaitForResponse(
             MessageTypeValues.requestRollState,
             MessageTypeValues.rollState
           );
 
-          // Query battery level
+          // Update battery level
           await this.queryBatteryState();
 
           // We're ready!
@@ -522,7 +522,7 @@ export default class Pixel implements IPixel {
     );
     const msg = response as BatteryLevel;
     this._batteryState = {
-      level: 100 * msg.level,
+      level: Math.round(msg.level * 100),
       isCharging: msg.charging,
     };
     return { ...this._batteryState };

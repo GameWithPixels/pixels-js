@@ -112,7 +112,7 @@ export interface UsePixelScannerOptions {
 export default function (
   options?: UsePixelScannerOptions
 ): [ScannedPixel[], (action: PixelScannerAction) => Promise<void>] {
-  // Apply options default values
+  // Options default values
   const sortedByName = options?.sortedByName ?? false;
   const refreshInterval = options?.refreshInterval ?? 1000;
 

@@ -2,12 +2,13 @@ import {
   Pixel,
   MessageOrType,
   RollState,
-  PixelRollState,
   PixelRollStateValues,
+  getPixelEnumName,
+  PixelRollStateNames,
 } from "@systemic-games/react-native-pixels-connect";
 import { useEffect, useState } from "react";
 
-export default function (pixel?: Pixel): [number, PixelRollState] {
+export default function (pixel?: Pixel): [number, PixelRollStateNames] {
   const [rollState, setRollState] = useState<RollState>();
   useEffect(() => {
     if (pixel) {
@@ -23,6 +24,9 @@ export default function (pixel?: Pixel): [number, PixelRollState] {
 
   return [
     rollState ? rollState.faceIndex + 1 : 0,
-    rollState?.state ?? PixelRollStateValues.unknown,
+    getPixelEnumName(
+      rollState?.state ?? PixelRollStateValues.unknown,
+      PixelRollStateValues
+    ) ?? "unknown",
   ];
 }

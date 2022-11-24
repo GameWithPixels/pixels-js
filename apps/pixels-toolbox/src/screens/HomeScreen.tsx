@@ -14,7 +14,7 @@ import {
   Text,
   useDisclose,
 } from "native-base";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Platform,
   RefreshControl,
@@ -25,8 +25,11 @@ import {
 import { useAppSelector } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
 import EmojiButton from "~/components/EmojiButton";
-import PixelConnectCard from "~/components/PixelConnectCard";
+import PixelSwipeableCard from "~/components/PixelSwipeableCard";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
+import PixelDispatcher, {
+  PixelDispatcherAction,
+} from "~/features/pixels/PixelDispatcher";
 import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
 import { type RootStackParamList } from "~/navigation";
 import { sr } from "~/styles";
@@ -59,7 +62,7 @@ function HeaderComponent({ title }: { title: string }) {
                 {...triggerProps}
               >
                 <Center width="100%" height="100%">
-                  <HamburgerIcon />
+                  <HamburgerIcon size="100%" />
                 </Center>
               </Pressable>
             );
@@ -97,16 +100,42 @@ function HomePage() {
   const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
     sortedByName: true,
   });
+  const [pixelsMap, setPixelsMap] = useState(
+    () => new Map<number, PixelDispatcher>()
+  );
   const [showInfo, setShowInfo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
   const applyAllActionSheet = useDisclose();
+  useEffect(() => {
+    setPixelsMap((pixelsMap) => {
+      if (scannedPixels.every((p) => pixelsMap.get(p.pixelId))) {
+        return pixelsMap;
+      } else {
+        const newMap = new Map<number, PixelDispatcher>();
+        scannedPixels.forEach((p) => {
+          const pd = pixelsMap.get(p.pixelId);
+          if (pd) {
+            pd.updateScannedPixel(p);
+          }
+          newMap.set(p.pixelId, pd ?? new PixelDispatcher(p));
+        });
+        return newMap;
+      }
+    });
+  }, [scannedPixels]);
+  const dispatchAll = useCallback(
+    (action: PixelDispatcherAction) =>
+      pixelsMap.forEach((pd) => pd.dispatch(action)),
+    [pixelsMap]
+  );
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
       <Box flex={1} alignItems="center" left="2%" width="96%">
         <Button
-          py={sr(10)}
+          mt={sr(5)}
+          mb={sr(20)}
           size="lg"
           _text={{
             fontSize: "2xl",
@@ -146,28 +175,35 @@ function HomePage() {
         <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
           <EmojiButton onPress={() => setShowInfo((b) => !b)}>ℹ️</EmojiButton>
           <Center flex={1}>
-            <Text variant="h2">{`${scannedPixels.length} Pixels`}</Text>
+            <Text variant="h2">{`${pixelsMap.size} Pixels`}</Text>
           </Center>
           <EmojiButton onPress={applyAllActionSheet.onOpen}>⚙️</EmojiButton>
         </Center>
-        {scannedPixels.length ? (
+        {pixelsMap.size ? (
           <FlatList
             width="100%"
-            data={scannedPixels}
+            data={[...pixelsMap.values()]}
             renderItem={(itemInfo) => (
-              <PixelConnectCard
-                scannedPixel={itemInfo.item}
+              <PixelSwipeableCard
+                pixelDispatcher={itemInfo.item}
                 showInfo={showInfo}
+                swipeableItemsWidth={sr("25%")}
               />
             )}
             keyExtractor={(p) => p.pixelId.toString()}
-            ItemSeparatorComponent={() => <Box h={sr(8)} />}
+            ItemSeparatorComponent={() => <Box height={sr(8)} />}
             contentContainerStyle={{ flexGrow: 1 }}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={() => {
                   setRefreshing(true);
+                  setPixelsMap((pixelsMap) => {
+                    const connected = [...pixelsMap.entries()].filter(
+                      (e) => e[1].status !== "disconnected"
+                    );
+                    return new Map(connected);
+                  });
                   scannerDispatch("clear");
                   setTimeout(() => {
                     // Wait of 1 second before stopping the refresh animation
@@ -196,10 +232,46 @@ function HomePage() {
       >
         <Actionsheet.Content>
           <Text variant="h3">Run On All Pixels:</Text>
-          <Actionsheet.Item>Connect</Actionsheet.Item>
-          <Actionsheet.Item>Disconnect</Actionsheet.Item>
-          <Actionsheet.Item>Update Profile</Actionsheet.Item>
-          <Actionsheet.Item>Update Bootloader & Firmware</Actionsheet.Item>
+          <Actionsheet.Item
+            onPress={() => {
+              dispatchAll("connect");
+              applyAllActionSheet.onClose();
+            }}
+          >
+            Connect
+          </Actionsheet.Item>
+          <Actionsheet.Item
+            onPress={() => {
+              dispatchAll("disconnect");
+              applyAllActionSheet.onClose();
+            }}
+          >
+            Disconnect
+          </Actionsheet.Item>
+          <Actionsheet.Item
+            onPress={() => {
+              dispatchAll("blink");
+              applyAllActionSheet.onClose();
+            }}
+          >
+            Blink
+          </Actionsheet.Item>
+          <Actionsheet.Item
+            onPress={() => {
+              dispatchAll("updateProfile");
+              applyAllActionSheet.onClose();
+            }}
+          >
+            Update Profile
+          </Actionsheet.Item>
+          {/* <Actionsheet.Item
+            onPress={() => {
+              dispatchAll("updateFirmware");
+              applyAllActionSheet.onClose();
+            }}
+          >
+            Update Bootloader & Firmware
+          </Actionsheet.Item> */}
         </Actionsheet.Content>
       </Actionsheet>
     </>

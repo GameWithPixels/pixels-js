@@ -398,9 +398,7 @@ function RunTestsPage({
             <Text fontSize={150} textAlign="center">
               {getTaskResultEmoji(taskChain.status)}
             </Text>
-            <Text mb="8%">
-              Battery: {Math.round(pixel?.batteryLevel ?? 0)}%
-            </Text>
+            <Text mb="8%">Battery: {pixel?.batteryLevel ?? 0}%</Text>
           </Center>
         )}
       </ScrollView>
