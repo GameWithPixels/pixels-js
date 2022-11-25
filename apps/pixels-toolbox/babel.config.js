@@ -11,6 +11,7 @@ module.exports = function (api) {
         },
       ],
       [
+        // Reanimated plugin has to be listed last.
         "react-native-reanimated/plugin",
         {
           globals: ["__getImageRgbAverages"],
