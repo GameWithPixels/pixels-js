@@ -78,7 +78,7 @@ const theme = extendTheme({
     },
     Button: {
       baseStyle: {
-        size: "xs",
+        size: "sm",
         _text: {
           fontSize: "lg",
         },

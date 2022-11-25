@@ -1,4 +1,8 @@
 import { assertUnreachable } from "@systemic-games/pixels-core-utils";
+import {
+  EditAnimationRainbow,
+  EditDataSet,
+} from "@systemic-games/pixels-edit-animation";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
@@ -15,6 +19,7 @@ import createTypedEventEmitter, {
   EventReceiver,
 } from "~/../../../packages/pixels-core-connect/src/createTypedEventEmitter";
 
+import areSameFirmwareDates from "../dfu/areSameFirmwareDates";
 import getDfuFileInfo from "../dfu/getDfuFileInfo";
 
 import { store } from "~/app/store";
@@ -25,6 +30,8 @@ export type PixelDispatcherAction =
   | "connect"
   | "disconnect"
   | "blink"
+  | "playRainbow"
+  | "calibrate"
   | "updateProfile"
   | "updateFirmware";
 
@@ -43,48 +50,47 @@ export default class PixelDispatcher implements IPixel {
     createTypedEventEmitter<PixelDispatcherEventMap>();
 
   get systemId(): string {
-    return this._activePixel().systemId;
+    return this._getIPixel().systemId;
   }
 
   get pixelId(): number {
-    return this._activePixel().pixelId;
+    return this._getIPixel().pixelId;
   }
 
   get name(): string {
-    return this._activePixel().name;
+    return this._getIPixel().name;
   }
 
   get ledCount(): number {
-    return this._activePixel().ledCount;
+    return this._getIPixel().ledCount;
   }
 
   get designAndColor(): PixelDesignAndColorNames {
-    return this._activePixel().designAndColor;
+    return this._getIPixel().designAndColor;
   }
 
   get firmwareDate(): Date {
-    return this._activePixel().firmwareDate;
+    return this._getIPixel().firmwareDate;
   }
 
   get rssi(): number {
-    return this._activePixel().rssi;
+    return this._getIPixel().rssi;
   }
 
   get batteryLevel(): number {
-    // TODO rounding shouldn't be needed
-    return Math.round(this._activePixel().batteryLevel);
+    return this._getIPixel().batteryLevel;
   }
 
   get isCharging(): boolean {
-    return this._activePixel().isCharging;
+    return this._getIPixel().isCharging;
   }
 
   get rollState(): PixelRollStateNames {
-    return this._activePixel().rollState;
+    return this._getIPixel().rollState;
   }
 
   get currentFace(): number {
-    return this._activePixel().currentFace;
+    return this._getIPixel().currentFace;
   }
 
   get address(): number {
@@ -93,6 +99,18 @@ export default class PixelDispatcher implements IPixel {
 
   get status(): PixelStatus {
     return this._pixel.status;
+  }
+
+  get isReady(): boolean {
+    return this._pixel.status === "ready";
+  }
+
+  get canUpdateFirmware(): boolean {
+    const dfuFiles = this._getDfuFiles();
+    return (
+      dfuFiles.length > 0 &&
+      !areSameFirmwareDates(getDfuFileInfo(dfuFiles[0]).date, this.firmwareDate)
+    );
   }
 
   // TODO remove this member
@@ -137,7 +155,13 @@ export default class PixelDispatcher implements IPixel {
         watch(this._pixel.disconnect());
         break;
       case "blink":
-        watch(this._pixel.blink(Color.dimOrange));
+        watch(this._blink());
+        break;
+      case "playRainbow":
+        watch(this._playRainbow());
+        break;
+      case "calibrate":
+        watch(this._calibrate());
         break;
       case "updateProfile":
         watch(this._updateProfile());
@@ -150,32 +174,80 @@ export default class PixelDispatcher implements IPixel {
     }
   }
 
-  private _activePixel() {
+  private _getIPixel(): IPixel {
     // TODO once disconnected, should return _pixel until _scannedPixel is updated
     return this.status === "disconnected" ? this._scannedPixel : this._pixel;
   }
 
-  private async _updateProfile() {
-    this._evEmitter.emit("profileUpdateProgress", 0);
-    try {
-      await this._pixel.transferDataSet(standardProfile, (p) =>
-        this._evEmitter.emit("profileUpdateProgress", 100 * p)
-      );
-    } finally {
-      this._evEmitter.emit("profileUpdateProgress", undefined);
+  private async _blink(): Promise<void> {
+    if (this.isReady) {
+      await this._pixel.blink(Color.dimOrange);
     }
   }
 
-  private async _updateFirmware() {
-    const filesInfo = store.getState().dfuFiles.dfuFiles.map(getDfuFileInfo);
-    const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
-    const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
-    await updateFirmware(
-      this._scannedPixel.address,
-      bootloader?.pathname,
-      firmware?.pathname,
-      (state) => this._evEmitter.emit("firmwareUpdateState", state),
-      (progress) => this._evEmitter.emit("firmwareUpdateProgress", progress)
-    );
+  private async _playRainbow(): Promise<void> {
+    if (this.isReady) {
+      this._evEmitter.emit("profileUpdateProgress", 0);
+      const editDataSet = new EditDataSet();
+      editDataSet.animations.push(
+        new EditAnimationRainbow({
+          duration: 6,
+          count: 3,
+          fade: 0.5,
+          traveling: true,
+        })
+      );
+      try {
+        await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
+          this._evEmitter.emit("profileUpdateProgress", 100 * p)
+        );
+      } finally {
+        this._evEmitter.emit("profileUpdateProgress", undefined);
+      }
+    }
+  }
+
+  private async _calibrate(): Promise<void> {
+    if (this.isReady) {
+      await this._pixel.startCalibration();
+    }
+  }
+
+  private async _updateProfile(): Promise<void> {
+    if (this.isReady) {
+      this._evEmitter.emit("profileUpdateProgress", 0);
+      try {
+        await this._pixel.transferDataSet(standardProfile, (p) =>
+          this._evEmitter.emit("profileUpdateProgress", 100 * p)
+        );
+      } finally {
+        this._evEmitter.emit("profileUpdateProgress", undefined);
+      }
+    }
+  }
+
+  private _getDfuFiles(): string[] {
+    return store.getState().dfuFiles.dfuFiles;
+  }
+
+  private async _updateFirmware(): Promise<void> {
+    if (this.canUpdateFirmware) {
+      const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
+      const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
+      const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
+      await updateFirmware(
+        this._scannedPixel.address,
+        bootloader?.pathname,
+        firmware?.pathname,
+        (state) => {
+          console.log("DFU State" + state);
+          this._evEmitter.emit("firmwareUpdateState", state);
+        },
+        (progress) => {
+          this._evEmitter.emit("firmwareUpdateProgress", progress);
+          console.log("DFU progress" + progress);
+        }
+      );
+    }
   }
 }

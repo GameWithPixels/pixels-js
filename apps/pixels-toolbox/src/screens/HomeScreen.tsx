@@ -9,6 +9,7 @@ import {
   FlatList,
   HamburgerIcon,
   HStack,
+  Link,
   Menu,
   Pressable,
   Text,
@@ -103,25 +104,19 @@ function HomePage() {
   const [pixelsMap, setPixelsMap] = useState(
     () => new Map<number, PixelDispatcher>()
   );
-  const [showInfo, setShowInfo] = useState(false);
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
   const applyAllActionSheet = useDisclose();
   useEffect(() => {
     setPixelsMap((pixelsMap) => {
-      if (scannedPixels.every((p) => pixelsMap.get(p.pixelId))) {
-        return pixelsMap;
-      } else {
-        const newMap = new Map<number, PixelDispatcher>();
-        scannedPixels.forEach((p) => {
-          const pd = pixelsMap.get(p.pixelId);
-          if (pd) {
-            pd.updateScannedPixel(p);
-          }
-          newMap.set(p.pixelId, pd ?? new PixelDispatcher(p));
-        });
-        return newMap;
-      }
+      const newMap = new Map<number, PixelDispatcher>();
+      scannedPixels.forEach((p) => {
+        const pd = pixelsMap.get(p.pixelId);
+        pd?.updateScannedPixel(p);
+        newMap.set(p.pixelId, pd ?? new PixelDispatcher(p));
+      });
+      return newMap;
     });
   }, [scannedPixels]);
   const dispatchAll = useCallback(
@@ -138,42 +133,25 @@ function HomePage() {
           mb={sr(20)}
           size="lg"
           _text={{
-            fontSize: "2xl",
-            fontWeight: "bold",
+            fontSize: "xl",
           }}
           onPress={() => navigation.navigate("Validation")}
         >
           Validation
         </Button>
-        <Box width="100%" alignItems="center" flexDir="row">
-          <EmojiButton
-            mr={sr(5)}
-            onPress={() => navigation.navigate("SelectDfuFiles")}
-          >
-            📁
-          </EmojiButton>
-          <Center width="100%" alignItems="baseline">
-            <Text>
-              <Text>Selected Firmware: </Text>
-              <Text italic>
-                {dfuFiles
-                  ? dfuFiles
-                      .map((p) => getDfuFileInfo(p).type ?? "unknown")
-                      .join(", ")
-                  : "unavailable"}
-              </Text>
-            </Text>
-            {dfuFiles?.length > 0 && (
-              <Text>
-                {toLocaleDateTimeString(
-                  getDfuFileInfo(dfuFiles[0]).date ?? new Date(0)
-                )}
-              </Text>
-            )}
-          </Center>
-        </Box>
+        <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
+          {dfuFiles?.length
+            ? `${dfuFiles
+                .map((p) => getDfuFileInfo(p).type ?? "unknown")
+                .join(", ")}: ${toLocaleDateTimeString(
+                getDfuFileInfo(dfuFiles[0]).date ?? new Date(0)
+              )}`
+            : "Select firmware"}
+        </Link>
         <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
-          <EmojiButton onPress={() => setShowInfo((b) => !b)}>ℹ️</EmojiButton>
+          <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>
+            ℹ️
+          </EmojiButton>
           <Center flex={1}>
             <Text variant="h2">{`${pixelsMap.size} Pixels`}</Text>
           </Center>
@@ -186,7 +164,7 @@ function HomePage() {
             renderItem={(itemInfo) => (
               <PixelSwipeableCard
                 pixelDispatcher={itemInfo.item}
-                showInfo={showInfo}
+                moreInfo={showMoreInfo}
                 swipeableItemsWidth={sr("25%")}
               />
             )}
