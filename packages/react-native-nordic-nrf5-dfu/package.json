@@ -23,6 +23,8 @@
   "scripts": {
     "test": "jest",
     "prepare": "bob build",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
     "release": "release-it --only-version"
   },
   "publishConfig": {
