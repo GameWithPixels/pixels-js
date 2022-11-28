@@ -6,6 +6,8 @@ import {
 import {
   assert,
   byteSizeOf,
+  createTypedEventEmitter,
+  EventReceiver,
   safeAssign,
 } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
@@ -45,9 +47,6 @@ import {
   PixelRollStateNames,
 } from "./Messages";
 import PixelSession from "./PixelSession";
-import createTypedEventEmitter, {
-  EventReceiver,
-} from "./createTypedEventEmitter";
 import getPixelEnumName from "./getPixelEnumName";
 
 // Returns a string with the current time with a millisecond precision

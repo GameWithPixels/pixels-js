@@ -46,6 +46,7 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
+    "events": "^3.3.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

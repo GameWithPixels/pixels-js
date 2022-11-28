@@ -47,6 +47,9 @@
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "dependencies": {
+    "@systemic-games/pixels-core-utils": "1.0.3"
+  },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.1.2",
