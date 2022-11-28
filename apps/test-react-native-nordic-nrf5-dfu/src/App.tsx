@@ -108,7 +108,7 @@ export default function App() {
     setDfuProgress(0);
     const dev = scannedDevices[0];
     try {
-      console.log(`Starting DFU on ${dev.address.toString(16)}`);
+      console.log(`Starting DFU for ${dev.address.toString(16)}`);
       await startDfu(dev.address, zipPath, {
         deviceName: dev.name,
         retries: 3,

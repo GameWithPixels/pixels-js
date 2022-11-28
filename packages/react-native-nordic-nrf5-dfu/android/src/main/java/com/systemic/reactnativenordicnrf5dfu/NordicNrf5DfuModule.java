@@ -34,7 +34,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
     private final ReactApplicationContext _reactContext;
     private Promise _startDfuPromise = null;
 
-    public NordicNrf5DfuModule(ReactApplicationContext reactContext) {
+    public NordicNrf5DfuModule(final ReactApplicationContext reactContext) {
         super(reactContext);
         _reactContext = reactContext;
         _reactContext.addLifecycleEventListener(this);
@@ -53,26 +53,46 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
     }
 
     @ReactMethod
-    public void addListener(String eventName) {
+    public void addListener(final String eventName) {
         // Required by React Native event emitter
         // Set up any upstream listeners or background tasks as necessary
     }
 
     @ReactMethod
-    public void removeListeners(Integer count) {
+    public void removeListeners(final Integer count) {
         // Required by React Native event emitter
         // Remove upstream listeners, stop unnecessary background tasks
     }
 
     // 48 bits Bluetooth MAC address fits into the 52 bits mantissa of a double
     @ReactMethod
-    public void startDfu(double address, String deviceName, String filePath, int numberOfRetries, Promise promise) {
+    public void startDfu(
+            final double address,
+            final String deviceName,
+            final String filePath,
+            final int numberOfRetries,
+            final int prepareDataObjectDelay,
+            final int rebootTime,
+            final int bootloaderScanTimeout,
+            final Promise promise) {
         if (address == 0) {
             promise.reject(INVALID_ARGUMENT, "address must be different than zero");
             return;
         }
-        if (numberOfRetries < 1) {
-            promise.reject(INVALID_ARGUMENT, "numberOfRetries must be 1 or greater");
+        if (numberOfRetries < 0) {
+            promise.reject(INVALID_ARGUMENT, "numberOfRetries must be 0 or greater");
+            return;
+        }
+        if (prepareDataObjectDelay < 0) {
+            promise.reject(INVALID_ARGUMENT, "prepareDataObjectDelay must be 0 or greater");
+            return;
+        }
+        if (rebootTime < 0) {
+            promise.reject(INVALID_ARGUMENT, "rebootTime must be 0 or greater");
+            return;
+        }
+        if (bootloaderScanTimeout < 0) {
+            promise.reject(INVALID_ARGUMENT, "bootloaderScanTimeout must be 0 or greater");
             return;
         }
         if (_startDfuPromise != null) {
@@ -91,20 +111,25 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             }
 
             String macAddressStr = str.toString();
-            Log.v(TAG, "Dfu starting for " + macAddressStr + ", retries=" + numberOfRetries);
+            Log.v(TAG, "Starting DFU for " + macAddressStr + ", retries=" + numberOfRetries);
 
-            DfuServiceInitiator starter = new DfuServiceInitiator(macAddressStr)
+            DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(macAddressStr)
                     .setKeepBond(false);
             if (deviceName != null && deviceName.length() > 0) {
-                starter.setDeviceName(deviceName);
+                serviceInitiator.setDeviceName(deviceName);
             }
-            starter.setNumberOfRetries(numberOfRetries);
-            starter.setPacketsReceiptNotificationsValue(1);
-            starter.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
-            starter.setZip(filePath);
+            serviceInitiator.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
+            serviceInitiator.setPacketsReceiptNotificationsValue(1);
+            serviceInitiator.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
+            serviceInitiator.setZip(filePath);
+            serviceInitiator.setPrepareDataObjectDelay(prepareDataObjectDelay > 0 ? prepareDataObjectDelay : 400);
+            serviceInitiator.setRebootTime(rebootTime);  //  Default is 0
+            if (bootloaderScanTimeout > 0) {
+                serviceInitiator.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
+            }
 
             // Note: store the returned DfuServiceController instance if you want to allow for abort the operation
-            starter.start(_reactContext, DfuService.class);
+            serviceInitiator.start(_reactContext, DfuService.class);
         }
         catch (Exception ex) {
             _startDfuPromise = null;
@@ -112,14 +137,13 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
         }
     }
 
-    private void sendEvent(String eventName, @Nullable WritableMap params) {
-        Log.d(TAG, "sendEvent " + eventName);
+    private void sendEvent(final String eventName, @Nullable final WritableMap params) {
         getReactApplicationContext()
                 .getJSModule(RCTNativeAppEventEmitter.class)
                 .emit(eventName, params);
     }
 
-    private void sendStateUpdate(String state, String deviceAddress) {
+    private void sendStateUpdate(final String state, final String deviceAddress) {
         WritableMap map = new WritableNativeMap();
         map.putDouble("deviceAddress", Long.parseLong(deviceAddress.replaceAll(":", ""),16));
         map.putString("state", state);
