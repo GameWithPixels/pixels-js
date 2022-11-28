@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
@@ -46,40 +46,7 @@ const paleBluePixelThemeParams = {
   },
 };
 
-const pairedPixelsinfo: PixelInfo[] = [
-  // {
-  //   name: "Bob",
-  //   rssi: -60,
-  //   batteryLevel: 0.85,
-  //   ledCount: 20,
-  //   firmwareDate: new Date(),
-  //   profileName: "Rainbow",
-  // },
-  // {
-  //   name: "Sarah",
-  //   rssi: -54,
-  //   batteryLevel: 0.49,
-  //   ledCount: 8,
-  //   firmwareDate: new Date(),
-  //   profileName: "Custom",
-  // },
-  // {
-  //   name: "Luke",
-  //   rssi: -45,
-  //   batteryLevel: 0.15,
-  //   ledCount: 12,
-  //   firmwareDate: new Date(),
-  //   profileName: "Speak Numbers",
-  // },
-  // {
-  //   name: "Henry",
-  //   rssi: -25,
-  //   batteryLevel: 0.9,
-  //   ledCount: 10,
-  //   firmwareDate: new Date(),
-  //   profileName: "Speak Numbers",
-  // },
-];
+const pairedPixelsinfo: PixelInfo[] = [];
 const date = new Date();
 const scannedPixelsinfo: PixelInfo[] = [
   {
@@ -124,11 +91,6 @@ const scannedPixelsinfo: PixelInfo[] = [
   },
 ];
 
-// const enum ScannedPixelsDisplay {
-//   FLATLIST,
-//   SQUARELIST,
-// }
-
 interface PairedPixelListProps {
   pairedPixels: PixelInfo[];
   navigation: any;
@@ -141,7 +103,7 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
         <HStack alignItems="center">
           <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
             <Text bold fontSize="md" letterSpacing="xl">
-              Paired Pixels :
+              Paired Dice:
             </Text>
           </Box>
           <Spacer />
@@ -152,20 +114,13 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
               SwitchPixelsDisplay(!PixelsDisplay);
             }}
             isChecked={PixelsDisplay}
-            Icon={
-              <MaterialIcons
-                name="panorama-horizontal"
-                size={24}
-                color="white"
-              />
-            }
-            //value={scannedPixelsDisplay}
+            Icon={<AntDesign name="bars" size={24} color="white" />}
           />
-          <MaterialIcons name="panorama-vertical" size={22} color="white" />
+          <AntDesign name="windowso" size={24} color="white" />
         </HStack>
         <Box rounded="md" p={2} bg="gray.700">
           {pairedPixels.length < 1 ? (
-            <Text> No PIXEL paired yet !</Text>
+            <Text> No dice paired yet!</Text>
           ) : PixelsDisplay === false ? (
             <HStack flexWrap="wrap">
               {pairedPixels.map((pixelInfo) => (
@@ -224,19 +179,22 @@ function NearbyPixelsList({
         <HStack alignItems="center">
           <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
             <Text bold fontSize="md" letterSpacing="xl">
-              Nearby pixels :
+              Nearby Dice:
             </Text>
           </Box>
           <Spacer />
           {/* Hide nearby Pixels toggle */}
-          <Toggle
-            text="Hide"
-            onToggle={() => {
-              SetHideNearbyPixels(!hideNearbyPixels);
-            }}
-            isChecked={hideNearbyPixels}
-            value={hideNearbyPixels}
-          />
+          <HStack space={1} alignItems="center">
+            <Toggle
+              text="Show"
+              onToggle={() => {
+                SetHideNearbyPixels(!hideNearbyPixels);
+              }}
+              isChecked={hideNearbyPixels}
+              value={hideNearbyPixels}
+            />
+            <Text>Hide</Text>
+          </HStack>
         </HStack>
 
         <Box rounded="md" p={2} bg="gray.700">
@@ -247,7 +205,6 @@ function NearbyPixelsList({
                   <ScannedPixelInfoComponent
                     pixel={pixelInfo}
                     onPress={() => {
-                      onPress?.();
                       addToPaired(pixelInfo);
                     }}
                   />
@@ -270,11 +227,6 @@ export default function HomeScreen() {
 
   return (
     <PxAppPage theme={paleBluePixelTheme}>
-      <Box p={4}>
-        <Text bold fontSize="2xl" letterSpacing="xl">
-          PIXELS
-        </Text>
-      </Box>
       {/* //Paired pixels list */}
       <VStack space={4}>
         <PairedPixelList pairedPixels={pairedPixels} navigation={navigation} />

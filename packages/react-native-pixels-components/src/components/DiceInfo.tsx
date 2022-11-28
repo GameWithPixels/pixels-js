@@ -53,13 +53,13 @@ export function PairedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
           <HStack space={5} alignItems="baseline">
             <VStack space={1} alignItems="baseline">
               <Text bold>{pixel.name}</Text>
-              <Text fontSize="xs"> Face {pixel.ledCount} up</Text>
+              <Text fontSize="xs"> Face up: {pixel.ledCount}</Text>
               <BatteryLevel iconSize="2xl" percentage={pixel.batteryLevel} />
             </VStack>
             <VStack space={1} alignItems="baseline" maxW={150}>
-              <Text fontSize="2xs">Firmware : {pixel.firmwareDate}</Text>
+              <Text fontSize="2xs">Firmware: {pixel.firmwareDate}</Text>
               <Text isTruncated fontSize="xs">
-                Profile : {pixel.profileName}
+                Profile: {pixel.profileName}
               </Text>
               <RSSIStrength iconSize="2xl" percentage={pixel.rssi} />
             </VStack>
@@ -103,7 +103,7 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
           <Text isTruncated fontSize="xs">
             Profile : {pixel.profileName}
           </Text>
-          <Text fontSize="xs">Face {pixel.ledCount} is up</Text>
+          <Text fontSize="xs">Face Up: {pixel.ledCount}</Text>
           <HStack space={2}>
             <BatteryLevel percentage={pixel.batteryLevel} />
             <RSSIStrength percentage={pixel.rssi} />
@@ -146,7 +146,7 @@ export function ScannedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
           <HStack space={5} alignItems="baseline">
             <VStack space={2}>
               <Text bold>{pixel.name}</Text>
-              <Text fontSize="xs">Face {pixel.ledCount} is up </Text>
+              <Text fontSize="xs">Face Up: {pixel.ledCount} </Text>
             </VStack>
             <VStack space={2}>
               <BatteryLevel percentage={pixel.batteryLevel} iconSize="2xl" />
@@ -155,11 +155,7 @@ export function ScannedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
           </HStack>
         </HStack>
         <Spacer />
-        {pressed ? (
-          <Button onPress={onPress}>Pair Pixel</Button>
-        ) : (
-          <Text> </Text>
-        )}
+        {pressed ? <Button onPress={onPress}>Pair Die</Button> : <Text> </Text>}
       </Card>
     </Pressable>
   );

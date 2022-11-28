@@ -15,7 +15,7 @@ export function NavigationContainerComponent() {
     <BottomToolbar
       itemsData={[
         {
-          label: "Settings",
+          label: "Home",
           onPress: () => {
             NavigateTo("SecondScreen", navigation);
           },

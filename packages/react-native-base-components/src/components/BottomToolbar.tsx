@@ -42,7 +42,7 @@ export interface BottomMenuBarProps {
 }
 
 export function BottomToolbar(props: BottomMenuBarProps) {
-  const [selected, setSelected] = React.useState(1);
+  const [selected, setSelected] = React.useState(4);
   const resolvedProps = usePropsResolution(
     "BottomToolBar",
     props

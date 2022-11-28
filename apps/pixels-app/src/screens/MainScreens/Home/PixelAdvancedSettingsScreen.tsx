@@ -66,7 +66,6 @@ export default function PixelAdvancedSettingsScreen() {
           </VStack>
         </Box>
         <Box>
-          <Divider bg="primary.200" width="90%" alignSelf="center" />
           <Text bold paddingBottom={2} paddingTop={5} fontSize="sm">
             Die storage :
           </Text>
@@ -119,7 +118,6 @@ export default function PixelAdvancedSettingsScreen() {
             </HStack>
           </VStack>
         </Box>
-        <Divider bg="primary.200" width="90%" alignSelf="center" />
         <Button
           w="100%"
           alignSelf="center"
@@ -129,7 +127,6 @@ export default function PixelAdvancedSettingsScreen() {
         >
           <Text bold>Calibrate</Text>
         </Button>
-        <Divider bg="primary.200" width="90%" alignSelf="center" />
         {/* <Button
           w="90%"
           alignSelf="center"

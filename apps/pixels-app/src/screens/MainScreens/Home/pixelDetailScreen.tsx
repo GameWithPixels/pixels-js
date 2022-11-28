@@ -187,18 +187,33 @@ function Histogram({ rolls }: HistogramProps) {
 //   );
 // }
 
-function DiceStats() {
+function DieStats() {
   const [showSessionStats, SetShowSessionStats] = React.useState(true);
+  const lifetimeHistogramRolls = [
+    30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45, 91, 12, 56, 35,
+    45,
+  ];
+  const sessionHistogramRolls = [
+    1, 2, 9, 6, 3, 2, 5, 8, 8, 9, 10, 4, 5, 7, 2, 11, 3, 7, 9, 4,
+  ];
+  const sessionRolls = sessionHistogramRolls.reduce(
+    (sessionHistogramRolls, v) => sessionHistogramRolls + v,
+    0
+  );
+  const lifetimeRolls = lifetimeHistogramRolls.reduce(
+    (lifetimeHistogramRolls, v) => lifetimeHistogramRolls + v,
+    0
+  );
   return (
     <Box>
       <HStack alignItems="center" space={2}>
         <Octicons name="graph" size={24} color="white" />
-        <Text bold>Dice Stats</Text>
+        <Text bold>Die Stats</Text>
         <Spacer />
         <HStack alignItems="center" space={1}>
           <Toggle
             textSize="xs"
-            text="Lifetime"
+            text="All"
             onToggle={() => {
               SetShowSessionStats(!showSessionStats);
             }}
@@ -233,14 +248,14 @@ function DiceStats() {
                     <Box w="100%">
                       <Text>Session</Text>
                       <Divider bg="white" />
-                      <Text fontSize="xl">26</Text>
+                      <Text fontSize="xl">{sessionRolls}</Text>
                     </Box>
                   ) : (
                     <Box w="100%">
                       <Text>Lifetime</Text>
                       <Divider bg="white" />
                       <Text isTruncated fontSize="xl">
-                        285
+                        {lifetimeRolls}
                       </Text>
                     </Box>
                   )}
@@ -273,7 +288,7 @@ function DiceStats() {
                       <Text>Session</Text>
                       <Divider bg="white" />
                       <HStack alignItems="baseline">
-                        <Text fontSize="xl">32 </Text>
+                        <Text fontSize="xl">52 </Text>
                         <Text>min</Text>
                       </HStack>
                     </Box>
@@ -282,7 +297,7 @@ function DiceStats() {
                       <Text>Lifetime</Text>
                       <Divider bg="white" />
                       <HStack alignItems="baseline">
-                        <Text fontSize="xl">3.5 </Text>
+                        <Text fontSize="xl">12.5 </Text>
                         <Text>h</Text>
                       </HStack>
                     </Box>
@@ -291,23 +306,33 @@ function DiceStats() {
               </Card>
             </HStack>
           </Center>
-          <Card bg="primary.300" verticalSpace={4}>
-            <HStack space={3} alignItems="baseline">
-              <Ionicons name="stats-chart" size={30} color="black" />
-              <Text bold fontSize="xl">
-                Lifetime rolls per face
-              </Text>
-            </HStack>
-            <Center width="300" h="150" alignSelf="center">
-              <Histogram
-                viewRatio={2}
-                rolls={[
-                  30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45,
-                  91, 12, 56, 35, 45,
-                ]}
-              />
-            </Center>
-          </Card>
+          {!showSessionStats ? (
+            //Lifetime histogram
+            <Card bg="primary.300" verticalSpace={4}>
+              <HStack space={3} alignItems="baseline">
+                <Ionicons name="stats-chart" size={30} color="black" />
+                <Text bold fontSize="xl">
+                  Lifetime Rolls Per Face
+                </Text>
+              </HStack>
+              <Center width="350" h="150" alignSelf="center">
+                <Histogram viewRatio={2} rolls={lifetimeHistogramRolls} />
+              </Center>
+            </Card>
+          ) : (
+            //Session histogram
+            <Card bg="primary.300" verticalSpace={4}>
+              <HStack space={3} alignItems="baseline">
+                <Ionicons name="stats-chart" size={30} color="black" />
+                <Text bold fontSize="xl">
+                  Session Rolls Per Face
+                </Text>
+              </HStack>
+              <Center width="350" h="150" alignSelf="center">
+                <Histogram viewRatio={2} rolls={sessionHistogramRolls} />
+              </Center>
+            </Card>
+          )}
         </VStack>
       </Box>
     </Box>
@@ -340,6 +365,11 @@ export default function PixelDetailScreen() {
   const [showLoadingPopup, SetShowLoadingPopup] = React.useState(false);
   return (
     <PxAppPage theme={paleBluePixelTheme}>
+      <LoadingPopup
+        title="Uploading profile..."
+        isOpen={showLoadingPopup}
+        onProgressEnd={() => SetShowLoadingPopup(false)}
+      />
       <VStack space={6} width="100%" maxW="100%">
         <Center bg="white" rounded="lg" px={2}>
           <Input
@@ -387,19 +417,12 @@ export default function PixelDetailScreen() {
               <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
                 <VStack space={2}>
                   <HStack>
-                    <Text bold>Face up : </Text>
+                    <Text bold>Face Up: </Text>
                     <Spacer />
                     <Text bold color="green.500" fontSize="md">
                       10
                     </Text>
                   </HStack>
-                  {/* <HStack>
-                    <Text bold>Status : </Text>
-                    <Spacer />
-                    <Text bold color="green.500">
-                      On Face
-                    </Text>
-                  </HStack> */}
                 </VStack>
               </Box>
             </VStack>
@@ -410,10 +433,11 @@ export default function PixelDetailScreen() {
         <Box>
           <HStack alignItems="center" space={2} paddingBottom={2}>
             <AntDesign name="profile" size={24} color="white" />
-            <Text bold>Recent profiles :</Text>
+            <Text bold>Recent Profiles:</Text>
           </HStack>
           <ProfilesScrollList
             onPress={() => {
+              console.log(showLoadingPopup);
               SetShowLoadingPopup(true);
             }}
             availableProfiles={[
@@ -430,11 +454,11 @@ export default function PixelDetailScreen() {
                 imageRequirePath: require("~/../assets/DieImageTransparent.png"),
               },
               {
-                profileName: "Speak Numbers",
+                profileName: "Speak",
                 imageRequirePath: require("~/../assets/DieImageTransparent.png"),
               },
               {
-                profileName: "Custom Profile",
+                profileName: "Custom",
                 imageRequirePath: require("~/../assets/RainbowDice.png"),
               },
               {
@@ -450,7 +474,7 @@ export default function PixelDetailScreen() {
         </Box>
 
         {/* Dice Stats is used without params until we switch to real data */}
-        {DiceStats()}
+        {DieStats()}
         {/* {Advanced Settings infos} */}
         <Divider bg="primary.200" width="90%" alignSelf="center" />
         <Pressable
@@ -478,9 +502,9 @@ export default function PixelDetailScreen() {
           w="100%"
           alignSelf="center"
         >
-          <Text bold>Unpair Dice</Text>
+          <Text bold>Unpair Die</Text>
         </Button>
-        <LoadingPopup title="Loading" progress={20} isOpen={showLoadingPopup} />
+        {/* <LoadingPopup title="Loading" progress={20} isOpen={showLoadingPopup} /> */}
       </VStack>
     </PxAppPage>
   );

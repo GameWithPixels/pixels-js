@@ -33,11 +33,14 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
           w="110px"
           h="100px"
           alignItems="center"
-          verticalSpace={4}
+          verticalSpace={1}
         >
-          <Center>
-            <Text bold fontSize="xs">
-              More Profiles
+          <Center w="90%" flexWrap="wrap">
+            <Text bold fontSize="sm" alignSelf="center">
+              More
+            </Text>
+            <Text bold fontSize="sm" alignSelf="center">
+              Profiles
             </Text>
           </Center>
           <Center>

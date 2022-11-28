@@ -1,5 +1,6 @@
 import { ProgressBar } from "@systemic-games/react-native-base-components";
-import { Center, HStack, Modal, Spinner, Text } from "native-base";
+import { Center, HStack, Modal, Text } from "native-base";
+import React from "react";
 
 export interface LoadingPopupProps {
   title?: string;
@@ -9,13 +10,18 @@ export interface LoadingPopupProps {
 }
 
 export function LoadingPopup(props: LoadingPopupProps) {
-  //   useEffect(() => {
-  //     const timer = setTimeout(() => {
-  //       console.log("closed");
-  //       props.onProgressEnd?.();
-  //     }, 5000);
-  //     return () => clearTimeout(timer);
-  //   });
+  const [progress, setProgress] = React.useState(0);
+
+  React.useEffect(() => {
+    if (progress < 100 && props.isOpen) {
+      const timeoutId = setTimeout(() => setProgress(progress + 2), 0.05);
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+    setProgress(0);
+    props.onProgressEnd?.();
+  }, [progress, props]);
 
   return (
     <Modal isOpen={props.isOpen}>
@@ -24,12 +30,12 @@ export function LoadingPopup(props: LoadingPopupProps) {
           <Center>
             <HStack space={2}>
               <Text>{props.title}</Text>
-              <Spinner size="sm" color="amber.500" />
+              {/* <Spinner size="sm" color="amber.500" /> */}
             </HStack>
           </Center>
         </Modal.Header>
-        <Modal.Body>
-          <ProgressBar progress={props.progress} />
+        <Modal.Body minH="1px">
+          <ProgressBar progress={progress} />
         </Modal.Body>
         <Modal.Footer />
       </Modal.Content>
