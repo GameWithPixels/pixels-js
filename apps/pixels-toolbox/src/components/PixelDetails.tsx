@@ -1,4 +1,4 @@
-import { Button, HStack, Text, VStack } from "native-base";
+import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
 import { useEffect, useState } from "react";
 
 import ProgressBar from "./ProgressBar";
@@ -10,6 +10,19 @@ import usePixelRssi from "~/features/pixels/hooks/usePixelRssi";
 import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import usePixelTelemetry from "~/features/pixels/hooks/usePixelTelemetry";
 import { sr } from "~/styles";
+
+function TextEntry({
+  children,
+  title,
+  ...props
+}: { title: string } & ITextProps) {
+  return (
+    <Text {...props}>
+      <Text>{title} </Text>
+      <Text italic>{children}</Text>
+    </Text>
+  );
+}
 
 export default function ({
   pixelDispatcher,
@@ -49,14 +62,22 @@ export default function ({
   return (
     <VStack space={sr(5)}>
       <Text bold>{`Name: ${pixel.name}`}</Text>
-      <Text my={sr(5)}>{`Status: ${status}`}</Text>
-      <Text>{`Pixel Id: ${pixel.pixelId}`}</Text>
-      <Text>{`LEDs Count: ${pixel.ledCount}, ${pixel.designAndColor}`}</Text>
-      <Text>{`Firmware: ${pixel.firmwareDate}`}</Text>
-      <Text>{`Battery: ${batteryInfo?.level}%, ${voltage}V, ${chargeState}`}</Text>
-      <Text>{`RSSI: ${Math.round(rssi ?? 0)}`}</Text>
-      <Text>{`Roll State: ${face}, ${rollState}`}</Text>
-      <Text>{`Acceleration: ${acc}`}</Text>
+      <TextEntry my={sr(5)} title="Status:">
+        {status}
+      </TextEntry>
+      <TextEntry title="Pixel Id:">{pixel.pixelId}</TextEntry>
+      <TextEntry title="LEDs Count:">
+        {pixel.ledCount}, {pixel.designAndColor}
+      </TextEntry>
+      <TextEntry title="Firmware:">{pixel.firmwareDate.toString()}</TextEntry>
+      <TextEntry title="Battery:">
+        {batteryInfo?.level}%, {voltage}V, {chargeState}
+      </TextEntry>
+      <TextEntry title="RSSI:">{Math.round(rssi ?? 0)}</TextEntry>
+      <TextEntry title="Roll State:">
+        {face}, {rollState}
+      </TextEntry>
+      <TextEntry title="Acceleration:">{acc}</TextEntry>
       <HStack space={sr(5)}>
         <VStack flex={1} space={sr(5)}>
           <Button onPress={() => pixelDispatcher.dispatch("connect")}>
@@ -82,7 +103,11 @@ export default function ({
           </Button>
         </VStack>
       </HStack>
-      {updateProgress !== undefined && <ProgressBar percent={updateProgress} />}
+      {updateProgress !== undefined && (
+        <Center my={sr(5)}>
+          <ProgressBar percent={updateProgress} />
+        </Center>
+      )}
       {lastError && (
         <>
           <Text color="red.500">{`Error: ${lastError}`}</Text>

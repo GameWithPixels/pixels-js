@@ -6,6 +6,8 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useState } from "react";
 
+import usePixelStatus from "./usePixelStatus";
+
 // Returned dispatch function is stable
 export default function (
   pixel?: Pixel,
@@ -14,6 +16,7 @@ export default function (
     alwaysActive?: boolean;
   }
 ): [number | undefined, (action: "start" | "stop") => void, Error?] {
+  const status = usePixelStatus(pixel);
   const [lastError, setLastError] = useState<Error>();
   const [rssi, setRssi] = useState<number>();
   const [active, setActive] = useState(false);
@@ -28,23 +31,25 @@ export default function (
 
   useEffect(() => {
     setLastError(undefined);
-    if (pixel && (active || alwaysActive)) {
+    if (pixel && status === "ready" && (active || alwaysActive)) {
       const rssiListener = (msg: MessageOrType) => setRssi((msg as Rssi).value);
       pixel.addMessageListener("rssi", rssiListener);
-      const id = setInterval(() => {
+      const requestRssi = () => {
         if (pixel.status === "ready") {
           // Send request and ignore any error as the connection state
           // might change at any moment and make sendMessage throw an exception
           pixel.sendMessage(MessageTypeValues.requestRssi).catch(setLastError);
         }
-      }, refreshInterval);
+      };
+      requestRssi();
+      const id = setInterval(requestRssi, refreshInterval);
       return () => {
         clearInterval(id);
         pixel.removeMessageListener("rssi", rssiListener);
         setRssi(undefined);
       };
     }
-  }, [active, alwaysActive, pixel, refreshInterval]);
+  }, [active, alwaysActive, pixel, refreshInterval, status]);
 
   return [rssi, dispatch, lastError];
 }

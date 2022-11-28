@@ -1,4 +1,9 @@
-import { assertUnreachable, createTypedEventEmitter, EventReceiver } from "@systemic-games/pixels-core-utils";
+import {
+  assert,
+  assertUnreachable,
+  createTypedEventEmitter,
+  EventReceiver,
+} from "@systemic-games/pixels-core-utils";
 import {
   EditAnimationRainbow,
   EditDataSet,
@@ -12,13 +17,15 @@ import {
   PixelDesignAndColorNames,
   PixelRollStateNames,
   PixelStatus,
+  PixelRollData,
   ScannedPixel,
+  PixelBatteryData,
 } from "@systemic-games/react-native-pixels-connect";
 
-import areSameFirmwareDates from "../dfu/areSameFirmwareDates";
 import getDfuFileInfo from "../dfu/getDfuFileInfo";
 
 import { store } from "~/app/store";
+import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
 import standardProfile from "~/standardProfile";
 
@@ -29,21 +36,31 @@ export type PixelDispatcherAction =
   | "playRainbow"
   | "calibrate"
   | "updateProfile"
-  | "updateFirmware";
+  | "queueFirmwareUpdate"
+  | "cancelFirmwareUpdate";
 
 export interface PixelDispatcherEventMap {
+  status: PixelStatus;
+  rollState: PixelRollData;
+  batteryState: PixelBatteryData;
+  rssi: number;
   action: PixelDispatcherAction;
   error: Error;
   profileUpdateProgress: number | undefined;
+  firmwareUpdateQueued: boolean;
   firmwareUpdateState: DfuState;
   firmwareUpdateProgress: number;
 }
 
+const _pendingDFUs: PixelDispatcher[] = [];
+
 export default class PixelDispatcher implements IPixel {
   private _scannedPixel: ScannedPixel;
+  private _lastScan: Date;
   private _pixel: Pixel;
   private readonly _evEmitter =
     createTypedEventEmitter<PixelDispatcherEventMap>();
+  private _isUpdatingProfile = false;
 
   get systemId(): string {
     return this._getIPixel().systemId;
@@ -93,12 +110,20 @@ export default class PixelDispatcher implements IPixel {
     return this._scannedPixel.address;
   }
 
+  get lastScan(): Date {
+    return this._lastScan;
+  }
+
   get status(): PixelStatus {
     return this._pixel.status;
   }
 
   get isReady(): boolean {
     return this._pixel.status === "ready";
+  }
+
+  get isUpdatingProfile(): boolean {
+    return this._isUpdatingProfile;
   }
 
   get canUpdateFirmware(): boolean {
@@ -109,14 +134,37 @@ export default class PixelDispatcher implements IPixel {
     );
   }
 
+  get isUpdatingFirmware(): boolean {
+    return _pendingDFUs[0] === this;
+  }
+
+  get isFirmwareUpdateQueued(): boolean {
+    return _pendingDFUs.indexOf(this) > 0;
+  }
+
   // TODO remove this member
   get pixel(): Pixel {
     return this._pixel;
   }
 
   constructor(scannedPixel: ScannedPixel) {
+    console.log("DISPATCHER!!!!!");
     this._scannedPixel = scannedPixel;
+    this._lastScan = new Date();
     this._pixel = getPixel(scannedPixel);
+    // TODO remove listeners
+    this._pixel.addEventListener("status", (status) =>
+      this._evEmitter.emit("status", status)
+    );
+    this._pixel.addEventListener("rollState", (state) =>
+      this._evEmitter.emit("rollState", state)
+    );
+    this._pixel.addEventListener("batteryState", (state) =>
+      this._evEmitter.emit("batteryState", state)
+    );
+    this._pixel.addEventListener("rssi", (rssi) =>
+      this._evEmitter.emit("rssi", rssi)
+    );
   }
 
   addEventListener<K extends keyof PixelDispatcherEventMap>(
@@ -138,6 +186,7 @@ export default class PixelDispatcher implements IPixel {
       throw new Error("Pixel id doesn't match");
     }
     this._scannedPixel = scannedPixel;
+    this._lastScan = new Date();
   }
 
   dispatch(action: PixelDispatcherAction) {
@@ -162,8 +211,11 @@ export default class PixelDispatcher implements IPixel {
       case "updateProfile":
         watch(this._updateProfile());
         break;
-      case "updateFirmware":
-        watch(this._updateFirmware());
+      case "queueFirmwareUpdate":
+        watch(this._queueFirmwareUpdate());
+        break;
+      case "cancelFirmwareUpdate":
+        watch(this._cancelFirmwareUpdate());
         break;
       default:
         assertUnreachable(action);
@@ -195,7 +247,7 @@ export default class PixelDispatcher implements IPixel {
       );
       try {
         await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
-          this._evEmitter.emit("profileUpdateProgress", 100 * p)
+          this._evEmitter.emit("profileUpdateProgress", p)
         );
       } finally {
         this._evEmitter.emit("profileUpdateProgress", undefined);
@@ -211,13 +263,16 @@ export default class PixelDispatcher implements IPixel {
 
   private async _updateProfile(): Promise<void> {
     if (this.isReady) {
-      this._evEmitter.emit("profileUpdateProgress", 0);
+      const notifyProgress = (p?: number) => {
+        this._evEmitter.emit("profileUpdateProgress", p);
+      };
       try {
-        await this._pixel.transferDataSet(standardProfile, (p) =>
-          this._evEmitter.emit("profileUpdateProgress", 100 * p)
-        );
+        this._isUpdatingProfile = true;
+        notifyProgress(0);
+        await this._pixel.transferDataSet(standardProfile, notifyProgress);
       } finally {
-        this._evEmitter.emit("profileUpdateProgress", undefined);
+        this._isUpdatingProfile = false;
+        notifyProgress(undefined);
       }
     }
   }
@@ -226,24 +281,42 @@ export default class PixelDispatcher implements IPixel {
     return store.getState().dfuFiles.dfuFiles;
   }
 
-  private async _updateFirmware(): Promise<void> {
-    if (this.canUpdateFirmware) {
-      const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
-      const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
-      const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
-      await updateFirmware(
-        this._scannedPixel.address,
-        bootloader?.pathname,
-        firmware?.pathname,
-        (state) => {
-          console.log("DFU State" + state);
-          this._evEmitter.emit("firmwareUpdateState", state);
-        },
-        (progress) => {
-          this._evEmitter.emit("firmwareUpdateProgress", progress);
-          console.log("DFU progress" + progress);
+  private async _queueFirmwareUpdate(): Promise<void> {
+    if (this.canUpdateFirmware && !_pendingDFUs.includes(this)) {
+      console.log("QUEUEING");
+      // Queue DFU request
+      _pendingDFUs.push(this);
+      this._evEmitter.emit("firmwareUpdateQueued", true);
+      if (_pendingDFUs.length === 1) {
+        console.log("STARTING");
+        // Process it immediately if it's the only pending request
+        const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
+        const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
+        const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
+        try {
+          await updateFirmware(
+            this._scannedPixel.address,
+            bootloader?.pathname,
+            firmware?.pathname,
+            (state) => this._evEmitter.emit("firmwareUpdateState", state),
+            (p) => this._evEmitter.emit("firmwareUpdateProgress", p)
+          );
+        } finally {
+          console.log("DONE");
+          assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
+          this._cancelFirmwareUpdate(true);
         }
-      );
+      }
+    }
+  }
+
+  private async _cancelFirmwareUpdate(force = false): Promise<void> {
+    const i = _pendingDFUs.indexOf(this);
+    if (i > 0 || force) {
+      _pendingDFUs.splice(i);
+      this._evEmitter.emit("firmwareUpdateQueued", false);
+    } else if (i === 0) {
+      // TODO cancel ongoing DFU
     }
   }
 }

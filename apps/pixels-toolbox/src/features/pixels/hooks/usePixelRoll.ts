@@ -1,32 +1,21 @@
 import {
   Pixel,
-  MessageOrType,
-  RollState,
-  PixelRollStateValues,
-  getPixelEnumName,
   PixelRollStateNames,
 } from "@systemic-games/react-native-pixels-connect";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 
 export default function (pixel?: Pixel): [number, PixelRollStateNames] {
-  const [rollState, setRollState] = useState<RollState>();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, triggerRender] = useReducer((b) => !b, false);
+
   useEffect(() => {
     if (pixel) {
-      const rollListener = (msg: MessageOrType) =>
-        setRollState(msg as RollState);
-      pixel.addMessageListener("rollState", rollListener);
+      pixel.addMessageListener("rollState", triggerRender);
       return () => {
-        pixel.removeMessageListener("rollState", rollListener);
-        setRollState(undefined);
+        pixel.removeMessageListener("rollState", triggerRender);
       };
     }
   }, [pixel]);
 
-  return [
-    rollState ? rollState.faceIndex + 1 : 0,
-    getPixelEnumName(
-      rollState?.state ?? PixelRollStateValues.unknown,
-      PixelRollStateValues
-    ) ?? "unknown",
-  ];
+  return pixel ? [pixel.currentFace, pixel.rollState] : [0, "unknown"];
 }

@@ -1,5 +1,7 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
+  AlertDialog,
   Box,
   Button,
   IBoxProps,
@@ -7,8 +9,10 @@ import {
   Pressable,
   Text,
   VStack,
+  useDisclose,
+  HStack,
 } from "native-base";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
 import PixelDetails from "./PixelDetails";
@@ -16,7 +20,6 @@ import PixelInfoCard, { PixelInfoCardProps } from "./PixelInfoCard";
 import ProgressBar from "./ProgressBar";
 
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import { sr } from "~/styles";
 
 function SwipeableItemView({
@@ -43,12 +46,24 @@ export default function ({
   swipeableItemsWidth,
   ...props
 }: SwipeablePixelCardProps) {
-  const status = usePixelStatus(pixelDispatcher.pixel);
   const [showDetails, setShowDetails] = useState(false);
-  const isDisco = !status || status === "disconnected";
   const [lastError, setLastError] = useState<Error>();
-  const [updateProgress, setUpdateProgress] = useState<number>();
-  const [dfuState, setDfuState] = useState<DfuState>();
+  const [profileUpdate, setProfileUpdate] = useState<number>();
+  const [dfuQueued, setDfuQueued] = useState(false);
+  const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
+  const [dfuProgress, setDfuProgress] = useState<number>(0);
+  console.log("REFRESH!!!");
+  useEffect(() => {
+    console.log("MOUNT!!!");
+  }, []);
+  useEffect(() => {
+    console.log("dfuState!!!", dfuState);
+    if (dfuState === "dfuAborted") {
+      setDfuState("dfuCompleted");
+      setDfuProgress(0);
+      setLastError(new Error("DFU Aborted"));
+    }
+  }, [dfuState]);
   useEffect(() => {
     if (!showDetails) {
       const logAction = (action: string) => {
@@ -58,29 +73,116 @@ export default function ({
       pixelDispatcher.addEventListener("error", setLastError);
       pixelDispatcher.addEventListener(
         "profileUpdateProgress",
-        setUpdateProgress
+        setProfileUpdate
       );
+      pixelDispatcher.addEventListener("firmwareUpdateQueued", setDfuQueued);
       pixelDispatcher.addEventListener("firmwareUpdateState", setDfuState);
       pixelDispatcher.addEventListener(
         "firmwareUpdateProgress",
-        setUpdateProgress
+        setDfuProgress
       );
+      const notifyUserListener = ({
+        message,
+        withCancel,
+        response,
+      }: {
+        message: string;
+        withCancel: boolean;
+        response: (okCancel: boolean) => void;
+      }) => {
+        //notifyUser(pixelDispatcher.pixel, message, withCancel, response);
+        setNotifyUserData({
+          message,
+          onOk: () => response(true),
+          onCancel: withCancel ? () => response(false) : undefined,
+        });
+      };
+      pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
       return () => {
         pixelDispatcher.removeEventListener("action", logAction);
         pixelDispatcher.removeEventListener("error", setLastError);
         pixelDispatcher.removeEventListener(
           "profileUpdateProgress",
-          setUpdateProgress
+          setProfileUpdate
+        );
+        pixelDispatcher.removeEventListener(
+          "firmwareUpdateQueued",
+          setDfuQueued
         );
         pixelDispatcher.removeEventListener("firmwareUpdateState", setDfuState);
         pixelDispatcher.removeEventListener(
           "firmwareUpdateProgress",
-          setUpdateProgress
+          setDfuProgress
+        );
+        pixelDispatcher.pixel.removeEventListener(
+          "userMessage",
+          notifyUserListener
         );
       };
     }
   }, [pixelDispatcher, showDetails]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (pixelDispatcher.isReady) {
+        const intervalId = setInterval(() => {
+          pixelDispatcher.pixel.queryBatteryState();
+          pixelDispatcher.pixel.queryRssi();
+        }, 5000);
+        return () => {
+          clearInterval(intervalId);
+        };
+      }
+    }, [pixelDispatcher.isReady, pixelDispatcher.pixel])
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, triggerRender] = useReducer((b) => !b, false);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // Re-render for every status, roll and battery event
+  //     pixelDispatcher.addEventListener("status", triggerRender);
+  //     pixelDispatcher.addEventListener("rollState", triggerRender);
+  //     pixelDispatcher.addEventListener("batteryState", triggerRender);
+  //     pixelDispatcher.addEventListener("rssi", triggerRender);
+  //     return () => {
+  //       pixelDispatcher.removeEventListener("status", triggerRender);
+  //       pixelDispatcher.removeEventListener("rollState", triggerRender);
+  //       pixelDispatcher.removeEventListener("batteryState", triggerRender);
+  //       pixelDispatcher.removeEventListener("rssi", triggerRender);
+  //     };
+  //   }, [pixelDispatcher])
+  // );
+  useFocusEffect(
+    // Refresh UI
+    useCallback(() => {
+      const id = setInterval(triggerRender, 3000);
+      return () => {
+        clearInterval(id);
+      };
+    }, [])
+  );
+
+  const [notifyUserData, setNotifyUserData] = useState<{
+    message: string;
+    onOk?: () => void;
+    onCancel?: () => void;
+  }>();
+  const notifyUserDisclose = useDisclose();
+  const okRef = useRef(null);
+  const open = notifyUserDisclose.onOpen;
+  useEffect(() => {
+    if (notifyUserData) {
+      console.log("!!! OPEN");
+      open();
+    }
+  }, [notifyUserData, open]);
+
+  const isDisco =
+    !pixelDispatcher.status || pixelDispatcher.status === "disconnected";
+  const lastSeen = Math.round(
+    (Date.now() - pixelDispatcher.lastScan.getTime()) / 1000
+  );
   return (
     <Swipeable
       onSwipeableOpen={(direction, swipeable) => {
@@ -92,7 +194,11 @@ export default function ({
           }
         } else {
           if (isDisco) {
-            pixelDispatcher.dispatch("updateFirmware");
+            if (pixelDispatcher.isFirmwareUpdateQueued) {
+              pixelDispatcher.dispatch("cancelFirmwareUpdate");
+            } else {
+              pixelDispatcher.dispatch("queueFirmwareUpdate");
+            }
           } else {
             pixelDispatcher.dispatch("blink");
           }
@@ -109,33 +215,77 @@ export default function ({
       )}
       rightThreshold={swipeableItemsWidth}
       renderRightActions={() =>
-        (!isDisco || pixelDispatcher.canUpdateFirmware) && (
+        (!isDisco ||
+          (pixelDispatcher.canUpdateFirmware &&
+            !pixelDispatcher.isUpdatingFirmware)) && (
           <SwipeableItemView
             width={swipeableItemsWidth}
-            label={isDisco ? "Update\nFirmware" : "Blink"}
+            label={
+              isDisco
+                ? pixelDispatcher.isUpdatingFirmware
+                  ? ""
+                  : pixelDispatcher.isFirmwareUpdateQueued
+                  ? "Cancel\nFirmware\nUpdate"
+                  : "Update\nFirmware"
+                : "Blink"
+            }
             backgroundColor={isDisco ? "purple.500" : "orange.500"}
             _text={{ mx: sr(20), color: "gray.100", bold: true }}
           />
         )
       }
     >
-      <Pressable onPress={() => setShowDetails(status === "ready")}>
+      <Pressable onPress={() => setShowDetails(pixelDispatcher.isReady)}>
         <PixelInfoCard pixel={pixelDispatcher} {...props}>
           {pixelDispatcher.canUpdateFirmware && (
             <Text position="absolute" top={sr(8)} right={sr(8)}>
               ⬆️
             </Text>
           )}
-          <VStack mb={sr(5)} space={sr(5)} alignItems="center" width="100%">
-            <Text>
-              <Text>Status: </Text>
-              <Text italic>{status}</Text>
-            </Text>
-            {dfuState && (
-              <Text variant="comment">{`DFU State: ${dfuState}`}</Text>
-            )}
-            {updateProgress !== undefined && (
-              <ProgressBar percent={updateProgress} />
+          <VStack
+            mb={sr(5)}
+            p={sr(5)}
+            space={sr(5)}
+            alignItems="center"
+            width="100%"
+          >
+            {dfuQueued ? (
+              dfuState !== "dfuCompleted" ? (
+                <HStack my={sr(5)} width="100%">
+                  <Text>Firmware Update: </Text>
+                  {dfuState === "dfuStarting" && dfuProgress > 0 ? (
+                    <Box flex={1} my={sr(5)}>
+                      <ProgressBar percent={dfuProgress} />
+                    </Box>
+                  ) : (
+                    <Text italic>{dfuState}</Text>
+                  )}
+                </HStack>
+              ) : (
+                <Text>Waiting On Firmware Update...</Text>
+              )
+            ) : profileUpdate ? (
+              <HStack my={sr(5)} width="100%">
+                <Text>Profile Update: </Text>
+                <Box flex={1} my={sr(5)}>
+                  <ProgressBar percent={profileUpdate} />
+                </Box>
+              </HStack>
+            ) : isDisco && lastSeen > 5 ? (
+              <Text italic>{`Unavailable (${
+                lastSeen < 120
+                  ? `${lastSeen}s`
+                  : `${Math.floor(lastSeen / 60)}m`
+              })`}</Text>
+            ) : (
+              <Text>
+                <Text>Status: </Text>
+                <Text italic>
+                  {isDisco && lastSeen <= 5
+                    ? "advertising"
+                    : pixelDispatcher.status}
+                </Text>
+              </Text>
             )}
             {children}
             {lastError && (
@@ -162,6 +312,41 @@ export default function ({
           </Modal.Body>
         </Modal.Content>
       </Modal>
+      <AlertDialog
+        isOpen={notifyUserDisclose.isOpen}
+        onClose={notifyUserDisclose.onClose}
+        leastDestructiveRef={okRef}
+      >
+        <AlertDialog.Content>
+          <AlertDialog.CloseButton />
+          <AlertDialog.Header>Pixel {pixelDispatcher.name}</AlertDialog.Header>
+          <AlertDialog.Body>{notifyUserData?.message}</AlertDialog.Body>
+          <AlertDialog.Footer>
+            <Button.Group space={2}>
+              <>
+                {notifyUserData?.onCancel && (
+                  <Button
+                    variant="unstyled"
+                    colorScheme="coolGray"
+                    onPress={notifyUserDisclose.onClose}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                {notifyUserData?.onOk && (
+                  <Button
+                    colorScheme="danger"
+                    onPress={notifyUserDisclose.onClose}
+                    ref={okRef}
+                  >
+                    OK
+                  </Button>
+                )}
+              </>
+            </Button.Group>
+          </AlertDialog.Footer>
+        </AlertDialog.Content>
+      </AlertDialog>
     </Swipeable>
   );
 }

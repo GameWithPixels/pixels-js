@@ -107,7 +107,7 @@ function HomePage() {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
-  const applyAllActionSheet = useDisclose();
+  const applyAllDisclose = useDisclose();
   useEffect(() => {
     setPixelsMap((pixelsMap) => {
       const newMap = new Map<number, PixelDispatcher>();
@@ -155,12 +155,12 @@ function HomePage() {
           <Center flex={1}>
             <Text variant="h2">{`${pixelsMap.size} Pixels`}</Text>
           </Center>
-          <EmojiButton onPress={applyAllActionSheet.onOpen}>⚙️</EmojiButton>
+          <EmojiButton onPress={applyAllDisclose.onOpen}>⚙️</EmojiButton>
         </Center>
         {pixelsMap.size ? (
           <FlatList
             width="100%"
-            data={[...pixelsMap.values()]}
+            data={[...pixelsMap.values()].sort((p) => p.pixelId)}
             renderItem={(itemInfo) => (
               <PixelSwipeableCard
                 pixelDispatcher={itemInfo.item}
@@ -205,15 +205,15 @@ function HomePage() {
       </Center>
       {/* Action sheet with list of operations to run on all Pixels */}
       <Actionsheet
-        isOpen={applyAllActionSheet.isOpen}
-        onClose={applyAllActionSheet.onClose}
+        isOpen={applyAllDisclose.isOpen}
+        onClose={applyAllDisclose.onClose}
       >
         <Actionsheet.Content>
           <Text variant="h3">Run On All Pixels:</Text>
           <Actionsheet.Item
             onPress={() => {
               dispatchAll("connect");
-              applyAllActionSheet.onClose();
+              applyAllDisclose.onClose();
             }}
           >
             Connect
@@ -221,7 +221,7 @@ function HomePage() {
           <Actionsheet.Item
             onPress={() => {
               dispatchAll("disconnect");
-              applyAllActionSheet.onClose();
+              applyAllDisclose.onClose();
             }}
           >
             Disconnect
@@ -229,7 +229,7 @@ function HomePage() {
           <Actionsheet.Item
             onPress={() => {
               dispatchAll("blink");
-              applyAllActionSheet.onClose();
+              applyAllDisclose.onClose();
             }}
           >
             Blink
@@ -237,7 +237,7 @@ function HomePage() {
           <Actionsheet.Item
             onPress={() => {
               dispatchAll("updateProfile");
-              applyAllActionSheet.onClose();
+              applyAllDisclose.onClose();
             }}
           >
             Update Profile
