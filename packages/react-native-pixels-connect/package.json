@@ -45,7 +45,6 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
-      "events": "^3.3.0",
       "@systemic-games/pixels-core-connect": "1.0.3",
       "@systemic-games/pixels-core-utils": "1.0.3",
       "@systemic-games/react-native-bluetooth-le": "1.0.0"

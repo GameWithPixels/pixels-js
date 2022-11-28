@@ -1,4 +1,4 @@
-import { assertUnreachable } from "@systemic-games/pixels-core-utils";
+import { assertUnreachable, createTypedEventEmitter, EventReceiver } from "@systemic-games/pixels-core-utils";
 import {
   EditAnimationRainbow,
   EditDataSet,
@@ -14,10 +14,6 @@ import {
   PixelStatus,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
-// TODO lift up to core
-import createTypedEventEmitter, {
-  EventReceiver,
-} from "~/../../../packages/pixels-core-connect/src/createTypedEventEmitter";
 
 import areSameFirmwareDates from "../dfu/areSameFirmwareDates";
 import getDfuFileInfo from "../dfu/getDfuFileInfo";

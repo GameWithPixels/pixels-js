@@ -5,6 +5,10 @@ import {
   PixelUuids,
 } from "@systemic-games/pixels-core-connect";
 import {
+  createTypedEventEmitter,
+  EventReceiver,
+} from "@systemic-games/pixels-core-utils";
+import {
   Central,
   ScannedPeripheralEvent,
 } from "@systemic-games/react-native-bluetooth-le";
@@ -12,9 +16,6 @@ import {
 import type ScannedPixel from "./ScannedPixel";
 import SequentialDataReader from "./SequentialDataReader";
 import SequentialPromiseQueue from "./SequentialPromiseQueue";
-import createTypedEventEmitter, {
-  EventReceiver,
-} from "./createTypedEventEmitter";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
