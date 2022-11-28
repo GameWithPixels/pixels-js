@@ -9,6 +9,7 @@ import usePixelRoll from "~/features/pixels/hooks/usePixelRoll";
 import usePixelRssi from "~/features/pixels/hooks/usePixelRssi";
 import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import usePixelTelemetry from "~/features/pixels/hooks/usePixelTelemetry";
+import usePixelTemperature from "~/features/pixels/hooks/usePixelTemperature";
 import { sr } from "~/styles";
 
 function TextEntry({
@@ -53,11 +54,12 @@ export default function ({
   const [rssi] = usePixelRssi(pixel, opt);
   const [face, rollState] = usePixelRoll(pixel);
   const [telemetry] = usePixelTelemetry(pixel, opt);
+  const [temperature] = usePixelTemperature(pixel, opt);
   const voltage = batteryInfo?.voltage.toFixed(3);
   const chargeState = batteryInfo?.isCharging ? "charging" : "not charging";
   const x = telemetry?.accX ?? 0;
-  const y = telemetry?.accX ?? 0;
-  const z = telemetry?.accX ?? 0;
+  const y = telemetry?.accY ?? 0;
+  const z = telemetry?.accZ ?? 0;
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
   return (
     <VStack space={sr(5)}>
@@ -74,6 +76,9 @@ export default function ({
         {batteryInfo?.level}%, {voltage}V, {chargeState}
       </TextEntry>
       <TextEntry title="RSSI:">{Math.round(rssi ?? 0)}</TextEntry>
+      <TextEntry title="Temperature:">
+        {temperature?.temperature ?? 0}C
+      </TextEntry>
       <TextEntry title="Roll State:">
         {face}, {rollState}
       </TextEntry>
