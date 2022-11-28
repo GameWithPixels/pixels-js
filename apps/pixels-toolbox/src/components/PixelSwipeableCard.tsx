@@ -52,12 +52,7 @@ export default function ({
   const [dfuQueued, setDfuQueued] = useState(false);
   const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
   const [dfuProgress, setDfuProgress] = useState<number>(0);
-  console.log("REFRESH!!!");
   useEffect(() => {
-    console.log("MOUNT!!!");
-  }, []);
-  useEffect(() => {
-    console.log("dfuState!!!", dfuState);
     if (dfuState === "dfuAborted") {
       setDfuState("dfuCompleted");
       setDfuProgress(0);
@@ -251,10 +246,10 @@ export default function ({
           >
             {dfuQueued ? (
               dfuState !== "dfuCompleted" ? (
-                <HStack my={sr(5)} width="100%">
+                <HStack my={sr(10)} width="100%">
                   <Text>Firmware Update: </Text>
                   {dfuState === "dfuStarting" && dfuProgress > 0 ? (
-                    <Box flex={1} my={sr(5)}>
+                    <Box flex={1} my={sr(10)}>
                       <ProgressBar percent={dfuProgress} />
                     </Box>
                   ) : (
@@ -265,9 +260,9 @@ export default function ({
                 <Text>Waiting On Firmware Update...</Text>
               )
             ) : profileUpdate ? (
-              <HStack my={sr(5)} width="100%">
+              <HStack my={sr(10)} width="100%">
                 <Text>Profile Update: </Text>
-                <Box flex={1} my={sr(5)}>
+                <Box flex={1} my={sr(10)}>
                   <ProgressBar percent={profileUpdate} />
                 </Box>
               </HStack>

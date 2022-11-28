@@ -100,6 +100,7 @@ function HomePage() {
   const window = useWindowDimensions();
   const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
     sortedByName: true,
+    refreshInterval: 3000,
   });
   const [pixelsMap, setPixelsMap] = useState(
     () => new Map<number, PixelDispatcher>()

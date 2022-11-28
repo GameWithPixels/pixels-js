@@ -148,7 +148,6 @@ export default class PixelDispatcher implements IPixel {
   }
 
   constructor(scannedPixel: ScannedPixel) {
-    console.log("DISPATCHER!!!!!");
     this._scannedPixel = scannedPixel;
     this._lastScan = new Date();
     this._pixel = getPixel(scannedPixel);
@@ -283,12 +282,10 @@ export default class PixelDispatcher implements IPixel {
 
   private async _queueFirmwareUpdate(): Promise<void> {
     if (this.canUpdateFirmware && !_pendingDFUs.includes(this)) {
-      console.log("QUEUEING");
       // Queue DFU request
       _pendingDFUs.push(this);
       this._evEmitter.emit("firmwareUpdateQueued", true);
       if (_pendingDFUs.length === 1) {
-        console.log("STARTING");
         // Process it immediately if it's the only pending request
         const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
         const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
@@ -302,7 +299,6 @@ export default class PixelDispatcher implements IPixel {
             (p) => this._evEmitter.emit("firmwareUpdateProgress", p)
           );
         } finally {
-          console.log("DONE");
           assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
           this._cancelFirmwareUpdate(true);
         }
