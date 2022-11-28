@@ -25,9 +25,9 @@ import {
 import getDfuFileInfo from "../dfu/getDfuFileInfo";
 
 import { store } from "~/app/store";
+import defaultProfile from "~/defaultProfile";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
-import standardProfile from "~/standardProfile";
 
 export type PixelDispatcherAction =
   | "connect"
@@ -269,7 +269,7 @@ export default class PixelDispatcher implements IPixel {
       try {
         this._isUpdatingProfile = true;
         notifyProgress(0);
-        await this._pixel.transferDataSet(standardProfile, notifyProgress);
+        await this._pixel.transferDataSet(defaultProfile, notifyProgress);
       } finally {
         this._isUpdatingProfile = false;
         notifyProgress(undefined);

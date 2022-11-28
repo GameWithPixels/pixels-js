@@ -11,6 +11,7 @@ import ProgressBar from "./ProgressBar";
 import TaskGroupComponent from "./TaskGroupContainer";
 
 import dfuFiles from "~/../assets/factory-dfu-files.zip";
+import defaultProfile from "~/defaultProfile";
 import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
@@ -25,7 +26,6 @@ import {
   ValidationFormFactor,
 } from "~/features/validation/ValidationFormFactor";
 import ValidationTests from "~/features/validation/ValidationTests";
-import standardProfile from "~/standardProfile";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 export interface ValidationTestsSettings {
@@ -560,7 +560,7 @@ export function PrepareDie({
   const taskChain = useTaskChain(
     action,
     useCallback(
-      () => ValidationTests.updateProfile(pixel, standardProfile, setProgress),
+      () => ValidationTests.updateProfile(pixel, defaultProfile, setProgress),
       [pixel]
     ),
     createTaskStatusContainer({
