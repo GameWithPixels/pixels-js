@@ -64,7 +64,8 @@ export interface StartDfuOptions {
   deviceName?: string;
   /**
    * Sets the number of retries that the DFU service will use to complete
-   * DFU. The default value is 2.
+   * DFU.
+   * @defaultValue 2 retries.
    * @remarks Android only.
    */
   retries?: number;
@@ -72,18 +73,20 @@ export interface StartDfuOptions {
    * This method sets the duration of a delay, that the service will wait
    * before sending each data object in Secure DFU. The delay will be done
    * after a data object is created, and before any data byte is sent.
-   * The default value is 400.
+   * @defaultValue 400 ms.
    * @remarks Android only.
    */
   prepareDataObjectDelay?: number;
   /**
-   * The reboot time in milliseconds. The default value is 0.
+   * The reboot time in milliseconds.
+   * @defaultValue 0 ms.
    * @remarks (Android only).
    */
   rebootTime?: number;
   /**
    * Sets the scan duration (in milliseconds) when scanning for DFU
-   * Bootloader. The value default is 5000ms.
+   * Bootloader.
+   * @defaultValue 5000 ms.
    * @remarks Android only.
    */
   bootloaderScanTimeout?: number;
@@ -91,6 +94,7 @@ export interface StartDfuOptions {
    * Disable the button less DFU feature for non-bonded devices which
    * allows to send a unique name to the device before it is switched
    * to bootloader mode.
+   * @defaultValue false.
    * @remarks iOS only.
    */
   alternativeAdvertisingNameDisabled?: boolean;
