@@ -1,4 +1,4 @@
-import { assertUnreachable } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import { FC, PropsWithChildren, useCallback, useState } from "react";
 
 import {
@@ -52,7 +52,7 @@ export default function (
             }
             break;
           default:
-            assertUnreachable(s);
+            assertNever(s);
         }
       })
     );

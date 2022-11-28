@@ -1,4 +1,4 @@
-import { assertUnreachable } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 
 export const DieTypes = ["d4", "d6", "pd6", "d8", "d10", "d12", "d20"] as const;
 export type DieType = typeof DieTypes[number];
@@ -20,6 +20,6 @@ export function getLedCount(dieType: DieType) {
     case "d20":
       return 20;
     default:
-      assertUnreachable(dieType);
+      assertNever(dieType);
   }
 }
