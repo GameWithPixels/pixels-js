@@ -21,7 +21,7 @@ export function ProfilesScrollList(props: ProfilesScrollListProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   return (
     <VStack space={2}>
-      <Center bg="pixelColors.highlightGray" h="125px" rounded="lg" p={2}>
+      <Center rounded="lg" p={2} bg="pixelColors.highlightGray" width="100%">
         <HStack alignItems="center">
           <ChevronLeftIcon />
           <Box w="360">
@@ -38,10 +38,11 @@ export function ProfilesScrollList(props: ProfilesScrollListProps) {
                   <ProfileCard
                     key={i}
                     w="110px"
-                    h="100px"
+                    h="90px"
                     verticalSpace={2}
                     imageSize="12"
                     textSize="xs"
+                    p={1}
                     profileName={profile.profileName}
                     profileIndexInList={i}
                     onSelected={SetSelectedProfile}

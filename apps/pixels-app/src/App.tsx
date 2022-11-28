@@ -5,7 +5,7 @@ import {
   TransitionPresets,
 } from "@react-navigation/stack";
 import { PixelTheme } from "@systemic-games/react-native-pixels-components";
-import { ChevronLeftIcon, NativeBaseProvider } from "native-base";
+import { NativeBaseProvider } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
 import { LogBox } from "react-native";
@@ -34,7 +34,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{
-              headerBackImage: (props) => <ChevronLeftIcon />,
+              // headerBackImage: (props) => <ChevronLeftIcon />,
               headerShown: false,
               ...TransitionPresets.SlideFromRightIOS,
               animationTypeForReplace: "pop",

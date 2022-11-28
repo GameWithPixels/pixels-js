@@ -15,6 +15,7 @@ import { Box, Center, HStack, Spacer, Text, VStack } from "native-base";
 import React from "react";
 
 import { HomeScreenStackParamList } from "~/Navigation";
+
 // import { useAppDispatch, useAppSelector } from "~/app/hooks";
 // import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
 
@@ -98,7 +99,7 @@ interface PairedPixelListProps {
 function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
   const [PixelsDisplay, SwitchPixelsDisplay] = React.useState(false);
   return (
-    <Center>
+    <Center width="100%">
       <VStack space={2} w="100%">
         <HStack alignItems="center">
           <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
@@ -116,25 +117,26 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
             isChecked={PixelsDisplay}
             Icon={<AntDesign name="bars" size={24} color="white" />}
           />
-          <AntDesign name="windowso" size={24} color="white" />
+          <AntDesign name="appstore-o" size={22} color="white" />
         </HStack>
-        <Box rounded="md" p={2} bg="gray.700">
+        <Box rounded="md" p={2} bg="gray.700" width="100%">
           {pairedPixels.length < 1 ? (
             <Text> No dice paired yet!</Text>
           ) : PixelsDisplay === false ? (
-            <HStack flexWrap="wrap">
+            <VStack w="100%">
               {pairedPixels.map((pixelInfo) => (
-                <Box p={1} key={pixelInfo.pixelId}>
+                <Box p={1} key={pixelInfo.pixelId} width="100%">
                   <PairedPixelInfoComponent pixel={pixelInfo} />
                 </Box>
               ))}
-            </HStack>
+            </VStack>
           ) : (
             <Center>
               <HStack flexWrap="wrap" justifyContent="flex-start" px={4}>
                 {pairedPixels.map((pixelInfo) => (
-                  <Box p={1} alignSelf="center" key={pixelInfo.pixelId}>
+                  <Box p={1} alignSelf="center" key={pixelInfo.pixelId} w="50%">
                     <SquarePairedPixelInfo
+                      w="100%"
                       pixel={pixelInfo}
                       onPress={() => {
                         navigation.navigate("Pixel Details", pixelInfo);
@@ -197,11 +199,11 @@ function NearbyPixelsList({
           </HStack>
         </HStack>
 
-        <Box rounded="md" p={2} bg="gray.700">
+        <Box rounded="md" p={2} bg="gray.700" alignItems="center" w="100%">
           {!hideNearbyPixels && (
-            <HStack flexWrap="wrap">
+            <VStack w="100%">
               {scannedPixels.map((pixelInfo) => (
-                <Box p={1} key={pixelInfo.pixelId}>
+                <Box p={1} key={pixelInfo.pixelId} w="100%">
                   <ScannedPixelInfoComponent
                     pixel={pixelInfo}
                     onPress={() => {
@@ -210,7 +212,7 @@ function NearbyPixelsList({
                   />
                 </Box>
               ))}
-            </HStack>
+            </VStack>
           )}
         </Box>
       </VStack>

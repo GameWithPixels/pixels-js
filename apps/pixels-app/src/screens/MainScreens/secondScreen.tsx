@@ -22,7 +22,7 @@ export default function SecondScreen() {
         <Card>
           <HStack alignItems="center">
             <Text>RSSI strength : </Text>
-            <RSSIStrength percentage={20} />
+            <RSSIStrength iconSize={10} percentage={20} />
           </HStack>
         </Card>
         <FaceMask diceFaces={20} />

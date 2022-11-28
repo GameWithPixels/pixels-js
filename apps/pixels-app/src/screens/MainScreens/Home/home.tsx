@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import PixelAdvancedSettingsScreen from "./PixelAdvancedSettingsScreen";
@@ -10,6 +11,10 @@ export default function Home() {
     <Stack.Navigator
       initialRouteName="Home"
       screenOptions={{
+        headerBackImage: (props) => (
+          <Ionicons name="md-arrow-back-outline" size={24} color="white" />
+        ),
+        headerTitleAlign: "center",
         headerStyle: {
           backgroundColor: "black",
         },
@@ -19,7 +24,9 @@ export default function Home() {
       <Stack.Screen
         name="Dices"
         component={HomeScreen}
-        options={{ title: "Dice Bag" }}
+        options={{
+          title: "Dice Bag",
+        }}
       />
       <Stack.Screen
         name="Pixel Details"

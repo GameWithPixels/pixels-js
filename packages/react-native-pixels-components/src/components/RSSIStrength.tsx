@@ -9,7 +9,7 @@ import { SizeType } from "native-base/lib/typescript/components/types";
 interface RSSIStrengthProps {
   percentage: number;
   textSize?: SizeType;
-  iconSize?: SizeType;
+  iconSize: number;
 }
 
 // RSSI level icons to display from min to max as required by PercentageDisplay
@@ -25,8 +25,8 @@ export function RSSIStrength(props: RSSIStrengthProps) {
   const resolvedProps = usePropsResolution("RSSIStrength", props);
   const rssiStrength = 100 + resolvedProps.percentage;
   return (
-    <Center>
-      <HStack space={2} alignItems="center">
+    <Center flex={1}>
+      <HStack space={2} alignItems="center" w="100%">
         <Box>
           <PercentageDisplayComponent
             icons={icons}

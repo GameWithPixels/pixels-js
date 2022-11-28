@@ -31,7 +31,8 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
           minW="10px"
           minH="10px"
           w="110px"
-          h="100px"
+          p={1}
+          h="90px"
           alignItems="center"
           verticalSpace={1}
         >

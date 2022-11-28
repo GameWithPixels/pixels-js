@@ -1,5 +1,5 @@
 import { Card } from "@systemic-games/react-native-base-components";
-import { Center, VStack, Pressable, Image, Text } from "native-base";
+import { Pressable, Image, Text } from "native-base";
 import {
   ColorType,
   SizeType,
@@ -55,25 +55,14 @@ export function ProfileCard(props: ProfileCardProps) {
         verticalSpace={props.verticalSpace}
         borderWidth={isSelected ? 2 : props.borderWidth}
       >
-        {/* <HStack h="15px">
-            <Spacer />
-            {isSelected && (
-              <AntDesign name="checkcircleo" size={12} color="white" />
-            )}
-          </HStack> */}
-        <Center>
-          <VStack space={props.verticalSpace} alignItems="center">
-            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Image
-              size={props.imageSize}
-              source={props.imageRequirePath}
-              alt="placeHolder"
-            />
-            <Text isTruncated fontSize={props.textSize} bold>
-              {props.profileName}
-            </Text>
-          </VStack>
-        </Center>
+        <Image
+          size={props.imageSize}
+          source={props.imageRequirePath}
+          alt="placeHolder"
+        />
+        <Text isTruncated fontSize={props.textSize} bold>
+          {props.profileName}
+        </Text>
       </Card>
     </Pressable>
   );

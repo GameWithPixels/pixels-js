@@ -1,9 +1,8 @@
 import { Icon } from "native-base";
-import {
-  ColorType,
-  SizeType,
-} from "native-base/lib/typescript/components/types";
+import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
+// eslint-disable-next-line import/namespace
+import { PixelRatio } from "react-native";
 
 export type IconParams = {
   category: any;
@@ -14,7 +13,7 @@ export interface PercentageDisplayProps {
   percentage: number;
   icons: IconParams[]; //icons must be stored as : first icon = empty percentage,[...], last icon = full percentage
   colors?: ColorType[]; //colors must be stored as : first color = empty percentage color,[...], last color = full percentage color
-  size?: SizeType;
+  size: number;
 }
 
 // Compute index based on the arraylength and the current percentage value
@@ -38,12 +37,14 @@ export function PercentageDisplayComponent({
   const NbOfColors = colors.length;
   const iconIndex = computeIndex(percentage, NbOfIcons);
   const colorIndex = computeIndex(percentage, NbOfColors);
+
+  const iconSize = PixelRatio.getPixelSizeForLayoutSize(size);
   return (
     <Icon
       as={icons[iconIndex].category}
       name={icons[iconIndex].iconName}
       color={colors[colorIndex]}
-      size={size}
+      size={iconSize}
     />
   );
 }

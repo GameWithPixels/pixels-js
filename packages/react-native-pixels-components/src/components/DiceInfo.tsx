@@ -12,7 +12,7 @@ import {
 } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
-import { ImageSourcePropType } from "react-native";
+import { ImageSourcePropType, PixelRatio } from "react-native";
 
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
@@ -30,38 +30,55 @@ export interface PixelInfo {
   imageRequirePath?: ImageSourcePropType;
 }
 
-export interface PixelInfoProps {
+export interface PixelInfoCardProps {
+  h?: number | string;
+  w?: number | string;
   pixel: PixelInfo;
   onPress?: (() => void) | null | undefined;
 }
 
-export function PairedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
+export function PairedPixelInfoComponent({
+  pixel,
+  onPress,
+}: PixelInfoCardProps) {
+  const imageSize = PixelRatio.getPixelSizeForLayoutSize(20);
+  const fontsize = PixelRatio.getPixelSizeForLayoutSize(5);
   return (
     <Pressable onPress={onPress}>
-      <Card borderWidth={1.5} minW={350} maxW={350} h={110}>
-        <HStack space={6} alignItems="center" maxW="100%">
+      <Card borderWidth={1.5} minW={100} w="100%" h={110}>
+        <HStack space={6} alignItems="center" maxW="100%" h="100%">
           <Box alignItems="center">
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
-              size={50}
+              size={imageSize}
               // source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
           {/* dice infos */}
-          <HStack space={5} alignItems="baseline">
-            <VStack space={1} alignItems="baseline">
-              <Text bold>{pixel.name}</Text>
-              <Text fontSize="xs"> Face up: {pixel.ledCount}</Text>
-              <BatteryLevel iconSize="2xl" percentage={pixel.batteryLevel} />
+          <HStack space={4} h="100%" w="100%">
+            <VStack space={1} alignItems="baseline" h="100%">
+              <Text flex={1} bold fontSize={fontsize}>
+                {pixel.name}
+              </Text>
+              <Text flex={1} fontSize="xs">
+                Face up: {pixel.ledCount}
+              </Text>
+              <Box flex={1}>
+                <BatteryLevel iconSize={10} percentage={pixel.batteryLevel} />
+              </Box>
             </VStack>
-            <VStack space={1} alignItems="baseline" maxW={150}>
-              <Text fontSize="2xs">Firmware: {pixel.firmwareDate}</Text>
-              <Text isTruncated fontSize="xs">
+            <VStack space={1} alignItems="baseline" h="100%">
+              <Text flex={1} fontSize="2xs" isTruncated>
+                Firmware: {pixel.firmwareDate}
+              </Text>
+              <Text flex={1} isTruncated fontSize="xs">
                 Profile: {pixel.profileName}
               </Text>
-              <RSSIStrength iconSize="2xl" percentage={pixel.rssi} />
+              <Box flex={1}>
+                <RSSIStrength iconSize={10} percentage={pixel.rssi} />
+              </Box>
             </VStack>
           </HStack>
         </HStack>
@@ -70,8 +87,14 @@ export function PairedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
   );
 }
 
-export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
+export function SquarePairedPixelInfo({
+  h,
+  w,
+  pixel,
+  onPress,
+}: PixelInfoCardProps) {
   const { onOpen } = useDisclose();
+  const imageSize = PixelRatio.getPixelSizeForLayoutSize(20);
   return (
     <>
       <Pressable
@@ -83,10 +106,11 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
         <Card
           paddingTop={0}
           borderWidth={1}
-          minW={165}
-          maxW={165}
+          p={2}
+          w={w}
           minH="40"
           verticalSpace={1}
+          h={h}
         >
           <Text bold alignSelf="center">
             {pixel.name}
@@ -94,7 +118,7 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
           <Box alignItems="center" paddingBottom={2}>
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
-              size={65}
+              size={imageSize}
               //source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               source={pixel.imageRequirePath}
               alt="placeHolder"
@@ -104,9 +128,13 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
             Profile : {pixel.profileName}
           </Text>
           <Text fontSize="xs">Face Up: {pixel.ledCount}</Text>
-          <HStack space={2}>
-            <BatteryLevel percentage={pixel.batteryLevel} />
-            <RSSIStrength percentage={pixel.rssi} />
+          <HStack space={2} w="100%">
+            <Box flex={1}>
+              <BatteryLevel iconSize={2} percentage={pixel.batteryLevel} />
+            </Box>
+            <Box flex={1}>
+              <RSSIStrength iconSize={2} percentage={pixel.rssi} />
+            </Box>
           </HStack>
         </Card>
       </Pressable>
@@ -114,9 +142,13 @@ export function SquarePairedPixelInfo({ pixel, onPress }: PixelInfoProps) {
   );
 }
 
-export function ScannedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
+export function ScannedPixelInfoComponent({
+  pixel,
+  onPress,
+}: PixelInfoCardProps) {
   const [pressed, SetPressed] = React.useState(false);
   const [height, SetHeight] = React.useState("100px");
+  const imageSize = PixelRatio.getPixelSizeForLayoutSize(20);
   return (
     <Pressable
       onPress={() => {
@@ -124,38 +156,35 @@ export function ScannedPixelInfoComponent({ pixel, onPress }: PixelInfoProps) {
         SetPressed(true);
       }}
     >
-      <Card
-        borderWidth={1.5}
-        maxW="100%"
-        minH="100%"
-        w={350}
-        h={height}
-        alignItems="center"
-      >
+      <Card borderWidth={1.5} w="100%" h={height} alignItems="center">
         <HStack space={10} alignItems="center" maxW="100%">
-          <Box alignItems="center">
+          <Box alignItems="center" flex={1}>
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
-              size={65}
+              size={imageSize}
               //source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
           {/* dice infos */}
-          <HStack space={5} alignItems="baseline">
+          <HStack space={5} alignItems="baseline" flex={2}>
             <VStack space={2}>
               <Text bold>{pixel.name}</Text>
               <Text fontSize="xs">Face Up: {pixel.ledCount} </Text>
             </VStack>
             <VStack space={2}>
-              <BatteryLevel percentage={pixel.batteryLevel} iconSize="2xl" />
-              <RSSIStrength percentage={pixel.rssi} iconSize="2xl" />
+              <BatteryLevel percentage={pixel.batteryLevel} iconSize={2} />
+              <RSSIStrength percentage={pixel.rssi} iconSize={2} />
             </VStack>
           </HStack>
         </HStack>
         <Spacer />
-        {pressed ? <Button onPress={onPress}>Pair Die</Button> : <Text> </Text>}
+        {pressed && (
+          <Button w={80} onPress={onPress} alignItems="center">
+            Pair Die
+          </Button>
+        )}
       </Card>
     </Pressable>
   );

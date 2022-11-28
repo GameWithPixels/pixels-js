@@ -17,7 +17,7 @@ export function Card(props: CardProps) {
   return (
     <Center>
       <Box {...resolvedProps} rounded={resolvedProps.rounded}>
-        <VStack space={resolvedProps.verticalSpace}>
+        <VStack space={resolvedProps.verticalSpace} alignItems="center">
           {resolvedProps.children}
         </VStack>
       </Box>

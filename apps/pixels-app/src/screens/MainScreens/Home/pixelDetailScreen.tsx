@@ -33,6 +33,8 @@ import {
   Pressable,
 } from "native-base";
 import React from "react";
+// eslint-disable-next-line import/namespace
+import { PixelRatio } from "react-native";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
 import {
@@ -116,77 +118,6 @@ function Histogram({ rolls }: HistogramProps) {
   );
 }
 
-// function DiceRolls() {
-//   return (
-//     <Card
-//       minW={10}
-//       w="180px"
-//       maxW="200px"
-//       verticalSpace={2}
-//       alignItems="center"
-//       bg="primary.300"
-//     >
-//       <HStack alignItems="center" space={3}>
-//         <FontAwesome5 name="dice" size={24} color="black" />
-//         <Text bold fontSize="xl">
-//           Rolls
-//         </Text>
-//       </HStack>
-//       <HStack space={2} alignItems="center" p={2}>
-//         <Box w="50%">
-//           <Text>Session</Text>
-//           <Divider bg="white" />
-//           <Text fontSize="xl">26</Text>
-//         </Box>
-//         <Box w="50%">
-//           <Text>Lifetime</Text>
-//           <Divider bg="white" />
-//           <Text isTruncated fontSize="xl">
-//             285
-//           </Text>
-//         </Box>
-//       </HStack>
-//     </Card>
-//   );
-// }
-// function DiceUseTime() {
-//   return (
-//     <Card
-//       minW={10}
-//       w="180px"
-//       maxW="200px"
-//       verticalSpace={2}
-//       alignItems="center"
-//       bg="primary.300"
-//     >
-//       <HStack alignItems="center" space={3}>
-//         <MaterialCommunityIcons name="clock" size={24} color="black" />
-//         <Text bold fontSize="xl">
-//           Use Time
-//         </Text>
-//       </HStack>
-//       <HStack space={2} alignItems="center" p={2}>
-//         <Box w="50%">
-//           <Text>Session</Text>
-//           <Divider bg="white" />
-//           <HStack alignItems="baseline">
-//             <Text fontSize="xl">32 </Text>
-//             <Text>min</Text>
-//           </HStack>
-//         </Box>
-//         <Box w="50%">
-//           <Text>Lifetime</Text>
-//           <Divider bg="white" />
-//           <HStack alignItems="baseline">
-//             <Text fontSize="xl">3.5 </Text>
-//             <Text>h</Text>
-//           </HStack>
-//         </Box>
-//       </HStack>
-//     </Card>
-//   );
-// }
-
 function DieStats() {
   const [showSessionStats, SetShowSessionStats] = React.useState(true);
   const lifetimeHistogramRolls = [
@@ -213,7 +144,7 @@ function DieStats() {
         <HStack alignItems="center" space={1}>
           <Toggle
             textSize="xs"
-            text="All"
+            text="Lifetime"
             onToggle={() => {
               SetShowSessionStats(!showSessionStats);
             }}
@@ -363,6 +294,7 @@ export default function PixelDetailScreen() {
   const route = useRoute<PixelDetailScreenRouteProp>();
   const pixelInfo = route.params;
   const [showLoadingPopup, SetShowLoadingPopup] = React.useState(false);
+  const imageSize = PixelRatio.getPixelSizeForLayoutSize(55);
   return (
     <PxAppPage theme={paleBluePixelTheme}>
       <LoadingPopup
@@ -385,9 +317,9 @@ export default function PixelDetailScreen() {
         <Center w="100%">
           <HStack space={0} alignItems="center" paddingLeft={5}>
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Box flex={2.5} paddingLeft={0}>
+            <Box w="50%" paddingLeft={0}>
               <Image
-                size={180}
+                size={imageSize}
                 // source={require("~/../assets/RainbowDice.png")}
                 source={pixelInfo.imageRequirePath}
                 alt="placeHolder"
@@ -402,14 +334,14 @@ export default function PixelDetailScreen() {
                   color="white"
                 />
               </Button>
-              <VStack bg="pixelColors.highlightGray" rounded="md">
+              <VStack bg="pixelColors.highlightGray" rounded="md" p={2}>
                 <BatteryLevel
-                  iconSize="50"
+                  iconSize={15}
                   textSize="lg"
                   percentage={pixelInfo.batteryLevel}
                 />
                 <RSSIStrength
-                  iconSize="50"
+                  iconSize={15}
                   textSize="lg"
                   percentage={pixelInfo.rssi}
                 />

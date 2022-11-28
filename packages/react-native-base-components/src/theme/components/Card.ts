@@ -5,12 +5,11 @@ export default {
   defaultProps: {
     rounded: "lg",
     bg: "primary.700",
-    minW: 300,
-    minH: 100,
+    minW: 10,
+    minH: 10,
     maxH: 600,
-    maxW: "100%",
     borderColor: "primary.200",
     borderWidth: 0,
-    Vspace: 2,
+    Vspace: 1,
   },
 } as CardProps;

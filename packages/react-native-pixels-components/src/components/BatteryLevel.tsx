@@ -11,7 +11,7 @@ interface BatteryLevelProps {
   percentage: number;
   isCharging?: boolean;
   textSize?: SizeType;
-  iconSize?: SizeType;
+  iconSize: number;
 }
 
 // Battery icons to display from empty to full as required by PercentageDisplay
@@ -28,7 +28,7 @@ export function BatteryLevel(props: BatteryLevelProps) {
   const batteryLevel = resolvedProps.percentage * 100;
   return (
     <Center>
-      <HStack space={3} alignItems="center">
+      <HStack space={3} alignItems="center" w="100%">
         <Box>
           <PercentageDisplayComponent
             icons={icons}

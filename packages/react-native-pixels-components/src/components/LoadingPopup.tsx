@@ -13,7 +13,7 @@ export function LoadingPopup(props: LoadingPopupProps) {
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
-    if (progress < 100 && props.isOpen) {
+    if (progress <= 100 && props.isOpen) {
       const timeoutId = setTimeout(() => setProgress(progress + 2), 0.05);
       return () => {
         clearTimeout(timeoutId);

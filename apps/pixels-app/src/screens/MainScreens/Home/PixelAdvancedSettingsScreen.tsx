@@ -46,9 +46,7 @@ export default function PixelAdvancedSettingsScreen() {
               space={2}
               maxW="100%"
             >
-              <Text isTruncated bold>
-                Firmware date :
-              </Text>
+              <Text bold>Firmware Date :</Text>
               <Spacer />
               <Box bg="gray.400" rounded="md" p={2} maxW="100%">
                 <Text isTruncated>{new Date().toUTCString()}</Text>
@@ -61,13 +59,13 @@ export default function PixelAdvancedSettingsScreen() {
                 <MaterialCommunityIcons name="update" size={24} color="white" />
               }
             >
-              <Text bold>Update firmware</Text>
+              <Text bold>Update Firmware</Text>
             </Button>
           </VStack>
         </Box>
         <Box>
           <Text bold paddingBottom={2} paddingTop={5} fontSize="sm">
-            Die storage :
+            Die Storage :
           </Text>
           <VStack bg="pixelColors.highlightGray" rounded="md" space={3} p={2}>
             <HStack rounded="md">
@@ -101,7 +99,7 @@ export default function PixelAdvancedSettingsScreen() {
                 bg="gray.500"
                 rounded="md"
               >
-                <Text bold>LED Patterns </Text>
+                <Text bold>Profiles</Text>
                 <Text>3123 bytes</Text>
               </VStack>
               <VStack

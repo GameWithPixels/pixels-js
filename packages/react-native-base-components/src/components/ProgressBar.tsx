@@ -11,6 +11,7 @@ export interface ProgressBarProps {
   boxBg?: ColorType;
   size?: SizeType;
   filledTrackBg?: ColorType;
+  showPercentage?: boolean;
   onProgressEnd?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -28,11 +29,13 @@ export function ProgressBar(props: ProgressBarProps) {
           bg: resolvedProps.filledTrackBg,
         }}
       />
-      <Text>
-        {props.loadingText
-          ? props.loadingText + props.progress + "%"
-          : props.progress + "%"}
-      </Text>
+      {props.showPercentage && (
+        <Text>
+          {props.loadingText
+            ? props.loadingText + props.progress + "%"
+            : props.progress + "%"}
+        </Text>
+      )}
     </Box>
   );
 }
