@@ -1,4 +1,4 @@
-import { assertUnreachable } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   PixelStatus,
@@ -39,7 +39,7 @@ export default function (): [
             lastPixel?.disconnect().catch(setLastError);
             break;
           default:
-            assertUnreachable(action);
+            assertNever(action);
         }
         return pixel;
       });

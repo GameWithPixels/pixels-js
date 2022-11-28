@@ -1,4 +1,4 @@
-import { assertUnreachable } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   getPixelUniqueName,
   PixelScanner,
@@ -89,7 +89,7 @@ async function scanAction(
         state.lastPixels.length = 0;
         break;
       default:
-        assertUnreachable(action);
+        assertNever(action);
     }
   });
 }

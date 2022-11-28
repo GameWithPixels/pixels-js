@@ -1,5 +1,5 @@
 import assert, { AssertionError } from "./assert";
-import assertUnreachable from "./assertUnreachable";
+import assertNever from "./assertNever";
 import bernsteinHash from "./bernsteinHash";
 import createTypedEventEmitter, {
   type EventKey,
@@ -32,7 +32,7 @@ export {
   enumFlag,
   assert,
   AssertionError,
-  assertUnreachable,
+  assertNever,
   decodeUtf8,
   SerializableProperty,
   type SerializedNumberFormat,

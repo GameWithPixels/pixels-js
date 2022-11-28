@@ -1,6 +1,6 @@
 import {
   assert,
-  assertUnreachable,
+  assertNever,
   createTypedEventEmitter,
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
@@ -217,7 +217,7 @@ export default class PixelDispatcher implements IPixel {
         watch(this._cancelFirmwareUpdate());
         break;
       default:
-        assertUnreachable(action);
+        assertNever(action);
     }
   }
 

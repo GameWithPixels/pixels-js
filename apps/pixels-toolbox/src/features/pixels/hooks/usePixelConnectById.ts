@@ -1,4 +1,4 @@
-import { assertUnreachable } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   getPixel,
@@ -62,7 +62,7 @@ export default function (): [
           setScannedPixel(undefined);
           break;
         default:
-          assertUnreachable(action);
+          assertNever(action);
       }
     },
     []
