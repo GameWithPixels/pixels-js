@@ -2,9 +2,6 @@
   "extends": "./../../tsconfig.web",
   "compilerOptions": {
     "outDir": "./dist",
-    "types": [
-      "jest"
-    ],
     "experimentalDecorators": true
   },
   "include": [
