@@ -307,7 +307,7 @@ export default function ({
       >
         <Modal.Content>
           <Modal.CloseButton />
-          <Modal.Header>Die Details</Modal.Header>
+          <Modal.Header>Pixels Die: {pixelDispatcher.name}</Modal.Header>
           <Modal.Body>
             <PixelDetails pixelDispatcher={pixelDispatcher} />
           </Modal.Body>

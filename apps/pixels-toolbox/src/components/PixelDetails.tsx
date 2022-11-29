@@ -19,7 +19,7 @@ function TextEntry({
 }: { title: string } & ITextProps) {
   return (
     <Text {...props}>
-      <Text>{title} </Text>
+      <Text bold>{title} </Text>
       <Text italic>{children}</Text>
     </Text>
   );
@@ -63,7 +63,6 @@ export default function ({
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
   return (
     <VStack space={sr(5)}>
-      <Text bold>{`Name: ${pixel.name}`}</Text>
       <TextEntry my={sr(5)} title="Status:">
         {status}
       </TextEntry>
