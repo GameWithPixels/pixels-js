@@ -187,11 +187,13 @@ export default class PixelDispatcher implements IPixel {
   }
 
   updateScannedPixel(scannedPixel: ScannedPixel) {
-    if (this._scannedPixel.pixelId !== scannedPixel.pixelId) {
-      throw new Error("Pixel id doesn't match");
+    if (this._scannedPixel !== scannedPixel) {
+      if (this.pixelId !== scannedPixel.pixelId) {
+        throw new Error("Pixel id doesn't match");
+      }
+      this._scannedPixel = scannedPixel;
+      this._lastScan = new Date();
     }
-    this._scannedPixel = scannedPixel;
-    this._lastScan = new Date();
   }
 
   dispatch(action: PixelDispatcherAction) {

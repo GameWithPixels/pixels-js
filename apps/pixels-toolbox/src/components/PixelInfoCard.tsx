@@ -23,7 +23,7 @@ export default function ({ children, pixel, moreInfo }: PixelInfoCardProps) {
       alignItems="center"
       px={sr(5)}
       py={sr(3)}
-      space={sr(5)}
+      space={sr(3)}
       w="100%"
     >
       <Center flexDir="row">
@@ -35,7 +35,7 @@ export default function ({ children, pixel, moreInfo }: PixelInfoCardProps) {
           <HStack space="8%">
             <Text>{`🆔 ${pixIdHex}`}</Text>
             <Text>{`${pixel.designAndColor}`}</Text>
-            <Text>{`${pixel.ledCount}💡`}</Text>
+            <Text>{`${pixel.ledCount}🚦`}</Text>
           </HStack>
         </>
       )}

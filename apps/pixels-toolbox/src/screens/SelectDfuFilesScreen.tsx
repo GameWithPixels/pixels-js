@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useAssets } from "expo-asset";
-import { Box, Button, Center, FlatList, Text } from "native-base";
+import { Box, Center, FlatList, Pressable, Text, VStack } from "native-base";
 import { useEffect, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 
@@ -66,22 +66,16 @@ function SelectDfuFilePage() {
       {!dfuFilesByDate ? (
         <Text italic>Reading DFU files...</Text>
       ) : dfuFilesByDate.length ? (
-        <FlatList
-          width="100%"
-          ItemSeparatorComponent={() => <Box h={sr(8)} />}
-          data={dfuFilesByDate}
-          renderItem={(itemInfo) => (
-            <Center variant="cardWithBorder" width="100%">
-              <Text variant="h2">
-                {`📅 ${toLocaleDateTimeString(
-                  itemInfo.item[0].date ?? new Date(0)
-                )}`}
-              </Text>
-              <Text>
-                Type: {itemInfo.item.map((i) => i.type ?? "unknown").join(", ")}
-              </Text>
-              <Button
-                marginY={sr(5)}
+        <>
+          <Text italic my={sr(5)}>
+            Tap To Select Bootloader/Firmware
+          </Text>
+          <FlatList
+            width="100%"
+            ItemSeparatorComponent={() => <Box h={sr(8)} />}
+            data={dfuFilesByDate}
+            renderItem={(itemInfo) => (
+              <Pressable
                 onPress={() => {
                   appDispatch(
                     setDfuFiles(itemInfo.item.map((i) => i.pathname))
@@ -89,13 +83,29 @@ function SelectDfuFilePage() {
                   navigation.goBack();
                 }}
               >
-                Select
-              </Button>
-            </Center>
-          )}
-          keyExtractor={(files) => files[0].pathname}
-          contentContainerStyle={{ flexGrow: 1 }}
-        />
+                <VStack
+                  variant="cardWithBorder"
+                  width="100%"
+                  alignItems="center"
+                  space={sr(5)}
+                  py={sr(8)}
+                >
+                  <Text variant="h2">
+                    {`📅 ${toLocaleDateTimeString(
+                      itemInfo.item[0].date ?? new Date(0)
+                    )}`}
+                  </Text>
+                  <Text>
+                    Type:{" "}
+                    {itemInfo.item.map((i) => i.type ?? "unknown").join(", ")}
+                  </Text>
+                </VStack>
+              </Pressable>
+            )}
+            keyExtractor={(files) => files[0].pathname}
+            contentContainerStyle={{ flexGrow: 1 }}
+          />
+        </>
       ) : (
         <Text bold>No files found in assets/dfu-files.zip!</Text>
       )}

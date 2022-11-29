@@ -4,7 +4,6 @@ import Constants from "expo-constants";
 import {
   Actionsheet,
   Box,
-  Button,
   Center,
   FlatList,
   HamburgerIcon,
@@ -228,17 +227,10 @@ function HomePage() {
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
       <Box flex={1} alignItems="center" left="2%" width="96%">
-        <Button
-          mt={sr(5)}
-          mb={sr(20)}
-          size="lg"
-          _text={{
-            fontSize: "xl",
-          }}
-          onPress={() => navigation.navigate("Validation")}
-        >
-          Validation
-        </Button>
+        <Text pl="7%" mb={sr(10)} alignSelf="flex-start">
+          ↖️
+          <Text italic> Open Menu To Go To Validation</Text>
+        </Text>
         <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
           {selectedFwLabel ?? "Tap To Select firmware"}
         </Link>

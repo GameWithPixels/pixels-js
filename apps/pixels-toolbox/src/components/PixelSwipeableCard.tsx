@@ -10,7 +10,7 @@ import {
   Text,
   VStack,
   useDisclose,
-  HStack,
+  Center,
 } from "native-base";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
@@ -53,12 +53,14 @@ export default function ({
   const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
   const [dfuProgress, setDfuProgress] = useState<number>(0);
 
-  // Reset DFU state when aborted
+  // Reset DFU state and progress when aborted or completed
   useEffect(() => {
     if (dfuState === "dfuAborted") {
       setDfuState("dfuCompleted");
       setDfuProgress(0);
       setLastError(new Error("DFU Aborted"));
+    } else if (dfuState === "dfuCompleted") {
+      setDfuProgress(0);
     }
   }, [dfuState]);
 
@@ -167,15 +169,13 @@ export default function ({
     }
   }, [notifyUserData, open]);
 
-  // When connected, refresh UI at least every 5 seconds
+  // Refresh UI at least every 5 seconds
   useFocusEffect(() => {
     // Called on every render!
-    if (isReady) {
-      const id = setTimeout(forceUpdate, 5000);
-      return () => {
-        clearTimeout(id);
-      };
-    }
+    const id = setTimeout(forceUpdate, 5000);
+    return () => {
+      clearTimeout(id);
+    };
   });
 
   // Some values for the UI below
@@ -245,33 +245,33 @@ export default function ({
           )}
           <VStack
             mb={sr(5)}
-            p={sr(5)}
+            mt={sr(-3)}
             space={sr(5)}
             alignItems="center"
             width="100%"
           >
             {dfuQueued ? (
               dfuState !== "dfuCompleted" ? (
-                <HStack my={sr(10)} width="100%">
+                <Center width="100%" flexDir="row">
                   <Text>Firmware Update: </Text>
                   {dfuState === "dfuStarting" && dfuProgress > 0 ? (
-                    <Box flex={1} my={sr(10)}>
+                    <Box flex={1}>
                       <ProgressBar percent={dfuProgress} />
                     </Box>
                   ) : (
                     <Text italic>{dfuState}</Text>
                   )}
-                </HStack>
+                </Center>
               ) : (
                 <Text>Waiting On Firmware Update...</Text>
               )
             ) : profileUpdate ? (
-              <HStack my={sr(10)} width="100%">
+              <Center width="100%" flexDir="row">
                 <Text>Profile Update: </Text>
-                <Box flex={1} my={sr(10)}>
+                <Box flex={1}>
                   <ProgressBar percent={profileUpdate} />
                 </Box>
-              </HStack>
+              </Center>
             ) : isDisco && lastSeen > 5 ? (
               <Text italic>{`Unavailable (${
                 lastSeen < 120
