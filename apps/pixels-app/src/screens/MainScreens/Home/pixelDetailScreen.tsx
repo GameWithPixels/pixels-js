@@ -34,13 +34,13 @@ import {
 } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
-import { PixelRatio } from "react-native";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
 import {
   PixelDetailScreenParamList,
   PixelDetailScreenRouteProp,
 } from "~/Navigation";
+import { sr } from "~/Utils";
 
 interface HistogramProps {
   rolls: number[];
@@ -155,21 +155,22 @@ function DieStats() {
       </HStack>
       {/* {DiceStats} */}
       <Box rounded="md" bg="pixelColors.highlightGray" minH="20px">
-        <VStack p={2} space={4}>
-          <Center width="100%" maxW="100%" h="150px">
-            <HStack space={4}>
+        <VStack p={sr(8)} space={sr(9)}>
+          <Center width="100%" maxW="100%" h={sr(150)}>
+            <HStack space={sr(11)}>
               {/* {DiceRolls()} */}
 
               <Card
                 minW={10}
-                w="180px"
-                maxW="200px"
+                w={sr(170)}
+                h={sr(140)}
+                maxW="100%"
                 verticalSpace={2}
                 alignItems="center"
                 bg="primary.300"
               >
                 <HStack alignItems="center" space={3}>
-                  <FontAwesome5 name="dice" size={24} color="black" />
+                  <FontAwesome5 name="dice" size={sr(24)} color="black" />
                   <Text bold fontSize="xl">
                     Rolls
                   </Text>
@@ -197,8 +198,9 @@ function DieStats() {
 
               <Card
                 minW={10}
-                w="180px"
-                maxW="200px"
+                w={sr(170)}
+                h={sr(140)}
+                maxW="100%"
                 verticalSpace={2}
                 alignItems="center"
                 bg="primary.300"
@@ -206,7 +208,7 @@ function DieStats() {
                 <HStack alignItems="center" space={3}>
                   <MaterialCommunityIcons
                     name="clock"
-                    size={24}
+                    size={sr(24)}
                     color="black"
                   />
                   <Text bold fontSize="xl">
@@ -239,27 +241,27 @@ function DieStats() {
           </Center>
           {!showSessionStats ? (
             //Lifetime histogram
-            <Card bg="primary.300" verticalSpace={4}>
-              <HStack space={3} alignItems="baseline">
+            <Card w={sr(350)} bg="primary.300" verticalSpace={sr(4)}>
+              <HStack space={sr(3)} alignItems="baseline">
                 <Ionicons name="stats-chart" size={30} color="black" />
                 <Text bold fontSize="xl">
                   Lifetime Rolls Per Face
                 </Text>
               </HStack>
-              <Center width="350" h="150" alignSelf="center">
+              <Center width={sr(320)} h={sr(150)} alignSelf="center">
                 <Histogram viewRatio={2} rolls={lifetimeHistogramRolls} />
               </Center>
             </Card>
           ) : (
             //Session histogram
-            <Card bg="primary.300" verticalSpace={4}>
+            <Card w={sr(350)} bg="primary.300" verticalSpace={sr(4)}>
               <HStack space={3} alignItems="baseline">
                 <Ionicons name="stats-chart" size={30} color="black" />
                 <Text bold fontSize="xl">
                   Session Rolls Per Face
                 </Text>
               </HStack>
-              <Center width="350" h="150" alignSelf="center">
+              <Center width={sr(320)} h={sr(150)} alignSelf="center">
                 <Histogram viewRatio={2} rolls={sessionHistogramRolls} />
               </Center>
             </Card>
@@ -294,7 +296,6 @@ export default function PixelDetailScreen() {
   const route = useRoute<PixelDetailScreenRouteProp>();
   const pixelInfo = route.params;
   const [showLoadingPopup, SetShowLoadingPopup] = React.useState(false);
-  const imageSize = PixelRatio.getPixelSizeForLayoutSize(55);
   return (
     <PxAppPage theme={paleBluePixelTheme}>
       <LoadingPopup
@@ -319,14 +320,14 @@ export default function PixelDetailScreen() {
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Box w="50%" paddingLeft={0}>
               <Image
-                size={imageSize}
+                size={sr(200)}
                 // source={require("~/../assets/RainbowDice.png")}
                 source={pixelInfo.imageRequirePath}
                 alt="placeHolder"
               />
             </Box>
             <Spacer />
-            <VStack flex={2} space={3} p={2} rounded="md" w="40%">
+            <VStack flex={2} space={sr(11)} p={2} rounded="md" w="40%">
               <Button>
                 <MaterialCommunityIcons
                   name="lightbulb-on-outline"
@@ -335,16 +336,8 @@ export default function PixelDetailScreen() {
                 />
               </Button>
               <VStack bg="pixelColors.highlightGray" rounded="md" p={2}>
-                <BatteryLevel
-                  iconSize={15}
-                  textSize="lg"
-                  percentage={pixelInfo.batteryLevel}
-                />
-                <RSSIStrength
-                  iconSize={15}
-                  textSize="lg"
-                  percentage={pixelInfo.rssi}
-                />
+                <BatteryLevel size="xl" percentage={pixelInfo.batteryLevel} />
+                <RSSIStrength percentage={pixelInfo.rssi} size="xl" />
               </VStack>
               <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
                 <VStack space={2}>

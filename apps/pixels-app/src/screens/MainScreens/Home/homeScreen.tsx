@@ -15,6 +15,7 @@ import { Box, Center, HStack, Spacer, Text, VStack } from "native-base";
 import React from "react";
 
 import { HomeScreenStackParamList } from "~/Navigation";
+import { sr } from "~/Utils";
 
 // import { useAppDispatch, useAppSelector } from "~/app/hooks";
 // import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
@@ -137,6 +138,7 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
                   <Box p={1} alignSelf="center" key={pixelInfo.pixelId} w="50%">
                     <SquarePairedPixelInfo
                       w="100%"
+                      h={sr(200)}
                       pixel={pixelInfo}
                       onPress={() => {
                         navigation.navigate("Pixel Details", pixelInfo);

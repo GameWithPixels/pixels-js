@@ -1,7 +1,8 @@
 import { theme as BaseTheme } from "@systemic-games/react-native-base-components";
 import { extendTheme, Theme } from "native-base";
 
-import components from "./components";
+import { sr } from "../utils";
+import pixelComponents from "./components";
 
 const pixelColors = {
   dark: "#100F1E",
@@ -33,6 +34,54 @@ const pixelColors = {
   pink: "#C71784",
 } as const;
 
+const fontSizes = {
+  "2xs": sr(10),
+  xs: sr(12),
+  sm: sr(14),
+  md: sr(16),
+  lg: sr(18),
+  xl: sr(20),
+  "2xl": sr(24),
+  "3xl": sr(30),
+  "4xl": sr(36),
+  "5xl": sr(48),
+  "6xl": sr(60),
+  "7xl": sr(72),
+  "8xl": sr(96),
+  "9xl": sr(128),
+};
+
+const components = {
+  ...pixelComponents,
+
+  Button: {
+    baseStyle: {
+      minW: "2",
+      minH: "2",
+    },
+    defaultProps: {
+      bg: "primary.500",
+      rounded: "lg",
+    },
+  },
+
+  Icon: {
+    sizes: {
+      "2xs": sr(10),
+      xs: sr(12),
+      sm: sr(20),
+      md: sr(25),
+      lg: sr(30),
+      xl: sr(40),
+      "2xl": sr(55),
+      "3xl": sr(65),
+      "4xl": sr(75),
+      "5xl": sr(85),
+      "6xl": sr(95),
+    },
+  },
+};
+
 // This type is there just to get rid of the typescript error with extendTheme
 type PixelThemeType =
   | Theme
@@ -43,5 +92,6 @@ export const PixelTheme = extendTheme<PixelThemeType>(BaseTheme, {
   colors: {
     pixelColors,
   },
+  fontSizes,
   components,
 });

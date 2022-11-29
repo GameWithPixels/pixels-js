@@ -43,7 +43,7 @@ export default function ThirdScreen() {
         <Card>
           <HStack alignItems="center">
             <Text>RSSI strength : </Text>
-            <RSSIStrength iconSize={10} percentage={92} />
+            <RSSIStrength percentage={92} />
           </HStack>
         </Card>
         <FaceMask bg="pixelColors.green" diceFaces={20} />

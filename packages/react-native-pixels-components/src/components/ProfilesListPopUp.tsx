@@ -12,6 +12,7 @@ import {
 } from "native-base";
 import React from "react";
 
+import { sr } from "../utils";
 import { ProfileCard, ProfileInfo } from "./ProfileCard";
 
 export interface ProfilesPopUpListProps {
@@ -30,9 +31,9 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
         <Card
           minW="10px"
           minH="10px"
-          w="110px"
+          w={sr(110)}
           p={1}
-          h="90px"
+          h={sr(90)}
           alignItems="center"
           verticalSpace={1}
         >

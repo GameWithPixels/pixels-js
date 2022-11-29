@@ -9,6 +9,7 @@ import {
 } from "native-base";
 import React from "react";
 
+import { sr } from "../utils";
 // eslint-disable-next-line import/namespace
 import { ProfileCard, ProfileInfo } from "./ProfileCard";
 import { ProfilesListPopUp } from "./ProfilesListPopUp";
@@ -20,11 +21,16 @@ export interface ProfilesScrollListProps {
 export function ProfilesScrollList(props: ProfilesScrollListProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   return (
-    <VStack space={2}>
-      <Center rounded="lg" p={2} bg="pixelColors.highlightGray" width="100%">
+    <VStack space={sr(2)}>
+      <Center
+        rounded="lg"
+        p={sr(9)}
+        bg="pixelColors.highlightGray"
+        width="100%"
+      >
         <HStack alignItems="center">
           <ChevronLeftIcon />
-          <Box w="360">
+          <Box h={sr(100)} w={sr(350)}>
             <ScrollView
               horizontal
               width="100%"
@@ -37,12 +43,12 @@ export function ProfilesScrollList(props: ProfilesScrollListProps) {
                 {props.availableProfiles.map((profile, i) => (
                   <ProfileCard
                     key={i}
-                    w="110px"
-                    h="90px"
-                    verticalSpace={2}
-                    imageSize="12"
+                    w={sr(110)}
+                    h={sr(90)}
+                    verticalSpace={sr(4)}
+                    imageSize={sr(50)}
                     textSize="xs"
-                    p={1}
+                    p={sr(4)}
                     profileName={profile.profileName}
                     profileIndexInList={i}
                     onSelected={SetSelectedProfile}
