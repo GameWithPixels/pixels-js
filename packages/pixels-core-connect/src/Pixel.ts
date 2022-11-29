@@ -50,7 +50,7 @@ import PixelSession from "./PixelSession";
 import getPixelEnumName from "./getPixelEnumName";
 
 // Returns a string with the current time with a millisecond precision
-function getTime(): string {
+function _getTime(): string {
   const to2 = (n: number) => n.toString().padStart(2, "0");
   const to3 = (n: number) => n.toString().padStart(3, "0");
   const d = new Date();
@@ -490,7 +490,7 @@ export default class Pixel implements IPixel {
     this._log(
       `Sending message ${msgName} (${getMessageType(
         msgOrType
-      )}) at ${getTime()}`
+      )}) at ${_getTime()}`
     );
     const data = serializeMessage(msgOrType);
     await this._session.writeValue(data, withoutResponse);
@@ -851,7 +851,7 @@ export default class Pixel implements IPixel {
         this._log(
           `Received message ${msgName} (${getMessageType(
             msgOrType
-          )}) at ${getTime()}`
+          )}) at ${_getTime()}`
         );
         if (typeof msgOrType !== "number") {
           // Log message contents
@@ -862,7 +862,7 @@ export default class Pixel implements IPixel {
         // Dispatch specific message event
         this._msgEvEmitter.emit(`message${msgName}`, msgOrType);
       } else {
-        this._log(`Received invalid message at ${getTime()}`);
+        this._log(`Received invalid message at ${_getTime()}`);
       }
     } catch (error) {
       this._log("CharacteristicValueChanged error: " + error);
