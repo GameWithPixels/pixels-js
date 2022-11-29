@@ -116,10 +116,10 @@ export interface PixelEventMap {
   message: MessageOrType;
   /** Roll state changed notification. */
   rollState: PixelRollData;
-  /** Roll value notification. */
+  /** Roll result notification. */
   roll: number;
   /** Battery state changed notification. */
-  batteryState: PixelBatteryData;
+  battery: PixelBatteryData;
   /** RSSI change notification. */
   rssi: number;
   /** User message notification. */
@@ -306,7 +306,7 @@ export default class Pixel implements IPixel {
         battery.voltage !== this._batteryState.voltage
       ) {
         this._batteryState = battery;
-        this._evEmitter.emit("batteryState", { ...battery });
+        this._evEmitter.emit("battery", { ...battery });
       }
     });
     // Subscribe to rssi messages and emit event

@@ -44,7 +44,7 @@ export type PixelDispatcherAction =
 export interface PixelDispatcherEventMap {
   status: PixelStatus;
   rollState: PixelRollData;
-  batteryState: PixelBatteryData;
+  battery: PixelBatteryData;
   rssi: number;
   action: PixelDispatcherAction;
   error: Error;
@@ -164,8 +164,8 @@ export default class PixelDispatcher implements IPixel {
     this._pixel.addEventListener("rollState", (state) =>
       this._evEmitter.emit("rollState", state)
     );
-    this._pixel.addEventListener("batteryState", (state) =>
-      this._evEmitter.emit("batteryState", state)
+    this._pixel.addEventListener("battery", (state) =>
+      this._evEmitter.emit("battery", state)
     );
     this._pixel.addEventListener("rssi", (rssi) =>
       this._evEmitter.emit("rssi", rssi)
