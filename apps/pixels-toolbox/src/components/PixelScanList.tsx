@@ -1,23 +1,24 @@
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import { Button, Center, FlatList, Spacer, Text } from "native-base";
-import { useEffect } from "react";
 
 import PixelInfoBox from "~/components/PixelInfoCard";
-import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
+import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 
 export default function ({
   onSelected,
   onClose,
+  refreshInterval,
 }: {
   onSelected: (pixel: ScannedPixel) => void;
   onClose: () => void;
+  refreshInterval?: number;
 }) {
-  const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
+  const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
     sortedByName: true,
+    refreshInterval,
   });
-  useEffect(() => {
-    scannerDispatch("start");
-  }, [scannerDispatch]);
+  useErrorWithHandler(lastError);
   return (
     <Center>
       <Center>

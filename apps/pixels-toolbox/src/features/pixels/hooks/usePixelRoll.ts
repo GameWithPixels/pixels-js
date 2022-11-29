@@ -6,13 +6,13 @@ import { useEffect, useReducer } from "react";
 
 export default function (pixel?: Pixel): [number, PixelRollStateNames] {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, triggerRender] = useReducer((b) => !b, false);
+  const [_, forceUpdate] = useReducer((b) => !b, false);
 
   useEffect(() => {
     if (pixel) {
-      pixel.addMessageListener("rollState", triggerRender);
+      pixel.addMessageListener("rollState", forceUpdate);
       return () => {
-        pixel.removeMessageListener("rollState", triggerRender);
+        pixel.removeMessageListener("rollState", forceUpdate);
       };
     }
   }, [pixel]);

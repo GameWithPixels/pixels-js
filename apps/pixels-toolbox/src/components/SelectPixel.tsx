@@ -10,7 +10,8 @@ import {
 
 import PixelInfoBox from "./PixelInfoCard";
 
-import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
+import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 import globalStyles, { sr } from "~/styles";
 
 interface SelectPixelProps {
@@ -18,9 +19,10 @@ interface SelectPixelProps {
 }
 
 export default function ({ setSelectedPixel }: SelectPixelProps) {
-  const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
+  const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
     sortedByName: true,
   });
+  useErrorWithHandler(lastError);
   return (
     <>
       <Text style={styles.text}>Select Pixel</Text>

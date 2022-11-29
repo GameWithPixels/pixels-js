@@ -28,15 +28,14 @@ import AppPage from "~/components/AppPage";
 import EmojiButton from "~/components/EmojiButton";
 import PixelSwipeableCard from "~/components/PixelSwipeableCard";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
-import PixelDispatcher, {
-  PixelDispatcherAction,
-} from "~/features/pixels/PixelDispatcher";
-import usePixelScannerWithFocus from "~/features/pixels/hooks/useFocusPixelScannerAsync";
+import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import { PixelDispatcherAction } from "~/features/pixels/PixelDispatcher";
+import useFocusPixelDispatcherScanner from "~/features/pixels/hooks/useFocusPixelDispatcherScanner";
 import { type RootStackParamList } from "~/navigation";
 import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
-function HeaderComponent({ title }: { title: string }) {
+function Header({ title }: { title: string }) {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "Home">>();
   return (
@@ -84,47 +83,147 @@ function HeaderComponent({ title }: { title: string }) {
   );
 }
 
+function PixelsList() {
+  // Scanning
+  const [pixelDispatchers, scannerDispatch, lastError] =
+    useFocusPixelDispatcherScanner();
+  useErrorWithHandler(lastError);
+
+  // Actions dispatched to all Pixels
+  const dispatchAllDisclose = useDisclose();
+  const dispatchAll = useCallback(
+    (action: PixelDispatcherAction) =>
+      pixelDispatchers.forEach((pd) => pd.dispatch(action)),
+    [pixelDispatchers]
+  );
+
+  // Values for UI
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  return (
+    <>
+      <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
+        <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>ℹ️</EmojiButton>
+        <Center flex={1}>
+          <Text variant="h2">{`${pixelDispatchers.length} Pixels`}</Text>
+        </Center>
+        <EmojiButton onPress={dispatchAllDisclose.onOpen}>⚙️</EmojiButton>
+      </Center>
+      {pixelDispatchers.length ? (
+        <FlatList
+          width="100%"
+          data={pixelDispatchers}
+          renderItem={(itemInfo) => (
+            <PixelSwipeableCard
+              pixelDispatcher={itemInfo.item}
+              moreInfo={showMoreInfo}
+              swipeableItemsWidth={sr("25%")}
+            />
+          )}
+          keyExtractor={(p) => p.pixelId.toString()}
+          ItemSeparatorComponent={() => <Box height={sr(8)} />}
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                scannerDispatch("clear");
+                setTimeout(() => {
+                  // Wait of 1 second before stopping the refresh animation
+                  setRefreshing(false);
+                }, 1000);
+              }}
+            />
+          }
+        />
+      ) : (
+        <Text italic>No Pixel found so far...</Text>
+      )}
+      <DispatchAllActionsheet
+        dispatch={dispatchAll}
+        isOpen={dispatchAllDisclose.isOpen}
+        onClose={dispatchAllDisclose.onClose}
+      />
+    </>
+  );
+}
+
+// Action sheet with list of operations to dispatch to all Pixels
+function DispatchAllActionsheet({
+  dispatch,
+  isOpen,
+  onClose,
+}: {
+  dispatch: (action: PixelDispatcherAction) => void;
+  isOpen: boolean;
+  onClose?: () => void;
+}) {
+  const apply = useCallback(
+    (action: PixelDispatcherAction) => {
+      dispatch(action);
+      onClose?.();
+    },
+    [dispatch, onClose]
+  );
+  return (
+    <Actionsheet isOpen={isOpen} onClose={onClose}>
+      <Actionsheet.Content>
+        <Text variant="h3">Run On All Pixels:</Text>
+        <Actionsheet.Item onPress={() => apply("connect")}>
+          Connect
+        </Actionsheet.Item>
+        <Actionsheet.Item onPress={() => apply("disconnect")}>
+          Disconnect
+        </Actionsheet.Item>
+        <Actionsheet.Item onPress={() => apply("blink")}>
+          Blink
+        </Actionsheet.Item>
+        <Actionsheet.Item onPress={() => apply("updateProfile")}>
+          Update Profile
+        </Actionsheet.Item>
+        <Actionsheet.Item onPress={() => apply("queueFirmwareUpdate")}>
+          Update Bootloader & Firmware
+        </Actionsheet.Item>
+      </Actionsheet.Content>
+    </Actionsheet>
+  );
+}
+
 function HomePage() {
+  // Setup page options
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "Home">>();
   useEffect(() => {
     navigation.setOptions({
       title: `Toolbox v${Constants.manifest?.version}`,
-      headerTitle: ({ children }) => <HeaderComponent title={children} />,
+      headerTitle: ({ children }) => <Header title={children} />,
       headerStyle: {
         height: sr(40) + Constants.statusBarHeight,
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const window = useWindowDimensions();
-  const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
-    sortedByName: true,
-    refreshInterval: 3000,
-  });
-  const [pixelsMap, setPixelsMap] = useState(
-    () => new Map<number, PixelDispatcher>()
-  );
-  const [showMoreInfo, setShowMoreInfo] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+
+  // DFU file
   const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
-  const applyAllDisclose = useDisclose();
+  const [selectedFwLabel, setSelectedFwLabel] = useState<string>();
   useEffect(() => {
-    setPixelsMap((pixelsMap) => {
-      const newMap = new Map<number, PixelDispatcher>();
-      scannedPixels.forEach((p) => {
-        const pd = pixelsMap.get(p.pixelId);
-        pd?.updateScannedPixel(p);
-        newMap.set(p.pixelId, pd ?? new PixelDispatcher(p));
-      });
-      return newMap;
-    });
-  }, [scannedPixels]);
-  const dispatchAll = useCallback(
-    (action: PixelDispatcherAction) =>
-      pixelsMap.forEach((pd) => pd.dispatch(action)),
-    [pixelsMap]
-  );
+    if (dfuFiles?.length) {
+      setSelectedFwLabel(
+        `${dfuFiles
+          .map((p) => getDfuFileInfo(p).type ?? "unknown")
+          .join(", ")}: ${toLocaleDateTimeString(
+          getDfuFileInfo(dfuFiles[0]).date ?? new Date(0)
+        )}`
+      );
+    } else {
+      setSelectedFwLabel(undefined);
+    }
+  }, [dfuFiles]);
+
+  // Values for UI
+  const window = useWindowDimensions();
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
@@ -141,60 +240,9 @@ function HomePage() {
           Validation
         </Button>
         <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
-          {dfuFiles?.length
-            ? `${dfuFiles
-                .map((p) => getDfuFileInfo(p).type ?? "unknown")
-                .join(", ")}: ${toLocaleDateTimeString(
-                getDfuFileInfo(dfuFiles[0]).date ?? new Date(0)
-              )}`
-            : "Select firmware"}
+          {selectedFwLabel ?? "Tap To Select firmware"}
         </Link>
-        <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
-          <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>
-            ℹ️
-          </EmojiButton>
-          <Center flex={1}>
-            <Text variant="h2">{`${pixelsMap.size} Pixels`}</Text>
-          </Center>
-          <EmojiButton onPress={applyAllDisclose.onOpen}>⚙️</EmojiButton>
-        </Center>
-        {pixelsMap.size ? (
-          <FlatList
-            width="100%"
-            data={[...pixelsMap.values()].sort((p) => p.pixelId)}
-            renderItem={(itemInfo) => (
-              <PixelSwipeableCard
-                pixelDispatcher={itemInfo.item}
-                moreInfo={showMoreInfo}
-                swipeableItemsWidth={sr("25%")}
-              />
-            )}
-            keyExtractor={(p) => p.pixelId.toString()}
-            ItemSeparatorComponent={() => <Box height={sr(8)} />}
-            contentContainerStyle={{ flexGrow: 1 }}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() => {
-                  setRefreshing(true);
-                  setPixelsMap((pixelsMap) => {
-                    const connected = [...pixelsMap.entries()].filter(
-                      (e) => e[1].status !== "disconnected"
-                    );
-                    return new Map(connected);
-                  });
-                  scannerDispatch("clear");
-                  setTimeout(() => {
-                    // Wait of 1 second before stopping the refresh animation
-                    setRefreshing(false);
-                  }, 1000);
-                }}
-              />
-            }
-          />
-        ) : (
-          <Text italic>No Pixel found so far...</Text>
-        )}
+        <PixelsList />
       </Box>
       {/* Footer showing app and system info */}
       <Center mt={sr(8)}>
@@ -204,55 +252,6 @@ function HomePage() {
             `OS: ${Platform.OS} ${Platform.Version}`}
         </Text>
       </Center>
-      {/* Action sheet with list of operations to run on all Pixels */}
-      <Actionsheet
-        isOpen={applyAllDisclose.isOpen}
-        onClose={applyAllDisclose.onClose}
-      >
-        <Actionsheet.Content>
-          <Text variant="h3">Run On All Pixels:</Text>
-          <Actionsheet.Item
-            onPress={() => {
-              dispatchAll("connect");
-              applyAllDisclose.onClose();
-            }}
-          >
-            Connect
-          </Actionsheet.Item>
-          <Actionsheet.Item
-            onPress={() => {
-              dispatchAll("disconnect");
-              applyAllDisclose.onClose();
-            }}
-          >
-            Disconnect
-          </Actionsheet.Item>
-          <Actionsheet.Item
-            onPress={() => {
-              dispatchAll("blink");
-              applyAllDisclose.onClose();
-            }}
-          >
-            Blink
-          </Actionsheet.Item>
-          <Actionsheet.Item
-            onPress={() => {
-              dispatchAll("updateProfile");
-              applyAllDisclose.onClose();
-            }}
-          >
-            Update Profile
-          </Actionsheet.Item>
-          {/* <Actionsheet.Item
-            onPress={() => {
-              dispatchAll("updateFirmware");
-              applyAllActionSheet.onClose();
-            }}
-          >
-            Update Bootloader & Firmware
-          </Actionsheet.Item> */}
-        </Actionsheet.Content>
-      </Actionsheet>
     </>
   );
 }

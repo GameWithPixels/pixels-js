@@ -6,7 +6,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import usePixelScanner from "./usePixelScannerAsync";
+import usePixelScanner from "./usePixelScanner";
 import usePixelStatus from "./usePixelStatus";
 
 import SequentialPromiseQueue from "~/utils/SequentialPromiseQueue";
@@ -35,13 +35,18 @@ export default function (): [
   Error?
 ] {
   const [lastError, setLastError] = useState<Error>();
-  const [scannedPixels, scannerDispatchAsync] = usePixelScanner();
+  const [scannedPixels, scannerDispatch, scanLastError] = usePixelScanner();
   const [pixelId, setPixelId] = useState<number>(0);
   const [scannedPixel, setScannedPixel] = useState<ScannedPixel>();
   const [pixel, setPixel] = useState<Pixel>();
   const [queue] = useState(() => new SequentialPromiseQueue());
   const pixelStatus = usePixelStatus(pixel);
   const stateRef = useRef<PixelConnectByIdState>({ status: "disconnected" });
+  useEffect(() => {
+    if (scanLastError) {
+      setLastError(scanLastError);
+    }
+  }, [scanLastError]);
 
   const dispatch = useCallback(
     (
@@ -70,15 +75,13 @@ export default function (): [
 
   // Scan start/stop
   useEffect(() => {
-    (async () => {
-      if (pixelId) {
-        await scannerDispatchAsync("clear");
-        await scannerDispatchAsync("start");
-      } else {
-        await scannerDispatchAsync("stop");
-      }
-    })().catch(setLastError);
-  }, [pixelId, scannerDispatchAsync]);
+    if (pixelId) {
+      scannerDispatch("clear");
+      scannerDispatch("start");
+    } else {
+      scannerDispatch("stop");
+    }
+  }, [pixelId, scannerDispatch]);
 
   // Assign Pixel
   useEffect(() => {

@@ -52,6 +52,8 @@ export default function ({
   const [dfuQueued, setDfuQueued] = useState(false);
   const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
   const [dfuProgress, setDfuProgress] = useState<number>(0);
+
+  // Reset DFU state when aborted
   useEffect(() => {
     if (dfuState === "dfuAborted") {
       setDfuState("dfuCompleted");
@@ -59,12 +61,10 @@ export default function ({
       setLastError(new Error("DFU Aborted"));
     }
   }, [dfuState]);
+
+  // Subscribe to events for which we store the resulting state
   useEffect(() => {
     if (!showDetails) {
-      const logAction = (action: string) => {
-        console.log(`Dispatching ${action} on Pixel ${pixelDispatcher.name}`);
-      };
-      pixelDispatcher.addEventListener("action", logAction);
       pixelDispatcher.addEventListener("error", setLastError);
       pixelDispatcher.addEventListener(
         "profileUpdateProgress",
@@ -94,7 +94,6 @@ export default function ({
       };
       pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
       return () => {
-        pixelDispatcher.removeEventListener("action", logAction);
         pixelDispatcher.removeEventListener("error", setLastError);
         pixelDispatcher.removeEventListener(
           "profileUpdateProgress",
@@ -117,47 +116,42 @@ export default function ({
     }
   }, [pixelDispatcher, showDetails]);
 
+  // Subscribe to state change events to force updating the UI
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, forceUpdate] = useReducer((b) => !b, false);
   useFocusEffect(
     useCallback(() => {
-      if (pixelDispatcher.isReady) {
+      // Re-render for every status, roll and battery event
+      pixelDispatcher.addEventListener("status", forceUpdate);
+      pixelDispatcher.addEventListener("rollState", forceUpdate);
+      // pixelDispatcher.addEventListener("rssi", forceUpdate);
+      // pixelDispatcher.addEventListener("batteryState", forceUpdate);
+      return () => {
+        pixelDispatcher.removeEventListener("status", forceUpdate);
+        pixelDispatcher.removeEventListener("rollState", forceUpdate);
+        // pixelDispatcher.removeEventListener("rssi", forceUpdate);
+        // pixelDispatcher.removeEventListener("batteryState", forceUpdate);
+      };
+    }, [pixelDispatcher])
+  );
+
+  // Request RSSI and battery state periodically
+  const isReady = pixelDispatcher.isReady;
+  useFocusEffect(
+    useCallback(() => {
+      if (isReady) {
         const intervalId = setInterval(() => {
-          pixelDispatcher.pixel.queryBatteryState();
-          pixelDispatcher.pixel.queryRssi();
+          pixelDispatcher.dispatch("queryRssi");
+          pixelDispatcher.dispatch("queryBattery");
         }, 5000);
         return () => {
           clearInterval(intervalId);
         };
       }
-    }, [pixelDispatcher.isReady, pixelDispatcher.pixel])
+    }, [pixelDispatcher, isReady])
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, triggerRender] = useReducer((b) => !b, false);
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     // Re-render for every status, roll and battery event
-  //     pixelDispatcher.addEventListener("status", triggerRender);
-  //     pixelDispatcher.addEventListener("rollState", triggerRender);
-  //     pixelDispatcher.addEventListener("batteryState", triggerRender);
-  //     pixelDispatcher.addEventListener("rssi", triggerRender);
-  //     return () => {
-  //       pixelDispatcher.removeEventListener("status", triggerRender);
-  //       pixelDispatcher.removeEventListener("rollState", triggerRender);
-  //       pixelDispatcher.removeEventListener("batteryState", triggerRender);
-  //       pixelDispatcher.removeEventListener("rssi", triggerRender);
-  //     };
-  //   }, [pixelDispatcher])
-  // );
-  useFocusEffect(
-    // Refresh UI
-    useCallback(() => {
-      const id = setInterval(triggerRender, 3000);
-      return () => {
-        clearInterval(id);
-      };
-    }, [])
-  );
-
+  // User notification
   const [notifyUserData, setNotifyUserData] = useState<{
     message: string;
     onOk?: () => void;
@@ -173,6 +167,18 @@ export default function ({
     }
   }, [notifyUserData, open]);
 
+  // When connected, refresh UI at least every 5 seconds
+  useFocusEffect(() => {
+    // Called on every render!
+    if (isReady) {
+      const id = setTimeout(forceUpdate, 5000);
+      return () => {
+        clearTimeout(id);
+      };
+    }
+  });
+
+  // Some values for the UI below
   const isDisco =
     !pixelDispatcher.status || pixelDispatcher.status === "disconnected";
   const lastSeen = Math.round(

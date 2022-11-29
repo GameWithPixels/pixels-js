@@ -32,6 +32,8 @@ import updateFirmware from "~/features/dfu/updateFirmware";
 export type PixelDispatcherAction =
   | "connect"
   | "disconnect"
+  | "queryRssi"
+  | "queryBattery"
   | "blink"
   | "playRainbow"
   | "calibrate"
@@ -54,6 +56,9 @@ export interface PixelDispatcherEventMap {
 
 const _pendingDFUs: PixelDispatcher[] = [];
 
+/**
+ * Helper class to dispatch commands to a Pixel and get notified on changes.
+ */
 export default class PixelDispatcher implements IPixel {
   private _scannedPixel: ScannedPixel;
   private _lastScan: Date;
@@ -67,11 +72,12 @@ export default class PixelDispatcher implements IPixel {
   }
 
   get pixelId(): number {
-    return this._getIPixel().pixelId;
+    return this._scannedPixel.pixelId;
   }
 
   get name(): string {
-    return this._getIPixel().name;
+    // TODO use Pixel instance name when connected, update code for other props too
+    return this._scannedPixel.name;
   }
 
   get ledCount(): number {
@@ -198,6 +204,12 @@ export default class PixelDispatcher implements IPixel {
       case "disconnect":
         watch(this._pixel.disconnect());
         break;
+      case "queryRssi":
+        watch(this._queryRssi());
+        break;
+      case "queryBattery":
+        watch(this._queryBattery());
+        break;
       case "blink":
         watch(this._blink());
         break;
@@ -224,6 +236,18 @@ export default class PixelDispatcher implements IPixel {
   private _getIPixel(): IPixel {
     // TODO once disconnected, should return _pixel until _scannedPixel is updated
     return this.status === "disconnected" ? this._scannedPixel : this._pixel;
+  }
+
+  private async _queryRssi(): Promise<void> {
+    if (this.isReady) {
+      await this._pixel.queryRssi();
+    }
+  }
+
+  private async _queryBattery(): Promise<void> {
+    if (this.isReady) {
+      await this._pixel.queryBatteryState();
+    }
   }
 
   private async _blink(): Promise<void> {
