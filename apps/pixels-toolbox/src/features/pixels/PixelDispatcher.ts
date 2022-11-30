@@ -312,22 +312,7 @@ export default class PixelDispatcher implements IPixel {
       _pendingDFUs.push(this);
       this._evEmitter.emit("firmwareUpdateQueued", true);
       if (_pendingDFUs.length === 1) {
-        // Process it immediately if it's the only pending request
-        const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
-        const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
-        const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
-        try {
-          await updateFirmware(
-            this._scannedPixel.address,
-            bootloader?.pathname,
-            firmware?.pathname,
-            (state) => this._evEmitter.emit("firmwareUpdateState", state),
-            (p) => this._evEmitter.emit("firmwareUpdateProgress", p)
-          );
-        } finally {
-          assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
-          this._cancelFirmwareUpdate(true);
-        }
+        await this._updateFirmware();
       }
     }
   }
@@ -337,8 +322,30 @@ export default class PixelDispatcher implements IPixel {
     if (i > 0 || force) {
       _pendingDFUs.splice(i);
       this._evEmitter.emit("firmwareUpdateQueued", false);
+      if (_pendingDFUs.length > 0) {
+        await _pendingDFUs[0]._updateFirmware();
+      }
     } else if (i === 0) {
       // TODO cancel ongoing DFU
+    }
+  }
+
+  private async _updateFirmware() {
+    // Process it immediately if it's the only pending request
+    const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
+    const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
+    const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
+    try {
+      await updateFirmware(
+        this._scannedPixel.address,
+        bootloader?.pathname,
+        firmware?.pathname,
+        (state) => this._evEmitter.emit("firmwareUpdateState", state),
+        (p) => this._evEmitter.emit("firmwareUpdateProgress", p)
+      );
+    } finally {
+      assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
+      this._cancelFirmwareUpdate(true);
     }
   }
 }

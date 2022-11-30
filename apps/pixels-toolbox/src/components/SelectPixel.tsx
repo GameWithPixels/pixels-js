@@ -49,7 +49,7 @@ export default function ({ setSelectedPixel }: SelectPixelProps) {
           />
         </View>
       ) : (
-        <Text style={styles.text}>No Pixel found so far...</Text>
+        <Text style={styles.text}>No Pixels found so far...</Text>
       )}
     </>
   );

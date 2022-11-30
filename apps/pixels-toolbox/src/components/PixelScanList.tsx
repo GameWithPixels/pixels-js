@@ -45,7 +45,7 @@ export default function ({
           />
         </>
       ) : (
-        <Text>No Pixel found so far...</Text>
+        <Text>No Pixels found so far...</Text>
       )}
     </VStack>
   );

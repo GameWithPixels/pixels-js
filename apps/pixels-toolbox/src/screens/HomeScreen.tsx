@@ -137,7 +137,7 @@ function PixelsList() {
           }
         />
       ) : (
-        <Text italic>No Pixel found so far...</Text>
+        <Text italic>No Pixels found so far...</Text>
       )}
       <DispatchAllActionsheet
         dispatch={dispatchAll}
