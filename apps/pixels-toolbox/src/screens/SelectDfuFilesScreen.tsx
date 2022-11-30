@@ -68,7 +68,7 @@ function SelectDfuFilePage() {
       ) : dfuFilesByDate.length ? (
         <>
           <Text italic my={sr(5)}>
-            Tap To Select Bootloader/Firmware
+            Tap On Bootloader/Firmware To Select:
           </Text>
           <FlatList
             width="100%"

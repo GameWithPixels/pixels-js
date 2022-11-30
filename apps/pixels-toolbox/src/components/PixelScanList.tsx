@@ -1,5 +1,5 @@
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
-import { Button, Center, FlatList, Spacer, Text } from "native-base";
+import { Button, Box, FlatList, Pressable, Text, VStack } from "native-base";
 
 import PixelInfoBox from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
@@ -20,35 +20,33 @@ export default function ({
   });
   useErrorWithHandler(lastError);
   return (
-    <Center>
-      <Center>
-        <Text bold>{`Scanned Pixels (${scannedPixels.length}):`}</Text>
-        <Button onPress={onClose}>Close</Button>
-        <Button onPress={() => scannerDispatch("clear")}>
-          Clear Scan List
-        </Button>
-      </Center>
-      <Center>
-        {scannedPixels.length ? (
+    <VStack flex={1} alignItems="center">
+      <Text bold>{`Scanned Pixels (${scannedPixels.length}):`}</Text>
+      <Button onPress={onClose}>Close</Button>
+      <Button onPress={() => scannerDispatch("clear")}>Clear Scan List</Button>
+      {scannedPixels.length ? (
+        <>
+          <Text italic>Tap On Device To Select:</Text>
           <FlatList
-            ItemSeparatorComponent={Spacer}
+            width="100%"
             data={scannedPixels}
             renderItem={(itemInfo) => (
-              <Center>
-                <PixelInfoBox pixel={itemInfo.item}>
-                  <Button onPress={() => onSelected(itemInfo.item)}>
-                    Select
-                  </Button>
-                </PixelInfoBox>
-              </Center>
+              <Pressable
+                onPress={() => onSelected(itemInfo.item)}
+                borderColor="gray.500"
+                borderWidth={2}
+              >
+                <PixelInfoBox pixel={itemInfo.item} />
+              </Pressable>
             )}
             keyExtractor={(p) => p.pixelId.toString()}
+            ItemSeparatorComponent={() => <Box height="3%" />}
             contentContainerStyle={{ flexGrow: 1 }}
           />
-        ) : (
-          <Text>No Pixel found so far...</Text>
-        )}
-      </Center>
-    </Center>
+        </>
+      ) : (
+        <Text>No Pixel found so far...</Text>
+      )}
+    </VStack>
   );
 }

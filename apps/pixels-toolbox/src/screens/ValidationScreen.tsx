@@ -9,6 +9,7 @@ import {
   ScrollView,
   Text,
   VStack,
+  Box,
 } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
@@ -196,54 +197,54 @@ function DecodePixelIdPage({
   const formFactor = getFormFactorNiceName(settings.formFactor);
   const bg = useBackgroundColor();
   return showScanList ? (
-    <PixelScanList
-      onSelected={(p) => onDecodedPixelId(p.pixelId)}
-      onClose={() => setShowScanList(false)}
-    />
+    <Box w="100%" h="100%" bg={bg}>
+      <PixelScanList
+        onSelected={(p) => onDecodedPixelId(p.pixelId)}
+        onClose={() => setShowScanList(false)}
+      />
+    </Box>
   ) : (
-    <>
-      <Center w="100%" h="100%" bg={bg}>
-        {device && cameraStatus === "ready" ? (
-          <Camera
-            ref={cameraRef}
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-            device={device}
-            isActive
-            photo
-            hdr={false}
-            lowLightBoost={false}
-            frameProcessor={frameProcessor}
-            videoStabilizationMode="off"
-          />
-        ) : (
-          <Text>{t("startingCamera")}</Text>
-        )}
-        {!readingColors && (
-          <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
-            <HStack>
-              <VStack>
-                <Text variant="comment">Reset {boardOrDie} using magnet</Text>
-                <Text variant="comment">and point camera at it</Text>
-              </VStack>
-              <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
-                Scan
-              </Button>
-            </HStack>
-          </Center>
-        )}
-        <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
-          <Text>
-            Testing {t(settings.dieType)} {formFactor}
-          </Text>
-          <Button w="100%" onPress={onBack}>
-            {t("back")}
-          </Button>
+    <Center w="100%" h="100%" bg={bg}>
+      {device && cameraStatus === "ready" ? (
+        <Camera
+          ref={cameraRef}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          device={device}
+          isActive
+          photo
+          hdr={false}
+          lowLightBoost={false}
+          frameProcessor={frameProcessor}
+          videoStabilizationMode="off"
+        />
+      ) : (
+        <Text>{t("startingCamera")}</Text>
+      )}
+      {!readingColors && (
+        <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
+          <HStack>
+            <VStack>
+              <Text variant="comment">Reset {boardOrDie} using magnet</Text>
+              <Text variant="comment">and point camera at it</Text>
+            </VStack>
+            <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
+              Scan
+            </Button>
+          </HStack>
         </Center>
+      )}
+      <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
+        <Text>
+          Testing {t(settings.dieType)} {formFactor}
+        </Text>
+        <Button w="100%" onPress={onBack}>
+          {t("back")}
+        </Button>
       </Center>
-    </>
+    </Center>
   );
 }
 

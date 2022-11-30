@@ -240,7 +240,7 @@ const ValidationTests = {
         // Blink face
         const blinkAS = blinkAbortController.signal;
         const options = {
-          faceMask: 1 << (face - 1),
+          faceMask: 1, // TODO use face mapping
         };
         blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
         // Wait on face

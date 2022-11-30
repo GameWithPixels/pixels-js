@@ -5,7 +5,14 @@ import {
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { Button, HStack, Text } from "native-base";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import ProgressBar from "./ProgressBar";
 import TaskGroupComponent from "./TaskGroupContainer";
@@ -15,6 +22,7 @@ import defaultProfile from "~/defaultProfile";
 import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
+import useTimeout from "~/features/hooks/useTimeout";
 import { DieType, getLedCount } from "~/features/pixels/DieType";
 import usePixelScanner from "~/features/pixels/hooks/usePixelScanner";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
@@ -27,6 +35,55 @@ import {
 } from "~/features/validation/ValidationFormFactor";
 import ValidationTests from "~/features/validation/ValidationTests";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+
+async function _makeUserCancellable(
+  abortSignal: AbortSignal,
+  setUserAbort: Dispatch<SetStateAction<(() => void) | undefined>>,
+  task: (abortSignal: AbortSignal) => Promise<void>
+): Promise<void> {
+  let userAborted = false;
+  const abortController = new AbortController();
+  setUserAbort(() => () => {
+    userAborted = true;
+    abortController.abort();
+  });
+  const abort = () => abortController.abort();
+  abortSignal.addEventListener("abort", abort);
+  try {
+    await task(abortController.signal);
+  } catch (error: any) {
+    if (userAborted) {
+      throw new Error("Task waitCharging aborted by user");
+    } else {
+      throw error;
+    }
+  } finally {
+    abortSignal.removeEventListener("abort", abort);
+  }
+}
+
+interface MessageYesNoProps {
+  message: string;
+  onYes?: () => void;
+  onNo?: () => void;
+  hideYesNo?: boolean;
+}
+
+function MessageYesNo({ message, onYes, onNo, hideYesNo }: MessageYesNoProps) {
+  return (
+    <>
+      <Text variant="comment">{message}</Text>
+      {!hideYesNo && (
+        <HStack>
+          <Button mr="5%" onPress={onYes}>
+            ☑️
+          </Button>
+          <Button onPress={onNo}>❌</Button>
+        </HStack>
+      )}
+    </>
+  );
+}
 
 export interface ValidationTestsSettings {
   formFactor: ValidationFormFactor;
@@ -189,80 +246,38 @@ export function WaitCharging({
   settings,
   notCharging,
 }: ValidationTestProps & { notCharging?: boolean }) {
-  // Timeout before asking user option to abort
-  const [isTimedOut, setIsTimedOut] = useState(false);
-  useEffect(() => {
-    if (!isTimedOut) {
-      const timeoutId = setTimeout(() => setIsTimedOut(true), 5000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isTimedOut]);
-
+  // Timeout before showing option to abort
+  const [hasElapsed, resetTimeout] = useTimeout(5000);
   const [userAbort, setUserAbort] = useState<() => void>();
+
   const taskChain = useTaskChain(
     action,
     useCallback(
-      async (abortSignal) => {
-        let userAborted = false;
-        const abortController = new AbortController();
-        setUserAbort(() => () => {
-          userAborted = true;
-          abortController.abort();
-        });
-        const abort = () => abortController.abort();
-        abortSignal.addEventListener("abort", abort);
-        try {
-          await ValidationTests.waitCharging(
-            pixel,
-            !notCharging,
-            abortController.signal
-          );
-        } catch (error: any) {
-          if (userAborted) {
-            throw new Error("Task waitCharging aborted by user");
-          } else {
-            throw error;
-          }
-        } finally {
-          abortSignal.removeEventListener("abort", abort);
-        }
-      },
+      async (abortSignal) =>
+        _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
+          ValidationTests.waitCharging(pixel, !notCharging, abortSignal)
+        ),
       [notCharging, pixel]
     ),
     createTaskStatusContainer({
-      children: (
-        <>
-          {!isTimedOut ? (
-            <Text variant="comment">
-              {isBoard(settings.formFactor)
-                ? notCharging
-                  ? "Remove coil from charger"
-                  : "Place coil on charger"
-                : notCharging
-                ? "Remove die from charger"
-                : "Place die on charger"}
-            </Text>
-          ) : (
-            <>
-              <Text variant="comment">{`Is ${
-                isBoard(settings.formFactor) ? "coil" : "die"
-              } properly ${
-                notCharging ? "removed from" : "placed on"
-              } charger?`}</Text>
-              <HStack>
-                <Button onPress={() => userAbort?.()}>Yes</Button>
-                <Button
-                  ml="3%"
-                  onPress={() => {
-                    setIsTimedOut(false);
-                  }}
-                >
-                  No
-                </Button>
-              </HStack>
-            </>
-          )}
-        </>
+      children: !hasElapsed ? (
+        <Text variant="comment">
+          {isBoard(settings.formFactor)
+            ? notCharging
+              ? "Remove coil from charger"
+              : "Place coil on charger"
+            : notCharging
+            ? "Remove die from charger"
+            : "Place die on charger"}
+        </Text>
+      ) : (
+        <MessageYesNo
+          message={`Is ${isBoard(settings.formFactor) ? "coil" : "die"} ${
+            notCharging ? "removed from" : "placed on"
+          } charger?`}
+          onYes={() => userAbort?.()}
+          onNo={() => resetTimeout()}
+        />
       ),
     })
   ).withStatusChanged(onTaskStatus);
@@ -320,19 +335,12 @@ export function CheckLEDs({
     ),
     createTaskStatusContainer({
       children: (
-        <>
-          <Text variant="comment">
-            Are all {getLedCount(settings.dieType)} LEDs fully white?
-          </Text>
-          {resolvePromise && (
-            <HStack>
-              <Button mr="5%" onPress={() => resolvePromise()}>
-                ☑️
-              </Button>
-              <Button onPress={() => userAbort?.()}>❌</Button>
-            </HStack>
-          )}
-        </>
+        <MessageYesNo
+          message={`Are all ${getLedCount(settings.dieType)} LEDs fully white?`}
+          hideYesNo={!resolvePromise}
+          onYes={() => resolvePromise?.()}
+          onNo={() => userAbort?.()}
+        />
       ),
     })
   ).withStatusChanged(onTaskStatus);
@@ -350,16 +358,28 @@ export function ShakeDie({
   pixel,
   settings,
 }: ValidationTestProps) {
+  // Timeout before showing option to abort
+  const [hasElapsed, resetTimeout] = useTimeout(5000);
+  const [userAbort, setUserAbort] = useState<() => void>();
+
   const taskChain = useTaskChain(
     action,
     useCallback(
       (abortSignal) =>
-        ValidationTests.checkAccelerationShake(pixel, abortSignal),
+        _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
+          ValidationTests.checkAccelerationShake(pixel, abortSignal)
+        ),
       [pixel]
     ),
     createTaskStatusContainer({
-      children: (
-        <Text variant="comment">Test accelerometer by shaking die</Text>
+      children: !hasElapsed ? (
+        <Text variant="comment">Test accelerometer by shaking the die</Text>
+      ) : (
+        <MessageYesNo
+          message="Have you shook the die?"
+          onYes={() => userAbort?.()}
+          onNo={() => resetTimeout()}
+        />
       ),
     })
   ).withStatusChanged(onTaskStatus);
@@ -414,19 +434,33 @@ export function WaitFaceUp({
   pixel,
   settings,
 }: ValidationTestProps) {
+  // Timeout before showing option to abort
+  const [hasElapsed, resetTimeout] = useTimeout(5000);
+  const [userAbort, setUserAbort] = useState<() => void>();
+
   const taskChain = useTaskChain(
     action,
     useCallback(
       (abortSignal) =>
-        ValidationTests.waitFaceUp(
-          pixel,
-          getLedCount(settings.dieType),
-          abortSignal
+        _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
+          ValidationTests.waitFaceUp(
+            pixel,
+            getLedCount(settings.dieType),
+            abortSignal
+          )
         ),
       [pixel, settings.dieType]
     ),
     createTaskStatusContainer({
-      children: <Text variant="comment">Place die with blinking face up</Text>,
+      children: !hasElapsed ? (
+        <Text variant="comment">Place die with blinking face up</Text>
+      ) : (
+        <MessageYesNo
+          message="Is blinking face up?"
+          onYes={() => userAbort?.()}
+          onNo={() => resetTimeout()}
+        />
+      ),
     })
   ).withStatusChanged(onTaskStatus);
 
@@ -565,9 +599,7 @@ export function PrepareDie({
     ),
     createTaskStatusContainer({
       title: "Update Profile",
-      children: (
-        <>{progress >= 0 && <ProgressBar percent={100 * progress} />}</>
-      ),
+      children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
     })
   )
     .chainWith(
