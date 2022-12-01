@@ -437,7 +437,7 @@ export function UpdateFirmware({
           " and bootloader version is",
           toLocaleDateTimeString(blDate)
         );
-        const onDeviceFwDate = new Date(scannedPixel.buildTimestamp * 1000);
+        const onDeviceFwDate = scannedPixel.firmwareDate;
         console.log(
           "On device firmware build timestamp is",
           toLocaleDateTimeString(onDeviceFwDate)

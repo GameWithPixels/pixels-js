@@ -41,16 +41,16 @@ import {
   NotifyUserAck,
   serializeMessage,
   SetName,
-  PixelDesignAndColor,
   PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelRollStateNames,
+  PixelDesignAndColorNames,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import getPixelEnumName from "./getPixelEnumName";
 
 // Returns a string with the current time with a millisecond precision
-function getTime(): string {
+function _getTime(): string {
   const to2 = (n: number) => n.toString().padStart(2, "0");
   const to3 = (n: number) => n.toString().padStart(3, "0");
   const d = new Date();
@@ -80,16 +80,26 @@ export type PixelStatus =
  * Data for the "rollState" event.
  * @category Pixel
  */
-export interface RollStateEventData {
+export interface PixelRollData {
   face: number;
   state: PixelRollStateNames;
+}
+
+/**
+ * Data for the "rollState" event.
+ * @category Pixel
+ */
+export interface PixelBatteryData {
+  level: number; // Percentage
+  isCharging: boolean;
+  voltage: number;
 }
 
 /**
  * Data for the "userMessage" event.
  * @category Pixel
  */
-export interface UserMessageEventData {
+export interface PixelUserMessage {
   message: string;
   withCancel: boolean;
   response: (okCancel: boolean) => Promise<void>;
@@ -105,11 +115,15 @@ export interface PixelEventMap {
   /** Message notification. */
   message: MessageOrType;
   /** Roll state changed notification. */
-  rollState: RollStateEventData;
-  /** Roll value notification. */
+  rollState: PixelRollData;
+  /** Roll result notification. */
   roll: number;
+  /** Battery state changed notification. */
+  battery: PixelBatteryData;
+  /** RSSI change notification. */
+  rssi: number;
   /** User message notification. */
-  userMessage: UserMessageEventData;
+  userMessage: PixelUserMessage;
 }
 
 /**
@@ -138,8 +152,13 @@ export interface IPixel {
   readonly pixelId: number;
   readonly name: string;
   readonly ledCount: number;
-  readonly designAndColor: PixelDesignAndColor;
-  readonly buildTimestamp: number;
+  readonly designAndColor: PixelDesignAndColorNames;
+  readonly firmwareDate: Date;
+  readonly rssi: number;
+  readonly batteryLevel: number; // Percentage
+  readonly isCharging: boolean;
+  readonly rollState: PixelRollStateNames;
+  readonly currentFace: number; // Face value (not index)
 }
 
 /**
@@ -162,10 +181,13 @@ export default class Pixel implements IPixel {
 
   // Pixel data
   private _info?: IAmADie = undefined;
-  private _rollState: {
-    face: number;
-    state: PixelRollStateNames;
+  private _rollState: PixelRollData = { face: 0, state: "unknown" };
+  private _batteryState: PixelBatteryData = {
+    level: 0,
+    isCharging: false,
+    voltage: 0,
   };
+  private _rssi = 0;
 
   /** Gets this Pixel's last known connection status.*/
   get status(): PixelStatus {
@@ -198,21 +220,41 @@ export default class Pixel implements IPixel {
   }
 
   /** Gets the Pixel design and color. */
-  get designAndColor(): PixelDesignAndColor {
-    return this._info?.designAndColor ?? PixelDesignAndColorValues.unknown;
+  get designAndColor(): PixelDesignAndColorNames {
+    return (
+      getPixelEnumName(this._info?.designAndColor, PixelDesignAndColorValues) ??
+      "unknown"
+    );
   }
 
-  /** Gets the Pixel firmware build timestamp (Unix epoch). */
-  get buildTimestamp(): number {
-    return this._info?.buildTimestamp ?? 0;
+  /** Gets the Pixel firmware build date. */
+  get firmwareDate(): Date {
+    return new Date(1000 * (this._info?.buildTimestamp ?? 0));
+  }
+
+  /** Gets the last measured RSSI value. */
+  get rssi(): number {
+    return this._rssi;
+  }
+
+  /** Gets the last know read battery level (percentage). */
+  get batteryLevel(): number {
+    return this._batteryState.level;
+  }
+
+  /** Gets the last know battery charging state. */
+  get isCharging(): boolean {
+    return this._batteryState.isCharging;
   }
 
   /** Gets the Pixel last know roll state. */
-  get rollState(): {
-    face: number;
-    state: PixelRollStateNames;
-  } {
-    return { ...this._rollState };
+  get rollState(): PixelRollStateNames {
+    return this._rollState.state;
+  }
+
+  /** Gets the Pixel last know face up. */
+  get currentFace(): number {
+    return this._rollState.face;
   }
 
   /**
@@ -232,17 +274,47 @@ export default class Pixel implements IPixel {
     });
     this._session = session;
     this._status = "disconnected"; //TODO use the getLastConnectionStatus()
-    this._rollState = { face: 0, state: "unknown" };
     // Subscribe to roll messages and emit roll event
     this.addMessageListener("rollState", (msgOrType) => {
       const msg = msgOrType as RollState;
-      this._rollState = {
+      const roll = {
         face: msg.faceIndex + 1,
         state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
       };
-      this._evEmitter.emit("rollState", this.rollState);
-      if (msg.state === PixelRollStateValues.onFace) {
-        this._evEmitter.emit("roll", msg.faceIndex + 1);
+      if (
+        roll.face !== this._rollState.face ||
+        roll.state !== this._rollState.state
+      ) {
+        this._rollState = roll;
+        this._evEmitter.emit("rollState", { ...roll });
+      }
+      if (roll.state === "onFace") {
+        this._evEmitter.emit("roll", roll.face);
+      }
+    });
+    // Subscribe to battery messages and emit battery event
+    this.addMessageListener("batteryLevel", (msgOrType) => {
+      const msg = msgOrType as BatteryLevel;
+      const battery = {
+        level: Math.round(msg.level * 100),
+        isCharging: msg.charging,
+        voltage: msg.voltage,
+      };
+      if (
+        battery.level !== this._batteryState.level ||
+        battery.isCharging !== this._batteryState.isCharging ||
+        battery.voltage !== this._batteryState.voltage
+      ) {
+        this._batteryState = battery;
+        this._evEmitter.emit("battery", { ...battery });
+      }
+    });
+    // Subscribe to rssi messages and emit event
+    this.addMessageListener("rssi", (msgOrType) => {
+      const msg = msgOrType as Rssi;
+      if (msg.value !== this._rssi) {
+        this._rssi = msg.value;
+        this._evEmitter.emit("rssi", this._rssi);
       }
     });
     // Subscribe to user message notification
@@ -300,11 +372,14 @@ export default class Pixel implements IPixel {
         if (this.status === "identifying") {
           this._info = response as IAmADie;
 
-          // Query roll state
+          // Update roll state
           await this.sendAndWaitForResponse(
             MessageTypeValues.requestRollState,
             MessageTypeValues.rollState
           );
+
+          // Update battery level
+          await this.queryBatteryState();
 
           // We're ready!
           this._updateStatus("ready");
@@ -415,7 +490,7 @@ export default class Pixel implements IPixel {
     this._log(
       `Sending message ${msgName} (${getMessageType(
         msgOrType
-      )}) at ${getTime()}`
+      )}) at ${_getTime()}`
     );
     const data = serializeMessage(msgOrType);
     await this._session.writeValue(data, withoutResponse);
@@ -482,16 +557,12 @@ export default class Pixel implements IPixel {
    * @returns A promise revolving to an object with the batter level in
    *          percentage and flag indicating whether it is charging or not.
    */
-  async queryBatteryState(): Promise<{ level: number; isCharging: boolean }> {
-    const response = await this.sendAndWaitForResponse(
+  async queryBatteryState(): Promise<PixelBatteryData> {
+    await this.sendAndWaitForResponse(
       MessageTypeValues.requestBatteryLevel,
       MessageTypeValues.batteryLevel
     );
-    const msg = response as BatteryLevel;
-    return {
-      level: 100 * msg.level,
-      isCharging: msg.charging,
-    };
+    return { ...this._batteryState };
   }
 
   /**
@@ -503,7 +574,8 @@ export default class Pixel implements IPixel {
       MessageTypeValues.requestRssi,
       MessageTypeValues.rssi
     );
-    return (response as Rssi).value;
+    this._rssi = (response as Rssi).value;
+    return this._rssi;
   }
 
   /**
@@ -558,7 +630,7 @@ export default class Pixel implements IPixel {
    * Uploads the given data set of animations to the Pixel flash memory.
    * @param dataSet The data set to upload.
    * @param progressCallback An optional callback that is called as the operation progresses
-   *                         with the progress value being between 0 an 1.
+   *                         with the progress in percent..
    */
   async transferDataSet(
     dataSet: DataSet,
@@ -625,7 +697,7 @@ export default class Pixel implements IPixel {
    * Plays the (single) LEDs animation included in the given data set.
    * @param dataSet The data set containing just one animation to play.
    * @param progressCallback An optional callback that is called as the operation progresses
-   *                         with the progress value being between 0 an 1.
+   *                         with the progress in percent..
    */
   async playTestAnimation(
     dataSet: DataSet,
@@ -684,7 +756,7 @@ export default class Pixel implements IPixel {
    * Those animations are lost when the Pixel goes to sleep, is turned off or is restarted.
    * @param dataSet The data set to upload.
    * @param progressCallback An optional callback that is called as the operation progresses
-   *                         with the progress value being between 0 an 1.
+   *                         with the progress in percent..
    */
   async transferInstantAnimations(
     dataSet: DataSet,
@@ -779,7 +851,7 @@ export default class Pixel implements IPixel {
         this._log(
           `Received message ${msgName} (${getMessageType(
             msgOrType
-          )}) at ${getTime()}`
+          )}) at ${_getTime()}`
         );
         if (typeof msgOrType !== "number") {
           // Log message contents
@@ -790,7 +862,7 @@ export default class Pixel implements IPixel {
         // Dispatch specific message event
         this._msgEvEmitter.emit(`message${msgName}`, msgOrType);
       } else {
-        this._log(`Received invalid message at ${getTime()}`);
+        this._log(`Received invalid message at ${_getTime()}`);
       }
     } catch (error) {
       this._log("CharacteristicValueChanged error: " + error);
@@ -892,6 +964,7 @@ export default class Pixel implements IPixel {
     this._log("Ready for receiving data");
 
     // Then transfer data
+    let lastProgress = 0;
     let offset = 0;
     while (remainingSize > 0) {
       const dataMsg = new BulkData();
@@ -904,7 +977,13 @@ export default class Pixel implements IPixel {
 
       remainingSize -= dataMsg.size;
       offset += dataMsg.size;
-      progressCallback?.(offset / data.byteLength);
+      if (progressCallback) {
+        const progress = (100 * offset) / data.byteLength;
+        if (progress > lastProgress) {
+          progressCallback(progress);
+          lastProgress = progress;
+        }
+      }
     }
 
     this._log("Finished sending bulk data");

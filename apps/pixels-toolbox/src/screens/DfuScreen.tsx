@@ -9,8 +9,6 @@ import {
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   toFullUuid,
-  PixelDesignAndColorValues,
-  PixelRollStateValues,
   PixelUuids,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
@@ -155,13 +153,14 @@ function DfuPage({ route }: DfuScreenProps) {
                 pixelId: 0,
                 address: p.address,
                 name: p.name,
-                rssi: 0,
                 ledCount: 0,
-                designAndColor: PixelDesignAndColorValues.unknown,
-                rollState: PixelRollStateValues.unknown,
-                currentFace: 0,
+                designAndColor: "unknown",
+                firmwareDate: new Date(),
+                rssi: 0,
                 batteryLevel: 0,
-                buildTimestamp: 0,
+                isCharging: false,
+                rollState: "unknown",
+                currentFace: 0,
               };
             })
           : scannedPixels
@@ -182,7 +181,7 @@ function DfuPage({ route }: DfuScreenProps) {
           (!filterUpToDate ||
             fileInfo.type === "bootloader" ||
             fileInfo?.date?.getTime() !==
-              Math.floor(pixel.buildTimestamp / 60) * 60000)
+              Math.floor(pixel.firmwareDate.getTime() / 60000) * 60000)
       )
     );
   }, [
@@ -202,8 +201,7 @@ function DfuPage({ route }: DfuScreenProps) {
   // Render scanned Pixel info and DFU status
   const renderScannedPixel = (itemInfo: ListRenderItemInfo<ScannedPixel>) => {
     const pixel = itemInfo.item;
-    const date = new Date(pixel.buildTimestamp * 1000);
-    const dateTimeStr = toLocaleDateTimeString(date);
+    const dateTimeStr = toLocaleDateTimeString(pixel.firmwareDate);
     const isUpdating = updateQueue[0]?.address === pixel.address;
     const isQueued = !updateQueue.every((p) => p.address !== pixel.address);
     const isUpdatable = !updatableList.every(
