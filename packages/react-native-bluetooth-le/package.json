@@ -23,7 +23,7 @@
   "scripts": {
     "test": "jest",
     "prepare": "bob build",
-    "release": "release-it --only-version"
+    "release": "release-it"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -73,6 +73,7 @@
   },
   "release-it": {
     "git": {
+      "tag": false,
       "commitMessage": "chore: release ${version}",
       "tagName": "v${version}"
     },
@@ -82,7 +83,7 @@
     "github": {
       "release": true
     },
-    "plugins": {
+    "plugins-disabled": {
       "@release-it/conventional-changelog": {
         "preset": "angular"
       }
