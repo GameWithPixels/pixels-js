@@ -13,17 +13,24 @@ import {
 } from "native-base";
 import React from "react";
 
+/**
+ * Props for {@link FaceMask} component.
+ */
 interface FaceMaskProps extends IModalProps {
-  diceFaces: number;
-  onCloseAction?: any;
+  dieFaces: number; // Number of faces on the die
+  onCloseAction?: (() => void) | null | undefined; // Function to be executed when the facemask window is closed
 }
 
+/**
+ * Facemask component used to display die faces and select which faces will be used with lighting animations.
+ * @param props See {@link FaceMaskProps} for props parameters.
+ */
 export function FaceMask(props: FaceMaskProps) {
   const [showModal, setShowModal] = React.useState(false);
   const [groupValue, setGroupValue] = React.useState<any[]>([]);
 
   const buttonsArray = [];
-  for (let i = 0; i < props.diceFaces; ++i) {
+  for (let i = 0; i < props.dieFaces; ++i) {
     buttonsArray.push(i);
   }
 
@@ -106,7 +113,7 @@ export function FaceMask(props: FaceMaskProps) {
                   onPress={() => {
                     setShowModal(false);
                     const faces = [];
-                    for (let i = 1; i <= props.diceFaces; ++i) {
+                    for (let i = 1; i <= props.dieFaces; ++i) {
                       faces.push(i.toString());
                     }
                     setGroupValue(faces);

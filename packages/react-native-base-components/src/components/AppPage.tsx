@@ -12,19 +12,26 @@ import React, { PropsWithChildren, useState } from "react";
 import { RefreshControl } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+/**
+ * Props for AppPage component.
+ */
 export interface AppPageProps extends PropsWithChildren {
-  theme?: ITheme;
+  theme?: ITheme; // Theme used in the page and given to NativeBaseProvider. Will be applied to all the children contained inside the app page
   h?: number;
   w?: number;
   p?: number | string;
   lightBg?: ColorType;
-  onRefresh?: (() => void) | null | undefined;
+  onRefresh?: (() => void) | null | undefined; // Function executed when refreshing the page
 }
 
 const wait = (timeout: number) => {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 };
 
+/**
+ * App page container with a scroll view to create separate pages with custom theme.
+ * @param props See {@link AppPageProps} for props parameters.
+ */
 function AppPage(props: AppPageProps) {
   const [refreshing, setRefreshing] = useState(false);
 

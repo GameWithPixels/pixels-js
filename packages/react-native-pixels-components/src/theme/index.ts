@@ -1,5 +1,5 @@
 import { theme as BaseTheme } from "@systemic-games/react-native-base-components";
-import { extendTheme, Theme } from "native-base";
+import { extendTheme } from "native-base";
 
 import { sr } from "../utils";
 import pixelComponents from "./components";
@@ -82,16 +82,23 @@ const components = {
   },
 };
 
-// This type is there just to get rid of the typescript error with extendTheme
-type PixelThemeType =
-  | Theme
+// This type is defined to get rid of the typescript error with extendTheme
+type PixelThemeExtraTypes =
   | { colors: { pixelColors: typeof pixelColors } }
   | { components: typeof components };
 
-export const PixelTheme = extendTheme<PixelThemeType>(BaseTheme, {
-  colors: {
-    pixelColors,
-  },
-  fontSizes,
-  components,
-});
+// This type is defined to enforce the emitted type for PixelTheme
+type PixelThemeType = typeof BaseTheme & {
+  colors: { pixelColors: typeof pixelColors };
+} & { components: typeof components };
+
+export const PixelTheme = extendTheme<typeof BaseTheme | PixelThemeExtraTypes>(
+  BaseTheme,
+  {
+    colors: {
+      pixelColors,
+    },
+    fontSizes,
+    components,
+  }
+) as PixelThemeType;

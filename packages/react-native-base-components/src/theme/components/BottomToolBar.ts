@@ -1,4 +1,4 @@
-import { BottomMenuBarProps } from "../../components/BottomToolbar";
+import { BottomToolBarProps } from "../../components/BottomToolbar";
 
 export default {
   defaultProps: {
@@ -13,4 +13,4 @@ export default {
     itemsRounded: "lg",
     textSize: "12",
   },
-} as BottomMenuBarProps;
+} as BottomToolBarProps;

@@ -12,21 +12,32 @@ import {
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React, { ReactNode } from "react";
 
-// Data of every item that will appear in the actionsheet drawer
+/**
+ * Data of every item that will appear in the Actionsheet drawer.
+ * @param label text/title/label of the Actionsheet.item
+ * @param item item object as any type of ReactNode to replace default Actionsheet.item
+ * @param onPress function executed the Actionsheet.item or custom item is pressed
+ */
 export interface ActionSheetItemData {
-  label?: string;
-  onPress?: (() => void) | null | undefined;
-  item?: ReactNode;
+  label?: string; // text/title/label of the item
+  onPress?: (() => void) | null | undefined; // function executed the item is pressed
+  item?: ReactNode; // the item object as any type of ReactNode to replace default Actionsheet.item
 }
 
+/**
+ * Props for {@link ActionSheet} component.
+ */
 export interface ActionSheetComponentProps extends IActionsheetProps {
-  // Array of items data to display inside classic ActionSheet.item objects
-  itemsData?: ActionSheetItemData[];
+  itemsData?: ActionSheetItemData[]; // Array of items data to display inside classic ActionSheet.item objects
   sheetBgColor?: ColorType;
   title?: string;
-  trigger?: ReactNode;
+  trigger?: ReactNode; // object as any type of ReactNode that will be used as the actionsheet trigger for opening it
 }
 
+/**
+ * ActionSheet drawer component. Can be triggered by any given component and display default Actionsheet.items or custom children.
+ * @param props See {@link ActionSheetComponentProps} for props parameters.
+ */
 export function ActionSheet(props: ActionSheetComponentProps) {
   const resolvedProps = usePropsResolution(
     "ActionSheet",

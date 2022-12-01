@@ -46,7 +46,7 @@ export default function ThirdScreen() {
             <RSSIStrength percentage={92} />
           </HStack>
         </Card>
-        <FaceMask bg="pixelColors.green" diceFaces={20} />
+        <FaceMask bg="pixelColors.green" dieFaces={20} />
       </VStack>
     </BaseAppPage>
   );

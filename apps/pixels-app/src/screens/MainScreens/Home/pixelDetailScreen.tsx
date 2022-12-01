@@ -13,7 +13,7 @@ import {
   createPixelTheme,
   LoadingPopup,
   PixelTheme,
-  ProfilesScrollList,
+  ProfilesScrollView,
   PxAppPage,
   RSSIStrength,
   Toggle,
@@ -290,18 +290,17 @@ const paleBluePixelThemeParams = {
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 export default function PixelDetailScreen() {
-  //Will be used when the correct nested screen are in place
   const navigation =
     useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
   const route = useRoute<PixelDetailScreenRouteProp>();
   const pixelInfo = route.params;
-  const [showLoadingPopup, SetShowLoadingPopup] = React.useState(false);
+  const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
   return (
     <PxAppPage theme={paleBluePixelTheme}>
       <LoadingPopup
         title="Uploading profile..."
         isOpen={showLoadingPopup}
-        onProgressEnd={() => SetShowLoadingPopup(false)}
+        onProgressEnd={() => setShowLoadingPopup(false)}
       />
       <VStack space={6} width="100%" maxW="100%">
         <Center bg="white" rounded="lg" px={2}>
@@ -321,7 +320,6 @@ export default function PixelDetailScreen() {
             <Box w="50%" paddingLeft={0}>
               <Image
                 size={sr(200)}
-                // source={require("~/../assets/RainbowDice.png")}
                 source={pixelInfo.imageRequirePath}
                 alt="placeHolder"
               />
@@ -360,10 +358,10 @@ export default function PixelDetailScreen() {
             <AntDesign name="profile" size={24} color="white" />
             <Text bold>Recent Profiles:</Text>
           </HStack>
-          <ProfilesScrollList
+          <ProfilesScrollView
             onPress={() => {
               console.log(showLoadingPopup);
-              SetShowLoadingPopup(true);
+              setShowLoadingPopup(true);
             }}
             availableProfiles={[
               {
@@ -429,7 +427,6 @@ export default function PixelDetailScreen() {
         >
           <Text bold>Unpair Die</Text>
         </Button>
-        {/* <LoadingPopup title="Loading" progress={20} isOpen={showLoadingPopup} /> */}
       </VStack>
     </PxAppPage>
   );

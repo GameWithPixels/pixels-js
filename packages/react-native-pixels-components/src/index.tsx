@@ -9,6 +9,6 @@ export { LightingStyleSelection } from "./components/LightingStylesSelection";
 export * from "./components/LoadingPopup";
 export * from "./components/ProfileCard";
 export * from "./components/DiceInfo";
-export * from "./components/ProfilesScrollList";
-export * from "./components/ProfilesListPopUp";
+export * from "./components/ProfilesScrollView";
+export * from "./components/ProfilesActionSheet";
 export * from "@systemic-games/react-native-base-components";

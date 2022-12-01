@@ -8,14 +8,22 @@ export type IconParams = {
   iconName: string;
 };
 
+/**
+ * Props for generic {@link PercentageDisplay} component.
+ */
 export interface PercentageDisplayProps {
-  percentage: number;
+  percentage: number; // current percentage value (from 0 to 1)
   icons: IconParams[]; //icons must be stored as : first icon = empty percentage,[...], last icon = full percentage
   colors?: ColorType[]; //colors must be stored as : first color = empty percentage color,[...], last color = full percentage color
-  _icon?: Partial<IIconProps>;
+  _icon?: Partial<IIconProps>; // parameter for styling icon size
 }
 
-// Compute index based on the arraylength and the current percentage value
+/**
+ * Compute index based on the arraylength and the current percentage value.
+ * @param percentage Current percentage value.
+ * @param arrayLength length of the icon array.
+ * @returns the index corresponding to the icon or color to display.
+ */
 function computeIndex(percentage: number, arrayLength: number): number {
   const ratio = arrayLength > 0 ? 100 / arrayLength : 1;
   const tempIndex = Math.round(percentage / ratio);
@@ -25,8 +33,11 @@ function computeIndex(percentage: number, arrayLength: number): number {
       : tempIndex;
   return index;
 }
-
-export function PercentageDisplayComponent({
+/**
+ * Generic component for displaying a percentage value with icons and colors.
+ * @param props See {@link PercentageDisplayProps} for props parameters.
+ */
+export function PercentageDisplay({
   colors = ["red.900", "orange.900", "green.900"],
   percentage,
   icons,

@@ -125,20 +125,6 @@ export default function PixelAdvancedSettingsScreen() {
         >
           <Text bold>Calibrate</Text>
         </Button>
-        {/* <Button
-          w="90%"
-          alignSelf="center"
-          leftIcon={
-            <MaterialIcons
-              name="settings-backup-restore"
-              size={24}
-              color="white"
-            />
-          }
-        >
-          <Text bold>Reset Settings</Text>
-        </Button>
-        <Divider bg="primary.200" width="90%" alignSelf="center" /> */}
         <Button
           w="100%"
           alignSelf="center"

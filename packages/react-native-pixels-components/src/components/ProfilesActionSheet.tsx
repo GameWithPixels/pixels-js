@@ -12,17 +12,26 @@ import {
 } from "native-base";
 import React from "react";
 
-import { sr } from "../utils";
 import { ProfileCard, ProfileInfo } from "./ProfileCard";
 
-export interface ProfilesPopUpListProps {
-  ProfilesInfo?: ProfileInfo[];
+/**
+ * Props for ProfilesActionSheet component.
+ */
+export interface ProfilesActionsheetProps {
+  ProfilesInfo?: ProfileInfo[]; // array of profiles informations to be displayed inside the component
+  w?: number;
+  h?: number;
 }
-export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
+/**
+ * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
+ * @param props See {@link ProfilesActionsheetProps} for props parameters.
+ */
+export function ProfilesActionSheet(props: ProfilesActionsheetProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
+      {/* Trigger of the actionsheet drawer */}
       <Pressable
         onPress={() => {
           onOpen();
@@ -31,9 +40,9 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
         <Card
           minW="10px"
           minH="10px"
-          w={sr(110)}
+          w={props.w}
           p={1}
-          h={sr(90)}
+          h={props.h}
           alignItems="center"
           verticalSpace={1}
         >
@@ -50,37 +59,8 @@ export function ProfilesListPopUp(props: ProfilesPopUpListProps) {
           </Center>
         </Card>
       </Pressable>
-      {/* <PopUp
-        bg="pixelColors.softBlack"
-        w="100%"
-        title="Available Profiles"
-        isOpen={showProfiles}
-        buttons={["Apply", "Cancel"]}
-        onClose={(result) => {
-          SetShowProfiles(false);
-          //Here check "result" and use corresponding action
-        }}
-      >
-        <HStack flexWrap="wrap">
-          {props.ProfilesInfo?.map((profileInfo, i) => (
-            <Box key={i} p={1}>
-              <ProfileCard
-                w="105px"
-                h="130px"
-                verticalSpace={1}
-                imageSize={70}
-                selectable
-                profileIndexInList={i}
-                selectedProfileIndex={selectedProfile}
-                onSelected={SetSelectedProfile}
-                profileName={profileInfo.profileName}
-                imageRequirePath={profileInfo.imageRequirePath}
-              />
-            </Box>
-          ))}
-        </HStack>
-      </PopUp> */}
 
+      {/* Actionsheet drawer */}
       <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
         <Actionsheet.Content maxH="100%" h="630px">
           <Text bold paddingBottom={5}>

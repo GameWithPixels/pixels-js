@@ -18,11 +18,14 @@ import { sr } from "../utils";
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
 
+/**
+ * Die information to be used in dice info components.
+ */
 export interface PixelInfo {
   name: string;
-  rssi: number;
+  rssi: number; // rssi value
   batteryLevel: number;
-  ledCount: number;
+  ledCount: number; // number of faces(led) on the die
   firmwareDate: string; //date.toString
   profileName: string;
   pixelId: number;
@@ -31,13 +34,19 @@ export interface PixelInfo {
   imageRequirePath?: ImageSourcePropType;
 }
 
+/**
+ * Props for components displaying dice informations.
+ */
 export interface PixelInfoCardProps {
   h?: number | string;
   w?: number | string;
-  pixel: PixelInfo;
-  onPress?: (() => void) | null | undefined;
+  pixel: PixelInfo; // Die infos and values
+  onPress?: (() => void) | null | undefined; // Function to be executed when pressing the die info
 }
-
+/**
+ * Horizontal info card for displaying paired dice
+ * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
+ */
 export function PairedPixelInfoComponent({
   pixel,
   onPress,
@@ -50,7 +59,6 @@ export function PairedPixelInfoComponent({
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(70)}
-              // source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               source={pixel.imageRequirePath}
               alt="placeHolder"
             />
@@ -86,6 +94,10 @@ export function PairedPixelInfoComponent({
   );
 }
 
+/**
+ * Squared info card for displaying paired dice informations.
+ * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
+ */
 export function SquarePairedPixelInfo({
   h,
   w,
@@ -117,7 +129,6 @@ export function SquarePairedPixelInfo({
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(70)}
-              //source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               source={pixel.imageRequirePath}
               alt="placeHolder"
             />
@@ -148,17 +159,21 @@ export function SquarePairedPixelInfo({
   );
 }
 
+/**
+ * Horizontal info card for displaying scanned unpaired dice informations.
+ * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
+ */
 export function ScannedPixelInfoComponent({
   pixel,
   onPress,
 }: PixelInfoCardProps) {
-  const [pressed, SetPressed] = React.useState(false);
-  const [height, SetHeight] = React.useState(100);
+  const [pressed, setPressed] = React.useState(false);
+  const [height, setHeight] = React.useState(100);
   return (
     <Pressable
       onPress={() => {
-        SetHeight(180);
-        SetPressed(true);
+        setHeight(180);
+        setPressed(true);
       }}
     >
       <Card borderWidth={1.5} w="100%" h={sr(height)} alignItems="center">
@@ -167,7 +182,6 @@ export function ScannedPixelInfoComponent({
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(60)}
-              //source={require("../../../../apps/pixels-app/assets/DieImageTransparent.png")}
               source={pixel.imageRequirePath}
               alt="placeHolder"
             />
