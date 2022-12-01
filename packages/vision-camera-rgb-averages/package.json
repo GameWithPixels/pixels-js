@@ -79,7 +79,7 @@
       "publish": true
     },
     "github": {
-      "release": true
+      "release": false
     },
     "plugins-disabled": {
       "@release-it/conventional-changelog": {
