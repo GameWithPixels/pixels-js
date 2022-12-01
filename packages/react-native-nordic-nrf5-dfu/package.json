@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/react-native-nordic-nrf5-dfu",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React Native package for running DFUs on Nordic Semiconductor nRF5 devices.",
   "main": "dist/commonjs/index",
   "module": "dist/module/index",
