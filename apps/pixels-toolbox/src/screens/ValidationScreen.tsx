@@ -9,6 +9,7 @@ import {
   ScrollView,
   Text,
   VStack,
+  Box,
 } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
@@ -34,7 +35,8 @@ import {
   WaitFaceUp,
   TurnOffDevice,
 } from "~/components/ValidationTestsComponents";
-import { DieType, DieTypes } from "~/features/DieType";
+import { DieType, DieTypes } from "~/features/pixels/DieType";
+import usePixelIdDecoderFrameProcessor from "~/features/pixels/hooks/usePixelIdDecoderFrameProcessor";
 import {
   getTaskResult,
   getTaskResultEmoji,
@@ -47,7 +49,6 @@ import {
   getFormFactorNiceName,
   ValidationFormFactor,
 } from "~/features/validation/ValidationFormFactor";
-import usePixelIdDecoderFrameProcessor from "~/usePixelIdDecoderFrameProcessor";
 
 function SelectFormFactorPage({
   onSelected,
@@ -196,54 +197,54 @@ function DecodePixelIdPage({
   const formFactor = getFormFactorNiceName(settings.formFactor);
   const bg = useBackgroundColor();
   return showScanList ? (
-    <PixelScanList
-      onSelected={(p) => onDecodedPixelId(p.pixelId)}
-      onClose={() => setShowScanList(false)}
-    />
+    <Box w="100%" h="100%" bg={bg}>
+      <PixelScanList
+        onSelected={(p) => onDecodedPixelId(p.pixelId)}
+        onClose={() => setShowScanList(false)}
+      />
+    </Box>
   ) : (
-    <>
-      <Center w="100%" h="100%" bg={bg}>
-        {device && cameraStatus === "ready" ? (
-          <Camera
-            ref={cameraRef}
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-            device={device}
-            isActive
-            photo
-            hdr={false}
-            lowLightBoost={false}
-            frameProcessor={frameProcessor}
-            videoStabilizationMode="off"
-          />
-        ) : (
-          <Text>{t("startingCamera")}</Text>
-        )}
-        {!readingColors && (
-          <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
-            <HStack>
-              <VStack>
-                <Text variant="comment">Reset {boardOrDie} using magnet</Text>
-                <Text variant="comment">and point camera at it</Text>
-              </VStack>
-              <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
-                Scan
-              </Button>
-            </HStack>
-          </Center>
-        )}
-        <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
-          <Text>
-            Testing {t(settings.dieType)} {formFactor}
-          </Text>
-          <Button w="100%" onPress={onBack}>
-            {t("back")}
-          </Button>
+    <Center w="100%" h="100%" bg={bg}>
+      {device && cameraStatus === "ready" ? (
+        <Camera
+          ref={cameraRef}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          device={device}
+          isActive
+          photo
+          hdr={false}
+          lowLightBoost={false}
+          frameProcessor={frameProcessor}
+          videoStabilizationMode="off"
+        />
+      ) : (
+        <Text>{t("startingCamera")}</Text>
+      )}
+      {!readingColors && (
+        <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
+          <HStack>
+            <VStack>
+              <Text variant="comment">Reset {boardOrDie} using magnet</Text>
+              <Text variant="comment">and point camera at it</Text>
+            </VStack>
+            <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
+              Scan
+            </Button>
+          </HStack>
         </Center>
+      )}
+      <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
+        <Text>
+          Testing {t(settings.dieType)} {formFactor}
+        </Text>
+        <Button w="100%" onPress={onBack}>
+          {t("back")}
+        </Button>
       </Center>
-    </>
+    </Center>
   );
 }
 
@@ -394,9 +395,12 @@ function RunTestsPage({
       <ScrollView w="100%" ref={scrollRef}>
         <>{taskChain.render()}</>
         {result && (
-          <Text mb="10%" fontSize={150} textAlign="center">
-            {getTaskResultEmoji(taskChain.status)}
-          </Text>
+          <Center>
+            <Text fontSize={150} textAlign="center">
+              {getTaskResultEmoji(taskChain.status)}
+            </Text>
+            <Text mb="8%">Battery: {pixel?.batteryLevel ?? 0}%</Text>
+          </Center>
         )}
       </ScrollView>
       <Button w="100%" onPress={onOkCancel}>
@@ -444,8 +448,45 @@ function useBackgroundColor() {
   return useColorModeValue("warmGray.100", "coolGray.800");
 }
 
+function containerVariants() {
+  return {
+    background: {
+      _dark: {
+        backgroundColor: "coolGray.800",
+      },
+      _light: {
+        backgroundColor: "warmGray.100",
+      },
+    },
+    card: {
+      rounded: "md",
+      borderWidth: "2",
+      _dark: {
+        borderColor: "warmGray.400",
+        backgroundColor: "coolGray.700",
+      },
+      _light: {
+        borderColor: "coolGray.500",
+        backgroundColor: "warmGray.200",
+      },
+    },
+  };
+}
+
 const theme = extendTheme({
   components: {
+    Box: {
+      variants: containerVariants(),
+    },
+    Center: {
+      variants: containerVariants(),
+    },
+    VStack: {
+      variants: containerVariants(),
+    },
+    HStack: {
+      variants: containerVariants(),
+    },
     Text: {
       baseStyle: {
         fontSize: "2xl",
@@ -467,8 +508,11 @@ const theme = extendTheme({
     Button: {
       variants: {
         solid: {
+          rounded: "sm",
+          borderWidth: "1",
           _dark: {
             bg: "coolGray.600",
+            borderColor: "coolGray.400",
             _pressed: {
               bg: "coolGray.700",
             },
@@ -478,6 +522,7 @@ const theme = extendTheme({
           },
           _light: {
             bg: "warmGray.300",
+            borderColor: "warmGray.500",
             _pressed: {
               bg: "warmGray.200",
             },
@@ -502,7 +547,7 @@ const theme = extendTheme({
 
 export default function () {
   return (
-    <AppPage style={{ flex: 1 }}>
+    <AppPage>
       <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
         <ValidationPage />
       </NativeBaseProvider>

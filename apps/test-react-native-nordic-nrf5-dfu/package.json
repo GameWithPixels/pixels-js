@@ -30,16 +30,16 @@
   "dependencies": {
     "@systemic-games/react-native-bluetooth-le": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
-    "react": "18.0.0",
-    "react-native": "0.69.7",
+    "react": "18.1.0",
+    "react-native": "0.70.6",
     "react-native-document-picker": "^8.1.2",
     "react-native-fs": "^2.20.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.3",
+    "@babel/core": "^7.20.2",
     "@babel/runtime": "^7.19.4",
-    "@types/react": "~18.0.0",
-    "@types/react-native": "0.69.6",
+    "@types/react": "~18.0.25",
+    "@types/react-native": "0.70.6",
     "babel-plugin-module-resolver": "^4.1.0",
     "metro-react-native-babel-preset": "~0.70.3"
   },

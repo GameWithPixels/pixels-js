@@ -1,82 +1,52 @@
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
-import { useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  FlatList,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
+import { Button, Box, FlatList, Pressable, Text, VStack } from "native-base";
 
-import PixelInfoBox from "~/components/PixelInfoBox";
-import Spacer from "~/components/Spacer";
-import globalStyles, { sr } from "~/styles";
-import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
+import PixelInfoBox from "~/components/PixelInfoCard";
+import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 
 export default function ({
   onSelected,
   onClose,
+  refreshInterval,
 }: {
   onSelected: (pixel: ScannedPixel) => void;
   onClose: () => void;
+  refreshInterval?: number;
 }) {
-  const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
+  const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
     sortedByName: true,
+    refreshInterval,
   });
-  useEffect(() => {
-    scannerDispatch("start");
-  }, [scannerDispatch]);
+  useErrorWithHandler(lastError);
   return (
-    <>
-      <View style={styles.containerScanHeader}>
-        <Text
-          style={styles.textBold}
-        >{`Scanned Pixels (${scannedPixels.length}):`}</Text>
-        <Spacer />
-        <Button onPress={onClose} title="Close" />
-        <Spacer />
-        <Button
-          onPress={() => scannerDispatch("clear")}
-          title="Clear Scan List"
-        />
-      </View>
-      <View style={styles.containerScanList}>
-        {scannedPixels.length ? (
+    <VStack flex={1} alignItems="center">
+      <Text bold>{`Scanned Pixels (${scannedPixels.length}):`}</Text>
+      <Button onPress={onClose}>Close</Button>
+      <Button onPress={() => scannerDispatch("clear")}>Clear Scan List</Button>
+      {scannedPixels.length ? (
+        <>
+          <Text italic>Tap On Device To Select:</Text>
           <FlatList
-            ItemSeparatorComponent={Spacer}
+            width="100%"
             data={scannedPixels}
             renderItem={(itemInfo) => (
-              <View style={styles.box}>
-                <PixelInfoBox pixel={itemInfo.item}>
-                  <Button
-                    onPress={() => onSelected(itemInfo.item)}
-                    title="Select"
-                  />
-                </PixelInfoBox>
-              </View>
+              <Pressable
+                onPress={() => onSelected(itemInfo.item)}
+                borderColor="gray.500"
+                borderWidth={2}
+              >
+                <PixelInfoBox pixel={itemInfo.item} />
+              </Pressable>
             )}
             keyExtractor={(p) => p.pixelId.toString()}
+            ItemSeparatorComponent={() => <Box height="3%" />}
             contentContainerStyle={{ flexGrow: 1 }}
           />
-        ) : (
-          <Text style={styles.text}>No Pixel found so far...</Text>
-        )}
-      </View>
-    </>
+        </>
+      ) : (
+        <Text>No Pixels found so far...</Text>
+      )}
+    </VStack>
   );
 }
-
-const styles = StyleSheet.create({
-  ...globalStyles,
-  containerScanHeader: {
-    margin: sr(20),
-  },
-  containerScanList: {
-    alignItems: "center",
-    justifyContent: "flex-start",
-    margin: sr(10),
-    flex: 1,
-    flexGrow: 1,
-  },
-});

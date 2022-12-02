@@ -13,6 +13,10 @@ export const BatteryStateFlagsValues = {
   Low: enumFlag(),
   Charging: enumFlag(),
   Done: enumFlag(),
+  Transition: enumFlag(),
+  BadCharging: enumFlag(),
+  Error: enumFlag(),
+  TrickleCharge: enumFlag(),
 } as const;
 
 /**

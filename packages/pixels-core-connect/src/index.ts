@@ -1,4 +1,4 @@
-import Pixel, { IPixel, PixelStatus, PixelEventMap, PixelError } from "./Pixel";
+import Pixel from "./Pixel";
 import PixelSession, {
   PixelSessionConnectionStatus,
   PixelSessionConnectionEvent,
@@ -9,9 +9,9 @@ import getPixelUniqueName from "./getPixelUniqueName";
 import repeatConnect from "./repeatConnect";
 import toFullUuid from "./toFullUuid";
 export * from "./Messages";
+export * from "./Pixel";
 
-export { IPixel, PixelStatus, PixelEventMap, PixelError, Pixel };
-export { PixelUuids };
+export { Pixel, PixelUuids };
 export {
   PixelSession,
   PixelSessionConnectionStatus,

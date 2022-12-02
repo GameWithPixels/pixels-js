@@ -1,8 +1,13 @@
 import {
+  getPixelEnumName,
   PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelUuids,
 } from "@systemic-games/pixels-core-connect";
+import {
+  createTypedEventEmitter,
+  EventReceiver,
+} from "@systemic-games/pixels-core-utils";
 import {
   Central,
   ScannedPeripheralEvent,
@@ -11,9 +16,8 @@ import {
 import type ScannedPixel from "./ScannedPixel";
 import SequentialDataReader from "./SequentialDataReader";
 import SequentialPromiseQueue from "./SequentialPromiseQueue";
-import createTypedEventEmitter, {
-  EventReceiver,
-} from "./createTypedEventEmitter";
+
+type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 export type PixelScannerEventMap = {
   isScanning: boolean;
@@ -104,18 +108,19 @@ export default class PixelScanner {
   }
 
   private onScannedPeripheral(ev: ScannedPeripheralEvent): void {
-    const scannedPixel = {
+    const scannedPixel: Mutable<ScannedPixel> = {
       systemId: ev.peripheral.systemId,
       pixelId: 0,
       address: ev.peripheral.address,
       name: ev.peripheral.name,
-      rssi: ev.peripheral.advertisementData.rssi,
       ledCount: 0,
-      designAndColor: PixelDesignAndColorValues.generic,
-      rollState: PixelRollStateValues.unknown,
-      currentFace: 0,
+      designAndColor: "unknown",
+      firmwareDate: new Date(0),
+      rssi: ev.peripheral.advertisementData.rssi,
       batteryLevel: 0,
-      buildTimestamp: 0,
+      isCharging: false,
+      rollState: "unknown",
+      currentFace: 0,
     };
 
     const manufacturerData =
@@ -129,6 +134,8 @@ export default class PixelScanner {
         new DataView(manufBuffer.buffer)
       );
 
+      let designAndColor = 0;
+      let rollState = 0;
       // Check the services data, Pixels use to share some information
       // in the scan response packet
       const serviceData = ev.peripheral.advertisementData.servicesData?.[0];
@@ -140,11 +147,11 @@ export default class PixelScanner {
         );
 
         scannedPixel.pixelId = serviceReader.readU32();
-        scannedPixel.buildTimestamp = serviceReader.readU32();
+        scannedPixel.firmwareDate = new Date(1000 * serviceReader.readU32());
 
         scannedPixel.ledCount = manufReader.readU8();
-        scannedPixel.designAndColor = manufReader.readU8();
-        scannedPixel.rollState = manufReader.readU8();
+        designAndColor = manufReader.readU8();
+        rollState = manufReader.readU8();
         scannedPixel.currentFace = manufReader.readU8() + 1;
         scannedPixel.batteryLevel = manufReader.readU8();
       } else if (manufacturerData.data.length === 7) {
@@ -154,13 +161,21 @@ export default class PixelScanner {
         // eslint-disable-next-line no-bitwise
         scannedPixel.ledCount = (companyId >> 8) & 0xff;
         // eslint-disable-next-line no-bitwise
-        scannedPixel.designAndColor = companyId & 0xff;
+        designAndColor = companyId & 0xff;
 
         scannedPixel.pixelId = manufReader.readU32();
-        scannedPixel.rollState = manufReader.readU8();
+        rollState = manufReader.readU8();
         scannedPixel.currentFace = manufReader.readU8() + 1;
         scannedPixel.batteryLevel = manufReader.readU8();
       }
+      scannedPixel.designAndColor =
+        getPixelEnumName(designAndColor, PixelDesignAndColorValues) ??
+        "unknown";
+      scannedPixel.rollState =
+        getPixelEnumName(rollState, PixelRollStateValues) ?? "unknown";
+      scannedPixel.batteryLevel = Math.round(
+        (scannedPixel.batteryLevel / 255) * 100
+      );
     }
 
     if (scannedPixel.pixelId) {
