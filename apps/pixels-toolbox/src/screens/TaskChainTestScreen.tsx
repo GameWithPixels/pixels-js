@@ -196,7 +196,7 @@ const theme = extendTheme({
 
 export default function () {
   return (
-    <AppPage style={{ flex: 1 }}>
+    <AppPage>
       <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
         <TestPage />
       </NativeBaseProvider>

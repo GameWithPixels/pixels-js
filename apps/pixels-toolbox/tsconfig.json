@@ -14,8 +14,8 @@
     }
   },
   "files": [
-    "assets/default-profiles.json",
-    "assets/nice-profile.json"
+    "assets/standard-profiles.json",
+    "assets/default-profile.json"
   ],
   "include": [
     "src/**/*"

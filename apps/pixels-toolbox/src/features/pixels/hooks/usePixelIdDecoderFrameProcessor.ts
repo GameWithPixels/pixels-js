@@ -1,15 +1,15 @@
 import { getImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
-import { useErrorHandler } from "react-error-boundary";
+import { useState } from "react";
 import { runOnJS } from "react-native-reanimated";
 import { Frame, useFrameProcessor } from "react-native-vision-camera";
 
-import { RbgColor } from "./PixelIdDecoder";
+import { RbgColor } from "./../PixelIdDecoder";
 import usePixelIdDecoder from "./usePixelIdDecoder";
 
 export type FrameProcessor = (frame: Frame) => void;
 
-export default function (): [FrameProcessor, number, RbgColor | undefined] {
-  const errorHandler = useErrorHandler();
+export default function (): [FrameProcessor, number, RbgColor?, Error?] {
+  const [lastError, setLastError] = useState<Error>();
 
   // PixelId decoder
   const [decoderState, decoderDispatch] = usePixelIdDecoder();
@@ -27,15 +27,20 @@ export default function (): [FrameProcessor, number, RbgColor | undefined] {
         });
         runOnJS(decoderDispatch)({ rgbAverages: result });
       } catch (error) {
-        errorHandler(
+        runOnJS(setLastError)(
           new Error(
             `Exception in frame processor "getImageRgbAverages": ${error}`
           )
         );
       }
     },
-    [decoderDispatch, errorHandler]
+    [decoderDispatch]
   );
 
-  return [frameProcessor, decoderState.pixelId, decoderState.scanColor];
+  return [
+    frameProcessor,
+    decoderState.pixelId,
+    decoderState.scanColor,
+    lastError,
+  ];
 }

@@ -3,10 +3,10 @@ import {
   loadAppDataSet,
 } from "@systemic-games/pixels-edit-animation";
 
-import niceProfileJson from "~/../assets/nice-profile.json";
+import defaultProfileJson from "~/../assets/default-profile.json";
 
 const niceProfileAppDataSet: Readonly<AppDataSet> =
-  loadAppDataSet(niceProfileJson);
+  loadAppDataSet(defaultProfileJson);
 
 const standardProfile = niceProfileAppDataSet
   .extractForProfile(niceProfileAppDataSet.profiles[0])

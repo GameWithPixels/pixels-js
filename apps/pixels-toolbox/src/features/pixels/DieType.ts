@@ -10,7 +10,7 @@ export function getLedCount(dieType: DieType) {
     case "d6":
       return 6;
     case "pd6":
-      return 6;
+      return 21;
     case "d8":
       return 8;
     case "d10":

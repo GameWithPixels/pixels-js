@@ -3,7 +3,7 @@
     "name": "Pixels Toolbox",
     "slug": "pixels-toolbox",
     "owner": "gamewithpixels",
-    "version": "1.4.4",
+    "version": "1.5.2",
     "sdkVersion": "47.0.0",
     "platforms": [
       "ios",
@@ -80,6 +80,7 @@
       "eas": {
         "projectId": "deab8983-a21f-4c31-9861-41762637a793"
       }
-    }
+    },
+    "jsEngine": "hermes"
   }
 }

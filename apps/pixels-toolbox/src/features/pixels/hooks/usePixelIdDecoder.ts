@@ -1,7 +1,7 @@
 import { ImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
 import { useCallback, useState } from "react";
 
-import PixelIdDecoder, { RbgColor } from "./PixelIdDecoder";
+import PixelIdDecoder, { RbgColor } from "./../PixelIdDecoder";
 
 export interface PixelIdDecoderState {
   pixelId: number;
@@ -13,6 +13,7 @@ export interface PixelIdDecoderAction {
   reset?: boolean;
 }
 
+// Returned dispatch function is stable
 export default function (): [
   PixelIdDecoderState,
   (action: PixelIdDecoderAction) => void
