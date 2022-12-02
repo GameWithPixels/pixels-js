@@ -17,7 +17,7 @@ import { NavigationContainerComponent } from "./components/NavigationContainerCo
 import secondScreen from "./screens/MainScreens/secondScreen";
 import ThirdScreen from "./screens/MainScreens/thirdScreen";
 
-import HomeNavigator from "~/screens/MainScreens/Home/homeNavigator";
+import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
 
 const Stack = createStackNavigator<RootStackParamList>();
 

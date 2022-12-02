@@ -2,8 +2,6 @@ import { ProgressBar } from "@systemic-games/react-native-base-components";
 import { Center, HStack, Modal, Text } from "native-base";
 import React from "react";
 
-//TODO remove minh minw
-
 /**
  * Props for loading popup component
  */

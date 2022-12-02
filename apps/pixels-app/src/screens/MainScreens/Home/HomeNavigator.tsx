@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 
+import HomeScreen from "./HomeScreen";
 import PixelAdvancedSettingsScreen from "./PixelAdvancedSettingsScreen";
-import HomeScreen from "./homeScreen";
-import PixelDetailScreen from "./pixelDetailScreen";
+import PixelDetailScreen from "./PixelDetailScreen";
 
 const Stack = createStackNavigator();
 export default function HomeNavigator() {
