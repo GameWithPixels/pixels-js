@@ -78,7 +78,6 @@ function Histogram({ rolls }: HistogramProps) {
           );
         })}
         {rolls.map((_, i) => (
-          /* @ts-expect-error*/
           <SvgText
             key={i}
             transform={`translate(${
@@ -94,7 +93,6 @@ function Histogram({ rolls }: HistogramProps) {
           </SvgText>
         ))}
         {[...Array(numGradValues).keys()].map((i) => (
-          /* @ts-expect-error */
           <SvgText
             key={i}
             x={gradCellWidth / 2}
