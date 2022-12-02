@@ -5,15 +5,23 @@ import {
 } from "native-base/lib/typescript/components/types";
 import React from "react";
 
+/**
+ * Props for {@link ProgressBar} component.
+ */
 export interface ProgressBarProps {
-  value?: number;
-  loadingText?: string;
+  progress?: number; // current progress value
+  loadingText?: string; // text placed before percentage value
   boxBg?: ColorType;
-  size?: SizeType;
+  size?: SizeType; // size possibilities of the progressbar
   filledTrackBg?: ColorType;
-  onProgressEnd?: React.Dispatch<React.SetStateAction<boolean>>;
+  showPercentage?: boolean; // show or hide current percentage progress
+  onProgressEnd?: (() => void) | null | undefined; // function to be executed when progress end
 }
 
+/**
+ * A progress bar with current progress value display.
+ * @param props See {@link ProgressBarProps} for props parameters.
+ */
 export function ProgressBar(props: ProgressBarProps) {
   const resolvedProps = usePropsResolution(
     "ProgressBar",
@@ -22,17 +30,19 @@ export function ProgressBar(props: ProgressBarProps) {
   return (
     <Box bg={resolvedProps.boxBg} p="3" rounded="lg">
       <Progress
-        value={props.value}
+        value={props.progress}
         size={resolvedProps.size}
         _filledTrack={{
           bg: resolvedProps.filledTrackBg,
         }}
       />
-      <Text>
-        {props.loadingText
-          ? props.loadingText + props.value + "%"
-          : props.value + "%"}
-      </Text>
+      {props.showPercentage && (
+        <Text>
+          {props.loadingText
+            ? props.loadingText + props.progress + "%"
+            : props.progress + "%"}
+        </Text>
+      )}
     </Box>
   );
 }

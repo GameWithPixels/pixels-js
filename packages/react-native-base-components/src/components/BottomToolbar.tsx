@@ -17,36 +17,46 @@ import React from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
-// Data of any item/page icon that will be displayed in the component
-export interface BottomMenuBarItemData {
-  label?: string;
+/**
+ * Data of any item/page icon that will be displayed in the toolbar
+ */
+export interface BottomToolBarItemData {
+  label?: string; // label/name of the item
   tintColor?: ColorType;
-  onPress: (() => void) | null | undefined; // functions to call and navigate to function
+  onPress: (() => void) | null | undefined; // function executed to navigate to other screens
   ImageRequirePath?: ImageSourcePropType; // Item image path. Need to return a require path ex: require(../assets/[...]image.png)
   size?: SizeType;
   alt?: string;
 }
-
-export interface BottomMenuBarProps {
-  itemsData?: BottomMenuBarItemData[];
-  itemsTintColor?: ColorType;
+/**
+ *  Props for {@link BottomToolBar} component.
+ */
+export interface BottomToolBarProps {
+  itemsData?: BottomToolBarItemData[]; // array of item data used to create toolbar pressable items
+  // Toolbar general props
   selectionHighlightColor?: ColorType;
   height?: number | string;
   width?: number | string;
   maxWidth?: number | string;
+  // Toolbar items props
+  itemsTintColor?: ColorType;
   itemsHeight?: number | string;
   itemsWidth?: number | string;
   itemsRounded?: SizeType;
   textSize?: number | string | SizeType;
   bg?: ColorType;
 }
-
-export function BottomToolbar(props: BottomMenuBarProps) {
-  const [selected, setSelected] = React.useState(1);
+/**
+ * Bottom toolbar to be used to navigate between main pages inside app.
+ * @info The toolbar need to be placed inside a container that can use the React navigation functionalities in order to work, as the navigation is not done inside this component.
+ * @param props See {@link BottomToolBarProps} for props parameters.
+ */
+export function BottomToolbar(props: BottomToolBarProps) {
+  const [selected, setSelected] = React.useState(4);
   const resolvedProps = usePropsResolution(
     "BottomToolBar",
     props
-  ) as BottomMenuBarProps;
+  ) as BottomToolBarProps;
   return (
     <Box height={20} width="100%" maxW="100%" alignSelf="center">
       <HStack space={2} bg={resolvedProps.bg} alignItems="center">

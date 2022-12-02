@@ -93,7 +93,6 @@ export function ColorWheel(props: ColorWheelProps) {
               onPress={() => {
                 setSelectedColor(s.color);
                 props.onSelectColor(toStringColor(s.color));
-                //props.onSelectColor2();
               }}
             />
           </Box>

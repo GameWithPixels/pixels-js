@@ -8,12 +8,16 @@ import {
   Spacer,
   VStack,
 } from "native-base";
-import React from "react";
+import React, { ReactNode } from "react";
 
-interface triggerProps {
+interface TriggerProps {
   title: string;
 }
-function TriggerElement(props: triggerProps) {
+/**
+ * Default trigger component for the LightingStyleSelection component.
+ * @param props See {@link TriggerProps} for props parameters.
+ */
+function TriggerElement(props: TriggerProps) {
   return (
     <Box w="100%" p={2} bg="primary.700" rounded="lg">
       <HStack space={2} alignItems="center">
@@ -26,45 +30,61 @@ function TriggerElement(props: triggerProps) {
   );
 }
 
-export function LightingStyleSelection() {
-  const [lightingTypeText, SetLightingType] = React.useState("Simple Flashes");
+/**
+ * Props for {@link LightingStyleSelection} component.
+ */
+interface LightingStyleSelectionProps {
+  trigger?: ReactNode; // trigger element to replace the default LightingStyleSelection trigger if needed
+}
+
+/**
+ * Component for selecting pattern lighting styles inside an Actionsheet drawer.
+ * @param props See {@link LightingStyleSelectionProps} for props parameters.
+ */
+export function LightingStyleSelection(props: LightingStyleSelectionProps) {
+  const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
     <>
       <VStack space={1}>
         <Text bold>Lighting Style</Text>
         <ActionSheet
-          trigger={<TriggerElement title={lightingTypeText} />}
+          trigger={
+            !props.trigger ? (
+              <TriggerElement title={lightingTypeText} />
+            ) : (
+              props.trigger
+            )
+          }
           title={lightingTypeText}
-          triggerLabel={lightingTypeText}
           itemsData={[
             {
               label: "Simple Flashes",
               onPress: () => {
-                SetLightingType("Simple Flashes");
+                setLightingType("Simple Flashes");
               },
             },
             {
               label: "Colorful Rainbow",
               onPress: () => {
-                SetLightingType("Colorful Rainbow");
+                setLightingType("Colorful Rainbow");
               },
             },
             {
               label: "Simple Gradient",
               onPress: () => {
-                SetLightingType("Simple Gradient");
+                setLightingType("Simple Gradient");
               },
             },
             {
               label: "Color LED Pattern",
               onPress: () => {
-                SetLightingType("Color LED Pattern");
+                setLightingType("Color LED Pattern");
               },
             },
             {
               label: "Gradient LED Pattern",
               onPress: () => {
-                SetLightingType("Gradient LED Pattern");
+                setLightingType("Gradient LED Pattern");
               },
             },
           ]}
