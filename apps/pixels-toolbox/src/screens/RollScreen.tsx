@@ -9,14 +9,13 @@ import {
 } from "react-native";
 
 import AppPage from "~/components/AppPage";
-import SelectPixel from "~/components/SelectPixel";
 import usePixelRoll from "~/features/pixels/hooks/usePixelRoll";
 import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
 
 function RollPage() {
   const errorHandler = useErrorHandler();
-  const [selectedPixel, setSelectedPixel] = useState<Pixel | undefined>();
+  const [selectedPixel] = useState<Pixel | undefined>();
   const status = usePixelStatus(selectedPixel);
   const [connectStarted, setConnectStarted] = useState(false);
   const [face, rollState] = usePixelRoll(selectedPixel);
@@ -49,7 +48,8 @@ function RollPage() {
   return (
     <>
       {!selectedPixel ? (
-        <SelectPixel setSelectedPixel={setSelectedPixel} />
+        // <PixelScanList onSelected={setSelectedPixel} />
+        <Text>Missing selection component!</Text>
       ) : (
         <View style={[styles.containerRoll, { backgroundColor }]}>
           {isConnecting ? (

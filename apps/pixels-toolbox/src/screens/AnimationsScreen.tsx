@@ -39,7 +39,6 @@ import {
 
 import defaultProfilesJson from "~/../assets/default-profiles.json";
 import AppPage from "~/components/AppPage";
-import SelectPixel from "~/components/SelectPixel";
 import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
 import range from "~/utils/range";
@@ -344,7 +343,8 @@ function AnimationPage() {
   return (
     <>
       {!selectedPixel ? (
-        <SelectPixel setSelectedPixel={setSelectedPixel} />
+        // <PixelScanList onSelected={setSelectedPixel} />
+        <Text>Missing selection component!</Text>
       ) : (
         <>
           <Text style={styles.text}>{`Connection status: ${status}`}</Text>
