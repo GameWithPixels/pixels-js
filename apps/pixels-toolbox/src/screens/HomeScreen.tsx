@@ -14,7 +14,7 @@ import {
   Text,
   useDisclose,
 } from "native-base";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   Platform,
   RefreshControl,
@@ -139,7 +139,7 @@ function PixelsList() {
       ) : (
         <Text italic>No Pixels found so far...</Text>
       )}
-      <DispatchAllActionsheet
+      <DispatchAllActionsheetMemo
         dispatch={dispatchAll}
         isOpen={dispatchAllDisclose.isOpen}
         onClose={dispatchAllDisclose.onClose}
@@ -189,6 +189,9 @@ function DispatchAllActionsheet({
   );
 }
 
+const HeaderMemo = memo(Header);
+const DispatchAllActionsheetMemo = memo(DispatchAllActionsheet);
+
 function HomePage() {
   // Setup page options
   const navigation =
@@ -196,7 +199,7 @@ function HomePage() {
   useEffect(() => {
     navigation.setOptions({
       title: `Toolbox v${Constants.manifest?.version}`,
-      headerTitle: ({ children }) => <Header title={children} />,
+      headerTitle: ({ children }) => <HeaderMemo title={children} />,
       headerStyle: {
         height: sr(40) + Constants.statusBarHeight,
       },

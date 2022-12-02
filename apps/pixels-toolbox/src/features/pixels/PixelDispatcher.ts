@@ -39,7 +39,7 @@ export type PixelDispatcherAction =
   | "calibrate"
   | "updateProfile"
   | "queueFirmwareUpdate"
-  | "cancelFirmwareUpdate";
+  | "dequeueFirmwareUpdate";
 
 export interface PixelDispatcherEventMap {
   status: PixelStatus;
@@ -61,7 +61,7 @@ const _pendingDFUs: PixelDispatcher[] = [];
  */
 export default class PixelDispatcher implements IPixel {
   private _scannedPixel: ScannedPixel;
-  private _lastScan: Date;
+  private _lastBleActivity: Date;
   private _pixel: Pixel;
   private readonly _evEmitter =
     createTypedEventEmitter<PixelDispatcherEventMap>();
@@ -116,8 +116,8 @@ export default class PixelDispatcher implements IPixel {
     return this._scannedPixel.address;
   }
 
-  get lastScan(): Date {
-    return this._lastScan;
+  get lastBleActivity(): Date {
+    return this._lastBleActivity;
   }
 
   get status(): PixelStatus {
@@ -155,12 +155,13 @@ export default class PixelDispatcher implements IPixel {
 
   constructor(scannedPixel: ScannedPixel) {
     this._scannedPixel = scannedPixel;
-    this._lastScan = new Date();
+    this._lastBleActivity = new Date();
     this._pixel = getPixel(scannedPixel);
     // TODO remove listeners
-    this._pixel.addEventListener("status", (status) =>
-      this._evEmitter.emit("status", status)
-    );
+    this._pixel.addEventListener("status", (status) => {
+      this._lastBleActivity = new Date();
+      this._evEmitter.emit("status", status);
+    });
     this._pixel.addEventListener("rollState", (state) =>
       this._evEmitter.emit("rollState", state)
     );
@@ -192,7 +193,7 @@ export default class PixelDispatcher implements IPixel {
         throw new Error("Pixel id doesn't match");
       }
       this._scannedPixel = scannedPixel;
-      this._lastScan = new Date();
+      this._lastBleActivity = new Date();
     }
   }
 
@@ -227,8 +228,8 @@ export default class PixelDispatcher implements IPixel {
       case "queueFirmwareUpdate":
         watch(this._queueFirmwareUpdate());
         break;
-      case "cancelFirmwareUpdate":
-        watch(this._cancelFirmwareUpdate());
+      case "dequeueFirmwareUpdate":
+        watch(this._dequeueFirmwareUpdate());
         break;
       default:
         assertNever(action);
@@ -317,13 +318,13 @@ export default class PixelDispatcher implements IPixel {
     }
   }
 
-  private async _cancelFirmwareUpdate(force = false): Promise<void> {
+  private async _dequeueFirmwareUpdate(force = false): Promise<void> {
     const i = _pendingDFUs.indexOf(this);
     if (i > 0 || force) {
       _pendingDFUs.splice(i);
       this._evEmitter.emit("firmwareUpdateQueued", false);
-      if (_pendingDFUs.length > 0) {
-        await _pendingDFUs[0]._updateFirmware();
+      if (i === 0) {
+        await _pendingDFUs[0]?._updateFirmware();
       }
     } else if (i === 0) {
       // TODO cancel ongoing DFU
@@ -345,7 +346,7 @@ export default class PixelDispatcher implements IPixel {
       );
     } finally {
       assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
-      this._cancelFirmwareUpdate(true);
+      this._dequeueFirmwareUpdate(true);
     }
   }
 }

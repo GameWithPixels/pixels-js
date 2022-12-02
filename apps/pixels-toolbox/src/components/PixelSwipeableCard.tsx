@@ -182,21 +182,23 @@ export default function ({
   const isDisco =
     !pixelDispatcher.status || pixelDispatcher.status === "disconnected";
   const lastSeen = Math.round(
-    (Date.now() - pixelDispatcher.lastScan.getTime()) / 1000
+    (Date.now() - pixelDispatcher.lastBleActivity.getTime()) / 1000
   );
   return (
     <Swipeable
       onSwipeableOpen={(direction, swipeable) => {
         if (direction === "left") {
-          if (isDisco) {
-            pixelDispatcher.dispatch("connect");
-          } else {
-            pixelDispatcher.dispatch("disconnect");
+          if (!dfuQueued) {
+            if (isDisco) {
+              pixelDispatcher.dispatch("connect");
+            } else {
+              pixelDispatcher.dispatch("disconnect");
+            }
           }
         } else {
           if (isDisco) {
             if (pixelDispatcher.isFirmwareUpdateQueued) {
-              pixelDispatcher.dispatch("cancelFirmwareUpdate");
+              pixelDispatcher.dispatch("dequeueFirmwareUpdate");
             } else {
               pixelDispatcher.dispatch("queueFirmwareUpdate");
             }
@@ -207,13 +209,15 @@ export default function ({
         swipeable.close();
       }}
       leftThreshold={swipeableItemsWidth}
-      renderLeftActions={() => (
-        <SwipeableItemView
-          label={isDisco ? "Connect" : "Disconnect"}
-          backgroundColor={isDisco ? "green.500" : "red.500"}
-          _text={{ mx: sr(20), color: "gray.100", bold: true }}
-        />
-      )}
+      renderLeftActions={() =>
+        !dfuQueued && (
+          <SwipeableItemView
+            label={isDisco ? "Connect" : "Disconnect"}
+            backgroundColor={isDisco ? "green.500" : "red.500"}
+            _text={{ mx: sr(20), color: "gray.100", bold: true }}
+          />
+        )
+      }
       rightThreshold={swipeableItemsWidth}
       renderRightActions={() =>
         (!isDisco ||
@@ -250,7 +254,9 @@ export default function ({
             alignItems="center"
             width="100%"
           >
+            {/* Show either DFU progress, profile update progress, connect state or advertising state */}
             {dfuQueued ? (
+              // DFU status and progress
               dfuState !== "dfuCompleted" ? (
                 <Center width="100%" flexDir="row">
                   <Text>Firmware Update: </Text>
@@ -266,6 +272,7 @@ export default function ({
                 <Text>Waiting On Firmware Update...</Text>
               )
             ) : profileUpdate ? (
+              // Profile update progress
               <Center width="100%" flexDir="row">
                 <Text>Profile Update: </Text>
                 <Box flex={1}>
@@ -273,12 +280,14 @@ export default function ({
                 </Box>
               </Center>
             ) : isDisco && lastSeen > 5 ? (
+              // Pixel is disconnected and hasn't been seen for a while (no advertising)
               <Text italic>{`Unavailable (${
                 lastSeen < 120
                   ? `${lastSeen}s`
                   : `${Math.floor(lastSeen / 60)}m`
               })`}</Text>
             ) : (
+              // Pixel is either connecting/connected or advertising
               <Text>
                 <Text>Status: </Text>
                 <Text italic>
