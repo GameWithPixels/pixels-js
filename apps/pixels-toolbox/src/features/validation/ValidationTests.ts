@@ -191,18 +191,6 @@ const ValidationTests = {
     );
   },
 
-  checkAccelerationShake: (
-    pixel: Pixel,
-    abortSignal: AbortSignal,
-    minNormDeviation = 0.3
-  ): Promise<void> => {
-    return ValidationTests.checkAccelerometer(
-      pixel,
-      (x, y, z) => Math.abs(1 - vectNorm(x, y, z)) > minNormDeviation,
-      abortSignal
-    );
-  },
-
   updateProfile: async (
     pixel: Pixel,
     profile: DataSet,

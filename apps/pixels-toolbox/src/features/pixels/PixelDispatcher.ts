@@ -327,7 +327,7 @@ export default class PixelDispatcher implements IPixel {
         await _pendingDFUs[0]?._updateFirmware();
       }
     } else if (i === 0) {
-      // TODO cancel ongoing DFU
+      // TODO abort ongoing DFU
     }
   }
 

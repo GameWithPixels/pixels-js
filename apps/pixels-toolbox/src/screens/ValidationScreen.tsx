@@ -27,7 +27,6 @@ import {
   CheckLEDs,
   ConnectPixel,
   PrepareDie,
-  ShakeDie,
   ValidationTestsSettings,
   UpdateFirmware,
   WaitCharging,
@@ -333,12 +332,6 @@ function RunTestsPage({
           <>
             {pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}
           </>
-        ))
-      )
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("ShakeDie", cancel, (p) => (
-          <>{pixel && <ShakeDie {...p} pixel={pixel} settings={settings} />}</>
         ))
       )
       .chainWith(

@@ -139,7 +139,7 @@ export function ConnectPixel({
       if (!pixelId) {
         throw new TaskFaultedError("Empty Pixel Id");
       }
-      await scannerDispatch("start");
+      scannerDispatch("start");
       try {
         await new Promise<void>((resolve, reject) => {
           const onTimeout = () => {
@@ -156,7 +156,7 @@ export function ConnectPixel({
           });
         });
       } finally {
-        await scannerDispatch("stop");
+        scannerDispatch("stop");
       }
     }, [pixelId, scannerDispatch]),
     createTaskStatusContainer("Bluetooth Scan")
@@ -352,48 +352,6 @@ export function CheckLEDs({
   );
 }
 
-export function ShakeDie({
-  action,
-  onTaskStatus,
-  pixel,
-  settings,
-}: ValidationTestProps) {
-  // Timeout before showing option to abort
-  const [hasElapsed, resetTimeout] = useTimeout(5000);
-  const [userAbort, setUserAbort] = useState<() => void>();
-
-  const taskChain = useTaskChain(
-    action,
-    useCallback(
-      (abortSignal) =>
-        _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
-          ValidationTests.checkAccelerationShake(pixel, abortSignal)
-        ),
-      [pixel]
-    ),
-    createTaskStatusContainer({
-      children: !hasElapsed ? (
-        <Text variant="comment">Test accelerometer by shaking the die</Text>
-      ) : (
-        <MessageYesNo
-          message="Have you shook the die?"
-          onYes={() => userAbort?.()}
-          onNo={() => resetTimeout()}
-        />
-      ),
-    })
-  ).withStatusChanged(onTaskStatus);
-
-  return (
-    <TaskGroupComponent
-      title="Wait For Shake Die"
-      taskStatus={taskChain.status}
-    >
-      {taskChain.render()}
-    </TaskGroupComponent>
-  );
-}
-
 export function TurnOffDevice({
   action,
   onTaskStatus,
@@ -453,7 +411,7 @@ export function WaitFaceUp({
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
-        <Text variant="comment">Place die with blinking face up</Text>
+        <Text variant="comment">Place die blinking face up</Text>
       ) : (
         <MessageYesNo
           message="Is blinking face up?"
@@ -462,7 +420,28 @@ export function WaitFaceUp({
         />
       ),
     })
-  ).withStatusChanged(onTaskStatus);
+  )
+    .chainWith(
+      useCallback(
+        (abortSignal) =>
+          _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
+            ValidationTests.waitFaceUp(pixel, 0, abortSignal)
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        children: !hasElapsed ? (
+          <Text variant="comment">Place die new blinking face up</Text>
+        ) : (
+          <MessageYesNo
+            message="Is blinking face up?"
+            onYes={() => userAbort?.()}
+            onNo={() => resetTimeout()}
+          />
+        ),
+      })
+    )
+    .withStatusChanged(onTaskStatus);
 
   return (
     <TaskGroupComponent title="Wait Face Up" taskStatus={taskChain.status}>
@@ -503,7 +482,7 @@ export function UpdateFirmware({
       if (!pixelId) {
         throw new TaskFaultedError("Empty Pixel Id");
       }
-      await scannerDispatch("start");
+      scannerDispatch("start");
       try {
         await new Promise<void>((resolve, reject) => {
           const onTimeout = () => {
@@ -520,7 +499,7 @@ export function UpdateFirmware({
           });
         });
       } finally {
-        await scannerDispatch("stop");
+        scannerDispatch("stop");
       }
     }, [pixelId, scannerDispatch]),
     createTaskStatusContainer("Bluetooth Scan")
