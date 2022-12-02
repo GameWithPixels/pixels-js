@@ -9,7 +9,7 @@ import React from "react";
 import { ImageSourcePropType } from "react-native";
 
 /**
- * Basic profile informations for minimal display.
+ * Basic profile information for minimal display.
  */
 export interface ProfileInfo {
   profileName: string;

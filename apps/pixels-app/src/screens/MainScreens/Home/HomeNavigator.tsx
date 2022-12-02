@@ -6,7 +6,7 @@ import HomeScreen from "./homeScreen";
 import PixelDetailScreen from "./pixelDetailScreen";
 
 const Stack = createStackNavigator();
-export default function Home() {
+export default function HomeNavigator() {
   return (
     <Stack.Navigator
       initialRouteName="Home"

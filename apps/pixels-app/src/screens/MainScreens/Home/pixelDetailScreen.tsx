@@ -119,7 +119,7 @@ function Histogram({ rolls }: HistogramProps) {
 }
 
 function DieStats() {
-  const [showSessionStats, SetShowSessionStats] = React.useState(true);
+  const [showSessionStats, setShowSessionStats] = React.useState(true);
   const lifetimeHistogramRolls = [
     30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45, 91, 12, 56, 35,
     45,
@@ -146,7 +146,7 @@ function DieStats() {
             textSize="xs"
             text="Lifetime"
             onToggle={() => {
-              SetShowSessionStats(!showSessionStats);
+              setShowSessionStats(!showSessionStats);
             }}
             isChecked={showSessionStats}
           />

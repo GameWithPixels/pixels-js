@@ -116,7 +116,7 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
               SwitchPixelsDisplay(!PixelsDisplay);
             }}
             isChecked={PixelsDisplay}
-            Icon={<AntDesign name="bars" size={24} color="white" />}
+            icon={<AntDesign name="bars" size={24} color="white" />}
           />
           <AntDesign name="appstore-o" size={22} color="white" />
         </HStack>

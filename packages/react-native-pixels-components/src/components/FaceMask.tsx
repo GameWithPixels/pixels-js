@@ -22,17 +22,20 @@ interface FaceMaskProps extends IModalProps {
 }
 
 /**
- * Facemask component used to display die faces and select which faces will be used with lighting animations.
+ * Display die faces and select which faces will be used with lighting animations.
  * @param props See {@link FaceMaskProps} for props parameters.
  */
 export function FaceMask(props: FaceMaskProps) {
   const [showModal, setShowModal] = React.useState(false);
   const [groupValue, setGroupValue] = React.useState<any[]>([]);
 
-  const buttonsArray = [];
-  for (let i = 0; i < props.dieFaces; ++i) {
-    buttonsArray.push(i);
-  }
+  // const buttonsArray = [];
+  // for (let i = 0; i < props.dieFaces; ++i) {
+  //   buttonsArray.push(i);
+  // }
+
+  const buttonsArray = Array(props.dieFaces).fill(0);
+  // Array(props.dieFaces).fill(0).map((e,i))
 
   const resolvedProps = usePropsResolution("FaceMask", props);
 
@@ -87,7 +90,7 @@ export function FaceMask(props: FaceMaskProps) {
                 }}
               >
                 <HStack space={2} flexWrap="wrap">
-                  {buttonsArray.map((i) => (
+                  {buttonsArray.map((_e, i) => (
                     <Box key={i} p={resolvedProps.checkBoxP}>
                       <Checkbox
                         w={50}

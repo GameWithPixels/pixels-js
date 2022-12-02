@@ -17,12 +17,11 @@ import { NavigationContainerComponent } from "./components/NavigationContainerCo
 import secondScreen from "./screens/MainScreens/secondScreen";
 import ThirdScreen from "./screens/MainScreens/thirdScreen";
 
-import Home from "~/screens/MainScreens/Home/home";
+import HomeNavigator from "~/screens/MainScreens/Home/homeNavigator";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 // Disable theses warnings that come from NativeBase
-LogBox.ignoreLogs(["EventEmitter.removeListener"]);
 LogBox.ignoreLogs([
   "We can not support a function callback. See Github Issues for details https://github.com/adobe/react-spectrum/issues/2320",
 ]);
@@ -34,14 +33,12 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{
-              // headerBackImage: (props) => <ChevronLeftIcon />,
               headerShown: false,
               ...TransitionPresets.SlideFromRightIOS,
               animationTypeForReplace: "pop",
             }}
           >
-            {/* <Stack.Screen name="HomeScreen" component={homeScreen} /> */}
-            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="Home" component={HomeNavigator} />
             <Stack.Screen name="SecondScreen" component={secondScreen} />
             <Stack.Screen name="ThirdScreen" component={ThirdScreen} />
           </Stack.Navigator>

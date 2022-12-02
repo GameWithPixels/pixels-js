@@ -14,7 +14,7 @@ interface TriggerProps {
   title: string;
 }
 /**
- * Default trigger component fro the LightingStyleSelection component.
+ * Default trigger component for the LightingStyleSelection component.
  * @param props See {@link TriggerProps} for props parameters.
  */
 function TriggerElement(props: TriggerProps) {

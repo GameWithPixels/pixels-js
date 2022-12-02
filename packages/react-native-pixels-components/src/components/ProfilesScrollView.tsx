@@ -26,7 +26,7 @@ export interface ProfilesScrollViewProps {
  * @param props See {@link ProfilesScrollViewProps} for props parameters
  */
 export function ProfilesScrollView(props: ProfilesScrollViewProps) {
-  const [selectedProfile, SetSelectedProfile] = React.useState<number>();
+  const [selectedProfile, setSelectedProfile] = React.useState<number>();
   return (
     <HStack alignItems="center">
       <ChevronLeftIcon />
@@ -50,7 +50,7 @@ export function ProfilesScrollView(props: ProfilesScrollViewProps) {
                 p={sr(4)}
                 profileName={profile.profileName}
                 profileIndexInList={i}
-                onSelected={SetSelectedProfile}
+                onSelected={setSelectedProfile}
                 onPress={props.onPress}
                 selectedProfileIndex={selectedProfile}
                 selectable

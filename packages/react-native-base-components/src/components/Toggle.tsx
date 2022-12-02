@@ -15,7 +15,7 @@ export interface ToggleProps extends ISwitchProps {
   textSize?: string | number | SizeType;
   toggleSize?: SizeType;
   space?: number | string; // Spacing between text and toggle
-  Icon?: ReactNode | ReactNode[]; // Icon displayed ont the left of the toggle
+  icon?: ReactNode | ReactNode[]; // Icon displayed ont the left of the toggle
 }
 
 /**
@@ -27,7 +27,7 @@ export function Toggle(props: ToggleProps) {
   return (
     <HStack space={resolvedProps.space} alignItems="center">
       <Text fontSize={props.textSize}>{props.text}</Text>
-      {props.Icon}
+      {props.icon}
       <Switch
         {...resolvedProps}
         onThumbColor={resolvedProps.onThumbColor}

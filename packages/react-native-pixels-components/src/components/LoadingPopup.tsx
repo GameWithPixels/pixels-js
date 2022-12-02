@@ -2,6 +2,8 @@ import { ProgressBar } from "@systemic-games/react-native-base-components";
 import { Center, HStack, Modal, Text } from "native-base";
 import React from "react";
 
+//TODO remove minh minw
+
 /**
  * Props for loading popup component
  */
@@ -25,8 +27,9 @@ export function LoadingPopup(props: LoadingPopupProps) {
       return () => {
         clearTimeout(timeoutId);
       };
+    } else {
+      setProgress(0);
     }
-    setProgress(0);
     props.onProgressEnd?.();
   }, [progress, props]);
 
@@ -40,7 +43,7 @@ export function LoadingPopup(props: LoadingPopupProps) {
             </HStack>
           </Center>
         </Modal.Header>
-        <Modal.Body minH="1px">
+        <Modal.Body minH={1}>
           <ProgressBar progress={progress} />
         </Modal.Body>
         <Modal.Footer />
