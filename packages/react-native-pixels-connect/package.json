@@ -23,7 +23,7 @@
   "scripts": {
     "test": "jest",
     "prepare": "bob build",
-    "release": "release-it --only-version"
+    "release": "release-it"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -45,7 +45,6 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
-      "events": "^3.3.0",
       "@systemic-games/pixels-core-connect": "1.0.3",
       "@systemic-games/pixels-core-utils": "1.0.3",
       "@systemic-games/react-native-bluetooth-le": "1.0.0"
@@ -53,13 +52,13 @@
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.1.2",
-    "@types/react": "~18.0.0",
-    "@types/react-native": "0.69.6",
+    "@types/react": "~18.0.25",
+    "@types/react-native": "0.70.6",
     "jest": "^29.1.2",
-    "react": "18.0.0",
-    "react-native": "0.69.7",
+    "react": "18.1.0",
+    "react-native": "0.70.6",
     "react-native-builder-bob": "^0.20.0",
-    "release-it": "^15.0.0"
+    "release-it": "^15.5.0"
   },
   "peerDependencies": {
     "react": "*",
@@ -73,6 +72,7 @@
   },
   "release-it": {
     "git": {
+      "tag": false,
       "commitMessage": "chore: release ${version}",
       "tagName": "v${version}"
     },
@@ -80,9 +80,9 @@
       "publish": true
     },
     "github": {
-      "release": true
+      "release": false
     },
-    "plugins": {
+    "plugins-disabled": {
       "@release-it/conventional-changelog": {
         "preset": "angular"
       }

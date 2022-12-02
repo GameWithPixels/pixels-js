@@ -2,6 +2,10 @@
   "extends": "./../../tsconfig.web.build",
   "compilerOptions": {
     "outDir": "./dist",
+    "types": [
+      "jest",
+      "node" // For EventEmitter
+    ],
     "experimentalDecorators": true
   },
   "include": [

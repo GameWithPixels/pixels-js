@@ -1,6 +1,12 @@
 import assert, { AssertionError } from "./assert";
-import assertUnreachable from "./assertUnreachable";
+import assertNever from "./assertNever";
 import bernsteinHash from "./bernsteinHash";
+import createTypedEventEmitter, {
+  type EventKey,
+  type EventMap,
+  type EventReceiver,
+  TypedEventEmitter,
+} from "./createTypedEventEmitter";
 import decodeUtf8 from "./decodeUtf8";
 import delay from "./delay";
 import { enumValue, enumFlag } from "./enum";
@@ -26,7 +32,7 @@ export {
   enumFlag,
   assert,
   AssertionError,
-  assertUnreachable,
+  assertNever,
   decodeUtf8,
   SerializableProperty,
   type SerializedNumberFormat,
@@ -44,4 +50,9 @@ export {
   bernsteinHash,
   delay,
   safeAssign,
+  createTypedEventEmitter,
+  type EventKey,
+  type EventMap,
+  type EventReceiver,
+  TypedEventEmitter,
 };

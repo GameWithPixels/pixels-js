@@ -77,6 +77,8 @@ export const MessageTypeValues = {
   transferInstantAnimationSetFinished: enumValue(),
   playInstantAnimation: enumValue(),
   stopAllAnimations: enumValue(),
+  requestTemperature: enumValue(),
+  temperature: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
@@ -848,6 +850,21 @@ export class PlayInstantAnimation implements PixelMessage {
   loop = false;
 }
 
+/**
+ * Message send by a Pixel to notify of its internal temperature.
+ * @category Message
+ */
+export class Temperature implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.temperature;
+
+  /** The temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
+  If the die was unable to read the temperature, value will be 0xffff */
+  @serializable(2)
+  temperatureTimes100 = 0;
+}
+
 // Returns the list of message classes defined in this file.
 function _getMessageClasses(): MessageClass[] {
   return [
@@ -874,5 +891,6 @@ function _getMessageClasses(): MessageClass[] {
     TransferInstantAnimationSet,
     TransferInstantAnimationSetAck,
     PlayInstantAnimation,
+    Temperature,
   ];
 }

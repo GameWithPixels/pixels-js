@@ -21,7 +21,7 @@ import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-// Disable theses warnings that come from NativeBase
+// Disable this warning that comes from NativeBase
 LogBox.ignoreLogs([
   "We can not support a function callback. See Github Issues for details https://github.com/adobe/react-spectrum/issues/2320",
 ]);

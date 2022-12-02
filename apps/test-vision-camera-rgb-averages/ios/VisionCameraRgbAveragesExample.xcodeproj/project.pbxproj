@@ -713,7 +713,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemicgames.rgbaveragesexampleExample-tvOS";
+        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemic.rgbaveragesexampleExample-tvOS";
         PRODUCT_NAME = "$(TARGET_NAME)";
         SDKROOT = appletvos;
         TARGETED_DEVICE_FAMILY = 3;
@@ -741,7 +741,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemicgames.rgbaveragesexampleExample-tvOS";
+        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemic.rgbaveragesexampleExample-tvOS";
         PRODUCT_NAME = "$(TARGET_NAME)";
         SDKROOT = appletvos;
         TARGETED_DEVICE_FAMILY = 3;
@@ -768,7 +768,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemicgames.rgbaveragesexampleExample-tvOSTests";
+        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemic.rgbaveragesexampleExample-tvOSTests";
         PRODUCT_NAME = "$(TARGET_NAME)";
         SDKROOT = appletvos;
         TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VisionCameraRgbAveragesExample-tvOS.app/VisionCameraRgbAveragesExample-tvOS";
@@ -795,7 +795,7 @@
           "-ObjC",
           "-lc++",
         );
-        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemicgames.rgbaveragesexampleExample-tvOSTests";
+        PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.systemic.rgbaveragesexampleExample-tvOSTests";
         PRODUCT_NAME = "$(TARGET_NAME)";
         SDKROOT = appletvos;
         TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VisionCameraRgbAveragesExample-tvOS.app/VisionCameraRgbAveragesExample-tvOS";

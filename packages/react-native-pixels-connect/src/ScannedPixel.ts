@@ -1,7 +1,7 @@
 import type {
   IPixel,
-  PixelDesignAndColor,
-  PixelRollState,
+  PixelDesignAndColorNames,
+  PixelRollStateNames,
 } from "@systemic-games/pixels-core-connect";
 
 export default interface ScannedPixel extends IPixel {
@@ -9,11 +9,12 @@ export default interface ScannedPixel extends IPixel {
   readonly pixelId: number;
   readonly address: number;
   readonly name: string;
-  readonly rssi: number;
   readonly ledCount: number;
-  readonly designAndColor: PixelDesignAndColor;
-  readonly rollState: PixelRollState;
-  readonly currentFace: number; // Face number (not index)
-  readonly batteryLevel: number;
-  readonly buildTimestamp: number;
+  readonly designAndColor: PixelDesignAndColorNames;
+  readonly firmwareDate: Date;
+  readonly rssi: number;
+  readonly batteryLevel: number; // Percentage
+  readonly isCharging: boolean;
+  readonly rollState: PixelRollStateNames;
+  readonly currentFace: number; // Face value (not index)
 }

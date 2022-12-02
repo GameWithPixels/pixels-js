@@ -65,7 +65,6 @@ export function ColorWheel(props: ColorWheelProps) {
         {shapes.map((s) => (
           <Box>
             <Defs>
-              {/* @ts-expect-error Typing error fixed in react-native-svg 12.4.4 */}
               <RadialGradient
                 id={toStringColor(s.color)}
                 cx="50%"

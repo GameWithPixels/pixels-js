@@ -3,7 +3,12 @@
     "name": "Pixels Toolbox",
     "slug": "pixels-toolbox",
     "owner": "gamewithpixels",
-    "version": "1.4.4",
+    "version": "1.5.2",
+    "sdkVersion": "47.0.0",
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -29,10 +34,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#222222"
       },
-      "package": "com.systemic.pixelstoolbox",
-      "permissions": [
-        "android.permission.CAMERA"
-      ]
+      "package": "com.systemic.pixelstoolbox"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -40,7 +42,12 @@
     "plugins": [
       "./withAndroidPermissions",
       "sentry-expo",
-      "react-native-vision-camera",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
+        }
+      ],
       [
         "expo-build-properties",
         {
@@ -73,6 +80,7 @@
       "eas": {
         "projectId": "deab8983-a21f-4c31-9861-41762637a793"
       }
-    }
+    },
+    "jsEngine": "hermes"
   }
 }

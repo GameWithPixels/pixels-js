@@ -53,17 +53,75 @@ export function addDfuProgressEventListener(
   return dfuEventEmitter.addListener("progress", handler);
 }
 
+/**
+ * Optional parameters for {@link startDfu}.
+ **/
 export interface StartDfuOptions {
+  /**
+   * The device named is used in user notifications.
+   * @remarks Android only.
+   */
   deviceName?: string;
-  retries?: number; // Android only
-  alternativeAdvertisingNameEnabled?: boolean; // iOS only
+  /**
+   * Sets the number of retries that the DFU service will use to complete
+   * DFU.
+   * @defaultValue 2 retries.
+   * @remarks Android only.
+   */
+  retries?: number;
+  /**
+   * This method sets the duration of a delay, that the service will wait
+   * before sending each data object in Secure DFU. The delay will be done
+   * after a data object is created, and before any data byte is sent.
+   * @defaultValue 400 ms.
+   * @remarks Android only.
+   */
+  prepareDataObjectDelay?: number;
+  /**
+   * The reboot time in milliseconds.
+   * @defaultValue 0 ms.
+   * @remarks (Android only).
+   */
+  rebootTime?: number;
+  /**
+   * Sets the scan duration (in milliseconds) when scanning for DFU
+   * Bootloader.
+   * @defaultValue 5000 ms.
+   * @remarks Android only.
+   */
+  bootloaderScanTimeout?: number;
+  /**
+   * Disable the button less DFU feature for non-bonded devices which
+   * allows to send a unique name to the device before it is switched
+   * to bootloader mode.
+   * @defaultValue false.
+   * @remarks iOS only.
+   */
+  alternativeAdvertisingNameDisabled?: boolean;
+  /**
+   * The callback that is invoked for each DFU event.
+   */
   dfuStateListener?: (ev: DfuStateEvent) => void;
+  /**
+   * The callback that is repeatedly invoked during the upload,
+   * with information about the transfer progress.
+   */
   dfuProgressListener?: (ev: DfuProgressEvent) => void;
 }
 
-// 48 bits Bluetooth MAC address fits into the 52 bits mantissa
-// of a number(64 bits floating point)
-// The Bluetooth address of the device when in DFU mode is the normal address + 1
+/**
+ * Starts the Device Firmware Update (DFU) service for the Bluetooth device
+ * at the given address.
+ *
+ * @param deviceAddress The Bluetooth address of the device to update.
+ * @param filePath The path of the DFU files to send to the device.
+ * @param options Optional parameters, see {@link StartDfuOptions}.
+ *
+ * @remarks
+ * - The Bluetooth address of the device when in DFU mode is the normal address + 1
+ * - The device address is passed as "number" as a 48 bits Bluetooth MAC address fits
+ *   into the 52 bits mantissa of a JavaScript number (64 bits floating point).
+ */
 export async function startDfu(
   deviceAddress: number,
   filePath: string,
@@ -112,14 +170,17 @@ export async function startDfu(
         deviceAddress,
         options?.deviceName,
         filePath,
-        options?.alternativeAdvertisingNameEnabled ?? false
+        options?.alternativeAdvertisingNameDisabled ?? false
       );
     } else if (Platform.OS === "android") {
       await NordicNrf5Dfu.startDfu(
         deviceAddress,
         options?.deviceName,
         filePath,
-        options?.retries ?? 1
+        options?.retries ?? 0,
+        options?.prepareDataObjectDelay ?? 0,
+        options?.rebootTime ?? 0,
+        options?.bootloaderScanTimeout ?? 0
       );
     } else {
       throw new Error("Platform not supported (not Android or iOS)");

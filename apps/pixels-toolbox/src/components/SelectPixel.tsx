@@ -8,33 +8,31 @@ import {
   // eslint-disable-next-line import/namespace
 } from "react-native";
 
-import PixelInfoBox from "./PixelInfoBox";
-import Spacer from "./Spacer";
+import PixelInfoBox from "./PixelInfoCard";
 
+import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 import globalStyles, { sr } from "~/styles";
-import usePixelScannerWithFocus from "~/usePixelScannerWithFocus";
 
 interface SelectPixelProps {
   setSelectedPixel: (pixel: Pixel) => void;
 }
 
 export default function ({ setSelectedPixel }: SelectPixelProps) {
-  const [scannedPixels, scannerDispatch] = usePixelScannerWithFocus({
+  const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
     sortedByName: true,
   });
+  useErrorWithHandler(lastError);
   return (
     <>
       <Text style={styles.text}>Select Pixel</Text>
-      <Spacer />
       <Button
         onPress={() => scannerDispatch("clear")}
         title="Clear Scan List"
       />
-      <Spacer />
       {scannedPixels.length ? (
         <View style={styles.containerScanList}>
           <FlatList
-            ItemSeparatorComponent={Spacer}
             data={scannedPixels}
             renderItem={(itemInfo) => (
               <View style={styles.box}>
@@ -51,7 +49,7 @@ export default function ({ setSelectedPixel }: SelectPixelProps) {
           />
         </View>
       ) : (
-        <Text style={styles.text}>No Pixel found so far...</Text>
+        <Text style={styles.text}>No Pixels found so far...</Text>
       )}
     </>
   );

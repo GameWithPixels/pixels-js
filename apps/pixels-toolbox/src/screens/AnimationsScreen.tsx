@@ -40,10 +40,9 @@ import {
 import defaultProfilesJson from "~/../assets/default-profiles.json";
 import AppPage from "~/components/AppPage";
 import SelectPixel from "~/components/SelectPixel";
-import Spacer from "~/components/Spacer";
-import range from "~/range";
+import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
-import usePixelStatus from "~/usePixelStatus";
+import range from "~/utils/range";
 
 // function test() {
 //   try {
@@ -257,7 +256,6 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         return (
           <>
             <Text style={styles.textBold}>{propertyValue}</Text>
-            <Spacer />
             <Slider
               style={styles.slider}
               value={value as number}
@@ -276,7 +274,6 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         );
         return (
           <FlatList
-            ItemSeparatorComponent={Spacer}
             data={gradients}
             renderItem={(itemInfo) => (
               <Button
@@ -296,7 +293,6 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         );
         return (
           <FlatList
-            ItemSeparatorComponent={Spacer}
             data={patterns}
             renderItem={(itemInfo) => (
               <Button
@@ -314,7 +310,6 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
   } else if (value instanceof EditColor) {
     return (
       <FlatList
-        ItemSeparatorComponent={Spacer}
         data={colorMap}
         renderItem={(itemInfo) => (
           <Button
@@ -353,12 +348,10 @@ function AnimationPage() {
       ) : (
         <>
           <Text style={styles.text}>{`Connection status: ${status}`}</Text>
-          <Spacer />
           <Button
             onPress={() => setSelectedPixel(undefined)}
             title="Disconnect"
           />
-          <Spacer />
           <Button
             onPress={() => {
               if (animList.length) {
@@ -371,14 +364,12 @@ function AnimationPage() {
             }}
             title="Play"
           />
-          <Spacer />
           {editAnim && editProperty ? (
             <>
               <Text
                 style={styles.textBold}
               >{`Editing ${editProperty.name}`}</Text>
               <Button onPress={() => setEditProperty(undefined)} title="Back" />
-              <Spacer />
               <PropertyEditor
                 editAnim={editAnim}
                 propertyKey={editProperty.propertyKey}
@@ -402,9 +393,7 @@ function AnimationPage() {
                 }}
                 title="Remove"
               />
-              <Spacer />
               <FlatList
-                ItemSeparatorComponent={Spacer}
                 data={getPropsWithName(editAnim)}
                 renderItem={(itemInfo) => (
                   <Button
@@ -421,9 +410,7 @@ function AnimationPage() {
           ) : (
             <>
               <Text style={styles.textBold}>Effects:</Text>
-              <Spacer />
               <FlatList
-                ItemSeparatorComponent={Spacer}
                 data={animList}
                 renderItem={(itemInfo) => (
                   <Button
@@ -436,9 +423,7 @@ function AnimationPage() {
             </>
           )}
           <Text style={styles.textBold}>Add Effect:</Text>
-          <Spacer />
           <FlatList
-            ItemSeparatorComponent={Spacer}
             data={editAnimationTypes}
             renderItem={(itemInfo) => (
               <Button
@@ -465,7 +450,7 @@ function AnimationPage() {
 
 export default function () {
   return (
-    <AppPage style={styles.container}>
+    <AppPage>
       <AnimationPage />
     </AppPage>
   );

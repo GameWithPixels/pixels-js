@@ -27,7 +27,8 @@ export default async function (
   const addrStr = pixelAddress.toString(16);
 
   // Update bootloader
-  if (bootloaderPath?.length) {
+  const hasBootloader = !!bootloaderPath?.length;
+  if (hasBootloader) {
     console.log(
       `Starting DFU for device ${addrStr} with bootloader ${bootloaderPath}`
     );
@@ -48,6 +49,7 @@ export default async function (
     console.log(
       `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
     );
-    await startDfu(pixelAddress + 1, firmwarePath, dfuOptions);
+    const addr = pixelAddress + (hasBootloader ? 1 : 0);
+    await startDfu(addr, firmwarePath, dfuOptions);
   }
 }
