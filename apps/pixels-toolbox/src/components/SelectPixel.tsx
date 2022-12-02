@@ -19,6 +19,7 @@ interface SelectPixelProps {
 }
 
 export default function ({ setSelectedPixel }: SelectPixelProps) {
+  const { t } = useTranslation();
   const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
     sortedByName: true,
   });
@@ -49,7 +50,7 @@ export default function ({ setSelectedPixel }: SelectPixelProps) {
           />
         </View>
       ) : (
-        <Text style={styles.text}>No Pixels found so far...</Text>
+        <Text style={styles.text}>{t("noPixelsFound")}</Text>
       )}
     </>
   );

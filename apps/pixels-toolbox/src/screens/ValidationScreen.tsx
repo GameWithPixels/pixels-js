@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import {
   extendTheme,
@@ -13,7 +15,7 @@ import {
 } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
-import { useTranslation } from "react-i18next";
+import { useTranslation, type TFunction } from "react-i18next";
 import {
   Camera,
   CameraPermissionStatus,
@@ -45,9 +47,19 @@ import useTaskChain from "~/features/tasks/useTaskChain";
 import useTaskComponent from "~/features/tasks/useTaskComponent";
 import {
   getBoardOrDie,
-  getFormFactorNiceName,
   ValidationFormFactor,
 } from "~/features/validation/ValidationFormFactor";
+import { RootStackParamList } from "~/navigation";
+
+function getTestingMessage(
+  t: TFunction<"translation", undefined>,
+  settings: ValidationTestsSettings
+): string {
+  return t("testingDieTypeWithFormFactor", {
+    dieType: t(settings.dieType),
+    formFactor: t(settings.formFactor),
+  });
+}
 
 function SelectFormFactorPage({
   onSelected,
@@ -82,8 +94,8 @@ function SelectDieTypePage({
   const { t } = useTranslation();
   return (
     <VStack w="100%" h="100%" p="2" bg={useBackgroundColor()}>
-      <Text textAlign="center">
-        Testing {getFormFactorNiceName(formFactor)}
+      <Text variant="comment" textAlign="center">
+        {t("testingFormFactor", { formFactor: t(formFactor) })}
       </Text>
       <VStack h="85%" p="2" justifyContent="center">
         {DieTypes.map((dt) => (
@@ -192,8 +204,6 @@ function DecodePixelIdPage({
   // Scan list
   const [showScanList, setShowScanList] = useState(false);
 
-  const boardOrDie = getBoardOrDie(settings.formFactor);
-  const formFactor = getFormFactorNiceName(settings.formFactor);
   const bg = useBackgroundColor();
   return showScanList ? (
     <Box w="100%" h="100%" bg={bg}>
@@ -223,22 +233,19 @@ function DecodePixelIdPage({
         <Text>{t("startingCamera")}</Text>
       )}
       {!readingColors && (
-        <Center position="absolute" top="0" w="94%" left="3" p="2" bg={bg}>
-          <HStack>
-            <VStack>
-              <Text variant="comment">Reset {boardOrDie} using magnet</Text>
-              <Text variant="comment">and point camera at it</Text>
-            </VStack>
-            <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
-              Scan
-            </Button>
-          </HStack>
-        </Center>
+        <HStack position="absolute" top="3%" w="94%" left="3%" p="1%" bg={bg}>
+          <Text flex={1} variant="comment">
+            {t("resetUsingMagnet", {
+              formFactor: getBoardOrDie(settings.formFactor),
+            })}
+          </Text>
+          <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
+            {t("scan")}
+          </Button>
+        </HStack>
       )}
       <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
-        <Text>
-          Testing {t(settings.dieType)} {formFactor}
-        </Text>
+        <Text variant="comment">{getTestingMessage(t, settings)}</Text>
         <Button w="100%" onPress={onBack}>
           {t("back")}
         </Button>
@@ -381,10 +388,9 @@ function RunTestsPage({
     }
   });
 
-  const formFactor = getFormFactorNiceName(settings.formFactor);
   return (
     <Center w="100%" h="100%" p="2%" bg={useBackgroundColor()}>
-      <Text>{`Testing ${t(settings.dieType)} ${formFactor}`}</Text>
+      <Text variant="comment">{getTestingMessage(t, settings)}</Text>
       <ScrollView w="100%" ref={scrollRef}>
         <>{taskChain.render()}</>
         {result && (
@@ -392,7 +398,9 @@ function RunTestsPage({
             <Text fontSize={150} textAlign="center">
               {getTaskResultEmoji(taskChain.status)}
             </Text>
-            <Text mb="8%">Battery: {pixel?.batteryLevel ?? 0}%</Text>
+            <Text mb="8%">
+              {t("batteryWithLevel", { level: pixel?.batteryLevel ?? 0 })}
+            </Text>
           </Center>
         )}
       </ScrollView>
@@ -404,6 +412,17 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
+  const { t } = useTranslation();
+  // Setup page options
+  const navigation =
+    useNavigation<StackNavigationProp<RootStackParamList, "Validation">>();
+  useEffect(() => {
+    navigation.setOptions({
+      title: t("factoryValidation"),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [formFactor, setFormFactor] = useState<ValidationFormFactor>();
   const [dieType, setDieType] = useState<DieType>();
   const [pixelId, setPixelId] = useState(0);

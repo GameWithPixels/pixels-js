@@ -15,6 +15,7 @@ import {
   useDisclose,
 } from "native-base";
 import { useState, useEffect, useCallback, memo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Platform,
   RefreshControl,
@@ -35,6 +36,7 @@ import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function Header({ title }: { title: string }) {
+  const { t } = useTranslation();
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "Home">>();
   return (
@@ -68,7 +70,7 @@ function Header({ title }: { title: string }) {
           }}
         >
           <Menu.Item onPress={() => navigation.navigate("Validation")}>
-            Factory Validation
+            {t("factoryValidation")}
           </Menu.Item>
           {/* TODO <Menu.Item onPress={() => navigation.navigate("Roll")}>
             Roll Screen
@@ -97,6 +99,7 @@ function PixelsList() {
   );
 
   // Values for UI
+  const { t } = useTranslation();
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   return (
@@ -104,7 +107,9 @@ function PixelsList() {
       <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
         <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>ℹ️</EmojiButton>
         <Center flex={1}>
-          <Text variant="h2">{`${pixelDispatchers.length} Pixels`}</Text>
+          <Text variant="h2">
+            {t("scannedPixelsWithCount", { count: pixelDispatchers.length })}
+          </Text>
         </Center>
         <EmojiButton onPress={dispatchAllDisclose.onOpen}>⚙️</EmojiButton>
       </Center>
@@ -137,7 +142,7 @@ function PixelsList() {
           }
         />
       ) : (
-        <Text italic>No Pixels found so far...</Text>
+        <Text italic>{t("noPixelsFound")}</Text>
       )}
       <DispatchAllActionsheetMemo
         dispatch={dispatchAll}
@@ -225,14 +230,14 @@ function HomePage() {
   }, [dfuFiles]);
 
   // Values for UI
+  const { t } = useTranslation();
   const window = useWindowDimensions();
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
       <Box flex={1} alignItems="center" left="2%" width="96%">
         <Text pl="7%" mb={sr(10)} alignSelf="flex-start">
-          ↖️
-          <Text italic> Open Menu To Go To Validation</Text>
+          ↖️ <Text italic>{t("openMenuToGoToValidation")}</Text>
         </Text>
         <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
           {selectedFwLabel ?? "Tap To Select firmware"}

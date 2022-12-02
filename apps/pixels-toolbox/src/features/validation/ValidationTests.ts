@@ -211,8 +211,8 @@ const ValidationTests = {
   waitFaceUp: async (
     pixel: Pixel,
     face: number,
-    abortSignal: AbortSignal,
-    blinkColor = Color.dimMagenta
+    blinkColor: Color,
+    abortSignal: AbortSignal
   ): Promise<void> => {
     assert(face > 0);
     await new Promise<void>((resolve, reject) => {

@@ -1,5 +1,14 @@
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
-import { Button, Box, FlatList, Pressable, Text, VStack } from "native-base";
+import {
+  Button,
+  Box,
+  FlatList,
+  HStack,
+  Pressable,
+  Text,
+  VStack,
+} from "native-base";
+import { useTranslation } from "react-i18next";
 
 import PixelInfoBox from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
@@ -14,19 +23,28 @@ export default function ({
   onClose: () => void;
   refreshInterval?: number;
 }) {
+  const { t } = useTranslation();
   const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
     sortedByName: true,
     refreshInterval,
   });
   useErrorWithHandler(lastError);
   return (
-    <VStack flex={1} alignItems="center">
-      <Text bold>{`Scanned Pixels (${scannedPixels.length}):`}</Text>
-      <Button onPress={onClose}>Close</Button>
-      <Button onPress={() => scannerDispatch("clear")}>Clear Scan List</Button>
-      {scannedPixels.length ? (
+    <VStack flex={1} space="1%" alignItems="center">
+      <HStack space="2%">
+        <Button onPress={onClose}>{t("close")}</Button>
+        <Button onPress={() => scannerDispatch("clear")}>
+          {t("clearScanList")}
+        </Button>
+      </HStack>
+      <Text bold>
+        {scannedPixels.length
+          ? t("scannedPixelsWithCount", { count: scannedPixels.length })
+          : t("noPixelsFound")}
+      </Text>
+      {scannedPixels.length > 0 && (
         <>
-          <Text italic>Tap On Device To Select:</Text>
+          <Text italic>{t("tapOnItemToSelect")}</Text>
           <FlatList
             width="100%"
             data={scannedPixels}
@@ -44,8 +62,6 @@ export default function ({
             contentContainerStyle={{ flexGrow: 1 }}
           />
         </>
-      ) : (
-        <Text>No Pixels found so far...</Text>
       )}
     </VStack>
   );
