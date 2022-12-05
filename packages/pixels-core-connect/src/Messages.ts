@@ -183,13 +183,11 @@ export function isMessage(obj: unknown): obj is PixelMessage {
  * @returns The message name.
  * @category Message
  */
-export function getMessageName(
-  msgOrType: MessageOrType
-): keyof typeof MessageTypeValues {
+export function getMessageName(msgOrType: MessageOrType): MessageTypeNames {
   const msgType = getMessageType(msgOrType);
   for (const [key, value] of Object.entries(MessageTypeValues)) {
     if (value === msgType) {
-      return key as keyof typeof MessageTypeValues;
+      return key as MessageTypeNames;
     }
   }
   throw Error(`${msgType} is not a value in ${MessageTypeValues}`);
