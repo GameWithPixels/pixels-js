@@ -19,6 +19,7 @@ import {
   EditRgbGradient,
   EditRgbKeyframe,
 } from "@systemic-games/pixels-edit-animation";
+import { usePixelStatus } from "@systemic-games/pixels-react";
 import {
   getPixelEnumName,
   AnimationTypeValues,
@@ -39,7 +40,6 @@ import {
 
 import defaultProfilesJson from "~/../assets/default-profiles.json";
 import AppPage from "~/components/AppPage";
-import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
 import range from "~/utils/range";
 

@@ -1,3 +1,4 @@
+import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { useEffect, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
@@ -9,8 +10,6 @@ import {
 } from "react-native";
 
 import AppPage from "~/components/AppPage";
-import usePixelRoll from "~/features/pixels/hooks/usePixelRoll";
-import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
 import globalStyles, { sr } from "~/styles";
 
 function RollPage() {
@@ -18,7 +17,7 @@ function RollPage() {
   const [selectedPixel] = useState<Pixel | undefined>();
   const status = usePixelStatus(selectedPixel);
   const [connectStarted, setConnectStarted] = useState(false);
-  const [face, rollState] = usePixelRoll(selectedPixel);
+  const [rollState] = usePixelValue(selectedPixel, "rollState");
 
   useEffect(() => {
     setConnectStarted(true);
@@ -42,7 +41,7 @@ function RollPage() {
       ? "yellow"
       : status !== "ready"
       ? "red"
-      : rollState !== "onFace"
+      : rollState?.state !== "onFace"
       ? "blue"
       : "green";
   return (
@@ -56,8 +55,9 @@ function RollPage() {
             <Text style={styles.textRoll}>...</Text>
           ) : (
             status === "ready" &&
-            rollState !== "unknown" && (
-              <Text style={styles.textRoll}>{face}</Text>
+            rollState &&
+            rollState.state !== "unknown" && (
+              <Text style={styles.textRoll}>{rollState.face}</Text>
             )
           )}
           {/* <Button onPress={() => setSelectedPixel(undefined)} title="Back" /> */}

@@ -1,15 +1,10 @@
+import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
 import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
 import { memo, useEffect, useState } from "react";
 
 import ProgressBar from "./ProgressBar";
 
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import usePixelBattery from "~/features/pixels/hooks/usePixelBattery";
-import usePixelRoll from "~/features/pixels/hooks/usePixelRoll";
-import usePixelRssi from "~/features/pixels/hooks/usePixelRssi";
-import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
-import usePixelTelemetry from "~/features/pixels/hooks/usePixelTelemetry";
-import usePixelTemperature from "~/features/pixels/hooks/usePixelTemperature";
 import { sr } from "~/styles";
 
 function TextEntry({
@@ -48,15 +43,16 @@ function PixelDetailsImpl({
   }, [pixelDispatcher]);
   const pixel = pixelDispatcher.pixel;
   const status = usePixelStatus(pixel);
-  // TODO should be active by default?
-  const opt = { refreshInterval: 5000, alwaysActive: true };
-  const [batteryInfo] = usePixelBattery(pixel, opt);
-  const [rssi] = usePixelRssi(pixel, opt);
-  const [face, rollState] = usePixelRoll(pixel);
-  const [telemetry] = usePixelTelemetry(pixel, opt);
-  const [temperature] = usePixelTemperature(pixel, opt);
-  const voltage = batteryInfo?.voltage.toFixed(3);
-  const chargeState = batteryInfo?.isCharging ? "charging" : "not charging";
+  const opt = { refreshInterval: 5000 };
+  const [battery] = usePixelValue(pixel, "batteryWithVoltage", opt);
+  const [rssi] = usePixelValue(pixel, "rssi", opt);
+  const [temperature] = usePixelValue(pixel, "temperature", opt);
+  const [rollState] = usePixelValue(pixel, "rollState", opt);
+  const [telemetry] = usePixelValue(pixel, "telemetry", opt);
+
+  // Prepare some values
+  const voltage = battery?.voltage.toFixed(3);
+  const chargeState = battery?.isCharging ? "charging" : "not charging";
   const x = telemetry?.accX ?? 0;
   const y = telemetry?.accY ?? 0;
   const z = telemetry?.accZ ?? 0;
@@ -67,21 +63,19 @@ function PixelDetailsImpl({
         {status}
       </TextEntry>
       <TextEntry title="Pixel Id:">{pixel.pixelId}</TextEntry>
-      <TextEntry title="LEDs Count:">
+      <TextEntry title="LEDs:">
         {pixel.ledCount}, {pixel.designAndColor}
       </TextEntry>
       <TextEntry title="Firmware:">{pixel.firmwareDate.toString()}</TextEntry>
-      <TextEntry title="Battery:">
-        {batteryInfo?.level}%, {voltage}V, {chargeState}
+      <TextEntry title="Bat:">
+        {battery?.level}%, {voltage}V, {chargeState}
       </TextEntry>
       <TextEntry title="RSSI:">{Math.round(rssi ?? 0)}</TextEntry>
-      <TextEntry title="Temperature:">
-        {temperature?.temperature ?? 0}C
-      </TextEntry>
+      <TextEntry title="Temperature:">{temperature ?? 0}°C</TextEntry>
       <TextEntry title="Roll State:">
-        {face}, {rollState}
+        {rollState?.face}, {rollState?.state}
       </TextEntry>
-      <TextEntry title="Acceleration:">{acc}</TextEntry>
+      <TextEntry title="Acc:">{acc}</TextEntry>
       <HStack space={sr(5)}>
         <VStack flex={1} space={sr(5)}>
           <Button onPress={() => pixelDispatcher.dispatch("connect")}>

@@ -1,8 +1,5 @@
+import { Pixel, PixelStatus } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import {
-  Pixel,
-  PixelStatus,
-} from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useState } from "react";
 
 import usePixelStatus from "./usePixelStatus";

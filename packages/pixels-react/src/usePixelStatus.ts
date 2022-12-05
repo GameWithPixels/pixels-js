@@ -1,7 +1,4 @@
-import {
-  Pixel,
-  PixelStatus,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel, PixelStatus } from "@systemic-games/pixels-core-connect";
 import { useEffect, useReducer } from "react";
 
 export default function (pixel?: Pixel): PixelStatus | undefined {
