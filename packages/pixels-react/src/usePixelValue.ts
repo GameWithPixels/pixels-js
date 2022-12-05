@@ -16,16 +16,6 @@ import {
 import { assertNever, EventReceiver } from "@systemic-games/pixels-core-utils";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
-interface PixelValueMapping {
-  roll: number;
-  rollState: PixelRollData;
-  battery: PixelBatteryData;
-  batteryWithVoltage: PixelBatteryData & { voltage: number };
-  rssi: number;
-  temperature: number;
-  telemetry: Telemetry;
-}
-
 function _autoRequest(
   pixel: Pixel,
   refreshInt: number,
@@ -91,25 +81,67 @@ function _requestProp<T extends keyof PixelEventMap>(
   };
 }
 
-// refreshInterval ignored for "roll" value
-export default function <T extends keyof PixelValueMapping>(
+/**
+ * Pixel value names map for {@link usePixelValue} function.
+ * Maps the value name with the corresponding data type.
+ */
+export interface UsePixelValueNamesMap {
+  /** Updates with the value of the last roll. */
+  roll: number;
+  /** Updates with the roll state and face but not more often than specified
+   *  by the refresh interval argument, except when a roll completes
+   *  (i.e. `state === 'onFace'`) in which case it updates immediately. */
+  rollState: PixelRollData;
+  /** Updates with the battery level and charging status. */
+  battery: PixelBatteryData;
+  /** Updates with the battery level, charging status and voltage
+   *  @remarks Since the voltage read from the die is always a little bit
+   *  different, the hook will update for every refresh interval. */
+  batteryWithVoltage: PixelBatteryData & { voltage: number };
+  /** Updates with the RSSI value. */
+  rssi: number;
+  /** Updates with the temperature in Celsius. */
+  temperature: number;
+  /** Updates with the telemetry data. */
+  telemetry: Telemetry;
+}
+
+/**
+ * React Hook that updates when the specified value of the given Pixel changes.
+ * @param pixel A Pixel for which to watch a value.
+ * @param valueName The name of the value to watch, see keys of
+ *                  {@link UsePixelValueNamesMap} for the complete list.
+ * @param options Optional arguments.
+ * @returns An array with:
+ * - the value being watched,
+ * - a stable dispatch function that may be called to start and stop
+ *   watching the Pixel's value,
+ * - the last encountered error.
+ * @remarks By default this hook immediately starts watching the Pixel's value.
+ *          See the function arguments to change that behavior.
+ */
+export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   pixel?: Pixel,
   valueName?: T,
   options?: {
-    refreshInterval?: number; // This is a maximum, default 1s
-    waitOnStart?: boolean; // Default false
+    /** The minimum interval between two updates. Ignored for "roll" value.
+     *  @defaultValue 1000 */
+    refreshInterval?: number;
+    /** Whether to wait on a call to the dispatcher with "start" before
+     *  watching the value. @defaultValue false */
+    waitOnStart?: boolean;
   }
 ): [
-  PixelValueMapping[T] | undefined,
+  UsePixelValueNamesMap[T] | undefined,
   (action: "start" | "stop") => void,
   Error?
 ] {
-  type ValueType = PixelValueMapping[T];
+  type ValueType = UsePixelValueNamesMap[T];
   const [lastError, setLastError] = useState<Error>();
   const [value, setValue] = useState<ValueType>();
   const [isActive, setIsActive] = useState(false);
   const stateRef = useRef<{
-    lastValueName?: keyof PixelValueMapping;
+    lastValueName?: keyof UsePixelValueNamesMap;
     lastValue?: ValueType;
     lastTime: number;
     timeoutId?: ReturnType<typeof setTimeout>;
@@ -123,6 +155,7 @@ export default function <T extends keyof PixelValueMapping>(
   const status = pixel?.status;
   useEffect(() => {
     if (stateRef.current.lastValueName !== valueName) {
+      // Clear value if we are watching a different one
       stateRef.current.lastValueName = valueName;
       setValue(undefined);
     }
@@ -150,14 +183,18 @@ export default function <T extends keyof PixelValueMapping>(
           const onRollState = (rollState: PixelRollData) =>
             setValue((lastValue) => {
               const now = Date.now();
+              // Time left before the value can be updated
               const timeLeft =
                 refreshInterval - (Date.now() - stateRef.current.lastTime);
+              // Immediately update the value if we have a roll or if we are
+              // passed the given refresh interval
               if (rollState.state === "onFace" || timeLeft <= 0) {
                 stateRef.current.lastTime = now;
                 clearTimeout(stateRef.current.timeoutId);
                 stateRef.current.timeoutId = undefined;
                 return rollState as ValueType;
               } else {
+                // Store value and update later
                 stateRef.current.lastValue = rollState as ValueType;
                 if (!stateRef.current.timeoutId) {
                   stateRef.current.timeoutId = setTimeout(() => {
@@ -172,6 +209,7 @@ export default function <T extends keyof PixelValueMapping>(
               }
             });
           pixel.addEventListener("rollState", onRollState);
+          // Update value immediately
           setValue(() => {
             stateRef.current.lastTime = Date.now();
             return {
@@ -293,6 +331,7 @@ export default function <T extends keyof PixelValueMapping>(
     }
   }, [isActive, pixel, refreshInterval, status, valueName, waitOnStart]);
 
+  // Create the dispatch function
   const dispatch = useCallback(
     (action: "start" | "stop") => setIsActive(action === "start"),
     []
