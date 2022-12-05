@@ -980,7 +980,7 @@ export default class Pixel implements IPixel {
       remainingSize -= dataMsg.size;
       offset += dataMsg.size;
       if (progressCallback) {
-        const progress = (100 * offset) / data.byteLength;
+        const progress = Math.round((100 * offset) / data.byteLength);
         if (progress > lastProgress) {
           progressCallback(progress);
           lastProgress = progress;
