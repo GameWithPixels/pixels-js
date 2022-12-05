@@ -62,10 +62,13 @@
     "expo-dev-client": "~2.0.0",
     "expo-device": "~5.0.0",
     "expo-file-system": "~15.1.1",
+    "expo-gl": "~12.0.1",
     "expo-localization": "~14.0.0",
+    "expo-modules-core": "~1.0.3",
     "expo-splash-screen": "~0.17.5",
     "expo-status-bar": "~1.4.2",
     "expo-system-ui": "~2.0.1",
+    "expo-three": "^6.2.0",
     "expo-updates": "~0.15.5",
     "i18next": "^22.0.0",
     "native-base": "~3.4.22",
@@ -85,7 +88,8 @@
     "react-redux": "^8.0.4",
     "redux": "^4.2.0",
     "reflect-metadata": "^0.1.13",
-    "sentry-expo": "~5.0.3"
+    "sentry-expo": "~5.0.3",
+    "three": "^0.147.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
