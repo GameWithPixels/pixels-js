@@ -10,7 +10,7 @@ import {
 } from "native-base";
 import { useTranslation } from "react-i18next";
 
-import PixelInfoBox from "~/components/PixelInfoCard";
+import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 
@@ -54,11 +54,11 @@ export default function ({
                 borderColor="gray.500"
                 borderWidth={2}
               >
-                <PixelInfoBox pixel={itemInfo.item} />
+                <PixelInfoCard pixel={itemInfo.item} />
               </Pressable>
             )}
             keyExtractor={(p) => p.pixelId.toString()}
-            ItemSeparatorComponent={() => <Box height="3%" />}
+            ItemSeparatorComponent={() => <Box height={5} />}
             contentContainerStyle={{ flexGrow: 1 }}
           />
         </>
