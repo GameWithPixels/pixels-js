@@ -86,11 +86,17 @@ function _requestProp<T extends keyof PixelEventMap>(
  * Maps the value name with the corresponding data type.
  */
 export interface UsePixelValueNamesMap {
-  /** Updates with the value of the last roll. */
-  roll: number;
-  /** Updates with the roll state and face but not more often than specified
-   *  by the refresh interval argument, except when a roll completes
-   *  (i.e. `state === 'onFace'`) in which case it updates immediately. */
+  /** Updates with the result of a roll.
+   *  @remarks
+   *  - The value is an object with the face number rather than just a number
+   *    so rolling the same face will trigger a state change nonetheless.
+   *  - No value is returned until a roll is made. */
+  roll: Pick<PixelRollData, "face">;
+  /** Updates with the roll state and face on any roll event but not more often
+   *  than specified by the refresh interval argument, except when there is a
+   *  roll result (i.e. `state === 'onFace'`) in which case it updates
+   *  immediately.
+   *  @remarks No value is returned until a roll event occurs. */
   rollState: PixelRollData;
   /** Updates with the battery level and charging status. */
   battery: PixelBatteryData;
@@ -117,14 +123,17 @@ export interface UsePixelValueNamesMap {
  * - a stable dispatch function that may be called to start and stop
  *   watching the Pixel's value,
  * - the last encountered error.
- * @remarks By default this hook immediately starts watching the Pixel's value.
- *          See the function arguments to change that behavior.
+ * @remarks
+ * - By default this hook immediately starts watching the Pixel's value.
+ *   See the function arguments to change that behavior.
+ * - The returned value is kept even after a disconnection event.
  */
 export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   pixel?: Pixel,
   valueName?: T,
   options?: {
-    /** The minimum interval between two updates. Ignored for "roll" value.
+    /** The minimum interval in milliseconds between two updates.
+     *  Ignored for "roll" value.
      *  @defaultValue 1000 */
     refreshInterval?: number;
     /** Whether to wait on a call to the dispatcher with "start" before
@@ -141,6 +150,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   const [value, setValue] = useState<ValueType>();
   const [isActive, setIsActive] = useState(false);
   const stateRef = useRef<{
+    lastPixel?: Pixel;
     lastValueName?: keyof UsePixelValueNamesMap;
     lastValue?: ValueType;
     lastTime: number;
@@ -154,9 +164,14 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
 
   const status = pixel?.status;
   useEffect(() => {
-    if (stateRef.current.lastValueName !== valueName) {
-      // Clear value if we are watching a different one
+    if (
+      stateRef.current.lastPixel !== pixel ||
+      stateRef.current.lastValueName !== valueName
+    ) {
+      // Clear value if we are watching a different Pixel
+      // or a different value
       stateRef.current.lastValueName = valueName;
+      stateRef.current.lastPixel = pixel;
       setValue(undefined);
     }
     if (
@@ -167,13 +182,9 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
     ) {
       switch (valueName) {
         case "roll": {
-          const onRoll = (roll: number) => setValue(roll as ValueType);
+          const onRoll = (roll: number) =>
+            setValue({ face: roll } as ValueType);
           pixel.addEventListener("roll", onRoll);
-          setValue(
-            pixel.rollState === "onFace"
-              ? (pixel.currentFace as ValueType)
-              : undefined
-          );
           return () => {
             pixel.removeEventListener("roll", onRoll);
           };
@@ -181,7 +192,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
 
         case "rollState": {
           const onRollState = (rollState: PixelRollData) =>
-            setValue((lastValue) => {
+            setValue((prevValue) => {
               const now = Date.now();
               // Time left before the value can be updated
               const timeLeft =
@@ -205,18 +216,10 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
                     });
                   }, timeLeft);
                 }
-                return lastValue;
+                return prevValue;
               }
             });
           pixel.addEventListener("rollState", onRollState);
-          // Update value immediately
-          setValue(() => {
-            stateRef.current.lastTime = Date.now();
-            return {
-              face: pixel.currentFace,
-              state: pixel.rollState,
-            } as ValueType;
-          });
           return () => {
             pixel.removeEventListener("rollState", onRollState);
             clearTimeout(stateRef.current.timeoutId);
