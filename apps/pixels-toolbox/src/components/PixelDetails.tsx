@@ -1,5 +1,5 @@
 import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import ProgressBar from "./ProgressBar";
 
@@ -25,7 +25,7 @@ function TextEntry({
   );
 }
 
-export default function ({
+function PixelDetailsImpl({
   pixelDispatcher,
 }: {
   pixelDispatcher: PixelDispatcher;
@@ -121,3 +121,5 @@ export default function ({
     </VStack>
   );
 }
+
+export default memo(PixelDetailsImpl);

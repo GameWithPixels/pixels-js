@@ -249,7 +249,7 @@ export default class PixelDispatcher implements IPixel {
 
   private async _queryBattery(): Promise<void> {
     if (this.isReady) {
-      await this._pixel.queryBatteryState();
+      await this._pixel.queryBattery();
     }
   }
 

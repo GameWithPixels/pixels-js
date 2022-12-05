@@ -107,13 +107,13 @@ const ValidationTests = {
       } else {
         abortSignal.addEventListener("abort", abort);
         const wait = async () => {
-          let batteryLevel = await pixel.queryBatteryState();
+          let batteryLevel = await pixel.queryBattery();
           while (
             !abortSignal.aborted &&
             batteryLevel.isCharging !== shouldBeCharging
           ) {
             await delay(200, abortSignal);
-            batteryLevel = await pixel.queryBatteryState(); // TODO abortSignal
+            batteryLevel = await pixel.queryBattery(); // TODO abortSignal
           }
           abortSignal.removeEventListener("abort", abort);
           if (!abortSignal.aborted) {
@@ -296,7 +296,7 @@ const ValidationTests = {
     });
   },
 
-  renameDie: async (pixel: Pixel, name = "Pixel"): Promise<void> => {
+  renameDie: async (_pixel: Pixel, _name = "Pixel"): Promise<void> => {
     // TODO await pixel.rename(name);
   },
 

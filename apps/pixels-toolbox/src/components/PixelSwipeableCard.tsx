@@ -140,7 +140,7 @@ export default function ({
   const isReady = pixelDispatcher.isReady;
   useFocusEffect(
     useCallback(() => {
-      if (isReady) {
+      if (isReady && !showDetails) {
         const intervalId = setInterval(() => {
           pixelDispatcher.dispatch("queryRssi");
           pixelDispatcher.dispatch("queryBattery");
@@ -149,7 +149,7 @@ export default function ({
           clearInterval(intervalId);
         };
       }
-    }, [pixelDispatcher, isReady])
+    }, [isReady, showDetails, pixelDispatcher])
   );
 
   // User notification
@@ -170,11 +170,13 @@ export default function ({
 
   // Refresh UI at least every 5 seconds
   useFocusEffect(() => {
-    // Called on every render!
-    const id = setTimeout(forceUpdate, 5000);
-    return () => {
-      clearTimeout(id);
-    };
+    if (!showDetails) {
+      // Called on every render!
+      const id = setTimeout(forceUpdate, 5000);
+      return () => {
+        clearTimeout(id);
+      };
+    }
   });
 
   // Some values for the UI below
@@ -239,7 +241,7 @@ export default function ({
         )
       }
     >
-      <Pressable onPress={() => setShowDetails(pixelDispatcher.isReady)}>
+      <Pressable onPress={() => setShowDetails(true)}>
         <PixelInfoCard pixel={pixelDispatcher} {...props}>
           {pixelDispatcher.canUpdateFirmware && (
             <Text position="absolute" top={sr(8)} right={sr(8)}>
@@ -282,8 +284,8 @@ export default function ({
               // Pixel is disconnected and hasn't been seen for a while (no advertising)
               <Text italic>{`Unavailable (${
                 lastSeen < 120
-                  ? `${lastSeen}s`
-                  : `${Math.floor(lastSeen / 60)}m`
+                  ? `${lastSeen} sec`
+                  : `${Math.floor(lastSeen / 60)} min`
               })`}</Text>
             ) : (
               // Pixel is either connecting/connected or advertising
@@ -308,6 +310,7 @@ export default function ({
           </VStack>
         </PixelInfoCard>
       </Pressable>
+      {/* TODO use navigation to show details */}
       <Modal
         isOpen={showDetails}
         onClose={() => setShowDetails(false)}
@@ -315,7 +318,7 @@ export default function ({
       >
         <Modal.Content>
           <Modal.CloseButton />
-          <Modal.Header>Pixels Die: {pixelDispatcher.name}</Modal.Header>
+          <Modal.Header>{pixelDispatcher.name}</Modal.Header>
           <Modal.Body>
             <PixelDetails pixelDispatcher={pixelDispatcher} />
           </Modal.Body>
