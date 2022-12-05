@@ -5,7 +5,7 @@ import {
   TransitionPresets,
 } from "@react-navigation/stack";
 import { PixelTheme } from "@systemic-games/react-native-pixels-components";
-import { ChevronLeftIcon, NativeBaseProvider } from "native-base";
+import { NativeBaseProvider } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
 import { LogBox } from "react-native";
@@ -14,9 +14,10 @@ import { Provider } from "react-redux";
 import { RootStackParamList } from "./Navigation";
 import { store } from "./app/store";
 import { NavigationContainerComponent } from "./components/NavigationContainerComponent";
-import homeScreen from "./screens/homeScreen";
-import secondScreen from "./screens/secondScreen";
-import ThirdScreen from "./screens/thirdScreen";
+import secondScreen from "./screens/MainScreens/secondScreen";
+import ThirdScreen from "./screens/MainScreens/thirdScreen";
+
+import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -32,13 +33,12 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{
-              headerBackImage: (props) => <ChevronLeftIcon />,
               headerShown: false,
               ...TransitionPresets.SlideFromRightIOS,
               animationTypeForReplace: "pop",
             }}
           >
-            <Stack.Screen name="HomeScreen" component={homeScreen} />
+            <Stack.Screen name="Home" component={HomeNavigator} />
             <Stack.Screen name="SecondScreen" component={secondScreen} />
             <Stack.Screen name="ThirdScreen" component={ThirdScreen} />
           </Stack.Navigator>

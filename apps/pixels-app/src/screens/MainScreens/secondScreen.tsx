@@ -25,7 +25,7 @@ export default function SecondScreen() {
             <RSSIStrength percentage={20} />
           </HStack>
         </Card>
-        <FaceMask diceFaces={20} />
+        <FaceMask dieFaces={20} />
       </VStack>
     </BaseAppPage>
   );

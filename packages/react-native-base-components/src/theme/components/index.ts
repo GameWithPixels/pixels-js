@@ -8,16 +8,6 @@ import Slider from "./Slider";
 import Toggle from "./Toggle";
 
 // Native Base components style & props default overriding
-const Button = {
-  baseStyle: {
-    minW: "2",
-    minH: "2",
-  },
-  defaultProps: {
-    bg: "primary.500",
-    rounded: "lg",
-  },
-};
 
 export default {
   Card,
@@ -28,5 +18,4 @@ export default {
   AppPage,
   ProgressBar,
   PopUp,
-  Button,
 };

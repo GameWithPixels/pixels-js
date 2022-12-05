@@ -15,7 +15,7 @@ export function NavigationContainerComponent() {
     <BottomToolbar
       itemsData={[
         {
-          label: "Settings",
+          label: "Home",
           onPress: () => {
             NavigateTo("SecondScreen", navigation);
           },
@@ -35,7 +35,7 @@ export function NavigationContainerComponent() {
         {
           label: "Patterns",
           onPress: () => {
-            NavigateTo("HomeScreen", navigation);
+            NavigateTo("Home", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/pixels-line.png"),
           tintColor: "pixelColors.green",
