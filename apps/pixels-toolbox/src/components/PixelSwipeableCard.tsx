@@ -119,7 +119,6 @@ export default function ({
   }, [pixelDispatcher, showDetails]);
 
   // Subscribe to state change events to force updating the UI
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, forceUpdate] = useReducer((b) => !b, false);
   useFocusEffect(
     useCallback(() => {

@@ -248,7 +248,6 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
     return msgType;
   } else {
     const msg = instantiateMessage(msgType);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, byteRead] = deserialize(msg, dataView);
     if (byteRead !== buffer.byteLength) {
       console.log(

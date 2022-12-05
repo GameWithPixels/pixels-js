@@ -646,7 +646,6 @@ export function WaitDieInCase({
   action,
   onTaskStatus,
   pixel,
-  settings,
 }: ValidationTestProps) {
   const { t } = useTranslation();
 

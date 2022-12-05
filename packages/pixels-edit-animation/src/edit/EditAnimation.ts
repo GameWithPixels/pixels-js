@@ -28,8 +28,7 @@ export default abstract class EditAnimation extends Editable {
   ): AnimationPreset;
   abstract duplicate(): EditAnimation;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  requiresPattern(pattern: EditPattern): { asRgb: boolean } | undefined {
+  requiresPattern(_pattern: EditPattern): { asRgb: boolean } | undefined {
     return undefined;
   }
 }

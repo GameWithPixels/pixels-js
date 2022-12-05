@@ -11,7 +11,7 @@ export default function HomeNavigator() {
     <Stack.Navigator
       initialRouteName="Home"
       screenOptions={{
-        headerBackImage: (props) => (
+        headerBackImage: () => (
           <Ionicons name="md-arrow-back-outline" size={24} color="white" />
         ),
         headerTitleAlign: "center",

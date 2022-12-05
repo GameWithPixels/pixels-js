@@ -5,7 +5,6 @@ import {
 import { useEffect, useReducer } from "react";
 
 export default function (pixel?: Pixel): PixelStatus | undefined {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, update] = useReducer((b) => !b, false);
 
   // Subscribe to status event to trigger a React update on status change
