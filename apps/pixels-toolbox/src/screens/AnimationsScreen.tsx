@@ -1,4 +1,3 @@
-import Slider from "@react-native-community/slider";
 import { assert } from "@systemic-games/pixels-core-utils";
 import {
   getPropsWithName,
@@ -19,28 +18,30 @@ import {
   EditRgbGradient,
   EditRgbKeyframe,
 } from "@systemic-games/pixels-edit-animation";
-import { usePixelStatus } from "@systemic-games/pixels-react";
+import { usePixelConnect } from "@systemic-games/pixels-react";
 import {
   getPixelEnumName,
   AnimationTypeValues,
   Color,
   Constants,
-  Pixel,
+  getPixel,
 } from "@systemic-games/react-native-pixels-connect";
-import { useEffect, useState } from "react";
-import { useErrorHandler } from "react-error-boundary";
 import {
   Button,
-  Text,
-  View,
+  Box,
   FlatList,
-  StyleSheet,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
+  HStack,
+  Slider,
+  Text,
+  VStack,
+} from "native-base";
+import { useEffect, useState } from "react";
+import { useErrorHandler } from "react-error-boundary";
 
-import defaultProfilesJson from "~/../assets/default-profiles.json";
+import standardProfilesJson from "~/../assets/standard-profiles.json";
 import AppPage from "~/components/AppPage";
-import globalStyles, { sr } from "~/styles";
+import PixelScanList from "~/components/PixelScanList";
+import { sr } from "~/styles";
 import range from "~/utils/range";
 
 // function test() {
@@ -100,7 +101,7 @@ const colorMap: readonly Readonly<{ name: string; color: Color }>[] =
 
 // Load default app profiles
 const defaultProfilesAppDataSet: Readonly<AppDataSet> =
-  loadAppDataSet(defaultProfilesJson);
+  loadAppDataSet(standardProfilesJson);
 
 // Available patterns from JSON file
 const patterns: readonly Readonly<EditPattern>[] =
@@ -228,17 +229,15 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         ];
         return (
           <>
-            <Text style={styles.textBold}>{propertyValue}</Text>
+            <Text bold>{propertyValue}</Text>
             {facesGroups.map((faces, i) => (
-              <View style={styles.containerHorizontal} key={i}>
+              <HStack key={i}>
                 {faces.map((face) => (
-                  <Button
-                    key={face}
-                    onPress={() => updateProp(face)}
-                    title={face.toString()}
-                  />
+                  <Button key={face} onPress={() => updateProp(face)}>
+                    {face.toString()}
+                  </Button>
                 ))}
-              </View>
+              </HStack>
             ))}
           </>
         );
@@ -252,17 +251,24 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         const range = getPropsWithRange(editAnim).find(
           (p) => p.propertyKey === propertyKey
         );
+        const step = range && range.step > 0 ? range.step : undefined;
         return (
           <>
-            <Text style={styles.textBold}>{propertyValue}</Text>
+            <Text bold>{propertyValue}</Text>
             <Slider
-              style={styles.slider}
+              width="80%"
+              height={sr(40)}
               value={value as number}
-              minimumValue={range?.min ?? 0}
-              maximumValue={range?.max ?? 1}
-              step={range?.step ?? 0}
-              onValueChange={updateProp}
-            />
+              minValue={range?.min ?? 0}
+              maxValue={range?.max ?? 1}
+              step={step}
+              onChange={updateProp}
+            >
+              <Slider.Track>
+                <Slider.FilledTrack />
+              </Slider.Track>
+              <Slider.Thumb />
+            </Slider>
           </>
         );
       }
@@ -274,12 +280,14 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         return (
           <FlatList
             data={gradients}
+            ItemSeparatorComponent={() => <Box h={sr(3)} />}
             renderItem={(itemInfo) => (
               <Button
                 key={itemInfo.item.name}
                 onPress={() => updateProp(itemInfo.item.gradient)}
-                title={itemInfo.item.name}
-              />
+              >
+                {itemInfo.item.name}
+              </Button>
             )}
             contentContainerStyle={{ flexGrow: 1 }}
           />
@@ -293,12 +301,14 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
         return (
           <FlatList
             data={patterns}
+            ItemSeparatorComponent={() => <Box h={sr(3)} />}
             renderItem={(itemInfo) => (
               <Button
                 key={itemInfo.item.name}
                 onPress={() => updateProp(itemInfo.item)}
-                title={itemInfo.item.name}
-              />
+              >
+                {itemInfo.item.name}
+              </Button>
             )}
             contentContainerStyle={{ flexGrow: 1 }}
           />
@@ -310,66 +320,63 @@ function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
     return (
       <FlatList
         data={colorMap}
+        ItemSeparatorComponent={() => <Box h={sr(3)} />}
         renderItem={(itemInfo) => (
           <Button
             key={itemInfo.item.name}
             onPress={() => updateProp(itemInfo.item.color)}
-            title={itemInfo.item.name}
-          />
+          >
+            {itemInfo.item.name}
+          </Button>
         )}
         contentContainerStyle={{ flexGrow: 1 }}
       />
     );
   } else {
-    return <Text style={styles.textBold}>NO EDITOR</Text>;
+    return <Text bold>NO EDITOR</Text>;
   }
 }
 
 function AnimationPage() {
   const errorHandler = useErrorHandler();
-  const [selectedPixel, setSelectedPixel] = useState<Pixel | undefined>();
-  const status = usePixelStatus(selectedPixel);
+  const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [animList, setAnimList] = useState<EditAnimation[]>([]);
   const [editAnim, setEditAnim] = useState<EditAnimation | undefined>();
   const [editProperty, setEditProperty] = useState<NameProperty | undefined>();
 
   useEffect(() => {
-    selectedPixel?.connect().catch(errorHandler);
-    return () => {
-      selectedPixel?.disconnect().catch(console.log);
-    };
-  }, [errorHandler, selectedPixel]);
+    errorHandler(lastError);
+  }, [errorHandler, lastError]);
 
   return (
     <>
-      {!selectedPixel ? (
-        // <PixelScanList onSelected={setSelectedPixel} />
-        <Text>Missing selection component!</Text>
+      {!pixel ? (
+        <PixelScanList
+          onSelected={(sp) => connectDispatch("connect", getPixel(sp))}
+        />
       ) : (
-        <>
-          <Text style={styles.text}>{`Connection status: ${status}`}</Text>
-          <Button
-            onPress={() => setSelectedPixel(undefined)}
-            title="Disconnect"
-          />
+        <VStack space={sr(3)}>
+          <Text>{`Connection status: ${status}`}</Text>
+          <Button onPress={() => connectDispatch("disconnect")}>
+            Disconnect
+          </Button>
           <Button
             onPress={() => {
               if (animList.length) {
-                selectedPixel.playTestAnimation(
+                pixel.playTestAnimation(
                   defaultProfilesAppDataSet
                     .extractForAnimation(animList[0])
                     .toDataSet()
                 );
               }
             }}
-            title="Play"
-          />
+          >
+            Play
+          </Button>
           {editAnim && editProperty ? (
             <>
-              <Text
-                style={styles.textBold}
-              >{`Editing ${editProperty.name}`}</Text>
-              <Button onPress={() => setEditProperty(undefined)} title="Back" />
+              <Text bold>{`Editing ${editProperty.name}`}</Text>
+              <Button onPress={() => setEditProperty(undefined)}>Back</Button>
               <PropertyEditor
                 editAnim={editAnim}
                 propertyKey={editProperty.propertyKey}
@@ -377,8 +384,8 @@ function AnimationPage() {
             </>
           ) : editAnim ? (
             <>
-              <Text style={styles.textBold}>{`Editing ${editAnim.name}`}</Text>
-              <Button onPress={() => setEditAnim(undefined)} title="Back" />
+              <Text bold>{`Editing ${editAnim.name}`}</Text>
+              <Button onPress={() => setEditAnim(undefined)}>Back</Button>
               <Button
                 onPress={() => {
                   setEditAnim(undefined);
@@ -391,40 +398,42 @@ function AnimationPage() {
                     return animList;
                   });
                 }}
-                title="Remove"
-              />
+              >
+                Remove
+              </Button>
               <FlatList
                 data={getPropsWithName(editAnim)}
+                ItemSeparatorComponent={() => <Box h={sr(3)} />}
                 renderItem={(itemInfo) => (
-                  <Button
-                    onPress={() => setEditProperty(itemInfo.item)}
-                    title={`${itemInfo.item.name}: ${getPropValueString(
+                  <Button onPress={() => setEditProperty(itemInfo.item)}>
+                    {`${itemInfo.item.name}: ${getPropValueString(
                       editAnim,
                       itemInfo.item.propertyKey
                     )}`}
-                  />
+                  </Button>
                 )}
                 contentContainerStyle={{ flexGrow: 1 }}
               />
             </>
           ) : (
             <>
-              <Text style={styles.textBold}>Effects:</Text>
+              <Text bold>Effects:</Text>
               <FlatList
                 data={animList}
+                ItemSeparatorComponent={() => <Box h={sr(3)} />}
                 renderItem={(itemInfo) => (
                   <Button
                     onPress={() => setEditAnim(itemInfo.item)}
-                    title={`Edit ${itemInfo.item.name}`}
-                  />
+                  >{`Edit ${itemInfo.item.name}`}</Button>
                 )}
                 contentContainerStyle={{ flexGrow: 1 }}
               />
             </>
           )}
-          <Text style={styles.textBold}>Add Effect:</Text>
+          <Text bold>Add Effect:</Text>
           <FlatList
             data={editAnimationTypes}
+            ItemSeparatorComponent={() => <Box h={sr(3)} />}
             renderItem={(itemInfo) => (
               <Button
                 onPress={() => {
@@ -437,12 +446,13 @@ function AnimationPage() {
                     return [...anims, anim];
                   });
                 }}
-                title={itemInfo.item.name.replace(EditAnimation.name, "")}
-              />
+              >
+                {itemInfo.item.name.replace(EditAnimation.name, "")}
+              </Button>
             )}
             contentContainerStyle={{ flexGrow: 1 }}
           />
-        </>
+        </VStack>
       )}
     </>
   );
@@ -455,10 +465,3 @@ export default function () {
     </AppPage>
   );
 }
-const styles = StyleSheet.create({
-  ...globalStyles,
-  slider: {
-    width: "80%",
-    height: sr(40),
-  },
-});

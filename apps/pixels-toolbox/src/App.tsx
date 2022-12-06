@@ -7,6 +7,8 @@ import { Provider } from "react-redux";
 import * as Sentry from "sentry-expo";
 
 import { store } from "./app/store";
+import AnimationsScreen from "./screens/AnimationsScreen";
+import DiceRenderer from "./screens/DiceRenderer";
 import theme from "./theme";
 
 import useBluetooth from "~/features/pixels/hooks/useBluetooth";
@@ -16,6 +18,8 @@ import RollScreen from "~/screens/RollScreen";
 import SelectDfuFilesScreen from "~/screens/SelectDfuFilesScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
 import { sr } from "~/styles";
+
+// Import internationalization file so it's initialized
 import "~/i18n";
 
 // Use Sentry for crash reporting
@@ -55,6 +59,8 @@ function App() {
               />
               <Stack.Screen name="Validation" component={ValidationScreen} />
               <Stack.Screen name="Roll" component={RollScreen} />
+              <Stack.Screen name="Animations" component={AnimationsScreen} />
+              <Stack.Screen name="DiceRenderer" component={DiceRenderer} />
             </Stack.Navigator>
           </NavigationContainer>
         </NativeBaseProvider>

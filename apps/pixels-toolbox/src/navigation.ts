@@ -4,4 +4,6 @@ export type RootStackParamList = {
   Validation: undefined;
   Stats: undefined;
   Roll: undefined;
+  Animations: undefined;
+  DiceRenderer: undefined;
 };

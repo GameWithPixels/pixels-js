@@ -20,7 +20,7 @@ export default function ({
   refreshInterval,
 }: {
   onSelected: (pixel: ScannedPixel) => void;
-  onClose: () => void;
+  onClose?: () => void;
   refreshInterval?: number;
 }) {
   const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
@@ -32,7 +32,7 @@ export default function ({
   return (
     <VStack flex={1} space="1%" alignItems="center">
       <HStack space="2%">
-        <Button onPress={onClose}>{t("close")}</Button>
+        {onClose && <Button onPress={onClose}>{t("close")}</Button>}
         <Button onPress={() => scannerDispatch("clear")}>
           {t("clearScanList")}
         </Button>

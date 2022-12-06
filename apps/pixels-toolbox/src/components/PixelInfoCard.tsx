@@ -20,7 +20,11 @@ function PixelMoreInfo({ pixel }: { pixel: IPixel }) {
   const fwDate = toLocaleDateTimeString(pixel.firmwareDate);
   return (
     <>
-      <Text>{`${t("Firmware")}: ${fwDate}`}</Text>
+      <Text>
+        {t("firmware")}
+        {t("colonSeparator")}
+        {fwDate}
+      </Text>
       <HStack space="8%">
         <Text>{`🆔 ${pixIdHex}`}</Text>
         <Text>{`${t(pixel.designAndColor)}`}</Text>

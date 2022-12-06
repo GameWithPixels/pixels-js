@@ -64,8 +64,8 @@ function PixelDetailsImpl({
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
   return (
     <VStack space={sr(5)}>
-      <TextEntry my={sr(5)} title="Status:">
-        {status}
+      <TextEntry my={sr(5)} title={t("status")}>
+        {status ? t(status) : ""}
       </TextEntry>
       <TextEntry title={t("pixelId")}>{pixel.pixelId}</TextEntry>
       <TextEntry title={t("leds")}>
@@ -87,31 +87,31 @@ function PixelDetailsImpl({
         {t("celsiusWithValue", { value: temperature ?? 0 })}
       </TextEntry>
       <TextEntry title={t("rollState")}>
-        {rollState?.face}, {rollState?.state}
+        {rollState?.face}, {rollState ? t(rollState.state) : ""}
       </TextEntry>
       <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
       <HStack space={sr(5)}>
         <VStack flex={1} space={sr(5)}>
           <Button onPress={() => pixelDispatcher.dispatch("connect")}>
-            Connect
+            {t("connect")}
           </Button>
           <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-            Blink
+            {t("blink")}
           </Button>
           <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
-            Calibrate
+            {t("calibrate")}
           </Button>
         </VStack>
         <VStack flex={1} space={sr(5)}>
           <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
-            Disconnect
+            {t("disconnect")}
           </Button>
           <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
-            Rainbow
+            {t("rainbow")}
           </Button>
           {/* TODO stop querying for voltage, rssi, etc. */}
           <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
-            Reset Profile
+            {t("resetProfile")}
           </Button>
         </VStack>
       </HStack>
