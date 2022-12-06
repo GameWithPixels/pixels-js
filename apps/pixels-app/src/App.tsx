@@ -14,8 +14,7 @@ import { Provider } from "react-redux";
 import { RootStackParamList } from "./Navigation";
 import { store } from "./app/store";
 import { NavigationContainerComponent } from "./components/NavigationContainerComponent";
-import secondScreen from "./screens/MainScreens/secondScreen";
-import ThirdScreen from "./screens/MainScreens/thirdScreen";
+import PatternsNavigator from "./screens/MainScreens/Patterns/PatternsNavigator";
 
 import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
 
@@ -39,8 +38,7 @@ export default function App() {
             }}
           >
             <Stack.Screen name="Home" component={HomeNavigator} />
-            <Stack.Screen name="SecondScreen" component={secondScreen} />
-            <Stack.Screen name="ThirdScreen" component={ThirdScreen} />
+            <Stack.Screen name="Patterns" component={PatternsNavigator} />
           </Stack.Navigator>
           <NavigationContainerComponent />
         </NavigationContainer>

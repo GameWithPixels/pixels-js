@@ -40,7 +40,7 @@ export function SliderComponent(props: SliderProps) {
         >
           <Slider
             {...resolvedProps}
-            defaultValue={resolvedProps.defaultValue}
+            defaultValue={resolvedProps.minValue}
             minValue={resolvedProps.minValue}
             maxValue={resolvedProps.maxValue}
             size={resolvedProps.size}

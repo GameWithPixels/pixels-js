@@ -3,12 +3,13 @@ import { ColorWheel } from "@systemic-games/react-native-base-components";
 import {
   Text,
   HStack,
-  Center,
   VStack,
-  Modal,
   Button,
   usePropsResolution,
   IModalProps,
+  Actionsheet,
+  Image,
+  Box,
 } from "native-base";
 import {
   ColorType,
@@ -70,7 +71,7 @@ export function ColorSelection(props: ColorSelectionProps) {
         {/* CheckBox override face component would be here */}
       </VStack>
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+      {/* <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
         <Modal.Content
           {...resolvedProps}
           minH={resolvedProps.modalMinH}
@@ -135,7 +136,77 @@ export function ColorSelection(props: ColorSelectionProps) {
             </Modal.Footer>
           </Center>
         </Modal.Content>
-      </Modal>
+      </Modal> */}
+      <Actionsheet
+        maxHeight="100%"
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+      >
+        <Actionsheet.Content maxHeight="100%" minHeight="95%">
+          <VStack p={2} alignItems="center" space={5} w="100%">
+            <Box
+              p={2}
+              rounded="2xl"
+              h="35%"
+              w="95%"
+              bg="blueGray.700"
+              alignItems="center"
+              paddingBottom={10}
+            >
+              {/* Temporary */}
+              <Image
+                borderRadius={100}
+                size={200}
+                source={require("../../../../apps/pixels-app/assets/zoomedDie4.png")}
+                alt="placheolder zoomed die"
+              />
+            </Box>
+            <Box p={2}>
+              <ColorWheel
+                initialColor={SelectedColor}
+                onSelectColor={setSelectedColor}
+              />
+            </Box>
+            <HStack space={2}>
+              <SimpleColorButton
+                color="black"
+                onPress={() => {
+                  setSelectedColor("black");
+                  setShowModal(false);
+                }}
+              />
+              <SimpleColorButton
+                color="white"
+                onPress={() => {
+                  setSelectedColor("white");
+                  setShowModal(false);
+                }}
+              />
+              <SimpleColorButton
+                color="red.500"
+                onPress={() => {
+                  setSelectedColor("red.500");
+                  setShowModal(false);
+                }}
+              />
+              <SimpleColorButton
+                color="green.500"
+                onPress={() => {
+                  setSelectedColor("green.500");
+                  setShowModal(false);
+                }}
+              />
+              <SimpleColorButton
+                color="blue.500"
+                onPress={() => {
+                  setSelectedColor("blue.500");
+                  setShowModal(false);
+                }}
+              />
+            </HStack>
+          </VStack>
+        </Actionsheet.Content>
+      </Actionsheet>
     </>
   );
 }

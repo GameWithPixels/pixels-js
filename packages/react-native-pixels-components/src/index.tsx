@@ -11,4 +11,5 @@ export * from "./components/ProfileCard";
 export * from "./components/DiceInfo";
 export * from "./components/ProfilesScrollView";
 export * from "./components/ProfilesActionSheet";
+export * from "./components/PatternCards";
 export * from "@systemic-games/react-native-base-components";

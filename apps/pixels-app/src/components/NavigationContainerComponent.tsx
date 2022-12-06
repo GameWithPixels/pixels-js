@@ -17,7 +17,7 @@ export function NavigationContainerComponent() {
         {
           label: "Home",
           onPress: () => {
-            NavigateTo("SecondScreen", navigation);
+            NavigateTo("Patterns", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/home-line-25.png"),
           tintColor: "pixelColors.blue",
@@ -35,7 +35,7 @@ export function NavigationContainerComponent() {
         {
           label: "Patterns",
           onPress: () => {
-            NavigateTo("Home", navigation);
+            NavigateTo("Patterns", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/pixels-line.png"),
           tintColor: "pixelColors.green",
@@ -53,7 +53,7 @@ export function NavigationContainerComponent() {
         {
           label: "Dice Bag",
           onPress: () => {
-            NavigateTo("SecondScreen", navigation);
+            NavigateTo("Home", navigation);
           },
           ImageRequirePath: require("../../assets/UI_Icons/D10.png"),
           tintColor: "pixelColors.red",
