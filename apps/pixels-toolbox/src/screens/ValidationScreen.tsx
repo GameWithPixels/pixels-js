@@ -236,7 +236,7 @@ function DecodePixelIdPage({
         <HStack position="absolute" top="3%" w="94%" left="3%" p="1%" bg={bg}>
           <Text flex={1} variant="comment">
             {t("resetUsingMagnet", {
-              formFactor: getBoardOrDie(settings.formFactor),
+              formFactor: t(getBoardOrDie(settings.formFactor)),
             })}
           </Text>
           <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
@@ -399,7 +399,9 @@ function RunTestsPage({
               {getTaskResultEmoji(taskChain.status)}
             </Text>
             <Text mb="8%">
-              {t("batteryWithLevel", { level: pixel?.batteryLevel ?? 0 })}
+              {t("battery")}
+              {t("colonSeparator")}
+              {t("percentWithValue", { value: pixel?.batteryLevel ?? 0 })}
             </Text>
           </Center>
         )}

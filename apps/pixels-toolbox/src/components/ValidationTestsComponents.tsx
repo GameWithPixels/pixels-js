@@ -501,7 +501,7 @@ export function TurnOffDevice({
   const taskChain = useTaskChain(
     action,
     useCallback(() => pixel.turnOff(), [pixel]),
-    createTaskStatusContainer("Turning Off")
+    createTaskStatusContainer(t("turningOff"))
   )
     .chainWith(
       useCallback(

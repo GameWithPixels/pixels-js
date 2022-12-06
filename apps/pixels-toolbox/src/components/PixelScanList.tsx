@@ -23,12 +23,12 @@ export default function ({
   onClose: () => void;
   refreshInterval?: number;
 }) {
-  const { t } = useTranslation();
   const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
     sortedByName: true,
     refreshInterval,
   });
   useErrorWithHandler(lastError);
+  const { t } = useTranslation();
   return (
     <VStack flex={1} space="1%" alignItems="center">
       <HStack space="2%">

@@ -13,6 +13,7 @@ import {
   Center,
 } from "native-base";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
 import PixelDetails from "./PixelDetails";
@@ -179,7 +180,8 @@ export default function ({
     }
   });
 
-  // Some values for the UI below
+  // Values for UI
+  const { t } = useTranslation();
   const isDisco =
     !pixelDispatcher.status || pixelDispatcher.status === "disconnected";
   const lastSeen = Math.round(
@@ -213,7 +215,7 @@ export default function ({
       renderLeftActions={() =>
         !dfuQueued && (
           <SwipeableItemView
-            label={isDisco ? "Connect" : "Disconnect"}
+            label={t(isDisco ? "connect" : "disconnect")}
             backgroundColor={isDisco ? "green.500" : "red.500"}
             _text={{ mx: sr(20), color: "gray.100", bold: true }}
           />
@@ -231,9 +233,9 @@ export default function ({
                 ? pixelDispatcher.isUpdatingFirmware
                   ? ""
                   : pixelDispatcher.isFirmwareUpdateQueued
-                  ? "Cancel\nFirmware\nUpdate"
-                  : "Update\nFirmware"
-                : "Blink"
+                  ? t("cancelFirmwareUpdate")
+                  : t("updateFirmware")
+                : t("blink")
             }
             backgroundColor={isDisco ? "purple.500" : "orange.500"}
             _text={{ mx: sr(20), color: "gray.100", bold: true }}
@@ -260,17 +262,17 @@ export default function ({
               // DFU status and progress
               dfuState !== "dfuCompleted" ? (
                 <Center width="100%" flexDir="row">
-                  <Text>Firmware Update: </Text>
+                  <Text>{t("firmwareUpdate")}: </Text>
                   {dfuState === "dfuStarting" && dfuProgress > 0 ? (
                     <Box flex={1}>
                       <ProgressBar percent={dfuProgress} />
                     </Box>
                   ) : (
-                    <Text italic>{dfuState}</Text>
+                    <Text italic>{t(dfuState)}</Text>
                   )}
                 </Center>
               ) : (
-                <Text>Waiting On Firmware Update...</Text>
+                <Text>{t("waitingOnFirmwareUpdate")}</Text>
               )
             ) : profileUpdate ? (
               // Profile update progress
@@ -282,19 +284,21 @@ export default function ({
               </Center>
             ) : isDisco && lastSeen > 5 ? (
               // Pixel is disconnected and hasn't been seen for a while (no advertising)
-              <Text italic>{`Unavailable (${
+              <Text italic>{`${t("unavailable")} (${
                 lastSeen < 120
-                  ? `${lastSeen} sec`
-                  : `${Math.floor(lastSeen / 60)} min`
+                  ? t("secondsWithValue", { value: lastSeen })
+                  : t("minutesWithValue", { value: Math.floor(lastSeen / 60) })
               })`}</Text>
             ) : (
               // Pixel is either connecting/connected or advertising
               <Text>
-                <Text>Status: </Text>
+                <Text>{t("status")}: </Text>
                 <Text italic>
-                  {isDisco && lastSeen <= 5
-                    ? "advertising"
-                    : pixelDispatcher.status}
+                  {t(
+                    isDisco && lastSeen <= 5
+                      ? "advertising"
+                      : pixelDispatcher.status
+                  )}
                 </Text>
               </Text>
             )}
@@ -303,7 +307,7 @@ export default function ({
               <>
                 <Text color="red.500">{lastError?.message}</Text>
                 <Button onPress={() => setLastError(undefined)}>
-                  Clear Error
+                  {t("clearError")}
                 </Button>
               </>
             )}
@@ -342,7 +346,7 @@ export default function ({
                     colorScheme="coolGray"
                     onPress={notifyUserDisclose.onClose}
                   >
-                    Cancel
+                    {t("cancel")}
                   </Button>
                 )}
                 {notifyUserData?.onOk && (
@@ -351,7 +355,7 @@ export default function ({
                     onPress={notifyUserDisclose.onClose}
                     ref={okRef}
                   >
-                    OK
+                    {t("ok")}
                   </Button>
                 )}
               </>

@@ -36,9 +36,9 @@ import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function Header({ title }: { title: string }) {
-  const { t } = useTranslation();
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "Home">>();
+  const { t } = useTranslation();
   return (
     <HStack width="100%" height="100%" alignItems="center">
       <Center position="absolute" top={0} width={sr(40)} height={sr(40)}>
@@ -170,24 +170,25 @@ function DispatchAllActionsheet({
     },
     [dispatch, onClose]
   );
+  const { t } = useTranslation();
   return (
     <Actionsheet isOpen={isOpen} onClose={onClose}>
       <Actionsheet.Content>
-        <Text variant="h3">Run On All Pixels:</Text>
+        <Text variant="h3">{t("applyToAllRelevantPixels")}</Text>
         <Actionsheet.Item onPress={() => apply("connect")}>
-          Connect
+          {t("connect")}
         </Actionsheet.Item>
         <Actionsheet.Item onPress={() => apply("disconnect")}>
-          Disconnect
+          {t("disconnect")}
         </Actionsheet.Item>
         <Actionsheet.Item onPress={() => apply("blink")}>
-          Blink
+          {t("blink")}
         </Actionsheet.Item>
         <Actionsheet.Item onPress={() => apply("updateProfile")}>
-          Update Profile
+          {t("updateProfile")}
         </Actionsheet.Item>
         <Actionsheet.Item onPress={() => apply("queueFirmwareUpdate")}>
-          Update Bootloader & Firmware
+          {t("updateBootloaderAndFirmware")}
         </Actionsheet.Item>
       </Actionsheet.Content>
     </Actionsheet>
@@ -240,16 +241,22 @@ function HomePage() {
           ↖️ <Text italic>{t("openMenuToGoToValidation")}</Text>
         </Text>
         <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
-          {selectedFwLabel ?? "Tap To Select firmware"}
+          {selectedFwLabel ?? t("tapToSelectFirmware")}
         </Link>
         <PixelsList />
       </Box>
       {/* Footer showing app and system info */}
       <Center mt={sr(8)}>
         <Text italic>
-          {`Screen: ${Math.round(window.width)}` +
-            `x${Math.round(window.height)} - ` +
-            `OS: ${Platform.OS} ${Platform.Version}`}
+          {t("screenWithSize", {
+            width: Math.round(window.width),
+            height: Math.round(window.height),
+          }) +
+            " - " +
+            t("osNameWithVersion", {
+              name: Platform.OS,
+              version: Platform.Version,
+            })}
         </Text>
       </Center>
     </>

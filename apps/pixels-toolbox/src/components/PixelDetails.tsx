@@ -1,6 +1,7 @@
 import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
 import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
 import { memo, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import ProgressBar from "./ProgressBar";
 
@@ -12,9 +13,13 @@ function TextEntry({
   title,
   ...props
 }: { title: string } & ITextProps) {
+  const { t } = useTranslation();
   return (
     <Text {...props}>
-      <Text bold>{title} </Text>
+      <Text bold>
+        {title}
+        {t("colonSeparator")}
+      </Text>
       <Text italic>{children}</Text>
     </Text>
   );
@@ -51,8 +56,8 @@ function PixelDetailsImpl({
   const [telemetry] = usePixelValue(pixel, "telemetry", opt);
 
   // Prepare some values
+  const { t } = useTranslation();
   const voltage = battery?.voltage.toFixed(3);
-  const chargeState = battery?.isCharging ? "charging" : "not charging";
   const x = telemetry?.accX ?? 0;
   const y = telemetry?.accY ?? 0;
   const z = telemetry?.accZ ?? 0;
@@ -62,20 +67,29 @@ function PixelDetailsImpl({
       <TextEntry my={sr(5)} title="Status:">
         {status}
       </TextEntry>
-      <TextEntry title="Pixel Id:">{pixel.pixelId}</TextEntry>
-      <TextEntry title="LEDs:">
+      <TextEntry title={t("pixelId")}>{pixel.pixelId}</TextEntry>
+      <TextEntry title={t("leds")}>
         {pixel.ledCount}, {pixel.designAndColor}
       </TextEntry>
-      <TextEntry title="Firmware:">{pixel.firmwareDate.toString()}</TextEntry>
-      <TextEntry title="Bat:">
-        {battery?.level}%, {voltage}V, {chargeState}
+      <TextEntry title={t("firmware")}>
+        {pixel.firmwareDate.toString()}
       </TextEntry>
-      <TextEntry title="RSSI:">{Math.round(rssi ?? 0)}</TextEntry>
-      <TextEntry title="Temperature:">{temperature ?? 0}°C</TextEntry>
-      <TextEntry title="Roll State:">
+      <TextEntry title={t("battery")}>
+        {t("percentWithValue", { value: battery?.level ?? 0 })}
+        {t("commaSeparator")}
+        {t("voltageWithValue", { value: voltage })}
+      </TextEntry>
+      <TextEntry title={t("charging")}>
+        {t(battery?.isCharging ? "yes" : "no")}
+      </TextEntry>
+      <TextEntry title={t("rssi")}>{Math.round(rssi ?? 0)}</TextEntry>
+      <TextEntry title={t("temperature")}>
+        {t("celsiusWithValue", { value: temperature ?? 0 })}
+      </TextEntry>
+      <TextEntry title={t("rollState")}>
         {rollState?.face}, {rollState?.state}
       </TextEntry>
-      <TextEntry title="Acc:">{acc}</TextEntry>
+      <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
       <HStack space={sr(5)}>
         <VStack flex={1} space={sr(5)}>
           <Button onPress={() => pixelDispatcher.dispatch("connect")}>
