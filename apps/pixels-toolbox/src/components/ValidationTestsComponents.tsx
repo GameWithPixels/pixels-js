@@ -571,7 +571,7 @@ export function WaitFaceUp({
       useCallback(
         (abortSignal) =>
           _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
-            ValidationTests.waitFaceUp(pixel, 0, Color.dimYellow, abortSignal)
+            ValidationTests.waitFaceUp(pixel, 1, Color.dimYellow, abortSignal)
           ),
         [pixel]
       ),

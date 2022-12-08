@@ -1,5 +1,4 @@
 import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import {
   extendTheme,
@@ -49,7 +48,6 @@ import {
   getBoardOrDie,
   ValidationFormFactor,
 } from "~/features/validation/ValidationFormFactor";
-import { RootStackParamList } from "~/navigation";
 
 function getTestingMessage(
   t: TFunction<"translation", undefined>,
@@ -416,8 +414,7 @@ function RunTestsPage({
 function ValidationPage() {
   const { t } = useTranslation();
   // Setup page options
-  const navigation =
-    useNavigation<StackNavigationProp<RootStackParamList, "Validation">>();
+  const navigation = useNavigation();
   useEffect(() => {
     navigation.setOptions({
       title: t("factoryValidation"),

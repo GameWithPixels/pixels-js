@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   IBoxProps,
-  Modal,
   Pressable,
   Text,
   VStack,
@@ -16,7 +15,6 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import PixelDetails from "./PixelDetails";
 import PixelInfoCard, { PixelInfoCardProps } from "./PixelInfoCard";
 import ProgressBar from "./ProgressBar";
 
@@ -38,16 +36,17 @@ function SwipeableItemView({
 export interface SwipeablePixelCardProps
   extends Omit<PixelInfoCardProps, "pixel"> {
   pixelDispatcher: PixelDispatcher;
+  onShowDetails: () => void;
   swipeableItemsWidth: number;
 }
 
 export default function ({
   children,
   pixelDispatcher,
+  onShowDetails,
   swipeableItemsWidth,
   ...props
 }: SwipeablePixelCardProps) {
-  const [showDetails, setShowDetails] = useState(false);
   const [lastError, setLastError] = useState<Error>();
   const [profileUpdate, setProfileUpdate] = useState<number>();
   const [dfuQueued, setDfuQueued] = useState(false);
@@ -67,57 +66,45 @@ export default function ({
 
   // Subscribe to events for which we store the resulting state
   useEffect(() => {
-    if (!showDetails) {
-      pixelDispatcher.addEventListener("error", setLastError);
-      pixelDispatcher.addEventListener(
+    pixelDispatcher.addEventListener("error", setLastError);
+    pixelDispatcher.addEventListener("profileUpdateProgress", setProfileUpdate);
+    pixelDispatcher.addEventListener("firmwareUpdateQueued", setDfuQueued);
+    pixelDispatcher.addEventListener("firmwareUpdateState", setDfuState);
+    pixelDispatcher.addEventListener("firmwareUpdateProgress", setDfuProgress);
+    const notifyUserListener = ({
+      message,
+      withCancel,
+      response,
+    }: {
+      message: string;
+      withCancel: boolean;
+      response: (okCancel: boolean) => void;
+    }) => {
+      setNotifyUserData({
+        message,
+        onOk: () => response(true),
+        onCancel: withCancel ? () => response(false) : undefined,
+      });
+    };
+    pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
+    return () => {
+      pixelDispatcher.removeEventListener("error", setLastError);
+      pixelDispatcher.removeEventListener(
         "profileUpdateProgress",
         setProfileUpdate
       );
-      pixelDispatcher.addEventListener("firmwareUpdateQueued", setDfuQueued);
-      pixelDispatcher.addEventListener("firmwareUpdateState", setDfuState);
-      pixelDispatcher.addEventListener(
+      pixelDispatcher.removeEventListener("firmwareUpdateQueued", setDfuQueued);
+      pixelDispatcher.removeEventListener("firmwareUpdateState", setDfuState);
+      pixelDispatcher.removeEventListener(
         "firmwareUpdateProgress",
         setDfuProgress
       );
-      const notifyUserListener = ({
-        message,
-        withCancel,
-        response,
-      }: {
-        message: string;
-        withCancel: boolean;
-        response: (okCancel: boolean) => void;
-      }) => {
-        //notifyUser(pixelDispatcher.pixel, message, withCancel, response);
-        setNotifyUserData({
-          message,
-          onOk: () => response(true),
-          onCancel: withCancel ? () => response(false) : undefined,
-        });
-      };
-      pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
-      return () => {
-        pixelDispatcher.removeEventListener("error", setLastError);
-        pixelDispatcher.removeEventListener(
-          "profileUpdateProgress",
-          setProfileUpdate
-        );
-        pixelDispatcher.removeEventListener(
-          "firmwareUpdateQueued",
-          setDfuQueued
-        );
-        pixelDispatcher.removeEventListener("firmwareUpdateState", setDfuState);
-        pixelDispatcher.removeEventListener(
-          "firmwareUpdateProgress",
-          setDfuProgress
-        );
-        pixelDispatcher.pixel.removeEventListener(
-          "userMessage",
-          notifyUserListener
-        );
-      };
-    }
-  }, [pixelDispatcher, showDetails]);
+      pixelDispatcher.pixel.removeEventListener(
+        "userMessage",
+        notifyUserListener
+      );
+    };
+  }, [pixelDispatcher]);
 
   // Subscribe to state change events to force updating the UI
   const [_, forceUpdate] = useReducer((b) => !b, false);
@@ -141,7 +128,7 @@ export default function ({
   const isReady = pixelDispatcher.isReady;
   useFocusEffect(
     useCallback(() => {
-      if (isReady && !showDetails) {
+      if (isReady) {
         const intervalId = setInterval(() => {
           pixelDispatcher.dispatch("queryRssi");
           pixelDispatcher.dispatch("queryBattery");
@@ -150,7 +137,7 @@ export default function ({
           clearInterval(intervalId);
         };
       }
-    }, [isReady, showDetails, pixelDispatcher])
+    }, [isReady, pixelDispatcher])
   );
 
   // User notification
@@ -158,26 +145,25 @@ export default function ({
     message: string;
     onOk?: () => void;
     onCancel?: () => void;
+    handled?: boolean;
   }>();
   const notifyUserDisclose = useDisclose();
   const okRef = useRef(null);
   const open = notifyUserDisclose.onOpen;
   useEffect(() => {
-    if (notifyUserData) {
-      console.log("!!! OPEN");
+    if (notifyUserData && !notifyUserData.handled) {
+      setNotifyUserData({ ...notifyUserData, handled: true });
       open();
     }
   }, [notifyUserData, open]);
 
   // Refresh UI at least every 5 seconds
   useFocusEffect(() => {
-    if (!showDetails) {
-      // Called on every render!
-      const id = setTimeout(forceUpdate, 5000);
-      return () => {
-        clearTimeout(id);
-      };
-    }
+    // Called on every render!
+    const id = setTimeout(forceUpdate, 5000);
+    return () => {
+      clearTimeout(id);
+    };
   });
 
   // Values for UI
@@ -243,7 +229,7 @@ export default function ({
         )
       }
     >
-      <Pressable onPress={() => setShowDetails(true)}>
+      <Pressable onPress={() => onShowDetails()}>
         <PixelInfoCard pixel={pixelDispatcher} {...props}>
           {pixelDispatcher.canUpdateFirmware && (
             <Text position="absolute" top={sr(8)} right={sr(8)}>
@@ -314,20 +300,6 @@ export default function ({
           </VStack>
         </PixelInfoCard>
       </Pressable>
-      {/* TODO use navigation to show details */}
-      <Modal
-        isOpen={showDetails}
-        onClose={() => setShowDetails(false)}
-        size="lg"
-      >
-        <Modal.Content>
-          <Modal.CloseButton />
-          <Modal.Header>{pixelDispatcher.name}</Modal.Header>
-          <Modal.Body>
-            <PixelDetails pixelDispatcher={pixelDispatcher} />
-          </Modal.Body>
-        </Modal.Content>
-      </Modal>
       <AlertDialog
         isOpen={notifyUserDisclose.isOpen}
         onClose={notifyUserDisclose.onClose}
@@ -335,25 +307,28 @@ export default function ({
       >
         <AlertDialog.Content>
           <AlertDialog.CloseButton />
-          <AlertDialog.Header>Pixel {pixelDispatcher.name}</AlertDialog.Header>
+          <AlertDialog.Header>{pixelDispatcher.name}</AlertDialog.Header>
           <AlertDialog.Body>{notifyUserData?.message}</AlertDialog.Body>
           <AlertDialog.Footer>
             <Button.Group space={2}>
               <>
                 {notifyUserData?.onCancel && (
                   <Button
-                    variant="unstyled"
-                    colorScheme="coolGray"
-                    onPress={notifyUserDisclose.onClose}
+                    onPress={() => {
+                      notifyUserData.onCancel?.();
+                      notifyUserDisclose.onClose();
+                    }}
                   >
                     {t("cancel")}
                   </Button>
                 )}
                 {notifyUserData?.onOk && (
                   <Button
-                    colorScheme="danger"
-                    onPress={notifyUserDisclose.onClose}
                     ref={okRef}
+                    onPress={() => {
+                      notifyUserData.onOk?.();
+                      notifyUserDisclose.onClose();
+                    }}
                   >
                     {t("ok")}
                   </Button>

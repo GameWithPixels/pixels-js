@@ -1,39 +1,24 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import Constants from "expo-constants";
 import { Box, Center, Link, Text } from "native-base";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Platform,
-  useWindowDimensions,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
+// eslint-disable-next-line import/namespace
+import { Platform, useWindowDimensions } from "react-native";
 
-import Header from "./Header";
 import PixelsList from "./PixelsList";
 
 import { useAppSelector } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
-import { type RootStackParamList } from "~/navigation";
+import { type HomeScreensParamList } from "~/navigation";
 import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function HomePage() {
   // Setup page options
   const navigation =
-    useNavigation<StackNavigationProp<RootStackParamList, "Home">>();
-  useEffect(() => {
-    navigation.setOptions({
-      title: `Toolbox v${Constants.manifest?.version}`,
-      headerTitle: ({ children }) => <Header title={children} />,
-      headerStyle: {
-        height: sr(40) + Constants.statusBarHeight,
-      },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useNavigation<StackNavigationProp<HomeScreensParamList, "Home">>();
 
   // DFU file
   const { dfuFiles } = useAppSelector((state) => state.dfuFiles);

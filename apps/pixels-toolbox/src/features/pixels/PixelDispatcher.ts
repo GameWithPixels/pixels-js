@@ -54,6 +54,7 @@ export interface PixelDispatcherEventMap {
   firmwareUpdateProgress: number;
 }
 
+const _instances = new Map<number, PixelDispatcher>();
 const _pendingDFUs: PixelDispatcher[] = [];
 
 /**
@@ -153,6 +154,10 @@ export default class PixelDispatcher implements IPixel {
     return this._pixel;
   }
 
+  static findInstance(pixelId: number) {
+    return _instances.get(pixelId);
+  }
+
   constructor(scannedPixel: ScannedPixel) {
     this._scannedPixel = scannedPixel;
     this._lastBleActivity = new Date();
@@ -171,6 +176,7 @@ export default class PixelDispatcher implements IPixel {
     this._pixel.addEventListener("rssi", (rssi) =>
       this._evEmitter.emit("rssi", rssi)
     );
+    _instances.set(this.pixelId, this);
   }
 
   addEventListener<K extends keyof PixelDispatcherEventMap>(

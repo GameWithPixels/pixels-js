@@ -1,20 +1,30 @@
-import { Center, HStack, Text } from "native-base";
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import { useNavigation } from "@react-navigation/native";
+import Constants from "expo-constants";
+import { HamburgerIcon, Pressable, Text } from "native-base";
 import { memo } from "react";
 
-import Menu from "./Menu";
+import { type RootScreensParamList } from "~/navigation";
 
-import { sr } from "~/styles";
-
-function HeaderImpl({ title }: { title: string }) {
+function HeaderImpl() {
+  const navigation =
+    useNavigation<
+      DrawerNavigationProp<RootScreensParamList, "HomeNavigator">
+    >();
   return (
-    <HStack width="100%" height="100%" alignItems="center">
-      <Center position="absolute" top={0} width={sr(40)} height={sr(40)}>
-        <Menu />
-      </Center>
-      <Center width="100%" height="100%">
-        <Text variant="h2">{title}</Text>
-      </Center>
-    </HStack>
+    <>
+      <Pressable
+        position="absolute"
+        top={1}
+        left={-90}
+        width={50}
+        height={50}
+        onPress={() => navigation.openDrawer()}
+      >
+        <HamburgerIcon size="100%" />
+      </Pressable>
+      <Text variant="h1">{`Toolbox v${Constants.manifest?.version}`}</Text>
+    </>
   );
 }
 

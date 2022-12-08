@@ -54,7 +54,8 @@ i18n
           tapToSelectFirmware: "Tap To Select Firmware",
           screenWithSize: "Screen: {{width}}x{{height}}",
           osNameWithVersion: "OS: {{name}} {{version}}",
-          applyToAllRelevantPixels: "Apply To All Relevant Pixels:",
+          applyToAllRelevantPixels: "Apply To All Relevant Pixels",
+          pixelsWithCount: "{{count}} Pixels",
           connect: "Connect",
           disconnect: "Disconnect",
           blink: "Blink",
@@ -63,14 +64,13 @@ i18n
           // Select Pixel
           noPixelsFound: "No Pixels found so far...",
           scannedPixelsWithCount: "{{count}} Scanned Pixels",
-          pixelsWithCount: "{{count}} Pixels",
-          tapOnItemToSelect: "Tap On Item To Select:",
+          tapOnItemToSelect: "Tap On Item To Select",
           clearScanList: "Clear Scan List",
           // Pixel card
           dBWithValue: "{{value}}dB",
           percentWithValue: "{{value}}%",
           voltageWithValue: "{{value}}V",
-          firmware: "Firmware:",
+          firmware: "Firmware",
           cancelFirmwareUpdate: "Cancel Firmware Update",
           updateFirmware: "Update Firmware",
           status: "Status",
@@ -187,6 +187,7 @@ i18n
           screenWithSize: "屏幕: {{width}}x{{height}}",
           osNameWithVersion: "OS: {{name}} {{version}}",
           applyToAllRelevantPixels: "适用于所有相关的骰子",
+          pixelsWithCount: "{{count}} 个骰子",
           connect: "连接",
           disconnect: "断开联系",
           blink: "闪烁",
@@ -195,7 +196,6 @@ i18n
           // Select Pixel
           noPixelsFound: "没有发现骰子",
           scannedPixelsWithCount: "{{count}} 扫描后的骰子",
-          pixelsWithCount: "{{count}} 个骰子",
           tapOnItemToSelect: "点击型号进行选择",
           clearScanList: "清空扫描清单",
           // Pixel card

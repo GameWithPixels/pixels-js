@@ -57,13 +57,13 @@ function PixelDetailsImpl({
 
   // Prepare some values
   const { t } = useTranslation();
-  const voltage = battery?.voltage.toFixed(3);
   const x = telemetry?.accX ?? 0;
   const y = telemetry?.accY ?? 0;
   const z = telemetry?.accZ ?? 0;
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
   return (
     <VStack space={sr(5)}>
+      <Text variant="h2">{pixelDispatcher.name}</Text>
       <TextEntry my={sr(5)} title={t("status")}>
         {status ? t(status) : ""}
       </TextEntry>
@@ -77,7 +77,7 @@ function PixelDetailsImpl({
       <TextEntry title={t("battery")}>
         {t("percentWithValue", { value: battery?.level ?? 0 })}
         {t("commaSeparator")}
-        {t("voltageWithValue", { value: voltage })}
+        {t("voltageWithValue", { value: battery?.voltage.toFixed(3) ?? 0 })}
       </TextEntry>
       <TextEntry title={t("charging")}>
         {t(battery?.isCharging ? "yes" : "no")}

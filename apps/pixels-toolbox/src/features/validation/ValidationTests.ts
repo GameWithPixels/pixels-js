@@ -115,7 +115,7 @@ const ValidationTests = {
             await delay(200, abortSignal);
             batteryLevel = await pixel.queryBattery(); // TODO abortSignal
           }
-          abortSignal.removeEventListener("abort", abort);
+          abortSignal.removeEventListener("abort", abort); // finally
           if (!abortSignal.aborted) {
             resolve();
           }
@@ -154,7 +154,7 @@ const ValidationTests = {
                 resolve();
               }
             } catch (error) {
-              abortSignal.removeEventListener("abort", abort);
+              abortSignal.removeEventListener("abort", abort); // finally
               reject(error);
             }
           };
@@ -248,8 +248,8 @@ const ValidationTests = {
               MessageTypeValues.rollState
             )) as RollState; // TODO subscribe on "roll" events
           }
+          abortSignal.removeEventListener("abort", abort); // finally
           if (!abortSignal.aborted) {
-            abortSignal.removeEventListener("abort", abort);
             blinkAbortController.abort();
             resolve();
           }
@@ -286,8 +286,8 @@ const ValidationTests = {
         blinkForever(pixel, color, blinkSA, options).catch(() => {});
         // Wait on promised being resolved
         setResolve(() => {
+          abortSignal.removeEventListener("abort", abort); // finally
           if (!abortSignal.aborted) {
-            abortSignal.removeEventListener("abort", abort);
             blinkAbortController.abort();
             resolve();
           }
@@ -334,7 +334,7 @@ const ValidationTests = {
           // Wait on connection status change
           statusListener = (status: PixelStatus) => {
             if (status === "disconnected") {
-              abortSignal.removeEventListener("abort", abort);
+              abortSignal.removeEventListener("abort", abort); // finally
               blinkAbortController.abort();
               resolve();
             }
