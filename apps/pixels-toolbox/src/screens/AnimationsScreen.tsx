@@ -1,22 +1,20 @@
-import { assert } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
-  getPropsWithName,
-  getPropsWithRange,
-  getPropsWithWidget,
-  NameProperty,
-  AppDataSet,
   loadAppDataSet,
+  AppDataSet,
   EditAnimation,
+  EditAnimationSimple,
   EditAnimationGradient,
   EditAnimationGradientPattern,
   EditAnimationKeyframed,
-  EditAnimationNoise,
   EditAnimationRainbow,
-  EditAnimationSimple,
+  EditAnimationNoise,
   EditColor,
   EditPattern,
   EditRgbGradient,
   EditRgbKeyframe,
+  WidgetData,
+  extractWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
 import { usePixelConnect } from "@systemic-games/pixels-react";
 import {
@@ -35,7 +33,7 @@ import {
   Text,
   VStack,
 } from "native-base";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 
 import standardProfilesJson from "~/../assets/standard-profiles.json";
@@ -191,149 +189,128 @@ function getPropValueString(
   } else if (propertyKey === "duration") {
     return editAnim.duration.toString();
   }
-  throw new Error(`Unsupported animation property key ${propertyKey}`);
+  throw new Error(`Unsupported animation property key: ${propertyKey}`);
 }
 
-interface PropertyEditorProps {
-  editAnim: EditAnimation;
-  propertyKey: string;
-}
-
-function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
-  const widget = getPropsWithWidget(editAnim).find(
-    (p) => p.propertyKey === propertyKey
-  );
-  const entry = Object.entries(editAnim).find((e) => e[0] === propertyKey);
-  const value = entry ? entry[1] : editAnim.duration; //TODO assumes only duration is an accessor
-  const [propertyValue, setPropertyValue] = useState(value);
-  const updateProp = (value: any) => {
-    console.log(`Updating prop ${propertyKey} to ${value}`);
-    if (propertyValue instanceof EditColor) {
-      value = EditColor.fromColor(value as Color);
-    }
-    setPropertyValue(value);
-    if (propertyKey === "duration") {
-      editAnim.duration = value as number;
-    } else {
-      (editAnim as any)[propertyKey] = value;
-    }
-  };
-
-  if (widget) {
-    switch (widget.type) {
-      case "faceMask": {
-        const facesGroups = [
-          range(1, 8),
-          range(8, 15),
-          [...range(15, 20), Constants.faceMaskAllLEDs],
-        ];
-        return (
-          <>
-            <Text bold>{propertyValue}</Text>
-            {facesGroups.map((faces, i) => (
-              <HStack key={i}>
-                {faces.map((face) => (
-                  <Button key={face} onPress={() => updateProp(face)}>
-                    {face.toString()}
-                  </Button>
-                ))}
-              </HStack>
-            ))}
-          </>
-        );
-      }
-      case "index":
-      case "slider": {
-        assert(
-          typeof propertyValue === "number",
-          `Property is not a number: ${propertyKey}`
-        );
-        const range = getPropsWithRange(editAnim).find(
-          (p) => p.propertyKey === propertyKey
-        );
-        const step = range && range.step > 0 ? range.step : undefined;
-        return (
-          <>
-            <Text bold>{propertyValue}</Text>
-            <Slider
-              width="80%"
-              height={sr(40)}
-              value={value as number}
-              minValue={range?.min ?? 0}
-              maxValue={range?.max ?? 1}
-              step={step}
-              onChange={updateProp}
-            >
-              <Slider.Track>
-                <Slider.FilledTrack />
-              </Slider.Track>
-              <Slider.Thumb />
-            </Slider>
-          </>
-        );
-      }
-      case "gradient":
-        assert(
-          !propertyValue || propertyValue instanceof EditRgbGradient,
-          `Property is not a EditRgbGradient: ${propertyKey}`
-        );
-        return (
-          <FlatList
-            data={gradients}
-            ItemSeparatorComponent={() => <Box h={sr(3)} />}
-            renderItem={(itemInfo) => (
-              <Button
-                key={itemInfo.item.name}
-                onPress={() => updateProp(itemInfo.item.gradient)}
-              >
-                {itemInfo.item.name}
-              </Button>
-            )}
-            contentContainerStyle={{ flexGrow: 1 }}
-          />
-        );
-      case "grayscalePattern":
-      case "rgbPattern":
-        assert(
-          !propertyValue || propertyValue instanceof EditPattern,
-          `Property is not an EditPattern: ${propertyKey}`
-        );
-        return (
-          <FlatList
-            data={patterns}
-            ItemSeparatorComponent={() => <Box h={sr(3)} />}
-            renderItem={(itemInfo) => (
-              <Button
-                key={itemInfo.item.name}
-                onPress={() => updateProp(itemInfo.item)}
-              >
-                {itemInfo.item.name}
-              </Button>
-            )}
-            contentContainerStyle={{ flexGrow: 1 }}
-          />
-        );
-      default:
-        throw new Error(`Unsupported widget ${widget.type}`);
-    }
-  } else if (value instanceof EditColor) {
-    return (
-      <FlatList
-        data={colorMap}
-        ItemSeparatorComponent={() => <Box h={sr(3)} />}
-        renderItem={(itemInfo) => (
-          <Button
-            key={itemInfo.item.name}
-            onPress={() => updateProp(itemInfo.item.color)}
+function RenderAnimWidget({ widget }: { widget: WidgetData }) {
+  const [_, forceUpdate] = useReducer((b) => !b, false);
+  function update<T>(value: T) {
+    (widget.update as (v: T) => void)(value);
+    forceUpdate();
+  }
+  const propValue = widget.getValue();
+  const type = widget.type;
+  switch (type) {
+    case "count":
+    case "slider": {
+      const step = widget.step ? widget.step : undefined;
+      console.log(widget?.min ?? 0, widget?.max ?? 1, step);
+      return (
+        <>
+          <Text bold>{`${widget.displayName}: ${propValue}`}</Text>
+          <Slider
+            width="80%"
+            height={sr(40)}
+            value={propValue as number}
+            minValue={widget?.min ?? 0}
+            maxValue={widget?.max ?? 1}
+            step={step ?? 0.1}
+            onChange={update}
           >
-            {itemInfo.item.name}
-          </Button>
-        )}
-        contentContainerStyle={{ flexGrow: 1 }}
-      />
-    );
-  } else {
-    return <Text bold>NO EDITOR</Text>;
+            <Slider.Track>
+              <Slider.FilledTrack />
+            </Slider.Track>
+            <Slider.Thumb />
+          </Slider>
+        </>
+      );
+    }
+
+    case "faceIndex":
+    case "playbackFace":
+    case "bitField":
+    case "toggle": {
+      return (
+        <Text bold>{`No editor for ${widget.displayName}: ${propValue}`}</Text>
+      );
+    }
+
+    case "faceMask": {
+      const facesGroups = [
+        range(1, 8),
+        range(8, 15),
+        [...range(15, 20), Constants.faceMaskAllLEDs],
+      ];
+      return (
+        <>
+          <Text bold>{widget.displayName}</Text>
+          {facesGroups.map((faces, i) => (
+            <HStack key={i}>
+              {faces.map((face) => (
+                <Button key={face} onPress={() => update(face)}>
+                  {face.toString()}
+                </Button>
+              ))}
+            </HStack>
+          ))}
+        </>
+      );
+    }
+    case "color": {
+      return (
+        <FlatList
+          data={colorMap}
+          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          renderItem={(itemInfo) => (
+            <Button
+              key={itemInfo.item.name}
+              onPress={() => update(itemInfo.item.color)}
+            >
+              {itemInfo.item.name}
+            </Button>
+          )}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      );
+    }
+
+    case "gradient":
+      return (
+        <FlatList
+          data={gradients}
+          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          renderItem={(itemInfo) => (
+            <Button
+              key={itemInfo.item.name}
+              onPress={() => update(itemInfo.item.gradient)}
+            >
+              {itemInfo.item.name}
+            </Button>
+          )}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      );
+
+    case "grayscalePattern":
+    case "rgbPattern":
+      return (
+        <FlatList
+          data={patterns}
+          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          renderItem={(itemInfo) => (
+            <Button
+              key={itemInfo.item.name}
+              onPress={() => update(itemInfo.item)}
+            >
+              {itemInfo.item.name}
+            </Button>
+          )}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      );
+
+    default:
+      assertNever(type);
   }
 }
 
@@ -342,7 +319,8 @@ function AnimationPage() {
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [animList, setAnimList] = useState<EditAnimation[]>([]);
   const [editAnim, setEditAnim] = useState<EditAnimation | undefined>();
-  const [editProperty, setEditProperty] = useState<NameProperty | undefined>();
+  const [animWidgets, setAnimWidgets] = useState<WidgetData[]>();
+  const [widget, setWidget] = useState<WidgetData>();
 
   useEffect(() => {
     errorHandler(lastError);
@@ -373,14 +351,11 @@ function AnimationPage() {
           >
             Play
           </Button>
-          {editAnim && editProperty ? (
+          {editAnim && widget ? (
             <>
-              <Text bold>{`Editing ${editProperty.name}`}</Text>
-              <Button onPress={() => setEditProperty(undefined)}>Back</Button>
-              <PropertyEditor
-                editAnim={editAnim}
-                propertyKey={editProperty.propertyKey}
-              />
+              <Text bold>{`Editing ${widget.displayName}`}</Text>
+              <Button onPress={() => setWidget(undefined)}>Back</Button>
+              <RenderAnimWidget widget={widget} />
             </>
           ) : editAnim ? (
             <>
@@ -402,11 +377,11 @@ function AnimationPage() {
                 Remove
               </Button>
               <FlatList
-                data={getPropsWithName(editAnim)}
+                data={animWidgets}
                 ItemSeparatorComponent={() => <Box h={sr(3)} />}
                 renderItem={(itemInfo) => (
-                  <Button onPress={() => setEditProperty(itemInfo.item)}>
-                    {`${itemInfo.item.name}: ${getPropValueString(
+                  <Button onPress={() => setWidget(itemInfo.item)}>
+                    {`${itemInfo.item.displayName}: ${getPropValueString(
                       editAnim,
                       itemInfo.item.propertyKey
                     )}`}
@@ -423,7 +398,10 @@ function AnimationPage() {
                 ItemSeparatorComponent={() => <Box h={sr(3)} />}
                 renderItem={(itemInfo) => (
                   <Button
-                    onPress={() => setEditAnim(itemInfo.item)}
+                    onPress={() => {
+                      setEditAnim(itemInfo.item);
+                      setAnimWidgets(extractWidgetsData(itemInfo.item));
+                    }}
                   >{`Edit ${itemInfo.item.name}`}</Button>
                 )}
                 contentContainerStyle={{ flexGrow: 1 }}
