@@ -1,7 +1,8 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { NativeBaseProvider } from "native-base";
+import { NativeBaseProvider, themeTools } from "native-base";
+import { useTranslation } from "react-i18next";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import * as Sentry from "sentry-expo";
@@ -35,6 +36,8 @@ const Drawer = createDrawerNavigator<RootScreensParamList>();
 
 function App() {
   useBluetooth();
+  const { t } = useTranslation();
+  const drawerBackground = themeTools.getColor(theme, "coolGray.700"); // TODO dark/light
   return (
     <Provider store={store}>
       <SafeAreaProvider>
@@ -46,13 +49,23 @@ function App() {
                 headerTitleStyle: {
                   fontWeight: "bold",
                   fontSize: sr(26),
-                  alignSelf: "center",
                 },
                 headerTitleAlign: "center",
+                drawerStyle: {
+                  backgroundColor: drawerBackground,
+                },
               }}
             >
-              <Drawer.Screen name="HomeNavigator" component={HomeNavigator} />
-              <Drawer.Screen name="Validation" component={ValidationScreen} />
+              <Drawer.Screen
+                name="HomeNavigator"
+                component={HomeNavigator}
+                options={{ title: t("pixelsScanner") }}
+              />
+              <Drawer.Screen
+                name="Validation"
+                component={ValidationScreen}
+                options={{ title: t("factoryValidation") }}
+              />
               <Drawer.Screen name="Roll" component={RollScreen} />
               <Drawer.Screen name="Animations" component={AnimationsScreen} />
               <Drawer.Screen name="DiceRenderer" component={DiceRenderer} />

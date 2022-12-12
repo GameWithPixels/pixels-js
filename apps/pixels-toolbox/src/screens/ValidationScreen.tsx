@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import {
   extendTheme,
@@ -412,16 +411,6 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
-  const { t } = useTranslation();
-  // Setup page options
-  const navigation = useNavigation();
-  useEffect(() => {
-    navigation.setOptions({
-      title: t("factoryValidation"),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const [formFactor, setFormFactor] = useState<ValidationFormFactor>();
   const [dieType, setDieType] = useState<DieType>();
   const [pixelId, setPixelId] = useState(0);

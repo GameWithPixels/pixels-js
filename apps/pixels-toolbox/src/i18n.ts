@@ -51,6 +51,7 @@ i18n
           rolling: "rolling",
           crooked: "crooked",
           // Home
+          pixelsScanner: "Pixels Scanner",
           tapToSelectFirmware: "Tap To Select Firmware",
           screenWithSize: "Screen: {{width}}x{{height}}",
           osNameWithVersion: "OS: {{name}} {{version}}",
