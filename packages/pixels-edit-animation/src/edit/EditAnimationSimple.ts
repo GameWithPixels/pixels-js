@@ -12,24 +12,11 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAnimation from "./EditAnimation";
 import EditColor from "./EditColor";
 import EditDataSet from "./EditDataSet";
-import { widget, range, units, name } from "./decorators";
+import { widget, range, name } from "./decorators";
 
 export default class EditAnimationSimple extends EditAnimation {
-  private _duration: number;
-
   get type(): AnimationType {
     return AnimationTypeValues.Simple;
-  }
-
-  @widget("slider")
-  @range(0.1, 30, 0)
-  @units("s")
-  @name("Duration")
-  get duration(): number {
-    return this._duration;
-  }
-  set duration(value: number) {
-    this._duration = value;
   }
 
   @widget("faceMask")
@@ -37,10 +24,11 @@ export default class EditAnimationSimple extends EditAnimation {
   @name("Face Mask")
   faces: number;
 
+  @widget("color")
   @name("Color")
   color: EditColor;
 
-  @widget("index")
+  @widget("count")
   @range(1, 10, 1)
   @name("Repeat Count")
   count: number;
@@ -58,9 +46,8 @@ export default class EditAnimationSimple extends EditAnimation {
     count?: number;
     fade?: number;
   }) {
-    super(options?.name);
+    super(options?.name, options?.duration ?? 1);
     const color = options?.color ?? Color.red;
-    this._duration = options?.duration ?? 1;
     this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
     this.color = color instanceof Color ? EditColor.fromColor(color) : color;
     this.count = options?.count ?? 1;

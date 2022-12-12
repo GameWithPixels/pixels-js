@@ -2,17 +2,25 @@ export interface PropertyData {
   propertyKey: string;
 }
 
+function getMetadata<T extends PropertyData>(
+  metadataKey: symbol,
+  target: object
+): T[] {
+  return Reflect.getMetadata(metadataKey, target) ?? [];
+}
+
 function addMetadata<T extends PropertyData>(
   metadataKey: symbol,
   target: object,
   metadata: T
 ): void {
-  const properties: T[] = Reflect.getMetadata(metadataKey, target);
-  if (properties) {
-    properties.push(metadata);
-  } else {
-    Reflect.defineMetadata(metadataKey, [metadata], target);
-  }
+  // Always pass new array do defineMetadata
+  // so it doesn't pollute the parent object of the target
+  Reflect.defineMetadata(
+    metadataKey,
+    getMetadata(metadataKey, target).concat([metadata]),
+    target
+  );
 }
 
 function createDecorator<T extends PropertyData>(
@@ -28,12 +36,6 @@ function createDecorator<T extends PropertyData>(
   };
 }
 
-function getMetadata<T extends PropertyData>(
-  metadataKey: symbol,
-  target: object
-): T[] {
-  return Reflect.getMetadata(metadataKey, target) ?? [];
-}
 const nameKey = Symbol("pixelAnimationName");
 
 export interface NameProperty extends PropertyData {
@@ -101,15 +103,17 @@ export function getPropsWithUnits(target: object): UnitsProperty[] {
 const widgetKey = Symbol("pixelAnimationWidget");
 
 export type WidgetType =
-  | "faceMask"
-  | "index"
+  | "toggle"
+  | "count"
   | "slider"
-  | "gradient"
-  | "grayscalePattern"
-  | "rgbPattern"
+  | "faceMask"
   | "faceIndex"
   | "playbackFace"
-  | "bitfield";
+  | "bitField"
+  | "color"
+  | "gradient"
+  | "grayscalePattern"
+  | "rgbPattern";
 
 export interface WidgetProperty extends PropertyData {
   type: WidgetType;
