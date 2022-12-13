@@ -3,7 +3,7 @@ import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 
 import {
   decorators,
-  EditAnimation,
+  Editable,
   EditColor,
   EditPattern,
   EditRgbGradient,
@@ -42,7 +42,8 @@ export type GrayscalePatternData = BaseWidgetData<
 >;
 export type RgbPattern = BaseWidgetData<"rgbPattern", EditPattern | undefined>;
 
-export type WidgetData =
+/** Type union of all possible widget data types. */
+export type EditWidgetData =
   | ToggleData
   | CountData
   | SliderData
@@ -55,7 +56,13 @@ export type WidgetData =
   | GrayscalePatternData
   | RgbPattern;
 
-export default function (editAnim: EditAnimation): WidgetData[] {
+/**
+ * Iterate other the properties of the given {@link Editable} object
+ * and returns the corresponding list of  widgets data.
+ * @param editAnim The animation for which to get the widgets data.
+ * @returns An array of {@link EditWidgetData}.
+ */
+export default function (editAnim: Editable): EditWidgetData[] {
   const entries = Object.entries(editAnim);
   return decorators
     .getPropsWithWidget(editAnim)

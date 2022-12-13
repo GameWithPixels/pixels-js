@@ -13,8 +13,8 @@ import {
   EditPattern,
   EditRgbGradient,
   EditRgbKeyframe,
-  WidgetData,
-  extractWidgetsData,
+  EditWidgetData,
+  getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
 import { usePixelConnect } from "@systemic-games/pixels-react";
 import {
@@ -192,26 +192,24 @@ function getPropValueString(
   throw new Error(`Unsupported animation property key: ${propertyKey}`);
 }
 
-function RenderAnimWidget({ widget }: { widget: WidgetData }) {
+function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
   const [_, forceUpdate] = useReducer((b) => !b, false);
   function update<T>(value: T) {
     (widget.update as (v: T) => void)(value);
     forceUpdate();
   }
-  const propValue = widget.getValue();
   const type = widget.type;
   switch (type) {
     case "count":
     case "slider": {
       const step = widget.step ? widget.step : undefined;
-      console.log(widget?.min ?? 0, widget?.max ?? 1, step);
       return (
         <>
-          <Text bold>{`${widget.displayName}: ${propValue}`}</Text>
+          <Text bold>{`${widget.displayName}: ${widget.getValue()}`}</Text>
           <Slider
             width="80%"
             height={sr(40)}
-            value={propValue as number}
+            value={widget.getValue()}
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
             step={step ?? 0.1}
@@ -231,7 +229,9 @@ function RenderAnimWidget({ widget }: { widget: WidgetData }) {
     case "bitField":
     case "toggle": {
       return (
-        <Text bold>{`No editor for ${widget.displayName}: ${propValue}`}</Text>
+        <Text bold>{`No editor for ${
+          widget.displayName
+        }: ${widget.getValue()}`}</Text>
       );
     }
 
@@ -256,6 +256,7 @@ function RenderAnimWidget({ widget }: { widget: WidgetData }) {
         </>
       );
     }
+
     case "color": {
       return (
         <FlatList
@@ -319,8 +320,8 @@ function AnimationPage() {
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [animList, setAnimList] = useState<EditAnimation[]>([]);
   const [editAnim, setEditAnim] = useState<EditAnimation | undefined>();
-  const [animWidgets, setAnimWidgets] = useState<WidgetData[]>();
-  const [widget, setWidget] = useState<WidgetData>();
+  const [animWidgets, setAnimWidgets] = useState<EditWidgetData[]>();
+  const [widget, setWidget] = useState<EditWidgetData>();
 
   useEffect(() => {
     errorHandler(lastError);
@@ -400,7 +401,7 @@ function AnimationPage() {
                   <Button
                     onPress={() => {
                       setEditAnim(itemInfo.item);
-                      setAnimWidgets(extractWidgetsData(itemInfo.item));
+                      setAnimWidgets(getEditWidgetsData(itemInfo.item));
                     }}
                   >{`Edit ${itemInfo.item.name}`}</Button>
                 )}
