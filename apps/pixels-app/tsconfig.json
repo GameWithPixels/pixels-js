@@ -18,6 +18,9 @@
   "references": [
     {
       "path": "./../../packages/react-native-pixels-components"
-    }
+    },
+    {
+      "path": "./../../packages/pixels-edit-animation"
+    },
   ]
 }
