@@ -17,7 +17,7 @@ export default class EditConditionConnectionState extends EditCondition {
     return ConditionTypeValues.ConnectionState;
   }
 
-  @widget("bitfield")
+  @widget("bitField")
   @name("Connection Event")
   flags: ConnectionStateFlags;
 

@@ -158,13 +158,13 @@ interface NearbyPixelListProps {
   scannedPixels: PixelInfo[];
   pairedPixels: PixelInfo[];
   setPairedPixels: React.Dispatch<React.SetStateAction<PixelInfo[]>>;
-  onPress?: (() => void) | null | undefined;
+  // onPress?: (() => void) | null | undefined; // any function to execute when pressing a pixel info
 }
+
 function NearbyPixelsList({
   scannedPixels,
   pairedPixels,
   setPairedPixels,
-  onPress, // any function to execute when pressing a pixel info
 }: NearbyPixelListProps) {
   const [hideNearbyPixels, SetHideNearbyPixels] = React.useState(false);
   function addToPaired(pixelToAdd: PixelInfo) {

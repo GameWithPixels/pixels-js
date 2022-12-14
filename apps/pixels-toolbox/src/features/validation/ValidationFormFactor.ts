@@ -10,9 +10,3 @@ export function getBoardOrDie(
 export function isBoard(formFactor: ValidationFormFactor): boolean {
   return getBoardOrDie(formFactor) === "board";
 }
-
-export function getFormFactorNiceName(
-  formFactor: ValidationFormFactor
-): string {
-  return formFactor === "boardNoCoil" ? "board without coil" : formFactor;
-}

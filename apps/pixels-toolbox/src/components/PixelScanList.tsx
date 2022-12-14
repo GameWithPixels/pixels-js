@@ -1,7 +1,16 @@
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
-import { Button, Box, FlatList, Pressable, Text, VStack } from "native-base";
+import {
+  Button,
+  Box,
+  FlatList,
+  HStack,
+  Pressable,
+  Text,
+  VStack,
+} from "native-base";
+import { useTranslation } from "react-i18next";
 
-import PixelInfoBox from "~/components/PixelInfoCard";
+import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 
@@ -11,7 +20,7 @@ export default function ({
   refreshInterval,
 }: {
   onSelected: (pixel: ScannedPixel) => void;
-  onClose: () => void;
+  onClose?: () => void;
   refreshInterval?: number;
 }) {
   const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
@@ -19,14 +28,23 @@ export default function ({
     refreshInterval,
   });
   useErrorWithHandler(lastError);
+  const { t } = useTranslation();
   return (
-    <VStack flex={1} alignItems="center">
-      <Text bold>{`Scanned Pixels (${scannedPixels.length}):`}</Text>
-      <Button onPress={onClose}>Close</Button>
-      <Button onPress={() => scannerDispatch("clear")}>Clear Scan List</Button>
-      {scannedPixels.length ? (
+    <VStack flex={1} space="1%" alignItems="center">
+      <HStack space="2%">
+        {onClose && <Button onPress={onClose}>{t("close")}</Button>}
+        <Button onPress={() => scannerDispatch("clear")}>
+          {t("clearScanList")}
+        </Button>
+      </HStack>
+      <Text bold>
+        {scannedPixels.length
+          ? t("scannedPixelsWithCount", { count: scannedPixels.length })
+          : t("noPixelsFound")}
+      </Text>
+      {scannedPixels.length > 0 && (
         <>
-          <Text italic>Tap On Device To Select:</Text>
+          <Text italic>{t("tapOnItemToSelect")}</Text>
           <FlatList
             width="100%"
             data={scannedPixels}
@@ -36,16 +54,14 @@ export default function ({
                 borderColor="gray.500"
                 borderWidth={2}
               >
-                <PixelInfoBox pixel={itemInfo.item} />
+                <PixelInfoCard pixel={itemInfo.item} />
               </Pressable>
             )}
             keyExtractor={(p) => p.pixelId.toString()}
-            ItemSeparatorComponent={() => <Box height="3%" />}
+            ItemSeparatorComponent={() => <Box height={5} />}
             contentContainerStyle={{ flexGrow: 1 }}
           />
         </>
-      ) : (
-        <Text>No Pixels found so far...</Text>
       )}
     </VStack>
   );

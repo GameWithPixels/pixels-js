@@ -12,24 +12,11 @@ import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
-import { widget, range, units, name } from "./decorators";
+import { widget, range, name } from "./decorators";
 
 export default class EditAnimationNoise extends EditAnimation {
-  private _duration: number;
-
   get type(): AnimationType {
     return AnimationTypeValues.Noise;
-  }
-
-  @widget("slider")
-  @range(0.1, 30, 0.1)
-  @units("s")
-  @name("Duration")
-  get duration(): number {
-    return this._duration;
-  }
-  set duration(value: number) {
-    this._duration = value;
   }
 
   @widget("gradient")
@@ -70,8 +57,7 @@ export default class EditAnimationNoise extends EditAnimation {
     blinkCount?: number;
     fade?: number;
   }) {
-    super(options?.name);
-    this._duration = options?.duration ?? 1;
+    super(options?.name, options?.duration ?? 1);
     this.gradient = options?.gradient;
     this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
     this.blinkDuration = options?.blinkDuration ?? 0.1;

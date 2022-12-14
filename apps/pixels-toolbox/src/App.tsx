@@ -1,21 +1,25 @@
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
-import { NativeBaseProvider } from "native-base";
+import { NativeBaseProvider, themeTools } from "native-base";
+import { useTranslation } from "react-i18next";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import * as Sentry from "sentry-expo";
 
 import { store } from "./app/store";
+import AnimationsScreen from "./screens/AnimationsScreen";
+import DiceRenderer from "./screens/DiceRenderer";
+import HomeNavigator from "./screens/HomeNavigator";
 import theme from "./theme";
 
 import useBluetooth from "~/features/pixels/hooks/useBluetooth";
-import { type RootStackParamList } from "~/navigation";
-import HomeScreen from "~/screens/HomeScreen";
+import { type RootScreensParamList } from "~/navigation";
 import RollScreen from "~/screens/RollScreen";
-import SelectDfuFilesScreen from "~/screens/SelectDfuFilesScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
 import { sr } from "~/styles";
+
+// Import internationalization file so it's initialized
 import "~/i18n";
 
 // Use Sentry for crash reporting
@@ -28,34 +32,44 @@ Sentry.init({
   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });
 
-const Stack = createStackNavigator<RootStackParamList>();
+const Drawer = createDrawerNavigator<RootScreensParamList>();
 
 function App() {
   useBluetooth();
+  const { t } = useTranslation();
+  const drawerBackground = themeTools.getColor(theme, "coolGray.700"); // TODO dark/light
   return (
     <Provider store={store}>
       <SafeAreaProvider>
         <StatusBar style="light" />
         <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
           <NavigationContainer theme={DarkTheme}>
-            <Stack.Navigator
+            <Drawer.Navigator
               screenOptions={{
                 headerTitleStyle: {
                   fontWeight: "bold",
                   fontSize: sr(26),
-                  alignSelf: "center",
                 },
                 headerTitleAlign: "center",
+                drawerStyle: {
+                  backgroundColor: drawerBackground,
+                },
               }}
             >
-              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen
-                name="SelectDfuFiles"
-                component={SelectDfuFilesScreen}
+              <Drawer.Screen
+                name="HomeNavigator"
+                component={HomeNavigator}
+                options={{ title: t("pixelsScanner") }}
               />
-              <Stack.Screen name="Validation" component={ValidationScreen} />
-              <Stack.Screen name="Roll" component={RollScreen} />
-            </Stack.Navigator>
+              <Drawer.Screen
+                name="Validation"
+                component={ValidationScreen}
+                options={{ title: t("factoryValidation") }}
+              />
+              <Drawer.Screen name="Roll" component={RollScreen} />
+              <Drawer.Screen name="Animations" component={AnimationsScreen} />
+              <Drawer.Screen name="DiceRenderer" component={DiceRenderer} />
+            </Drawer.Navigator>
           </NavigationContainer>
         </NativeBaseProvider>
       </SafeAreaProvider>

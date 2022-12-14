@@ -1,5 +1,4 @@
 import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import { useAssets } from "expo-asset";
 import { Box, Center, FlatList, Pressable, Text, VStack } from "native-base";
 import { useEffect, useState } from "react";
@@ -11,14 +10,12 @@ import AppPage from "~/components/AppPage";
 import getDfuFileInfo, { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 import { setDfuFiles } from "~/features/store/dfuFilesSlice";
-import { type RootStackParamList } from "~/navigation";
 import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function SelectDfuFilePage() {
   const errorHandler = useErrorHandler();
-  const navigation =
-    useNavigation<StackNavigationProp<RootStackParamList, "SelectDfuFiles">>();
+  const navigation = useNavigation();
   useEffect(() => {
     navigation.setOptions({
       title: "Select Firmware:",

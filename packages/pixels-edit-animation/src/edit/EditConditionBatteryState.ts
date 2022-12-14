@@ -17,7 +17,7 @@ export default class EditConditionBatteryState extends EditCondition {
     return ConditionTypeValues.BatteryState;
   }
 
-  @widget("bitfield")
+  @widget("bitField")
   @name("Battery State")
   flags: BatteryStateFlags;
 

@@ -54,6 +54,7 @@ export interface PixelDispatcherEventMap {
   firmwareUpdateProgress: number;
 }
 
+const _instances = new Map<number, PixelDispatcher>();
 const _pendingDFUs: PixelDispatcher[] = [];
 
 /**
@@ -153,6 +154,10 @@ export default class PixelDispatcher implements IPixel {
     return this._pixel;
   }
 
+  static findInstance(pixelId: number) {
+    return _instances.get(pixelId);
+  }
+
   constructor(scannedPixel: ScannedPixel) {
     this._scannedPixel = scannedPixel;
     this._lastBleActivity = new Date();
@@ -171,6 +176,7 @@ export default class PixelDispatcher implements IPixel {
     this._pixel.addEventListener("rssi", (rssi) =>
       this._evEmitter.emit("rssi", rssi)
     );
+    _instances.set(this.pixelId, this);
   }
 
   addEventListener<K extends keyof PixelDispatcherEventMap>(
@@ -249,7 +255,7 @@ export default class PixelDispatcher implements IPixel {
 
   private async _queryBattery(): Promise<void> {
     if (this.isReady) {
-      await this._pixel.queryBatteryState();
+      await this._pixel.queryBattery();
     }
   }
 
@@ -312,6 +318,7 @@ export default class PixelDispatcher implements IPixel {
       // Queue DFU request
       _pendingDFUs.push(this);
       this._evEmitter.emit("firmwareUpdateQueued", true);
+      // Run update immediately if it's the only pending request
       if (_pendingDFUs.length === 1) {
         await this._updateFirmware();
       }
@@ -323,16 +330,14 @@ export default class PixelDispatcher implements IPixel {
     if (i > 0 || force) {
       _pendingDFUs.splice(i);
       this._evEmitter.emit("firmwareUpdateQueued", false);
-      if (i === 0) {
-        await _pendingDFUs[0]?._updateFirmware();
-      }
+      // Run next update if any
+      await _pendingDFUs[0]?._updateFirmware();
     } else if (i === 0) {
-      // TODO cancel ongoing DFU
+      // TODO abort ongoing DFU
     }
   }
 
   private async _updateFirmware() {
-    // Process it immediately if it's the only pending request
     const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
     const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
     const firmware = filesInfo.filter((i) => i.type === "firmware")[0];

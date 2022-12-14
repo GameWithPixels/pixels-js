@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   IBoxProps,
-  Modal,
   Pressable,
   Text,
   VStack,
@@ -13,9 +12,9 @@ import {
   Center,
 } from "native-base";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import PixelDetails from "./PixelDetails";
 import PixelInfoCard, { PixelInfoCardProps } from "./PixelInfoCard";
 import ProgressBar from "./ProgressBar";
 
@@ -37,16 +36,17 @@ function SwipeableItemView({
 export interface SwipeablePixelCardProps
   extends Omit<PixelInfoCardProps, "pixel"> {
   pixelDispatcher: PixelDispatcher;
+  onShowDetails: () => void;
   swipeableItemsWidth: number;
 }
 
 export default function ({
   children,
   pixelDispatcher,
+  onShowDetails,
   swipeableItemsWidth,
   ...props
 }: SwipeablePixelCardProps) {
-  const [showDetails, setShowDetails] = useState(false);
   const [lastError, setLastError] = useState<Error>();
   const [profileUpdate, setProfileUpdate] = useState<number>();
   const [dfuQueued, setDfuQueued] = useState(false);
@@ -66,60 +66,47 @@ export default function ({
 
   // Subscribe to events for which we store the resulting state
   useEffect(() => {
-    if (!showDetails) {
-      pixelDispatcher.addEventListener("error", setLastError);
-      pixelDispatcher.addEventListener(
+    pixelDispatcher.addEventListener("error", setLastError);
+    pixelDispatcher.addEventListener("profileUpdateProgress", setProfileUpdate);
+    pixelDispatcher.addEventListener("firmwareUpdateQueued", setDfuQueued);
+    pixelDispatcher.addEventListener("firmwareUpdateState", setDfuState);
+    pixelDispatcher.addEventListener("firmwareUpdateProgress", setDfuProgress);
+    const notifyUserListener = ({
+      message,
+      withCancel,
+      response,
+    }: {
+      message: string;
+      withCancel: boolean;
+      response: (okCancel: boolean) => void;
+    }) => {
+      setNotifyUserData({
+        message,
+        onOk: () => response(true),
+        onCancel: withCancel ? () => response(false) : undefined,
+      });
+    };
+    pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
+    return () => {
+      pixelDispatcher.removeEventListener("error", setLastError);
+      pixelDispatcher.removeEventListener(
         "profileUpdateProgress",
         setProfileUpdate
       );
-      pixelDispatcher.addEventListener("firmwareUpdateQueued", setDfuQueued);
-      pixelDispatcher.addEventListener("firmwareUpdateState", setDfuState);
-      pixelDispatcher.addEventListener(
+      pixelDispatcher.removeEventListener("firmwareUpdateQueued", setDfuQueued);
+      pixelDispatcher.removeEventListener("firmwareUpdateState", setDfuState);
+      pixelDispatcher.removeEventListener(
         "firmwareUpdateProgress",
         setDfuProgress
       );
-      const notifyUserListener = ({
-        message,
-        withCancel,
-        response,
-      }: {
-        message: string;
-        withCancel: boolean;
-        response: (okCancel: boolean) => void;
-      }) => {
-        //notifyUser(pixelDispatcher.pixel, message, withCancel, response);
-        setNotifyUserData({
-          message,
-          onOk: () => response(true),
-          onCancel: withCancel ? () => response(false) : undefined,
-        });
-      };
-      pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
-      return () => {
-        pixelDispatcher.removeEventListener("error", setLastError);
-        pixelDispatcher.removeEventListener(
-          "profileUpdateProgress",
-          setProfileUpdate
-        );
-        pixelDispatcher.removeEventListener(
-          "firmwareUpdateQueued",
-          setDfuQueued
-        );
-        pixelDispatcher.removeEventListener("firmwareUpdateState", setDfuState);
-        pixelDispatcher.removeEventListener(
-          "firmwareUpdateProgress",
-          setDfuProgress
-        );
-        pixelDispatcher.pixel.removeEventListener(
-          "userMessage",
-          notifyUserListener
-        );
-      };
-    }
-  }, [pixelDispatcher, showDetails]);
+      pixelDispatcher.pixel.removeEventListener(
+        "userMessage",
+        notifyUserListener
+      );
+    };
+  }, [pixelDispatcher]);
 
   // Subscribe to state change events to force updating the UI
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, forceUpdate] = useReducer((b) => !b, false);
   useFocusEffect(
     useCallback(() => {
@@ -150,7 +137,7 @@ export default function ({
           clearInterval(intervalId);
         };
       }
-    }, [pixelDispatcher, isReady])
+    }, [isReady, pixelDispatcher])
   );
 
   // User notification
@@ -158,13 +145,14 @@ export default function ({
     message: string;
     onOk?: () => void;
     onCancel?: () => void;
+    handled?: boolean;
   }>();
   const notifyUserDisclose = useDisclose();
   const okRef = useRef(null);
   const open = notifyUserDisclose.onOpen;
   useEffect(() => {
-    if (notifyUserData) {
-      console.log("!!! OPEN");
+    if (notifyUserData && !notifyUserData.handled) {
+      setNotifyUserData({ ...notifyUserData, handled: true });
       open();
     }
   }, [notifyUserData, open]);
@@ -178,7 +166,8 @@ export default function ({
     };
   });
 
-  // Some values for the UI below
+  // Values for UI
+  const { t } = useTranslation();
   const isDisco =
     !pixelDispatcher.status || pixelDispatcher.status === "disconnected";
   const lastSeen = Math.round(
@@ -212,7 +201,7 @@ export default function ({
       renderLeftActions={() =>
         !dfuQueued && (
           <SwipeableItemView
-            label={isDisco ? "Connect" : "Disconnect"}
+            label={t(isDisco ? "connect" : "disconnect")}
             backgroundColor={isDisco ? "green.500" : "red.500"}
             _text={{ mx: sr(20), color: "gray.100", bold: true }}
           />
@@ -230,9 +219,9 @@ export default function ({
                 ? pixelDispatcher.isUpdatingFirmware
                   ? ""
                   : pixelDispatcher.isFirmwareUpdateQueued
-                  ? "Cancel\nFirmware\nUpdate"
-                  : "Update\nFirmware"
-                : "Blink"
+                  ? t("cancelFirmwareUpdate")
+                  : t("updateFirmware")
+                : t("blink")
             }
             backgroundColor={isDisco ? "purple.500" : "orange.500"}
             _text={{ mx: sr(20), color: "gray.100", bold: true }}
@@ -240,7 +229,7 @@ export default function ({
         )
       }
     >
-      <Pressable onPress={() => setShowDetails(pixelDispatcher.isReady)}>
+      <Pressable onPress={() => onShowDetails()}>
         <PixelInfoCard pixel={pixelDispatcher} {...props}>
           {pixelDispatcher.canUpdateFirmware && (
             <Text position="absolute" top={sr(8)} right={sr(8)}>
@@ -259,17 +248,17 @@ export default function ({
               // DFU status and progress
               dfuState !== "dfuCompleted" ? (
                 <Center width="100%" flexDir="row">
-                  <Text>Firmware Update: </Text>
+                  <Text>{t("firmwareUpdate")}: </Text>
                   {dfuState === "dfuStarting" && dfuProgress > 0 ? (
                     <Box flex={1}>
                       <ProgressBar percent={dfuProgress} />
                     </Box>
                   ) : (
-                    <Text italic>{dfuState}</Text>
+                    <Text italic>{t(dfuState)}</Text>
                   )}
                 </Center>
               ) : (
-                <Text>Waiting On Firmware Update...</Text>
+                <Text>{t("waitingOnFirmwareUpdate")}</Text>
               )
             ) : profileUpdate ? (
               // Profile update progress
@@ -281,19 +270,21 @@ export default function ({
               </Center>
             ) : isDisco && lastSeen > 5 ? (
               // Pixel is disconnected and hasn't been seen for a while (no advertising)
-              <Text italic>{`Unavailable (${
+              <Text italic>{`${t("unavailable")} (${
                 lastSeen < 120
-                  ? `${lastSeen}s`
-                  : `${Math.floor(lastSeen / 60)}m`
+                  ? t("secondsWithValue", { value: lastSeen })
+                  : t("minutesWithValue", { value: Math.floor(lastSeen / 60) })
               })`}</Text>
             ) : (
               // Pixel is either connecting/connected or advertising
               <Text>
-                <Text>Status: </Text>
+                <Text>{t("status")}: </Text>
                 <Text italic>
-                  {isDisco && lastSeen <= 5
-                    ? "advertising"
-                    : pixelDispatcher.status}
+                  {t(
+                    isDisco && lastSeen <= 5
+                      ? "advertising"
+                      : pixelDispatcher.status
+                  )}
                 </Text>
               </Text>
             )}
@@ -302,26 +293,13 @@ export default function ({
               <>
                 <Text color="red.500">{lastError?.message}</Text>
                 <Button onPress={() => setLastError(undefined)}>
-                  Clear Error
+                  {t("clearError")}
                 </Button>
               </>
             )}
           </VStack>
         </PixelInfoCard>
       </Pressable>
-      <Modal
-        isOpen={showDetails}
-        onClose={() => setShowDetails(false)}
-        size="lg"
-      >
-        <Modal.Content>
-          <Modal.CloseButton />
-          <Modal.Header>Pixels Die: {pixelDispatcher.name}</Modal.Header>
-          <Modal.Body>
-            <PixelDetails pixelDispatcher={pixelDispatcher} />
-          </Modal.Body>
-        </Modal.Content>
-      </Modal>
       <AlertDialog
         isOpen={notifyUserDisclose.isOpen}
         onClose={notifyUserDisclose.onClose}
@@ -329,27 +307,30 @@ export default function ({
       >
         <AlertDialog.Content>
           <AlertDialog.CloseButton />
-          <AlertDialog.Header>Pixel {pixelDispatcher.name}</AlertDialog.Header>
+          <AlertDialog.Header>{pixelDispatcher.name}</AlertDialog.Header>
           <AlertDialog.Body>{notifyUserData?.message}</AlertDialog.Body>
           <AlertDialog.Footer>
             <Button.Group space={2}>
               <>
                 {notifyUserData?.onCancel && (
                   <Button
-                    variant="unstyled"
-                    colorScheme="coolGray"
-                    onPress={notifyUserDisclose.onClose}
+                    onPress={() => {
+                      notifyUserData.onCancel?.();
+                      notifyUserDisclose.onClose();
+                    }}
                   >
-                    Cancel
+                    {t("cancel")}
                   </Button>
                 )}
                 {notifyUserData?.onOk && (
                   <Button
-                    colorScheme="danger"
-                    onPress={notifyUserDisclose.onClose}
                     ref={okRef}
+                    onPress={() => {
+                      notifyUserData.onOk?.();
+                      notifyUserDisclose.onClose();
+                    }}
                   >
-                    OK
+                    {t("ok")}
                   </Button>
                 )}
               </>

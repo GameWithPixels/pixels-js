@@ -107,15 +107,15 @@ const ValidationTests = {
       } else {
         abortSignal.addEventListener("abort", abort);
         const wait = async () => {
-          let batteryLevel = await pixel.queryBatteryState();
+          let batteryLevel = await pixel.queryBattery();
           while (
             !abortSignal.aborted &&
             batteryLevel.isCharging !== shouldBeCharging
           ) {
             await delay(200, abortSignal);
-            batteryLevel = await pixel.queryBatteryState(); // TODO abortSignal
+            batteryLevel = await pixel.queryBattery(); // TODO abortSignal
           }
-          abortSignal.removeEventListener("abort", abort);
+          abortSignal.removeEventListener("abort", abort); // finally
           if (!abortSignal.aborted) {
             resolve();
           }
@@ -154,7 +154,7 @@ const ValidationTests = {
                 resolve();
               }
             } catch (error) {
-              abortSignal.removeEventListener("abort", abort);
+              abortSignal.removeEventListener("abort", abort); // finally
               reject(error);
             }
           };
@@ -191,18 +191,6 @@ const ValidationTests = {
     );
   },
 
-  checkAccelerationShake: (
-    pixel: Pixel,
-    abortSignal: AbortSignal,
-    minNormDeviation = 0.3
-  ): Promise<void> => {
-    return ValidationTests.checkAccelerometer(
-      pixel,
-      (x, y, z) => Math.abs(1 - vectNorm(x, y, z)) > minNormDeviation,
-      abortSignal
-    );
-  },
-
   updateProfile: async (
     pixel: Pixel,
     profile: DataSet,
@@ -223,8 +211,8 @@ const ValidationTests = {
   waitFaceUp: async (
     pixel: Pixel,
     face: number,
-    abortSignal: AbortSignal,
-    blinkColor = Color.dimMagenta
+    blinkColor: Color,
+    abortSignal: AbortSignal
   ): Promise<void> => {
     assert(face > 0);
     await new Promise<void>((resolve, reject) => {
@@ -260,8 +248,8 @@ const ValidationTests = {
               MessageTypeValues.rollState
             )) as RollState; // TODO subscribe on "roll" events
           }
+          abortSignal.removeEventListener("abort", abort); // finally
           if (!abortSignal.aborted) {
-            abortSignal.removeEventListener("abort", abort);
             blinkAbortController.abort();
             resolve();
           }
@@ -298,8 +286,8 @@ const ValidationTests = {
         blinkForever(pixel, color, blinkSA, options).catch(() => {});
         // Wait on promised being resolved
         setResolve(() => {
+          abortSignal.removeEventListener("abort", abort); // finally
           if (!abortSignal.aborted) {
-            abortSignal.removeEventListener("abort", abort);
             blinkAbortController.abort();
             resolve();
           }
@@ -308,7 +296,7 @@ const ValidationTests = {
     });
   },
 
-  renameDie: async (pixel: Pixel, name = "Pixel"): Promise<void> => {
+  renameDie: async (_pixel: Pixel, _name = "Pixel"): Promise<void> => {
     // TODO await pixel.rename(name);
   },
 
@@ -346,7 +334,7 @@ const ValidationTests = {
           // Wait on connection status change
           statusListener = (status: PixelStatus) => {
             if (status === "disconnected") {
-              abortSignal.removeEventListener("abort", abort);
+              abortSignal.removeEventListener("abort", abort); // finally
               blinkAbortController.abort();
               resolve();
             }

@@ -1,67 +1,59 @@
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
-import { useEffect, useState } from "react";
+import { usePixelConnect, usePixelValue } from "@systemic-games/pixels-react";
+import { getPixel } from "@systemic-games/react-native-pixels-connect";
+import { Center, Pressable, Text } from "native-base";
+import { useEffect } from "react";
 import { useErrorHandler } from "react-error-boundary";
-import {
-  StyleSheet,
-  Text,
-  View,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
 
 import AppPage from "~/components/AppPage";
-import SelectPixel from "~/components/SelectPixel";
-import usePixelRoll from "~/features/pixels/hooks/usePixelRoll";
-import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
-import globalStyles, { sr } from "~/styles";
+import PixelScanList from "~/components/PixelScanList";
+import { sr } from "~/styles";
 
 function RollPage() {
   const errorHandler = useErrorHandler();
-  const [selectedPixel, setSelectedPixel] = useState<Pixel | undefined>();
-  const status = usePixelStatus(selectedPixel);
-  const [connectStarted, setConnectStarted] = useState(false);
-  const [face, rollState] = usePixelRoll(selectedPixel);
+  const [status, pixel, connectDispatch, lastError] = usePixelConnect();
+  const [rollState] = usePixelValue(pixel, "rollState");
 
   useEffect(() => {
-    setConnectStarted(true);
-    selectedPixel?.connect().catch(errorHandler);
-    return () => {
-      selectedPixel?.disconnect().catch(console.log);
-    };
-  }, [errorHandler, selectedPixel]);
-
-  // Pixel status is first set to "disconnected" before "connecting"
-  // but we don't want display that initial "disconnected" state.
-  useEffect(() => {
-    if (status !== "disconnected") {
-      setConnectStarted(false);
-    }
-  }, [status]);
+    errorHandler(lastError);
+  }, [errorHandler, lastError]);
 
   const isConnecting = status === "connecting" || status === "identifying";
   const backgroundColor =
-    !status || isConnecting || connectStarted
+    !status || isConnecting
       ? "yellow"
       : status !== "ready"
       ? "red"
-      : rollState !== "onFace"
+      : rollState?.state !== "onFace"
       ? "blue"
       : "green";
   return (
     <>
-      {!selectedPixel ? (
-        <SelectPixel setSelectedPixel={setSelectedPixel} />
+      {!pixel ? (
+        <PixelScanList
+          onSelected={(sp) => connectDispatch("connect", getPixel(sp))}
+        />
       ) : (
-        <View style={[styles.containerRoll, { backgroundColor }]}>
-          {isConnecting ? (
-            <Text style={styles.textRoll}>...</Text>
-          ) : (
-            status === "ready" &&
-            rollState !== "unknown" && (
-              <Text style={styles.textRoll}>{face}</Text>
-            )
-          )}
-          {/* <Button onPress={() => setSelectedPixel(undefined)} title="Back" /> */}
-        </View>
+        <Pressable onPress={() => connectDispatch("disconnect")}>
+          <Center
+            width="100%"
+            height="100%"
+            backgroundColor={`${backgroundColor}.600`}
+          >
+            {isConnecting ? (
+              <Text fontSize={sr(250)} bold color="white">
+                ...
+              </Text>
+            ) : (
+              status === "ready" &&
+              rollState &&
+              rollState.state !== "unknown" && (
+                <Text fontSize={sr(250)} bold color="white">
+                  {rollState.face}
+                </Text>
+              )
+            )}
+          </Center>
+        </Pressable>
       )}
     </>
   );
@@ -74,18 +66,3 @@ export default function () {
     </AppPage>
   );
 }
-
-const styles = StyleSheet.create({
-  ...globalStyles,
-  containerRoll: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
-  },
-  textRoll: {
-    fontSize: sr(250),
-    color: "white",
-    fontWeight: "bold",
-  },
-});

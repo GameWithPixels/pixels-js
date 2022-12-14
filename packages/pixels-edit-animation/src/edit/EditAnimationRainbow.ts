@@ -10,24 +10,11 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
-import { widget, range, units, name } from "./decorators";
+import { widget, range, name } from "./decorators";
 
 export default class EditAnimationRainbow extends EditAnimation {
-  private _duration: number;
-
   get type(): AnimationType {
     return AnimationTypeValues.Rainbow;
-  }
-
-  @widget("slider")
-  @range(0.1, 30, 0.1)
-  @units("s")
-  @name("Duration")
-  get duration(): number {
-    return this._duration;
-  }
-  set duration(value: number) {
-    this._duration = value;
   }
 
   @widget("faceMask")
@@ -35,7 +22,7 @@ export default class EditAnimationRainbow extends EditAnimation {
   @name("Face Mask")
   faces: number;
 
-  @widget("index")
+  @widget("count")
   @range(1, 10, 1)
   @name("Repeat Count")
   count: number;
@@ -45,6 +32,7 @@ export default class EditAnimationRainbow extends EditAnimation {
   @name("Fading Sharpness")
   fade: number;
 
+  @widget("toggle")
   @name("Traveling Order")
   traveling: boolean;
 
@@ -56,8 +44,7 @@ export default class EditAnimationRainbow extends EditAnimation {
     fade?: number;
     traveling?: boolean;
   }) {
-    super(options?.name);
-    this._duration = options?.duration ?? 1;
+    super(options?.name, options?.duration ?? 1);
     this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
     this.count = options?.count ?? 1;
     this.fade = options?.fade ?? 0;
@@ -77,7 +64,7 @@ export default class EditAnimationRainbow extends EditAnimation {
   duplicate(): EditAnimation {
     return new EditAnimationRainbow({
       name: this.name,
-      duration: this._duration,
+      duration: this.duration,
       faces: this.faces,
       fade: this.fade,
       count: this.count,

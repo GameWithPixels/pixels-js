@@ -1,4 +1,5 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
+import { usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
   getPixel,
@@ -7,7 +8,6 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import usePixelScanner from "./usePixelScanner";
-import usePixelStatus from "./usePixelStatus";
 
 import SequentialPromiseQueue from "~/utils/SequentialPromiseQueue";
 

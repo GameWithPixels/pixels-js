@@ -17,7 +17,7 @@ export default class EditConditionFaceCompare extends EditCondition {
     return ConditionTypeValues.FaceCompare;
   }
 
-  @widget("bitfield")
+  @widget("bitField")
   @name("Comparison")
   flags: FaceCompareFlags;
 

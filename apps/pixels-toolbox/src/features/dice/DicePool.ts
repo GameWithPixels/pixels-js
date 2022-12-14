@@ -146,7 +146,7 @@ export class DicePool extends EventTarget {
 
   // Label generation, keep them unique across all DicePool instances
   private static _generateLabelCounter = 0;
-  private static generateLabel(pixel: Pixel) {
+  private static generateLabel(_pixel: Pixel) {
     const i = ++DicePool._generateLabelCounter;
     return `Dice${i}`; //TODO ${pixel.type ? `-${pixel.type}` : ""}`;
   }
