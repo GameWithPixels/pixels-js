@@ -47,7 +47,8 @@ function AppPage(props: AppPageProps) {
       <StatusBar />
       <SafeAreaProvider>
         <Box
-          p={2}
+          paddingX={2}
+          paddingBottom={1}
           bg={resolvedProps.lightBg}
           h={resolvedProps.h}
           w={resolvedProps.w}

@@ -1,6 +1,7 @@
 import { IColor } from "@systemic-games/pixels-core-animation";
-import { Box, Center } from "native-base";
-import React, { useState } from "react";
+import { Box, Button, Center, VStack } from "native-base";
+import { ColorType } from "native-base/lib/typescript/components/types";
+import React from "react";
 import Svg, { Defs, Polygon, RadialGradient, Stop } from "react-native-svg";
 
 import {
@@ -30,12 +31,35 @@ export function toStringColor(color: IColor): string {
   return "#" + toHex(color.r) + toHex(color.g) + toHex(color.b);
 }
 
+export const enum ColorWheelColorType {
+  DIM,
+  NORMAL,
+  BRIGHT,
+}
+
 /**
  * Props for customizing the colorWheel and its behavior
  */
 export interface ColorWheelProps {
   initialColor?: string;
   onSelectColor: React.Dispatch<React.SetStateAction<string>>; // action to initiate after selecting a color on the wheel
+  wheelParams?: WheelParams;
+  colorType?: ColorWheelColorType;
+}
+
+/**
+ * Parameter for generating the shapes in {@link ColorWheel} component.
+ */
+export interface WheelParams {
+  x: number;
+  y: number;
+  radius: number;
+  innerRadius: number;
+  sliceCount: number;
+  layerCount: number;
+  segmentCount: number;
+  brightness: number;
+  dimBrightness: number;
 }
 
 /**
@@ -43,22 +67,30 @@ export interface ColorWheelProps {
  */
 export function ColorWheel(props: ColorWheelProps) {
   const [selectedColor, setSelectedColor] = React.useState<IColor>();
-  const wheelParams = {
-    x: 50,
-    y: 50,
-    radius: 49,
-    innerRadius: 20,
-    sliceCount: 16,
-    layerCount: 2,
-    segmentCount: 16,
-    brightness: 1,
-    dimBrightness: 0.35,
-  };
+  const [wheelColorType, setWheelColorType] = React.useState(
+    ColorWheelColorType.NORMAL
+  );
+  const [colorBrightness, setColorBrightness] = React.useState(1);
+  const buttonHighlightColor: ColorType = "pixelColors.highlightGray";
+  const wheelParams = props.wheelParams
+    ? props.wheelParams
+    : {
+        x: 40,
+        y: 40,
+        radius: 40,
+        innerRadius: 15,
+        sliceCount: 16,
+        layerCount: 2,
+        segmentCount: 16,
+        brightness: 1,
+        dimBrightness: 0,
+      };
 
   /**
    * Create each polygon representing the colors on the wheel based on the generated shapes
    */
   const polygons = () => {
+    wheelParams.brightness = colorBrightness;
     const shapes = generateColorWheel(wheelParams);
     return (
       <>
@@ -73,23 +105,41 @@ export function ColorWheel(props: ColorWheelProps) {
               >
                 <Stop
                   offset="0%"
-                  stopColor={toStringColor({
-                    r: s.color.r / 2,
-                    g: s.color.g / 2,
-                    b: s.color.b / 2,
-                  })}
+                  stopColor={
+                    wheelColorType === ColorWheelColorType.BRIGHT
+                      ? toStringColor(s.color)
+                      : toStringColor({
+                          r: s.color.r * 2,
+                          g: s.color.g * 2,
+                          b: s.color.b * 2,
+                        })
+                    // toStringColor(s.color)
+                  }
                   stopOpacity="1"
                 />
                 <Stop
                   offset="100%"
-                  stopColor={toStringColor(s.color)}
+                  stopColor={
+                    wheelColorType === ColorWheelColorType.BRIGHT
+                      ? toStringColor({
+                          r: s.color.r / 2,
+                          g: s.color.g / 2,
+                          b: s.color.b / 2,
+                        })
+                      : toStringColor(s.color)
+                    //toStringColor(s.color)
+                  }
                   stopOpacity="1"
                 />
               </RadialGradient>
             </Defs>
             <Polygon
               points={toStringPath(s.points)}
-              fill={`url(#${toStringColor(s.color)})`}
+              fill={
+                wheelColorType === ColorWheelColorType.NORMAL
+                  ? toStringColor(s.color)
+                  : `url(#${toStringColor(s.color)})`
+              }
               onPress={() => {
                 setSelectedColor(s.color);
                 props.onSelectColor(toStringColor(s.color));
@@ -116,13 +166,59 @@ export function ColorWheel(props: ColorWheelProps) {
       )
     );
   };
-  const [wheel] = useState(() => polygons());
+  //const [wheel] = useState(() => polygons());
   return (
-    <Center>
-      <Svg height={300} width={300} viewBox="0 0 100 100">
-        {wheel}
-        {selector()}
-      </Svg>
+    <Center width="100%">
+      <VStack space={2} w="100%" alignItems="center">
+        <Button.Group isAttached w="100%">
+          <Button
+            flex={1}
+            bgColor={
+              wheelColorType === ColorWheelColorType.DIM
+                ? buttonHighlightColor
+                : "primary.500"
+            }
+            onPress={() => {
+              setWheelColorType(ColorWheelColorType.DIM);
+              setColorBrightness(0.5);
+            }}
+          >
+            Dim
+          </Button>
+          <Button
+            flex={1}
+            bgColor={
+              wheelColorType === ColorWheelColorType.NORMAL
+                ? buttonHighlightColor
+                : "primary.500"
+            }
+            onPress={() => {
+              setWheelColorType(ColorWheelColorType.NORMAL);
+              setColorBrightness(1);
+            }}
+          >
+            Normal
+          </Button>
+          <Button
+            flex={1}
+            bgColor={
+              wheelColorType === ColorWheelColorType.BRIGHT
+                ? buttonHighlightColor
+                : "primary.500"
+            }
+            onPress={() => {
+              setWheelColorType(ColorWheelColorType.BRIGHT);
+              setColorBrightness(2);
+            }}
+          >
+            Bright
+          </Button>
+        </Button.Group>
+        <Svg height={300} width={300} viewBox="0 0 80 80">
+          {polygons()}
+          {selector()}
+        </Svg>
+      </VStack>
     </Center>
   );
 }

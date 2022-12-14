@@ -85,7 +85,7 @@ export default function PatternsScreen() {
                 }}
                 w="90%"
                 verticalSpace={2}
-                imageSize={100}
+                imageSize={70}
                 p={2}
                 borderWidth={1}
                 selectable

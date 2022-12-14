@@ -12,6 +12,7 @@ import {
 } from "@systemic-games/react-native-pixels-components";
 import { VStack, Image, ScrollView, Center, Input } from "native-base";
 import React from "react";
+import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
 import { AnimationSettingsScreenRouteProps } from "~/Navigation";
 
@@ -72,6 +73,7 @@ export default function AnimationSettingsScreen() {
             />
             <FaceMask dieFaces={20} />
             <ColorSelection />
+            <GradientColorSelection triggerW="100%" />
             <SliderComponent
               sliderTitle="Repeat Count"
               minValue={0}
