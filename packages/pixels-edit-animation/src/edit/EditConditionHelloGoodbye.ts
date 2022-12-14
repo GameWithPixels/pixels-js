@@ -17,7 +17,7 @@ export default class EditConditionHelloGoodbye extends EditCondition {
     return ConditionTypeValues.HelloGoodbye;
   }
 
-  @widget("bitfield")
+  @widget("bitField")
   @name("Hello / Goodbye")
   flags: HelloGoodbyeFlags;
 

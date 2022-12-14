@@ -10,43 +10,30 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
-import { widget, range, units, name } from "./decorators";
+import { name, widget } from "./decorators";
 
 export default class EditAnimationKeyframed extends EditAnimation {
-  private _duration: number;
-
   get type(): AnimationType {
     return AnimationTypeValues.Keyframed;
-  }
-
-  @widget("slider")
-  @range(0.1, 30, 0.1)
-  @units("s")
-  @name("Duration")
-  get duration(): number {
-    return this._duration;
-  }
-  set duration(value: number) {
-    this._duration = value;
   }
 
   @widget("rgbPattern")
   @name("LED Pattern")
   pattern?: EditPattern;
 
+  @widget("toggle")
   @name("Traveling Order")
-  flowOrder: boolean;
+  travelingOrder: boolean;
 
   constructor(options?: {
     name?: string;
     duration?: number;
     pattern?: EditPattern;
-    flowOrder?: boolean;
+    travelingOrder?: boolean;
   }) {
-    super(options?.name);
-    this._duration = options?.duration ?? 1;
+    super(options?.name, options?.duration ?? 1);
     this.pattern = options?.pattern;
-    this.flowOrder = options?.flowOrder ?? false;
+    this.travelingOrder = options?.travelingOrder ?? false;
   }
 
   toAnimation(editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
@@ -54,7 +41,7 @@ export default class EditAnimationKeyframed extends EditAnimation {
       duration: this.duration * 1000, // stored in milliseconds
       tracksOffset: editSet.getPatternRGBTrackOffset(this.pattern),
       trackCount: this.pattern?.gradients.length ?? 0,
-      flowOrder: this.flowOrder ? 1 : 0,
+      flowOrder: this.travelingOrder ? 1 : 0,
     });
   }
 
@@ -63,7 +50,7 @@ export default class EditAnimationKeyframed extends EditAnimation {
       name: this.name,
       duration: this.duration,
       pattern: this.pattern,
-      flowOrder: this.flowOrder,
+      travelingOrder: this.travelingOrder,
     });
   }
 

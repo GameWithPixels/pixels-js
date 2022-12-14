@@ -1,47 +1,45 @@
-import Slider from "@react-native-community/slider";
-import { assert } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
-  getPropsWithName,
-  getPropsWithRange,
-  getPropsWithWidget,
-  NameProperty,
-  AppDataSet,
   loadAppDataSet,
+  AppDataSet,
   EditAnimation,
+  EditAnimationSimple,
   EditAnimationGradient,
   EditAnimationGradientPattern,
   EditAnimationKeyframed,
-  EditAnimationNoise,
   EditAnimationRainbow,
-  EditAnimationSimple,
+  EditAnimationNoise,
   EditColor,
   EditPattern,
   EditRgbGradient,
   EditRgbKeyframe,
+  EditWidgetData,
+  getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
+import { usePixelConnect } from "@systemic-games/pixels-react";
 import {
   getPixelEnumName,
   AnimationTypeValues,
   Color,
   Constants,
-  Pixel,
+  getPixel,
 } from "@systemic-games/react-native-pixels-connect";
-import { useEffect, useState } from "react";
-import { useErrorHandler } from "react-error-boundary";
 import {
   Button,
-  Text,
-  View,
+  Box,
   FlatList,
-  StyleSheet,
-  // eslint-disable-next-line import/namespace
-} from "react-native";
+  HStack,
+  Slider,
+  Text,
+  VStack,
+} from "native-base";
+import { useEffect, useReducer, useState } from "react";
+import { useErrorHandler } from "react-error-boundary";
 
-import defaultProfilesJson from "~/../assets/default-profiles.json";
+import standardProfilesJson from "~/../assets/standard-profiles.json";
 import AppPage from "~/components/AppPage";
-import SelectPixel from "~/components/SelectPixel";
-import usePixelStatus from "~/features/pixels/hooks/usePixelStatus";
-import globalStyles, { sr } from "~/styles";
+import PixelScanList from "~/components/PixelScanList";
+import { sr } from "~/styles";
 import range from "~/utils/range";
 
 // function test() {
@@ -101,7 +99,7 @@ const colorMap: readonly Readonly<{ name: string; color: Color }>[] =
 
 // Load default app profiles
 const defaultProfilesAppDataSet: Readonly<AppDataSet> =
-  loadAppDataSet(defaultProfilesJson);
+  loadAppDataSet(standardProfilesJson);
 
 // Available patterns from JSON file
 const patterns: readonly Readonly<EditPattern>[] =
@@ -191,194 +189,179 @@ function getPropValueString(
   } else if (propertyKey === "duration") {
     return editAnim.duration.toString();
   }
-  throw new Error(`Unsupported animation property key ${propertyKey}`);
+  throw new Error(`Unsupported animation property key: ${propertyKey}`);
 }
 
-interface PropertyEditorProps {
-  editAnim: EditAnimation;
-  propertyKey: string;
-}
+function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
+  const [_, forceUpdate] = useReducer((b) => !b, false);
+  function update<T>(value: T) {
+    (widget.update as (v: T) => void)(value);
+    forceUpdate();
+  }
+  const type = widget.type;
+  switch (type) {
+    case "count":
+    case "slider": {
+      const step = widget.step ? widget.step : undefined;
+      return (
+        <>
+          <Text bold>{`${widget.displayName}: ${widget.getValue()}`}</Text>
+          <Slider
+            width="80%"
+            height={sr(40)}
+            value={widget.getValue()}
+            minValue={widget?.min ?? 0}
+            maxValue={widget?.max ?? 1}
+            step={step ?? 0.1}
+            onChange={update}
+          >
+            <Slider.Track>
+              <Slider.FilledTrack />
+            </Slider.Track>
+            <Slider.Thumb />
+          </Slider>
+        </>
+      );
+    }
 
-function PropertyEditor({ editAnim, propertyKey }: PropertyEditorProps) {
-  const widget = getPropsWithWidget(editAnim).find(
-    (p) => p.propertyKey === propertyKey
-  );
-  const entry = Object.entries(editAnim).find((e) => e[0] === propertyKey);
-  const value = entry ? entry[1] : editAnim.duration; //TODO assumes only duration is an accessor
-  const [propertyValue, setPropertyValue] = useState(value);
-  const updateProp = (value: any) => {
-    console.log(`Updating prop ${propertyKey} to ${value}`);
-    if (propertyValue instanceof EditColor) {
-      value = EditColor.fromColor(value as Color);
+    case "faceIndex":
+    case "playbackFace":
+    case "bitField":
+    case "toggle": {
+      return (
+        <Text bold>{`No editor for ${
+          widget.displayName
+        }: ${widget.getValue()}`}</Text>
+      );
     }
-    setPropertyValue(value);
-    if (propertyKey === "duration") {
-      editAnim.duration = value as number;
-    } else {
-      (editAnim as any)[propertyKey] = value;
-    }
-  };
 
-  if (widget) {
-    switch (widget.type) {
-      case "faceMask": {
-        const facesGroups = [
-          range(1, 8),
-          range(8, 15),
-          [...range(15, 20), Constants.faceMaskAllLEDs],
-        ];
-        return (
-          <>
-            <Text style={styles.textBold}>{propertyValue}</Text>
-            {facesGroups.map((faces, i) => (
-              <View style={styles.containerHorizontal} key={i}>
-                {faces.map((face) => (
-                  <Button
-                    key={face}
-                    onPress={() => updateProp(face)}
-                    title={face.toString()}
-                  />
-                ))}
-              </View>
-            ))}
-          </>
-        );
-      }
-      case "index":
-      case "slider": {
-        assert(
-          typeof propertyValue === "number",
-          `Property is not a number: ${propertyKey}`
-        );
-        const range = getPropsWithRange(editAnim).find(
-          (p) => p.propertyKey === propertyKey
-        );
-        return (
-          <>
-            <Text style={styles.textBold}>{propertyValue}</Text>
-            <Slider
-              style={styles.slider}
-              value={value as number}
-              minimumValue={range?.min ?? 0}
-              maximumValue={range?.max ?? 1}
-              step={range?.step ?? 0}
-              onValueChange={updateProp}
-            />
-          </>
-        );
-      }
-      case "gradient":
-        assert(
-          !propertyValue || propertyValue instanceof EditRgbGradient,
-          `Property is not a EditRgbGradient: ${propertyKey}`
-        );
-        return (
-          <FlatList
-            data={gradients}
-            renderItem={(itemInfo) => (
-              <Button
-                key={itemInfo.item.name}
-                onPress={() => updateProp(itemInfo.item.gradient)}
-                title={itemInfo.item.name}
-              />
-            )}
-            contentContainerStyle={{ flexGrow: 1 }}
-          />
-        );
-      case "grayscalePattern":
-      case "rgbPattern":
-        assert(
-          !propertyValue || propertyValue instanceof EditPattern,
-          `Property is not an EditPattern: ${propertyKey}`
-        );
-        return (
-          <FlatList
-            data={patterns}
-            renderItem={(itemInfo) => (
-              <Button
-                key={itemInfo.item.name}
-                onPress={() => updateProp(itemInfo.item)}
-                title={itemInfo.item.name}
-              />
-            )}
-            contentContainerStyle={{ flexGrow: 1 }}
-          />
-        );
-      default:
-        throw new Error(`Unsupported widget ${widget.type}`);
+    case "faceMask": {
+      const facesGroups = [
+        range(1, 8),
+        range(8, 15),
+        [...range(15, 20), Constants.faceMaskAllLEDs],
+      ];
+      return (
+        <>
+          <Text bold>{widget.displayName}</Text>
+          {facesGroups.map((faces, i) => (
+            <HStack key={i}>
+              {faces.map((face) => (
+                <Button key={face} onPress={() => update(face)}>
+                  {face.toString()}
+                </Button>
+              ))}
+            </HStack>
+          ))}
+        </>
+      );
     }
-  } else if (value instanceof EditColor) {
-    return (
-      <FlatList
-        data={colorMap}
-        renderItem={(itemInfo) => (
-          <Button
-            key={itemInfo.item.name}
-            onPress={() => updateProp(itemInfo.item.color)}
-            title={itemInfo.item.name}
-          />
-        )}
-        contentContainerStyle={{ flexGrow: 1 }}
-      />
-    );
-  } else {
-    return <Text style={styles.textBold}>NO EDITOR</Text>;
+
+    case "color": {
+      return (
+        <FlatList
+          data={colorMap}
+          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          renderItem={(itemInfo) => (
+            <Button
+              key={itemInfo.item.name}
+              onPress={() => update(itemInfo.item.color)}
+            >
+              {itemInfo.item.name}
+            </Button>
+          )}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      );
+    }
+
+    case "gradient":
+      return (
+        <FlatList
+          data={gradients}
+          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          renderItem={(itemInfo) => (
+            <Button
+              key={itemInfo.item.name}
+              onPress={() => update(itemInfo.item.gradient)}
+            >
+              {itemInfo.item.name}
+            </Button>
+          )}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      );
+
+    case "grayscalePattern":
+    case "rgbPattern":
+      return (
+        <FlatList
+          data={patterns}
+          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          renderItem={(itemInfo) => (
+            <Button
+              key={itemInfo.item.name}
+              onPress={() => update(itemInfo.item)}
+            >
+              {itemInfo.item.name}
+            </Button>
+          )}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      );
+
+    default:
+      assertNever(type);
   }
 }
 
 function AnimationPage() {
   const errorHandler = useErrorHandler();
-  const [selectedPixel, setSelectedPixel] = useState<Pixel | undefined>();
-  const status = usePixelStatus(selectedPixel);
+  const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [animList, setAnimList] = useState<EditAnimation[]>([]);
   const [editAnim, setEditAnim] = useState<EditAnimation | undefined>();
-  const [editProperty, setEditProperty] = useState<NameProperty | undefined>();
+  const [animWidgets, setAnimWidgets] = useState<EditWidgetData[]>();
+  const [widget, setWidget] = useState<EditWidgetData>();
 
   useEffect(() => {
-    selectedPixel?.connect().catch(errorHandler);
-    return () => {
-      selectedPixel?.disconnect().catch(console.log);
-    };
-  }, [errorHandler, selectedPixel]);
+    errorHandler(lastError);
+  }, [errorHandler, lastError]);
 
   return (
     <>
-      {!selectedPixel ? (
-        <SelectPixel setSelectedPixel={setSelectedPixel} />
+      {!pixel ? (
+        <PixelScanList
+          onSelected={(sp) => connectDispatch("connect", getPixel(sp))}
+        />
       ) : (
-        <>
-          <Text style={styles.text}>{`Connection status: ${status}`}</Text>
-          <Button
-            onPress={() => setSelectedPixel(undefined)}
-            title="Disconnect"
-          />
+        <VStack space={sr(3)}>
+          <Text>{`Connection status: ${status}`}</Text>
+          <Button onPress={() => connectDispatch("disconnect")}>
+            Disconnect
+          </Button>
           <Button
             onPress={() => {
               if (animList.length) {
-                selectedPixel.playTestAnimation(
+                pixel.playTestAnimation(
                   defaultProfilesAppDataSet
                     .extractForAnimation(animList[0])
                     .toDataSet()
                 );
               }
             }}
-            title="Play"
-          />
-          {editAnim && editProperty ? (
+          >
+            Play
+          </Button>
+          {editAnim && widget ? (
             <>
-              <Text
-                style={styles.textBold}
-              >{`Editing ${editProperty.name}`}</Text>
-              <Button onPress={() => setEditProperty(undefined)} title="Back" />
-              <PropertyEditor
-                editAnim={editAnim}
-                propertyKey={editProperty.propertyKey}
-              />
+              <Text bold>{`Editing ${widget.displayName}`}</Text>
+              <Button onPress={() => setWidget(undefined)}>Back</Button>
+              <RenderAnimWidget widget={widget} />
             </>
           ) : editAnim ? (
             <>
-              <Text style={styles.textBold}>{`Editing ${editAnim.name}`}</Text>
-              <Button onPress={() => setEditAnim(undefined)} title="Back" />
+              <Text bold>{`Editing ${editAnim.name}`}</Text>
+              <Button onPress={() => setEditAnim(undefined)}>Back</Button>
               <Button
                 onPress={() => {
                   setEditAnim(undefined);
@@ -391,40 +374,45 @@ function AnimationPage() {
                     return animList;
                   });
                 }}
-                title="Remove"
-              />
+              >
+                Remove
+              </Button>
               <FlatList
-                data={getPropsWithName(editAnim)}
+                data={animWidgets}
+                ItemSeparatorComponent={() => <Box h={sr(3)} />}
                 renderItem={(itemInfo) => (
-                  <Button
-                    onPress={() => setEditProperty(itemInfo.item)}
-                    title={`${itemInfo.item.name}: ${getPropValueString(
+                  <Button onPress={() => setWidget(itemInfo.item)}>
+                    {`${itemInfo.item.displayName}: ${getPropValueString(
                       editAnim,
                       itemInfo.item.propertyKey
                     )}`}
-                  />
+                  </Button>
                 )}
                 contentContainerStyle={{ flexGrow: 1 }}
               />
             </>
           ) : (
             <>
-              <Text style={styles.textBold}>Effects:</Text>
+              <Text bold>Effects:</Text>
               <FlatList
                 data={animList}
+                ItemSeparatorComponent={() => <Box h={sr(3)} />}
                 renderItem={(itemInfo) => (
                   <Button
-                    onPress={() => setEditAnim(itemInfo.item)}
-                    title={`Edit ${itemInfo.item.name}`}
-                  />
+                    onPress={() => {
+                      setEditAnim(itemInfo.item);
+                      setAnimWidgets(getEditWidgetsData(itemInfo.item));
+                    }}
+                  >{`Edit ${itemInfo.item.name}`}</Button>
                 )}
                 contentContainerStyle={{ flexGrow: 1 }}
               />
             </>
           )}
-          <Text style={styles.textBold}>Add Effect:</Text>
+          <Text bold>Add Effect:</Text>
           <FlatList
             data={editAnimationTypes}
+            ItemSeparatorComponent={() => <Box h={sr(3)} />}
             renderItem={(itemInfo) => (
               <Button
                 onPress={() => {
@@ -437,12 +425,13 @@ function AnimationPage() {
                     return [...anims, anim];
                   });
                 }}
-                title={itemInfo.item.name.replace(EditAnimation.name, "")}
-              />
+              >
+                {itemInfo.item.name.replace(EditAnimation.name, "")}
+              </Button>
             )}
             contentContainerStyle={{ flexGrow: 1 }}
           />
-        </>
+        </VStack>
       )}
     </>
   );
@@ -455,10 +444,3 @@ export default function () {
     </AppPage>
   );
 }
-const styles = StyleSheet.create({
-  ...globalStyles,
-  slider: {
-    width: "80%",
-    height: sr(40),
-  },
-});

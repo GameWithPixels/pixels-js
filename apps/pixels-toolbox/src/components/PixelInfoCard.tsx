@@ -1,6 +1,7 @@
 import { IPixel } from "@systemic-games/react-native-pixels-connect";
 import { Center, HStack, Text, VStack } from "native-base";
 import { memo, PropsWithChildren } from "react";
+import { useTranslation } from "react-i18next";
 
 import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
@@ -11,6 +12,7 @@ export interface PixelInfoCardProps extends PropsWithChildren {
 }
 
 function PixelMoreInfo({ pixel }: { pixel: IPixel }) {
+  const { t } = useTranslation();
   const pixIdHex = pixel.pixelId
     .toString(16)
     .padStart(8, "0")
@@ -18,10 +20,14 @@ function PixelMoreInfo({ pixel }: { pixel: IPixel }) {
   const fwDate = toLocaleDateTimeString(pixel.firmwareDate);
   return (
     <>
-      <Text>{`Firmware: ${fwDate}`}</Text>
+      <Text>
+        {t("firmware")}
+        {t("colonSeparator")}
+        {fwDate}
+      </Text>
       <HStack space="8%">
         <Text>{`🆔 ${pixIdHex}`}</Text>
-        <Text>{`${pixel.designAndColor}`}</Text>
+        <Text>{`${t(pixel.designAndColor)}`}</Text>
         <Text>{`${pixel.ledCount}🚦`}</Text>
       </HStack>
     </>
@@ -29,6 +35,7 @@ function PixelMoreInfo({ pixel }: { pixel: IPixel }) {
 }
 
 function PixelInfoCardImpl({ children, pixel, moreInfo }: PixelInfoCardProps) {
+  const { t } = useTranslation();
   const charging = pixel.isCharging ? "⚡️" : "🔋";
   return (
     <VStack
@@ -44,11 +51,13 @@ function PixelInfoCardImpl({ children, pixel, moreInfo }: PixelInfoCardProps) {
       </Center>
       {moreInfo && <PixelMoreInfo pixel={pixel} />}
       <HStack space="8%">
-        <Text>{`📶 ${pixel.rssi}dB`}</Text>
-        <Text>{`${charging} ${pixel.batteryLevel}%`}</Text>
+        <Text>{`📶 ${t("dBWithValue", { value: pixel.rssi })}`}</Text>
+        <Text>{`${charging} ${t("percentWithValue", {
+          value: pixel.batteryLevel,
+        })}`}</Text>
         <Text>
           <Text>{`🎲 ${pixel.currentFace} `}</Text>
-          <Text italic>{`(${pixel.rollState})`}</Text>
+          <Text italic>{`(${t(pixel.rollState)})`}</Text>
         </Text>
       </HStack>
       {children}

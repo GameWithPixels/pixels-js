@@ -12,24 +12,11 @@ import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
-import { widget, range, units, name } from "./decorators";
+import { widget, name } from "./decorators";
 
 export default class EditAnimationGradientPattern extends EditAnimation {
-  private _duration: number;
-
   get type(): AnimationType {
     return AnimationTypeValues.GradientPattern;
-  }
-
-  @widget("slider")
-  @range(0.1, 30, 0.1)
-  @units("s")
-  @name("Duration")
-  get duration(): number {
-    return this._duration;
-  }
-  set duration(value: number) {
-    this._duration = value;
   }
 
   @widget("grayscalePattern")
@@ -40,6 +27,7 @@ export default class EditAnimationGradientPattern extends EditAnimation {
   @name("RGB Gradient")
   gradient?: EditRgbGradient;
 
+  @widget("toggle")
   @name("Override color based on face")
   overrideWithFace: boolean;
 
@@ -50,8 +38,7 @@ export default class EditAnimationGradientPattern extends EditAnimation {
     gradient?: EditRgbGradient;
     overrideWithFace?: boolean;
   }) {
-    super(options?.name);
-    this._duration = options?.duration ?? 1;
+    super(options?.name, options?.duration ?? 1);
     this.pattern = options?.pattern;
     this.gradient = options?.gradient;
     this.overrideWithFace = options?.overrideWithFace ?? false;

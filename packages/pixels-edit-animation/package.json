@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/pixels-edit-animation",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -48,8 +48,8 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
-    "@systemic-games/pixels-core-animation": "1.0.3",
-    "@systemic-games/pixels-core-utils": "1.0.3"
+    "@systemic-games/pixels-core-animation": "1.0.4",
+    "@systemic-games/pixels-core-utils": "1.0.4"
   },
   "devDependencies": {
     "@types/jest": "^29.1.2",

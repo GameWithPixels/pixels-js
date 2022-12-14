@@ -2,6 +2,13 @@
 
 Monorepo for Pixels Typescript/JavaScript libraries and apps.
 
+
+See the different modules' export documentation [here](
+    https://gamewithpixels.github.io/pixels-js/index.html
+).
+
+Documentation is generated with [TypeDoc](https://typedoc.org/).
+
 ## Setup
 
 Initialize projects and build packages:

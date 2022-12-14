@@ -1,0 +1,14 @@
+{
+  "extends": "./../../tsconfig.web",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "references": [
+    {
+      "path": "./../pixels-core-connect"
+    }
+  ]
+}

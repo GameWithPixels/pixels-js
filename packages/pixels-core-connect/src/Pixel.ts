@@ -45,6 +45,7 @@ import {
   PixelRollStateValues,
   PixelRollStateNames,
   PixelDesignAndColorNames,
+  MessageTypeNames,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import getPixelEnumName from "./getPixelEnumName";
@@ -92,7 +93,6 @@ export interface PixelRollData {
 export interface PixelBatteryData {
   level: number; // Percentage
   isCharging: boolean;
-  voltage: number;
 }
 
 /**
@@ -174,6 +174,7 @@ export default class Pixel implements IPixel {
 
   // Log function
   private readonly _logFunc: (msg: unknown) => void;
+  private readonly _logMessages: boolean;
 
   // Connection data
   private readonly _session: PixelSession;
@@ -185,7 +186,6 @@ export default class Pixel implements IPixel {
   private _batteryState: PixelBatteryData = {
     level: 0,
     isCharging: false,
-    voltage: 0,
   };
   private _rssi = 0;
 
@@ -260,8 +260,13 @@ export default class Pixel implements IPixel {
   /**
    * Instantiates a Pixel.
    */
-  constructor(session: PixelSession, logFunc?: (msg: unknown) => void) {
+  constructor(
+    session: PixelSession,
+    logFunc?: (msg: unknown) => void,
+    logMessages = false
+  ) {
     this._logFunc = logFunc ?? console.log;
+    this._logMessages = logMessages;
     // TODO clean up events on release
     session.setConnectionEventListener(({ connectionStatus }) => {
       if (connectionStatus !== "connected" && connectionStatus !== "ready") {
@@ -302,8 +307,7 @@ export default class Pixel implements IPixel {
       };
       if (
         battery.level !== this._batteryState.level ||
-        battery.isCharging !== this._batteryState.isCharging ||
-        battery.voltage !== this._batteryState.voltage
+        battery.isCharging !== this._batteryState.isCharging
       ) {
         this._batteryState = battery;
         this._evEmitter.emit("battery", { ...battery });
@@ -379,7 +383,7 @@ export default class Pixel implements IPixel {
           );
 
           // Update battery level
-          await this.queryBatteryState();
+          await this.queryBattery();
 
           // We're ready!
           this._updateStatus("ready");
@@ -449,7 +453,7 @@ export default class Pixel implements IPixel {
    * @param listener The callback function.
    */
   addMessageListener(
-    msgType: MessageType | keyof typeof MessageTypeValues,
+    msgType: MessageType | MessageTypeNames,
     listener: (this: Pixel, message: MessageOrType) => void
   ): void {
     this._msgEvEmitter.addListener(
@@ -466,7 +470,7 @@ export default class Pixel implements IPixel {
    * @param listener The callback function to unregister.
    */
   removeMessageListener(
-    msgType: MessageType | keyof typeof MessageTypeValues,
+    msgType: MessageType | MessageTypeNames,
     listener: (this: Pixel, msg: MessageOrType) => void
   ): void {
     this._msgEvEmitter.removeListener(
@@ -487,11 +491,9 @@ export default class Pixel implements IPixel {
     withoutResponse = false
   ): Promise<void> {
     const msgName = getMessageName(msgOrType);
-    this._log(
-      `Sending message ${msgName} (${getMessageType(
-        msgOrType
-      )}) at ${_getTime()}`
-    );
+    if (this._logMessages) {
+      this._log(`Sending message ${msgName} (${getMessageType(msgOrType)})}`);
+    }
     const data = serializeMessage(msgOrType);
     await this._session.writeValue(data, withoutResponse);
   }
@@ -557,7 +559,7 @@ export default class Pixel implements IPixel {
    * @returns A promise revolving to an object with the batter level in
    *          percentage and flag indicating whether it is charging or not.
    */
-  async queryBatteryState(): Promise<PixelBatteryData> {
+  async queryBattery(): Promise<PixelBatteryData> {
     await this.sendAndWaitForResponse(
       MessageTypeValues.requestBatteryLevel,
       MessageTypeValues.batteryLevel
@@ -830,7 +832,7 @@ export default class Pixel implements IPixel {
     if (isMessage(msg)) {
       this._logFunc(msg);
     } else {
-      this._logFunc(`[Pixel ${this.name}] ${msg}`);
+      this._logFunc(`[${_getTime()} - Pixel ${this.name}] ${msg}`);
     }
   }
 
@@ -848,21 +850,21 @@ export default class Pixel implements IPixel {
       const msgOrType = deserializeMessage(dataView.buffer);
       const msgName = getMessageName(msgOrType);
       if (msgOrType) {
-        this._log(
-          `Received message ${msgName} (${getMessageType(
-            msgOrType
-          )}) at ${_getTime()}`
-        );
-        if (typeof msgOrType !== "number") {
-          // Log message contents
-          this._log(msgOrType);
+        if (this._logMessages) {
+          this._log(
+            `Received message ${msgName} (${getMessageType(msgOrType)})}`
+          );
+          if (typeof msgOrType !== "number") {
+            // Log message contents
+            this._log(msgOrType);
+          }
         }
         // Dispatch generic message event
         this._evEmitter.emit("message", msgOrType);
         // Dispatch specific message event
         this._msgEvEmitter.emit(`message${msgName}`, msgOrType);
       } else {
-        this._log(`Received invalid message at ${_getTime()}`);
+        this._log("Received invalid message");
       }
     } catch (error) {
       this._log("CharacteristicValueChanged error: " + error);
@@ -978,7 +980,7 @@ export default class Pixel implements IPixel {
       remainingSize -= dataMsg.size;
       offset += dataMsg.size;
       if (progressCallback) {
-        const progress = (100 * offset) / data.byteLength;
+        const progress = Math.round((100 * offset) / data.byteLength);
         if (progress > lastProgress) {
           progressCallback(progress);
           lastProgress = progress;

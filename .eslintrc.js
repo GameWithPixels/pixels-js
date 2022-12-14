@@ -25,6 +25,11 @@ module.exports = {
         project: "./tsconfig.eslint.json",
       },
     },
+    // JavaScript
+    {
+      files: ["*.js", "*.jsx"],
+      rules: { "@typescript-eslint/no-unused-vars": "off" },
+    },
     // Configuration files
     {
       files: [
@@ -38,8 +43,17 @@ module.exports = {
       },
     },
   ],
-  // React Native Vision Camera
   rules: {
+    // Ignore unused variables and arguments starting with underscore
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+      },
+    ],
+    // For React Native Vision Camera
     "react-hooks/exhaustive-deps": [
       "warn",
       {

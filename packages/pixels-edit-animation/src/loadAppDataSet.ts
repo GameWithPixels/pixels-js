@@ -33,125 +33,26 @@ import EditProfile from "./edit/EditProfile";
 import EditRgbGradient from "./edit/EditRgbGradient";
 import EditRgbKeyframe from "./edit/EditRgbKeyframe";
 import EditRule from "./edit/EditRule";
+import * as Json from "./jsonTypes";
 
-export interface JsonRgbColor {
-  r?: number;
-  g?: number;
-  b?: number;
-}
-
-export interface JsonKeyframe {
-  time?: number;
-  color?: JsonRgbColor;
-}
-
-export interface JsonGradient {
-  //TODO empty, duration, firstTime, lastTime not needed
-  keyframes?: JsonKeyframe[];
-}
-
-export interface JsonPattern {
-  name?: string;
-  gradients?: JsonGradient[];
-  //TODO not needed duration?: number;
-}
-
-export interface JsonAudioClip {
-  name?: string;
-  id?: number;
-}
-
-export interface JsonPreviewSettings {
-  design?: number;
-}
-
-export interface JsonColor {
-  type: number;
-  rgbColor: JsonRgbColor;
-}
-
-export interface JsonAnimationData {
-  name?: string;
-  duration?: number;
-  count?: number;
-  fade?: number;
-  faces?: number;
-  patternIndex?: number;
-  traveling?: boolean;
-  overrideWithFace?: boolean;
-  color?: JsonColor;
-  gradient?: JsonGradient;
-  defaultPreviewSettings?: JsonPreviewSettings;
-}
-
-export interface JsonAnimation {
-  type?: number;
-  data?: JsonAnimationData;
-}
-
-export interface JsonConditionData {
-  flags?: number;
-  faceIndex?: number;
-  recheckAfter?: number;
-  period?: number;
-}
-
-export interface JsonCondition {
-  type?: number;
-  data?: JsonConditionData;
-}
-
-export interface JsonActionData {
-  animationIndex?: number;
-  faceIndex?: number;
-  loopCount?: number;
-  audioClipIndex?: number;
-}
-
-export interface JsonAction {
-  type?: number;
-  data?: JsonActionData;
-}
-
-export interface JsonRule {
-  condition?: JsonCondition;
-  actions?: JsonAction[];
-}
-
-export interface JsonProfile {
-  name?: string | null; //TODO remove null
-  description?: string | null; //TODO remove null
-  rules?: JsonRule[];
-  defaultPreviewSettings?: JsonPreviewSettings;
-}
-
-export interface JsonDataSet {
-  jsonVersion?: number;
-  patterns?: JsonPattern[];
-  animations?: JsonAnimation[];
-  audioClips?: JsonAudioClip[]; //TODO Moved after animations
-  behaviors?: JsonProfile[]; //TODO rename to profiles
-  defaultBehavior?: JsonProfile; //TODO rename to defaultProfile
-}
-
-function toRgbColor(color?: JsonRgbColor): Color {
+function toRgbColor(color?: Json.RgbColor): Color {
   return Color.fromBytes(color?.r ?? 0, color?.g ?? 0, color?.b ?? 0);
 }
 
-function toKeyframes(keyframes?: JsonKeyframe[]): EditRgbKeyframe[] {
+function toKeyframes(keyframes?: Json.Keyframe[]): EditRgbKeyframe[] {
   return (
     keyframes?.map((k) => new EditRgbKeyframe(k.time, toRgbColor(k.color))) ??
     []
   );
 }
 
-function toGradients(gradients?: JsonGradient[]): EditRgbGradient[] {
+function toGradients(gradients?: Json.Gradient[]): EditRgbGradient[] {
   return (
     gradients?.map((g) => new EditRgbGradient(toKeyframes(g.keyframes))) ?? []
   );
 }
 
-function toColor(color?: JsonColor): EditColor {
+function toColor(color?: Json.Color): EditColor {
   const c = new EditColor();
   if (color) {
     switch (color.type) {
@@ -168,18 +69,18 @@ function toColor(color?: JsonColor): EditColor {
   return c;
 }
 
-function toPatterns(patterns?: JsonPattern[]): EditPattern[] {
+function toPatterns(patterns?: Json.Pattern[]): EditPattern[] {
   return (
     patterns?.map((p) => new EditPattern(p.name, toGradients(p.gradients))) ??
     []
   );
 }
 
-function toAudioClips(audioClips?: JsonAudioClip[]): EditAudioClip[] {
+function toAudioClips(audioClips?: Json.AudioClip[]): EditAudioClip[] {
   return audioClips?.map((ac) => safeAssign(new EditAudioClip(), ac)) ?? [];
 }
 
-function toCondition(condition?: JsonCondition): EditCondition | undefined {
+function toCondition(condition?: Json.Condition): EditCondition | undefined {
   if (condition?.data) {
     const data = condition.data;
     //TODO make those creations and assignments in a more generic way
@@ -210,11 +111,11 @@ function toCondition(condition?: JsonCondition): EditCondition | undefined {
 function toActions(
   animations: EditAnimation[],
   audioClips: EditAudioClip[],
-  actions?: JsonAction[]
+  actions?: Json.Action[]
 ): EditAction[] {
   const actionsWithData = actions?.filter((act) => !!act.data) as {
     type?: number;
-    data: JsonActionData;
+    data: Json.ActionData;
   }[];
   return (
     actionsWithData?.map((act) => {
@@ -241,7 +142,7 @@ function toActions(
 function toRules(
   animations: EditAnimation[],
   audioClips: EditAudioClip[],
-  rules?: JsonRule[]
+  rules?: Json.Rule[]
 ): EditRule[] {
   return (
     rules?.map((r) => {
@@ -256,7 +157,7 @@ function toRules(
 function toProfile(
   animations: EditAnimation[],
   audioClips: EditAudioClip[],
-  profile: JsonProfile
+  profile: Json.Profile
 ): EditProfile {
   return new EditProfile(
     profile.name ?? "",
@@ -265,14 +166,14 @@ function toProfile(
   );
 }
 
-export default function (jsonData: JsonDataSet): AppDataSet {
+export default function (jsonData: Json.DataSet): AppDataSet {
   const patterns = toPatterns(jsonData.patterns);
   const audioClips = toAudioClips(jsonData.audioClips);
   const animationsWithData = jsonData?.animations?.filter(
     (anim) => !!anim.data
   ) as {
     type?: number;
-    data: JsonAnimationData;
+    data: Json.AnimationData;
   }[];
   const animations =
     animationsWithData?.map((anim) => {
@@ -302,7 +203,7 @@ export default function (jsonData: JsonDataSet): AppDataSet {
             name: data.name,
             duration: data.duration,
             pattern: patterns[data.patternIndex ?? -1],
-            flowOrder: data.traveling,
+            travelingOrder: data.traveling,
           }) as EditAnimation;
         case AnimationTypeValues.GradientPattern:
           return new EditAnimationGradientPattern({
@@ -327,7 +228,7 @@ export default function (jsonData: JsonDataSet): AppDataSet {
           throw Error(`Unsupported animation type ${anim.type}`);
       }
     }) ?? [];
-  const toMyProfile = (profile: JsonProfile) =>
+  const toMyProfile = (profile: Json.Profile) =>
     toProfile(animations, audioClips, profile);
   return new AppDataSet({
     patterns,

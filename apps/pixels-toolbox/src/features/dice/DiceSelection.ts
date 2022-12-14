@@ -118,7 +118,7 @@ export class DiceSelection extends EventTarget {
     }
   }
 
-  private register(pixel: Pixel) {
+  private register(_pixel: Pixel) {
     // Callback for connection events
     /*const connEvFunc = (ev: CustomEvent<ConnectionEventData>) => {
       const data = ev.detail;

@@ -1,22 +1,13 @@
-import {
-  Pixel,
-  PixelStatus,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel, PixelStatus } from "@systemic-games/pixels-core-connect";
 import { useEffect, useState } from "react";
 
 import usePixelStatus from "./usePixelStatus";
 
-export type PixelConnectAction = "connect" | "disconnect";
-
-export interface PixelConnectOptions {
-  pixel: Pixel;
-}
-
-export type PixelConnectDispatch = (
-  action: PixelConnectAction,
-  options?: PixelConnectOptions
-) => void;
-
+/**
+ * React Hook that connects to the given Pixel on mount, and disconnect on dismount.
+ * @param pixel The Pixel to connect to, may be undefined.
+ * @returns An array with the Pixel status and the last encountered error.
+ */
 export default function (pixel?: Pixel): [PixelStatus?, Error?] {
   const [lastError, setLastError] = useState<Error>();
   useEffect(() => {
