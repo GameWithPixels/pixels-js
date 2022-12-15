@@ -186,6 +186,7 @@ i18n
           rolling: "骰子滚动中",
           crooked: "骰子位置不平",
           // Home
+          pixelsScanner: "骰子扫描器",
           tapToSelectFirmware: "点击选择固件",
           screenWithSize: "屏幕: {{width}}x{{height}}",
           osNameWithVersion: "OS: {{name}} {{version}}",
@@ -225,6 +226,9 @@ i18n
           batteryTemperature: "电池温度",
           celsiusWithValue: "{{value}}°C",
           rollState: "滚动状态",
+          calibrate: "校准",
+          rainbow: "彩虹动画效果",
+          resetProfile: "重置资料",
           // Validation
           factoryValidation: "工厂测试",
           openMenuToGoToValidation: "打开菜单进入测试模式",
