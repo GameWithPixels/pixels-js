@@ -1,5 +1,17 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
+import { assertNever } from "@systemic-games/pixels-core-utils";
+import {
+  EditAnimation,
+  EditAnimationGradient,
+  EditAnimationGradientPattern,
+  EditAnimationKeyframed as _EditAnimationKeyframed,
+  EditAnimationNoise as _EditAnimationNoise,
+  EditAnimationRainbow,
+  EditAnimationSimple,
+  EditWidgetData,
+  getEditWidgetsData,
+} from "@systemic-games/pixels-edit-animation";
 import {
   Card,
   FaceMask,
@@ -9,9 +21,10 @@ import {
   LightingStyleSelection,
   SliderComponent,
   ColorSelection,
+  Toggle,
 } from "@systemic-games/react-native-pixels-components";
-import { VStack, Image, ScrollView, Center, Input } from "native-base";
-import React from "react";
+import { VStack, Image, ScrollView, Center, Input, Text } from "native-base";
+import React, { useEffect } from "react";
 import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
 import { AnimationSettingsScreenRouteProps } from "~/Navigation";
@@ -33,9 +46,119 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
+/**
+ * Render a widget corresponding to a widget type from {@link EditWidgetData}.
+ * @param widget widget information object.
+ * @returns a JSX element as a corresponding edition widget.
+ */
+function RenderWidget({ widget }: { widget: EditWidgetData }) {
+  const type = widget.type;
+  switch (type) {
+    case "count":
+    case "slider": {
+      const step = widget.step ? widget.step : undefined;
+      return (
+        <>
+          <SliderComponent
+            sliderTitle={widget.displayName}
+            minValue={widget?.min ?? 0}
+            maxValue={widget?.max ?? 1}
+            //value={widget.getValue()}
+            step={step ?? 0.1}
+            unit="sec"
+            sliderBoxColor="PixelColors.accentPurple"
+            sliderTrackColor="PixelColors.pink"
+            unitTextColor={undefined}
+            sliderThumbColor={undefined}
+            onSelectedValue={widget.update}
+          />
+        </>
+      );
+    }
+    case "color":
+      return (
+        <>
+          {/* TODO use widget.update function with string to color in order to work */}
+          <ColorSelection />
+        </>
+      );
+
+    case "faceMask":
+      return (
+        <>
+          {/* TODO Check what is supposed to tell the number of faces */}
+          <FaceMask
+            dieFaces={20}
+            //TODO check what is supposed to get returned for the facemask "update"
+            onCloseAction={widget.update}
+          />
+        </>
+      );
+
+    case "gradient":
+      return (
+        <>
+          {/* TODO use widget.update function with string to color in order to work */}
+          <GradientColorSelection triggerW="100%" />
+        </>
+      );
+
+    case "rgbPattern":
+    case "grayscalePattern":
+      return (
+        <Text>
+          {" "}
+          {widget.displayName} Placeholder until component is defined and/or
+          done
+        </Text>
+      );
+
+    case "bitField":
+    case "faceIndex":
+    case "playbackFace":
+    case "toggle": {
+      return (
+        <>
+          <Toggle text={widget.displayName} onToggle={widget.update} />
+        </>
+      );
+    }
+
+    default:
+      assertNever(type);
+  }
+}
+/**
+ * Container component for {@link RenderWidget} to display widgets for animation edition.
+ * @param editAnim type of animation for widgets to display.
+ * @returns a scrollview of edition widgets corresponding to the type of animation.
+ */
+function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
+  const [animWidgets, setAnimWidgets] = React.useState<EditWidgetData[]>([]);
+  useEffect(() => {
+    setAnimWidgets(getEditWidgetsData(editAnim));
+  }, [editAnim]);
+
+  return (
+    <>
+      <ScrollView>
+        <VStack p={2} h="100%" space={2} bg="gray.700" rounded="md">
+          {animWidgets.map((widget, key) => (
+            <RenderWidget key={key} widget={widget} />
+          ))}
+        </VStack>
+      </ScrollView>
+    </>
+  );
+}
+
 export default function AnimationSettingsScreen() {
   const route = useRoute<AnimationSettingsScreenRouteProps>();
   const patternInfo = route.params;
+  const [editAnim, setEditAnim] = React.useState<EditAnimation>(
+    new EditAnimationSimple()
+  );
+  const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
     <PxAppPage theme={paleBluePixelTheme} h="100%">
       <VStack space={1} h="100%">
@@ -57,47 +180,47 @@ export default function AnimationSettingsScreen() {
             alt="description of image"
           />
         </Card>
-        <LightingStyleSelection />
-        <ScrollView>
-          <VStack p={2} space={2} bg="gray.700" rounded="md">
-            <SliderComponent
-              sliderTitle="Duration"
-              minValue={0.1}
-              maxValue={10}
-              steps={0.1}
-              unit="sec"
-              sliderBoxColor="PixelColors.accentPurple"
-              sliderTrackColor="PixelColors.pink"
-              unitTextColor={undefined}
-              sliderThumbColor={undefined}
-            />
-            <FaceMask dieFaces={20} />
-            <ColorSelection />
-            <GradientColorSelection triggerW="100%" />
-            <SliderComponent
-              sliderTitle="Repeat Count"
-              minValue={0}
-              maxValue={10}
-              steps={1}
-              unit=""
-              sliderBoxColor="PixelColors.accentPurple"
-              sliderTrackColor="PixelColors.pink"
-              unitTextColor={undefined}
-              sliderThumbColor={undefined}
-            />
-            <SliderComponent
-              sliderTitle="Fading Sharpness"
-              minValue={0.1}
-              maxValue={1}
-              steps={0.1}
-              unit=""
-              sliderBoxColor="PixelColors.accentPurple"
-              sliderTrackColor="PixelColors.pink"
-              unitTextColor={undefined}
-              sliderThumbColor={undefined}
-            />
-          </VStack>
-        </ScrollView>
+        <LightingStyleSelection
+          title={lightingTypeText}
+          itemsData={[
+            {
+              label: "Simple Flashes",
+              onPress: () => {
+                setLightingType("Simple Flashes");
+                setEditAnim(new EditAnimationSimple());
+              },
+            },
+            {
+              label: "Colorful Rainbow",
+              onPress: () => {
+                setLightingType("Colorful Rainbow");
+                setEditAnim(new EditAnimationRainbow());
+              },
+            },
+            {
+              label: "Simple Gradient",
+              onPress: () => {
+                setLightingType("Simple Gradient");
+                setEditAnim(new EditAnimationGradient());
+              },
+            },
+            {
+              label: "Color LED Pattern",
+              onPress: () => {
+                setLightingType("Color LED Pattern");
+                setEditAnim(new EditAnimationGradientPattern());
+              },
+            },
+            {
+              label: "Gradient LED Pattern",
+              onPress: () => {
+                setLightingType("Gradient LED Pattern");
+                setEditAnim(new EditAnimationGradientPattern());
+              },
+            },
+          ]}
+        />
+        {AnimationEditor({ editAnim })}
       </VStack>
     </PxAppPage>
   );

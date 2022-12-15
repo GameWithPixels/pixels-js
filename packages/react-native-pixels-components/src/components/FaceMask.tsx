@@ -18,7 +18,7 @@ import React from "react";
  */
 interface FaceMaskProps extends IModalProps {
   dieFaces: number; // Number of faces on the die
-  onCloseAction?: (() => void) | null | undefined; // Function to be executed when the facemask window is closed
+  onCloseAction?: ((value: any) => void) | null | undefined; // Function to be executed when the facemask window is closed
 }
 
 /**
@@ -72,7 +72,7 @@ export function FaceMask(props: FaceMaskProps) {
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
-          if (props.onCloseAction) props.onCloseAction();
+          if (props.onCloseAction) props.onCloseAction(groupValue);
         }}
       >
         <Modal.Content bg={resolvedProps.bg}>

@@ -1,5 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ActionSheet } from "@systemic-games/react-native-base-components";
+import {
+  ActionSheet,
+  ActionSheetItemData,
+} from "@systemic-games/react-native-base-components";
 import {
   Box,
   Text,
@@ -35,6 +38,9 @@ function TriggerElement(props: TriggerProps) {
  */
 interface LightingStyleSelectionProps {
   trigger?: ReactNode; // trigger element to replace the default LightingStyleSelection trigger if needed
+  title: string;
+  onSelect?: (() => void) | null | undefined;
+  itemsData?: ActionSheetItemData[];
 }
 
 /**
@@ -42,7 +48,7 @@ interface LightingStyleSelectionProps {
  * @param props See {@link LightingStyleSelectionProps} for props parameters.
  */
 export function LightingStyleSelection(props: LightingStyleSelectionProps) {
-  const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
+  //const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
     <>
       <VStack space={1}>
@@ -50,44 +56,50 @@ export function LightingStyleSelection(props: LightingStyleSelectionProps) {
         <ActionSheet
           trigger={
             !props.trigger ? (
-              <TriggerElement title={lightingTypeText} />
+              <TriggerElement title={props.title} />
             ) : (
               props.trigger
             )
           }
-          title={lightingTypeText}
-          itemsData={[
-            {
-              label: "Simple Flashes",
-              onPress: () => {
-                setLightingType("Simple Flashes");
-              },
-            },
-            {
-              label: "Colorful Rainbow",
-              onPress: () => {
-                setLightingType("Colorful Rainbow");
-              },
-            },
-            {
-              label: "Simple Gradient",
-              onPress: () => {
-                setLightingType("Simple Gradient");
-              },
-            },
-            {
-              label: "Color LED Pattern",
-              onPress: () => {
-                setLightingType("Color LED Pattern");
-              },
-            },
-            {
-              label: "Gradient LED Pattern",
-              onPress: () => {
-                setLightingType("Gradient LED Pattern");
-              },
-            },
-          ]}
+          title={props.title}
+          itemsData={props.itemsData ? props.itemsData : undefined}
+          // itemsData={[
+          //   {
+          //     label: "Simple Flashes",
+          //     onPress: () => {
+          //       setLightingType("Simple Flashes");
+          //       props.onSelect?.();
+          //     },
+          //   },
+          //   {
+          //     label: "Colorful Rainbow",
+          //     onPress: () => {
+          //       setLightingType("Colorful Rainbow");
+          //       props.onSelect;
+          //     },
+          //   },
+          //   {
+          //     label: "Simple Gradient",
+          //     onPress: () => {
+          //       setLightingType("Simple Gradient");
+          //       props.onSelect;
+          //     },
+          //   },
+          //   {
+          //     label: "Color LED Pattern",
+          //     onPress: () => {
+          //       setLightingType("Color LED Pattern");
+          //       props.onSelect;
+          //     },
+          //   },
+          //   {
+          //     label: "Gradient LED Pattern",
+          //     onPress: () => {
+          //       setLightingType("Gradient LED Pattern");
+          //       props.onSelect;
+          //     },
+          //   },
+          // ]}
         />
       </VStack>
     </>

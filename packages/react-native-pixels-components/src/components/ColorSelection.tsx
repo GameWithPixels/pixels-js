@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Color as _color } from "@systemic-games/pixels-core-animation";
 import {
   ColorWheel,
   ColorWheelColorType,
@@ -43,7 +44,7 @@ interface ColorSelectionProps extends IModalProps {
   triggerBg?: ColorType; // modal trigger element initial background color
   triggerH?: SizeType; // trigger element height
   triggerW?: SizeType; // trigger element width
-  onColorSelected?: (() => void) | null | undefined; // action when a color was selected trough the color selection component
+  onColorSelected?: ((value: string) => void) | null | undefined; // action when a color was selected trough the color selection component
 }
 /**
  * Color selection component used for selecting a single color shade from a color wheel / color picker.
@@ -75,73 +76,6 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
         </HStack>
         {/* CheckBox override face component would be here */}
       </VStack>
-
-      {/* <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <Modal.Content
-          {...resolvedProps}
-          minH={resolvedProps.modalMinH}
-          minW={resolvedProps.modalMinW}
-        >
-          <Center>
-            <Modal.Header
-              bg={resolvedProps.bg}
-              fontSize={resolvedProps.headerFontSize}
-            >
-              Select Color
-            </Modal.Header>
-            <Modal.CloseButton />
-          </Center>
-          <Modal.Body bg={resolvedProps.bg}>
-            <VStack space={2}>
-              <ColorWheel
-                initialColor={SelectedColor}
-                onSelectColor={setSelectedColor}
-              />
-            </VStack>
-          </Modal.Body>
-          <Center>
-            <Modal.Footer bg={resolvedProps.bg}>
-              <HStack space={2}>
-                <SimpleColorButton
-                  color="black"
-                  onPress={() => {
-                    setSelectedColor("black");
-                    setShowModal(false);
-                  }}
-                />
-                <SimpleColorButton
-                  color="white"
-                  onPress={() => {
-                    setSelectedColor("white");
-                    setShowModal(false);
-                  }}
-                />
-                <SimpleColorButton
-                  color="red.500"
-                  onPress={() => {
-                    setSelectedColor("red.500");
-                    setShowModal(false);
-                  }}
-                />
-                <SimpleColorButton
-                  color="green.500"
-                  onPress={() => {
-                    setSelectedColor("green.500");
-                    setShowModal(false);
-                  }}
-                />
-                <SimpleColorButton
-                  color="blue.500"
-                  onPress={() => {
-                    setSelectedColor("blue.500");
-                    setShowModal(false);
-                  }}
-                />
-              </HStack>
-            </Modal.Footer>
-          </Center>
-        </Modal.Content>
-      </Modal> */}
       <Actionsheet
         maxHeight="100%"
         isOpen={showModal}
@@ -177,6 +111,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 color="black"
                 onPress={() => {
                   setSelectedColor("black");
+                  props.onColorSelected?.(SelectedColor);
                   setShowModal(false);
                 }}
               />

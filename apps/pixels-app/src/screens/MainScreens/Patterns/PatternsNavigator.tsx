@@ -11,7 +11,7 @@ export default function PatternsNavigator() {
     <Stack.Navigator
       initialRouteName="Patterns"
       screenOptions={{
-        headerBackImage: (props) => (
+        headerBackImage: () => (
           <Ionicons name="md-arrow-back-outline" size={24} color="white" />
         ),
         headerTitleAlign: "center",

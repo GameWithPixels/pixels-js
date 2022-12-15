@@ -22,6 +22,7 @@ export interface SliderProps extends ISliderProps {
   sliderTrackColor?: ColorType;
   sliderBoxColor?: ColorType;
   onSelectedValue?: (value: number) => void;
+  onValueChange?: (() => void) | null | undefined;
 }
 
 export function SliderComponent(props: SliderProps) {
@@ -47,10 +48,7 @@ export function SliderComponent(props: SliderProps) {
             step={resolvedProps.steps}
             onChange={(v) => {
               setOnChangeValue(v);
-            }}
-            onChangeEnd={(v) => {
-              if (resolvedProps.onSelectedValue)
-                resolvedProps.OnSelectedValue(Math.floor(v));
+              resolvedProps.onSelectedValue(v);
             }}
           >
             <Slider.Track shadow={1}>
