@@ -251,12 +251,12 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
       console.log(
         `The last ${
           buffer.byteLength - byteRead
-        } bytes were not read during deserialization"`
+        } bytes were not read while deserializing message of type ${msg.type}`
       );
     }
     assert(
       msg.type === msgType,
-      `Incorrect message type after deserialization ${msg.type} but expecting ${msgType}`
+      `Incorrect message type after deserializing ${msg.type} but expecting ${msgType}`
     );
     return msg;
   }
@@ -270,7 +270,7 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
 export class GenericPixelMessage implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.iAmADie;
+  readonly type: MessageType;
 
   constructor(type: MessageType) {
     this.type = type;
@@ -319,18 +319,49 @@ export class IAmADie implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.iAmADie;
 
+  /** Number of LEDs. */
   @serializable(1)
   ledCount = 0;
+
+  /** Die look. */
   @serializable(1, { padding: 1 })
   designAndColor = PixelDesignAndColorValues.generic;
+
+  /** Hash of the uploaded profile. */
   @serializable(4)
   dataSetHash = 0;
+
+  /** The Pixel id. */
   @serializable(4)
   pixelId = 0;
+
+  /** Amount of available flash. */
   @serializable(2)
   availableFlashSize = 0;
+
+  /** Unix timestamp for the date of the firmware. */
   @serializable(4)
   buildTimestamp = 0;
+
+  // Roll state
+
+  /** Current roll state. */
+  @serializable(1)
+  rollState = PixelRollStateValues.unknown;
+
+  /** Face number (if applicable), starts at 0. */
+  @serializable(1)
+  rollFaceIndex = 0;
+
+  // Battery level
+
+  /** The battery charge level in percent. */
+  @serializable(1)
+  batteryLevelPercent = 0;
+
+  /** The charging state of the battery. */
+  @serializable(1)
+  batteryState = PixelBatteryStateValues.unknown;
 }
 
 /**
@@ -380,7 +411,7 @@ export class RollState implements PixelMessage {
   @serializable(1)
   state = PixelRollStateValues.unknown;
 
-  /** Face number (if applicable), starts at 0. */
+  /** Index of the face facing up (if applicable). */
   @serializable(1)
   faceIndex = 0;
 }
@@ -393,6 +424,8 @@ export class Telemetry implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
   readonly type = MessageTypeValues.telemetry;
+
+  // Accelerometer
 
   @serializable(4, { numberFormat: "float" })
   accX = 0;
@@ -421,11 +454,59 @@ export class Telemetry implements PixelMessage {
   @serializable(4, { numberFormat: "float" })
   faceConfidence = 0;
 
-  @serializable(4, { numberFormat: "signed" })
-  face = 0;
-
   @serializable(4)
   time = 0;
+
+  /** Current roll state. */
+  @serializable(1)
+  rollState = PixelRollStateValues.unknown;
+
+  /** Index of the face facing up (if applicable). */
+  @serializable(1)
+  faceIndex = 0;
+
+  // Battery & power
+
+  /** The battery charge level in percent. */
+  @serializable(1)
+  batteryLevelPercent = 0;
+
+  /** The charging state of the battery. */
+  @serializable(1)
+  batteryState = PixelBatteryStateValues.unknown;
+
+  /** The measured battery voltage multiplied by 50. */
+  @serializable(1)
+  voltageTimes50 = 0;
+
+  /** The measured coil voltage multiplied by 50. */
+  @serializable(1)
+  vCoilTimes50 = 0;
+
+  // RSSI
+
+  /** The RSSI value, in dBm. */
+  @serializable(1, { numberFormat: "signed" })
+  rssi = 0;
+
+  /** The data channel index of which the RSSI is measured. */
+  @serializable(1)
+  channelIndex = 0;
+
+  // Temperature
+
+  /**
+   * The microcontroller temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
+   * If the die was unable to read the temperature, value will be 0xffff.
+   */
+  @serializable(2)
+  mcuTemperatureTimes100 = 0;
+
+  /**
+   * The battery temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
+   */
+  @serializable(2)
+  batteryTemperatureTimes100 = 0;
 }
 
 /**
@@ -617,6 +698,30 @@ export class PlaySound implements PixelMessage {
 }
 
 /**
+ * The list of available modes for telemetry requests.
+ * @enum
+ * @category Message
+ */
+export const TelemetryRequestModeValues = {
+  off: enumValue(0),
+  once: enumValue(),
+  repeat: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link TelemetryRequestModeValues}.
+ * @category Message
+ */
+export type TelemetryRequestModeNames = keyof typeof TelemetryRequestModeValues;
+
+/**
+ * The "enum" type for {@link TelemetryRequestModeValues}.
+ * @category Message
+ */
+export type TelemetryRequestMode =
+  typeof TelemetryRequestModeValues[TelemetryRequestModeNames];
+
+/**
  * Message send to a Pixel to have it start or stop sending telemetry messages.
  * @category Message
  */
@@ -625,9 +730,11 @@ export class RequestTelemetry implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.requestTelemetry;
 
-  /** The id for the clip. */
   @serializable(1)
-  activate = false;
+  requestMode = TelemetryRequestModeValues.off;
+
+  @serializable(2)
+  minInterval = 0; // Milliseconds, 0 for no cap on rate
 }
 
 /**
@@ -661,6 +768,56 @@ export class Blink implements PixelMessage {
 }
 
 /**
+ * The different possible battery charging states.
+ * @enum
+ * @category Message
+ */
+export const PixelBatteryStateValues = {
+  unknown: enumValue(0),
+
+  // Battery looks fine, nothing is happening.
+  ok: enumValue(),
+
+  // Battery level is low, notify user they should recharge.
+  low: enumValue(),
+
+  // Coil voltage is bad, but we don't know yet if that's because we removed
+  // the die and the coil cap is still discharging, or if indeed the die is
+  // incorrectly positioned.
+  transition: enumValue(),
+
+  // Coil voltage is bad, die is probably positioned incorrectly.
+  // Note that currently this state is triggered during transition between
+  // charging and not charging...
+  badCharging: enumValue(),
+
+  // Charge state doesn't make sense (charging but no coil voltage detected
+  // for instance).
+  error: enumValue(),
+
+  // Battery is currently recharging.
+  charging: enumValue(),
+
+  // Battery is almost full.
+  trickleCharge: enumValue(),
+
+  // Battery is full and finished charging.
+  done: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link PixelBatteryStateValues}.
+ * @category Message
+ */
+export type BatteryStateNames = keyof typeof PixelBatteryStateValues;
+
+/**
+ * The "enum" type for {@link PixelBatteryStateValues}.
+ * @category Message
+ */
+export type BatteryState = typeof PixelBatteryStateValues[BatteryStateNames];
+
+/**
  * Message send by a Pixel to notify of its battery level and state.
  * @category Message
  */
@@ -669,17 +826,29 @@ export class BatteryLevel implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.batteryLevel;
 
-  /** The battery charge level, floating value between 0 and 1. */
-  @serializable(4, { numberFormat: "float" })
-  level = 0;
-
-  /** The battery measured voltage. */
-  @serializable(4, { numberFormat: "float" })
-  voltage = 0;
-
-  /** Whether the battery is charging. */
+  /** The battery charge level in percent. */
   @serializable(1)
-  charging = false;
+  levelPercent = 0;
+
+  /** The charging state of the battery. */
+  @serializable(1)
+  state = PixelBatteryStateValues.unknown;
+}
+
+/**
+ * Message send to a Pixel to configure RSSI reporting.
+ * @category Message
+ */
+export class RequestRssi implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.requestRssi;
+
+  @serializable(1)
+  requestMode = TelemetryRequestModeValues.off;
+
+  @serializable(2)
+  minInterval = 0; // Milliseconds, 0 for no cap on rate
 }
 
 /**
@@ -694,10 +863,6 @@ export class Rssi implements PixelMessage {
   /** The RSSI value, in dBm. */
   @serializable(1, { numberFormat: "signed" })
   value = 0;
-
-  /** The data channel index of which the RSSI is measured. */
-  @serializable(1)
-  channelIndex = 0;
 }
 
 /**
@@ -856,11 +1021,16 @@ export class Temperature implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.temperature;
 
-  /** The temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
-  If the die was unable to read the temperature, value will be 0xffff */
+  /**
+   * The microcontroller temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
+   * If the die was unable to read the temperature, value will be 0xffff.
+   */
   @serializable(2)
   mcuTemperatureTimes100 = 0;
 
+  /**
+   * The battery temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
+   */
   @serializable(2)
   batteryTemperatureTimes100 = 0;
 }
@@ -882,6 +1052,7 @@ function _getMessageClasses(): MessageClass[] {
     PlaySound,
     Blink,
     BatteryLevel,
+    RequestRssi,
     Rssi,
     NotifyUser,
     NotifyUserAck,
