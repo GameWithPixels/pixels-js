@@ -115,6 +115,7 @@ export default function ({
       pixelDispatcher.addEventListener("rollState", forceUpdate);
       // pixelDispatcher.addEventListener("rssi", forceUpdate);
       // pixelDispatcher.addEventListener("batteryState", forceUpdate);
+      pixelDispatcher.dispatch("reportRssi");
       return () => {
         pixelDispatcher.removeEventListener("status", forceUpdate);
         pixelDispatcher.removeEventListener("rollState", forceUpdate);
@@ -122,22 +123,6 @@ export default function ({
         // pixelDispatcher.removeEventListener("batteryState", forceUpdate);
       };
     }, [pixelDispatcher])
-  );
-
-  // Request RSSI and battery state periodically
-  const isReady = pixelDispatcher.isReady;
-  useFocusEffect(
-    useCallback(() => {
-      if (isReady) {
-        const intervalId = setInterval(() => {
-          pixelDispatcher.dispatch("queryRssi");
-          pixelDispatcher.dispatch("queryBattery");
-        }, 5000);
-        return () => {
-          clearInterval(intervalId);
-        };
-      }
-    }, [isReady, pixelDispatcher])
   );
 
   // User notification

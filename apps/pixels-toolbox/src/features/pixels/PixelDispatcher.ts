@@ -32,8 +32,7 @@ import updateFirmware from "~/features/dfu/updateFirmware";
 export type PixelDispatcherAction =
   | "connect"
   | "disconnect"
-  | "queryRssi"
-  | "queryBattery"
+  | "reportRssi"
   | "blink"
   | "playRainbow"
   | "calibrate"
@@ -213,11 +212,8 @@ export default class PixelDispatcher implements IPixel {
       case "disconnect":
         watch(this._pixel.disconnect());
         break;
-      case "queryRssi":
-        watch(this._queryRssi());
-        break;
-      case "queryBattery":
-        watch(this._queryBattery());
+      case "reportRssi":
+        watch(this._reportRssi());
         break;
       case "blink":
         watch(this._blink());
@@ -247,15 +243,9 @@ export default class PixelDispatcher implements IPixel {
     return this.status === "disconnected" ? this._scannedPixel : this._pixel;
   }
 
-  private async _queryRssi(): Promise<void> {
+  private async _reportRssi(): Promise<void> {
     if (this.isReady) {
-      await this._pixel.queryRssi();
-    }
-  }
-
-  private async _queryBattery(): Promise<void> {
-    if (this.isReady) {
-      await this._pixel.queryBattery();
+      await this._pixel.reportRssi(true);
     }
   }
 

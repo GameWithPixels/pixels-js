@@ -9,9 +9,13 @@ import {
   Telemetry,
   DataSet,
   MessageOrType,
-  BatteryLevel,
   RollState,
   PixelRollStateValues,
+  TelemetryRequestModeValues,
+  RequestRssi,
+  Rssi,
+  PixelBatteryStateValues,
+  PixelBatteryData,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { TaskCanceledError, TaskFaultedError } from "../tasks/useTask";
@@ -72,25 +76,35 @@ const ValidationTests = {
 
   checkBatteryVoltage: async (pixel: Pixel): Promise<void> => {
     const response = await pixel.sendAndWaitForResponse(
-      MessageTypeValues.requestBatteryLevel,
-      MessageTypeValues.batteryLevel
+      safeAssign(new RequestTelemetry(), {
+        requestMode: TelemetryRequestModeValues.once,
+      }),
+      MessageTypeValues.telemetry
     );
-    const batteryLevel = response as BatteryLevel;
-    const voltageStr = batteryLevel.voltage.toFixed(3);
+    const telemetry = response as Telemetry;
+    const voltage = telemetry.voltageTimes50 / 50;
     console.log(
-      `Battery voltage: ${voltageStr} V,` +
-        ` level: ${batteryLevel.level.toFixed(3)},` +
-        ` charging: ${batteryLevel.charging}`
+      `Battery voltage: ${voltage.toFixed(2)} V,` +
+        ` level: ${telemetry.batteryLevelPercent} %,` +
+        ` charging: ${
+          telemetry.batteryState >= PixelBatteryStateValues.charging
+        }`
     );
-    if (batteryLevel.voltage < 3 || batteryLevel.voltage > 5) {
-      throw new Error(`Out of range battery voltage: ${voltageStr}`);
+    if (voltage < 3 || voltage > 5) {
+      throw new Error(`Out of range battery voltage: ${voltage}`);
     }
   },
 
   checkRssi: async (pixel: Pixel): Promise<void> => {
-    const rssi = await pixel.queryRssi();
+    const rssi = (await pixel.sendAndWaitForResponse(
+      safeAssign(new RequestRssi(), {
+        requestMode: TelemetryRequestModeValues.once,
+      }),
+      MessageTypeValues.telemetry
+    )) as Rssi;
+
     console.log(`RSSI is ${rssi}`);
-    if (rssi < -70) {
+    if (rssi.value < -70) {
       throw new Error(`Out of range RSSI value: ${rssi}`);
     }
   },
@@ -101,26 +115,23 @@ const ValidationTests = {
     abortSignal: AbortSignal
   ): Promise<void> => {
     await new Promise<void>((resolve, reject) => {
-      const abort = () => reject(new TaskCanceledError("checkAccelerometer"));
+      const batteryHandler = ({ isCharging }: PixelBatteryData) => {
+        if (isCharging === shouldBeCharging) {
+          pixel.removeEventListener("battery", batteryHandler);
+          resolve();
+        }
+      };
+      const abort = () => {
+        pixel.removeEventListener("battery", batteryHandler);
+        reject(new TaskCanceledError("waitCharging"));
+      };
       if (abortSignal.aborted) {
         abort();
+      } else if (pixel.isCharging === shouldBeCharging) {
+        resolve();
       } else {
         abortSignal.addEventListener("abort", abort);
-        const wait = async () => {
-          let batteryLevel = await pixel.queryBattery();
-          while (
-            !abortSignal.aborted &&
-            batteryLevel.isCharging !== shouldBeCharging
-          ) {
-            await delay(200, abortSignal);
-            batteryLevel = await pixel.queryBattery(); // TODO abortSignal
-          }
-          abortSignal.removeEventListener("abort", abort); // finally
-          if (!abortSignal.aborted) {
-            resolve();
-          }
-        };
-        wait().catch(() => {});
+        pixel.addEventListener("battery", batteryHandler);
       }
     });
   },
@@ -132,7 +143,9 @@ const ValidationTests = {
   ): Promise<void> => {
     // Turn on telemetry and wait for data
     await pixel.sendMessage(
-      safeAssign(new RequestTelemetry(), { activate: true })
+      safeAssign(new RequestTelemetry(), {
+        requestMode: TelemetryRequestModeValues.repeat,
+      })
     );
     let onTelemetry: ((msg: MessageOrType) => void) | undefined;
     try {
@@ -154,7 +167,7 @@ const ValidationTests = {
                 resolve();
               }
             } catch (error) {
-              abortSignal.removeEventListener("abort", abort); // finally
+              abortSignal.removeEventListener("abort", abort); // TODO finally
               reject(error);
             }
           };
@@ -167,7 +180,9 @@ const ValidationTests = {
       }
       // Turn off telemetry
       await pixel.sendMessage(
-        safeAssign(new RequestTelemetry(), { activate: false })
+        safeAssign(new RequestTelemetry(), {
+          requestMode: TelemetryRequestModeValues.off,
+        })
       );
     }
   },
@@ -248,7 +263,7 @@ const ValidationTests = {
               MessageTypeValues.rollState
             )) as RollState; // TODO subscribe on "roll" events
           }
-          abortSignal.removeEventListener("abort", abort); // finally
+          abortSignal.removeEventListener("abort", abort); // TODO finally
           if (!abortSignal.aborted) {
             blinkAbortController.abort();
             resolve();
@@ -286,7 +301,7 @@ const ValidationTests = {
         blinkForever(pixel, color, blinkSA, options).catch(() => {});
         // Wait on promised being resolved
         setResolve(() => {
-          abortSignal.removeEventListener("abort", abort); // finally
+          abortSignal.removeEventListener("abort", abort); // TODO finally
           if (!abortSignal.aborted) {
             blinkAbortController.abort();
             resolve();
@@ -334,7 +349,7 @@ const ValidationTests = {
           // Wait on connection status change
           statusListener = (status: PixelStatus) => {
             if (status === "disconnected") {
-              abortSignal.removeEventListener("abort", abort); // finally
+              abortSignal.removeEventListener("abort", abort); // TODO finally
               blinkAbortController.abort();
               resolve();
             }
