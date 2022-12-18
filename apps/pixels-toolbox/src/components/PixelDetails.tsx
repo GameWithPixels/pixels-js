@@ -83,8 +83,11 @@ function PixelDetailsImpl({
         {t(battery?.isCharging ? "yes" : "no")}
       </TextEntry>
       <TextEntry title={t("rssi")}>{Math.round(rssi ?? 0)}</TextEntry>
-      <TextEntry title={t("temperature")}>
-        {t("celsiusWithValue", { value: temperature ?? 0 })}
+      <TextEntry title={t("mcu temperature")}>
+        {t("celsiusWithValue", { value: temperature?.mcuTemperature ?? 0 })}
+      </TextEntry>
+      <TextEntry title={t("battery temperature")}>
+        {t("celsiusWithValue", { value: temperature?.batteryTemperature ?? 0 })}
       </TextEntry>
       <TextEntry title={t("rollState")}>
         {rollState?.face}, {rollState ? t(rollState.state) : ""}

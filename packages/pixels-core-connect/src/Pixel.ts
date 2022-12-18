@@ -96,6 +96,15 @@ export interface PixelBatteryData {
 }
 
 /**
+ * Data for the "rollState" event.
+ * @category Pixel
+ */
+export interface PixelTemperatureData {
+  mcuTemperature: number; // temperature in celsius
+  batteryTemperature: number; // temperature in celsius
+}
+
+/**
  * Data for the "userMessage" event.
  * @category Pixel
  */

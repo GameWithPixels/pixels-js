@@ -12,6 +12,7 @@ import {
   MessageType,
   PixelEventMap,
   BatteryLevel,
+  PixelTemperatureData,
 } from "@systemic-games/pixels-core-connect";
 import { assertNever, EventReceiver } from "@systemic-games/pixels-core-utils";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
@@ -107,7 +108,7 @@ export interface UsePixelValueNamesMap {
   /** Updates with the RSSI value. */
   rssi: number;
   /** Updates with the temperature in Celsius. */
-  temperature: number;
+  temperature: PixelTemperatureData;
   /** Updates with the telemetry data. */
   telemetry: Telemetry;
 }
@@ -281,10 +282,14 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             refreshInterval,
             "temperature",
             MessageTypeValues.requestTemperature,
-            (msg: MessageOrType) =>
-              setValue(
-                ((msg as Temperature).temperatureTimes100 / 100) as ValueType
-              ),
+            (msg: MessageOrType) => {
+              const tmp = msg as Temperature;
+              const val = {
+                mcuTemperature: tmp.mcuTemperatureTimes100 / 100,
+                batteryTemperature: tmp.batteryTemperatureTimes100 / 100,
+              };
+              setValue(val as ValueType);
+            },
             setLastError,
             forceUpdate
           );

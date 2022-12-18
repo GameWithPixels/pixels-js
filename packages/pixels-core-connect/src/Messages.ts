@@ -859,7 +859,10 @@ export class Temperature implements PixelMessage {
   /** The temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
   If the die was unable to read the temperature, value will be 0xffff */
   @serializable(2)
-  temperatureTimes100 = 0;
+  mcuTemperatureTimes100 = 0;
+
+  @serializable(2)
+  batteryTemperatureTimes100 = 0;
 }
 
 // Returns the list of message classes defined in this file.
