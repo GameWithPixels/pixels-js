@@ -87,6 +87,8 @@ i18n
           charging: "Charging",
           rssi: "RSSI",
           temperature: "Temperature",
+          mcuTemperature: "MCU Temperature",
+          batteryTemperature: "Battery Temperature",
           celsiusWithValue: "{{value}}°C",
           rollState: "Roll State",
           calibrate: "Calibrate",
@@ -219,6 +221,8 @@ i18n
           charging: "充电中",
           rssi: "RSSI",
           temperature: "温度",
+          mcuTemperature: "MCU 温度",
+          batteryTemperature: "电池温度",
           celsiusWithValue: "{{value}}°C",
           rollState: "滚动状态",
           // Validation
