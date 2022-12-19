@@ -509,7 +509,7 @@ export default class Pixel implements IPixel {
   ): Promise<void> {
     const msgName = getMessageName(msgOrType);
     if (this._logMessages) {
-      this._log(`Sending message ${msgName} (${getMessageType(msgOrType)})`);
+      this._log(`Sending message ${msgName} (${getMessageType(msgOrType)})}`);
     }
     const data = serializeMessage(msgOrType);
     await this._session.writeValue(data, withoutResponse);
