@@ -53,7 +53,7 @@ function PixelDetailsImpl({
   }, [pixelDispatcher]);
   const pixel = pixelDispatcher.pixel;
   const status = usePixelStatus(pixel);
-  const [telemetry] = usePixelValue(pixel, "telemetry");
+  const [telemetry] = usePixelValue(pixel, "telemetry", { minInterval: 1000 });
 
   // Prepare some values
   const { t } = useTranslation();
