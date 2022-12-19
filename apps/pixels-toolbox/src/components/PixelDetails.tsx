@@ -86,7 +86,14 @@ function PixelDetailsImpl({
           value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
         })}
       </TextEntry>
-      <TextEntry title={t("chargeState")}>
+      <TextEntry title={t("charging")}>
+        {t(
+          telemetry &&
+            telemetry?.batteryState >= PixelBatteryStateValues.charging
+            ? "yes"
+            : "no"
+        )}
+        {t("commaSeparator")}
         {getPixelEnumName(telemetry?.batteryState, PixelBatteryStateValues)}
       </TextEntry>
       <TextEntry title={t("rssi")}>
