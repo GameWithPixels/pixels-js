@@ -405,40 +405,40 @@ const Central = {
         // Continue if there wasn't any state change since we got connected
         if (stateCounter === pInf.stateCounter && pInf.state === "connecting") {
           // Log services and characteristics
-          const services = await BluetoothLE.getDiscoveredServices(sysId);
-          const logs: string[][] = [];
-          await Promise.all(
-            services.split(",").map(async (serviceUuid) => {
-              const log = [` * service ${serviceUuid}:`];
-              logs.push(log);
-              // Get characteristics for the service
-              const characteristics =
-                await BluetoothLE.getServiceCharacteristics(sysId, serviceUuid);
-              // And get characteristics properties
-              await Promise.all(
-                characteristics.split(",").map(async (uuid) => {
-                  const props = await BluetoothLE.getCharacteristicProperties(
-                    sysId,
-                    serviceUuid,
-                    uuid,
-                    0
-                  );
-                  log.push(
-                    `    - characteristic ${uuid} has properties = ${props}`
-                  );
-                })
-              );
-            })
-          );
-          if (logs.length) {
-            console.log(
-              `[BLE ${name}] Enumerating services:\n${logs
-                .map((l) => l.join("\n"))
-                .join("\n")}`
-            );
-          } else {
-            console.log(`[BLE ${name}] No service discovered`);
-          }
+          // const services = await BluetoothLE.getDiscoveredServices(sysId);
+          // const logs: string[][] = [];
+          // await Promise.all(
+          //   services.split(",").map(async (serviceUuid) => {
+          //     const log = [` * service ${serviceUuid}:`];
+          //     logs.push(log);
+          //     // Get characteristics for the service
+          //     const characteristics =
+          //       await BluetoothLE.getServiceCharacteristics(sysId, serviceUuid);
+          //     // And get characteristics properties
+          //     await Promise.all(
+          //       characteristics.split(",").map(async (uuid) => {
+          //         const props = await BluetoothLE.getCharacteristicProperties(
+          //           sysId,
+          //           serviceUuid,
+          //           uuid,
+          //           0
+          //         );
+          //         log.push(
+          //           `    - characteristic ${uuid} has properties = ${props}`
+          //         );
+          //       })
+          //     );
+          //   })
+          // );
+          // if (logs.length) {
+          //   console.log(
+          //     `[BLE ${name}] Enumerating services:\n${logs
+          //       .map((l) => l.join("\n"))
+          //       .join("\n")}`
+          //   );
+          // } else {
+          //   console.log(`[BLE ${name}] No service discovered`);
+          // }
 
           // And finally set state to "ready" if there wasn't any state change since we got connected
           if (
