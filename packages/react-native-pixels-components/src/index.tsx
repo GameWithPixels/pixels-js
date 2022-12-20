@@ -12,4 +12,6 @@ export * from "./components/DiceInfo";
 export * from "./components/ProfilesScrollView";
 export * from "./components/ProfilesActionSheet";
 export * from "./components/PatternCards";
+export * from "./components/RuleComparisonWidget";
+export * from "./components/FaceIndex";
 export * from "@systemic-games/react-native-base-components";

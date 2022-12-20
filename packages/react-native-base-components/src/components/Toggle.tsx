@@ -12,7 +12,7 @@ import React, { ReactNode } from "react";
  * Props for {@link Toggle} component.
  */
 export interface ToggleProps extends ISwitchProps {
-  text?: string; // Text displayed on the left of the toggle
+  title?: string; // Text displayed on the left of the toggle
   textSize?: string | number | SizeType;
   toggleSize?: SizeType;
   space?: number | string; // Spacing between text and toggle
@@ -28,7 +28,7 @@ export function Toggle(props: ToggleProps) {
   const [isChecked, setIsChecked] = React.useState(false);
   return (
     <HStack space={resolvedProps.space} alignItems="center">
-      <Text fontSize={props.textSize}>{props.text}</Text>
+      <Text fontSize={props.textSize}>{props.title}</Text>
       {props.icon}
       <Switch
         {...resolvedProps}

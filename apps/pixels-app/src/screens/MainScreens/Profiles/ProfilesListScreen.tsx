@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   createPixelTheme,
   PixelTheme,
@@ -6,6 +8,8 @@ import {
   ProfileInfo,
 } from "@systemic-games/react-native-pixels-components";
 import { Box, Center, HStack, VStack, Text, Spacer } from "native-base";
+
+import { ProfilesScreenParamList } from "~/Navigation";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -42,9 +46,12 @@ const profiles: ProfileInfo[] = [
   { profileName: "test15" },
 ];
 
-export function ProfilesScreen() {
+export function ProfilesListScreen() {
+  const navigation =
+    useNavigation<StackNavigationProp<ProfilesScreenParamList>>();
+
   return (
-    <PxAppPage theme={paleBluePixelTheme}>
+    <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={2}>
         <HStack alignItems="center" paddingRight={2}>
           <Text bold fontSize="md">
@@ -64,6 +71,9 @@ export function ProfilesScreen() {
                   textSize="md"
                   profileName={profileInfo.profileName}
                   borderWidth={1}
+                  onPress={() => {
+                    navigation.navigate("ProfileEditRuleScreen");
+                  }}
                 />
               </Box>
             ))}

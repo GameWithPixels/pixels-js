@@ -3,12 +3,12 @@ import { useRoute } from "@react-navigation/native";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   EditAnimation,
-  EditAnimationGradient,
-  EditAnimationGradientPattern,
-  EditAnimationKeyframed as _EditAnimationKeyframed,
-  EditAnimationNoise as _EditAnimationNoise,
-  EditAnimationRainbow,
-  EditAnimationSimple,
+  EditAnimationGradient, // simple gradient
+  EditAnimationGradientPattern, // gradient led pattern
+  EditAnimationKeyframed as _EditAnimationKeyframed, // color led pattern
+  EditAnimationNoise as _EditAnimationNoise, // noise
+  EditAnimationRainbow, // rainbow
+  EditAnimationSimple, // simple flash
   EditWidgetData,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
@@ -22,12 +22,16 @@ import {
   SliderComponent,
   ColorSelection,
   Toggle,
+  RuleComparisonWidget,
+  FaceIndex,
+  PlayBackFace,
 } from "@systemic-games/react-native-pixels-components";
 import { VStack, Image, ScrollView, Center, Input, Text } from "native-base";
 import React, { useEffect } from "react";
 import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
 import { AnimationSettingsScreenRouteProps } from "~/Navigation";
+import EditAnimationSandbox from "~/features/EditAnimationSandbox";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -54,7 +58,27 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 function RenderWidget({ widget }: { widget: EditWidgetData }) {
   const type = widget.type;
   switch (type) {
-    case "count":
+    case "count": {
+      const step = widget.step ? widget.step : undefined;
+      console.log(step);
+      return (
+        <>
+          <SliderComponent
+            sliderTitle={widget.displayName}
+            minValue={widget?.min ?? 0}
+            maxValue={widget?.max ?? 1}
+            //value={widget.getValue()}
+            step={step ?? 1}
+            unit=""
+            sliderBoxColor="PixelColors.accentPurple"
+            sliderTrackColor="PixelColors.pink"
+            unitTextColor={undefined}
+            sliderThumbColor={undefined}
+            onSelectedValue={widget.update}
+          />
+        </>
+      );
+    }
     case "slider": {
       const step = widget.step ? widget.step : undefined;
       return (
@@ -65,7 +89,7 @@ function RenderWidget({ widget }: { widget: EditWidgetData }) {
             maxValue={widget?.max ?? 1}
             //value={widget.getValue()}
             step={step ?? 0.1}
-            unit="sec"
+            unit=""
             sliderBoxColor="PixelColors.accentPurple"
             sliderTrackColor="PixelColors.pink"
             unitTextColor={undefined}
@@ -113,13 +137,32 @@ function RenderWidget({ widget }: { widget: EditWidgetData }) {
         </Text>
       );
 
-    case "bitField":
-    case "faceIndex":
-    case "playbackFace":
+    case "bitField": {
+      // for rules : flags
+      return (
+        <>
+          <RuleComparisonWidget />
+        </>
+      );
+    }
+    case "faceIndex": {
+      return (
+        <>
+          <FaceIndex faces={20} />
+        </>
+      );
+    } // for rules : condition on face, select one face
+    case "playbackFace": {
+      return (
+        <>
+          <PlayBackFace title={widget.displayName} />
+        </>
+      );
+    } // for rules : condition on face, select one face or current face
     case "toggle": {
       return (
         <>
-          <Toggle text={widget.displayName} onToggle={widget.update} />
+          <Toggle title={widget.displayName} onToggle={widget.update} />
         </>
       );
     }
@@ -216,6 +259,13 @@ export default function AnimationSettingsScreen() {
               onPress: () => {
                 setLightingType("Gradient LED Pattern");
                 setEditAnim(new EditAnimationGradientPattern());
+              },
+            },
+            {
+              label: "Test anim type",
+              onPress: () => {
+                setLightingType("Test anim type");
+                setEditAnim(new EditAnimationSandbox());
               },
             },
           ]}

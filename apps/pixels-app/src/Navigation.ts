@@ -24,6 +24,7 @@ export type PatternsScreenStackParamList = {
 export type AnimationScreenParamList = {
   PatternInfo: PatternInfo;
 };
+//For route
 export type AnimationSettingsScreenRouteProps = RouteProp<
   AnimationScreenParamList,
   "PatternInfo"
@@ -34,7 +35,14 @@ export type PixelDetailScreenParamList = {
   PixelAdvancedSettingsScreen: undefined;
   PixelInfo: PixelInfo;
 };
+//For route
 export type PixelDetailScreenRouteProp = RouteProp<
   PixelDetailScreenParamList,
   "PixelInfo"
 >;
+
+//ProfileSScreen params and props
+export type ProfilesScreenParamList = {
+  ProfileRulesScreen: undefined;
+  ProfileEditRuleScreen: undefined;
+};

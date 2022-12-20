@@ -10,6 +10,7 @@ import { Provider } from "react-redux";
 import { store } from "./app/store";
 import { TabBarNavigator } from "./components/TabBarNavigator";
 import PatternsNavigator from "./screens/MainScreens/Patterns/PatternsNavigator";
+import ProfilesNavigator from "./screens/MainScreens/Profiles/ProfilesNavigator";
 
 import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
 
@@ -35,7 +36,7 @@ export default function App() {
                 iconSize: 9,
               },
               {
-                screen: { name: "Profiles", component: HomeNavigator },
+                screen: { name: "Profiles", component: ProfilesNavigator },
                 imageRequirePath: require("../assets/UI_Icons/id-card.png"),
                 TabSelectedColor: "pixelColors.purple",
                 TabUnselectedColor: "pixelColors.purple",

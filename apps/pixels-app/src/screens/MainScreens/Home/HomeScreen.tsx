@@ -190,7 +190,7 @@ function NearbyPixelsList({
           {/* Hide nearby Pixels toggle */}
           <HStack space={1} alignItems="center">
             <Toggle
-              text="Show"
+              title="Show"
               onToggle={() => {
                 SetHideNearbyPixels(!hideNearbyPixels);
               }}

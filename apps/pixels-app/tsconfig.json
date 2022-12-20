@@ -2,6 +2,7 @@
   "extends": "./../../tsconfig.expo",
   "compilerOptions": {
     "outDir": "./dist",
+    "experimentalDecorators": true,
     "baseUrl": "./src",
     "paths": {
       "@systemic-games/*": [

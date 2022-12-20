@@ -15,7 +15,6 @@ export interface SliderProps extends ISliderProps {
   sliderTitle?: string;
   minValue?: number;
   maxValue?: number;
-  steps?: number;
   unit?: string;
   unitTextColor?: ColorType;
   sliderThumbColor?: ColorType;
@@ -45,10 +44,10 @@ export function SliderComponent(props: SliderProps) {
             minValue={resolvedProps.minValue}
             maxValue={resolvedProps.maxValue}
             size={resolvedProps.size}
-            step={resolvedProps.steps}
+            step={resolvedProps.step}
             onChange={(v) => {
               setOnChangeValue(v);
-              resolvedProps.onSelectedValue(v);
+              resolvedProps.onSelectedValue?.(v);
             }}
           >
             <Slider.Track shadow={1}>

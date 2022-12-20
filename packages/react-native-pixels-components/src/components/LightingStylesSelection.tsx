@@ -63,43 +63,6 @@ export function LightingStyleSelection(props: LightingStyleSelectionProps) {
           }
           title={props.title}
           itemsData={props.itemsData ? props.itemsData : undefined}
-          // itemsData={[
-          //   {
-          //     label: "Simple Flashes",
-          //     onPress: () => {
-          //       setLightingType("Simple Flashes");
-          //       props.onSelect?.();
-          //     },
-          //   },
-          //   {
-          //     label: "Colorful Rainbow",
-          //     onPress: () => {
-          //       setLightingType("Colorful Rainbow");
-          //       props.onSelect;
-          //     },
-          //   },
-          //   {
-          //     label: "Simple Gradient",
-          //     onPress: () => {
-          //       setLightingType("Simple Gradient");
-          //       props.onSelect;
-          //     },
-          //   },
-          //   {
-          //     label: "Color LED Pattern",
-          //     onPress: () => {
-          //       setLightingType("Color LED Pattern");
-          //       props.onSelect;
-          //     },
-          //   },
-          //   {
-          //     label: "Gradient LED Pattern",
-          //     onPress: () => {
-          //       setLightingType("Gradient LED Pattern");
-          //       props.onSelect;
-          //     },
-          //   },
-          // ]}
         />
       </VStack>
     </>

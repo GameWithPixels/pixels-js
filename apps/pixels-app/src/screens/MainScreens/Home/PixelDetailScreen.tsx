@@ -142,7 +142,7 @@ function DieStats() {
         <HStack alignItems="center" space={1}>
           <Toggle
             textSize="xs"
-            text="Lifetime"
+            title="Lifetime"
             onToggle={() => {
               setShowSessionStats(!showSessionStats);
             }}

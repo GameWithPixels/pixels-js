@@ -48,6 +48,7 @@ function AppPage(props: AppPageProps) {
       <SafeAreaProvider>
         <Box
           paddingX={2}
+          paddingTop={2}
           paddingBottom={1}
           bg={resolvedProps.lightBg}
           h={resolvedProps.h}
