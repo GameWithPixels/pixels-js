@@ -93,7 +93,8 @@ function PixelDetailsImpl({
             ? "yes"
             : "no"
         )}
-        {t("commaSeparator")}
+      </TextEntry>
+      <TextEntry title={t("chargingState")}>
         {getPixelEnumName(telemetry?.batteryState, PixelBatteryStateValues)}
       </TextEntry>
       <TextEntry title={t("rssi")}>
