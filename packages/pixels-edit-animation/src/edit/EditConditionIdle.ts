@@ -9,7 +9,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { range, units, widget } from "./decorators";
+import { range, unit, widget } from "./decorators";
 
 export default class EditConditionIdle extends EditCondition {
   get type(): ActionType {
@@ -18,7 +18,7 @@ export default class EditConditionIdle extends EditCondition {
 
   @widget("slider")
   @range(0.5, 30, 0.5)
-  @units("s")
+  @unit("s")
   period: number;
 
   constructor(period = 10) {

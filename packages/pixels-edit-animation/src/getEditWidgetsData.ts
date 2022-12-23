@@ -1,4 +1,3 @@
-import { Color } from "@systemic-games/pixels-core-animation";
 import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 
 import {
@@ -9,12 +8,12 @@ import {
   EditRgbGradient,
 } from "./edit";
 
-interface BaseWidgetData<T extends decorators.WidgetType, V, U = V> {
+interface BaseWidgetData<T extends decorators.WidgetType, V> {
   propertyKey: string;
   displayName: string;
   type: T;
   getValue: () => V;
-  update: (value: U) => void;
+  update: (value: V) => void;
 }
 
 interface BaseWidgetWithRangeData<T extends decorators.WidgetType>
@@ -22,6 +21,7 @@ interface BaseWidgetWithRangeData<T extends decorators.WidgetType>
   min?: number;
   max?: number;
   step?: number;
+  unit?: string;
 }
 
 export type ToggleData = BaseWidgetData<"toggle", boolean>;
@@ -30,8 +30,10 @@ export type SliderData = BaseWidgetWithRangeData<"slider">;
 export type FaceMaskData = BaseWidgetData<"faceMask", number>;
 export type FaceIndexData = BaseWidgetData<"faceIndex", number>;
 export type PlaybackFaceData = BaseWidgetData<"playbackFace", number>;
-export type BitFieldData = BaseWidgetData<"bitField", number>;
-export type ColorData = BaseWidgetData<"color", EditColor, Color>;
+export type BitFieldData = BaseWidgetData<"bitField", number> & {
+  values: { [key: string]: number };
+};
+export type ColorData = BaseWidgetData<"color", EditColor>;
 export type GradientData = BaseWidgetData<
   "gradient",
   EditRgbGradient | undefined
@@ -73,9 +75,6 @@ export default function (editAnim: Editable): EditWidgetData[] {
 
       const updateProp = (newValue: any) => {
         console.log(`Updating prop ${propertyKey} to ${newValue}`);
-        if (value instanceof EditColor) {
-          newValue = EditColor.fromColor(newValue as Color);
-        }
         (editAnim as any)[propertyKey] = newValue;
         console.log(editAnim);
       };
@@ -114,14 +113,29 @@ export default function (editAnim: Editable): EditWidgetData[] {
           const range = decorators
             .getPropsWithRange(editAnim)
             .find((p) => p.propertyKey === propertyKey);
-          return {
+          const unit = decorators
+            .getPropsWithUnit(editAnim)
+            .find((p) => p.propertyKey === propertyKey)?.unit;
+          const data = {
             ...range,
             ...keyAndName,
-            type,
+            unit,
             // @ts-expect-error Accessing property by index
             getValue: () => editAnim[propertyKey] as number,
             update: (v: number) => updateProp(v),
           };
+          if (type === "bitField") {
+            const values = decorators
+              .getPropsWithValues(editAnim)
+              .find((p) => p.propertyKey === propertyKey)?.values;
+            assert(
+              values,
+              `Missing values decorator on bitField property ${entries[0]}`
+            );
+            return { ...data, type, values };
+          } else {
+            return { ...data, type };
+          }
         }
 
         case "faceMask":
@@ -147,7 +161,7 @@ export default function (editAnim: Editable): EditWidgetData[] {
             type,
             // @ts-expect-error Accessing property by index
             getValue: () => editAnim[propertyKey] as EditColor,
-            update: (v: Color) => updateProp(v),
+            update: (v: EditColor) => updateProp(v),
           };
 
         case "gradient":
