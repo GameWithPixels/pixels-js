@@ -4,10 +4,10 @@ import {
   PxAppPage,
   RuleComparisonWidget,
   RuleConditionSelection,
-  FaceIndex,
   ProfilesActionSheet,
   PlayBackFace,
   SliderComponent,
+  FaceIndex2,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
@@ -199,8 +199,17 @@ export default function ProfileEditRuleScreen() {
             conditions={conditions}
             conditionIndex={0}
           />
-          <RuleComparisonWidget />
-          <FaceIndex faces={20} />
+          <RuleComparisonWidget
+            borderWidth={2}
+            title="Comparison"
+            items={[
+              { title: "Less" },
+              { title: "Equal" },
+              { title: "Greater" },
+            ]}
+          />
+          {/* <FaceIndex faces={20} /> */}
+          <FaceIndex2 faces={20} />
         </VStack>
 
         {rulesWidgetList.map((ruleWidgetInfo, key) => (

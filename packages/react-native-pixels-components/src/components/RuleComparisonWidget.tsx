@@ -10,47 +10,80 @@ import {
   useDisclose,
   Pressable,
   ScrollView,
+  IButtonProps,
 } from "native-base";
+import {
+  ColorType,
+  SizeType,
+} from "native-base/lib/typescript/components/types";
 import React from "react";
 
-export function RuleComparisonWidget() {
-  const [lessSelected, setLessSelected] = React.useState(false);
-  const [equalSelected, setEqualSelected] = React.useState(true);
-  const [greaterSelected, setGreaterSelected] = React.useState(false);
+interface customButtonProps extends IButtonProps {
+  title?: string;
+  titleFontSize?: number | SizeType;
+  keyIndex: number;
+  itemsLength: number;
+  onButtonPress?: (() => void) | null | undefined;
+}
+function CustomButton(props: customButtonProps) {
+  const [isSelected, setIselected] = React.useState(false);
+  return (
+    <Button
+      flex={1}
+      rounded="none"
+      onPress={() => {
+        props.onButtonPress?.();
+        setIselected(!isSelected);
+      }}
+      borderRightWidth={
+        props.keyIndex === props.itemsLength ? undefined : props.borderWidth
+      }
+      bg={isSelected ? "gray.300" : undefined}
+    >
+      <Text fontSize={props.titleFontSize}>{props.title}</Text>
+    </Button>
+  );
+}
+
+export interface ItemData {
+  title?: string;
+  onPress?: (() => void) | null | undefined;
+}
+
+export interface RuleComparisonWidgetProps {
+  title?: string;
+  items: ItemData[];
+  bg?: ColorType;
+  borderWidth?: number;
+  borderColor?: ColorType;
+  fontSize?: number | SizeType;
+}
+
+export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
+  const selectedButtons = Array(props.items.length).fill(false);
+  const [selectedOption, setSelectedOption] =
+    React.useState<boolean[]>(selectedButtons);
+
   return (
     <VStack>
-      <Text>Comparison</Text>
+      <Text>{props.title}</Text>
       <Box w="100%">
         <Button.Group isAttached>
-          <Button
-            bg={lessSelected ? "pixelColors.blue" : undefined}
-            borderRightWidth={2}
-            flex={1}
-            onPress={() => {
-              setLessSelected(!lessSelected);
-            }}
-          >
-            Less
-          </Button>
-          <Button
-            bg={equalSelected ? "pixelColors.blue" : undefined}
-            borderRightWidth={2}
-            flex={1}
-            onPress={() => {
-              setEqualSelected(!equalSelected);
-            }}
-          >
-            Equal
-          </Button>
-          <Button
-            bg={greaterSelected ? "pixelColors.blue" : undefined}
-            flex={1}
-            onPress={() => {
-              setGreaterSelected(!greaterSelected);
-            }}
-          >
-            Greater
-          </Button>
+          {props.items.map((item, key) => (
+            <CustomButton
+              key={key}
+              keyIndex={key}
+              itemsLength={props.items.length - 1}
+              title={item.title}
+              titleFontSize={props.fontSize}
+              borderWidth={props.borderWidth}
+              onButtonPress={() => {
+                item.onPress?.();
+                selectedOption[key] = !selectedOption[key];
+                setSelectedOption(selectedOption);
+              }}
+            />
+          ))}
         </Button.Group>
       </Box>
     </VStack>

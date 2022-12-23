@@ -141,7 +141,13 @@ function RenderWidget({ widget }: { widget: EditWidgetData }) {
       // for rules : flags
       return (
         <>
-          <RuleComparisonWidget />
+          <RuleComparisonWidget
+            items={[
+              { title: "Less" },
+              { title: "Equal" },
+              { title: "Greater" },
+            ]}
+          />
         </>
       );
     }
