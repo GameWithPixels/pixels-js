@@ -11,9 +11,9 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  * @enum
  */
 export const FaceCompareFlagsValues = {
-  Less: enumFlag(0),
-  Equal: enumFlag(),
-  Greater: enumFlag(),
+  less: enumFlag(0),
+  equal: enumFlag(),
+  greater: enumFlag(),
 } as const;
 
 /**
@@ -35,7 +35,7 @@ export type FaceCompareFlags =
  */
 export default class ConditionFaceCompare implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.FaceCompare;
+  type: ConditionType = ConditionTypeValues.faceCompare;
 
   @serializable(1)
   faceIndex = 0;

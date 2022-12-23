@@ -16,7 +16,7 @@ import { widget, range, name } from "./decorators";
 
 export default class EditAnimationNoise extends EditAnimation {
   get type(): AnimationType {
-    return AnimationTypeValues.Noise;
+    return AnimationTypeValues.noise;
   }
 
   @widget("gradient")

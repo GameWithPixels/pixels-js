@@ -17,6 +17,7 @@ export default function () {
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => <Header />,
+      //TODO do this instead: https://github.com/react-navigation/react-navigation/issues/7011#issuecomment-575375103
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

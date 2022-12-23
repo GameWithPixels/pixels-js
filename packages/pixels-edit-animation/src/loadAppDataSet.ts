@@ -56,9 +56,9 @@ function toColor(color?: Json.Color): EditColor {
   const c = new EditColor();
   if (color) {
     switch (color.type) {
-      case ColorTypeValues.Rgb:
-      case ColorTypeValues.Face:
-      case ColorTypeValues.Random:
+      case ColorTypeValues.rgb:
+      case ColorTypeValues.face:
+      case ColorTypeValues.random:
         c.type = color.type;
         break;
       default:
@@ -86,21 +86,21 @@ function toCondition(condition?: Json.Condition): EditCondition | undefined {
     //TODO make those creations and assignments in a more generic way
     //TODO check flags value
     switch (condition.type) {
-      case ConditionTypeValues.HelloGoodbye:
+      case ConditionTypeValues.helloGoodbye:
         return safeAssign(new EditConditionHelloGoodbye(), data);
-      case ConditionTypeValues.Handling:
+      case ConditionTypeValues.handling:
         return new EditConditionHandling();
-      case ConditionTypeValues.Rolling:
+      case ConditionTypeValues.rolling:
         return safeAssign(new EditConditionRolling(), data);
-      case ConditionTypeValues.FaceCompare:
+      case ConditionTypeValues.faceCompare:
         return safeAssign(new EditConditionFaceCompare(), data);
-      case ConditionTypeValues.Crooked:
+      case ConditionTypeValues.crooked:
         return new EditConditionCrooked();
-      case ConditionTypeValues.ConnectionState:
+      case ConditionTypeValues.connectionState:
         return safeAssign(new EditConditionConnectionState(), data);
-      case ConditionTypeValues.BatteryState:
+      case ConditionTypeValues.catteryState:
         return safeAssign(new EditConditionBatteryState(), data);
-      case ConditionTypeValues.Idle:
+      case ConditionTypeValues.idle:
         return safeAssign(new EditConditionIdle(), data);
       default:
         throw Error(`Unsupported condition type ${condition.type}`);
@@ -122,13 +122,13 @@ function toActions(
       const data = act.data;
       //TODO make those creations and assignments in a more generic way
       switch (act.type) {
-        case ActionTypeValues.PlayAnimation:
+        case ActionTypeValues.playAnimation:
           return safeAssign(new EditActionPlayAnimation(), {
             animation: animations[data.animationIndex ?? -1],
             faceIndex: data.faceIndex,
             loopCount: data.loopCount,
           });
-        case ActionTypeValues.PlayAudioClip:
+        case ActionTypeValues.playAudioClip:
           return safeAssign(new EditActionPlayAudioClip(), {
             clip: audioClips[data.audioClipIndex ?? -1],
           });
@@ -180,7 +180,7 @@ export default function (jsonData: Json.DataSet): AppDataSet {
       const data = anim.data;
       switch (anim.type) {
         //TODO make those creations and assignments in a more generic way
-        case AnimationTypeValues.Simple:
+        case AnimationTypeValues.simple:
           return new EditAnimationSimple({
             name: data.name,
             duration: data.duration,
@@ -189,7 +189,7 @@ export default function (jsonData: Json.DataSet): AppDataSet {
             count: data.count,
             fade: data.fade,
           }) as EditAnimation;
-        case AnimationTypeValues.Rainbow:
+        case AnimationTypeValues.rainbow:
           return new EditAnimationRainbow({
             name: data.name,
             duration: data.duration,
@@ -198,14 +198,14 @@ export default function (jsonData: Json.DataSet): AppDataSet {
             fade: data.fade,
             traveling: data.traveling,
           }) as EditAnimation;
-        case AnimationTypeValues.Keyframed:
+        case AnimationTypeValues.keyframed:
           return new EditAnimationKeyframed({
             name: data.name,
             duration: data.duration,
             pattern: patterns[data.patternIndex ?? -1],
             travelingOrder: data.traveling,
           }) as EditAnimation;
-        case AnimationTypeValues.GradientPattern:
+        case AnimationTypeValues.gradientPattern:
           return new EditAnimationGradientPattern({
             name: data.name,
             duration: data.duration,
@@ -215,7 +215,7 @@ export default function (jsonData: Json.DataSet): AppDataSet {
             ),
             overrideWithFace: data.overrideWithFace,
           }) as EditAnimation;
-        case AnimationTypeValues.Gradient:
+        case AnimationTypeValues.gradient:
           return new EditAnimationGradient({
             name: data.name,
             duration: data.duration,

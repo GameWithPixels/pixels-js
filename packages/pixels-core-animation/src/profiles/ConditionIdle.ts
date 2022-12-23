@@ -9,7 +9,7 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  */
 export default class ConditionIdle implements Condition {
   @serializable(1, { padding: 1 })
-  type: ConditionType = ConditionTypeValues.Idle;
+  type: ConditionType = ConditionTypeValues.idle;
 
   @serializable(2)
   repeatPeriodMs = 0;

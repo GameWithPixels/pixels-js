@@ -5,20 +5,22 @@ import {
   ConditionTypeValues,
   ConditionHelloGoodbye,
   HelloGoodbyeFlags,
+  HelloGoodbyeFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, widget } from "./decorators";
+import { name, values, widget } from "./decorators";
 
 export default class EditConditionHelloGoodbye extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.HelloGoodbye;
+    return ConditionTypeValues.helloGoodbye;
   }
 
   @widget("bitField")
   @name("Hello / Goodbye")
+  @values(HelloGoodbyeFlagsValues)
   flags: HelloGoodbyeFlags;
 
   constructor(flags: HelloGoodbyeFlags = 0) {

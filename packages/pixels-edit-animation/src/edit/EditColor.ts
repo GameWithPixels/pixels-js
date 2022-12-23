@@ -7,23 +7,23 @@ export default class EditColor extends Editable {
   type: ColorType;
   color: Color; // Used when type is ColorType.RGB
 
-  constructor(type: ColorType = ColorTypeValues.Rgb, color = Color.black) {
+  constructor(type: ColorType = ColorTypeValues.rgb, color = Color.black) {
     super();
     this.type = type;
     this.color = color;
   }
 
   static fromColor(color: Color): EditColor {
-    return new EditColor(ColorTypeValues.Rgb, color);
+    return new EditColor(ColorTypeValues.rgb, color);
   }
 
   toColorIndex(refPalette: Color[]): number {
     switch (this.type) {
-      case ColorTypeValues.Rgb:
+      case ColorTypeValues.rgb:
         return EditColor.toColorIndex(refPalette, this.color);
-      case ColorTypeValues.Face:
+      case ColorTypeValues.face:
         return Constants.paletteColorFromFace;
-      case ColorTypeValues.Random:
+      case ColorTypeValues.random:
         return Constants.paletteColorFromRandom;
       default:
         throw new Error(`Unsupported EditColor type: ${this.type}`);

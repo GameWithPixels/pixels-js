@@ -9,7 +9,7 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  */
 export default class ConditionRolling implements Condition {
   @serializable(1, { padding: 1 })
-  type: ConditionType = ConditionTypeValues.Rolling;
+  type: ConditionType = ConditionTypeValues.rolling;
 
   @serializable(2)
   repeatPeriodMs = 0; // 0 means do NOT repeat

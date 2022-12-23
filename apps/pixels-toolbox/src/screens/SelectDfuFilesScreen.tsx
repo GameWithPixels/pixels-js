@@ -47,7 +47,12 @@ function SelectDfuFilePage() {
               );
             }
           });
-          setDfuFilesByDate([...filesByDate.values()]);
+          setDfuFilesByDate(
+            [...filesByDate.values()].sort(
+              (a, b) =>
+                (b[0].date?.getTime() ?? 0) - (a[0].date?.getTime() ?? 0)
+            )
+          );
         };
         extractFirmwareFiles().catch(errorHandler);
       } else {

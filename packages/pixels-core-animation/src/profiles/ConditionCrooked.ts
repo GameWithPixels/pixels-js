@@ -9,5 +9,5 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  */
 export default class ConditionCrooked implements Condition {
   @serializable(1, { padding: 3 })
-  type: ConditionType = ConditionTypeValues.Crooked;
+  type: ConditionType = ConditionTypeValues.crooked;
 }

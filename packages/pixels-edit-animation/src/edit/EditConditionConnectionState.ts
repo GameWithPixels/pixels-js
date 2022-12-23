@@ -5,20 +5,22 @@ import {
   Condition,
   ConditionConnectionState,
   ConnectionStateFlags,
+  ConnectionStateFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, widget } from "./decorators";
+import { name, values, widget } from "./decorators";
 
 export default class EditConditionConnectionState extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.ConnectionState;
+    return ConditionTypeValues.connectionState;
   }
 
   @widget("bitField")
   @name("Connection Event")
+  @values(ConnectionStateFlagsValues)
   flags: ConnectionStateFlags;
 
   constructor(flags: ConnectionStateFlags = 0) {

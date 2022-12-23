@@ -22,7 +22,7 @@ export default class EditActionPlayAudioClip extends EditAction {
   }
 
   get type(): ActionType {
-    return ActionTypeValues.PlayAnimation;
+    return ActionTypeValues.playAnimation;
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet): Action {

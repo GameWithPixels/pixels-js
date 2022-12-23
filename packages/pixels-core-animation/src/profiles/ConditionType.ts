@@ -5,15 +5,15 @@ import { enumValue } from "@systemic-games/pixels-core-utils";
  * @enum
  */
 export const ConditionTypeValues = {
-  Unknown: enumValue(0),
-  HelloGoodbye: enumValue(),
-  Handling: enumValue(),
-  Rolling: enumValue(),
-  FaceCompare: enumValue(),
-  Crooked: enumValue(),
-  ConnectionState: enumValue(),
-  BatteryState: enumValue(),
-  Idle: enumValue(),
+  unknown: enumValue(0),
+  helloGoodbye: enumValue(),
+  handling: enumValue(),
+  rolling: enumValue(),
+  faceCompare: enumValue(),
+  crooked: enumValue(),
+  connectionState: enumValue(),
+  catteryState: enumValue(),
+  idle: enumValue(),
 } as const;
 
 /**

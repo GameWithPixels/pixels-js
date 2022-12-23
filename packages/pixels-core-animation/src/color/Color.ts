@@ -1,7 +1,8 @@
+import { getBlue, getGreen, getRed } from "./color32Utils";
 import { IColor, colorToString, colorComponentToByte } from "./colorUtils";
 
 /**
- * Represents an RGB color using values between O and 1
+ * Represents an RGB color using values ranging from O and 1
  * for each color component.
  * @category Color
  */
@@ -22,10 +23,26 @@ export default class Color implements IColor {
     return colorComponentToByte(this.b);
   }
 
-  constructor(r: number, g: number, b: number) {
-    this.r = r;
-    this.g = g;
-    this.b = b;
+  /**
+   * Create a new instance from either:
+   * - a (R, G, B) triplet (values ranging from 0 to 1)
+   * - a 24 bit color value
+   * - an hexadecimal color string (web style)
+   */
+  constructor();
+  constructor(r: number, g: number, b: number);
+  constructor(color24: number);
+  constructor(hexColor: string);
+  constructor(rOrHexColor?: number | string, g?: number, b?: number) {
+    if (rOrHexColor !== undefined) {
+      if (typeof rOrHexColor === "string") {
+        this.setWithHex(rOrHexColor);
+      } else if (g === undefined) {
+        this.setWithValue(rOrHexColor);
+      } else {
+        this.set(rOrHexColor, g, b ?? 0);
+      }
+    }
   }
 
   equals(other: Color): boolean {
@@ -55,8 +72,51 @@ export default class Color implements IColor {
     return colorToString(this);
   }
 
+  set(r: number, g: number, b: number): Color {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    return this;
+  }
+
+  setWithBytes(rByte: number, gByte: number, bByte: number): Color {
+    this.r = rByte / 255;
+    this.g = gByte / 255;
+    this.b = bByte / 255;
+    return this;
+  }
+
+  setWithValue(color24: number): Color {
+    this.r = getRed(color24);
+    this.g = getGreen(color24);
+    this.b = getBlue(color24);
+    return this;
+  }
+
+  setWithHex(hexColor: string): Color {
+    if (hexColor.length) {
+      const i = hexColor[0] === "#" ? 1 : 0;
+      if (hexColor.length === 3 + i) {
+        this.set(
+          parseInt(hexColor[i], 16),
+          parseInt(hexColor[i + 1], 16),
+          parseInt(hexColor[i + 2], 16)
+        );
+      } else if (hexColor.length === 6 + i) {
+        this.setWithValue(parseInt(i ? hexColor.slice(i) : hexColor, 16));
+      } else {
+        throw new Error(`Invalid hexadecimal color: ${hexColor}`);
+      }
+    }
+    return this;
+  }
+
   static fromBytes(rByte: number, gByte: number, bByte: number): Color {
-    return new Color(rByte / 255, gByte / 255, bByte / 255);
+    return new Color().setWithBytes(rByte, gByte, bByte);
+  }
+
+  static fromString(hexColor: string): Color {
+    return new Color().setWithHex(hexColor);
   }
 
   // Black is LED off
