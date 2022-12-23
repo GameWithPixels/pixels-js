@@ -11,9 +11,13 @@ import {
   PixelBatteryData,
   MessageType,
   PixelEventMap,
-  BatteryLevel,
+  TelemetryRequestModeValues,
 } from "@systemic-games/pixels-core-connect";
-import { assertNever, EventReceiver } from "@systemic-games/pixels-core-utils";
+import {
+  assertNever,
+  EventReceiver,
+  safeAssign,
+} from "@systemic-games/pixels-core-utils";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
 function _autoRequest(
@@ -100,14 +104,13 @@ export interface UsePixelValueNamesMap {
   rollState: PixelRollData;
   /** Updates with the battery level and charging status. */
   battery: PixelBatteryData;
-  /** Updates with the battery level, charging status and voltage
-   *  @remarks Since the voltage read from the die is always a little bit
-   *  different, the hook will update for every refresh interval. */
-  batteryWithVoltage: PixelBatteryData & { voltage: number };
   /** Updates with the RSSI value. */
   rssi: number;
   /** Updates with the temperature in Celsius. */
-  temperature: number;
+  temperature: {
+    mcuTemperature: number; // Microcontroller temperature in celsius
+    batteryTemperature: number; // Battery temperature in celsius
+  };
   /** Updates with the telemetry data. */
   telemetry: Telemetry;
 }
@@ -132,10 +135,10 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   pixel?: Pixel,
   valueName?: T,
   options?: {
-    /** The minimum interval in milliseconds between two updates.
+    /** The minimum time interval in milliseconds between two updates.
      *  Ignored for "roll" value.
-     *  @defaultValue 1000 */
-    refreshInterval?: number;
+     *  @defaultValue 5000 */
+    minInterval?: number;
     /** Whether to wait on a call to the dispatcher with "start" before
      *  watching the value. @defaultValue false */
     waitOnStart?: boolean;
@@ -159,7 +162,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   const [_, forceUpdate] = useReducer((b) => !b, false);
 
   // Options default values
-  const refreshInterval = options?.refreshInterval ?? 1000;
+  const minInterval = options?.minInterval ?? 5000;
   const waitOnStart = options?.waitOnStart ?? false;
 
   const status = pixel?.status;
@@ -182,6 +185,8 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
     ) {
       switch (valueName) {
         case "roll": {
+          // We don't immediately set the state value,
+          // rather we wait on the next roll to update it
           const onRoll = (roll: number) =>
             setValue({ face: roll } as ValueType);
           pixel.addEventListener("roll", onRoll);
@@ -191,12 +196,18 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
         }
 
         case "rollState": {
+          // Set the state value with the current roll state
+          setValue({
+            face: pixel.currentFace,
+            state: pixel.rollState,
+          } as ValueType);
+          // Roll event listener
           const onRollState = (rollState: PixelRollData) =>
             setValue((prevValue) => {
               const now = Date.now();
               // Time left before the value can be updated
               const timeLeft =
-                refreshInterval - (Date.now() - stateRef.current.lastTime);
+                minInterval - (Date.now() - stateRef.current.lastTime);
               // Immediately update the value if we have a roll or if we are
               // passed the given refresh interval
               if (rollState.state === "onFace" || timeLeft <= 0) {
@@ -219,43 +230,59 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
                 return prevValue;
               }
             });
+          // Listen to roll events
           pixel.addEventListener("rollState", onRollState);
           return () => {
             pixel.removeEventListener("rollState", onRollState);
             clearTimeout(stateRef.current.timeoutId);
-            // eslint-disable-next-line react-hooks/exhaustive-deps
             stateRef.current.timeoutId = undefined;
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             stateRef.current.lastTime = 0;
           };
         }
 
-        case "battery":
+        case "battery": {
+          // Set the state value with the current battery state
           setValue({
             level: pixel.batteryLevel,
             isCharging: pixel.isCharging,
           } as ValueType);
-          return _requestProp(
-            pixel,
-            refreshInterval,
-            "battery",
-            () => pixel.queryBattery(),
-            (battery) => setValue(battery as ValueType),
-            setLastError,
-            forceUpdate
-          );
+          // Battery event listener
+          const onBattery = (batteryData: PixelBatteryData) =>
+            setValue(batteryData as ValueType);
+          // Listen to battery events
+          pixel.addEventListener("battery", onBattery);
+          return () => {
+            pixel.removeEventListener("battery", onBattery);
+          };
+        }
 
-        case "batteryWithVoltage":
+        case "rssi": {
+          // We don't immediately set the state value as the current
+          // rssi value available with the Pixel instance is probably
+          // outdated
+          // RSSI event listener
+          const onRssi = (rssi: number) => setValue(rssi as ValueType);
+          // Listen to battery events
+          pixel.addEventListener("rssi", onRssi);
+          // Request Pixel to send RSSI
+          pixel.reportRssi(true, minInterval).catch(setLastError);
+          return () => {
+            pixel.reportRssi(false).catch(() => {});
+          };
+        }
+
+        case "temperature":
           return _requestValue(
             pixel,
-            refreshInterval,
-            "batteryLevel",
-            MessageTypeValues.requestBatteryLevel,
+            minInterval,
+            "temperature",
+            MessageTypeValues.requestTemperature,
             (msg: MessageOrType) => {
-              const bat = msg as BatteryLevel;
+              const tmp = msg as Temperature;
               const val = {
-                level: Math.round(100 * bat.level),
-                isCharging: bat.charging,
-                voltage: bat.voltage, // Voltage is always different
+                mcuTemperature: tmp.mcuTemperatureTimes100 / 100,
+                batteryTemperature: tmp.batteryTemperatureTimes100 / 100,
               };
               setValue(val as ValueType);
             },
@@ -263,64 +290,23 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             forceUpdate
           );
 
-        case "rssi":
-          setValue(pixel.rssi as ValueType);
-          return _requestProp(
-            pixel,
-            refreshInterval,
-            "rssi",
-            () => pixel.queryRssi(),
-            (rssi) => setValue(rssi as ValueType),
-            setLastError,
-            forceUpdate
-          );
-
-        case "temperature":
-          return _requestValue(
-            pixel,
-            refreshInterval,
-            "temperature",
-            MessageTypeValues.requestTemperature,
-            (msg: MessageOrType) =>
-              setValue(
-                ((msg as Temperature).temperatureTimes100 / 100) as ValueType
-              ),
-            setLastError,
-            forceUpdate
-          );
-
         case "telemetry": {
-          // Force updating on status change
-          const onStatus = (status: PixelStatus) => {
-            if (status === "ready" || status === "disconnected") {
-              forceUpdate();
-            }
-          };
-          pixel.addEventListener("status", onStatus);
+          // Telemetry listener
+          const onTelemetry = (msg: MessageOrType) =>
+            setValue(msg as ValueType);
           // Listen for telemetry messages
-          const onTelemetry = (msg: MessageOrType) => {
-            const value = msg as ValueType;
-            stateRef.current.lastValue = value;
-            // One we have an initial value, update with given interval
-            if (!stateRef.current.timeoutId) {
-              setValue(value);
-              stateRef.current.timeoutId = setInterval(
-                () => setValue(stateRef.current.lastValue),
-                refreshInterval
-              );
-            }
-          };
           pixel.addMessageListener("telemetry", onTelemetry);
           // Request for telemetry updates
-          const msg = new RequestTelemetry();
-          msg.activate = true;
-          pixel.sendMessage(msg).catch(setLastError);
+          pixel
+            .sendMessage(
+              safeAssign(new RequestTelemetry(), {
+                requestMode: TelemetryRequestModeValues.repeat,
+                minInterval,
+              })
+            )
+            .catch(setLastError);
           return () => {
             // Cleanup
-            clearInterval(stateRef.current.timeoutId);
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            stateRef.current.timeoutId = undefined;
-            pixel.removeEventListener("status", onStatus);
             pixel.removeMessageListener("telemetry", onTelemetry);
             if (pixel.status === "ready") {
               // Request for stopping telemetry updates if connected (ignore any error)
@@ -328,11 +314,12 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             }
           };
         }
+
         default:
           assertNever(valueName);
       }
     }
-  }, [isActive, pixel, refreshInterval, status, valueName, waitOnStart]);
+  }, [isActive, pixel, minInterval, status, valueName, waitOnStart]);
 
   // Create the dispatch function
   const dispatch = useCallback(

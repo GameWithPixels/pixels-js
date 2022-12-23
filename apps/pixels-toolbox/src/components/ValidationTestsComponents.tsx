@@ -178,7 +178,7 @@ export function UpdateFirmware({
         }
         console.log(
           "DFU files loaded, firmware version is",
-          toLocaleDateTimeString(blDate),
+          toLocaleDateTimeString(fwDate),
           " and bootloader version is",
           toLocaleDateTimeString(blDate)
         );

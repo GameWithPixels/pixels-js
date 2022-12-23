@@ -10,7 +10,7 @@ import { AnimationType, AnimationTypeValues } from "./AnimationType";
  */
 export default class AnimationNoise implements AnimationPreset {
   @serializable(1, { padding: 1 })
-  readonly type: AnimationType = AnimationTypeValues.Noise;
+  readonly type: AnimationType = AnimationTypeValues.noise;
 
   @serializable(2)
   duration = 0; // In milliseconds

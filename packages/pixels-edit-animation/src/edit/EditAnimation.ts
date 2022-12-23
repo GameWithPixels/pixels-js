@@ -7,7 +7,7 @@ import {
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
 import Editable from "./Editable";
-import { widget, range, units, name } from "./decorators";
+import { widget, range, unit, name } from "./decorators";
 
 /**
  * Base class for animation editing classes.
@@ -21,7 +21,7 @@ export default abstract class EditAnimation extends Editable {
 
   @widget("slider")
   @range(0.1, 30, 0.1)
-  @units("s")
+  @unit("s")
   @name("Duration")
   /** Animation duration in seconds. */
   duration: number;

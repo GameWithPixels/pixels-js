@@ -16,14 +16,17 @@ function HeaderImpl() {
       <Pressable
         position="absolute"
         top={1}
-        left={-90}
+        left={__DEV__ ? -90 : -110}
         width={50}
         height={50}
         onPress={() => navigation.openDrawer()}
       >
         <HamburgerIcon size="100%" />
       </Pressable>
-      <Text variant="h1">{`Toolbox v${Constants.manifest?.version}`}</Text>
+      <Text variant="h1">
+        {`Toolbox ${Constants.manifest?.version}`}
+        {__DEV__ ? " 🚧" : ""}
+      </Text>
     </>
   );
 }

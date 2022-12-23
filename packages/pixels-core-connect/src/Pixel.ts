@@ -46,6 +46,9 @@ import {
   PixelRollStateNames,
   PixelDesignAndColorNames,
   MessageTypeNames,
+  PixelBatteryStateValues,
+  RequestRssi,
+  TelemetryRequestModeValues,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import getPixelEnumName from "./getPixelEnumName";
@@ -232,27 +235,42 @@ export default class Pixel implements IPixel {
     return new Date(1000 * (this._info?.buildTimestamp ?? 0));
   }
 
-  /** Gets the last measured RSSI value. */
+  /**
+   * Gets the last RSSI value notified by the Pixel.
+   * @remarks Call {@link reportRssi} to automatically update the RSSI value.
+   */
   get rssi(): number {
     return this._rssi;
   }
 
-  /** Gets the last know read battery level (percentage). */
+  /**
+   * Gets the Pixel battery level (percentage).
+   * @remarks The battery level is automatically updated when connected.
+   */
   get batteryLevel(): number {
     return this._batteryState.level;
   }
 
-  /** Gets the last know battery charging state. */
+  /**
+   * Gets the Pixel battery charging state.
+   * @remarks The charging state is automatically updated when connected.
+   */
   get isCharging(): boolean {
     return this._batteryState.isCharging;
   }
 
-  /** Gets the Pixel last know roll state. */
+  /**
+   * Gets the Pixel roll state.
+   * @remarks The roll state is automatically updated when connected.
+   */
   get rollState(): PixelRollStateNames {
     return this._rollState.state;
   }
 
-  /** Gets the Pixel last know face up. */
+  /**
+   * Gets the Pixel face value that is currently up.
+   * @remarks The current face is automatically updated when connected.
+   */
   get currentFace(): number {
     return this._rollState.face;
   }
@@ -286,13 +304,9 @@ export default class Pixel implements IPixel {
         face: msg.faceIndex + 1,
         state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
       };
-      if (
-        roll.face !== this._rollState.face ||
-        roll.state !== this._rollState.state
-      ) {
-        this._rollState = roll;
-        this._evEmitter.emit("rollState", { ...roll });
-      }
+      // Notify all die roll events
+      this._rollState = roll;
+      this._evEmitter.emit("rollState", { ...roll });
       if (roll.state === "onFace") {
         this._evEmitter.emit("roll", roll.face);
       }
@@ -301,9 +315,8 @@ export default class Pixel implements IPixel {
     this.addMessageListener("batteryLevel", (msgOrType) => {
       const msg = msgOrType as BatteryLevel;
       const battery = {
-        level: Math.round(msg.level * 100),
-        isCharging: msg.charging,
-        voltage: msg.voltage,
+        level: msg.levelPercent,
+        isCharging: msg.state >= PixelBatteryStateValues.charging,
       };
       if (
         battery.level !== this._batteryState.level ||
@@ -376,14 +389,18 @@ export default class Pixel implements IPixel {
         if (this.status === "identifying") {
           this._info = response as IAmADie;
 
-          // Update roll state
-          await this.sendAndWaitForResponse(
-            MessageTypeValues.requestRollState,
-            MessageTypeValues.rollState
-          );
+          this._batteryState = {
+            level: this._info.batteryLevelPercent,
+            isCharging:
+              this._info.batteryState >= PixelBatteryStateValues.charging,
+          };
 
-          // Update battery level
-          await this.queryBattery();
+          this._rollState = {
+            face: this._info.rollFaceIndex + 1,
+            state:
+              getPixelEnumName(this._info.rollState, PixelRollStateValues) ??
+              "unknown",
+          };
 
           // We're ready!
           this._updateStatus("ready");
@@ -555,29 +572,20 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Asynchronously gets the battery state.
-   * @returns A promise revolving to an object with the batter level in
-   *          percentage and flag indicating whether it is charging or not.
+   * Request Pixel to regularly send its measured RSSI value.
+   * @param activate Whether to turn or turn off this feature.
+   * @param minInterval The minimum time interval in milliseconds
+   *                    between two RSSI updates.
    */
-  async queryBattery(): Promise<PixelBatteryData> {
-    await this.sendAndWaitForResponse(
-      MessageTypeValues.requestBatteryLevel,
-      MessageTypeValues.batteryLevel
+  async reportRssi(activate: boolean, minInterval = 5000): Promise<void> {
+    await this.sendMessage(
+      safeAssign(new RequestRssi(), {
+        requestMode: activate
+          ? TelemetryRequestModeValues.repeat
+          : TelemetryRequestModeValues.off,
+        minInterval,
+      })
     );
-    return { ...this._batteryState };
-  }
-
-  /**
-   * Asynchronously gets the RSSI value.
-   * @returns A promise revolving to the RSSI value, between 0 and 65535.
-   */
-  async queryRssi(): Promise<number> {
-    const response = await this.sendAndWaitForResponse(
-      MessageTypeValues.requestRssi,
-      MessageTypeValues.rssi
-    );
-    this._rssi = (response as Rssi).value;
-    return this._rssi;
   }
 
   /**
@@ -822,9 +830,9 @@ export default class Pixel implements IPixel {
    * @param animIndex The index of the instant animation to play.
    */
   async playInstantAnimation(animIndex: number): Promise<void> {
-    const play = new PlayInstantAnimation();
-    play.animation = animIndex;
-    await this.sendMessage(play);
+    await this.sendMessage(
+      safeAssign(new PlayInstantAnimation(), { animation: animIndex })
+    );
   }
 
   // Log the given message prepended with a timestamp and the Pixel name

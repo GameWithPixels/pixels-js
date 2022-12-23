@@ -10,7 +10,7 @@ import { AnimationType, AnimationTypeValues } from "./AnimationType";
  */
 export default class AnimationRainbow implements AnimationPreset {
   @serializable(1, { padding: 1 })
-  readonly type: AnimationType = AnimationTypeValues.Rainbow;
+  readonly type: AnimationType = AnimationTypeValues.rainbow;
 
   @serializable(2)
   duration = 0; // In milliseconds

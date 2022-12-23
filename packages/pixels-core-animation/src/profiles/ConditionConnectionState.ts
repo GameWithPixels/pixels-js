@@ -9,8 +9,8 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  * @enum
  */
 export const ConnectionStateFlagsValues = {
-  Connected: enumFlag(0),
-  Disconnected: enumFlag(),
+  connected: enumFlag(0),
+  disconnected: enumFlag(),
 };
 
 /**
@@ -32,7 +32,7 @@ export type ConnectionStateFlags =
  */
 export default class ConditionConnectionState implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.ConnectionState;
+  type: ConditionType = ConditionTypeValues.connectionState;
 
   @serializable(1, { padding: 2 })
   flags: ConnectionStateFlags = 0;

@@ -153,7 +153,10 @@ export default class PixelScanner {
         designAndColor = manufReader.readU8();
         rollState = manufReader.readU8();
         scannedPixel.currentFace = manufReader.readU8() + 1;
-        scannedPixel.batteryLevel = manufReader.readU8();
+        const battery = manufReader.readU8();
+        // MSB is battery charging
+        scannedPixel.batteryLevel = battery & 0x7f;
+        scannedPixel.isCharging = (battery & 0x80) > 0;
       } else if (manufacturerData.data.length === 7) {
         // Update the Scanned Pixel with values from manufacturers data
         // as advertised from before July 2022
@@ -166,16 +169,15 @@ export default class PixelScanner {
         scannedPixel.pixelId = manufReader.readU32();
         rollState = manufReader.readU8();
         scannedPixel.currentFace = manufReader.readU8() + 1;
-        scannedPixel.batteryLevel = manufReader.readU8();
+        scannedPixel.batteryLevel = Math.round(
+          (manufReader.readU8() / 255) * 100
+        );
       }
       scannedPixel.designAndColor =
         getPixelEnumName(designAndColor, PixelDesignAndColorValues) ??
         "unknown";
       scannedPixel.rollState =
         getPixelEnumName(rollState, PixelRollStateValues) ?? "unknown";
-      scannedPixel.batteryLevel = Math.round(
-        (scannedPixel.batteryLevel / 255) * 100
-      );
     }
 
     if (scannedPixel.pixelId) {

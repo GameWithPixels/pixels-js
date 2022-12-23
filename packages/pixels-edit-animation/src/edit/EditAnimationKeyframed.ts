@@ -14,7 +14,7 @@ import { name, widget } from "./decorators";
 
 export default class EditAnimationKeyframed extends EditAnimation {
   get type(): AnimationType {
-    return AnimationTypeValues.Keyframed;
+    return AnimationTypeValues.keyframed;
   }
 
   @widget("rgbPattern")

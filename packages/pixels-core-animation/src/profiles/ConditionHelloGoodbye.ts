@@ -10,8 +10,8 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  * @enum
  */
 export const HelloGoodbyeFlagsValues = {
-  Hello: enumFlag(0),
-  Goodbye: enumFlag(),
+  hello: enumFlag(0),
+  goodbye: enumFlag(),
 } as const;
 
 /**
@@ -33,7 +33,7 @@ export type HelloGoodbyeFlags =
  */
 export default class ConditionHelloGoodbye implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.HelloGoodbye;
+  type: ConditionType = ConditionTypeValues.helloGoodbye;
 
   @serializable(1, { padding: 2 })
   flags: HelloGoodbyeFlags = 0;

@@ -5,25 +5,27 @@ import {
   Condition,
   BatteryStateFlags,
   ConditionBatteryState,
+  BatteryStateFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, widget, range, units } from "./decorators";
+import { name, widget, range, unit, values } from "./decorators";
 
 export default class EditConditionBatteryState extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.BatteryState;
+    return ConditionTypeValues.catteryState;
   }
 
   @widget("bitField")
   @name("Battery State")
+  @values(BatteryStateFlagsValues)
   flags: BatteryStateFlags;
 
   @widget("slider")
   @range(5, 60)
-  @units("s")
+  @unit("s")
   recheckAfter: number;
 
   constructor(flags: BatteryStateFlags = 0, recheckAfter = 1) {

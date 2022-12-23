@@ -36,7 +36,11 @@ function createDecorator<T extends PropertyData>(
   };
 }
 
-const nameKey = Symbol("pixelAnimationName");
+//
+// Name property
+//
+
+const nameKey = Symbol("pixelEditAnimationName");
 
 export interface NameProperty extends PropertyData {
   name: string;
@@ -54,7 +58,11 @@ export function getPropsWithName(target: object): NameProperty[] {
   return getMetadata(nameKey, target);
 }
 
-const rangeKey = Symbol("pixelAnimationRange");
+//
+// Range property
+//
+
+const rangeKey = Symbol("pixelEditAnimationRange");
 
 export interface RangeProperty extends PropertyData {
   min: number;
@@ -80,27 +88,59 @@ export function getPropsWithRange(target: object): RangeProperty[] {
   return getMetadata(rangeKey, target);
 }
 
-const unitKey = Symbol("pixelAnimationUnits");
+//
+// Unit property
+//
 
-export type UnitsType = "s" | "ms";
+const unitKey = Symbol("pixelEditAnimationUnit");
 
-export interface UnitsProperty extends PropertyData {
-  unit: UnitsType;
+export type UnitType = "s" | "ms";
+
+export interface UnitProperty extends PropertyData {
+  unit: UnitType;
 }
 
-// Units decorator factory
-export function units(
-  unit: UnitsType
+// Unit decorator factory
+export function unit(
+  unit: UnitType
 ): (target: object, propertyKey: string) => void {
-  return createDecorator<UnitsProperty>(unitKey, { unit });
+  return createDecorator<UnitProperty>(unitKey, { unit });
 }
 
-// Get properties with a units decorator
-export function getPropsWithUnits(target: object): UnitsProperty[] {
+// Get properties with a unit decorator
+export function getPropsWithUnit(target: object): UnitProperty[] {
   return getMetadata(unitKey, target);
 }
 
-const widgetKey = Symbol("pixelAnimationWidget");
+//
+// Values property
+//
+
+const valuesKey = Symbol("pixelEditAnimationValues");
+
+export type ValuesType = { [key: string]: number };
+
+export interface ValuesProperty extends PropertyData {
+  values: ValuesType;
+}
+
+// Unit decorator factory
+export function values(
+  values: ValuesType
+): (target: object, propertyKey: string) => void {
+  return createDecorator<ValuesProperty>(valuesKey, { values });
+}
+
+// Get properties with a values decorator
+export function getPropsWithValues(target: object): ValuesProperty[] {
+  return getMetadata(valuesKey, target);
+}
+
+//
+// Widget property
+//
+
+const widgetKey = Symbol("pixelEditAnimationWidget");
 
 export type WidgetType =
   | "toggle"
@@ -131,7 +171,11 @@ export function getPropsWithWidget(target: object): WidgetProperty[] {
   return getMetadata(widgetKey, target);
 }
 
-const displayOrderKey = Symbol("pixelAnimationDisplayOrder");
+//
+// Display Order property
+//
+
+const displayOrderKey = Symbol("pixelEditAnimationDisplayOrder");
 
 export interface DisplayOrderProperty extends PropertyData {
   index: number;
@@ -151,7 +195,11 @@ export function getPropsWithDisplayOrder(
   return getMetadata(displayOrderKey, target);
 }
 
-const skipEnumKey = Symbol("pixelAnimationSkipEnum");
+//
+// Skip Enum property
+//
+
+const skipEnumKey = Symbol("pixelEditAnimationSkipEnum");
 
 // Skip decorator
 export function skipEnum(target: object, propertyKey: string): void {

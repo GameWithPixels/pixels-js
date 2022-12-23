@@ -10,7 +10,7 @@ import { AnimationType, AnimationTypeValues } from "./AnimationType";
  */
 export default class AnimationKeyframed implements AnimationPreset {
   @serializable(1, { padding: 1 })
-  readonly type: AnimationType = AnimationTypeValues.Keyframed;
+  readonly type: AnimationType = AnimationTypeValues.keyframed;
 
   @serializable(2)
   duration = 0; // In milliseconds

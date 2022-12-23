@@ -1,4 +1,9 @@
 import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
+import {
+  getPixelEnumName,
+  PixelBatteryStateValues,
+  PixelRollStateValues,
+} from "@systemic-games/react-native-pixels-connect";
 import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
 import { memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,12 +53,7 @@ function PixelDetailsImpl({
   }, [pixelDispatcher]);
   const pixel = pixelDispatcher.pixel;
   const status = usePixelStatus(pixel);
-  const opt = { refreshInterval: 5000 };
-  const [battery] = usePixelValue(pixel, "batteryWithVoltage", opt);
-  const [rssi] = usePixelValue(pixel, "rssi", opt);
-  const [temperature] = usePixelValue(pixel, "temperature", opt);
-  const [rollState] = usePixelValue(pixel, "rollState", opt);
-  const [telemetry] = usePixelValue(pixel, "telemetry", opt);
+  const [telemetry] = usePixelValue(pixel, "telemetry", { minInterval: 1000 });
 
   // Prepare some values
   const { t } = useTranslation();
@@ -75,19 +75,47 @@ function PixelDetailsImpl({
         {pixel.firmwareDate.toString()}
       </TextEntry>
       <TextEntry title={t("battery")}>
-        {t("percentWithValue", { value: battery?.level ?? 0 })}
+        {t("percentWithValue", { value: telemetry?.batteryLevelPercent ?? 0 })}
         {t("commaSeparator")}
-        {t("voltageWithValue", { value: battery?.voltage.toFixed(3) ?? 0 })}
+        {t("voltageWithValue", {
+          value: telemetry ? telemetry.voltageTimes50 / 50 : 0,
+        })}
+      </TextEntry>
+      <TextEntry title={t("coil")}>
+        {t("voltageWithValue", {
+          value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
+        })}
       </TextEntry>
       <TextEntry title={t("charging")}>
-        {t(battery?.isCharging ? "yes" : "no")}
+        {t(
+          telemetry &&
+            telemetry?.batteryState >= PixelBatteryStateValues.charging
+            ? "yes"
+            : "no"
+        )}
       </TextEntry>
-      <TextEntry title={t("rssi")}>{Math.round(rssi ?? 0)}</TextEntry>
-      <TextEntry title={t("temperature")}>
-        {t("celsiusWithValue", { value: temperature ?? 0 })}
+      <TextEntry title={t("chargingState")}>
+        {getPixelEnumName(telemetry?.batteryState, PixelBatteryStateValues)}
+      </TextEntry>
+      <TextEntry title={t("rssi")}>
+        {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
+      </TextEntry>
+      <TextEntry title={t("mcuTemperature")}>
+        {t("celsiusWithValue", {
+          value: (telemetry?.mcuTemperatureTimes100 ?? 0) / 100,
+        })}
+      </TextEntry>
+      <TextEntry title={t("batteryTemperature")}>
+        {t("celsiusWithValue", {
+          value: (telemetry?.batteryTemperatureTimes100 ?? 0) / 100,
+        })}
       </TextEntry>
       <TextEntry title={t("rollState")}>
-        {rollState?.face}, {rollState ? t(rollState.state) : ""}
+        {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
+        {t(
+          getPixelEnumName(telemetry?.rollState, PixelRollStateValues) ??
+            "unknown"
+        )}
       </TextEntry>
       <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
       <HStack space={sr(5)}>

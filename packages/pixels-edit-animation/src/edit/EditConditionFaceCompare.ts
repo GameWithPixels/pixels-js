@@ -5,20 +5,22 @@ import {
   ConditionTypeValues,
   ConditionFaceCompare,
   FaceCompareFlags,
+  FaceCompareFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, range, widget } from "./decorators";
+import { name, range, values, widget } from "./decorators";
 
 export default class EditConditionFaceCompare extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.FaceCompare;
+    return ConditionTypeValues.faceCompare;
   }
 
   @widget("bitField")
   @name("Comparison")
+  @values(FaceCompareFlagsValues)
   flags: FaceCompareFlags;
 
   @widget("faceIndex")

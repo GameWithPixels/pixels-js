@@ -9,16 +9,16 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { range, units, widget } from "./decorators";
+import { range, unit, widget } from "./decorators";
 
 export default class EditConditionRolling extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.Rolling;
+    return ConditionTypeValues.rolling;
   }
 
   @widget("slider")
   @range(0.5, 5, 0.1)
-  @units("s")
+  @unit("s")
   recheckAfter: number;
 
   constructor(recheckAfter = 1) {

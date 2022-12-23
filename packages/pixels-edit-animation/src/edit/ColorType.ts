@@ -4,9 +4,9 @@ import { enumValue } from "@systemic-games/pixels-core-utils";
  * @enum
  */
 export const ColorTypeValues = {
-  Rgb: enumValue(0),
-  Face: enumValue(),
-  Random: enumValue(),
+  rgb: enumValue(0),
+  face: enumValue(),
+  random: enumValue(),
 } as const;
 
 /**
