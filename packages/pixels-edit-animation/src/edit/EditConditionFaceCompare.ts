@@ -15,7 +15,7 @@ import { name, range, values, widget } from "./decorators";
 
 export default class EditConditionFaceCompare extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.FaceCompare;
+    return ConditionTypeValues.faceCompare;
   }
 
   @widget("bitField")

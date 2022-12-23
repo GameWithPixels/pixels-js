@@ -9,7 +9,7 @@ import { ActionType, ActionTypeValues } from "./ActionType";
  */
 export default class ActionPlayAnimation implements Action {
   @serializable(1)
-  type: ActionType = ActionTypeValues.PlayAnimation;
+  type: ActionType = ActionTypeValues.playAnimation;
 
   @serializable(1)
   animIndex = 0;

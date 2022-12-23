@@ -5,15 +5,15 @@ import { enumValue } from "@systemic-games/pixels-core-utils";
  * @enum
  */
 export const AnimationTypeValues = {
-  Unknown: enumValue(0),
-  Simple: enumValue(),
-  Rainbow: enumValue(),
-  Keyframed: enumValue(),
-  GradientPattern: enumValue(),
-  Gradient: enumValue(),
-  Noise: enumValue(),
-  Cycle: enumValue(),
-  Name: enumValue(),
+  unknown: enumValue(0),
+  simple: enumValue(),
+  rainbow: enumValue(),
+  keyframed: enumValue(),
+  gradientPattern: enumValue(),
+  gradient: enumValue(),
+  noise: enumValue(),
+  cycle: enumValue(),
+  name: enumValue(),
 } as const;
 
 /**

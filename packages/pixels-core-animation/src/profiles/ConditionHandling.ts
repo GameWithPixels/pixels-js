@@ -9,5 +9,5 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  */
 export default class ConditionHandling implements Condition {
   @serializable(1, { padding: 3 })
-  type: ConditionType = ConditionTypeValues.Handling;
+  type: ConditionType = ConditionTypeValues.handling;
 }

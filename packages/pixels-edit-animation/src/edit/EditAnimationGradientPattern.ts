@@ -16,7 +16,7 @@ import { widget, name } from "./decorators";
 
 export default class EditAnimationGradientPattern extends EditAnimation {
   get type(): AnimationType {
-    return AnimationTypeValues.GradientPattern;
+    return AnimationTypeValues.gradientPattern;
   }
 
   @widget("grayscalePattern")

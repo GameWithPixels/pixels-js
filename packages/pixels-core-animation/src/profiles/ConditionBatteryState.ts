@@ -9,14 +9,14 @@ import { ConditionType, ConditionTypeValues } from "./ConditionType";
  * @enum
  */
 export const BatteryStateFlagsValues = {
-  Ok: enumFlag(0),
-  Low: enumFlag(),
-  Charging: enumFlag(),
-  Done: enumFlag(),
-  Transition: enumFlag(),
-  BadCharging: enumFlag(),
-  Error: enumFlag(),
-  TrickleCharge: enumFlag(),
+  ok: enumFlag(0),
+  low: enumFlag(),
+  charging: enumFlag(),
+  done: enumFlag(),
+  transition: enumFlag(),
+  badCharging: enumFlag(),
+  error: enumFlag(),
+  trickleCharge: enumFlag(),
 } as const;
 
 /**
@@ -38,7 +38,7 @@ export type BatteryStateFlags =
  */
 export default class ConditionBatteryState implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.BatteryState;
+  type: ConditionType = ConditionTypeValues.catteryState;
 
   @serializable(1)
   flags: BatteryStateFlags = 0;

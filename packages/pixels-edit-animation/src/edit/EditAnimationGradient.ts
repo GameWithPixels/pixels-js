@@ -16,7 +16,7 @@ import { widget, range, name } from "./decorators";
 
 export default class EditAnimationGradient extends EditAnimation {
   get type(): AnimationType {
-    return AnimationTypeValues.Gradient;
+    return AnimationTypeValues.gradient;
   }
 
   @widget("faceMask")

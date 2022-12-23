@@ -9,7 +9,7 @@ import { ActionType, ActionTypeValues } from "./ActionType";
  */
 export default class ActionPlayAudioClip implements Action {
   @serializable(1, { padding: 1 })
-  type: ActionType = ActionTypeValues.PlayAudioClip;
+  type: ActionType = ActionTypeValues.playAudioClip;
 
   @serializable(2)
   clipId = 0;

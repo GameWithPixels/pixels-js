@@ -13,7 +13,7 @@ import { range, unit, widget } from "./decorators";
 
 export default class EditConditionRolling extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.Rolling;
+    return ConditionTypeValues.rolling;
   }
 
   @widget("slider")

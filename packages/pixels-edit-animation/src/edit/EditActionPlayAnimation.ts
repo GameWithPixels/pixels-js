@@ -33,7 +33,7 @@ export default class EditActionPlayAnimation extends EditAction {
   }
 
   get type(): ActionType {
-    return ActionTypeValues.PlayAnimation;
+    return ActionTypeValues.playAnimation;
   }
 
   toAction(editSet: EditDataSet, _set: DataSet): Action {

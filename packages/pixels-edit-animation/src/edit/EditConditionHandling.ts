@@ -11,7 +11,7 @@ import EditDataSet from "./EditDataSet";
 
 export default class EditConditionHandling extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.Handling;
+    return ConditionTypeValues.handling;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {

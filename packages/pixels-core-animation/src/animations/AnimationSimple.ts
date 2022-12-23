@@ -10,7 +10,7 @@ import { AnimationType, AnimationTypeValues } from "./AnimationType";
  */
 export default class AnimationSimple implements AnimationPreset {
   @serializable(1, { padding: 1 })
-  readonly type: AnimationType = AnimationTypeValues.Simple;
+  readonly type: AnimationType = AnimationTypeValues.simple;
 
   @serializable(2)
   duration = 0; // In milliseconds

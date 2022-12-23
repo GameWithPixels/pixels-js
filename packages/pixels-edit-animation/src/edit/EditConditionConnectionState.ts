@@ -15,7 +15,7 @@ import { name, values, widget } from "./decorators";
 
 export default class EditConditionConnectionState extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.ConnectionState;
+    return ConditionTypeValues.connectionState;
   }
 
   @widget("bitField")

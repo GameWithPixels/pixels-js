@@ -10,7 +10,7 @@ import { AnimationType, AnimationTypeValues } from "./AnimationType";
  */
 export default class AnimationGradientPattern implements AnimationPreset {
   @serializable(1, { padding: 1 })
-  readonly type: AnimationType = AnimationTypeValues.GradientPattern;
+  readonly type: AnimationType = AnimationTypeValues.gradientPattern;
 
   @serializable(2)
   duration = 0; // In milliseconds

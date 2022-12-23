@@ -13,7 +13,7 @@ import { range, unit, widget } from "./decorators";
 
 export default class EditConditionIdle extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.Idle;
+    return ConditionTypeValues.idle;
   }
 
   @widget("slider")

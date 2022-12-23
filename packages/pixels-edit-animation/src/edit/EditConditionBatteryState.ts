@@ -15,7 +15,7 @@ import { name, widget, range, unit, values } from "./decorators";
 
 export default class EditConditionBatteryState extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.BatteryState;
+    return ConditionTypeValues.catteryState;
   }
 
   @widget("bitField")

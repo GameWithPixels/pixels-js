@@ -11,7 +11,7 @@ import EditDataSet from "./EditDataSet";
 
 export default class EditConditionCrooked extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.Crooked;
+    return ConditionTypeValues.crooked;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {

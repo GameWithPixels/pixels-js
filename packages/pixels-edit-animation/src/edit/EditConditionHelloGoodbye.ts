@@ -15,7 +15,7 @@ import { name, values, widget } from "./decorators";
 
 export default class EditConditionHelloGoodbye extends EditCondition {
   get type(): ActionType {
-    return ConditionTypeValues.HelloGoodbye;
+    return ConditionTypeValues.helloGoodbye;
   }
 
   @widget("bitField")
