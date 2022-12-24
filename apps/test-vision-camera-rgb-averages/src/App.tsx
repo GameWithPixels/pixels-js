@@ -75,10 +75,7 @@ export default function App() {
         style={styles.camera}
         device={device}
         isActive
-        photo
-        frameProcessor={
-          device.supportsParallelVideoProcessing ? frameProcessor : undefined
-        }
+        frameProcessor={frameProcessor}
       />
     );
 
