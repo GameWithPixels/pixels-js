@@ -1,21 +1,16 @@
 import { usePixelConnect, usePixelValue } from "@systemic-games/pixels-react";
 import { getPixel } from "@systemic-games/react-native-pixels-connect";
 import { Center, Pressable, Text } from "native-base";
-import { useEffect } from "react";
-import { useErrorHandler } from "react-error-boundary";
 
 import AppPage from "~/components/AppPage";
 import PixelScanList from "~/components/PixelScanList";
+import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import { sr } from "~/styles";
 
 function RollPage() {
-  const errorHandler = useErrorHandler();
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [rollState] = usePixelValue(pixel, "rollState");
-
-  useEffect(() => {
-    errorHandler(lastError);
-  }, [errorHandler, lastError]);
+  useErrorWithHandler(lastError);
 
   const isConnecting = status === "connecting" || status === "identifying";
   const backgroundColor =

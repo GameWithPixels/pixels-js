@@ -33,12 +33,12 @@ import {
   Text,
   VStack,
 } from "native-base";
-import { useEffect, useReducer, useState } from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useReducer, useState } from "react";
 
 import standardProfilesJson from "~/../assets/standard-profiles.json";
 import AppPage from "~/components/AppPage";
 import PixelScanList from "~/components/PixelScanList";
+import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import { sr } from "~/styles";
 import range from "~/utils/range";
 
@@ -316,16 +316,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
 }
 
 function AnimationPage() {
-  const errorHandler = useErrorHandler();
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [animList, setAnimList] = useState<EditAnimation[]>([]);
   const [editAnim, setEditAnim] = useState<EditAnimation | undefined>();
   const [animWidgets, setAnimWidgets] = useState<EditWidgetData[]>();
   const [widget, setWidget] = useState<EditWidgetData>();
 
-  useEffect(() => {
-    errorHandler(lastError);
-  }, [errorHandler, lastError]);
+  useErrorWithHandler(lastError);
 
   return (
     <>
