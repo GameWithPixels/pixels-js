@@ -203,39 +203,41 @@ export default class PixelDispatcher implements IPixel {
   }
 
   dispatch(action: PixelDispatcherAction) {
-    const watch = (promise?: Promise<unknown>) =>
-      promise?.catch((error) => this._evEmitter.emit("error", error));
     switch (action) {
       case "connect":
-        watch(this._pixel.connect());
+        this._watch(this._pixel.connect());
         break;
       case "disconnect":
-        watch(this._pixel.disconnect());
+        this._watch(this._pixel.disconnect());
         break;
       case "reportRssi":
-        watch(this._reportRssi());
+        this._watch(this._reportRssi());
         break;
       case "blink":
-        watch(this._blink());
+        this._watch(this._blink());
         break;
       case "playRainbow":
-        watch(this._playRainbow());
+        this._watch(this._playRainbow());
         break;
       case "calibrate":
-        watch(this._calibrate());
+        this._watch(this._calibrate());
         break;
       case "updateProfile":
-        watch(this._updateProfile());
+        this._watch(this._updateProfile());
         break;
       case "queueFirmwareUpdate":
-        watch(this._queueFirmwareUpdate());
+        this._queueFirmwareUpdate();
         break;
       case "dequeueFirmwareUpdate":
-        watch(this._dequeueFirmwareUpdate());
+        this._dequeueFirmwareUpdate();
         break;
       default:
         assertNever(action);
     }
+  }
+
+  private _watch(promise: Promise<unknown>): void {
+    promise?.catch((error) => this._evEmitter.emit("error", error));
   }
 
   private _getIPixel(): IPixel {
@@ -303,25 +305,25 @@ export default class PixelDispatcher implements IPixel {
     return store.getState().dfuFiles.dfuFiles;
   }
 
-  private async _queueFirmwareUpdate(): Promise<void> {
+  private _queueFirmwareUpdate(): void {
     if (this.canUpdateFirmware && !_pendingDFUs.includes(this)) {
       // Queue DFU request
       _pendingDFUs.push(this);
       this._evEmitter.emit("firmwareUpdateQueued", true);
       // Run update immediately if it's the only pending request
       if (_pendingDFUs.length === 1) {
-        await this._updateFirmware();
+        this._watch(this._updateFirmware());
       }
     }
   }
 
-  private async _dequeueFirmwareUpdate(force = false): Promise<void> {
+  private _dequeueFirmwareUpdate(force = false): void {
     const i = _pendingDFUs.indexOf(this);
     if (i > 0 || force) {
       _pendingDFUs.splice(i);
       this._evEmitter.emit("firmwareUpdateQueued", false);
       // Run next update if any
-      await _pendingDFUs[0]?._updateFirmware();
+      this._watch(_pendingDFUs[0]?._updateFirmware());
     } else if (i === 0) {
       // TODO abort ongoing DFU
     }
