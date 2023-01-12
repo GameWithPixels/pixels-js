@@ -1,6 +1,6 @@
 import {
   Color,
-  toColor32,
+  Color32Utils,
   DataSet,
 } from "@systemic-games/pixels-core-animation";
 import {
@@ -617,7 +617,7 @@ export default class Pixel implements IPixel {
     }
   ): Promise<void> {
     const blinkMsg = safeAssign(new Blink(), {
-      color: toColor32(color),
+      color: Color32Utils.toColor32(color),
       count: options?.count ?? 1,
       duration: options?.duration ?? 1000,
       fade: 255 * (options?.fade ?? 0),

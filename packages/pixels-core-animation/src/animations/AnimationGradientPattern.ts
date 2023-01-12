@@ -25,7 +25,7 @@ export default class AnimationGradientPattern implements AnimationPreset {
   gradientTrackOffset = 0;
 
   @serializable(1, { padding: 1 })
-  overrideWithFace = 0;
+  overrideWithFace = false;
 
   createInstance(bits: AnimationBits): AnimationInstanceGradientPattern {
     return new AnimationInstanceGradientPattern(this, bits);
