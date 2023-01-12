@@ -46,11 +46,11 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
       "@systemic-games/pixels-core-connect": "1.0.4",
-      "@systemic-games/pixels-core-utils": "1.0.4",
-      "@systemic-games/react-native-bluetooth-le": "1.0.0"
+      "@systemic-games/pixels-core-utils": "1.0.4"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
+    "@systemic-games/react-native-bluetooth-le": "1.0.0",
     "@types/jest": "^29.1.2",
     "@types/react": "~18.0.25",
     "@types/react-native": "0.70.6",
@@ -62,7 +62,8 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "@systemic-games/react-native-bluetooth-le": "1.0.0"
   },
   "jest": {
     "preset": "react-native",
