@@ -7021,10 +7021,10 @@ expo-system-ui@~2.0.1:
     "@react-native/normalize-color" "^2.0.0"
     debug "^4.3.2"
 
-expo-three@^6.2.0:
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/expo-three/-/expo-three-6.2.0.tgz#35319161d4706ed6f4f4fc63cb75c9ef4406bb5f"
-  integrity sha512-NkQul+AIu9KSKbz2OKz+ZHMdi0hwsyYQDPdlEQ9x3UWNpDIZDX4q5JPl210xqnwYEwOrfbV0vtJ20HLy5Sa4ww==
+expo-three@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/expo-three/-/expo-three-7.0.0.tgz#283fa891b5e15bd0a4dc6ef304341deabccac145"
+  integrity sha512-SVvwEwK88/VddOJGhYcy0fFi0aGeI4trd8M6GjRG/mampJZa/TWZC2fJNo6/EAsWxrLSNJFO+KjhT1OrOxXDbQ==
   dependencies:
     "@expo/browser-polyfill" "^1.0.0"
     expo-asset-utils "~3.0.0"
@@ -13087,10 +13087,10 @@ thenify-all@^1.0.0:
   dependencies:
     any-promise "^1.0.0"
 
-three@^0.147.0:
-  version "0.147.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.147.0.tgz#1974af9e8e0c1efb3a8561334d57c0b6c29a7951"
-  integrity sha512-LPTOslYQXFkmvceQjFTNnVVli2LaVF6C99Pv34fJypp8NbQLbTlu3KinZ0zURghS5zEehK+VQyvWuPZ/Sm8fzw==
+three@^0.145.0:
+  version "0.145.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.145.0.tgz#a613d71e75effc2aed88be630027ca01e2b6502e"
+  integrity sha512-EKoHQEtEJ4CB6b2BGMBgLZrfwLjXcSUfoI/MiIXUuRpeYsfK5aPWbYhdtIVWOH+x6X0TouldHKHBuc/LAiFzAw==
 
 throat@^5.0.0:
   version "5.0.0"
