@@ -25,6 +25,7 @@
     "pk:all": "yarn pk:core && yarn pk:web && yarn pk:components && yarn pk:native",
     "pub:core": "yarn pk:core && yarn workspace @systemic-games/pixels-core-utils publish && yarn workspace @systemic-games/pixels-core-animation publish && yarn workspace @systemic-games/pixels-core-connect publish && yarn workspace @systemic-games/pixels-edit-animation publish",
     "pub:web": "yarn pk:web && yarn workspace @systemic-games/pixels-web-connect publish && yarn workspace @systemic-games/pixels-react publish",
+    "pub:native": "yarn pk:native && yarn workspace @systemic-games/react-native-bluetooth-le publish && yarn workspace @systemic-games/react-native-nordic-nrf5-dfu publish && yarn workspace @systemic-games/vision-camera-rgb-averages publish && yarn workspace @systemic-games/react-native-pixels-connect publish",
     "prepare": "yarn pk:all",
     "logcat": "adb logcat -s SystemicGames",
     "types": "tsc --build",

@@ -23,7 +23,7 @@
   "scripts": {
     "test": "jest",
     "prepare": "bob build",
-    "release": "release-it"
+    "publish": "release-it"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -58,8 +58,8 @@
     "jest": "^29.1.2",
     "react": "18.1.0",
     "react-native": "0.70.6",
-    "react-native-builder-bob": "^0.20.0",
-    "release-it": "^15.5.0"
+    "react-native-builder-bob": "^0.20.3",
+    "release-it": "^15.6.0"
   },
   "peerDependencies": {
     "react": "*",
