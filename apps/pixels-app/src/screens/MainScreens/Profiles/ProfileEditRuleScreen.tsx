@@ -210,6 +210,10 @@ function RuleConditionWidget(props: RuleWidgetProps) {
   );
 }
 
+/**
+ * Widget for selecting a type of action to execute in a rule.
+ * @param props See {@link RuleWidgetProps} for props params.
+ */
 function RuleActionWidget(props: RuleWidgetProps) {
   const [editAction, setEditAction] = React.useState<EditAction>(
     new EditActionPlayAnimation()
@@ -271,7 +275,7 @@ export default function ProfileEditRuleScreen() {
   );
   const [_audioClip, _setAudioClip] = React.useState("-- Select Audio Clip --");
 
-  function addRule() {
+  function addAction() {
     let widgetIndex = rulesWidgetList.length + 1;
     widgetIndex = widgetIndex === 0 ? 1 : widgetIndex;
     const ruleWidgetInfo: RuleWidgetInfo = { widgetIndex };
@@ -288,7 +292,6 @@ export default function ProfileEditRuleScreen() {
     );
     setRulesWidgetList([...rulesWidgetList]);
   }
-  //TODO check why vstack doesnt work with %
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={2} height={1000} w="100%">
@@ -308,15 +311,7 @@ export default function ProfileEditRuleScreen() {
             }}
           />
         ))}
-        {/* <Button
-          leftIcon={
-            <MaterialIcons name="rule-folder" size={24} color="white" />
-          }
-          onPress={() => addRule()}
-        >
-          ADD RULE
-        </Button> */}
-        <Pressable onPress={() => addRule()}>
+        <Pressable onPress={() => addAction()}>
           <Center borderWidth={1.5} borderColor="gray.600" rounded="md" h="125">
             <HStack
               space={4}
@@ -325,9 +320,8 @@ export default function ProfileEditRuleScreen() {
               bg="darkBlue.800"
               p={2}
             >
-              {/* <MaterialIcons name="rule-folder" size={35} color="white" /> */}
               <MaterialIcons name="rule" size={35} color="white" />
-              <Text>ADD RULE</Text>
+              <Text>ADD ACTION</Text>
             </HStack>
           </Center>
         </Pressable>

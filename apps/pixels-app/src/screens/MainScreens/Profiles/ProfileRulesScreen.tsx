@@ -4,6 +4,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Card,
   createPixelTheme,
+  createSwipeableSideButton,
   PixelTheme,
   ProfileRulesCard,
   PxAppPage,
@@ -24,8 +25,6 @@ import DraggableFlatList, {
   RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
-
-import { createSwipeableSideButton } from "./ProfilesListScreen";
 
 import { ProfilesScreenParamList } from "~/Navigation";
 
@@ -89,6 +88,11 @@ interface CreateRuleWidgetProps {
   onPress?: () => void;
 }
 
+/**
+ * JSX pressable to create a new editable rule.
+ * @param props See {@link CreateRuleWidgetProps} for props params.
+ * @returns
+ */
 function _CreateRuleWidget(props: CreateRuleWidgetProps) {
   return (
     <Pressable
