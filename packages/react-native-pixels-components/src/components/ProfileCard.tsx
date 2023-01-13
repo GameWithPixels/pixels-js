@@ -1,5 +1,6 @@
+import { AntDesign } from "@expo/vector-icons";
 import { Card } from "@systemic-games/react-native-base-components";
-import { Pressable, Image, Text } from "native-base";
+import { Pressable, Image, Text, HStack, VStack, Box } from "native-base";
 import {
   ColorType,
   SizeType,
@@ -7,12 +8,15 @@ import {
 import React from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
-
 /**
  * Basic profile information for minimal display.
  */
 export interface ProfileInfo {
   profileName: string;
+  profileKey?: number;
+  profileWithSound?: boolean;
+  category?: string;
+
   //Temporary for image until 3d render
   imageRequirePath?: ImageSourcePropType;
 }
@@ -20,7 +24,7 @@ export interface ProfileInfo {
  * Props for selectable and pressable profile cards
  */
 export interface ProfileCardProps {
-  profileName: string;
+  profileName?: string;
   //Temporary
   imageRequirePath?: ImageSourcePropType;
   bg?: ColorType;
@@ -57,7 +61,7 @@ export function ProfileCard(props: ProfileCardProps) {
       <Card
         bg={null}
         p={props.p}
-        minW="50px"
+        minW="100%"
         minH="50px"
         w={props.w}
         h={props.h}
@@ -72,6 +76,63 @@ export function ProfileCard(props: ProfileCardProps) {
         <Text isTruncated fontSize={props.textSize} bold>
           {props.profileName}
         </Text>
+      </Card>
+    </Pressable>
+  );
+}
+
+export interface DetailedProfileCardProps extends ProfileCardProps {
+  profileWithSound?: boolean;
+  profileDescription?: string;
+  profileCategory?: string;
+}
+
+export function DetailedProfileCard(props: DetailedProfileCardProps) {
+  const selectedProfileIndex = props.selectedProfileIndex;
+  const isSelected = props.selectable
+    ? selectedProfileIndex === props.profileIndexInList
+    : false;
+  return (
+    <Pressable
+      onPress={() => {
+        props.onSelected?.(props.profileIndexInList);
+        props.onPress?.();
+      }}
+    >
+      <Card
+        bg={null}
+        p={props.p}
+        minW="100%"
+        minH="50px"
+        w={props.w}
+        h={props.h}
+        verticalSpace={props.verticalSpace}
+        borderWidth={isSelected ? 2 : props.borderWidth}
+      >
+        <HStack p={1} h="100%" alignItems="center">
+          <Box flex={1}>
+            <Image
+              size={props.imageSize}
+              source={props.imageRequirePath}
+              alt="placeHolder"
+            />
+          </Box>
+          <Box flex={1}>
+            <Text isTruncated fontSize={props.textSize} bold>
+              {props.profileName}
+            </Text>
+          </Box>
+          <VStack flex={1} alignItems="center">
+            {props.profileWithSound && (
+              <HStack flex={1} alignItems="center">
+                <AntDesign name="sound" size={24} color="white" />
+              </HStack>
+            )}
+            <HStack flex={1} alignItems="center">
+              <Text bold>Type/Category</Text>
+            </HStack>
+          </VStack>
+        </HStack>
       </Card>
     </Pressable>
   );

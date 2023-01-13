@@ -56,6 +56,8 @@ function AppPage(props: AppPageProps) {
         >
           {resolvedProps.scrollable ? (
             <ScrollView
+              height="100%"
+              width="100%"
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }

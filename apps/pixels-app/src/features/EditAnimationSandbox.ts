@@ -14,11 +14,12 @@ import {
 
 export default class EditAnimationSandbox extends EditAnimation {
   get type(): AnimationType {
-    return AnimationTypeValues.Rainbow;
+    return AnimationTypeValues.rainbow;
   }
 
   @decorators.widget("bitField")
   @decorators.name("Comparison")
+  @decorators.values(FaceCompareFlagsValues)
   flags: FaceCompareFlags;
 
   @decorators.widget("faceIndex")
@@ -32,7 +33,7 @@ export default class EditAnimationSandbox extends EditAnimation {
 
   constructor(options?: { name?: string; duration?: number }) {
     super(options?.name, options?.duration ?? 1);
-    this.flags = FaceCompareFlagsValues.Less | FaceCompareFlagsValues.Equal;
+    this.flags = FaceCompareFlagsValues.less | FaceCompareFlagsValues.equal;
     this.faceIndex = 3;
     this.playbackFace = -1; // -1 == current face
   }

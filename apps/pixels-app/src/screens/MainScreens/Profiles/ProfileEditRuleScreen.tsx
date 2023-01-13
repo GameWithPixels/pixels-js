@@ -1,24 +1,38 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import {
+  EditAction,
+  EditActionPlayAnimation,
+  EditActionPlayAudioClip,
+  EditCondition,
+  EditConditionBatteryState,
+  EditConditionConnectionState,
+  EditConditionCrooked,
+  EditConditionFaceCompare,
+  EditConditionHandling,
+  EditConditionHelloGoodbye,
+  EditConditionIdle,
+  EditConditionRolling,
+  EditWidgetData,
+  getEditWidgetsData,
+} from "@systemic-games/pixels-edit-animation";
 import {
   PixelTheme,
   createPixelTheme,
   PxAppPage,
-  RuleComparisonWidget,
   RuleConditionSelection,
-  ProfilesActionSheet,
-  PlayBackFace,
-  SliderComponent,
-  FaceIndex2,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
-  ChevronDownIcon,
   HStack,
-  Spacer,
   VStack,
   Text,
   Button,
+  Pressable,
+  Center,
 } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
+
+import { RenderWidget } from "../Patterns/AnimationSettingsScreen";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -37,20 +51,7 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
-const conditions = [
-  "Pixel roll is...",
-  "Pixel wakes up/sleep",
-  "Pixel is picked up",
-  "Pixel is rolling",
-  "Pixel is crooked",
-  "Bluetooth Event...",
-  "Battery Event...",
-  "Pixel is idle for...",
-];
-
-const conditions2 = ["Trigger Pattern", "Play Audio CLip"];
-
-const Patterns = [
+const _Patterns = [
   {
     profileName: "Pattern 1",
     imageRequirePath: require("~/../assets/YellowDice.png"),
@@ -117,20 +118,134 @@ interface RuleWidgetInfo {
   widgetIndex: number;
 }
 interface RuleWidgetProps {
-  //Temporary
   ruleInfo: RuleWidgetInfo;
   children?: React.ReactNode | React.ReactNode[];
   onDelete?: (() => void) | null | undefined;
 }
-function RuleWidget(props: RuleWidgetProps) {
+
+function RuleConditionWidget(props: RuleWidgetProps) {
+  const [editCondition, setEditCondition] = React.useState<EditCondition>(
+    new EditConditionFaceCompare()
+  );
+  const [conditionTitle, setConditionTitle] =
+    React.useState("Pixel roll is...");
   return (
-    <VStack space={2} p={4} borderWidth={1} borderColor="gray.300" rounded="lg">
+    <VStack
+      space={2}
+      p={4}
+      borderWidth={1}
+      borderColor="gray.300"
+      rounded="lg"
+      bg="darkBlue.700"
+    >
       <HStack space={2} width="100%" alignItems="center">
         <Box flex={10} w="100%">
           <RuleConditionSelection
+            title={conditionTitle}
             widgetIndexInList={props.ruleInfo.widgetIndex}
-            conditions={conditions2}
+            conditions={[
+              {
+                label: "Pixel roll is...",
+                onPress: () => {
+                  setConditionTitle("Pixel roll is...");
+                  setEditCondition(new EditConditionFaceCompare());
+                },
+              },
+              {
+                label: "Pixel wakes up/sleep",
+                onPress: () => {
+                  setConditionTitle("Pixel wakes up/sleep");
+                  setEditCondition(new EditConditionHelloGoodbye());
+                },
+              },
+              {
+                label: "Pixel is picked up",
+                onPress: () => {
+                  setConditionTitle("Pixel is picked up");
+                  setEditCondition(new EditConditionHandling());
+                },
+              },
+              {
+                label: "Pixel is rolling",
+                onPress: () => {
+                  setConditionTitle("Pixel is rolling");
+                  setEditCondition(new EditConditionRolling());
+                },
+              },
+              {
+                label: "Pixel is crooked",
+                onPress: () => {
+                  setConditionTitle("Pixel is crooked");
+                  setEditCondition(new EditConditionCrooked());
+                },
+              },
+              {
+                label: "Bluetooth Event...",
+                onPress: () => {
+                  setConditionTitle("Bluetooth Event...");
+                  setEditCondition(new EditConditionConnectionState());
+                },
+              },
+              {
+                label: "Battery Event...",
+                onPress: () => {
+                  setConditionTitle("Battery Event...");
+                  setEditCondition(new EditConditionBatteryState());
+                },
+              },
+              {
+                label: "Pixel is idle for...",
+                onPress: () => {
+                  setConditionTitle("Pixel is idle for...");
+                  setEditCondition(new EditConditionIdle());
+                },
+              },
+            ]}
             conditionIndex={0}
+          />
+        </Box>
+      </HStack>
+      {ConditionEditor({ editCondition })}
+    </VStack>
+  );
+}
+
+function RuleActionWidget(props: RuleWidgetProps) {
+  const [editAction, setEditAction] = React.useState<EditAction>(
+    new EditActionPlayAnimation()
+  );
+  const [actionTitle, setActionTitle] = React.useState("Trigger Pattern");
+  return (
+    <VStack
+      space={2}
+      p={4}
+      borderWidth={1}
+      borderColor="gray.300"
+      rounded="lg"
+      bg="darkBlue.700"
+    >
+      <HStack space={2} width="100%" alignItems="center">
+        <Box flex={10} w="100%">
+          <RuleConditionSelection
+            title={actionTitle}
+            widgetIndexInList={props.ruleInfo.widgetIndex}
+            conditions={[
+              {
+                label: "Trigger Pattern",
+                onPress: () => {
+                  setActionTitle("Trigger Pattern");
+                  setEditAction(new EditActionPlayAnimation());
+                },
+              },
+              {
+                label: "Play Audio Clip",
+                onPress: () => {
+                  setActionTitle("Play Audio Clip");
+                  setEditAction(new EditActionPlayAudioClip());
+                },
+              },
+            ]}
+            conditionIndex={props.ruleInfo.widgetIndex}
           />
         </Box>
         <Button
@@ -142,7 +257,7 @@ function RuleWidget(props: RuleWidgetProps) {
           <Text fontSize="xl">X</Text>
         </Button>
       </HStack>
-      {props.children}
+      {ActionEditor({ editAction })}
     </VStack>
   );
 }
@@ -151,21 +266,10 @@ export default function ProfileEditRuleScreen() {
   const [rulesWidgetList, setRulesWidgetList] = React.useState<
     RuleWidgetInfo[]
   >([]);
-  const [pattern, _setPattern] = React.useState(
+  const [_pattern, _setPattern] = React.useState(
     "-- Select a Lighting Pattern --"
   );
   const [_audioClip, _setAudioClip] = React.useState("-- Select Audio Clip --");
-
-  //   function arddRule(rule: PixelInfo) {
-  //     const pixelName = pixelToAdd.name;
-  //     scannedPixels.splice(
-  //       scannedPixels.findIndex((pixel) => {
-  //         return pixel.name === pixelName;
-  //       }),
-  //       1
-  //     );
-  //     setPairedPixels([...pairedPixels, pixelToAdd]);
-  //   }
 
   function addRule() {
     let widgetIndex = rulesWidgetList.length + 1;
@@ -184,151 +288,84 @@ export default function ProfileEditRuleScreen() {
     );
     setRulesWidgetList([...rulesWidgetList]);
   }
+  //TODO check why vstack doesnt work with %
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
-      <VStack space={2}>
-        <VStack
-          space={2}
-          p={4}
-          borderWidth={1}
-          borderColor="gray.300"
-          rounded="lg"
-        >
-          <RuleConditionSelection
-            widgetIndexInList={0}
-            conditions={conditions}
-            conditionIndex={0}
-          />
-          <RuleComparisonWidget
-            borderWidth={2}
-            title="Comparison"
-            items={[
-              { title: "Less" },
-              { title: "Equal" },
-              { title: "Greater" },
-            ]}
-          />
-          {/* <FaceIndex faces={20} /> */}
-          <FaceIndex2 faces={20} />
-        </VStack>
+      <VStack space={2} height={1000} w="100%">
+        <RuleConditionWidget
+          ruleInfo={{ widgetIndex: 0 }}
+          onDelete={() => {
+            removeRule(0);
+          }}
+        />
 
         {rulesWidgetList.map((ruleWidgetInfo, key) => (
-          <RuleWidget
+          <RuleActionWidget
             key={key}
             ruleInfo={ruleWidgetInfo}
             onDelete={() => {
               removeRule(ruleWidgetInfo.widgetIndex);
             }}
-            children={[
-              <Text bold>Lighting Pattern</Text>,
-              <ProfilesActionSheet
-                trigger={
-                  <HStack
-                    p={3}
-                    paddingLeft={4}
-                    flex={2}
-                    w="100%"
-                    alignItems="center"
-                    rounded="lg"
-                    bg="darkBlue.800"
-                  >
-                    <Box flex={2}>
-                      <Text fontSize="md">{pattern}</Text>
-                    </Box>
-                    <Spacer />
-                    <Box>
-                      <ChevronDownIcon />
-                    </Box>
-                  </HStack>
-                }
-                drawerTitle="Select Pattern"
-                ProfilesInfo={Patterns}
-              />,
-              <PlayBackFace title="Play on Face" />,
-              <SliderComponent sliderTitle="Repeat Count" step={1} />,
-            ]}
           />
         ))}
-
-        {/* <VStack
-          space={2}
-          p={4}
-          borderWidth={1}
-          borderColor="gray.300"
-          rounded="lg"
+        {/* <Button
+          leftIcon={
+            <MaterialIcons name="rule-folder" size={24} color="white" />
+          }
+          onPress={() => addRule()}
         >
-          <RuleConditionSelection
-            title="Then"
-            conditions={conditions2}
-            conditionIndex={0}
-          />
-          <Text bold>Lighting Pattern</Text>
-          <ProfilesActionSheet
-            trigger={
-              <HStack
-                p={3}
-                paddingLeft={4}
-                flex={2}
-                w="100%"
-                alignItems="center"
-                rounded="lg"
-                bg="darkBlue.800"
-              >
-                <Box flex={2}>
-                  <Text fontSize="md">{pattern}</Text>
-                </Box>
-                <Spacer />
-                <Box>
-                  <ChevronDownIcon />
-                </Box>
-              </HStack>
-            }
-            drawerTitle="Select Pattern"
-            ProfilesInfo={Patterns}
-          />
-          <PlayBackFace title="Play on Face" />
-          <SliderComponent sliderTitle="Repeat Count" step={1} />
-        </VStack>
-
-        <VStack
-          space={2}
-          p={4}
-          borderWidth={1}
-          borderColor="gray.300"
-          rounded="lg"
-        >
-          <RuleConditionSelection
-            title="And"
-            conditions={conditions2}
-            conditionIndex={1}
-          />
-          <Text bold>Audio Clip</Text>
-          <ProfilesActionSheet
-            trigger={
-              <HStack
-                p={3}
-                paddingLeft={4}
-                flex={2}
-                w="100%"
-                alignItems="center"
-                rounded="lg"
-                bg="darkBlue.800"
-              >
-                <Box flex={2}>
-                  <Text fontSize="md">{audioClip}</Text>
-                </Box>
-                <Spacer />
-                <Box>
-                  <ChevronDownIcon />
-                </Box>
-              </HStack>
-            }
-            drawerTitle="Select Audio Clip"
-            ProfilesInfo={Patterns}
-          />
-        </VStack> */}
-        <Button onPress={() => addRule()}>ADD RULE</Button>
+          ADD RULE
+        </Button> */}
+        <Pressable onPress={() => addRule()}>
+          <Center borderWidth={1.5} borderColor="gray.600" rounded="md" h="125">
+            <HStack
+              space={4}
+              alignItems="center"
+              rounded="lg"
+              bg="darkBlue.800"
+              p={2}
+            >
+              {/* <MaterialIcons name="rule-folder" size={35} color="white" /> */}
+              <MaterialIcons name="rule" size={35} color="white" />
+              <Text>ADD RULE</Text>
+            </HStack>
+          </Center>
+        </Pressable>
       </VStack>
     </PxAppPage>
+  );
+}
+
+function ConditionEditor({ editCondition }: { editCondition: EditCondition }) {
+  const [conditionWidgets, setConditionsWidgets] = React.useState<
+    EditWidgetData[]
+  >([]);
+  useEffect(() => {
+    setConditionsWidgets(getEditWidgetsData(editCondition));
+  }, [editCondition]);
+  console.log(editCondition);
+  return (
+    <VStack p={2} space={2} bg="gray.700" rounded="md">
+      {conditionWidgets.map((widgets, key) => (
+        <RenderWidget key={key} widget={widgets} />
+      ))}
+    </VStack>
+  );
+}
+
+function ActionEditor({ editAction }: { editAction: EditAction }) {
+  const [conditionWidgets, setConditionsWidgets] = React.useState<
+    EditWidgetData[]
+  >([]);
+  useEffect(() => {
+    setConditionsWidgets(getEditWidgetsData(editAction));
+  }, [editAction]);
+  console.log(editAction);
+  return (
+    <VStack p={2} space={2} bg="gray.700" rounded="md">
+      {conditionWidgets.map((widgets, key) => (
+        <RenderWidget key={key} widget={widgets} />
+      ))}
+    </VStack>
   );
 }

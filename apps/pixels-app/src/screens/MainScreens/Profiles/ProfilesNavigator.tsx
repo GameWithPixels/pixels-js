@@ -32,7 +32,7 @@ export default function ProfilesNavigator() {
         name="ProfileRulesScreen"
         component={ProfilesRulesScreen}
         options={{
-          title: "Rules",
+          title: "Profile Rules",
         }}
       />
       <Stack.Screen

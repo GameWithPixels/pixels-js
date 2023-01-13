@@ -55,7 +55,7 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
  * @param widget widget information object.
  * @returns a JSX element as a corresponding edition widget.
  */
-function RenderWidget({ widget }: { widget: EditWidgetData }) {
+export function RenderWidget({ widget }: { widget: EditWidgetData }) {
   const type = widget.type;
   switch (type) {
     case "count": {
@@ -69,7 +69,7 @@ function RenderWidget({ widget }: { widget: EditWidgetData }) {
             maxValue={widget?.max ?? 1}
             //value={widget.getValue()}
             step={step ?? 1}
-            unit=""
+            unitType={widget.unit ? widget.unit : undefined}
             sliderBoxColor="PixelColors.accentPurple"
             sliderTrackColor="PixelColors.pink"
             unitTextColor={undefined}
@@ -89,7 +89,7 @@ function RenderWidget({ widget }: { widget: EditWidgetData }) {
             maxValue={widget?.max ?? 1}
             //value={widget.getValue()}
             step={step ?? 0.1}
-            unit=""
+            unitType={widget.unit ? widget.unit : undefined}
             sliderBoxColor="PixelColors.accentPurple"
             sliderTrackColor="PixelColors.pink"
             unitTextColor={undefined}
@@ -139,14 +139,13 @@ function RenderWidget({ widget }: { widget: EditWidgetData }) {
 
     case "bitField": {
       // for rules : flags
+      console.log(widget.values);
+      console.log(Object.keys(widget.values));
       return (
         <>
           <RuleComparisonWidget
-            items={[
-              { title: "Less" },
-              { title: "Equal" },
-              { title: "Greater" },
-            ]}
+            title={widget.displayName}
+            values={widget.values}
           />
         </>
       );
@@ -182,7 +181,7 @@ function RenderWidget({ widget }: { widget: EditWidgetData }) {
  * @param editAnim type of animation for widgets to display.
  * @returns a scrollview of edition widgets corresponding to the type of animation.
  */
-function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
+export function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
   const [animWidgets, setAnimWidgets] = React.useState<EditWidgetData[]>([]);
   useEffect(() => {
     setAnimWidgets(getEditWidgetsData(editAnim));

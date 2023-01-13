@@ -15,7 +15,7 @@ export interface SliderProps extends ISliderProps {
   sliderTitle?: string;
   minValue?: number;
   maxValue?: number;
-  unit?: string;
+  unitType?: string;
   unitTextColor?: ColorType;
   sliderThumbColor?: ColorType;
   sliderTrackColor?: ColorType;

@@ -1,3 +1,4 @@
+import { ActionSheetItemData } from "@systemic-games/react-native-base-components";
 import {
   Box,
   Button,
@@ -52,15 +53,17 @@ export interface ItemData {
 
 export interface RuleComparisonWidgetProps {
   title?: string;
-  items: ItemData[];
+  values: any;
   bg?: ColorType;
   borderWidth?: number;
   borderColor?: ColorType;
   fontSize?: number | SizeType;
+  onPress?: (() => void) | null | undefined;
 }
-
+//TODO fix the way the component is updated when selection are made to work with the bitfield update function (not array of boolean)
 export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
-  const selectedButtons = Array(props.items.length).fill(false);
+  const valueTitles = Object.keys(props.values);
+  const selectedButtons = Array(valueTitles.length).fill(false);
   const [selectedOption, setSelectedOption] =
     React.useState<boolean[]>(selectedButtons);
 
@@ -69,18 +72,19 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
       <Text>{props.title}</Text>
       <Box w="100%">
         <Button.Group isAttached>
-          {props.items.map((item, key) => (
+          {valueTitles.map((item, key) => (
             <CustomButton
               key={key}
               keyIndex={key}
-              itemsLength={props.items.length - 1}
-              title={item.title}
+              itemsLength={valueTitles.length - 1}
+              title={item}
               titleFontSize={props.fontSize}
               borderWidth={props.borderWidth}
               onButtonPress={() => {
-                item.onPress?.();
                 selectedOption[key] = !selectedOption[key];
                 setSelectedOption(selectedOption);
+                // const maskValue = combine(selectedOption);
+                // props.onPress?.(maskValue);
               }}
             />
           ))}
@@ -91,16 +95,12 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
 }
 
 export interface RuleConditionSelectionProps {
-  //Temporary
-  conditions: string[];
+  title?: string;
+  conditions: ActionSheetItemData[];
   conditionIndex: number;
   widgetIndexInList: number;
 }
-
 export function RuleConditionSelection(props: RuleConditionSelectionProps) {
-  const [condition, _setCondition] = React.useState(
-    props.conditions[props.conditionIndex]
-  );
   const { isOpen, onOpen, onClose } = useDisclose();
   let title = "When";
   if (props.widgetIndexInList === 0) {
@@ -127,7 +127,7 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
             bg="darkBlue.800"
           >
             <Box flex={2}>
-              <Text fontSize="sm">{condition}</Text>
+              <Text fontSize="sm">{props.title}</Text>
             </Box>
             <Spacer />
             <Box>
@@ -141,8 +141,16 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
         <Actionsheet.Content>
           <ScrollView w="100%">
             {props.conditions.map((condition, key) => (
-              <Actionsheet.Item alignItems="center" key={key} width="100%">
-                <Text fontSize="md">{condition}</Text>
+              <Actionsheet.Item
+                alignItems="center"
+                key={key}
+                width="100%"
+                onPress={() => {
+                  condition.onPress?.();
+                  onClose();
+                }}
+              >
+                <Text fontSize="md">{condition.label}</Text>
               </Actionsheet.Item>
             ))}
           </ScrollView>
