@@ -13,6 +13,9 @@
       ]
     }
   },
+  "files": [
+    "assets/standard-profiles.json",
+  ],
   "include": [
     "src/**/*"
   ],
