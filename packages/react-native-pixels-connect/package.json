@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
-    "@systemic-games/react-native-bluetooth-le": "1.0.0",
+    "@systemic-games/react-native-bluetooth-le": "1.0.5",
     "@types/jest": "^29.1.2",
     "@types/react": "~18.0.25",
     "@types/react-native": "0.70.6",
@@ -63,7 +63,7 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "@systemic-games/react-native-bluetooth-le": "1.0.0"
+    "@systemic-games/react-native-bluetooth-le": "1.0.5"
   },
   "jest": {
     "preset": "react-native",
