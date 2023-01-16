@@ -57,7 +57,7 @@ export function ActionSheet(props: ActionSheetComponentProps) {
       >
         <Actionsheet.Content maxHeight="100%" bg={resolvedProps.sheetBgColor}>
           <Box w="100%" px={4}>
-            <Text bold fontSize="16">
+            <Text bold fontSize="16" alignSelf="center">
               {resolvedProps.title}
             </Text>
           </Box>

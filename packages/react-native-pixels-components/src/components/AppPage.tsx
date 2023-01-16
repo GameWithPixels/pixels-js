@@ -5,7 +5,7 @@ import {
 
 export function AppPage(props: AppPageProps) {
   return (
-    <BaseAppPage theme={props.theme} lightBg="pixelColors.softBlack">
+    <BaseAppPage {...props} theme={props.theme} lightBg="pixelColors.softBlack">
       {props.children}
     </BaseAppPage>
   );

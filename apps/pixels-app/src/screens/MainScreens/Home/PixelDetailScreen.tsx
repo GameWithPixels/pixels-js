@@ -142,7 +142,7 @@ function DieStats() {
         <HStack alignItems="center" space={1}>
           <Toggle
             textSize="xs"
-            text="Lifetime"
+            title="Lifetime"
             onToggle={() => {
               setShowSessionStats(!showSessionStats);
             }}
@@ -294,7 +294,7 @@ export default function PixelDetailScreen() {
   const pixelInfo = route.params;
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
   return (
-    <PxAppPage theme={paleBluePixelTheme}>
+    <PxAppPage theme={paleBluePixelTheme} scrollable>
       <LoadingPopup
         title="Uploading profile..."
         isOpen={showLoadingPopup}

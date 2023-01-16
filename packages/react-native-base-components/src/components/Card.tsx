@@ -11,7 +11,6 @@ export interface CardProps extends IContainerProps {
   borderWidth?: number;
   verticalSpace?: number;
 }
-//TO DO remove minh minw and test if there is problemes
 export function Card(props: CardProps) {
   const resolvedProps = usePropsResolution("Card", props) as CardProps;
   return (

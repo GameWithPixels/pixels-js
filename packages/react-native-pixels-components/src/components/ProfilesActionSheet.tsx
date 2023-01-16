@@ -18,6 +18,8 @@ import { ProfileCard, ProfileInfo } from "./ProfileCard";
  * Props for ProfilesActionSheet component.
  */
 export interface ProfilesActionsheetProps {
+  trigger?: React.ReactNode;
+  drawerTitle?: string;
   ProfilesInfo?: ProfileInfo[]; // array of profiles informations to be displayed inside the component
   w?: number;
   h?: number;
@@ -37,34 +39,38 @@ export function ProfilesActionSheet(props: ProfilesActionsheetProps) {
           onOpen();
         }}
       >
-        <Card
-          minW="10px"
-          minH="10px"
-          w={props.w}
-          p={1}
-          h={props.h}
-          alignItems="center"
-          verticalSpace={1}
-        >
-          <Center w="90%" flexWrap="wrap">
-            <Text bold fontSize="sm" alignSelf="center">
-              More
-            </Text>
-            <Text bold fontSize="sm" alignSelf="center">
-              Profiles
-            </Text>
-          </Center>
-          <Center>
-            <Feather name="more-horizontal" size={35} color="white" />
-          </Center>
-        </Card>
+        {!props.trigger ? (
+          <Card
+            minW="10px"
+            minH="10px"
+            w={props.w}
+            p={1}
+            h={props.h}
+            alignItems="center"
+            verticalSpace={1}
+          >
+            <Center w="90%" flexWrap="wrap">
+              <Text bold fontSize="sm" alignSelf="center">
+                More
+              </Text>
+              <Text bold fontSize="sm" alignSelf="center">
+                Profiles
+              </Text>
+            </Center>
+            <Center>
+              <Feather name="more-horizontal" size={35} color="white" />
+            </Center>
+          </Card>
+        ) : (
+          props.trigger
+        )}
       </Pressable>
 
       {/* Actionsheet drawer */}
       <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
         <Actionsheet.Content maxH="100%" h="630px">
           <Text bold paddingBottom={5}>
-            Available Profiles
+            {props.drawerTitle ? props.drawerTitle : "Available Profiles"}
           </Text>
           <ScrollView>
             <HStack flexWrap="wrap" w="100%">

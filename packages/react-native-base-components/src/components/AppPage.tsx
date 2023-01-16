@@ -17,8 +17,9 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
  */
 export interface AppPageProps extends PropsWithChildren {
   theme?: ITheme; // Theme used in the page and given to NativeBaseProvider. Will be applied to all the children contained inside the app page
-  h?: number;
-  w?: number;
+  scrollable?: boolean;
+  h?: number | string;
+  w?: number | string;
   p?: number | string;
   lightBg?: ColorType;
   onRefresh?: (() => void) | null | undefined; // Function executed when refreshing the page
@@ -46,18 +47,26 @@ function AppPage(props: AppPageProps) {
       <StatusBar />
       <SafeAreaProvider>
         <Box
-          p={2}
+          paddingX={2}
+          paddingTop={2}
+          paddingBottom={1}
           bg={resolvedProps.lightBg}
           h={resolvedProps.h}
           w={resolvedProps.w}
         >
-          <ScrollView
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          >
-            {props.children}
-          </ScrollView>
+          {resolvedProps.scrollable ? (
+            <ScrollView
+              height="100%"
+              width="100%"
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            >
+              {props.children}
+            </ScrollView>
+          ) : (
+            props.children
+          )}
         </Box>
       </SafeAreaProvider>
     </NativeBaseProvider>

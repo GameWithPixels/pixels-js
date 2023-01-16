@@ -13,12 +13,15 @@ import {
 } from "native-base";
 import React from "react";
 
+import { bitsToIndices, combine, toMask } from "../faceMaskUtils";
+
 /**
  * Props for {@link FaceMask} component.
  */
 interface FaceMaskProps extends IModalProps {
   dieFaces: number; // Number of faces on the die
-  onCloseAction?: (() => void) | null | undefined; // Function to be executed when the facemask window is closed
+  maskNumber?: number;
+  onCloseAction?: ((value: any) => void) | null | undefined; // Function to be executed when the facemask window is closed
 }
 
 /**
@@ -26,18 +29,15 @@ interface FaceMaskProps extends IModalProps {
  * @param props See {@link FaceMaskProps} for props parameters.
  */
 export function FaceMask(props: FaceMaskProps) {
-  const [showModal, setShowModal] = React.useState(false);
-  const [groupValue, setGroupValue] = React.useState<any[]>([]);
-
-  // const buttonsArray = [];
-  // for (let i = 0; i < props.dieFaces; ++i) {
-  //   buttonsArray.push(i);
-  // }
-
   const buttonsArray = Array(props.dieFaces).fill(0);
   // Array(props.dieFaces).fill(0).map((e,i))
+  let indices: number[] = [];
+  if (props.maskNumber) indices = bitsToIndices(props.maskNumber);
 
   const resolvedProps = usePropsResolution("FaceMask", props);
+
+  const [showModal, setShowModal] = React.useState(false);
+  const [groupValue, setGroupValue] = React.useState<any[]>(indices);
 
   return (
     <>
@@ -72,7 +72,9 @@ export function FaceMask(props: FaceMaskProps) {
         isOpen={showModal}
         onClose={() => {
           setShowModal(false);
-          if (props.onCloseAction) props.onCloseAction();
+          // Combine the selected face into one maskValue
+          const maskValue = combine(groupValue.map((f) => toMask(f - 1)));
+          if (props.onCloseAction) props.onCloseAction(maskValue);
         }}
       >
         <Modal.Content bg={resolvedProps.bg}>

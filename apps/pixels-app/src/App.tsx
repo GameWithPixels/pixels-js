@@ -1,9 +1,5 @@
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
-import {
-  createStackNavigator,
-  TransitionPresets,
-} from "@react-navigation/stack";
 import { PixelTheme } from "@systemic-games/react-native-pixels-components";
 import { NativeBaseProvider } from "native-base";
 import React from "react";
@@ -11,15 +7,12 @@ import React from "react";
 import { LogBox } from "react-native";
 import { Provider } from "react-redux";
 
-import { RootStackParamList } from "./Navigation";
 import { store } from "./app/store";
-import { NavigationContainerComponent } from "./components/NavigationContainerComponent";
-import secondScreen from "./screens/MainScreens/secondScreen";
-import ThirdScreen from "./screens/MainScreens/thirdScreen";
+import { TabBarNavigator } from "./components/TabBarNavigator";
+import PatternsNavigator from "./screens/MainScreens/Patterns/PatternsNavigator";
+import ProfilesNavigator from "./screens/MainScreens/Profiles/ProfilesNavigator";
 
 import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
-
-const Stack = createStackNavigator<RootStackParamList>();
 
 // Disable this warning that comes from NativeBase
 LogBox.ignoreLogs([
@@ -31,18 +24,40 @@ export default function App() {
     <Provider store={store}>
       <NativeBaseProvider theme={PixelTheme}>
         <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{
-              headerShown: false,
-              ...TransitionPresets.SlideFromRightIOS,
-              animationTypeForReplace: "pop",
-            }}
-          >
-            <Stack.Screen name="Home" component={HomeNavigator} />
-            <Stack.Screen name="SecondScreen" component={secondScreen} />
-            <Stack.Screen name="ThirdScreen" component={ThirdScreen} />
-          </Stack.Navigator>
-          <NavigationContainerComponent />
+          <TabBarNavigator
+            theme={PixelTheme}
+            height={65}
+            items={[
+              {
+                screen: { name: "Dice Bag", component: HomeNavigator },
+                imageRequirePath: require("../assets/UI_Icons/D10.png"),
+                TabSelectedColor: "pixelColors.red",
+                TabUnselectedColor: "pixelColors.red",
+                iconSize: 9,
+              },
+              {
+                screen: { name: "Profiles", component: ProfilesNavigator },
+                imageRequirePath: require("../assets/UI_Icons/id-card.png"),
+                TabSelectedColor: "pixelColors.purple",
+                TabUnselectedColor: "pixelColors.purple",
+                iconSize: 10,
+              },
+              {
+                screen: { name: "Patterns", component: PatternsNavigator },
+                imageRequirePath: require("../assets/UI_Icons/pixels-fill.png"),
+                TabSelectedColor: "pixelColors.green",
+                TabUnselectedColor: "pixelColors.green",
+                iconSize: 9,
+              },
+              {
+                screen: { name: "Settings", component: PatternsNavigator },
+                imageRequirePath: require("../assets/UI_Icons/diagram.png"),
+                TabSelectedColor: "pixelColors.yellow",
+                TabUnselectedColor: "pixelColors.yellow",
+                iconSize: 9,
+              },
+            ]}
+          />
         </NavigationContainer>
       </NativeBaseProvider>
     </Provider>

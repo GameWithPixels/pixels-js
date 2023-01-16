@@ -6,12 +6,13 @@ import {
   usePropsResolution,
 } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
+
 /**
  * Props for {@link Toggle} component.
  */
 export interface ToggleProps extends ISwitchProps {
-  text?: string; // Text displayed on the left of the toggle
+  title?: string; // Text displayed on the left of the toggle
   textSize?: string | number | SizeType;
   toggleSize?: SizeType;
   space?: number | string; // Spacing between text and toggle
@@ -24,9 +25,10 @@ export interface ToggleProps extends ISwitchProps {
  */
 export function Toggle(props: ToggleProps) {
   const resolvedProps = usePropsResolution("Toggle", props) as ToggleProps;
+  const [isChecked, setIsChecked] = React.useState(false);
   return (
     <HStack space={resolvedProps.space} alignItems="center">
-      <Text fontSize={props.textSize}>{props.text}</Text>
+      <Text fontSize={props.textSize}>{props.title}</Text>
       {props.icon}
       <Switch
         {...resolvedProps}
@@ -34,8 +36,12 @@ export function Toggle(props: ToggleProps) {
         offThumbColor={resolvedProps.offThumbColor}
         onTrackColor={resolvedProps.onTrackColor}
         size={resolvedProps.toggleSize}
-        onValueChange={props.onToggle}
-        defaultIsChecked={false}
+        onToggle={() => {
+          const checked = !isChecked;
+          setIsChecked(checked);
+          props.onToggle?.(checked);
+        }}
+        value={isChecked}
       />
     </HStack>
   );

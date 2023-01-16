@@ -190,7 +190,7 @@ function NearbyPixelsList({
           {/* Hide nearby Pixels toggle */}
           <HStack space={1} alignItems="center">
             <Toggle
-              text="Show"
+              title="Show"
               onToggle={() => {
                 SetHideNearbyPixels(!hideNearbyPixels);
               }}
@@ -230,7 +230,7 @@ export default function HomeScreen() {
     useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
 
   return (
-    <PxAppPage theme={paleBluePixelTheme}>
+    <PxAppPage theme={paleBluePixelTheme} scrollable>
       {/* //Paired pixels list */}
       <VStack space={4}>
         <PairedPixelList pairedPixels={pairedPixels} navigation={navigation} />

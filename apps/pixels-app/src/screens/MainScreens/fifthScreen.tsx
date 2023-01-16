@@ -13,7 +13,7 @@ export default function SecondScreen() {
       <VStack space={4}>
         <Card />
         <Card />
-        <Toggle text="Hello second screen toggle" />
+        <Toggle title="Hello second screen toggle" />
         <Card />
         <Card />
       </VStack>

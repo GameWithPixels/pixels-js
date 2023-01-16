@@ -34,7 +34,7 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 export default function PixelAdvancedSettingsScreen() {
   return (
-    <PxAppPage theme={paleBluePixelTheme}>
+    <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={4} paddingTop={5}>
         {/* {Firmware infos} */}
         <Box maxWidth="100%" bg="pixelColors.highlightGray" rounded="md">
