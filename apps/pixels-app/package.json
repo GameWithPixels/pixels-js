@@ -46,7 +46,7 @@
     "@reduxjs/toolkit": "^1.8.6",
     "@systemic-games/pixels-edit-animation": "*",
     "@systemic-games/react-native-pixels-components": "*",
-    "expo": "~47.0.8",
+    "expo": "~47.0.13",
     "expo-status-bar": "~1.4.2",
     "native-base": "~3.4.22",
     "react": "18.1.0",
