@@ -15,11 +15,11 @@ import {
 import Constants from "./Constants";
 import requestPermissions from "./requestPermissions";
 
-function toArray(strList?: string): string[] {
+function _toArray(strList?: string): string[] {
   return strList?.split(",") ?? [];
 }
 
-function toString(...values: (string | number)[]): string {
+function _toString(...values: (string | number)[]): string {
   return values.join(",");
 }
 
@@ -81,7 +81,7 @@ const _scanEvEmitter = createTypedEventEmitter<ScanEventMap>();
 // List of known peripherals
 const _peripherals: Map<string, PeripheralInfo> = new Map();
 
-function notifyScanStatus(scanStatus: boolean) {
+function _notifyScanStatus(scanStatus: boolean) {
   try {
     _scanEvEmitter.emit("scanStatus", { scanning: scanStatus });
   } catch (error) {
@@ -89,15 +89,15 @@ function notifyScanStatus(scanStatus: boolean) {
   }
 }
 
-function getSystemId(peripheral: PeripheralOrSystemId): string {
+function _getSystemId(peripheral: PeripheralOrSystemId): string {
   return typeof peripheral === "string" ? peripheral : peripheral.systemId;
 }
 
-function getPeripheralInfo(peripheral: PeripheralOrSystemId): PeripheralInfo {
-  const pInf = _peripherals.get(getSystemId(peripheral));
+function _getPeripheralInfo(peripheral: PeripheralOrSystemId): PeripheralInfo {
+  const pInf = _peripherals.get(_getSystemId(peripheral));
   if (!pInf) {
     throw new Error(
-      `No peripheral found with SystemId=${getSystemId(peripheral)}`
+      `No peripheral found with SystemId=${_getSystemId(peripheral)}`
     );
   }
   return pInf;
@@ -162,7 +162,7 @@ const Central = {
             const pInf = _peripherals.get(ev.device.systemId);
             if (pInf) {
               const onValueChanged = pInf.valueChangedCallbacks.get(
-                toString(
+                _toString(
                   ev.characteristic.serviceUuid,
                   ev.characteristic.uuid,
                   ev.characteristic.instanceIndex
@@ -268,7 +268,7 @@ const Central = {
         (ev: BleScanResultEvent) => {
           if (typeof ev === "string") {
             console.error(`[BLE] Scan error: ${ev}`);
-            notifyScanStatus(false);
+            _notifyScanStatus(false);
           } else {
             try {
               // Forward event
@@ -312,7 +312,7 @@ const Central = {
       `[BLE] Started scan for BLE peripherals with services ${requiredServices}`
     );
 
-    notifyScanStatus(true);
+    _notifyScanStatus(true);
   },
 
   stopScanning: async () => {
@@ -320,7 +320,7 @@ const Central = {
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
     await BluetoothLE.stopScan();
-    notifyScanStatus(false);
+    _notifyScanStatus(false);
   },
   /*
     //Note: callback might be triggered even if status didn't changed
@@ -352,7 +352,7 @@ const Central = {
     connectionStatusCallback?: (ev: PeripheralConnectionEvent) => void,
     timeoutMs = 0 //TODO unused
   ): Promise<void> => {
-    const pInf = getPeripheralInfo(peripheral);
+    const pInf = _getPeripheralInfo(peripheral);
     const name = pInf.scannedPeripheral.name;
     if (
       !connectionStatusCallback &&
@@ -372,7 +372,7 @@ const Central = {
 
     //TODO handle case when another connection request for the same device is already under way
     //TODO reject if state is not disconnected?
-    const sysId = getSystemId(peripheral);
+    const sysId = _getSystemId(peripheral);
     if (await BluetoothLE.createPeripheral(sysId)) {
       try {
         // Store connection status callback if one was given (otherwise keep the existing one)
@@ -473,7 +473,7 @@ const Central = {
   disconnectPeripheral: async (
     peripheral: PeripheralOrSystemId
   ): Promise<void> => {
-    const pInf = getPeripheralInfo(peripheral);
+    const pInf = _getPeripheralInfo(peripheral);
     console.log(
       `[BLE ${pInf.scannedPeripheral.name}] Disconnecting, last known state is ${pInf.state}`
     );
@@ -494,27 +494,27 @@ const Central = {
   getPeripheralName: async (
     peripheral: PeripheralOrSystemId
   ): Promise<string> => {
-    return await BluetoothLE.getPeripheralName(getSystemId(peripheral));
+    return await BluetoothLE.getPeripheralName(_getSystemId(peripheral));
   },
 
   getPeripheralMtu: async (
     peripheral: PeripheralOrSystemId
   ): Promise<number> => {
-    return await BluetoothLE.getPeripheralMtu(getSystemId(peripheral));
+    return await BluetoothLE.getPeripheralMtu(_getSystemId(peripheral));
   },
 
   readPeripheralRssi: async (
     peripheral: PeripheralOrSystemId,
     _timeoutMs = Constants.defaultRequestTimeout //TODO unused
   ): Promise<number> => {
-    return await BluetoothLE.readPeripheralRssi(getSystemId(peripheral));
+    return await BluetoothLE.readPeripheralRssi(_getSystemId(peripheral));
   },
 
   getDiscoveredServices: async (
     peripheral: PeripheralOrSystemId
   ): Promise<string[]> => {
-    return toArray(
-      await BluetoothLE.getDiscoveredServices(getSystemId(peripheral))
+    return _toArray(
+      await BluetoothLE.getDiscoveredServices(_getSystemId(peripheral))
     );
   },
 
@@ -522,9 +522,9 @@ const Central = {
     peripheral: PeripheralOrSystemId,
     serviceUuid: string
   ): Promise<string[]> => {
-    return toArray(
+    return _toArray(
       await BluetoothLE.getServiceCharacteristics(
-        getSystemId(peripheral),
+        _getSystemId(peripheral),
         serviceUuid
       )
     );
@@ -537,7 +537,7 @@ const Central = {
     instanceIndex = 0
   ): Promise<number> => {
     return await BluetoothLE.getCharacteristicProperties(
-      getSystemId(peripheral),
+      _getSystemId(peripheral),
       serviceUuid,
       characteristicUuid,
       instanceIndex
@@ -555,7 +555,7 @@ const Central = {
   ): Promise<Uint8Array> => {
     return new Uint8Array(
       (await BluetoothLE.readCharacteristic(
-        getSystemId(peripheral),
+        _getSystemId(peripheral),
         serviceUuid,
         characteristicUuid,
         options?.instanceIndex ?? 0
@@ -575,7 +575,7 @@ const Central = {
     }
   ): Promise<void> => {
     await BluetoothLE.writeCharacteristic(
-      getSystemId(peripheral),
+      _getSystemId(peripheral),
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0,
@@ -595,14 +595,14 @@ const Central = {
       timeoutMs?: number; //TODO unused => Constants.defaultRequestTimeout
     }
   ): Promise<void> => {
-    const pInf = getPeripheralInfo(peripheral);
+    const pInf = _getPeripheralInfo(peripheral);
     await BluetoothLE.subscribeCharacteristic(
-      getSystemId(peripheral),
+      _getSystemId(peripheral),
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    const key = toString(
+    const key = _toString(
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0
@@ -619,14 +619,14 @@ const Central = {
       timeoutMs?: number; //TODO unused => Constants.defaultRequestTimeout
     }
   ): Promise<void> => {
-    const pInf = getPeripheralInfo(peripheral);
+    const pInf = _getPeripheralInfo(peripheral);
     await BluetoothLE.unsubscribeCharacteristic(
-      getSystemId(peripheral),
+      _getSystemId(peripheral),
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    const key = toString(
+    const key = _toString(
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0

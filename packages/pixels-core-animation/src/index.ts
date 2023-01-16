@@ -13,6 +13,15 @@ export { default as RgbTrack } from "./animations/RgbTrack";
 export { default as SimpleKeyframe } from "./animations/SimpleKeyframe";
 export { default as Track } from "./animations/Track";
 
+// Animation instances
+export { default as AnimationInstance } from "./animations/AnimationInstance";
+export { default as AnimationInstanceGradient } from "./animations/AnimationInstanceGradient";
+export { default as AnimationInstanceGradientPattern } from "./animations/AnimationInstanceGradientPattern";
+export { default as AnimationInstanceKeyframed } from "./animations/AnimationInstanceKeyframed";
+export { default as AnimationInstanceNoise } from "./animations/AnimationInstanceNoise";
+export { default as AnimationInstanceRainbow } from "./animations/AnimationInstanceRainbow";
+export { default as AnimationInstanceSimple } from "./animations/AnimationInstanceSimple";
+
 // Profiles
 export { default as Profile } from "./profiles/Profile";
 export { default as Rule } from "./profiles/Rule";
@@ -49,9 +58,9 @@ export { default as ConditionRolling } from "./profiles/ConditionRolling";
 
 // Colors
 export { default as Color } from "./color/Color";
-export * from "./color/colorUtils";
-export * from "./color/color32Utils";
-export * from "./color/gammaUtils";
+export * as ColorUtils from "./color/colorUtils";
+export * as Color32Utils from "./color/color32Utils";
+export * as GammaUtils from "./color/gammaUtils";
 
 // Other
 export { default as Constants } from "./animations/Constants";

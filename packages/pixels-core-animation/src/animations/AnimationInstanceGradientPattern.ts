@@ -12,9 +12,9 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
     return this.animationPreset as AnimationGradientPattern;
   }
 
-  start(startTime: number, remapFace: number, loop: boolean): void {
-    super.start(startTime, remapFace, loop);
-    if (this.preset.overrideWithFace !== 0) {
+  start(startTime: number): void {
+    super.start(startTime);
+    if (this.preset.overrideWithFace) {
       this._rgb = this.animationBits.getColor32(Constants.paletteColorFromFace);
     }
   }
@@ -33,7 +33,7 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
     const gradient = this.animationBits.getRgbTrack(preset.gradientTrackOffset);
 
     let gradientColor = 0;
-    if (preset.overrideWithFace !== 0) {
+    if (preset.overrideWithFace) {
       gradientColor = this._rgb;
     } else {
       gradientColor = gradient.evaluateColor(this.animationBits, trackTime);

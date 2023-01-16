@@ -1,12 +1,9 @@
 import { Central } from "@systemic-games/react-native-bluetooth-le";
 
-import PixelScanner, { PixelScannerEventMap } from "./PixelScanner";
-import type ScannedPixel from "./ScannedPixel";
-import getPixel from "./getPixel";
-
-export { type ScannedPixel };
-export { PixelScanner, PixelScannerEventMap };
-export { getPixel };
+export { default as PixelScanner } from "./PixelScanner";
+export * from "./PixelScanner";
+export { type default as ScannedPixel } from "./ScannedPixel";
+export { default as getPixel } from "./getPixel";
 
 export * from "@systemic-games/pixels-core-connect";
 export * from "@systemic-games/pixels-core-animation";

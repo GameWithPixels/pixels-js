@@ -13,8 +13,8 @@ export default class AnimationInstanceSimple extends AnimationInstance {
     return this.animationPreset as AnimationSimple;
   }
 
-  start(startTime: number, remapFace: number, loop: boolean): void {
-    super.start(startTime, remapFace, loop);
+  start(startTime: number): void {
+    super.start(startTime);
     this._rgb = this.animationBits.getColor32(this.preset.colorIndex);
   }
 

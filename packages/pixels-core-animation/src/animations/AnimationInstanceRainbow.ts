@@ -32,7 +32,7 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
     }
 
     let retCount = 0;
-    if (preset.traveling !== 0) {
+    if (preset.traveling) {
       // Fill the indices and colors for the anim controller to know how to update LEDs
       for (let i = 0; i < Constants.maxLEDsCount; ++i) {
         if ((preset.faceMask & (1 << i)) !== 0) {

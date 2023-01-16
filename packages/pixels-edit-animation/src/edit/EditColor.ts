@@ -1,4 +1,8 @@
-import { Constants, Color, gamma } from "@systemic-games/pixels-core-animation";
+import {
+  Constants,
+  Color,
+  GammaUtils,
+} from "@systemic-games/pixels-core-animation";
 
 import { ColorType, ColorTypeValues } from "./ColorType";
 import Editable from "./Editable";
@@ -31,7 +35,7 @@ export default class EditColor extends Editable {
   }
 
   static toColorIndex(refPalette: Color[], color: Color): number {
-    const colorGamma = gamma(color);
+    const colorGamma = GammaUtils.gamma(color);
     let colorIndex = refPalette.findIndex((c) => colorGamma.equals(c));
     if (colorIndex === -1) {
       colorIndex = refPalette.length;

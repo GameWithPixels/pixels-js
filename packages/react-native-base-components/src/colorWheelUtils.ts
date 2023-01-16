@@ -1,8 +1,4 @@
-import {
-  IColor,
-  hsvToRgb,
-  rgbToHsv,
-} from "@systemic-games/pixels-core-animation";
+import { ColorUtils } from "@systemic-games/pixels-core-animation";
 
 /**
  * 2D point.
@@ -17,7 +13,7 @@ export interface Point {
  */
 export interface Shape {
   points: Point[];
-  color: IColor;
+  color: ColorUtils.IColor;
 }
 
 function clamp(value: number, maxValue = 1) {
@@ -143,11 +139,14 @@ export function generateColorWheel({
   brightness,
 }: ColorWheelParams): Shape[] {
   // Calculate color for a specific slice
-  function computeColor(sliceIndex: number, layerIndex: number): IColor {
+  function computeColor(
+    sliceIndex: number,
+    layerIndex: number
+  ): ColorUtils.IColor {
     // Inverse the hue value to match rendering of Unity app
     const hue = ((sliceCount - sliceIndex - 0.5) / sliceCount) % 1;
     const sat = Math.pow((layerIndex + 1) / layerCount, saturationPower ?? 1.2);
-    return hsvToRgb({ h: hue, s: sat, v: brightness ?? 1 });
+    return ColorUtils.hsvToRgb({ h: hue, s: sat, v: brightness ?? 1 });
   }
 
   const shapes: Shape[] = [];
@@ -180,12 +179,12 @@ interface ColorWheelPosition {
 }
 
 function toColorWheelPosition(
-  color: IColor,
+  color: ColorUtils.IColor,
   sliceCount: number,
   layerCount: number,
   dimBrightness: number
 ): ColorWheelPosition {
-  const hsv = rgbToHsv(color);
+  const hsv = ColorUtils.rgbToHsv(color);
   const layerIndex = clamp(hsv.s * layerCount, layerCount - 1);
   const sliceIndex = sliceCount - 1 - clamp(hsv.h * sliceCount, sliceCount - 1);
   const epsilon = 0.01;
@@ -214,7 +213,7 @@ export interface ColorWheelsGenParams
  * @returns The shape of the slice containing the color or undefined.
  */
 export function findColorWheelSlice(
-  color: IColor,
+  color: ColorUtils.IColor,
   wheelsGenParams: ColorWheelsGenParams
 ): Point[] | undefined {
   const pos = toColorWheelPosition(
