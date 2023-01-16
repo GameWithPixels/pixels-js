@@ -1,4 +1,5 @@
 import type { RouteProp } from "@react-navigation/native";
+import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   PatternInfo,
   PixelInfo,
@@ -31,18 +32,24 @@ export type AnimationSettingsScreenRouteProps = RouteProp<
 >;
 
 //PixelDetailScreen params and props
-export type PixelDetailScreenParamList = {
+export type PixelDetailScreenStackParamList = {
   PixelAdvancedSettingsScreen: undefined;
   PixelInfo: PixelInfo;
 };
 //For route
 export type PixelDetailScreenRouteProp = RouteProp<
-  PixelDetailScreenParamList,
+  PixelDetailScreenStackParamList,
   "PixelInfo"
 >;
 
-//ProfileSScreen params and props
-export type ProfilesScreenParamList = {
+//ProfileScreen params and props
+export type ProfilesScreenStackParamList = {
   ProfileRulesScreen: undefined;
   ProfileEditRuleScreen: undefined;
+  routeParams: { profileInfo: EditProfile };
 };
+export type RouteTestParams = {
+  ProfileInfo: EditProfile;
+};
+//For route
+export type ProfileScreenRouteProp = RouteProp<RouteTestParams, "ProfileInfo">;

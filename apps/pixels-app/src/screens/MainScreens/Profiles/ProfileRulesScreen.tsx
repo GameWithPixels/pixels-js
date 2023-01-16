@@ -1,6 +1,8 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { ActionTypeValues } from "@systemic-games/pixels-core-animation";
+import { EditAction, EditRule } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
   createPixelTheme,
@@ -19,14 +21,18 @@ import {
   Text,
   Input,
 } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
 
-import { ProfilesScreenParamList } from "~/Navigation";
+import {
+  ProfileScreenRouteProp,
+  ProfilesScreenStackParamList,
+} from "~/Navigation";
+import EditableStore from "~/features/EditableStore";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -78,11 +84,11 @@ const rules: RuleCardInfo[] = [
   },
 ];
 
-const DefaultRule: RuleCardInfo = {
-  ruleKey: 7487584890487,
-  condition: "roll is equal to 1",
-  actions: [" trigger patterns : Red To Blue "],
-};
+// const DefaultRule: RuleCardInfo = {
+//   ruleKey: 7487584890487,
+//   condition: "roll is equal to 1",
+//   actions: [" trigger patterns : Red To Blue "],
+// };
 
 interface CreateRuleWidgetProps {
   onPress?: () => void;
@@ -110,47 +116,67 @@ function _CreateRuleWidget(props: CreateRuleWidgetProps) {
   );
 }
 
+function GetActionTitles(actions: EditAction[]): string[] {
+  const actionsTitles: string[] = [];
+
+  actions.forEach(function (action) {
+    if (action.type === ActionTypeValues.playAnimation) {
+      actionsTitles.push("Play animation");
+    } else {
+      actionsTitles.push("Play audio clip");
+    }
+  });
+  return actionsTitles;
+}
+
 export default function ProfilesRulesScreen() {
   const navigation =
-    useNavigation<StackNavigationProp<ProfilesScreenParamList>>();
-  const [rulesList, setRulesList] = React.useState<RuleCardInfo[]>(rules);
+    useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
+
+  // Get the editProfile info from the selected profile
+  const route = useRoute<ProfileScreenRouteProp>();
+
+  const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
+  useEffect(() => {
+    setRulesList(route.params.rules);
+  }, [route.params.rules]);
 
   function _addRule() {
-    const ruleKey = Math.random() * 1000;
-    const ruleToAdd = DefaultRule;
-    ruleToAdd.ruleKey = ruleKey;
-    setRulesList([...rulesList, ruleToAdd]);
+    // const ruleKey = Math.random() * 1000;
+    // const ruleToAdd = DefaultRule;
+    // ruleToAdd.ruleKey = ruleKey;
+    const newRule = new EditRule();
+    // Register rule
+    EditableStore.getKey(newRule);
+    setRulesList([...rulesList, newRule]);
   }
 
-  function duplicateRule(ruleToDuplicate: RuleCardInfo, index: number) {
-    const duplicateRule = { ...ruleToDuplicate };
-    duplicateRule.ruleKey = Math.random() * 1000;
-    rulesList.splice(index + 1, 0, duplicateRule);
+  function duplicateRule(ruleToDuplicate: EditRule, index: number) {
+    const duplicatedRule = ruleToDuplicate.duplicate();
+    // Register duplicated rule
+    EditableStore.getKey(duplicatedRule);
+    rulesList.splice(index + 1, 0, duplicatedRule);
     setRulesList([...rulesList]);
   }
 
-  function deleteRule(ruleToDelete: RuleCardInfo) {
-    console.log("delete");
-    const ruleKey = ruleToDelete.ruleKey;
-    console.log("rule key :" + ruleKey);
+  function deleteRule(ruleToDelete: EditRule) {
+    const ruleKey = EditableStore.getKey(ruleToDelete);
     rulesList.splice(
       rulesList.findIndex((ruleToDelete) => {
-        return ruleToDelete.ruleKey === ruleKey;
+        return EditableStore.getKey(ruleToDelete) === ruleKey;
       }),
       1
     );
     console.log(rulesList);
     setRulesList([...rulesList]);
+    // Delete rule from register
+    EditableStore.unregister(ruleToDelete);
   }
-  const renderItem = ({
-    item,
-    drag,
-    isActive,
-  }: RenderItemParams<RuleCardInfo>) => {
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<EditRule>) => {
     return (
       <ScaleDecorator>
         <Swipeable
-          key={item.ruleKey}
+          key={EditableStore.getKey(item)}
           renderRightActions={createSwipeableSideButton({
             w: 120,
             buttons: [
@@ -185,8 +211,11 @@ export default function ProfilesRulesScreen() {
           >
             <ProfileRulesCard
               onPress={() => navigation.navigate("ProfileEditRuleScreen")}
-              key={item.ruleKey}
-              ruleCardInfo={item}
+              key={EditableStore.getKey(item)}
+              ruleCardInfo={{
+                ruleKey: EditableStore.getKey(item),
+                actions: GetActionTitles(item.actions),
+              }}
             />
           </Pressable>
         </Swipeable>
@@ -223,7 +252,7 @@ export default function ProfilesRulesScreen() {
           <DraggableFlatList
             data={rulesList}
             onDragEnd={({ data }) => setRulesList(data)}
-            keyExtractor={(item) => item.ruleKey?.toString()}
+            keyExtractor={(item) => EditableStore.getKey(item)?.toString()}
             renderItem={renderItem}
             ItemSeparatorComponent={SeparatorItem}
           />

@@ -37,7 +37,7 @@ import React from "react";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
 import {
-  PixelDetailScreenParamList,
+  PixelDetailScreenStackParamList,
   PixelDetailScreenRouteProp,
 } from "~/Navigation";
 import { sr } from "~/Utils";
@@ -289,7 +289,7 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 export default function PixelDetailScreen() {
   const navigation =
-    useNavigation<StackNavigationProp<PixelDetailScreenParamList>>();
+    useNavigation<StackNavigationProp<PixelDetailScreenStackParamList>>();
   const route = useRoute<PixelDetailScreenRouteProp>();
   const pixelInfo = route.params;
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);

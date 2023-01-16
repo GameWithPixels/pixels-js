@@ -31,7 +31,10 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import { ProfilesScreenParamList } from "~/Navigation";
+import {
+  ProfileScreenRouteProp as _ProfileScreenRouteProps,
+  ProfilesScreenStackParamList,
+} from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import StandardProfiles from "~/features/StandardProfile";
 
@@ -94,7 +97,7 @@ function CreateProfileWidget(props: ProfileCardProps) {
 
 export function ProfilesListScreen() {
   const navigation =
-    useNavigation<StackNavigationProp<ProfilesScreenParamList>>();
+    useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
 
   const [profileList, setProfileList] = React.useState(profiles);
   // List of favorite profiles
@@ -152,6 +155,19 @@ export function ProfilesListScreen() {
     setFavoritesProfileList([...favoriteProfilesList, favoriteProfile]);
   }
 
+  function removeFromFavorites(profileToRemove: EditProfile) {
+    const profileToDeleteKey = EditableStore.getKey(profileToRemove);
+    favoriteProfilesList.splice(
+      favoriteProfilesList.findIndex((profileToDelete) => {
+        return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
+      }),
+      1
+    );
+    setFavoritesProfileList([...favoriteProfilesList]);
+
+    setProfileList([...profileList, profileToRemove]);
+  }
+
   function openExportSheet(_profileToExport: EditProfile) {
     onOpen();
     //DO OTHER THINGS
@@ -193,12 +209,12 @@ export function ProfilesListScreen() {
                             w: 85,
                             buttons: [
                               {
-                                onPress: () => addToFavorites(profile),
+                                onPress: () => removeFromFavorites(profile),
                                 bg: "purple.500",
                                 icon: (
-                                  <AntDesign
-                                    name="staro"
-                                    size={24}
+                                  <MaterialCommunityIcons
+                                    name="bookmark-remove-outline"
+                                    size={30}
                                     color="white"
                                   />
                                 ),
@@ -280,9 +296,9 @@ export function ProfilesListScreen() {
                                 onPress: () => addToFavorites(profile),
                                 bg: "purple.500",
                                 icon: (
-                                  <AntDesign
-                                    name="staro"
-                                    size={24}
+                                  <MaterialCommunityIcons
+                                    name="bookmark-plus-outline"
+                                    size={30}
                                     color="white"
                                   />
                                 ),
