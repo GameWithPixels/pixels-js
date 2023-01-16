@@ -37,7 +37,7 @@ export default async function (
     } catch (error: any) {
       if (error.message === "FW version failure") {
         // Bootloader already up-to-date
-        console.log("Bootloader is same or more recent");
+        console.log("Bootloader is same version or more recent");
       } else {
         throw error;
       }

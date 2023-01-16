@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import { Button, VStack } from "native-base";
+import { Button, ScrollView, VStack } from "native-base";
 import { useEffect } from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
@@ -23,8 +23,10 @@ function DieDetailsPage(props: DieDetailsProps) {
   const navigation = useNavigation();
   const { t } = useTranslation();
   return (
-    <VStack mx={sr(10)}>
-      {pixelDispatcher && <PixelDetails pixelDispatcher={pixelDispatcher} />}
+    <VStack mx={sr(10)} flex={1}>
+      <ScrollView>
+        {pixelDispatcher && <PixelDetails pixelDispatcher={pixelDispatcher} />}
+      </ScrollView>
       <Button mt={sr(10)} onPress={() => navigation.goBack()}>
         {t("close")}
       </Button>

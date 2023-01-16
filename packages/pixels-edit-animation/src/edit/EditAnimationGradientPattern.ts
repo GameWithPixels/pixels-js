@@ -60,7 +60,7 @@ export default class EditAnimationGradientPattern extends EditAnimation {
         : 0,
       trackCount: this.pattern?.gradients.length ?? 0,
       gradientTrackOffset,
-      overrideWithFace: this.overrideWithFace ? 1 : 0,
+      overrideWithFace: this.overrideWithFace,
     });
   }
 

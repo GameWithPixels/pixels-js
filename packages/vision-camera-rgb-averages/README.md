@@ -72,10 +72,7 @@ function App() {
         ref={cameraRef}
         device={devices.back}
         isActive
-        photo
-        frameProcessor={
-          device.supportsParallelVideoProcessing ? frameProcessor : undefined
-        }
+        frameProcessor={frameProcessor}
       />
     </View>
   );

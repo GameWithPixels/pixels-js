@@ -1,4 +1,4 @@
-import { IColor } from "@systemic-games/pixels-core-animation";
+import { ColorUtils } from "@systemic-games/pixels-core-animation";
 import { Box, Button, Center, VStack } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
@@ -23,7 +23,7 @@ export function toStringPath(points?: Point[]) {
  * @param color RBG color object.
  * @returns A HTML color code.
  */
-export function toStringColor(color: IColor): string {
+export function toStringColor(color: ColorUtils.IColor): string {
   function toHex(v: number) {
     const byte = Math.max(0, Math.min(255, Math.round(255 * v)));
     return byte.toString(16).padStart(2, "0");
@@ -66,7 +66,7 @@ export interface WheelParams {
  * Generate the color wheel by drawing the colors polygons and the selector
  */
 export function ColorWheel(props: ColorWheelProps) {
-  const [selectedColor, setSelectedColor] = React.useState<IColor>();
+  const [selectedColor, setSelectedColor] = React.useState<ColorUtils.IColor>();
   const [wheelColorType, setWheelColorType] = React.useState(
     ColorWheelColorType.NORMAL
   );

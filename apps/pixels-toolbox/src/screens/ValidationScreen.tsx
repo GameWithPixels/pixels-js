@@ -155,12 +155,7 @@ function DecodePixelIdPage({
       setCameraStatus("needPermission");
       errorHandler(new Error(t("needCameraPermission")));
     } else if (cameraPermission === "authorized" && device) {
-      if (!device.supportsParallelVideoProcessing) {
-        setCameraStatus("noParallelVideoProcessing");
-        errorHandler(new Error(t("incompatibleCamera")));
-      } else {
-        setCameraStatus("ready");
-      }
+      setCameraStatus("ready");
     }
   }, [cameraPermission, device, errorHandler, t]);
 
@@ -220,11 +215,10 @@ function DecodePixelIdPage({
           }}
           device={device}
           isActive
-          photo
           hdr={false}
           lowLightBoost={false}
-          frameProcessor={frameProcessor}
           videoStabilizationMode="off"
+          frameProcessor={frameProcessor}
         />
       ) : (
         <Text>{t("startingCamera")}</Text>
