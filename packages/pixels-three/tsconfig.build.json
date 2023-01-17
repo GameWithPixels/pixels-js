@@ -1,0 +1,9 @@
+{
+  "extends": "./../../tsconfig.web.build",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

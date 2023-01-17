@@ -1,0 +1,5 @@
+# We want to hoist all packages in the project's root
+# so we should have an empty node_module directory
+# except for the binaries
+!/node_modules/*
+/node_modules/.bin/*
