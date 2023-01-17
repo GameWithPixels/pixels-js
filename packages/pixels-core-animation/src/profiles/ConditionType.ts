@@ -12,7 +12,7 @@ export const ConditionTypeValues = {
   faceCompare: enumValue(),
   crooked: enumValue(),
   connectionState: enumValue(),
-  catteryState: enumValue(),
+  batteryState: enumValue(),
   idle: enumValue(),
 } as const;
 

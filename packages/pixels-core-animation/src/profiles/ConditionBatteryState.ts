@@ -38,7 +38,7 @@ export type BatteryStateFlags =
  */
 export default class ConditionBatteryState implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.catteryState;
+  type: ConditionType = ConditionTypeValues.batteryState;
 
   @serializable(1)
   flags: BatteryStateFlags = 0;

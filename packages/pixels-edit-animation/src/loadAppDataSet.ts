@@ -98,7 +98,7 @@ function toCondition(condition?: Json.Condition): EditCondition | undefined {
         return new EditConditionCrooked();
       case ConditionTypeValues.connectionState:
         return safeAssign(new EditConditionConnectionState(), data);
-      case ConditionTypeValues.catteryState:
+      case ConditionTypeValues.batteryState:
         return safeAssign(new EditConditionBatteryState(), data);
       case ConditionTypeValues.idle:
         return safeAssign(new EditConditionIdle(), data);
