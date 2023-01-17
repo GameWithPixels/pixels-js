@@ -34,6 +34,7 @@ import {
 import React, { useEffect } from "react";
 
 import { RenderWidget } from "../Patterns/AnimationSettingsScreen";
+//import { lastSelectedRule } from "./ProfileRulesScreen";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -271,6 +272,10 @@ export default function ProfileEditRuleScreen() {
   const [rulesWidgetList, setRulesWidgetList] = React.useState<
     RuleWidgetInfo[]
   >([]);
+
+  // useEffect(()=>{
+  //   setRulesWidgetList(lastSelectedRule.actions)
+  // })
   const [_pattern, _setPattern] = React.useState(
     "-- Select a Lighting Pattern --"
   );

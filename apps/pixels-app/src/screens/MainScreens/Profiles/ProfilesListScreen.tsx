@@ -43,6 +43,8 @@ import StandardProfiles from "~/features/StandardProfile";
 
 // StandardProfiles.profiles[0].collectAnimations;
 
+export let lastSelectedProfile: EditProfile;
+
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
   primaryColors: {
@@ -271,7 +273,9 @@ export function ProfilesListScreen() {
                             profileWithSound={false}
                             onPress={() => {
                               // navigation.navigate("ProfileEditRuleScreen");
-                              navigation.navigate("ProfileRulesScreen");
+                              lastSelectedProfile = profile;
+                              // navigation.navigate("ProfileRulesScreen");
+                              console.log(lastSelectedProfile.rules);
                             }}
                           />
                         </Swipeable>
@@ -354,7 +358,8 @@ export function ProfilesListScreen() {
                             borderWidth={1}
                             profileWithSound={false}
                             onPress={() => {
-                              // navigation.navigate("ProfileEditRuleScreen");
+                              lastSelectedProfile = profile;
+                              console.log(lastSelectedProfile.rules);
                               navigation.navigate("ProfileRulesScreen");
                             }}
                           />
@@ -365,6 +370,7 @@ export function ProfilesListScreen() {
                   <Box p={1}>
                     <CreateProfileWidget
                       onPress={() => {
+                        // Empty profile that will need to be edited
                         addProfile(new EditProfile());
                       }}
                     />

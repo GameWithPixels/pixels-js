@@ -1,8 +1,18 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { ActionTypeValues } from "@systemic-games/pixels-core-animation";
-import { EditAction, EditRule } from "@systemic-games/pixels-edit-animation";
+import {
+  ActionTypeValues,
+  ConditionTypeValues,
+} from "@systemic-games/pixels-core-animation";
+import {
+  EditAction,
+  EditActionPlayAnimation,
+  EditActionPlayAudioClip,
+  EditCondition,
+  EditConditionConnectionState,
+  EditRule,
+} from "@systemic-games/pixels-edit-animation";
 import {
   Card,
   createPixelTheme,
@@ -27,9 +37,15 @@ import DraggableFlatList, {
   RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
+import {
+  EditConditionBatteryState,
+  EditConditionFaceCompare,
+} from "~/../../../packages/pixels-edit-animation/dist/types";
+
+import { lastSelectedProfile } from "./ProfilesListScreen";
 
 import {
-  ProfileScreenRouteProp,
+  //ProfileScreenRouteProp,
   ProfilesScreenStackParamList,
 } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
@@ -90,6 +106,8 @@ const rules: RuleCardInfo[] = [
 //   actions: [" trigger patterns : Red To Blue "],
 // };
 
+export let lastSelectedRule: EditRule;
+
 interface CreateRuleWidgetProps {
   onPress?: () => void;
 }
@@ -117,16 +135,101 @@ function _CreateRuleWidget(props: CreateRuleWidgetProps) {
 }
 
 function GetActionTitles(actions: EditAction[]): string[] {
-  const actionsTitles: string[] = [];
+  const actionsTitles: any[] = [];
 
   actions.forEach(function (action) {
     if (action.type === ActionTypeValues.playAnimation) {
-      actionsTitles.push("Play animation");
+      actionsTitles.push(
+        "Play " + (action as EditActionPlayAnimation).animation?.name
+      );
     } else {
-      actionsTitles.push("Play audio clip");
+      actionsTitles.push(
+        "Play " + (action as EditActionPlayAudioClip).clip?.name
+      );
     }
   });
   return actionsTitles;
+}
+function GetConditionTitle(condition: EditCondition | undefined): string {
+  let conditionTitle: string = "No action selected";
+  let faceCompareFlag;
+  if (condition) {
+    switch (condition.type) {
+      case ConditionTypeValues.handling:
+        conditionTitle = "die is picked up";
+        break;
+      case ConditionTypeValues.catteryState:
+        conditionTitle =
+          "battery is " + (condition as EditConditionBatteryState).flags;
+
+        break;
+      case ConditionTypeValues.connectionState:
+        conditionTitle =
+          "die is " + (condition as EditConditionConnectionState).flags;
+
+        break;
+      case ConditionTypeValues.crooked:
+        conditionTitle = "die is crooked";
+
+        break;
+      case ConditionTypeValues.faceCompare:
+        faceCompareFlag = (condition as EditConditionFaceCompare).flags;
+        if (faceCompareFlag === 0) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is less than " + faceIndex;
+        } else if (faceCompareFlag === 1) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is equal to " + faceIndex;
+        } else if (faceCompareFlag === 2) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is greater than " + faceIndex;
+        } else if (faceCompareFlag === 3) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is less or equal to " + faceIndex;
+        } else if (faceCompareFlag === 4) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is less or greater than " + faceIndex;
+        } else if (faceCompareFlag === 5) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is equal or greater than " + faceIndex;
+        } else {
+          conditionTitle = "die is any";
+        }
+        break;
+      case ConditionTypeValues.helloGoodbye:
+        if ((condition as EditConditionConnectionState).flags === 0) {
+          conditionTitle = "Die is waking up";
+        } else if ((condition as EditConditionConnectionState).flags === 1) {
+          conditionTitle = "Die is going to sleep";
+        } else {
+          conditionTitle = "Die is waking up or going to sleep";
+        }
+        break;
+      case ConditionTypeValues.idle:
+        conditionTitle = "Die is idle";
+
+        break;
+      case ConditionTypeValues.rolling:
+        conditionTitle = "Die is rolling";
+
+        break;
+      case ConditionTypeValues.unknown:
+        conditionTitle = "Unknown";
+
+        break;
+      default:
+        conditionTitle = "No condition selected";
+        break;
+    }
+  }
+
+  return conditionTitle;
 }
 
 export default function ProfilesRulesScreen() {
@@ -134,12 +237,17 @@ export default function ProfilesRulesScreen() {
     useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
 
   // Get the editProfile info from the selected profile
-  const route = useRoute<ProfileScreenRouteProp>();
+  // const route = useRoute<ProfileScreenRouteProp>();
+
+  // const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
+  // useEffect(() => {
+  //   setRulesList(route.params.rules);
+  // }, [route.params.rules]);
 
   const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
   useEffect(() => {
-    setRulesList(route.params.rules);
-  }, [route.params.rules]);
+    setRulesList(lastSelectedProfile.rules);
+  }, []);
 
   function _addRule() {
     // const ruleKey = Math.random() * 1000;
@@ -202,7 +310,10 @@ export default function ProfilesRulesScreen() {
           })}
         >
           <Pressable
-            onPress={() => navigation.navigate("ProfileEditRuleScreen")}
+            onPress={() => {
+              navigation.navigate("ProfileEditRuleScreen");
+              lastSelectedRule = item;
+            }}
             onLongPress={() => {
               console.log("long pressed");
               drag();
@@ -210,11 +321,11 @@ export default function ProfilesRulesScreen() {
             disabled={isActive}
           >
             <ProfileRulesCard
-              onPress={() => navigation.navigate("ProfileEditRuleScreen")}
               key={EditableStore.getKey(item)}
               ruleCardInfo={{
                 ruleKey: EditableStore.getKey(item),
                 actions: GetActionTitles(item.actions),
+                condition: GetConditionTitle(item.condition),
               }}
             />
           </Pressable>
