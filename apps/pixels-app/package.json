@@ -14,9 +14,9 @@
     ]
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios"
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -47,6 +47,7 @@
     "@systemic-games/pixels-edit-animation": "*",
     "@systemic-games/react-native-pixels-components": "*",
     "expo": "~47.0.13",
+    "expo-splash-screen": "~0.17.5",
     "expo-status-bar": "~1.4.2",
     "native-base": "~3.4.25",
     "react": "18.1.0",
