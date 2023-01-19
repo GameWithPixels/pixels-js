@@ -31,7 +31,6 @@ import React, { useEffect } from "react";
 import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
 import { AnimationSettingsScreenRouteProps } from "~/Navigation";
-import EditAnimationSandbox from "~/features/EditAnimationSandbox";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -264,13 +263,6 @@ export default function AnimationSettingsScreen() {
               onPress: () => {
                 setLightingType("Gradient LED Pattern");
                 setEditAnim(new EditAnimationGradientPattern());
-              },
-            },
-            {
-              label: "Test anim type",
-              onPress: () => {
-                setLightingType("Test anim type");
-                setEditAnim(new EditAnimationSandbox());
               },
             },
           ]}
