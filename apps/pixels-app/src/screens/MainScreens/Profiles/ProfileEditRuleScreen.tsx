@@ -1,5 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import {
+  ActionTypeValues,
+  ConditionTypeValues,
+} from "@systemic-games/pixels-core-animation";
+import {
   EditAction,
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
@@ -12,6 +16,7 @@ import {
   EditConditionHelloGoodbye,
   EditConditionIdle,
   EditConditionRolling,
+  EditRule,
   EditWidgetData,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
@@ -20,6 +25,7 @@ import {
   createPixelTheme,
   PxAppPage,
   RuleConditionSelection,
+  RuleActionSelection,
   // RuleConditionSelection,
 } from "@systemic-games/react-native-pixels-components";
 import {
@@ -34,7 +40,9 @@ import {
 import React, { useEffect } from "react";
 
 import { RenderWidget } from "../Patterns/AnimationSettingsScreen";
-//import { lastSelectedRule } from "./ProfileRulesScreen";
+import { lastSelectedRule } from "./ProfileRulesScreen";
+
+import EditableStore from "~/features/EditableStore";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -53,84 +61,118 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
-const _Patterns = [
-  {
-    profileName: "Pattern 1",
-    imageRequirePath: require("~/../assets/YellowDice.png"),
-  },
-  {
-    profileName: "Pattern 2",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
-  },
-  {
-    profileName: "Pattern 3",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
-  },
-  {
-    profileName: "Pattern 4",
-    imageRequirePath: require("~/../assets/RainbowDice.png"),
-  },
-  {
-    profileName: "Pattern 5",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-  },
-  {
-    profileName: "Pattern 6",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-  },
-  {
-    profileName: "Pattern 7",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
-  },
-  {
-    profileName: "Pattern 8",
-    imageRequirePath: require("~/../assets/YellowDice.png"),
-  },
-  {
-    profileName: "Pattern 9",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-  },
-  {
-    profileName: "Pattern 10",
-    imageRequirePath: require("~/../assets/RainbowDice.png"),
-  },
-  {
-    profileName: "Pattern 11",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-  },
-  {
-    profileName: "Pattern 12",
-    imageRequirePath: require("~/../assets/RainbowDice.png"),
-  },
-  {
-    profileName: "Pattern 13",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
-  },
-  {
-    profileName: "Pattern 14",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-  },
-  {
-    profileName: "Pattern 15",
-    imageRequirePath: require("~/../assets/YellowDice.png"),
-  },
-];
+// export function GetConditionSimpleTitle(
+//   condition: EditCondition | undefined
+// ): string {
+//   console.log("condition type = " + condition?.type);
+//   let conditionTitle: string = "No action selected";
+//   if (condition) {
+//     switch (condition.type) {
+//       case ConditionTypeValues.handling:
+//         conditionTitle = "Pixel is picked up";
+//         break;
+//       case ConditionTypeValues.catteryState:
+//         conditionTitle = "Battery Event...";
+//         break;
+//       case ConditionTypeValues.connectionState:
+//         conditionTitle = "Bluethoot Event...";
+//         break;
+//       case ConditionTypeValues.crooked:
+//         conditionTitle = "Pixel is crooked";
+//         break;
+//       case ConditionTypeValues.faceCompare:
+//         conditionTitle = "Pixel roll is...";
+//         break;
+//       case ConditionTypeValues.helloGoodbye:
+//         conditionTitle = "Pixel wakes up / sleeps";
+//         break;
+//       case ConditionTypeValues.idle:
+//         conditionTitle = "Pixel is idle for...";
 
-interface RuleWidgetInfo {
-  widgetIndex: number;
-}
-interface RuleWidgetProps {
-  ruleInfo: RuleWidgetInfo;
+//         break;
+//       case ConditionTypeValues.rolling:
+//         conditionTitle = "Pixel is rolling";
+
+//         break;
+//       case ConditionTypeValues.unknown:
+//         conditionTitle = "Unknown";
+
+//         break;
+//       default:
+//         conditionTitle = "No condition selected";
+//         break;
+//     }
+//   }
+
+//   return conditionTitle;
+// }
+
+interface RuleActionWidgetProps {
+  action: EditAction;
   children?: React.ReactNode | React.ReactNode[];
   onDelete?: (() => void) | null | undefined;
 }
+interface RuleConditionWidgetProps {
+  condition: EditCondition;
+  children?: React.ReactNode | React.ReactNode[];
+}
 
-function RuleConditionWidget(props: RuleWidgetProps) {
+function RuleConditionWidget(props: RuleConditionWidgetProps) {
   const [editCondition, setEditCondition] = React.useState<EditCondition>(
     new EditConditionFaceCompare()
   );
-  const [conditionTitle, setConditionTitle] =
-    React.useState("Pixel roll is...");
+
+  useEffect(() => {
+    setEditCondition(props.condition);
+  }, [props.condition]);
+
+  const [_conditionTitle, setConditionTitle] = React.useState<string>();
+
+  function GetConditionSimpleTitle(
+    condition: EditCondition | undefined
+  ): string {
+    let conditionTitle: string = "No action selected";
+    if (condition) {
+      switch (condition.type) {
+        case ConditionTypeValues.handling:
+          conditionTitle = "Pixel is picked up";
+          break;
+        case ConditionTypeValues.catteryState:
+          conditionTitle = "Battery Event...";
+          break;
+        case ConditionTypeValues.connectionState:
+          conditionTitle = "Bluethoot Event...";
+          break;
+        case ConditionTypeValues.crooked:
+          conditionTitle = "Pixel is crooked";
+          break;
+        case ConditionTypeValues.faceCompare:
+          conditionTitle = "Pixel roll is...";
+          break;
+        case ConditionTypeValues.helloGoodbye:
+          conditionTitle = "Pixel wakes up / sleeps";
+          break;
+        case ConditionTypeValues.idle:
+          conditionTitle = "Pixel is idle for...";
+
+          break;
+        case ConditionTypeValues.rolling:
+          conditionTitle = "Pixel is rolling";
+
+          break;
+        case ConditionTypeValues.unknown:
+          conditionTitle = "Unknown";
+
+          break;
+        default:
+          conditionTitle = "No condition selected";
+          break;
+      }
+    }
+
+    return conditionTitle;
+  }
+
   return (
     <VStack
       space={2}
@@ -143,9 +185,8 @@ function RuleConditionWidget(props: RuleWidgetProps) {
       <HStack space={2} width="100%" alignItems="center">
         <Box flex={10} w="100%">
           <RuleConditionSelection
-            title={conditionTitle}
-            widgetIndexInList={props.ruleInfo.widgetIndex}
-            conditions={[
+            conditionTitle={GetConditionSimpleTitle(props.condition)}
+            possibleConditions={[
               {
                 label: "Pixel roll is...",
                 onPress: () => {
@@ -203,7 +244,6 @@ function RuleConditionWidget(props: RuleWidgetProps) {
                 },
               },
             ]}
-            conditionIndex={0}
           />
         </Box>
       </HStack>
@@ -214,13 +254,29 @@ function RuleConditionWidget(props: RuleWidgetProps) {
 
 /**
  * Widget for selecting a type of action to execute in a rule.
- * @param props See {@link RuleWidgetProps} for props params.
+ * @param props See {@link RuleActionWidgetProps} for props params.
  */
-function RuleActionWidget(props: RuleWidgetProps) {
+function RuleActionWidget(props: RuleActionWidgetProps) {
   const [editAction, setEditAction] = React.useState<EditAction>(
     new EditActionPlayAnimation()
   );
-  const [actionTitle, setActionTitle] = React.useState("Trigger Pattern");
+
+  useEffect(() => {
+    setEditAction(props.action);
+  }, [props.action]);
+
+  const [_actionTitle, setActionTitle] = React.useState("Trigger Pattern");
+
+  function getActionTitle(action: EditAction): string {
+    let actionTitle;
+    if (action.type === ActionTypeValues.playAnimation) {
+      actionTitle = "Trigger pattern";
+    } else {
+      actionTitle = "Play audio clip";
+    }
+
+    return actionTitle;
+  }
   return (
     <VStack
       space={2}
@@ -232,10 +288,9 @@ function RuleActionWidget(props: RuleWidgetProps) {
     >
       <HStack space={2} width="100%" alignItems="center">
         <Box flex={10} w="100%">
-          <RuleConditionSelection
-            title={actionTitle}
-            widgetIndexInList={props.ruleInfo.widgetIndex}
-            conditions={[
+          <RuleActionSelection
+            actionTitle={getActionTitle(editAction)}
+            possibleActions={[
               {
                 label: "Trigger Pattern",
                 onPress: () => {
@@ -251,7 +306,6 @@ function RuleActionWidget(props: RuleWidgetProps) {
                 },
               },
             ]}
-            conditionIndex={props.ruleInfo.widgetIndex}
           />
         </Box>
         <Button
@@ -269,55 +323,75 @@ function RuleActionWidget(props: RuleWidgetProps) {
 }
 
 export default function ProfileEditRuleScreen() {
-  const [rulesWidgetList, setRulesWidgetList] = React.useState<
-    RuleWidgetInfo[]
-  >([]);
+  const [rule, setRule] = React.useState<EditRule>();
+  const [ruleActions, setRuleActions] = React.useState<EditAction[]>([]);
 
-  // useEffect(()=>{
-  //   setRulesWidgetList(lastSelectedRule.actions)
-  // })
+  useEffect(() => {
+    setRule(lastSelectedRule);
+    if (rule?.actions) setRuleActions(rule.actions);
+  }, [rule?.actions]);
+
+  // useEffect(() => {
+  //   //Set the actions from the rules
+  //   const actions = lastSelectedRule.actions;
+  //   setRuleActions(actions);
+
+  //   const actionWidgets: RuleActionWidgetInfo[] = [];
+  //   // Set the actions inside RuleActionWidgetInfo for action widget props
+  //   ruleActions.forEach(function (action, index) {
+  //     const actionWidgetInfo: RuleActionWidgetInfo = {
+  //       action,
+  //       widgetIndex: index,
+  //     };
+  //     actionWidgets.push(actionWidgetInfo);
+  //   });
+  //   setRulesWidgetList(actionWidgets);
+  // }, [ruleActions]);
+
   const [_pattern, _setPattern] = React.useState(
     "-- Select a Lighting Pattern --"
   );
   const [_audioClip, _setAudioClip] = React.useState("-- Select Audio Clip --");
 
   function addAction() {
-    let widgetIndex = rulesWidgetList.length + 1;
-    widgetIndex = widgetIndex === 0 ? 1 : widgetIndex;
-    const ruleWidgetInfo: RuleWidgetInfo = { widgetIndex };
-    setRulesWidgetList([...rulesWidgetList, ruleWidgetInfo]);
-    console.log(rulesWidgetList);
+    const newAction = new EditActionPlayAnimation();
+    setRuleActions([...ruleActions, newAction]);
   }
 
-  function removeRule(widgetIndex: number) {
-    rulesWidgetList.splice(
-      rulesWidgetList.findIndex((widget) => {
-        return widget.widgetIndex === widgetIndex;
+  function removeAction(actionKey: number) {
+    ruleActions.splice(
+      ruleActions.findIndex((action) => {
+        return EditableStore.getKey(action) === actionKey;
       }),
       1
     );
-    setRulesWidgetList([...rulesWidgetList]);
+    setRuleActions([...ruleActions]);
   }
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={2} height={1000} w="100%">
         <RuleConditionWidget
-          ruleInfo={{ widgetIndex: 0 }}
-          onDelete={() => {
-            removeRule(0);
-          }}
+          condition={
+            rule?.condition ? rule.condition : new EditConditionFaceCompare()
+          }
         />
 
-        {rulesWidgetList.map((ruleWidgetInfo, key) => (
+        {ruleActions.map((action) => (
           <RuleActionWidget
-            key={key}
-            ruleInfo={ruleWidgetInfo}
+            key={EditableStore.getKey(action)}
+            action={action}
             onDelete={() => {
-              removeRule(ruleWidgetInfo.widgetIndex);
+              console.log("delete");
+              removeAction(EditableStore.getKey(action));
+              EditableStore.unregister(action);
             }}
           />
         ))}
-        <Pressable onPress={() => addAction()}>
+        <Pressable
+          onPress={() => {
+            addAction();
+          }}
+        >
           <Center borderWidth={1.5} borderColor="gray.600" rounded="md" h="125">
             <HStack
               space={4}
@@ -343,7 +417,6 @@ function ConditionEditor({ editCondition }: { editCondition: EditCondition }) {
   useEffect(() => {
     setConditionsWidgets(getEditWidgetsData(editCondition));
   }, [editCondition]);
-  console.log(editCondition);
   return (
     <VStack p={2} space={2} bg="gray.700" rounded="md">
       {conditionWidgets.map((widgets, key) => (
@@ -360,7 +433,6 @@ function ActionEditor({ editAction }: { editAction: EditAction }) {
   useEffect(() => {
     setConditionsWidgets(getEditWidgetsData(editAction));
   }, [editAction]);
-  console.log(editAction);
   return (
     <VStack p={2} space={2} bg="gray.700" rounded="md">
       {conditionWidgets.map((widgets, key) => (

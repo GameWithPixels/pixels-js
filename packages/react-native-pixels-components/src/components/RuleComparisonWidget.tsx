@@ -95,21 +95,12 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
 }
 
 export interface RuleConditionSelectionProps {
-  title?: string;
-  conditions: ActionSheetItemData[];
-  conditionIndex: number;
-  widgetIndexInList: number;
+  possibleConditions: ActionSheetItemData[];
+  conditionTitle?: string;
 }
 export function RuleConditionSelection(props: RuleConditionSelectionProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
-  let title = "When";
-  if (props.widgetIndexInList === 0) {
-    title = "When";
-  } else if (props.widgetIndexInList === 1) {
-    title = "Then";
-  } else {
-    title = "And";
-  }
+  const title = "When";
 
   return (
     <>
@@ -127,7 +118,7 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
             bg="darkBlue.800"
           >
             <Box flex={2}>
-              <Text fontSize="sm">{props.title}</Text>
+              <Text fontSize="sm">{props.conditionTitle}</Text>
             </Box>
             <Spacer />
             <Box>
@@ -140,7 +131,7 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
           <ScrollView w="100%">
-            {props.conditions.map((condition, key) => (
+            {props.possibleConditions.map((condition, key) => (
               <Actionsheet.Item
                 alignItems="center"
                 key={key}
@@ -151,6 +142,63 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
                 }}
               >
                 <Text fontSize="md">{condition.label}</Text>
+              </Actionsheet.Item>
+            ))}
+          </ScrollView>
+        </Actionsheet.Content>
+      </Actionsheet>
+    </>
+  );
+}
+
+export interface RuleActionSelectionProps {
+  possibleActions: ActionSheetItemData[];
+  actionTitle?: string;
+}
+export function RuleActionSelection(props: RuleActionSelectionProps) {
+  const { isOpen, onOpen, onClose } = useDisclose();
+  const title = "Then";
+
+  return (
+    <>
+      <HStack h={70} width="100%" alignItems="center">
+        <Box flex={1}>
+          <Text fontSize="2xl">{title}</Text>
+        </Box>
+        <Pressable flex={2} onPress={onOpen}>
+          <HStack
+            p={3}
+            paddingLeft={4}
+            w="100%"
+            alignItems="center"
+            rounded="lg"
+            bg="darkBlue.800"
+          >
+            <Box flex={2}>
+              <Text fontSize="sm">{props.actionTitle}</Text>
+            </Box>
+            <Spacer />
+            <Box>
+              <ChevronDownIcon />
+            </Box>
+          </HStack>
+        </Pressable>
+      </HStack>
+
+      <Actionsheet isOpen={isOpen} onClose={onClose}>
+        <Actionsheet.Content>
+          <ScrollView w="100%">
+            {props.possibleActions.map((actionTitle, key) => (
+              <Actionsheet.Item
+                alignItems="center"
+                key={key}
+                width="100%"
+                onPress={() => {
+                  actionTitle.onPress?.();
+                  onClose();
+                }}
+              >
+                <Text fontSize="md">{actionTitle.label}</Text>
               </Actionsheet.Item>
             ))}
           </ScrollView>

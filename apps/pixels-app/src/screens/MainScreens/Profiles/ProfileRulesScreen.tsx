@@ -10,7 +10,9 @@ import {
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditCondition,
+  EditConditionBatteryState,
   EditConditionConnectionState,
+  EditConditionFaceCompare,
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import {
@@ -37,12 +39,8 @@ import DraggableFlatList, {
   RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
-import {
-  EditConditionBatteryState,
-  EditConditionFaceCompare,
-} from "~/../../../packages/pixels-edit-animation/dist/types";
 
-import { lastSelectedProfile } from "./ProfilesListScreen";
+import { selectedProfile } from "./ProfilesListScreen";
 
 import {
   //ProfileScreenRouteProp,
@@ -153,14 +151,24 @@ function GetActionTitles(actions: EditAction[]): string[] {
 function GetConditionTitle(condition: EditCondition | undefined): string {
   let conditionTitle: string = "No action selected";
   let faceCompareFlag;
+  let batteryFlag;
   if (condition) {
     switch (condition.type) {
       case ConditionTypeValues.handling:
         conditionTitle = "die is picked up";
         break;
       case ConditionTypeValues.catteryState:
-        conditionTitle =
-          "battery is " + (condition as EditConditionBatteryState).flags;
+        batteryFlag = (condition as EditConditionBatteryState).flags;
+        if (batteryFlag === 0) {
+          conditionTitle = "battery is ok ";
+        } else if (batteryFlag === 1) {
+          conditionTitle = "battery is low ";
+        } else if (batteryFlag === 3) {
+          conditionTitle = "battery is charging";
+        } else if (batteryFlag === 4) {
+          conditionTitle = "battery is done charging";
+        }
+        // TODO add the variations with multiple selections at once
 
         break;
       case ConditionTypeValues.connectionState:
@@ -246,13 +254,10 @@ export default function ProfilesRulesScreen() {
 
   const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
   useEffect(() => {
-    setRulesList(lastSelectedProfile.rules);
+    setRulesList(selectedProfile.profile.rules);
   }, []);
 
   function _addRule() {
-    // const ruleKey = Math.random() * 1000;
-    // const ruleToAdd = DefaultRule;
-    // ruleToAdd.ruleKey = ruleKey;
     const newRule = new EditRule();
     // Register rule
     EditableStore.getKey(newRule);
@@ -275,7 +280,6 @@ export default function ProfilesRulesScreen() {
       }),
       1
     );
-    console.log(rulesList);
     setRulesList([...rulesList]);
     // Delete rule from register
     EditableStore.unregister(ruleToDelete);
@@ -311,8 +315,8 @@ export default function ProfilesRulesScreen() {
         >
           <Pressable
             onPress={() => {
-              navigation.navigate("ProfileEditRuleScreen");
               lastSelectedRule = item;
+              navigation.navigate("ProfileEditRuleScreen");
             }}
             onLongPress={() => {
               console.log("long pressed");

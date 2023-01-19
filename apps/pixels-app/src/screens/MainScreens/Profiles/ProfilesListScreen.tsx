@@ -63,6 +63,13 @@ const paleBluePixelThemeParams = {
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 const profiles = [...StandardProfiles.profiles];
+const defaultProfile = StandardProfiles.defaultProfile;
+defaultProfile.name = "Default profile";
+interface SelectedProfile {
+  profile: EditProfile;
+  profileKey: number;
+}
+export let selectedProfile: SelectedProfile;
 
 const placeHolderRequirePath = require("~/../assets/RainbowDice.png");
 const _defaultImageRequirePath = require("~/../assets/UI_Icons/D10.png");
@@ -275,7 +282,7 @@ export function ProfilesListScreen() {
                               // navigation.navigate("ProfileEditRuleScreen");
                               lastSelectedProfile = profile;
                               // navigation.navigate("ProfileRulesScreen");
-                              console.log(lastSelectedProfile.rules);
+                              // console.log(lastSelectedProfile.rules);
                             }}
                           />
                         </Swipeable>
@@ -358,8 +365,12 @@ export function ProfilesListScreen() {
                             borderWidth={1}
                             profileWithSound={false}
                             onPress={() => {
-                              lastSelectedProfile = profile;
-                              console.log(lastSelectedProfile.rules);
+                              //Trying to register the profile for updating it on the other screens
+                              selectedProfile = { profile, profileKey: 0 };
+                              selectedProfile.profileKey = EditableStore.getKey(
+                                selectedProfile.profile
+                              );
+                              console.log(selectedProfile.profile.rules);
                               navigation.navigate("ProfileRulesScreen");
                             }}
                           />
@@ -371,7 +382,7 @@ export function ProfilesListScreen() {
                     <CreateProfileWidget
                       onPress={() => {
                         // Empty profile that will need to be edited
-                        addProfile(new EditProfile());
+                        addProfile(defaultProfile);
                       }}
                     />
                   </Box>
