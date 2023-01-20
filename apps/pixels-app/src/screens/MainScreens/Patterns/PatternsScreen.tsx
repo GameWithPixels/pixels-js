@@ -10,49 +10,10 @@ import {
 } from "@systemic-games/react-native-pixels-components";
 import { Box, Center, HStack } from "native-base";
 import React, { useEffect } from "react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 import { PatternsScreenStackParamList } from "~/Navigation";
 import StandardProfiles from "~/features/StandardProfile";
 export let lastSelectedLightingPattern: EditAnimation;
-// const patterns: PatternInfo[] = [
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-//   {
-//     name: "Red To Blue",
-//     imageRequirePath: require("../../../../assets/BlueDice.png"),
-//   },
-// ];
 
 const standardLightingPatterns = [...StandardProfiles.animations];
 
@@ -102,22 +63,6 @@ export default function PatternsScreen() {
         <HStack flexWrap="wrap" justifyContent="flex-start">
           {lightingPatternInfoList.map((lightingPatternInfo, key) => (
             <Box key={key} alignSelf="center" p={1} w="50%">
-              {/* <PatternCard
-                onPress={() => {
-                  //@ts-expect-error error from pattern info type not being accepted while still working fine
-                  navigation.navigate("AnimationSettingsScreen", patternInfo);
-                }}
-                w="90%"
-                verticalSpace={2}
-                imageSize={70}
-                p={2}
-                borderWidth={1}
-                selectable
-                selectedPatternIndex={selectedPattern}
-                onSelected={setSelectedPattern}
-                patternIndexInList={key}
-                patternInfo={patternInfo}
-              /> */}
               <LightingPatternsCard
                 onPress={() => {
                   navigation.navigate("AnimationSettingsScreen");

@@ -5,7 +5,6 @@ import {
   EditAnimationGradient, // simple gradient
   EditAnimationGradientPattern,
   EditAnimationKeyframed, // gradient led pattern
-  EditAnimationKeyframed as _EditAnimationKeyframed, // color led pattern
   EditAnimationNoise as _EditAnimationNoise, // noise
   EditAnimationRainbow, // rainbow
   EditAnimationSimple, // simple flash
@@ -34,7 +33,7 @@ import { GradientColorSelection } from "~/../../../packages/react-native-pixels-
 import { lastSelectedLightingPattern } from "./PatternsScreen";
 
 import StandardProfiles from "~/features/StandardProfile";
-const standardPatterns = StandardProfiles.patterns;
+const standardPatterns = [...StandardProfiles.patterns];
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -201,6 +200,10 @@ export default function AnimationSettingsScreen() {
   const [editAnim, setEditAnim] = React.useState<EditAnimation>(
     new EditAnimationSimple()
   );
+
+  useEffect(() => {
+    setEditAnim(lastSelectedLightingPattern);
+  }, []);
   const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
     <PxAppPage theme={paleBluePixelTheme} h="100%">
