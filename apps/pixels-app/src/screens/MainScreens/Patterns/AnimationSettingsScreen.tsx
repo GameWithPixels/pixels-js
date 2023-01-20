@@ -1,13 +1,16 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
+  AnimationBits,
+  AnimationPreset,
   EditAnimation,
   EditAnimationGradient, // simple gradient
   EditAnimationGradientPattern,
   EditAnimationKeyframed, // gradient led pattern
   EditAnimationNoise as _EditAnimationNoise, // noise
   EditAnimationRainbow, // rainbow
-  EditAnimationSimple, // simple flash
+  EditAnimationSimple,
+  EditDataSet, // simple flash
   EditWidgetData,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
@@ -26,13 +29,22 @@ import {
   PlayBackFace,
   PatternActionSheet,
 } from "@systemic-games/react-native-pixels-components";
-import { VStack, Image, ScrollView, Center, Input, Text } from "native-base";
+import {
+  VStack,
+  ScrollView,
+  Center,
+  Input,
+  Text,
+  Button,
+  Box,
+} from "native-base";
 import React, { useEffect } from "react";
 import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
 import { lastSelectedLightingPattern } from "./PatternsScreen";
 
 import StandardProfiles from "~/features/StandardProfile";
+import DieRenderer from "~/features/render3d/DieRenderer";
 const standardPatterns = [...StandardProfiles.patterns];
 
 const paleBluePixelThemeParams = {
@@ -68,11 +80,9 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
             sliderTitle={widget.displayName}
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
-            //value={widget.getValue()}
+            value={widget.getValue()}
             step={step ?? 1}
             unitType={widget.unit ? widget.unit : undefined}
-            sliderBoxColor="PixelColors.accentPurple"
-            sliderTrackColor="PixelColors.pink"
             unitTextColor={undefined}
             sliderThumbColor={undefined}
             onSelectedValue={widget.update}
@@ -88,7 +98,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
             sliderTitle={widget.displayName}
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
-            //value={widget.getValue()}
+            value={widget.getValue()}
             step={step ?? 0.1}
             unitType={widget.unit ? widget.unit : undefined}
             sliderBoxColor="PixelColors.accentPurple"
@@ -113,8 +123,8 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
         <>
           {/* TODO Check what is supposed to tell the number of faces */}
           <FaceMask
+            //maskNumber={widget.getValue()}
             dieFaces={20}
-            //TODO check what is supposed to get returned for the facemask "update"
             onCloseAction={widget.update}
           />
         </>
@@ -147,7 +157,8 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "faceIndex": {
       return (
         <>
-          <FaceIndex faces={20} />
+          {/* //TODO check how to initialize default mask from widget */}
+          <FaceIndex faces={20} onIndexSelected={widget.update} />
         </>
       );
     } // for rules : condition on face, select one face
@@ -161,7 +172,11 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "toggle": {
       return (
         <>
-          <Toggle title={widget.displayName} onToggle={widget.update} />
+          <Toggle
+            value={widget.getValue()}
+            title={widget.displayName}
+            onToggle={widget.update}
+          />
         </>
       );
     }
@@ -207,6 +222,8 @@ export default function AnimationSettingsScreen() {
     new EditAnimationSimple()
   );
 
+  const [animation, setAnimation] = React.useState<AnimationPreset>();
+
   useEffect(() => {
     setEditAnim(lastSelectedLightingPattern);
   }, []);
@@ -226,13 +243,34 @@ export default function AnimationSettingsScreen() {
           />
         </Center>
         <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0}>
-          <Image
+          {/* <Image
             // PlaceHolderImage
             source={require("../../../../assets/BlueDice.png")}
             size={160}
             alt="description of image"
-          />
+          /> */}
         </Card>
+        <Box w="100%" h={200}>
+          <DieRenderer animation={animation} />
+          <Button
+            onPress={() => {
+              try {
+                let animation;
+                setAnimation(
+                  (animation = lastSelectedLightingPattern.toAnimation(
+                    new EditDataSet(),
+                    new AnimationBits()
+                  ))
+                );
+                console.log(animation);
+              } catch (error) {
+                console.error(error);
+              }
+            }}
+          >
+            Apply
+          </Button>
+        </Box>
         <LightingStyleSelection
           title={lightingTypeText}
           itemsData={[

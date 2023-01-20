@@ -40,7 +40,7 @@ export function SliderComponent(props: SliderProps) {
         >
           <Slider
             {...resolvedProps}
-            defaultValue={resolvedProps.minValue}
+            defaultValue={resolvedProps.defaultValue}
             minValue={resolvedProps.minValue}
             maxValue={resolvedProps.maxValue}
             size={resolvedProps.size}
@@ -65,7 +65,11 @@ export function SliderComponent(props: SliderProps) {
           minW={resolvedProps.unitBoxMinWidth}
           bg={resolvedProps.boxColor}
         >
-          <Text alignSelf="center">{onChangeValue + resolvedProps.unit}</Text>
+          <Text alignSelf="center">
+            {props.unitType
+              ? onChangeValue + props.unitType
+              : onChangeValue + ""}
+          </Text>
         </Box>
       </HStack>
     </VStack>

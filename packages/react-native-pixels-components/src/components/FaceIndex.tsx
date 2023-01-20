@@ -17,9 +17,10 @@ import React, { useRef } from "react";
 import { FlatList as ReactFlatList } from "react-native";
 
 export interface FaceIndexProps {
-  faces?: number;
+  faces: number;
   showTitle?: boolean;
   disabled?: boolean;
+  onIndexSelected?: (faceIndex: number) => void;
 }
 
 export function FaceIndex(props: FaceIndexProps) {
@@ -47,6 +48,7 @@ export function FaceIndex(props: FaceIndexProps) {
               <Actionsheet.Item
                 onPress={() => {
                   setFaceIndex(i + 1);
+                  props.onIndexSelected?.(faceIndex);
                   onClose();
                 }}
                 alignItems="center"
@@ -141,6 +143,7 @@ export function FaceIndex2(props: FaceIndexProps) {
 
 export interface PlayBackFaceProps {
   title?: string;
+  onToggle?: () => void;
 }
 
 export function PlayBackFace(props: PlayBackFaceProps) {

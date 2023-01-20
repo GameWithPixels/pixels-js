@@ -59,6 +59,7 @@ export interface RuleComparisonWidgetProps {
   borderColor?: ColorType;
   fontSize?: number | SizeType;
   onPress?: (() => void) | null | undefined;
+  onSelected?: (value: number) => void;
 }
 //TODO fix the way the component is updated when selection are made to work with the bitfield update function (not array of boolean)
 export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
