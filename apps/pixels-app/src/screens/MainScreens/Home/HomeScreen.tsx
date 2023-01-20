@@ -2,20 +2,30 @@ import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
+  AnimationRainbow,
+  Constants,
+} from "@systemic-games/pixels-core-animation";
+import {
   PxAppPage,
   PixelTheme,
   Toggle,
   createPixelTheme,
   PairedPixelInfoComponent,
-  PixelInfo,
   ScannedPixelInfoComponent,
   SquarePairedPixelInfo,
 } from "@systemic-games/react-native-pixels-components";
+import {
+  ScannedPixel,
+  initializeBle,
+  shutdownBle,
+  usePixelScanner,
+} from "@systemic-games/react-native-pixels-connect";
 import { Box, Center, HStack, Spacer, Text, VStack } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { HomeScreenStackParamList } from "~/Navigation";
 import { sr } from "~/Utils";
+import DieRenderer from "~/features/render3d/DieRenderer";
 
 // import { useAppDispatch, useAppSelector } from "~/app/hooks";
 // import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
@@ -48,9 +58,9 @@ const paleBluePixelThemeParams = {
   },
 };
 
-const pairedPixelsinfo: PixelInfo[] = [];
-const date = new Date();
-const scannedPixelsinfo: PixelInfo[] = [
+const pairedPixelsinfo: ScannedPixel[] = [];
+/*const date = new Date();
+const scannedPixelsinfo: ScannedPixel[] = [
   {
     name: "John",
     rssi: -60,
@@ -91,17 +101,28 @@ const scannedPixelsinfo: PixelInfo[] = [
     imageRequirePath: require("~/../assets/BlueDice.png"),
     pixelId: 73647812634,
   },
-];
+];*/
 
 interface PairedPixelListProps {
-  pairedPixels: PixelInfo[];
+  pairedPixels: ScannedPixel[];
   navigation: any;
 }
 function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
   const [PixelsDisplay, SwitchPixelsDisplay] = React.useState(false);
+  const [anim] = React.useState(() => {
+    const anim = new AnimationRainbow();
+    anim.duration = 10000;
+    anim.count = 1;
+    anim.traveling = true;
+    anim.faceMask = Constants.faceMaskAllLEDs;
+    return anim;
+  });
   return (
     <Center width="100%">
       <VStack space={2} w="100%">
+        <Box h={300} w={300}>
+          <DieRenderer animation={anim} />
+        </Box>
         <HStack alignItems="center">
           <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
             <Text bold fontSize="md" letterSpacing="xl">
@@ -155,9 +176,9 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
   );
 }
 interface NearbyPixelListProps {
-  scannedPixels: PixelInfo[];
-  pairedPixels: PixelInfo[];
-  setPairedPixels: React.Dispatch<React.SetStateAction<PixelInfo[]>>;
+  scannedPixels: ScannedPixel[];
+  pairedPixels: ScannedPixel[];
+  setPairedPixels: (pixels: ScannedPixel[]) => void;
   // onPress?: (() => void) | null | undefined; // any function to execute when pressing a pixel info
 }
 
@@ -167,7 +188,7 @@ function NearbyPixelsList({
   setPairedPixels,
 }: NearbyPixelListProps) {
   const [hideNearbyPixels, SetHideNearbyPixels] = React.useState(false);
-  function addToPaired(pixelToAdd: PixelInfo) {
+  function addToPaired(pixelToAdd: ScannedPixel) {
     const pixelName = pixelToAdd.name;
     scannedPixels.splice(
       scannedPixels.findIndex((pixel) => {
@@ -225,9 +246,18 @@ function NearbyPixelsList({
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 export default function HomeScreen() {
   const [pairedPixels, SetPairedPixels] = React.useState(pairedPixelsinfo);
-  const [scannedPixels] = React.useState(scannedPixelsinfo);
+  const [scannedPixels, scannerDispatch] = usePixelScanner();
   const navigation =
     useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
+
+  useEffect(() => {
+    console.log("GOOOOO");
+    initializeBle().catch(console.error);
+    scannerDispatch("start");
+    return () => {
+      shutdownBle().catch(console.error);
+    };
+  }, [scannerDispatch]);
 
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>

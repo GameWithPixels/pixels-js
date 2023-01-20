@@ -1,9 +1,7 @@
 import type { RouteProp } from "@react-navigation/native";
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
-import {
-  PatternInfo,
-  PixelInfo,
-} from "@systemic-games/react-native-pixels-components";
+import { PatternInfo } from "@systemic-games/react-native-pixels-components";
+import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 
 //Main screens stack params
 export type RootStackParamList = {
@@ -34,7 +32,7 @@ export type AnimationSettingsScreenRouteProps = RouteProp<
 //PixelDetailScreen params and props
 export type PixelDetailScreenStackParamList = {
   PixelAdvancedSettingsScreen: undefined;
-  PixelInfo: PixelInfo;
+  PixelInfo: ScannedPixel;
 };
 //For route
 export type PixelDetailScreenRouteProp = RouteProp<

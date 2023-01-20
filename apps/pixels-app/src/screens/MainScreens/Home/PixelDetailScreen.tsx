@@ -318,7 +318,7 @@ export default function PixelDetailScreen() {
             <Box w="50%" paddingLeft={0}>
               <Image
                 size={sr(200)}
-                source={pixelInfo.imageRequirePath}
+                // source={pixelInfo.imageRequirePath}
                 alt="placeHolder"
               />
             </Box>

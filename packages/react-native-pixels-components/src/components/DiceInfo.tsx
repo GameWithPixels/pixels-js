@@ -1,4 +1,5 @@
 import { Card } from "@systemic-games/react-native-base-components";
+import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import {
   HStack,
   VStack,
@@ -11,36 +12,18 @@ import {
   useDisclose,
 } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
-import { ImageSourcePropType } from "react-native";
 
 import { sr } from "../utils";
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
 
 /**
- * Die information to be used in dice info components.
- */
-export interface PixelInfo {
-  name: string;
-  rssi: number; // rssi value
-  batteryLevel: number;
-  ledCount: number; // number of faces(led) on the die
-  firmwareDate: string; //date.toString
-  profileName: string;
-  pixelId: number;
-
-  //Temporary for showing different images until 3d render
-  imageRequirePath?: ImageSourcePropType;
-}
-
-/**
- * Props for components displaying dice informations.
+ * Props for components displaying dice information.
  */
 export interface PixelInfoCardProps {
   h?: number | string;
   w?: number | string;
-  pixel: PixelInfo; // Die infos and values
+  pixel: ScannedPixel; // Die infos and values
   onPress?: (() => void) | null | undefined; // Function to be executed when pressing the die info
 }
 /**
@@ -59,7 +42,7 @@ export function PairedPixelInfoComponent({
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(70)}
-              source={pixel.imageRequirePath}
+              // source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
@@ -78,10 +61,10 @@ export function PairedPixelInfoComponent({
             </VStack>
             <VStack space={1} alignItems="baseline" h="100%">
               <Text flex={1} fontSize="2xs" isTruncated>
-                Firmware: {pixel.firmwareDate}
+                Firmware: {pixel.firmwareDate.toLocaleDateString()}
               </Text>
               <Text flex={1} isTruncated fontSize="xs">
-                Profile: {pixel.profileName}
+                Profile: Unknown
               </Text>
               <Box flex={1}>
                 <RSSIStrength percentage={pixel.rssi} />
@@ -95,7 +78,7 @@ export function PairedPixelInfoComponent({
 }
 
 /**
- * Squared info card for displaying paired dice informations.
+ * Squared info card for displaying paired dice information.
  * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
  */
 export function SquarePairedPixelInfo({
@@ -129,12 +112,12 @@ export function SquarePairedPixelInfo({
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(70)}
-              source={pixel.imageRequirePath}
+              // source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
           <Text isTruncated fontSize="xs">
-            Profile : {pixel.profileName}
+            Profile: Unknown
           </Text>
           <Text fontSize="xs">Face Up: {pixel.ledCount}</Text>
           <HStack space={sr(2)} w="100%">
@@ -160,7 +143,7 @@ export function SquarePairedPixelInfo({
 }
 
 /**
- * Horizontal info card for displaying scanned unpaired dice informations.
+ * Horizontal info card for displaying scanned unpaired dice information.
  * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
  */
 export function ScannedPixelInfoComponent({
@@ -182,7 +165,7 @@ export function ScannedPixelInfoComponent({
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(60)}
-              source={pixel.imageRequirePath}
+              // source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
