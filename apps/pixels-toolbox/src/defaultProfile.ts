@@ -3,7 +3,7 @@ import {
   loadAppDataSet,
 } from "@systemic-games/pixels-edit-animation";
 
-import defaultProfileJson from "~/../assets/default-profile.json";
+import defaultProfileJson from "!/default-profile.json";
 
 const niceProfileAppDataSet: Readonly<AppDataSet> =
   loadAppDataSet(defaultProfileJson);

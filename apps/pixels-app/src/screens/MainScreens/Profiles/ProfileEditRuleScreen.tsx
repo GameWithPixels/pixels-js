@@ -55,63 +55,63 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 const _Patterns = [
   {
     profileName: "Pattern 1",
-    imageRequirePath: require("~/../assets/YellowDice.png"),
+    imageRequirePath: require("!/YellowDice.png"),
   },
   {
     profileName: "Pattern 2",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
+    imageRequirePath: require("!/BlueDice.png"),
   },
   {
     profileName: "Pattern 3",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
+    imageRequirePath: require("!/BlueDice.png"),
   },
   {
     profileName: "Pattern 4",
-    imageRequirePath: require("~/../assets/RainbowDice.png"),
+    imageRequirePath: require("!/RainbowDice.png"),
   },
   {
     profileName: "Pattern 5",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+    imageRequirePath: require("!/DieImageTransparent.png"),
   },
   {
     profileName: "Pattern 6",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+    imageRequirePath: require("!/DieImageTransparent.png"),
   },
   {
     profileName: "Pattern 7",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
+    imageRequirePath: require("!/BlueDice.png"),
   },
   {
     profileName: "Pattern 8",
-    imageRequirePath: require("~/../assets/YellowDice.png"),
+    imageRequirePath: require("!/YellowDice.png"),
   },
   {
     profileName: "Pattern 9",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+    imageRequirePath: require("!/DieImageTransparent.png"),
   },
   {
     profileName: "Pattern 10",
-    imageRequirePath: require("~/../assets/RainbowDice.png"),
+    imageRequirePath: require("!/RainbowDice.png"),
   },
   {
     profileName: "Pattern 11",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+    imageRequirePath: require("!/DieImageTransparent.png"),
   },
   {
     profileName: "Pattern 12",
-    imageRequirePath: require("~/../assets/RainbowDice.png"),
+    imageRequirePath: require("!/RainbowDice.png"),
   },
   {
     profileName: "Pattern 13",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
+    imageRequirePath: require("!/BlueDice.png"),
   },
   {
     profileName: "Pattern 14",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+    imageRequirePath: require("!/DieImageTransparent.png"),
   },
   {
     profileName: "Pattern 15",
-    imageRequirePath: require("~/../assets/YellowDice.png"),
+    imageRequirePath: require("!/YellowDice.png"),
   },
 ];
 
