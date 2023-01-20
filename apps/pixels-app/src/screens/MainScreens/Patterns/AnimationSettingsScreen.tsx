@@ -26,7 +26,7 @@ import {
   PlayBackFace,
   PatternActionSheet,
 } from "@systemic-games/react-native-pixels-components";
-import { VStack, Image, ScrollView, Center, Input } from "native-base";
+import { VStack, Image, ScrollView, Center, Input, Text } from "native-base";
 import React, { useEffect } from "react";
 import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 

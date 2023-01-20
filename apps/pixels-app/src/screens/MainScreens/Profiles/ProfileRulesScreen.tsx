@@ -251,12 +251,12 @@ export default function ProfilesRulesScreen() {
     setRulesList(selectedProfile.profile.rules);
   }, []);
 
-  function _addRule() {
-    const newRule = new EditRule();
-    // Register rule
-    EditableStore.getKey(newRule);
-    setRulesList([...rulesList, newRule]);
-  }
+  // function _addRule() {
+  //   const newRule = new EditRule();
+  //   // Register rule
+  //   EditableStore.getKey(newRule);
+  //   setRulesList([...rulesList, newRule]);
+  // }
 
   function duplicateRule(ruleToDuplicate: EditRule, index: number) {
     const duplicatedRule = ruleToDuplicate.duplicate();
