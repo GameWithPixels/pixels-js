@@ -1,55 +1,21 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { EditAnimation } from "@systemic-games/pixels-edit-animation";
 import {
-  PatternCard,
-  PatternInfo,
   PxAppPage,
   PixelTheme,
   createPixelTheme,
+  LightingPatternsCard,
+  LightingPatternsInfo,
 } from "@systemic-games/react-native-pixels-components";
 import { Box, Center, HStack } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { PatternsScreenStackParamList } from "~/Navigation";
+import StandardProfiles from "~/features/StandardProfile";
+export let lastSelectedLightingPattern: EditAnimation;
 
-const patterns: PatternInfo[] = [
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-  {
-    name: "Red To Blue",
-    imageRequirePath: require("../../../../assets/BlueDice.png"),
-  },
-];
+const standardLightingPatterns = [...StandardProfiles.animations];
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -70,29 +36,45 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 export default function PatternsScreen() {
   const navigation =
     useNavigation<StackNavigationProp<PatternsScreenStackParamList>>();
-  const [selectedPattern, setSelectedPattern] = React.useState<number>();
+  // const [selectedLightingPattern, setSelectedLightingPattern] =
+  //   React.useState<EditAnimation>();
+
+  const [patternList, _setPatternsList] = React.useState<EditAnimation[]>(
+    standardLightingPatterns
+  );
+  const [lightingPatternInfoList, setLightingPatternInfoList] = React.useState<
+    LightingPatternsInfo[]
+  >([]);
+
+  useEffect(() => {
+    const infos: LightingPatternsInfo[] = [];
+    patternList.map((lightingPattern) =>
+      infos.push({
+        editAnimation: lightingPattern,
+        imageRequirePath: require("../../../../assets/BlueDice.png"),
+      })
+    );
+    setLightingPatternInfoList(infos);
+  }, [patternList]);
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       {/* TODO try to replace with flatlist and disable scroll in page */}
       <Center>
         <HStack flexWrap="wrap" justifyContent="flex-start">
-          {patterns.map((patternInfo, key) => (
+          {lightingPatternInfoList.map((lightingPatternInfo, key) => (
             <Box key={key} alignSelf="center" p={1} w="50%">
-              <PatternCard
+              <LightingPatternsCard
                 onPress={() => {
-                  //@ts-expect-error error from pattern info type not being accepted while still working fine
-                  navigation.navigate("AnimationSettingsScreen", patternInfo);
+                  navigation.navigate("AnimationSettingsScreen");
+                  lastSelectedLightingPattern =
+                    lightingPatternInfo.editAnimation;
                 }}
                 w="90%"
                 verticalSpace={2}
                 imageSize={70}
                 p={2}
                 borderWidth={1}
-                selectable
-                selectedPatternIndex={selectedPattern}
-                onSelected={setSelectedPattern}
-                patternIndexInList={key}
-                patternInfo={patternInfo}
+                lightingPatternInfo={lightingPatternInfo}
               />
             </Box>
           ))}

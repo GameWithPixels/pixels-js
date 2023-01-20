@@ -2,6 +2,20 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
+  ActionTypeValues,
+  ConditionTypeValues,
+} from "@systemic-games/pixels-core-animation";
+import {
+  EditAction,
+  EditActionPlayAnimation,
+  EditActionPlayAudioClip,
+  EditCondition,
+  EditConditionBatteryState,
+  EditConditionConnectionState,
+  EditConditionFaceCompare,
+  EditRule,
+} from "@systemic-games/pixels-edit-animation";
+import {
   Card,
   createPixelTheme,
   createSwipeableSideButton,
@@ -19,14 +33,20 @@ import {
   Text,
   Input,
 } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
 
-import { ProfilesScreenParamList } from "~/Navigation";
+import { selectedProfile } from "./ProfilesListScreen";
+
+import {
+  //ProfileScreenRouteProp,
+  ProfilesScreenStackParamList,
+} from "~/Navigation";
+import EditableStore from "~/features/EditableStore";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -78,11 +98,7 @@ const rules: RuleCardInfo[] = [
   },
 ];
 
-const DefaultRule: RuleCardInfo = {
-  ruleKey: 7487584890487,
-  condition: "roll is equal to 1",
-  actions: [" trigger patterns : Red To Blue "],
-};
+export let lastSelectedRule: EditRule;
 
 interface CreateRuleWidgetProps {
   onPress?: () => void;
@@ -110,47 +126,163 @@ function _CreateRuleWidget(props: CreateRuleWidgetProps) {
   );
 }
 
-export default function ProfilesRulesScreen() {
-  const navigation =
-    useNavigation<StackNavigationProp<ProfilesScreenParamList>>();
-  const [rulesList, setRulesList] = React.useState<RuleCardInfo[]>(rules);
+function GetActionTitles(actions: EditAction[]): string[] {
+  const actionsTitles: any[] = [];
 
-  function _addRule() {
-    const ruleKey = Math.random() * 1000;
-    const ruleToAdd = DefaultRule;
-    ruleToAdd.ruleKey = ruleKey;
-    setRulesList([...rulesList, ruleToAdd]);
+  actions.forEach(function (action) {
+    if (action.type === ActionTypeValues.playAnimation) {
+      actionsTitles.push(
+        "Play " + (action as EditActionPlayAnimation).animation?.name
+      );
+    } else {
+      actionsTitles.push(
+        "Play " + (action as EditActionPlayAudioClip).clip?.name
+      );
+    }
+  });
+  return actionsTitles;
+}
+function GetConditionTitle(condition: EditCondition | undefined): string {
+  let conditionTitle: string = "No action selected";
+  let faceCompareFlag;
+  let batteryFlag;
+  if (condition) {
+    switch (condition.type) {
+      case ConditionTypeValues.handling:
+        conditionTitle = "die is picked up";
+        break;
+      case ConditionTypeValues.batteryState:
+        batteryFlag = (condition as EditConditionBatteryState).flags;
+        if (batteryFlag === 0) {
+          conditionTitle = "battery is ok ";
+        } else if (batteryFlag === 1) {
+          conditionTitle = "battery is low ";
+        } else if (batteryFlag === 3) {
+          conditionTitle = "battery is charging";
+        } else if (batteryFlag === 4) {
+          conditionTitle = "battery is done charging";
+        }
+        // TODO add the variations with multiple selections at once
+
+        break;
+      case ConditionTypeValues.connectionState:
+        conditionTitle =
+          "die is " + (condition as EditConditionConnectionState).flags;
+
+        break;
+      case ConditionTypeValues.crooked:
+        conditionTitle = "die is crooked";
+
+        break;
+      case ConditionTypeValues.faceCompare:
+        faceCompareFlag = (condition as EditConditionFaceCompare).flags;
+        if (faceCompareFlag === 0) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is less than " + faceIndex;
+        } else if (faceCompareFlag === 1) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is equal to " + faceIndex;
+        } else if (faceCompareFlag === 2) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is greater than " + faceIndex;
+        } else if (faceCompareFlag === 3) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is less or equal to " + faceIndex;
+        } else if (faceCompareFlag === 4) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is less or greater than " + faceIndex;
+        } else if (faceCompareFlag === 5) {
+          const faceIndex =
+            (condition as EditConditionFaceCompare).faceIndex + 1;
+          conditionTitle = "die roll is equal or greater than " + faceIndex;
+        } else {
+          conditionTitle = "die is any";
+        }
+        break;
+      case ConditionTypeValues.helloGoodbye:
+        if ((condition as EditConditionConnectionState).flags === 0) {
+          conditionTitle = "Die is waking up";
+        } else if ((condition as EditConditionConnectionState).flags === 1) {
+          conditionTitle = "Die is going to sleep";
+        } else {
+          conditionTitle = "Die is waking up or going to sleep";
+        }
+        break;
+      case ConditionTypeValues.idle:
+        conditionTitle = "Die is idle";
+
+        break;
+      case ConditionTypeValues.rolling:
+        conditionTitle = "Die is rolling";
+
+        break;
+      case ConditionTypeValues.unknown:
+        conditionTitle = "Unknown";
+
+        break;
+      default:
+        conditionTitle = "No condition selected";
+        break;
+    }
   }
 
-  function duplicateRule(ruleToDuplicate: RuleCardInfo, index: number) {
-    const duplicateRule = { ...ruleToDuplicate };
-    duplicateRule.ruleKey = Math.random() * 1000;
-    rulesList.splice(index + 1, 0, duplicateRule);
+  return conditionTitle;
+}
+
+export default function ProfilesRulesScreen() {
+  const navigation =
+    useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
+
+  // Get the editProfile info from the selected profile
+  // const route = useRoute<ProfileScreenRouteProp>();
+
+  // const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
+  // useEffect(() => {
+  //   setRulesList(route.params.rules);
+  // }, [route.params.rules]);
+
+  const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
+  useEffect(() => {
+    setRulesList(selectedProfile.profile.rules);
+  }, []);
+
+  // function _addRule() {
+  //   const newRule = new EditRule();
+  //   // Register rule
+  //   EditableStore.getKey(newRule);
+  //   setRulesList([...rulesList, newRule]);
+  // }
+
+  function duplicateRule(ruleToDuplicate: EditRule, index: number) {
+    const duplicatedRule = ruleToDuplicate.duplicate();
+    // Register duplicated rule
+    EditableStore.getKey(duplicatedRule);
+    rulesList.splice(index + 1, 0, duplicatedRule);
     setRulesList([...rulesList]);
   }
 
-  function deleteRule(ruleToDelete: RuleCardInfo) {
-    console.log("delete");
-    const ruleKey = ruleToDelete.ruleKey;
-    console.log("rule key :" + ruleKey);
+  function deleteRule(ruleToDelete: EditRule) {
+    const ruleKey = EditableStore.getKey(ruleToDelete);
     rulesList.splice(
       rulesList.findIndex((ruleToDelete) => {
-        return ruleToDelete.ruleKey === ruleKey;
+        return EditableStore.getKey(ruleToDelete) === ruleKey;
       }),
       1
     );
-    console.log(rulesList);
     setRulesList([...rulesList]);
+    // Delete rule from register
+    EditableStore.unregister(ruleToDelete);
   }
-  const renderItem = ({
-    item,
-    drag,
-    isActive,
-  }: RenderItemParams<RuleCardInfo>) => {
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<EditRule>) => {
     return (
       <ScaleDecorator>
         <Swipeable
-          key={item.ruleKey}
+          key={EditableStore.getKey(item)}
           renderRightActions={createSwipeableSideButton({
             w: 120,
             buttons: [
@@ -176,7 +308,10 @@ export default function ProfilesRulesScreen() {
           })}
         >
           <Pressable
-            onPress={() => navigation.navigate("ProfileEditRuleScreen")}
+            onPress={() => {
+              lastSelectedRule = item;
+              navigation.navigate("ProfileEditRuleScreen");
+            }}
             onLongPress={() => {
               console.log("long pressed");
               drag();
@@ -184,9 +319,12 @@ export default function ProfilesRulesScreen() {
             disabled={isActive}
           >
             <ProfileRulesCard
-              onPress={() => navigation.navigate("ProfileEditRuleScreen")}
-              key={item.ruleKey}
-              ruleCardInfo={item}
+              key={EditableStore.getKey(item)}
+              ruleCardInfo={{
+                ruleKey: EditableStore.getKey(item),
+                actions: GetActionTitles(item.actions),
+                condition: GetConditionTitle(item.condition),
+              }}
             />
           </Pressable>
         </Swipeable>
@@ -219,11 +357,12 @@ export default function ProfilesRulesScreen() {
           </Box>
         </HStack>
         <Text bold>Rules for this profile : </Text>
-        <Box h="78%" p={1}>
+        <_CreateRuleWidget />
+        <Box h={600} p={1}>
           <DraggableFlatList
             data={rulesList}
             onDragEnd={({ data }) => setRulesList(data)}
-            keyExtractor={(item) => item.ruleKey?.toString()}
+            keyExtractor={(item) => EditableStore.getKey(item)?.toString()}
             renderItem={renderItem}
             ItemSeparatorComponent={SeparatorItem}
           />

@@ -8,12 +8,12 @@ const _editList: (Editable | undefined)[] = [];
  */
 const EditableStore = {
   /**
-   * Add an object to the store and returns its unique key.
-   * @remarks An object registered multiple times will return the same key.
+   * Returns a unique key for the given object.
+   * @remarks The object is kept in an internal store, call {@link unregister} to remove it.
    * @param editable The Pixels Animation {@link Editable} object to register.
    * @returns The unique key associated with the object.
    */
-  register: (editable: Editable): number => {
+  getKey: (editable: Editable): number => {
     const key = _editList.indexOf(editable);
     if (key < 0) {
       _editList.push(editable);
@@ -21,19 +21,6 @@ const EditableStore = {
     } else {
       return key;
     }
-  },
-
-  /**
-   * Returns the unique key associated with the given object.
-   * @param editable The Pixels Animation {@link Editable} for which to return the key.
-   * @returns The unique key associated with the object.
-   */
-  getKey: (editable: Editable): number => {
-    const key = _editList.indexOf(editable);
-    if (key < 0) {
-      throw new Error("Editable object not registered");
-    }
-    return key;
   },
 
   /**
