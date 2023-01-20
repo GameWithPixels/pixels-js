@@ -13,6 +13,7 @@ import EditDataSet from "./EditDataSet";
 import { name, range, widget } from "./decorators";
 
 export default class EditActionPlayAnimation extends EditAction {
+  @widget("animation")
   @name("Lighting Pattern")
   animation?: EditAnimation;
 

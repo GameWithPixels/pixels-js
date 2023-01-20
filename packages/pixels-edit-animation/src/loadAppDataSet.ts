@@ -80,7 +80,7 @@ function toAudioClips(audioClips?: Json.AudioClip[]): EditAudioClip[] {
   return audioClips?.map((ac) => safeAssign(new EditAudioClip(), ac)) ?? [];
 }
 
-function toCondition(condition?: Json.Condition): EditCondition | undefined {
+function toCondition(condition?: Json.Condition): EditCondition {
   if (condition?.data) {
     const data = condition.data;
     //TODO make those creations and assignments in a more generic way
@@ -105,6 +105,8 @@ function toCondition(condition?: Json.Condition): EditCondition | undefined {
       default:
         throw Error(`Unsupported condition type ${condition.type}`);
     }
+  } else {
+    throw Error("No data for the condition");
   }
 }
 
@@ -145,12 +147,13 @@ function toRules(
   rules?: Json.Rule[]
 ): EditRule[] {
   return (
-    rules?.map((r) => {
-      const rule = new EditRule();
-      rule.condition = toCondition(r.condition);
-      rule.actions.push(...toActions(animations, audioClips, r.actions));
-      return rule;
-    }) ?? []
+    rules?.map(
+      (r) =>
+        new EditRule(
+          toCondition(r.condition),
+          toActions(animations, audioClips, r.actions)
+        )
+    ) ?? []
   );
 }
 

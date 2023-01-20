@@ -21,6 +21,11 @@ export default async function (
   virtualAssetModule: string | number,
   assetFilename: string
 ): Promise<Asset> {
+  if (!assetFilename) {
+    // Even though a name is necessary only on Android standalone, we make sure it's always there
+    // so Android builds don't mysteriously fail
+    throw new Error("ensureAssetReadable(): Empty asset filename");
+  }
   const asset = Asset.fromModule(virtualAssetModule);
   // Check if we are running on Android and if the asset as a scheme
   if (
@@ -32,8 +37,7 @@ export default async function (
     return asset;
   } else {
     // Copy file to cache directory so ExpoTHREE.loadAsync() can read it
-    const directoryUri = `${FileSystem.cacheDirectory}copiedFromResource`;
-    const localUri = `${directoryUri}/${assetFilename}`;
+    const localUri = `${FileSystem.cacheDirectory}copiedFromResource/${assetFilename}`;
     const fileInfo = await FileSystem.getInfoAsync(localUri, { size: false });
     if (!fileInfo.exists) {
       if (!asset.localUri) {
@@ -42,7 +46,23 @@ export default async function (
       if (!asset.localUri) {
         throw new Error("Can't copy file to cache because it has no local URI");
       }
-      await FileSystem.makeDirectoryAsync(directoryUri);
+      const directoryUri = localUri.substring(0, localUri.lastIndexOf("/"));
+      const dirInfo = await FileSystem.getInfoAsync(directoryUri);
+      if (!dirInfo.isDirectory) {
+        // Recursively create directory
+        const directories = assetFilename.split("/");
+        directories.pop();
+        let subDirectoryUri = FileSystem.cacheDirectory!;
+        for (let i = 0; i < directories.length; ++i) {
+          if (directories[i]) {
+            subDirectoryUri += directories[i] + "/";
+            const subDirInfo = await FileSystem.getInfoAsync(subDirectoryUri);
+            if (!subDirInfo.isDirectory) {
+              await FileSystem.makeDirectoryAsync(subDirectoryUri);
+            }
+          }
+        }
+      }
       await FileSystem.copyAsync({
         from: asset.localUri,
         to: localUri,

@@ -7,6 +7,7 @@ import {
 import {
   createTypedEventEmitter,
   EventReceiver,
+  SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
 import {
   Central,
@@ -15,7 +16,6 @@ import {
 
 import type ScannedPixel from "./ScannedPixel";
 import SequentialDataReader from "./SequentialDataReader";
-import SequentialPromiseQueue from "./SequentialPromiseQueue";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 

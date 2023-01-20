@@ -1,4 +1,7 @@
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
+import {
+  ScannedPixel,
+  useFocusPixelScanner,
+} from "@systemic-games/react-native-pixels-connect";
 import {
   Button,
   Box,
@@ -12,7 +15,6 @@ import { useTranslation } from "react-i18next";
 
 import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
-import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 
 export default function ({
   onSelected,

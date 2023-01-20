@@ -8,10 +8,10 @@ import EditDataSet from "./EditDataSet";
 import Editable from "./Editable";
 
 export default class EditRule extends Editable {
-  condition?: EditCondition;
+  condition: EditCondition;
   readonly actions: EditAction[];
 
-  constructor(condition?: EditCondition, actions: EditAction[] = []) {
+  constructor(condition: EditCondition, actions: EditAction[] = []) {
     super();
     this.condition = condition;
     this.actions = actions;
