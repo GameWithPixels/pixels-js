@@ -3,6 +3,7 @@ import {
   getPixel,
   Pixel,
   ScannedPixel,
+  usePixelScanner,
 } from "@systemic-games/react-native-pixels-connect";
 import { Button, HStack, Text } from "native-base";
 import {
@@ -25,7 +26,6 @@ import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import useTimeout from "~/features/hooks/useTimeout";
 import { DieType, getLedCount } from "~/features/pixels/DieType";
-import usePixelScanner from "~/features/pixels/hooks/usePixelScanner";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";

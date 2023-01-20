@@ -1,22 +1,22 @@
-import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
-  PixelScanner,
-  ScannedPixel,
-} from "@systemic-games/react-native-pixels-connect";
+  assertNever,
+  SequentialPromiseQueue,
+} from "@systemic-games/pixels-core-utils";
 
-import SequentialPromiseQueue from "~/utils/SequentialPromiseQueue";
+import PixelScanner from "./PixelScanner";
+import ScannedPixel from "./ScannedPixel";
 
 /**
  * Actions to be taken on a {@link PixelScanList} instance.
  */
-export type PixelsScanListAction = "start" | "stop" | "clear";
+export type PixelScanNotifierAction = "start" | "stop" | "clear";
 
 /**
  * Represents an up-to-date list of scanned Pixels.
  * Subscribe to the "updated" event to get notified
  * when the list is changed.
  */
-export default class PixelsScanList {
+export default class PixelScanNotifier {
   private readonly _scanner = new PixelScanner();
   private readonly _queue = new SequentialPromiseQueue();
   private readonly _pixels: ScannedPixel[] = [];
@@ -37,7 +37,7 @@ export default class PixelsScanList {
   }
 
   // Reducer like function for a PixelScanner
-  async dispatch(action: PixelsScanListAction): Promise<void> {
+  async dispatch(action: PixelScanNotifierAction): Promise<void> {
     return this._queue.run(async () => {
       const scanner = this._scanner;
       switch (action) {

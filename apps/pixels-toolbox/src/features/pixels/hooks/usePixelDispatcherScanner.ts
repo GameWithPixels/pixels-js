@@ -1,9 +1,12 @@
-import { getPixelUniqueName } from "@systemic-games/react-native-pixels-connect";
+import {
+  getPixelUniqueName,
+  PixelScannerAction,
+  PixelScanNotifier,
+  UsePixelScannerOptions,
+} from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import PixelDispatcher from "../PixelDispatcher";
-import PixelScanNotifier from "../PixelScanNotifier";
-import { PixelScannerAction, UsePixelScannerOptions } from "./usePixelScanner";
 
 export interface UsePixelDispatcherScannerOptions
   extends UsePixelScannerOptions {}

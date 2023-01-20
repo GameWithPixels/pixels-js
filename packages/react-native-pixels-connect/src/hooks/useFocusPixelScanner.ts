@@ -1,13 +1,13 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import { useCallback } from "react";
 
+import ScannedPixel from "../ScannedPixel";
 import usePixelScanner, {
   PixelScannerAction,
   UsePixelScannerOptions,
 } from "./usePixelScanner";
 
-interface UseFocusPixelScannerOptions extends UsePixelScannerOptions {}
+export interface UseFocusPixelScannerOptions extends UsePixelScannerOptions {}
 
 // Returned dispatch function is stable
 export default function (
