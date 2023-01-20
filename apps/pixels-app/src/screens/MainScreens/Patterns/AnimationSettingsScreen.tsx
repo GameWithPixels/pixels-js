@@ -263,13 +263,6 @@ export default function AnimationSettingsScreen() {
                 setEditAnim(new EditAnimationGradientPattern());
               },
             },
-            {
-              label: "Test anim type",
-              onPress: () => {
-                setLightingType("Test anim type");
-                setEditAnim(new EditAnimationSandbox());
-              },
-            },
           ]}
         />
         {AnimationEditor({ editAnim })}

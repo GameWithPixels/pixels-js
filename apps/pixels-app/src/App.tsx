@@ -14,9 +14,11 @@ import ProfilesNavigator from "./screens/MainScreens/Profiles/ProfilesNavigator"
 
 import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
 
-// Disable this warning that comes from NativeBase
 LogBox.ignoreLogs([
+  // From NativeBase
   "We can not support a function callback. See Github Issues for details https://github.com/adobe/react-spectrum/issues/2320",
+  // From Three.js
+  "THREE.FileLoader: HTTP Status 0 received.",
 ]);
 
 export default function App() {

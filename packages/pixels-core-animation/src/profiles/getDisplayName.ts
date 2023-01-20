@@ -76,7 +76,7 @@ export function getConditionTypeDisplayName(
       return { name: "Pixel is crooked", order: 4 };
     case ConditionTypeValues.connectionState:
       return { name: "Bluetooth Event...", order: 5 };
-    case ConditionTypeValues.catteryState:
+    case ConditionTypeValues.batteryState:
       return { name: "Battery Event...", order: 6 };
     case ConditionTypeValues.idle:
       return { name: "Pixel is idle for...", order: 7 };

@@ -26,5 +26,17 @@
     {
       "path": "./../../packages/pixels-edit-animation"
     },
+    {
+      "path": "./../../packages/react-native-pixels-connect"
+    },
+    {
+      "path": "./../../packages/pixels-edit-animation"
+    },
+    {
+      "path": "./../../packages/pixels-react"
+    },
+    {
+      "path": "./../../packages/pixels-three"
+    }
   ]
 }

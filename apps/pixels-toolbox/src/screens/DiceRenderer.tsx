@@ -22,7 +22,7 @@ class IconMesh extends Mesh {
     super(
       new BoxGeometry(1.0, 1.0, 1.0),
       new MeshStandardMaterial({
-        map: new TextureLoader().load(require("~/../assets/images/icon.png")),
+        map: new TextureLoader().load(require("!/images/icon.png")),
       })
     );
   }

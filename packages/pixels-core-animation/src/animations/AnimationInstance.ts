@@ -13,6 +13,10 @@ export default abstract class AnimationInstance {
     return this._startTime;
   }
 
+  get duration(): number {
+    return this._animationPreset.duration;
+  }
+
   protected get animationPreset(): AnimationPreset {
     return this._animationPreset;
   }

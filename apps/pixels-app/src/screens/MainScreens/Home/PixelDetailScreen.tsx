@@ -364,31 +364,31 @@ export default function PixelDetailScreen() {
             availableProfiles={[
               {
                 profileName: "Rainbow",
-                imageRequirePath: require("~/../assets/RainbowDice.png"),
+                imageRequirePath: require("!/RainbowDice.png"),
               },
               {
                 profileName: "Waterfall",
-                imageRequirePath: require("~/../assets/BlueDice.png"),
+                imageRequirePath: require("!/BlueDice.png"),
               },
               {
                 profileName: "Red to Blue",
-                imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+                imageRequirePath: require("!/DieImageTransparent.png"),
               },
               {
                 profileName: "Speak",
-                imageRequirePath: require("~/../assets/DieImageTransparent.png"),
+                imageRequirePath: require("!/DieImageTransparent.png"),
               },
               {
                 profileName: "Custom",
-                imageRequirePath: require("~/../assets/RainbowDice.png"),
+                imageRequirePath: require("!/RainbowDice.png"),
               },
               {
                 profileName: "Flashy",
-                imageRequirePath: require("~/../assets/YellowDice.png"),
+                imageRequirePath: require("!/YellowDice.png"),
               },
               {
                 profileName: "Explosion",
-                imageRequirePath: require("~/../assets/YellowDice.png"),
+                imageRequirePath: require("!/YellowDice.png"),
               },
             ]}
           />
