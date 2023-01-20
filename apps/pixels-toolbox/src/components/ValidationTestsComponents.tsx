@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import ProgressBar from "./ProgressBar";
 import TaskGroupComponent from "./TaskGroupContainer";
 
-import dfuFiles from "~/../assets/factory-dfu-files.zip";
+import dfuFiles from "!/factory-dfu-files.zip";
 import defaultProfile from "~/defaultProfile";
 import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";

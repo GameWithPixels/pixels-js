@@ -31,7 +31,7 @@ export default async function (): Promise<Die3D> {
   // Load textures
   if (!normalTex) {
     const asset = await ensureAssetReadable(
-      require("~/../assets/textures/plastic-normal.png"),
+      require("!/textures/plastic-normal.png"),
       "textures/plastic-normal.png"
     );
     normalTex = await loadAsync(asset);
@@ -39,7 +39,7 @@ export default async function (): Promise<Die3D> {
 
   if (!faceTex) {
     const asset = await ensureAssetReadable(
-      require("~/../assets/textures/d20-face-map.png"),
+      require("!/textures/d20-face-map.png"),
       "textures/d20-face-map.png"
     );
     faceTex = await loadAsync(asset);
@@ -50,7 +50,7 @@ export default async function (): Promise<Die3D> {
     const start = Date.now();
 
     // Use https://fabconvert.com/convert/fbx/to/glb to convert fbx files
-    const gltfModule = Asset.fromModule(require("~/../assets/meshes/d20.glb"));
+    const gltfModule = Asset.fromModule(require("!/meshes/d20.glb"));
     const gltf = await loadAsync(gltfModule);
 
     console.log(`D20 mesh loaded in ${Date.now() - start}ms`);

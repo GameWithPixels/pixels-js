@@ -4,7 +4,7 @@ import { Box, Center, FlatList, Pressable, Text, VStack } from "native-base";
 import { useEffect, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 
-import dfuFilesZip from "~/../assets/dfu-files.zip";
+import dfuFilesZip from "!/dfu-files.zip";
 import { useAppDispatch } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
 import getDfuFileInfo, { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
