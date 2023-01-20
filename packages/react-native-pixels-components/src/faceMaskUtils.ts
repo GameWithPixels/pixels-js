@@ -1,13 +1,15 @@
-export function bitsToIndices(bits: number): number[] {
+export function bitsToIndices(value: number): number[] {
   const indices: number[] = [];
 
+  // Convert value into binary
+  // We use a string because of the limitation of JS bits operators
+  let bits = value.toString(2);
   let index = 0;
-  //loop bits
-  while (bits) {
-    if (bits & 1) {
+  while (bits.length) {
+    if (bits[bits.length - 1]) {
       indices.push(index);
     }
-    bits = bits >> 1;
+    bits = bits.substring(0, bits.length - 1);
     ++index;
   }
   return indices;
