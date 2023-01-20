@@ -10,9 +10,10 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAction from "./EditAction";
 import EditAudioClip from "./EditAudioClip";
 import EditDataSet from "./EditDataSet";
-import { name } from "./decorators";
+import { name, widget } from "./decorators";
 
 export default class EditActionPlayAudioClip extends EditAction {
+  @widget("audioClip")
   @name("Audio Clip")
   clip?: EditAudioClip;
 

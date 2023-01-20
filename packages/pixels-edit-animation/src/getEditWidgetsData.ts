@@ -3,6 +3,8 @@ import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import {
   decorators,
   Editable,
+  EditAnimation,
+  EditAudioClip,
   EditColor,
   EditPattern,
   EditRgbGradient,
@@ -43,6 +45,8 @@ export type GrayscalePatternData = BaseWidgetData<
   EditPattern | undefined
 >;
 export type RgbPattern = BaseWidgetData<"rgbPattern", EditPattern | undefined>;
+export type Animation = BaseWidgetData<"animation", EditAnimation | undefined>;
+export type AudioClip = BaseWidgetData<"audioClip", EditAudioClip | undefined>;
 
 /** Type union of all possible widget data types. */
 export type EditWidgetData =
@@ -56,7 +60,9 @@ export type EditWidgetData =
   | ColorData
   | GradientData
   | GrayscalePatternData
-  | RgbPattern;
+  | RgbPattern
+  | Animation
+  | AudioClip;
 
 /**
  * Iterate other the properties of the given {@link Editable} object
@@ -190,6 +196,32 @@ export default function (editAnim: Editable): EditWidgetData[] {
             // @ts-expect-error Accessing property by index
             getValue: () => editAnim[propertyKey] as EditPattern | undefined,
             update: (v?: EditPattern) => updateProp(v),
+          };
+
+        case "animation":
+          assert(
+            value === undefined || value instanceof EditAnimation,
+            `Property is not an EditAnimation: ${propertyKey}`
+          );
+          return {
+            ...keyAndName,
+            type,
+            // @ts-expect-error Accessing property by index
+            getValue: () => editAnim[propertyKey] as EditAnimation | undefined,
+            update: (v?: EditAnimation) => updateProp(v),
+          };
+
+        case "audioClip":
+          assert(
+            value === undefined || value instanceof EditAudioClip,
+            `Property is not an EditAudioClip: ${propertyKey}`
+          );
+          return {
+            ...keyAndName,
+            type,
+            // @ts-expect-error Accessing property by index
+            getValue: () => editAnim[propertyKey] as EditAudioClip | undefined,
+            update: (v?: EditAudioClip) => updateProp(v),
           };
 
         default:

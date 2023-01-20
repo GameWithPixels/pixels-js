@@ -171,6 +171,12 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       );
     }
 
+    case "animation":
+      return <Text>Animation Selector Placeholder</Text>;
+
+    case "audioClip":
+      return <Text>Audi Clip Selector Placeholder</Text>;
+
     default:
       assertNever(type);
   }
