@@ -137,7 +137,7 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
         case ConditionTypeValues.handling:
           conditionTitle = "Pixel is picked up";
           break;
-        case ConditionTypeValues.catteryState:
+        case ConditionTypeValues.batteryState:
           conditionTitle = "Battery Event...";
           break;
         case ConditionTypeValues.connectionState:

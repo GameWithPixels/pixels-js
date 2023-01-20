@@ -62,7 +62,7 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
-const profiles = [...StandardProfiles.profiles];
+const standardProfiles = [...StandardProfiles.profiles];
 const defaultProfile = StandardProfiles.defaultProfile;
 defaultProfile.name = "Default profile";
 interface SelectedProfile {
@@ -108,7 +108,7 @@ export function ProfilesListScreen() {
   const navigation =
     useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
 
-  const [profileList, setProfileList] = React.useState(profiles);
+  const [profileList, setProfileList] = React.useState(standardProfiles);
   // List of favorite profiles
   const [favoriteProfilesList, setFavoritesProfileList] = React.useState<
     EditProfile[]

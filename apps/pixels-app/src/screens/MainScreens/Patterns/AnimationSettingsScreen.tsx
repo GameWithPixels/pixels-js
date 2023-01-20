@@ -33,7 +33,6 @@ import { GradientColorSelection } from "~/../../../packages/react-native-pixels-
 
 import { lastSelectedLightingPattern } from "./PatternsScreen";
 
-import EditAnimationSandbox from "~/features/EditAnimationSandbox";
 import StandardProfiles from "~/features/StandardProfile";
 const standardPatterns = StandardProfiles.patterns;
 

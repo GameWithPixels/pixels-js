@@ -98,12 +98,6 @@ const rules: RuleCardInfo[] = [
   },
 ];
 
-// const DefaultRule: RuleCardInfo = {
-//   ruleKey: 7487584890487,
-//   condition: "roll is equal to 1",
-//   actions: [" trigger patterns : Red To Blue "],
-// };
-
 export let lastSelectedRule: EditRule;
 
 interface CreateRuleWidgetProps {
@@ -157,7 +151,7 @@ function GetConditionTitle(condition: EditCondition | undefined): string {
       case ConditionTypeValues.handling:
         conditionTitle = "die is picked up";
         break;
-      case ConditionTypeValues.catteryState:
+      case ConditionTypeValues.batteryState:
         batteryFlag = (condition as EditConditionBatteryState).flags;
         if (batteryFlag === 0) {
           conditionTitle = "battery is ok ";
