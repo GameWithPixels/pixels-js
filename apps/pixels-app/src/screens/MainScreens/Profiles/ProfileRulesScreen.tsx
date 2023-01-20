@@ -363,7 +363,8 @@ export default function ProfilesRulesScreen() {
           </Box>
         </HStack>
         <Text bold>Rules for this profile : </Text>
-        <Box h="78%" p={1}>
+        <_CreateRuleWidget />
+        <Box h={600} p={1}>
           <DraggableFlatList
             data={rulesList}
             onDragEnd={({ data }) => setRulesList(data)}

@@ -45,7 +45,8 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
-    "@systemic-games/react-native-base-components": "1.0.0"
+    "@systemic-games/react-native-base-components": "1.0.0",
+    "@systemic-games/pixels-edit-animation": "1.0.5"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",

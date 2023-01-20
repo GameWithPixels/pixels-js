@@ -260,12 +260,7 @@ function RuleActionWidget(props: RuleActionWidgetProps) {
   const [editAction, setEditAction] = React.useState<EditAction>(
     new EditActionPlayAnimation()
   );
-
-  useEffect(() => {
-    setEditAction(props.action);
-  }, [props.action]);
-
-  const [_actionTitle, setActionTitle] = React.useState("Trigger Pattern");
+  const [_actionTitle, setActionTitle] = React.useState<string>();
 
   function getActionTitle(action: EditAction): string {
     let actionTitle;
@@ -277,6 +272,13 @@ function RuleActionWidget(props: RuleActionWidgetProps) {
 
     return actionTitle;
   }
+
+  useEffect(() => {
+    setEditAction(props.action);
+    const initialActionTitle = getActionTitle(props.action);
+    setActionTitle(initialActionTitle);
+  }, [props.action]);
+
   return (
     <VStack
       space={2}
@@ -289,7 +291,7 @@ function RuleActionWidget(props: RuleActionWidgetProps) {
       <HStack space={2} width="100%" alignItems="center">
         <Box flex={10} w="100%">
           <RuleActionSelection
-            actionTitle={getActionTitle(editAction)}
+            actionTitle={_actionTitle}
             possibleActions={[
               {
                 label: "Trigger Pattern",
@@ -427,15 +429,15 @@ function ConditionEditor({ editCondition }: { editCondition: EditCondition }) {
 }
 
 function ActionEditor({ editAction }: { editAction: EditAction }) {
-  const [conditionWidgets, setConditionsWidgets] = React.useState<
-    EditWidgetData[]
-  >([]);
+  const [actionWIdgets, setActionsWidgets] = React.useState<EditWidgetData[]>(
+    []
+  );
   useEffect(() => {
-    setConditionsWidgets(getEditWidgetsData(editAction));
+    setActionsWidgets(getEditWidgetsData(editAction));
   }, [editAction]);
   return (
     <VStack p={2} space={2} bg="gray.700" rounded="md">
-      {conditionWidgets.map((widgets, key) => (
+      {actionWIdgets.map((widgets, key) => (
         <RenderWidget key={key} widget={widgets} />
       ))}
     </VStack>

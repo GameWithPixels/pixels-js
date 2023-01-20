@@ -15,4 +15,5 @@ export * from "./components/PatternCards";
 export * from "./components/RuleComparisonWidget";
 export * from "./components/FaceIndex";
 export * from "./components/ProfileRulesCard";
+export * from "./components/PatternsActionSheet";
 export * from "@systemic-games/react-native-base-components";

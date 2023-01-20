@@ -1,10 +1,10 @@
 import { FontAwesome5 } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   EditAnimation,
   EditAnimationGradient, // simple gradient
-  EditAnimationGradientPattern, // gradient led pattern
+  EditAnimationGradientPattern,
+  EditAnimationKeyframed, // gradient led pattern
   EditAnimationKeyframed as _EditAnimationKeyframed, // color led pattern
   EditAnimationNoise as _EditAnimationNoise, // noise
   EditAnimationRainbow, // rainbow
@@ -25,13 +25,17 @@ import {
   RuleComparisonWidget,
   FaceIndex,
   PlayBackFace,
+  PatternActionSheet,
 } from "@systemic-games/react-native-pixels-components";
-import { VStack, Image, ScrollView, Center, Input, Text } from "native-base";
+import { VStack, Image, ScrollView, Center, Input } from "native-base";
 import React, { useEffect } from "react";
 import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
-import { AnimationSettingsScreenRouteProps } from "~/Navigation";
+import { lastSelectedLightingPattern } from "./PatternsScreen";
+
 import EditAnimationSandbox from "~/features/EditAnimationSandbox";
+import StandardProfiles from "~/features/StandardProfile";
+const standardPatterns = StandardProfiles.patterns;
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -60,7 +64,6 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
   switch (type) {
     case "count": {
       const step = widget.step ? widget.step : undefined;
-      console.log(step);
       return (
         <>
           <SliderComponent
@@ -128,19 +131,12 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       );
 
     case "rgbPattern":
+      return <PatternActionSheet Patterns={standardPatterns} />;
     case "grayscalePattern":
-      return (
-        <Text>
-          {" "}
-          {widget.displayName} Placeholder until component is defined and/or
-          done
-        </Text>
-      );
+      return <PatternActionSheet Patterns={standardPatterns} />;
 
     case "bitField": {
       // for rules : flags
-      console.log(widget.values);
-      console.log(Object.keys(widget.values));
       return (
         <>
           <RuleComparisonWidget
@@ -201,8 +197,8 @@ export function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
 }
 
 export default function AnimationSettingsScreen() {
-  const route = useRoute<AnimationSettingsScreenRouteProps>();
-  const patternInfo = route.params;
+  //const route = useRoute<AnimationSettingsScreenRouteProps>();
+  // const patternInfo = route.params;
   const [editAnim, setEditAnim] = React.useState<EditAnimation>(
     new EditAnimationSimple()
   );
@@ -217,13 +213,14 @@ export default function AnimationSettingsScreen() {
             }
             size="lg"
             variant="unstyled"
-            placeholder={patternInfo.name}
+            placeholder={lastSelectedLightingPattern.name}
             color="black"
           />
         </Center>
         <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0}>
           <Image
-            source={patternInfo.imageRequirePath}
+            // PlaceHolderImage
+            source={require("../../../../assets/BlueDice.png")}
             size={160}
             alt="description of image"
           />
@@ -256,7 +253,7 @@ export default function AnimationSettingsScreen() {
               label: "Color LED Pattern",
               onPress: () => {
                 setLightingType("Color LED Pattern");
-                setEditAnim(new EditAnimationGradientPattern());
+                setEditAnim(new EditAnimationKeyframed());
               },
             },
             {

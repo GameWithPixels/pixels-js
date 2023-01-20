@@ -1,3 +1,7 @@
+import {
+  EditAnimation,
+  EditPattern,
+} from "@systemic-games/pixels-edit-animation/dist/types";
 import { Card } from "@systemic-games/react-native-base-components";
 import { Pressable, Text, Image } from "native-base";
 import {
@@ -8,11 +12,12 @@ import {
 import { ImageSourcePropType } from "react-native";
 
 export interface PatternInfo {
-  name?: string;
   //Temporary
   imageRequirePath?: ImageSourcePropType;
   //Temporary is a string
   animationType?: string;
+  editPattern: EditPattern;
+  patternKey?: number;
 }
 
 export interface PatternCardProps {
@@ -47,10 +52,48 @@ export function PatternCard(props: PatternCardProps) {
       <Card {...props} borderWidth={isSelected ? 3 : props.borderWidth}>
         <Image
           size={props.imageSize}
-          alt={props.patternInfo.name}
+          alt={props.patternInfo.editPattern.name}
           source={props.patternInfo.imageRequirePath}
         />
-        <Text>{props.patternInfo.name}</Text>
+        <Text>{props.patternInfo.editPattern.name}</Text>
+      </Card>
+    </Pressable>
+  );
+}
+
+export interface LightingPatternsInfo {
+  editAnimation: EditAnimation;
+  imageRequirePath: ImageSourcePropType;
+}
+
+export interface LightingPatternCardProps {
+  lightingPatternInfo: LightingPatternsInfo;
+  bg?: ColorType;
+  w?: number | string;
+  h?: number | string;
+  p?: number | string;
+  verticalSpace?: number;
+  borderWidth?: number;
+  imageSize?: number | SizeType | string;
+  textSize?: number | SizeType | string;
+  onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
+  //To be used with the list in which the cards are placed and displayed for selection highlight
+}
+
+export function LightingPatternsCard(props: LightingPatternCardProps) {
+  return (
+    <Pressable
+      onPress={() => {
+        props.onPress?.();
+      }}
+    >
+      <Card {...props} borderWidth={props.borderWidth}>
+        <Image
+          size={props.imageSize}
+          alt={props.lightingPatternInfo.editAnimation.name}
+          source={props.lightingPatternInfo.imageRequirePath}
+        />
+        <Text>{props.lightingPatternInfo.editAnimation.name}</Text>
       </Card>
     </Pressable>
   );
