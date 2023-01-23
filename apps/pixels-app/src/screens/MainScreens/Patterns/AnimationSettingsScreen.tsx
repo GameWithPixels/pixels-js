@@ -80,7 +80,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
             sliderTitle={widget.displayName}
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
-            value={widget.getValue()}
+            defaultValue={widget.getValue()}
             step={step ?? 1}
             unitType={widget.unit ? widget.unit : undefined}
             unitTextColor={undefined}
@@ -98,11 +98,9 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
             sliderTitle={widget.displayName}
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
-            value={widget.getValue()}
+            defaultValue={widget.getValue()}
             step={step ?? 0.1}
             unitType={widget.unit ? widget.unit : undefined}
-            sliderBoxColor="PixelColors.accentPurple"
-            sliderTrackColor="PixelColors.pink"
             unitTextColor={undefined}
             sliderThumbColor={undefined}
             onSelectedValue={widget.update}
@@ -123,7 +121,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
         <>
           {/* TODO Check what is supposed to tell the number of faces */}
           <FaceMask
-            //maskNumber={widget.getValue()}
+            maskNumber={widget.getValue()}
             dieFaces={20}
             onCloseAction={widget.update}
           />
@@ -230,7 +228,7 @@ export default function AnimationSettingsScreen() {
   const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
     <PxAppPage theme={paleBluePixelTheme} h="100%">
-      <VStack space={1} h="100%">
+      <VStack space={2} h="100%">
         <Center bg="white" rounded="lg" px={2} h={9}>
           <Input
             InputRightElement={
@@ -242,15 +240,8 @@ export default function AnimationSettingsScreen() {
             color="black"
           />
         </Center>
-        <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0}>
-          {/* <Image
-            // PlaceHolderImage
-            source={require("../../../../assets/BlueDice.png")}
-            size={160}
-            alt="description of image"
-          /> */}
-        </Card>
-        <Box w="100%" h={200}>
+        <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0} />
+        <Box p={1} w="100%" h={200} rounded="lg">
           <DieRenderer animation={animation} />
           <Button
             onPress={() => {

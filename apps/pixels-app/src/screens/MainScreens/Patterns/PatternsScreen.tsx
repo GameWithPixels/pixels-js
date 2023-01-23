@@ -7,11 +7,14 @@ import {
   createPixelTheme,
   LightingPatternsCard,
   LightingPatternsInfo,
+  createSwipeableSideButton,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, Center, HStack } from "native-base";
+import { Box, Center, VStack } from "native-base";
 import React, { useEffect } from "react";
+import { Swipeable } from "react-native-gesture-handler";
 
 import { PatternsScreenStackParamList } from "~/Navigation";
+import EditableStore from "~/features/EditableStore";
 import StandardProfiles from "~/features/StandardProfile";
 export let lastSelectedLightingPattern: EditAnimation;
 
@@ -56,29 +59,129 @@ export default function PatternsScreen() {
     );
     setLightingPatternInfoList(infos);
   }, [patternList]);
+
+  /**
+   * Duplicate an existing profile by updating the profileList.
+   * @param patternToDuplicate Profile infos of the profile to duplicate.
+   * @param index Index of the profile to duplicate.
+   */
+  function duplicatePattern(patternToDuplicate: EditAnimation, index: number) {
+    // Copy the profile that needs to be duplicated
+    patternToDuplicate.name = patternToDuplicate.name + " COPY";
+    const duplicatedPattern = patternToDuplicate.duplicate();
+
+    // Duplicate the profile in the UI list
+    patternList.splice(index + 1, 0, duplicatedPattern);
+    _setPatternsList([...patternList]);
+  }
+
+  function deletePattern(patternToDelete: EditAnimation) {
+    console.log("delete pattern");
+    const patternToDeleteKey = EditableStore.getKey(patternToDelete);
+    patternList.splice(
+      patternList.findIndex((patternToDelete) => {
+        return EditableStore.getKey(patternToDelete) === patternToDeleteKey;
+      }),
+      1
+    );
+    _setPatternsList([...patternList]);
+    EditableStore.unregister(patternToDelete);
+  }
+
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
-      {/* TODO try to replace with flatlist and disable scroll in page */}
       <Center>
-        <HStack flexWrap="wrap" justifyContent="flex-start">
-          {lightingPatternInfoList.map((lightingPatternInfo, key) => (
-            <Box key={key} alignSelf="center" p={1} w="50%">
-              <LightingPatternsCard
-                onPress={() => {
-                  navigation.navigate("AnimationSettingsScreen");
-                  lastSelectedLightingPattern =
-                    lightingPatternInfo.editAnimation;
-                }}
-                w="90%"
-                verticalSpace={2}
-                imageSize={70}
-                p={2}
-                borderWidth={1}
-                lightingPatternInfo={lightingPatternInfo}
-              />
+        <VStack w="100%">
+          {lightingPatternInfoList.map((lightingPatternInfo, i) => (
+            // <Box key={key} alignSelf="center" p={1} w="50%">
+            // <LightingPatternsCard
+            //   onPress={() => {
+            //     navigation.navigate("AnimationSettingsScreen");
+            //     lastSelectedLightingPattern =
+            //       lightingPatternInfo.editAnimation;
+            //   }}
+            //   w="90%"
+            //   verticalSpace={2}
+            //   imageSize={70}
+            //   p={2}
+            //   borderWidth={1}
+            //   lightingPatternInfo={lightingPatternInfo}
+            // />
+            // </Box>
+            <Box p={1} key={EditableStore.getKey(lightingPatternInfo)}>
+              <Swipeable
+                renderLeftActions={createSwipeableSideButton({
+                  w: 85,
+                  buttons: [
+                    {
+                      //onPress: () => removeFromFavorites(profile),
+                      bg: "purple.500",
+                      // icon: (
+                      //   <MaterialCommunityIcons
+                      //     name="bookmark-remove-outline"
+                      //     size={30}
+                      //     color="white"
+                      //   />
+                      // ),
+                    },
+                  ],
+                })}
+                renderRightActions={createSwipeableSideButton({
+                  w: 195,
+                  buttons: [
+                    {
+                      onPress: () =>
+                        duplicatePattern(lightingPatternInfo.editAnimation, i),
+                      bg: "blue.500",
+                      // icon: (
+                      //   <MaterialIcons
+                      //     name="content-copy"
+                      //     size={24}
+                      //     color="white"
+                      //   />
+                      // ),
+                    },
+                    {
+                      // onPress: () => openExportSheet(profile),
+                      bg: "amber.500",
+                      // icon: (
+                      //   <MaterialCommunityIcons
+                      //     name="export-variant"
+                      //     size={24}
+                      //     color="white"
+                      //   />
+                      // ),
+                    },
+                    {
+                      onPress: () =>
+                        deletePattern(lightingPatternInfo.editAnimation),
+
+                      bg: "red.500",
+                      // icon: (
+                      //   <MaterialIcons
+                      //     name="delete-outline"
+                      //     size={24}
+                      //     color="white"
+                      //   />
+                      // ),
+                    },
+                  ],
+                })}
+              >
+                <LightingPatternsCard
+                  onPress={() => {
+                    navigation.navigate("AnimationSettingsScreen");
+                    lastSelectedLightingPattern =
+                      lightingPatternInfo.editAnimation;
+                  }}
+                  lightingPatternInfo={lightingPatternInfo}
+                  w="100%"
+                  imageSize={70}
+                />
+              </Swipeable>
             </Box>
           ))}
-        </HStack>
+        </VStack>
       </Center>
     </PxAppPage>
   );
