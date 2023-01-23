@@ -4,9 +4,10 @@ export function bitsToIndices(value: number): number[] {
   // Convert value into binary
   // We use a string because of the limitation of JS bits operators
   let bits = value.toString(2);
+
   let index = 0;
   while (bits.length) {
-    if (bits[bits.length - 1]) {
+    if (bits[bits.length - 1] === "1") {
       indices.push(index);
     }
     bits = bits.substring(0, bits.length - 1);
