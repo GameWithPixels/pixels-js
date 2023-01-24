@@ -100,12 +100,12 @@ const ValidationTests = {
       safeAssign(new RequestRssi(), {
         requestMode: TelemetryRequestModeValues.once,
       }),
-      MessageTypeValues.telemetry
+      MessageTypeValues.rssi
     )) as Rssi;
 
-    console.log(`RSSI is ${rssi}`);
+    console.log(`RSSI is ${rssi.value}`);
     if (rssi.value < -70) {
-      throw new Error(`Out of range RSSI value: ${rssi}`);
+      throw new Error(`Low RSSI value: ${rssi.value}`);
     }
   },
 
@@ -316,7 +316,7 @@ const ValidationTests = {
   },
 
   exitValidationMode: async (pixel: Pixel): Promise<void> => {
-    // Back out validation mode, don't wait for response as die will restart
+    // Exit validation mode, don't wait for response as die will restart
     await pixel.sendMessage(MessageTypeValues.exitValidation, true);
   },
 
