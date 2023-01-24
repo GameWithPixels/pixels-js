@@ -20,6 +20,7 @@ import {
   PixelRollData,
   ScannedPixel,
   PixelBatteryData,
+  MessageTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 
 import getDfuFileInfo from "../dfu/getDfuFileInfo";
@@ -38,7 +39,8 @@ export type PixelDispatcherAction =
   | "calibrate"
   | "updateProfile"
   | "queueFirmwareUpdate"
-  | "dequeueFirmwareUpdate";
+  | "dequeueFirmwareUpdate"
+  | "exitValidationMode";
 
 export interface PixelDispatcherEventMap {
   status: PixelStatus;
@@ -231,6 +233,9 @@ export default class PixelDispatcher implements IPixel {
       case "dequeueFirmwareUpdate":
         this._dequeueFirmwareUpdate();
         break;
+      case "exitValidationMode":
+        this._exitValidationMode();
+        break;
       default:
         assertNever(action);
     }
@@ -344,6 +349,13 @@ export default class PixelDispatcher implements IPixel {
     } finally {
       assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
       this._dequeueFirmwareUpdate(true);
+    }
+  }
+
+  private _exitValidationMode(): void {
+    if (this.isReady) {
+      // Exit validation mode, don't wait for response as die will restart
+      this._pixel.sendMessage(MessageTypeValues.exitValidation, true);
     }
   }
 }

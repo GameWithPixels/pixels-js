@@ -141,6 +141,11 @@ function PixelDetailsImpl({
           <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
             {t("resetProfile")}
           </Button>
+          <Button
+            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}
+          >
+            {t("exitValidationMode")}
+          </Button>
         </VStack>
       </HStack>
       {updateProgress !== undefined && (

@@ -17,7 +17,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import ProgressBar from "./ProgressBar";
-import TaskGroupComponent from "./TaskGroupContainer";
+import TaskChainComponent from "./TaskChainComponent";
 
 import dfuFiles from "!/factory-dfu-files.zip";
 import defaultProfile from "~/defaultProfile";
@@ -46,7 +46,8 @@ function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
 async function _makeUserCancellable(
   abortSignal: AbortSignal,
   setUserAbort: Dispatch<SetStateAction<(() => void) | undefined>>,
-  task: (abortSignal: AbortSignal) => Promise<void>
+  task: (abortSignal: AbortSignal) => Promise<void>,
+  abortMessage: string
 ): Promise<void> {
   let userAborted = false;
   const abortController = new AbortController();
@@ -60,7 +61,7 @@ async function _makeUserCancellable(
     await task(abortController.signal);
   } catch (error: any) {
     if (userAborted) {
-      throw new Error("Task waitCharging aborted by user");
+      throw new Error(abortMessage);
     } else {
       throw error;
     }
@@ -211,12 +212,7 @@ export function UpdateFirmware({
     .withStatusChanged(onTaskStatus);
 
   return (
-    <TaskGroupComponent
-      title={t("firmwareUpdate")}
-      taskStatus={taskChain.status}
-    >
-      {taskChain.render()}
-    </TaskGroupComponent>
+    <TaskChainComponent title={t("firmwareUpdate")} taskChain={taskChain} />
   );
 }
 
@@ -314,12 +310,7 @@ export function ConnectPixel({
     .withStatusChanged(onTaskStatus);
 
   return (
-    <TaskGroupComponent
-      title={t("scanAndConnect")}
-      taskStatus={taskChain.status}
-    >
-      {taskChain.render()}
-    </TaskGroupComponent>
+    <TaskChainComponent title={t("scanAndConnect")} taskChain={taskChain} />
   );
 }
 
@@ -362,11 +353,7 @@ export function CheckBoard({
   }
   taskChain.withStatusChanged(onTaskStatus);
 
-  return (
-    <TaskGroupComponent title={t("checkBoard")} taskStatus={taskChain.status}>
-      {taskChain.render()}
-    </TaskGroupComponent>
-  );
+  return <TaskChainComponent title={t("checkBoard")} taskChain={taskChain} />;
 }
 
 export function WaitCharging({
@@ -386,8 +373,12 @@ export function WaitCharging({
     action,
     useCallback(
       async (abortSignal) =>
-        _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
-          ValidationTests.waitCharging(pixel, !notCharging, abortSignal)
+        _makeUserCancellable(
+          abortSignal,
+          setUserAbort,
+          (abortSignal) =>
+            ValidationTests.waitCharging(pixel, !notCharging, abortSignal),
+          "Aborted wait for charging"
         ),
       [notCharging, pixel]
     ),
@@ -417,12 +408,10 @@ export function WaitCharging({
   ).withStatusChanged(onTaskStatus);
 
   return (
-    <TaskGroupComponent
+    <TaskChainComponent
       title={t(notCharging ? "waitNotCharging" : "waitCharging")}
-      taskStatus={taskChain.status}
-    >
-      {taskChain.render()}
-    </TaskGroupComponent>
+      taskChain={taskChain}
+    />
   );
 }
 
@@ -459,7 +448,7 @@ export function CheckLEDs({
           );
         } catch (error: any) {
           if (userAborted) {
-            throw new Error("Task checkLEDsLitUp aborted by user");
+            throw new Error("LEDs not bright enough");
           } else {
             throw error;
           }
@@ -483,11 +472,7 @@ export function CheckLEDs({
     })
   ).withStatusChanged(onTaskStatus);
 
-  return (
-    <TaskGroupComponent title={t("checkLEDs")} taskStatus={taskChain.status}>
-      {taskChain.render()}
-    </TaskGroupComponent>
-  );
+  return <TaskChainComponent title={t("checkLEDs")} taskChain={taskChain} />;
 }
 
 export function TurnOffDevice({
@@ -520,12 +505,7 @@ export function TurnOffDevice({
     .withStatusChanged(onTaskStatus);
 
   return (
-    <TaskGroupComponent
-      title={t("waitForShutdown")}
-      taskStatus={taskChain.status}
-    >
-      {taskChain.render()}
-    </TaskGroupComponent>
+    <TaskChainComponent title={t("waitForShutdown")} taskChain={taskChain} />
   );
 }
 
@@ -545,13 +525,17 @@ export function WaitFaceUp({
     action,
     useCallback(
       (abortSignal) =>
-        _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
-          ValidationTests.waitFaceUp(
-            pixel,
-            getLedCount(settings.dieType),
-            Color.dimMagenta,
-            abortSignal
-          )
+        _makeUserCancellable(
+          abortSignal,
+          setUserAbort,
+          (abortSignal) =>
+            ValidationTests.waitFaceUp(
+              pixel,
+              getLedCount(settings.dieType),
+              Color.dimMagenta,
+              abortSignal
+            ),
+          `Aborted wait for face ${getLedCount(settings.dieType)} up`
         ),
       [pixel, settings.dieType]
     ),
@@ -570,8 +554,17 @@ export function WaitFaceUp({
     .chainWith(
       useCallback(
         (abortSignal) =>
-          _makeUserCancellable(abortSignal, setUserAbort, (abortSignal) =>
-            ValidationTests.waitFaceUp(pixel, 1, Color.dimYellow, abortSignal)
+          _makeUserCancellable(
+            abortSignal,
+            setUserAbort,
+            (abortSignal) =>
+              ValidationTests.waitFaceUp(
+                pixel,
+                1,
+                Color.dimYellow,
+                abortSignal
+              ),
+            "Aborted wait for face 1 up"
           ),
         [pixel]
       ),
@@ -589,11 +582,7 @@ export function WaitFaceUp({
     )
     .withStatusChanged(onTaskStatus);
 
-  return (
-    <TaskGroupComponent title={t("waitFaceUp")} taskStatus={taskChain.status}>
-      {taskChain.render()}
-    </TaskGroupComponent>
-  );
+  return <TaskChainComponent title={t("waitFaceUp")} taskChain={taskChain} />;
 }
 
 interface UpdateFirmwareProps extends TaskComponentProps {
@@ -635,11 +624,7 @@ export function PrepareDie({
     )
     .withStatusChanged(onTaskStatus);
 
-  return (
-    <TaskGroupComponent title={t("prepareDie")} taskStatus={taskChain.status}>
-      {taskChain.render()}
-    </TaskGroupComponent>
-  );
+  return <TaskChainComponent title={t("prepareDie")} taskChain={taskChain} />;
 }
 
 export function WaitDieInCase({
@@ -666,11 +651,6 @@ export function WaitDieInCase({
   ).withStatusChanged(onTaskStatus);
 
   return (
-    <TaskGroupComponent
-      title={t("waitDieInCase")}
-      taskStatus={taskChain.status}
-    >
-      {taskChain.render()}
-    </TaskGroupComponent>
+    <TaskChainComponent title={t("waitDieInCase")} taskChain={taskChain} />
   );
 }
