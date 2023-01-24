@@ -1,4 +1,8 @@
-import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  MaterialIcons,
+  MaterialCommunityIcons,
+  Ionicons,
+} from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { EditAnimation } from "@systemic-games/pixels-edit-animation";
@@ -8,6 +12,8 @@ import {
   createPixelTheme,
   LightingPatternsCard,
   createSwipeableSideButton,
+  Card,
+  LightingPatternCardProps,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Actionsheet,
@@ -17,6 +23,7 @@ import {
   VStack,
   Text,
   useDisclose,
+  Pressable,
 } from "native-base";
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
@@ -43,12 +50,41 @@ const paleBluePixelThemeParams = {
     "900": "#010204",
   },
 };
+
+/**
+ * Custom profile card widget for the option to create a new profile.
+ * @param props See {@link ProfileCardProps} for props parameters.
+ */
+function CreatePatternWidget(props: LightingPatternCardProps) {
+  return (
+    <Pressable
+      onPress={() => {
+        props.onPress?.();
+      }}
+    >
+      <Card
+        bg={null}
+        p={props.p}
+        minW="100%"
+        minH="50px"
+        w={props.w}
+        h={props.h}
+        verticalSpace={props.verticalSpace}
+        borderWidth={props.borderWidth}
+      >
+        <Ionicons name="add-circle-outline" size={24} color="white" />
+        <Text isTruncated fontSize={props.textSize} bold>
+          ADD NEW PATTERN
+        </Text>
+      </Card>
+    </Pressable>
+  );
+}
+
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 export default function PatternsScreen() {
   const navigation =
     useNavigation<StackNavigationProp<PatternsScreenStackParamList>>();
-  // const [selectedLightingPattern, setSelectedLightingPattern] =
-  //   React.useState<EditAnimation>();
 
   const [patternList, setPatternsList] = React.useState<EditAnimation[]>(
     standardLightingPatterns
@@ -87,11 +123,17 @@ export default function PatternsScreen() {
     //DO OTHER THINGS
   }
 
+  function addPattern() {
+    const newPattern = standardLightingPatterns[0].duplicate();
+    newPattern.name = "NEW Pattern";
+    setPatternsList([...patternList, newPattern]);
+  }
+
   return (
     <>
       <PxAppPage theme={paleBluePixelTheme} scrollable>
         <Center>
-          <VStack w="100%">
+          <VStack w="100%" bg="gray.700" rounded="lg" p={2}>
             {patternList.map((patternInfo, i) => (
               <Box p={1} key={EditableStore.getKey(patternInfo)}>
                 <Swipeable
@@ -143,11 +185,17 @@ export default function PatternsScreen() {
                     patternInfo={patternInfo}
                     w="100%"
                     imageSize={70}
+                    borderWidth={1}
                   />
                 </Swipeable>
               </Box>
             ))}
           </VStack>
+          <CreatePatternWidget
+            onPress={() => {
+              addPattern();
+            }}
+          />
         </Center>
       </PxAppPage>
 

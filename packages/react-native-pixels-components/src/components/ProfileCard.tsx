@@ -81,17 +81,28 @@ export function ProfileCard(props: ProfileCardProps) {
   );
 }
 
+/**
+ * Props for {@link DetailedProfileCard}.
+ */
 export interface DetailedProfileCardProps extends ProfileCardProps {
   profileWithSound?: boolean;
   profileDescription?: string;
   profileCategory?: string;
+
+  // Maybe for when renderer will be used
+  renderer?: React.ReactNode;
 }
 
+/**
+ * More detailed horizontal profile card for displaying profiles information.
+ * @param props See {@link DetailedProfileCardProps} for props params.
+ */
 export function DetailedProfileCard(props: DetailedProfileCardProps) {
   const selectedProfileIndex = props.selectedProfileIndex;
   const isSelected = props.selectable
     ? selectedProfileIndex === props.profileIndexInList
     : false;
+
   return (
     <Pressable
       onPress={() => {

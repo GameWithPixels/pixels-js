@@ -3,6 +3,7 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   AnimationBits,
   AnimationPreset,
+  AnimationTypeValues,
   EditAnimation,
   EditAnimationGradient, // simple gradient
   EditAnimationGradientPattern,
@@ -223,6 +224,25 @@ export default function AnimationSettingsScreen() {
 
   useEffect(() => {
     setEditAnim(lastSelectedLightingPattern);
+    const initialLightingType = lastSelectedLightingPattern.type;
+
+    switch (initialLightingType) {
+      case AnimationTypeValues.simple:
+        setLightingType("Simple Flashes");
+        break;
+      case AnimationTypeValues.rainbow:
+        setLightingType("Colorful Rainbow");
+        break;
+      case AnimationTypeValues.gradient:
+        setLightingType("Simple Gradient");
+        break;
+      case AnimationTypeValues.gradientPattern:
+        setLightingType("Gradient LED Pattern");
+        break;
+      case AnimationTypeValues.keyframed:
+        setLightingType("Color LED Pattern");
+        break;
+    }
   }, []);
   const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (

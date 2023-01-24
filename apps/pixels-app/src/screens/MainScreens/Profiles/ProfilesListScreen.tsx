@@ -6,7 +6,11 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { EditProfile } from "@systemic-games/pixels-edit-animation";
+import {
+  EditDataSet,
+  EditProfile,
+  AnimationBits,
+} from "@systemic-games/pixels-edit-animation";
 import {
   createPixelTheme,
   PixelTheme,
@@ -121,6 +125,13 @@ export function ProfilesListScreen() {
     // Add the new profile in the UI list
     setProfileList([...profileList, newProfile]);
   }
+
+  const animations = standardProfiles[0].collectAnimations();
+  const defaultanimation = animations[0].toAnimation(
+    new EditDataSet(),
+    new AnimationBits()
+  );
+  console.log("animations = " + defaultanimation);
 
   /**
    * Duplicate an existing profile by updating the profileList.

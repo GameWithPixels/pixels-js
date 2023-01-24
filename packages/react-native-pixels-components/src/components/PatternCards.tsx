@@ -11,6 +11,8 @@ import {
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
+const defaultImageRequirePath = require("../../../../apps/pixels-app/assets/RainbowDice.png");
+
 export interface PatternInfo {
   //Temporary
   imageRequirePath?: ImageSourcePropType;
@@ -61,13 +63,13 @@ export function PatternCard(props: PatternCardProps) {
   );
 }
 
-export interface LightingPatternsInfo {
-  editAnimation: EditAnimation;
-  imageRequirePath: ImageSourcePropType;
-}
+// export interface LightingPatternsInfo {
+//   editAnimation: EditAnimation;
+//   imageRequirePath: ImageSourcePropType;
+// }
 
 export interface LightingPatternCardProps {
-  patternInfo: EditAnimation;
+  patternInfo?: EditAnimation;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -88,12 +90,12 @@ export function LightingPatternsCard(props: LightingPatternCardProps) {
       }}
     >
       <Card {...props} borderWidth={props.borderWidth}>
-        {/* <Image
+        <Image
           size={props.imageSize}
-          alt={props.patternInfo.editAnimation.name}
-          source={props.patternInfo.imageRequirePath}
-        /> */}
-        <Text>{props.patternInfo.name}</Text>
+          alt={props.patternInfo?.name}
+          source={defaultImageRequirePath}
+        />
+        <Text>{props.patternInfo?.name}</Text>
       </Card>
     </Pressable>
   );
