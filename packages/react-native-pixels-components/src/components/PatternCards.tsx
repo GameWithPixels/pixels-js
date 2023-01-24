@@ -67,7 +67,7 @@ export interface LightingPatternsInfo {
 }
 
 export interface LightingPatternCardProps {
-  lightingPatternInfo: LightingPatternsInfo;
+  patternInfo: EditAnimation;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -88,12 +88,12 @@ export function LightingPatternsCard(props: LightingPatternCardProps) {
       }}
     >
       <Card {...props} borderWidth={props.borderWidth}>
-        <Image
+        {/* <Image
           size={props.imageSize}
-          alt={props.lightingPatternInfo.editAnimation.name}
-          source={props.lightingPatternInfo.imageRequirePath}
-        />
-        <Text>{props.lightingPatternInfo.editAnimation.name}</Text>
+          alt={props.patternInfo.editAnimation.name}
+          source={props.patternInfo.imageRequirePath}
+        /> */}
+        <Text>{props.patternInfo.name}</Text>
       </Card>
     </Pressable>
   );

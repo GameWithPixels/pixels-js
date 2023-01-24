@@ -119,7 +119,6 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "faceMask":
       return (
         <>
-          {/* TODO Check what is supposed to tell the number of faces */}
           <FaceMask
             maskNumber={widget.getValue()}
             dieFaces={20}

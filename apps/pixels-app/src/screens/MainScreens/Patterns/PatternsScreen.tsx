@@ -1,3 +1,4 @@
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { EditAnimation } from "@systemic-games/pixels-edit-animation";
@@ -6,11 +7,18 @@ import {
   PixelTheme,
   createPixelTheme,
   LightingPatternsCard,
-  LightingPatternsInfo,
   createSwipeableSideButton,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, Center, VStack } from "native-base";
-import React, { useEffect } from "react";
+import {
+  Actionsheet,
+  Box,
+  Center,
+  HStack,
+  VStack,
+  Text,
+  useDisclose,
+} from "native-base";
+import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
 
 import { PatternsScreenStackParamList } from "~/Navigation";
@@ -42,37 +50,22 @@ export default function PatternsScreen() {
   // const [selectedLightingPattern, setSelectedLightingPattern] =
   //   React.useState<EditAnimation>();
 
-  const [patternList, _setPatternsList] = React.useState<EditAnimation[]>(
+  const [patternList, setPatternsList] = React.useState<EditAnimation[]>(
     standardLightingPatterns
   );
-  const [lightingPatternInfoList, setLightingPatternInfoList] = React.useState<
-    LightingPatternsInfo[]
-  >([]);
-
-  useEffect(() => {
-    const infos: LightingPatternsInfo[] = [];
-    patternList.map((lightingPattern) =>
-      infos.push({
-        editAnimation: lightingPattern,
-        imageRequirePath: require("../../../../assets/BlueDice.png"),
-      })
-    );
-    setLightingPatternInfoList(infos);
-  }, [patternList]);
 
   /**
-   * Duplicate an existing profile by updating the profileList.
-   * @param patternToDuplicate Profile infos of the profile to duplicate.
-   * @param index Index of the profile to duplicate.
+   * Duplicate an existing pattern by updating the profileList.
+   * @param patternToDuplicate Pattern infos of the pattern to duplicate.
+   * @param index Index of the pattern to duplicate.
    */
   function duplicatePattern(patternToDuplicate: EditAnimation, index: number) {
-    // Copy the profile that needs to be duplicated
-    patternToDuplicate.name = patternToDuplicate.name + " COPY";
+    // Copy the pattern that needs to be duplicated
     const duplicatedPattern = patternToDuplicate.duplicate();
-
-    // Duplicate the profile in the UI list
+    duplicatedPattern.name = patternToDuplicate.name + " COPY";
+    // Duplicate the pattern in the UI list
     patternList.splice(index + 1, 0, duplicatedPattern);
-    _setPatternsList([...patternList]);
+    setPatternsList([...patternList]);
   }
 
   function deletePattern(patternToDelete: EditAnimation) {
@@ -84,105 +77,110 @@ export default function PatternsScreen() {
       }),
       1
     );
-    _setPatternsList([...patternList]);
+
+    setPatternsList([...patternList]);
     EditableStore.unregister(patternToDelete);
+  }
+  const { isOpen, onOpen, onClose } = useDisclose();
+  function openExportSheet(_patternToExport: EditAnimation) {
+    onOpen();
+    //DO OTHER THINGS
   }
 
   return (
-    <PxAppPage theme={paleBluePixelTheme} scrollable>
-      <Center>
-        <VStack w="100%">
-          {lightingPatternInfoList.map((lightingPatternInfo, i) => (
-            // <Box key={key} alignSelf="center" p={1} w="50%">
-            // <LightingPatternsCard
-            //   onPress={() => {
-            //     navigation.navigate("AnimationSettingsScreen");
-            //     lastSelectedLightingPattern =
-            //       lightingPatternInfo.editAnimation;
-            //   }}
-            //   w="90%"
-            //   verticalSpace={2}
-            //   imageSize={70}
-            //   p={2}
-            //   borderWidth={1}
-            //   lightingPatternInfo={lightingPatternInfo}
-            // />
-            // </Box>
-            <Box p={1} key={EditableStore.getKey(lightingPatternInfo)}>
-              <Swipeable
-                renderLeftActions={createSwipeableSideButton({
-                  w: 85,
-                  buttons: [
-                    {
-                      //onPress: () => removeFromFavorites(profile),
-                      bg: "purple.500",
-                      // icon: (
-                      //   <MaterialCommunityIcons
-                      //     name="bookmark-remove-outline"
-                      //     size={30}
-                      //     color="white"
-                      //   />
-                      // ),
-                    },
-                  ],
-                })}
-                renderRightActions={createSwipeableSideButton({
-                  w: 195,
-                  buttons: [
-                    {
-                      onPress: () =>
-                        duplicatePattern(lightingPatternInfo.editAnimation, i),
-                      bg: "blue.500",
-                      // icon: (
-                      //   <MaterialIcons
-                      //     name="content-copy"
-                      //     size={24}
-                      //     color="white"
-                      //   />
-                      // ),
-                    },
-                    {
-                      // onPress: () => openExportSheet(profile),
-                      bg: "amber.500",
-                      // icon: (
-                      //   <MaterialCommunityIcons
-                      //     name="export-variant"
-                      //     size={24}
-                      //     color="white"
-                      //   />
-                      // ),
-                    },
-                    {
-                      onPress: () =>
-                        deletePattern(lightingPatternInfo.editAnimation),
+    <>
+      <PxAppPage theme={paleBluePixelTheme} scrollable>
+        <Center>
+          <VStack w="100%">
+            {patternList.map((patternInfo, i) => (
+              <Box p={1} key={EditableStore.getKey(patternInfo)}>
+                <Swipeable
+                  renderRightActions={createSwipeableSideButton({
+                    w: 195,
+                    buttons: [
+                      {
+                        onPress: () => duplicatePattern(patternInfo, i),
+                        bg: "blue.500",
+                        icon: (
+                          <MaterialIcons
+                            name="content-copy"
+                            size={24}
+                            color="white"
+                          />
+                        ),
+                      },
+                      {
+                        onPress: () => openExportSheet(patternInfo),
+                        bg: "amber.500",
+                        icon: (
+                          <MaterialCommunityIcons
+                            name="export-variant"
+                            size={24}
+                            color="white"
+                          />
+                        ),
+                      },
+                      {
+                        onPress: () => deletePattern(patternInfo),
 
-                      bg: "red.500",
-                      // icon: (
-                      //   <MaterialIcons
-                      //     name="delete-outline"
-                      //     size={24}
-                      //     color="white"
-                      //   />
-                      // ),
-                    },
-                  ],
-                })}
-              >
-                <LightingPatternsCard
-                  onPress={() => {
-                    navigation.navigate("AnimationSettingsScreen");
-                    lastSelectedLightingPattern =
-                      lightingPatternInfo.editAnimation;
-                  }}
-                  lightingPatternInfo={lightingPatternInfo}
-                  w="100%"
-                  imageSize={70}
-                />
-              </Swipeable>
-            </Box>
-          ))}
-        </VStack>
-      </Center>
-    </PxAppPage>
+                        bg: "red.500",
+                        icon: (
+                          <MaterialIcons
+                            name="delete-outline"
+                            size={24}
+                            color="white"
+                          />
+                        ),
+                      },
+                    ],
+                  })}
+                >
+                  <LightingPatternsCard
+                    onPress={() => {
+                      navigation.navigate("AnimationSettingsScreen");
+                      lastSelectedLightingPattern = patternInfo;
+                    }}
+                    patternInfo={patternInfo}
+                    w="100%"
+                    imageSize={70}
+                  />
+                </Swipeable>
+              </Box>
+            ))}
+          </VStack>
+        </Center>
+      </PxAppPage>
+
+      <Actionsheet isOpen={isOpen} onClose={onClose}>
+        <Actionsheet.Content h={180} maxW="100%" w="100%">
+          <VStack space={1} w="100%">
+            <Actionsheet.Item maxW="100%" w="100%" bg="gray.500" rounded="md">
+              <HStack w="100%" h={30} space={3}>
+                <Box>
+                  <Text fontSize="lg">Copy</Text>
+                </Box>
+                <Box>
+                  <MaterialIcons name="content-copy" size={24} color="white" />
+                </Box>
+              </HStack>
+            </Actionsheet.Item>
+            <Actionsheet.Item maxW="100%" w="100%" bg="gray.500" rounded="md">
+              <HStack h={30} space={3}>
+                <Box>
+                  <Text fontSize="lg">Save as JSON</Text>
+                </Box>
+                <Box>
+                  <MaterialCommunityIcons
+                    name="code-json"
+                    size={24}
+                    color="white"
+                  />
+                </Box>
+              </HStack>
+            </Actionsheet.Item>
+          </VStack>
+        </Actionsheet.Content>
+      </Actionsheet>
+    </>
   );
 }

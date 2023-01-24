@@ -11,7 +11,7 @@ import {
   usePropsResolution,
   IModalProps,
 } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { bitsToIndices, combine, toMask } from "../faceMaskUtils";
 
@@ -20,7 +20,7 @@ import { bitsToIndices, combine, toMask } from "../faceMaskUtils";
  */
 interface FaceMaskProps extends IModalProps {
   dieFaces: number; // Number of faces on the die
-  maskNumber?: number;
+  maskNumber: number;
   onCloseAction?: ((value: any) => void) | null | undefined; // Function to be executed when the facemask window is closed
 }
 
@@ -30,14 +30,19 @@ interface FaceMaskProps extends IModalProps {
  */
 export function FaceMask(props: FaceMaskProps) {
   const buttonsArray = Array(props.dieFaces).fill(0);
-  // Array(props.dieFaces).fill(0).map((e,i))
-  let indices: number[] = [];
-  if (props.maskNumber) indices = bitsToIndices(props.maskNumber);
 
   const resolvedProps = usePropsResolution("FaceMask", props);
-
   const [showModal, setShowModal] = React.useState(false);
-  const [groupValue, setGroupValue] = React.useState<any[]>(indices);
+  const [groupValue, setGroupValue] = React.useState<number[]>(
+    bitsToIndices(props.maskNumber)
+  );
+  const [faceValues, setFaceValues] = React.useState<number[]>([]);
+
+  useEffect(() => {
+    const values = bitsToIndices(props.maskNumber);
+    setGroupValue(values);
+    setFaceValues(values.map((n) => n + 1));
+  }, [props.maskNumber]);
 
   return (
     <>
@@ -61,7 +66,7 @@ export function FaceMask(props: FaceMaskProps) {
                 <Text>No faces selected</Text>
               ) : (
                 <Text fontSize="md">
-                  {groupValue.sort((n1, n2) => n1 - n2).join(" / ")}
+                  {faceValues.sort((n1, n2) => n1 - n2).join(" / ")}
                 </Text>
               )}
             </HStack>
@@ -86,9 +91,10 @@ export function FaceMask(props: FaceMaskProps) {
           <Modal.Body bg={resolvedProps.bg}>
             <Center>
               <Checkbox.Group
-                defaultValue={groupValue}
+                defaultValue={groupValue.map((n) => n.toString())}
                 onChange={(values) => {
                   setGroupValue(values || []);
+                  setFaceValues(values.map((n: number) => Number(n) + 1));
                 }}
               >
                 <HStack space={2} flexWrap="wrap">
@@ -99,7 +105,7 @@ export function FaceMask(props: FaceMaskProps) {
                         size={resolvedProps.checkBoxSize}
                         alignSelf="center"
                         key={i}
-                        value={(i + 1).toString()}
+                        value={i.toString()}
                       >
                         {i + 1}
                       </Checkbox>
@@ -119,7 +125,7 @@ export function FaceMask(props: FaceMaskProps) {
                     setShowModal(false);
                     const faces = [];
                     for (let i = 1; i <= props.dieFaces; ++i) {
-                      faces.push(i.toString());
+                      faces.push(i);
                     }
                     setGroupValue(faces);
                   }}
