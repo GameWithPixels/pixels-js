@@ -107,7 +107,7 @@ export type MessageType = typeof MessageTypeValues[MessageTypeNames];
 /**
  * Base type for all Pixels messages.
  * Note: messages that have no specific data don't require a class,
- * a {@link MessageTypeValue} is used instead.
+ * a {@link MessageTypeValues} is used instead.
  * @category Message
  */
 export interface PixelMessage {
@@ -118,7 +118,7 @@ export interface PixelMessage {
 /**
  * Union type of {@link PixelMessage} and {@link MessageType} types.
  * Messages without parameter have no {@link PixelMessage} class to represent them,
- * instead they are represent by the corresponding {@link MessageTypeValue}.
+ * instead they are represent by the corresponding {@link MessageTypeValues}.
  * @category Message
  */
 export type MessageOrType = PixelMessage | MessageType;
