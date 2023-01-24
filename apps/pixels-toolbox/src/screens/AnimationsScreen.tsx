@@ -35,7 +35,7 @@ import {
 } from "native-base";
 import { useReducer, useState } from "react";
 
-import standardProfilesJson from "!/standard-profiles.json";
+import standardProfilesJson from "!/profiles/standard-profiles.json";
 import AppPage from "~/components/AppPage";
 import PixelScanList from "~/components/PixelScanList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";

@@ -24,11 +24,12 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 import getDfuFileInfo from "../dfu/getDfuFileInfo";
+import { getDieType } from "./DieType";
 
 import { store } from "~/app/store";
-import defaultProfile from "~/defaultProfile";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
+import getDefaultProfile from "~/getDefaultProfile";
 
 export type PixelDispatcherAction =
   | "connect"
@@ -298,7 +299,8 @@ export default class PixelDispatcher implements IPixel {
       try {
         this._isUpdatingProfile = true;
         notifyProgress(0);
-        await this._pixel.transferDataSet(defaultProfile, notifyProgress);
+        const profile = getDefaultProfile(getDieType(this._pixel.ledCount));
+        await this._pixel.transferDataSet(profile, notifyProgress);
       } finally {
         this._isUpdatingProfile = false;
         notifyProgress(undefined);

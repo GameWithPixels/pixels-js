@@ -20,7 +20,6 @@ import ProgressBar from "./ProgressBar";
 import TaskChainComponent from "./TaskChainComponent";
 
 import dfuFiles from "!/factory-dfu-files.zip";
-import defaultProfile from "~/defaultProfile";
 import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
@@ -36,6 +35,7 @@ import {
   ValidationFormFactor,
 } from "~/features/validation/ValidationFormFactor";
 import ValidationTests from "~/features/validation/ValidationTests";
+import getDefaultProfile from "~/getDefaultProfile";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
@@ -601,8 +601,13 @@ export function PrepareDie({
   const taskChain = useTaskChain(
     action,
     useCallback(
-      () => ValidationTests.updateProfile(pixel, defaultProfile, setProgress),
-      [pixel]
+      () =>
+        ValidationTests.updateProfile(
+          pixel,
+          getDefaultProfile(settings.dieType),
+          setProgress
+        ),
+      [pixel, settings.dieType]
     ),
     createTaskStatusContainer({
       title: t("updateProfile"),
