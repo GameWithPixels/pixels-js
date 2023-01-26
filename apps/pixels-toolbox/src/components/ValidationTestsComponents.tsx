@@ -529,12 +529,7 @@ export function WaitFaceUp({
           abortSignal,
           setUserAbort,
           (abortSignal) =>
-            ValidationTests.waitFaceUp(
-              pixel,
-              getLedCount(settings.dieType),
-              Color.dimMagenta,
-              abortSignal
-            ),
+            ValidationTests.waitFaceUp(pixel, 1, Color.dimMagenta, abortSignal),
           `Aborted wait for face ${getLedCount(settings.dieType)} up`
         ),
       [pixel, settings.dieType]
@@ -560,7 +555,7 @@ export function WaitFaceUp({
             (abortSignal) =>
               ValidationTests.waitFaceUp(
                 pixel,
-                1,
+                pixel.ledCount,
                 Color.dimYellow,
                 abortSignal
               ),
