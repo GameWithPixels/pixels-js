@@ -5,8 +5,14 @@ import {
   Ionicons,
   Octicons,
 } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import {
+  Color,
+  EditAnimationSimple,
+  EditColor,
+  EditDataSet,
+} from "@systemic-games/pixels-edit-animation";
 import {
   BatteryLevel,
   Card,
@@ -19,11 +25,17 @@ import {
   Toggle,
 } from "@systemic-games/react-native-pixels-components";
 import {
+  AnimationBits,
+  AnimationPreset,
+  getPixel,
+  usePixelConnect,
+  usePixelValue,
+} from "@systemic-games/react-native-pixels-connect";
+import {
   Box,
   Center,
   Text,
   VStack,
-  Image,
   HStack,
   Input,
   Spacer,
@@ -33,14 +45,14 @@ import {
   Pressable,
 } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
 import {
+  PixelDetailScreenProps,
   PixelDetailScreenStackParamList,
-  PixelDetailScreenRouteProp,
 } from "~/Navigation";
 import { sr } from "~/Utils";
+import DieRenderer from "~/features/render3d/DieRenderer";
 
 interface HistogramProps {
   rolls: number[];
@@ -287,12 +299,39 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
-export default function PixelDetailScreen() {
+export default function PixelDetailScreen(props: PixelDetailScreenProps) {
   const navigation =
     useNavigation<StackNavigationProp<PixelDetailScreenStackParamList>>();
-  const route = useRoute<PixelDetailScreenRouteProp>();
-  const pixelInfo = route.params;
+  const systemId = props.route.params.systemId;
+  const [status, pixel, connectDispatch] = usePixelConnect();
+  const [faceUp, rollDispatch] = usePixelValue(pixel, "roll");
+  useFocusEffect(
+    React.useCallback(() => {
+      connectDispatch("connect", getPixel(systemId));
+      rollDispatch("start");
+      return () => {
+        rollDispatch("stop");
+        connectDispatch("disconnect");
+      };
+    }, [connectDispatch, rollDispatch, systemId])
+  );
+
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
+  const [animData, setAnimData] = React.useState<{
+    animation: AnimationPreset;
+    bits: AnimationBits;
+  }>();
+  React.useEffect(() => {
+    const edit = new EditAnimationSimple();
+    edit.duration = 10;
+    edit.count = 10;
+    edit.faces = 2;
+    edit.color = new EditColor(new Color("#00ff00"));
+    const bits = new AnimationBits();
+    const animation = edit.toAnimation(new EditDataSet(), bits);
+    setAnimData({ animation, bits });
+  }, []);
+
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <LoadingPopup
@@ -308,23 +347,20 @@ export default function PixelDetailScreen() {
             }
             size="2xl"
             variant="unstyled"
-            placeholder={pixelInfo.name}
+            placeholder={pixel?.name}
             color="black"
           />
         </Center>
         <Center w="100%">
           <HStack space={0} alignItems="center" paddingLeft={5}>
-            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Box w="50%" paddingLeft={0}>
-              <Image
-                size={sr(200)}
-                // source={pixelInfo.imageRequirePath}
-                alt="placeHolder"
-              />
+              <Box w={sr(200)} h={sr(200)}>
+                <DieRenderer animationData={animData} />
+              </Box>
             </Box>
             <Spacer />
             <VStack flex={2} space={sr(11)} p={2} rounded="md" w="40%">
-              <Button>
+              <Button onPress={() => pixel?.blink(Color.dimOrange)}>
                 <MaterialCommunityIcons
                   name="lightbulb-on-outline"
                   size={24}
@@ -332,17 +368,18 @@ export default function PixelDetailScreen() {
                 />
               </Button>
               <VStack bg="pixelColors.highlightGray" rounded="md" p={2}>
-                <BatteryLevel size="xl" percentage={pixelInfo.batteryLevel} />
-                <RSSIStrength percentage={pixelInfo.rssi} size="xl" />
+                <BatteryLevel size="xl" percentage={pixel?.batteryLevel ?? 0} />
+                <RSSIStrength percentage={pixel?.rssi ?? 0} size="xl" />
               </VStack>
               <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
                 <VStack space={2}>
                   <HStack>
-                    <Text bold>Face Up: </Text>
+                    <Text bold>Face Up:</Text>
                     <Spacer />
                     <Text bold color="green.500" fontSize="md">
-                      10
+                      {`${faceUp ?? ""}`}
                     </Text>
+                    <Text>{status}</Text>
                   </HStack>
                 </VStack>
               </Box>
@@ -423,7 +460,7 @@ export default function PixelDetailScreen() {
           w="100%"
           alignSelf="center"
         >
-          <Text bold>Unpair Die</Text>
+          <Text bold>Unpair</Text>
         </Button>
       </VStack>
     </PxAppPage>

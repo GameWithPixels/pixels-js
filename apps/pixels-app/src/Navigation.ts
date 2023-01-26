@@ -1,25 +1,51 @@
 import type { RouteProp } from "@react-navigation/native";
+import { StackScreenProps } from "@react-navigation/stack";
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import { PatternInfo } from "@systemic-games/react-native-pixels-components";
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 
-//Main screens stack params
+//Main screens stack
 export type RootStackParamList = {
-  Home: undefined;
-  HomeScreen: undefined;
+  DiceBag: undefined;
+  Profiles: undefined;
   Patterns: undefined;
+  Settings: undefined;
 };
 
-//Home screen stack params
+//Home screen stack
 export type HomeScreenStackParamList = {
-  PixelDetailScreen: undefined;
-  PixelAdvancedSettingsScreen: undefined;
+  Dices: undefined;
+  PixelDetails: { systemId: string };
+  PixelAdvancedSettings: { systemId: string };
 };
-//Patterns screen stack params
+//For route
+export type PixelDetailScreenProps = StackScreenProps<
+  HomeScreenStackParamList,
+  "PixelDetails"
+>;
+//For route
+export type PixelAdvancedSettingsScreenProps = StackScreenProps<
+  HomeScreenStackParamList,
+  "PixelAdvancedSettings"
+>;
+
+//Pixel Detail sub-screen stack
+export type PixelDetailScreenStackParamList = {
+  PixelAdvancedSettingsScreen: undefined;
+  PixelInfo: { systemId: string };
+};
+//For route
+// export type PixelDetailScreenRouteProp = RouteProp<
+//   PixelDetailScreenStackParamList,
+//   "PixelInfo"
+// >;
+
+//Patterns screen stack
 export type PatternsScreenStackParamList = {
   PatternsScreen: undefined;
   AnimationSettingsScreen: undefined;
 };
+
+//Animation screen
 export type AnimationScreenParamList = {
   PatternInfo: PatternInfo;
 };
@@ -27,17 +53,6 @@ export type AnimationScreenParamList = {
 export type AnimationSettingsScreenRouteProps = RouteProp<
   AnimationScreenParamList,
   "PatternInfo"
->;
-
-//PixelDetailScreen params and props
-export type PixelDetailScreenStackParamList = {
-  PixelAdvancedSettingsScreen: undefined;
-  PixelInfo: ScannedPixel;
-};
-//For route
-export type PixelDetailScreenRouteProp = RouteProp<
-  PixelDetailScreenStackParamList,
-  "PixelInfo"
 >;
 
 //ProfileScreen params and props

@@ -1,4 +1,5 @@
 import {
+  AnimationBits,
   AnimationPreset,
   AnimationRainbow,
   Constants,
@@ -30,7 +31,7 @@ export interface PixelInfoCardProps {
   w?: number | string;
   pixel: ScannedPixel;
   onPress?: () => void;
-  dieRenderer: (anim: AnimationPreset) => React.ReactNode;
+  dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
 }
 /**
  * Horizontal info card for displaying paired dice
@@ -49,13 +50,14 @@ export function PairedPixelInfoComponent({
     anim.faceMask = Constants.faceMaskAllLEDs;
     return anim;
   });
+  const [bits] = React.useState(new AnimationBits());
   return (
     <Pressable onPress={onPress}>
       <Card borderWidth={1.5} minW={100} w="100%" h={110}>
         <HStack space={6} alignItems="center" maxW="100%" h="100%">
           <Box alignItems="center">
             <Box h={sr(70)} w={sr(70)}>
-              {dieRenderer(anim)}
+              {dieRenderer(anim, bits)}
             </Box>
           </Box>
           {/* dice infos */}
@@ -173,6 +175,7 @@ export function ScannedPixelInfoComponent({
     anim.faceMask = Constants.faceMaskAllLEDs;
     return anim;
   });
+  const [bits] = React.useState(new AnimationBits());
 
   return (
     <Pressable
@@ -185,7 +188,7 @@ export function ScannedPixelInfoComponent({
         <HStack space={sr(8)} alignItems="center" maxW="100%">
           <Box alignItems="center" flex={1}>
             <Box h={sr(60)} w={sr(60)}>
-              {dieRenderer(anim)}
+              {dieRenderer(anim, bits)}
             </Box>
           </Box>
           {/* dice infos */}

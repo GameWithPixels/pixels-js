@@ -4,6 +4,7 @@ import {
   createPixelTheme,
   PxAppPage,
 } from "@systemic-games/react-native-pixels-components";
+import { Color, getPixel } from "@systemic-games/react-native-pixels-connect";
 import {
   Box,
   Button,
@@ -14,6 +15,8 @@ import {
   VStack,
 } from "native-base";
 import React from "react";
+
+import { PixelAdvancedSettingsScreenProps } from "~/Navigation";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -32,7 +35,12 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
-export default function PixelAdvancedSettingsScreen() {
+export default function PixelAdvancedSettingsScreen(
+  props: PixelAdvancedSettingsScreenProps
+) {
+  const systemId = props.route.params.systemId;
+  const pixel = getPixel(systemId);
+
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={4} paddingTop={5}>
@@ -46,10 +54,10 @@ export default function PixelAdvancedSettingsScreen() {
               space={2}
               maxW="100%"
             >
-              <Text bold>Firmware Date :</Text>
+              <Text bold>Firmware Date:</Text>
               <Spacer />
               <Box bg="gray.400" rounded="md" p={2} maxW="100%">
-                <Text isTruncated>{new Date().toUTCString()}</Text>
+                <Text isTruncated>{pixel.firmwareDate.toUTCString()}</Text>
               </Box>
             </HStack>
             <Button
@@ -65,7 +73,7 @@ export default function PixelAdvancedSettingsScreen() {
         </Box>
         <Box>
           <Text bold paddingBottom={2} paddingTop={5} fontSize="sm">
-            Die Storage :
+            Die Storage:
           </Text>
           <VStack bg="pixelColors.highlightGray" rounded="md" space={3} p={2}>
             <HStack rounded="md">
@@ -88,7 +96,7 @@ export default function PixelAdvancedSettingsScreen() {
                 bg="gray.500"
                 rounded="md"
               >
-                <Text bold>Patterns </Text>
+                <Text bold>Patterns</Text>
                 <Text>2834 bytes</Text>
               </VStack>
               <VStack
@@ -110,7 +118,7 @@ export default function PixelAdvancedSettingsScreen() {
                 bg="gray.500"
                 rounded="md"
               >
-                <Text bold>Rules </Text>
+                <Text bold>Rules</Text>
                 <Text>392 bytes</Text>
               </VStack>
             </HStack>
@@ -131,6 +139,7 @@ export default function PixelAdvancedSettingsScreen() {
           leftIcon={
             <MaterialCommunityIcons name="restart" size={24} color="white" />
           }
+          onPress={() => pixel.blink(Color.red)}
         >
           <Text bold>Reboot</Text>
         </Button>

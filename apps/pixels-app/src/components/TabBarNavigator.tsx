@@ -7,8 +7,9 @@ import {
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
-// TODO create type for this navigator
-const Tab = createBottomTabNavigator();
+import { RootStackParamList } from "~/Navigation";
+
+const Tab = createBottomTabNavigator<RootStackParamList>();
 
 // const ScreenOptions = (route: any, color: any) => {
 //   let imageRequirePath;
@@ -68,8 +69,8 @@ export interface TabBarItem {
  * Data for a screen component inside the tab navigator.
  */
 export interface ScreenItem {
-  name: string;
-  component: any;
+  name: keyof RootStackParamList;
+  component: React.ComponentType;
 }
 /**
  * Props for TabBarComponent.
