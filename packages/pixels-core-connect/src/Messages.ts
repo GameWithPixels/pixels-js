@@ -1,3 +1,4 @@
+import { Constants as AnimConstants } from "@systemic-games/pixels-core-animation";
 import {
   assert,
   enumValue,
@@ -760,11 +761,15 @@ export class Blink implements PixelMessage {
 
   /** Select which faces to light up. */
   @serializable(4)
-  faceMask = -1;
+  faceMask: number = AnimConstants.faceMaskAllLEDs;
 
-  /** Amount of in and out fading, 0: sharp transition, 255: max fading */
+  /** Amount of in and out fading, 0: sharp transition, 255: max fading. */
   @serializable(1)
   fade = 0;
+
+  /** Whether to indefinitely loop the animation. */
+  @serializable(1)
+  loop = false;
 }
 
 /**
@@ -1007,7 +1012,7 @@ export class PlayInstantAnimation implements PixelMessage {
   @serializable(1)
   faceIndex = 0;
 
-  /** Whether to play the animation forever. */
+  /** Whether to indefinitely loop the animation. */
   @serializable(1)
   loop = false;
 }
