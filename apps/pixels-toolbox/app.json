@@ -3,7 +3,7 @@
     "name": "Pixels Toolbox",
     "slug": "pixels-toolbox",
     "owner": "gamewithpixels",
-    "version": "1.5.8",
+    "version": "1.5.9",
     "sdkVersion": "47.0.0",
     "platforms": [
       "ios",
