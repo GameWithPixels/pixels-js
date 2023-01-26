@@ -1,3 +1,8 @@
+import {
+  AnimationPreset,
+  AnimationRainbow,
+  Constants,
+} from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import {
@@ -23,8 +28,9 @@ import { RSSIStrength } from "./RSSIStrength";
 export interface PixelInfoCardProps {
   h?: number | string;
   w?: number | string;
-  pixel: ScannedPixel; // Die infos and values
-  onPress?: (() => void) | null | undefined; // Function to be executed when pressing the die info
+  pixel: ScannedPixel;
+  onPress?: () => void;
+  dieRenderer: (anim: AnimationPreset) => React.ReactNode;
 }
 /**
  * Horizontal info card for displaying paired dice
@@ -33,18 +39,24 @@ export interface PixelInfoCardProps {
 export function PairedPixelInfoComponent({
   pixel,
   onPress,
+  dieRenderer,
 }: PixelInfoCardProps) {
+  const [anim] = React.useState(() => {
+    const anim = new AnimationRainbow();
+    anim.duration = 10000;
+    anim.count = 1;
+    anim.traveling = true;
+    anim.faceMask = Constants.faceMaskAllLEDs;
+    return anim;
+  });
   return (
     <Pressable onPress={onPress}>
       <Card borderWidth={1.5} minW={100} w="100%" h={110}>
         <HStack space={6} alignItems="center" maxW="100%" h="100%">
           <Box alignItems="center">
-            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Image
-              size={sr(70)}
-              // source={pixel.imageRequirePath}
-              alt="placeHolder"
-            />
+            <Box h={sr(70)} w={sr(70)}>
+              {dieRenderer(anim)}
+            </Box>
           </Box>
           {/* dice infos */}
           <HStack space={sr(25)} h="100%" w="100%">
@@ -149,9 +161,19 @@ export function SquarePairedPixelInfo({
 export function ScannedPixelInfoComponent({
   pixel,
   onPress,
+  dieRenderer,
 }: PixelInfoCardProps) {
   const [pressed, setPressed] = React.useState(false);
   const [height, setHeight] = React.useState(100);
+  const [anim] = React.useState(() => {
+    const anim = new AnimationRainbow();
+    anim.duration = 10000;
+    anim.count = 1;
+    anim.traveling = true;
+    anim.faceMask = Constants.faceMaskAllLEDs;
+    return anim;
+  });
+
   return (
     <Pressable
       onPress={() => {
@@ -162,12 +184,9 @@ export function ScannedPixelInfoComponent({
       <Card borderWidth={1.5} w="100%" h={sr(height)} alignItems="center">
         <HStack space={sr(8)} alignItems="center" maxW="100%">
           <Box alignItems="center" flex={1}>
-            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Image
-              size={sr(60)}
-              // source={pixel.imageRequirePath}
-              alt="placeHolder"
-            />
+            <Box h={sr(60)} w={sr(60)}>
+              {dieRenderer(anim)}
+            </Box>
           </Box>
           {/* dice infos */}
           <HStack alignItems="baseline" flex={2}>
