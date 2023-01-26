@@ -36,8 +36,11 @@ export default async function (
     // Nothing special to do
     return asset;
   } else {
+    // Have issues with sub-directories in cache on device (it works on simulator)
+    // (file couldn't be opened despite being copied successfully)
+    assetFilename = assetFilename.split("/").join("_");
     // Copy file to cache directory so ExpoTHREE.loadAsync() can read it
-    const localUri = `${FileSystem.cacheDirectory}copiedFromResource/${assetFilename}`;
+    const localUri = `${FileSystem.cacheDirectory}copiedFromResource_${assetFilename}`;
     const fileInfo = await FileSystem.getInfoAsync(localUri, { size: false });
     if (!fileInfo.exists) {
       if (!asset.localUri) {
@@ -45,23 +48,6 @@ export default async function (
       }
       if (!asset.localUri) {
         throw new Error("Can't copy file to cache because it has no local URI");
-      }
-      const directoryUri = localUri.substring(0, localUri.lastIndexOf("/"));
-      const dirInfo = await FileSystem.getInfoAsync(directoryUri);
-      if (!dirInfo.isDirectory) {
-        // Recursively create directory
-        const directories = assetFilename.split("/");
-        directories.pop();
-        let subDirectoryUri = FileSystem.cacheDirectory!;
-        for (let i = 0; i < directories.length; ++i) {
-          if (directories[i]) {
-            subDirectoryUri += directories[i] + "/";
-            const subDirInfo = await FileSystem.getInfoAsync(subDirectoryUri);
-            if (!subDirInfo.isDirectory) {
-              await FileSystem.makeDirectoryAsync(subDirectoryUri);
-            }
-          }
-        }
       }
       await FileSystem.copyAsync({
         from: asset.localUri,

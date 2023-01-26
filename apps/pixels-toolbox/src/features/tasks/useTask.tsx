@@ -33,9 +33,11 @@ export default function (
   asyncOp: TaskOperation,
   taskRenderer: TaskRenderer,
   action: TaskAction = "run"
-): [TaskStatus, FC<PropsWithChildren>] {
+): [TaskStatus, FC<PropsWithChildren>, Error?] {
   const [status, setStatus] = useState<TaskStatus>("pending");
+  const [lastError, setLastError] = useState<Error>();
   useEffect(() => {
+    setLastError(undefined);
     if (action === "run") {
       setStatus("running");
       const updateStatus = (newStatus: TaskStatus) =>
@@ -48,6 +50,7 @@ export default function (
             `Task error (with aborted: ${abortCtrl.signal.aborted})`,
             error
           );
+          setLastError(error);
           if (error instanceof TaskCanceledError) {
             updateStatus("canceled");
           } else if (!abortCtrl.signal.aborted) {
@@ -67,5 +70,6 @@ export default function (
   return [
     status,
     ({ children }) => taskRenderer({ children, taskStatus: status }),
+    lastError,
   ];
 }

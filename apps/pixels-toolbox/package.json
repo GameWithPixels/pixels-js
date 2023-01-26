@@ -1,7 +1,7 @@
 {
   "name": "@systemic-games/pixels-toolbox",
   "description": "Internal app for testing Pixels dice and new software features.",
-  "version": "1.5.7",
+  "version": "1.5.10",
   "main": "index.js",
   "workspaces": {
     "nohoist": [
@@ -56,11 +56,10 @@
     "@systemic-games/react-native-pixels-connect": "*",
     "@systemic-games/vision-camera-rgb-averages": "*",
     "expo": "~47.0.13",
-    "expo-application": "~5.0.1",
-    "expo-asset": "~8.6.2",
+    "expo-asset": "~8.7.0",
     "expo-build-properties": "~0.4.0",
     "expo-constants": "~14.0.2",
-    "expo-dev-client": "~2.0.0",
+    "expo-dev-client": "~2.0.1",
     "expo-device": "~5.0.0",
     "expo-file-system": "~15.1.1",
     "expo-font": "~11.0.1",
@@ -71,7 +70,7 @@
     "expo-status-bar": "~1.4.2",
     "expo-system-ui": "~2.0.1",
     "expo-three": "^7.0.0",
-    "expo-updates": "~0.15.5",
+    "expo-updates": "~0.15.6",
     "i18next": "^22.0.0",
     "native-base": "~3.4.25",
     "react": "18.1.0",

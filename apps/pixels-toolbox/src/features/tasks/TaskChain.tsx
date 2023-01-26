@@ -10,6 +10,7 @@ import useTask, {
 interface TaskChainItem {
   status: TaskStatus;
   component: FC<PropsWithChildren>;
+  error?: Error;
 }
 
 export default class TaskChain {
@@ -44,6 +45,10 @@ export default class TaskChain {
 
   get components(): FC<PropsWithChildren>[] {
     return this._tasksItems.map((ti) => ti.component);
+  }
+
+  get lastError(): Error | undefined {
+    return this._tasksItems.find((ti) => !!ti.error)?.error;
   }
 
   constructor(
@@ -82,8 +87,8 @@ export default class TaskChain {
       : true;
     const action = !prevTaskSucceeded ? "reset" : this._action;
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [status, component] = useTask(asyncOp, taskRenderer, action);
-    this._tasksItems.push({ status, component });
+    const [status, component, error] = useTask(asyncOp, taskRenderer, action);
+    this._tasksItems.push({ status, component, error });
     return this;
   }
 

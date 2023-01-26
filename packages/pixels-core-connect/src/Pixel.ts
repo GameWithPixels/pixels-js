@@ -2,6 +2,7 @@ import {
   Color,
   Color32Utils,
   DataSet,
+  Constants as AnimConstants,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
@@ -605,6 +606,7 @@ export default class Pixel implements IPixel {
    * @param options.duration Total duration in milliseconds.
    * @param options.fade Amount of in and out fading, 0: sharp transition, 1: max fading.
    * @param options.faceMask Select which faces to light up.
+   * @param options.loop Whether to indefinitely loop the animation.
    * @returns A promise.
    */
   async blink(
@@ -614,6 +616,7 @@ export default class Pixel implements IPixel {
       duration?: number;
       fade?: number;
       faceMask?: number;
+      loop?: boolean;
     }
   ): Promise<void> {
     const blinkMsg = safeAssign(new Blink(), {
@@ -621,7 +624,8 @@ export default class Pixel implements IPixel {
       count: options?.count ?? 1,
       duration: options?.duration ?? 1000,
       fade: 255 * (options?.fade ?? 0),
-      faceMask: options?.faceMask ?? -1,
+      faceMask: options?.faceMask ?? AnimConstants.faceMaskAllLEDs,
+      loop: options?.loop ?? false,
     });
     await this.sendAndWaitForResponse(
       blinkMsg,

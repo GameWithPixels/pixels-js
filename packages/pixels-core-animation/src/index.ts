@@ -65,3 +65,4 @@ export * as GammaUtils from "./color/gammaUtils";
 // Other
 export { default as Constants } from "./animations/Constants";
 export { default as DataSet } from "./DataSet";
+export { default as getFaceMask } from "./getFaceMask";

@@ -9,13 +9,12 @@ import {
   Telemetry,
   DataSet,
   MessageOrType,
-  RollState,
-  PixelRollStateValues,
   TelemetryRequestModeValues,
   RequestRssi,
   Rssi,
   PixelBatteryStateValues,
   PixelBatteryData,
+  getFaceMask,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { TaskCanceledError, TaskFaultedError } from "../tasks/useTask";
@@ -100,12 +99,12 @@ const ValidationTests = {
       safeAssign(new RequestRssi(), {
         requestMode: TelemetryRequestModeValues.once,
       }),
-      MessageTypeValues.telemetry
+      MessageTypeValues.rssi
     )) as Rssi;
 
-    console.log(`RSSI is ${rssi}`);
+    console.log(`RSSI is ${rssi.value}`);
     if (rssi.value < -70) {
-      throw new Error(`Out of range RSSI value: ${rssi}`);
+      throw new Error(`Low RSSI value: ${rssi.value}`);
     }
   },
 
@@ -232,44 +231,34 @@ const ValidationTests = {
     assert(face > 0);
     await new Promise<void>((resolve, reject) => {
       const blinkAbortController = new AbortController();
+      const rollListener = (f: number) => {
+        if (f === face) {
+          console.log(`Die rolled on expected face ${face}`);
+          pixel.removeEventListener("roll", rollListener);
+          blinkAbortController.abort();
+          resolve();
+        }
+      };
       const abort = () => {
+        pixel.removeEventListener("roll", rollListener);
         blinkAbortController.abort();
         reject(new TaskCanceledError("waitFaceUp"));
       };
       if (abortSignal.aborted) {
         abort();
+      } else if (pixel.currentFace === face) {
+        console.log(`Die already on face ${face}`);
+        resolve();
       } else {
         abortSignal.addEventListener("abort", abort);
         // Blink face
         const blinkAS = blinkAbortController.signal;
         const options = {
-          faceMask: 1, // TODO use face mapping
+          faceMask: getFaceMask(face),
         };
         blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
         // Wait on face
-        const waitOnFace = async () => {
-          let rollState = (await pixel.sendAndWaitForResponse(
-            MessageTypeValues.requestRollState,
-            MessageTypeValues.rollState
-          )) as RollState;
-          while (
-            !abortSignal.aborted &&
-            (rollState.state !== PixelRollStateValues.onFace ||
-              rollState.faceIndex !== face - 1)
-          ) {
-            await delay(200, abortSignal);
-            rollState = (await pixel.sendAndWaitForResponse(
-              MessageTypeValues.requestRollState,
-              MessageTypeValues.rollState
-            )) as RollState; // TODO subscribe on "roll" events
-          }
-          abortSignal.removeEventListener("abort", abort); // TODO finally
-          if (!abortSignal.aborted) {
-            blinkAbortController.abort();
-            resolve();
-          }
-        };
-        waitOnFace().catch(() => {});
+        pixel.addEventListener("roll", rollListener);
       }
     });
   },
@@ -316,7 +305,7 @@ const ValidationTests = {
   },
 
   exitValidationMode: async (pixel: Pixel): Promise<void> => {
-    // Back out validation mode, don't wait for response as die will restart
+    // Exit validation mode, don't wait for response as die will restart
     await pixel.sendMessage(MessageTypeValues.exitValidation, true);
   },
 
