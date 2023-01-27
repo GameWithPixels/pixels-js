@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Color as _color } from "@systemic-games/pixels-core-animation";
 import {
   ColorWheel,
   ColorWheelColorType,
@@ -40,6 +39,7 @@ function SimpleColorButton(props: SimpleColorButtonProps) {
  * Props for customizing elements and behavior of a ColorSelection or GradientColorSelection component.
  */
 interface ColorSelectionProps extends IModalProps {
+  initialColor?: string;
   modalBg?: ColorType; // modal general background color
   triggerBg?: ColorType; // modal trigger element initial background color
   triggerH?: SizeType; // trigger element height
@@ -54,7 +54,8 @@ interface ColorSelectionProps extends IModalProps {
 export function SimpleColorSelection(props: ColorSelectionProps) {
   const resolvedProps = usePropsResolution("ColorSelection", props);
   const [showModal, setShowModal] = React.useState(false);
-  const [SelectedColor, setSelectedColor] = React.useState("red.500");
+  const [SelectedColor, setSelectedColor] = React.useState(props.initialColor);
+  console.log("initial color" + props.initialColor);
   // const [overridingOnFace, setOverridingOnFace] = React.useState(false);
 
   return (
@@ -97,13 +98,16 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 borderRadius={100}
                 size={200}
                 source={require("../../../../apps/pixels-app/assets/zoomedDie4.png")}
-                alt="placheolder zoomed die"
+                alt="placeholder zoomed die"
               />
             </Box>
             <Box p={2}>
               <ColorWheel
                 initialColor={SelectedColor}
-                onSelectColor={setSelectedColor}
+                onSelectColor={(hexColor) => {
+                  setSelectedColor(hexColor);
+                  props.onColorSelected?.(hexColor);
+                }}
               />
             </Box>
             <HStack space={2}>
@@ -111,7 +115,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 color="black"
                 onPress={() => {
                   setSelectedColor("black");
-                  props.onColorSelected?.(SelectedColor);
+                  props.onColorSelected?.("#000000");
                   setShowModal(false);
                 }}
               />
@@ -119,6 +123,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 color="white"
                 onPress={() => {
                   setSelectedColor("white");
+                  props.onColorSelected?.("#FFFFFF");
                   setShowModal(false);
                 }}
               />
@@ -126,6 +131,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 color="red.500"
                 onPress={() => {
                   setSelectedColor("red.500");
+                  props.onColorSelected?.("#FF0000");
                   setShowModal(false);
                 }}
               />
@@ -133,6 +139,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 color="green.500"
                 onPress={() => {
                   setSelectedColor("green.500");
+                  props.onColorSelected?.("#00FF00");
                   setShowModal(false);
                 }}
               />
@@ -140,6 +147,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 color="blue.500"
                 onPress={() => {
                   setSelectedColor("blue.500");
+                  props.onColorSelected?.("#0000FF");
                   setShowModal(false);
                 }}
               />

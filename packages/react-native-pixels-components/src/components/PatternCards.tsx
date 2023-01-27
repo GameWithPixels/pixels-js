@@ -1,15 +1,18 @@
 import {
   EditAnimation,
   EditPattern,
-} from "@systemic-games/pixels-edit-animation/dist/types";
+} from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Image } from "native-base";
+import { Pressable, Text, Image, Box, HStack, VStack } from "native-base";
 import {
   ColorType,
   SizeType,
 } from "native-base/lib/typescript/components/types";
+import React from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
+
+import { AnimationTypeToTitle } from "../animationUtils";
 
 const defaultImageRequirePath = require("../../../../apps/pixels-app/assets/RainbowDice.png");
 
@@ -83,6 +86,10 @@ export interface LightingPatternCardProps {
 }
 
 export function LightingPatternsCard(props: LightingPatternCardProps) {
+  const animationTitle = props.patternInfo
+    ? AnimationTypeToTitle(props.patternInfo)
+    : "Type";
+
   return (
     <Pressable
       onPress={() => {
@@ -90,12 +97,30 @@ export function LightingPatternsCard(props: LightingPatternCardProps) {
       }}
     >
       <Card {...props} borderWidth={props.borderWidth}>
-        <Image
-          size={props.imageSize}
-          alt={props.patternInfo?.name}
-          source={defaultImageRequirePath}
-        />
-        <Text>{props.patternInfo?.name}</Text>
+        <HStack p={1} h="100%" alignItems="center">
+          <Box flex={1} alignItems="center">
+            <Text isTruncated fontSize="lg" bold>
+              {props.patternInfo?.name}
+            </Text>
+          </Box>
+          <Box flex={1} alignItems="center">
+            <Image
+              size={props.imageSize}
+              source={defaultImageRequirePath}
+              alt="placeHolder"
+            />
+          </Box>
+          <VStack flex={1} alignItems="center">
+            {/* {props.profileWithSound && (
+              <HStack flex={1} alignItems="center">
+                <AntDesign name="sound" size={24} color="white" />
+              </HStack>
+            )} */}
+            <HStack flex={1} alignItems="center">
+              <Text bold>{animationTitle}</Text>
+            </HStack>
+          </VStack>
+        </HStack>
       </Card>
     </Pressable>
   );

@@ -184,7 +184,9 @@ export default function PatternsScreen() {
                     }}
                     patternInfo={patternInfo}
                     w="100%"
+                    h={100}
                     imageSize={70}
+                    p={1.5}
                     borderWidth={1}
                   />
                 </Swipeable>

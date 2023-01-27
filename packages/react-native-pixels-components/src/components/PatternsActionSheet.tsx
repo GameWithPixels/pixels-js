@@ -1,4 +1,4 @@
-import { EditPattern } from "@systemic-games/pixels-edit-animation/dist/types";
+import { EditPattern } from "@systemic-games/pixels-edit-animation";
 import {
   Actionsheet,
   Box,

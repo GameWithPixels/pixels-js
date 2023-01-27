@@ -21,5 +21,5 @@ export function toMask(index: number): number {
 }
 
 export function combine(values: number[]): number {
-  return values.reduce((prev, cur) => prev | cur);
+  return values.length ? values.reduce((prev, cur) => prev | cur) : 0;
 }

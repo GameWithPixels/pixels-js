@@ -3,7 +3,8 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   AnimationBits,
   AnimationPreset,
-  AnimationTypeValues,
+  Color,
+  ColorTypeValues,
   EditAnimation,
   EditAnimationGradient, // simple gradient
   EditAnimationGradientPattern,
@@ -11,6 +12,7 @@ import {
   EditAnimationNoise as _EditAnimationNoise, // noise
   EditAnimationRainbow, // rainbow
   EditAnimationSimple,
+  EditColor,
   EditDataSet, // simple flash
   EditWidgetData,
   getEditWidgetsData,
@@ -29,6 +31,7 @@ import {
   FaceIndex,
   PlayBackFace,
   PatternActionSheet,
+  AnimationTypeToTitle,
 } from "@systemic-games/react-native-pixels-components";
 import {
   VStack,
@@ -112,8 +115,14 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "color":
       return (
         <>
-          {/* TODO use widget.update function with string to color in order to work */}
-          <ColorSelection />
+          <ColorSelection
+            initialColor={widget.getValue().color.toString()}
+            onColorSelected={(color) =>
+              widget.update(
+                new EditColor(ColorTypeValues.rgb, new Color(color))
+              )
+            }
+          />
         </>
       );
 
@@ -221,28 +230,13 @@ export default function AnimationSettingsScreen() {
   );
 
   const [animation, setAnimation] = React.useState<AnimationPreset>();
+  const [animationBits, setAnimationBits] = React.useState<AnimationBits>(
+    new AnimationBits()
+  );
 
   useEffect(() => {
     setEditAnim(lastSelectedLightingPattern);
-    const initialLightingType = lastSelectedLightingPattern.type;
-
-    switch (initialLightingType) {
-      case AnimationTypeValues.simple:
-        setLightingType("Simple Flashes");
-        break;
-      case AnimationTypeValues.rainbow:
-        setLightingType("Colorful Rainbow");
-        break;
-      case AnimationTypeValues.gradient:
-        setLightingType("Simple Gradient");
-        break;
-      case AnimationTypeValues.gradientPattern:
-        setLightingType("Gradient LED Pattern");
-        break;
-      case AnimationTypeValues.keyframed:
-        setLightingType("Color LED Pattern");
-        break;
-    }
+    setLightingType(AnimationTypeToTitle(lastSelectedLightingPattern));
   }, []);
   const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
@@ -261,18 +255,18 @@ export default function AnimationSettingsScreen() {
         </Center>
         <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0} />
         <Box p={1} w="100%" h={200} rounded="lg">
-          <DieRenderer animation={animation} />
+          <DieRenderer animation={animation} animationBits={animationBits} />
           <Button
             onPress={() => {
               try {
-                let animation;
-                setAnimation(
-                  (animation = lastSelectedLightingPattern.toAnimation(
-                    new EditDataSet(),
-                    new AnimationBits()
-                  ))
+                const animationBits = new AnimationBits();
+
+                const animation = lastSelectedLightingPattern.toAnimation(
+                  new EditDataSet(),
+                  animationBits
                 );
-                console.log(animation);
+                setAnimationBits(animationBits);
+                setAnimation(animation);
               } catch (error) {
                 console.error(error);
               }
