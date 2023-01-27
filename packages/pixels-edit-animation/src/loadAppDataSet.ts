@@ -7,7 +7,7 @@ import {
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import AppDataSet from "./AppDataSet";
-import { ColorTypeValues } from "./edit/ColorType";
+import { ColorModeValues } from "./edit/ColorMode";
 import EditAction from "./edit/EditAction";
 import EditActionPlayAnimation from "./edit/EditActionPlayAnimation";
 import EditActionPlayAudioClip from "./edit/EditActionPlayAudioClip";
@@ -55,11 +55,11 @@ function toGradients(gradients?: Json.Gradient[]): EditRgbGradient[] {
 function toColor(color?: Json.Color): EditColor {
   if (color) {
     switch (color.type) {
-      case ColorTypeValues.rgb:
+      case ColorModeValues.rgb:
         return new EditColor(toRgbColor(color?.rgbColor));
-      case ColorTypeValues.face:
+      case ColorModeValues.face:
         return new EditColor("face");
-      case ColorTypeValues.random:
+      case ColorModeValues.random:
         return new EditColor("random");
       default:
         throw Error(`Unsupported color type ${color.type}`);

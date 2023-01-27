@@ -5,28 +5,28 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
-import { ColorTypeNames } from "./ColorType";
+import { ColorModeNames } from "./ColorMode";
 import Editable from "./Editable";
 
 export default class EditColor extends Editable {
-  type: ColorTypeNames;
+  mode: ColorModeNames;
   color: Color; // Used when type is ColorType.RGB
 
   constructor(
-    colorOrType: Color | Exclude<ColorTypeNames, "rgb"> = Color.black
+    colorOrMode: Color | Exclude<ColorModeNames, "rgb"> = Color.black
   ) {
     super();
-    if (colorOrType instanceof Color) {
-      this.type = "rgb";
-      this.color = colorOrType;
+    if (colorOrMode instanceof Color) {
+      this.mode = "rgb";
+      this.color = colorOrMode;
     } else {
-      this.type = colorOrType;
+      this.mode = colorOrMode;
       this.color = Color.black;
     }
   }
 
   toColorIndex(refPalette: Color[]): number {
-    switch (this.type) {
+    switch (this.mode) {
       case "rgb":
         return EditColor.toColorIndex(refPalette, this.color);
       case "face":
@@ -34,7 +34,7 @@ export default class EditColor extends Editable {
       case "random":
         return Constants.paletteColorFromRandom;
       default:
-        assertNever(this.type, `Unsupported EditColor type: ${this.type}`);
+        assertNever(this.mode, `Unsupported EditColor type: ${this.mode}`);
     }
   }
 
@@ -49,8 +49,8 @@ export default class EditColor extends Editable {
   }
 
   duplicate(): EditColor {
-    return this.type === "rgb"
+    return this.mode === "rgb"
       ? new EditColor(this.color.duplicate())
-      : new EditColor(this.type);
+      : new EditColor(this.mode);
   }
 }
