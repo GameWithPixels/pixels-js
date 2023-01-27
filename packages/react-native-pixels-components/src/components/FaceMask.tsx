@@ -1,3 +1,4 @@
+import { getFaceMask } from "@systemic-games/pixels-edit-animation";
 import {
   Text,
   HStack,
@@ -13,7 +14,7 @@ import {
 } from "native-base";
 import React, { useEffect } from "react";
 
-import { bitsToIndices, combine, toMask } from "../faceMaskUtils";
+import { bitsToIndices, combineBits } from "../bitMasksUtils";
 
 /**
  * Props for {@link FaceMask} component.
@@ -81,8 +82,8 @@ export function FaceMask(props: FaceMaskProps) {
         onClose={() => {
           setShowModal(false);
           // Combine the selected face into one maskValue
-          const maskValue = combine(
-            groupValue.map((f) => toMask(Number(f) - 1))
+          const maskValue = combineBits(
+            groupValue.map((f) => getFaceMask(Number(f)))
           );
           if (props.onCloseAction) props.onCloseAction(maskValue);
         }}

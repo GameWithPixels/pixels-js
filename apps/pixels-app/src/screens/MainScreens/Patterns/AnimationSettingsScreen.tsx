@@ -254,10 +254,15 @@ export default function AnimationSettingsScreen() {
     new EditAnimationSimple()
   );
 
-  const [animation, setAnimation] = React.useState<AnimationPreset>();
-  const [animationBits, setAnimationBits] = React.useState<AnimationBits>(
-    new AnimationBits()
-  );
+  // const [animation, setAnimation] = React.useState<AnimationPreset>();
+  // const [animationBits, setAnimationBits] = React.useState<AnimationBits>(
+  //   new AnimationBits()
+  // );
+
+  const [animData, setAnimData] = React.useState<{
+    animation: AnimationPreset;
+    bits: AnimationBits;
+  }>();
 
   useEffect(() => {
     setEditAnim(lastSelectedLightingPattern);
@@ -280,18 +285,17 @@ export default function AnimationSettingsScreen() {
         </Center>
         <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0} />
         <Box p={1} w="100%" h={200} rounded="lg">
-          <DieRenderer animation={animation} animationBits={animationBits} />
+          <DieRenderer animationData={animData} />
           <Button
             onPress={() => {
               try {
-                const animationBits = new AnimationBits();
-
+                const bits = new AnimationBits();
                 const animation = lastSelectedLightingPattern.toAnimation(
                   new EditDataSet(),
-                  animationBits
+                  bits
                 );
-                setAnimationBits(animationBits);
-                setAnimation(animation);
+                const animData = { animation, bits };
+                setAnimData(animData);
               } catch (error) {
                 console.error(error);
               }
