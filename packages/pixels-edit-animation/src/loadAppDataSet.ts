@@ -53,20 +53,20 @@ function toGradients(gradients?: Json.Gradient[]): EditRgbGradient[] {
 }
 
 function toColor(color?: Json.Color): EditColor {
-  const c = new EditColor();
   if (color) {
     switch (color.type) {
       case ColorTypeValues.rgb:
+        return new EditColor(toRgbColor(color?.rgbColor));
       case ColorTypeValues.face:
+        return new EditColor("face");
       case ColorTypeValues.random:
-        c.type = color.type;
-        break;
+        return new EditColor("random");
       default:
         throw Error(`Unsupported color type ${color.type}`);
     }
-    c.color = toRgbColor(color?.rgbColor);
+  } else {
+    return new EditColor();
   }
-  return c;
 }
 
 function toPatterns(patterns?: Json.Pattern[]): EditPattern[] {
