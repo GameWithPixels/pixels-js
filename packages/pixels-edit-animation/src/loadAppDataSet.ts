@@ -7,7 +7,7 @@ import {
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import AppDataSet from "./AppDataSet";
-import { ColorTypeValues } from "./edit/ColorType";
+import { ColorModeValues } from "./edit/ColorMode";
 import EditAction from "./edit/EditAction";
 import EditActionPlayAnimation from "./edit/EditActionPlayAnimation";
 import EditActionPlayAudioClip from "./edit/EditActionPlayAudioClip";
@@ -53,20 +53,20 @@ function toGradients(gradients?: Json.Gradient[]): EditRgbGradient[] {
 }
 
 function toColor(color?: Json.Color): EditColor {
-  const c = new EditColor();
   if (color) {
     switch (color.type) {
-      case ColorTypeValues.rgb:
-      case ColorTypeValues.face:
-      case ColorTypeValues.random:
-        c.type = color.type;
-        break;
+      case ColorModeValues.rgb:
+        return new EditColor(toRgbColor(color?.rgbColor));
+      case ColorModeValues.face:
+        return new EditColor("face");
+      case ColorModeValues.random:
+        return new EditColor("random");
       default:
         throw Error(`Unsupported color type ${color.type}`);
     }
-    c.color = toRgbColor(color?.rgbColor);
+  } else {
+    return new EditColor();
   }
-  return c;
 }
 
 function toPatterns(patterns?: Json.Pattern[]): EditPattern[] {

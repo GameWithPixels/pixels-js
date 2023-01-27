@@ -1,4 +1,4 @@
-export * from "./ColorType";
+export * from "./ColorMode";
 export * as decorators from "./decorators";
 export { default as EditAction } from "./EditAction";
 export { default as EditActionPlayAnimation } from "./EditActionPlayAnimation";
