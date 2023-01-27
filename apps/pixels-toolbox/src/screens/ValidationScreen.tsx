@@ -285,17 +285,11 @@ function RunTestsPage({
       ))
     );
   }
-  taskChain
-    .chainWith(
-      ...useTaskComponent("CheckBoard", cancel, (p) => (
-        <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
-      ))
-    )
-    .chainWith(
-      ...useTaskComponent("CheckLEDs", cancel, (p) => (
-        <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
-      ))
-    );
+  taskChain.chainWith(
+    ...useTaskComponent("CheckBoard", cancel, (p) => (
+      <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
+    ))
+  );
   if (settings.formFactor !== "boardNoCoil") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -313,6 +307,11 @@ function RunTestsPage({
       ))
     );
   }
+  taskChain.chainWith(
+    ...useTaskComponent("CheckLEDs", cancel, (p) => (
+      <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
+    ))
+  );
   if (settings.formFactor !== "die") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks

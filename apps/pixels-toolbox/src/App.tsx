@@ -3,6 +3,8 @@ import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, themeTools } from "native-base";
 import { useTranslation } from "react-i18next";
+// eslint-disable-next-line import/namespace
+import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import * as Sentry from "sentry-expo";
@@ -21,6 +23,11 @@ import { sr } from "~/styles";
 
 // Import internationalization file so it's initialized
 import "~/i18n";
+
+LogBox.ignoreLogs([
+  // Ignore Sentry warnings
+  "Sentry Logger [warn]:",
+]);
 
 // Use Sentry for crash reporting
 Sentry.init({

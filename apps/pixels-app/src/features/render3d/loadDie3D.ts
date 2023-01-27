@@ -5,6 +5,17 @@ import { loadAsync, THREE } from "expo-three";
 import "./readAsArrayBuffer";
 import ensureAssetReadable from "./ensureAssetReadable";
 
+function reorderFaces<T>(faces: T[]): T[] {
+  if (faces.length === 20) {
+    const sourceOrder = [
+      19, 20, 2, 12, 15, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 17, 18,
+    ];
+    const copy = [...faces];
+    sourceOrder.forEach((dst, i) => (faces[dst - 1] = copy[i]));
+  }
+  return faces;
+}
+
 function extractMeshesGeometry(
   gltf: { scene: THREE.Group },
   computeTangents = true
@@ -12,15 +23,17 @@ function extractMeshesGeometry(
   const meshes = Object.values(gltf.scene.children).filter(
     (obj) => (obj as THREE.Mesh).isMesh
   ) as THREE.Mesh[];
-  return meshes.map((mesh) => {
-    const geometry = mesh.geometry.clone();
-    if (computeTangents && !geometry.hasAttribute("tangent")) {
-      geometry.computeTangents();
-    }
-    const position = mesh.getWorldPosition(new THREE.Vector3());
-    geometry.translate(position.x, position.y, position.z);
-    return geometry;
-  });
+  return reorderFaces(
+    meshes.map((mesh) => {
+      const geometry = mesh.geometry.clone();
+      if (computeTangents && !geometry.hasAttribute("tangent")) {
+        geometry.computeTangents();
+      }
+      const position = mesh.getWorldPosition(new THREE.Vector3());
+      geometry.translate(position.x, position.y, position.z);
+      return geometry;
+    })
+  );
 }
 
 let normalTex: THREE.Texture | undefined;

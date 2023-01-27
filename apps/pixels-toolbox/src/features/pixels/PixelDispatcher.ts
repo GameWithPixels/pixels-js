@@ -20,14 +20,16 @@ import {
   PixelRollData,
   ScannedPixel,
   PixelBatteryData,
+  MessageTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 
 import getDfuFileInfo from "../dfu/getDfuFileInfo";
+import { getDieType } from "./DieType";
 
 import { store } from "~/app/store";
-import defaultProfile from "~/defaultProfile";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
+import getDefaultProfile from "~/getDefaultProfile";
 
 export type PixelDispatcherAction =
   | "connect"
@@ -38,7 +40,8 @@ export type PixelDispatcherAction =
   | "calibrate"
   | "updateProfile"
   | "queueFirmwareUpdate"
-  | "dequeueFirmwareUpdate";
+  | "dequeueFirmwareUpdate"
+  | "exitValidationMode";
 
 export interface PixelDispatcherEventMap {
   status: PixelStatus;
@@ -231,6 +234,9 @@ export default class PixelDispatcher implements IPixel {
       case "dequeueFirmwareUpdate":
         this._dequeueFirmwareUpdate();
         break;
+      case "exitValidationMode":
+        this._exitValidationMode();
+        break;
       default:
         assertNever(action);
     }
@@ -293,7 +299,8 @@ export default class PixelDispatcher implements IPixel {
       try {
         this._isUpdatingProfile = true;
         notifyProgress(0);
-        await this._pixel.transferDataSet(defaultProfile, notifyProgress);
+        const profile = getDefaultProfile(getDieType(this._pixel.ledCount));
+        await this._pixel.transferDataSet(profile, notifyProgress);
       } finally {
         this._isUpdatingProfile = false;
         notifyProgress(undefined);
@@ -344,6 +351,13 @@ export default class PixelDispatcher implements IPixel {
     } finally {
       assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
       this._dequeueFirmwareUpdate(true);
+    }
+  }
+
+  private _exitValidationMode(): void {
+    if (this.isReady) {
+      // Exit validation mode, don't wait for response as die will restart
+      this._pixel.sendMessage(MessageTypeValues.exitValidation, true);
     }
   }
 }
