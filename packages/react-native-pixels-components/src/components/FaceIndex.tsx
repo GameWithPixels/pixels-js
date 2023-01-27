@@ -143,7 +143,8 @@ export function FaceIndex2(props: FaceIndexProps) {
 
 export interface PlayBackFaceProps {
   title?: string;
-  onToggle?: () => void;
+  currentValue?: number;
+  onValueChange?: (value: number) => void;
 }
 
 export function PlayBackFace(props: PlayBackFaceProps) {
@@ -153,7 +154,14 @@ export function PlayBackFace(props: PlayBackFaceProps) {
       <Text bold>{props.title}</Text>
       <HStack alignItems="center">
         <Box flex={1}>
-          <Toggle title="Current face" onToggle={setDisableFaceIndex} />
+          <Toggle
+            title="Current face"
+            onToggle={() => {
+              setDisableFaceIndex(!disableFaceIndex);
+              const currValue = props.currentValue ?? 0;
+              props.onValueChange?.(currValue);
+            }}
+          />
         </Box>
         <Box flex={1}>
           <FaceIndex faces={20} showTitle={false} disabled={disableFaceIndex} />

@@ -13,7 +13,8 @@ import {
   EditAnimationRainbow, // rainbow
   EditAnimationSimple,
   EditColor,
-  EditDataSet, // simple flash
+  EditDataSet,
+  EditRgbGradient, // simple flash
   EditWidgetData,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
@@ -140,15 +141,36 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "gradient":
       return (
         <>
-          {/* TODO use widget.update function with string to color in order to work */}
-          <GradientColorSelection triggerW="100%" />
+          {/* TODO use widget.update function */}
+          <GradientColorSelection
+            triggerW="100%"
+            onColorSelected={(keyFrames) =>
+              widget.update(new EditRgbGradient(keyFrames))
+            }
+          />
         </>
       );
 
     case "rgbPattern":
-      return <PatternActionSheet Patterns={standardPatterns} />;
+      return (
+        <PatternActionSheet
+          initialPattern={widget.getValue()}
+          Patterns={standardPatterns}
+          onSelectPattern={(pattern) => {
+            widget.update(pattern);
+          }}
+        />
+      );
     case "grayscalePattern":
-      return <PatternActionSheet Patterns={standardPatterns} />;
+      return (
+        <PatternActionSheet
+          initialPattern={widget.getValue()}
+          Patterns={standardPatterns}
+          onSelectPattern={(pattern) => {
+            widget.update(pattern);
+          }}
+        />
+      );
 
     case "bitField": {
       // for rules : flags
@@ -164,7 +186,6 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "faceIndex": {
       return (
         <>
-          {/* //TODO check how to initialize default mask from widget */}
           <FaceIndex faces={20} onIndexSelected={widget.update} />
         </>
       );
@@ -172,7 +193,11 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "playbackFace": {
       return (
         <>
-          <PlayBackFace title={widget.displayName} />
+          <PlayBackFace
+            currentValue={widget.getValue()}
+            onValueChange={widget.update}
+            title={widget.displayName}
+          />
         </>
       );
     } // for rules : condition on face, select one face or current face

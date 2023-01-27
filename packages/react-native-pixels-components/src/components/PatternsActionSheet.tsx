@@ -12,6 +12,9 @@ import React, { useEffect } from "react";
 
 import { PatternCard, PatternInfo } from "./PatternCards";
 
+//Temporary default image require path
+const defaultImageRequirePath = require("~/../assets/RainbowDice.png");
+
 /**
  * Props for ProfilesActionSheet component.
  */
@@ -22,7 +25,8 @@ export interface PatternsActionsheetProps {
   PatternInfo?: PatternInfo[]; // array of profiles informations to be displayed inside the component
   w?: number;
   h?: number;
-  onSelectPattern?: (() => void) | null | undefined;
+  onSelectPattern?: ((editPattern: EditPattern) => void) | null | undefined;
+  initialPattern?: EditPattern;
 }
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
@@ -36,23 +40,34 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
 
   const [patternsInfo, setPatternsInfo] = React.useState<PatternInfo[]>([]);
-  const [_selectedPattern, setSelectedPattern] = React.useState<EditPattern>();
+
+  const [_selectedPattern, setSelectedPattern] = React.useState<EditPattern>(
+    new EditPattern()
+  );
 
   useEffect(() => {
     setPatternList(props.Patterns);
-  }, [props.Patterns]);
+    const initialPattern = props.initialPattern
+      ? props.initialPattern
+      : new EditPattern();
+    setSelectedPattern(initialPattern);
+    setPatternName(initialPattern.name);
+  }, [props.Patterns, props.initialPattern]);
 
   useEffect(() => {
     const infos: PatternInfo[] = [];
-    patternList.map((pattern) => infos.push({ editPattern: pattern }));
+    patternList.map((pattern) =>
+      infos.push({
+        editPattern: pattern,
+        imageRequirePath: defaultImageRequirePath,
+      })
+    );
     setPatternsInfo(infos);
   }, [patternList]);
 
   function onPatternSelected(patternInfo: PatternInfo) {
     const patternName = patternInfo.editPattern.name;
     setPatternName(patternName);
-
-    setSelectedPattern(patternInfo.editPattern);
   }
 
   return (
@@ -97,7 +112,8 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
                     onSelected={() => {
                       setPatternToHighlight(i);
                       onPatternSelected(patternInfo);
-                      props.onSelectPattern?.();
+                      setSelectedPattern(patternInfo.editPattern);
+                      props.onSelectPattern?.(patternInfo.editPattern);
                       onClose();
                     }}
                     patternInfo={patternInfo}

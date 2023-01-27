@@ -49,7 +49,7 @@ export function SliderComponent(props: SliderProps) {
             minValue={resolvedProps.minValue}
             maxValue={resolvedProps.maxValue}
             size={resolvedProps.size}
-            step={resolvedProps.step}
+            step={10}
             onChange={(v) => {
               setOnChangeValue(v);
               props.onSelectedValue?.(v);

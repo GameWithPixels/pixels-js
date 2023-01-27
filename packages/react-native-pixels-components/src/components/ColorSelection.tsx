@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { EditRgbKeyframe } from "@systemic-games/pixels-edit-animation";
 import {
   ColorWheel,
   ColorWheelColorType,
@@ -11,7 +12,6 @@ import {
   usePropsResolution,
   IModalProps,
   Actionsheet,
-  Image,
   Box,
   ScrollView,
 } from "native-base";
@@ -45,6 +45,18 @@ interface ColorSelectionProps extends IModalProps {
   triggerH?: SizeType; // trigger element height
   triggerW?: SizeType; // trigger element width
   onColorSelected?: ((value: string) => void) | null | undefined; // action when a color was selected trough the color selection component
+}
+/**
+ * Props for customizing elements and behavior of a ColorSelection or GradientColorSelection component.
+ */
+interface GradientColorSelectionProps extends IModalProps {
+  initialColor?: string;
+  initialKeyFrames?: EditRgbKeyframe[];
+  modalBg?: ColorType; // modal general background color
+  triggerBg?: ColorType; // modal trigger element initial background color
+  triggerH?: SizeType; // trigger element height
+  triggerW?: SizeType; // trigger element width
+  onColorSelected?: ((keyframes: EditRgbKeyframe[]) => void) | null | undefined; // action when a color was selected trough the color selection component
 }
 /**
  * Color selection component used for selecting a single color shade from a color wheel / color picker.
@@ -94,12 +106,12 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
               paddingBottom={10}
             >
               {/* Temporary */}
-              <Image
+              {/* <Image
                 borderRadius={100}
                 size={200}
                 source={require("../../../../apps/pixels-app/assets/zoomedDie4.png")}
                 alt="placeholder zoomed die"
-              />
+              /> */}
             </Box>
             <Box p={2}>
               <ColorWheel
@@ -159,11 +171,12 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
   );
 }
 
-export function GradientColorSelection(props: ColorSelectionProps) {
+export function GradientColorSelection(props: GradientColorSelectionProps) {
   //const resolvedProps = usePropsResolution("ColorSelection", props);
   const [showModal, setShowModal] = React.useState(false);
   const [selectedColor, setSelectedColor] = React.useState("red.500");
   const [selectedGradientKey, setSelectedGradientKey] = React.useState(0);
+  //Temporary for testing
   const [keyColor1, setKeyColor1] = React.useState("black");
   const [keyColor2, setKeyColor2] = React.useState("black");
   const [keyColor3, setKeyColor3] = React.useState("black");
@@ -174,6 +187,10 @@ export function GradientColorSelection(props: ColorSelectionProps) {
   const [keyColor8, setKeyColor8] = React.useState("black");
 
   const gradientKeylength = 100 / 7;
+
+  const [_rgbKeyFrames, _setRgbKeyFrames] = React.useState(
+    props.initialKeyFrames
+  );
 
   return (
     <>
@@ -202,21 +219,6 @@ export function GradientColorSelection(props: ColorSelectionProps) {
         <Actionsheet.Content maxHeight="95%" minHeight="95%">
           <ScrollView>
             <VStack p={2} alignItems="center" space={2} w="100%">
-              {/* <Box
-              p={2}
-              rounded="2xl"
-              h="30%"
-              w="95%"
-              bg={{
-                linearGradient: {
-                  colors: ["lightBlue.300", "violet.800"],
-                  start: [0, 0],
-                  end: [1, 0],
-                },
-              }}
-              alignItems="center"
-              paddingBottom={10}
-            /> */}
               <Box width="100%" alignItems="center">
                 <Svg height="200" width="100%">
                   <Defs>
