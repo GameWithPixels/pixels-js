@@ -10,11 +10,14 @@
       ],
       "~/*": [
         "*"
+      ],
+      "!/*": [
+        "../assets/*"
       ]
     }
   },
   "files": [
-    "assets/standard-profiles.json",
+    "assets/profiles/standard-profiles.json",
   ],
   "include": [
     "src/**/*"
