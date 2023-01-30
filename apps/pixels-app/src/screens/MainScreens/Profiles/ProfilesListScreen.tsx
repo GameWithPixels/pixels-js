@@ -31,12 +31,10 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import {
-  ProfileScreenRouteProp as _ProfileScreenRouteProps,
-  ProfilesScreenStackParamList,
-} from "~/Navigation";
+import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import StandardProfiles from "~/features/StandardProfile";
+import DieRenderer from "~/features/render3d/DieRenderer";
 
 // StandardProfiles.profiles[0].rules[0].actions[0].type ===
 //   ActionTypeValues.playAnimation;
@@ -70,9 +68,6 @@ interface SelectedProfile {
   profileKey: number;
 }
 export let selectedProfile: SelectedProfile;
-
-const placeHolderRequirePath = require("~/../assets/RainbowDice.png");
-const _defaultImageRequirePath = require("~/../assets/UI_Icons/D10.png");
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -273,7 +268,7 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            imageRequirePath={placeHolderRequirePath}
+                            dieRender={() => <DieRenderer />}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
@@ -359,7 +354,7 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            imageRequirePath={placeHolderRequirePath}
+                            dieRender={() => <DieRenderer />}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
@@ -380,6 +375,8 @@ export function ProfilesListScreen() {
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget
+                      profileName="+"
+                      dieRender={() => <></>}
                       onPress={() => {
                         // Empty profile that will need to be edited
                         addProfile(defaultProfile);

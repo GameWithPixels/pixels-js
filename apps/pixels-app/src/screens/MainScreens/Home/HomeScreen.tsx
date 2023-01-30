@@ -181,7 +181,7 @@ export default function HomeScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      scannerDispatch("start");
+      setTimeout(() => scannerDispatch("start"), 1000);
       return () => {
         scannerDispatch("stop");
       };

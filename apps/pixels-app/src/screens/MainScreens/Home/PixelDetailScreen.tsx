@@ -5,7 +5,7 @@ import {
   Ionicons,
   Octicons,
 } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Color,
@@ -47,11 +47,9 @@ import {
 import React from "react";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
-import {
-  PixelDetailScreenProps,
-  PixelDetailScreenStackParamList,
-} from "~/Navigation";
+import { PixelDetailScreenProps, HomeScreenStackParamList } from "~/Navigation";
 import { sr } from "~/Utils";
+import StandardProfiles from "~/features/StandardProfile";
 import DieRenderer from "~/features/render3d/DieRenderer";
 
 interface HistogramProps {
@@ -297,24 +295,23 @@ const paleBluePixelThemeParams = {
     "900": "#010204",
   },
 };
+
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
 export default function PixelDetailScreen(props: PixelDetailScreenProps) {
   const navigation =
-    useNavigation<StackNavigationProp<PixelDetailScreenStackParamList>>();
+    useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
   const systemId = props.route.params.systemId;
   const [status, pixel, connectDispatch] = usePixelConnect();
-  const [faceUp, rollDispatch] = usePixelValue(pixel, "roll");
-  useFocusEffect(
-    React.useCallback(() => {
-      connectDispatch("connect", getPixel(systemId));
-      rollDispatch("start");
-      return () => {
-        rollDispatch("stop");
-        connectDispatch("disconnect");
-      };
-    }, [connectDispatch, rollDispatch, systemId])
-  );
+  const [faceUpObj, rollDispatch] = usePixelValue(pixel, "roll");
+  React.useEffect(() => {
+    connectDispatch("connect", getPixel(systemId));
+    rollDispatch("start");
+    return () => {
+      rollDispatch("stop");
+      connectDispatch("disconnect");
+    };
+  }, [connectDispatch, rollDispatch, systemId]);
 
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
   const [animData, setAnimData] = React.useState<{
@@ -377,9 +374,15 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
                     <Text bold>Face Up:</Text>
                     <Spacer />
                     <Text bold color="green.500" fontSize="md">
-                      {`${faceUp ?? ""}`}
+                      {`${faceUpObj?.face ?? ""}`}
                     </Text>
-                    <Text>{status}</Text>
+                  </HStack>
+                  <HStack>
+                    <Text bold>Status:</Text>
+                    <Spacer />
+                    <Text bold color="green.500" fontSize="md">
+                      {status}
+                    </Text>
                   </HStack>
                 </VStack>
               </Box>
@@ -394,40 +397,11 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
             <Text bold>Recent Profiles:</Text>
           </HStack>
           <ProfilesScrollView
+            profiles={StandardProfiles.profiles}
+            dieRender={() => <DieRenderer />}
             onPress={() => {
-              console.log(showLoadingPopup);
               setShowLoadingPopup(true);
             }}
-            availableProfiles={[
-              {
-                profileName: "Rainbow",
-                imageRequirePath: require("!/RainbowDice.png"),
-              },
-              {
-                profileName: "Waterfall",
-                imageRequirePath: require("!/BlueDice.png"),
-              },
-              {
-                profileName: "Red to Blue",
-                imageRequirePath: require("!/DieImageTransparent.png"),
-              },
-              {
-                profileName: "Speak",
-                imageRequirePath: require("!/DieImageTransparent.png"),
-              },
-              {
-                profileName: "Custom",
-                imageRequirePath: require("!/RainbowDice.png"),
-              },
-              {
-                profileName: "Flashy",
-                imageRequirePath: require("!/YellowDice.png"),
-              },
-              {
-                profileName: "Explosion",
-                imageRequirePath: require("!/YellowDice.png"),
-              },
-            ]}
           />
         </Box>
 
@@ -437,7 +411,7 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
         <Divider bg="primary.200" width="90%" alignSelf="center" />
         <Pressable
           onPress={() => {
-            navigation.navigate("PixelAdvancedSettingsScreen");
+            navigation.navigate("PixelAdvancedSettings", { systemId });
           }}
         >
           <HStack

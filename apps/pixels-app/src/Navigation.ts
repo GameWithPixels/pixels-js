@@ -1,9 +1,10 @@
 import type { RouteProp } from "@react-navigation/native";
 import { StackScreenProps } from "@react-navigation/stack";
-import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import { PatternInfo } from "@systemic-games/react-native-pixels-components";
 
-//Main screens stack
+//
+// Main screens stack
+//
 export type RootStackParamList = {
   DiceBag: undefined;
   Profiles: undefined;
@@ -11,58 +12,49 @@ export type RootStackParamList = {
   Settings: undefined;
 };
 
-//Home screen stack
+//
+// Home screen stack
+//
 export type HomeScreenStackParamList = {
   Dices: undefined;
   PixelDetails: { systemId: string };
   PixelAdvancedSettings: { systemId: string };
 };
-//For route
+
 export type PixelDetailScreenProps = StackScreenProps<
   HomeScreenStackParamList,
   "PixelDetails"
 >;
-//For route
+
 export type PixelAdvancedSettingsScreenProps = StackScreenProps<
   HomeScreenStackParamList,
   "PixelAdvancedSettings"
 >;
 
-//Pixel Detail sub-screen stack
-export type PixelDetailScreenStackParamList = {
-  PixelAdvancedSettingsScreen: undefined;
-  PixelInfo: { systemId: string };
-};
-//For route
-// export type PixelDetailScreenRouteProp = RouteProp<
-//   PixelDetailScreenStackParamList,
-//   "PixelInfo"
-// >;
-
-//Patterns screen stack
+//
+// Patterns screen stack
+//
 export type PatternsScreenStackParamList = {
   PatternsScreen: undefined;
   AnimationSettingsScreen: undefined;
 };
 
-//Animation screen
+//
+// Animation screen
+//
 export type AnimationScreenParamList = {
   PatternInfo: PatternInfo;
 };
-//For route
+
 export type AnimationSettingsScreenRouteProps = RouteProp<
   AnimationScreenParamList,
   "PatternInfo"
 >;
 
-//ProfileScreen params and props
+//
+// ProfileScreen params and props
+//
 export type ProfilesScreenStackParamList = {
   ProfileRulesScreen: undefined;
   ProfileEditRuleScreen: undefined;
-  routeParams: { profileInfo: EditProfile };
 };
-export type RouteTestParams = {
-  ProfileInfo: EditProfile;
-};
-//For route
-export type ProfileScreenRouteProp = RouteProp<RouteTestParams, "ProfileInfo">;

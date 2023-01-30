@@ -43,7 +43,6 @@ const icons: IconParams[] = [
  */
 export function BatteryLevel(props: BatteryLevelProps) {
   const resolvedProps = usePropsResolution("BatteryLevel", props);
-  const batteryLevel = resolvedProps.percentage * 100;
   return (
     <Center>
       <HStack space={3} alignItems="center" w="100%">
@@ -52,10 +51,10 @@ export function BatteryLevel(props: BatteryLevelProps) {
             _icon={resolvedProps._icon}
             icons={icons}
             colors={resolvedProps.colors}
-            percentage={batteryLevel}
+            percentage={resolvedProps.percentage}
           />
         </Box>
-        <Text {...resolvedProps._text}>{batteryLevel + "%"}</Text>
+        <Text {...resolvedProps._text}>{resolvedProps.percentage + "%"}</Text>
       </HStack>
     </Center>
   );

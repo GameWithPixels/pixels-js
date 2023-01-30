@@ -40,7 +40,6 @@ export default function PixelAdvancedSettingsScreen(
 ) {
   const systemId = props.route.params.systemId;
   const pixel = getPixel(systemId);
-
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={4} paddingTop={5}>
