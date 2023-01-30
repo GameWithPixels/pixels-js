@@ -10,7 +10,7 @@ import { Text } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 
-import loadDie3D from "./loadDie3D";
+import loadDie3D from "./createDie3DAsync";
 
 function onContextCreate(
   gl: ExpoWebGLRenderingContext,
