@@ -16,13 +16,13 @@ import {
   EditWidgetData,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
-import { usePixelConnect } from "@systemic-games/pixels-react";
 import {
   getPixelEnumName,
   AnimationTypeValues,
   Color,
   Constants,
   getPixel,
+  usePixelConnect,
 } from "@systemic-games/react-native-pixels-connect";
 import {
   Button,
