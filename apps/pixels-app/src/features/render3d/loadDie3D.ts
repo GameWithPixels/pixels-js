@@ -1,3 +1,4 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import { Die3D } from "@systemic-games/pixels-three";
 import { Asset } from "expo-asset";
 import { loadAsync, THREE } from "expo-three";
@@ -5,35 +6,35 @@ import { loadAsync, THREE } from "expo-three";
 import "./readAsArrayBuffer";
 import ensureAssetReadable from "./ensureAssetReadable";
 
-function reorderFaces<T>(faces: T[]): T[] {
-  if (faces.length === 20) {
-    const sourceOrder = [
-      19, 20, 2, 12, 15, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 17, 18,
-    ];
-    const copy = [...faces];
-    sourceOrder.forEach((dst, i) => (faces[dst - 1] = copy[i]));
-  }
-  return faces;
-}
-
 function extractMeshesGeometry(
   gltf: { scene: THREE.Group },
   computeTangents = true
 ): THREE.BufferGeometry[] {
+  // Get all meshes
   const meshes = Object.values(gltf.scene.children).filter(
     (obj) => (obj as THREE.Mesh).isMesh
   ) as THREE.Mesh[];
-  return reorderFaces(
-    meshes.map((mesh) => {
-      const geometry = mesh.geometry.clone();
-      if (computeTangents && !geometry.hasAttribute("tangent")) {
-        geometry.computeTangents();
-      }
-      const position = mesh.getWorldPosition(new THREE.Vector3());
-      geometry.translate(position.x, position.y, position.z);
-      return geometry;
-    })
-  );
+  // Clone geometry and reorder based on mesh name
+  const faces: THREE.BufferGeometry[] = Array(meshes.length);
+  meshes.forEach((mesh, i) => {
+    // Clone geometry
+    const geometry = mesh.geometry.clone();
+    if (computeTangents && !geometry.hasAttribute("tangent")) {
+      geometry.computeTangents();
+    }
+    const position = mesh.getWorldPosition(new THREE.Vector3());
+    geometry.translate(position.x, position.y, position.z);
+    // Get face index
+    const indexFromName = Number(mesh.name.split("_")[1]);
+    const index = isNaN(indexFromName) ? i : indexFromName - 1;
+    assert(
+      !isNaN(index) && index >= 0 && index < meshes.length,
+      `Out of bound face index: ${index}`
+    );
+    assert(!faces[index], `Duplicate face index: ${index}`);
+    faces[index] = geometry;
+  });
+  return faces;
 }
 
 let normalTex: THREE.Texture | undefined;
