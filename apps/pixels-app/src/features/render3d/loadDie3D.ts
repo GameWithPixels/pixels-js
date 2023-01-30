@@ -1,3 +1,4 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import { Die3D } from "@systemic-games/pixels-three";
 import { Asset } from "expo-asset";
 import { loadAsync, THREE } from "expo-three";
@@ -9,18 +10,31 @@ function extractMeshesGeometry(
   gltf: { scene: THREE.Group },
   computeTangents = true
 ): THREE.BufferGeometry[] {
+  // Get all meshes
   const meshes = Object.values(gltf.scene.children).filter(
     (obj) => (obj as THREE.Mesh).isMesh
   ) as THREE.Mesh[];
-  return meshes.map((mesh) => {
+  // Clone geometry and reorder based on mesh name
+  const faces: THREE.BufferGeometry[] = Array(meshes.length);
+  meshes.forEach((mesh, i) => {
+    // Clone geometry
     const geometry = mesh.geometry.clone();
     if (computeTangents && !geometry.hasAttribute("tangent")) {
       geometry.computeTangents();
     }
     const position = mesh.getWorldPosition(new THREE.Vector3());
     geometry.translate(position.x, position.y, position.z);
-    return geometry;
+    // Get face index
+    const indexFromName = Number(mesh.name.split("_")[1]);
+    const index = isNaN(indexFromName) ? i : indexFromName - 1;
+    assert(
+      !isNaN(index) && index >= 0 && index < meshes.length,
+      `Out of bound face index: ${index}`
+    );
+    assert(!faces[index], `Duplicate face index: ${index}`);
+    faces[index] = geometry;
   });
+  return faces;
 }
 
 let normalTex: THREE.Texture | undefined;

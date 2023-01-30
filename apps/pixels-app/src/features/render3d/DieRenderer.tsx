@@ -83,14 +83,17 @@ function onContextCreate(
  * Props for {@link DieRenderer}.
  */
 export interface DieRendererProps {
-  animation?: AnimationPreset; // The optional animation to play on the die.
+  animationData?: {
+    animation: AnimationPreset;
+    bits: AnimationBits;
+  }; // The optional animation to play on the die.
 }
 
 /**
  * Component that renders a D20 in 3D.
  * See {@link DieRendererProps} for the supported props.
  */
-export default function DieRenderer({ animation }: DieRendererProps) {
+export default function DieRenderer({ animationData }: DieRendererProps) {
   const errorHandler = useErrorHandler();
 
   // Load die 3d object
@@ -104,8 +107,14 @@ export default function DieRenderer({ animation }: DieRendererProps) {
   // Create an instance to play the animation
   const animInstanceRef = useRef<AnimationInstance>();
   useEffect(() => {
-    animInstanceRef.current = animation?.createInstance(new AnimationBits());
-  }, [animation]);
+    if (animationData?.animation && animationData?.bits) {
+      animInstanceRef.current = animationData.animation.createInstance(
+        animationData.bits
+      );
+    } else {
+      animInstanceRef.current = undefined;
+    }
+  }, [animationData?.animation, animationData?.bits]);
 
   return (
     <>
