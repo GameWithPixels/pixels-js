@@ -23,3 +23,4 @@ export * from "./hooks/usePixelScanner";
 
 export * from "@systemic-games/pixels-core-connect";
 export * from "@systemic-games/pixels-core-animation";
+export * from "@systemic-games/pixels-react";

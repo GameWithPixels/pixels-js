@@ -1,8 +1,9 @@
-import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
 import {
   getPixelEnumName,
   PixelBatteryStateValues,
   PixelRollStateValues,
+  usePixelStatus,
+  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
 import { memo, useEffect, useState } from "react";

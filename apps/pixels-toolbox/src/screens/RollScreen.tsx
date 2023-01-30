@@ -1,5 +1,8 @@
-import { usePixelConnect, usePixelValue } from "@systemic-games/pixels-react";
-import { getPixel } from "@systemic-games/react-native-pixels-connect";
+import {
+  getPixel,
+  usePixelConnect,
+  usePixelValue,
+} from "@systemic-games/react-native-pixels-connect";
 import { Center, Pressable, Text } from "native-base";
 
 import AppPage from "~/components/AppPage";
