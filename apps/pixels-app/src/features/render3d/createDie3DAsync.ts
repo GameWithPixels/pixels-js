@@ -1,4 +1,8 @@
-import { assert } from "@systemic-games/pixels-core-utils";
+import {
+  assert,
+  assertNever,
+  createTypedEventEmitter,
+} from "@systemic-games/pixels-core-utils";
 import { Die3D } from "@systemic-games/pixels-three";
 import { Asset } from "expo-asset";
 import { loadAsync, THREE } from "expo-three";
@@ -41,7 +45,10 @@ let normalTex: THREE.Texture | undefined;
 let faceTex: THREE.Texture | undefined;
 let faceMeshes: THREE.BufferGeometry[] | undefined;
 
-export default async function (): Promise<Die3D> {
+let status: "loading" | "loaded" | "error";
+const doneEvent = createTypedEventEmitter<{ done: undefined }>();
+
+async function loadAssets(): Promise<void> {
   // Load textures
   if (!normalTex) {
     const asset = await ensureAssetReadable(
@@ -49,6 +56,9 @@ export default async function (): Promise<Die3D> {
       "textures/plastic-normal.png"
     );
     normalTex = await loadAsync(asset);
+    if (!normalTex) {
+      throw new Error("Failed to load D20 normal texture");
+    }
   }
 
   if (!faceTex) {
@@ -57,6 +67,9 @@ export default async function (): Promise<Die3D> {
       "textures/d20-face-map.png"
     );
     faceTex = await loadAsync(asset);
+    if (!faceTex) {
+      throw new Error("Failed to load D20 face texture");
+    }
   }
 
   // Load mesh
@@ -78,11 +91,43 @@ export default async function (): Promise<Die3D> {
       `D20 mesh was found with ${faceMeshes.length} faces instead of 20`
     );
   }
-  if (!normalTex) {
-    throw new Error("Failed to load D20 normal texture");
+}
+
+const instantiate = () => new Die3D(faceMeshes!, normalTex!, faceTex!);
+const error = () =>
+  new Error("Failed to load some Die3D asset, see previous errors");
+
+export default async function (): Promise<Die3D> {
+  switch (status) {
+    case undefined:
+      status = "loading";
+      try {
+        await loadAssets();
+        status = "loaded";
+        doneEvent.emit("done", undefined);
+        return instantiate();
+      } catch (error) {
+        status = "error";
+        doneEvent.emit("done", undefined);
+        throw error;
+      }
+    case "loading":
+      return new Promise<Die3D>((resolve, reject) => {
+        const listener = () => {
+          doneEvent.removeListener("done", listener);
+          if (status === "loaded") {
+            resolve(instantiate());
+          } else {
+            reject(error());
+          }
+        };
+        doneEvent.addListener("done", listener);
+      });
+    case "loaded":
+      return instantiate();
+    case "error":
+      throw error();
+    default:
+      assertNever(status, "Unexpected Die3D load status");
   }
-  if (!faceTex) {
-    throw new Error("Failed to load D20 face texture");
-  }
-  return new Die3D(faceMeshes, normalTex, faceTex);
 }
