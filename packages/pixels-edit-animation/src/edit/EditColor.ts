@@ -10,18 +10,18 @@ import Editable from "./Editable";
 
 export default class EditColor extends Editable {
   mode: ColorModeNames;
-  color: Color; // Used when type is ColorType.RGB
+  color: Color; // Used when type is "rgb"
 
   constructor(
     colorOrMode: Color | Exclude<ColorModeNames, "rgb"> = Color.black
   ) {
     super();
-    if (colorOrMode instanceof Color) {
-      this.mode = "rgb";
-      this.color = colorOrMode;
-    } else {
+    if (colorOrMode === "face" || colorOrMode === "random") {
       this.mode = colorOrMode;
       this.color = Color.black;
+    } else {
+      this.mode = "rgb";
+      this.color = colorOrMode;
     }
   }
 
