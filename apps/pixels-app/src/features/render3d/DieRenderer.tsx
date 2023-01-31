@@ -87,7 +87,7 @@ function onContextCreate(
         const count = anim.updateLEDs(ms, indices, colors);
         // Light up die
         for (let i = 0; i < count; ++i) {
-          die3d.setLedColor(indices[i], colors[i]);
+          die3d.setLEDColor(indices[i], colors[i]);
         }
       } catch (error) {
         console.error(error);

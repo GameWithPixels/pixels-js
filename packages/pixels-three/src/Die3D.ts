@@ -52,14 +52,14 @@ export default class Die3D extends THREE.Object3D {
     });
   }
 
-  getLedColor(index: number): THREE.Color {
+  getLEDColor(index: number): THREE.Color {
     if (index < 0 || index >= this._materials.length) {
       throw new Error(`Out of range LED index: ${index}`);
     }
     return this._materials[index].emissive.clone();
   }
 
-  setLedColor(index: number, color: THREE.Color | number): void {
+  setLEDColor(index: number, color: THREE.Color | number): void {
     if (index < 0 || index >= this._materials.length) {
       throw new Error(`Out of range LED index: ${index}`);
     }
