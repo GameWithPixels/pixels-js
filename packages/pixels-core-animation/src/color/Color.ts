@@ -98,9 +98,9 @@ export default class Color implements IColor {
       const i = hexColor[0] === "#" ? 1 : 0;
       if (hexColor.length === 3 + i) {
         this.set(
-          parseInt(hexColor[i], 16),
-          parseInt(hexColor[i + 1], 16),
-          parseInt(hexColor[i + 2], 16)
+          parseInt(hexColor[i], 16) / 255,
+          parseInt(hexColor[i + 1], 16) / 255,
+          parseInt(hexColor[i + 2], 16) / 255
         );
       } else if (hexColor.length === 6 + i) {
         this.setWithValue(parseInt(i ? hexColor.slice(i) : hexColor, 16));

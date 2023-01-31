@@ -2,12 +2,12 @@ import {
   assertNever,
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
-import { usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
   getPixel,
   ScannedPixel,
   usePixelScanner,
+  usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
 

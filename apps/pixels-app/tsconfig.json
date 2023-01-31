@@ -10,11 +10,14 @@
       ],
       "~/*": [
         "*"
+      ],
+      "!/*": [
+        "../assets/*"
       ]
     }
   },
   "files": [
-    "assets/standard-profiles.json",
+    "assets/profiles/standard-profiles.json",
   ],
   "include": [
     "src/**/*"
@@ -24,16 +27,10 @@
       "path": "./../../packages/react-native-pixels-components"
     },
     {
-      "path": "./../../packages/pixels-edit-animation"
-    },
-    {
       "path": "./../../packages/react-native-pixels-connect"
     },
     {
       "path": "./../../packages/pixels-edit-animation"
-    },
-    {
-      "path": "./../../packages/pixels-react"
     },
     {
       "path": "./../../packages/pixels-three"

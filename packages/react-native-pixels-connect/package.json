@@ -45,8 +45,9 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
-      "@systemic-games/pixels-core-connect": "1.0.5",
-      "@systemic-games/pixels-core-utils": "1.0.5"
+    "@systemic-games/pixels-core-connect": "1.0.5",
+    "@systemic-games/pixels-core-utils": "1.0.5",
+    "@systemic-games/pixels-react": "1.0.5"
   },
   "devDependencies": {
     "@react-navigation/native": "^6.1.2",

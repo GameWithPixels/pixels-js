@@ -10,7 +10,7 @@ import { Text } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 
-import loadDie3D from "./loadDie3D";
+import loadDie3D from "./createDie3DAsync";
 
 function onContextCreate(
   gl: ExpoWebGLRenderingContext,
@@ -18,10 +18,9 @@ function onContextCreate(
   getAnimInstance: () => AnimationInstance | undefined
 ): void {
   // Renderer
-  const renderer = new Renderer({ gl });
+  const renderer = new Renderer({ gl, alpha: true });
   // set size of buffer to be equal to drawing buffer width
   renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
-  renderer.setClearColor(0x6ad6f0);
 
   // Camera
   const ratio = gl.drawingBufferWidth / gl.drawingBufferHeight;
