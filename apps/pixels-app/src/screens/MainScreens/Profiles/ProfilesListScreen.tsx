@@ -6,7 +6,7 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { EditProfile } from "@systemic-games/pixels-edit-animation";
+import { DataSet, EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   createPixelTheme,
   PixelTheme,
@@ -36,11 +36,6 @@ import EditableStore from "~/features/EditableStore";
 import StandardProfiles from "~/features/StandardProfile";
 import DieRenderer from "~/features/render3d/DieRenderer";
 
-// StandardProfiles.profiles[0].rules[0].actions[0].type ===
-//   ActionTypeValues.playAnimation;
-
-// StandardProfiles.profiles[0].collectAnimations;
-
 export let lastSelectedProfile: EditProfile;
 
 const paleBluePixelThemeParams = {
@@ -68,6 +63,16 @@ interface SelectedProfile {
   profileKey: number;
 }
 export let selectedProfile: SelectedProfile;
+
+const profilesDataSet = new Map<EditProfile, DataSet>();
+function getDataSet(profile: EditProfile): DataSet {
+  let animData = profilesDataSet.get(profile);
+  if (!animData) {
+    animData = StandardProfiles.extractForProfile(profile).toDataSet();
+    profilesDataSet.set(profile, animData);
+  }
+  return animData;
+}
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -268,7 +273,11 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            dieRender={() => <DieRenderer />}
+                            dieRender={() => (
+                              <DieRenderer
+                                animationData={getDataSet(profile)}
+                              />
+                            )}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
@@ -354,7 +363,11 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            dieRender={() => <DieRenderer />}
+                            dieRender={() => (
+                              <DieRenderer
+                                animationData={getDataSet(profile)}
+                              />
+                            )}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}

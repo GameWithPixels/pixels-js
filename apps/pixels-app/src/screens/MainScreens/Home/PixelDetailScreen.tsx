@@ -8,10 +8,10 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
+  AnimationRainbow,
   Color,
-  EditAnimationSimple,
-  EditColor,
-  EditDataSet,
+  Constants,
+  DataSet,
 } from "@systemic-games/pixels-edit-animation";
 import {
   BatteryLevel,
@@ -26,7 +26,6 @@ import {
 } from "@systemic-games/react-native-pixels-components";
 import {
   AnimationBits,
-  AnimationPreset,
   getPixel,
   usePixelConnect,
   usePixelValue,
@@ -46,11 +45,22 @@ import {
 } from "native-base";
 import React from "react";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
+import { EditProfile } from "~/../../../packages/pixels-edit-animation/dist/types";
 
 import { PixelDetailScreenProps, HomeScreenStackParamList } from "~/Navigation";
 import { sr } from "~/Utils";
 import StandardProfiles from "~/features/StandardProfile";
 import DieRenderer from "~/features/render3d/DieRenderer";
+
+const profilesDataSet = new Map<EditProfile, DataSet>();
+function getDataSet(profile: EditProfile): DataSet {
+  let animData = profilesDataSet.get(profile);
+  if (!animData) {
+    animData = StandardProfiles.extractForProfile(profile).toDataSet();
+    profilesDataSet.set(profile, animData);
+  }
+  return animData;
+}
 
 interface HistogramProps {
   rolls: number[];
@@ -314,19 +324,14 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
   }, [connectDispatch, rollDispatch, systemId]);
 
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
-  const [animData, setAnimData] = React.useState<{
-    animation: AnimationPreset;
-    bits: AnimationBits;
-  }>();
-  React.useEffect(() => {
-    const edit = new EditAnimationSimple();
-    edit.duration = 10;
-    edit.count = 10;
-    edit.faces = 2;
-    edit.color = new EditColor(new Color("#00ff00"));
-    const bits = new AnimationBits();
-    const animation = edit.toAnimation(new EditDataSet(), bits);
-    setAnimData({ animation, bits });
+  const animData = React.useMemo(() => {
+    const anim = new AnimationRainbow();
+    anim.duration = 10000;
+    anim.count = 1;
+    anim.traveling = true;
+    anim.faceMask = Constants.faceMaskAllLEDs;
+    const animationBits = new AnimationBits();
+    return { animations: anim, animationBits };
   }, []);
 
   return (
@@ -398,7 +403,9 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
           </HStack>
           <ProfilesScrollView
             profiles={StandardProfiles.profiles}
-            dieRender={() => <DieRenderer />}
+            dieRender={(profile) => (
+              <DieRenderer animationData={getDataSet(profile)} />
+            )}
             onPress={() => {
               setShowLoadingPopup(true);
             }}

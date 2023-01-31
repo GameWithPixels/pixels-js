@@ -42,22 +42,22 @@ export function PairedPixelInfoComponent({
   onPress,
   dieRenderer,
 }: PixelInfoCardProps) {
-  const [anim] = React.useState(() => {
-    const anim = new AnimationRainbow();
-    anim.duration = 10000;
-    anim.count = 1;
-    anim.traveling = true;
-    anim.faceMask = Constants.faceMaskAllLEDs;
-    return anim;
-  });
-  const [bits] = React.useState(new AnimationBits());
+  const animData = React.useMemo(() => {
+    const animation = new AnimationRainbow();
+    animation.duration = 10000;
+    animation.count = 1;
+    animation.traveling = true;
+    animation.faceMask = Constants.faceMaskAllLEDs;
+    const bits = new AnimationBits();
+    return { animation, bits };
+  }, []);
   return (
     <Pressable onPress={onPress}>
       <Card borderWidth={1.5} minW={100} w="100%" h={110}>
         <HStack space={6} alignItems="center" maxW="100%" h="100%">
           <Box alignItems="center">
             <Box h={sr(70)} w={sr(70)}>
-              {dieRenderer(anim, bits)}
+              {dieRenderer(animData.animation, animData.bits)}
             </Box>
           </Box>
           {/* dice infos */}
@@ -167,15 +167,15 @@ export function ScannedPixelInfoComponent({
 }: PixelInfoCardProps) {
   const [pressed, setPressed] = React.useState(false);
   const [height, setHeight] = React.useState(100);
-  const [anim] = React.useState(() => {
-    const anim = new AnimationRainbow();
-    anim.duration = 10000;
-    anim.count = 1;
-    anim.traveling = true;
-    anim.faceMask = Constants.faceMaskAllLEDs;
-    return anim;
-  });
-  const [bits] = React.useState(new AnimationBits());
+  const animData = React.useMemo(() => {
+    const animation = new AnimationRainbow();
+    animation.duration = 10000;
+    animation.count = 1;
+    animation.traveling = true;
+    animation.faceMask = Constants.faceMaskAllLEDs;
+    const bits = new AnimationBits();
+    return { animation, bits };
+  }, []);
 
   return (
     <Pressable
@@ -188,7 +188,7 @@ export function ScannedPixelInfoComponent({
         <HStack space={sr(8)} alignItems="center" maxW="100%">
           <Box alignItems="center" flex={1}>
             <Box h={sr(60)} w={sr(60)}>
-              {dieRenderer(anim, bits)}
+              {dieRenderer(animData.animation, animData.bits)}
             </Box>
           </Box>
           {/* dice infos */}

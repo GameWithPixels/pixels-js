@@ -203,7 +203,11 @@ export default function HomeScreen() {
 
   const dieRenderer = React.useCallback(
     (animation: AnimationPreset, bits: AnimationBits) => {
-      return <DieRenderer animationData={{ animation, bits }} />;
+      return (
+        <DieRenderer
+          animationData={{ animations: animation, animationBits: bits }}
+        />
+      );
     },
     []
   );

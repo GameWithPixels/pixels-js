@@ -40,8 +40,8 @@ export default class RgbTrack {
    */
   getKeyframe(bits: AnimationBits, keyframeIndex: number): RgbKeyframe {
     assert(
-      keyframeIndex < this.keyFrameCount,
-      `Invalid keyframeIndex ${keyframeIndex} < ${this.keyFrameCount}`
+      keyframeIndex >= 0 && keyframeIndex < this.keyFrameCount,
+      `Invalid key frame index: ${keyframeIndex} (count: ${this.keyFrameCount})`
     );
     return bits.getRgbKeyframe(this.keyframesOffset + keyframeIndex);
   }
