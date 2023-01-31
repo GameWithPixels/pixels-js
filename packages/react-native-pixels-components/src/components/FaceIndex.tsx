@@ -8,23 +8,21 @@ import {
   HStack,
   VStack,
   Box,
-  Modal,
-  Center,
-  FlatList,
 } from "native-base";
-import React, { useRef } from "react";
-// eslint-disable-next-line import/namespace
-import { FlatList as ReactFlatList } from "react-native";
+import React from "react";
 
 export interface FaceIndexProps {
   faces: number;
+  initialFaceIndex?: number;
   showTitle?: boolean;
   disabled?: boolean;
   onIndexSelected?: (faceIndex: number) => void;
 }
 
 export function FaceIndex(props: FaceIndexProps) {
-  const [faceIndex, setFaceIndex] = React.useState(props.faces);
+  const initialFaceIndex = props.initialFaceIndex;
+  console.log("initial faceindex = " + initialFaceIndex);
+  const [faceIndex, setFaceIndex] = React.useState(initialFaceIndex);
   const facesArray = Array(props.faces).fill(0);
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
@@ -48,7 +46,8 @@ export function FaceIndex(props: FaceIndexProps) {
               <Actionsheet.Item
                 onPress={() => {
                   setFaceIndex(i + 1);
-                  props.onIndexSelected?.(faceIndex);
+                  const selectedIndex = faceIndex ? faceIndex : 0;
+                  props.onIndexSelected?.(selectedIndex);
                   onClose();
                 }}
                 alignItems="center"
@@ -64,86 +63,87 @@ export function FaceIndex(props: FaceIndexProps) {
   );
 }
 
-export function FaceIndex2(props: FaceIndexProps) {
-  const [faceIndex, _setFaceIndex] = React.useState(props.faces);
-  const facesArray = Array(props.faces).fill(0);
-  const { isOpen, onOpen, onClose } = useDisclose();
+// export function FaceIndex2(props: FaceIndexProps) {
+//   const [faceIndex, _setFaceIndex] = React.useState(props.faces);
+//   const facesArray = Array(props.faces).fill(0);
+//   const { isOpen, onOpen, onClose } = useDisclose();
 
-  const flatListRef = useRef<ReactFlatList>(null);
-  function _scrollToIndex(index: any) {
-    flatListRef?.current?.scrollToIndex({ index });
-  }
+//   const flatListRef = useRef<ReactFlatList>(null);
+//   function _scrollToIndex(index: any) {
+//     flatListRef?.current?.scrollToIndex({ index });
+//   }
 
-  return (
-    <>
-      <VStack>
-        {props.showTitle ?? <Text>Than</Text>}
-        <Button
-          onPress={onOpen}
-          disabled={props.disabled}
-          bg={props.disabled ? "gray.900" : undefined}
-        >
-          <Text color={props.disabled ? "gray.800" : undefined}>
-            {faceIndex}
-          </Text>
-        </Button>
-      </VStack>
+//   return (
+//     <>
+//       <VStack>
+//         {props.showTitle ?? <Text>Than</Text>}
+//         <Button
+//           onPress={onOpen}
+//           disabled={props.disabled}
+//           bg={props.disabled ? "gray.900" : undefined}
+//         >
+//           <Text color={props.disabled ? "gray.800" : undefined}>
+//             {faceIndex}
+//           </Text>
+//         </Button>
+//       </VStack>
 
-      <Modal isOpen={isOpen} onClose={onClose} w="100%">
-        <Modal.Content h="30%" maxH="30%" width="90%">
-          <HStack w="100%" alignItems="center">
-            {/* <Box flex={1}>
-                <ChevronLeftIcon />
-              </Box> */}
-            <Center flex={1} width="100%">
-              {/* <ScrollView>
-                  {facesArray.map((_e, i) => (
-                    <Actionsheet.Item
-                      onPress={() => {
-                        setFaceIndex(i + 1);
-                        onClose();
-                      }}
-                      alignItems="center"
-                      key={i}
-                    >
-                      <Text fontSize="2xl">{i + 1}</Text>
-                    </Actionsheet.Item>
-                  ))}
-                </ScrollView> */}
-              <FlatList
-                ref={flatListRef}
-                snapToAlignment="start"
-                decelerationRate="fast"
-                snapToInterval={70}
-                width="100%"
-                data={facesArray}
-                renderItem={({ index }) => (
-                  <Center>
-                    <Actionsheet.Item
-                      h={70}
-                      alignSelf="center"
-                      alignItems="center"
-                    >
-                      <Text fontSize="2xl">{index + 1}</Text>
-                    </Actionsheet.Item>
-                  </Center>
-                )}
-                initialScrollIndex={0}
-              />
-            </Center>
-            {/* <Box flex={1}>
-                <ChevronRightIcon />
-              </Box> */}
-          </HStack>
-        </Modal.Content>
-      </Modal>
-    </>
-  );
-}
+//       <Modal isOpen={isOpen} onClose={onClose} w="100%">
+//         <Modal.Content h="30%" maxH="30%" width="90%">
+//           <HStack w="100%" alignItems="center">
+//             {/* <Box flex={1}>
+//                 <ChevronLeftIcon />
+//               </Box> */}
+//             <Center flex={1} width="100%">
+//               {/* <ScrollView>
+//                   {facesArray.map((_e, i) => (
+//                     <Actionsheet.Item
+//                       onPress={() => {
+//                         setFaceIndex(i + 1);
+//                         onClose();
+//                       }}
+//                       alignItems="center"
+//                       key={i}
+//                     >
+//                       <Text fontSize="2xl">{i + 1}</Text>
+//                     </Actionsheet.Item>
+//                   ))}
+//                 </ScrollView> */}
+//               <FlatList
+//                 ref={flatListRef}
+//                 snapToAlignment="start"
+//                 decelerationRate="fast"
+//                 snapToInterval={70}
+//                 width="100%"
+//                 data={facesArray}
+//                 renderItem={({ index }) => (
+//                   <Center>
+//                     <Actionsheet.Item
+//                       h={70}
+//                       alignSelf="center"
+//                       alignItems="center"
+//                     >
+//                       <Text fontSize="2xl">{index + 1}</Text>
+//                     </Actionsheet.Item>
+//                   </Center>
+//                 )}
+//                 initialScrollIndex={0}
+//               />
+//             </Center>
+//             {/* <Box flex={1}>
+//                 <ChevronRightIcon />
+//               </Box> */}
+//           </HStack>
+//         </Modal.Content>
+//       </Modal>
+//     </>
+//   );
+// }
 
 export interface PlayBackFaceProps {
   title?: string;
   currentValue?: number;
+  initialFaceIndex?: number;
   onValueChange?: (value: number) => void;
 }
 
@@ -164,7 +164,12 @@ export function PlayBackFace(props: PlayBackFaceProps) {
           />
         </Box>
         <Box flex={1}>
-          <FaceIndex faces={20} showTitle={false} disabled={disableFaceIndex} />
+          <FaceIndex
+            initialFaceIndex={props.initialFaceIndex}
+            faces={20}
+            showTitle={false}
+            disabled={disableFaceIndex}
+          />
         </Box>
       </HStack>
     </VStack>

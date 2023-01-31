@@ -143,7 +143,7 @@ export interface AnimationActionsheetProps {
     | ((editAnimation: EditAnimation) => void)
     | null
     | undefined;
-  initialAnimation: EditAnimation;
+  initialAnimation?: EditAnimation;
 }
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
@@ -167,7 +167,7 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
     setAnimationsList(props.animations);
     const initialAnim = props.initialAnimation;
 
-    setAnimationName(initialAnim.name);
+    setAnimationName(initialAnim ? initialAnim.name : "undefined");
   }, [props.animations, props.initialAnimation]);
 
   // useEffect(() => {

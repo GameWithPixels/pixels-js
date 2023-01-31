@@ -4,7 +4,6 @@ import {
   AnimationBits,
   AnimationPreset,
   Color,
-  ColorTypeValues,
   EditAnimation,
   EditAnimationGradient, // simple gradient
   EditAnimationGradientPattern,
@@ -26,13 +25,19 @@ import {
   createPixelTheme,
   LightingStyleSelection,
   SliderComponent,
-  ColorSelection,
+  SimpleColorSelection,
   Toggle,
   RuleComparisonWidget,
   FaceIndex,
   PlayBackFace,
   PatternActionSheet,
-  AnimationTypeToTitle,
+  animationTypeToTitle,
+  AnimationsActionSheet,
+  valuesToKeys,
+  keysToValues,
+  GradientColorSelection,
+  combineBits,
+  bitsToIndices,
 } from "@systemic-games/react-native-pixels-components";
 import {
   VStack,
@@ -44,7 +49,6 @@ import {
   Box,
 } from "native-base";
 import React, { useEffect } from "react";
-import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
 import { lastSelectedLightingPattern } from "./PatternsScreen";
 
@@ -116,12 +120,10 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "color":
       return (
         <>
-          <ColorSelection
+          <SimpleColorSelection
             initialColor={widget.getValue().color.toString()}
             onColorSelected={(color) =>
-              widget.update(
-                new EditColor(ColorTypeValues.rgb, new Color(color))
-              )
+              widget.update(new EditColor(new Color(color)))
             }
           />
         </>
@@ -174,11 +176,27 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
 
     case "bitField": {
       // for rules : flags
+
+      // Values for buttons
+      const values = Object.values(widget.values);
+      const valuesTitles = valuesToKeys(values, widget.values);
+
+      // Initial selected values
+      const initialIndices = bitsToIndices(widget.getValue());
+      const initialValues = valuesToKeys(initialIndices, widget.values);
+      console.log("initial options before = " + initialValues);
       return (
         <>
           <RuleComparisonWidget
             title={widget.displayName}
-            values={widget.values}
+            values={valuesTitles}
+            initialValues={initialValues}
+            onChange={(keys) => {
+              const changedValues = keysToValues(keys, widget.values, 0);
+              const bits =
+                changedValues.length < 1 ? 0 : combineBits(changedValues);
+              widget.update(bits);
+            }}
           />
         </>
       );
@@ -186,7 +204,11 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "faceIndex": {
       return (
         <>
-          <FaceIndex faces={20} onIndexSelected={widget.update} />
+          <FaceIndex
+            initialFaceIndex={widget.getValue()}
+            faces={20}
+            onIndexSelected={widget.update}
+          />
         </>
       );
     } // for rules : condition on face, select one face
@@ -195,6 +217,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
         <>
           <PlayBackFace
             currentValue={widget.getValue()}
+            initialFaceIndex={widget.getValue()}
             onValueChange={widget.update}
             title={widget.displayName}
           />
@@ -214,10 +237,15 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     }
 
     case "animation":
-      return <Text>Animation Selector Placeholder</Text>;
+      return (
+        <AnimationsActionSheet
+          animations={StandardProfiles.animations}
+          initialAnimation={widget.getValue()}
+        />
+      );
 
     case "audioClip":
-      return <Text>Audi Clip Selector Placeholder</Text>;
+      return <Text>Audio Clip Selector Placeholder</Text>;
 
     default:
       assertNever(type);
@@ -266,7 +294,7 @@ export default function AnimationSettingsScreen() {
 
   useEffect(() => {
     setEditAnim(lastSelectedLightingPattern);
-    setLightingType(AnimationTypeToTitle(lastSelectedLightingPattern));
+    setLightingType(animationTypeToTitle(lastSelectedLightingPattern));
   }, []);
   const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (

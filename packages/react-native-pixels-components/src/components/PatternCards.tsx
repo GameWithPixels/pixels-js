@@ -12,7 +12,7 @@ import React from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
-import { AnimationTypeToTitle } from "../animationUtils";
+import { animationTypeToTitle } from "../animationUtils";
 
 const defaultImageRequirePath = require("../../../../apps/pixels-app/assets/RainbowDice.png");
 
@@ -90,7 +90,7 @@ export interface LightingPatternCardProps {
 
 export function LightingPatternsCard(props: LightingPatternCardProps) {
   const animationTitle = props.patternInfo
-    ? AnimationTypeToTitle(props.patternInfo)
+    ? animationTypeToTitle(props.patternInfo)
     : "Type";
 
   return (

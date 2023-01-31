@@ -61,52 +61,6 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
-// export function GetConditionSimpleTitle(
-//   condition: EditCondition | undefined
-// ): string {
-//   console.log("condition type = " + condition?.type);
-//   let conditionTitle: string = "No action selected";
-//   if (condition) {
-//     switch (condition.type) {
-//       case ConditionTypeValues.handling:
-//         conditionTitle = "Pixel is picked up";
-//         break;
-//       case ConditionTypeValues.catteryState:
-//         conditionTitle = "Battery Event...";
-//         break;
-//       case ConditionTypeValues.connectionState:
-//         conditionTitle = "Bluethoot Event...";
-//         break;
-//       case ConditionTypeValues.crooked:
-//         conditionTitle = "Pixel is crooked";
-//         break;
-//       case ConditionTypeValues.faceCompare:
-//         conditionTitle = "Pixel roll is...";
-//         break;
-//       case ConditionTypeValues.helloGoodbye:
-//         conditionTitle = "Pixel wakes up / sleeps";
-//         break;
-//       case ConditionTypeValues.idle:
-//         conditionTitle = "Pixel is idle for...";
-
-//         break;
-//       case ConditionTypeValues.rolling:
-//         conditionTitle = "Pixel is rolling";
-
-//         break;
-//       case ConditionTypeValues.unknown:
-//         conditionTitle = "Unknown";
-
-//         break;
-//       default:
-//         conditionTitle = "No condition selected";
-//         break;
-//     }
-//   }
-
-//   return conditionTitle;
-// }
-
 interface RuleActionWidgetProps {
   action: EditAction;
   children?: React.ReactNode | React.ReactNode[];
@@ -332,23 +286,6 @@ export default function ProfileEditRuleScreen() {
     setRule(lastSelectedRule);
     if (rule?.actions) setRuleActions(rule.actions);
   }, [rule?.actions]);
-
-  // useEffect(() => {
-  //   //Set the actions from the rules
-  //   const actions = lastSelectedRule.actions;
-  //   setRuleActions(actions);
-
-  //   const actionWidgets: RuleActionWidgetInfo[] = [];
-  //   // Set the actions inside RuleActionWidgetInfo for action widget props
-  //   ruleActions.forEach(function (action, index) {
-  //     const actionWidgetInfo: RuleActionWidgetInfo = {
-  //       action,
-  //       widgetIndex: index,
-  //     };
-  //     actionWidgets.push(actionWidgetInfo);
-  //   });
-  //   setRulesWidgetList(actionWidgets);
-  // }, [ruleActions]);
 
   const [_pattern, _setPattern] = React.useState(
     "-- Select a Lighting Pattern --"

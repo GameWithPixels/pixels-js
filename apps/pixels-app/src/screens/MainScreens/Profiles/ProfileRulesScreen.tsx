@@ -174,6 +174,7 @@ function GetConditionTitle(condition: EditCondition | undefined): string {
         conditionTitle = "die is crooked";
 
         break;
+      //TODO remake this swicth case because flags may not be corrects
       case ConditionTypeValues.faceCompare:
         faceCompareFlag = (condition as EditConditionFaceCompare).flags;
         if (faceCompareFlag === 0) {
@@ -237,14 +238,6 @@ function GetConditionTitle(condition: EditCondition | undefined): string {
 export default function ProfilesRulesScreen() {
   const navigation =
     useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
-
-  // Get the editProfile info from the selected profile
-  // const route = useRoute<ProfileScreenRouteProp>();
-
-  // const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
-  // useEffect(() => {
-  //   setRulesList(route.params.rules);
-  // }, [route.params.rules]);
 
   const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
   useEffect(() => {

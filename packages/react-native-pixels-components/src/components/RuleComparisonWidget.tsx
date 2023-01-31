@@ -24,17 +24,19 @@ interface customButtonProps extends IButtonProps {
   titleFontSize?: number | SizeType;
   keyIndex: number;
   itemsLength: number;
-  onButtonPress?: (() => void) | null | undefined;
+  initiallySelected: boolean;
+  onButtonPress?: (isSelected: boolean) => void;
 }
 function CustomButton(props: customButtonProps) {
-  const [isSelected, setIselected] = React.useState(false);
+  const [isSelected, setIselected] = React.useState(props.initiallySelected);
   return (
     <Button
       flex={1}
       rounded="none"
       onPress={() => {
-        props.onButtonPress?.();
-        setIselected(!isSelected);
+        const nowSelected = !isSelected;
+        setIselected(nowSelected);
+        props.onButtonPress?.(nowSelected);
       }}
       borderRightWidth={
         props.keyIndex === props.itemsLength ? undefined : props.borderWidth
@@ -53,44 +55,58 @@ export interface ItemData {
 
 export interface RuleComparisonWidgetProps {
   title?: string;
-  values: { [key: string]: number };
+  // values: { [key: string]: number };
+  values: string[];
   bg?: ColorType;
   borderWidth?: number;
   borderColor?: ColorType;
   fontSize?: number | SizeType;
-  onPress?: (() => void) | null | undefined;
-  onSelected?: (value: number) => void;
+  onChange?: (keys: string[]) => void; // widget.update
+  isLeft?: boolean;
+  isRight?: boolean;
+  initialValues: string[];
 }
-//TODO fix the way the component is updated when selection are made to work with the bitfield update function (not array of boolean)
 export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
-  const valueTitles = Object.keys(props.values);
-  const selectedButtons = Array(valueTitles.length).fill(false);
-  const [selectedOption, setSelectedOption] =
-    React.useState<boolean[]>(selectedButtons);
-
-  // useEffect(()=>{
-  //   const values = valueTitles
-
-  // })
-
+  const values = props.values;
+  const initialSelection = props.initialValues;
+  console.log("initial selection = " + initialSelection);
+  const [selectedOptions, setSelectedOptions] =
+    React.useState<string[]>(initialSelection);
   return (
     <VStack>
       <Text>{props.title}</Text>
       <Box w="100%">
         <Button.Group isAttached>
-          {valueTitles.map((item, i) => (
+          {values.map((item, i) => (
             <CustomButton
               key={i}
               keyIndex={i}
-              itemsLength={valueTitles.length - 1}
+              itemsLength={values.length - 1}
               title={item}
               titleFontSize={props.fontSize}
               borderWidth={props.borderWidth}
-              onButtonPress={() => {
-                selectedOption[i] = !selectedOption[i];
-                setSelectedOption(selectedOption);
-                // const maskValue = combine(selectedOption);
-                // props.onPress?.(maskValue);
+              initiallySelected={selectedOptions.includes(item)}
+              onButtonPress={(isSelected) => {
+                console.log("pressed button");
+                setSelectedOptions((options) => {
+                  console.log("is selected = " + isSelected);
+                  if (isSelected) {
+                    if (!options.includes(item)) {
+                      const newOptions = [...options, item];
+                      props.onChange?.(newOptions);
+                      return newOptions;
+                    }
+                  } else {
+                    const i = options.indexOf(item);
+                    if (i >= 0) {
+                      const newOptions = [...options];
+                      newOptions.splice(i, 1);
+                      props.onChange?.(newOptions);
+                      return newOptions;
+                    }
+                  }
+                  return options;
+                });
               }}
             />
           ))}

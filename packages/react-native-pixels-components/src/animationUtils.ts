@@ -8,7 +8,7 @@ import {
  * @param animation The editAnimation to check type and return title.
  * @returns a string representing the animation type title.
  */
-export function AnimationTypeToTitle(animation: EditAnimation): string {
+export function animationTypeToTitle(animation: EditAnimation): string {
   const animationType = animation.type;
   let animationTtitle = "Type";
 
