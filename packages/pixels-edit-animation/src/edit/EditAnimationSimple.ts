@@ -29,7 +29,7 @@ export default class EditAnimationSimple extends EditAnimation {
   color: EditColor;
 
   @widget("count")
-  @range(1, 10, 1)
+  @range(1, 10)
   @name("Repeat Count")
   count: number;
 

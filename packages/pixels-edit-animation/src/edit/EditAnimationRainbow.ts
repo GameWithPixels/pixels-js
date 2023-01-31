@@ -23,7 +23,7 @@ export default class EditAnimationRainbow extends EditAnimation {
   faces: number;
 
   @widget("count")
-  @range(1, 10, 1)
+  @range(1, 10)
   @name("Repeat Count")
   count: number;
 

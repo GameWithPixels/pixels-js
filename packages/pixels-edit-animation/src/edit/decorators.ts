@@ -67,14 +67,14 @@ const rangeKey = Symbol("pixelEditAnimationRange");
 export interface RangeProperty extends PropertyData {
   min: number;
   max: number;
-  step: number;
+  step?: number;
 }
 
 // Range decorator factory
 export function range(
   min: number,
   max: number,
-  step = 0
+  step?: number
 ): (target: object, propertyKey: string) => void {
   return createDecorator<RangeProperty>(rangeKey, {
     min,
