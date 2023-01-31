@@ -100,21 +100,23 @@ export default function PatternsScreen() {
     const duplicatedPattern = patternToDuplicate.duplicate();
     duplicatedPattern.name = patternToDuplicate.name + " COPY";
     // Duplicate the pattern in the UI list
-    patternList.splice(index + 1, 0, duplicatedPattern);
-    setPatternsList([...patternList]);
+    const patterns = [...patternList];
+    patterns.splice(index + 1, 0, duplicatedPattern);
+    setPatternsList(patterns);
   }
 
   function deletePattern(patternToDelete: EditAnimation) {
     console.log("delete pattern");
     const patternToDeleteKey = EditableStore.getKey(patternToDelete);
-    patternList.splice(
-      patternList.findIndex((patternToDelete) => {
+    const patterns = [...patternList];
+    patterns.splice(
+      patterns.findIndex((patternToDelete) => {
         return EditableStore.getKey(patternToDelete) === patternToDeleteKey;
       }),
       1
     );
 
-    setPatternsList([...patternList]);
+    setPatternsList(patterns);
     EditableStore.unregister(patternToDelete);
   }
   const { isOpen, onOpen, onClose } = useDisclose();

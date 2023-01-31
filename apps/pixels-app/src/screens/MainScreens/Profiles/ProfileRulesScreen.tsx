@@ -255,19 +255,21 @@ export default function ProfilesRulesScreen() {
     const duplicatedRule = ruleToDuplicate.duplicate();
     // Register duplicated rule
     EditableStore.getKey(duplicatedRule);
-    rulesList.splice(index + 1, 0, duplicatedRule);
-    setRulesList([...rulesList]);
+    const rules = [...rulesList];
+    rules.splice(index + 1, 0, duplicatedRule);
+    setRulesList(rules);
   }
 
   function deleteRule(ruleToDelete: EditRule) {
     const ruleKey = EditableStore.getKey(ruleToDelete);
-    rulesList.splice(
-      rulesList.findIndex((ruleToDelete) => {
+    const rules = [...rulesList];
+    rules.splice(
+      rules.findIndex((ruleToDelete) => {
         return EditableStore.getKey(ruleToDelete) === ruleKey;
       }),
       1
     );
-    setRulesList([...rulesList]);
+    setRulesList(rules);
     // Delete rule from register
     EditableStore.unregister(ruleToDelete);
   }

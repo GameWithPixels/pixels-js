@@ -37,7 +37,7 @@ import {
   keysToValues,
   GradientColorSelection,
   combineBits,
-  bitsToIndices,
+  bitsToFlags,
 } from "@systemic-games/react-native-pixels-components";
 import {
   VStack,
@@ -182,9 +182,9 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       const valuesTitles = valuesToKeys(values, widget.values);
 
       // Initial selected values
-      const initialIndices = bitsToIndices(widget.getValue());
+      const initialIndices = bitsToFlags(widget.getValue());
       const initialValues = valuesToKeys(initialIndices, widget.values);
-      console.log("initial options before = " + initialValues);
+
       return (
         <>
           <RuleComparisonWidget
@@ -257,9 +257,8 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
  * @returns a scrollview of edition widgets corresponding to the type of animation.
  */
 export function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
-  const [animWidgets, setAnimWidgets] = React.useState<EditWidgetData[]>([]);
-  useEffect(() => {
-    setAnimWidgets(getEditWidgetsData(editAnim));
+  const animWidgets = React.useMemo(() => {
+    return getEditWidgetsData(editAnim);
   }, [editAnim]);
 
   return (

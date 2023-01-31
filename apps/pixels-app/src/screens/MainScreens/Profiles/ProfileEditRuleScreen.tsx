@@ -16,8 +16,6 @@ import {
   EditConditionHelloGoodbye,
   EditConditionIdle,
   EditConditionRolling,
-  EditRule,
-  EditWidgetData,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
 import {
@@ -37,7 +35,7 @@ import {
   Pressable,
   Center,
 } from "native-base";
-import React, { useEffect } from "react";
+import React from "react";
 
 import { RenderWidget } from "../Patterns/AnimationSettingsScreen";
 import { lastSelectedRule } from "./ProfileRulesScreen";
@@ -72,14 +70,7 @@ interface RuleConditionWidgetProps {
 }
 
 function RuleConditionWidget(props: RuleConditionWidgetProps) {
-  const [editCondition, setEditCondition] = React.useState<EditCondition>(
-    new EditConditionFaceCompare()
-  );
-
-  useEffect(() => {
-    setEditCondition(props.condition);
-  }, [props.condition]);
-
+  const [editCondition, setEditCondition] = React.useState(props.condition);
   const [_conditionTitle, setConditionTitle] = React.useState<string>();
 
   function GetConditionSimpleTitle(
@@ -95,7 +86,7 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
           conditionTitle = "Battery Event...";
           break;
         case ConditionTypeValues.connectionState:
-          conditionTitle = "Bluethoot Event...";
+          conditionTitle = "Bluetooth Event...";
           break;
         case ConditionTypeValues.crooked:
           conditionTitle = "Pixel is crooked";
@@ -201,7 +192,7 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
           />
         </Box>
       </HStack>
-      {ConditionEditor({ editCondition })}
+      <ConditionEditor editCondition={editCondition} />
     </VStack>
   );
 }
@@ -211,27 +202,12 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
  * @param props See {@link RuleActionWidgetProps} for props params.
  */
 function RuleActionWidget(props: RuleActionWidgetProps) {
-  const [editAction, setEditAction] = React.useState<EditAction>(
-    new EditActionPlayAnimation()
+  const [editAction, setEditAction] = React.useState(props.action);
+  const [actionTitle, setActionTitle] = React.useState(() =>
+    props.action.type === ActionTypeValues.playAnimation
+      ? "Trigger pattern"
+      : "Play audio clip"
   );
-  const [_actionTitle, setActionTitle] = React.useState<string>();
-
-  function getActionTitle(action: EditAction): string {
-    let actionTitle;
-    if (action.type === ActionTypeValues.playAnimation) {
-      actionTitle = "Trigger pattern";
-    } else {
-      actionTitle = "Play audio clip";
-    }
-
-    return actionTitle;
-  }
-
-  useEffect(() => {
-    setEditAction(props.action);
-    const initialActionTitle = getActionTitle(props.action);
-    setActionTitle(initialActionTitle);
-  }, [props.action]);
 
   return (
     <VStack
@@ -245,7 +221,7 @@ function RuleActionWidget(props: RuleActionWidgetProps) {
       <HStack space={2} width="100%" alignItems="center">
         <Box flex={10} w="100%">
           <RuleActionSelection
-            actionTitle={_actionTitle}
+            actionTitle={actionTitle}
             possibleActions={[
               {
                 label: "Trigger Pattern",
@@ -273,20 +249,15 @@ function RuleActionWidget(props: RuleActionWidgetProps) {
           <Text fontSize="xl">X</Text>
         </Button>
       </HStack>
-      {ActionEditor({ editAction })}
+      <ActionEditor editAction={editAction} />
     </VStack>
   );
 }
 
 export default function ProfileEditRuleScreen() {
-  const [rule, setRule] = React.useState<EditRule>();
-  const [ruleActions, setRuleActions] = React.useState<EditAction[]>([]);
-
-  useEffect(() => {
-    setRule(lastSelectedRule);
-    if (rule?.actions) setRuleActions(rule.actions);
-  }, [rule?.actions]);
-
+  const [ruleActions, setRuleActions] = React.useState(
+    lastSelectedRule.actions
+  );
   const [_pattern, _setPattern] = React.useState(
     "-- Select a Lighting Pattern --"
   );
@@ -298,22 +269,19 @@ export default function ProfileEditRuleScreen() {
   }
 
   function removeAction(actionKey: number) {
-    ruleActions.splice(
-      ruleActions.findIndex((action) => {
+    const actions = [...ruleActions];
+    actions.splice(
+      actions.findIndex((action) => {
         return EditableStore.getKey(action) === actionKey;
       }),
       1
     );
-    setRuleActions([...ruleActions]);
+    setRuleActions(actions);
   }
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={2} height={1000} w="100%">
-        <RuleConditionWidget
-          condition={
-            rule?.condition ? rule.condition : new EditConditionFaceCompare()
-          }
-        />
+        <RuleConditionWidget condition={lastSelectedRule.condition} />
 
         {ruleActions.map((action) => (
           <RuleActionWidget
@@ -350,11 +318,8 @@ export default function ProfileEditRuleScreen() {
 }
 
 function ConditionEditor({ editCondition }: { editCondition: EditCondition }) {
-  const [conditionWidgets, setConditionsWidgets] = React.useState<
-    EditWidgetData[]
-  >([]);
-  useEffect(() => {
-    setConditionsWidgets(getEditWidgetsData(editCondition));
+  const conditionWidgets = React.useMemo(() => {
+    return getEditWidgetsData(editCondition);
   }, [editCondition]);
   return (
     <VStack p={2} space={2} bg="gray.700" rounded="md">
@@ -366,11 +331,8 @@ function ConditionEditor({ editCondition }: { editCondition: EditCondition }) {
 }
 
 function ActionEditor({ editAction }: { editAction: EditAction }) {
-  const [actionWIdgets, setActionsWidgets] = React.useState<EditWidgetData[]>(
-    []
-  );
-  useEffect(() => {
-    setActionsWidgets(getEditWidgetsData(editAction));
+  const actionWIdgets = React.useMemo(() => {
+    return getEditWidgetsData(editAction);
   }, [editAction]);
   return (
     <VStack p={2} space={2} bg="gray.700" rounded="md">

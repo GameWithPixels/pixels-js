@@ -144,19 +144,21 @@ export function ProfilesListScreen() {
     const duplicatedProfile = profileToDuplicate.duplicate();
 
     // Duplicate the profile in the UI list
-    profileList.splice(index + 1, 0, duplicatedProfile);
-    setProfileList([...profileList]);
+    const profiles = [...profileList];
+    profiles.splice(index + 1, 0, duplicatedProfile);
+    setProfileList(profiles);
   }
 
   function deleteProfile(profileToDelete: EditProfile) {
     const profileToDeleteKey = EditableStore.getKey(profileToDelete);
-    profileList.splice(
-      profileList.findIndex((profileToDelete) => {
+    const profiles = [...profileList];
+    profiles.splice(
+      profiles.findIndex((profileToDelete) => {
         return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
       }),
       1
     );
-    setProfileList([...profileList]);
+    setProfileList(profiles);
     EditableStore.unregister(profileToDelete);
   }
 
@@ -177,13 +179,14 @@ export function ProfilesListScreen() {
 
   function removeFromFavorites(profileToRemove: EditProfile) {
     const profileToDeleteKey = EditableStore.getKey(profileToRemove);
-    favoriteProfilesList.splice(
-      favoriteProfilesList.findIndex((profileToDelete) => {
+    const profiles = [...favoriteProfilesList];
+    profiles.splice(
+      profiles.findIndex((profileToDelete) => {
         return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
       }),
       1
     );
-    setFavoritesProfileList([...favoriteProfilesList]);
+    setFavoritesProfileList(profiles);
 
     setProfileList([...profileList, profileToRemove]);
   }
