@@ -20,7 +20,7 @@ import { ProfilesActionSheet } from "./ProfilesActionSheet";
 export interface ProfilesScrollViewProps {
   profiles: EditProfile[];
   dieRender: (profile: EditProfile) => React.ReactNode;
-  onPress?: (() => void) | null | undefined;
+  onPress?: ((profile: EditProfile) => void) | null | undefined;
 }
 
 /**
@@ -53,7 +53,7 @@ export function ProfilesScrollView(props: ProfilesScrollViewProps) {
                 profileName={profile.name}
                 profileIndexInList={i}
                 onSelected={setSelectedProfile}
-                onPress={props.onPress}
+                onPress={() => props.onPress?.(profile)}
                 selectedProfileIndex={selectedProfile}
                 selectable
                 dieRender={() => props.dieRender(profile)}

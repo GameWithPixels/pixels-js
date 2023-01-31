@@ -50,7 +50,7 @@ import { EditProfile } from "~/../../../packages/pixels-edit-animation/dist/type
 import { PixelDetailScreenProps, HomeScreenStackParamList } from "~/Navigation";
 import { sr } from "~/Utils";
 import StandardProfiles from "~/features/StandardProfile";
-import DieRenderer from "~/features/render3d/DieRenderer";
+import DieRenderer, { DieRendererProps } from "~/features/render3d/DieRenderer";
 
 const profilesDataSet = new Map<EditProfile, DataSet>();
 function getDataSet(profile: EditProfile): DataSet {
@@ -324,7 +324,11 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
   }, [connectDispatch, rollDispatch, systemId]);
 
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
-  const animData = React.useMemo(() => {
+  const [transferProgress, setTransferProgress] = React.useState(0);
+
+  const [animData, setAnimData] = React.useState<
+    DieRendererProps["animationData"]
+  >(() => {
     const anim = new AnimationRainbow();
     anim.duration = 10000;
     anim.count = 1;
@@ -332,14 +336,14 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
     anim.faceMask = Constants.faceMaskAllLEDs;
     const animationBits = new AnimationBits();
     return { animations: anim, animationBits };
-  }, []);
+  });
 
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <LoadingPopup
         title="Uploading profile..."
         isOpen={showLoadingPopup}
-        onProgressEnd={() => setShowLoadingPopup(false)}
+        progress={transferProgress}
       />
       <VStack space={6} width="100%" maxW="100%">
         <Center bg="white" rounded="lg" px={2}>
@@ -406,8 +410,16 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
             dieRender={(profile) => (
               <DieRenderer animationData={getDataSet(profile)} />
             )}
-            onPress={() => {
-              setShowLoadingPopup(true);
+            onPress={(profile) => {
+              if (pixel?.isReady) {
+                setTransferProgress(0);
+                setShowLoadingPopup(true);
+                pixel
+                  ?.transferDataSet(getDataSet(profile), setTransferProgress)
+                  .then(() => setAnimData(getDataSet(profile)))
+                  .catch(console.error)
+                  .finally(() => setShowLoadingPopup(false));
+              }
             }}
           />
         </Box>
