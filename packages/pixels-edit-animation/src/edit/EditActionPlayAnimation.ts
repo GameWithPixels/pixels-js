@@ -22,7 +22,7 @@ export default class EditActionPlayAnimation extends EditAction {
   @name("Play on Face")
   faceIndex: number;
 
-  @widget("slider")
+  @widget("count")
   @range(1, 10)
   @name("Repeat Count")
   loopCount: number;
