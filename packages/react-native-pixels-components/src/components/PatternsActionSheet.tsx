@@ -212,6 +212,8 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
             <HStack flexWrap="wrap" w="100%">
               {animationsList?.map((animation, i) => (
                 <Box key={i} p={1}>
+                  {/* Pattern card use as an animation card */}
+
                   <PatternCard
                     w="105px"
                     h="130px"

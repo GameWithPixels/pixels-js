@@ -53,7 +53,7 @@ export interface ItemData {
 
 export interface RuleComparisonWidgetProps {
   title?: string;
-  values: any;
+  values: { [key: string]: number };
   bg?: ColorType;
   borderWidth?: number;
   borderColor?: ColorType;
@@ -68,21 +68,26 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
   const [selectedOption, setSelectedOption] =
     React.useState<boolean[]>(selectedButtons);
 
+  // useEffect(()=>{
+  //   const values = valueTitles
+
+  // })
+
   return (
     <VStack>
       <Text>{props.title}</Text>
       <Box w="100%">
         <Button.Group isAttached>
-          {valueTitles.map((item, key) => (
+          {valueTitles.map((item, i) => (
             <CustomButton
-              key={key}
-              keyIndex={key}
+              key={i}
+              keyIndex={i}
               itemsLength={valueTitles.length - 1}
               title={item}
               titleFontSize={props.fontSize}
               borderWidth={props.borderWidth}
               onButtonPress={() => {
-                selectedOption[key] = !selectedOption[key];
+                selectedOption[i] = !selectedOption[i];
                 setSelectedOption(selectedOption);
                 // const maskValue = combine(selectedOption);
                 // props.onPress?.(maskValue);
