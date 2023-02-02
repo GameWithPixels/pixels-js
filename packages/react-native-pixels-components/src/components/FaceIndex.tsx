@@ -36,7 +36,7 @@ export function FaceIndex(props: FaceIndexProps) {
         </Button>
       </VStack>
       <Actionsheet isOpen={isOpen} onClose={onClose}>
-        <Actionsheet.Content maxHeight={200} minHeight={200}>
+        <Actionsheet.Content maxHeight={400} minHeight={200}>
           <ScrollView h="100%" w="100%">
             {facesArray.map((_e, i) => (
               <Actionsheet.Item
@@ -156,8 +156,9 @@ export function PlayBackFace(props: PlayBackFaceProps) {
       <HStack alignItems="center">
         <Box flex={1}>
           <Toggle
-            defaultIsChecked={disableFaceIndex}
-            title="Current face"
+            //defaultIsChecked={initiallyDisabled}
+            // value={!disableFaceIndex}
+            title="Select face"
             onToggle={() => {
               setDisableFaceIndex((wasDisabled) => {
                 props.onValueChange?.(wasDisabled ? faceIndexRef.current : -1);

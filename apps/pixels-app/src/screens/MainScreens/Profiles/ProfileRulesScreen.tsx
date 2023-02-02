@@ -22,7 +22,6 @@ import {
   PixelTheme,
   ProfileRulesCard,
   PxAppPage,
-  RuleCardInfo,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
@@ -65,39 +64,6 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
-const rules: RuleCardInfo[] = [
-  {
-    condition: "roll is equal to 20",
-    actions: ["do this", "do that"],
-    ruleKey: 98479283749,
-  },
-  {
-    condition: "roll is equal to 10",
-    actions: ["do this", "do that", "also do that"],
-    ruleKey: 90397459843,
-  },
-  {
-    condition: "roll is equal to 6",
-    actions: ["do this"],
-    ruleKey: 328739487,
-  },
-  {
-    condition: "roll is less than 15",
-    actions: ["do this", "do that", "also do that"],
-    ruleKey: 6743975948,
-  },
-  {
-    condition: "roll is equal to 7",
-    actions: ["do this", "do that", "also do that"],
-    ruleKey: 7487587,
-  },
-  {
-    condition: "roll is equal to 5",
-    actions: ["do this", "do that", "also do that"],
-    ruleKey: 4899847598,
-  },
-];
-
 export let lastSelectedRule: EditRule;
 
 interface CreateRuleWidgetProps {
@@ -109,7 +75,7 @@ interface CreateRuleWidgetProps {
  * @param props See {@link CreateRuleWidgetProps} for props params.
  * @returns
  */
-function _CreateRuleWidget(props: CreateRuleWidgetProps) {
+function CreateRuleWidget(props: CreateRuleWidgetProps) {
   return (
     <Pressable
       onPress={() => {
@@ -177,30 +143,36 @@ function GetConditionTitle(condition: EditCondition | undefined): string {
       //TODO remake this swicth case because flags may not be corrects
       case ConditionTypeValues.faceCompare:
         faceCompareFlag = (condition as EditConditionFaceCompare).flags;
+        console.log("face compare flag number = ", faceCompareFlag);
         if (faceCompareFlag === 0) {
+          // less
           const faceIndex =
             (condition as EditConditionFaceCompare).faceIndex + 1;
           conditionTitle = "die roll is less than " + faceIndex;
         } else if (faceCompareFlag === 1) {
+          // equal
           const faceIndex =
             (condition as EditConditionFaceCompare).faceIndex + 1;
           conditionTitle = "die roll is equal to " + faceIndex;
         } else if (faceCompareFlag === 2) {
+          // greater
           const faceIndex =
             (condition as EditConditionFaceCompare).faceIndex + 1;
           conditionTitle = "die roll is greater than " + faceIndex;
         } else if (faceCompareFlag === 3) {
           const faceIndex =
             (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is less or equal to " + faceIndex;
+          conditionTitle = "die roll is equal or greater than " + faceIndex;
         } else if (faceCompareFlag === 4) {
           const faceIndex =
             (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is less or greater than " + faceIndex;
+          //conditionTitle = "die roll is less or greater than " + faceIndex;
+          conditionTitle = " is 4 " + faceIndex;
         } else if (faceCompareFlag === 5) {
           const faceIndex =
             (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is equal or greater than " + faceIndex;
+          // conditionTitle = "die roll is equal or greater than " + faceIndex;
+          conditionTitle = "is 5 " + faceIndex;
         } else {
           conditionTitle = "die is any";
         }
@@ -244,12 +216,12 @@ export default function ProfilesRulesScreen() {
     setRulesList(selectedProfile.profile.rules);
   }, []);
 
-  // function _addRule() {
-  //   const newRule = new EditRule();
-  //   // Register rule
-  //   EditableStore.getKey(newRule);
-  //   setRulesList([...rulesList, newRule]);
-  // }
+  function addRule() {
+    const newRule = rulesList[0].duplicate();
+    // Register rule
+    EditableStore.getKey(newRule);
+    setRulesList([...rulesList, newRule]);
+  }
 
   function duplicateRule(ruleToDuplicate: EditRule, index: number) {
     const duplicatedRule = ruleToDuplicate.duplicate();
@@ -282,7 +254,7 @@ export default function ProfilesRulesScreen() {
             w: 120,
             buttons: [
               {
-                onPress: () => duplicateRule(item, rules.length),
+                onPress: () => duplicateRule(item, rulesList.length),
                 bg: "blue.500",
                 icon: (
                   <MaterialIcons name="content-copy" size={24} color="white" />
@@ -352,7 +324,7 @@ export default function ProfilesRulesScreen() {
           </Box>
         </HStack>
         <Text bold>Rules for this profile : </Text>
-        <_CreateRuleWidget />
+        <CreateRuleWidget onPress={addRule} />
         <Box h={600} p={1}>
           <DraggableFlatList
             data={rulesList}
