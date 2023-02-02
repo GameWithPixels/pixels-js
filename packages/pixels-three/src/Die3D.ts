@@ -9,6 +9,10 @@ export default class Die3D extends THREE.Object3D {
   private readonly _materials: DieStandardMaterial[] = [];
   private readonly _lights: THREE.PointLight[] = [];
 
+  get faceCount(): number {
+    return this._materials.length;
+  }
+
   constructor(
     facesGeometry: THREE.BufferGeometry[],
     normalMap: THREE.Texture,
@@ -48,15 +52,28 @@ export default class Die3D extends THREE.Object3D {
     });
   }
 
-  getLedColor(index: number): THREE.Color {
+  getLEDColor(index: number): THREE.Color {
+    if (index < 0 || index >= this._materials.length) {
+      throw new Error(`Out of range LED index: ${index}`);
+    }
     return this._materials[index].emissive.clone();
   }
 
-  setLedColor(index: number, color: THREE.Color | number): void {
+  setLEDColor(index: number, color: THREE.Color | number): void {
     if (index < 0 || index >= this._materials.length) {
       throw new Error(`Out of range LED index: ${index}`);
     }
     const colorHex = typeof color === "number" ? color : color.getHex();
+    this._setColor(index, colorHex);
+  }
+
+  clearLEDs(): void {
+    for (let i = 0; i < this.faceCount; ++i) {
+      this._setColor(i, 0);
+    }
+  }
+
+  _setColor(index: number, colorHex: number): void {
     this._materials[index].emissive.setHex(colorHex);
     if (this._lights.length) {
       this._lights[index].color.setHex(colorHex);

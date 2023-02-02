@@ -33,7 +33,7 @@ import {
   Text,
   VStack,
 } from "native-base";
-import { useReducer, useState } from "react";
+import { useMemo, useReducer, useState } from "react";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import AppPage from "~/components/AppPage";
@@ -325,8 +325,12 @@ function AnimationPage() {
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [animList, setAnimList] = useState<EditAnimation[]>([]);
   const [editAnim, setEditAnim] = useState<EditAnimation | undefined>();
-  const [animWidgets, setAnimWidgets] = useState<EditWidgetData[]>();
   const [widget, setWidget] = useState<EditWidgetData>();
+  const animWidgets = useMemo(() => {
+    if (editAnim) {
+      return getEditWidgetsData(editAnim);
+    }
+  }, [editAnim]);
 
   useErrorWithHandler(lastError);
 
@@ -404,7 +408,6 @@ function AnimationPage() {
                   <Button
                     onPress={() => {
                       setEditAnim(itemInfo.item);
-                      setAnimWidgets(getEditWidgetsData(itemInfo.item));
                     }}
                   >{`Edit ${itemInfo.item.name}`}</Button>
                 )}

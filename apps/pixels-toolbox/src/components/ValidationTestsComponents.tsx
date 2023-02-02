@@ -24,7 +24,7 @@ import extractDfuFiles from "~/features/dfu/extractDfuFiles";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import useTimeout from "~/features/hooks/useTimeout";
-import { DieType, getLedCount } from "~/features/pixels/DieType";
+import { DieType, getLEDCount } from "~/features/pixels/DieType";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
@@ -288,7 +288,7 @@ export function ConnectPixel({
           throw new TaskFaultedError("Empty scanned Pixel");
         }
         const ledCount = scannedPixelRef.current.ledCount;
-        if (ledCount !== getLedCount(settings.dieType)) {
+        if (ledCount !== getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
             `Incorrect die type, expected ${settings.dieType} but got ${ledCount} LEDs`
           );
@@ -329,7 +329,7 @@ export function CheckBoard({
 
   const taskChain = useTaskChain(
     action,
-    useCallback(() => ValidationTests.checkLedLoopback(pixel), [pixel]),
+    useCallback(() => ValidationTests.checkLEDLoopback(pixel), [pixel]),
     createTaskStatusContainer(t("ledLoopback"))
   )
     .chainWith(
@@ -462,7 +462,7 @@ export function CheckLEDs({
       children: (
         <MessageYesNo
           message={t("areAllLEDsWhiteWithCount", {
-            count: getLedCount(settings.dieType),
+            count: getLEDCount(settings.dieType),
           })}
           hideYesNo={!resolvePromise}
           onYes={() => resolvePromise?.()}
@@ -530,7 +530,7 @@ export function WaitFaceUp({
           setUserAbort,
           (abortSignal) =>
             ValidationTests.waitFaceUp(pixel, 1, Color.dimMagenta, abortSignal),
-          `Aborted wait for face ${getLedCount(settings.dieType)} up`
+          `Aborted wait for face ${getLEDCount(settings.dieType)} up`
         ),
       [pixel, settings.dieType]
     ),

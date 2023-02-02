@@ -4,6 +4,7 @@ import {
   ActionTypeValues,
   Action,
   ActionPlayAnimation,
+  Constants,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -21,12 +22,16 @@ export default class EditActionPlayAnimation extends EditAction {
   @name("Play on Face")
   faceIndex: number;
 
-  @widget("slider")
+  @widget("count")
   @range(1, 10)
   @name("Repeat Count")
   loopCount: number;
 
-  constructor(animation?: EditAnimation, faceIndex = -1, loopCount = 1) {
+  constructor(
+    animation?: EditAnimation,
+    faceIndex: number = Constants.currentFaceIndex,
+    loopCount = 1
+  ) {
     super();
     this.animation = animation;
     this.faceIndex = faceIndex;
@@ -41,7 +46,7 @@ export default class EditActionPlayAnimation extends EditAction {
     return safeAssign(new ActionPlayAnimation(), {
       animIndex: this.animation
         ? editSet.animations.indexOf(this.animation)
-        : -1,
+        : Constants.currentFaceIndex,
       faceIndex: this.faceIndex,
       loopCount: this.loopCount,
     });

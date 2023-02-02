@@ -41,7 +41,7 @@ export default class EditColor extends Editable {
   static toColorIndex(refPalette: Color[], color: Color): number {
     const colorGamma = GammaUtils.gamma(color);
     let colorIndex = refPalette.findIndex((c) => colorGamma.equals(c));
-    if (colorIndex === -1) {
+    if (colorIndex < 0) {
       colorIndex = refPalette.length;
       refPalette.push(colorGamma);
     }

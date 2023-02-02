@@ -7,6 +7,7 @@ const Constants = {
   paletteColorFromRandom: 126,
   faceMaskAllLEDs: 0xffffffff,
   keyframeTimeResolutionMs: 2,
+  currentFaceIndex: -1,
 } as const;
 
 export default Constants;

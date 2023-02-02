@@ -40,8 +40,8 @@ export default class Track {
    */
   getKeyframe(bits: AnimationBits, keyframeIndex: number): SimpleKeyframe {
     assert(
-      keyframeIndex < this.keyFrameCount,
-      `Invalid keyframeIndex ${keyframeIndex} < ${this.keyFrameCount}`
+      keyframeIndex >= 0 && keyframeIndex < this.keyFrameCount,
+      `Invalid key frame index: ${keyframeIndex} (count: ${this.keyFrameCount})`
     );
     return bits.getKeyframe(this.keyframesOffset + keyframeIndex);
   }
