@@ -60,7 +60,7 @@ export const MessageTypeValues = {
   notifyUser: enumValue(),
   notifyUserAck: enumValue(),
   testHardware: enumValue(),
-  testLedLoopback: enumValue(),
+  testLEDLoopback: enumValue(),
   ledLoopback: enumValue(),
   setTopLevelState: enumValue(),
   programDefaultParameters: enumValue(),
@@ -89,7 +89,7 @@ export const MessageTypeValues = {
   printNormals: enumValue(),
   printA2DReadings: enumValue(),
   lightUpFace: enumValue(),
-  setLedToColor: enumValue(),
+  setLEDToColor: enumValue(),
   debugAnimationController: enumValue(),
 } as const;
 
@@ -915,7 +915,7 @@ export class NotifyUserAck implements PixelMessage {
  * Message send by a Pixel to notify of its measured LED loopback value.
  * @category Message
  */
-export class LedLoopback implements PixelMessage {
+export class LEDLoopback implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
   readonly type = MessageTypeValues.ledLoopback;
@@ -1061,7 +1061,7 @@ function _getMessageClasses(): MessageClass[] {
     Rssi,
     NotifyUser,
     NotifyUserAck,
-    LedLoopback,
+    LEDLoopback,
     SetDesignAndColor,
     SetName,
     TransferInstantAnimationSet,

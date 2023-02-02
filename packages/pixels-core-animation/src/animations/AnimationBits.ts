@@ -119,10 +119,10 @@ export default class AnimationBits {
     const item = array[index];
     if (item === undefined) {
       // Throw an exception if index is out of bounds, invalid (negative or not an integer)
-      // or if the item at the given index is not set or undefined (which just as bad in our case)
+      // or if the item at the given index is not set or undefined (which is just as bad in our case)
       if (index < 0 || index >= array.length) {
         throw new Error(
-          `Out of bound index for AnimationBits.${name}: got ${index} while array has ${array.length} value(s)`
+          `Out of bound index for AnimationBits.${name}, got ${index} but array has ${array.length} item(s)`
         );
       } else {
         throw new Error(`No item for AnimationBits.${name} at index ${index}`);
