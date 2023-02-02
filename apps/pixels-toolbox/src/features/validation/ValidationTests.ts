@@ -3,7 +3,7 @@ import {
   Color,
   Pixel,
   PixelStatus,
-  LedLoopback,
+  LEDLoopback,
   MessageTypeValues,
   RequestTelemetry,
   Telemetry,
@@ -61,12 +61,12 @@ async function blinkForever(
 }
 
 const ValidationTests = {
-  checkLedLoopback: async (pixel: Pixel): Promise<void> => {
+  checkLEDLoopback: async (pixel: Pixel): Promise<void> => {
     const msg = await pixel.sendAndWaitForResponse(
-      MessageTypeValues.testLedLoopback,
+      MessageTypeValues.testLEDLoopback,
       MessageTypeValues.ledLoopback
     );
-    const ledLoopback = msg as LedLoopback;
+    const ledLoopback = msg as LEDLoopback;
     console.log(`LED loopback value: ${ledLoopback.value}`);
     if (!ledLoopback.value) {
       throw new Error(`Unexpected LED loopback value: ${ledLoopback.value}`);
