@@ -206,7 +206,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
         <>
           <FaceIndex
             initialFaceIndex={widget.getValue()}
-            faces={20}
+            faceCount={20}
             onIndexSelected={widget.update}
           />
         </>
@@ -217,6 +217,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
         <>
           <PlayBackFace
             initialFaceIndex={widget.getValue()}
+            faceCount={20}
             onValueChange={widget.update}
             title={widget.displayName}
           />
