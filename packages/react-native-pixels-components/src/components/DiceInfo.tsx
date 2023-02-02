@@ -5,7 +5,6 @@ import {
   Constants,
 } from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import {
   HStack,
   VStack,
@@ -23,13 +22,24 @@ import { sr } from "../utils";
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
 
+export interface PixelInfo {
+  readonly address: number;
+  readonly name: string;
+  readonly ledCount: number;
+  readonly firmwareDate: Date;
+  readonly rssi: number;
+  readonly batteryLevel: number; // Percentage
+  readonly isCharging: boolean;
+  readonly currentFace: number; // Face value (not index)
+}
+
 /**
  * Props for components displaying dice information.
  */
 export interface PixelInfoCardProps {
   h?: number | string;
   w?: number | string;
-  pixel: ScannedPixel;
+  pixel: PixelInfo;
   onPress?: () => void;
   dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
 }
