@@ -1,3 +1,4 @@
+import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   ScrollView,
   HStack,
@@ -8,17 +9,18 @@ import {
 import React from "react";
 
 import { sr } from "../utils";
-import { ProfileCard, ProfileInfo } from "./ProfileCard";
+import { ProfileCard } from "./ProfileCard";
 import { ProfilesActionSheet } from "./ProfilesActionSheet";
 
 /**
- * Props for the profilesScrollview
- * @param availableProfiles array of {@link ProfileInfo} that represent all the list profiles
- * @param onPress function given to all the profiles to execute when pressed
+ * Props for the {@link ProfilesScrollView}.
+ * @param profiles list of available profiles.
+ * @param onPress function given to all the profiles to execute when pressed.
  */
 export interface ProfilesScrollViewProps {
-  availableProfiles: ProfileInfo[];
-  onPress?: (() => void) | null | undefined;
+  profiles: EditProfile[];
+  dieRender: (profile: EditProfile) => React.ReactNode;
+  onPress?: ((profile: EditProfile) => void) | null | undefined;
 }
 
 /**
@@ -40,7 +42,7 @@ export function ProfilesScrollView(props: ProfilesScrollViewProps) {
           decelerationRate="normal"
         >
           <HStack space={2}>
-            {props.availableProfiles.map((profile, i) => (
+            {props.profiles.slice(0, 8).map((profile, i) => (
               <ProfileCard
                 key={i}
                 w={sr(110)}
@@ -48,79 +50,19 @@ export function ProfilesScrollView(props: ProfilesScrollViewProps) {
                 imageSize={sr(50)}
                 textSize="xs"
                 p={sr(4)}
-                profileName={profile.profileName}
+                profileName={profile.name}
                 profileIndexInList={i}
                 onSelected={setSelectedProfile}
-                onPress={props.onPress}
+                onPress={() => props.onPress?.(profile)}
                 selectedProfileIndex={selectedProfile}
                 selectable
-                imageRequirePath={profile.imageRequirePath}
+                dieRender={() => props.dieRender(profile)}
               />
             ))}
             <ProfilesActionSheet
               w={sr(110)}
-              ProfilesInfo={[
-                {
-                  profileName: "Profile 1",
-                  imageRequirePath: require("~/../assets/YellowDice.png"),
-                },
-                {
-                  profileName: "Profile 2",
-                  imageRequirePath: require("~/../assets/BlueDice.png"),
-                },
-                {
-                  profileName: "Profile 3",
-                  imageRequirePath: require("~/../assets/BlueDice.png"),
-                },
-                {
-                  profileName: "Profile 4",
-                  imageRequirePath: require("~/../assets/RainbowDice.png"),
-                },
-                {
-                  profileName: "Profile 5",
-                  imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-                },
-                {
-                  profileName: "Profile 6",
-                  imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-                },
-                {
-                  profileName: "Profile 7",
-                  imageRequirePath: require("~/../assets/BlueDice.png"),
-                },
-                {
-                  profileName: "Profile 8",
-                  imageRequirePath: require("~/../assets/YellowDice.png"),
-                },
-                {
-                  profileName: "Profile 9",
-                  imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-                },
-                {
-                  profileName: "Profile 10",
-                  imageRequirePath: require("~/../assets/RainbowDice.png"),
-                },
-                {
-                  profileName: "Profile 11",
-                  imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-                },
-                {
-                  profileName: "Profile 12",
-                  imageRequirePath: require("~/../assets/RainbowDice.png"),
-                },
-                {
-                  profileName: "Profile 13",
-                  imageRequirePath: require("~/../assets/BlueDice.png"),
-                },
-                {
-                  profileName: "Profile 14",
-                  imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-                },
-                {
-                  profileName: "Profile 15",
-                  imageRequirePath: require("~/../assets/YellowDice.png"),
-                },
-              ]}
+              profiles={props.profiles}
+              dieRender={props.dieRender}
             />
           </HStack>
         </ScrollView>

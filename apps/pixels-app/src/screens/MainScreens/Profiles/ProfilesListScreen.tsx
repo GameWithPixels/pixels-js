@@ -6,7 +6,7 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { EditProfile } from "@systemic-games/pixels-edit-animation";
+import { DataSet, EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   createPixelTheme,
   PixelTheme,
@@ -31,17 +31,10 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import {
-  ProfileScreenRouteProp as _ProfileScreenRouteProps,
-  ProfilesScreenStackParamList,
-} from "~/Navigation";
+import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import StandardProfiles from "~/features/StandardProfile";
-
-// StandardProfiles.profiles[0].rules[0].actions[0].type ===
-//   ActionTypeValues.playAnimation;
-
-// StandardProfiles.profiles[0].collectAnimations;
+import DieRenderer from "~/features/render3d/DieRenderer";
 
 export let lastSelectedProfile: EditProfile;
 
@@ -71,8 +64,15 @@ interface SelectedProfile {
 }
 export let selectedProfile: SelectedProfile;
 
-const placeHolderRequirePath = require("~/../assets/RainbowDice.png");
-const _defaultImageRequirePath = require("~/../assets/UI_Icons/D10.png");
+const profilesDataSet = new Map<EditProfile, DataSet>();
+function getDataSet(profile: EditProfile): DataSet {
+  let animData = profilesDataSet.get(profile);
+  if (!animData) {
+    animData = StandardProfiles.extractForProfile(profile).toDataSet();
+    profilesDataSet.set(profile, animData);
+  }
+  return animData;
+}
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -273,7 +273,11 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            imageRequirePath={placeHolderRequirePath}
+                            dieRender={() => (
+                              <DieRenderer
+                                animationData={getDataSet(profile)}
+                              />
+                            )}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
@@ -359,7 +363,11 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            imageRequirePath={placeHolderRequirePath}
+                            dieRender={() => (
+                              <DieRenderer
+                                animationData={getDataSet(profile)}
+                              />
+                            )}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
@@ -380,6 +388,8 @@ export function ProfilesListScreen() {
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget
+                      profileName="+"
+                      dieRender={() => <></>}
                       onPress={() => {
                         // Empty profile that will need to be edited
                         addProfile(defaultProfile);

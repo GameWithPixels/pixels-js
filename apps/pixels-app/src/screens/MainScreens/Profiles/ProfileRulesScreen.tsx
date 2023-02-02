@@ -42,10 +42,7 @@ import { Swipeable } from "react-native-gesture-handler";
 
 import { selectedProfile } from "./ProfilesListScreen";
 
-import {
-  //ProfileScreenRouteProp,
-  ProfilesScreenStackParamList,
-} from "~/Navigation";
+import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 
 const paleBluePixelThemeParams = {
