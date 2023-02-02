@@ -9,7 +9,7 @@ import {
   VStack,
   Box,
 } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
 
 export interface FaceIndexProps {
   faces: number;
@@ -21,7 +21,7 @@ export interface FaceIndexProps {
 
 export function FaceIndex(props: FaceIndexProps) {
   const initialFaceIndex = props.initialFaceIndex;
-  console.log("initial faceindex = " + initialFaceIndex);
+  console.log("is disabled in tooggle = ", props.disabled);
   const [faceIndex, setFaceIndex] = React.useState(initialFaceIndex);
   const facesArray = Array(props.faces).fill(0);
   const { isOpen, onOpen, onClose } = useDisclose();
@@ -142,33 +142,48 @@ export function FaceIndex(props: FaceIndexProps) {
 
 export interface PlayBackFaceProps {
   title?: string;
-  currentValue?: number;
-  initialFaceIndex?: number;
+  initialFaceIndex: number;
   onValueChange?: (value: number) => void;
 }
 
 export function PlayBackFace(props: PlayBackFaceProps) {
   const [disableFaceIndex, setDisableFaceIndex] = React.useState(false);
+  const [indexValue, setIndexValue] = React.useState(1);
+
+  useEffect(() => {
+    const isDisabled = props.initialFaceIndex < 0;
+    setDisableFaceIndex(isDisabled);
+    const value = props.initialFaceIndex;
+    setIndexValue(value);
+  }, [props.initialFaceIndex]);
+  console.log("is disabled in playbackface ", disableFaceIndex);
   return (
     <VStack w="100%">
       <Text bold>{props.title}</Text>
       <HStack alignItems="center">
         <Box flex={1}>
           <Toggle
+            defaultIsChecked={disableFaceIndex}
             title="Current face"
             onToggle={() => {
-              setDisableFaceIndex(!disableFaceIndex);
-              const currValue = props.currentValue ?? 0;
-              props.onValueChange?.(currValue);
+              const isDisabled = !disableFaceIndex;
+              setDisableFaceIndex(isDisabled);
+              setIndexValue(isDisabled ? -1 : 1);
+              // To update widget with default value of 1 when faces are enables back
+              if (isDisabled) {
+                props.onValueChange?.(1);
+                console.log("updated widget");
+              }
             }}
           />
         </Box>
         <Box flex={1}>
           <FaceIndex
-            initialFaceIndex={props.initialFaceIndex}
+            initialFaceIndex={indexValue < 0 ? 0 : indexValue}
             faces={20}
             showTitle={false}
             disabled={disableFaceIndex}
+            onIndexSelected={props.onValueChange}
           />
         </Box>
       </HStack>

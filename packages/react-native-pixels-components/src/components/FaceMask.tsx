@@ -100,7 +100,6 @@ export function FaceMask(props: FaceMaskProps) {
                 defaultValue={groupValue.map((n) => n.toString())}
                 onChange={(values: string[]) => {
                   setGroupValue(values || []);
-                  // setFaceValues(values.map((n) => Number(n) - 1));
                 }}
               >
                 <HStack space={2} flexWrap="wrap">
@@ -128,12 +127,19 @@ export function FaceMask(props: FaceMaskProps) {
                   h={10}
                   w={60}
                   onPress={() => {
-                    setShowModal(false);
+                    // setShowModal(false);
                     const faces = [];
                     for (let i = 1; i <= props.dieFaces; ++i) {
                       faces.push(i.toString());
                     }
                     setGroupValue(faces);
+
+                    setShowModal(false);
+                    // Combine the selected face into one maskValue
+                    const maskValue = combineBits(
+                      faces.map((f) => getFaceMask(Number(f)))
+                    );
+                    if (props.onCloseAction) props.onCloseAction(maskValue);
                   }}
                 >
                   All
@@ -142,8 +148,16 @@ export function FaceMask(props: FaceMaskProps) {
                   h={10}
                   w={60}
                   onPress={() => {
-                    setShowModal(false);
+                    // setShowModal(false);
                     setGroupValue([]);
+
+                    const groupValues: string[] = [];
+                    setShowModal(false);
+                    // Combine the selected face into one maskValue
+                    const maskValue = combineBits(
+                      groupValues.map((f) => getFaceMask(Number(f)))
+                    );
+                    if (props.onCloseAction) props.onCloseAction(maskValue);
                   }}
                 >
                   None

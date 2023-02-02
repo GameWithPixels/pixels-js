@@ -216,7 +216,6 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <>
           <PlayBackFace
-            currentValue={widget.getValue()}
             initialFaceIndex={widget.getValue()}
             onValueChange={widget.update}
             title={widget.displayName}
