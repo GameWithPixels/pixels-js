@@ -26,9 +26,6 @@ export interface SliderProps extends ISliderProps {
 
 export function SliderComponent(props: SliderProps) {
   const defaultValue = props.defaultValue;
-  console.log("default value = " + defaultValue);
-  // ? props.defaultValue / 1000
-  // : props.minValue;
   const [onChangeValue, setOnChangeValue] = React.useState(defaultValue);
   const resolvedProps = usePropsResolution("Slider", props);
   return (
@@ -45,11 +42,10 @@ export function SliderComponent(props: SliderProps) {
           <Slider
             {...resolvedProps}
             defaultValue={resolvedProps.defaultValue}
-            // value={onChangeValue}
             minValue={resolvedProps.minValue}
             maxValue={resolvedProps.maxValue}
             size={resolvedProps.size}
-            step={10}
+            step={resolvedProps.step}
             onChange={(v) => {
               setOnChangeValue(v);
               props.onSelectedValue?.(v);

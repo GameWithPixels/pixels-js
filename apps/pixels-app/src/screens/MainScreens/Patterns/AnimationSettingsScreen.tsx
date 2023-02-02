@@ -108,7 +108,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
             defaultValue={widget.getValue()}
-            step={step ?? 0.1}
+            step={step ?? 0.001}
             unitType={widget.unit ? widget.unit : undefined}
             unitTextColor={undefined}
             sliderThumbColor={undefined}
@@ -241,6 +241,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
         <AnimationsActionSheet
           animations={StandardProfiles.animations}
           initialAnimation={widget.getValue()}
+          onSelectAnimation={widget.update}
         />
       );
 

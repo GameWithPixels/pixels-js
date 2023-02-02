@@ -27,6 +27,7 @@ export interface PatternInfo {
 
 export interface PatternCardProps {
   patternInfo?: PatternInfo;
+  imageRequirePath?: ImageSourcePropType;
   name?: string;
   bg?: ColorType;
   w?: number | string;
@@ -58,8 +59,12 @@ export function PatternCard(props: PatternCardProps) {
       <Card {...props} borderWidth={isSelected ? 3 : props.borderWidth}>
         <Image
           size={props.imageSize}
-          alt={props.patternInfo?.editPattern.name}
-          source={props.patternInfo?.imageRequirePath}
+          alt={props.patternInfo?.editPattern.name ?? "Image"}
+          source={
+            props.patternInfo?.imageRequirePath
+              ? props.patternInfo?.imageRequirePath
+              : props.imageRequirePath
+          }
         />
         <Text>
           {props.patternInfo ? props.patternInfo.editPattern.name : props.name}

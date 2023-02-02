@@ -46,7 +46,7 @@ export function FaceIndex(props: FaceIndexProps) {
               <Actionsheet.Item
                 onPress={() => {
                   setFaceIndex(i + 1);
-                  const selectedIndex = faceIndex ? faceIndex : 0;
+                  const selectedIndex = i + 1;
                   props.onIndexSelected?.(selectedIndex);
                   onClose();
                 }}

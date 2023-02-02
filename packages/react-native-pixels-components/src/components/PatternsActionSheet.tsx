@@ -10,6 +10,8 @@ import {
   useDisclose,
 } from "native-base";
 import React, { useEffect } from "react";
+// eslint-disable-next-line import/namespace
+import { ImageSourcePropType } from "react-native";
 
 import { PatternCard, PatternInfo } from "./PatternCards";
 
@@ -30,7 +32,7 @@ export interface PatternsActionsheetProps {
   initialPattern?: EditPattern;
 }
 /**
- * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
+ * Actionsheet drawer of patterns to be opened to display a vertical scroll view of pressables and selectables pattern cards.
  * @param props See {@link PatternsActionsheetProps} for props parameters.
  */
 export function PatternActionSheet(props: PatternsActionsheetProps) {
@@ -144,6 +146,7 @@ export interface AnimationActionsheetProps {
     | null
     | undefined;
   initialAnimation?: EditAnimation;
+  imageRequirePath?: ImageSourcePropType;
 }
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
@@ -206,7 +209,7 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
         <Actionsheet.Content maxH="100%" h={600}>
           <Text bold paddingBottom={5}>
-            {props.drawerTitle ? props.drawerTitle : "Available Patterns"}
+            {props.drawerTitle ? props.drawerTitle : "Available Animations"}
           </Text>
           <ScrollView>
             <HStack flexWrap="wrap" w="100%">
@@ -215,6 +218,7 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
                   {/* Pattern card use as an animation card */}
 
                   <PatternCard
+                    imageRequirePath={defaultImageRequirePath}
                     w="105px"
                     h="130px"
                     verticalSpace={1}
