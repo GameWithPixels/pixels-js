@@ -26,13 +26,14 @@ import {
   PlayBackFace,
   PatternActionSheet,
 } from "@systemic-games/react-native-pixels-components";
-import { VStack, Image, ScrollView, Center, Input, Text } from "native-base";
+import { VStack, ScrollView, Center, Input, Text, Box } from "native-base";
 import React, { useEffect } from "react";
 import { GradientColorSelection } from "~/../../../packages/react-native-pixels-components/src/components/ColorSelection";
 
 import { lastSelectedLightingPattern } from "./PatternsScreen";
 
 import StandardProfiles from "~/features/StandardProfile";
+import DieRenderer from "~/features/render3d/DieRenderer";
 const standardPatterns = [...StandardProfiles.patterns];
 
 const paleBluePixelThemeParams = {
@@ -226,12 +227,9 @@ export default function AnimationSettingsScreen() {
           />
         </Center>
         <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0}>
-          <Image
-            // PlaceHolderImage
-            source={require("../../../../assets/BlueDice.png")}
-            size={160}
-            alt="description of image"
-          />
+          <Box w={160} h={160}>
+            <DieRenderer />
+          </Box>
         </Card>
         <LightingStyleSelection
           title={lightingTypeText}

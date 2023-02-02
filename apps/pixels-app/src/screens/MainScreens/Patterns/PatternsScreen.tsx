@@ -51,7 +51,8 @@ export default function PatternsScreen() {
     patternList.map((lightingPattern) =>
       infos.push({
         editAnimation: lightingPattern,
-        imageRequirePath: require("../../../../assets/BlueDice.png"),
+        // Remove me!
+        imageRequirePath: require("!/favicon.png"),
       })
     );
     setLightingPatternInfoList(infos);

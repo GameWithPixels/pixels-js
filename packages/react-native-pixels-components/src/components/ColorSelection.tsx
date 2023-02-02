@@ -12,7 +12,6 @@ import {
   usePropsResolution,
   IModalProps,
   Actionsheet,
-  Image,
   Box,
   ScrollView,
 } from "native-base";
@@ -92,13 +91,11 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
               alignItems="center"
               paddingBottom={10}
             >
-              {/* Temporary */}
-              <Image
-                borderRadius={100}
-                size={200}
-                source={require("../../../../apps/pixels-app/assets/zoomedDie4.png")}
-                alt="placheolder zoomed die"
-              />
+              {/* TODO */}
+              <Text>Render colored die here</Text>
+              {/* <Box w={200} h={200}>
+                {dieRenderer()}
+              </Box> */}
             </Box>
             <Box p={2}>
               <ColorWheel
