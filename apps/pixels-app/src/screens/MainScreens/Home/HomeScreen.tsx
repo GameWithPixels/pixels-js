@@ -50,7 +50,7 @@ function PairedPixelList({
   onPress,
   dieRenderer,
 }: PairedPixelListProps) {
-  const [PixelsDisplay, SwitchPixelsDisplay] = React.useState(false);
+  const [pixelsDisplay, switchPixelsDisplay] = React.useState(false);
   return (
     <Center width="100%">
       <VStack space={2} w="100%">
@@ -65,9 +65,9 @@ function PairedPixelList({
           <Toggle
             space={0}
             onToggle={() => {
-              SwitchPixelsDisplay(!PixelsDisplay);
+              switchPixelsDisplay(!pixelsDisplay);
             }}
-            isChecked={PixelsDisplay}
+            isChecked={pixelsDisplay}
             icon={<AntDesign name="bars" size={24} color="white" />}
           />
           <AntDesign name="appstore-o" size={22} color="white" />
@@ -75,7 +75,7 @@ function PairedPixelList({
         <Box rounded="md" p={2} bg="gray.700" width="100%">
           {!pairedPixels.length ? (
             <Text>No dice paired yet!</Text>
-          ) : PixelsDisplay === false ? (
+          ) : pixelsDisplay === false ? (
             <VStack w="100%">
               {pairedPixels.map((pixel) => (
                 <Box p={1} key={pixel.pixelId} width="100%">
@@ -123,7 +123,7 @@ function NearbyPixelsList({
   onPixelPaired,
   dieRenderer,
 }: NearbyPixelListProps) {
-  const [hideNearbyPixels, SetHideNearbyPixels] = React.useState(false);
+  const [hideNearbyPixels, setHideNearbyPixels] = React.useState(false);
   return (
     <Center>
       <VStack space={2} w="100%">
@@ -139,7 +139,7 @@ function NearbyPixelsList({
             <Toggle
               title="Show"
               onToggle={() => {
-                SetHideNearbyPixels(!hideNearbyPixels);
+                setHideNearbyPixels(!hideNearbyPixels);
               }}
               isChecked={hideNearbyPixels}
               value={hideNearbyPixels}
