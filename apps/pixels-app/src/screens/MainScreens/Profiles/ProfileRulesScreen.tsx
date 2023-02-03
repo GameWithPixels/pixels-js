@@ -1,7 +1,10 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { EditRule } from "@systemic-games/pixels-edit-animation";
+import {
+  EditRule,
+  EditConditionFaceCompare,
+} from "@systemic-games/pixels-edit-animation";
 import {
   Card,
   createPixelTheme,
@@ -89,7 +92,7 @@ export default function ProfilesRulesScreen() {
   );
 
   function addRule() {
-    const newRule = rulesList[0].duplicate();
+    const newRule = new EditRule(new EditConditionFaceCompare());
     // Register rule
     EditableStore.getKey(newRule);
     setRulesList([...rulesList, newRule]);
