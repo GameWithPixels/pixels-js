@@ -35,11 +35,12 @@ import { Swipeable } from "react-native-gesture-handler";
 
 import { PatternsScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
-import StandardProfiles from "~/features/StandardProfile";
+import { MyAppDataSet } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
+
 export let lastSelectedLightingPattern: EditAnimation;
 
-const standardLightingPatterns = [...StandardProfiles.animations];
+const standardLightingPatterns = [...MyAppDataSet.animations];
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,

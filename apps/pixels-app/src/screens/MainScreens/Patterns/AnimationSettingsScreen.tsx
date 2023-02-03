@@ -52,9 +52,10 @@ import React, { useEffect } from "react";
 
 import { lastSelectedLightingPattern } from "./PatternsScreen";
 
-import StandardProfiles from "~/features/StandardProfile";
+import { MyAppDataSet } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
-const standardPatterns = [...StandardProfiles.patterns];
+
+const standardPatterns = [...MyAppDataSet.patterns];
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -270,7 +271,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "animation":
       return (
         <AnimationsActionSheet
-          animations={StandardProfiles.animations}
+          animations={MyAppDataSet.animations}
           dieRenderer={(anim: EditAnimation) => (
             <DieRenderer animationData={getAnimData(anim)} />
           )}

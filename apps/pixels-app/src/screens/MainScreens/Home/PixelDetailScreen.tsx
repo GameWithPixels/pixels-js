@@ -11,7 +11,6 @@ import {
   AnimationRainbow,
   Color,
   Constants,
-  DataSet,
 } from "@systemic-games/pixels-edit-animation";
 import {
   BatteryLevel,
@@ -45,22 +44,11 @@ import {
 } from "native-base";
 import React from "react";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
-import { EditProfile } from "~/../../../packages/pixels-edit-animation/dist/types";
 
 import { PixelDetailScreenProps, HomeScreenStackParamList } from "~/Navigation";
 import { sr } from "~/Utils";
-import StandardProfiles from "~/features/StandardProfile";
+import { extractDataSet, MyAppDataSet } from "~/features/profiles";
 import DieRenderer, { DieRendererProps } from "~/features/render3d/DieRenderer";
-
-const profilesDataSet = new Map<EditProfile, DataSet>();
-function getDataSet(profile: EditProfile): DataSet {
-  let animData = profilesDataSet.get(profile);
-  if (!animData) {
-    animData = StandardProfiles.extractForProfile(profile).toDataSet();
-    profilesDataSet.set(profile, animData);
-  }
-  return animData;
-}
 
 interface HistogramProps {
   rolls: number[];
@@ -399,17 +387,20 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
             <Text bold>Recent Profiles:</Text>
           </HStack>
           <ProfilesScrollView
-            profiles={StandardProfiles.profiles}
+            profiles={MyAppDataSet.profiles}
             dieRender={(profile) => (
-              <DieRenderer animationData={getDataSet(profile)} />
+              <DieRenderer animationData={extractDataSet(profile)} />
             )}
             onPress={(profile) => {
               if (pixel?.isReady) {
                 setTransferProgress(0);
                 setShowLoadingPopup(true);
                 pixel
-                  ?.transferDataSet(getDataSet(profile), setTransferProgress)
-                  .then(() => setAnimData(getDataSet(profile)))
+                  ?.transferDataSet(
+                    extractDataSet(profile),
+                    setTransferProgress
+                  )
+                  .then(() => setAnimData(extractDataSet(profile)))
                   .catch(console.error)
                   .finally(() => setShowLoadingPopup(false));
               }

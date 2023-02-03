@@ -6,11 +6,7 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import {
-  EditProfile,
-  DataSet,
-  loadAppDataSet,
-} from "@systemic-games/pixels-edit-animation";
+import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   createPixelTheme,
   PixelTheme,
@@ -35,9 +31,9 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import StandardProfilesJson from "!/profiles/standard-profiles.json";
 import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
+import { extractDataSet, MyAppDataSet } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
 
 export let lastSelectedProfile: EditProfile;
@@ -64,17 +60,6 @@ interface SelectedProfile {
   profileKey: number;
 }
 export let selectedProfile: SelectedProfile;
-
-const appDataSet = loadAppDataSet(StandardProfilesJson);
-const profilesDataSet = new Map<EditProfile, DataSet>();
-function getDataSet(profile: EditProfile): DataSet {
-  let animData = profilesDataSet.get(profile);
-  if (!animData) {
-    animData = appDataSet.extractForProfile(profile).toDataSet();
-    profilesDataSet.set(profile, animData);
-  }
-  return animData;
-}
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -111,7 +96,7 @@ export function ProfilesListScreen() {
     useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
 
   const [profileList, setProfileList] = React.useState([
-    ...appDataSet.profiles,
+    ...MyAppDataSet.profiles,
   ]);
   // List of favorite profiles
   const [favoriteProfilesList, setFavoritesProfileList] = React.useState<
@@ -119,7 +104,7 @@ export function ProfilesListScreen() {
   >([]);
 
   function addProfile(profile: EditProfile) {
-    appDataSet.profiles.push(profile);
+    MyAppDataSet.profiles.push(profile);
     // Register the new profile in the editable store
     EditableStore.getKey(profile);
     // Add the new profile in the UI list
@@ -284,7 +269,7 @@ export function ProfilesListScreen() {
                             imageSize={70}
                             dieRender={() => (
                               <DieRenderer
-                                animationData={getDataSet(profile)}
+                                animationData={extractDataSet(profile)}
                               />
                             )}
                             textSize="md"
@@ -309,90 +294,89 @@ export function ProfilesListScreen() {
                     </Box>
                   </HStack>
                   <VStack p={2} rounded="lg" bg="gray.700">
-                    {profileList.map((profile, i) => {
-                      return (
-                        <Box p={1} key={EditableStore.getKey(profile)}>
-                          <Swipeable
-                            renderLeftActions={createSwipeableSideButton({
-                              w: 85,
-                              buttons: [
-                                {
-                                  onPress: () => addToFavorites(profile),
-                                  bg: "purple.500",
-                                  icon: (
-                                    <MaterialCommunityIcons
-                                      name="bookmark-plus-outline"
-                                      size={30}
-                                      color="white"
-                                    />
-                                  ),
-                                },
-                              ],
-                            })}
-                            renderRightActions={createSwipeableSideButton({
-                              w: 195,
-                              buttons: [
-                                {
-                                  onPress: () => duplicateProfile(profile, i),
-                                  bg: "blue.500",
-                                  icon: (
-                                    <MaterialIcons
-                                      name="content-copy"
-                                      size={24}
-                                      color="white"
-                                    />
-                                  ),
-                                },
-                                {
-                                  onPress: () => openExportSheet(profile),
-                                  bg: "amber.500",
-                                  icon: (
-                                    <MaterialCommunityIcons
-                                      name="export-variant"
-                                      size={24}
-                                      color="white"
-                                    />
-                                  ),
-                                },
-                                {
-                                  onPress: () => deleteProfile(profile),
-                                  bg: "red.500",
-                                  icon: (
-                                    <MaterialIcons
-                                      name="delete-outline"
-                                      size={24}
-                                      color="white"
-                                    />
-                                  ),
-                                },
-                              ],
-                            })}
-                          >
-                            <DetailedProfileCard
-                              w="100%"
-                              h={110}
-                              imageSize={70}
-                              dieRender={() => (
-                                <DieRenderer
-                                  animationData={getDataSet(profile)}
-                                />
-                              )}
-                              textSize="md"
-                              profileName={profile.name}
-                              borderWidth={1}
-                              profileWithSound={false}
-                              onPress={() => {
-                                //Trying to register the profile for updating it on the other screens
-                                selectedProfile = { profile, profileKey: 0 };
-                                selectedProfile.profileKey =
-                                  EditableStore.getKey(selectedProfile.profile);
-                                navigation.navigate("ProfileRulesScreen");
-                              }}
-                            />
-                          </Swipeable>
-                        </Box>
-                      );
-                    })}
+                    {profileList.map((profile, i) => (
+                      <Box p={1} key={EditableStore.getKey(profile)}>
+                        <Swipeable
+                          renderLeftActions={createSwipeableSideButton({
+                            w: 85,
+                            buttons: [
+                              {
+                                onPress: () => addToFavorites(profile),
+                                bg: "purple.500",
+                                icon: (
+                                  <MaterialCommunityIcons
+                                    name="bookmark-plus-outline"
+                                    size={30}
+                                    color="white"
+                                  />
+                                ),
+                              },
+                            ],
+                          })}
+                          renderRightActions={createSwipeableSideButton({
+                            w: 195,
+                            buttons: [
+                              {
+                                onPress: () => duplicateProfile(profile, i),
+                                bg: "blue.500",
+                                icon: (
+                                  <MaterialIcons
+                                    name="content-copy"
+                                    size={24}
+                                    color="white"
+                                  />
+                                ),
+                              },
+                              {
+                                onPress: () => openExportSheet(profile),
+                                bg: "amber.500",
+                                icon: (
+                                  <MaterialCommunityIcons
+                                    name="export-variant"
+                                    size={24}
+                                    color="white"
+                                  />
+                                ),
+                              },
+                              {
+                                onPress: () => deleteProfile(profile),
+                                bg: "red.500",
+                                icon: (
+                                  <MaterialIcons
+                                    name="delete-outline"
+                                    size={24}
+                                    color="white"
+                                  />
+                                ),
+                              },
+                            ],
+                          })}
+                        >
+                          <DetailedProfileCard
+                            w="100%"
+                            h={110}
+                            imageSize={70}
+                            dieRender={() => (
+                              <DieRenderer
+                                animationData={extractDataSet(profile)}
+                              />
+                            )}
+                            textSize="md"
+                            profileName={profile.name}
+                            borderWidth={1}
+                            profileWithSound={false}
+                            onPress={() => {
+                              //Trying to register the profile for updating it on the other screens
+                              selectedProfile = { profile, profileKey: 0 };
+                              selectedProfile.profileKey = EditableStore.getKey(
+                                selectedProfile.profile
+                              );
+                              navigation.navigate("ProfileRulesScreen");
+                            }}
+                          />
+                        </Swipeable>
+                      </Box>
+                    ))}
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget
