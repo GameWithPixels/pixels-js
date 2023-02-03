@@ -70,7 +70,9 @@ interface RuleConditionWidgetProps {
 
 function RuleConditionWidget(props: RuleConditionWidgetProps) {
   const [editCondition, setEditCondition] = React.useState(props.condition);
-  const [_conditionTitle, setConditionTitle] = React.useState<string>();
+  const [conditionTitle, setConditionTitle] = React.useState<string>(
+    GetConditionSimpleTitle(props.condition)
+  );
 
   function GetConditionSimpleTitle(
     condition: EditCondition | undefined
@@ -129,7 +131,7 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
       <HStack space={2} width="100%" alignItems="center">
         <Box flex={10} w="100%">
           <RuleConditionSelection
-            conditionTitle={GetConditionSimpleTitle(props.condition)}
+            conditionTitle={conditionTitle}
             possibleConditions={[
               {
                 label: "Pixel roll is...",
@@ -143,6 +145,7 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
                 onPress: () => {
                   setConditionTitle("Pixel wakes up/sleep");
                   setEditCondition(new EditConditionHelloGoodbye());
+                  //Should update the rule condition
                 },
               },
               {
@@ -257,10 +260,6 @@ export default function ProfileEditRuleScreen() {
   const [ruleActions, setRuleActions] = React.useState(
     lastSelectedRule.actions
   );
-  const [_pattern, _setPattern] = React.useState(
-    "-- Select a Lighting Pattern --"
-  );
-  const [_audioClip, _setAudioClip] = React.useState("-- Select Audio Clip --");
 
   function addAction() {
     const newAction = new EditActionPlayAnimation();

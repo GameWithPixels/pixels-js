@@ -19,6 +19,17 @@ import {
 } from "native-base/lib/typescript/components/types";
 import React from "react";
 
+function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
+  const title =
+    "Battery is " +
+    selectedButtons
+      .map((title) => {
+        return title;
+      })
+      .join(" or ");
+  return title;
+}
+
 interface customButtonProps extends IButtonProps {
   title?: string;
   titleFontSize?: number | SizeType;
@@ -72,47 +83,127 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
   console.log("initial selection = " + initialSelection);
   const [selectedOptions, setSelectedOptions] =
     React.useState<string[]>(initialSelection);
+  const { isOpen, onOpen, onClose } = useDisclose();
   return (
-    <VStack>
-      <Text>{props.title}</Text>
-      <Box w="100%">
-        <Button.Group isAttached>
-          {values.map((item, i) => (
-            <CustomButton
-              key={i}
-              keyIndex={i}
-              itemsLength={values.length - 1}
-              title={item}
-              titleFontSize={props.fontSize}
-              borderWidth={props.borderWidth}
-              initiallySelected={selectedOptions.includes(item)}
-              onButtonPress={(isSelected) => {
-                console.log("pressed button");
-                setSelectedOptions((options) => {
-                  console.log("is selected = " + isSelected);
-                  if (isSelected) {
-                    if (!options.includes(item)) {
-                      const newOptions = [...options, item];
-                      props.onChange?.(newOptions);
-                      return newOptions;
+    <>
+      <VStack>
+        <Text>{props.title}</Text>
+        <Box w="100%">
+          {values.length < 4 ? (
+            <Button.Group isAttached>
+              {values.map((item, i) => (
+                <CustomButton
+                  key={i}
+                  keyIndex={i}
+                  itemsLength={values.length - 1}
+                  title={item}
+                  titleFontSize={props.fontSize}
+                  borderWidth={props.borderWidth}
+                  initiallySelected={selectedOptions.includes(item)}
+                  onButtonPress={(isSelected) => {
+                    console.log("pressed button");
+                    setSelectedOptions((options) => {
+                      console.log("is selected = " + isSelected);
+                      if (isSelected) {
+                        if (!options.includes(item)) {
+                          const newOptions = [...options, item];
+                          props.onChange?.(newOptions);
+                          return newOptions;
+                        }
+                      } else {
+                        const i = options.indexOf(item);
+                        if (i >= 0) {
+                          const newOptions = [...options];
+                          newOptions.splice(i, 1);
+                          props.onChange?.(newOptions);
+                          return newOptions;
+                        }
+                      }
+                      return options;
+                    });
+                  }}
+                />
+              ))}
+            </Button.Group>
+          ) : (
+            <Pressable onPress={onOpen}>
+              <HStack
+                p={3}
+                paddingLeft={4}
+                w="100%"
+                alignItems="center"
+                rounded="lg"
+                bg="darkBlue.800"
+                minH={50}
+              >
+                <Box flex={2}>
+                  <Text fontSize="sm">
+                    {BatteryConditionTitleFromOptions(selectedOptions)}
+                  </Text>
+                </Box>
+                <Spacer />
+                <Box>
+                  <ChevronDownIcon />
+                </Box>
+              </HStack>
+            </Pressable>
+          )}
+        </Box>
+      </VStack>
+
+      <Actionsheet isOpen={isOpen} onClose={onClose}>
+        <Actionsheet.Content>
+          <ScrollView w="100%">
+            {/* {props.possibleConditions.map((condition, key) => (
+              <Actionsheet.Item
+                alignItems="center"
+                key={key}
+                width="100%"
+                onPress={() => {
+                  condition.onPress?.();
+                  onClose();
+                }}
+              >
+                <Text fontSize="md">{condition.label}</Text>
+              </Actionsheet.Item>
+            ))} */}
+            {values.map((item, i) => (
+              <CustomButton
+                key={i}
+                keyIndex={i}
+                itemsLength={values.length - 1}
+                title={item}
+                titleFontSize={props.fontSize}
+                borderWidth={props.borderWidth}
+                initiallySelected={selectedOptions.includes(item)}
+                onButtonPress={(isSelected) => {
+                  console.log("pressed button");
+                  setSelectedOptions((options) => {
+                    console.log("is selected = " + isSelected);
+                    if (isSelected) {
+                      if (!options.includes(item)) {
+                        const newOptions = [...options, item];
+                        props.onChange?.(newOptions);
+                        return newOptions;
+                      }
+                    } else {
+                      const i = options.indexOf(item);
+                      if (i >= 0) {
+                        const newOptions = [...options];
+                        newOptions.splice(i, 1);
+                        props.onChange?.(newOptions);
+                        return newOptions;
+                      }
                     }
-                  } else {
-                    const i = options.indexOf(item);
-                    if (i >= 0) {
-                      const newOptions = [...options];
-                      newOptions.splice(i, 1);
-                      props.onChange?.(newOptions);
-                      return newOptions;
-                    }
-                  }
-                  return options;
-                });
-              }}
-            />
-          ))}
-        </Button.Group>
-      </Box>
-    </VStack>
+                    return options;
+                  });
+                }}
+              />
+            ))}
+          </ScrollView>
+        </Actionsheet.Content>
+      </Actionsheet>
+    </>
   );
 }
 
