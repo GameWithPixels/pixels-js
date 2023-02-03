@@ -10,6 +10,7 @@ import {
   EditDataSet,
   EditProfile,
   AnimationBits,
+  DataSet,
 } from "@systemic-games/pixels-edit-animation";
 import {
   createPixelTheme,

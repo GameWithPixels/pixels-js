@@ -65,7 +65,7 @@ function PairedPixelList({
           <Toggle
             space={0}
             onValueChange={() => {
-              switchPixelsDisplay(!PixelsDisplay);
+              switchPixelsDisplay(!pixelsDisplay);
             }}
             isChecked={pixelsDisplay}
             icon={<AntDesign name="bars" size={24} color="white" />}

@@ -282,14 +282,9 @@ export default function AnimationSettingsScreen() {
     new EditAnimationSimple()
   );
 
-  // const [animation, setAnimation] = React.useState<AnimationPreset>();
-  // const [animationBits, setAnimationBits] = React.useState<AnimationBits>(
-  //   new AnimationBits()
-  // );
-
   const [animData, setAnimData] = React.useState<{
-    animation: AnimationPreset;
-    bits: AnimationBits;
+    animations: AnimationPreset;
+    animationBits: AnimationBits;
   }>();
 
   useEffect(() => {
@@ -317,13 +312,12 @@ export default function AnimationSettingsScreen() {
           <Button
             onPress={() => {
               try {
-                const bits = new AnimationBits();
-                const animation = lastSelectedLightingPattern.toAnimation(
+                const animationBits = new AnimationBits();
+                const anim = lastSelectedLightingPattern.toAnimation(
                   new EditDataSet(),
-                  bits
+                  animationBits
                 );
-                const animData = { animation, bits };
-                setAnimData(animData);
+                setAnimData({ animations: anim, animationBits });
               } catch (error) {
                 console.error(error);
               }
