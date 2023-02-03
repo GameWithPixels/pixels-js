@@ -140,8 +140,11 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
      *  @defaultValue 5000 */
     minInterval?: number;
     /** Whether to wait on a call to the dispatcher with "start" before
-     *  watching the value. @defaultValue false */
-    waitOnStart?: boolean;
+     *  watching the value.
+     *  Otherwise the hook returns the required value as soon the Pixel
+     *  is connected.
+     * @defaultValue false */
+    explicitStart?: boolean;
   }
 ): [
   UsePixelValueNamesMap[T] | undefined,
@@ -163,7 +166,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
 
   // Options default values
   const minInterval = options?.minInterval ?? 5000;
-  const waitOnStart = options?.waitOnStart ?? false;
+  const waitOnStart = options?.explicitStart ?? false;
 
   const status = pixel?.status;
   useEffect(() => {

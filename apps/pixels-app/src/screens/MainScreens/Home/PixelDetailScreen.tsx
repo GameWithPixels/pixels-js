@@ -311,17 +311,10 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 export default function PixelDetailScreen(props: PixelDetailScreenProps) {
   const navigation =
     useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
-  const systemId = props.route.params.systemId;
-  const [status, pixel, connectDispatch] = usePixelConnect();
-  const [faceUpObj, rollDispatch] = usePixelValue(pixel, "roll");
-  React.useEffect(() => {
-    connectDispatch("connect", getPixel(systemId));
-    rollDispatch("start");
-    return () => {
-      rollDispatch("stop");
-      connectDispatch("disconnect");
-    };
-  }, [connectDispatch, rollDispatch, systemId]);
+  const { systemId } = props.route.params;
+  const pixel = getPixel(systemId);
+  const [status] = usePixelConnect(pixel);
+  const [rollState] = usePixelValue(pixel, "rollState");
 
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
   const [transferProgress, setTransferProgress] = React.useState(0);
@@ -383,7 +376,7 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
                     <Text bold>Face Up:</Text>
                     <Spacer />
                     <Text bold color="green.500" fontSize="md">
-                      {`${faceUpObj?.face ?? ""}`}
+                      {`${rollState?.face ?? ""}`}
                     </Text>
                   </HStack>
                   <HStack>

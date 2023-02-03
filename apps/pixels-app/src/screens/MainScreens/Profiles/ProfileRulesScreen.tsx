@@ -25,15 +25,7 @@ import {
   ProfileRulesCard,
   PxAppPage,
 } from "@systemic-games/react-native-pixels-components";
-import {
-  Box,
-  HStack,
-  Image,
-  Pressable,
-  VStack,
-  Text,
-  Input,
-} from "native-base";
+import { Box, HStack, Pressable, VStack, Text, Input } from "native-base";
 import React, { useEffect } from "react";
 import DraggableFlatList, {
   ScaleDecorator,
@@ -45,6 +37,7 @@ import { selectedProfile } from "./ProfilesListScreen";
 
 import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
+import DieRenderer from "~/features/render3d/DieRenderer";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -319,11 +312,9 @@ export default function ProfilesRulesScreen() {
       <VStack space={2} width="100%">
         <HStack alignItems="center" width="100%">
           <Box flex={1}>
-            <Image
-              size={100}
-              alt="profileDiceImage"
-              source={require("../../../../assets/RainbowDice.png")}
-            />
+            <Box w={100} h={100}>
+              <DieRenderer />
+            </Box>
           </Box>
           <Box flex={2.5}>
             {/* TODO check for text color not to be white */}

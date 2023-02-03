@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import { useAssets } from "expo-asset";
 import { Box, Center, FlatList, Pressable, Text, VStack } from "native-base";
 import { useEffect, useState } from "react";
@@ -10,18 +9,12 @@ import AppPage from "~/components/AppPage";
 import getDfuFileInfo, { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 import { setDfuFiles } from "~/features/store/dfuFilesSlice";
+import { SelectDfuFilesProps } from "~/navigation";
 import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
-function SelectDfuFilePage() {
+function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   const errorHandler = useErrorHandler();
-  const navigation = useNavigation();
-  useEffect(() => {
-    navigation.setOptions({
-      title: "Select Firmware:",
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const [assets, assetsError] = useAssets([dfuFilesZip]);
   const [dfuFilesByDate, setDfuFilesByDate] = useState<DfuFileInfo[][]>();
   const appDispatch = useAppDispatch();
@@ -115,10 +108,10 @@ function SelectDfuFilePage() {
   );
 }
 
-export default function () {
+export default function (props: SelectDfuFilesProps) {
   return (
     <AppPage>
-      <SelectDfuFilePage />
+      <SelectDfuFilePage {...props} />
     </AppPage>
   );
 }

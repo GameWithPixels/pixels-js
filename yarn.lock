@@ -1846,9 +1846,9 @@
     write-file-atomic "^2.3.0"
 
 "@expo/metro-config@~0.5.0", "@expo/metro-config@~0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@expo/metro-config/-/metro-config-0.5.1.tgz#58c715041e1773ad653519535c017138bfc766de"
-  integrity sha512-Rvy4ZFgKNDfXO401z2OQF8fWbPj1lLVDL4GF1aqCIhCDHCKrezbwB0xejpcUyndJRCxBL2BMAM+P24t6cKv9Fw==
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@expo/metro-config/-/metro-config-0.5.2.tgz#9474454dcf8c2e3d66231f36f8bbbae5e9e0c3dc"
+  integrity sha512-W1qsZPA5BXuRBkNLydKBYQ1+ubObhOK0gk2Fpc+XnhW+UUIHC9sDR5pZRYGNSnDDc3rG8y7c32UzSW9nlK+mog==
   dependencies:
     "@expo/config" "~7.0.2"
     "@expo/json-file" "8.2.36"

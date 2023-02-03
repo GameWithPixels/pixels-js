@@ -20,5 +20,5 @@ export default function (pixel?: Pixel): [PixelStatus?, Error?] {
     }
   }, [pixel]);
 
-  return [usePixelStatus(), lastError];
+  return [usePixelStatus(pixel), lastError];
 }
