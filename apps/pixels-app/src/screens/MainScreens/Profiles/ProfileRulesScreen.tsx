@@ -4,18 +4,20 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import {
   ActionTypeValues,
   ConditionTypeValues,
+  //FaceCompareFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import {
   EditAction,
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditCondition,
-  EditConditionBatteryState,
+  // EditConditionBatteryState,
   EditConditionConnectionState,
-  EditConditionFaceCompare,
+  // EditConditionFaceCompare,
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import {
+  // bitsToFlags,
   Card,
   createPixelTheme,
   createSwipeableSideButton,
@@ -109,26 +111,29 @@ function GetActionTitles(actions: EditAction[]): string[] {
   return actionsTitles;
 }
 function GetConditionTitle(condition: EditCondition | undefined): string {
-  let conditionTitle: string = "No action selected";
-  let faceCompareFlag;
-  let batteryFlag;
+  let conditionTitle: string = "Die roll is ";
+  // let faceCompareFlag: number[];
+  // let batteryFlags: number[];
   if (condition) {
     switch (condition.type) {
       case ConditionTypeValues.handling:
         conditionTitle = "die is picked up";
         break;
       case ConditionTypeValues.batteryState:
-        batteryFlag = (condition as EditConditionBatteryState).flags;
-        if (batteryFlag === 0) {
-          conditionTitle = "battery is ok ";
-        } else if (batteryFlag === 1) {
-          conditionTitle = "battery is low ";
-        } else if (batteryFlag === 3) {
-          conditionTitle = "battery is charging";
-        } else if (batteryFlag === 4) {
-          conditionTitle = "battery is done charging";
-        }
-        // TODO add the variations with multiple selections at once
+        // batteryFlags = bitsToFlags(
+        //   (condition as EditConditionBatteryState).flags
+        // );
+
+        // if (batteryFlag === 0) {
+        //   conditionTitle = "battery is ok ";
+        // } else if (batteryFlag === 1) {
+        //   conditionTitle = "battery is low ";
+        // } else if (batteryFlag === 3) {
+        //   conditionTitle = "battery is charging";
+        // } else if (batteryFlag === 4) {
+        //   conditionTitle = "battery is done charging";
+        // }
+        // // TODO add the variations with multiple selections at once
 
         break;
       case ConditionTypeValues.connectionState:
@@ -142,40 +147,50 @@ function GetConditionTitle(condition: EditCondition | undefined): string {
         break;
       //TODO remake this swicth case because flags may not be corrects
       case ConditionTypeValues.faceCompare:
-        faceCompareFlag = (condition as EditConditionFaceCompare).flags;
-        console.log("face compare flag number = ", faceCompareFlag);
-        if (faceCompareFlag === 0) {
-          // less
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is less than " + faceIndex;
-        } else if (faceCompareFlag === 1) {
-          // equal
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is equal to " + faceIndex;
-        } else if (faceCompareFlag === 2) {
-          // greater
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is greater than " + faceIndex;
-        } else if (faceCompareFlag === 3) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is equal or greater than " + faceIndex;
-        } else if (faceCompareFlag === 4) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          //conditionTitle = "die roll is less or greater than " + faceIndex;
-          conditionTitle = " is 4 " + faceIndex;
-        } else if (faceCompareFlag === 5) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          // conditionTitle = "die roll is equal or greater than " + faceIndex;
-          conditionTitle = "is 5 " + faceIndex;
-        } else {
-          conditionTitle = "die is any";
-        }
+        // faceCompareFlag = bitsToFlags(
+        //   (condition as EditConditionFaceCompare).flags
+        // );
+        // conditionTitle = faceCompareFlag.map((flag) => {
+        //   switch (flag) {
+        //     case FaceCompareFlagsValues.equal:
+        //       return " equal to";
+        //     case FaceCompareFlagsValues.greater:
+        //       return "greater than";
+        //     case FaceCompareFlagsValues.less:
+        //       return "less than";
+        //   }
+        // });
+
+        // if (faceCompareFlag === 1) {
+        //   // less = 1
+        //   const faceIndex =
+        //     (condition as EditConditionFaceCompare).faceIndex + 1;
+        //   conditionTitle = "die roll is less than " + faceIndex;
+        // } else if (faceCompareFlag === 2) {
+        //   // equal = 2
+        //   const faceIndex =
+        //     (condition as EditConditionFaceCompare).faceIndex + 1;
+        //   conditionTitle = "die roll is equal to " + faceIndex;
+        // } else if (faceCompareFlag === 3) {
+        //   // greater = 3
+        //   const faceIndex =
+        //     (condition as EditConditionFaceCompare).faceIndex + 1;
+        //   conditionTitle = "die roll is greater than " + faceIndex;
+        // } else if (faceCompareFlag === 5) {
+        //   const faceIndex =
+        //     (condition as EditConditionFaceCompare).faceIndex + 1;
+        //   conditionTitle = "die roll is equal or greater than " + faceIndex;
+        // } else if (faceCompareFlag === 4) {
+        //   const faceIndex =
+        //     (condition as EditConditionFaceCompare).faceIndex + 1;
+        //   conditionTitle = "die roll is less or greater than " + faceIndex;
+        // } else if (faceCompareFlag === 3) {
+        //   const faceIndex =
+        //     (condition as EditConditionFaceCompare).faceIndex + 1;
+        //   conditionTitle = "die roll is less or equal to " + faceIndex;
+        // } else {
+        //   conditionTitle = "die is any";
+        // }
         break;
       case ConditionTypeValues.helloGoodbye:
         if ((condition as EditConditionConnectionState).flags === 0) {

@@ -230,7 +230,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
           <Toggle
             value={widget.getValue()}
             title={widget.displayName}
-            onToggle={widget.update}
+            onValueChange={widget.update}
           />
         </>
       );

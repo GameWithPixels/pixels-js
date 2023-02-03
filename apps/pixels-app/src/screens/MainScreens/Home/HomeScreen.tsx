@@ -112,7 +112,7 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
           {/* Switch scanned display toggle */}
           <Toggle
             space={0}
-            onToggle={() => {
+            onValueChange={() => {
               SwitchPixelsDisplay(!PixelsDisplay);
             }}
             isChecked={PixelsDisplay}
@@ -191,7 +191,7 @@ function NearbyPixelsList({
           <HStack space={1} alignItems="center">
             <Toggle
               title="Show"
-              onToggle={() => {
+              onValueChange={() => {
                 SetHideNearbyPixels(!hideNearbyPixels);
               }}
               isChecked={hideNearbyPixels}

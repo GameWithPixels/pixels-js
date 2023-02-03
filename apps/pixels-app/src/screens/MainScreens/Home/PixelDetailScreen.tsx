@@ -143,7 +143,7 @@ function DieStats() {
           <Toggle
             textSize="xs"
             title="Lifetime"
-            onToggle={() => {
+            onValueChange={() => {
               setShowSessionStats(!showSessionStats);
             }}
             isChecked={showSessionStats}

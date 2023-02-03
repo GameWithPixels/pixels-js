@@ -156,10 +156,10 @@ export function PlayBackFace(props: PlayBackFaceProps) {
       <HStack alignItems="center">
         <Box flex={1}>
           <Toggle
-            //defaultIsChecked={initiallyDisabled}
+            defaultIsChecked={initiallyDisabled}
             // value={!disableFaceIndex}
             title="Select face"
-            onToggle={() => {
+            onValueChange={() => {
               setDisableFaceIndex((wasDisabled) => {
                 props.onValueChange?.(wasDisabled ? faceIndexRef.current : -1);
                 return !wasDisabled;
