@@ -93,6 +93,7 @@ export default function ProfilesRulesScreen() {
 
   function addRule() {
     const newRule = new EditRule(new EditConditionFaceCompare());
+    selectedProfile.profile.rules.push(newRule);
     // Register rule
     EditableStore.getKey(newRule);
     setRulesList([...rulesList, newRule]);
