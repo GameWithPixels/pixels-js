@@ -110,7 +110,9 @@ export function ProfilesListScreen() {
   const navigation =
     useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
 
-  const [profileList, setProfileList] = React.useState(appDataSet.profiles);
+  const [profileList, setProfileList] = React.useState([
+    ...appDataSet.profiles,
+  ]);
   // List of favorite profiles
   const [favoriteProfilesList, setFavoritesProfileList] = React.useState<
     EditProfile[]
@@ -121,7 +123,7 @@ export function ProfilesListScreen() {
     // Register the new profile in the editable store
     EditableStore.getKey(profile);
     // Add the new profile in the UI list
-    setProfileList([...profileList, profile]);
+    setProfileList((profileList) => [...profileList, profile]);
   }
 
   /**
@@ -135,22 +137,26 @@ export function ProfilesListScreen() {
     const duplicatedProfile = profileToDuplicate.duplicate();
 
     // Duplicate the profile in the UI list
-    const profiles = [...profileList];
-    profiles.splice(index + 1, 0, duplicatedProfile);
-    setProfileList(profiles);
+    setProfileList((profileList) => {
+      const profiles = [...profileList];
+      profiles.splice(index + 1, 0, duplicatedProfile);
+      return profiles;
+    });
   }
 
   function deleteProfile(profileToDelete: EditProfile) {
     const profileToDeleteKey = EditableStore.getKey(profileToDelete);
-    const profiles = [...profileList];
-    profiles.splice(
-      profiles.findIndex((profileToDelete) => {
-        return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
-      }),
-      1
-    );
-    setProfileList(profiles);
     EditableStore.unregister(profileToDelete);
+    setProfileList((profileList) => {
+      const profiles = [...profileList];
+      profiles.splice(
+        profiles.findIndex((profileToDelete) => {
+          return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
+        }),
+        1
+      );
+      return profiles;
+    });
   }
 
   function addToFavorites(profileToFavorite: EditProfile) {
@@ -177,8 +183,7 @@ export function ProfilesListScreen() {
       1
     );
     setFavoritesProfileList(profiles);
-
-    setProfileList([...profileList, profileToRemove]);
+    setProfileList((profileList) => [...profileList, profileToRemove]);
   }
 
   function openExportSheet(_profileToExport: EditProfile) {
@@ -290,7 +295,6 @@ export function ProfilesListScreen() {
                               // navigation.navigate("ProfileEditRuleScreen");
                               lastSelectedProfile = profile;
                               // navigation.navigate("ProfileRulesScreen");
-                              // console.log(lastSelectedProfile.rules);
                             }}
                           />
                         </Swipeable>
