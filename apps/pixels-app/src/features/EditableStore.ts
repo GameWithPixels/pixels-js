@@ -9,7 +9,7 @@ const _editList: (Editable | undefined)[] = [];
 const EditableStore = {
   /**
    * Returns a unique key for the given object.
-   * @remarks The object is kept in an internal store, call {@link unregister} to remove it.
+   * @remarks The object is kept in an internal store, call {@link EditableStore.unregister} to remove it.
    * @param editable The Pixels Animation {@link Editable} object to register.
    * @returns The unique key associated with the object.
    */
