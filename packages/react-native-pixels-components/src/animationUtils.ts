@@ -1,6 +1,6 @@
 import {
+  AnimationType,
   AnimationTypeValues,
-  EditAnimation,
 } from "@systemic-games/pixels-edit-animation";
 
 /**
@@ -8,27 +8,19 @@ import {
  * @param animation The editAnimation to check type and return title.
  * @returns a string representing the animation type title.
  */
-export function animationTypeToTitle(animation: EditAnimation): string {
-  const animationType = animation.type;
-  let animationTtitle = "Type";
-
+export function animationTypeToTitle(animationType?: AnimationType): string {
   switch (animationType) {
     case AnimationTypeValues.simple:
-      animationTtitle = "Simple Flashes";
-      break;
+      return "Simple Flashes";
     case AnimationTypeValues.rainbow:
-      animationTtitle = "Colorful Rainbow";
-      break;
+      return "Colorful Rainbow";
     case AnimationTypeValues.gradient:
-      animationTtitle = "Simple Gradient";
-      break;
+      return "Simple Gradient";
     case AnimationTypeValues.gradientPattern:
-      animationTtitle = "Gradient LED Pattern";
-      break;
+      return "Gradient LED Pattern";
     case AnimationTypeValues.keyframed:
-      animationTtitle = "Color LED Pattern";
-      break;
+      return "Color LED Pattern";
+    default:
+      return "Type";
   }
-
-  return animationTtitle;
 }

@@ -51,7 +51,7 @@ i18n
           rolling: "rolling",
           crooked: "crooked",
           // Home
-          pixelsScanner: "Pixels Scanner",
+          selectFirmware: "Select Firmware",
           tapToSelectFirmware: "Tap To Select Firmware",
           screenWithSize: "Screen: {{width}}x{{height}}",
           osNameWithVersion: "OS: {{name}} {{version}}",
@@ -187,7 +187,7 @@ i18n
           rolling: "骰子滚动中",
           crooked: "骰子位置不平",
           // Home
-          pixelsScanner: "骰子扫描器",
+          selectFirmware: "选择固件",
           tapToSelectFirmware: "点击选择固件",
           screenWithSize: "屏幕: {{width}}x{{height}}",
           osNameWithVersion: "OS: {{name}} {{version}}",

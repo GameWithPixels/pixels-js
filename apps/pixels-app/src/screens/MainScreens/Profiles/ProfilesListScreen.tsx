@@ -6,11 +6,7 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import {
-  EditDataSet,
-  EditProfile,
-  AnimationBits,
-} from "@systemic-games/pixels-edit-animation";
+import { EditProfile, DataSet } from "@systemic-games/pixels-edit-animation";
 import {
   createPixelTheme,
   PixelTheme,
@@ -35,17 +31,10 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import {
-  ProfileScreenRouteProp as _ProfileScreenRouteProps,
-  ProfilesScreenStackParamList,
-} from "~/Navigation";
+import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import StandardProfiles from "~/features/StandardProfile";
-
-// StandardProfiles.profiles[0].rules[0].actions[0].type ===
-//   ActionTypeValues.playAnimation;
-
-// StandardProfiles.profiles[0].collectAnimations;
+import DieRenderer from "~/features/render3d/DieRenderer";
 
 export let lastSelectedProfile: EditProfile;
 
@@ -75,8 +64,15 @@ interface SelectedProfile {
 }
 export let selectedProfile: SelectedProfile;
 
-const placeHolderRequirePath = require("~/../assets/RainbowDice.png");
-const _defaultImageRequirePath = require("~/../assets/UI_Icons/D10.png");
+const profilesDataSet = new Map<EditProfile, DataSet>();
+function getDataSet(profile: EditProfile): DataSet {
+  let animData = profilesDataSet.get(profile);
+  if (!animData) {
+    animData = StandardProfiles.extractForProfile(profile).toDataSet();
+    profilesDataSet.set(profile, animData);
+  }
+  return animData;
+}
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -126,13 +122,6 @@ export function ProfilesListScreen() {
     setProfileList([...profileList, newProfile]);
   }
 
-  const animations = standardProfiles[0].collectAnimations();
-  const defaultanimation = animations[0].toAnimation(
-    new EditDataSet(),
-    new AnimationBits()
-  );
-  console.log("animations = " + defaultanimation);
-
   /**
    * Duplicate an existing profile by updating the profileList.
    * @param profileToDuplicate Profile infos of the profile to duplicate.
@@ -172,7 +161,6 @@ export function ProfilesListScreen() {
       }),
       1
     );
-    console.log("added to favorites");
     // Add profile to favorite list
     setFavoritesProfileList([...favoriteProfilesList, favoriteProfile]);
   }
@@ -287,7 +275,11 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            imageRequirePath={placeHolderRequirePath}
+                            dieRender={() => (
+                              <DieRenderer
+                                animationData={getDataSet(profile)}
+                              />
+                            )}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
@@ -373,7 +365,11 @@ export function ProfilesListScreen() {
                             w="100%"
                             h={110}
                             imageSize={70}
-                            imageRequirePath={placeHolderRequirePath}
+                            dieRender={() => (
+                              <DieRenderer
+                                animationData={getDataSet(profile)}
+                              />
+                            )}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
@@ -384,7 +380,6 @@ export function ProfilesListScreen() {
                               selectedProfile.profileKey = EditableStore.getKey(
                                 selectedProfile.profile
                               );
-                              console.log(selectedProfile.profile.rules);
                               navigation.navigate("ProfileRulesScreen");
                             }}
                           />
@@ -394,6 +389,8 @@ export function ProfilesListScreen() {
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget
+                      profileName="New Profile"
+                      dieRender={() => <></>}
                       onPress={() => {
                         // Empty profile that will need to be edited
                         addProfile(defaultProfile);

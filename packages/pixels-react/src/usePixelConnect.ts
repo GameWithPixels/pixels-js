@@ -1,6 +1,6 @@
 import { Pixel, PixelStatus } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import usePixelStatus from "./usePixelStatus";
 
@@ -19,52 +19,65 @@ import usePixelStatus from "./usePixelStatus";
  *          dispatch function. Connecting to another Pixel using the same dispatch
  *          will first disconnect from the previous Pixel.
  */
-export default function (): [
+export default function (
+  pixel?: Pixel
+): [
   PixelStatus | undefined,
   Pixel | undefined,
   (action: "connect" | "disconnect", pixel?: Pixel) => void,
   Error?
 ] {
   const [lastError, setLastError] = useState<Error>();
-  const [pixel, setPixel] = useState<Pixel>();
+  const pixelRef = useRef<Pixel | undefined>(pixel);
 
   // Create the dispatch function
   const dispatch = useCallback(
     (action: "connect" | "disconnect", pixel?: Pixel) => {
       // Clear last error
       setLastError(undefined);
-      // Store Pixel
-      setPixel((lastPixel) => {
-        switch (action) {
-          case "connect":
-            if (!pixel) {
-              // Re-use the current Pixel if none given
-              pixel = lastPixel;
+      switch (action) {
+        case "connect":
+          // Store Pixel
+          if (!pixel) {
+            // Re-use the current Pixel if none given
+            pixel = pixelRef.current;
+          }
+          if (pixel) {
+            if (pixel !== pixelRef.current) {
+              // Disconnect from a previous Pixel
+              pixelRef.current?.disconnect().catch((error) =>
+                // We don't want to return this error as we are in a connect action
+                console.warn(`Error disconnecting Pixel :${error}`)
+              );
             }
-            if (pixel) {
-              if (lastPixel !== pixel) {
-                // Disconnect from a previous Pixel
-                lastPixel?.disconnect().catch((error) =>
-                  // We don't want to return this error as we are in a connect action
-                  console.log(`Error disconnecting Pixel :${error}`)
-                );
-              }
-              // Connect to our Pixel
-              pixel.connect().catch(setLastError);
-            }
-            break;
-          case "disconnect":
-            // Disconnect from our Pixel
-            lastPixel?.disconnect().catch(setLastError);
-            break;
-          default:
-            assertNever(action);
-        }
-        return pixel;
-      });
+            // Connect to our Pixel
+            pixelRef.current = pixel;
+            pixel.connect().catch(setLastError);
+          }
+          break;
+        case "disconnect":
+          // Disconnect from our stored Pixel
+          pixelRef.current?.disconnect().catch(setLastError);
+          break;
+        default:
+          assertNever(action);
+      }
     },
     []
   );
 
-  return [usePixelStatus(pixel), pixel, dispatch, lastError];
+  // Disconnect on unmount and when given a different Pixel
+  useEffect(() => {
+    if (pixel) {
+      dispatch("connect", pixel);
+    }
+    return () => dispatch("disconnect");
+  }, [dispatch, pixel]);
+
+  return [
+    usePixelStatus(pixelRef.current),
+    pixelRef.current,
+    dispatch,
+    lastError,
+  ];
 }

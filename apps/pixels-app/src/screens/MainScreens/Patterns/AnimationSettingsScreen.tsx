@@ -73,6 +73,31 @@ const paleBluePixelThemeParams = {
 };
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 
+const defaultAnim = new EditAnimationRainbow();
+const animDataMap = new Map<
+  EditAnimation,
+  {
+    animations: AnimationPreset;
+    animationBits: AnimationBits;
+  }
+>();
+
+function getAnimData(anim?: EditAnimation) {
+  if (!anim) {
+    anim = defaultAnim;
+  }
+  let data = animDataMap.get(anim);
+  if (!data) {
+    const animationBits = new AnimationBits();
+    data = {
+      animationBits,
+      animations: anim.toAnimation(new EditDataSet(), animationBits),
+    };
+    animDataMap.set(anim, data);
+  }
+  return data;
+}
+
 /**
  * Render a widget corresponding to a widget type from {@link EditWidgetData}.
  * @param widget widget information object.
@@ -157,7 +182,8 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <PatternActionSheet
           initialPattern={widget.getValue()}
-          Patterns={standardPatterns}
+          patterns={standardPatterns}
+          dieRenderer={() => <DieRenderer animationData={getAnimData()} />}
           onSelectPattern={(pattern) => {
             widget.update(pattern);
           }}
@@ -167,7 +193,8 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <PatternActionSheet
           initialPattern={widget.getValue()}
-          Patterns={standardPatterns}
+          patterns={standardPatterns}
+          dieRenderer={() => <DieRenderer animationData={getAnimData()} />}
           onSelectPattern={(pattern) => {
             widget.update(pattern);
           }}
@@ -240,6 +267,9 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <AnimationsActionSheet
           animations={StandardProfiles.animations}
+          dieRenderer={(anim: EditAnimation) => (
+            <DieRenderer animationData={getAnimData(anim)} />
+          )}
           initialAnimation={widget.getValue()}
           onSelectAnimation={widget.update}
         />
@@ -282,19 +312,14 @@ export default function AnimationSettingsScreen() {
     new EditAnimationSimple()
   );
 
-  // const [animation, setAnimation] = React.useState<AnimationPreset>();
-  // const [animationBits, setAnimationBits] = React.useState<AnimationBits>(
-  //   new AnimationBits()
-  // );
-
   const [animData, setAnimData] = React.useState<{
-    animation: AnimationPreset;
-    bits: AnimationBits;
+    animations: AnimationPreset;
+    animationBits: AnimationBits;
   }>();
 
   useEffect(() => {
     setEditAnim(lastSelectedLightingPattern);
-    setLightingType(animationTypeToTitle(lastSelectedLightingPattern));
+    setLightingType(animationTypeToTitle(lastSelectedLightingPattern.type));
   }, []);
   const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
@@ -317,13 +342,12 @@ export default function AnimationSettingsScreen() {
           <Button
             onPress={() => {
               try {
-                const bits = new AnimationBits();
-                const animation = lastSelectedLightingPattern.toAnimation(
+                const animationBits = new AnimationBits();
+                const anim = lastSelectedLightingPattern.toAnimation(
                   new EditDataSet(),
-                  bits
+                  animationBits
                 );
-                const animData = { animation, bits };
-                setAnimData(animData);
+                setAnimData({ animations: anim, animationBits });
               } catch (error) {
                 console.error(error);
               }

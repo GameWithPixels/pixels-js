@@ -17,8 +17,12 @@ export type HomeScreensParamList = {
   SelectDfuFiles: undefined;
 };
 
-// Die details sub-screen
+export type HomeProps = StackScreenProps<HomeScreensParamList, "Home">;
 export type DieDetailsProps = StackScreenProps<
   HomeScreensParamList,
   "DieDetails"
+>;
+export type SelectDfuFilesProps = StackScreenProps<
+  HomeScreensParamList,
+  "SelectDfuFiles"
 >;

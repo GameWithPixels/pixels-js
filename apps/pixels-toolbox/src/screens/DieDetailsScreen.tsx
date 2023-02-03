@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import { Button, ScrollView, VStack } from "native-base";
 import { useEffect } from "react";
 import { useErrorHandler } from "react-error-boundary";
@@ -10,9 +9,9 @@ import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { DieDetailsProps } from "~/navigation";
 import { sr } from "~/styles";
 
-function DieDetailsPage(props: DieDetailsProps) {
+function DieDetailsPage({ route, navigation }: DieDetailsProps) {
   const errorHandler = useErrorHandler();
-  const pixelId = props.route.params.pixelId;
+  const { pixelId } = route.params;
   const pixelDispatcher = PixelDispatcher.findInstance(pixelId);
   useEffect(() => {
     if (!pixelDispatcher) {
@@ -20,7 +19,6 @@ function DieDetailsPage(props: DieDetailsProps) {
     }
   }, [errorHandler, pixelDispatcher, pixelId]);
 
-  const navigation = useNavigation();
   const { t } = useTranslation();
   return (
     <VStack mx={sr(10)} flex={1}>

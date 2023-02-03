@@ -1,5 +1,5 @@
 import { AntDesign } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
   PxAppPage,
@@ -7,30 +7,21 @@ import {
   Toggle,
   createPixelTheme,
   PairedPixelInfoComponent,
-  PixelInfo,
   ScannedPixelInfoComponent,
   SquarePairedPixelInfo,
 } from "@systemic-games/react-native-pixels-components";
+import {
+  AnimationPreset,
+  ScannedPixel,
+  usePixelScanner,
+  AnimationBits,
+} from "@systemic-games/react-native-pixels-connect";
 import { Box, Center, HStack, Spacer, Text, VStack } from "native-base";
 import React from "react";
 
 import { HomeScreenStackParamList } from "~/Navigation";
 import { sr } from "~/Utils";
-
-// import { useAppDispatch, useAppSelector } from "~/app/hooks";
-// import { setDarkMode, setLightMode } from "~/features/themeModeSlice";
-
-// function ReduxExample() {
-//   const appDispatch = useAppDispatch();
-//   const { themeMode } = useAppSelector((state) => state.themeMode);
-//   return (
-//     <HStack>
-//       <Text>{themeMode}</Text>
-//       <Button onPress={() => appDispatch(setLightMode())}>Light</Button>
-//       <Button onPress={() => appDispatch(setDarkMode())}>Dark</Button>
-//     </HStack>
-//   );
-// }
+import DieRenderer from "~/features/render3d/DieRenderer";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -48,57 +39,18 @@ const paleBluePixelThemeParams = {
   },
 };
 
-const pairedPixelsinfo: PixelInfo[] = [];
-const date = new Date();
-const scannedPixelsinfo: PixelInfo[] = [
-  {
-    name: "John",
-    rssi: -60,
-    batteryLevel: 0.85,
-    ledCount: 20,
-    firmwareDate: date.toDateString(),
-    profileName: "Rainbow",
-    imageRequirePath: require("~/../assets/RainbowDice.png"),
-    pixelId: 123364872364,
-  },
-  {
-    name: "Franck",
-    rssi: -54,
-    batteryLevel: 0.49,
-    ledCount: 8,
-    firmwareDate: date.toDateString(),
-    profileName: "Custom",
-    imageRequirePath: require("~/../assets/YellowDice.png"),
-    pixelId: 198273918,
-  },
-  {
-    name: "Julie",
-    rssi: -45,
-    batteryLevel: 0.15,
-    ledCount: 12,
-    firmwareDate: date.toDateString(),
-    profileName: "Speak Numbers 123412341234",
-    imageRequirePath: require("~/../assets/DieImageTransparent.png"),
-    pixelId: 983479238,
-  },
-  {
-    name: "Alice",
-    rssi: -25,
-    batteryLevel: 0.9,
-    ledCount: 10,
-    firmwareDate: date.toDateString(),
-    profileName: "Red To Blue",
-    imageRequirePath: require("~/../assets/BlueDice.png"),
-    pixelId: 73647812634,
-  },
-];
-
 interface PairedPixelListProps {
-  pairedPixels: PixelInfo[];
-  navigation: any;
+  pairedPixels: ScannedPixel[];
+  onPress: (pixel: ScannedPixel) => void;
+  dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
 }
-function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
-  const [PixelsDisplay, SwitchPixelsDisplay] = React.useState(false);
+
+function PairedPixelList({
+  pairedPixels,
+  onPress,
+  dieRenderer,
+}: PairedPixelListProps) {
+  const [pixelsDisplay, switchPixelsDisplay] = React.useState(false);
   return (
     <Center width="100%">
       <VStack space={2} w="100%">
@@ -113,36 +65,39 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
           <Toggle
             space={0}
             onValueChange={() => {
-              SwitchPixelsDisplay(!PixelsDisplay);
+              switchPixelsDisplay(!pixelsDisplay);
             }}
-            isChecked={PixelsDisplay}
+            isChecked={pixelsDisplay}
             icon={<AntDesign name="bars" size={24} color="white" />}
           />
           <AntDesign name="appstore-o" size={22} color="white" />
         </HStack>
         <Box rounded="md" p={2} bg="gray.700" width="100%">
-          {pairedPixels.length < 1 ? (
-            <Text> No dice paired yet!</Text>
-          ) : PixelsDisplay === false ? (
+          {!pairedPixels.length ? (
+            <Text>No dice paired yet!</Text>
+          ) : pixelsDisplay === false ? (
             <VStack w="100%">
-              {pairedPixels.map((pixelInfo) => (
-                <Box p={1} key={pixelInfo.pixelId} width="100%">
-                  <PairedPixelInfoComponent pixel={pixelInfo} />
+              {pairedPixels.map((pixel) => (
+                <Box p={1} key={pixel.pixelId} width="100%">
+                  <PairedPixelInfoComponent
+                    pixel={pixel}
+                    onPress={() => onPress(pixel)}
+                    dieRenderer={dieRenderer}
+                  />
                 </Box>
               ))}
             </VStack>
           ) : (
             <Center>
               <HStack flexWrap="wrap" justifyContent="flex-start" px={4}>
-                {pairedPixels.map((pixelInfo) => (
-                  <Box p={1} alignSelf="center" key={pixelInfo.pixelId} w="50%">
+                {pairedPixels.map((pixel) => (
+                  <Box p={1} alignSelf="center" key={pixel.pixelId} w="50%">
                     <SquarePairedPixelInfo
                       w="100%"
                       h={sr(200)}
-                      pixel={pixelInfo}
-                      onPress={() => {
-                        navigation.navigate("Pixel Details", pixelInfo);
-                      }}
+                      pixel={pixel}
+                      onPress={() => onPress(pixel)}
+                      dieRenderer={dieRenderer}
                     />
                   </Box>
                 ))}
@@ -154,29 +109,21 @@ function PairedPixelList({ pairedPixels, navigation }: PairedPixelListProps) {
     </Center>
   );
 }
+
 interface NearbyPixelListProps {
-  scannedPixels: PixelInfo[];
-  pairedPixels: PixelInfo[];
-  setPairedPixels: React.Dispatch<React.SetStateAction<PixelInfo[]>>;
-  // onPress?: (() => void) | null | undefined; // any function to execute when pressing a pixel info
+  scannedPixels: ScannedPixel[];
+  pairedPixels: ScannedPixel[];
+  onPixelPaired: (pixel: ScannedPixel) => void;
+  dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
 }
 
 function NearbyPixelsList({
   scannedPixels,
   pairedPixels,
-  setPairedPixels,
+  onPixelPaired,
+  dieRenderer,
 }: NearbyPixelListProps) {
-  const [hideNearbyPixels, SetHideNearbyPixels] = React.useState(false);
-  function addToPaired(pixelToAdd: PixelInfo) {
-    const pixelName = pixelToAdd.name;
-    scannedPixels.splice(
-      scannedPixels.findIndex((pixel) => {
-        return pixel.name === pixelName;
-      }),
-      1
-    );
-    setPairedPixels([...pairedPixels, pixelToAdd]);
-  }
+  const [hideNearbyPixels, setHideNearbyPixels] = React.useState(false);
   return (
     <Center>
       <VStack space={2} w="100%">
@@ -192,7 +139,7 @@ function NearbyPixelsList({
             <Toggle
               title="Show"
               onValueChange={() => {
-                SetHideNearbyPixels(!hideNearbyPixels);
+                setHideNearbyPixels(!hideNearbyPixels);
               }}
               isChecked={hideNearbyPixels}
               value={hideNearbyPixels}
@@ -204,16 +151,19 @@ function NearbyPixelsList({
         <Box rounded="md" p={2} bg="gray.700" alignItems="center" w="100%">
           {!hideNearbyPixels && (
             <VStack w="100%">
-              {scannedPixels.map((pixelInfo) => (
-                <Box p={1} key={pixelInfo.pixelId} w="100%">
-                  <ScannedPixelInfoComponent
-                    pixel={pixelInfo}
-                    onPress={() => {
-                      addToPaired(pixelInfo);
-                    }}
-                  />
-                </Box>
-              ))}
+              {scannedPixels
+                .filter((p) =>
+                  pairedPixels.every((pp) => pp.pixelId !== p.pixelId)
+                )
+                .map((pixel) => (
+                  <Box p={1} key={pixel.pixelId} w="100%">
+                    <ScannedPixelInfoComponent
+                      pixel={pixel}
+                      onPress={() => onPixelPaired(pixel)}
+                      dieRenderer={dieRenderer}
+                    />
+                  </Box>
+                ))}
             </VStack>
           )}
         </Box>
@@ -223,27 +173,63 @@ function NearbyPixelsList({
 }
 
 const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
+
 export default function HomeScreen() {
-  const [pairedPixels, SetPairedPixels] = React.useState(pairedPixelsinfo);
-  const [scannedPixels] = React.useState(scannedPixelsinfo);
+  const [scannedPixels, scannerDispatch] = usePixelScanner();
   const navigation =
     useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
 
+  useFocusEffect(
+    React.useCallback(() => {
+      setTimeout(() => scannerDispatch("start"), 1000);
+      return () => {
+        scannerDispatch("stop");
+      };
+    }, [scannerDispatch])
+  );
+
+  const [pairedPixels, setPairedPixels] = React.useState<ScannedPixel[]>([]);
+  const addPairedPixel = React.useCallback(
+    (pixel: ScannedPixel) =>
+      setPairedPixels((pairedPixels) => {
+        if (pairedPixels.every((pp) => pp.pixelId !== pixel.pixelId)) {
+          return [...pairedPixels, pixel];
+        } else {
+          return pairedPixels;
+        }
+      }),
+    []
+  );
+
+  const dieRenderer = React.useCallback(
+    (animation: AnimationPreset, bits: AnimationBits) => {
+      return (
+        <DieRenderer
+          animationData={{ animations: animation, animationBits: bits }}
+        />
+      );
+    },
+    []
+  );
+
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
-      {/* //Paired pixels list */}
       <VStack space={4}>
-        <PairedPixelList pairedPixels={pairedPixels} navigation={navigation} />
-        {/* //Nearby pixels list */}
+        {/* Paired pixels list */}
+        <PairedPixelList
+          pairedPixels={pairedPixels}
+          onPress={(pixel) => {
+            navigation.navigate("PixelDetails", { systemId: pixel.systemId });
+          }}
+          dieRenderer={dieRenderer}
+        />
+        {/* Nearby pixels list */}
         <NearbyPixelsList
           pairedPixels={pairedPixels}
           scannedPixels={scannedPixels}
-          setPairedPixels={SetPairedPixels}
+          onPixelPaired={addPairedPixel}
+          dieRenderer={dieRenderer}
         />
-        {/* <FaceMask diceFaces={20} />
-        <ReduxExample />
-        <ReduxExample />
-        <LightingStyleSelection /> */}
       </VStack>
     </PxAppPage>
   );

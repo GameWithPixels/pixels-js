@@ -5,7 +5,12 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { EditAnimation } from "@systemic-games/pixels-edit-animation";
+import {
+  AnimationBits,
+  AnimationPreset,
+  EditAnimation,
+  EditDataSet,
+} from "@systemic-games/pixels-edit-animation";
 import {
   PxAppPage,
   PixelTheme,
@@ -31,6 +36,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import { PatternsScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import StandardProfiles from "~/features/StandardProfile";
+import DieRenderer from "~/features/render3d/DieRenderer";
 export let lastSelectedLightingPattern: EditAnimation;
 
 const standardLightingPatterns = [...StandardProfiles.animations];
@@ -50,6 +56,27 @@ const paleBluePixelThemeParams = {
     "900": "#010204",
   },
 };
+
+const animDataMap = new Map<
+  EditAnimation,
+  {
+    animations: AnimationPreset;
+    animationBits: AnimationBits;
+  }
+>();
+
+function getAnimData(anim: EditAnimation) {
+  let data = animDataMap.get(anim);
+  if (!data) {
+    const animationBits = new AnimationBits();
+    data = {
+      animationBits,
+      animations: anim.toAnimation(new EditDataSet(), animationBits),
+    };
+    animDataMap.set(anim, data);
+  }
+  return data;
+}
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -136,14 +163,14 @@ export default function PatternsScreen() {
       <PxAppPage theme={paleBluePixelTheme} scrollable>
         <Center>
           <VStack w="100%" bg="gray.700" rounded="lg" p={2}>
-            {patternList.map((patternInfo, i) => (
-              <Box p={1} key={EditableStore.getKey(patternInfo)}>
+            {patternList.map((anim, i) => (
+              <Box p={1} key={EditableStore.getKey(anim)}>
                 <Swipeable
                   renderRightActions={createSwipeableSideButton({
                     w: 195,
                     buttons: [
                       {
-                        onPress: () => duplicatePattern(patternInfo, i),
+                        onPress: () => duplicatePattern(anim, i),
                         bg: "blue.500",
                         icon: (
                           <MaterialIcons
@@ -154,7 +181,7 @@ export default function PatternsScreen() {
                         ),
                       },
                       {
-                        onPress: () => openExportSheet(patternInfo),
+                        onPress: () => openExportSheet(anim),
                         bg: "amber.500",
                         icon: (
                           <MaterialCommunityIcons
@@ -165,7 +192,7 @@ export default function PatternsScreen() {
                         ),
                       },
                       {
-                        onPress: () => deletePattern(patternInfo),
+                        onPress: () => deletePattern(anim),
 
                         bg: "red.500",
                         icon: (
@@ -182,9 +209,13 @@ export default function PatternsScreen() {
                   <LightingPatternsCard
                     onPress={() => {
                       navigation.navigate("AnimationSettingsScreen");
-                      lastSelectedLightingPattern = patternInfo;
+                      lastSelectedLightingPattern = anim;
                     }}
-                    patternInfo={patternInfo}
+                    name={anim.name}
+                    animationType={anim.type}
+                    dieRenderer={() => (
+                      <DieRenderer animationData={getAnimData(anim)} />
+                    )}
                     w="100%"
                     h={100}
                     imageSize={70}

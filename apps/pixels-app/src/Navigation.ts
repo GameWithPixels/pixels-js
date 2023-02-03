@@ -1,55 +1,46 @@
-import type { RouteProp } from "@react-navigation/native";
-import { EditProfile } from "@systemic-games/pixels-edit-animation";
-import {
-  PatternInfo,
-  PixelInfo,
-} from "@systemic-games/react-native-pixels-components";
+import { StackScreenProps } from "@react-navigation/stack";
 
-//Main screens stack params
+//
+// Main screens stack
+//
 export type RootStackParamList = {
-  Home: undefined;
-  HomeScreen: undefined;
+  DiceBag: undefined;
+  Profiles: undefined;
   Patterns: undefined;
+  Settings: undefined;
 };
 
-//Home screen stack params
+//
+// Home screen stack
+//
 export type HomeScreenStackParamList = {
-  PixelDetailScreen: undefined;
-  PixelAdvancedSettingsScreen: undefined;
+  Dices: undefined;
+  PixelDetails: { systemId: string };
+  PixelAdvancedSettings: { systemId: string };
 };
-//Patterns screen stack params
+
+export type PixelDetailScreenProps = StackScreenProps<
+  HomeScreenStackParamList,
+  "PixelDetails"
+>;
+
+export type PixelAdvancedSettingsScreenProps = StackScreenProps<
+  HomeScreenStackParamList,
+  "PixelAdvancedSettings"
+>;
+
+//
+// Patterns screen stack
+//
 export type PatternsScreenStackParamList = {
   PatternsScreen: undefined;
   AnimationSettingsScreen: undefined;
 };
-export type AnimationScreenParamList = {
-  PatternInfo: PatternInfo;
-};
-//For route
-export type AnimationSettingsScreenRouteProps = RouteProp<
-  AnimationScreenParamList,
-  "PatternInfo"
->;
 
-//PixelDetailScreen params and props
-export type PixelDetailScreenStackParamList = {
-  PixelAdvancedSettingsScreen: undefined;
-  PixelInfo: PixelInfo;
-};
-//For route
-export type PixelDetailScreenRouteProp = RouteProp<
-  PixelDetailScreenStackParamList,
-  "PixelInfo"
->;
-
-//ProfileScreen params and props
+//
+// ProfileScreen params and props
+//
 export type ProfilesScreenStackParamList = {
   ProfileRulesScreen: undefined;
   ProfileEditRuleScreen: undefined;
-  routeParams: { profileInfo: EditProfile };
 };
-export type RouteTestParams = {
-  ProfileInfo: EditProfile;
-};
-//For route
-export type ProfileScreenRouteProp = RouteProp<RouteTestParams, "ProfileInfo">;

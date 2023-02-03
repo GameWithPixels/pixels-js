@@ -1,5 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import { Box, Center, FlatList, Text, useDisclose } from "native-base";
 import { useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,13 +11,13 @@ import PixelSwipeableCard from "~/components/PixelSwipeableCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import { PixelDispatcherAction } from "~/features/pixels/PixelDispatcher";
 import useFocusPixelDispatcherScanner from "~/features/pixels/hooks/useFocusPixelDispatcherScanner";
-import { type HomeScreensParamList } from "~/navigation";
 import { sr } from "~/styles";
 
-function PixelsListImpl() {
-  const navigation =
-    useNavigation<StackNavigationProp<HomeScreensParamList, "Home">>();
+interface PixelsListProps {
+  onDieDetails: (pixelId: number) => void;
+}
 
+function PixelsListImpl({ onDieDetails }: PixelsListProps) {
   // Scanning
   const [pixelDispatchers, scannerDispatch, lastError] =
     useFocusPixelDispatcherScanner();
@@ -56,11 +54,7 @@ function PixelsListImpl() {
             <PixelSwipeableCard
               pixelDispatcher={itemInfo.item}
               moreInfo={showMoreInfo}
-              onShowDetails={() =>
-                navigation.navigate("DieDetails", {
-                  pixelId: itemInfo.item.pixelId,
-                })
-              }
+              onShowDetails={() => onDieDetails(itemInfo.item.pixelId)}
               swipeableItemsWidth={sr("25%")}
             />
           )}

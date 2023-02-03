@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
 import {
   Actionsheet,
@@ -12,23 +13,24 @@ import {
 } from "native-base";
 import React from "react";
 
-import { ProfileCard, ProfileInfo } from "./ProfileCard";
+import { ProfileCard } from "./ProfileCard";
 
 /**
  * Props for ProfilesActionSheet component.
  */
-export interface ProfilesActionsheetProps {
+export interface ProfilesActionSheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
-  ProfilesInfo?: ProfileInfo[]; // array of profiles informations to be displayed inside the component
+  profiles: EditProfile[]; // array of profiles information to be displayed inside the component
+  dieRender: (profile: EditProfile) => React.ReactNode;
   w?: number;
   h?: number;
 }
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
- * @param props See {@link ProfilesActionsheetProps} for props parameters.
+ * @param props See {@link ProfilesActionSheetProps} for props parameters.
  */
-export function ProfilesActionSheet(props: ProfilesActionsheetProps) {
+export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
   const [selectedProfile, SetSelectedProfile] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
@@ -74,7 +76,7 @@ export function ProfilesActionSheet(props: ProfilesActionsheetProps) {
           </Text>
           <ScrollView>
             <HStack flexWrap="wrap" w="100%">
-              {props.ProfilesInfo?.map((profileInfo, i) => (
+              {props.profiles?.map((profile, i) => (
                 <Box key={i} p={1}>
                   <ProfileCard
                     w="105px"
@@ -85,8 +87,8 @@ export function ProfilesActionSheet(props: ProfilesActionsheetProps) {
                     profileIndexInList={i}
                     selectedProfileIndex={selectedProfile}
                     onSelected={SetSelectedProfile}
-                    profileName={profileInfo.profileName}
-                    imageRequirePath={profileInfo.imageRequirePath}
+                    profileName={profile.name}
+                    dieRender={() => props.dieRender(profile)}
                   />
                 </Box>
               ))}

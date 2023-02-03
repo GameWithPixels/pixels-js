@@ -13,10 +13,7 @@ import React, { useEffect } from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
-import { PatternCard, PatternInfo } from "./PatternCards";
-
-//Temporary default image require path
-const defaultImageRequirePath = require("~/../assets/RainbowDice.png");
+import { PatternCard } from "./PatternCards";
 
 /**
  * Props for PatternsActionSheet component.
@@ -24,8 +21,8 @@ const defaultImageRequirePath = require("~/../assets/RainbowDice.png");
 export interface PatternsActionsheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
-  Patterns: EditPattern[];
-  PatternInfo?: PatternInfo[]; // array of patterns informations to be displayed inside the component
+  patterns: EditPattern[];
+  dieRenderer: (pattern: EditPattern) => React.ReactNode;
   w?: number;
   h?: number;
   onSelectPattern?: ((editPattern: EditPattern) => void) | null | undefined;
@@ -37,41 +34,10 @@ export interface PatternsActionsheetProps {
  */
 export function PatternActionSheet(props: PatternsActionsheetProps) {
   const [patternToHighlight, setPatternToHighlight] = React.useState<number>();
-
-  const [patternName, setPatternName] = React.useState<string>();
-  const [patternList, setPatternList] = React.useState<EditPattern[]>([]);
   const { isOpen, onOpen, onClose } = useDisclose();
-
-  const [patternsInfo, setPatternsInfo] = React.useState<PatternInfo[]>([]);
-
-  const [_selectedPattern, setSelectedPattern] = React.useState<EditPattern>(
-    new EditPattern()
+  const [selectedPattern, setSelectedPattern] = React.useState<EditPattern>(
+    props.initialPattern ? props.initialPattern : new EditPattern()
   );
-
-  useEffect(() => {
-    setPatternList(props.Patterns);
-    const initialPattern = props.initialPattern
-      ? props.initialPattern
-      : new EditPattern();
-    setSelectedPattern(initialPattern);
-    setPatternName(initialPattern.name);
-  }, [props.Patterns, props.initialPattern]);
-
-  useEffect(() => {
-    const infos: PatternInfo[] = [];
-    patternList.map((pattern) =>
-      infos.push({
-        editPattern: pattern,
-        imageRequirePath: defaultImageRequirePath,
-      })
-    );
-    setPatternsInfo(infos);
-  }, [patternList]);
-
-  function onPatternSelected(patternInfo: PatternInfo) {
-    const patternName = patternInfo.editPattern.name;
-    setPatternName(patternName);
-  }
 
   return (
     <>
@@ -84,9 +50,7 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
         {!props.trigger ? (
           <Box w="100%" p={2} bg="primary.700" rounded="lg">
             <HStack space={2} alignItems="center">
-              <Text>
-                {patternName ? patternName : "No led pattern selected"}
-              </Text>
+              <Text>{selectedPattern?.name ?? "No led pattern selected"}</Text>
             </HStack>
           </Box>
         ) : (
@@ -102,7 +66,7 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
           </Text>
           <ScrollView>
             <HStack flexWrap="wrap" w="100%">
-              {patternsInfo?.map((patternInfo, i) => (
+              {props.patterns?.map((pattern, i) => (
                 <Box key={i} p={1}>
                   <PatternCard
                     w="105px"
@@ -114,12 +78,12 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
                     selectedPatternIndex={patternToHighlight}
                     onSelected={() => {
                       setPatternToHighlight(i);
-                      onPatternSelected(patternInfo);
-                      setSelectedPattern(patternInfo.editPattern);
-                      props.onSelectPattern?.(patternInfo.editPattern);
+                      setSelectedPattern(pattern);
+                      props.onSelectPattern?.(pattern);
                       onClose();
                     }}
-                    patternInfo={patternInfo}
+                    patternName={pattern.name}
+                    dieRenderer={() => props.dieRenderer(pattern)}
                   />
                 </Box>
               ))}
@@ -138,13 +102,10 @@ export interface AnimationActionsheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
   animations: EditAnimation[];
-  // AnimationInfo?: PatternInfo[]; // array of profiles informations to be displayed inside the component
+  dieRenderer: (anim: EditAnimation) => React.ReactNode;
   w?: number;
   h?: number;
-  onSelectAnimation?:
-    | ((editAnimation: EditAnimation) => void)
-    | null
-    | undefined;
+  onSelectAnimation?: (editAnimation: EditAnimation) => void;
   initialAnimation?: EditAnimation;
   imageRequirePath?: ImageSourcePropType;
 }
@@ -218,7 +179,6 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
                   {/* Pattern card use as an animation card */}
 
                   <PatternCard
-                    imageRequirePath={defaultImageRequirePath}
                     w="105px"
                     h="130px"
                     verticalSpace={1}
@@ -231,7 +191,8 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
                       props.onSelectAnimation?.(animation);
                       onClose();
                     }}
-                    name={animation.name}
+                    patternName={animation.name}
+                    dieRenderer={() => props.dieRenderer(animation)}
                   />
                 </Box>
               ))}
