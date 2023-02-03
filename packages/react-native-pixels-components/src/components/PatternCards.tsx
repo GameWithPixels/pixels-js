@@ -1,34 +1,17 @@
-import {
-  EditAnimation,
-  EditPattern,
-} from "@systemic-games/pixels-edit-animation";
+import { AnimationType } from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Image, Box, HStack, VStack } from "native-base";
+import { Pressable, Text, Box, HStack, VStack } from "native-base";
 import {
   ColorType,
   SizeType,
 } from "native-base/lib/typescript/components/types";
 import React from "react";
-// eslint-disable-next-line import/namespace
-import { ImageSourcePropType } from "react-native";
 
 import { animationTypeToTitle } from "../animationUtils";
 
-const defaultImageRequirePath = require("../../../../apps/pixels-app/assets/RainbowDice.png");
-
-export interface PatternInfo {
-  //Temporary
-  imageRequirePath?: ImageSourcePropType;
-  //Temporary is a string
-  animationType?: string;
-  editPattern: EditPattern;
-  patternKey?: number;
-}
-
 export interface PatternCardProps {
-  patternInfo?: PatternInfo;
-  imageRequirePath?: ImageSourcePropType;
-  name?: string;
+  patternName: string;
+  dieRenderer?: () => React.ReactNode;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -44,6 +27,7 @@ export interface PatternCardProps {
   selectable?: boolean; // used to disable the selection highlight (used until actual selection system is done)
   onSelected?: React.Dispatch<React.SetStateAction<number | undefined>>; // set the currently selected profile with the profile card index
 }
+
 export function PatternCard(props: PatternCardProps) {
   const selectedPatternIndex = props.selectedPatternIndex;
   const isSelected = props.selectable
@@ -57,18 +41,10 @@ export function PatternCard(props: PatternCardProps) {
       }}
     >
       <Card {...props} borderWidth={isSelected ? 3 : props.borderWidth}>
-        <Image
-          size={props.imageSize}
-          alt={props.patternInfo?.editPattern.name ?? "Image"}
-          source={
-            props.patternInfo?.imageRequirePath
-              ? props.patternInfo?.imageRequirePath
-              : props.imageRequirePath
-          }
-        />
-        <Text>
-          {props.patternInfo ? props.patternInfo.editPattern.name : props.name}
-        </Text>
+        {props.dieRenderer && (
+          <Box size={props.imageSize}>{props.dieRenderer()}</Box>
+        )}
+        <Text>{props.patternName}</Text>
       </Card>
     </Pressable>
   );
@@ -80,7 +56,9 @@ export function PatternCard(props: PatternCardProps) {
 // }
 
 export interface LightingPatternCardProps {
-  patternInfo?: EditAnimation;
+  name?: string;
+  animationType?: AnimationType;
+  dieRenderer?: () => React.ReactNode;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -94,10 +72,10 @@ export interface LightingPatternCardProps {
 }
 
 export function LightingPatternsCard(props: LightingPatternCardProps) {
-  const animationTitle = props.patternInfo
-    ? animationTypeToTitle(props.patternInfo)
-    : "Type";
-
+  const title = React.useMemo(
+    () => animationTypeToTitle(props.animationType),
+    [props.animationType]
+  );
   return (
     <Pressable
       onPress={() => {
@@ -108,15 +86,13 @@ export function LightingPatternsCard(props: LightingPatternCardProps) {
         <HStack p={1} h="100%" alignItems="center">
           <Box flex={1} alignItems="center">
             <Text isTruncated fontSize="lg" bold>
-              {props.patternInfo?.name}
+              {props.name}
             </Text>
           </Box>
           <Box flex={1} alignItems="center">
-            <Image
-              size={props.imageSize}
-              source={defaultImageRequirePath}
-              alt="placeHolder"
-            />
+            {props.dieRenderer && (
+              <Box size={props.imageSize}>{props.dieRenderer()}</Box>
+            )}
           </Box>
           <VStack flex={1} alignItems="center">
             {/* {props.profileWithSound && (
@@ -125,7 +101,7 @@ export function LightingPatternsCard(props: LightingPatternCardProps) {
               </HStack>
             )} */}
             <HStack flex={1} alignItems="center">
-              <Text bold>{animationTitle}</Text>
+              <Text bold>{title}</Text>
             </HStack>
           </VStack>
         </HStack>

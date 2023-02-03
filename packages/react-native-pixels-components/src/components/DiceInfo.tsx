@@ -23,7 +23,6 @@ import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
 
 export interface PixelInfo {
-  readonly address: number;
   readonly name: string;
   readonly ledCount: number;
   readonly firmwareDate: Date;

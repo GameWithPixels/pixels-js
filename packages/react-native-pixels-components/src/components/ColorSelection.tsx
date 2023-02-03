@@ -107,6 +107,8 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
             >
               {/* TODO */}
               <Text>Render colored die here</Text>
+              <Text>Render colored die here</Text>
+              <Text>Render colored die here</Text>
               {/* <Box w={200} h={200}>
                 {dieRenderer()}
               </Box> */}

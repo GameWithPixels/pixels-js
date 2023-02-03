@@ -314,6 +314,7 @@ export default function ProfilesRulesScreen() {
           <Box flex={1}>
             <Box w={100} h={100}>
               <DieRenderer />
+              {/* animationData={ }  */}
             </Box>
           </Box>
           <Box flex={2.5}>

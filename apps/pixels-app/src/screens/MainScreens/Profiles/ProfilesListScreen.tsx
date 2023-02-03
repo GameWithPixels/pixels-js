@@ -6,12 +6,7 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import {
-  EditDataSet,
-  EditProfile,
-  AnimationBits,
-  DataSet,
-} from "@systemic-games/pixels-edit-animation";
+import { EditProfile, DataSet } from "@systemic-games/pixels-edit-animation";
 import {
   createPixelTheme,
   PixelTheme,
@@ -127,13 +122,6 @@ export function ProfilesListScreen() {
     setProfileList([...profileList, newProfile]);
   }
 
-  const animations = standardProfiles[0].collectAnimations();
-  const defaultanimation = animations[0].toAnimation(
-    new EditDataSet(),
-    new AnimationBits()
-  );
-  console.log("animations = " + defaultanimation);
-
   /**
    * Duplicate an existing profile by updating the profileList.
    * @param profileToDuplicate Profile infos of the profile to duplicate.
@@ -173,7 +161,6 @@ export function ProfilesListScreen() {
       }),
       1
     );
-    console.log("added to favorites");
     // Add profile to favorite list
     setFavoritesProfileList([...favoriteProfilesList, favoriteProfile]);
   }
@@ -393,7 +380,6 @@ export function ProfilesListScreen() {
                               selectedProfile.profileKey = EditableStore.getKey(
                                 selectedProfile.profile
                               );
-                              console.log(selectedProfile.profile.rules);
                               navigation.navigate("ProfileRulesScreen");
                             }}
                           />
@@ -403,7 +389,7 @@ export function ProfilesListScreen() {
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget
-                      profileName="+"
+                      profileName="New Profile"
                       dieRender={() => <></>}
                       onPress={() => {
                         // Empty profile that will need to be edited

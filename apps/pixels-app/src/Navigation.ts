@@ -1,6 +1,4 @@
-import type { RouteProp } from "@react-navigation/native";
 import { StackScreenProps } from "@react-navigation/stack";
-import { PatternInfo } from "@systemic-games/react-native-pixels-components";
 
 //
 // Main screens stack
@@ -38,18 +36,6 @@ export type PatternsScreenStackParamList = {
   PatternsScreen: undefined;
   AnimationSettingsScreen: undefined;
 };
-
-//
-// Animation screen
-//
-export type AnimationScreenParamList = {
-  PatternInfo: PatternInfo;
-};
-
-export type AnimationSettingsScreenRouteProps = RouteProp<
-  AnimationScreenParamList,
-  "PatternInfo"
->;
 
 //
 // ProfileScreen params and props
