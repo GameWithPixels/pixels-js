@@ -17,7 +17,7 @@ import {
   ColorType,
   SizeType,
 } from "native-base/lib/typescript/components/types";
-import React from "react";
+import React, { useCallback } from "react";
 
 function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
   const title =
@@ -35,24 +35,20 @@ interface customButtonProps extends IButtonProps {
   titleFontSize?: number | SizeType;
   keyIndex: number;
   itemsLength: number;
-  initiallySelected: boolean;
-  onButtonPress?: (isSelected: boolean) => void;
+  isSelected: boolean;
+  onPress: () => void;
 }
+
 function CustomButton(props: customButtonProps) {
-  const [isSelected, setIselected] = React.useState(props.initiallySelected);
   return (
     <Button
       flex={1}
       rounded="none"
-      onPress={() => {
-        const nowSelected = !isSelected;
-        setIselected(nowSelected);
-        props.onButtonPress?.(nowSelected);
-      }}
+      onPress={props.onPress}
       borderRightWidth={
         props.keyIndex === props.itemsLength ? undefined : props.borderWidth
       }
-      bg={isSelected ? "gray.300" : undefined}
+      bg={props.isSelected ? "gray.300" : undefined}
     >
       <Text fontSize={props.titleFontSize}>{props.title}</Text>
     </Button>
@@ -66,8 +62,8 @@ export interface ItemData {
 
 export interface RuleComparisonWidgetProps {
   title?: string;
-  // values: { [key: string]: number };
   values: string[];
+  initialValues: string[];
   bg?: ColorType;
   borderWidth?: number;
   borderColor?: ColorType;
@@ -75,14 +71,38 @@ export interface RuleComparisonWidgetProps {
   onChange?: (keys: string[]) => void; // widget.update
   isLeft?: boolean;
   isRight?: boolean;
-  initialValues: string[];
 }
+
 export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
   const values = props.values;
-  const initialSelection = props.initialValues;
-  console.log("initial selection = " + initialSelection);
-  const [selectedOptions, setSelectedOptions] =
-    React.useState<string[]>(initialSelection);
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>(
+    props.initialValues
+  );
+  const valuesRef = React.useRef(values);
+  React.useEffect(() => {
+    if (values !== valuesRef.current) {
+      valuesRef.current = values;
+      setSelectedOptions([]);
+    }
+  }, [values]);
+  const onChange = props.onChange;
+  const onPress = useCallback(
+    (item: string) =>
+      setSelectedOptions((options) => {
+        const index = options.indexOf(item);
+        if (index < 0) {
+          const newOptions = [...options, item];
+          onChange?.(newOptions);
+          return newOptions;
+        } else {
+          const newOptions = [...options];
+          newOptions.splice(index, 1);
+          onChange?.(newOptions);
+          return newOptions;
+        }
+      }),
+    [onChange]
+  );
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
@@ -95,33 +115,12 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
                 <CustomButton
                   key={i}
                   keyIndex={i}
-                  itemsLength={values.length - 1}
+                  itemsLength={props.values.length - 1}
                   title={item}
                   titleFontSize={props.fontSize}
                   borderWidth={props.borderWidth}
-                  initiallySelected={selectedOptions.includes(item)}
-                  onButtonPress={(isSelected) => {
-                    console.log("pressed button");
-                    setSelectedOptions((options) => {
-                      console.log("is selected = " + isSelected);
-                      if (isSelected) {
-                        if (!options.includes(item)) {
-                          const newOptions = [...options, item];
-                          props.onChange?.(newOptions);
-                          return newOptions;
-                        }
-                      } else {
-                        const i = options.indexOf(item);
-                        if (i >= 0) {
-                          const newOptions = [...options];
-                          newOptions.splice(i, 1);
-                          props.onChange?.(newOptions);
-                          return newOptions;
-                        }
-                      }
-                      return options;
-                    });
-                  }}
+                  isSelected={selectedOptions.includes(item)}
+                  onPress={() => onPress(item)}
                 />
               ))}
             </Button.Group>
@@ -175,29 +174,8 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
                 title={item}
                 titleFontSize={props.fontSize}
                 borderWidth={props.borderWidth}
-                initiallySelected={selectedOptions.includes(item)}
-                onButtonPress={(isSelected) => {
-                  console.log("pressed button");
-                  setSelectedOptions((options) => {
-                    console.log("is selected = " + isSelected);
-                    if (isSelected) {
-                      if (!options.includes(item)) {
-                        const newOptions = [...options, item];
-                        props.onChange?.(newOptions);
-                        return newOptions;
-                      }
-                    } else {
-                      const i = options.indexOf(item);
-                      if (i >= 0) {
-                        const newOptions = [...options];
-                        newOptions.splice(i, 1);
-                        props.onChange?.(newOptions);
-                        return newOptions;
-                      }
-                    }
-                    return options;
-                  });
-                }}
+                isSelected={selectedOptions.includes(item)}
+                onPress={() => onPress(item)}
               />
             ))}
           </ScrollView>
@@ -211,6 +189,7 @@ export interface RuleConditionSelectionProps {
   possibleConditions: ActionSheetItemData[];
   conditionTitle?: string;
 }
+
 export function RuleConditionSelection(props: RuleConditionSelectionProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   const title = "When";

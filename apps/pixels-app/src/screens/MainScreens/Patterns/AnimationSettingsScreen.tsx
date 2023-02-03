@@ -205,12 +205,16 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       // for rules : flags
 
       // Values for buttons
-      const values = Object.values(widget.values);
-      const valuesTitles = valuesToKeys(values, widget.values);
+      const valuesTitles = valuesToKeys(
+        Object.values(widget.values),
+        widget.values
+      );
 
       // Initial selected values
-      const initialIndices = bitsToFlags(widget.getValue());
-      const initialValues = valuesToKeys(initialIndices, widget.values);
+      const initialValues = valuesToKeys(
+        bitsToFlags(widget.getValue()),
+        widget.values
+      );
 
       return (
         <>
