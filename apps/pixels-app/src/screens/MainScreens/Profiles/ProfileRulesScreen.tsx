@@ -3,21 +3,25 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
   ActionTypeValues,
+  BatteryStateFlagsValues,
   ConditionTypeValues,
-  //FaceCompareFlagsValues,
+  ConnectionStateFlagsValues,
+  FaceCompareFlagsValues,
+  HelloGoodbyeFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import {
   EditAction,
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditCondition,
-  // EditConditionBatteryState,
+  EditConditionBatteryState,
   EditConditionConnectionState,
-  // EditConditionFaceCompare,
+  EditConditionFaceCompare,
+  EditConditionHelloGoodbye,
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  // bitsToFlags,
+  bitsToFlags,
   Card,
   createPixelTheme,
   createSwipeableSideButton,
@@ -111,95 +115,116 @@ function GetActionTitles(actions: EditAction[]): string[] {
   return actionsTitles;
 }
 function GetConditionTitle(condition: EditCondition | undefined): string {
-  let conditionTitle: string = "Die roll is ";
-  // let faceCompareFlag: number[];
-  // let batteryFlags: number[];
+  let conditionTitle: string = "";
+  let faceCompareFlag: number[];
+  let batteryFlags: number[];
+  let helloGoodbyeFlags: number[];
+  let connectionStateFlags: number[];
   if (condition) {
     switch (condition.type) {
       case ConditionTypeValues.handling:
         conditionTitle = "die is picked up";
         break;
       case ConditionTypeValues.batteryState:
-        // batteryFlags = bitsToFlags(
-        //   (condition as EditConditionBatteryState).flags
-        // );
+        batteryFlags = bitsToFlags(
+          (condition as EditConditionBatteryState).flags
+        );
 
-        // if (batteryFlag === 0) {
-        //   conditionTitle = "battery is ok ";
-        // } else if (batteryFlag === 1) {
-        //   conditionTitle = "battery is low ";
-        // } else if (batteryFlag === 3) {
-        //   conditionTitle = "battery is charging";
-        // } else if (batteryFlag === 4) {
-        //   conditionTitle = "battery is done charging";
-        // }
-        // // TODO add the variations with multiple selections at once
+        conditionTitle =
+          "Battery is " +
+          batteryFlags
+            .map((flag) => {
+              switch (flag) {
+                case BatteryStateFlagsValues.ok:
+                  return "ok";
+                case BatteryStateFlagsValues.low:
+                  return " low";
+                case BatteryStateFlagsValues.charging:
+                  return " charging";
+                case BatteryStateFlagsValues.done:
+                  return "done";
+                default:
+                  conditionTitle = "No conditions";
+                  break;
+              }
+            })
+            .join(" or ");
 
         break;
       case ConditionTypeValues.connectionState:
+        connectionStateFlags = bitsToFlags(
+          (condition as EditConditionConnectionState).flags
+        );
+
         conditionTitle =
-          "die is " + (condition as EditConditionConnectionState).flags;
+          " Die is " +
+          connectionStateFlags.map((flag) => {
+            switch (flag) {
+              case ConnectionStateFlagsValues.connected:
+                return "connected";
+              case ConnectionStateFlagsValues.disconnected:
+                return "disconnected";
+              default:
+                conditionTitle = "No conditions";
+                break;
+            }
+          });
 
         break;
       case ConditionTypeValues.crooked:
         conditionTitle = "die is crooked";
 
         break;
-      //TODO remake this swicth case because flags may not be corrects
       case ConditionTypeValues.faceCompare:
-        // faceCompareFlag = bitsToFlags(
-        //   (condition as EditConditionFaceCompare).flags
-        // );
-        // conditionTitle = faceCompareFlag.map((flag) => {
-        //   switch (flag) {
-        //     case FaceCompareFlagsValues.equal:
-        //       return " equal to";
-        //     case FaceCompareFlagsValues.greater:
-        //       return "greater than";
-        //     case FaceCompareFlagsValues.less:
-        //       return "less than";
-        //   }
-        // });
+        {
+          const face = (condition as EditConditionFaceCompare).faceIndex + 1;
 
-        // if (faceCompareFlag === 1) {
-        //   // less = 1
-        //   const faceIndex =
-        //     (condition as EditConditionFaceCompare).faceIndex + 1;
-        //   conditionTitle = "die roll is less than " + faceIndex;
-        // } else if (faceCompareFlag === 2) {
-        //   // equal = 2
-        //   const faceIndex =
-        //     (condition as EditConditionFaceCompare).faceIndex + 1;
-        //   conditionTitle = "die roll is equal to " + faceIndex;
-        // } else if (faceCompareFlag === 3) {
-        //   // greater = 3
-        //   const faceIndex =
-        //     (condition as EditConditionFaceCompare).faceIndex + 1;
-        //   conditionTitle = "die roll is greater than " + faceIndex;
-        // } else if (faceCompareFlag === 5) {
-        //   const faceIndex =
-        //     (condition as EditConditionFaceCompare).faceIndex + 1;
-        //   conditionTitle = "die roll is equal or greater than " + faceIndex;
-        // } else if (faceCompareFlag === 4) {
-        //   const faceIndex =
-        //     (condition as EditConditionFaceCompare).faceIndex + 1;
-        //   conditionTitle = "die roll is less or greater than " + faceIndex;
-        // } else if (faceCompareFlag === 3) {
-        //   const faceIndex =
-        //     (condition as EditConditionFaceCompare).faceIndex + 1;
-        //   conditionTitle = "die roll is less or equal to " + faceIndex;
-        // } else {
-        //   conditionTitle = "die is any";
-        // }
+          faceCompareFlag = bitsToFlags(
+            (condition as EditConditionFaceCompare).flags
+          );
+
+          conditionTitle =
+            "Die roll is " +
+            faceCompareFlag
+              .map((flag) => {
+                switch (flag) {
+                  case FaceCompareFlagsValues.equal:
+                    return "equal to";
+                  case FaceCompareFlagsValues.greater:
+                    return "greater than";
+                  case FaceCompareFlagsValues.less:
+                    return "less than";
+                  default:
+                    throw new Error();
+                }
+              })
+              .join(" or ") +
+            " " +
+            face;
+        }
+        console.log("condition title = ", conditionTitle);
+
         break;
       case ConditionTypeValues.helloGoodbye:
-        if ((condition as EditConditionConnectionState).flags === 0) {
-          conditionTitle = "Die is waking up";
-        } else if ((condition as EditConditionConnectionState).flags === 1) {
-          conditionTitle = "Die is going to sleep";
-        } else {
-          conditionTitle = "Die is waking up or going to sleep";
-        }
+        helloGoodbyeFlags = bitsToFlags(
+          (condition as EditConditionHelloGoodbye).flags
+        );
+
+        conditionTitle =
+          "Die is " +
+          helloGoodbyeFlags
+            .map((flag) => {
+              switch (flag) {
+                case HelloGoodbyeFlagsValues.goodbye:
+                  return "going to sleep";
+                case HelloGoodbyeFlagsValues.hello:
+                  return "waking up";
+                default:
+                  conditionTitle = "No conditions";
+                  break;
+              }
+            })
+            .join(" or ");
         break;
       case ConditionTypeValues.idle:
         conditionTitle = "Die is idle";
