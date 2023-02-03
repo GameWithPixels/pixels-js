@@ -1,27 +1,8 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { EditRule } from "@systemic-games/pixels-edit-animation";
 import {
-  ActionTypeValues,
-  BatteryStateFlagsValues,
-  ConditionTypeValues,
-  ConnectionStateFlagsValues,
-  FaceCompareFlagsValues,
-  HelloGoodbyeFlagsValues,
-} from "@systemic-games/pixels-core-animation";
-import {
-  EditAction,
-  EditActionPlayAnimation,
-  EditActionPlayAudioClip,
-  EditCondition,
-  EditConditionBatteryState,
-  EditConditionConnectionState,
-  EditConditionFaceCompare,
-  EditConditionHelloGoodbye,
-  EditRule,
-} from "@systemic-games/pixels-edit-animation";
-import {
-  bitsToFlags,
   Card,
   createPixelTheme,
   createSwipeableSideButton,
@@ -30,7 +11,7 @@ import {
   PxAppPage,
 } from "@systemic-games/react-native-pixels-components";
 import { Box, HStack, Pressable, VStack, Text, Input } from "native-base";
-import React, { useEffect } from "react";
+import React from "react";
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
@@ -38,6 +19,8 @@ import DraggableFlatList, {
 import { Swipeable } from "react-native-gesture-handler";
 
 import { selectedProfile } from "./ProfilesListScreen";
+import getActionTitles from "./getActionTitles";
+import getConditionTitle from "./getConditionTitle";
 
 import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
@@ -88,153 +71,8 @@ function CreateRuleWidget(props: CreateRuleWidgetProps) {
   );
 }
 
-function GetActionTitles(actions: EditAction[]): string[] {
-  const actionsTitles: any[] = [];
-
-  actions.forEach(function (action) {
-    if (action.type === ActionTypeValues.playAnimation) {
-      actionsTitles.push(
-        "Play " + (action as EditActionPlayAnimation).animation?.name
-      );
-    } else {
-      actionsTitles.push(
-        "Play " + (action as EditActionPlayAudioClip).clip?.name
-      );
-    }
-  });
-  return actionsTitles;
-}
-function GetConditionTitle(condition: EditCondition | undefined): string {
-  let conditionTitle: string = "";
-  let faceCompareFlag: number[];
-  let batteryFlags: number[];
-  let helloGoodbyeFlags: number[];
-  let connectionStateFlags: number[];
-  if (condition) {
-    switch (condition.type) {
-      case ConditionTypeValues.handling:
-        conditionTitle = "die is picked up";
-        break;
-      case ConditionTypeValues.batteryState:
-        batteryFlags = bitsToFlags(
-          (condition as EditConditionBatteryState).flags
-        );
-
-        conditionTitle =
-          "Battery is " +
-          batteryFlags
-            .map((flag) => {
-              switch (flag) {
-                case BatteryStateFlagsValues.ok:
-                  return "ok";
-                case BatteryStateFlagsValues.low:
-                  return " low";
-                case BatteryStateFlagsValues.charging:
-                  return " charging";
-                case BatteryStateFlagsValues.done:
-                  return "done";
-                default:
-                  conditionTitle = "No conditions";
-                  break;
-              }
-            })
-            .join(" or ");
-
-        break;
-      case ConditionTypeValues.connectionState:
-        connectionStateFlags = bitsToFlags(
-          (condition as EditConditionConnectionState).flags
-        );
-
-        conditionTitle =
-          " Die is " +
-          connectionStateFlags.map((flag) => {
-            switch (flag) {
-              case ConnectionStateFlagsValues.connected:
-                return "connected";
-              case ConnectionStateFlagsValues.disconnected:
-                return "disconnected";
-              default:
-                conditionTitle = "No conditions";
-                break;
-            }
-          });
-
-        break;
-      case ConditionTypeValues.crooked:
-        conditionTitle = "die is crooked";
-
-        break;
-      case ConditionTypeValues.faceCompare:
-        {
-          const face = (condition as EditConditionFaceCompare).faceIndex + 1;
-
-          faceCompareFlag = bitsToFlags(
-            (condition as EditConditionFaceCompare).flags
-          );
-
-          conditionTitle =
-            "Die roll is " +
-            faceCompareFlag
-              .map((flag) => {
-                switch (flag) {
-                  case FaceCompareFlagsValues.equal:
-                    return "equal to";
-                  case FaceCompareFlagsValues.greater:
-                    return "greater than";
-                  case FaceCompareFlagsValues.less:
-                    return "less than";
-                  default:
-                    throw new Error();
-                }
-              })
-              .join(" or ") +
-            " " +
-            face;
-        }
-        console.log("condition title = ", conditionTitle);
-
-        break;
-      case ConditionTypeValues.helloGoodbye:
-        helloGoodbyeFlags = bitsToFlags(
-          (condition as EditConditionHelloGoodbye).flags
-        );
-
-        conditionTitle =
-          "Die is " +
-          helloGoodbyeFlags
-            .map((flag) => {
-              switch (flag) {
-                case HelloGoodbyeFlagsValues.goodbye:
-                  return "going to sleep";
-                case HelloGoodbyeFlagsValues.hello:
-                  return "waking up";
-                default:
-                  conditionTitle = "No conditions";
-                  break;
-              }
-            })
-            .join(" or ");
-        break;
-      case ConditionTypeValues.idle:
-        conditionTitle = "Die is idle";
-
-        break;
-      case ConditionTypeValues.rolling:
-        conditionTitle = "Die is rolling";
-
-        break;
-      case ConditionTypeValues.unknown:
-        conditionTitle = "Unknown";
-
-        break;
-      default:
-        conditionTitle = "No condition selected";
-        break;
-    }
-  }
-
-  return conditionTitle;
+function SeparatorItem() {
+  return <Box h={2} />;
 }
 
 export default function ProfilesRulesScreen() {
@@ -242,9 +80,13 @@ export default function ProfilesRulesScreen() {
     useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
 
   const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
-  useEffect(() => {
-    setRulesList(selectedProfile.profile.rules);
-  }, []);
+  useFocusEffect(
+    // Refresh rules list
+    React.useCallback(
+      () => setRulesList([...selectedProfile.profile.rules]),
+      []
+    )
+  );
 
   function addRule() {
     const newRule = rulesList[0].duplicate();
@@ -275,7 +117,8 @@ export default function ProfilesRulesScreen() {
     // Delete rule from register
     EditableStore.unregister(ruleToDelete);
   }
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<EditRule>) => {
+
+  function RenderItem({ item, drag, isActive }: RenderItemParams<EditRule>) {
     return (
       <ScaleDecorator>
         <Swipeable
@@ -310,7 +153,6 @@ export default function ProfilesRulesScreen() {
               navigation.navigate("ProfileEditRuleScreen");
             }}
             onLongPress={() => {
-              console.log("long pressed");
               drag();
             }}
             disabled={isActive}
@@ -319,19 +161,16 @@ export default function ProfilesRulesScreen() {
               key={EditableStore.getKey(item)}
               ruleCardInfo={{
                 ruleKey: EditableStore.getKey(item),
-                actions: GetActionTitles(item.actions),
-                condition: GetConditionTitle(item.condition),
+                actions: getActionTitles(item.actions),
+                condition: getConditionTitle(item.condition),
               }}
             />
           </Pressable>
         </Swipeable>
       </ScaleDecorator>
     );
-  };
-
-  function SeparatorItem() {
-    return <Box h={2} />;
   }
+
   return (
     <PxAppPage scrollable={false} theme={paleBluePixelTheme}>
       <VStack space={2} width="100%">
@@ -339,7 +178,7 @@ export default function ProfilesRulesScreen() {
           <Box flex={1}>
             <Box w={100} h={100}>
               <DieRenderer />
-              {/* animationData={ }  */}
+              {/* TODO animationData={ }  */}
             </Box>
           </Box>
           <Box flex={2.5}>
@@ -359,7 +198,7 @@ export default function ProfilesRulesScreen() {
             data={rulesList}
             onDragEnd={({ data }) => setRulesList(data)}
             keyExtractor={(item) => EditableStore.getKey(item)?.toString()}
-            renderItem={renderItem}
+            renderItem={RenderItem}
             ItemSeparatorComponent={SeparatorItem}
           />
         </Box>

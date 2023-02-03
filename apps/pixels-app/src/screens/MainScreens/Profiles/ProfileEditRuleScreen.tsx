@@ -40,6 +40,7 @@ import { RenderWidget } from "../Patterns/AnimationSettingsScreen";
 import { lastSelectedRule } from "./ProfileRulesScreen";
 
 import EditableStore from "~/features/EditableStore";
+import getConditionSimpleTitle from "~/screens/MainScreens/Profiles/getConditionSimpleTitle";
 
 const paleBluePixelThemeParams = {
   theme: PixelTheme,
@@ -65,60 +66,15 @@ interface RuleActionWidgetProps {
 }
 interface RuleConditionWidgetProps {
   condition: EditCondition;
+  setCondition: (condition: EditCondition) => void;
   children?: React.ReactNode | React.ReactNode[];
 }
 
 function RuleConditionWidget(props: RuleConditionWidgetProps) {
-  const [editCondition, setEditCondition] = React.useState(props.condition);
-  const [conditionTitle, setConditionTitle] = React.useState<string>(
-    GetConditionSimpleTitle(props.condition)
+  const conditionTitle = React.useMemo(
+    () => getConditionSimpleTitle(props.condition.type),
+    [props.condition.type]
   );
-
-  function GetConditionSimpleTitle(
-    condition: EditCondition | undefined
-  ): string {
-    let conditionTitle: string = "No action selected";
-    if (condition) {
-      switch (condition.type) {
-        case ConditionTypeValues.handling:
-          conditionTitle = "Pixel is picked up";
-          break;
-        case ConditionTypeValues.batteryState:
-          conditionTitle = "Battery Event...";
-          break;
-        case ConditionTypeValues.connectionState:
-          conditionTitle = "Bluetooth Event...";
-          break;
-        case ConditionTypeValues.crooked:
-          conditionTitle = "Pixel is crooked";
-          break;
-        case ConditionTypeValues.faceCompare:
-          conditionTitle = "Pixel roll is...";
-          break;
-        case ConditionTypeValues.helloGoodbye:
-          conditionTitle = "Pixel wakes up / sleeps";
-          break;
-        case ConditionTypeValues.idle:
-          conditionTitle = "Pixel is idle for...";
-
-          break;
-        case ConditionTypeValues.rolling:
-          conditionTitle = "Pixel is rolling";
-
-          break;
-        case ConditionTypeValues.unknown:
-          conditionTitle = "Unknown";
-
-          break;
-        default:
-          conditionTitle = "No condition selected";
-          break;
-      }
-    }
-
-    return conditionTitle;
-  }
-
   return (
     <VStack
       space={2}
@@ -134,67 +90,52 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
             conditionTitle={conditionTitle}
             possibleConditions={[
               {
-                label: "Pixel roll is...",
-                onPress: () => {
-                  setConditionTitle("Pixel roll is...");
-                  setEditCondition(new EditConditionFaceCompare());
-                },
+                label: getConditionSimpleTitle(ConditionTypeValues.faceCompare),
+                onPress: () =>
+                  props.setCondition(new EditConditionFaceCompare()),
               },
               {
-                label: "Pixel wakes up/sleep",
-                onPress: () => {
-                  setConditionTitle("Pixel wakes up/sleep");
-                  setEditCondition(new EditConditionHelloGoodbye());
-                  //Should update the rule condition
-                },
+                label: getConditionSimpleTitle(
+                  ConditionTypeValues.helloGoodbye
+                ),
+                onPress: () =>
+                  props.setCondition(new EditConditionHelloGoodbye()),
               },
               {
-                label: "Pixel is picked up",
-                onPress: () => {
-                  setConditionTitle("Pixel is picked up");
-                  setEditCondition(new EditConditionHandling());
-                },
+                label: getConditionSimpleTitle(ConditionTypeValues.handling),
+                onPress: () => props.setCondition(new EditConditionHandling()),
               },
               {
-                label: "Pixel is rolling",
-                onPress: () => {
-                  setConditionTitle("Pixel is rolling");
-                  setEditCondition(new EditConditionRolling());
-                },
+                label: getConditionSimpleTitle(ConditionTypeValues.rolling),
+                onPress: () => props.setCondition(new EditConditionRolling()),
               },
               {
-                label: "Pixel is crooked",
-                onPress: () => {
-                  setConditionTitle("Pixel is crooked");
-                  setEditCondition(new EditConditionCrooked());
-                },
+                label: getConditionSimpleTitle(ConditionTypeValues.crooked),
+                onPress: () => props.setCondition(new EditConditionCrooked()),
               },
               {
-                label: "Bluetooth Event...",
-                onPress: () => {
-                  setConditionTitle("Bluetooth Event...");
-                  setEditCondition(new EditConditionConnectionState());
-                },
+                label: getConditionSimpleTitle(
+                  ConditionTypeValues.connectionState
+                ),
+                onPress: () =>
+                  props.setCondition(new EditConditionConnectionState()),
               },
               {
-                label: "Battery Event...",
-                onPress: () => {
-                  setConditionTitle("Battery Event...");
-                  setEditCondition(new EditConditionBatteryState());
-                },
+                label: getConditionSimpleTitle(
+                  ConditionTypeValues.batteryState
+                ),
+                onPress: () =>
+                  props.setCondition(new EditConditionBatteryState()),
               },
               {
-                label: "Pixel is idle for...",
-                onPress: () => {
-                  setConditionTitle("Pixel is idle for...");
-                  setEditCondition(new EditConditionIdle());
-                },
+                label: getConditionSimpleTitle(ConditionTypeValues.idle),
+                onPress: () => props.setCondition(new EditConditionIdle()),
               },
             ]}
           />
         </Box>
       </HStack>
-      <ConditionEditor editCondition={editCondition} />
+      <ConditionEditor editCondition={props.condition} />
     </VStack>
   );
 }
@@ -257,46 +198,58 @@ function RuleActionWidget(props: RuleActionWidgetProps) {
 }
 
 export default function ProfileEditRuleScreen() {
+  const [condition, setCondition] = React.useState(lastSelectedRule.condition);
   const [ruleActions, setRuleActions] = React.useState(
     lastSelectedRule.actions
   );
 
-  function addAction() {
+  const addAction = React.useCallback(() => {
     const newAction = new EditActionPlayAnimation();
-    setRuleActions([...ruleActions, newAction]);
-  }
+    setRuleActions((ruleActions) => {
+      const actions = [...ruleActions, newAction];
+      lastSelectedRule.actions.length = 0;
+      lastSelectedRule.actions.push(...actions);
+      return actions;
+    });
+  }, []);
 
-  function removeAction(actionKey: number) {
-    const actions = [...ruleActions];
-    actions.splice(
-      actions.findIndex((action) => {
-        return EditableStore.getKey(action) === actionKey;
+  const removeAction = React.useCallback(
+    (action: EditAction) =>
+      setRuleActions((ruleActions) => {
+        const actionKey = EditableStore.getKey(action);
+        EditableStore.unregister(action);
+        const actions = [...ruleActions];
+        actions.splice(
+          actions.findIndex((action) => {
+            return EditableStore.getKey(action) === actionKey;
+          }),
+          1
+        );
+        lastSelectedRule.actions.length = 0;
+        lastSelectedRule.actions.push(...actions);
+        return actions;
       }),
-      1
-    );
-    setRuleActions(actions);
-  }
+    []
+  );
+
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
       <VStack space={2} height={1000} w="100%">
-        <RuleConditionWidget condition={lastSelectedRule.condition} />
-
+        <RuleConditionWidget
+          condition={condition}
+          setCondition={(condition) => {
+            setCondition(condition);
+            lastSelectedRule.condition = condition;
+          }}
+        />
         {ruleActions.map((action) => (
           <RuleActionWidget
             key={EditableStore.getKey(action)}
             action={action}
-            onDelete={() => {
-              console.log("delete");
-              removeAction(EditableStore.getKey(action));
-              EditableStore.unregister(action);
-            }}
+            onDelete={() => removeAction(action)}
           />
         ))}
-        <Pressable
-          onPress={() => {
-            addAction();
-          }}
-        >
+        <Pressable onPress={() => addAction()}>
           <Center borderWidth={1.5} borderColor="gray.600" rounded="md" h="125">
             <HStack
               space={4}
@@ -321,8 +274,8 @@ function ConditionEditor({ editCondition }: { editCondition: EditCondition }) {
   }, [editCondition]);
   return (
     <VStack p={2} space={2} bg="gray.700" rounded="md">
-      {conditionWidgets.map((widgets, key) => (
-        <RenderWidget key={key} widget={widgets} />
+      {conditionWidgets.map((widget, key) => (
+        <RenderWidget key={key} widget={widget} />
       ))}
     </VStack>
   );
@@ -334,8 +287,8 @@ function ActionEditor({ editAction }: { editAction: EditAction }) {
   }, [editAction]);
   return (
     <VStack p={2} space={2} bg="gray.700" rounded="md">
-      {actionWIdgets.map((widgets, key) => (
-        <RenderWidget key={key} widget={widgets} />
+      {actionWIdgets.map((widget, key) => (
+        <RenderWidget key={key} widget={widget} />
       ))}
     </VStack>
   );

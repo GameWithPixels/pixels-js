@@ -82,6 +82,7 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
   );
   const valuesRef = React.useRef(values);
   React.useEffect(() => {
+    // Clear selected options if the list of values changes
     if (values !== valuesRef.current) {
       valuesRef.current = values;
       setSelectedOptions([]);
