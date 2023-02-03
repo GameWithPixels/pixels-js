@@ -305,89 +305,90 @@ export function ProfilesListScreen() {
                     </Box>
                   </HStack>
                   <VStack p={2} rounded="lg" bg="gray.700">
-                    {profileList.map((profile, i) => (
-                      <Box p={1} key={EditableStore.getKey(profile)}>
-                        <Swipeable
-                          renderLeftActions={createSwipeableSideButton({
-                            w: 85,
-                            buttons: [
-                              {
-                                onPress: () => addToFavorites(profile),
-                                bg: "purple.500",
-                                icon: (
-                                  <MaterialCommunityIcons
-                                    name="bookmark-plus-outline"
-                                    size={30}
-                                    color="white"
-                                  />
-                                ),
-                              },
-                            ],
-                          })}
-                          renderRightActions={createSwipeableSideButton({
-                            w: 195,
-                            buttons: [
-                              {
-                                onPress: () => duplicateProfile(profile, i),
-                                bg: "blue.500",
-                                icon: (
-                                  <MaterialIcons
-                                    name="content-copy"
-                                    size={24}
-                                    color="white"
-                                  />
-                                ),
-                              },
-                              {
-                                onPress: () => openExportSheet(profile),
-                                bg: "amber.500",
-                                icon: (
-                                  <MaterialCommunityIcons
-                                    name="export-variant"
-                                    size={24}
-                                    color="white"
-                                  />
-                                ),
-                              },
-                              {
-                                onPress: () => deleteProfile(profile),
-                                bg: "red.500",
-                                icon: (
-                                  <MaterialIcons
-                                    name="delete-outline"
-                                    size={24}
-                                    color="white"
-                                  />
-                                ),
-                              },
-                            ],
-                          })}
-                        >
-                          <DetailedProfileCard
-                            w="100%"
-                            h={110}
-                            imageSize={70}
-                            dieRender={() => (
-                              <DieRenderer
-                                animationData={getDataSet(profile)}
-                              />
-                            )}
-                            textSize="md"
-                            profileName={profile.name}
-                            borderWidth={1}
-                            profileWithSound={false}
-                            onPress={() => {
-                              //Trying to register the profile for updating it on the other screens
-                              selectedProfile = { profile, profileKey: 0 };
-                              selectedProfile.profileKey = EditableStore.getKey(
-                                selectedProfile.profile
-                              );
-                              navigation.navigate("ProfileRulesScreen");
-                            }}
-                          />
-                        </Swipeable>
-                      </Box>
-                    ))}
+                    {profileList.map((profile, i) => {
+                      return (
+                        <Box p={1} key={EditableStore.getKey(profile)}>
+                          <Swipeable
+                            renderLeftActions={createSwipeableSideButton({
+                              w: 85,
+                              buttons: [
+                                {
+                                  onPress: () => addToFavorites(profile),
+                                  bg: "purple.500",
+                                  icon: (
+                                    <MaterialCommunityIcons
+                                      name="bookmark-plus-outline"
+                                      size={30}
+                                      color="white"
+                                    />
+                                  ),
+                                },
+                              ],
+                            })}
+                            renderRightActions={createSwipeableSideButton({
+                              w: 195,
+                              buttons: [
+                                {
+                                  onPress: () => duplicateProfile(profile, i),
+                                  bg: "blue.500",
+                                  icon: (
+                                    <MaterialIcons
+                                      name="content-copy"
+                                      size={24}
+                                      color="white"
+                                    />
+                                  ),
+                                },
+                                {
+                                  onPress: () => openExportSheet(profile),
+                                  bg: "amber.500",
+                                  icon: (
+                                    <MaterialCommunityIcons
+                                      name="export-variant"
+                                      size={24}
+                                      color="white"
+                                    />
+                                  ),
+                                },
+                                {
+                                  onPress: () => deleteProfile(profile),
+                                  bg: "red.500",
+                                  icon: (
+                                    <MaterialIcons
+                                      name="delete-outline"
+                                      size={24}
+                                      color="white"
+                                    />
+                                  ),
+                                },
+                              ],
+                            })}
+                          >
+                            <DetailedProfileCard
+                              w="100%"
+                              h={110}
+                              imageSize={70}
+                              dieRender={() => (
+                                <DieRenderer
+                                  animationData={getDataSet(profile)}
+                                />
+                              )}
+                              textSize="md"
+                              profileName={profile.name}
+                              borderWidth={1}
+                              profileWithSound={false}
+                              onPress={() => {
+                                //Trying to register the profile for updating it on the other screens
+                                selectedProfile = { profile, profileKey: 0 };
+                                selectedProfile.profileKey =
+                                  EditableStore.getKey(selectedProfile.profile);
+                                navigation.navigate("ProfileRulesScreen");
+                              }}
+                            />
+                          </Swipeable>
+                        </Box>
+                      );
+                    })}
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget

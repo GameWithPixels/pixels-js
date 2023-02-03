@@ -21,12 +21,14 @@ import React, { useCallback } from "react";
 
 function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
   const title =
-    "Battery is " +
-    selectedButtons
-      .map((title) => {
-        return title;
-      })
-      .join(" or ");
+    selectedButtons[0] !== undefined
+      ? "Battery is " +
+        selectedButtons
+          .map((title) => {
+            return title;
+          })
+          .join(" or ")
+      : "No actions";
   return title;
 }
 
