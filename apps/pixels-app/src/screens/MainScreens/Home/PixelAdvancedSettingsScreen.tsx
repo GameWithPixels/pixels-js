@@ -38,7 +38,7 @@ const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
 export default function PixelAdvancedSettingsScreen(
   props: PixelAdvancedSettingsScreenProps
 ) {
-  const systemId = props.route.params.systemId;
+  const { systemId } = props.route.params;
   const pixel = getPixel(systemId);
   return (
     <PxAppPage theme={paleBluePixelTheme} scrollable>
