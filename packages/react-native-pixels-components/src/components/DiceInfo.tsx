@@ -1,3 +1,9 @@
+import {
+  AnimationBits,
+  AnimationPreset,
+  AnimationRainbow,
+  Constants,
+} from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
 import {
   HStack,
@@ -11,37 +17,31 @@ import {
   useDisclose,
 } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
-import { ImageSourcePropType } from "react-native";
 
 import { sr } from "../utils";
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
 
-/**
- * Die information to be used in dice info components.
- */
 export interface PixelInfo {
-  name: string;
-  rssi: number; // rssi value
-  batteryLevel: number;
-  ledCount: number; // number of faces(led) on the die
-  firmwareDate: string; //date.toString
-  profileName: string;
-  pixelId: number;
-
-  //Temporary for showing different images until 3d render
-  imageRequirePath?: ImageSourcePropType;
+  readonly address: number;
+  readonly name: string;
+  readonly ledCount: number;
+  readonly firmwareDate: Date;
+  readonly rssi: number;
+  readonly batteryLevel: number; // Percentage
+  readonly isCharging: boolean;
+  readonly currentFace: number; // Face value (not index)
 }
 
 /**
- * Props for components displaying dice informations.
+ * Props for components displaying dice information.
  */
 export interface PixelInfoCardProps {
   h?: number | string;
   w?: number | string;
-  pixel: PixelInfo; // Die infos and values
-  onPress?: (() => void) | null | undefined; // Function to be executed when pressing the die info
+  pixel: PixelInfo;
+  onPress?: () => void;
+  dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
 }
 /**
  * Horizontal info card for displaying paired dice
@@ -50,18 +50,25 @@ export interface PixelInfoCardProps {
 export function PairedPixelInfoComponent({
   pixel,
   onPress,
+  dieRenderer,
 }: PixelInfoCardProps) {
+  const animData = React.useMemo(() => {
+    const animation = new AnimationRainbow();
+    animation.duration = 10000;
+    animation.count = 1;
+    animation.traveling = true;
+    animation.faceMask = Constants.faceMaskAllLEDs;
+    const bits = new AnimationBits();
+    return { animation, bits };
+  }, []);
   return (
     <Pressable onPress={onPress}>
       <Card borderWidth={1.5} minW={100} w="100%" h={110}>
         <HStack space={6} alignItems="center" maxW="100%" h="100%">
           <Box alignItems="center">
-            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Image
-              size={sr(70)}
-              source={pixel.imageRequirePath}
-              alt="placeHolder"
-            />
+            <Box h={sr(70)} w={sr(70)}>
+              {dieRenderer(animData.animation, animData.bits)}
+            </Box>
           </Box>
           {/* dice infos */}
           <HStack space={sr(25)} h="100%" w="100%">
@@ -78,10 +85,10 @@ export function PairedPixelInfoComponent({
             </VStack>
             <VStack space={1} alignItems="baseline" h="100%">
               <Text flex={1} fontSize="2xs" isTruncated>
-                Firmware: {pixel.firmwareDate}
+                Firmware: {pixel.firmwareDate.toLocaleDateString()}
               </Text>
               <Text flex={1} isTruncated fontSize="xs">
-                Profile: {pixel.profileName}
+                Profile: Unknown
               </Text>
               <Box flex={1}>
                 <RSSIStrength percentage={pixel.rssi} />
@@ -95,7 +102,7 @@ export function PairedPixelInfoComponent({
 }
 
 /**
- * Squared info card for displaying paired dice informations.
+ * Squared info card for displaying paired dice information.
  * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
  */
 export function SquarePairedPixelInfo({
@@ -129,12 +136,12 @@ export function SquarePairedPixelInfo({
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(70)}
-              source={pixel.imageRequirePath}
+              // source={pixel.imageRequirePath}
               alt="placeHolder"
             />
           </Box>
           <Text isTruncated fontSize="xs">
-            Profile : {pixel.profileName}
+            Profile: Unknown
           </Text>
           <Text fontSize="xs">Face Up: {pixel.ledCount}</Text>
           <HStack space={sr(2)} w="100%">
@@ -160,15 +167,26 @@ export function SquarePairedPixelInfo({
 }
 
 /**
- * Horizontal info card for displaying scanned unpaired dice informations.
+ * Horizontal info card for displaying scanned unpaired dice information.
  * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
  */
 export function ScannedPixelInfoComponent({
   pixel,
   onPress,
+  dieRenderer,
 }: PixelInfoCardProps) {
   const [pressed, setPressed] = React.useState(false);
   const [height, setHeight] = React.useState(100);
+  const animData = React.useMemo(() => {
+    const animation = new AnimationRainbow();
+    animation.duration = 10000;
+    animation.count = 1;
+    animation.traveling = true;
+    animation.faceMask = Constants.faceMaskAllLEDs;
+    const bits = new AnimationBits();
+    return { animation, bits };
+  }, []);
+
   return (
     <Pressable
       onPress={() => {
@@ -179,12 +197,9 @@ export function ScannedPixelInfoComponent({
       <Card borderWidth={1.5} w="100%" h={sr(height)} alignItems="center">
         <HStack space={sr(8)} alignItems="center" maxW="100%">
           <Box alignItems="center" flex={1}>
-            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Image
-              size={sr(60)}
-              source={pixel.imageRequirePath}
-              alt="placeHolder"
-            />
+            <Box h={sr(60)} w={sr(60)}>
+              {dieRenderer(animData.animation, animData.bits)}
+            </Box>
           </Box>
           {/* dice infos */}
           <HStack alignItems="baseline" flex={2}>

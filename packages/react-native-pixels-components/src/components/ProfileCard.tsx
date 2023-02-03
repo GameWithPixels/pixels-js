@@ -1,6 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import { Card } from "@systemic-games/react-native-base-components";
-import { Pressable, Image, Text, HStack, VStack, Box } from "native-base";
+import { Pressable, Text, HStack, VStack, Box } from "native-base";
 import {
   ColorType,
   SizeType,
@@ -24,9 +24,8 @@ export interface ProfileInfo {
  * Props for selectable and pressable profile cards
  */
 export interface ProfileCardProps {
-  profileName?: string;
-  //Temporary
-  imageRequirePath?: ImageSourcePropType;
+  profileName: string;
+  dieRender: () => React.ReactNode;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -68,11 +67,7 @@ export function ProfileCard(props: ProfileCardProps) {
         verticalSpace={props.verticalSpace}
         borderWidth={isSelected ? 2 : props.borderWidth}
       >
-        <Image
-          size={props.imageSize}
-          source={props.imageRequirePath}
-          alt="placeHolder"
-        />
+        <Box size={props.imageSize}>{props.dieRender()}</Box>
         <Text isTruncated fontSize={props.textSize} bold>
           {props.profileName}
         </Text>
@@ -122,11 +117,7 @@ export function DetailedProfileCard(props: DetailedProfileCardProps) {
       >
         <HStack p={1} h="100%" alignItems="center">
           <Box flex={1}>
-            <Image
-              size={props.imageSize}
-              source={props.imageRequirePath}
-              alt="placeHolder"
-            />
+            <Box size={props.imageSize}>{props.dieRender()}</Box>
           </Box>
           <Box flex={1}>
             <Text isTruncated fontSize={props.textSize} bold>

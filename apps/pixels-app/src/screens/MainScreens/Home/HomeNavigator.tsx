@@ -5,11 +5,13 @@ import HomeScreen from "./HomeScreen";
 import PixelAdvancedSettingsScreen from "./PixelAdvancedSettingsScreen";
 import PixelDetailScreen from "./PixelDetailScreen";
 
-const Stack = createStackNavigator();
+import { HomeScreenStackParamList } from "~/Navigation";
+
+const Stack = createStackNavigator<HomeScreenStackParamList>();
+
 export default function HomeNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="Home"
       screenOptions={{
         headerBackImage: () => (
           <Ionicons name="md-arrow-back-outline" size={24} color="white" />
@@ -29,14 +31,14 @@ export default function HomeNavigator() {
         }}
       />
       <Stack.Screen
-        name="Pixel Details"
+        name="PixelDetails"
         component={PixelDetailScreen}
         options={{
           title: "Die Details",
         }}
       />
       <Stack.Screen
-        name="PixelAdvancedSettingsScreen"
+        name="PixelAdvancedSettings"
         component={PixelAdvancedSettingsScreen}
         options={{ title: "Advanced Settings" }}
       />

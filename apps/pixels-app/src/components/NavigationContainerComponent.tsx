@@ -10,7 +10,7 @@ function NavigateTo(path: string, navigation: any) {
 
 export function NavigationContainerComponent() {
   const navigation =
-    useNavigation<StackNavigationProp<RootStackParamList, "HomeScreen">>();
+    useNavigation<StackNavigationProp<RootStackParamList, "DiceBag">>();
   return (
     <BottomToolbar
       itemsData={[

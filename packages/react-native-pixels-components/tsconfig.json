@@ -17,6 +17,9 @@
     },
     {
       "path": "./../pixels-edit-animation"
+    },
+    {
+      "path": "./../react-native-pixels-connect"
     }
   ]  
 }

@@ -10,12 +10,12 @@ import { Text } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 
-import loadDie3D from "./createDie3DAsync";
+import createDie3DAsync from "./createDie3DAsync";
 
 function onContextCreate(
   gl: ExpoWebGLRenderingContext,
   die3d: Die3D,
-  getAnimInstance: () => AnimationInstance | undefined
+  getAnimInstances: () => AnimationInstance[]
 ): void {
   // Renderer
   const renderer = new Renderer({ gl, alpha: true });
@@ -48,25 +48,53 @@ function onContextCreate(
   // scene.add(redLight);
 
   // Create render function
+  let lastAnims: AnimationInstance[] = [];
+  let animIndex = 0;
+  let errored = false;
   const render = () => {
     requestAnimationFrame(render);
 
     // Update
     die3d.rotation.y -= 0.005;
     const ms = Date.now();
-    const animInst = getAnimInstance();
-    if (animInst) {
-      if (animInst.startTime + animInst.duration < ms) {
-        // Start animation
-        animInst.start(ms);
+    const anims = getAnimInstances();
+    let changed = lastAnims !== anims;
+    if (changed) {
+      lastAnims = anims;
+      animIndex = 0;
+      errored = false;
+      // Turn all LEDs off
+      die3d.clearLEDs();
+    }
+    if (!errored && anims?.length) {
+      if (
+        !changed &&
+        anims[animIndex].startTime + anims[animIndex].duration < ms
+      ) {
+        // Switch to next animation
+        animIndex = (animIndex + 1) % anims.length;
+        changed = true;
       }
-      // Get LEDs colors
-      const indices: number[] = Array(20).fill(0);
-      const colors: number[] = Array(20).fill(0);
-      const count = animInst.updateLEDs(ms, indices, colors);
-      // Light up die
-      for (let i = 0; i < count; ++i) {
-        die3d.setLEDColor(indices[i], colors[i]);
+      const anim = anims[animIndex];
+      try {
+        if (changed) {
+          // Start animation
+          anim.start(ms);
+        }
+        // Get LEDs colors
+        const indices: number[] = Array(20).fill(0);
+        const colors: number[] = Array(20).fill(0);
+        const count = anim.updateLEDs(ms, indices, colors);
+        // Light up die
+        for (let i = 0; i < count; ++i) {
+          die3d.setLEDColor(indices[i], colors[i]);
+        }
+      } catch (error) {
+        console.error(error);
+        console.warn(
+          `Error playing animation at index ${animIndex}, stop playing to avoid further errors`
+        );
+        errored = true;
       }
     }
 
@@ -83,8 +111,8 @@ function onContextCreate(
  */
 export interface DieRendererProps {
   animationData?: {
-    animation: AnimationPreset;
-    bits: AnimationBits;
+    animations: AnimationPreset | AnimationPreset[];
+    animationBits: AnimationBits;
   }; // The optional animation to play on the die.
 }
 
@@ -92,28 +120,32 @@ export interface DieRendererProps {
  * Component that renders a D20 in 3D.
  * See {@link DieRendererProps} for the supported props.
  */
-export default function DieRenderer({ animationData }: DieRendererProps) {
+export default function ({ animationData }: DieRendererProps) {
   const errorHandler = useErrorHandler();
 
   // Load die 3d object
   const [die3d, setDie3d] = useState<Die3D>();
   useEffect(() => {
     if (!die3d) {
-      loadDie3D().then(setDie3d).catch(errorHandler);
+      createDie3DAsync().then(setDie3d).catch(errorHandler);
     }
   }, [die3d, errorHandler]);
 
   // Create an instance to play the animation
-  const animInstanceRef = useRef<AnimationInstance>();
+  const animInstanceRef = useRef<AnimationInstance[]>([]);
   useEffect(() => {
-    if (animationData?.animation && animationData?.bits) {
-      animInstanceRef.current = animationData.animation.createInstance(
-        animationData.bits
+    let anims = animationData?.animations;
+    if (anims && animationData?.animationBits) {
+      if (!Array.isArray(anims)) {
+        anims = [anims];
+      }
+      animInstanceRef.current = anims.map((a) =>
+        a.createInstance(animationData.animationBits)
       );
     } else {
-      animInstanceRef.current = undefined;
+      animInstanceRef.current = [];
     }
-  }, [animationData?.animation, animationData?.bits]);
+  }, [animationData?.animations, animationData?.animationBits]);
 
   return (
     <>
