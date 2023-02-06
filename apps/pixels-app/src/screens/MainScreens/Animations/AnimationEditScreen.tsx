@@ -11,6 +11,7 @@ import {
   EditDataSet,
   getEditWidgetsData,
   AnimationTypeValues,
+  EditAnimationNoise,
 } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
@@ -130,6 +131,12 @@ export default function AnimationEditScreen({
               label: animationTypeToTitle(AnimationTypeValues.gradientPattern),
               onPress: () => {
                 setEditAnim(new EditAnimationGradientPattern());
+              },
+            },
+            {
+              label: animationTypeToTitle(AnimationTypeValues.noise),
+              onPress: () => {
+                setEditAnim(new EditAnimationNoise());
               },
             },
           ]}
