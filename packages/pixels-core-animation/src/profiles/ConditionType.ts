@@ -5,7 +5,7 @@ import { enumValue } from "@systemic-games/pixels-core-utils";
  * @enum
  */
 export const ConditionTypeValues = {
-  unknown: enumValue(0),
+  none: enumValue(0),
   helloGoodbye: enumValue(),
   handling: enumValue(),
   rolling: enumValue(),

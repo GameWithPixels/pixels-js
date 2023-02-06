@@ -20,7 +20,7 @@ export function getAnimationTypeDisplayName(
   animType: AnimationType
 ): NameAndOrder | undefined {
   switch (animType) {
-    case AnimationTypeValues.unknown:
+    case AnimationTypeValues.none:
       return;
     case AnimationTypeValues.simple:
       return { name: "Simple Flashes", order: 0 };
@@ -44,7 +44,7 @@ export function getActionTypeDisplayName(
   actionType: ActionType
 ): NameAndOrder | undefined {
   switch (actionType) {
-    case ActionTypeValues.unknown:
+    case ActionTypeValues.none:
       return;
     case ActionTypeValues.playAnimation:
       return { name: "Trigger Pattern", order: 0 };
@@ -62,7 +62,7 @@ export function getConditionTypeDisplayName(
   conditionType: ConditionType
 ): NameAndOrder | undefined {
   switch (conditionType) {
-    case ConditionTypeValues.unknown:
+    case ConditionTypeValues.none:
       return;
     case ConditionTypeValues.helloGoodbye:
       return { name: "Pixel wakes up / sleeps", order: 0 };
