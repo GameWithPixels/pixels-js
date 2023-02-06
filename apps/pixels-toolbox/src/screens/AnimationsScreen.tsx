@@ -224,7 +224,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       );
     }
 
-    case "faceIndex":
+    case "face":
     case "playbackFace":
     case "bitField":
     case "toggle": {

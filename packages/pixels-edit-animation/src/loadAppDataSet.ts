@@ -127,7 +127,7 @@ function toActions(
         case ActionTypeValues.playAnimation:
           return safeAssign(new EditActionPlayAnimation(), {
             animation: animations[data.animationIndex ?? -1],
-            faceIndex: data.faceIndex,
+            face: data.faceIndex ? data.faceIndex + 1 : undefined,
             loopCount: data.loopCount,
           });
         case ActionTypeValues.playAudioClip:

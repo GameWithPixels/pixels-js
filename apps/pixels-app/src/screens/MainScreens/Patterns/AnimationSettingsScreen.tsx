@@ -145,7 +145,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
         </>
       );
     }
-    case "faceIndex": {
+    case "face": {
       return (
         <>
           <FaceIndex faces={20} />

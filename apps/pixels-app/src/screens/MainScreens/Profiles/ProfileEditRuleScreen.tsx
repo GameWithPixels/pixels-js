@@ -160,8 +160,8 @@ function RuleConditionWidget(props: RuleConditionWidgetProps) {
           conditionTitle = "Pixel is rolling";
 
           break;
-        case ConditionTypeValues.unknown:
-          conditionTitle = "Unknown";
+        case ConditionTypeValues.none:
+          conditionTitle = "None";
 
           break;
         default:

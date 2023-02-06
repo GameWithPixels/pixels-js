@@ -167,29 +167,23 @@ function GetConditionTitle(condition: EditCondition | undefined): string {
       case ConditionTypeValues.faceCompare:
         faceCompareFlag = (condition as EditConditionFaceCompare).flags;
         if (faceCompareFlag === 0) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is less than " + faceIndex;
+          const face = (condition as EditConditionFaceCompare).face;
+          conditionTitle = "die roll is less than " + face;
         } else if (faceCompareFlag === 1) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is equal to " + faceIndex;
+          const face = (condition as EditConditionFaceCompare).face;
+          conditionTitle = "die roll is equal to " + face;
         } else if (faceCompareFlag === 2) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is greater than " + faceIndex;
+          const face = (condition as EditConditionFaceCompare).face;
+          conditionTitle = "die roll is greater than " + face;
         } else if (faceCompareFlag === 3) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is less or equal to " + faceIndex;
+          const face = (condition as EditConditionFaceCompare).face;
+          conditionTitle = "die roll is less or equal to " + face;
         } else if (faceCompareFlag === 4) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is less or greater than " + faceIndex;
+          const face = (condition as EditConditionFaceCompare).face;
+          conditionTitle = "die roll is less or greater than " + face;
         } else if (faceCompareFlag === 5) {
-          const faceIndex =
-            (condition as EditConditionFaceCompare).faceIndex + 1;
-          conditionTitle = "die roll is equal or greater than " + faceIndex;
+          const face = (condition as EditConditionFaceCompare).face;
+          conditionTitle = "die roll is equal or greater than " + face;
         } else {
           conditionTitle = "die is any";
         }
@@ -211,8 +205,8 @@ function GetConditionTitle(condition: EditCondition | undefined): string {
         conditionTitle = "Die is rolling";
 
         break;
-      case ConditionTypeValues.unknown:
-        conditionTitle = "Unknown";
+      case ConditionTypeValues.none:
+        conditionTitle = "None";
 
         break;
       default:
