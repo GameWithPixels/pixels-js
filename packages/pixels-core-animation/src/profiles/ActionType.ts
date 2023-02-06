@@ -6,7 +6,7 @@ import { enumValue } from "@systemic-games/pixels-core-utils";
  * @enum
  */
 export const ActionTypeValues = {
-  unknown: enumValue(0),
+  none: enumValue(0),
   playAnimation: enumValue(),
   playAudioClip: enumValue(),
 } as const;

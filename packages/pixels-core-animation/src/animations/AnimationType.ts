@@ -5,7 +5,7 @@ import { enumValue } from "@systemic-games/pixels-core-utils";
  * @enum
  */
 export const AnimationTypeValues = {
-  unknown: enumValue(0),
+  none: enumValue(0),
   simple: enumValue(),
   rainbow: enumValue(),
   keyframed: enumValue(),
