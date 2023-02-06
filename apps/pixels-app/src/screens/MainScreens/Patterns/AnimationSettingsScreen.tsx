@@ -36,7 +36,7 @@ import {
   valuesToKeys,
   keysToValues,
   GradientColorSelection,
-  combineBits,
+  combineFlags,
   bitsToFlags,
 } from "@systemic-games/react-native-pixels-components";
 import {
@@ -226,7 +226,7 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
             onChange={(keys) => {
               const changedValues = keysToValues(keys, widget.values, 0);
               const bits =
-                changedValues.length < 1 ? 0 : combineBits(changedValues);
+                changedValues.length < 1 ? 0 : combineFlags(changedValues);
               widget.update(bits);
             }}
           />

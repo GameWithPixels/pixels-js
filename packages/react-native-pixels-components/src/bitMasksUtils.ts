@@ -40,7 +40,7 @@ export function bitsToFlags(value: number): number[] {
  * @param flags List of numbers (flags) to combine.
  * @returns The combined value.
  */
-export function combineBits(flags: number[]): number {
+export function combineFlags(flags: number[]): number {
   return flags.length
     ? flags.reduce((prev, cur) => {
         assert(

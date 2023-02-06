@@ -14,7 +14,7 @@ import {
 } from "native-base";
 import React, { useEffect } from "react";
 
-import { bitsToIndices, combineBits } from "../bitMasksUtils";
+import { bitsToIndices, combineFlags } from "../bitMasksUtils";
 
 /**
  * Props for {@link FaceMask} component.
@@ -82,7 +82,7 @@ export function FaceMask(props: FaceMaskProps) {
         onClose={() => {
           setShowModal(false);
           // Combine the selected face into one maskValue
-          const maskValue = combineBits(
+          const maskValue = combineFlags(
             groupValue.map((f) => getFaceMask(Number(f)))
           );
           if (props.onCloseAction) props.onCloseAction(maskValue);
@@ -136,7 +136,7 @@ export function FaceMask(props: FaceMaskProps) {
 
                     setShowModal(false);
                     // Combine the selected face into one maskValue
-                    const maskValue = combineBits(
+                    const maskValue = combineFlags(
                       faces.map((f) => getFaceMask(Number(f)))
                     );
                     if (props.onCloseAction) props.onCloseAction(maskValue);
@@ -154,7 +154,7 @@ export function FaceMask(props: FaceMaskProps) {
                     const groupValues: string[] = [];
                     setShowModal(false);
                     // Combine the selected face into one maskValue
-                    const maskValue = combineBits(
+                    const maskValue = combineFlags(
                       groupValues.map((f) => getFaceMask(Number(f)))
                     );
                     if (props.onCloseAction) props.onCloseAction(maskValue);
