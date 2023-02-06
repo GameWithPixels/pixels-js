@@ -1,4 +1,3 @@
-import { AnimationType } from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
 import { Pressable, Text, Box, HStack, VStack } from "native-base";
 import {
@@ -6,8 +5,6 @@ import {
   SizeType,
 } from "native-base/lib/typescript/components/types";
 import React from "react";
-
-import { animationTypeToTitle } from "../animationUtils";
 
 export interface PatternCardProps {
   patternName: string;
@@ -56,8 +53,8 @@ export function PatternCard(props: PatternCardProps) {
 // }
 
 export interface LightingPatternCardProps {
+  title: string;
   name?: string;
-  animationType?: AnimationType;
   dieRenderer?: () => React.ReactNode;
   bg?: ColorType;
   w?: number | string;
@@ -71,11 +68,7 @@ export interface LightingPatternCardProps {
   //To be used with the list in which the cards are placed and displayed for selection highlight
 }
 
-export function LightingPatternsCard(props: LightingPatternCardProps) {
-  const title = React.useMemo(
-    () => animationTypeToTitle(props.animationType),
-    [props.animationType]
-  );
+export function LightingPatternCard(props: LightingPatternCardProps) {
   return (
     <Pressable
       onPress={() => {
@@ -101,7 +94,7 @@ export function LightingPatternsCard(props: LightingPatternCardProps) {
               </HStack>
             )} */}
             <HStack flex={1} alignItems="center">
-              <Text bold>{title}</Text>
+              <Text bold>{props.title}</Text>
             </HStack>
           </VStack>
         </HStack>

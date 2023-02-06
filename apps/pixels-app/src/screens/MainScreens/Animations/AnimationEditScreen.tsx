@@ -17,10 +17,11 @@ import {
   Card,
   PixelAppPage,
   LightingStyleSelection,
-  animationTypeToTitle,
 } from "@systemic-games/react-native-pixels-components";
 import { VStack, ScrollView, Center, Input, Button, Box } from "native-base";
 import React from "react";
+
+import getAnimationTitle from "./getAnimationTitle";
 
 import { RenderWidget } from "~/components/RenderWidget";
 import EditableStore from "~/features/EditableStore";
@@ -57,7 +58,7 @@ export default function AnimationEditScreen({
     EditableStore.getEditable<EditAnimation>(route.params.animationId)
   );
   const animTypeText = React.useMemo(
-    () => animationTypeToTitle(editAnim.type),
+    () => getAnimationTitle(editAnim.type),
     [editAnim.type]
   );
   const [animData, setAnimData] = React.useState<{
@@ -104,37 +105,37 @@ export default function AnimationEditScreen({
           title={animTypeText}
           itemsData={[
             {
-              label: animationTypeToTitle(AnimationTypeValues.simple),
+              label: getAnimationTitle(AnimationTypeValues.simple),
               onPress: () => {
                 setEditAnim(new EditAnimationSimple());
               },
             },
             {
-              label: animationTypeToTitle(AnimationTypeValues.rainbow),
+              label: getAnimationTitle(AnimationTypeValues.rainbow),
               onPress: () => {
                 setEditAnim(new EditAnimationRainbow());
               },
             },
             {
-              label: animationTypeToTitle(AnimationTypeValues.gradient),
+              label: getAnimationTitle(AnimationTypeValues.gradient),
               onPress: () => {
                 setEditAnim(new EditAnimationGradient());
               },
             },
             {
-              label: animationTypeToTitle(AnimationTypeValues.keyframed),
+              label: getAnimationTitle(AnimationTypeValues.keyframed),
               onPress: () => {
                 setEditAnim(new EditAnimationKeyframed());
               },
             },
             {
-              label: animationTypeToTitle(AnimationTypeValues.gradientPattern),
+              label: getAnimationTitle(AnimationTypeValues.gradientPattern),
               onPress: () => {
                 setEditAnim(new EditAnimationGradientPattern());
               },
             },
             {
-              label: animationTypeToTitle(AnimationTypeValues.noise),
+              label: getAnimationTitle(AnimationTypeValues.noise),
               onPress: () => {
                 setEditAnim(new EditAnimationNoise());
               },

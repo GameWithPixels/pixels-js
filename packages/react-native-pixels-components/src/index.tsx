@@ -19,4 +19,3 @@ export * from "./components/ProfileRulesCard";
 export * from "./components/PatternsActionSheet";
 export * from "./bitMasksUtils";
 export * from "./keyValuesUtils";
-export * from "./animationUtils";

@@ -11,7 +11,7 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   PixelAppPage,
-  LightingPatternsCard,
+  LightingPatternCard,
   createSwipeableSideButton,
   Card,
   LightingPatternCardProps,
@@ -29,6 +29,8 @@ import {
 } from "native-base";
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
+
+import getAnimationTitle from "./getAnimationTitle";
 
 import EditableStore from "~/features/EditableStore";
 import { MyAppDataSet } from "~/features/profiles";
@@ -62,7 +64,7 @@ function getAnimData(anim: EditAnimation) {
  * Custom profile card widget for the option to create a new profile.
  * @param props See {@link ProfileCardProps} for props parameters.
  */
-function CreatePatternWidget(props: LightingPatternCardProps) {
+function CreatePatternWidget(props: Omit<LightingPatternCardProps, "title">) {
   return (
     <Pressable
       onPress={() => {
@@ -185,14 +187,14 @@ export default function AnimationsListScreen({
                       ],
                     })}
                   >
-                    <LightingPatternsCard
+                    <LightingPatternCard
                       onPress={() =>
                         navigation.navigate("AnimationEdit", {
                           animationId: EditableStore.getKey(anim),
                         })
                       }
                       name={anim.name}
-                      animationType={anim.type}
+                      title={getAnimationTitle(anim.type)}
                       dieRenderer={() => (
                         <DieRenderer animationData={getAnimData(anim)} />
                       )}
