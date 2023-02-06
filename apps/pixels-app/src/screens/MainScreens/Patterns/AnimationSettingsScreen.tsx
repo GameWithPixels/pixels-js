@@ -28,7 +28,7 @@ import {
   SimpleColorSelection,
   Toggle,
   RuleComparisonWidget,
-  FaceIndex,
+  FaceSelector,
   PlayBackFace,
   PatternActionSheet,
   animationTypeToTitle,
@@ -236,10 +236,10 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     case "face": {
       return (
         <>
-          <FaceIndex
-            initialFaceIndex={widget.getValue()}
+          <FaceSelector
+            initialFace={widget.getValue()}
             faceCount={20}
-            onIndexSelected={widget.update}
+            onSelect={widget.update}
           />
         </>
       );

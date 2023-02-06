@@ -13,7 +13,7 @@ export * from "./components/ProfilesScrollView";
 export * from "./components/ProfilesActionSheet";
 export * from "./components/PatternCards";
 export * from "./components/RuleComparisonWidget";
-export * from "./components/FaceIndex";
+export * from "./components/FaceSelector";
 export * from "./components/ProfileRulesCard";
 export * from "./components/PatternsActionSheet";
 export * from "./bitMasksUtils";

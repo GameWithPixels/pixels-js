@@ -13,14 +13,17 @@ import React from "react";
 
 export interface FaceIndexProps {
   faceCount: number;
-  initialFaceIndex?: number;
+  initialFace?: number;
   disabled?: boolean;
-  onIndexSelected?: (faceIndex: number) => void;
+  onSelect?: (faceIndex: number) => void;
 }
 
-export function FaceIndex(props: FaceIndexProps) {
-  const [faceIndex, setFaceIndex] = React.useState(props.initialFaceIndex ?? 0);
-  const facesArray = Array(props.faceCount).fill(0);
+export function FaceSelector(props: FaceIndexProps) {
+  const [face, setFace] = React.useState(props.initialFace ?? 0);
+  const faces = React.useMemo(
+    () => Array.from({ length: props.faceCount }, (_, i) => i + 1),
+    [props.faceCount]
+  );
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
@@ -30,25 +33,23 @@ export function FaceIndex(props: FaceIndexProps) {
           disabled={props.disabled}
           bg={props.disabled ? "gray.900" : undefined}
         >
-          <Text color={props.disabled ? "gray.800" : undefined}>
-            {faceIndex + 1}
-          </Text>
+          <Text color={props.disabled ? "gray.800" : undefined}>{face}</Text>
         </Button>
       </VStack>
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content maxHeight={400} minHeight={200}>
           <ScrollView h="100%" w="100%">
-            {facesArray.map((_e, i) => (
+            {faces.map((face) => (
               <Actionsheet.Item
                 onPress={() => {
-                  setFaceIndex(i);
-                  props.onIndexSelected?.(i);
+                  setFace(face);
+                  props.onSelect?.(face);
                   onClose();
                 }}
                 alignItems="center"
-                key={i}
+                key={face}
               >
-                <Text fontSize="2xl">{i + 1}</Text>
+                <Text fontSize="2xl">{face}</Text>
               </Actionsheet.Item>
             ))}
           </ScrollView>
@@ -168,11 +169,11 @@ export function PlayBackFace(props: PlayBackFaceProps) {
           />
         </Box>
         <Box flex={1}>
-          <FaceIndex
-            initialFaceIndex={initiallyDisabled ? 0 : props.initialFaceIndex}
+          <FaceSelector
+            initialFace={initiallyDisabled ? 0 : props.initialFaceIndex}
             faceCount={props.faceCount}
             disabled={disableFaceIndex}
-            onIndexSelected={(index) => {
+            onSelect={(index) => {
               faceIndexRef.current = index;
               props.onValueChange?.(index);
             }}

@@ -21,9 +21,7 @@ export default function (actionType: ConditionType): string {
       return "Pixel is idle for...";
     case ConditionTypeValues.rolling:
       return "Pixel is rolling";
-    case ConditionTypeValues.unknown:
-      return "Unknown";
     default:
-      return "No condition selected";
+      return "No action selected";
   }
 }

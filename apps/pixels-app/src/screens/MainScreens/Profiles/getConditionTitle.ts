@@ -1,8 +1,8 @@
 import {
   BatteryStateFlagsValues,
+  EditCondition,
   ConditionTypeValues,
   ConnectionStateFlagsValues,
-  EditCondition,
   EditConditionBatteryState,
   EditConditionConnectionState,
   EditConditionFaceCompare,
@@ -12,25 +12,17 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import { bitsToFlags } from "@systemic-games/react-native-pixels-components";
 
-export default function (condition?: EditCondition): string {
-  let conditionTitle: string = "";
-  let faceCompareFlag: number[];
-  let batteryFlags: number[];
-  let helloGoodbyeFlags: number[];
-  let connectionStateFlags: number[];
+export default function (condition: EditCondition): string {
   if (condition) {
-    switch (condition.type) {
+    const type = condition.type;
+    switch (type) {
       case ConditionTypeValues.handling:
-        conditionTitle = "die is picked up";
-        break;
-      case ConditionTypeValues.batteryState:
-        batteryFlags = bitsToFlags(
-          (condition as EditConditionBatteryState).flags
-        );
+        return "die is picked up";
 
-        conditionTitle =
+      case ConditionTypeValues.batteryState:
+        return (
           "Battery is " +
-          batteryFlags
+          bitsToFlags((condition as EditConditionBatteryState).flags)
             .map((flag) => {
               switch (flag) {
                 case BatteryStateFlagsValues.ok:
@@ -42,74 +34,57 @@ export default function (condition?: EditCondition): string {
                 case BatteryStateFlagsValues.done:
                   return "done";
                 default:
-                  conditionTitle = "No conditions";
-                  break;
+                  return "No condition";
               }
             })
-            .join(" or ");
+            .join(" or ")
+        );
 
-        break;
       case ConditionTypeValues.connectionState:
-        connectionStateFlags = bitsToFlags(
-          (condition as EditConditionConnectionState).flags
-        );
-
-        conditionTitle =
+        return (
           " Die is " +
-          connectionStateFlags.map((flag) => {
-            switch (flag) {
-              case ConnectionStateFlagsValues.connected:
-                return "connected";
-              case ConnectionStateFlagsValues.disconnected:
-                return "disconnected";
-              default:
-                conditionTitle = "No conditions";
-                break;
+          bitsToFlags((condition as EditConditionConnectionState).flags).map(
+            (flag) => {
+              switch (flag) {
+                case ConnectionStateFlagsValues.connected:
+                  return "connected";
+                case ConnectionStateFlagsValues.disconnected:
+                  return "disconnected";
+                default:
+                  return "No condition";
+              }
             }
-          });
-
-        break;
-      case ConditionTypeValues.crooked:
-        conditionTitle = "die is crooked";
-
-        break;
-      case ConditionTypeValues.faceCompare:
-        {
-          const face = (condition as EditConditionFaceCompare).faceIndex + 1;
-
-          faceCompareFlag = bitsToFlags(
-            (condition as EditConditionFaceCompare).flags
-          );
-
-          conditionTitle =
-            "Die roll is " +
-            faceCompareFlag
-              .map((flag) => {
-                switch (flag) {
-                  case FaceCompareFlagsValues.equal:
-                    return "equal to";
-                  case FaceCompareFlagsValues.greater:
-                    return "greater than";
-                  case FaceCompareFlagsValues.less:
-                    return "less than";
-                  default:
-                    throw new Error();
-                }
-              })
-              .join(" or ") +
-            " " +
-            face;
-        }
-
-        break;
-      case ConditionTypeValues.helloGoodbye:
-        helloGoodbyeFlags = bitsToFlags(
-          (condition as EditConditionHelloGoodbye).flags
+          )
         );
 
-        conditionTitle =
+      case ConditionTypeValues.crooked:
+        return "die is crooked";
+
+      case ConditionTypeValues.faceCompare:
+        return (
+          "Die roll is " +
+          bitsToFlags((condition as EditConditionFaceCompare).flags)
+            .map((flag) => {
+              switch (flag) {
+                case FaceCompareFlagsValues.equal:
+                  return "equal to";
+                case FaceCompareFlagsValues.greater:
+                  return "greater than";
+                case FaceCompareFlagsValues.less:
+                  return "less than";
+                default:
+                  throw new Error();
+              }
+            })
+            .join(" or ") +
+          " " +
+          (condition as EditConditionFaceCompare).face
+        );
+
+      case ConditionTypeValues.helloGoodbye:
+        return (
           "Die is " +
-          helloGoodbyeFlags
+          bitsToFlags((condition as EditConditionHelloGoodbye).flags)
             .map((flag) => {
               switch (flag) {
                 case HelloGoodbyeFlagsValues.goodbye:
@@ -117,29 +92,18 @@ export default function (condition?: EditCondition): string {
                 case HelloGoodbyeFlagsValues.hello:
                   return "waking up";
                 default:
-                  conditionTitle = "No conditions";
-                  break;
+                  return "No condition";
               }
             })
-            .join(" or ");
-        break;
+            .join(" or ")
+        );
+
       case ConditionTypeValues.idle:
-        conditionTitle = "Die is idle";
+        return "Die is idle";
 
-        break;
       case ConditionTypeValues.rolling:
-        conditionTitle = "Die is rolling";
-
-        break;
-      case ConditionTypeValues.unknown:
-        conditionTitle = "Unknown";
-
-        break;
-      default:
-        conditionTitle = "No condition selected";
-        break;
+        return "Die is rolling";
     }
   }
-
-  return conditionTitle;
+  return "No condition selected";
 }
