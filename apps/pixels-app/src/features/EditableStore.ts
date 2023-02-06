@@ -1,3 +1,4 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import { Editable } from "@systemic-games/pixels-edit-animation";
 
 const _editList: (Editable | undefined)[] = [];
@@ -9,7 +10,7 @@ const _editList: (Editable | undefined)[] = [];
 const EditableStore = {
   /**
    * Returns a unique key for the given object.
-   * @remarks The object is kept in an internal store, call {@link EditableStore.unregister} to remove it.
+   * @remarks The object is kept in an internal store, call {@link unregister} to remove it.
    * @param editable The Pixels Animation {@link Editable} object to register.
    * @returns The unique key associated with the object.
    */
@@ -21,6 +22,12 @@ const EditableStore = {
     } else {
       return key;
     }
+  },
+
+  getEditable<T extends Editable>(key: number): T {
+    const editable = _editList[key] as T;
+    assert(editable, `Not Editable object with this key: ${key}`);
+    return editable; //TODO check type
   },
 
   /**

@@ -1,17 +1,14 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   EditRule,
   EditConditionFaceCompare,
 } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
-  createPixelTheme,
   createSwipeableSideButton,
-  PixelTheme,
   ProfileRulesCard,
-  PxAppPage,
+  PixelAppPage,
 } from "@systemic-games/react-native-pixels-components";
 import { Box, HStack, Pressable, VStack, Text, Input } from "native-base";
 import React from "react";
@@ -20,48 +17,25 @@ import DraggableFlatList, {
   RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
+import { EditProfile } from "~/../../../packages/pixels-edit-animation/dist/types";
 
-import { selectedProfile } from "./ProfilesListScreen";
 import getActionTitles from "./getActionTitles";
 import getConditionTitle from "./getConditionTitle";
 
-import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import DieRenderer from "~/features/render3d/DieRenderer";
-
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-
-export let lastSelectedRule: EditRule;
-
-interface CreateRuleWidgetProps {
-  onPress?: () => void;
-}
+import { ProfileRulesScreenProps } from "~/navigation";
 
 /**
  * JSX pressable to create a new editable rule.
  * @param props See {@link CreateRuleWidgetProps} for props params.
  * @returns
  */
-function CreateRuleWidget(props: CreateRuleWidgetProps) {
+function CreateRuleWidget({ onPress }: { onPress: () => void }) {
   return (
     <Pressable
       onPress={() => {
-        props.onPress?.();
+        onPress();
       }}
     >
       <Card bg={null} minW="100%" minH="50px">
@@ -78,22 +52,22 @@ function SeparatorItem() {
   return <Box h={2} />;
 }
 
-export default function ProfilesRulesScreen() {
-  const navigation =
-    useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
-
+export default function ProfilesRulesScreen({
+  navigation,
+  route,
+}: ProfileRulesScreenProps) {
+  const profile = EditableStore.getEditable<EditProfile>(
+    route.params.profileId
+  );
   const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
   useFocusEffect(
     // Refresh rules list
-    React.useCallback(
-      () => setRulesList([...selectedProfile.profile.rules]),
-      []
-    )
+    React.useCallback(() => setRulesList([...profile.rules]), [profile])
   );
 
   function addRule() {
     const newRule = new EditRule(new EditConditionFaceCompare());
-    selectedProfile.profile.rules.push(newRule);
+    profile.rules.push(newRule);
     // Register rule
     EditableStore.getKey(newRule);
     setRulesList([...rulesList, newRule]);
@@ -153,8 +127,9 @@ export default function ProfilesRulesScreen() {
         >
           <Pressable
             onPress={() => {
-              lastSelectedRule = item;
-              navigation.navigate("ProfileEditRuleScreen");
+              navigation.navigate("ProfileEditRule", {
+                ruleId: EditableStore.getKey(item),
+              });
             }}
             onLongPress={() => {
               drag();
@@ -176,7 +151,7 @@ export default function ProfilesRulesScreen() {
   }
 
   return (
-    <PxAppPage scrollable={false} theme={paleBluePixelTheme}>
+    <PixelAppPage>
       <VStack space={2} width="100%">
         <HStack alignItems="center" width="100%">
           <Box flex={1}>
@@ -207,6 +182,6 @@ export default function ProfilesRulesScreen() {
           />
         </Box>
       </VStack>
-    </PxAppPage>
+    </PixelAppPage>
   );
 }

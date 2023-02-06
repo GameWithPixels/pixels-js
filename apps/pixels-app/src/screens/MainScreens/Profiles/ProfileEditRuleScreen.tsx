@@ -19,9 +19,7 @@ import {
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  PixelTheme,
-  createPixelTheme,
-  PxAppPage,
+  PixelAppPage,
   RuleConditionSelection,
   RuleActionSelection,
 } from "@systemic-games/react-native-pixels-components";
@@ -33,41 +31,25 @@ import {
   Button,
   Pressable,
   Center,
+  ScrollView,
 } from "native-base";
 import React from "react";
+import { EditRule } from "~/../../../packages/pixels-edit-animation/dist/types";
 
 import { RenderWidget } from "../Patterns/AnimationSettingsScreen";
-import { lastSelectedRule } from "./ProfileRulesScreen";
 
 import EditableStore from "~/features/EditableStore";
+import { ProfileEditRuleScreenProps } from "~/navigation";
 import getConditionSimpleTitle from "~/screens/MainScreens/Profiles/getConditionSimpleTitle";
 
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-
-interface RuleActionWidgetProps {
+interface RuleActionWidgetProps extends React.PropsWithChildren {
   action: EditAction;
-  children?: React.ReactNode | React.ReactNode[];
   onDelete?: (() => void) | null | undefined;
 }
-interface RuleConditionWidgetProps {
+
+interface RuleConditionWidgetProps extends React.PropsWithChildren {
   condition: EditCondition;
   setCondition: (condition: EditCondition) => void;
-  children?: React.ReactNode | React.ReactNode[];
 }
 
 function RuleConditionWidget(props: RuleConditionWidgetProps) {
@@ -197,21 +179,22 @@ function RuleActionWidget(props: RuleActionWidgetProps) {
   );
 }
 
-export default function ProfileEditRuleScreen() {
-  const [condition, setCondition] = React.useState(lastSelectedRule.condition);
-  const [ruleActions, setRuleActions] = React.useState(
-    lastSelectedRule.actions
-  );
+export default function ProfileEditRuleScreen({
+  route,
+}: ProfileEditRuleScreenProps) {
+  const rule = EditableStore.getEditable<EditRule>(route.params.ruleId);
+  const [condition, setCondition] = React.useState(rule.condition);
+  const [ruleActions, setRuleActions] = React.useState(rule.actions);
 
   const addAction = React.useCallback(() => {
     const newAction = new EditActionPlayAnimation();
     setRuleActions((ruleActions) => {
       const actions = [...ruleActions, newAction];
-      lastSelectedRule.actions.length = 0;
-      lastSelectedRule.actions.push(...actions);
+      rule.actions.length = 0;
+      rule.actions.push(...actions);
       return actions;
     });
-  }, []);
+  }, [rule]);
 
   const removeAction = React.useCallback(
     (action: EditAction) =>
@@ -225,46 +208,53 @@ export default function ProfileEditRuleScreen() {
           }),
           1
         );
-        lastSelectedRule.actions.length = 0;
-        lastSelectedRule.actions.push(...actions);
+        rule.actions.length = 0;
+        rule.actions.push(...actions);
         return actions;
       }),
-    []
+    [rule]
   );
 
   return (
-    <PxAppPage theme={paleBluePixelTheme} scrollable>
-      <VStack space={2} height={1000} w="100%">
-        <RuleConditionWidget
-          condition={condition}
-          setCondition={(condition) => {
-            setCondition(condition);
-            lastSelectedRule.condition = condition;
-          }}
-        />
-        {ruleActions.map((action) => (
-          <RuleActionWidget
-            key={EditableStore.getKey(action)}
-            action={action}
-            onDelete={() => removeAction(action)}
+    <PixelAppPage>
+      <ScrollView height="100%" width="100%">
+        <VStack space={2} height={1000} w="100%">
+          <RuleConditionWidget
+            condition={condition}
+            setCondition={(condition) => {
+              setCondition(condition);
+              rule.condition = condition;
+            }}
           />
-        ))}
-        <Pressable onPress={() => addAction()}>
-          <Center borderWidth={1.5} borderColor="gray.600" rounded="md" h="125">
-            <HStack
-              space={4}
-              alignItems="center"
-              rounded="lg"
-              bg="darkBlue.800"
-              p={2}
+          {ruleActions.map((action) => (
+            <RuleActionWidget
+              key={EditableStore.getKey(action)}
+              action={action}
+              onDelete={() => removeAction(action)}
+            />
+          ))}
+          <Pressable onPress={() => addAction()}>
+            <Center
+              borderWidth={1.5}
+              borderColor="gray.600"
+              rounded="md"
+              h="125"
             >
-              <MaterialIcons name="rule" size={35} color="white" />
-              <Text>ADD ACTION</Text>
-            </HStack>
-          </Center>
-        </Pressable>
-      </VStack>
-    </PxAppPage>
+              <HStack
+                space={4}
+                alignItems="center"
+                rounded="lg"
+                bg="darkBlue.800"
+                p={2}
+              >
+                <MaterialIcons name="rule" size={35} color="white" />
+                <Text>ADD ACTION</Text>
+              </HStack>
+            </Center>
+          </Pressable>
+        </VStack>
+      </ScrollView>
+    </PixelAppPage>
   );
 }
 

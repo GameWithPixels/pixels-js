@@ -3,8 +3,6 @@ import {
   MaterialCommunityIcons,
   Ionicons,
 } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import {
   AnimationBits,
   AnimationPreset,
@@ -12,9 +10,7 @@ import {
   EditDataSet,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  PxAppPage,
-  PixelTheme,
-  createPixelTheme,
+  PixelAppPage,
   LightingPatternsCard,
   createSwipeableSideButton,
   Card,
@@ -29,34 +25,17 @@ import {
   Text,
   useDisclose,
   Pressable,
+  ScrollView,
 } from "native-base";
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
 
-import { PatternsScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import { MyAppDataSet } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
-
-export let lastSelectedLightingPattern: EditAnimation;
+import { PatternsListScreenProps } from "~/navigation";
 
 const standardLightingPatterns = [...MyAppDataSet.animations];
-
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
 
 const animDataMap = new Map<
   EditAnimation,
@@ -109,11 +88,9 @@ function CreatePatternWidget(props: LightingPatternCardProps) {
   );
 }
 
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-export default function PatternsScreen() {
-  const navigation =
-    useNavigation<StackNavigationProp<PatternsScreenStackParamList>>();
-
+export default function PatternsListScreen({
+  navigation,
+}: PatternsListScreenProps) {
   const [patternList, setPatternsList] = React.useState<EditAnimation[]>(
     standardLightingPatterns
   );
@@ -161,79 +138,82 @@ export default function PatternsScreen() {
 
   return (
     <>
-      <PxAppPage theme={paleBluePixelTheme} scrollable>
-        <Center>
-          <VStack w="100%" bg="gray.700" rounded="lg" p={2}>
-            {patternList.map((anim, i) => (
-              <Box p={1} key={EditableStore.getKey(anim)}>
-                <Swipeable
-                  renderRightActions={createSwipeableSideButton({
-                    w: 195,
-                    buttons: [
-                      {
-                        onPress: () => duplicatePattern(anim, i),
-                        bg: "blue.500",
-                        icon: (
-                          <MaterialIcons
-                            name="content-copy"
-                            size={24}
-                            color="white"
-                          />
-                        ),
-                      },
-                      {
-                        onPress: () => openExportSheet(anim),
-                        bg: "amber.500",
-                        icon: (
-                          <MaterialCommunityIcons
-                            name="export-variant"
-                            size={24}
-                            color="white"
-                          />
-                        ),
-                      },
-                      {
-                        onPress: () => deletePattern(anim),
+      <PixelAppPage>
+        <ScrollView height="100%" width="100%">
+          <Center>
+            <VStack w="100%" bg="gray.700" rounded="lg" p={2}>
+              {patternList.map((anim, i) => (
+                <Box p={1} key={EditableStore.getKey(anim)}>
+                  <Swipeable
+                    renderRightActions={createSwipeableSideButton({
+                      w: 195,
+                      buttons: [
+                        {
+                          onPress: () => duplicatePattern(anim, i),
+                          bg: "blue.500",
+                          icon: (
+                            <MaterialIcons
+                              name="content-copy"
+                              size={24}
+                              color="white"
+                            />
+                          ),
+                        },
+                        {
+                          onPress: () => openExportSheet(anim),
+                          bg: "amber.500",
+                          icon: (
+                            <MaterialCommunityIcons
+                              name="export-variant"
+                              size={24}
+                              color="white"
+                            />
+                          ),
+                        },
+                        {
+                          onPress: () => deletePattern(anim),
 
-                        bg: "red.500",
-                        icon: (
-                          <MaterialIcons
-                            name="delete-outline"
-                            size={24}
-                            color="white"
-                          />
-                        ),
-                      },
-                    ],
-                  })}
-                >
-                  <LightingPatternsCard
-                    onPress={() => {
-                      navigation.navigate("AnimationSettingsScreen");
-                      lastSelectedLightingPattern = anim;
-                    }}
-                    name={anim.name}
-                    animationType={anim.type}
-                    dieRenderer={() => (
-                      <DieRenderer animationData={getAnimData(anim)} />
-                    )}
-                    w="100%"
-                    h={100}
-                    imageSize={70}
-                    p={1.5}
-                    borderWidth={1}
-                  />
-                </Swipeable>
-              </Box>
-            ))}
-          </VStack>
-          <CreatePatternWidget
-            onPress={() => {
-              addPattern();
-            }}
-          />
-        </Center>
-      </PxAppPage>
+                          bg: "red.500",
+                          icon: (
+                            <MaterialIcons
+                              name="delete-outline"
+                              size={24}
+                              color="white"
+                            />
+                          ),
+                        },
+                      ],
+                    })}
+                  >
+                    <LightingPatternsCard
+                      onPress={() =>
+                        navigation.navigate("AnimationSettings", {
+                          animationId: EditableStore.getKey(anim),
+                        })
+                      }
+                      name={anim.name}
+                      animationType={anim.type}
+                      dieRenderer={() => (
+                        <DieRenderer animationData={getAnimData(anim)} />
+                      )}
+                      w="100%"
+                      h={100}
+                      imageSize={70}
+                      p={1.5}
+                      borderWidth={1}
+                    />
+                  </Swipeable>
+                </Box>
+              ))}
+            </VStack>
+            <CreatePatternWidget
+              onPress={() => {
+                addPattern();
+              }}
+            />
+          </Center>
+        </ScrollView>
+      </PixelAppPage>
 
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content h={180} maxW="100%" w="100%">

@@ -5,8 +5,6 @@ import {
   Ionicons,
   Octicons,
 } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import {
   AnimationRainbow,
   Color,
@@ -15,11 +13,9 @@ import {
 import {
   BatteryLevel,
   Card,
-  createPixelTheme,
   LoadingPopup,
-  PixelTheme,
   ProfilesScrollView,
-  PxAppPage,
+  PixelAppPage,
   RSSIStrength,
   Toggle,
 } from "@systemic-games/react-native-pixels-components";
@@ -41,14 +37,15 @@ import {
   Button,
   ChevronRightIcon,
   Pressable,
+  ScrollView,
 } from "native-base";
 import React from "react";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
-import { PixelDetailScreenProps, HomeScreenStackParamList } from "~/Navigation";
 import { sr } from "~/Utils";
 import { extractDataSet, MyAppDataSet } from "~/features/profiles";
 import DieRenderer, { DieRendererProps } from "~/features/render3d/DieRenderer";
+import { PixelDetailScreenProps } from "~/navigation";
 
 interface HistogramProps {
   rolls: number[];
@@ -278,28 +275,11 @@ function DieStats() {
   );
 }
 
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
-
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-
-export default function PixelDetailScreen(props: PixelDetailScreenProps) {
-  const navigation =
-    useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
-  const { systemId } = props.route.params;
+export default function PixelDetailScreen({
+  navigation,
+  route,
+}: PixelDetailScreenProps) {
+  const { systemId } = route.params;
   const pixel = getPixel(systemId);
   const [status, lastError] = usePixel(pixel);
   const [rollState] = usePixelValue(pixel, "rollState");
@@ -320,134 +300,142 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
   });
 
   return (
-    <PxAppPage theme={paleBluePixelTheme} scrollable>
+    <>
+      <PixelAppPage>
+        <ScrollView height="100%" width="100%">
+          <VStack space={6} width="100%" maxW="100%">
+            <Center bg="white" rounded="lg" px={2}>
+              <Input
+                InputRightElement={
+                  <FontAwesome5 name="pen" size={20} color="black" />
+                }
+                size="2xl"
+                variant="unstyled"
+                placeholder={pixel?.name}
+                color="black"
+              />
+            </Center>
+            <Center w="100%">
+              <HStack space={0} alignItems="center" paddingLeft={5}>
+                <Box w="50%" paddingLeft={0}>
+                  <Box w={sr(200)} h={sr(200)}>
+                    <DieRenderer animationData={animData} />
+                  </Box>
+                </Box>
+                <Spacer />
+                <VStack flex={2} space={sr(11)} p={2} rounded="md" w="40%">
+                  <Button onPress={() => pixel?.blink(Color.dimOrange)}>
+                    <MaterialCommunityIcons
+                      name="lightbulb-on-outline"
+                      size={24}
+                      color="white"
+                    />
+                  </Button>
+                  <VStack bg="pixelColors.highlightGray" rounded="md" p={2}>
+                    <BatteryLevel
+                      size="xl"
+                      percentage={pixel?.batteryLevel ?? 0}
+                    />
+                    <RSSIStrength percentage={pixel?.rssi ?? 0} size="xl" />
+                  </VStack>
+                  <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
+                    <VStack space={2}>
+                      {lastError ? (
+                        <Text bold color="red.500" fontSize="md">
+                          {`${lastError}`}
+                        </Text>
+                      ) : (
+                        <>
+                          <HStack>
+                            <Text bold>Face Up:</Text>
+                            <Spacer />
+                            <Text bold color="green.500" fontSize="md">
+                              {`${rollState?.face ?? ""}`}
+                            </Text>
+                          </HStack>
+                          <HStack>
+                            <Text bold>Status:</Text>
+                            <Spacer />
+                            <Text bold color="green.500" fontSize="md">
+                              {status}
+                            </Text>
+                          </HStack>
+                        </>
+                      )}
+                    </VStack>
+                  </Box>
+                </VStack>
+              </HStack>
+            </Center>
+
+            {/* {Profiles horizontal scroll list} */}
+            <Box>
+              <HStack alignItems="center" space={2} paddingBottom={2}>
+                <AntDesign name="profile" size={24} color="white" />
+                <Text bold>Recent Profiles:</Text>
+              </HStack>
+              <ProfilesScrollView
+                profiles={MyAppDataSet.profiles}
+                dieRender={(profile) => (
+                  <DieRenderer animationData={extractDataSet(profile)} />
+                )}
+                onPress={(profile) => {
+                  if (pixel?.isReady) {
+                    setTransferProgress(0);
+                    setShowLoadingPopup(true);
+                    pixel
+                      ?.transferDataSet(
+                        extractDataSet(profile),
+                        setTransferProgress
+                      )
+                      .then(() => setAnimData(extractDataSet(profile)))
+                      .catch(console.error)
+                      .finally(() => setShowLoadingPopup(false));
+                  }
+                }}
+              />
+            </Box>
+
+            {/* Dice Stats is used without params until we switch to real data */}
+            <DieStats />
+            {/* {Advanced Settings infos} */}
+            <Divider bg="primary.200" width="90%" alignSelf="center" />
+            <Pressable
+              onPress={() => {
+                navigation.navigate("PixelAdvancedSettings", { systemId });
+              }}
+            >
+              <HStack
+                alignItems="center"
+                bg="primary.500"
+                p={3}
+                rounded="md"
+                w="100%"
+                alignSelf="center"
+              >
+                <Text bold>Advanced Settings</Text>
+                <Spacer />
+                <ChevronRightIcon />
+              </HStack>
+            </Pressable>
+
+            <Divider bg="primary.200" width="90%" alignSelf="center" />
+            <Button
+              leftIcon={<AntDesign name="disconnect" size={24} color="white" />}
+              w="100%"
+              alignSelf="center"
+            >
+              <Text bold>Unpair</Text>
+            </Button>
+          </VStack>
+        </ScrollView>
+      </PixelAppPage>
+
       <LoadingPopup
         title="Uploading profile..."
         isOpen={showLoadingPopup}
         progress={transferProgress}
       />
-      <VStack space={6} width="100%" maxW="100%">
-        <Center bg="white" rounded="lg" px={2}>
-          <Input
-            InputRightElement={
-              <FontAwesome5 name="pen" size={20} color="black" />
-            }
-            size="2xl"
-            variant="unstyled"
-            placeholder={pixel?.name}
-            color="black"
-          />
-        </Center>
-        <Center w="100%">
-          <HStack space={0} alignItems="center" paddingLeft={5}>
-            <Box w="50%" paddingLeft={0}>
-              <Box w={sr(200)} h={sr(200)}>
-                <DieRenderer animationData={animData} />
-              </Box>
-            </Box>
-            <Spacer />
-            <VStack flex={2} space={sr(11)} p={2} rounded="md" w="40%">
-              <Button onPress={() => pixel?.blink(Color.dimOrange)}>
-                <MaterialCommunityIcons
-                  name="lightbulb-on-outline"
-                  size={24}
-                  color="white"
-                />
-              </Button>
-              <VStack bg="pixelColors.highlightGray" rounded="md" p={2}>
-                <BatteryLevel size="xl" percentage={pixel?.batteryLevel ?? 0} />
-                <RSSIStrength percentage={pixel?.rssi ?? 0} size="xl" />
-              </VStack>
-              <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
-                <VStack space={2}>
-                  {lastError ? (
-                    <Text bold color="red.500" fontSize="md">
-                      {`${lastError}`}
-                    </Text>
-                  ) : (
-                    <>
-                      <HStack>
-                        <Text bold>Face Up:</Text>
-                        <Spacer />
-                        <Text bold color="green.500" fontSize="md">
-                          {`${rollState?.face ?? ""}`}
-                        </Text>
-                      </HStack>
-                      <HStack>
-                        <Text bold>Status:</Text>
-                        <Spacer />
-                        <Text bold color="green.500" fontSize="md">
-                          {status}
-                        </Text>
-                      </HStack>
-                    </>
-                  )}
-                </VStack>
-              </Box>
-            </VStack>
-          </HStack>
-        </Center>
-
-        {/* {Profiles horizontal scroll list} */}
-        <Box>
-          <HStack alignItems="center" space={2} paddingBottom={2}>
-            <AntDesign name="profile" size={24} color="white" />
-            <Text bold>Recent Profiles:</Text>
-          </HStack>
-          <ProfilesScrollView
-            profiles={MyAppDataSet.profiles}
-            dieRender={(profile) => (
-              <DieRenderer animationData={extractDataSet(profile)} />
-            )}
-            onPress={(profile) => {
-              if (pixel?.isReady) {
-                setTransferProgress(0);
-                setShowLoadingPopup(true);
-                pixel
-                  ?.transferDataSet(
-                    extractDataSet(profile),
-                    setTransferProgress
-                  )
-                  .then(() => setAnimData(extractDataSet(profile)))
-                  .catch(console.error)
-                  .finally(() => setShowLoadingPopup(false));
-              }
-            }}
-          />
-        </Box>
-
-        {/* Dice Stats is used without params until we switch to real data */}
-        {DieStats()}
-        {/* {Advanced Settings infos} */}
-        <Divider bg="primary.200" width="90%" alignSelf="center" />
-        <Pressable
-          onPress={() => {
-            navigation.navigate("PixelAdvancedSettings", { systemId });
-          }}
-        >
-          <HStack
-            alignItems="center"
-            bg="primary.500"
-            p={3}
-            rounded="md"
-            w="100%"
-            alignSelf="center"
-          >
-            <Text bold>Advanced Settings</Text>
-            <Spacer />
-            <ChevronRightIcon />
-          </HStack>
-        </Pressable>
-
-        <Divider bg="primary.200" width="90%" alignSelf="center" />
-        <Button
-          leftIcon={<AntDesign name="disconnect" size={24} color="white" />}
-          w="100%"
-          alignSelf="center"
-        >
-          <Text bold>Unpair</Text>
-        </Button>
-      </VStack>
-    </PxAppPage>
+    </>
   );
 }

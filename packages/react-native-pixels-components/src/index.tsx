@@ -1,11 +1,12 @@
-export { PixelTheme } from "./theme";
+export * from "@systemic-games/react-native-base-components";
 
-export { BatteryLevel } from "./components/BatteryLevel";
-export { RSSIStrength } from "./components/RSSIStrength";
-export { FaceMask } from "./components/FaceMask";
+export * from "./theme";
+export * from "./components/BatteryLevel";
+export * from "./components/RSSIStrength";
+export * from "./components/FaceMask";
 export * from "./components/ColorSelection";
-export { AppPage as PxAppPage } from "./components/AppPage";
-export { LightingStyleSelection } from "./components/LightingStylesSelection";
+export * from "./components/PixelAppPage";
+export * from "./components/LightingStylesSelection";
 export * from "./components/LoadingPopup";
 export * from "./components/ProfileCard";
 export * from "./components/DiceInfo";
@@ -19,4 +20,3 @@ export * from "./components/PatternsActionSheet";
 export * from "./bitMasksUtils";
 export * from "./keyValuesUtils";
 export * from "./animationUtils";
-export * from "@systemic-games/react-native-base-components";

@@ -7,52 +7,9 @@ import {
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
-import { RootStackParamList } from "~/Navigation";
+import { RootStackParamList } from "~/navigation";
 
 const Tab = createBottomTabNavigator<RootStackParamList>();
-
-// const ScreenOptions = (route: any, color: any) => {
-//   let imageRequirePath;
-//   let imageColor;
-//   let imageSize;
-//   let labelColor;
-
-//   switch (route.name) {
-//     case "Patterns":
-//       imageRequirePath = require("../../assets/UI_Icons/pixels-fill.png");
-//       imageColor = "pixelColors.green";
-//       labelColor = "pixelColors.green";
-//       imageSize = 9;
-//       break;
-//     case "Dice Bag":
-//       imageRequirePath = require("../../assets/UI_Icons/D10.png");
-//       imageColor = "pixelColors.red";
-//       labelColor = "pixelColors.red";
-//       imageSize = 8;
-//       break;
-//     case "Profiles":
-//       imageRequirePath = require("../../assets/UI_Icons/id-card.png");
-//       imageColor = "pixelColors.purple";
-//       labelColor = "pixelColors.purple";
-//       imageSize = 9;
-//       break;
-//     case "Settings":
-//       imageRequirePath = require("../../assets/UI_Icons/diagram.png");
-//       imageColor = "pixelColors.yellow";
-//       labelColor = "pixelColors.yellow";
-//       imageSize = 8;
-//       break;
-//   }
-
-//   return (
-//     <Image
-//       alt={imageColor}
-//       source={imageRequirePath}
-//       tintColor={imageColor}
-//       size={imageSize}
-//     />
-//   );
-// };
 
 /**
  * Data and props of a TabBar item that will be displayed inside the tab bar component.

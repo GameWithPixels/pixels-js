@@ -4,17 +4,13 @@ import {
   MaterialCommunityIcons,
   AntDesign,
 } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
-  createPixelTheme,
-  PixelTheme,
-  PxAppPage,
   Card,
   ProfileCardProps,
   DetailedProfileCard,
   createSwipeableSideButton,
+  PixelAppPage,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
@@ -31,35 +27,10 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
 import { extractDataSet, MyAppDataSet } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
-
-export let lastSelectedProfile: EditProfile;
-
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-
-interface SelectedProfile {
-  profile: EditProfile;
-  profileKey: number;
-}
-export let selectedProfile: SelectedProfile;
+import { ProfilesListScreenProps } from "~/navigation";
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -91,10 +62,7 @@ function CreateProfileWidget(props: ProfileCardProps) {
   );
 }
 
-export function ProfilesListScreen() {
-  const navigation =
-    useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
-
+export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
   const [profileList, setProfileList] = React.useState([
     ...MyAppDataSet.profiles,
   ]);
@@ -180,7 +148,7 @@ export function ProfilesListScreen() {
 
   return (
     <>
-      <PxAppPage theme={paleBluePixelTheme} scrollable={false}>
+      <PixelAppPage>
         <VStack space={3}>
           <HStack alignItems="center" paddingRight={2}>
             <Text bold fontSize="md">
@@ -277,9 +245,7 @@ export function ProfilesListScreen() {
                             borderWidth={1}
                             profileWithSound={false}
                             onPress={() => {
-                              // navigation.navigate("ProfileEditRuleScreen");
-                              lastSelectedProfile = profile;
-                              // navigation.navigate("ProfileRulesScreen");
+                              console.error("PROFILE SELECTED!");
                             }}
                           />
                         </Swipeable>
@@ -365,14 +331,11 @@ export function ProfilesListScreen() {
                             profileName={profile.name}
                             borderWidth={1}
                             profileWithSound={false}
-                            onPress={() => {
-                              //Trying to register the profile for updating it on the other screens
-                              selectedProfile = { profile, profileKey: 0 };
-                              selectedProfile.profileKey = EditableStore.getKey(
-                                selectedProfile.profile
-                              );
-                              navigation.navigate("ProfileRulesScreen");
-                            }}
+                            onPress={() =>
+                              navigation.navigate("ProfileRules", {
+                                profileId: EditableStore.getKey(profile),
+                              })
+                            }
                           />
                         </Swipeable>
                       </Box>
@@ -393,7 +356,7 @@ export function ProfilesListScreen() {
             </Box>
           </Center>
         </VStack>
-      </PxAppPage>
+      </PixelAppPage>
 
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content h={180} maxW="100%" w="100%">

@@ -16,13 +16,12 @@ import {
   EditRgbGradient, // simple flash
   EditWidgetData,
   getEditWidgetsData,
+  AnimationTypeValues,
 } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
   FaceMask,
-  PixelTheme,
-  PxAppPage,
-  createPixelTheme,
+  PixelAppPage,
   LightingStyleSelection,
   SliderComponent,
   SimpleColorSelection,
@@ -48,56 +47,14 @@ import {
   Button,
   Box,
 } from "native-base";
-import React, { useEffect } from "react";
+import React from "react";
 
-import { lastSelectedLightingPattern } from "./PatternsScreen";
-
-import { MyAppDataSet } from "~/features/profiles";
+import EditableStore from "~/features/EditableStore";
+import { MyAppDataSet, getAnimData } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
+import { AnimationSettingsScreenProps } from "~/navigation";
 
 const standardPatterns = [...MyAppDataSet.patterns];
-
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-
-const defaultAnim = new EditAnimationRainbow();
-const animDataMap = new Map<
-  EditAnimation,
-  {
-    animations: AnimationPreset;
-    animationBits: AnimationBits;
-  }
->();
-
-function getAnimData(anim?: EditAnimation) {
-  if (!anim) {
-    anim = defaultAnim;
-  }
-  let data = animDataMap.get(anim);
-  if (!data) {
-    const animationBits = new AnimationBits();
-    data = {
-      animationBits,
-      animations: anim.toAnimation(new EditDataSet(), animationBits),
-    };
-    animDataMap.set(anim, data);
-  }
-  return data;
-}
 
 /**
  * Render a widget corresponding to a widget type from {@link EditWidgetData}.
@@ -310,25 +267,22 @@ export function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
   );
 }
 
-export default function AnimationSettingsScreen() {
-  //const route = useRoute<AnimationSettingsScreenRouteProps>();
-  // const patternInfo = route.params;
-  const [editAnim, setEditAnim] = React.useState<EditAnimation>(
-    new EditAnimationSimple()
+export default function AnimationSettingsScreen({
+  route,
+}: AnimationSettingsScreenProps) {
+  const [editAnim, setEditAnim] = React.useState(
+    EditableStore.getEditable<EditAnimation>(route.params.animationId)
   );
-
+  const animTypeText = React.useMemo(
+    () => animationTypeToTitle(editAnim.type),
+    [editAnim.type]
+  );
   const [animData, setAnimData] = React.useState<{
     animations: AnimationPreset;
     animationBits: AnimationBits;
   }>();
-
-  useEffect(() => {
-    setEditAnim(lastSelectedLightingPattern);
-    setLightingType(animationTypeToTitle(lastSelectedLightingPattern.type));
-  }, []);
-  const [lightingTypeText, setLightingType] = React.useState("Simple Flashes");
   return (
-    <PxAppPage theme={paleBluePixelTheme} h="100%">
+    <PixelAppPage>
       <VStack space={2} h="100%">
         <Center bg="white" rounded="lg" px={2} h={9}>
           <Input
@@ -337,7 +291,7 @@ export default function AnimationSettingsScreen() {
             }
             size="lg"
             variant="unstyled"
-            placeholder={lastSelectedLightingPattern.name}
+            placeholder={editAnim.name}
             color="black"
           />
         </Center>
@@ -348,11 +302,13 @@ export default function AnimationSettingsScreen() {
             onPress={() => {
               try {
                 const animationBits = new AnimationBits();
-                const anim = lastSelectedLightingPattern.toAnimation(
-                  new EditDataSet(),
-                  animationBits
-                );
-                setAnimData({ animations: anim, animationBits });
+                setAnimData({
+                  animations: editAnim.toAnimation(
+                    new EditDataSet(),
+                    animationBits
+                  ),
+                  animationBits,
+                });
               } catch (error) {
                 console.error(error);
               }
@@ -362,40 +318,35 @@ export default function AnimationSettingsScreen() {
           </Button>
         </Box>
         <LightingStyleSelection
-          title={lightingTypeText}
+          title={animTypeText}
           itemsData={[
             {
-              label: "Simple Flashes",
+              label: animationTypeToTitle(AnimationTypeValues.simple),
               onPress: () => {
-                setLightingType("Simple Flashes");
                 setEditAnim(new EditAnimationSimple());
               },
             },
             {
-              label: "Colorful Rainbow",
+              label: animationTypeToTitle(AnimationTypeValues.rainbow),
               onPress: () => {
-                setLightingType("Colorful Rainbow");
                 setEditAnim(new EditAnimationRainbow());
               },
             },
             {
-              label: "Simple Gradient",
+              label: animationTypeToTitle(AnimationTypeValues.gradient),
               onPress: () => {
-                setLightingType("Simple Gradient");
                 setEditAnim(new EditAnimationGradient());
               },
             },
             {
-              label: "Color LED Pattern",
+              label: animationTypeToTitle(AnimationTypeValues.keyframed),
               onPress: () => {
-                setLightingType("Color LED Pattern");
                 setEditAnim(new EditAnimationKeyframed());
               },
             },
             {
-              label: "Gradient LED Pattern",
+              label: animationTypeToTitle(AnimationTypeValues.gradientPattern),
               onPress: () => {
-                setLightingType("Gradient LED Pattern");
                 setEditAnim(new EditAnimationGradientPattern());
               },
             },
@@ -403,6 +354,6 @@ export default function AnimationSettingsScreen() {
         />
         {AnimationEditor({ editAnim })}
       </VStack>
-    </PxAppPage>
+    </PixelAppPage>
   );
 }
