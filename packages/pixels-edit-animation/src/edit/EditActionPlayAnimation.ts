@@ -20,7 +20,7 @@ export default class EditActionPlayAnimation extends EditAction {
 
   @widget("playbackFace")
   @name("Play on Face")
-  faceIndex: number;
+  face: number; // Face value
 
   @widget("count")
   @range(1, 10)
@@ -29,12 +29,12 @@ export default class EditActionPlayAnimation extends EditAction {
 
   constructor(
     animation?: EditAnimation,
-    faceIndex: number = Constants.currentFaceIndex,
+    face: number = Constants.currentFaceIndex,
     loopCount = 1
   ) {
     super();
     this.animation = animation;
-    this.faceIndex = faceIndex;
+    this.face = face;
     this.loopCount = loopCount;
   }
 
@@ -47,7 +47,7 @@ export default class EditActionPlayAnimation extends EditAction {
       animIndex: this.animation
         ? editSet.animations.indexOf(this.animation)
         : Constants.currentFaceIndex,
-      faceIndex: this.faceIndex,
+      faceIndex: this.face > 0 ? this.face - 1 : this.face,
       loopCount: this.loopCount,
     });
   }
@@ -55,7 +55,7 @@ export default class EditActionPlayAnimation extends EditAction {
   duplicate(): EditAction {
     return new EditActionPlayAnimation(
       this.animation,
-      this.faceIndex,
+      this.face,
       this.loopCount
     );
   }

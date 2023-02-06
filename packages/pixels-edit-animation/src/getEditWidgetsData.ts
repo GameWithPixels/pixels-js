@@ -30,7 +30,7 @@ export type ToggleData = BaseWidgetData<"toggle", boolean>;
 export type CountData = BaseWidgetWithRangeData<"count">;
 export type SliderData = BaseWidgetWithRangeData<"slider">;
 export type FaceMaskData = BaseWidgetData<"faceMask", number>;
-export type FaceIndexData = BaseWidgetData<"faceIndex", number>;
+export type FaceData = BaseWidgetData<"face", number>;
 export type PlaybackFaceData = BaseWidgetData<"playbackFace", number>;
 export type BitFieldData = BaseWidgetData<"bitField", number> & {
   values: { [key: string]: number };
@@ -54,7 +54,7 @@ export type EditWidgetData =
   | CountData
   | SliderData
   | FaceMaskData
-  | FaceIndexData
+  | FaceData
   | PlaybackFaceData
   | BitFieldData
   | ColorData
@@ -109,7 +109,7 @@ export default function (editAnim: Editable): EditWidgetData[] {
 
         case "count":
         case "slider":
-        case "faceIndex":
+        case "face":
         case "playbackFace":
         case "bitField": {
           assert(

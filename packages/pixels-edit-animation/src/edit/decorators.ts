@@ -147,7 +147,7 @@ export type WidgetType =
   | "count"
   | "slider"
   | "faceMask"
-  | "faceIndex"
+  | "face"
   | "playbackFace"
   | "bitField"
   | "color"

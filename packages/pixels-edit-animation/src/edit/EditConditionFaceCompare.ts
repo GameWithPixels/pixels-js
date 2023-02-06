@@ -23,25 +23,25 @@ export default class EditConditionFaceCompare extends EditCondition {
   @values(FaceCompareFlagsValues)
   flags: FaceCompareFlags;
 
-  @widget("faceIndex")
+  @widget("face")
   @range(0, 19)
   @name("Than")
-  faceIndex: number;
+  face: number; // Face value
 
-  constructor(flags: FaceCompareFlags = 0, faceIndex = 0) {
+  constructor(flags: FaceCompareFlags = 0, face = 0) {
     super();
     this.flags = flags;
-    this.faceIndex = faceIndex;
+    this.face = face;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
     return safeAssign(new ConditionFaceCompare(), {
-      faceIndex: this.faceIndex,
+      faceIndex: this.face > 0 ? this.face - 1 : this.face,
       flags: this.flags,
     });
   }
 
   duplicate(): EditCondition {
-    return new EditConditionFaceCompare(this.flags, this.faceIndex);
+    return new EditConditionFaceCompare(this.flags, this.face);
   }
 }
