@@ -38,18 +38,18 @@ export type PixelAdvancedSettingsScreenProps = StackScreenProps<
 // Animation screen stack
 //
 export type AnimationsScreenStackParamList = {
-  PatternsList: undefined;
-  AnimationSettings: { animationId: number };
+  AnimationsList: undefined;
+  AnimationEdit: { animationId: number };
 };
 
-export type PatternsListScreenProps = StackScreenProps<
+export type AnimationsListScreenProps = StackScreenProps<
   AnimationsScreenStackParamList,
-  "PatternsList"
+  "AnimationsList"
 >;
 
-export type AnimationSettingsScreenProps = StackScreenProps<
+export type AnimationEditScreenProps = StackScreenProps<
   AnimationsScreenStackParamList,
-  "AnimationSettings"
+  "AnimationEdit"
 >;
 
 //

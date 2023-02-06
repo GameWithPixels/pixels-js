@@ -1,28 +1,13 @@
-import { FontAwesome5 } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
-  AnimationBits,
-  AnimationPreset,
   Color,
   EditAnimation,
-  EditAnimationGradient, // simple gradient
-  EditAnimationGradientPattern,
-  EditAnimationKeyframed, // gradient led pattern
-  EditAnimationNoise as _EditAnimationNoise, // noise
-  EditAnimationRainbow, // rainbow
-  EditAnimationSimple,
   EditColor,
-  EditDataSet,
-  EditRgbGradient, // simple flash
+  EditRgbGradient,
   EditWidgetData,
-  getEditWidgetsData,
-  AnimationTypeValues,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  Card,
   FaceMask,
-  PixelAppPage,
-  LightingStyleSelection,
   SliderComponent,
   SimpleColorSelection,
   Toggle,
@@ -30,7 +15,6 @@ import {
   FaceSelector,
   PlayBackFace,
   PatternActionSheet,
-  animationTypeToTitle,
   AnimationsActionSheet,
   valuesToKeys,
   keysToValues,
@@ -38,23 +22,11 @@ import {
   combineFlags,
   bitsToFlags,
 } from "@systemic-games/react-native-pixels-components";
-import {
-  VStack,
-  ScrollView,
-  Center,
-  Input,
-  Text,
-  Button,
-  Box,
-} from "native-base";
+import { Text } from "native-base";
 import React from "react";
 
-import EditableStore from "~/features/EditableStore";
 import { MyAppDataSet, getAnimData } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
-import { AnimationSettingsScreenProps } from "~/navigation";
-
-const standardPatterns = [...MyAppDataSet.patterns];
 
 /**
  * Render a widget corresponding to a widget type from {@link EditWidgetData}.
@@ -140,18 +112,19 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <PatternActionSheet
           initialPattern={widget.getValue()}
-          patterns={standardPatterns}
+          patterns={MyAppDataSet.patterns}
           dieRenderer={() => <DieRenderer animationData={getAnimData()} />}
           onSelectPattern={(pattern) => {
             widget.update(pattern);
           }}
         />
       );
+
     case "grayscalePattern":
       return (
         <PatternActionSheet
           initialPattern={widget.getValue()}
-          patterns={standardPatterns}
+          patterns={MyAppDataSet.patterns}
           dieRenderer={() => <DieRenderer animationData={getAnimData()} />}
           onSelectPattern={(pattern) => {
             widget.update(pattern);
@@ -243,117 +216,4 @@ export function RenderWidget({ widget }: { widget: EditWidgetData }) {
     default:
       assertNever(type);
   }
-}
-/**
- * Container component for {@link RenderWidget} to display widgets for animation edition.
- * @param editAnim type of animation for widgets to display.
- * @returns a scrollview of edition widgets corresponding to the type of animation.
- */
-export function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
-  const animWidgets = React.useMemo(() => {
-    return getEditWidgetsData(editAnim);
-  }, [editAnim]);
-
-  return (
-    <>
-      <ScrollView>
-        <VStack p={2} h="100%" space={2} bg="gray.700" rounded="md">
-          {animWidgets.map((widget, key) => (
-            <RenderWidget key={key} widget={widget} />
-          ))}
-        </VStack>
-      </ScrollView>
-    </>
-  );
-}
-
-export default function AnimationSettingsScreen({
-  route,
-}: AnimationSettingsScreenProps) {
-  const [editAnim, setEditAnim] = React.useState(
-    EditableStore.getEditable<EditAnimation>(route.params.animationId)
-  );
-  const animTypeText = React.useMemo(
-    () => animationTypeToTitle(editAnim.type),
-    [editAnim.type]
-  );
-  const [animData, setAnimData] = React.useState<{
-    animations: AnimationPreset;
-    animationBits: AnimationBits;
-  }>();
-  return (
-    <PixelAppPage>
-      <VStack space={2} h="100%">
-        <Center bg="white" rounded="lg" px={2} h={9}>
-          <Input
-            InputRightElement={
-              <FontAwesome5 name="pen" size={18} color="black" />
-            }
-            size="lg"
-            variant="unstyled"
-            placeholder={editAnim.name}
-            color="black"
-          />
-        </Center>
-        <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0} />
-        <Box p={1} w="100%" h={200} rounded="lg">
-          <DieRenderer animationData={animData} />
-          <Button
-            onPress={() => {
-              try {
-                const animationBits = new AnimationBits();
-                setAnimData({
-                  animations: editAnim.toAnimation(
-                    new EditDataSet(),
-                    animationBits
-                  ),
-                  animationBits,
-                });
-              } catch (error) {
-                console.error(error);
-              }
-            }}
-          >
-            Apply
-          </Button>
-        </Box>
-        <LightingStyleSelection
-          title={animTypeText}
-          itemsData={[
-            {
-              label: animationTypeToTitle(AnimationTypeValues.simple),
-              onPress: () => {
-                setEditAnim(new EditAnimationSimple());
-              },
-            },
-            {
-              label: animationTypeToTitle(AnimationTypeValues.rainbow),
-              onPress: () => {
-                setEditAnim(new EditAnimationRainbow());
-              },
-            },
-            {
-              label: animationTypeToTitle(AnimationTypeValues.gradient),
-              onPress: () => {
-                setEditAnim(new EditAnimationGradient());
-              },
-            },
-            {
-              label: animationTypeToTitle(AnimationTypeValues.keyframed),
-              onPress: () => {
-                setEditAnim(new EditAnimationKeyframed());
-              },
-            },
-            {
-              label: animationTypeToTitle(AnimationTypeValues.gradientPattern),
-              onPress: () => {
-                setEditAnim(new EditAnimationGradientPattern());
-              },
-            },
-          ]}
-        />
-        {AnimationEditor({ editAnim })}
-      </VStack>
-    </PixelAppPage>
-  );
 }

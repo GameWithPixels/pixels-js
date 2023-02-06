@@ -16,6 +16,7 @@ import {
   EditConditionHelloGoodbye,
   EditConditionIdle,
   EditConditionRolling,
+  EditRule,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
 import {
@@ -34,10 +35,8 @@ import {
   ScrollView,
 } from "native-base";
 import React from "react";
-import { EditRule } from "~/../../../packages/pixels-edit-animation/dist/types";
 
-import { RenderWidget } from "../Patterns/AnimationSettingsScreen";
-
+import { RenderWidget } from "~/components/RenderWidget";
 import EditableStore from "~/features/EditableStore";
 import { ProfileEditRuleScreenProps } from "~/navigation";
 import getConditionSimpleTitle from "~/screens/MainScreens/Profiles/getConditionSimpleTitle";

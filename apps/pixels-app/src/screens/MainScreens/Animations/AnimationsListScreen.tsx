@@ -33,7 +33,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import EditableStore from "~/features/EditableStore";
 import { MyAppDataSet } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
-import { PatternsListScreenProps } from "~/navigation";
+import { AnimationsListScreenProps } from "~/navigation";
 
 const standardLightingPatterns = [...MyAppDataSet.animations];
 
@@ -88,9 +88,9 @@ function CreatePatternWidget(props: LightingPatternCardProps) {
   );
 }
 
-export default function PatternsListScreen({
+export default function AnimationsListScreen({
   navigation,
-}: PatternsListScreenProps) {
+}: AnimationsListScreenProps) {
   const [patternList, setPatternsList] = React.useState<EditAnimation[]>(
     standardLightingPatterns
   );
@@ -187,7 +187,7 @@ export default function PatternsListScreen({
                   >
                     <LightingPatternsCard
                       onPress={() =>
-                        navigation.navigate("AnimationSettings", {
+                        navigation.navigate("AnimationEdit", {
                           animationId: EditableStore.getKey(anim),
                         })
                       }

@@ -3,8 +3,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { NativeBaseProvider } from "native-base";
 import React from "react";
 
-import AnimationSettingsScreen from "./AnimationSettingsScreen";
-import PatternsListScreen from "./PatternsListScreen";
+import AnimationEditScreen from "./AnimationEditScreen";
+import AnimationsListScreen from "./AnimationsListScreen";
 
 import { AnimationsScreenStackParamList } from "~/navigation";
 import { paleBluePixelTheme } from "~/themes";
@@ -27,15 +27,15 @@ export default function PatternsNavigator() {
         }}
       >
         <Stack.Screen
-          name="PatternsList"
-          component={PatternsListScreen}
+          name="AnimationsList"
+          component={AnimationsListScreen}
           options={{
             title: "Lighting Patterns",
           }}
         />
         <Stack.Screen
-          name="AnimationSettings"
-          component={AnimationSettingsScreen}
+          name="AnimationEdit"
+          component={AnimationEditScreen}
           options={{
             title: "Lighting Patterns Settings",
           }}

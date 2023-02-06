@@ -13,7 +13,7 @@ import { Provider } from "react-redux";
 
 import { store } from "./app/store";
 import { TabBarNavigator } from "./components/TabBarNavigator";
-import PatternsNavigator from "./screens/MainScreens/Patterns/PatternsNavigator";
+import PatternsNavigator from "./screens/MainScreens/Animations/AnimationsNavigator";
 import ProfilesNavigator from "./screens/MainScreens/Profiles/ProfilesNavigator";
 
 import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
