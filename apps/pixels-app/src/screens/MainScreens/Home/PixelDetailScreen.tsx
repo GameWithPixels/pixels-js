@@ -27,7 +27,7 @@ import {
 import {
   AnimationBits,
   getPixel,
-  usePixelConnect,
+  usePixel,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import {
@@ -313,7 +313,7 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
     useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
   const { systemId } = props.route.params;
   const pixel = getPixel(systemId);
-  const [status] = usePixelConnect(pixel);
+  const [status, lastError] = usePixel(pixel);
   const [rollState] = usePixelValue(pixel, "rollState");
 
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
@@ -372,20 +372,28 @@ export default function PixelDetailScreen(props: PixelDetailScreenProps) {
               </VStack>
               <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
                 <VStack space={2}>
-                  <HStack>
-                    <Text bold>Face Up:</Text>
-                    <Spacer />
-                    <Text bold color="green.500" fontSize="md">
-                      {`${rollState?.face ?? ""}`}
+                  {lastError ? (
+                    <Text bold color="red.500" fontSize="md">
+                      {`${lastError}`}
                     </Text>
-                  </HStack>
-                  <HStack>
-                    <Text bold>Status:</Text>
-                    <Spacer />
-                    <Text bold color="green.500" fontSize="md">
-                      {status}
-                    </Text>
-                  </HStack>
+                  ) : (
+                    <>
+                      <HStack>
+                        <Text bold>Face Up:</Text>
+                        <Spacer />
+                        <Text bold color="green.500" fontSize="md">
+                          {`${rollState?.face ?? ""}`}
+                        </Text>
+                      </HStack>
+                      <HStack>
+                        <Text bold>Status:</Text>
+                        <Spacer />
+                        <Text bold color="green.500" fontSize="md">
+                          {status}
+                        </Text>
+                      </HStack>
+                    </>
+                  )}
                 </VStack>
               </Box>
             </VStack>
