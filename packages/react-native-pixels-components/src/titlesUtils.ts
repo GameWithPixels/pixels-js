@@ -1,8 +1,15 @@
 import {
+  ActionTypeValues,
+  AnimationType,
+  AnimationTypeValues,
   BatteryStateFlagsValues,
-  EditCondition,
+  ConditionType,
   ConditionTypeValues,
   ConnectionStateFlagsValues,
+  EditAction,
+  EditActionPlayAnimation,
+  EditActionPlayAudioClip,
+  EditCondition,
   EditConditionBatteryState,
   EditConditionConnectionState,
   EditConditionFaceCompare,
@@ -10,9 +17,74 @@ import {
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
 } from "@systemic-games/pixels-edit-animation";
-import { bitsToFlags } from "@systemic-games/react-native-pixels-components";
 
-export default function (condition: EditCondition): string {
+import { bitsToFlags } from "./bitMasksUtils";
+
+export function getActionTitles(actions: EditAction[]): string[] {
+  const actionsTitles: any[] = [];
+
+  actions.forEach(function (action) {
+    if (action.type === ActionTypeValues.playAnimation) {
+      actionsTitles.push(
+        "Play " + (action as EditActionPlayAnimation).animation?.name
+      );
+    } else {
+      actionsTitles.push(
+        "Play " + (action as EditActionPlayAudioClip).clip?.name
+      );
+    }
+  });
+  return actionsTitles;
+}
+
+/**
+ * Return the animation type title based on the animation type.
+ * @param animation The editAnimation to check type and return title.
+ * @returns a string representing the animation type title.
+ */
+export function getAnimationTitle(animationType?: AnimationType): string {
+  switch (animationType) {
+    case AnimationTypeValues.simple:
+      return "Simple Flashes";
+    case AnimationTypeValues.rainbow:
+      return "Colorful Rainbow";
+    case AnimationTypeValues.gradient:
+      return "Simple Gradient";
+    case AnimationTypeValues.gradientPattern:
+      return "Gradient LED Pattern";
+    case AnimationTypeValues.keyframed:
+      return "Color LED Pattern";
+    case AnimationTypeValues.noise:
+      return "Noise";
+    default:
+      return "Type";
+  }
+}
+
+export function getConditionSimpleTitle(actionType: ConditionType): string {
+  switch (actionType) {
+    case ConditionTypeValues.handling:
+      return "Pixel is picked up";
+    case ConditionTypeValues.batteryState:
+      return "Battery Event...";
+    case ConditionTypeValues.connectionState:
+      return "Bluetooth Event...";
+    case ConditionTypeValues.crooked:
+      return "Pixel is crooked";
+    case ConditionTypeValues.faceCompare:
+      return "Pixel roll is...";
+    case ConditionTypeValues.helloGoodbye:
+      return "Pixel wakes up / sleeps";
+    case ConditionTypeValues.idle:
+      return "Pixel is idle for...";
+    case ConditionTypeValues.rolling:
+      return "Pixel is rolling";
+    default:
+      return "No action selected";
+  }
+}
+
+export function getConditionTitle(condition: EditCondition): string {
   if (condition) {
     const type = condition.type;
     switch (type) {

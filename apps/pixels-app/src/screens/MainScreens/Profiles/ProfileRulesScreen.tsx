@@ -3,12 +3,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import {
   EditRule,
   EditConditionFaceCompare,
+  EditProfile,
 } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
   createSwipeableSideButton,
   ProfileRulesCard,
   PixelAppPage,
+  getActionTitles,
+  getConditionTitle,
 } from "@systemic-games/react-native-pixels-components";
 import { Box, HStack, Pressable, VStack, Text, Input } from "native-base";
 import React from "react";
@@ -17,10 +20,6 @@ import DraggableFlatList, {
   RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
-import { EditProfile } from "~/../../../packages/pixels-edit-animation/dist/types";
-
-import getActionTitles from "./getActionTitles";
-import getConditionTitle from "./getConditionTitle";
 
 import EditableStore from "~/features/EditableStore";
 import DieRenderer from "~/features/render3d/DieRenderer";

@@ -17,21 +17,21 @@ import {
   Card,
   PixelAppPage,
   LightingStyleSelection,
+  RenderWidget,
+  getAnimationTitle,
 } from "@systemic-games/react-native-pixels-components";
 import { VStack, ScrollView, Center, Input, Button, Box } from "native-base";
 import React from "react";
 
-import getAnimationTitle from "./getAnimationTitle";
-
-import { RenderWidget } from "~/components/RenderWidget";
 import EditableStore from "~/features/EditableStore";
+import { MyAppDataSet, getAnimData } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { AnimationEditScreenProps } from "~/navigation";
 
 /**
  * Container component for {@link RenderWidget} to display widgets for animation edition.
  * @param editAnim type of animation for widgets to display.
- * @returns a scrollview of edition widgets corresponding to the type of animation.
+ * @returns a ScrollView of edition widgets corresponding to the type of animation.
  */
 export function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
   const animWidgets = React.useMemo(() => {
@@ -43,7 +43,16 @@ export function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
       <ScrollView>
         <VStack p={2} h="100%" space={2} bg="gray.700" rounded="md">
           {animWidgets.map((widget, key) => (
-            <RenderWidget key={key} widget={widget} />
+            <RenderWidget
+              key={key}
+              widget={widget}
+              patternsParams={{
+                patterns: MyAppDataSet.patterns,
+                dieRenderer: () => (
+                  <DieRenderer animationData={getAnimData()} />
+                ),
+              }}
+            />
           ))}
         </VStack>
       </ScrollView>

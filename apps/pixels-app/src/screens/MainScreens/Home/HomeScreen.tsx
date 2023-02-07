@@ -6,6 +6,7 @@ import {
   PairedPixelInfoComponent,
   ScannedPixelInfoComponent,
   SquarePairedPixelInfo,
+  sr,
 } from "@systemic-games/react-native-pixels-components";
 import {
   AnimationPreset,
@@ -26,7 +27,6 @@ import React from "react";
 // eslint-disable-next-line import/namespace
 import { RefreshControl } from "react-native";
 
-import { sr } from "~/Utils";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { DiceListScreenProps } from "~/navigation";
 

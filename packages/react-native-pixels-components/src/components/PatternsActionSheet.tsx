@@ -1,5 +1,7 @@
-import { EditPattern } from "@systemic-games/pixels-edit-animation";
-import { EditAnimation } from "@systemic-games/pixels-edit-animation/dist/types";
+import {
+  EditAnimation,
+  EditPattern,
+} from "@systemic-games/pixels-edit-animation";
 import {
   Actionsheet,
   Box,
@@ -10,8 +12,6 @@ import {
   useDisclose,
 } from "native-base";
 import React, { useEffect } from "react";
-// eslint-disable-next-line import/namespace
-import { ImageSourcePropType } from "react-native";
 
 import { PatternCard } from "./PatternCards";
 
@@ -22,21 +22,27 @@ export interface PatternsActionsheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
   patterns: EditPattern[];
-  dieRenderer: (pattern: EditPattern) => React.ReactNode;
-  w?: number;
-  h?: number;
+  dieRenderer?: (pattern: EditPattern) => React.ReactNode;
   onSelectPattern?: ((editPattern: EditPattern) => void) | null | undefined;
   initialPattern?: EditPattern;
 }
+
 /**
  * Actionsheet drawer of patterns to be opened to display a vertical scroll view of pressables and selectables pattern cards.
  * @param props See {@link PatternsActionsheetProps} for props parameters.
  */
-export function PatternActionSheet(props: PatternsActionsheetProps) {
+export function PatternActionSheet({
+  trigger,
+  drawerTitle,
+  patterns,
+  dieRenderer,
+  onSelectPattern,
+  initialPattern,
+}: PatternsActionsheetProps) {
   const [patternToHighlight, setPatternToHighlight] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclose();
   const [selectedPattern, setSelectedPattern] = React.useState<EditPattern>(
-    props.initialPattern ? props.initialPattern : new EditPattern()
+    initialPattern ? initialPattern : new EditPattern()
   );
 
   return (
@@ -47,14 +53,14 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
           onOpen();
         }}
       >
-        {!props.trigger ? (
+        {!trigger ? (
           <Box w="100%" p={2} bg="primary.700" rounded="lg">
             <HStack space={2} alignItems="center">
               <Text>{selectedPattern?.name ?? "No led pattern selected"}</Text>
             </HStack>
           </Box>
         ) : (
-          props.trigger
+          trigger
         )}
       </Pressable>
 
@@ -62,11 +68,11 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
         <Actionsheet.Content maxH="100%" h={600}>
           <Text bold paddingBottom={5}>
-            {props.drawerTitle ? props.drawerTitle : "Available Patterns"}
+            {drawerTitle ? drawerTitle : "Available Patterns"}
           </Text>
           <ScrollView>
             <HStack flexWrap="wrap" w="100%">
-              {props.patterns?.map((pattern, i) => (
+              {patterns?.map((pattern, i) => (
                 <Box key={i} p={1}>
                   <PatternCard
                     w="105px"
@@ -79,11 +85,13 @@ export function PatternActionSheet(props: PatternsActionsheetProps) {
                     onSelected={() => {
                       setPatternToHighlight(i);
                       setSelectedPattern(pattern);
-                      props.onSelectPattern?.(pattern);
+                      onSelectPattern?.(pattern);
                       onClose();
                     }}
                     patternName={pattern.name}
-                    dieRenderer={() => props.dieRenderer(pattern)}
+                    dieRenderer={
+                      dieRenderer ? () => dieRenderer(pattern) : undefined
+                    }
                   />
                 </Box>
               ))}
@@ -102,20 +110,22 @@ export interface AnimationActionsheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
   animations: EditAnimation[];
-  dieRenderer: (anim: EditAnimation) => React.ReactNode;
-  w?: number;
-  h?: number;
+  dieRenderer?: (anim: EditAnimation) => React.ReactNode;
   onSelectAnimation?: (editAnimation: EditAnimation) => void;
   initialAnimation?: EditAnimation;
-  imageRequirePath?: ImageSourcePropType;
 }
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
  * @param props See {@link PatternsActionsheetProps} for props parameters.
  */
-export function AnimationsActionSheet(props: AnimationActionsheetProps) {
-  // const [patternToHighlight, setPatternToHighlight] = React.useState<number>();
-
+export function AnimationsActionSheet({
+  trigger,
+  drawerTitle,
+  animations,
+  dieRenderer,
+  onSelectAnimation,
+  initialAnimation,
+}: AnimationActionsheetProps) {
   const [animationName, setAnimationName] = React.useState<string>();
   const [animationsList, setAnimationsList] = React.useState<EditAnimation[]>(
     []
@@ -128,22 +138,11 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
     React.useState<EditAnimation>();
 
   useEffect(() => {
-    setAnimationsList(props.animations);
-    const initialAnim = props.initialAnimation;
+    setAnimationsList(animations);
+    const initialAnim = initialAnimation;
 
     setAnimationName(initialAnim ? initialAnim.name : "undefined");
-  }, [props.animations, props.initialAnimation]);
-
-  // useEffect(() => {
-  //   const infos: PatternInfo[] = [];
-  //   animationsList.map((pattern) =>
-  //     infos.push({
-  //       editPattern: pattern,
-  //       imageRequirePath: defaultImageRequirePath,
-  //     })
-  //   );
-  //   setPatternsInfo(infos);
-  // }, [animationsList]);
+  }, [animations, initialAnimation]);
 
   return (
     <>
@@ -153,7 +152,7 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
           onOpen();
         }}
       >
-        {!props.trigger ? (
+        {!trigger ? (
           <Box w="100%" p={2} bg="primary.700" rounded="lg">
             <HStack space={2} alignItems="center">
               <Text>
@@ -162,7 +161,7 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
             </HStack>
           </Box>
         ) : (
-          props.trigger
+          trigger
         )}
       </Pressable>
 
@@ -170,7 +169,7 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
         <Actionsheet.Content maxH="100%" h={600}>
           <Text bold paddingBottom={5}>
-            {props.drawerTitle ? props.drawerTitle : "Available Animations"}
+            {drawerTitle ? drawerTitle : "Available Animations"}
           </Text>
           <ScrollView>
             <HStack flexWrap="wrap" w="100%">
@@ -188,11 +187,13 @@ export function AnimationsActionSheet(props: AnimationActionsheetProps) {
                     onSelected={() => {
                       setAnimationName(animation.name);
                       setSelectedAnimation(animation);
-                      props.onSelectAnimation?.(animation);
+                      onSelectAnimation?.(animation);
                       onClose();
                     }}
                     patternName={animation.name}
-                    dieRenderer={() => props.dieRenderer(animation)}
+                    dieRenderer={
+                      dieRenderer ? () => dieRenderer(animation) : undefined
+                    }
                   />
                 </Box>
               ))}

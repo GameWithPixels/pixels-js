@@ -15,6 +15,7 @@ import {
   createSwipeableSideButton,
   Card,
   LightingPatternCardProps,
+  getAnimationTitle,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Actionsheet,
@@ -29,8 +30,6 @@ import {
 } from "native-base";
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
-
-import getAnimationTitle from "./getAnimationTitle";
 
 import EditableStore from "~/features/EditableStore";
 import { MyAppDataSet } from "~/features/profiles";
