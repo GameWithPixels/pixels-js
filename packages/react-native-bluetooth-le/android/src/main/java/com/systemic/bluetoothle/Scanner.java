@@ -68,9 +68,9 @@ public final class Scanner
 
         // Build scan settings
         ScanSettings settings = new ScanSettings.Builder()
-                .setLegacy(false) // Default is true for compatibility with older apps, but we all type of advertisements, not just legacy
-                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // Default is low power which is good for long scans, in our use case we do short scans and we prefer having quick results
-                .build(); // Other defaults are great for us
+            .setLegacy(false) // Default is true for compatibility with older apps, but we all type of advertisements, not just legacy
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // Default is low power which is good for long scans, in our use case we do short scans and we prefer having quick results
+            .build(); // Other defaults are great for us
 
         // Convert the comma separated list of UUIDs
         List<ScanFilter> filters = null;
@@ -83,6 +83,7 @@ public final class Scanner
                 {
                     if (uuidStr.length() > 0)
                     {
+                        Log.v(TAG, "==> scan filter: " + uuidStr);
                         ParcelUuid uuid = ParcelUuid.fromString(uuidStr);
                         filters.add(new ScanFilter.Builder().setServiceUuid(uuid).build());
                     }
