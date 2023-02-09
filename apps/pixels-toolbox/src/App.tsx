@@ -63,7 +63,11 @@ function App() {
                 },
               }}
             >
-              <Drawer.Screen name="HomeNavigator" component={HomeNavigator} />
+              <Drawer.Screen
+                name="HomeNavigator"
+                component={HomeNavigator}
+                options={{ title: t("pixelsScanner") }}
+              />
               <Drawer.Screen
                 name="Validation"
                 component={ValidationScreen}

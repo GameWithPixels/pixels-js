@@ -1,3 +1,4 @@
+import { DrawerScreenProps } from "@react-navigation/drawer";
 import type { StackScreenProps } from "@react-navigation/stack";
 
 // Main menu
@@ -9,6 +10,11 @@ export type RootScreensParamList = {
   Animations: undefined;
   DiceRenderer: undefined;
 };
+
+export type HomeNavigatorProps = DrawerScreenProps<
+  RootScreensParamList,
+  "HomeNavigator"
+>;
 
 // Home screen and sub screens
 export type HomeScreensParamList = {

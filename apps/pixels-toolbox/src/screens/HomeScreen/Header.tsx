@@ -1,18 +1,21 @@
 import Constants from "expo-constants";
-import { HamburgerIcon, Pressable, Text } from "native-base";
+import { Center, HStack, HamburgerIcon, Pressable, Text } from "native-base";
 import { memo } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-function HeaderImpl({ navigation }: { navigation: { openDrawer(): void } }) {
+function HeaderImpl({ onPress }: { onPress?: () => void }) {
+  const { top } = useSafeAreaInsets();
   return (
-    <>
-      <Pressable width={50} height={50} onPress={() => navigation.openDrawer()}>
+    <HStack mt={top}>
+      <Pressable width={50} height={50} onPress={onPress}>
         <HamburgerIcon size="100%" />
       </Pressable>
-      <Text variant="h1">
-        {`Toolbox ${Constants.manifest?.version}`}
-        {__DEV__ ? " 🚧" : ""}
-      </Text>
-    </>
+      <Center flex={1}>
+        <Text variant="h1">
+          {`Toolbox ${__DEV__ ? " 🚧" : Constants.manifest?.version}`}
+        </Text>
+      </Center>
+    </HStack>
   );
 }
 
