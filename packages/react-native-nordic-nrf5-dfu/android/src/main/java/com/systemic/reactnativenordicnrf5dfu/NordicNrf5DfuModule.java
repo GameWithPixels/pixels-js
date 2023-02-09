@@ -30,9 +30,11 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
     public static final String NAME = "NordicNrf5Dfu";
     private static final String TAG = "SystemicGames";
     private final static String INTERNAL_ERROR = "INTERNAL_ERROR";
+    private final static String INVALID_CALL = "INVALID_CALL";
     private final static String INVALID_ARGUMENT = "INVALID_ARGUMENT";
     private final ReactApplicationContext _reactContext;
     private Promise _startDfuPromise = null;
+    private DfuServiceController _dfuController = null;
 
     public NordicNrf5DfuModule(final ReactApplicationContext reactContext) {
         super(reactContext);
@@ -74,6 +76,8 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             final int prepareDataObjectDelay,
             final int rebootTime,
             final int bootloaderScanTimeout,
+            final boolean forceScanningForNewAddress,
+            final boolean keepBond,
             final Promise promise) {
         if (address == 0) {
             promise.reject(INVALID_ARGUMENT, "address must be different than zero");
@@ -95,12 +99,11 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             promise.reject(INVALID_ARGUMENT, "bootloaderScanTimeout must be 0 or greater");
             return;
         }
-        if (_startDfuPromise != null) {
-            promise.reject(INVALID_ARGUMENT, "DFU already in progress");
+        if (_dfuController != null) {
+            promise.reject(INVALID_CALL, "DFU already in progress");
             return;
         }
         try {
-            _startDfuPromise = promise;
             long macAddress = (long)address;
             StringBuilder str = new StringBuilder();
             for (int i = 5; i >= 0; --i) {
@@ -113,8 +116,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             String macAddressStr = str.toString();
             Log.v(TAG, "Starting DFU for " + macAddressStr + ", retries=" + numberOfRetries);
 
-            DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(macAddressStr)
-                    .setKeepBond(false);
+            DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(macAddressStr);
             if (deviceName != null && deviceName.length() > 0) {
                 serviceInitiator.setDeviceName(deviceName);
             }
@@ -122,18 +124,27 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             serviceInitiator.setPacketsReceiptNotificationsValue(1);
             serviceInitiator.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
             serviceInitiator.setZip(filePath);
+            // 400 is the recommended value for the delay, see comments in DfuServiceInitiator.java of the DFU library
             serviceInitiator.setPrepareDataObjectDelay(prepareDataObjectDelay > 0 ? prepareDataObjectDelay : 400);
             serviceInitiator.setRebootTime(rebootTime);  //  Default is 0
             if (bootloaderScanTimeout > 0) {
                 serviceInitiator.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
             }
+            serviceInitiator.setForceScanningForNewAddressInLegacyDfu(forceScanningForNewAddress);
+            serviceInitiator.setKeepBond(keepBond);
 
-            // Note: store the returned DfuServiceController instance if you want to allow for abort the operation
-            serviceInitiator.start(_reactContext, DfuService.class);
+            _dfuController = serviceInitiator.start(_reactContext, DfuService.class);
+            _startDfuPromise = promise;
         }
         catch (Exception ex) {
-            _startDfuPromise = null;
             promise.reject(INTERNAL_ERROR, ex.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void abortDfu() {
+        if (_dfuController != null) {
+            _dfuController.abort();
         }
     }
 
@@ -172,6 +183,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
      * when the screen is locked or the app went to the background. This is because the UI needs to have the
      * correct information after user comes back to the activity and this information can't be read from the service
      * as it might have been killed already (DFU completed or finished with error).
+     * Note: those events are raised on the main thread.
      */
     private final DfuProgressListener _dfuProgressListener = new DfuProgressListenerAdapter() {
         @Override
@@ -201,25 +213,27 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
 
         @Override
         public void onDfuCompleted(@NonNull final String deviceAddress) {
-            if (_startDfuPromise != null) {
-                _startDfuPromise.resolve(null);
-                _startDfuPromise = null;
-            }
+            Promise promise = getPromiseAndSetDone();
             sendStateUpdate("dfuCompleted", deviceAddress);
-
-            new Handler().postDelayed(() -> {
-                // if this activity is still open and upload process was completed, cancel the notification
-                final NotificationManager manager = (NotificationManager) _reactContext.getSystemService(Context.NOTIFICATION_SERVICE);
-                manager.cancel(DfuService.NOTIFICATION_ID);
-            }, 200);
+            if (promise != null) {
+                promise.resolve(null);
+            }
         }
 
         @Override
         public void onDfuAborted(@NonNull final String deviceAddress) {
+            Promise promise = getPromiseAndSetDone();
             sendStateUpdate("dfuAborted", deviceAddress);
-            if (_startDfuPromise != null) {
-                _startDfuPromise.reject("2", "DFU ABORTED");
-                _startDfuPromise = null;
+            if (promise != null) {
+                promise.reject("2", "DFU ABORTED");
+            }
+        }
+
+        @Override
+        public void onError(@NonNull final String deviceAddress, final int error, final int errorType, final String message) {
+            Promise promise = getPromiseAndSetDone();
+            if (promise != null) {
+                promise.reject(Integer.toString(error), message);
             }
         }
 
@@ -235,12 +249,21 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             sendEvent("progress", map);
         }
 
-        @Override
-        public void onError(@NonNull final String deviceAddress, final int error, final int errorType, final String message) {
-            if (_startDfuPromise != null) {
-                _startDfuPromise.reject(Integer.toString(error), message);
-                _startDfuPromise = null;
+        private Promise getPromiseAndSetDone() {
+            Promise promise = _startDfuPromise;
+            _dfuController = null;
+            _startDfuPromise = null;
+            try {
+                new Handler().postDelayed(() -> {
+                    // if this activity is still open and upload process was completed, cancel the notification
+                    final NotificationManager manager = (NotificationManager) _reactContext.getSystemService(Context.NOTIFICATION_SERVICE);
+                    manager.cancel(DfuService.NOTIFICATION_ID);
+                }, 200);
             }
+            catch (Exception e) {
+                Log.e(TAG, "Error cancelling DFU notification: " + e.toString());
+            }
+            return promise;
         }
     };
 }

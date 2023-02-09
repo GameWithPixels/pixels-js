@@ -91,7 +91,21 @@ export interface StartDfuOptions {
    */
   bootloaderScanTimeout?: number;
   /**
-   * Disable the button less DFU feature for non-bonded devices which
+   * When this is set to true, the Legacy button-less Service will scan for the device advertising
+   * with an incremented MAC address, instead of trying to reconnect to the same device.
+   * @defaultValue false.
+   * @remarks Android only.
+   */
+  forceScanningForNewAddress?: boolean;
+  /**
+   * Sets whether the bond information should be preserver after flashing new application.
+   * This feature requires Legacy DFU Bootloader version 0.6 or newer (SDK 8.0.0+).
+   * @defaultValue false.
+   * @remarks This flag is ignored when Secure DFU button-less Service is used. Android only.
+   */
+  keepBond?: boolean;
+  /**
+   * Disable the button-less DFU feature for non-bonded devices which
    * allows to send a unique name to the device before it is switched
    * to bootloader mode.
    * @defaultValue false.
@@ -180,7 +194,9 @@ export async function startDfu(
         options?.retries ?? 0,
         options?.prepareDataObjectDelay ?? 0,
         options?.rebootTime ?? 0,
-        options?.bootloaderScanTimeout ?? 0
+        options?.bootloaderScanTimeout ?? 0,
+        options?.forceScanningForNewAddress ?? false,
+        options?.keepBond ?? false
       );
     } else {
       throw new Error("Platform not supported (not Android or iOS)");
@@ -191,4 +207,11 @@ export async function startDfu(
     progressSub?.remove();
     stateSub?.remove();
   }
+}
+
+/**
+ * Abort an on going DFU if any.
+ */
+export async function abortDfu(): Promise<void> {
+  await NordicNrf5Dfu.abortDfu();
 }
