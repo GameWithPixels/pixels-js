@@ -21,11 +21,15 @@ export interface UsePixelScannerOptions {
 /**
  * React hook that instantiates {@link PixelScanner}
  * and use it to maintain an up-to-date list of {@link PixelDispatcher}.
- * @param options See {@link UsePixelScannerOptions}
- * @returns The list of {@link ScannedPixel} and stable reducer like function
- * to dispatch actions to the scanner.
+ * @param options Optional arguments, see {@link UsePixelScannerOptions}.
+ * @returns An array with:
+ * - the list of {@link ScannedPixel},
+ * - a stable reducer like function to dispatch actions to the scanner.
+ * - the last encountered error.
+ * @remarks On Android, BLE scanning will fail without error when started more than 5 times
+ * during the last 30 seconds.
  */
-export default function (
+export function usePixelScanner(
   options?: UsePixelScannerOptions
 ): [ScannedPixel[], (action: PixelScannerAction) => void, Error?] {
   const [lastError, setLastError] = useState<Error>();

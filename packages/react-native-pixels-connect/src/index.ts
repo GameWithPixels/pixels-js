@@ -1,12 +1,4 @@
-import { Central } from "@systemic-games/react-native-bluetooth-le";
-
-export async function initializeBle() {
-  await Central.initialize();
-}
-
-export async function shutdownBle() {
-  await Central.shutdown();
-}
+export * from "./ble";
 
 export { default as PixelScanner } from "./PixelScanner";
 export * from "./PixelScanner";
@@ -15,10 +7,7 @@ export * from "./PixelScanNotifier";
 export { type default as ScannedPixel } from "./ScannedPixel";
 export { default as getPixel } from "./getPixel";
 
-export { default as useFocusPixelScanner } from "./hooks/useFocusPixelScanner";
-export * from "./hooks/useFocusPixelScanner";
-
-export { default as usePixelScanner } from "./hooks/usePixelScanner";
+export * from "./hooks/useBluetooth";
 export * from "./hooks/usePixelScanner";
 
 export * from "@systemic-games/pixels-core-connect";

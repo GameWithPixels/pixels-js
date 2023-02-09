@@ -1,10 +1,8 @@
-import {
-  initializeBle,
-  shutdownBle,
-} from "@systemic-games/react-native-pixels-connect";
 import { useEffect } from "react";
 
-export default function (): void {
+import { initializeBle, shutdownBle } from "../ble";
+
+export function useBluetooth(): void {
   useEffect(() => {
     initializeBle().catch(console.error);
     return () => {

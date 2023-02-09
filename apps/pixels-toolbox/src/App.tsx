@@ -1,5 +1,6 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
+import { useBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, themeTools } from "native-base";
 import { useTranslation } from "react-i18next";
@@ -15,7 +16,6 @@ import DiceRenderer from "./screens/DiceRenderer";
 import HomeNavigator from "./screens/HomeNavigator";
 import theme from "./theme";
 
-import useBluetooth from "~/features/pixels/hooks/useBluetooth";
 import { type RootScreensParamList } from "~/navigation";
 import RollScreen from "~/screens/RollScreen";
 import ValidationScreen from "~/screens/ValidationScreen";

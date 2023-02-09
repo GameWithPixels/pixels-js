@@ -1,10 +1,7 @@
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { PixelTheme } from "@systemic-games/react-native-pixels-components";
-import {
-  initializeBle,
-  shutdownBle,
-} from "@systemic-games/react-native-pixels-connect";
+import { useBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { NativeBaseProvider } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
@@ -26,13 +23,7 @@ LogBox.ignoreLogs([
 ]);
 
 export default function App() {
-  React.useEffect(() => {
-    // Initialize BLE and start scanning
-    initializeBle().catch(console.error);
-    return () => {
-      shutdownBle().catch(console.error);
-    };
-  }, []);
+  useBluetooth();
   return (
     <Provider store={store}>
       <NativeBaseProvider theme={PixelTheme}>
