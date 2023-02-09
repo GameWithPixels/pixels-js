@@ -37,8 +37,7 @@ export function usePixelScanner(
   // Options default values
   const sortedByName = options?.sortedByName ?? false;
   const refreshInterval = options?.refreshInterval ?? 1000;
-  // TODO only scanFilter initial value is used
-  const scanFilterRef = useRef(options?.scanFilter);
+  const scanFilter = options?.scanFilter;
 
   // Pixels scan list and PixelDispatcher list
   const notifierRef = useRef<PixelScanNotifier>();
@@ -51,21 +50,37 @@ export function usePixelScanner(
     const intervalId = setInterval(() => {
       if (updatedRef.current && notifierRef.current) {
         updatedRef.current = false;
-        const scannedPixels = notifierRef.current.scannedPixels;
-        if (sortedByName) {
-          // Note: we sort even if no new entry was added as a die name
-          // could have changed since the last sort
-          scannedPixels.sort((p1, p2) =>
-            getPixelUniqueName(p1).localeCompare(getPixelUniqueName(p2))
-          );
+        const scannedPixels = scanFilter
+          ? notifierRef.current.scannedPixels.filter(scanFilter)
+          : notifierRef.current.scannedPixels;
+        if (scannedPixels.length) {
+          if (sortedByName) {
+            // Note: we sort even if no new entry was added as a die name
+            // could have changed since the last sort
+            scannedPixels.sort((p1, p2) =>
+              getPixelUniqueName(p1).localeCompare(getPixelUniqueName(p2))
+            );
+          }
+          setPixels((prevPixels) => {
+            // Compare with existing list
+            const l = prevPixels.length;
+            if (scannedPixels.length !== l) {
+              return scannedPixels;
+            }
+            for (let i = 0; i < l; ++i) {
+              if (prevPixels[i] !== scannedPixels[i]) {
+                return scannedPixels;
+              }
+            }
+            return prevPixels;
+          });
         }
-        setPixels(scannedPixels);
       }
     }, refreshInterval);
     return () => {
       clearInterval(intervalId);
     };
-  }, [sortedByName, refreshInterval]);
+  }, [sortedByName, refreshInterval, scanFilter]);
 
   // Init / clean up
   useEffect(() => {
@@ -81,10 +96,8 @@ export function usePixelScanner(
   const dispatch = useCallback((action: PixelScannerAction) => {
     const dispatchAsync = async () => {
       if (!notifierRef.current) {
-        notifierRef.current = new PixelScanNotifier(
-          () => (updatedRef.current = true),
-          scanFilterRef.current
-        );
+        notifierRef.current = new PixelScanNotifier();
+        notifierRef.current.listener = () => (updatedRef.current = true);
       }
       return notifierRef.current.dispatch(action);
     };

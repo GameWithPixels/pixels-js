@@ -12,6 +12,22 @@ import ScannedPixel from "./ScannedPixel";
 export type PixelScanNotifierAction = "start" | "stop" | "clear";
 
 /**
+ * Type for a callback listening to {@link PixelScanNotifier} scan events.
+ */
+export type PixelScanListener =
+  | ((pixel: ScannedPixel | null) => void)
+  | null
+  | undefined;
+
+/**
+ * Type for a callback filtering {@link ScannedPixel}, used by {@link PixelScanNotifier}.
+ */
+export type PixelScanFilter =
+  | ((scannedPixel: ScannedPixel) => boolean)
+  | null
+  | undefined;
+
+/**
  * Represents an up-to-date list of scanned Pixels.
  * Subscribe to the "updated" event to get notified
  * when the list is changed.
@@ -21,19 +37,25 @@ export default class PixelScanNotifier {
   private readonly _queue = new SequentialPromiseQueue();
   private readonly _pixels: ScannedPixel[] = [];
   private _scanCallback?: (pixel: ScannedPixel) => void;
-  private _notifyCallback: (pixel?: ScannedPixel) => void;
-  private _scanFilter?: (scannedPixel: ScannedPixel) => boolean;
+  private _listener: PixelScanListener;
+  private _scanFilter: PixelScanFilter;
+
+  get listener(): PixelScanListener {
+    return this._listener;
+  }
+  set listener(listener: PixelScanListener) {
+    this._listener = listener;
+  }
+
+  get scanFilter(): PixelScanFilter {
+    return this._scanFilter;
+  }
+  set scanFilter(scanFilter: PixelScanFilter) {
+    this._scanFilter = scanFilter;
+  }
 
   get scannedPixels() {
     return [...this._pixels];
-  }
-
-  constructor(
-    notifyCallback: (pixel?: ScannedPixel) => void,
-    scanFilter?: (scannedPixel: ScannedPixel) => boolean
-  ) {
-    this._notifyCallback = notifyCallback;
-    this._scanFilter = scanFilter;
   }
 
   // Reducer like function for a PixelScanner
@@ -60,7 +82,7 @@ export default class PixelScanNotifier {
                   // Replace previous entry
                   this._pixels[index] = pixel;
                 }
-                this._notifyCallback(pixel);
+                this._listener?.(pixel);
               }
             };
             scanner.addEventListener("scannedPixel", listener);
@@ -68,6 +90,7 @@ export default class PixelScanNotifier {
             this._scanCallback = listener;
           }
           break;
+
         case "stop":
           // Check if a scan was already started
           if (this._scanCallback) {
@@ -79,10 +102,12 @@ export default class PixelScanNotifier {
             this._scanCallback = undefined;
           }
           break;
+
         case "clear":
           this._pixels.length = 0;
-          this._notifyCallback(undefined);
+          this._listener?.(null);
           break;
+
         default:
           assertNever(action);
       }

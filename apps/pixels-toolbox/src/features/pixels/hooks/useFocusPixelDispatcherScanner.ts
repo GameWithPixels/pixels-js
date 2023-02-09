@@ -10,7 +10,15 @@ import usePixelDispatcherScanner, {
 interface UseFocusPixelDispatcherScannerOptions
   extends UsePixelDispatcherScannerOptions {}
 
-// Returned dispatch function is stable
+/**
+ * React hook that starts and stops Pixel Bluetooth scans based on React Navigation focus events.
+ * See {@link usePixelDispatcherScanner} for more information.
+ * @param options Optional arguments, see {@link UseFocusPixelDispatcherScannerOptions}.
+ * @returns An array with:
+ * - the list of {@link PixelDispatcher},
+ * - a stable reducer like function to dispatch actions to the scanner,
+ * - the last encountered error.
+ */
 export default function (
   options?: UseFocusPixelDispatcherScannerOptions
 ): [PixelDispatcher[], (action: PixelScannerAction) => void, Error?] {

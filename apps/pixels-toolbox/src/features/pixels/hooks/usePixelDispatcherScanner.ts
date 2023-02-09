@@ -14,9 +14,11 @@ export interface UsePixelDispatcherScannerOptions
 /**
  * React hook that instantiates a {@link PixelScanNotifier}
  * and use it to maintain an up-to-date list of {@link PixelDispatcher}.
- * @param options See {@link UsePixelDispatcherScannerOptions}
- * @returns The list of {@link PixelDispatcher} and stable reducer like function
- * to dispatch actions to the scan notifier.
+ * @param options Optional arguments, see {@link UsePixelDispatcherScannerOptions}.
+ * @returns An array with:
+ * - the list of {@link PixelDispatcher},
+ * - a stable reducer like function to dispatch actions to the scanner,
+ * - the last encountered error.
  */
 export default function (
   options?: UsePixelDispatcherScannerOptions
@@ -26,8 +28,7 @@ export default function (
   // Options default values
   const sortedByName = options?.sortedByName ?? false;
   const refreshInterval = options?.refreshInterval ?? 1000;
-  // TODO only scanFilter initial value is used
-  const scanFilterRef = useRef(options?.scanFilter);
+  const scanFilter = options?.scanFilter;
 
   // Pixels scan list and PixelDispatcher list
   const stateRef = useRef({
@@ -39,6 +40,7 @@ export default function (
 
   // Setup batch updates
   useEffect(() => {
+    // TODO run batch updates only when getting updates
     const intervalId = setInterval(() => {
       if (stateRef.current.cleared) {
         stateRef.current.cleared = false;
@@ -54,34 +56,46 @@ export default function (
       }
       if (stateRef.current.updated && stateRef.current.notifier) {
         stateRef.current.updated = false;
-        const scannedPixels = stateRef.current.notifier.scannedPixels;
-        setPixels((oldPixels) => {
-          const pixels = [...oldPixels];
-          scannedPixels.forEach((sp) => {
-            const index = pixels.findIndex((p) => p.pixelId === sp.pixelId);
-            if (index < 0) {
-              // New entry
-              pixels.push(new PixelDispatcher(sp));
+        const scannedPixels = scanFilter
+          ? stateRef.current.notifier.scannedPixels.filter(scanFilter)
+          : stateRef.current.notifier.scannedPixels;
+        if (scannedPixels.length) {
+          setPixels((oldPixels) => {
+            const pixels = [...oldPixels];
+            let updated = false;
+            scannedPixels.forEach((sp) => {
+              const index = pixels.findIndex((p) => p.pixelId === sp.pixelId);
+              if (index < 0) {
+                // New entry
+                pixels.push(new PixelDispatcher(sp));
+                updated = true;
+              } else {
+                // Update existing entry
+                if (pixels[index].updateScannedPixel(sp)) {
+                  updated = true;
+                }
+              }
+            });
+            if (updated) {
+              if (sortedByName) {
+                // Note: we sort even if no new entry was added as a die name
+                // could have changed since the last sort
+                scannedPixels.sort((p1, p2) =>
+                  getPixelUniqueName(p1).localeCompare(getPixelUniqueName(p2))
+                );
+              }
+              return pixels;
             } else {
-              // Update existing entry
-              pixels[index].updateScannedPixel(sp);
+              return oldPixels;
             }
           });
-          if (sortedByName) {
-            // Note: we sort even if no new entry was added as a die name
-            // could have changed since the last sort
-            scannedPixels.sort((p1, p2) =>
-              getPixelUniqueName(p1).localeCompare(getPixelUniqueName(p2))
-            );
-          }
-          return pixels;
-        });
+        }
       }
     }, refreshInterval);
     return () => {
       clearInterval(intervalId);
     };
-  }, [sortedByName, refreshInterval, stateRef]);
+  }, [sortedByName, refreshInterval, stateRef, scanFilter]);
 
   // Init / clean up
   useEffect(() => {
@@ -98,13 +112,14 @@ export default function (
   const dispatch = useCallback((action: PixelScannerAction) => {
     setLastError(undefined);
     if (!stateRef.current.notifier) {
-      stateRef.current.notifier = new PixelScanNotifier((sp) => {
+      stateRef.current.notifier = new PixelScanNotifier();
+      stateRef.current.notifier.listener = (sp) => {
         if (sp) {
           stateRef.current.updated = true;
         } else {
           stateRef.current.cleared = true;
         }
-      }, scanFilterRef.current);
+      };
     }
     stateRef.current.notifier.dispatch(action).catch(setLastError);
   }, []);

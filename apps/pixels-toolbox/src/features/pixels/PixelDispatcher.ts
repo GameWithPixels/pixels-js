@@ -195,13 +195,16 @@ export default class PixelDispatcher implements IPixel {
     this._evEmitter.removeListener(eventName, listener);
   }
 
-  updateScannedPixel(scannedPixel: ScannedPixel) {
-    if (this._scannedPixel !== scannedPixel) {
+  updateScannedPixel(scannedPixel: ScannedPixel): boolean {
+    if (this._scannedPixel === scannedPixel) {
+      return false;
+    } else {
       if (this.pixelId !== scannedPixel.pixelId) {
         throw new Error("Pixel id doesn't match");
       }
       this._scannedPixel = scannedPixel;
       this._lastBleActivity = new Date();
+      return true;
     }
   }
 
