@@ -1,4 +1,4 @@
-export { theme, createPixelTheme } from "./theme";
+export * from "./theme";
 export * from "./components/Card";
 export * from "./components/Toggle";
 export * from "./components/PercentageDisplay";
@@ -11,3 +11,4 @@ export * from "./components/ColorWheel";
 export * from "./components/Slider";
 export * from "./components/PopUp";
 export * from "./components/Swipeable";
+export * from "./components/Histogram";

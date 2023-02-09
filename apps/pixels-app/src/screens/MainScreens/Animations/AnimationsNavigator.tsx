@@ -1,17 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NativeBaseProvider } from "native-base";
+import React from "react";
 
-import ProfileEditRuleScreen from "./ProfileEditRuleScreen";
-import ProfilesRulesScreen from "./ProfileRulesScreen";
-import { ProfilesListScreen } from "./ProfilesListScreen";
+import AnimationEditScreen from "./AnimationEditScreen";
+import AnimationsListScreen from "./AnimationsListScreen";
 
-import { ProfilesScreenStackParamList } from "~/navigation";
+import { AnimationsScreenStackParamList } from "~/navigation";
 import { paleBluePixelTheme } from "~/themes";
 
-const Stack = createStackNavigator<ProfilesScreenStackParamList>();
+const Stack = createStackNavigator<AnimationsScreenStackParamList>();
 
-export default function ProfilesNavigator() {
+export default function PatternsNavigator() {
   return (
     <NativeBaseProvider theme={paleBluePixelTheme}>
       <Stack.Navigator
@@ -27,24 +27,17 @@ export default function ProfilesNavigator() {
         }}
       >
         <Stack.Screen
-          name="ProfilesList"
-          component={ProfilesListScreen}
+          name="AnimationsList"
+          component={AnimationsListScreen}
           options={{
-            title: "Profiles",
+            title: "Lighting Patterns",
           }}
         />
         <Stack.Screen
-          name="ProfileRules"
-          component={ProfilesRulesScreen}
+          name="AnimationEdit"
+          component={AnimationEditScreen}
           options={{
-            title: "Profile Rules",
-          }}
-        />
-        <Stack.Screen
-          name="ProfileEditRule"
-          component={ProfileEditRuleScreen}
-          options={{
-            title: "Edit Rule",
+            title: "Lighting Patterns Settings",
           }}
         />
       </Stack.Navigator>

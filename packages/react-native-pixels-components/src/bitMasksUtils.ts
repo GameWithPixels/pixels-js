@@ -23,24 +23,38 @@ export function bitsToIndices(value: number): number[] {
 }
 
 /**
+ * Decompose the given value into the corresponding list of flags.
+ * @remarks In this context, a flag is a 2^n value.
+ * @param value  The value to use.
+ * @returns The flags corresponding to the "on" bits.
+ */
+export function bitsToFlags(value: number): number[] {
+  return bitsToIndices(value).map(bitIndexToFlag);
+}
+
+/**
  * Combines the given values into a single one by OR-ing them.
  * This is most useful when combining flags.
+ * @remarks In this context, a flag is a 2^n value.
  * @remarks Because of the limitations of the OR operator, the given flags must be less than 2^31.
  * @param flags List of numbers (flags) to combine.
  * @returns The combined value.
  */
-export function combineBits(flags: number[]): number {
-  return flags.reduce((prev, cur) => {
-    assert(
-      cur < 0x80000000,
-      "Flag value greater or equal to 2^31, can't combine using OR operator"
-    );
-    return prev | cur;
-  });
+export function combineFlags(flags: number[]): number {
+  return flags.length
+    ? flags.reduce((prev, cur) => {
+        assert(
+          cur < 0x80000000,
+          "Flag value greater or equal to 2^31, can't combine using OR operator"
+        );
+        return prev | cur;
+      })
+    : 0;
 }
 
 /**
- * Converts a given bit index to the corresponding flag value (which is 2^bitIndex).
+ * Converts a given bit index to the corresponding flag value.
+ * @remarks In this context, a flag is a 2^n value.
  * @remarks Because the value is returned as a 64 bits floating point number with a 52 bits mantissa,
  * the given bit index must be less than 53.
  * @param bitIndex A bit index.

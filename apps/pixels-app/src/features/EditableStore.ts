@@ -1,3 +1,4 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import { Editable } from "@systemic-games/pixels-edit-animation";
 
 const _editList: (Editable | undefined)[] = [];
@@ -21,6 +22,12 @@ const EditableStore = {
     } else {
       return key;
     }
+  },
+
+  getEditable<T extends Editable>(key: number): T {
+    const editable = _editList[key] as T;
+    assert(editable, `Not Editable object with this key: ${key}`);
+    return editable; //TODO check type
   },
 
   /**

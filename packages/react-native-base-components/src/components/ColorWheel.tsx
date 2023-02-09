@@ -42,7 +42,7 @@ export const enum ColorWheelColorType {
  */
 export interface ColorWheelProps {
   initialColor?: string;
-  onSelectColor: React.Dispatch<React.SetStateAction<string>>; // action to initiate after selecting a color on the wheel
+  onSelectColor: ((color: string) => void) | null | undefined; // action to initiate after selecting a color on the wheel
   wheelParams?: WheelParams;
   colorType?: ColorWheelColorType;
 }
@@ -142,7 +142,7 @@ export function ColorWheel(props: ColorWheelProps) {
               }
               onPress={() => {
                 setSelectedColor(s.color);
-                props.onSelectColor(toStringColor(s.color));
+                props.onSelectColor?.(toStringColor(s.color));
               }}
             />
           </Box>

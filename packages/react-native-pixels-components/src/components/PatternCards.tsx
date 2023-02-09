@@ -1,27 +1,14 @@
-import {
-  EditAnimation,
-  EditPattern,
-} from "@systemic-games/pixels-edit-animation/dist/types";
 import { Card } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Image } from "native-base";
+import { Pressable, Text, Box, HStack, VStack } from "native-base";
 import {
   ColorType,
   SizeType,
 } from "native-base/lib/typescript/components/types";
-// eslint-disable-next-line import/namespace
-import { ImageSourcePropType } from "react-native";
-
-export interface PatternInfo {
-  //Temporary
-  imageRequirePath?: ImageSourcePropType;
-  //Temporary is a string
-  animationType?: string;
-  editPattern: EditPattern;
-  patternKey?: number;
-}
+import React from "react";
 
 export interface PatternCardProps {
-  patternInfo: PatternInfo;
+  patternName: string;
+  dieRenderer?: () => React.ReactNode;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -37,6 +24,7 @@ export interface PatternCardProps {
   selectable?: boolean; // used to disable the selection highlight (used until actual selection system is done)
   onSelected?: React.Dispatch<React.SetStateAction<number | undefined>>; // set the currently selected profile with the profile card index
 }
+
 export function PatternCard(props: PatternCardProps) {
   const selectedPatternIndex = props.selectedPatternIndex;
   const isSelected = props.selectable
@@ -50,24 +38,24 @@ export function PatternCard(props: PatternCardProps) {
       }}
     >
       <Card {...props} borderWidth={isSelected ? 3 : props.borderWidth}>
-        <Image
-          size={props.imageSize}
-          alt={props.patternInfo.editPattern.name}
-          source={props.patternInfo.imageRequirePath}
-        />
-        <Text>{props.patternInfo.editPattern.name}</Text>
+        {props.dieRenderer && (
+          <Box size={props.imageSize}>{props.dieRenderer()}</Box>
+        )}
+        <Text>{props.patternName}</Text>
       </Card>
     </Pressable>
   );
 }
 
-export interface LightingPatternsInfo {
-  editAnimation: EditAnimation;
-  imageRequirePath: ImageSourcePropType;
-}
+// export interface LightingPatternsInfo {
+//   editAnimation: EditAnimation;
+//   imageRequirePath: ImageSourcePropType;
+// }
 
 export interface LightingPatternCardProps {
-  lightingPatternInfo: LightingPatternsInfo;
+  title: string;
+  name?: string;
+  dieRenderer?: () => React.ReactNode;
   bg?: ColorType;
   w?: number | string;
   h?: number | string;
@@ -80,7 +68,7 @@ export interface LightingPatternCardProps {
   //To be used with the list in which the cards are placed and displayed for selection highlight
 }
 
-export function LightingPatternsCard(props: LightingPatternCardProps) {
+export function LightingPatternCard(props: LightingPatternCardProps) {
   return (
     <Pressable
       onPress={() => {
@@ -88,12 +76,28 @@ export function LightingPatternsCard(props: LightingPatternCardProps) {
       }}
     >
       <Card {...props} borderWidth={props.borderWidth}>
-        <Image
-          size={props.imageSize}
-          alt={props.lightingPatternInfo.editAnimation.name}
-          source={props.lightingPatternInfo.imageRequirePath}
-        />
-        <Text>{props.lightingPatternInfo.editAnimation.name}</Text>
+        <HStack p={1} h="100%" alignItems="center">
+          <Box flex={1} alignItems="center">
+            <Text isTruncated fontSize="lg" bold>
+              {props.name}
+            </Text>
+          </Box>
+          <Box flex={1} alignItems="center">
+            {props.dieRenderer && (
+              <Box size={props.imageSize}>{props.dieRenderer()}</Box>
+            )}
+          </Box>
+          <VStack flex={1} alignItems="center">
+            {/* {props.profileWithSound && (
+              <HStack flex={1} alignItems="center">
+                <AntDesign name="sound" size={24} color="white" />
+              </HStack>
+            )} */}
+            <HStack flex={1} alignItems="center">
+              <Text bold>{props.title}</Text>
+            </HStack>
+          </VStack>
+        </HStack>
       </Card>
     </Pressable>
   );

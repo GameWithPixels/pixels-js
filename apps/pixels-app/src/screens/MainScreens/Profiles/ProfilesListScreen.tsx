@@ -4,17 +4,13 @@ import {
   MaterialCommunityIcons,
   AntDesign,
 } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { DataSet, EditProfile } from "@systemic-games/pixels-edit-animation";
+import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
-  createPixelTheme,
-  PixelTheme,
-  PxAppPage,
   Card,
   ProfileCardProps,
   DetailedProfileCard,
   createSwipeableSideButton,
+  PixelAppPage,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
@@ -31,48 +27,10 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import { ProfilesScreenStackParamList } from "~/Navigation";
 import EditableStore from "~/features/EditableStore";
-import StandardProfiles from "~/features/StandardProfile";
+import { extractDataSet, MyAppDataSet } from "~/features/profiles";
 import DieRenderer from "~/features/render3d/DieRenderer";
-
-export let lastSelectedProfile: EditProfile;
-
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-
-const standardProfiles = [...StandardProfiles.profiles];
-const defaultProfile = StandardProfiles.defaultProfile;
-defaultProfile.name = "Default profile";
-interface SelectedProfile {
-  profile: EditProfile;
-  profileKey: number;
-}
-export let selectedProfile: SelectedProfile;
-
-const profilesDataSet = new Map<EditProfile, DataSet>();
-function getDataSet(profile: EditProfile): DataSet {
-  let animData = profilesDataSet.get(profile);
-  if (!animData) {
-    animData = StandardProfiles.extractForProfile(profile).toDataSet();
-    profilesDataSet.set(profile, animData);
-  }
-  return animData;
-}
+import { ProfilesListScreenProps } from "~/navigation";
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -104,22 +62,21 @@ function CreateProfileWidget(props: ProfileCardProps) {
   );
 }
 
-export function ProfilesListScreen() {
-  const navigation =
-    useNavigation<StackNavigationProp<ProfilesScreenStackParamList>>();
-
-  const [profileList, setProfileList] = React.useState(standardProfiles);
+export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
+  const [profileList, setProfileList] = React.useState([
+    ...MyAppDataSet.profiles,
+  ]);
   // List of favorite profiles
   const [favoriteProfilesList, setFavoritesProfileList] = React.useState<
     EditProfile[]
   >([]);
 
-  function addProfile(profileToAdd: EditProfile) {
-    const newProfile = profileToAdd;
+  function addProfile(profile: EditProfile) {
+    MyAppDataSet.profiles.push(profile);
     // Register the new profile in the editable store
-    EditableStore.getKey(newProfile);
+    EditableStore.getKey(profile);
     // Add the new profile in the UI list
-    setProfileList([...profileList, newProfile]);
+    setProfileList((profileList) => [...profileList, profile]);
   }
 
   /**
@@ -133,20 +90,26 @@ export function ProfilesListScreen() {
     const duplicatedProfile = profileToDuplicate.duplicate();
 
     // Duplicate the profile in the UI list
-    profileList.splice(index + 1, 0, duplicatedProfile);
-    setProfileList([...profileList]);
+    setProfileList((profileList) => {
+      const profiles = [...profileList];
+      profiles.splice(index + 1, 0, duplicatedProfile);
+      return profiles;
+    });
   }
 
   function deleteProfile(profileToDelete: EditProfile) {
     const profileToDeleteKey = EditableStore.getKey(profileToDelete);
-    profileList.splice(
-      profileList.findIndex((profileToDelete) => {
-        return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
-      }),
-      1
-    );
-    setProfileList([...profileList]);
     EditableStore.unregister(profileToDelete);
+    setProfileList((profileList) => {
+      const profiles = [...profileList];
+      profiles.splice(
+        profiles.findIndex((profileToDelete) => {
+          return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
+        }),
+        1
+      );
+      return profiles;
+    });
   }
 
   function addToFavorites(profileToFavorite: EditProfile) {
@@ -159,22 +122,21 @@ export function ProfilesListScreen() {
       }),
       1
     );
-    console.log("added to favorites");
     // Add profile to favorite list
     setFavoritesProfileList([...favoriteProfilesList, favoriteProfile]);
   }
 
   function removeFromFavorites(profileToRemove: EditProfile) {
     const profileToDeleteKey = EditableStore.getKey(profileToRemove);
-    favoriteProfilesList.splice(
-      favoriteProfilesList.findIndex((profileToDelete) => {
+    const profiles = [...favoriteProfilesList];
+    profiles.splice(
+      profiles.findIndex((profileToDelete) => {
         return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
       }),
       1
     );
-    setFavoritesProfileList([...favoriteProfilesList]);
-
-    setProfileList([...profileList, profileToRemove]);
+    setFavoritesProfileList(profiles);
+    setProfileList((profileList) => [...profileList, profileToRemove]);
   }
 
   function openExportSheet(_profileToExport: EditProfile) {
@@ -186,7 +148,7 @@ export function ProfilesListScreen() {
 
   return (
     <>
-      <PxAppPage theme={paleBluePixelTheme} scrollable={false}>
+      <PixelAppPage>
         <VStack space={3}>
           <HStack alignItems="center" paddingRight={2}>
             <Text bold fontSize="md">
@@ -208,7 +170,7 @@ export function ProfilesListScreen() {
                 <VStack space={2}>
                   <HStack p={1} space={3} alignItems="center">
                     <AntDesign name="staro" size={24} color="white" />
-                    <Text bold>Favorites :</Text>
+                    <Text bold>Favorites:</Text>
                   </HStack>
                   <VStack p={2} rounded="lg" bg="gray.700">
                     {favoriteProfilesList.map((profile, i) => (
@@ -275,7 +237,7 @@ export function ProfilesListScreen() {
                             imageSize={70}
                             dieRender={() => (
                               <DieRenderer
-                                animationData={getDataSet(profile)}
+                                animationData={extractDataSet(profile)}
                               />
                             )}
                             textSize="md"
@@ -283,10 +245,7 @@ export function ProfilesListScreen() {
                             borderWidth={1}
                             profileWithSound={false}
                             onPress={() => {
-                              // navigation.navigate("ProfileEditRuleScreen");
-                              lastSelectedProfile = profile;
-                              // navigation.navigate("ProfileRulesScreen");
-                              // console.log(lastSelectedProfile.rules);
+                              console.error("PROFILE SELECTED!");
                             }}
                           />
                         </Swipeable>
@@ -365,22 +324,18 @@ export function ProfilesListScreen() {
                             imageSize={70}
                             dieRender={() => (
                               <DieRenderer
-                                animationData={getDataSet(profile)}
+                                animationData={extractDataSet(profile)}
                               />
                             )}
                             textSize="md"
                             profileName={profile.name}
                             borderWidth={1}
                             profileWithSound={false}
-                            onPress={() => {
-                              //Trying to register the profile for updating it on the other screens
-                              selectedProfile = { profile, profileKey: 0 };
-                              selectedProfile.profileKey = EditableStore.getKey(
-                                selectedProfile.profile
-                              );
-                              console.log(selectedProfile.profile.rules);
-                              navigation.navigate("ProfileRulesScreen");
-                            }}
+                            onPress={() =>
+                              navigation.navigate("ProfileRules", {
+                                profileId: EditableStore.getKey(profile),
+                              })
+                            }
                           />
                         </Swipeable>
                       </Box>
@@ -388,11 +343,11 @@ export function ProfilesListScreen() {
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget
-                      profileName="+"
+                      profileName=""
                       dieRender={() => <></>}
                       onPress={() => {
                         // Empty profile that will need to be edited
-                        addProfile(defaultProfile);
+                        addProfile(new EditProfile("New Profile"));
                       }}
                     />
                   </Box>
@@ -401,7 +356,7 @@ export function ProfilesListScreen() {
             </Box>
           </Center>
         </VStack>
-      </PxAppPage>
+      </PixelAppPage>
 
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content h={180} maxW="100%" w="100%">

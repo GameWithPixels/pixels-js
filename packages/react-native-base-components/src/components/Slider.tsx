@@ -25,7 +25,8 @@ export interface SliderProps extends ISliderProps {
 }
 
 export function SliderComponent(props: SliderProps) {
-  const [onChangeValue, setOnChangeValue] = React.useState(0.1);
+  const defaultValue = props.defaultValue;
+  const [onChangeValue, setOnChangeValue] = React.useState(defaultValue);
   const resolvedProps = usePropsResolution("Slider", props);
   return (
     <VStack space={1}>
@@ -40,14 +41,14 @@ export function SliderComponent(props: SliderProps) {
         >
           <Slider
             {...resolvedProps}
-            defaultValue={resolvedProps.minValue}
+            defaultValue={resolvedProps.defaultValue}
             minValue={resolvedProps.minValue}
             maxValue={resolvedProps.maxValue}
             size={resolvedProps.size}
             step={resolvedProps.step}
             onChange={(v) => {
               setOnChangeValue(v);
-              resolvedProps.onSelectedValue?.(v);
+              props.onSelectedValue?.(v);
             }}
           >
             <Slider.Track shadow={1}>
@@ -65,7 +66,9 @@ export function SliderComponent(props: SliderProps) {
           minW={resolvedProps.unitBoxMinWidth}
           bg={resolvedProps.boxColor}
         >
-          <Text alignSelf="center">{onChangeValue + resolvedProps.unit}</Text>
+          <Text alignSelf="center">
+            {props.unitType ? onChangeValue + props.unitType : onChangeValue}
+          </Text>
         </Box>
       </HStack>
     </VStack>

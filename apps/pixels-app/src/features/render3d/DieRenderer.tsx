@@ -54,8 +54,10 @@ function onContextCreate(
   const render = () => {
     requestAnimationFrame(render);
 
-    // Update
+    // Rotate die
     die3d.rotation.y -= 0.005;
+
+    // Update animation
     const ms = Date.now();
     const anims = getAnimInstances();
     let changed = lastAnims !== anims;

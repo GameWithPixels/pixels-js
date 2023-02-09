@@ -1,76 +1,37 @@
-import {
-  Box,
-  ITheme,
-  NativeBaseProvider,
-  ScrollView,
-  StatusBar,
-  usePropsResolution,
-} from "native-base";
+import { Box, StatusBar, usePropsResolution } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
-import React, { PropsWithChildren, useState } from "react";
-// eslint-disable-next-line import/namespace
-import { RefreshControl } from "react-native";
+import React, { PropsWithChildren } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 /**
  * Props for AppPage component.
  */
 export interface AppPageProps extends PropsWithChildren {
-  theme?: ITheme; // Theme used in the page and given to NativeBaseProvider. Will be applied to all the children contained inside the app page
-  scrollable?: boolean;
   h?: number | string;
   w?: number | string;
   p?: number | string;
-  lightBg?: ColorType;
-  onRefresh?: (() => void) | null | undefined; // Function executed when refreshing the page
+  bg?: ColorType;
 }
-
-const wait = (timeout: number) => {
-  return new Promise((resolve) => setTimeout(resolve, timeout));
-};
 
 /**
  * App page container with a scroll view to create separate pages with custom theme.
  * @param props See {@link AppPageProps} for props parameters.
  */
-function AppPage(props: AppPageProps) {
-  const [refreshing, setRefreshing] = useState(false);
-
-  //Example to use and see the refresh function
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    wait(2000).then(() => setRefreshing(false));
-  }, []);
+export function AppPage(props: AppPageProps) {
   const resolvedProps = usePropsResolution("AppPage", props) as AppPageProps;
   return (
-    <NativeBaseProvider theme={props.theme}>
+    <SafeAreaProvider>
       <StatusBar />
-      <SafeAreaProvider>
-        <Box
-          paddingX={2}
-          paddingTop={2}
-          paddingBottom={1}
-          bg={resolvedProps.lightBg}
-          h={resolvedProps.h}
-          w={resolvedProps.w}
-        >
-          {resolvedProps.scrollable ? (
-            <ScrollView
-              height="100%"
-              width="100%"
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-            >
-              {props.children}
-            </ScrollView>
-          ) : (
-            props.children
-          )}
-        </Box>
-      </SafeAreaProvider>
-    </NativeBaseProvider>
+      <Box
+        paddingX={2}
+        paddingTop={2}
+        paddingBottom={1}
+        bg={resolvedProps.bg}
+        h={resolvedProps.h}
+        w={resolvedProps.w}
+      >
+        {props.children}
+      </Box>
+    </SafeAreaProvider>
   );
 }
-
-export { AppPage as BaseAppPage };

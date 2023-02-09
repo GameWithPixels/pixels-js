@@ -12,17 +12,21 @@ import {
   usePropsResolution,
   IModalProps,
 } from "native-base";
-import React from "react";
+import React, { useEffect } from "react";
 
-import { bitsToIndices, combineBits } from "../bitMasksUtils";
+import { bitsToIndices, combineFlags } from "../bitMasksUtils";
 
 /**
  * Props for {@link FaceMask} component.
  */
 interface FaceMaskProps extends IModalProps {
   dieFaces: number; // Number of faces on the die
-  maskNumber?: number;
+  maskNumber: number;
   onCloseAction?: ((value: any) => void) | null | undefined; // Function to be executed when the facemask window is closed
+}
+
+function bitsToFaceIndex(maskNumber: number) {
+  return bitsToIndices(maskNumber).map((n) => (n + 1).toString());
 }
 
 /**
@@ -31,14 +35,16 @@ interface FaceMaskProps extends IModalProps {
  */
 export function FaceMask(props: FaceMaskProps) {
   const buttonsArray = Array(props.dieFaces).fill(0);
-  // Array(props.dieFaces).fill(0).map((e,i))
-  let indices: number[] = [];
-  if (props.maskNumber) indices = bitsToIndices(props.maskNumber);
 
   const resolvedProps = usePropsResolution("FaceMask", props);
-
   const [showModal, setShowModal] = React.useState(false);
-  const [groupValue, setGroupValue] = React.useState<any[]>(indices);
+  const [groupValue, setGroupValue] = React.useState<string[]>(
+    bitsToFaceIndex(props.maskNumber)
+  );
+
+  useEffect(() => {
+    setGroupValue(bitsToFaceIndex(props.maskNumber));
+  }, [props.maskNumber]);
 
   return (
     <>
@@ -62,7 +68,9 @@ export function FaceMask(props: FaceMaskProps) {
                 <Text>No faces selected</Text>
               ) : (
                 <Text fontSize="md">
-                  {groupValue.sort((n1, n2) => n1 - n2).join(" / ")}
+                  {groupValue
+                    .sort((n1, n2) => Number(n1) - Number(n2))
+                    .join(" / ")}
                 </Text>
               )}
             </HStack>
@@ -74,7 +82,9 @@ export function FaceMask(props: FaceMaskProps) {
         onClose={() => {
           setShowModal(false);
           // Combine the selected face into one maskValue
-          const maskValue = combineBits(groupValue.map((f) => getFaceMask(f)));
+          const maskValue = combineFlags(
+            groupValue.map((f) => getFaceMask(Number(f)))
+          );
           if (props.onCloseAction) props.onCloseAction(maskValue);
         }}
       >
@@ -87,8 +97,8 @@ export function FaceMask(props: FaceMaskProps) {
           <Modal.Body bg={resolvedProps.bg}>
             <Center>
               <Checkbox.Group
-                defaultValue={groupValue}
-                onChange={(values) => {
+                defaultValue={groupValue.map((n) => n.toString())}
+                onChange={(values: string[]) => {
                   setGroupValue(values || []);
                 }}
               >
@@ -117,12 +127,19 @@ export function FaceMask(props: FaceMaskProps) {
                   h={10}
                   w={60}
                   onPress={() => {
-                    setShowModal(false);
+                    // setShowModal(false);
                     const faces = [];
                     for (let i = 1; i <= props.dieFaces; ++i) {
                       faces.push(i.toString());
                     }
                     setGroupValue(faces);
+
+                    setShowModal(false);
+                    // Combine the selected face into one maskValue
+                    const maskValue = combineFlags(
+                      faces.map((f) => getFaceMask(Number(f)))
+                    );
+                    if (props.onCloseAction) props.onCloseAction(maskValue);
                   }}
                 >
                   All
@@ -131,8 +148,16 @@ export function FaceMask(props: FaceMaskProps) {
                   h={10}
                   w={60}
                   onPress={() => {
-                    setShowModal(false);
+                    // setShowModal(false);
                     setGroupValue([]);
+
+                    const groupValues: string[] = [];
+                    setShowModal(false);
+                    // Combine the selected face into one maskValue
+                    const maskValue = combineFlags(
+                      groupValues.map((f) => getFaceMask(Number(f)))
+                    );
+                    if (props.onCloseAction) props.onCloseAction(maskValue);
                   }}
                 >
                   None

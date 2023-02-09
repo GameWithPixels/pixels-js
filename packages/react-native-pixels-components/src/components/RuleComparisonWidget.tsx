@@ -17,29 +17,40 @@ import {
   ColorType,
   SizeType,
 } from "native-base/lib/typescript/components/types";
-import React from "react";
+import React, { useCallback } from "react";
+
+function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
+  const title =
+    selectedButtons[0] !== undefined
+      ? "Battery is " +
+        selectedButtons
+          .map((title) => {
+            return title;
+          })
+          .join(" or ")
+      : "No actions";
+  return title;
+}
 
 interface customButtonProps extends IButtonProps {
   title?: string;
   titleFontSize?: number | SizeType;
   keyIndex: number;
   itemsLength: number;
-  onButtonPress?: (() => void) | null | undefined;
+  isSelected: boolean;
+  onPress: () => void;
 }
+
 function CustomButton(props: customButtonProps) {
-  const [isSelected, setIselected] = React.useState(false);
   return (
     <Button
       flex={1}
       rounded="none"
-      onPress={() => {
-        props.onButtonPress?.();
-        setIselected(!isSelected);
-      }}
+      onPress={props.onPress}
       borderRightWidth={
         props.keyIndex === props.itemsLength ? undefined : props.borderWidth
       }
-      bg={isSelected ? "gray.300" : undefined}
+      bg={props.isSelected ? "gray.300" : undefined}
     >
       <Text fontSize={props.titleFontSize}>{props.title}</Text>
     </Button>
@@ -53,44 +64,127 @@ export interface ItemData {
 
 export interface RuleComparisonWidgetProps {
   title?: string;
-  values: any;
+  values: string[];
+  initialValues: string[];
   bg?: ColorType;
   borderWidth?: number;
   borderColor?: ColorType;
   fontSize?: number | SizeType;
-  onPress?: (() => void) | null | undefined;
+  onChange?: (keys: string[]) => void; // widget.update
+  isLeft?: boolean;
+  isRight?: boolean;
 }
-//TODO fix the way the component is updated when selection are made to work with the bitfield update function (not array of boolean)
-export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
-  const valueTitles = Object.keys(props.values);
-  const selectedButtons = Array(valueTitles.length).fill(false);
-  const [selectedOption, setSelectedOption] =
-    React.useState<boolean[]>(selectedButtons);
 
+export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
+  const values = props.values;
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>(
+    props.initialValues
+  );
+  const valuesRef = React.useRef(values);
+  React.useEffect(() => {
+    // Clear selected options if the list of values changes
+    if (values !== valuesRef.current) {
+      valuesRef.current = values;
+      setSelectedOptions([]);
+    }
+  }, [values]);
+  const onChange = props.onChange;
+  const onPress = useCallback(
+    (item: string) =>
+      setSelectedOptions((options) => {
+        const index = options.indexOf(item);
+        if (index < 0) {
+          const newOptions = [...options, item];
+          onChange?.(newOptions);
+          return newOptions;
+        } else {
+          const newOptions = [...options];
+          newOptions.splice(index, 1);
+          onChange?.(newOptions);
+          return newOptions;
+        }
+      }),
+    [onChange]
+  );
+  const { isOpen, onOpen, onClose } = useDisclose();
   return (
-    <VStack>
-      <Text>{props.title}</Text>
-      <Box w="100%">
-        <Button.Group isAttached>
-          {valueTitles.map((item, key) => (
-            <CustomButton
-              key={key}
-              keyIndex={key}
-              itemsLength={valueTitles.length - 1}
-              title={item}
-              titleFontSize={props.fontSize}
-              borderWidth={props.borderWidth}
-              onButtonPress={() => {
-                selectedOption[key] = !selectedOption[key];
-                setSelectedOption(selectedOption);
-                // const maskValue = combine(selectedOption);
-                // props.onPress?.(maskValue);
-              }}
-            />
-          ))}
-        </Button.Group>
-      </Box>
-    </VStack>
+    <>
+      <VStack>
+        <Text>{props.title}</Text>
+        <Box w="100%">
+          {values.length < 4 ? (
+            <Button.Group isAttached>
+              {values.map((item, i) => (
+                <CustomButton
+                  key={i}
+                  keyIndex={i}
+                  itemsLength={props.values.length - 1}
+                  title={item}
+                  titleFontSize={props.fontSize}
+                  borderWidth={props.borderWidth}
+                  isSelected={selectedOptions.includes(item)}
+                  onPress={() => onPress(item)}
+                />
+              ))}
+            </Button.Group>
+          ) : (
+            <Pressable onPress={onOpen}>
+              <HStack
+                p={3}
+                paddingLeft={4}
+                w="100%"
+                alignItems="center"
+                rounded="lg"
+                bg="darkBlue.800"
+                minH={50}
+              >
+                <Box flex={2}>
+                  <Text fontSize="sm">
+                    {BatteryConditionTitleFromOptions(selectedOptions)}
+                  </Text>
+                </Box>
+                <Spacer />
+                <Box>
+                  <ChevronDownIcon />
+                </Box>
+              </HStack>
+            </Pressable>
+          )}
+        </Box>
+      </VStack>
+
+      <Actionsheet isOpen={isOpen} onClose={onClose}>
+        <Actionsheet.Content>
+          <ScrollView w="100%">
+            {/* {props.possibleConditions.map((condition, key) => (
+              <Actionsheet.Item
+                alignItems="center"
+                key={key}
+                width="100%"
+                onPress={() => {
+                  condition.onPress?.();
+                  onClose();
+                }}
+              >
+                <Text fontSize="md">{condition.label}</Text>
+              </Actionsheet.Item>
+            ))} */}
+            {values.map((item, i) => (
+              <CustomButton
+                key={i}
+                keyIndex={i}
+                itemsLength={values.length - 1}
+                title={item}
+                titleFontSize={props.fontSize}
+                borderWidth={props.borderWidth}
+                isSelected={selectedOptions.includes(item)}
+                onPress={() => onPress(item)}
+              />
+            ))}
+          </ScrollView>
+        </Actionsheet.Content>
+      </Actionsheet>
+    </>
   );
 }
 
@@ -98,6 +192,7 @@ export interface RuleConditionSelectionProps {
   possibleConditions: ActionSheetItemData[];
   conditionTitle?: string;
 }
+
 export function RuleConditionSelection(props: RuleConditionSelectionProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   const title = "When";

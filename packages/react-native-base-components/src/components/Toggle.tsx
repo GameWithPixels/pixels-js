@@ -21,11 +21,11 @@ export interface ToggleProps extends ISwitchProps {
 
 /**
  * Toggle component to display a toggle with an icon and/or text.
+ * Use OnValueChangeProps in order to get toggle events.
  * @param props See {@link ToggleProps} for props parameters.
  */
 export function Toggle(props: ToggleProps) {
   const resolvedProps = usePropsResolution("Toggle", props) as ToggleProps;
-  const [isChecked, setIsChecked] = React.useState(false);
   return (
     <HStack space={resolvedProps.space} alignItems="center">
       <Text fontSize={props.textSize}>{props.title}</Text>
@@ -36,12 +36,6 @@ export function Toggle(props: ToggleProps) {
         offThumbColor={resolvedProps.offThumbColor}
         onTrackColor={resolvedProps.onTrackColor}
         size={resolvedProps.toggleSize}
-        onToggle={() => {
-          const checked = !isChecked;
-          setIsChecked(checked);
-          props.onToggle?.(checked);
-        }}
-        value={isChecked}
       />
     </HStack>
   );

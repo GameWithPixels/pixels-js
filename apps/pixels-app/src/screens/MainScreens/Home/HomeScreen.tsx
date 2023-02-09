@@ -1,14 +1,12 @@
 import { AntDesign } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { useFocusEffect } from "@react-navigation/native";
 import {
-  PxAppPage,
-  PixelTheme,
+  PixelAppPage,
   Toggle,
-  createPixelTheme,
   PairedPixelInfoComponent,
   ScannedPixelInfoComponent,
   SquarePairedPixelInfo,
+  sr,
 } from "@systemic-games/react-native-pixels-components";
 import {
   AnimationPreset,
@@ -16,28 +14,21 @@ import {
   usePixelScanner,
   AnimationBits,
 } from "@systemic-games/react-native-pixels-connect";
-import { Box, Center, HStack, Spacer, Text, VStack } from "native-base";
+import {
+  Box,
+  Center,
+  HStack,
+  ScrollView,
+  Spacer,
+  Text,
+  VStack,
+} from "native-base";
 import React from "react";
+// eslint-disable-next-line import/namespace
+import { RefreshControl } from "react-native";
 
-import { HomeScreenStackParamList } from "~/Navigation";
-import { sr } from "~/Utils";
 import DieRenderer from "~/features/render3d/DieRenderer";
-
-const paleBluePixelThemeParams = {
-  theme: PixelTheme,
-  primaryColors: {
-    "50": "#1b94ff",
-    "100": "#0081f2",
-    "200": "#006cca",
-    "300": "#0256a0",
-    "400": "#024178",
-    "500": "#04345e",
-    "600": "#062846",
-    "700": "#051b2e",
-    "800": "#040f18",
-    "900": "#010204",
-  },
-};
+import { DiceListScreenProps } from "~/navigation";
 
 interface PairedPixelListProps {
   pairedPixels: ScannedPixel[];
@@ -64,7 +55,7 @@ function PairedPixelList({
           {/* Switch scanned display toggle */}
           <Toggle
             space={0}
-            onToggle={() => {
+            onValueChange={() => {
               switchPixelsDisplay(!pixelsDisplay);
             }}
             isChecked={pixelsDisplay}
@@ -138,7 +129,7 @@ function NearbyPixelsList({
           <HStack space={1} alignItems="center">
             <Toggle
               title="Show"
-              onToggle={() => {
+              onValueChange={() => {
                 setHideNearbyPixels(!hideNearbyPixels);
               }}
               isChecked={hideNearbyPixels}
@@ -172,12 +163,8 @@ function NearbyPixelsList({
   );
 }
 
-const paleBluePixelTheme = createPixelTheme(paleBluePixelThemeParams);
-
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: DiceListScreenProps) {
   const [scannedPixels, scannerDispatch] = usePixelScanner();
-  const navigation =
-    useNavigation<StackNavigationProp<HomeScreenStackParamList>>();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -212,25 +199,41 @@ export default function HomeScreen() {
     []
   );
 
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  //Example to use and see the refresh function
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 2000);
+  }, []);
+
   return (
-    <PxAppPage theme={paleBluePixelTheme} scrollable>
-      <VStack space={4}>
-        {/* Paired pixels list */}
-        <PairedPixelList
-          pairedPixels={pairedPixels}
-          onPress={(pixel) => {
-            navigation.navigate("PixelDetails", { systemId: pixel.systemId });
-          }}
-          dieRenderer={dieRenderer}
-        />
-        {/* Nearby pixels list */}
-        <NearbyPixelsList
-          pairedPixels={pairedPixels}
-          scannedPixels={scannedPixels}
-          onPixelPaired={addPairedPixel}
-          dieRenderer={dieRenderer}
-        />
-      </VStack>
-    </PxAppPage>
+    <PixelAppPage>
+      <ScrollView
+        height="100%"
+        width="100%"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <VStack space={4}>
+          {/* Paired pixels list */}
+          <PairedPixelList
+            pairedPixels={pairedPixels}
+            onPress={(pixel) => {
+              navigation.navigate("PixelDetails", { systemId: pixel.systemId });
+            }}
+            dieRenderer={dieRenderer}
+          />
+          {/* Nearby pixels list */}
+          <NearbyPixelsList
+            pairedPixels={pairedPixels}
+            scannedPixels={scannedPixels}
+            onPixelPaired={addPairedPixel}
+            dieRenderer={dieRenderer}
+          />
+        </VStack>
+      </ScrollView>
+    </PixelAppPage>
   );
 }
