@@ -1,3 +1,4 @@
+import { delay } from "@systemic-games/pixels-core-utils";
 import {
   DfuProgressEvent,
   DfuState,
@@ -25,9 +26,10 @@ export default async function (
   };
 
   const addrStr = pixelAddress.toString(16);
+  const hasFirmware = !!firmwarePath?.length;
+  const hasBootloader = !!bootloaderPath?.length;
 
   // Update bootloader
-  const hasBootloader = !!bootloaderPath?.length;
   if (hasBootloader) {
     console.log(
       `Starting DFU for device ${addrStr} with bootloader ${bootloaderPath}`
@@ -38,6 +40,11 @@ export default async function (
       if (error.message === "FW version failure") {
         // Bootloader already up-to-date
         console.log("Bootloader is same version or more recent");
+        if (hasFirmware) {
+          // Give DFU library a break, otherwise we risk getting the FW version failure again
+          // on the firmware update
+          await delay(100);
+        }
       } else {
         throw error;
       }
@@ -45,7 +52,7 @@ export default async function (
   }
 
   // Update firmware
-  if (firmwarePath?.length) {
+  if (hasFirmware) {
     console.log(
       `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
     );
