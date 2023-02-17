@@ -6,6 +6,7 @@ import PixelSession, {
 import PixelUuids from "./PixelUuids";
 import getPixelEnumName from "./getPixelEnumName";
 import getPixelUniqueName from "./getPixelUniqueName";
+import getPixelCharging from "./getPixelCharging";
 import repeatConnect from "./repeatConnect";
 import toFullUuid from "./toFullUuid";
 export * from "./Messages";
@@ -17,4 +18,4 @@ export {
   PixelSessionConnectionStatus,
   PixelSessionConnectionEvent,
 };
-export { getPixelEnumName, getPixelUniqueName, repeatConnect, toFullUuid };
+export { getPixelEnumName, getPixelUniqueName, getPixelCharging, repeatConnect, toFullUuid };

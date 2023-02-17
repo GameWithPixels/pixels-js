@@ -53,6 +53,7 @@ import {
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import getPixelEnumName from "./getPixelEnumName";
+import getPixelCharging from "./getPixelCharging";
 
 // Returns a string with the current time with a millisecond precision
 function _getTime(): string {
@@ -317,7 +318,7 @@ export default class Pixel implements IPixel {
       const msg = msgOrType as BatteryLevel;
       const battery = {
         level: msg.levelPercent,
-        isCharging: msg.state >= PixelBatteryStateValues.charging,
+        isCharging: getPixelCharging(msg.state),
       };
       if (
         battery.level !== this._batteryState.level ||
@@ -393,7 +394,7 @@ export default class Pixel implements IPixel {
           this._batteryState = {
             level: this._info.batteryLevelPercent,
             isCharging:
-              this._info.batteryState >= PixelBatteryStateValues.charging,
+              getPixelCharging(this._info.batteryState),
           };
 
           this._rollState = {

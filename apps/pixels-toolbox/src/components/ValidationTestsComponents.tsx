@@ -366,7 +366,7 @@ export function WaitCharging({
   const { t } = useTranslation();
 
   // Timeout before showing option to abort
-  const [hasElapsed, resetTimeout] = useTimeout(5000);
+  const [hasElapsed, resetTimeout] = useTimeout(20000);
   const [userAbort, setUserAbort] = useState<() => void>();
 
   const taskChain = useTaskChain(
@@ -529,10 +529,15 @@ export function WaitFaceUp({
           abortSignal,
           setUserAbort,
           (abortSignal) =>
-            ValidationTests.waitFaceUp(pixel, 1, Color.dimMagenta, abortSignal),
-          `Aborted wait for face ${getLEDCount(settings.dieType)} up`
+            ValidationTests.waitFaceUp(
+              pixel,
+              5, // Fixme, this should be different for each die type
+              Color.magenta,
+              abortSignal
+            ),
+          `Aborted wait for face 5 up`
         ),
-      [pixel, settings.dieType]
+      [pixel]
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
@@ -555,11 +560,11 @@ export function WaitFaceUp({
             (abortSignal) =>
               ValidationTests.waitFaceUp(
                 pixel,
-                pixel.ledCount,
-                Color.dimYellow,
+                10, // Fixme, this should be different for each die type
+                Color.yellow,
                 abortSignal
               ),
-            "Aborted wait for face 1 up"
+            "Aborted wait for face 10 up"
           ),
         [pixel]
       ),

@@ -4,6 +4,8 @@ import {
   PixelRollStateValues,
   usePixelStatus,
   usePixelValue,
+  BatteryState,
+//  getPixelCharging,
 } from "@systemic-games/react-native-pixels-connect";
 import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
 import { memo, useEffect, useState } from "react";
@@ -30,6 +32,7 @@ function TextEntry({
     </Text>
   );
 }
+
 
 function PixelDetailsImpl({
   pixelDispatcher,
@@ -87,12 +90,12 @@ function PixelDetailsImpl({
           value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
         })}
       </TextEntry>
-      <TextEntry title={t("charging")}>
-        {t(
-          telemetry &&
-            telemetry?.batteryState >= PixelBatteryStateValues.charging
-            ? "yes"
-            : "no"
+      <TextEntry title={t("internalChargerState")}>
+        {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff"
+        )}
+      </TextEntry>
+      <TextEntry title={t("forceDisableChargingState")}>
+        {t(telemetry?.forceDisableChargingState ? "chargingDisabled" : "chargingAllowed"
         )}
       </TextEntry>
       <TextEntry title={t("chargingState")}>

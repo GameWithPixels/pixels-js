@@ -508,6 +508,14 @@ export class Telemetry implements PixelMessage {
    */
   @serializable(2)
   batteryTemperatureTimes100 = 0;
+
+  /** Internal charge state */
+  @serializable(1)
+  internalChargeState = 0;
+
+  /** Internal disabling of charging (because of temperature for instance) */
+  @serializable(1)
+  forceDisableChargingState = 0;
 }
 
 /**
@@ -808,6 +816,12 @@ export const PixelBatteryStateValues = {
 
   // Battery is full and finished charging.
   done: enumValue(),
+
+  // Battery is too cold
+  lowTemp: enumValue(),
+
+  // Battery is too hot
+  highTemp: enumValue(),
 } as const;
 
 /**
