@@ -511,11 +511,11 @@ export class Telemetry implements PixelMessage {
 
   /** Internal charge state */
   @serializable(1)
-  internalChargeState = 0;
+  internalChargeState = false;
 
   /** Internal disabling of charging (because of temperature for instance) */
   @serializable(1)
-  forceDisableChargingState = 0;
+  forceDisableChargingState = false;
 }
 
 /**
