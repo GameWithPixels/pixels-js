@@ -5,6 +5,7 @@ import {
   ScannedPixel,
   usePixelScanner,
 } from "@systemic-games/react-native-pixels-connect";
+import { Audio, AVPlaybackSource } from "expo-av";
 import { Button, HStack, Text } from "native-base";
 import {
   Dispatch,
@@ -26,7 +27,7 @@ import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import useTimeout from "~/features/hooks/useTimeout";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
-import { TaskFaultedError } from "~/features/tasks/useTask";
+import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import {
@@ -37,6 +38,39 @@ import {
 import ValidationTests from "~/features/validation/ValidationTests";
 import getDefaultProfile from "~/getDefaultProfile";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+
+const chimeSound = require("!/sounds/chime.mp3");
+const errorSound = require("!/sounds/error.mp3");
+
+const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
+
+async function _getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
+  let loadedSound = soundMap.get(source);
+  if (!loadedSound) {
+    const { sound } = await Audio.Sound.createAsync(source);
+    soundMap.set(source, sound);
+    loadedSound = sound;
+  }
+  return loadedSound;
+}
+
+async function _playSoundAsync(source: AVPlaybackSource) {
+  try {
+    const sound = await _getSound(source);
+    await sound.setPositionAsync(0);
+    return await sound.playAsync();
+  } catch (err) {
+    console.log("Error playing sound:", err);
+  }
+}
+
+function _playSoundOnResult(result: TaskStatus) {
+  if (result === "succeeded") {
+    _playSoundAsync(chimeSound);
+  } else if (result === "canceled" || result === "faulted") {
+    _playSoundAsync(errorSound);
+  }
+}
 
 function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
   const boardOrDie = getBoardOrDie(settings.formFactor);
@@ -209,6 +243,7 @@ export function UpdateFirmware({
         ),
       })
     )
+    .withStatusChanged(_playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (
@@ -307,6 +342,7 @@ export function ConnectPixel({
       }, []),
       createTaskStatusContainer(t("connect"))
     )
+    .withStatusChanged(_playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (
@@ -351,7 +387,9 @@ export function CheckBoard({
       createTaskStatusContainer(t("rssi"))
     );
   }
-  taskChain.withStatusChanged(onTaskStatus);
+  taskChain
+    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("checkBoard")} taskChain={taskChain} />;
 }
@@ -405,7 +443,9 @@ export function WaitCharging({
         />
       ),
     })
-  ).withStatusChanged(onTaskStatus);
+  )
+    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
 
   return (
     <TaskChainComponent
@@ -470,7 +510,9 @@ export function CheckLEDs({
         />
       ),
     })
-  ).withStatusChanged(onTaskStatus);
+  )
+    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("checkLEDs")} taskChain={taskChain} />;
 }
@@ -502,6 +544,7 @@ export function TurnOffDevice({
       ),
       createTaskStatusContainer(t("waitingDeviceDisconnect"))
     )
+    .withStatusChanged(_playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (
@@ -513,7 +556,6 @@ export function WaitFaceUp({
   action,
   onTaskStatus,
   pixel,
-  settings,
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
@@ -580,6 +622,7 @@ export function WaitFaceUp({
         ),
       })
     )
+    .withStatusChanged(_playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("waitFaceUp")} taskChain={taskChain} />;
@@ -627,6 +670,7 @@ export function PrepareDie({
       //useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
       createTaskStatusContainer(t("exitValidationMode"))
     )
+    .withStatusChanged(_playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("prepareDie")} taskChain={taskChain} />;
@@ -653,7 +697,9 @@ export function WaitDieInCase({
     createTaskStatusContainer({
       children: <Text variant="comment">{t("placeDieInCaseAndCloseLid")}</Text>,
     })
-  ).withStatusChanged(onTaskStatus);
+  )
+    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
 
   return (
     <TaskChainComponent title={t("waitDieInCase")} taskChain={taskChain} />
