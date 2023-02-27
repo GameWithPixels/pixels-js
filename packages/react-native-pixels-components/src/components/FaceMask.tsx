@@ -1,3 +1,4 @@
+import { bitsToIndices, combineFlags } from "@systemic-games/pixels-core-utils";
 import { getFaceMask } from "@systemic-games/pixels-edit-animation";
 import {
   Text,
@@ -13,8 +14,6 @@ import {
   IModalProps,
 } from "native-base";
 import React, { useEffect } from "react";
-
-import { bitsToIndices, combineFlags } from "../bitMasksUtils";
 
 /**
  * Props for {@link FaceMask} component.

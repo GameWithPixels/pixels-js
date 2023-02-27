@@ -10,3 +10,5 @@ export * from "./enum";
 export { default as safeAssign } from "./safeAssign";
 export * from "./serializable";
 export { default as SequentialPromiseQueue } from "./SequentialPromiseQueue";
+export * from "./bitMasksUtils";
+export * from "./keyValuesUtils";

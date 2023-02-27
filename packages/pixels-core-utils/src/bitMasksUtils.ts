@@ -1,23 +1,24 @@
-import assert from "../../pixels-core-utils/src/assert";
+import assert from "./assert";
 
 /**
  * Returns the indices of the "on" bits of the given value.
  * @param value  The value to use.
  * @returns The indices of the "on" bits.
  */
-export function bitsToIndices(value: number): number[] {
+export function bitsToIndices(value?: number): number[] {
   const indices: number[] = [];
-
-  // Convert value to binary format: we use a string because of the limitations
-  // with JS bits operators (ex: 0x80000000 >> 1 => -1073741824 )
-  let bits = value.toString(2);
-  let index = 0;
-  while (bits.length) {
-    if (bits[bits.length - 1] === "1") {
-      indices.push(index);
+  if (value) {
+    // Convert value to binary format: we use a string because of the limitations
+    // with JS bits operators (ex: 0x80000000 >> 1 => -1073741824 )
+    let bits = value.toString(2);
+    let index = 0;
+    while (bits.length) {
+      if (bits[bits.length - 1] === "1") {
+        indices.push(index);
+      }
+      bits = bits.substring(0, bits.length - 1);
+      ++index;
     }
-    bits = bits.substring(0, bits.length - 1);
-    ++index;
   }
   return indices;
 }
@@ -28,7 +29,7 @@ export function bitsToIndices(value: number): number[] {
  * @param value  The value to use.
  * @returns The flags corresponding to the "on" bits.
  */
-export function bitsToFlags(value: number): number[] {
+export function bitsToFlags(value?: number): number[] {
   return bitsToIndices(value).map(bitIndexToFlag);
 }
 

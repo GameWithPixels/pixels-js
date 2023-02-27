@@ -1,4 +1,11 @@
-import { assert, assertNever } from "@systemic-games/pixels-core-utils";
+import {
+  assert,
+  assertNever,
+  bitsToFlags,
+  combineFlags,
+  keysToValues,
+  valuesToKeys,
+} from "@systemic-games/pixels-core-utils";
 import {
   Color,
   EditAnimation,
@@ -14,8 +21,6 @@ import {
 import { Text } from "native-base";
 import React from "react";
 
-import { bitsToFlags, combineFlags } from "../bitMasksUtils";
-import { keysToValues, valuesToKeys } from "../keyValuesUtils";
 import { GradientColorSelection, SimpleColorSelection } from "./ColorSelection";
 import { FaceMask } from "./FaceMask";
 import { FaceSelector, PlayBackFace } from "./FaceSelector";
