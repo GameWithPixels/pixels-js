@@ -9,14 +9,15 @@ const _pixels = new Map<string, Pixel>();
 /**
  * Returns a Pixel instance for the corresponding scanned Pixel instance of Pixel id.
  * The same instance is returned when called multiple times for the same Pixel.
- * @param scannedPixelOrSystemId The {@link ScannedPixel} instance or the Pixel id of the die
- *                               to connect to.
+ * @param scannedPixelOrSystemId The {@link ScannedPixel} instance or the BLE system id
+ *                               of the die to connect to.
  * @param logFunc Optional function used to log Pixel connection and messaging activity.
  * @param logMessages Optional boolean to request logging messaging activity using the
  *                    passed logger function.
  * @returns A {@link Pixel} instance.
  */
 export default function (
+  // TODO take pixelId
   scannedPixelOrSystemId: ScannedPixel | string,
   logFunc?: (msg: unknown) => void,
   logMessages?: boolean
