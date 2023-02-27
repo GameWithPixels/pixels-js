@@ -9,10 +9,8 @@ import {
   sr,
 } from "@systemic-games/react-native-pixels-components";
 import {
-  AnimationPreset,
   ScannedPixel,
   usePixelScanner,
-  AnimationBits,
 } from "@systemic-games/react-native-pixels-connect";
 import {
   Box,
@@ -27,20 +25,30 @@ import React from "react";
 // eslint-disable-next-line import/namespace
 import { RefreshControl } from "react-native";
 
+import {
+  useAppPairedDice,
+  useAppProfiles,
+  useAppUpdatePairedDie,
+} from "~/app/hooks";
+import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
-import { DiceListScreenProps } from "~/navigation";
-
-interface PairedPixelListProps {
-  pairedPixels: ScannedPixel[];
-  onPress: (pixel: ScannedPixel) => void;
-  dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
-}
+import { HomeScreenProps } from "~/navigation";
 
 function PairedPixelList({
+  navigation,
   pairedPixels,
-  onPress,
-  dieRenderer,
-}: PairedPixelListProps) {
+}: {
+  navigation: HomeScreenProps["navigation"];
+  pairedPixels: ScannedPixel[];
+}) {
+  const pairedDice = useAppPairedDice();
+  const profiles = useAppProfiles();
+  const onPress = React.useCallback(
+    (pixel: ScannedPixel) => {
+      navigation.navigate("PixelDetails", { systemId: pixel.systemId });
+    },
+    [navigation]
+  );
   const [pixelsDisplay, switchPixelsDisplay] = React.useState(false);
   return (
     <Center width="100%">
@@ -68,15 +76,30 @@ function PairedPixelList({
             <Text>No dice paired yet!</Text>
           ) : pixelsDisplay === false ? (
             <VStack w="100%">
-              {pairedPixels.map((pixel) => (
-                <Box p={1} key={pixel.pixelId} width="100%">
-                  <PairedPixelInfoComponent
-                    pixel={pixel}
-                    onPress={() => onPress(pixel)}
-                    dieRenderer={dieRenderer}
-                  />
-                </Box>
-              ))}
+              {pairedPixels.map((pixel) => {
+                const uuid = pairedDice.find(
+                  (d) => d.systemId === pixel.systemId
+                )?.profileUuid;
+                const profile = profiles.find((p) => p.uuid === uuid);
+                return (
+                  <Box p={1} key={pixel.pixelId} width="100%">
+                    <PairedPixelInfoComponent
+                      pixel={pixel}
+                      profileName={profile?.name}
+                      onPress={() => onPress(pixel)}
+                      dieRenderer={() => {
+                        return (
+                          <DieRenderer
+                            renderData={
+                              profile ? getCachedDataSet(profile) : undefined
+                            }
+                          />
+                        );
+                      }}
+                    />
+                  </Box>
+                );
+              })}
             </VStack>
           ) : (
             <Center>
@@ -88,7 +111,7 @@ function PairedPixelList({
                       h={sr(200)}
                       pixel={pixel}
                       onPress={() => onPress(pixel)}
-                      dieRenderer={dieRenderer}
+                      dieRenderer={() => <DieRenderer />}
                     />
                   </Box>
                 ))}
@@ -101,20 +124,13 @@ function PairedPixelList({
   );
 }
 
-interface NearbyPixelListProps {
-  scannedPixels: ScannedPixel[];
-  pairedPixels: ScannedPixel[];
-  onPixelPaired: (pixel: ScannedPixel) => void;
-  dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
-}
-
 function NearbyPixelsList({
-  scannedPixels,
-  pairedPixels,
-  onPixelPaired,
-  dieRenderer,
-}: NearbyPixelListProps) {
+  unpairedPixels,
+}: {
+  unpairedPixels: ScannedPixel[];
+}) {
   const [hideNearbyPixels, setHideNearbyPixels] = React.useState(false);
+  const updatePairedDie = useAppUpdatePairedDie();
   return (
     <Center>
       <VStack space={2} w="100%">
@@ -142,19 +158,17 @@ function NearbyPixelsList({
         <Box rounded="md" p={2} bg="gray.700" alignItems="center" w="100%">
           {!hideNearbyPixels && (
             <VStack w="100%">
-              {scannedPixels
-                .filter((p) =>
-                  pairedPixels.every((pp) => pp.pixelId !== p.pixelId)
-                )
-                .map((pixel) => (
-                  <Box p={1} key={pixel.pixelId} w="100%">
-                    <ScannedPixelInfoComponent
-                      pixel={pixel}
-                      onPress={() => onPixelPaired(pixel)}
-                      dieRenderer={dieRenderer}
-                    />
-                  </Box>
-                ))}
+              {unpairedPixels.map((pixel) => (
+                <Box p={1} key={pixel.pixelId} w="100%">
+                  <ScannedPixelInfoComponent
+                    pixel={pixel}
+                    onPress={() =>
+                      updatePairedDie({ systemId: pixel.systemId })
+                    }
+                    dieRenderer={() => <DieRenderer />}
+                  />
+                </Box>
+              ))}
             </VStack>
           )}
         </Box>
@@ -163,45 +177,37 @@ function NearbyPixelsList({
   );
 }
 
-export default function HomeScreen({ navigation }: DiceListScreenProps) {
+export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [scannedPixels, scannerDispatch] = usePixelScanner();
 
   useFocusEffect(
     React.useCallback(() => {
-      setTimeout(() => scannerDispatch("start"), 1000);
+      setTimeout(() => scannerDispatch("start"), 1000); //TODO remove this delay
       return () => {
         scannerDispatch("stop");
       };
     }, [scannerDispatch])
   );
 
-  const [pairedPixels, setPairedPixels] = React.useState<ScannedPixel[]>([]);
-  const addPairedPixel = React.useCallback(
-    (pixel: ScannedPixel) =>
-      setPairedPixels((pairedPixels) => {
-        if (pairedPixels.every((pp) => pp.pixelId !== pixel.pixelId)) {
-          return [...pairedPixels, pixel];
-        } else {
-          return pairedPixels;
-        }
-      }),
-    []
+  const pairedDice = useAppPairedDice();
+  const unpairedPixels = React.useMemo(
+    () =>
+      scannedPixels.filter((p) =>
+        pairedDice.every((d) => d.systemId !== p.systemId)
+      ),
+    [pairedDice, scannedPixels]
   );
-
-  const dieRenderer = React.useCallback(
-    (animation: AnimationPreset, bits: AnimationBits) => {
-      return (
-        <DieRenderer
-          animationData={{ animations: animation, animationBits: bits }}
-        />
-      );
-    },
-    []
+  const pairedPixels = React.useMemo(
+    () =>
+      scannedPixels.filter(
+        (p) => pairedDice.findIndex((d) => d.systemId === p.systemId) >= 0
+      ),
+    [pairedDice, scannedPixels]
   );
 
   const [refreshing, setRefreshing] = React.useState(false);
 
-  //Example to use and see the refresh function
+  // Example to use and see the refresh function
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 2000);
@@ -217,21 +223,11 @@ export default function HomeScreen({ navigation }: DiceListScreenProps) {
         }
       >
         <VStack space={4}>
-          {/* Paired pixels list */}
           <PairedPixelList
+            navigation={navigation}
             pairedPixels={pairedPixels}
-            onPress={(pixel) => {
-              navigation.navigate("PixelDetails", { systemId: pixel.systemId });
-            }}
-            dieRenderer={dieRenderer}
           />
-          {/* Nearby pixels list */}
-          <NearbyPixelsList
-            pairedPixels={pairedPixels}
-            scannedPixels={scannedPixels}
-            onPixelPaired={addPairedPixel}
-            dieRenderer={dieRenderer}
-          />
+          <NearbyPixelsList unpairedPixels={unpairedPixels} />
         </VStack>
       </ScrollView>
     </PixelAppPage>

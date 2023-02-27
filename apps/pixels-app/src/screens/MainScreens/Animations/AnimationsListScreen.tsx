@@ -4,10 +4,8 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import {
-  AnimationBits,
-  AnimationPreset,
   EditAnimation,
-  EditDataSet,
+  EditAnimationSimple,
 } from "@systemic-games/pixels-edit-animation";
 import {
   PixelAppPage,
@@ -31,33 +29,15 @@ import {
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
 
-import EditableStore from "~/features/EditableStore";
-import { MyAppDataSet } from "~/features/profiles";
+import {
+  useAppAddAnimation,
+  useAppAnimations,
+  useAppRemoveAnimation,
+} from "~/app/hooks";
+import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
+import generateUuid from "~/features/generateUuid";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { AnimationsListScreenProps } from "~/navigation";
-
-const standardLightingPatterns = [...MyAppDataSet.animations];
-
-const animDataMap = new Map<
-  EditAnimation,
-  {
-    animations: AnimationPreset;
-    animationBits: AnimationBits;
-  }
->();
-
-function getAnimData(anim: EditAnimation) {
-  let data = animDataMap.get(anim);
-  if (!data) {
-    const animationBits = new AnimationBits();
-    data = {
-      animationBits,
-      animations: anim.toAnimation(new EditDataSet(), animationBits),
-    };
-    animDataMap.set(anim, data);
-  }
-  return data;
-}
 
 /**
  * Custom profile card widget for the option to create a new profile.
@@ -82,7 +62,7 @@ function CreatePatternWidget(props: Omit<LightingPatternCardProps, "title">) {
       >
         <Ionicons name="add-circle-outline" size={24} color="white" />
         <Text isTruncated fontSize={props.textSize} bold>
-          ADD NEW PATTERN
+          ADD NEW LIGHTING PATTERN
         </Text>
       </Card>
     </Pressable>
@@ -92,50 +72,23 @@ function CreatePatternWidget(props: Omit<LightingPatternCardProps, "title">) {
 export default function AnimationsListScreen({
   navigation,
 }: AnimationsListScreenProps) {
-  const [patternList, setPatternsList] = React.useState<EditAnimation[]>(
-    standardLightingPatterns
+  const animations = useAppAnimations();
+  const addAnimation = useAppAddAnimation();
+  const removeAnimation = useAppRemoveAnimation();
+
+  const duplicateAnimation = React.useCallback(
+    (anim: Readonly<EditAnimation>) => {
+      // Copy the animation that needs to be duplicated
+      const dupAnim = anim.duplicate(generateUuid());
+      dupAnim.name += " copy";
+      // Insert in list after the original animation
+      addAnimation(dupAnim, animations.indexOf(anim) + 1);
+    },
+    [addAnimation, animations]
   );
 
-  /**
-   * Duplicate an existing pattern by updating the profileList.
-   * @param patternToDuplicate Pattern infos of the pattern to duplicate.
-   * @param index Index of the pattern to duplicate.
-   */
-  function duplicatePattern(patternToDuplicate: EditAnimation, index: number) {
-    // Copy the pattern that needs to be duplicated
-    const duplicatedPattern = patternToDuplicate.duplicate();
-    duplicatedPattern.name = patternToDuplicate.name + " COPY";
-    // Duplicate the pattern in the UI list
-    const patterns = [...patternList];
-    patterns.splice(index + 1, 0, duplicatedPattern);
-    setPatternsList(patterns);
-  }
-
-  function deletePattern(patternToDelete: EditAnimation) {
-    console.log("delete pattern");
-    const patternToDeleteKey = EditableStore.getKey(patternToDelete);
-    const patterns = [...patternList];
-    patterns.splice(
-      patterns.findIndex((patternToDelete) => {
-        return EditableStore.getKey(patternToDelete) === patternToDeleteKey;
-      }),
-      1
-    );
-
-    setPatternsList(patterns);
-    EditableStore.unregister(patternToDelete);
-  }
+  // Action sheet
   const { isOpen, onOpen, onClose } = useDisclose();
-  function openExportSheet(_patternToExport: EditAnimation) {
-    onOpen();
-    //DO OTHER THINGS
-  }
-
-  function addPattern() {
-    const newPattern = standardLightingPatterns[0].duplicate();
-    newPattern.name = "NEW Pattern";
-    setPatternsList([...patternList, newPattern]);
-  }
 
   return (
     <>
@@ -143,14 +96,14 @@ export default function AnimationsListScreen({
         <ScrollView height="100%" width="100%">
           <Center>
             <VStack w="100%" bg="gray.700" rounded="lg" p={2}>
-              {patternList.map((anim, i) => (
-                <Box p={1} key={EditableStore.getKey(anim)}>
+              {animations.map((anim) => (
+                <Box p={1} key={anim.uuid}>
                   <Swipeable
                     renderRightActions={createSwipeableSideButton({
                       w: 195,
                       buttons: [
                         {
-                          onPress: () => duplicatePattern(anim, i),
+                          onPress: () => duplicateAnimation(anim),
                           bg: "blue.500",
                           icon: (
                             <MaterialIcons
@@ -161,7 +114,7 @@ export default function AnimationsListScreen({
                           ),
                         },
                         {
-                          onPress: () => openExportSheet(anim),
+                          onPress: () => onOpen(),
                           bg: "amber.500",
                           icon: (
                             <MaterialCommunityIcons
@@ -172,7 +125,7 @@ export default function AnimationsListScreen({
                           ),
                         },
                         {
-                          onPress: () => deletePattern(anim),
+                          onPress: () => removeAnimation(anim),
 
                           bg: "red.500",
                           icon: (
@@ -189,13 +142,13 @@ export default function AnimationsListScreen({
                     <LightingPatternCard
                       onPress={() =>
                         navigation.navigate("AnimationEdit", {
-                          animationId: EditableStore.getKey(anim),
+                          animationUuid: anim.uuid,
                         })
                       }
                       name={anim.name}
                       title={getAnimationTitle(anim.type)}
                       dieRenderer={() => (
-                        <DieRenderer animationData={getAnimData(anim)} />
+                        <DieRenderer renderData={getCachedDataSet(anim)} />
                       )}
                       w="100%"
                       h={100}
@@ -208,9 +161,14 @@ export default function AnimationsListScreen({
               ))}
             </VStack>
             <CreatePatternWidget
-              onPress={() => {
-                addPattern();
-              }}
+              onPress={() =>
+                addAnimation(
+                  new EditAnimationSimple({
+                    uuid: generateUuid(),
+                    name: "New Animation",
+                  })
+                )
+              }
             />
           </Center>
         </ScrollView>

@@ -21,22 +21,21 @@ import {
 } from "native-base";
 import React from "react";
 
-export default function DieStatistics() {
+export default function DieStatistics({
+  sessionRolls,
+  lifetimeRolls,
+}: {
+  sessionRolls: number[];
+  lifetimeRolls: number[];
+}) {
   const [showSessionStats, setShowSessionStats] = React.useState(true);
-  const lifetimeHistogramRolls = [
-    30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45, 91, 12, 56, 35,
-    45,
-  ];
-  const sessionHistogramRolls = [
-    1, 2, 9, 6, 3, 2, 5, 8, 8, 9, 10, 4, 5, 7, 2, 11, 3, 7, 9, 4,
-  ];
-  const sessionRolls = sessionHistogramRolls.reduce(
-    (sessionHistogramRolls, v) => sessionHistogramRolls + v,
-    0
+  const sessionRollsCount = React.useMemo(
+    () => sessionRolls.reduce((sum, v) => sum + v, 0),
+    [sessionRolls]
   );
-  const lifetimeRolls = lifetimeHistogramRolls.reduce(
-    (lifetimeHistogramRolls, v) => lifetimeHistogramRolls + v,
-    0
+  const lifetimeRollsCount = React.useMemo(
+    () => lifetimeRolls.reduce((sum, v) => sum + v, 0),
+    [lifetimeRolls]
   );
   return (
     <Box>
@@ -83,14 +82,14 @@ export default function DieStatistics() {
                     <Box w="100%">
                       <Text>Session</Text>
                       <Divider bg="white" />
-                      <Text fontSize="xl">{sessionRolls}</Text>
+                      <Text fontSize="xl">{sessionRollsCount}</Text>
                     </Box>
                   ) : (
                     <Box w="100%">
                       <Text>Lifetime</Text>
                       <Divider bg="white" />
                       <Text isTruncated fontSize="xl">
-                        {lifetimeRolls}
+                        {lifetimeRollsCount}
                       </Text>
                     </Box>
                   )}
@@ -152,7 +151,7 @@ export default function DieStatistics() {
                 </Text>
               </HStack>
               <Center width={sr(320)} h={sr(150)} alignSelf="center">
-                <Histogram viewRatio={2} rolls={lifetimeHistogramRolls} />
+                <Histogram viewRatio={2} rolls={lifetimeRolls} />
               </Center>
             </Card>
           ) : (
@@ -165,7 +164,7 @@ export default function DieStatistics() {
                 </Text>
               </HStack>
               <Center width={sr(320)} h={sr(150)} alignSelf="center">
-                <Histogram viewRatio={2} rolls={sessionHistogramRolls} />
+                <Histogram viewRatio={2} rolls={sessionRolls} />
               </Center>
             </Card>
           )}

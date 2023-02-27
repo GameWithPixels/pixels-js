@@ -2,6 +2,7 @@ import {
   AnimationBits,
   AnimationInstance,
   AnimationPreset,
+  GammaUtils,
 } from "@systemic-games/pixels-core-animation";
 import { Die3D } from "@systemic-games/pixels-three";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
@@ -48,17 +49,19 @@ function onContextCreate(
   // scene.add(redLight);
 
   // Create render function
+  let lastTime = Date.now();
   let lastAnims: AnimationInstance[] = [];
   let animIndex = 0;
   let errored = false;
   const render = () => {
     requestAnimationFrame(render);
+    const time = Date.now();
 
     // Rotate die
-    die3d.rotation.y -= 0.005;
+    die3d.rotation.y -= (time - lastTime) / 5000;
+    lastTime = time;
 
     // Update animation
-    const ms = Date.now();
     const anims = getAnimInstances();
     let changed = lastAnims !== anims;
     if (changed) {
@@ -71,7 +74,7 @@ function onContextCreate(
     if (!errored && anims?.length) {
       if (
         !changed &&
-        anims[animIndex].startTime + anims[animIndex].duration < ms
+        anims[animIndex].startTime + anims[animIndex].duration < time
       ) {
         // Switch to next animation
         animIndex = (animIndex + 1) % anims.length;
@@ -81,15 +84,22 @@ function onContextCreate(
       try {
         if (changed) {
           // Start animation
-          anim.start(ms);
+          anim.start(time);
         }
         // Get LEDs colors
         const indices: number[] = Array(20).fill(0);
         const colors: number[] = Array(20).fill(0);
-        const count = anim.updateLEDs(ms, indices, colors);
+        const count = anim.updateLEDs(time, indices, colors);
         // Light up die
+        const c = new THREE.Color();
         for (let i = 0; i < count; ++i) {
-          die3d.setLEDColor(indices[i], colors[i]);
+          const colorValue = colors[i];
+          c.setRGB(
+            GammaUtils.reverseGamma8((colorValue >> 16) & 0xff) / 255,
+            GammaUtils.reverseGamma8((colorValue >> 8) & 0xff) / 255,
+            GammaUtils.reverseGamma8(colorValue & 0xff) / 255
+          );
+          die3d.setLEDColor(indices[i], c);
         }
       } catch (error) {
         console.error(error);
@@ -109,20 +119,25 @@ function onContextCreate(
 }
 
 /**
+ * Die animation data to be rendered with a {@link DieRenderer} component.
+ */
+export interface DieRenderData {
+  animations: AnimationPreset | AnimationPreset[];
+  animationBits: AnimationBits;
+}
+
+/**
  * Props for {@link DieRenderer}.
  */
 export interface DieRendererProps {
-  animationData?: {
-    animations: AnimationPreset | AnimationPreset[];
-    animationBits: AnimationBits;
-  }; // The optional animation to play on the die.
+  renderData?: DieRenderData; // The optional animation(s) to play on the die.
 }
 
 /**
  * Component that renders a D20 in 3D.
  * See {@link DieRendererProps} for the supported props.
  */
-export default function ({ animationData }: DieRendererProps) {
+export default function ({ renderData }: DieRendererProps) {
   const errorHandler = useErrorHandler();
 
   // Load die 3d object
@@ -135,19 +150,18 @@ export default function ({ animationData }: DieRendererProps) {
 
   // Create an instance to play the animation
   const animInstanceRef = useRef<AnimationInstance[]>([]);
+  const animations = renderData?.animations;
+  const animationBits = renderData?.animationBits;
   useEffect(() => {
-    let anims = animationData?.animations;
-    if (anims && animationData?.animationBits) {
-      if (!Array.isArray(anims)) {
-        anims = [anims];
-      }
+    if (animations && animationBits) {
+      const anims = Array.isArray(animations) ? animations : [animations];
       animInstanceRef.current = anims.map((a) =>
-        a.createInstance(animationData.animationBits)
+        a.createInstance(animationBits)
       );
     } else {
       animInstanceRef.current = [];
     }
-  }, [animationData?.animations, animationData?.animationBits]);
+  }, [animations, animationBits]);
 
   return (
     <>

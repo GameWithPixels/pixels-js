@@ -1,8 +1,8 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { assert } from "@systemic-games/pixels-core-utils";
 import {
   EditAction,
   EditActionPlayAnimation,
-  EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import {
   PixelAppPage,
@@ -19,17 +19,39 @@ import {
 } from "native-base";
 import React from "react";
 
-import EditableStore from "~/features/EditableStore";
-import { MyAppDataSet, getAnimData } from "~/features/profiles";
+import {
+  getTempProfileFromUuid,
+  useAppAnimations,
+  useAppUserTexts,
+} from "~/app/hooks";
+import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { ProfileEditRuleScreenProps } from "~/navigation";
 
 export default function ProfileEditRuleScreen({
   route,
 }: ProfileEditRuleScreenProps) {
-  const rule = EditableStore.getEditable<EditRule>(route.params.ruleId);
+  const profile = React.useMemo(() => {
+    const selectedProfile = getTempProfileFromUuid(route.params.profileUuid);
+    assert(
+      selectedProfile,
+      `ProfileEditRuleScreen: Couldn't find profile with uuid: ${route.params.profileUuid}`
+    );
+    return selectedProfile;
+  }, [route.params.profileUuid]);
+  const rule = React.useMemo(() => {
+    const selectedRule = profile.rules[route.params.ruleIndex];
+    assert(
+      selectedRule,
+      `ProfileEditRuleScreen: Couldn't find rule with index: ${route.params.ruleIndex}`
+    );
+    return selectedRule;
+  }, [profile, route.params.ruleIndex]);
   const [condition, setCondition] = React.useState(rule.condition);
   const [ruleActions, setRuleActions] = React.useState(rule.actions);
+
+  const animations = useAppAnimations();
+  const appUserTexts = useAppUserTexts();
 
   const addAction = React.useCallback(() => {
     const newAction = new EditActionPlayAnimation();
@@ -41,18 +63,23 @@ export default function ProfileEditRuleScreen({
     });
   }, [rule]);
 
+  const replaceAction = React.useCallback(
+    (action: EditAction, newAction: EditAction) =>
+      setRuleActions((ruleActions) => {
+        const actions = [...ruleActions];
+        actions.splice(actions.indexOf(action), 1, newAction);
+        rule.actions.length = 0;
+        rule.actions.push(...actions);
+        return actions;
+      }),
+    [rule]
+  );
+
   const removeAction = React.useCallback(
     (action: EditAction) =>
       setRuleActions((ruleActions) => {
-        const actionKey = EditableStore.getKey(action);
-        EditableStore.unregister(action);
         const actions = [...ruleActions];
-        actions.splice(
-          actions.findIndex((action) => {
-            return EditableStore.getKey(action) === actionKey;
-          }),
-          1
-        );
+        actions.splice(actions.indexOf(action), 1);
         rule.actions.length = 0;
         rule.actions.push(...actions);
         return actions;
@@ -73,12 +100,16 @@ export default function ProfileEditRuleScreen({
           />
           {ruleActions.map((action) => (
             <RuleActionWidget
-              key={EditableStore.getKey(action)}
+              key={rule.actions.indexOf(action)}
               action={action}
+              onReplace={(newAction) => replaceAction(action, newAction)}
               onDelete={() => removeAction(action)}
-              animations={MyAppDataSet.animations}
+              animations={animations}
+              userTextsParams={{
+                availableTexts: appUserTexts,
+              }}
               dieRenderer={(anim) => (
-                <DieRenderer animationData={getAnimData(anim)} />
+                <DieRenderer renderData={getCachedDataSet(anim)} />
               )}
             />
           ))}

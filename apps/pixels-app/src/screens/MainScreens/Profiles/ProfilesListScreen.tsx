@@ -27,8 +27,13 @@ import {
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-import EditableStore from "~/features/EditableStore";
-import { extractDataSet, MyAppDataSet } from "~/features/profiles";
+import {
+  useAppAddProfile,
+  useAppProfiles,
+  useAppRemoveProfile,
+} from "~/app/hooks";
+import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
+import generateUuid from "~/features/generateUuid";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { ProfilesListScreenProps } from "~/navigation";
 
@@ -36,7 +41,9 @@ import { ProfilesListScreenProps } from "~/navigation";
  * Custom profile card widget for the option to create a new profile.
  * @param props See {@link ProfileCardProps} for props parameters.
  */
-function CreateProfileWidget(props: ProfileCardProps) {
+function CreateProfileWidget(
+  props: Omit<ProfileCardProps, "profileName" | "dieRender">
+) {
   return (
     <Pressable
       onPress={() => {
@@ -63,88 +70,68 @@ function CreateProfileWidget(props: ProfileCardProps) {
 }
 
 export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
-  const [profileList, setProfileList] = React.useState([
-    ...MyAppDataSet.profiles,
-  ]);
+  const profiles = useAppProfiles();
+  const addProfile = useAppAddProfile();
+  const removeProfile = useAppRemoveProfile();
+
   // List of favorite profiles
-  const [favoriteProfilesList, setFavoritesProfileList] = React.useState<
+  const [favoriteProfilesList, _setFavoritesProfileList] = React.useState<
     EditProfile[]
   >([]);
 
-  function addProfile(profile: EditProfile) {
-    MyAppDataSet.profiles.push(profile);
-    // Register the new profile in the editable store
-    EditableStore.getKey(profile);
-    // Add the new profile in the UI list
-    setProfileList((profileList) => [...profileList, profile]);
-  }
+  const duplicateProfile = React.useCallback(
+    (profile: Readonly<EditProfile>) => {
+      // Copy the profile that needs to be duplicated
+      const dupProfile = profile.duplicate(generateUuid());
+      dupProfile.name += " copy";
+      // Insert in list after the original profile
+      addProfile(dupProfile, profiles.indexOf(profile) + 1);
+    },
+    [addProfile, profiles]
+  );
 
-  /**
-   * Duplicate an existing profile by updating the profileList.
-   * @param profileToDuplicate Profile infos of the profile to duplicate.
-   * @param index Index of the profile to duplicate.
-   */
-  function duplicateProfile(profileToDuplicate: EditProfile, index: number) {
-    // Copy the profile that needs to be duplicated
-    profileToDuplicate.name = profileToDuplicate.name + " COPY";
-    const duplicatedProfile = profileToDuplicate.duplicate();
+  const addToFavorites = React.useCallback(
+    (_profileToFavorite: Readonly<EditProfile>) => {
+      // const favoriteProfile = profileToFavorite;
+      // // Remove profile from common list
+      // const profileToFavoriteKey = EditableStore.getKey(profileToFavorite);
+      // profileList.splice(
+      //   profileList.findIndex((profileToFavorite) => {
+      //     return EditableStore.getKey(profileToFavorite) === profileToFavoriteKey;
+      //   }),
+      //   1
+      // );
+      // // Add profile to favorite list
+      // setFavoritesProfileList([...favoriteProfilesList, favoriteProfile]);
+    },
+    []
+  );
 
-    // Duplicate the profile in the UI list
-    setProfileList((profileList) => {
-      const profiles = [...profileList];
-      profiles.splice(index + 1, 0, duplicatedProfile);
-      return profiles;
-    });
-  }
+  const removeFromFavorites = React.useCallback(
+    (_profileToRemove: Readonly<EditProfile>) => {
+      // const profileToDeleteKey = EditableStore.getKey(profileToRemove);
+      // const profiles = [...favoriteProfilesList];
+      // profiles.splice(
+      //   profiles.findIndex((profileToDelete) => {
+      //     return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
+      //   }),
+      //   1
+      // );
+      // setFavoritesProfileList(profiles);
+      // setProfileList((profileList) => [...profileList, profileToRemove]);
+    },
+    []
+  );
 
-  function deleteProfile(profileToDelete: EditProfile) {
-    const profileToDeleteKey = EditableStore.getKey(profileToDelete);
-    EditableStore.unregister(profileToDelete);
-    setProfileList((profileList) => {
-      const profiles = [...profileList];
-      profiles.splice(
-        profiles.findIndex((profileToDelete) => {
-          return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
-        }),
-        1
-      );
-      return profiles;
-    });
-  }
-
-  function addToFavorites(profileToFavorite: EditProfile) {
-    const favoriteProfile = profileToFavorite;
-    // Remove profile from common list
-    const profileToFavoriteKey = EditableStore.getKey(profileToFavorite);
-    profileList.splice(
-      profileList.findIndex((profileToFavorite) => {
-        return EditableStore.getKey(profileToFavorite) === profileToFavoriteKey;
-      }),
-      1
-    );
-    // Add profile to favorite list
-    setFavoritesProfileList([...favoriteProfilesList, favoriteProfile]);
-  }
-
-  function removeFromFavorites(profileToRemove: EditProfile) {
-    const profileToDeleteKey = EditableStore.getKey(profileToRemove);
-    const profiles = [...favoriteProfilesList];
-    profiles.splice(
-      profiles.findIndex((profileToDelete) => {
-        return EditableStore.getKey(profileToDelete) === profileToDeleteKey;
-      }),
-      1
-    );
-    setFavoritesProfileList(profiles);
-    setProfileList((profileList) => [...profileList, profileToRemove]);
-  }
-
-  function openExportSheet(_profileToExport: EditProfile) {
-    onOpen();
-    //DO OTHER THINGS
-  }
-
+  // Action sheet
   const { isOpen, onOpen, onClose } = useDisclose();
+
+  const openExportSheet = React.useCallback(
+    (_profileToFavorite: Readonly<EditProfile>) => {
+      onOpen();
+    },
+    [onOpen]
+  );
 
   return (
     <>
@@ -173,8 +160,8 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                     <Text bold>Favorites:</Text>
                   </HStack>
                   <VStack p={2} rounded="lg" bg="gray.700">
-                    {favoriteProfilesList.map((profile, i) => (
-                      <Box p={1} key={EditableStore.getKey(profile)}>
+                    {favoriteProfilesList.map((profile) => (
+                      <Box p={1} key={profile.uuid}>
                         <Swipeable
                           renderLeftActions={createSwipeableSideButton({
                             w: 85,
@@ -196,7 +183,7 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                             w: 195,
                             buttons: [
                               {
-                                onPress: () => duplicateProfile(profile, i),
+                                onPress: () => duplicateProfile(profile),
                                 bg: "blue.500",
                                 icon: (
                                   <MaterialIcons
@@ -218,7 +205,7 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                                 ),
                               },
                               {
-                                onPress: () => deleteProfile(profile),
+                                onPress: () => removeProfile(profile),
                                 bg: "red.500",
                                 icon: (
                                   <MaterialIcons
@@ -237,7 +224,7 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                             imageSize={70}
                             dieRender={() => (
                               <DieRenderer
-                                animationData={extractDataSet(profile)}
+                                renderData={getCachedDataSet(profile)}
                               />
                             )}
                             textSize="md"
@@ -260,8 +247,8 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                     </Box>
                   </HStack>
                   <VStack p={2} rounded="lg" bg="gray.700">
-                    {profileList.map((profile, i) => (
-                      <Box p={1} key={EditableStore.getKey(profile)}>
+                    {profiles.map((profile) => (
+                      <Box p={1} key={profile.uuid}>
                         <Swipeable
                           renderLeftActions={createSwipeableSideButton({
                             w: 85,
@@ -283,7 +270,7 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                             w: 195,
                             buttons: [
                               {
-                                onPress: () => duplicateProfile(profile, i),
+                                onPress: () => duplicateProfile(profile),
                                 bg: "blue.500",
                                 icon: (
                                   <MaterialIcons
@@ -305,7 +292,7 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                                 ),
                               },
                               {
-                                onPress: () => deleteProfile(profile),
+                                onPress: () => removeProfile(profile),
                                 bg: "red.500",
                                 icon: (
                                   <MaterialIcons
@@ -324,7 +311,9 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                             imageSize={70}
                             dieRender={() => (
                               <DieRenderer
-                                animationData={extractDataSet(profile)}
+                                renderData={getCachedDataSet(
+                                  profile as EditProfile // TODO readonly profile
+                                )}
                               />
                             )}
                             textSize="md"
@@ -333,7 +322,7 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                             profileWithSound={false}
                             onPress={() =>
                               navigation.navigate("ProfileRules", {
-                                profileId: EditableStore.getKey(profile),
+                                profileUuid: profile.uuid,
                               })
                             }
                           />
@@ -343,12 +332,14 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
                   </VStack>
                   <Box p={1}>
                     <CreateProfileWidget
-                      profileName=""
-                      dieRender={() => <></>}
-                      onPress={() => {
-                        // Empty profile that will need to be edited
-                        addProfile(new EditProfile("New Profile"));
-                      }}
+                      onPress={() =>
+                        addProfile(
+                          new EditProfile({
+                            uuid: generateUuid(),
+                            name: "New Profile",
+                          })
+                        )
+                      }
                     />
                   </Box>
                 </VStack>

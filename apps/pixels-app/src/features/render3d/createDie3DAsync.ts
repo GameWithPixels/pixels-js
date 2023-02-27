@@ -33,9 +33,12 @@ function extractMeshesGeometry(
     const index = isNaN(indexFromName) ? i : indexFromName - 1;
     assert(
       !isNaN(index) && index >= 0 && index < meshes.length,
-      `Out of bound face index: ${index}`
+      `extractMeshesGeometry(): Out of bound face index: ${index}`
     );
-    assert(!faces[index], `Duplicate face index: ${index}`);
+    assert(
+      !faces[index],
+      `extractMeshesGeometry(): Duplicate face index: ${index}`
+    );
     faces[index] = geometry;
   });
   return faces;
@@ -47,6 +50,8 @@ let faceMeshes: THREE.BufferGeometry[] | undefined;
 
 let status: "loading" | "loaded" | "error";
 const doneEvent = createTypedEventEmitter<{ done: undefined }>();
+// We may create a bunch of Die3D at once
+doneEvent.setMaxListeners(0);
 
 async function loadAssets(): Promise<void> {
   // Load textures

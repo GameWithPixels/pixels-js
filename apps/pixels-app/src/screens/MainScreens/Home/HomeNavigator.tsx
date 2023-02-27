@@ -27,7 +27,7 @@ export default function HomeNavigator() {
         }}
       >
         <Stack.Screen
-          name="DiceList"
+          name="Home"
           component={HomeScreen}
           options={{
             title: "Dice Bag",

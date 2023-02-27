@@ -4,9 +4,8 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import {
-  AnimationRainbow,
   Color,
-  Constants,
+  EditActionMakeWebRequest,
 } from "@systemic-games/pixels-edit-animation";
 import {
   BatteryLevel,
@@ -17,10 +16,14 @@ import {
   sr,
 } from "@systemic-games/react-native-pixels-components";
 import {
-  AnimationBits,
+  MessageOrType,
+  PixelRollData,
+  PixelRollStateValues,
+  RemoteAction,
+  RollState,
   getPixel,
+  getPixelEnumName,
   usePixel,
-  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import {
   Box,
@@ -38,9 +41,16 @@ import {
 } from "native-base";
 import React from "react";
 
+import {
+  useAppProfiles,
+  useAppPairedDice,
+  useAppRemovePairedDie,
+  useAppUpdatePairedDie,
+} from "~/app/hooks";
 import DieStatistics from "~/components/DieStatistics";
-import { extractDataSet, MyAppDataSet } from "~/features/profiles";
-import DieRenderer, { DieRendererProps } from "~/features/render3d/DieRenderer";
+import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
+import httpPost from "~/features/httpPost";
+import DieRenderer from "~/features/render3d/DieRenderer";
 import { PixelDetailScreenProps } from "~/navigation";
 
 export default function PixelDetailScreen({
@@ -48,24 +58,91 @@ export default function PixelDetailScreen({
   route,
 }: PixelDetailScreenProps) {
   const { systemId } = route.params;
-  const pixel = getPixel(systemId);
+  const pixel = getPixel(systemId); //, console.log, true);
   const [status, lastError] = usePixel(pixel);
-  const [rollState] = usePixelValue(pixel, "rollState");
+  //const [rollState] = usePixelValue(pixel, "rollState");
+  const [rollState, setRollState] = React.useState<PixelRollData>();
+
+  const pairedDice = useAppPairedDice();
+  const updatePairedDie = useAppUpdatePairedDie();
+  const removePairedDie = useAppRemovePairedDie();
+
+  const profiles = useAppProfiles();
+  const activeProfile = React.useMemo(() => {
+    const die = pairedDice.find((d) => d.systemId === systemId);
+    return profiles.find((p) => p.uuid === die?.profileUuid);
+  }, [pairedDice, profiles, systemId]);
+
+  React.useEffect(() => {
+    if (pixel) {
+      const onRollState = (msgOrType: MessageOrType) => {
+        const msg = msgOrType as RollState;
+        const roll = {
+          face: msg.faceIndex + 1,
+          state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
+        };
+        setRollState(roll);
+      };
+      pixel.addMessageListener("rollState", onRollState);
+      const onRemoteAction = (msgOrType: MessageOrType) => {
+        if (activeProfile) {
+          const msg = msgOrType as RemoteAction;
+          const action = activeProfile.getRemoteAction(msg.actionId);
+          if (action instanceof EditActionMakeWebRequest) {
+            console.log(
+              `Running remote action for web request with id=${msg.actionId} at URL "${action.url}" with value "${action.value}"`
+            );
+            if (!__DEV__) {
+              httpPost(
+                action.url,
+                pixel.name,
+                action.value,
+                activeProfile.name
+              ).then((status) =>
+                console.log(
+                  `Post request to ${action.url} returned with status ${status}`
+                )
+              );
+            }
+          } else if (action) {
+            console.log(`Couldn't run remote action with id ${msg.actionId}`);
+          } else {
+            console.log(`Couldn't find remote action with id ${msg.actionId}`);
+          }
+        }
+      };
+      pixel.addMessageListener("remoteAction", onRemoteAction);
+      return () => {
+        pixel.removeMessageListener("rollState", onRollState);
+        pixel.removeMessageListener("remoteAction", onRemoteAction);
+      };
+    }
+  }, [activeProfile, pixel]);
+
+  const [sessionRolls, setSessionRolls] = React.useState<number[]>(() =>
+    new Array(20).fill(0)
+  );
+  React.useEffect(() => {
+    if (rollState && rollState.state === "onFace") {
+      setSessionRolls((rolls) => {
+        const newRolls = [...rolls];
+        const i = rollState.face - 1;
+        newRolls[i] = newRolls[i] + 1;
+        return newRolls;
+      });
+    }
+  }, [rollState]);
+
+  const lifetimeRolls = React.useMemo(
+    () => [
+      30, 25, 21, 42, 32, 65, 78, 88, 98, 83, 51, 32, 94, 93, 45, 91, 12, 56,
+      35, 45,
+    ],
+    []
+  );
 
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
   const [transferProgress, setTransferProgress] = React.useState(0);
-
-  const [animData, setAnimData] = React.useState<
-    DieRendererProps["animationData"]
-  >(() => {
-    const anim = new AnimationRainbow();
-    anim.duration = 10000;
-    anim.count = 1;
-    anim.traveling = true;
-    anim.faceMask = Constants.faceMaskAllLEDs;
-    const animationBits = new AnimationBits();
-    return { animations: anim, animationBits };
-  });
 
   return (
     <>
@@ -79,7 +156,7 @@ export default function PixelDetailScreen({
                 }
                 size="2xl"
                 variant="unstyled"
-                placeholder={pixel?.name}
+                placeholder={pixel.name}
                 color="black"
               />
             </Center>
@@ -87,12 +164,16 @@ export default function PixelDetailScreen({
               <HStack space={0} alignItems="center" paddingLeft={5}>
                 <Box w="50%" paddingLeft={0}>
                   <Box w={sr(200)} h={sr(200)}>
-                    <DieRenderer animationData={animData} />
+                    <DieRenderer
+                      renderData={
+                        activeProfile && getCachedDataSet(activeProfile)
+                      }
+                    />
                   </Box>
                 </Box>
                 <Spacer />
                 <VStack flex={2} space={sr(11)} p={2} rounded="md" w="40%">
-                  <Button onPress={() => pixel?.blink(Color.dimOrange)}>
+                  <Button onPress={() => pixel.blink(Color.dimOrange)}>
                     <MaterialCommunityIcons
                       name="lightbulb-on-outline"
                       size={24}
@@ -102,9 +183,10 @@ export default function PixelDetailScreen({
                   <VStack bg="pixelColors.highlightGray" rounded="md" p={2}>
                     <BatteryLevel
                       size="xl"
-                      percentage={pixel?.batteryLevel ?? 0}
+                      percentage={pixel.batteryLevel}
+                      isCharging={pixel.isCharging}
                     />
-                    <RSSIStrength percentage={pixel?.rssi ?? 0} size="xl" />
+                    <RSSIStrength percentage={pixel.rssi} size="xl" />
                   </VStack>
                   <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
                     <VStack space={2}>
@@ -119,6 +201,7 @@ export default function PixelDetailScreen({
                             <Spacer />
                             <Text bold color="green.500" fontSize="md">
                               {`${rollState?.face ?? ""}`}
+                              {`\n${rollState?.state ?? ""}`}
                             </Text>
                           </HStack>
                           <HStack>
@@ -136,27 +219,29 @@ export default function PixelDetailScreen({
               </HStack>
             </Center>
 
-            {/* {Profiles horizontal scroll list} */}
+            {/* Profiles horizontal scroll list */}
             <Box>
               <HStack alignItems="center" space={2} paddingBottom={2}>
                 <AntDesign name="profile" size={24} color="white" />
                 <Text bold>Recent Profiles:</Text>
               </HStack>
               <ProfilesScrollView
-                profiles={MyAppDataSet.profiles}
+                profiles={profiles}
                 dieRender={(profile) => (
-                  <DieRenderer animationData={extractDataSet(profile)} />
+                  <DieRenderer renderData={getCachedDataSet(profile)} />
                 )}
                 onPress={(profile) => {
-                  if (pixel?.isReady) {
+                  if (pixel.isReady) {
                     setTransferProgress(0);
                     setShowLoadingPopup(true);
                     pixel
                       ?.transferDataSet(
-                        extractDataSet(profile),
+                        getCachedDataSet(profile),
                         setTransferProgress
                       )
-                      .then(() => setAnimData(extractDataSet(profile)))
+                      .then(() =>
+                        updatePairedDie({ systemId, profileUuid: profile.uuid })
+                      )
                       .catch(console.error)
                       .finally(() => setShowLoadingPopup(false));
                   }
@@ -164,9 +249,13 @@ export default function PixelDetailScreen({
               />
             </Box>
 
-            {/* Dice Stats is used without params until we switch to real data */}
-            <DieStatistics />
-            {/* {Advanced Settings infos} */}
+            {/* Die Stats */}
+            <DieStatistics
+              sessionRolls={sessionRolls}
+              lifetimeRolls={lifetimeRolls}
+            />
+
+            {/* Advanced Settings infos */}
             <Divider bg="primary.200" width="90%" alignSelf="center" />
             <Pressable
               onPress={() => {
@@ -192,6 +281,10 @@ export default function PixelDetailScreen({
               leftIcon={<AntDesign name="disconnect" size={24} color="white" />}
               w="100%"
               alignSelf="center"
+              onPress={() => {
+                removePairedDie(systemId);
+                navigation.goBack();
+              }}
             >
               <Text bold>Unpair</Text>
             </Button>

@@ -3,17 +3,16 @@ import { useFocusEffect } from "@react-navigation/native";
 import {
   EditRule,
   EditConditionFaceCompare,
-  EditProfile,
 } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
   createSwipeableSideButton,
   ProfileRulesCard,
   PixelAppPage,
-  getActionTitles,
-  getConditionTitle,
+  getActionDescription,
+  getConditionDescription,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, HStack, Pressable, VStack, Text, Input } from "native-base";
+import { Box, HStack, Pressable, VStack, Text } from "native-base";
 import React from "react";
 import DraggableFlatList, {
   ScaleDecorator,
@@ -21,7 +20,8 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
 
-import EditableStore from "~/features/EditableStore";
+import { getTempProfileFromUuid, useAppUpdateProfile } from "~/app/hooks";
+import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { ProfileRulesScreenProps } from "~/navigation";
 
@@ -55,63 +55,85 @@ export default function ProfilesRulesScreen({
   navigation,
   route,
 }: ProfileRulesScreenProps) {
-  const profile = EditableStore.getEditable<EditProfile>(
-    route.params.profileId
+  const profile = React.useMemo(
+    () => getTempProfileFromUuid(route.params.profileUuid),
+    [route.params.profileUuid]
   );
-  const [rulesList, setRulesList] = React.useState<EditRule[]>([]);
+
+  const updateProfile = useAppUpdateProfile();
+  React.useEffect(() => {
+    return () => {
+      // TODO update profile when leaving screen
+      updateProfile(profile);
+    };
+  }, [profile, updateProfile]);
+
+  const [_, forceUpdate] = React.useReducer((b) => !b, false);
   useFocusEffect(
-    // Refresh rules list
-    React.useCallback(() => setRulesList([...profile.rules]), [profile])
+    // TODO refresh screen when coming back from edit rule
+    React.useCallback(() => {
+      forceUpdate();
+    }, [])
   );
 
-  function addRule() {
-    const newRule = new EditRule(new EditConditionFaceCompare());
-    profile.rules.push(newRule);
-    // Register rule
-    EditableStore.getKey(newRule);
-    setRulesList([...rulesList, newRule]);
-  }
+  const addRule = React.useCallback(() => {
+    const rule = new EditRule(new EditConditionFaceCompare());
+    profile.rules.push(rule);
+    forceUpdate();
+  }, [profile.rules]);
 
-  function duplicateRule(ruleToDuplicate: EditRule, index: number) {
-    const duplicatedRule = ruleToDuplicate.duplicate();
-    // Register duplicated rule
-    EditableStore.getKey(duplicatedRule);
-    const rules = [...rulesList];
-    rules.splice(index + 1, 0, duplicatedRule);
-    setRulesList(rules);
-  }
+  const duplicateRule = React.useCallback(
+    (rule: EditRule) => {
+      const dupRule = rule.duplicate();
+      profile.rules.splice(profile.rules.indexOf(rule) + 1, 0, dupRule);
+      forceUpdate();
+    },
+    [profile.rules]
+  );
 
-  function deleteRule(ruleToDelete: EditRule) {
-    const ruleKey = EditableStore.getKey(ruleToDelete);
-    const rules = [...rulesList];
-    rules.splice(
-      rules.findIndex((ruleToDelete) => {
-        return EditableStore.getKey(ruleToDelete) === ruleKey;
-      }),
-      1
-    );
-    setRulesList(rules);
-    // Delete rule from register
-    EditableStore.unregister(ruleToDelete);
-  }
+  const deleteRule = React.useCallback(
+    (rule: EditRule) => {
+      const index = profile.rules.indexOf(rule);
+      if (index >= 0) {
+        profile.rules.splice(index, 1);
+        forceUpdate();
+      }
+    },
+    [profile.rules]
+  );
 
-  function RenderItem({ item, drag, isActive }: RenderItemParams<EditRule>) {
+  // Simple key generation for DraggableFlatList
+  const rulesArrayForKeys = React.useRef<EditRule[]>([]);
+  const getKeyForRule = React.useCallback((rule: EditRule) => {
+    const arr = rulesArrayForKeys.current;
+    let index = arr.indexOf(rule);
+    if (index < 0) {
+      index = arr.length;
+      arr.push(rule);
+    }
+    return index.toString();
+  }, []);
+
+  function RenderItem({
+    item: rule,
+    drag,
+    isActive,
+  }: RenderItemParams<EditRule>) {
     return (
       <ScaleDecorator>
         <Swipeable
-          key={EditableStore.getKey(item)}
           renderRightActions={createSwipeableSideButton({
             w: 120,
             buttons: [
               {
-                onPress: () => duplicateRule(item, rulesList.length),
+                onPress: () => duplicateRule(rule),
                 bg: "blue.500",
                 icon: (
                   <MaterialIcons name="content-copy" size={24} color="white" />
                 ),
               },
               {
-                onPress: () => deleteRule(item),
+                onPress: () => deleteRule(rule),
                 bg: "red.500",
                 icon: (
                   <MaterialIcons
@@ -127,7 +149,8 @@ export default function ProfilesRulesScreen({
           <Pressable
             onPress={() => {
               navigation.navigate("ProfileEditRule", {
-                ruleId: EditableStore.getKey(item),
+                profileUuid: profile.uuid,
+                ruleIndex: profile.rules.indexOf(rule),
               });
             }}
             onLongPress={() => {
@@ -136,11 +159,9 @@ export default function ProfilesRulesScreen({
             disabled={isActive}
           >
             <ProfileRulesCard
-              key={EditableStore.getKey(item)}
               ruleCardInfo={{
-                ruleKey: EditableStore.getKey(item),
-                actions: getActionTitles(item.actions),
-                condition: getConditionTitle(item.condition),
+                actions: rule.actions.map(getActionDescription),
+                condition: getConditionDescription(rule.condition),
               }}
             />
           </Pressable>
@@ -155,27 +176,45 @@ export default function ProfilesRulesScreen({
         <HStack alignItems="center" width="100%">
           <Box flex={1}>
             <Box w={100} h={100}>
-              <DieRenderer />
-              {/* TODO animationData={ }  */}
+              <DieRenderer renderData={getCachedDataSet(profile)} />
             </Box>
           </Box>
-          <Box flex={2.5}>
-            {/* TODO check for text color not to be white */}
+          {/* <Box flex={2.5}>
             <Input
-              bg="white"
+              bg="pixelColors.highlightGray"
               variant="filled"
-              placeholder="Edit profile description"
+              placeholder="Type Name"
               placeholderTextColor="gray.400"
+              value={name}
+              onChangeText={(t) => {
+                setName(t);
+                profile.name = t;
+              }}
             />
-          </Box>
+            <Input
+              bg="pixelColors.highlightGray"
+              variant="filled"
+              placeholder="Type Description"
+              placeholderTextColor="gray.400"
+              value={description}
+              onChangeText={(t) => {
+                setDescription(t);
+                profile.description = t;
+              }}
+              multiline
+            />
+          </Box> */}
         </HStack>
         <Text bold>Rules for this profile : </Text>
         <CreateRuleWidget onPress={addRule} />
         <Box h="68%" p={1}>
           <DraggableFlatList
-            data={rulesList}
-            onDragEnd={({ data }) => setRulesList(data)}
-            keyExtractor={(item) => EditableStore.getKey(item)?.toString()}
+            data={profile.rules}
+            onDragEnd={({ data }) => {
+              profile.rules.length = 0;
+              profile.rules.push(...data);
+            }}
+            keyExtractor={getKeyForRule}
             renderItem={RenderItem}
             ItemSeparatorComponent={SeparatorItem}
           />

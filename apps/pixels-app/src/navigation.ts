@@ -14,14 +14,14 @@ export type RootStackParamList = {
 // Home screen stack
 //
 export type HomeScreenStackParamList = {
-  DiceList: undefined;
+  Home: undefined;
   PixelDetails: { systemId: string };
   PixelAdvancedSettings: { systemId: string };
 };
 
-export type DiceListScreenProps = StackScreenProps<
+export type HomeScreenProps = StackScreenProps<
   HomeScreenStackParamList,
-  "DiceList"
+  "Home"
 >;
 
 export type PixelDetailScreenProps = StackScreenProps<
@@ -39,7 +39,7 @@ export type PixelAdvancedSettingsScreenProps = StackScreenProps<
 //
 export type AnimationsScreenStackParamList = {
   AnimationsList: undefined;
-  AnimationEdit: { animationId: number };
+  AnimationEdit: { animationUuid: string };
 };
 
 export type AnimationsListScreenProps = StackScreenProps<
@@ -57,8 +57,8 @@ export type AnimationEditScreenProps = StackScreenProps<
 //
 export type ProfilesScreenStackParamList = {
   ProfilesList: undefined;
-  ProfileRules: { profileId: number };
-  ProfileEditRule: { ruleId: number };
+  ProfileRules: { profileUuid: string };
+  ProfileEditRule: { profileUuid: string; ruleIndex: number };
 };
 
 export type ProfilesListScreenProps = StackScreenProps<
