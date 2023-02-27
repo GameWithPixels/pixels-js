@@ -25,36 +25,27 @@ export { default as AnimationInstanceSimple } from "./animations/AnimationInstan
 // Profiles
 export { default as Profile } from "./profiles/Profile";
 export { default as Rule } from "./profiles/Rule";
+export * from "./profiles/ActionType";
+export * from "./profiles/RemoteActionType";
 export { default as Action } from "./profiles/Action";
 export { default as ActionPlayAnimation } from "./profiles/ActionPlayAnimation";
 export { default as ActionPlayAudioClip } from "./profiles/ActionPlayAudioClip";
+export { default as ActionMakeWebRequest } from "./profiles/ActionMakeWebRequest";
 export * from "./profiles/ConditionType";
-export {
-  default as ConditionBatteryState,
-  BatteryStateFlagsValues,
-  type BatteryStateFlags,
-} from "./profiles/ConditionBatteryState";
-export {
-  default as ConditionConnectionState,
-  ConnectionStateFlagsValues,
-  type ConnectionStateFlags,
-} from "./profiles/ConditionConnectionState";
-export {
-  default as ConditionFaceCompare,
-  FaceCompareFlagsValues,
-  type FaceCompareFlags,
-} from "./profiles/ConditionFaceCompare";
-export {
-  default as ConditionHelloGoodbye,
-  HelloGoodbyeFlagsValues,
-  type HelloGoodbyeFlags,
-} from "./profiles/ConditionHelloGoodbye";
-export * from "./profiles/ActionType";
+export { default as ConditionBatteryState } from "./profiles/ConditionBatteryState";
+export * from "./profiles/ConditionBatteryState";
+export { default as ConditionConnectionState } from "./profiles/ConditionConnectionState";
+export * from "./profiles/ConditionConnectionState";
+export { default as ConditionFaceCompare } from "./profiles/ConditionFaceCompare";
+export * from "./profiles/ConditionFaceCompare";
+export { default as ConditionHelloGoodbye } from "./profiles/ConditionHelloGoodbye";
+export * from "./profiles/ConditionHelloGoodbye";
 export { default as Condition } from "./profiles/Condition";
 export { default as ConditionCrooked } from "./profiles/ConditionCrooked";
 export { default as ConditionHandling } from "./profiles/ConditionHandling";
 export { default as ConditionIdle } from "./profiles/ConditionIdle";
 export { default as ConditionRolling } from "./profiles/ConditionRolling";
+export * from "./profiles/getDisplayName";
 
 // Colors
 export { default as Color } from "./color/Color";

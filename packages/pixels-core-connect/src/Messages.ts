@@ -40,7 +40,7 @@ export const MessageTypeValues = {
   playAnimation: enumValue(),
   playAnimationEvent: enumValue(),
   stopAnimation: enumValue(),
-  playSound: enumValue(),
+  remoteAction: enumValue(),
   requestRollState: enumValue(),
   requestAnimationSet: enumValue(),
   requestSettings: enumValue(),
@@ -693,17 +693,21 @@ export class DebugLog implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel to request playing a specific sound clip.
+ * Message send by a Pixel to request running a specific remote action.
  * @category Message
  */
-export class PlaySound implements PixelMessage {
+export class RemoteAction implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.playSound;
+  readonly type = MessageTypeValues.remoteAction;
 
-  /** The id for the clip. */
+  /** Type of remote action. */
+  // @serializable(1)
+  // readonly remoteActionType: RemoteActionType = 0;
+
+  /** The action id to run. */
   @serializable(2)
-  clipId = 0;
+  actionId = 0;
 }
 
 /**
@@ -1068,7 +1072,7 @@ function _getMessageClasses(): MessageClass[] {
     TransferTestAnimationSet,
     TransferTestAnimationSetAck,
     DebugLog,
-    PlaySound,
+    RemoteAction,
     Blink,
     BatteryLevel,
     RequestRssi,

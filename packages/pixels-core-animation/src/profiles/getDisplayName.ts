@@ -4,6 +4,7 @@ import {
 } from "../animations/AnimationType";
 import { ActionType, ActionTypeValues } from "./ActionType";
 import { ConditionType, ConditionTypeValues } from "./ConditionType";
+import { RemoteActionType, RemoteActionTypeValues } from "./RemoteActionType";
 
 /**
  * @category Profile
@@ -32,8 +33,8 @@ export function getAnimationTypeDisplayName(
       return { name: "Gradient LED Pattern", order: 4 };
     case AnimationTypeValues.gradient:
       return { name: "Simple Gradient", order: 2 };
-    default:
-      console.error(`Unknown value for AnimationType: ${animType}`);
+    case AnimationTypeValues.noise:
+      return { name: "Noise", order: 5 };
   }
 }
 
@@ -41,17 +42,21 @@ export function getAnimationTypeDisplayName(
  * @category Profile
  */
 export function getActionTypeDisplayName(
-  actionType: ActionType
+  actionType: ActionType,
+  actionRemoteType: RemoteActionType = 0
 ): NameAndOrder | undefined {
   switch (actionType) {
     case ActionTypeValues.none:
       return;
     case ActionTypeValues.playAnimation:
       return { name: "Trigger Pattern", order: 0 };
-    case ActionTypeValues.playAudioClip:
-      return { name: "Play Audio Clip", order: 1 };
-    default:
-      console.error(`Unknown value for ActionType: ${actionType}`);
+    case ActionTypeValues.runOnDevice:
+      switch (actionRemoteType) {
+        case RemoteActionTypeValues.playAudioClip:
+          return { name: "Play Audio Clip", order: 1 };
+        case RemoteActionTypeValues.makeWebRequest:
+          return { name: "Make Web Request", order: 2 };
+      }
   }
 }
 
@@ -80,7 +85,5 @@ export function getConditionTypeDisplayName(
       return { name: "Battery Event...", order: 6 };
     case ConditionTypeValues.idle:
       return { name: "Pixel is idle for...", order: 7 };
-    default:
-      console.error(`Unknown value for ConditionType: ${conditionType}`);
   }
 }

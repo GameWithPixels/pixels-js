@@ -47,13 +47,13 @@ import {
   PixelRollStateNames,
   PixelDesignAndColorNames,
   MessageTypeNames,
-  PixelBatteryStateValues,
   RequestRssi,
   TelemetryRequestModeValues,
+  RemoteAction,
 } from "./Messages";
 import PixelSession from "./PixelSession";
-import getPixelEnumName from "./getPixelEnumName";
 import getPixelCharging from "./getPixelCharging";
+import getPixelEnumName from "./getPixelEnumName";
 
 // Returns a string with the current time with a millisecond precision
 function _getTime(): string {
@@ -127,8 +127,10 @@ export interface PixelEventMap {
   battery: PixelBatteryData;
   /** RSSI change notification. */
   rssi: number;
-  /** User message notification. */
+  /** User message request. */
   userMessage: PixelUserMessage;
+  /** Remote action request. */
+  remoteAction: number; // Audio clip local id
 }
 
 /**
@@ -153,6 +155,7 @@ export class PixelError extends Error {
  * @category Pixel
  */
 export interface IPixel {
+  // TODO rename to PixelInfo
   readonly systemId: string;
   readonly pixelId: number;
   readonly name: string;
@@ -350,6 +353,11 @@ export default class Pixel implements IPixel {
           );
         },
       });
+      // Subscribe to play sound notifications
+      this.addMessageListener("remoteAction", (message: MessageOrType) => {
+        const msg = message as RemoteAction;
+        this._evEmitter.emit("remoteAction", msg.actionId);
+      });
     });
   }
 
@@ -393,10 +401,11 @@ export default class Pixel implements IPixel {
 
           this._batteryState = {
             level: this._info.batteryLevelPercent,
-            isCharging:
-              getPixelCharging(this._info.batteryState),
+            isCharging: getPixelCharging(this._info.batteryState),
           };
 
+          // We don't raise roll and roll state events as those should occur
+          // only when the die is actually moved
           this._rollState = {
             face: this._info.rollFaceIndex + 1,
             state:
@@ -406,6 +415,9 @@ export default class Pixel implements IPixel {
 
           // We're ready!
           this._updateStatus("ready");
+
+          // Notify battery state
+          this._evEmitter.emit("battery", { ...this._batteryState });
         }
       }
 
