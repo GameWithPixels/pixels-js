@@ -26,13 +26,13 @@ export default class EditRgbGradient extends Editable {
       : 0;
   }
 
-  constructor(keyframes: EditRgbKeyframe[] = []) {
-    super();
-    this.keyframes = keyframes;
+  constructor(opt?: { uuid?: string; keyframes?: EditRgbKeyframe[] }) {
+    super(opt);
+    this.keyframes = opt?.keyframes ?? [];
   }
 
-  duplicate(): EditRgbGradient {
-    const track = new EditRgbGradient();
+  duplicate(uuid?: string): EditRgbGradient {
+    const track = new EditRgbGradient({ uuid });
     if (this.keyframes != null) {
       this.keyframes.forEach((keyframe) => {
         track.keyframes.push(keyframe.duplicate());
@@ -49,13 +49,13 @@ export default class EditRgbGradient extends Editable {
   ): EditRgbGradient {
     const rgbKeyframes = keyframes
       .sort((kf1, kf2) => kf1.time - kf2.time)
-      .map((kf) => new EditRgbKeyframe(kf.time, kf.color));
+      .map((kf) => new EditRgbKeyframe(kf));
     if (!rgbKeyframes.length || rgbKeyframes[0].time > 0) {
-      rgbKeyframes.splice(0, 0, new EditRgbKeyframe(0));
+      rgbKeyframes.unshift(new EditRgbKeyframe({ time: 0 }));
     }
     if (!rgbKeyframes.length || keyframes[keyframes.length - 1].time < 1) {
-      rgbKeyframes.push(new EditRgbKeyframe(1));
+      rgbKeyframes.push(new EditRgbKeyframe({ time: 1 }));
     }
-    return new EditRgbGradient(rgbKeyframes);
+    return new EditRgbGradient({ keyframes: rgbKeyframes });
   }
 }

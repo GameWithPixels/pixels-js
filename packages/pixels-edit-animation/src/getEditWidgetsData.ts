@@ -2,7 +2,6 @@ import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 
 import {
   decorators,
-  Editable,
   EditAnimation,
   EditAudioClip,
   EditColor,
@@ -27,9 +26,10 @@ interface BaseWidgetWithRangeData<T extends decorators.WidgetType>
 }
 
 export type ToggleData = BaseWidgetData<"toggle", boolean>;
+export type StringData = BaseWidgetData<"string", string>;
 export type CountData = BaseWidgetWithRangeData<"count">;
 export type SliderData = BaseWidgetWithRangeData<"slider">;
-export type FaceMaskData = BaseWidgetData<"faceMask", number>;
+export type FaceMaskData = BaseWidgetWithRangeData<"faceMask">;
 export type FaceData = BaseWidgetData<"face", number>;
 export type PlaybackFaceData = BaseWidgetData<"playbackFace", number>;
 export type BitFieldData = BaseWidgetData<"bitField", number> & {
@@ -47,10 +47,12 @@ export type GrayscalePatternData = BaseWidgetData<
 export type RgbPattern = BaseWidgetData<"rgbPattern", EditPattern | undefined>;
 export type Animation = BaseWidgetData<"animation", EditAnimation | undefined>;
 export type AudioClip = BaseWidgetData<"audioClip", EditAudioClip | undefined>;
+export type UserText = BaseWidgetData<"userText", string | undefined>;
 
 /** Type union of all possible widget data types. */
 export type EditWidgetData =
   | ToggleData
+  | StringData
   | CountData
   | SliderData
   | FaceMaskData
@@ -62,15 +64,16 @@ export type EditWidgetData =
   | GrayscalePatternData
   | RgbPattern
   | Animation
-  | AudioClip;
+  | AudioClip
+  | UserText;
 
 /**
  * Iterate other the properties of the given {@link Editable} object
  * and returns the corresponding list of  widgets data.
- * @param editAnim The animation for which to get the widgets data.
+ * @param editAnim The edit animation object for which to get the widgets data.
  * @returns An array of {@link EditWidgetData}.
  */
-export default function (editAnim: Editable): EditWidgetData[] {
+export default function (editAnim: object): EditWidgetData[] {
   const entries = Object.entries(editAnim);
   return decorators
     .getPropsWithWidget(editAnim)
@@ -79,10 +82,9 @@ export default function (editAnim: Editable): EditWidgetData[] {
       assert(entry);
       const value = entry[1];
 
-      const updateProp = (newValue: any) => {
-        console.log(`Updating prop ${propertyKey} to ${newValue}`);
+      const getValue = () => (editAnim as any)[propertyKey];
+      const update = (newValue: any) => {
         (editAnim as any)[propertyKey] = newValue;
-        console.log(editAnim);
       };
 
       const keyAndName = {
@@ -102,9 +104,20 @@ export default function (editAnim: Editable): EditWidgetData[] {
           return {
             ...keyAndName,
             type,
-            // @ts-expect-error Accessing property by index
-            getValue: () => editAnim[propertyKey] as boolean,
-            update: (v: boolean) => updateProp(v),
+            getValue,
+            update,
+          };
+
+        case "string":
+          assert(
+            typeof value === "string",
+            `Property is not a string: ${propertyKey}`
+          );
+          return {
+            ...keyAndName,
+            type,
+            getValue,
+            update,
           };
 
         case "count":
@@ -126,9 +139,8 @@ export default function (editAnim: Editable): EditWidgetData[] {
             ...range,
             ...keyAndName,
             unit,
-            // @ts-expect-error Accessing property by index
-            getValue: () => editAnim[propertyKey] as number,
-            update: (v: number) => updateProp(v),
+            getValue,
+            update,
           };
           if (type === "bitField") {
             const values = decorators
@@ -144,18 +156,22 @@ export default function (editAnim: Editable): EditWidgetData[] {
           }
         }
 
-        case "faceMask":
+        case "faceMask": {
           assert(
             typeof value === "number",
             `Property is not a number: ${propertyKey}`
           );
+          const range = decorators
+            .getPropsWithRange(editAnim)
+            .find((p) => p.propertyKey === propertyKey);
           return {
+            ...range,
             ...keyAndName,
             type,
-            // @ts-expect-error Accessing property by index
-            getValue: () => editAnim[propertyKey] as number,
-            update: (v: number) => updateProp(v),
+            getValue,
+            update,
           };
+        }
 
         case "color":
           assert(
@@ -165,9 +181,8 @@ export default function (editAnim: Editable): EditWidgetData[] {
           return {
             ...keyAndName,
             type,
-            // @ts-expect-error Accessing property by index
-            getValue: () => editAnim[propertyKey] as EditColor,
-            update: (v: EditColor) => updateProp(v),
+            getValue,
+            update,
           };
 
         case "gradient":
@@ -178,10 +193,8 @@ export default function (editAnim: Editable): EditWidgetData[] {
           return {
             ...keyAndName,
             type,
-            getValue: () =>
-              // @ts-expect-error Accessing property by index
-              editAnim[propertyKey] as EditRgbGradient | undefined,
-            update: (v?: EditRgbGradient) => updateProp(v),
+            getValue,
+            update,
           };
 
         case "grayscalePattern":
@@ -193,9 +206,8 @@ export default function (editAnim: Editable): EditWidgetData[] {
           return {
             ...keyAndName,
             type,
-            // @ts-expect-error Accessing property by index
-            getValue: () => editAnim[propertyKey] as EditPattern | undefined,
-            update: (v?: EditPattern) => updateProp(v),
+            getValue,
+            update,
           };
 
         case "animation":
@@ -206,9 +218,8 @@ export default function (editAnim: Editable): EditWidgetData[] {
           return {
             ...keyAndName,
             type,
-            // @ts-expect-error Accessing property by index
-            getValue: () => editAnim[propertyKey] as EditAnimation | undefined,
-            update: (v?: EditAnimation) => updateProp(v),
+            getValue,
+            update,
           };
 
         case "audioClip":
@@ -219,9 +230,20 @@ export default function (editAnim: Editable): EditWidgetData[] {
           return {
             ...keyAndName,
             type,
-            // @ts-expect-error Accessing property by index
-            getValue: () => editAnim[propertyKey] as EditAudioClip | undefined,
-            update: (v?: EditAudioClip) => updateProp(v),
+            getValue,
+            update,
+          };
+
+        case "userText":
+          assert(
+            value === undefined || typeof value === "string",
+            `Property is not a string: ${propertyKey}`
+          );
+          return {
+            ...keyAndName,
+            type,
+            getValue,
+            update,
           };
 
         default:

@@ -5,9 +5,8 @@ import {
 } from "@systemic-games/pixels-core-animation";
 
 import EditDataSet from "./EditDataSet";
-import Editable from "./Editable";
 
-export default abstract class EditCondition extends Editable {
+export default abstract class EditCondition {
   abstract get type(): ConditionType;
   abstract toCondition(editSet: EditDataSet, set: DataSet): Condition;
   abstract duplicate(): EditCondition;

@@ -144,6 +144,7 @@ const widgetKey = Symbol("pixelEditAnimationWidget");
 
 export type WidgetType =
   | "toggle"
+  | "string"
   | "count"
   | "slider"
   | "faceMask"
@@ -155,7 +156,8 @@ export type WidgetType =
   | "grayscalePattern"
   | "rgbPattern"
   | "animation"
-  | "audioClip";
+  | "audioClip"
+  | "userText";
 
 export interface WidgetProperty extends PropertyData {
   type: WidgetType;

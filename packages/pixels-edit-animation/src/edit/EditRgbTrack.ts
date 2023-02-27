@@ -3,9 +3,8 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
-import Editable from "./Editable";
 
-export default class EditRgbTrack extends Editable {
+export default class EditRgbTrack {
   readonly ledIndices: number[] = [];
   readonly gradient: EditRgbGradient;
 
@@ -23,9 +22,8 @@ export default class EditRgbTrack extends Editable {
     return this.gradient.lastTime;
   }
 
-  constructor(gradient: EditRgbGradient = new EditRgbGradient()) {
-    super();
-    this.gradient = gradient;
+  constructor(opt?: { gradient?: EditRgbGradient }) {
+    this.gradient = opt?.gradient ?? new EditRgbGradient();
   }
 
   toTrack(editSet: EditDataSet, bits: AnimationBits): RgbTrack {

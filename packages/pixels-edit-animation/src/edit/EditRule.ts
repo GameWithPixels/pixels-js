@@ -5,19 +5,17 @@ import EditAction from "./EditAction";
 import EditAnimation from "./EditAnimation";
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import Editable from "./Editable";
 
-export default class EditRule extends Editable {
+export default class EditRule {
   condition: EditCondition;
   readonly actions: EditAction[];
 
-  constructor(condition: EditCondition, actions: EditAction[] = []) {
-    super();
+  constructor(condition: EditCondition, opt?: { actions?: EditAction[] }) {
     this.condition = condition;
-    this.actions = actions;
+    this.actions = opt?.actions ?? [];
   }
 
-  toRule(editSet: EditDataSet, set: DataSet): Rule {
+  toRule(editSet: EditDataSet, set: DataSet, ruleId: number): Rule {
     // Create our condition
     const conditionIndex = set.conditions.length;
     if (this.condition) {
@@ -26,8 +24,10 @@ export default class EditRule extends Editable {
 
     // Create our action
     const actionOffset = set.actions.length;
+    let actionId = ruleId << 8;
     this.actions.forEach((editAction) => {
-      const act = editAction.toAction(editSet, set);
+      const act = editAction.toAction(editSet, set, actionId);
+      ++actionId;
       set.actions.push(act);
     });
 
@@ -39,10 +39,9 @@ export default class EditRule extends Editable {
   }
 
   duplicate(): EditRule {
-    return new EditRule(
-      this.condition?.duplicate(),
-      this.actions.map((action) => action.duplicate())
-    );
+    return new EditRule(this.condition?.duplicate(), {
+      actions: this.actions.map((action) => action.duplicate()),
+    });
   }
 
   replaceAnimation(

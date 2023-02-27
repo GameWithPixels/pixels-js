@@ -18,7 +18,7 @@ export default class EditAnimationRainbow extends EditAnimation {
   }
 
   @widget("faceMask")
-  @range(0, 19, 1)
+  @range(1, 20, 1)
   @name("Face Mask")
   faces: number;
 
@@ -36,7 +36,8 @@ export default class EditAnimationRainbow extends EditAnimation {
   @name("Traveling Order")
   traveling: boolean;
 
-  constructor(options?: {
+  constructor(opt?: {
+    uuid?: string;
     name?: string;
     duration?: number;
     faces?: number;
@@ -44,11 +45,11 @@ export default class EditAnimationRainbow extends EditAnimation {
     fade?: number;
     traveling?: boolean;
   }) {
-    super(options?.name, options?.duration ?? 1);
-    this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
-    this.count = options?.count ?? 1;
-    this.fade = options?.fade ?? 0;
-    this.traveling = options?.traveling ?? true;
+    super(opt);
+    this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
+    this.count = opt?.count ?? 1;
+    this.fade = opt?.fade ?? 0;
+    this.traveling = opt?.traveling ?? true;
   }
 
   toAnimation(_editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
@@ -61,14 +62,7 @@ export default class EditAnimationRainbow extends EditAnimation {
     });
   }
 
-  duplicate(): EditAnimation {
-    return new EditAnimationRainbow({
-      name: this.name,
-      duration: this.duration,
-      faces: this.faces,
-      fade: this.fade,
-      count: this.count,
-      traveling: this.traveling,
-    });
+  duplicate(uuid?: string): EditAnimation {
+    return new EditAnimationRainbow({ ...this, uuid });
   }
 }

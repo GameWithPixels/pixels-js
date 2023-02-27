@@ -41,14 +41,17 @@ function toRgbColor(color?: Json.RgbColor): Color {
 
 function toKeyframes(keyframes?: Json.Keyframe[]): EditRgbKeyframe[] {
   return (
-    keyframes?.map((k) => new EditRgbKeyframe(k.time, toRgbColor(k.color))) ??
-    []
+    keyframes?.map(
+      (k) => new EditRgbKeyframe({ time: k.time, color: toRgbColor(k.color) })
+    ) ?? []
   );
 }
 
 function toGradients(gradients?: Json.Gradient[]): EditRgbGradient[] {
   return (
-    gradients?.map((g) => new EditRgbGradient(toKeyframes(g.keyframes))) ?? []
+    gradients?.map(
+      (g) => new EditRgbGradient({ keyframes: toKeyframes(g.keyframes) })
+    ) ?? []
   );
 }
 
@@ -69,19 +72,23 @@ function toColor(color?: Json.Color): EditColor {
   }
 }
 
+export function toPattern(pattern: Json.Pattern): EditPattern {
+  return new EditPattern({
+    name: pattern.name,
+    gradients: toGradients(pattern.gradients),
+  });
+}
+
 function toPatterns(patterns?: Json.Pattern[]): EditPattern[] {
-  return (
-    patterns?.map((p) => new EditPattern(p.name, toGradients(p.gradients))) ??
-    []
-  );
+  return patterns?.map(toPattern) ?? [];
 }
 
 function toAudioClips(audioClips?: Json.AudioClip[]): EditAudioClip[] {
-  return audioClips?.map((ac) => safeAssign(new EditAudioClip(), ac)) ?? [];
+  return audioClips?.map((ac) => new EditAudioClip(ac)) ?? [];
 }
 
-function toCondition(condition?: Json.Condition): EditCondition {
-  if (condition?.data) {
+function toCondition(condition: Json.Condition): EditCondition {
+  if (condition.data) {
     const data = condition.data;
     //TODO make those creations and assignments in a more generic way
     //TODO check flags value
@@ -93,7 +100,10 @@ function toCondition(condition?: Json.Condition): EditCondition {
       case ConditionTypeValues.rolling:
         return safeAssign(new EditConditionRolling(), data);
       case ConditionTypeValues.faceCompare:
-        return safeAssign(new EditConditionFaceCompare(), data);
+        return safeAssign(new EditConditionFaceCompare(), {
+          ...data,
+          face: data.faceIndex && data.faceIndex,
+        });
       case ConditionTypeValues.crooked:
         return new EditConditionCrooked();
       case ConditionTypeValues.connectionState:
@@ -113,24 +123,23 @@ function toCondition(condition?: Json.Condition): EditCondition {
 function toActions(
   animations: EditAnimation[],
   audioClips: EditAudioClip[],
-  actions?: Json.Action[]
+  actions: Json.Action[]
 ): EditAction[] {
-  const actionsWithData = actions?.filter((act) => !!act.data) as {
-    type?: number;
-    data: Json.ActionData;
-  }[];
+  const validActions = actions?.filter(
+    (act): act is Required<Json.Action> => !!act.type && !!act.data
+  );
   return (
-    actionsWithData?.map((act) => {
+    validActions?.map((act) => {
       const data = act.data;
       //TODO make those creations and assignments in a more generic way
       switch (act.type) {
         case ActionTypeValues.playAnimation:
           return safeAssign(new EditActionPlayAnimation(), {
             animation: animations[data.animationIndex ?? -1],
-            face: data.faceIndex ? data.faceIndex + 1 : undefined,
+            face: data.faceIndex && data.faceIndex + 1,
             loopCount: data.loopCount,
           });
-        case ActionTypeValues.playAudioClip:
+        case ActionTypeValues.runOnDevice:
           return safeAssign(new EditActionPlayAudioClip(), {
             clip: audioClips[data.audioClipIndex ?? -1],
           });
@@ -141,105 +150,109 @@ function toActions(
   );
 }
 
-function toRules(
+export function toRules(
   animations: EditAnimation[],
   audioClips: EditAudioClip[],
   rules?: Json.Rule[]
 ): EditRule[] {
+  const validRules = rules?.filter(
+    (r): r is Required<Json.Rule> => !!r.condition && !!r.actions
+  );
   return (
-    rules?.map(
+    validRules?.map(
       (r) =>
-        new EditRule(
-          toCondition(r.condition),
-          toActions(animations, audioClips, r.actions)
-        )
+        new EditRule(toCondition(r.condition), {
+          actions: toActions(animations, audioClips, r.actions),
+        })
     ) ?? []
   );
 }
 
-function toProfile(
+export function toProfile(
+  profile: Json.Profile,
   animations: EditAnimation[],
-  audioClips: EditAudioClip[],
-  profile: Json.Profile
+  audioClips: EditAudioClip[]
 ): EditProfile {
-  return new EditProfile(
-    profile.name ?? "",
-    profile.description ?? "",
-    toRules(animations, audioClips, profile.rules)
-  );
+  return new EditProfile({
+    name: profile.name,
+    description: profile.description,
+    rules: toRules(animations, audioClips, profile.rules),
+  });
+}
+
+export function toAnimation(
+  anim: Required<Json.Animation>,
+  patterns: EditPattern[]
+): EditAnimation {
+  const data = anim.data;
+  switch (anim.type) {
+    //TODO make those creations and assignments in a more generic way
+    case AnimationTypeValues.simple:
+      return new EditAnimationSimple({
+        name: data.name,
+        duration: data.duration,
+        faces: data.faces,
+        color: toColor(data.color),
+        count: data.count,
+        fade: data.fade,
+      }) as EditAnimation;
+    case AnimationTypeValues.rainbow:
+      return new EditAnimationRainbow({
+        name: data.name,
+        duration: data.duration,
+        faces: data.faces,
+        count: data.count,
+        fade: data.fade,
+        traveling: data.traveling,
+      }) as EditAnimation;
+    case AnimationTypeValues.keyframed:
+      return new EditAnimationKeyframed({
+        name: data.name,
+        duration: data.duration,
+        pattern: patterns[data.patternIndex ?? -1],
+        traveling: data.traveling,
+      }) as EditAnimation;
+    case AnimationTypeValues.gradientPattern:
+      return new EditAnimationGradientPattern({
+        name: data.name,
+        duration: data.duration,
+        pattern: patterns[data.patternIndex ?? -1],
+        gradient: new EditRgbGradient({
+          keyframes: toKeyframes(data.gradient?.keyframes),
+        }),
+        overrideWithFace: data.overrideWithFace,
+      }) as EditAnimation;
+    case AnimationTypeValues.gradient:
+      return new EditAnimationGradient({
+        name: data.name,
+        duration: data.duration,
+        faces: data.faces,
+        gradient: new EditRgbGradient({
+          keyframes: toKeyframes(data.gradient?.keyframes),
+        }),
+      }) as EditAnimation;
+    default:
+      throw Error(`Unsupported animation type ${anim.type}`);
+  }
 }
 
 export default function (jsonData: Json.DataSet): AppDataSet {
   const patterns = toPatterns(jsonData.patterns);
-  const audioClips = toAudioClips(jsonData.audioClips);
-  const animationsWithData = jsonData?.animations?.filter(
-    (anim) => !!anim.data
-  ) as {
-    type?: number;
-    data: Json.AnimationData;
-  }[];
+  const validAnimations = jsonData?.animations?.filter(
+    (anim): anim is Required<Json.Animation> => !!anim.type && !!anim.data
+  );
   const animations =
-    animationsWithData?.map((anim) => {
-      const data = anim.data;
-      switch (anim.type) {
-        //TODO make those creations and assignments in a more generic way
-        case AnimationTypeValues.simple:
-          return new EditAnimationSimple({
-            name: data.name,
-            duration: data.duration,
-            faces: data.faces,
-            color: toColor(data.color),
-            count: data.count,
-            fade: data.fade,
-          }) as EditAnimation;
-        case AnimationTypeValues.rainbow:
-          return new EditAnimationRainbow({
-            name: data.name,
-            duration: data.duration,
-            faces: data.faces,
-            count: data.count,
-            fade: data.fade,
-            traveling: data.traveling,
-          }) as EditAnimation;
-        case AnimationTypeValues.keyframed:
-          return new EditAnimationKeyframed({
-            name: data.name,
-            duration: data.duration,
-            pattern: patterns[data.patternIndex ?? -1],
-            travelingOrder: data.traveling,
-          }) as EditAnimation;
-        case AnimationTypeValues.gradientPattern:
-          return new EditAnimationGradientPattern({
-            name: data.name,
-            duration: data.duration,
-            pattern: patterns[data.patternIndex ?? -1],
-            gradient: new EditRgbGradient(
-              toKeyframes(data.gradient?.keyframes)
-            ),
-            overrideWithFace: data.overrideWithFace,
-          }) as EditAnimation;
-        case AnimationTypeValues.gradient:
-          return new EditAnimationGradient({
-            name: data.name,
-            duration: data.duration,
-            faces: data.faces,
-            gradient: new EditRgbGradient(
-              toKeyframes(data.gradient?.keyframes)
-            ),
-          }) as EditAnimation;
-        default:
-          throw Error(`Unsupported animation type ${anim.type}`);
-      }
-    }) ?? [];
-  const toMyProfile = (profile: Json.Profile) =>
-    toProfile(animations, audioClips, profile);
+    validAnimations?.map((anim) => toAnimation(anim, patterns)) ?? [];
+  const audioClips = toAudioClips(jsonData.audioClips);
   return new AppDataSet({
     patterns,
     animations,
     audioClips,
-    profiles: jsonData?.behaviors?.map(toMyProfile) ?? [],
+    profiles:
+      jsonData?.behaviors?.map((p) => toProfile(p, animations, audioClips)) ??
+      [],
     defaultProfile: jsonData?.defaultBehavior
-      ? toMyProfile(jsonData.defaultBehavior)
+      ? toProfile(jsonData.defaultBehavior, animations, audioClips)
       : undefined,
   });
 }

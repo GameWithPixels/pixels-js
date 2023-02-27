@@ -23,9 +23,9 @@ export default class EditConditionConnectionState extends EditCondition {
   @values(ConnectionStateFlagsValues)
   flags: ConnectionStateFlags;
 
-  constructor(flags: ConnectionStateFlags = 0) {
+  constructor(opt?: { flags?: ConnectionStateFlags }) {
     super();
-    this.flags = flags;
+    this.flags = opt?.flags ?? 0;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
@@ -35,6 +35,6 @@ export default class EditConditionConnectionState extends EditCondition {
   }
 
   duplicate(): EditCondition {
-    return new EditConditionConnectionState(this.flags);
+    return new EditConditionConnectionState(this);
   }
 }

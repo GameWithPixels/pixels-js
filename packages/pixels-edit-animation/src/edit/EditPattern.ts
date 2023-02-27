@@ -10,8 +10,6 @@ import EditRgbGradient from "./EditRgbGradient";
 import Editable from "./Editable";
 
 export default class EditPattern extends Editable {
-  name: string;
-
   readonly gradients: EditRgbGradient[];
 
   get duration(): number {
@@ -20,10 +18,13 @@ export default class EditPattern extends Editable {
       : 1;
   }
 
-  constructor(name = "Empty LED Pattern", gradients: EditRgbGradient[] = []) {
-    super();
-    this.name = name;
-    this.gradients = gradients;
+  constructor(opt?: {
+    uuid?: string;
+    name?: string;
+    gradients?: EditRgbGradient[];
+  }) {
+    super(opt);
+    this.gradients = opt?.gradients ?? [];
   }
 
   toRgbTracks(editSet: EditDataSet, bits: AnimationBits): RgbTrack[] {

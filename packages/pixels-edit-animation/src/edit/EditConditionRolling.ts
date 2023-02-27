@@ -21,9 +21,9 @@ export default class EditConditionRolling extends EditCondition {
   @unit("s")
   recheckAfter: number;
 
-  constructor(recheckAfter = 1) {
+  constructor(opt?: { recheckAfter?: number }) {
     super();
-    this.recheckAfter = recheckAfter;
+    this.recheckAfter = opt?.recheckAfter ?? 1;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
@@ -33,6 +33,6 @@ export default class EditConditionRolling extends EditCondition {
   }
 
   duplicate(): EditCondition {
-    return new EditConditionRolling(this.recheckAfter);
+    return new EditConditionRolling(this);
   }
 }

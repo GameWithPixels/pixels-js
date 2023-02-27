@@ -20,7 +20,7 @@ export default class EditAnimationSimple extends EditAnimation {
   }
 
   @widget("faceMask")
-  @range(0, 19, 1)
+  @range(1, 20, 1)
   @name("Face Mask")
   faces: number;
 
@@ -34,11 +34,12 @@ export default class EditAnimationSimple extends EditAnimation {
   count: number;
 
   @widget("slider")
-  @range(0.1, 1)
+  @range(0, 1)
   @name("Fading Sharpness")
   fade: number;
 
-  constructor(options?: {
+  constructor(opt?: {
+    uuid?: string;
     name?: string;
     duration?: number;
     faces?: number;
@@ -46,12 +47,12 @@ export default class EditAnimationSimple extends EditAnimation {
     count?: number;
     fade?: number;
   }) {
-    super(options?.name, options?.duration ?? 1);
-    const color = options?.color ?? Color.red;
-    this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
+    super(opt);
+    const color = opt?.color ?? Color.blue;
+    this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
     this.color = color instanceof Color ? new EditColor(color) : color;
-    this.count = options?.count ?? 1;
-    this.fade = options?.fade ?? 0.1;
+    this.count = opt?.count ?? 1;
+    this.fade = opt?.fade ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -64,13 +65,7 @@ export default class EditAnimationSimple extends EditAnimation {
     });
   }
 
-  duplicate(): EditAnimation {
-    return new EditAnimationSimple({
-      name: this.name,
-      duration: this.duration,
-      faces: this.faces,
-      color: this.color.duplicate(),
-      count: this.count,
-    });
+  duplicate(uuid?: string): EditAnimation {
+    return new EditAnimationSimple({ ...this, uuid });
   }
 }

@@ -13,9 +13,6 @@ import { widget, range, unit, name } from "./decorators";
  * Base class for animation editing classes.
  */
 export default abstract class EditAnimation extends Editable {
-  /** The animation name. */
-  name: string;
-
   /** The animation type (constant). */
   abstract get type(): AnimationType;
 
@@ -26,19 +23,19 @@ export default abstract class EditAnimation extends Editable {
   /** Animation duration in seconds. */
   duration: number;
 
-  constructor(name = "", duration = 0) {
-    super();
-    this.name = name;
-    this.duration = duration;
+  constructor(opt?: { uuid?: string; name?: string; duration?: number }) {
+    super(opt);
+    this.duration = opt?.duration ?? 1;
   }
 
   abstract toAnimation(
     editSet: EditDataSet,
     bits: AnimationBits
   ): AnimationPreset;
-  abstract duplicate(): EditAnimation;
 
-  requiresPattern(_pattern: EditPattern): { asRgb: boolean } | undefined {
-    return undefined;
+  abstract duplicate(uuid?: string): EditAnimation;
+
+  collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {
+    return {};
   }
 }

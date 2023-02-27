@@ -7,17 +7,14 @@ import {
 
 import EditColor from "./EditColor";
 import EditDataSet from "./EditDataSet";
-import Editable from "./Editable";
 
-export default class EditRgbKeyframe extends Editable {
-  // Float
+export default class EditRgbKeyframe {
   time: number;
   color: Color;
 
-  constructor(time = 0, color = Color.black) {
-    super();
-    this.time = time;
-    this.color = color;
+  constructor(opt?: { time?: number; color?: Color }) {
+    this.time = opt?.time ?? 0;
+    this.color = opt?.color ?? Color.black;
   }
 
   toRgbKeyframe(_editSet: EditDataSet, bits: AnimationBits): RgbKeyframe {
@@ -36,6 +33,9 @@ export default class EditRgbKeyframe extends Editable {
   }
 
   duplicate(): EditRgbKeyframe {
-    return new EditRgbKeyframe(this.time, this.color.duplicate());
+    return new EditRgbKeyframe({
+      time: this.time,
+      color: this.color.duplicate(),
+    });
   }
 }

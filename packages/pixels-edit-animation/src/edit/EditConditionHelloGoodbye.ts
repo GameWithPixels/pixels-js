@@ -23,9 +23,9 @@ export default class EditConditionHelloGoodbye extends EditCondition {
   @values(HelloGoodbyeFlagsValues)
   flags: HelloGoodbyeFlags;
 
-  constructor(flags: HelloGoodbyeFlags = 0) {
+  constructor(opt?: { flags?: HelloGoodbyeFlags }) {
     super();
-    this.flags = flags;
+    this.flags = opt?.flags ?? 0;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
@@ -35,6 +35,6 @@ export default class EditConditionHelloGoodbye extends EditCondition {
   }
 
   duplicate(): EditCondition {
-    return new EditConditionHelloGoodbye(this.flags);
+    return new EditConditionHelloGoodbye(this);
   }
 }

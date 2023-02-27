@@ -1,99 +1,99 @@
-export interface RgbColor {
-  r?: number;
-  g?: number;
-  b?: number;
-}
+export type RgbColor = Partial<{
+  r: number;
+  g: number;
+  b: number;
+}>;
 
-export interface Keyframe {
-  time?: number;
-  color?: RgbColor;
-}
+export type Keyframe = Partial<{
+  time: number;
+  color: RgbColor;
+}>;
 
-export interface Gradient {
+export type Gradient = Partial<{
   //TODO empty, duration, firstTime, lastTime not needed
-  keyframes?: Keyframe[];
-}
+  keyframes: Keyframe[];
+}>;
 
-export interface Pattern {
-  name?: string;
-  gradients?: Gradient[];
+export type Pattern = Partial<{
+  name: string;
+  gradients: Gradient[];
   //TODO not needed duration?: number;
-}
+}>;
 
-export interface AudioClip {
-  name?: string;
-  id?: number;
-}
+export type AudioClip = Partial<{
+  name: string;
+  id: number;
+}>;
 
-export interface PreviewSettings {
-  design?: number;
-}
+export type PreviewSettings = Partial<{
+  design: number;
+}>;
 
-export interface Color {
+export type Color = Partial<{
   type: number;
   rgbColor: RgbColor;
-}
+}>;
 
-export interface AnimationData {
-  name?: string;
-  duration?: number;
-  count?: number;
-  fade?: number;
-  faces?: number;
-  patternIndex?: number;
-  traveling?: boolean;
-  overrideWithFace?: boolean;
-  color?: Color;
-  gradient?: Gradient;
-  defaultPreviewSettings?: PreviewSettings;
-}
+export type AnimationData = Partial<{
+  name: string;
+  duration: number;
+  count: number;
+  fade: number;
+  faces: number;
+  patternIndex: number;
+  traveling: boolean;
+  overrideWithFace: boolean;
+  color: Color;
+  gradient: Gradient;
+  defaultPreviewSettings: PreviewSettings;
+}>;
 
-export interface Animation {
-  type?: number;
-  data?: AnimationData;
-}
+export type Animation = Partial<{
+  type: number;
+  data: AnimationData;
+}>;
 
-export interface ConditionData {
-  flags?: number;
-  faceIndex?: number;
-  recheckAfter?: number;
-  period?: number;
-}
+export type ConditionData = Partial<{
+  flags: number;
+  faceIndex: number;
+  recheckAfter: number;
+  period: number;
+}>;
 
-export interface Condition {
-  type?: number;
-  data?: ConditionData;
-}
+export type Condition = Partial<{
+  type: number;
+  data: ConditionData;
+}>;
 
-export interface ActionData {
-  animationIndex?: number;
-  faceIndex?: number;
-  loopCount?: number;
-  audioClipIndex?: number;
-}
+export type ActionData = Partial<{
+  animationIndex: number;
+  faceIndex: number;
+  loopCount: number;
+  audioClipIndex: number;
+}>;
 
-export interface Action {
-  type?: number;
-  data?: ActionData;
-}
+export type Action = Partial<{
+  type: number;
+  data: ActionData;
+}>;
 
-export interface Rule {
-  condition?: Condition;
-  actions?: Action[];
-}
+export type Rule = Partial<{
+  condition: Condition;
+  actions: Action[];
+}>;
 
-export interface Profile {
-  name?: string | null; //TODO remove null
-  description?: string | null; //TODO remove null
-  rules?: Rule[];
-  defaultPreviewSettings?: PreviewSettings;
-}
+export type Profile = Partial<{
+  name: string;
+  description: string;
+  rules: Rule[];
+  defaultPreviewSettings: PreviewSettings;
+}>;
 
-export interface DataSet {
-  jsonVersion?: number;
-  patterns?: Pattern[];
-  animations?: Animation[];
-  audioClips?: AudioClip[]; //TODO Moved after animations
-  behaviors?: Profile[]; //TODO rename to profiles
-  defaultBehavior?: Profile; //TODO rename to defaultProfile
-}
+export type DataSet = Partial<{
+  jsonVersion: number;
+  behaviors: Profile[]; // profiles
+  animations: Animation[];
+  patterns: Pattern[];
+  audioClips: AudioClip[];
+  defaultBehavior: Profile; // defaultProfile
+}>;

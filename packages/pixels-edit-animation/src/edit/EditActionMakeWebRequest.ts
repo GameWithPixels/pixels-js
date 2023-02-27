@@ -3,7 +3,7 @@ import {
   ActionType,
   ActionTypeValues,
   Action,
-  ActionPlayAudioClip,
+  ActionMakeWebRequest,
   RemoteActionType,
   RemoteActionTypeValues,
 } from "@systemic-games/pixels-core-animation";
@@ -11,18 +11,22 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAction from "./EditAction";
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
-import EditAudioClip from "./EditAudioClip";
 import EditDataSet from "./EditDataSet";
 import { name, widget } from "./decorators";
 
-export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
-  @widget("audioClip")
-  @name("Audio Clip")
-  clip?: EditAudioClip;
+export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
+  @widget("userText")
+  @name("URL")
+  url: string;
 
-  constructor(opt?: { clip?: EditAudioClip }) {
+  @widget("userText")
+  @name("Value")
+  value: string;
+
+  constructor(opt?: { url?: string; value?: string }) {
     super();
-    this.clip = opt?.clip;
+    this.url = opt?.url ?? "";
+    this.value = opt?.value ?? "";
   }
 
   get type(): ActionType {
@@ -30,16 +34,16 @@ export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
   }
 
   get remoteType(): RemoteActionType {
-    return RemoteActionTypeValues.playAudioClip;
+    return RemoteActionTypeValues.makeWebRequest;
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {
-    return safeAssign(new ActionPlayAudioClip(), {
+    return safeAssign(new ActionMakeWebRequest(), {
       actionId,
     });
   }
 
   duplicate(): EditAction {
-    return new EditActionPlayAudioClip(this);
+    return new EditActionMakeWebRequest(this);
   }
 }

@@ -21,9 +21,9 @@ export default class EditConditionIdle extends EditCondition {
   @unit("s")
   period: number;
 
-  constructor(period = 10) {
+  constructor(opt?: { period?: number }) {
     super();
-    this.period = period;
+    this.period = opt?.period ?? 10;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
@@ -33,6 +33,6 @@ export default class EditConditionIdle extends EditCondition {
   }
 
   duplicate(): EditCondition {
-    return new EditConditionIdle(this.period);
+    return new EditConditionIdle(this);
   }
 }

@@ -31,17 +31,18 @@ export default class EditAnimationGradientPattern extends EditAnimation {
   @name("Override color based on face")
   overrideWithFace: boolean;
 
-  constructor(options?: {
+  constructor(opt?: {
+    uuid?: string;
     name?: string;
     duration?: number;
     pattern?: EditPattern;
     gradient?: EditRgbGradient;
     overrideWithFace?: boolean;
   }) {
-    super(options?.name, options?.duration ?? 1);
-    this.pattern = options?.pattern;
-    this.gradient = options?.gradient;
-    this.overrideWithFace = options?.overrideWithFace ?? false;
+    super(opt);
+    this.pattern = opt?.pattern;
+    this.gradient = opt?.gradient;
+    this.overrideWithFace = opt?.overrideWithFace ?? false;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -49,7 +50,7 @@ export default class EditAnimationGradientPattern extends EditAnimation {
     // Add gradient
     if (this.gradient) {
       bits.rgbTracks.push(
-        new EditRgbTrack(this.gradient).toTrack(editSet, bits)
+        new EditRgbTrack({ gradient: this.gradient }).toTrack(editSet, bits)
       );
     }
 
@@ -64,19 +65,15 @@ export default class EditAnimationGradientPattern extends EditAnimation {
     });
   }
 
-  duplicate(): EditAnimation {
-    return new EditAnimationGradientPattern({
-      name: this.name,
-      duration: this.duration,
-      pattern: this.pattern,
-      gradient: this.gradient?.duplicate(),
-      overrideWithFace: this.overrideWithFace,
-    });
+  duplicate(uuid?: string): EditAnimation {
+    return new EditAnimationGradientPattern({ ...this, uuid });
   }
 
-  requiresPattern(pattern: EditPattern): { asRgb: boolean } | undefined {
-    if (this.pattern === pattern) {
-      return { asRgb: false };
+  collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {
+    if (this.pattern) {
+      return { grayscale: [this.pattern] };
+    } else {
+      return {};
     }
   }
 }

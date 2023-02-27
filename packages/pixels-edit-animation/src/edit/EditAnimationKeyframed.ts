@@ -23,17 +23,18 @@ export default class EditAnimationKeyframed extends EditAnimation {
 
   @widget("toggle")
   @name("Traveling Order")
-  travelingOrder: boolean;
+  traveling: boolean;
 
-  constructor(options?: {
+  constructor(opt?: {
+    uuid?: string;
     name?: string;
     duration?: number;
     pattern?: EditPattern;
-    travelingOrder?: boolean;
+    traveling?: boolean;
   }) {
-    super(options?.name, options?.duration ?? 1);
-    this.pattern = options?.pattern;
-    this.travelingOrder = options?.travelingOrder ?? false;
+    super(opt);
+    this.pattern = opt?.pattern;
+    this.traveling = opt?.traveling ?? false;
   }
 
   toAnimation(editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
@@ -41,22 +42,19 @@ export default class EditAnimationKeyframed extends EditAnimation {
       duration: this.duration * 1000, // stored in milliseconds
       tracksOffset: editSet.getPatternRGBTrackOffset(this.pattern),
       trackCount: this.pattern?.gradients.length ?? 0,
-      flowOrder: this.travelingOrder ? 1 : 0,
+      flowOrder: this.traveling ? 1 : 0,
     });
   }
 
-  duplicate(): EditAnimation {
-    return new EditAnimationKeyframed({
-      name: this.name,
-      duration: this.duration,
-      pattern: this.pattern,
-      travelingOrder: this.travelingOrder,
-    });
+  duplicate(uuid?: string): EditAnimation {
+    return new EditAnimationKeyframed({ ...this, uuid });
   }
 
-  requiresPattern(pattern: EditPattern): { asRgb: boolean } | undefined {
-    if (this.pattern === pattern) {
-      return { asRgb: true };
+  collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {
+    if (this.pattern) {
+      return { rgb: [this.pattern] };
+    } else {
+      return {};
     }
   }
 }

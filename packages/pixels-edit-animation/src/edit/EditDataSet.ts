@@ -3,25 +3,23 @@ import { DataSet } from "@systemic-games/pixels-core-animation";
 import EditAnimation from "./EditAnimation";
 import EditPattern from "./EditPattern";
 import EditProfile from "./EditProfile";
-import Editable from "./Editable";
 
-export default class EditDataSet extends Editable {
+export default class EditDataSet {
   readonly patterns: EditPattern[];
   readonly rgbPatterns: EditPattern[];
   readonly animations: EditAnimation[];
   readonly profile: EditProfile;
 
-  constructor(options?: {
+  constructor(opt?: {
     patterns?: EditPattern[];
     rgbPatterns?: EditPattern[];
     animations?: EditAnimation[];
     profile?: EditProfile;
   }) {
-    super();
-    this.patterns = options?.patterns ?? [];
-    this.rgbPatterns = options?.rgbPatterns ?? [];
-    this.animations = options?.animations ?? [];
-    this.profile = options?.profile ?? new EditProfile();
+    this.patterns = opt?.patterns ?? [];
+    this.rgbPatterns = opt?.rgbPatterns ?? [];
+    this.animations = opt?.animations ?? [];
+    this.profile = opt?.profile ?? new EditProfile();
   }
 
   getPatternTrackOffset(pattern: EditPattern): number {

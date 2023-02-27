@@ -28,10 +28,10 @@ export default class EditConditionBatteryState extends EditCondition {
   @unit("s")
   recheckAfter: number;
 
-  constructor(flags: BatteryStateFlags = 0, recheckAfter = 1) {
+  constructor(opt?: { flags?: BatteryStateFlags; recheckAfter?: number }) {
     super();
-    this.flags = flags;
-    this.recheckAfter = recheckAfter;
+    this.flags = opt?.flags ?? 0;
+    this.recheckAfter = opt?.recheckAfter ?? 1;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
@@ -42,6 +42,6 @@ export default class EditConditionBatteryState extends EditCondition {
   }
 
   duplicate(): EditCondition {
-    return new EditConditionBatteryState(this.flags, this.recheckAfter);
+    return new EditConditionBatteryState(this);
   }
 }

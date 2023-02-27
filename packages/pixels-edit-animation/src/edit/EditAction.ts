@@ -6,11 +6,14 @@ import {
 
 import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
-import Editable from "./Editable";
 
-export default abstract class EditAction extends Editable {
+export default abstract class EditAction {
   abstract get type(): ActionType;
-  abstract toAction(editSet: EditDataSet, set: DataSet): Action;
+  abstract toAction(
+    editSet: EditDataSet,
+    set: DataSet,
+    actionId: number
+  ): Action;
   abstract duplicate(): EditAction;
 
   replaceAnimation(

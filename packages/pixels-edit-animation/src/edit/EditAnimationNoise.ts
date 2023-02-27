@@ -24,7 +24,7 @@ export default class EditAnimationNoise extends EditAnimation {
   gradient?: EditRgbGradient;
 
   @widget("faceMask")
-  @range(0, 19, 1)
+  @range(1, 20, 1)
   @name("Face Mask")
   faces: number;
 
@@ -47,7 +47,8 @@ export default class EditAnimationNoise extends EditAnimation {
   @name("Fading Sharpness")
   fade: number;
 
-  constructor(options?: {
+  constructor(opt?: {
+    uuid?: string;
     name?: string;
     duration?: number;
     gradient?: EditRgbGradient;
@@ -57,28 +58,26 @@ export default class EditAnimationNoise extends EditAnimation {
     blinkCount?: number;
     fade?: number;
   }) {
-    super(options?.name, options?.duration ?? 1);
-    this.gradient = options?.gradient;
-    this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
-    this.blinkDuration = options?.blinkDuration ?? 0.1;
-    this.blinkGradient = options?.blinkGradient;
-    this.blinkCount = options?.blinkCount ?? 10;
-    this.fade = options?.fade ?? 0;
+    super(opt);
+    this.gradient = opt?.gradient;
+    this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
+    this.blinkDuration = opt?.blinkDuration ?? 0.1;
+    this.blinkGradient = opt?.blinkGradient;
+    this.blinkCount = opt?.blinkCount ?? 10;
+    this.fade = opt?.fade ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
     // Add gradient
     const gradientTrackOffset = bits.rgbTracks.length;
     if (this.gradient) {
-      bits.rgbTracks.push(
-        new EditRgbTrack(this.gradient).toTrack(editSet, bits)
-      );
+      const track = new EditRgbTrack({ gradient: this.gradient });
+      bits.rgbTracks.push(track.toTrack(editSet, bits));
     }
     const blinkTrackOffset = bits.rgbTracks.length;
     if (this.blinkGradient) {
-      bits.rgbTracks.push(
-        new EditRgbTrack(this.blinkGradient).toTrack(editSet, bits)
-      );
+      const track = new EditRgbTrack({ gradient: this.blinkGradient });
+      bits.rgbTracks.push(track.toTrack(editSet, bits));
     }
 
     return safeAssign(new AnimationNoise(), {
@@ -92,16 +91,7 @@ export default class EditAnimationNoise extends EditAnimation {
     });
   }
 
-  duplicate(): EditAnimation {
-    return new EditAnimationNoise({
-      name: this.name,
-      duration: this.duration,
-      gradient: this.gradient?.duplicate(),
-      faces: this.faces,
-      blinkDuration: this.blinkDuration,
-      blinkGradient: this.blinkGradient,
-      blinkCount: this.blinkCount,
-      fade: this.fade,
-    });
+  duplicate(uuid?: string): EditAnimation {
+    return new EditAnimationNoise({ ...this, uuid });
   }
 }

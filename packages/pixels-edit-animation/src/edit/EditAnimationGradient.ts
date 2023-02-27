@@ -20,7 +20,7 @@ export default class EditAnimationGradient extends EditAnimation {
   }
 
   @widget("faceMask")
-  @range(0, 19, 1)
+  @range(1, 20, 1)
   @name("Face Mask")
   faces: number;
 
@@ -28,15 +28,16 @@ export default class EditAnimationGradient extends EditAnimation {
   @name("Gradient")
   gradient?: EditRgbGradient;
 
-  constructor(options?: {
+  constructor(opt?: {
+    uuid?: string;
     name?: string;
     duration?: number;
     faces?: number;
     gradient?: EditRgbGradient;
   }) {
-    super(options?.name, options?.duration ?? 1);
-    this.faces = options?.faces ?? Constants.faceMaskAllLEDs;
-    this.gradient = options?.gradient;
+    super(opt);
+    this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
+    this.gradient = opt?.gradient;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -44,7 +45,7 @@ export default class EditAnimationGradient extends EditAnimation {
     const gradientTrackOffset = bits.rgbTracks.length;
     if (this.gradient) {
       bits.rgbTracks.push(
-        new EditRgbTrack(this.gradient).toTrack(editSet, bits)
+        new EditRgbTrack({ gradient: this.gradient }).toTrack(editSet, bits)
       );
     }
 
@@ -55,12 +56,7 @@ export default class EditAnimationGradient extends EditAnimation {
     });
   }
 
-  duplicate(): EditAnimation {
-    return new EditAnimationGradient({
-      name: this.name,
-      duration: this.duration,
-      faces: this.faces,
-      gradient: this.gradient?.duplicate(),
-    });
+  duplicate(uuid?: string): EditAnimation {
+    return new EditAnimationGradient({ ...this, uuid });
   }
 }

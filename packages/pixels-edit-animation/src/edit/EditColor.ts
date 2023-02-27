@@ -6,17 +6,15 @@ import {
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { ColorModeNames } from "./ColorMode";
-import Editable from "./Editable";
 
-export default class EditColor extends Editable {
+export default class EditColor {
   mode: ColorModeNames;
   color: Color; // Used when type is "rgb"
 
   constructor(
     colorOrMode: Color | Exclude<ColorModeNames, "rgb"> = Color.black
   ) {
-    super();
-    if (colorOrMode === "face" || colorOrMode === "random") {
+    if (typeof colorOrMode === "string") {
       this.mode = colorOrMode;
       this.color = Color.black;
     } else {

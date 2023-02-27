@@ -19,7 +19,7 @@ export default class EditActionPlayAnimation extends EditAction {
   animation?: EditAnimation;
 
   @widget("playbackFace")
-  @name("Play on Face")
+  @name("Play On Face")
   face: number; // Face value
 
   @widget("count")
@@ -27,22 +27,22 @@ export default class EditActionPlayAnimation extends EditAction {
   @name("Repeat Count")
   loopCount: number;
 
-  constructor(
-    animation?: EditAnimation,
-    face: number = Constants.currentFaceIndex,
-    loopCount = 1
-  ) {
+  constructor(opt?: {
+    animation?: EditAnimation;
+    face?: number;
+    loopCount?: number;
+  }) {
     super();
-    this.animation = animation;
-    this.face = face;
-    this.loopCount = loopCount;
+    this.animation = opt?.animation;
+    this.face = opt?.face ?? Constants.currentFaceIndex;
+    this.loopCount = opt?.loopCount ?? 1;
   }
 
   get type(): ActionType {
     return ActionTypeValues.playAnimation;
   }
 
-  toAction(editSet: EditDataSet, _set: DataSet): Action {
+  toAction(editSet: EditDataSet, _set: DataSet, _actionId: number): Action {
     return safeAssign(new ActionPlayAnimation(), {
       animIndex: this.animation
         ? editSet.animations.indexOf(this.animation)
@@ -53,11 +53,7 @@ export default class EditActionPlayAnimation extends EditAction {
   }
 
   duplicate(): EditAction {
-    return new EditActionPlayAnimation(
-      this.animation,
-      this.face,
-      this.loopCount
-    );
+    return new EditActionPlayAnimation(this);
   }
 
   replaceAnimation(
