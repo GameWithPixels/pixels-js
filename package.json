@@ -29,6 +29,7 @@
     "pub:native": "yarn pk:native && yarn workspace @systemic-games/react-native-bluetooth-le publish && yarn workspace @systemic-games/react-native-nordic-nrf5-dfu publish && yarn workspace @systemic-games/vision-camera-rgb-averages publish && yarn workspace @systemic-games/react-native-pixels-connect publish",
     "prepare": "yarn pk:all",
     "logcat": "adb logcat -s SystemicGames",
+    "logcat:errors": "adb logcat *:E",
     "types": "tsc --build",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" --cache",
     "lint:fix": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix",

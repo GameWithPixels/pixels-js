@@ -116,3 +116,8 @@ And `tsconfig.json` with:
   ]
 }
 ```
+
+## Assets Files Attributions
+
+Chime sound: [pixabay](https://pixabay.com/sound-effects/chime-sound-7143/).
+Error sound: [pixabay](https://pixabay.com/sound-effects/error-when-entering-the-game-menu-132111/).
