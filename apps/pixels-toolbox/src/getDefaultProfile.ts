@@ -1,16 +1,18 @@
 import {
   DataSet,
   Json,
+  createDataSetForProfile,
   loadAppDataSet,
 } from "@systemic-games/pixels-edit-animation";
 
 import { DieType } from "./features/pixels/DieType";
 
-function getFirstProfileDataSet(jsonData: Json.DataSet) {
+function getFirstProfileDataSet(jsonData: Json.DataSet): DataSet {
   const defaultProfileAppDataSet = loadAppDataSet(jsonData);
-  return defaultProfileAppDataSet
-    .extractForProfile(defaultProfileAppDataSet.profiles[0])
-    .toDataSet();
+  return createDataSetForProfile(
+    defaultProfileAppDataSet.profiles[0],
+    defaultProfileAppDataSet.defaultProfile
+  ).toDataSet();
 }
 
 export default function (dieType: DieType): DataSet {

@@ -15,6 +15,7 @@ import {
   EditRgbKeyframe,
   EditWidgetData,
   getEditWidgetsData,
+  createDataSetForAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
   getPixelEnumName,
@@ -112,51 +113,67 @@ const gradients: readonly Readonly<{
 }>[] = [
   {
     name: "Red To Blue",
-    gradient: new EditRgbGradient([
-      new EditRgbKeyframe(0, Color.black),
-      new EditRgbKeyframe(0.15, Color.fromBytes(89, 0, 17)),
-      new EditRgbKeyframe(0.5, Color.fromBytes(61, 0, 89)),
-      new EditRgbKeyframe(0.85, Color.fromBytes(0, 6, 89)),
-      new EditRgbKeyframe(1, Color.black),
-    ]),
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0, color: Color.black }),
+        new EditRgbKeyframe({ time: 0.15, color: Color.fromBytes(89, 0, 17) }),
+        new EditRgbKeyframe({ time: 0.5, color: Color.fromBytes(61, 0, 89) }),
+        new EditRgbKeyframe({ time: 0.85, color: Color.fromBytes(0, 6, 89) }),
+        new EditRgbKeyframe({ time: 1, color: Color.black }),
+      ],
+    }),
   },
   {
     name: "Velvet To Blue",
-    gradient: new EditRgbGradient([
-      new EditRgbKeyframe(0, Color.black),
-      new EditRgbKeyframe(0.15, Color.fromBytes(175, 0, 255)),
-      new EditRgbKeyframe(0.85, Color.fromBytes(98, 108, 255)),
-      new EditRgbKeyframe(1, Color.black),
-    ]),
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0, color: Color.black }),
+        new EditRgbKeyframe({
+          time: 0.15,
+          color: Color.fromBytes(175, 0, 255),
+        }),
+        new EditRgbKeyframe({
+          time: 0.85,
+          color: Color.fromBytes(98, 108, 255),
+        }),
+        new EditRgbKeyframe({ time: 1, color: Color.black }),
+      ],
+    }),
   },
   {
     name: "Multicolors",
-    gradient: new EditRgbGradient([
-      new EditRgbKeyframe(0, Color.black),
-      new EditRgbKeyframe(0.2, Color.blue),
-      new EditRgbKeyframe(0.4, Color.red),
-      new EditRgbKeyframe(0.6, Color.cyan),
-      new EditRgbKeyframe(0.8, Color.green),
-      new EditRgbKeyframe(1, Color.black),
-    ]),
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0, color: Color.black }),
+        new EditRgbKeyframe({ time: 0.2, color: Color.blue }),
+        new EditRgbKeyframe({ time: 0.4, color: Color.red }),
+        new EditRgbKeyframe({ time: 0.6, color: Color.cyan }),
+        new EditRgbKeyframe({ time: 0.8, color: Color.green }),
+        new EditRgbKeyframe({ time: 1, color: Color.black }),
+      ],
+    }),
   },
   {
     name: "Fade In And Out",
-    gradient: new EditRgbGradient([
-      new EditRgbKeyframe(0, Color.black),
-      new EditRgbKeyframe(0.5, Color.white),
-      new EditRgbKeyframe(1, Color.black),
-    ]),
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0, color: Color.black }),
+        new EditRgbKeyframe({ time: 0.5, color: Color.white }),
+        new EditRgbKeyframe({ time: 1, color: Color.black }),
+      ],
+    }),
   },
   {
     name: "Two Hills",
-    gradient: new EditRgbGradient([
-      new EditRgbKeyframe(0, Color.black),
-      new EditRgbKeyframe(0.3, Color.white),
-      new EditRgbKeyframe(0.6, Color.black),
-      new EditRgbKeyframe(0.8, new Color(0.7, 0.7, 0.7)),
-      new EditRgbKeyframe(1, Color.black),
-    ]),
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0, color: Color.black }),
+        new EditRgbKeyframe({ time: 0.3, color: Color.white }),
+        new EditRgbKeyframe({ time: 0.6, color: Color.black }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(0.7, 0.7, 0.7) }),
+        new EditRgbKeyframe({ time: 1, color: Color.black }),
+      ],
+    }),
   },
 ];
 
@@ -202,7 +219,6 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
   switch (type) {
     case "count":
     case "slider": {
-      const step = widget.step ? widget.step : undefined;
       return (
         <>
           <Text bold>{`${widget.displayName}: ${widget.getValue()}`}</Text>
@@ -212,7 +228,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             value={widget.getValue()}
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
-            step={step ?? 0.1}
+            step={widget.step ?? 0.1}
             onChange={update}
           >
             <Slider.Track>
@@ -224,10 +240,11 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       );
     }
 
+    case "toggle":
+    case "string":
     case "face":
     case "playbackFace":
-    case "bitField":
-    case "toggle": {
+    case "bitField": {
       return (
         <Text bold>{`No editor for ${
           widget.displayName
@@ -314,7 +331,10 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       return <Text>Animation Selector Placeholder</Text>;
 
     case "audioClip":
-      return <Text>Audi Clip Selector Placeholder</Text>;
+      return <Text>Audio Clip Selector Placeholder</Text>;
+
+    case "userText":
+      return <Text>User Text Editor Placeholder</Text>;
 
     default:
       assertNever(type);
@@ -350,9 +370,7 @@ function AnimationPage() {
             onPress={() => {
               if (animList.length) {
                 pixel.playTestAnimation(
-                  defaultProfilesAppDataSet
-                    .extractForAnimation(animList[0])
-                    .toDataSet()
+                  createDataSetForAnimation(animList[0]).toDataSet()
                 );
               }
             }}

@@ -75767,8 +75767,6 @@
   ],
   "presets": [],
   "defaultBehavior": {
-    "name": null,
-    "description": null,
     "rules": [
       {
         "condition": {
