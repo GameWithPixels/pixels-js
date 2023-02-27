@@ -20,6 +20,7 @@ export interface TypedEventEmitter<T extends EventMap> {
     eventType: K,
     listener: EventReceiver<T[K]>
   ): void;
+
   /**
    * Removes the specified listener function from the listener array
    * for the event of the given type.
@@ -30,6 +31,7 @@ export interface TypedEventEmitter<T extends EventMap> {
     eventType: K,
     listener: EventReceiver<T[K]>
   ): void;
+
   /**
    * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
    * with the given name.
@@ -37,6 +39,20 @@ export interface TypedEventEmitter<T extends EventMap> {
    * @param params Optional parameters.
    */
   emit<K extends EventKey<T>>(eventName: K, params: T[K]): void;
+
+  /**
+   * By default `EventEmitter`s will print a warning if more than `10` listeners are
+   * added for a particular event.
+   * Use this function to modify the default threshold.
+   * @param n: Number of listeners before printing a warning.
+   *           The value can be set to`Infinity` (or `0`) to indicate an unlimited number of listeners.
+   */
+  setMaxListeners(n: number): this;
+
+  /**
+   * Returns the current max listener value for this `EventEmitter`.
+   */
+  getMaxListeners(): number;
 }
 
 /**
