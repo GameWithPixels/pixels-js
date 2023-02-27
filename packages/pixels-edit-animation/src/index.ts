@@ -8,3 +8,4 @@ export { default as getEditWidgetsData } from "./getEditWidgetsData";
 export * as Json from "./jsonTypes";
 
 export * from "./edit";
+export * as Serializable from "./serializable";
