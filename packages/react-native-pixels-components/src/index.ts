@@ -20,5 +20,6 @@ export * from "./components/PatternsActionSheet";
 export * from "./components/RenderWidget";
 export * from "./components/RuleActionWidget";
 export * from "./components/RuleConditionWidget";
+export * from "./components/UserTextSelection";
 export * from "./titlesUtils";
 export * from "./utils";

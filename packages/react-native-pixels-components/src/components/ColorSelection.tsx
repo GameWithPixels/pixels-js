@@ -66,10 +66,7 @@ interface GradientColorSelectionProps extends IModalProps {
 export function SimpleColorSelection(props: ColorSelectionProps) {
   const resolvedProps = usePropsResolution("ColorSelection", props);
   const [showModal, setShowModal] = React.useState(false);
-  const [SelectedColor, setSelectedColor] = React.useState(props.initialColor);
-  console.log("initial color" + props.initialColor);
-  // const [overridingOnFace, setOverridingOnFace] = React.useState(false);
-
+  const [selectedColor, setSelectedColor] = React.useState(props.initialColor);
   return (
     <>
       <VStack space={2}>
@@ -79,8 +76,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
         <HStack space={2}>
           <Button
             onPress={() => setShowModal(true)}
-            // isDisabled={overridingOnFace}
-            bg={SelectedColor}
+            bg={selectedColor}
             w={resolvedProps.triggerW}
             h={resolvedProps.triggerH}
           >
@@ -115,7 +111,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
             </Box>
             <Box p={2}>
               <ColorWheel
-                initialColor={SelectedColor}
+                initialColor={selectedColor}
                 onSelectColor={(hexColor) => {
                   setSelectedColor(hexColor);
                   props.onColorSelected?.(hexColor);
@@ -172,7 +168,6 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
 }
 
 export function GradientColorSelection(props: GradientColorSelectionProps) {
-  //const resolvedProps = usePropsResolution("ColorSelection", props);
   const [showModal, setShowModal] = React.useState(false);
   const [selectedColor, setSelectedColor] = React.useState("red.500");
   const [selectedGradientKey, setSelectedGradientKey] = React.useState(0);
@@ -201,7 +196,6 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
         <HStack space={2}>
           <Button
             onPress={() => setShowModal(true)}
-            // isDisabled={overridingOnFace}
             bg={selectedColor}
             w={props.triggerW}
             h={props.triggerH}
@@ -326,7 +320,6 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                       }}
                     >
                       <Box
-                        // bg={SelectedGradientKey === 1 ? SelectedColor : "black"}
                         bg={keyColor4}
                         borderColor="white"
                         borderWidth={selectedGradientKey === 4 ? 2 : 1}
@@ -342,7 +335,6 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                       }}
                     >
                       <Box
-                        // bg={SelectedGradientKey === 1 ? SelectedColor : "black"}
                         bg={keyColor5}
                         borderColor="white"
                         borderWidth={selectedGradientKey === 5 ? 2 : 1}
@@ -358,7 +350,6 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                       }}
                     >
                       <Box
-                        // bg={SelectedG"radientKey === 1 ? SelectedColor : "black"}
                         bg={keyColor6}
                         borderColor="white"
                         borderWidth={selectedGradientKey === 6 ? 2 : 1}
@@ -374,7 +365,6 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                       }}
                     >
                       <Box
-                        // bg={SelectedGradientKey === 1 ? SelectedColor : "black"}
                         bg={keyColor7}
                         borderColor="white"
                         borderWidth={selectedGradientKey === 7 ? 2 : 1}
@@ -390,7 +380,6 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                       }}
                     >
                       <Box
-                        // bg={SelectedGradientKey === 1 ? SelectedColor : "black"}
                         bg={keyColor8}
                         borderColor="white"
                         borderWidth={selectedGradientKey === 8 ? 2 : 1}
@@ -398,7 +387,6 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                       />
                     </Pressable>
                   </Box>
-
                   {/* <Pressable>
                     <Box
                       borderColor="white"
@@ -427,7 +415,7 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                 <ColorWheel
                   initialColor={selectedColor}
                   onSelectColor={setSelectedColor}
-                  colorType={ColorWheelColorType.BRIGHT}
+                  colorType={ColorWheelColorType.bright}
                   wheelParams={{
                     x: 40,
                     y: 40,

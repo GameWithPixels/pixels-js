@@ -1,12 +1,14 @@
+import { bitsToFlags } from "@systemic-games/pixels-core-utils";
 import {
-  ActionTypeValues,
+  RemoteActionType,
+  ActionType,
   AnimationType,
-  AnimationTypeValues,
   BatteryStateFlagsValues,
   ConditionType,
   ConditionTypeValues,
   ConnectionStateFlagsValues,
   EditAction,
+  EditActionMakeWebRequest,
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditCondition,
@@ -16,25 +18,46 @@ import {
   EditConditionHelloGoodbye,
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
+  getActionTypeDisplayName,
+  getAnimationTypeDisplayName,
+  getConditionTypeDisplayName,
 } from "@systemic-games/pixels-edit-animation";
 
-import { bitsToFlags } from "./bitMasksUtils";
+export function getActionTitle(
+  actionType: ActionType,
+  actionRemoteType: RemoteActionType = 0
+): string {
+  const title = getActionTypeDisplayName(actionType, actionRemoteType)?.name;
+  if (!title) {
+    throw new Error(`getActionTitle(): unsupported action type: ${actionType}`);
+  }
+  return title;
+}
 
-export function getActionTitles(actions: EditAction[]): string[] {
-  const actionsTitles: any[] = [];
+function getDomain(url: string) {
+  const parts = url.split("/");
+  if (parts.length <= 1) {
+    return url;
+  } else {
+    const addr = parts.find((s) => s.includes("."));
+    return addr ? addr : url;
+  }
+}
 
-  actions.forEach(function (action) {
-    if (action.type === ActionTypeValues.playAnimation) {
-      actionsTitles.push(
-        "Play " + (action as EditActionPlayAnimation).animation?.name
-      );
-    } else {
-      actionsTitles.push(
-        "Play " + (action as EditActionPlayAudioClip).clip?.name
-      );
-    }
-  });
-  return actionsTitles;
+export function getActionDescription(action: EditAction): string {
+  if (action instanceof EditActionPlayAnimation) {
+    const name = action.animation?.name;
+    return name ? `Play ${name}` : "No Animation Selected";
+  } else if (action instanceof EditActionPlayAudioClip) {
+    const name = action.clip?.name;
+    return name ? `Play ${name}` : "No Audio Clip Selected";
+  } else if (action instanceof EditActionMakeWebRequest) {
+    const url = action.url;
+    return url ? `Make Web Request at ${getDomain(url)}` : "No URL Entered";
+  }
+  throw new Error(
+    `getActionDescription(): unsupported action type: ${action.type}`
+  );
 }
 
 /**
@@ -42,49 +65,22 @@ export function getActionTitles(actions: EditAction[]): string[] {
  * @param animation The editAnimation to check type and return title.
  * @returns a string representing the animation type title.
  */
-export function getAnimationTitle(animationType?: AnimationType): string {
-  switch (animationType) {
-    case AnimationTypeValues.simple:
-      return "Simple Flashes";
-    case AnimationTypeValues.rainbow:
-      return "Colorful Rainbow";
-    case AnimationTypeValues.gradient:
-      return "Simple Gradient";
-    case AnimationTypeValues.gradientPattern:
-      return "Gradient LED Pattern";
-    case AnimationTypeValues.keyframed:
-      return "Color LED Pattern";
-    case AnimationTypeValues.noise:
-      return "Noise";
-    default:
-      return "Type";
+export function getAnimationTitle(animationType: AnimationType): string {
+  const title = getAnimationTypeDisplayName(animationType)?.name;
+  if (!title) {
+    throw new Error(
+      `getAnimationTitle(): unsupported animation type: ${animationType}`
+    );
   }
+  return title;
 }
 
-export function getConditionSimpleTitle(actionType: ConditionType): string {
-  switch (actionType) {
-    case ConditionTypeValues.handling:
-      return "Pixel is picked up";
-    case ConditionTypeValues.batteryState:
-      return "Battery Event...";
-    case ConditionTypeValues.connectionState:
-      return "Bluetooth Event...";
-    case ConditionTypeValues.crooked:
-      return "Pixel is crooked";
-    case ConditionTypeValues.faceCompare:
-      return "Pixel roll is...";
-    case ConditionTypeValues.helloGoodbye:
-      return "Pixel wakes up / sleeps";
-    case ConditionTypeValues.idle:
-      return "Pixel is idle for...";
-    case ConditionTypeValues.rolling:
-      return "Pixel is rolling";
-    default:
-      return "No action selected";
-  }
+export function getConditionTitle(actionType: ConditionType): string {
+  const title = getConditionTypeDisplayName(actionType)?.name;
+  return title ?? "No action selected";
 }
 
-export function getConditionTitle(condition: EditCondition): string {
+export function getConditionDescription(condition: EditCondition): string {
   if (condition) {
     const type = condition.type;
     switch (type) {

@@ -21,8 +21,8 @@ import { ProfileCard } from "./ProfileCard";
 export interface ProfilesActionSheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
-  profiles: EditProfile[]; // array of profiles information to be displayed inside the component
-  dieRender: (profile: EditProfile) => React.ReactNode;
+  profiles: Readonly<EditProfile>[]; // array of profiles information to be displayed inside the component
+  dieRender: (profile: Readonly<EditProfile>) => React.ReactNode;
   w?: number;
   h?: number;
 }

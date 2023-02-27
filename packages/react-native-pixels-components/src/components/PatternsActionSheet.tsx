@@ -21,10 +21,13 @@ import { PatternCard } from "./PatternCards";
 export interface PatternsActionsheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
-  patterns: EditPattern[];
-  dieRenderer?: (pattern: EditPattern) => React.ReactNode;
-  onSelectPattern?: ((editPattern: EditPattern) => void) | null | undefined;
-  initialPattern?: EditPattern;
+  patterns: Readonly<EditPattern>[];
+  dieRenderer?: (pattern: Readonly<EditPattern>) => React.ReactNode;
+  onSelectPattern?:
+    | ((editPattern: Readonly<EditPattern>) => void)
+    | null
+    | undefined;
+  initialPattern?: Readonly<EditPattern>;
 }
 
 /**
@@ -41,7 +44,7 @@ export function PatternActionSheet({
 }: PatternsActionsheetProps) {
   const [patternToHighlight, setPatternToHighlight] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclose();
-  const [selectedPattern, setSelectedPattern] = React.useState<EditPattern>(
+  const [selectedPattern, setSelectedPattern] = React.useState(
     initialPattern ? initialPattern : new EditPattern()
   );
 
@@ -89,9 +92,7 @@ export function PatternActionSheet({
                       onClose();
                     }}
                     patternName={pattern.name}
-                    dieRenderer={
-                      dieRenderer ? () => dieRenderer(pattern) : undefined
-                    }
+                    dieRenderer={dieRenderer && (() => dieRenderer(pattern))}
                   />
                 </Box>
               ))}
@@ -109,10 +110,10 @@ export function PatternActionSheet({
 export interface AnimationActionsheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
-  animations: EditAnimation[];
-  dieRenderer?: (anim: EditAnimation) => React.ReactNode;
-  onSelectAnimation?: (editAnimation: EditAnimation) => void;
-  initialAnimation?: EditAnimation;
+  animations: Readonly<EditAnimation>[];
+  dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
+  onSelectAnimation?: (editAnimation: Readonly<EditAnimation>) => void;
+  initialAnimation?: Readonly<EditAnimation>;
 }
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
@@ -127,15 +128,12 @@ export function AnimationsActionSheet({
   initialAnimation,
 }: AnimationActionsheetProps) {
   const [animationName, setAnimationName] = React.useState<string>();
-  const [animationsList, setAnimationsList] = React.useState<EditAnimation[]>(
-    []
-  );
+  const [animationsList, setAnimationsList] = React.useState<
+    Readonly<EditAnimation>[]
+  >([]);
   const { isOpen, onOpen, onClose } = useDisclose();
-
-  // const [patternsInfo, setPatternsInfo] = React.useState<PatternInfo[]>([]);
-
   const [_selectedAnimation, setSelectedAnimation] =
-    React.useState<EditAnimation>();
+    React.useState<Readonly<EditAnimation>>();
 
   useEffect(() => {
     setAnimationsList(animations);
@@ -147,11 +145,7 @@ export function AnimationsActionSheet({
   return (
     <>
       {/* Trigger of the actionsheet drawer */}
-      <Pressable
-        onPress={() => {
-          onOpen();
-        }}
-      >
+      <Pressable onPress={onOpen}>
         {!trigger ? (
           <Box w="100%" p={2} bg="primary.700" rounded="lg">
             <HStack space={2} alignItems="center">
@@ -174,9 +168,8 @@ export function AnimationsActionSheet({
           <ScrollView>
             <HStack flexWrap="wrap" w="100%">
               {animationsList?.map((animation, i) => (
-                <Box key={i} p={1}>
+                <Box key={animation.uuid} p={1}>
                   {/* Pattern card use as an animation card */}
-
                   <PatternCard
                     w="105px"
                     h="130px"
@@ -191,9 +184,7 @@ export function AnimationsActionSheet({
                       onClose();
                     }}
                     patternName={animation.name}
-                    dieRenderer={
-                      dieRenderer ? () => dieRenderer(animation) : undefined
-                    }
+                    dieRenderer={dieRenderer && (() => dieRenderer(animation))}
                   />
                 </Box>
               ))}

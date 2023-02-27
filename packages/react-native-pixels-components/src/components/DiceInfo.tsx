@@ -1,9 +1,3 @@
-import {
-  AnimationBits,
-  AnimationPreset,
-  AnimationRainbow,
-  Constants,
-} from "@systemic-games/pixels-edit-animation";
 import { Card } from "@systemic-games/react-native-base-components";
 import {
   HStack,
@@ -39,8 +33,9 @@ export interface PixelInfoCardProps {
   h?: number | string;
   w?: number | string;
   pixel: PixelInfo;
+  profileName?: string;
   onPress?: () => void;
-  dieRenderer: (anim: AnimationPreset, bits: AnimationBits) => React.ReactNode;
+  dieRenderer?: () => React.ReactNode;
 }
 /**
  * Horizontal info card for displaying paired dice
@@ -48,27 +43,19 @@ export interface PixelInfoCardProps {
  */
 export function PairedPixelInfoComponent({
   pixel,
+  profileName,
   onPress,
   dieRenderer,
 }: PixelInfoCardProps) {
-  const animData = React.useMemo(() => {
-    const animation = new AnimationRainbow();
-    animation.duration = 10000;
-    animation.count = 1;
-    animation.traveling = true;
-    animation.faceMask = Constants.faceMaskAllLEDs;
-    const bits = new AnimationBits();
-    return { animation, bits };
-  }, []);
   return (
     <Pressable onPress={onPress}>
       <Card borderWidth={1.5} minW={100} w="100%" h={110}>
         <HStack space={6} alignItems="center" maxW="100%" h="100%">
-          <Box alignItems="center">
+          {dieRenderer && (
             <Box h={sr(70)} w={sr(70)}>
-              {dieRenderer(animData.animation, animData.bits)}
+              {dieRenderer()}
             </Box>
-          </Box>
+          )}
           {/* dice infos */}
           <HStack space={sr(25)} h="100%" w="100%">
             <VStack space={1} alignItems="baseline" h="100%">
@@ -79,7 +66,10 @@ export function PairedPixelInfoComponent({
                 Face up: {pixel.ledCount}
               </Text>
               <Box flex={1}>
-                <BatteryLevel percentage={pixel.batteryLevel} />
+                <BatteryLevel
+                  percentage={pixel.batteryLevel}
+                  isCharging={pixel.isCharging}
+                />
               </Box>
             </VStack>
             <VStack space={1} alignItems="baseline" h="100%">
@@ -87,7 +77,7 @@ export function PairedPixelInfoComponent({
                 Firmware: {pixel.firmwareDate.toLocaleDateString()}
               </Text>
               <Text flex={1} isTruncated fontSize="xs">
-                Profile: Unknown
+                Profile: {profileName}
               </Text>
               <Box flex={1}>
                 <RSSIStrength percentage={pixel.rssi} />
@@ -149,6 +139,7 @@ export function SquarePairedPixelInfo({
                 _icon={{ size: "md" }}
                 _text={{ fontSize: "sm" }}
                 percentage={pixel.batteryLevel}
+                isCharging={pixel.isCharging}
               />
             </Box>
             <Box flex={1}>
@@ -176,15 +167,6 @@ export function ScannedPixelInfoComponent({
 }: PixelInfoCardProps) {
   const [pressed, setPressed] = React.useState(false);
   const [height, setHeight] = React.useState(100);
-  const animData = React.useMemo(() => {
-    const animation = new AnimationRainbow();
-    animation.duration = 10000;
-    animation.count = 1;
-    animation.traveling = true;
-    animation.faceMask = Constants.faceMaskAllLEDs;
-    const bits = new AnimationBits();
-    return { animation, bits };
-  }, []);
 
   return (
     <Pressable
@@ -195,11 +177,11 @@ export function ScannedPixelInfoComponent({
     >
       <Card borderWidth={1.5} w="100%" h={sr(height)} alignItems="center">
         <HStack space={sr(8)} alignItems="center" maxW="100%">
-          <Box alignItems="center" flex={1}>
+          {dieRenderer && (
             <Box h={sr(60)} w={sr(60)}>
-              {dieRenderer(animData.animation, animData.bits)}
+              {dieRenderer()}
             </Box>
-          </Box>
+          )}
           {/* dice infos */}
           <HStack alignItems="baseline" flex={2}>
             <VStack space={sr(2)}>
@@ -210,7 +192,10 @@ export function ScannedPixelInfoComponent({
             </VStack>
             <Spacer />
             <VStack space={2} paddingRight={sr(5)}>
-              <BatteryLevel percentage={pixel.batteryLevel} />
+              <BatteryLevel
+                percentage={pixel.batteryLevel}
+                isCharging={pixel.isCharging}
+              />
               <RSSIStrength percentage={pixel.rssi} />
             </VStack>
           </HStack>

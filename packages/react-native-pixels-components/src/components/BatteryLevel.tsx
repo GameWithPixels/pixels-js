@@ -54,7 +54,10 @@ export function BatteryLevel(props: BatteryLevelProps) {
             percentage={resolvedProps.percentage}
           />
         </Box>
-        <Text {...resolvedProps._text}>{resolvedProps.percentage + "%"}</Text>
+        <Text {...resolvedProps._text}>
+          {resolvedProps.isCharging ? "⚡" : ""}
+          {resolvedProps.percentage + "%"}
+        </Text>
       </HStack>
     </Center>
   );

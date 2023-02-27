@@ -1,7 +1,6 @@
 import { HStack, VStack, Box, Text } from "native-base";
 
 export interface RuleCardInfo {
-  ruleKey: number;
   condition?: string;
   actions?: string[];
 }

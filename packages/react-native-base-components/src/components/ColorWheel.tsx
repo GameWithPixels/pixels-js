@@ -32,9 +32,9 @@ export function toStringColor(color: ColorUtils.IColor): string {
 }
 
 export const enum ColorWheelColorType {
-  DIM,
-  NORMAL,
-  BRIGHT,
+  dim,
+  normal,
+  bright,
 }
 
 /**
@@ -68,7 +68,7 @@ export interface WheelParams {
 export function ColorWheel(props: ColorWheelProps) {
   const [selectedColor, setSelectedColor] = React.useState<ColorUtils.IColor>();
   const [wheelColorType, setWheelColorType] = React.useState(
-    ColorWheelColorType.NORMAL
+    ColorWheelColorType.normal
   );
   const [colorBrightness, setColorBrightness] = React.useState(1);
   const buttonHighlightColor: ColorType = "pixelColors.highlightGray";
@@ -94,8 +94,8 @@ export function ColorWheel(props: ColorWheelProps) {
     const shapes = generateColorWheel(wheelParams);
     return (
       <>
-        {shapes.map((s) => (
-          <Box>
+        {shapes.map((s, i) => (
+          <Box key={i}>
             <Defs>
               <RadialGradient
                 id={toStringColor(s.color)}
@@ -106,28 +106,26 @@ export function ColorWheel(props: ColorWheelProps) {
                 <Stop
                   offset="0%"
                   stopColor={
-                    wheelColorType === ColorWheelColorType.BRIGHT
+                    wheelColorType === ColorWheelColorType.bright
                       ? toStringColor(s.color)
                       : toStringColor({
                           r: s.color.r * 2,
                           g: s.color.g * 2,
                           b: s.color.b * 2,
                         })
-                    // toStringColor(s.color)
                   }
                   stopOpacity="1"
                 />
                 <Stop
                   offset="100%"
                   stopColor={
-                    wheelColorType === ColorWheelColorType.BRIGHT
+                    wheelColorType === ColorWheelColorType.bright
                       ? toStringColor({
                           r: s.color.r / 2,
                           g: s.color.g / 2,
                           b: s.color.b / 2,
                         })
                       : toStringColor(s.color)
-                    //toStringColor(s.color)
                   }
                   stopOpacity="1"
                 />
@@ -136,7 +134,7 @@ export function ColorWheel(props: ColorWheelProps) {
             <Polygon
               points={toStringPath(s.points)}
               fill={
-                wheelColorType === ColorWheelColorType.NORMAL
+                wheelColorType === ColorWheelColorType.normal
                   ? toStringColor(s.color)
                   : `url(#${toStringColor(s.color)})`
               }
@@ -166,7 +164,6 @@ export function ColorWheel(props: ColorWheelProps) {
       )
     );
   };
-  //const [wheel] = useState(() => polygons());
   return (
     <Center width="100%">
       <VStack space={2} w="100%" alignItems="center">
@@ -174,12 +171,12 @@ export function ColorWheel(props: ColorWheelProps) {
           <Button
             flex={1}
             bgColor={
-              wheelColorType === ColorWheelColorType.DIM
+              wheelColorType === ColorWheelColorType.dim
                 ? buttonHighlightColor
                 : "primary.500"
             }
             onPress={() => {
-              setWheelColorType(ColorWheelColorType.DIM);
+              setWheelColorType(ColorWheelColorType.dim);
               setColorBrightness(0.5);
             }}
           >
@@ -188,12 +185,12 @@ export function ColorWheel(props: ColorWheelProps) {
           <Button
             flex={1}
             bgColor={
-              wheelColorType === ColorWheelColorType.NORMAL
+              wheelColorType === ColorWheelColorType.normal
                 ? buttonHighlightColor
                 : "primary.500"
             }
             onPress={() => {
-              setWheelColorType(ColorWheelColorType.NORMAL);
+              setWheelColorType(ColorWheelColorType.normal);
               setColorBrightness(1);
             }}
           >
@@ -202,12 +199,12 @@ export function ColorWheel(props: ColorWheelProps) {
           <Button
             flex={1}
             bgColor={
-              wheelColorType === ColorWheelColorType.BRIGHT
+              wheelColorType === ColorWheelColorType.bright
                 ? buttonHighlightColor
                 : "primary.500"
             }
             onPress={() => {
-              setWheelColorType(ColorWheelColorType.BRIGHT);
+              setWheelColorType(ColorWheelColorType.bright);
               setColorBrightness(2);
             }}
           >

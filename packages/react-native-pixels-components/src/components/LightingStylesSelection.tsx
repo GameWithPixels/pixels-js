@@ -62,7 +62,7 @@ export function LightingStyleSelection(props: LightingStyleSelectionProps) {
             )
           }
           title={props.title}
-          itemsData={props.itemsData ? props.itemsData : undefined}
+          itemsData={props.itemsData}
         />
       </VStack>
     </>

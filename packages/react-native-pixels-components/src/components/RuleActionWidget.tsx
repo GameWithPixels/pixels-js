@@ -1,25 +1,31 @@
 import {
+  RemoteActionTypeValues,
   ActionTypeValues,
   EditAction,
+  EditActionMakeWebRequest,
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditAnimation,
   getEditWidgetsData,
+  EditActionRunOnDevice,
 } from "@systemic-games/pixels-edit-animation";
 import { Box, Button, HStack, Text, VStack } from "native-base";
 import React from "react";
 
-import { RenderWidget } from "./RenderWidget";
+import { getActionTitle } from "../titlesUtils";
+import { RenderWidget, RenderWidgetProps } from "./RenderWidget";
 import { RuleActionSelection } from "./RuleComparisonWidget";
 
 function ActionEditor({
   editAction,
   animations,
+  userTextsParams,
   dieRenderer,
 }: {
   editAction: EditAction;
-  animations: EditAnimation[];
-  dieRenderer?: (anim: EditAnimation) => React.ReactNode;
+  animations: Readonly<EditAnimation>[];
+  userTextsParams: RenderWidgetProps["userTextsParams"];
+  dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
 }) {
   const actionWIdgets = React.useMemo(() => {
     return getEditWidgetsData(editAction);
@@ -34,6 +40,7 @@ function ActionEditor({
             animations,
             dieRenderer,
           }}
+          userTextsParams={userTextsParams}
         />
       ))}
     </VStack>
@@ -42,8 +49,10 @@ function ActionEditor({
 
 export interface RuleActionWidgetProps extends React.PropsWithChildren {
   action: EditAction;
-  animations: EditAnimation[];
-  dieRenderer?: (anim: EditAnimation) => React.ReactNode;
+  animations: Readonly<EditAnimation>[];
+  userTextsParams: RenderWidgetProps["userTextsParams"];
+  dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
+  onReplace?: ((action: EditAction) => void) | null | undefined;
   onDelete?: (() => void) | null | undefined;
 }
 
@@ -54,16 +63,22 @@ export interface RuleActionWidgetProps extends React.PropsWithChildren {
 export function RuleActionWidget({
   action,
   animations,
+  userTextsParams,
   dieRenderer,
+  onReplace,
   onDelete,
 }: RuleActionWidgetProps) {
   const [editAction, setEditAction] = React.useState(action);
-  const [actionTitle, setActionTitle] = React.useState(() =>
-    action.type === ActionTypeValues.playAnimation
-      ? "Trigger pattern"
-      : "Play audio clip"
+  const actionTitle = React.useMemo(
+    () =>
+      getActionTitle(
+        editAction.type,
+        editAction instanceof EditActionRunOnDevice
+          ? editAction.remoteType
+          : undefined
+      ),
+    [editAction]
   );
-
   return (
     <VStack
       space={2}
@@ -79,17 +94,33 @@ export function RuleActionWidget({
             actionTitle={actionTitle}
             possibleActions={[
               {
-                label: "Trigger Pattern",
+                label: getActionTitle(ActionTypeValues.playAnimation),
                 onPress: () => {
-                  setActionTitle("Trigger Pattern");
-                  setEditAction(new EditActionPlayAnimation());
+                  const act = new EditActionPlayAnimation();
+                  setEditAction(act);
+                  onReplace?.(act);
                 },
               },
               {
-                label: "Play Audio Clip",
+                label: getActionTitle(
+                  ActionTypeValues.runOnDevice,
+                  RemoteActionTypeValues.playAudioClip
+                ),
                 onPress: () => {
-                  setActionTitle("Play Audio Clip");
-                  setEditAction(new EditActionPlayAudioClip());
+                  const act = new EditActionPlayAudioClip();
+                  setEditAction(act);
+                  onReplace?.(act);
+                },
+              },
+              {
+                label: getActionTitle(
+                  ActionTypeValues.runOnDevice,
+                  RemoteActionTypeValues.makeWebRequest
+                ),
+                onPress: () => {
+                  const act = new EditActionMakeWebRequest();
+                  setEditAction(act);
+                  onReplace?.(act);
                 },
               },
             ]}
@@ -102,6 +133,7 @@ export function RuleActionWidget({
       <ActionEditor
         editAction={editAction}
         animations={animations}
+        userTextsParams={userTextsParams}
         dieRenderer={dieRenderer}
       />
     </VStack>

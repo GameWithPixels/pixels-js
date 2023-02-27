@@ -18,9 +18,9 @@ import { ProfilesActionSheet } from "./ProfilesActionSheet";
  * @param onPress function given to all the profiles to execute when pressed.
  */
 export interface ProfilesScrollViewProps {
-  profiles: EditProfile[];
-  dieRender: (profile: EditProfile) => React.ReactNode;
-  onPress?: ((profile: EditProfile) => void) | null | undefined;
+  profiles: Readonly<EditProfile>[];
+  dieRender: (profile: Readonly<EditProfile>) => React.ReactNode;
+  onPress?: ((profile: Readonly<EditProfile>) => void) | null | undefined;
 }
 
 /**

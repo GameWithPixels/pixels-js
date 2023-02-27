@@ -25,7 +25,7 @@ export interface ProfileInfo {
  */
 export interface ProfileCardProps {
   profileName: string;
-  dieRender: () => React.ReactNode;
+  dieRender: () => React.ReactNode; // TODO dieRenderer
   bg?: ColorType;
   w?: number | string;
   h?: number | string;

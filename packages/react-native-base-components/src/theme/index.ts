@@ -25,7 +25,7 @@ export function createPixelTheme({
   tertiaryColors = theme.colors.tertiary,
 }: CreatePixelThemeParams) {
   const newTheme = extendTheme(theme, {
-    // @ts-expect-error
+    // @ts-ignore
     colors: {
       primary: primaryColors,
       secondary: secondaryColors,

@@ -14,11 +14,15 @@ import {
 import { Box, HStack, VStack } from "native-base";
 import React from "react";
 
-import { getConditionSimpleTitle } from "../titlesUtils";
+import { getConditionTitle } from "../titlesUtils";
 import { RenderWidget } from "./RenderWidget";
 import { RuleConditionSelection } from "./RuleComparisonWidget";
 
-function ConditionEditor({ editCondition }: { editCondition: EditCondition }) {
+interface ConditionEditorProps {
+  editCondition: EditCondition;
+}
+
+function ConditionEditor({ editCondition }: ConditionEditorProps) {
   const conditionWidgets = React.useMemo(() => {
     return getEditWidgetsData(editCondition);
   }, [editCondition]);
@@ -37,10 +41,6 @@ export interface RuleConditionWidgetProps extends React.PropsWithChildren {
 }
 
 export function RuleConditionWidget(props: RuleConditionWidgetProps) {
-  const conditionTitle = React.useMemo(
-    () => getConditionSimpleTitle(props.condition.type),
-    [props.condition.type]
-  );
   return (
     <VStack
       space={2}
@@ -53,48 +53,42 @@ export function RuleConditionWidget(props: RuleConditionWidgetProps) {
       <HStack space={2} width="100%" alignItems="center">
         <Box flex={10} w="100%">
           <RuleConditionSelection
-            conditionTitle={conditionTitle}
+            conditionTitle={getConditionTitle(props.condition.type)}
             possibleConditions={[
               {
-                label: getConditionSimpleTitle(ConditionTypeValues.faceCompare),
+                label: getConditionTitle(ConditionTypeValues.faceCompare),
                 onPress: () =>
                   props.setCondition(new EditConditionFaceCompare()),
               },
               {
-                label: getConditionSimpleTitle(
-                  ConditionTypeValues.helloGoodbye
-                ),
+                label: getConditionTitle(ConditionTypeValues.helloGoodbye),
                 onPress: () =>
                   props.setCondition(new EditConditionHelloGoodbye()),
               },
               {
-                label: getConditionSimpleTitle(ConditionTypeValues.handling),
+                label: getConditionTitle(ConditionTypeValues.handling),
                 onPress: () => props.setCondition(new EditConditionHandling()),
               },
               {
-                label: getConditionSimpleTitle(ConditionTypeValues.rolling),
+                label: getConditionTitle(ConditionTypeValues.rolling),
                 onPress: () => props.setCondition(new EditConditionRolling()),
               },
               {
-                label: getConditionSimpleTitle(ConditionTypeValues.crooked),
+                label: getConditionTitle(ConditionTypeValues.crooked),
                 onPress: () => props.setCondition(new EditConditionCrooked()),
               },
               {
-                label: getConditionSimpleTitle(
-                  ConditionTypeValues.connectionState
-                ),
+                label: getConditionTitle(ConditionTypeValues.connectionState),
                 onPress: () =>
                   props.setCondition(new EditConditionConnectionState()),
               },
               {
-                label: getConditionSimpleTitle(
-                  ConditionTypeValues.batteryState
-                ),
+                label: getConditionTitle(ConditionTypeValues.batteryState),
                 onPress: () =>
                   props.setCondition(new EditConditionBatteryState()),
               },
               {
-                label: getConditionSimpleTitle(ConditionTypeValues.idle),
+                label: getConditionTitle(ConditionTypeValues.idle),
                 onPress: () => props.setCondition(new EditConditionIdle()),
               },
             ]}

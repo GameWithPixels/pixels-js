@@ -250,15 +250,14 @@ export interface RuleActionSelectionProps {
   possibleActions: ActionSheetItemData[];
   actionTitle?: string;
 }
+
 export function RuleActionSelection(props: RuleActionSelectionProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
-  const title = "Then";
-
   return (
     <>
       <HStack h={70} width="100%" alignItems="center">
         <Box flex={1}>
-          <Text fontSize="2xl">{title}</Text>
+          <Text fontSize="2xl">Then</Text>
         </Box>
         <Pressable flex={2} onPress={onOpen}>
           <HStack
@@ -269,7 +268,7 @@ export function RuleActionSelection(props: RuleActionSelectionProps) {
             rounded="lg"
             bg="darkBlue.800"
           >
-            <Box flex={2}>
+            <Box flex={8}>
               <Text fontSize="sm">{props.actionTitle}</Text>
             </Box>
             <Spacer />

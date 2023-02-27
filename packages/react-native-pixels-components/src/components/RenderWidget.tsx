@@ -29,16 +29,20 @@ import {
   PatternActionSheet,
 } from "./PatternsActionSheet";
 import { RuleComparisonWidget } from "./RuleComparisonWidget";
+import { UserTextSelection } from "./UserTextSelection";
 
 export interface RenderWidgetProps {
   widget: EditWidgetData;
   patternsParams?: {
-    patterns: EditPattern[];
-    dieRenderer?: (pattern: EditPattern) => React.ReactNode;
+    patterns: Readonly<EditPattern>[];
+    dieRenderer?: (pattern: Readonly<EditPattern>) => React.ReactNode;
   };
   animationsParams?: {
-    animations: EditAnimation[];
-    dieRenderer?: (anim: EditAnimation) => React.ReactNode;
+    animations: Readonly<EditAnimation>[];
+    dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
+  };
+  userTextsParams?: {
+    availableTexts: string[];
   };
 }
 
@@ -51,50 +55,70 @@ export function RenderWidget({
   widget,
   patternsParams,
   animationsParams,
+  userTextsParams,
 }: RenderWidgetProps) {
+  // Trigger a re-render whenever the value is updated
+  const [_, forceUpdate] = React.useReducer((b) => !b, false);
+  const update = (value: any) => {
+    // @ts-ignore
+    widget.update(value);
+    forceUpdate();
+  };
   const type = widget.type;
   switch (type) {
-    case "count": {
-      const step = widget.step ? widget.step : undefined;
+    case "toggle":
       return (
-        <SliderComponent
-          sliderTitle={widget.displayName}
-          minValue={widget?.min ?? 0}
-          maxValue={widget?.max ?? 1}
-          defaultValue={widget.getValue()}
-          step={step ?? 1}
-          unitType={widget.unit ? widget.unit : undefined}
-          unitTextColor={undefined}
-          sliderThumbColor={undefined}
-          onSelectedValue={widget.update}
+        <Toggle
+          value={widget.getValue()}
+          title={widget.displayName}
+          onValueChange={update}
         />
       );
-    }
 
-    case "slider": {
-      const step = widget.step ? widget.step : undefined;
+    case "string":
+      return (
+        <UserTextSelection
+          title={widget.displayName}
+          value={widget.getValue()}
+          onValueChange={update}
+        />
+      );
+
+    case "count":
       return (
         <SliderComponent
           sliderTitle={widget.displayName}
           minValue={widget?.min ?? 0}
           maxValue={widget?.max ?? 1}
           defaultValue={widget.getValue()}
-          step={step ?? 0.001}
-          unitType={widget.unit ? widget.unit : undefined}
+          step={widget.step ?? 1}
+          unitType={widget.unit}
           unitTextColor={undefined}
           sliderThumbColor={undefined}
-          onSelectedValue={widget.update}
+          onSelectedValue={update}
         />
       );
-    }
+
+    case "slider":
+      return (
+        <SliderComponent
+          sliderTitle={widget.displayName}
+          minValue={widget?.min ?? 0}
+          maxValue={widget?.max ?? 1}
+          defaultValue={widget.getValue()}
+          step={widget.step ?? 0.001}
+          unitType={widget.unit}
+          unitTextColor={undefined}
+          sliderThumbColor={undefined}
+          onSelectedValue={update}
+        />
+      );
 
     case "color":
       return (
         <SimpleColorSelection
           initialColor={widget.getValue().color.toString()}
-          onColorSelected={(color) =>
-            widget.update(new EditColor(new Color(color)))
-          }
+          onColorSelected={(color) => update(new EditColor(new Color(color)))}
         />
       );
 
@@ -102,8 +126,8 @@ export function RenderWidget({
       return (
         <FaceMask
           maskNumber={widget.getValue()}
-          dieFaces={20}
-          onCloseAction={widget.update}
+          dieFaces={widget.max ?? 20}
+          onCloseAction={update}
         />
       );
 
@@ -111,8 +135,8 @@ export function RenderWidget({
       return (
         <GradientColorSelection
           triggerW="100%"
-          onColorSelected={(keyFrames) =>
-            widget.update(new EditRgbGradient(keyFrames))
+          onColorSelected={(keyframes) =>
+            update(new EditRgbGradient({ keyframes }))
           }
         />
       );
@@ -128,7 +152,7 @@ export function RenderWidget({
           patterns={patternsParams?.patterns}
           dieRenderer={patternsParams.dieRenderer}
           onSelectPattern={(pattern) => {
-            widget.update(pattern);
+            update(pattern as EditPattern); // TODO pattern is readonly
           }}
         />
       );
@@ -144,7 +168,7 @@ export function RenderWidget({
           patterns={patternsParams?.patterns}
           dieRenderer={patternsParams.dieRenderer}
           onSelectPattern={(pattern) => {
-            widget.update(pattern);
+            update(pattern as EditPattern); // TODO pattern is readonly
           }}
         />
       );
@@ -154,34 +178,34 @@ export function RenderWidget({
       const valuesTitles = valuesToKeys(
         Object.values(widget.values),
         widget.values
-      );
+      ) as string[];
 
       // Initial selected values
       const initialValues = valuesToKeys(
         bitsToFlags(widget.getValue()),
         widget.values
-      );
-
+      ) as string[];
       return (
         <RuleComparisonWidget
           title={widget.displayName}
           values={valuesTitles}
           initialValues={initialValues}
           onChange={(keys) => {
-            const changedValues = keysToValues(keys, widget.values, 0);
+            const changedValues = keysToValues(keys, widget.values);
             const bits =
               changedValues.length < 1 ? 0 : combineFlags(changedValues);
-            widget.update(bits);
+            update(bits);
           }}
         />
       );
     }
+
     case "face":
       return (
         <FaceSelector
           initialFace={widget.getValue()}
           faceCount={20}
-          onSelect={widget.update}
+          onSelect={update}
         />
       );
 
@@ -190,17 +214,8 @@ export function RenderWidget({
         <PlayBackFace
           initialFaceIndex={widget.getValue()}
           faceCount={20}
-          onValueChange={widget.update}
+          onValueChange={update}
           title={widget.displayName}
-        />
-      );
-
-    case "toggle":
-      return (
-        <Toggle
-          value={widget.getValue()}
-          title={widget.displayName}
-          onValueChange={widget.update}
         />
       );
 
@@ -214,12 +229,26 @@ export function RenderWidget({
           animations={animationsParams?.animations}
           dieRenderer={animationsParams.dieRenderer}
           initialAnimation={widget.getValue()}
-          onSelectAnimation={widget.update}
+          onSelectAnimation={(anim) => update(anim as EditAnimation)} // TODO readonly animation
         />
       );
 
     case "audioClip":
       return <Text>Audio Clip Selector Placeholder</Text>;
+
+    case "userText":
+      assert(
+        userTextsParams,
+        "RenderWidget requires `userTextsParams` to be set to render a user text"
+      );
+      return (
+        <UserTextSelection
+          title={widget.displayName}
+          value={widget.getValue()}
+          onValueChange={update}
+          availableTexts={userTextsParams.availableTexts}
+        />
+      );
 
     default:
       assertNever(type);
