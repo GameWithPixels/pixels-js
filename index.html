@@ -39,18 +39,6 @@
 <p>Note: this is equivalent to run <code>yarn install &amp;&amp; yarn pk:all</code>.
 It&#39;s the later command that builds all the packages.</p>
 
-<a href="#local-build" id="local-build" style="color: inherit; text-decoration: none;">
-  <h3>Local Build</h3>
-</a>
-<p>To make a development build, install it on the device and connect to it:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn px android</span>
-</code></pre>
-<p>On the next run you can avoid rebuilding the app and directly start the development server.
-It will connect to the development app that was previously installed:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn px start</span>
-</code></pre>
-<p><strong>Note:</strong> for the Toolbox, replace <code>px</code> by <code>tb</code>.</p>
-
 <a href="#eas-build" id="eas-build" style="color: inherit; text-decoration: none;">
   <h3>EAS Build</h3>
 </a>
@@ -63,13 +51,25 @@ It will connect to the development app that was previously installed:</p>
 <p>For other types of builds, replace &quot;development&quot; by build type such as &quot;preview&quot; (without quotes).</p>
 <p><strong>Note:</strong> for the Toolbox, replace <code>px</code> by <code>tb</code>.</p>
 
-<a href="#remotely-install-build" id="remotely-install-build" style="color: inherit; text-decoration: none;">
-  <h3>Remotely Install Build</h3>
+<a href="#install-a-build" id="install-a-build" style="color: inherit; text-decoration: none;">
+  <h3>Install A Build</h3>
 </a>
 <p>To install a build on the emulator:</p>
 <pre><code class="language-sh"><span class="hl-0">adb -e install app.apk</span>
 </code></pre>
 <p>Use the -d flag to install on a physical device instead.</p>
+
+<a href="#running-a-dev-build" id="running-a-dev-build" style="color: inherit; text-decoration: none;">
+  <h3>Running A Dev Build</h3>
+</a>
+<p>To start a development server that connects to a development version of app already installed:</p>
+<pre><code class="language-sh"><span class="hl-0">yarn px start</span>
+</code></pre>
+<p>Or to build locally without EAS and immediately deploy the build and connect to it:</p>
+<pre><code class="language-sh"><span class="hl-0">yarn px android</span>
+</code></pre>
+<p>On the next run you can avoid rebuilding the app and directly start the development server.</p>
+<p><strong>Note:</strong> for the Toolbox, replace <code>px</code> by <code>tb</code>.</p>
 
 <a href="#making-updates" id="making-updates" style="color: inherit; text-decoration: none;">
   <h3>Making Updates</h3>
