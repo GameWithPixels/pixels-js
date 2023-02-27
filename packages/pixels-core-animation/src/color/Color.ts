@@ -1,4 +1,9 @@
-import { getBlue, getGreen, getRed } from "./color32Utils";
+import {
+  getBlue,
+  getGreen,
+  getRed,
+  toColor32 as convertToColor32,
+} from "./color32Utils";
 import { IColor, colorToString, colorComponentToByte } from "./colorUtils";
 
 /**
@@ -72,6 +77,10 @@ export default class Color implements IColor {
     return colorToString(this);
   }
 
+  toColor32(): number {
+    return convertToColor32(this);
+  }
+
   set(r: number, g: number, b: number): Color {
     this.r = r;
     this.g = g;
@@ -87,9 +96,7 @@ export default class Color implements IColor {
   }
 
   setWithValue(color24: number): Color {
-    this.r = getRed(color24);
-    this.g = getGreen(color24);
-    this.b = getBlue(color24);
+    this.setWithBytes(getRed(color24), getGreen(color24), getBlue(color24));
     return this;
   }
 

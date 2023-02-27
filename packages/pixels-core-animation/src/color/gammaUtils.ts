@@ -4,6 +4,10 @@
 import Color from "./Color";
 import * as Color32Utils from "./color32Utils";
 
+function toByte(n: number) {
+  return n < 0 ? 0 : n > 255 ? 255 : Math.floor(n);
+}
+
 /// <summary>
 /// Returns the gamma of the given intensity.
 /// </summary>
@@ -14,7 +18,7 @@ import * as Color32Utils from "./color32Utils";
  * @category Color Gamma
  */
 export function gamma8(intensity: number): number {
-  return _gammaTable[intensity & 255]; // 0-255 in, 0-255 out
+  return _gammaTable[toByte(intensity)]; // 0-255 in, 0-255 out
 }
 
 /// <summary>
@@ -59,7 +63,7 @@ export function gamma(color: Color): Color {
  * @category Color Gamma
  */
 export function reverseGamma8(gamma: number): number {
-  return _reverseGammaTable[Math.floor(gamma)]; // 0-255 in, 0-255 out
+  return _reverseGammaTable[toByte(gamma)]; // 0-255 in, 0-255 out
 }
 
 /// <summary>
@@ -67,12 +71,16 @@ export function reverseGamma8(gamma: number): number {
 /// </summary>
 /// <param name="color">The color to transform.</param>
 /// <returns>The reverse gamma transformed color.</returns>
-// export function reverseGamma(color: Color32): Color32 {
-//   const r = reverseGamma8(color.r);
-//   const g = reverseGamma8(color.g);
-//   const b = reverseGamma8(color.b);
-//   return new Color32(r, g, b, 255);
-// }
+
+/**
+ * @category Color Gamma
+ */
+export function reverseGamma(color: Color): Color {
+  const r = reverseGamma8(color.rByte);
+  const g = reverseGamma8(color.gByte);
+  const b = reverseGamma8(color.bByte);
+  return Color.fromBytes(r, g, b);
+}
 
 const _gammaTable = [
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

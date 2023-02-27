@@ -72,6 +72,24 @@ export function rgbToHsv({ r, g, b }: IColor): IColorHsv {
   }
 }
 
+function colorByteToHex(byte: number): string {
+  const str = byte.toString(16);
+  return str.length === 1 ? "0" + str : str;
+}
+
+/**
+ * @category Color
+ */
+export function colorBytesToString(
+  rByte: number,
+  gByte: number,
+  bByte: number
+): string {
+  return (
+    "#" + colorByteToHex(rByte) + colorByteToHex(gByte) + colorByteToHex(bByte)
+  );
+}
+
 /**
  * @category Color
  */
@@ -82,18 +100,10 @@ export function colorComponentToByte(c: number): number {
 /**
  * @category Color
  */
-export function colorComponentToHex(v: number) {
-  return ("0" + colorComponentToByte(v).toString(16)).slice(-2);
-}
-
-/**
- * @category Color
- */
-export function colorToString(color: IColor): string {
-  return (
-    "#" +
-    colorComponentToHex(color.r) +
-    colorComponentToHex(color.g) +
-    colorComponentToHex(color.b)
+export function colorToString({ r, g, b }: IColor): string {
+  return colorBytesToString(
+    colorComponentToByte(r),
+    colorComponentToByte(g),
+    colorComponentToByte(b)
   );
 }
