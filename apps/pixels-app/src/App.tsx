@@ -12,10 +12,10 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./app/store";
 import { TabBarNavigator } from "./components/TabBarNavigator";
 import AppSettings from "./screens/AppSettings";
-import PatternsNavigator from "./screens/MainScreens/Animations/AnimationsNavigator";
-import ProfilesNavigator from "./screens/MainScreens/Profiles/ProfilesNavigator";
+import PatternsNavigator from "./screens/animations/AnimationsNavigator";
+import ProfilesNavigator from "./screens/profiles/ProfilesNavigator";
 
-import HomeNavigator from "~/screens/MainScreens/Home/HomeNavigator";
+import HomeNavigator from "~/screens/home/HomeNavigator";
 
 LogBox.ignoreLogs([
   // From NativeBase
