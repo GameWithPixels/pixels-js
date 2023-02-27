@@ -110,7 +110,7 @@ export interface ScannedPeripheral extends Device {
 
 const Central = {
   // May be called multiple times
-  initialize: async (): Promise<void> => {
+  async initialize(): Promise<void> {
     if (!_connStatusSubs) {
       if (!_nativeEmitter) {
         _nativeEmitter = new NativeEventEmitter(BluetoothLE);
@@ -191,7 +191,7 @@ const Central = {
     }
   },
 
-  shutdown: async (): Promise<void> => {
+  async shutdown(): Promise<void> {
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
     _connStatusSubs?.remove();
@@ -203,50 +203,50 @@ const Central = {
     console.log("[BLE] Central has shutdown");
   },
 
-  isReady: (): boolean => {
+  isReady(): boolean {
     return !!_nativeEmitter;
   },
 
-  getScannedPeripherals: (): ScannedPeripheral[] => {
+  getScannedPeripherals(): ScannedPeripheral[] {
     return [..._peripherals.values()].map((pInf) => pInf.scannedPeripheral);
   },
 
-  getConnectedPeripherals: (): ScannedPeripheral[] => {
+  getConnectedPeripherals(): ScannedPeripheral[] {
     return [..._peripherals.values()]
       .filter((pInf) => pInf.state === "ready")
       .map((pInf) => pInf.scannedPeripheral);
   },
 
-  addScanStatusEventListener: (
+  addScanStatusEventListener(
     scanStatusCallback: (ev: ScanStatusEvent) => void
-  ): void => {
+  ): void {
     _scanEvEmitter.addListener("scanStatus", scanStatusCallback);
   },
 
-  removeScanStatusEventListener: (
+  removeScanStatusEventListener(
     scanStatusCallback: (ev: ScanStatusEvent) => void
-  ): void => {
+  ): void {
     _scanEvEmitter.removeListener("scanStatus", scanStatusCallback);
   },
 
-  addScannedPeripheralEventListener: (
+  addScannedPeripheralEventListener(
     scannedPeripheralCallback: (ev: ScannedPeripheralEvent) => void
-  ): void => {
+  ): void {
     _scanEvEmitter.addListener("scannedPeripheral", scannedPeripheralCallback);
   },
 
-  removeScannedPeripheralEventListener: (
+  removeScannedPeripheralEventListener(
     scannedPeripheralCallback: (ev: ScannedPeripheralEvent) => void
-  ): void => {
+  ): void {
     _scanEvEmitter.removeListener(
       "scannedPeripheral",
       scannedPeripheralCallback
     );
   },
 
-  scanForPeripheralsWithServices: async (
+  async scanForPeripheralsWithServices(
     services: string | string[]
-  ): Promise<void> => {
+  ): Promise<void> {
     if (!_nativeEmitter) {
       throw new Error("Central not ready for scanning");
     }
@@ -315,7 +315,7 @@ const Central = {
     _notifyScanStatus(true);
   },
 
-  stopScanning: async () => {
+  async stopScanning(): Promise<void> {
     console.log("[BLE] Stopping scan");
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
@@ -347,11 +347,11 @@ const Central = {
       this._characteristicValueChanged = valueChanged;
     }
   */
-  connectPeripheral: async (
+  async connectPeripheral(
     peripheral: PeripheralOrSystemId,
     connectionStatusCallback?: (ev: PeripheralConnectionEvent) => void,
     timeoutMs = 0 //TODO unused
-  ): Promise<void> => {
+  ): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     const name = pInf.scannedPeripheral.name;
     if (
@@ -470,9 +470,7 @@ const Central = {
     }
   },
 
-  disconnectPeripheral: async (
-    peripheral: PeripheralOrSystemId
-  ): Promise<void> => {
+  async disconnectPeripheral(peripheral: PeripheralOrSystemId): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     console.log(
       `[BLE ${pInf.scannedPeripheral.name}] Disconnecting, last known state is ${pInf.state}`
@@ -491,37 +489,33 @@ const Central = {
     }
   },
 
-  getPeripheralName: async (
-    peripheral: PeripheralOrSystemId
-  ): Promise<string> => {
+  async getPeripheralName(peripheral: PeripheralOrSystemId): Promise<string> {
     return await BluetoothLE.getPeripheralName(_getSystemId(peripheral));
   },
 
-  getPeripheralMtu: async (
-    peripheral: PeripheralOrSystemId
-  ): Promise<number> => {
+  async getPeripheralMtu(peripheral: PeripheralOrSystemId): Promise<number> {
     return await BluetoothLE.getPeripheralMtu(_getSystemId(peripheral));
   },
 
-  readPeripheralRssi: async (
+  async readPeripheralRssi(
     peripheral: PeripheralOrSystemId,
     _timeoutMs = Constants.defaultRequestTimeout //TODO unused
-  ): Promise<number> => {
+  ): Promise<number> {
     return await BluetoothLE.readPeripheralRssi(_getSystemId(peripheral));
   },
 
-  getDiscoveredServices: async (
+  async getDiscoveredServices(
     peripheral: PeripheralOrSystemId
-  ): Promise<string[]> => {
+  ): Promise<string[]> {
     return _toArray(
       await BluetoothLE.getDiscoveredServices(_getSystemId(peripheral))
     );
   },
 
-  getServiceCharacteristics: async (
+  async getServiceCharacteristics(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string
-  ): Promise<string[]> => {
+  ): Promise<string[]> {
     return _toArray(
       await BluetoothLE.getServiceCharacteristics(
         _getSystemId(peripheral),
@@ -530,12 +524,12 @@ const Central = {
     );
   },
 
-  getCharacteristicProperties: async (
+  async getCharacteristicProperties(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
     instanceIndex = 0
-  ): Promise<number> => {
+  ): Promise<number> {
     return await BluetoothLE.getCharacteristicProperties(
       _getSystemId(peripheral),
       serviceUuid,
@@ -544,7 +538,7 @@ const Central = {
     );
   },
 
-  readCharacteristic: async (
+  async readCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
@@ -552,7 +546,7 @@ const Central = {
       instanceIndex?: number;
       timeoutMs?: number; //TODO unused => Constants.defaultRequestTimeout
     }
-  ): Promise<Uint8Array> => {
+  ): Promise<Uint8Array> {
     return new Uint8Array(
       (await BluetoothLE.readCharacteristic(
         _getSystemId(peripheral),
@@ -563,7 +557,7 @@ const Central = {
     );
   },
 
-  writeCharacteristic: async (
+  async writeCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
@@ -573,7 +567,7 @@ const Central = {
       instanceIndex?: number;
       timeoutMs?: number; //TODO unused => Constants.defaultRequestTimeout
     }
-  ): Promise<void> => {
+  ): Promise<void> {
     await BluetoothLE.writeCharacteristic(
       _getSystemId(peripheral),
       serviceUuid,
@@ -585,7 +579,7 @@ const Central = {
   },
 
   // Replaces a previous subscription to same characteristic
-  subscribeCharacteristic: async (
+  async subscribeCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
@@ -594,7 +588,7 @@ const Central = {
       instanceIndex?: number;
       timeoutMs?: number; //TODO unused => Constants.defaultRequestTimeout
     }
-  ): Promise<void> => {
+  ): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     await BluetoothLE.subscribeCharacteristic(
       _getSystemId(peripheral),
@@ -610,7 +604,7 @@ const Central = {
     pInf.valueChangedCallbacks.set(key, onValueChanged);
   },
 
-  unsubscribeCharacteristic: async (
+  async unsubscribeCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
@@ -618,7 +612,7 @@ const Central = {
       instanceIndex?: number;
       timeoutMs?: number; //TODO unused => Constants.defaultRequestTimeout
     }
-  ): Promise<void> => {
+  ): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     await BluetoothLE.unsubscribeCharacteristic(
       _getSystemId(peripheral),
