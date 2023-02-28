@@ -1,4 +1,4 @@
-import { createStackNavigator } from "@react-navigation/stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,7 +9,7 @@ import DieDetailsScreen from "~/screens/DieDetailsScreen";
 import HomeScreen from "~/screens/HomeScreen";
 import SelectDfuFilesScreen from "~/screens/SelectDfuFilesScreen";
 
-const Stack = createStackNavigator<HomeScreensParamList>();
+const Stack = createNativeStackNavigator<HomeScreensParamList>();
 
 export default function ({ navigation }: HomeNavigatorProps) {
   // Setup page options

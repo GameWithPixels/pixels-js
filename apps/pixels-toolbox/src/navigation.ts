@@ -1,5 +1,5 @@
 import { DrawerScreenProps } from "@react-navigation/drawer";
-import type { StackScreenProps } from "@react-navigation/stack";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 // Main screens
 export type RootScreensParamList = {
@@ -24,12 +24,12 @@ export type HomeScreensParamList = {
   SelectDfuFiles: undefined;
 };
 
-export type HomeProps = StackScreenProps<HomeScreensParamList, "Home">;
-export type DieDetailsProps = StackScreenProps<
+export type HomeProps = NativeStackScreenProps<HomeScreensParamList, "Home">;
+export type DieDetailsProps = NativeStackScreenProps<
   HomeScreensParamList,
   "DieDetails"
 >;
-export type SelectDfuFilesProps = StackScreenProps<
+export type SelectDfuFilesProps = NativeStackScreenProps<
   HomeScreensParamList,
   "SelectDfuFiles"
 >;

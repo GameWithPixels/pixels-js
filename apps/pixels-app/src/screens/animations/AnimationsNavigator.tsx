@@ -1,5 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NativeBaseProvider } from "native-base";
 import React from "react";
 
@@ -9,16 +8,13 @@ import AnimationsListScreen from "./AnimationsListScreen";
 import { AnimationsScreenStackParamList } from "~/navigation";
 import { paleBluePixelTheme } from "~/themes";
 
-const Stack = createStackNavigator<AnimationsScreenStackParamList>();
+const Stack = createNativeStackNavigator<AnimationsScreenStackParamList>();
 
 export default function PatternsNavigator() {
   return (
     <NativeBaseProvider theme={paleBluePixelTheme}>
       <Stack.Navigator
         screenOptions={{
-          headerBackImage: () => (
-            <Ionicons name="md-arrow-back-outline" size={24} color="white" />
-          ),
           headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: "black",
