@@ -112,6 +112,10 @@ i18n
           calibrate: "Calibrate",
           rainbow: "Rainbow",
           resetProfile: "Reset Profile",
+          discharge: "Discharge",
+          enableCharging: "Enable Charging",
+          disableCharging: "Disable Charging",
+
           // Validation
           factoryValidation: "Factory Validation",
           openMenuToGoToValidation: "Open Menu To Go To Validation",
@@ -264,6 +268,10 @@ i18n
           calibrate: "校准",
           rainbow: "彩虹动画效果",
           resetProfile: "重置资料",
+          discharge: "Discharge",
+          enableCharging: "Enable Charging",
+          disableCharging: "Disable Charging",
+
           // Validation
           factoryValidation: "工厂测试",
           openMenuToGoToValidation: "打开菜单进入测试模式",

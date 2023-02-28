@@ -80,6 +80,8 @@ export const MessageTypeValues = {
   stopAllAnimations: enumValue(),
   requestTemperature: enumValue(),
   temperature: enumValue(),
+  enableCharging: enumValue(),
+  disableCharging: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),

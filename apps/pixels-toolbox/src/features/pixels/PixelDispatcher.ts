@@ -41,7 +41,10 @@ export type PixelDispatcherAction =
   | "updateProfile"
   | "queueFirmwareUpdate"
   | "dequeueFirmwareUpdate"
-  | "exitValidationMode";
+  | "exitValidationMode"
+  | "discharge"
+  | "enableCharging"
+  | "disableCharging";
 
 export interface PixelDispatcherEventMap {
   status: PixelStatus;
@@ -228,6 +231,9 @@ export default class PixelDispatcher implements IPixel {
       case "calibrate":
         this._watch(this._calibrate());
         break;
+      case "discharge":
+        this._watch(this._discharge());
+        break;
       case "updateProfile":
         this._watch(this._updateProfile());
         break;
@@ -239,6 +245,12 @@ export default class PixelDispatcher implements IPixel {
         break;
       case "exitValidationMode":
         this._exitValidationMode();
+        break;
+      case "enableCharging":
+        this._forceEnableCharging(true);
+        break;
+      case "disableCharging":
+        this._forceEnableCharging(false);
         break;
       default:
         assertNever(action);
@@ -291,6 +303,18 @@ export default class PixelDispatcher implements IPixel {
   private async _calibrate(): Promise<void> {
     if (this.isReady) {
       await this._pixel.startCalibration();
+    }
+  }
+
+  private async _discharge(): Promise<void> {
+    if (this.isReady) {
+      await this._pixel.discharge();
+    }
+  }
+
+  private async _forceEnableCharging(enable: boolean): Promise<void> {
+    if (this.isReady) {
+      await this._pixel.forceEnableCharging(enable);
     }
   }
 

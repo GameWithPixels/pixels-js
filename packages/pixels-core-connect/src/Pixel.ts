@@ -8,6 +8,7 @@ import {
   assert,
   byteSizeOf,
   createTypedEventEmitter,
+  delay,
   EventReceiver,
   safeAssign,
 } from "@systemic-games/pixels-core-utils";
@@ -613,6 +614,23 @@ export default class Pixel implements IPixel {
   }
 
   /**
+    * Request Pixel die to turn on/off charging
+    */
+  async forceEnableCharging(enable: boolean): Promise<void> {
+    if (enable) {
+      await this.sendMessage(
+        MessageTypeValues.enableCharging,
+        true // withoutResponse
+      );
+    } else {
+      await this.sendMessage(
+        MessageTypeValues.disableCharging,
+        true // withoutResponse
+      );
+    }
+  }
+
+  /**
    * Requests the Pixel to blink and wait for a confirmation.
    * @param color Blink color.
    * @param options.count Number of blinks.
@@ -647,6 +665,28 @@ export default class Pixel implements IPixel {
   }
 
   /**
+   * Discharges the pixel as fast as possible by lighting up all leds
+   * @returns A promise.
+   */
+  async discharge(): Promise<void> {
+    const blinkMsg = safeAssign(new Blink(), {
+      color: Color32Utils.toColor32(Color.brightWhite),
+      count: 1,
+      duration: 6000,
+      fade: 10,
+      faceMask: AnimConstants.faceMaskAllLEDs,
+      loop: false,
+    });
+    while (true) { // We are counting on the disconnect exception to happen!
+      await this.sendAndWaitForResponse(
+        blinkMsg,
+        MessageTypeValues.blinkFinished
+      );
+      await delay(3000);
+    }
+  }
+
+/**
    * Requests the Pixel to stop all animations currently playing.
    */
   async stopAllAnimations(): Promise<void> {
