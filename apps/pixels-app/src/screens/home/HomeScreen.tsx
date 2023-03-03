@@ -45,7 +45,7 @@ function PairedPixelList({
   const profiles = useAppProfiles();
   const onPress = React.useCallback(
     (pixel: ScannedPixel) => {
-      navigation.navigate("PixelDetails", { systemId: pixel.systemId });
+      navigation.navigate("PixelDetails", { pixelId: pixel.pixelId });
     },
     [navigation]
   );
@@ -78,7 +78,7 @@ function PairedPixelList({
             <VStack w="100%">
               {pairedPixels.map((pixel) => {
                 const uuid = pairedDice.find(
-                  (d) => d.systemId === pixel.systemId
+                  (d) => d.pixelId === pixel.pixelId
                 )?.profileUuid;
                 const profile = profiles.find((p) => p.uuid === uuid);
                 return (
@@ -162,9 +162,7 @@ function NearbyPixelsList({
                 <Box p={1} key={pixel.pixelId} w="100%">
                   <ScannedPixelInfoComponent
                     pixel={pixel}
-                    onPress={() =>
-                      updatePairedDie({ systemId: pixel.systemId })
-                    }
+                    onPress={() => updatePairedDie({ pixelId: pixel.pixelId })}
                     dieRenderer={() => <DieRenderer />}
                   />
                 </Box>
@@ -193,14 +191,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const unpairedPixels = React.useMemo(
     () =>
       scannedPixels.filter((p) =>
-        pairedDice.every((d) => d.systemId !== p.systemId)
+        pairedDice.every((d) => d.pixelId !== p.pixelId)
       ),
     [pairedDice, scannedPixels]
   );
   const pairedPixels = React.useMemo(
     () =>
       scannedPixels.filter(
-        (p) => pairedDice.findIndex((d) => d.systemId === p.systemId) >= 0
+        (p) => pairedDice.findIndex((d) => d.pixelId === p.pixelId) >= 0
       ),
     [pairedDice, scannedPixels]
   );

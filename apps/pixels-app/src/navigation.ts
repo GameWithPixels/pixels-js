@@ -15,8 +15,8 @@ export type RootStackParamList = {
 //
 export type HomeScreenStackParamList = {
   Home: undefined;
-  PixelDetails: { systemId: string };
-  PixelAdvancedSettings: { systemId: string };
+  PixelDetails: { pixelId: number };
+  PixelAdvancedSettings: { pixelId: number };
 };
 
 export type HomeScreenProps = NativeStackScreenProps<

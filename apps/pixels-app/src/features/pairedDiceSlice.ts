@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface DieInfo {
-  systemId: string;
+  pixelId: number;
   profileUuid?: string;
 }
 
@@ -19,7 +19,7 @@ const pairedDiceSlice = createSlice({
     updatePairedDie(state, action: PayloadAction<DieInfo>) {
       const pairedDie = action.payload;
       const index = state.dice.findIndex(
-        (d) => d.systemId === pairedDie.systemId
+        (d) => d.pixelId === pairedDie.pixelId
       );
       if (index >= 0) {
         state.dice[index] = pairedDie;
@@ -28,8 +28,8 @@ const pairedDiceSlice = createSlice({
       }
     },
 
-    removePairedDie(state, action: PayloadAction<string>) {
-      const index = state.dice.findIndex((d) => d.systemId === action.payload);
+    removePairedDie(state, action: PayloadAction<number>) {
+      const index = state.dice.findIndex((d) => d.pixelId === action.payload);
       if (index >= 0) {
         state.dice.splice(index, 1);
       } else {

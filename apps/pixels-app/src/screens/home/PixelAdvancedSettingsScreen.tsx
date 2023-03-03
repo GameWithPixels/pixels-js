@@ -18,8 +18,8 @@ import { PixelAdvancedSettingsScreenProps } from "~/navigation";
 export default function PixelAdvancedSettingsScreen(
   props: PixelAdvancedSettingsScreenProps
 ) {
-  const { systemId } = props.route.params;
-  const pixel = getPixel(systemId);
+  const { pixelId } = props.route.params;
+  const pixel = getPixel(pixelId);
   return (
     <PixelAppPage>
       <ScrollView height="100%" width="100%">

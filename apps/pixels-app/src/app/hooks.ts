@@ -48,11 +48,11 @@ export function useAppUpdatePairedDie(): (die: DieInfo) => void {
   );
 }
 
-export function useAppRemovePairedDie(): (systemId: string) => void {
+export function useAppRemovePairedDie(): (pixelId: number) => void {
   const dispatch = useAppDispatch();
   return useCallback(
-    (systemId: string) => {
-      dispatch(removePairedDie(systemId));
+    (pixelId: number) => {
+      dispatch(removePairedDie(pixelId));
     },
     [dispatch]
   );

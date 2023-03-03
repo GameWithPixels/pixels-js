@@ -52,8 +52,8 @@ export default function PixelDetailScreen({
   navigation,
   route,
 }: PixelDetailScreenProps) {
-  const { systemId } = route.params;
-  const pixel = getPixel(systemId);
+  const { pixelId } = route.params;
+  const pixel = getPixel(pixelId);
   const [status, lastError] = usePixel(pixel);
   const [rollState] = usePixelValue(pixel, "rollState", { minInterval: 100 });
 
@@ -63,9 +63,9 @@ export default function PixelDetailScreen({
 
   const profiles = useAppProfiles();
   const activeProfile = React.useMemo(() => {
-    const die = pairedDice.find((d) => d.systemId === systemId);
+    const die = pairedDice.find((d) => d.pixelId === pixelId);
     return profiles.find((p) => p.uuid === die?.profileUuid);
-  }, [pairedDice, profiles, systemId]);
+  }, [pairedDice, profiles, pixelId]);
 
   React.useEffect(() => {
     if (pixel) {
@@ -233,7 +233,7 @@ export default function PixelDetailScreen({
                         setTransferProgress
                       )
                       .then(() =>
-                        updatePairedDie({ systemId, profileUuid: profile.uuid })
+                        updatePairedDie({ pixelId, profileUuid: profile.uuid })
                       )
                       .catch(console.error)
                       .finally(() => setShowLoadingPopup(false));
@@ -252,7 +252,7 @@ export default function PixelDetailScreen({
             <Divider bg="primary.200" width="90%" alignSelf="center" />
             <Pressable
               onPress={() => {
-                navigation.navigate("PixelAdvancedSettings", { systemId });
+                navigation.navigate("PixelAdvancedSettings", { pixelId });
               }}
             >
               <HStack
@@ -275,7 +275,7 @@ export default function PixelDetailScreen({
               w="100%"
               alignSelf="center"
               onPress={() => {
-                removePairedDie(systemId);
+                removePairedDie(pixelId);
                 navigation.goBack();
               }}
             >
