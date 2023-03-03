@@ -131,7 +131,7 @@ export interface PixelEventMap {
   /** User message request. */
   userMessage: PixelUserMessage;
   /** Remote action request. */
-  remoteAction: number; // Audio clip local id
+  remoteAction: number; // Remote action id
 }
 
 /**
@@ -340,7 +340,7 @@ export default class Pixel implements IPixel {
         this._evEmitter.emit("rssi", this._rssi);
       }
     });
-    // Subscribe to user message notification
+    // Subscribe to user message requests
     this.addMessageListener("notifyUser", (message: MessageOrType) => {
       const msg = message as NotifyUser;
       this._evEmitter.emit("userMessage", {
@@ -354,11 +354,11 @@ export default class Pixel implements IPixel {
           );
         },
       });
-      // Subscribe to play sound notifications
-      this.addMessageListener("remoteAction", (message: MessageOrType) => {
-        const msg = message as RemoteAction;
-        this._evEmitter.emit("remoteAction", msg.actionId);
-      });
+    });
+    // Subscribe to remote action requests
+    this.addMessageListener("remoteAction", (message: MessageOrType) => {
+      const msg = message as RemoteAction;
+      this._evEmitter.emit("remoteAction", msg.actionId);
     });
   }
 
