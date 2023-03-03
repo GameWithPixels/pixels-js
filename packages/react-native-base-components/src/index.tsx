@@ -9,6 +9,9 @@ export * from "./components/ProgressBar";
 export * from "./colorWheelUtils";
 export * from "./components/ColorWheel";
 export * from "./components/Slider";
-export * from "./components/PopUp";
 export * from "./components/Swipeable";
 export * from "./components/Histogram";
+
+export * from "./components/FastVStack";
+export * from "./components/FastHStack";
+export * from "./components/FastButton";

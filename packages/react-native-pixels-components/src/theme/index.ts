@@ -51,19 +51,23 @@ const fontSizes = {
   "9xl": sr(128),
 };
 
+const buttonTheme = {
+  baseStyle: {
+    minW: "2",
+    minH: "2",
+  },
+  defaultProps: {
+    bg: "primary.500",
+    rounded: "lg",
+  },
+};
+
 const components = {
   ...pixelComponents,
 
-  Button: {
-    baseStyle: {
-      minW: "2",
-      minH: "2",
-    },
-    defaultProps: {
-      bg: "primary.500",
-      rounded: "lg",
-    },
-  },
+  Button: buttonTheme,
+
+  FastButton: buttonTheme,
 
   Icon: {
     sizes: {
