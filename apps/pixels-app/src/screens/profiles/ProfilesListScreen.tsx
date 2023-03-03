@@ -11,6 +11,7 @@ import {
   DetailedProfileCard,
   createSwipeableSideButton,
   PixelAppPage,
+  useDisclose,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Box,
@@ -22,7 +23,6 @@ import {
   Pressable,
   ScrollView,
   Actionsheet,
-  useDisclose,
 } from "native-base";
 import React from "react";
 import Swipeable from "react-native-gesture-handler/Swipeable";

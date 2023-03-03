@@ -1,4 +1,7 @@
-import { Card } from "@systemic-games/react-native-base-components";
+import {
+  Card,
+  useDisclose,
+} from "@systemic-games/react-native-base-components";
 import {
   HStack,
   VStack,
@@ -8,7 +11,6 @@ import {
   Pressable,
   Button,
   Spacer,
-  useDisclose,
 } from "native-base";
 import React from "react";
 

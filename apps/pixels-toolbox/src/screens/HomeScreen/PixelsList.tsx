@@ -1,5 +1,6 @@
+import { useDisclose } from "@systemic-games/react-native-pixels-components";
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
-import { Box, Center, FlatList, Text, useDisclose } from "native-base";
+import { Box, Center, FlatList, Text } from "native-base";
 import { useState, useCallback, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 // eslint-disable-next-line import/namespace

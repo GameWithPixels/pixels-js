@@ -1,9 +1,11 @@
-import { Toggle } from "@systemic-games/react-native-base-components";
+import {
+  Toggle,
+  useDisclose,
+} from "@systemic-games/react-native-base-components";
 import {
   Actionsheet,
   Button,
   ScrollView,
-  useDisclose,
   Text,
   HStack,
   VStack,

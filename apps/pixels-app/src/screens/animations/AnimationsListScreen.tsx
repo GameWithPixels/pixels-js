@@ -14,6 +14,7 @@ import {
   Card,
   LightingPatternCardProps,
   getAnimationTitle,
+  useDisclose,
 } from "@systemic-games/react-native-pixels-components";
 import {
   Actionsheet,
@@ -22,7 +23,6 @@ import {
   HStack,
   VStack,
   Text,
-  useDisclose,
   Pressable,
   ScrollView,
 } from "native-base";

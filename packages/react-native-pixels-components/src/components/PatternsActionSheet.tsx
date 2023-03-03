@@ -2,6 +2,7 @@ import {
   EditAnimation,
   EditPattern,
 } from "@systemic-games/pixels-edit-animation";
+import { useDisclose } from "@systemic-games/react-native-base-components";
 import {
   Actionsheet,
   Box,
@@ -9,7 +10,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  useDisclose,
 } from "native-base";
 import React, { useEffect } from "react";
 

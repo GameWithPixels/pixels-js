@@ -1,4 +1,7 @@
-import { ActionSheetListItemData } from "@systemic-games/react-native-base-components";
+import {
+  ActionSheetListItemData,
+  useDisclose,
+} from "@systemic-games/react-native-base-components";
 import {
   Box,
   Button,
@@ -8,7 +11,6 @@ import {
   ChevronDownIcon,
   Actionsheet,
   Spacer,
-  useDisclose,
   Pressable,
   ScrollView,
   IButtonProps,

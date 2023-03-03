@@ -1,5 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import { useDisclose } from "@systemic-games/react-native-pixels-components";
 import {
   AlertDialog,
   Box,
@@ -8,7 +9,6 @@ import {
   Pressable,
   Text,
   VStack,
-  useDisclose,
   Center,
 } from "native-base";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";

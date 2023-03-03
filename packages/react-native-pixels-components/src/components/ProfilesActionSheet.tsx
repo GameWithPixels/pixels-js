@@ -1,6 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
-import { Card } from "@systemic-games/react-native-base-components";
+import {
+  Card,
+  useDisclose,
+} from "@systemic-games/react-native-base-components";
 import {
   Actionsheet,
   Box,
@@ -9,7 +12,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  useDisclose,
 } from "native-base";
 import React from "react";
 
