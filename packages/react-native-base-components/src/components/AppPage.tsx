@@ -1,12 +1,12 @@
 import { Box, StatusBar, usePropsResolution } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 /**
  * Props for AppPage component.
  */
-export interface AppPageProps extends PropsWithChildren {
+export interface AppPageProps extends React.PropsWithChildren {
   h?: number | string;
   w?: number | string;
   p?: number | string;

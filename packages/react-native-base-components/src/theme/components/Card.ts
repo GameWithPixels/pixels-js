@@ -1,5 +1,3 @@
-import { CardProps } from "../../components/Card";
-
 export default {
   baseStyle: {},
   defaultProps: {
@@ -7,7 +5,7 @@ export default {
     bg: "primary.700",
     maxH: 600,
     borderColor: "primary.200",
-    borderWidth: 0,
-    Vspace: 1,
+    space: 1,
+    alignItems: "center",
   },
-} as CardProps;
+};

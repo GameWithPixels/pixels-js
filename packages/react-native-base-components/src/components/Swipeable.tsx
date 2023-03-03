@@ -19,6 +19,7 @@ export interface CreateSwipeableSideButtonProps {
   w?: number;
   buttons: SwipeableSideButtonProps[]; // Array of buttons props to create every needed pressable.
 }
+
 /**
  * Create an array of pressable element to be used inside a swipeable component as a renderAction.
  * @param props See {@link createSwipeableSideButton} for props parameters.

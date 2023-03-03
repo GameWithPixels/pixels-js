@@ -1,5 +1,3 @@
-import { ToggleProps } from "../../components/Toggle";
-
 export default {
   defaultProps: {
     toggleSize: "md",
@@ -9,4 +7,4 @@ export default {
     onTrackColor: "primary.200",
     offTrackColor: "primary.500",
   },
-} as ToggleProps;
+};

@@ -6,7 +6,7 @@ import {
   usePropsResolution,
 } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
-import React, { ReactNode } from "react";
+import React from "react";
 
 /**
  * Props for {@link Toggle} component.
@@ -16,7 +16,7 @@ export interface ToggleProps extends ISwitchProps {
   textSize?: string | number | SizeType;
   toggleSize?: SizeType;
   space?: number | string; // Spacing between text and toggle
-  icon?: ReactNode | ReactNode[]; // Icon displayed ont the left of the toggle
+  icon?: React.ReactNode | React.ReactNode[]; // Icon displayed ont the left of the toggle
 }
 
 /**
