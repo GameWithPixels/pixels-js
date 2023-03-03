@@ -16,14 +16,9 @@ import {
   sr,
 } from "@systemic-games/react-native-pixels-components";
 import {
-  MessageOrType,
-  PixelRollData,
-  PixelRollStateValues,
-  RemoteAction,
-  RollState,
   getPixel,
-  getPixelEnumName,
   usePixel,
+  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import {
   Box,
@@ -58,10 +53,9 @@ export default function PixelDetailScreen({
   route,
 }: PixelDetailScreenProps) {
   const { systemId } = route.params;
-  const pixel = getPixel(systemId); //, console.log, true);
+  const pixel = getPixel(systemId);
   const [status, lastError] = usePixel(pixel);
-  //const [rollState] = usePixelValue(pixel, "rollState");
-  const [rollState, setRollState] = React.useState<PixelRollData>();
+  const [rollState] = usePixelValue(pixel, "rollState", { minInterval: 100 });
 
   const pairedDice = useAppPairedDice();
   const updatePairedDie = useAppUpdatePairedDie();
@@ -75,22 +69,12 @@ export default function PixelDetailScreen({
 
   React.useEffect(() => {
     if (pixel) {
-      const onRollState = (msgOrType: MessageOrType) => {
-        const msg = msgOrType as RollState;
-        const roll = {
-          face: msg.faceIndex + 1,
-          state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
-        };
-        setRollState(roll);
-      };
-      pixel.addMessageListener("rollState", onRollState);
-      const onRemoteAction = (msgOrType: MessageOrType) => {
+      const onRemoteAction = (actionId: number) => {
         if (activeProfile) {
-          const msg = msgOrType as RemoteAction;
-          const action = activeProfile.getRemoteAction(msg.actionId);
+          const action = activeProfile.getRemoteAction(actionId);
           if (action instanceof EditActionMakeWebRequest) {
             console.log(
-              `Running remote action for web request with id=${msg.actionId} at URL "${action.url}" with value "${action.value}"`
+              `Running remote action for web request with id=${actionId} at URL "${action.url}" with value "${action.value}"`
             );
             if (!__DEV__) {
               httpPost(
@@ -103,18 +87,27 @@ export default function PixelDetailScreen({
                   `Post request to ${action.url} returned with status ${status}`
                 )
               );
+            } else {
+              console.log(
+                "Running web request actions is disabled in development builds"
+              );
             }
-          } else if (action) {
-            console.log(`Couldn't run remote action with id ${msg.actionId}`);
           } else {
-            console.log(`Couldn't find remote action with id ${msg.actionId}`);
+            console.warn(
+              `Ignoring running action with id ${actionId} for profile ${
+                activeProfile.name
+              } because ${
+                action
+                  ? "the action is not a web request"
+                  : "there is no such action"
+              }`
+            );
           }
         }
       };
-      pixel.addMessageListener("remoteAction", onRemoteAction);
+      pixel.addEventListener("remoteAction", onRemoteAction);
       return () => {
-        pixel.removeMessageListener("rollState", onRollState);
-        pixel.removeMessageListener("remoteAction", onRemoteAction);
+        pixel.removeEventListener("remoteAction", onRemoteAction);
       };
     }
   }, [activeProfile, pixel]);
