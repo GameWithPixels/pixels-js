@@ -57,7 +57,7 @@ function CreatePatternWidget(props: Omit<LightingPatternCardProps, "title">) {
         minH="50px"
         w={props.w}
         h={props.h}
-        verticalSpace={props.verticalSpace}
+        space={props.verticalSpace}
         borderWidth={props.borderWidth}
       >
         <Ionicons name="add-circle-outline" size={24} color="white" />

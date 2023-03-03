@@ -12,9 +12,9 @@ import {
   createDataSetForAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
+  AnimationTypeSelector,
   Card,
   PixelAppPage,
-  LightingStyleSelection,
   RenderWidget,
   getAnimationTitle,
 } from "@systemic-games/react-native-pixels-components";
@@ -128,30 +128,30 @@ export default function AnimationEditScreen({
             Apply
           </Button>
         </Box>
-        <LightingStyleSelection
-          title={animTypeText}
+        <AnimationTypeSelector
+          label={animTypeText}
           itemsData={[
             {
               label: getAnimationTitle(AnimationTypeValues.simple),
-              onPress: () => {
+              onSelect: () => {
                 setEditAnim(new EditAnimationSimple({ uuid: editAnim.uuid }));
               },
             },
             {
               label: getAnimationTitle(AnimationTypeValues.rainbow),
-              onPress: () => {
+              onSelect: () => {
                 setEditAnim(new EditAnimationRainbow({ uuid: editAnim.uuid }));
               },
             },
             {
               label: getAnimationTitle(AnimationTypeValues.gradient),
-              onPress: () => {
+              onSelect: () => {
                 setEditAnim(new EditAnimationGradient({ uuid: editAnim.uuid }));
               },
             },
             {
               label: getAnimationTitle(AnimationTypeValues.keyframed),
-              onPress: () => {
+              onSelect: () => {
                 setEditAnim(
                   new EditAnimationKeyframed({ uuid: editAnim.uuid })
                 );
@@ -159,7 +159,7 @@ export default function AnimationEditScreen({
             },
             {
               label: getAnimationTitle(AnimationTypeValues.gradientPattern),
-              onPress: () => {
+              onSelect: () => {
                 setEditAnim(
                   new EditAnimationGradientPattern({ uuid: editAnim.uuid })
                 );
@@ -167,7 +167,7 @@ export default function AnimationEditScreen({
             },
             {
               label: getAnimationTitle(AnimationTypeValues.noise),
-              onPress: () => {
+              onSelect: () => {
                 setEditAnim(new EditAnimationNoise({ uuid: editAnim.uuid }));
               },
             },

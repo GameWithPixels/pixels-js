@@ -67,7 +67,7 @@ export default function DieStatistics({
                 w={sr(170)}
                 h={sr(140)}
                 maxW="100%"
-                verticalSpace={2}
+                space={2}
                 alignItems="center"
                 bg="primary.300"
               >
@@ -103,7 +103,7 @@ export default function DieStatistics({
                 w={sr(170)}
                 h={sr(140)}
                 maxW="100%"
-                verticalSpace={2}
+                space={2}
                 alignItems="center"
                 bg="primary.300"
               >
@@ -143,7 +143,7 @@ export default function DieStatistics({
           </Center>
           {!showSessionStats ? (
             //Lifetime histogram
-            <Card w={sr(350)} bg="primary.300" verticalSpace={sr(4)}>
+            <Card w={sr(350)} bg="primary.300" space={sr(4)}>
               <HStack space={sr(3)} alignItems="baseline">
                 <Ionicons name="stats-chart" size={30} color="black" />
                 <Text bold fontSize="xl">
@@ -156,7 +156,7 @@ export default function DieStatistics({
             </Card>
           ) : (
             //Session histogram
-            <Card w={sr(350)} bg="primary.300" verticalSpace={sr(4)}>
+            <Card w={sr(350)} bg="primary.300" space={sr(4)}>
               <HStack space={3} alignItems="baseline">
                 <Ionicons name="stats-chart" size={30} color="black" />
                 <Text bold fontSize="xl">

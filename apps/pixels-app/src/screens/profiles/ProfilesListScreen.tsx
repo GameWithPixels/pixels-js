@@ -57,7 +57,7 @@ function CreateProfileWidget(
         minH="50px"
         w={props.w}
         h={props.h}
-        verticalSpace={props.verticalSpace}
+        space={props.space}
         borderWidth={props.borderWidth}
       >
         <Ionicons name="add-circle-outline" size={24} color="white" />
