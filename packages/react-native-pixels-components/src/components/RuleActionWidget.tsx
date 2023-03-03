@@ -95,7 +95,7 @@ export function RuleActionWidget({
             possibleActions={[
               {
                 label: getActionTitle(ActionTypeValues.playAnimation),
-                onPress: () => {
+                onSelect: () => {
                   const act = new EditActionPlayAnimation();
                   setEditAction(act);
                   onReplace?.(act);
@@ -106,7 +106,7 @@ export function RuleActionWidget({
                   ActionTypeValues.runOnDevice,
                   RemoteActionTypeValues.playAudioClip
                 ),
-                onPress: () => {
+                onSelect: () => {
                   const act = new EditActionPlayAudioClip();
                   setEditAction(act);
                   onReplace?.(act);
@@ -117,7 +117,7 @@ export function RuleActionWidget({
                   ActionTypeValues.runOnDevice,
                   RemoteActionTypeValues.makeWebRequest
                 ),
-                onPress: () => {
+                onSelect: () => {
                   const act = new EditActionMakeWebRequest();
                   setEditAction(act);
                   onReplace?.(act);

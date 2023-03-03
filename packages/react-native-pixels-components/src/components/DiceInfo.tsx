@@ -115,7 +115,7 @@ export function SquarePairedPixelInfo({
           p={sr(7)}
           w={w}
           minH={sr(40)}
-          verticalSpace={1}
+          space={1}
           h={h}
         >
           <Text fontSize="lg" bold alignSelf="center">

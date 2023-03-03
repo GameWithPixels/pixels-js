@@ -6,7 +6,7 @@ export * from "./components/RSSIStrength";
 export * from "./components/FaceMask";
 export * from "./components/ColorSelection";
 export * from "./components/PixelAppPage";
-export * from "./components/LightingStylesSelection";
+export * from "./components/AnimationTypeSelector";
 export * from "./components/LoadingPopup";
 export * from "./components/ProfileCard";
 export * from "./components/DiceInfo";

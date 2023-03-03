@@ -1,4 +1,4 @@
-import { ActionSheetItemData } from "@systemic-games/react-native-base-components";
+import { ActionSheetListItemData } from "@systemic-games/react-native-base-components";
 import {
   Box,
   Button,
@@ -189,7 +189,7 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
 }
 
 export interface RuleConditionSelectionProps {
-  possibleConditions: ActionSheetItemData[];
+  possibleConditions: ActionSheetListItemData[];
   conditionTitle?: string;
 }
 
@@ -226,17 +226,17 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
           <ScrollView w="100%">
-            {props.possibleConditions.map((condition, key) => (
+            {props.possibleConditions.map(({ label, onSelect }, key) => (
               <Actionsheet.Item
                 alignItems="center"
                 key={key}
                 width="100%"
                 onPress={() => {
-                  condition.onPress?.();
+                  onSelect?.(label);
                   onClose();
                 }}
               >
-                <Text fontSize="md">{condition.label}</Text>
+                <Text fontSize="md">{label}</Text>
               </Actionsheet.Item>
             ))}
           </ScrollView>
@@ -247,7 +247,7 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
 }
 
 export interface RuleActionSelectionProps {
-  possibleActions: ActionSheetItemData[];
+  possibleActions: ActionSheetListItemData[];
   actionTitle?: string;
 }
 
@@ -282,17 +282,17 @@ export function RuleActionSelection(props: RuleActionSelectionProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
           <ScrollView w="100%">
-            {props.possibleActions.map((actionTitle, key) => (
+            {props.possibleActions.map(({ label, onSelect }, key) => (
               <Actionsheet.Item
                 alignItems="center"
                 key={key}
                 width="100%"
                 onPress={() => {
-                  actionTitle.onPress?.();
+                  onSelect?.(label);
                   onClose();
                 }}
               >
-                <Text fontSize="md">{actionTitle.label}</Text>
+                <Text fontSize="md">{label}</Text>
               </Actionsheet.Item>
             ))}
           </ScrollView>

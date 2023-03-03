@@ -30,7 +30,7 @@ export interface ProfileCardProps {
   w?: number | string;
   h?: number | string;
   p?: number | string;
-  verticalSpace?: number; // vertical spacing between elements in the profile card
+  space?: number; // vertical spacing between elements in the profile card
   borderWidth?: number;
   imageSize?: number | SizeType | string;
   textSize?: number | SizeType | string;
@@ -64,7 +64,7 @@ export function ProfileCard(props: ProfileCardProps) {
         minH="50px"
         w={props.w}
         h={props.h}
-        verticalSpace={props.verticalSpace}
+        space={props.space}
         borderWidth={isSelected ? 2 : props.borderWidth}
       >
         <Box size={props.imageSize}>{props.dieRender()}</Box>
@@ -112,7 +112,7 @@ export function DetailedProfileCard(props: DetailedProfileCardProps) {
         minH="50px"
         w={props.w}
         h={props.h}
-        verticalSpace={props.verticalSpace}
+        space={props.space}
         borderWidth={isSelected ? 2 : props.borderWidth}
       >
         <HStack p={1} h="100%" alignItems="center">

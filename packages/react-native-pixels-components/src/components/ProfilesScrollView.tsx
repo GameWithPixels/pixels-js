@@ -46,7 +46,7 @@ export function ProfilesScrollView(props: ProfilesScrollViewProps) {
               <ProfileCard
                 key={i}
                 w={sr(110)}
-                verticalSpace={sr(4)}
+                space={sr(4)}
                 imageSize={sr(50)}
                 textSize="xs"
                 p={sr(4)}

@@ -57,39 +57,39 @@ export function RuleConditionWidget(props: RuleConditionWidgetProps) {
             possibleConditions={[
               {
                 label: getConditionTitle(ConditionTypeValues.faceCompare),
-                onPress: () =>
+                onSelect: () =>
                   props.setCondition(new EditConditionFaceCompare()),
               },
               {
                 label: getConditionTitle(ConditionTypeValues.helloGoodbye),
-                onPress: () =>
+                onSelect: () =>
                   props.setCondition(new EditConditionHelloGoodbye()),
               },
               {
                 label: getConditionTitle(ConditionTypeValues.handling),
-                onPress: () => props.setCondition(new EditConditionHandling()),
+                onSelect: () => props.setCondition(new EditConditionHandling()),
               },
               {
                 label: getConditionTitle(ConditionTypeValues.rolling),
-                onPress: () => props.setCondition(new EditConditionRolling()),
+                onSelect: () => props.setCondition(new EditConditionRolling()),
               },
               {
                 label: getConditionTitle(ConditionTypeValues.crooked),
-                onPress: () => props.setCondition(new EditConditionCrooked()),
+                onSelect: () => props.setCondition(new EditConditionCrooked()),
               },
               {
                 label: getConditionTitle(ConditionTypeValues.connectionState),
-                onPress: () =>
+                onSelect: () =>
                   props.setCondition(new EditConditionConnectionState()),
               },
               {
                 label: getConditionTitle(ConditionTypeValues.batteryState),
-                onPress: () =>
+                onSelect: () =>
                   props.setCondition(new EditConditionBatteryState()),
               },
               {
                 label: getConditionTitle(ConditionTypeValues.idle),
-                onPress: () => props.setCondition(new EditConditionIdle()),
+                onSelect: () => props.setCondition(new EditConditionIdle()),
               },
             ]}
           />

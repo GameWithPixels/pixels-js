@@ -49,7 +49,7 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
             p={1}
             h={props.h}
             alignItems="center"
-            verticalSpace={1}
+            space={1}
           >
             <Center w="90%" flexWrap="wrap">
               <Text bold fontSize="sm" alignSelf="center">
@@ -81,7 +81,7 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
                   <ProfileCard
                     w="105px"
                     h="130px"
-                    verticalSpace={1}
+                    space={1}
                     imageSize={70}
                     selectable
                     profileIndexInList={i}
