@@ -1,4 +1,5 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
+import { createStackNavigator } from "@react-navigation/stack";
 import { NativeBaseProvider } from "native-base";
 
 import HomeScreen from "./HomeScreen";
@@ -8,13 +9,16 @@ import PixelDetailScreen from "./PixelDetailScreen";
 import { HomeScreenStackParamList } from "~/navigation";
 import { paleBluePixelTheme } from "~/themes";
 
-const Stack = createNativeStackNavigator<HomeScreenStackParamList>();
+const Stack = createStackNavigator<HomeScreenStackParamList>();
 
 export default function HomeNavigator() {
   return (
     <NativeBaseProvider theme={paleBluePixelTheme}>
       <Stack.Navigator
         screenOptions={{
+          headerBackImage: () => (
+            <Ionicons name="md-arrow-back-outline" size={24} color="white" />
+          ),
           headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: "black",

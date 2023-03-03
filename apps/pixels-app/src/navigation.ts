@@ -1,4 +1,4 @@
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { StackScreenProps } from "@react-navigation/stack";
 
 //
 // Main screens stack
@@ -19,17 +19,17 @@ export type HomeScreenStackParamList = {
   PixelAdvancedSettings: { pixelId: number };
 };
 
-export type HomeScreenProps = NativeStackScreenProps<
+export type HomeScreenProps = StackScreenProps<
   HomeScreenStackParamList,
   "Home"
 >;
 
-export type PixelDetailScreenProps = NativeStackScreenProps<
+export type PixelDetailScreenProps = StackScreenProps<
   HomeScreenStackParamList,
   "PixelDetails"
 >;
 
-export type PixelAdvancedSettingsScreenProps = NativeStackScreenProps<
+export type PixelAdvancedSettingsScreenProps = StackScreenProps<
   HomeScreenStackParamList,
   "PixelAdvancedSettings"
 >;
@@ -42,12 +42,12 @@ export type AnimationsScreenStackParamList = {
   AnimationEdit: { animationUuid: string };
 };
 
-export type AnimationsListScreenProps = NativeStackScreenProps<
+export type AnimationsListScreenProps = StackScreenProps<
   AnimationsScreenStackParamList,
   "AnimationsList"
 >;
 
-export type AnimationEditScreenProps = NativeStackScreenProps<
+export type AnimationEditScreenProps = StackScreenProps<
   AnimationsScreenStackParamList,
   "AnimationEdit"
 >;
@@ -61,17 +61,17 @@ export type ProfilesScreenStackParamList = {
   ProfileEditRule: { profileUuid: string; ruleIndex: number };
 };
 
-export type ProfilesListScreenProps = NativeStackScreenProps<
+export type ProfilesListScreenProps = StackScreenProps<
   ProfilesScreenStackParamList,
   "ProfilesList"
 >;
 
-export type ProfileRulesScreenProps = NativeStackScreenProps<
+export type ProfileRulesScreenProps = StackScreenProps<
   ProfilesScreenStackParamList,
   "ProfileRules"
 >;
 
-export type ProfileEditRuleScreenProps = NativeStackScreenProps<
+export type ProfileEditRuleScreenProps = StackScreenProps<
   ProfilesScreenStackParamList,
   "ProfileEditRule"
 >;

@@ -1,4 +1,5 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
+import { createStackNavigator } from "@react-navigation/stack";
 import { NativeBaseProvider } from "native-base";
 
 import ProfileEditRuleScreen from "./ProfileEditRuleScreen";
@@ -8,13 +9,16 @@ import { ProfilesListScreen } from "./ProfilesListScreen";
 import { ProfilesScreenStackParamList } from "~/navigation";
 import { paleBluePixelTheme } from "~/themes";
 
-const Stack = createNativeStackNavigator<ProfilesScreenStackParamList>();
+const Stack = createStackNavigator<ProfilesScreenStackParamList>();
 
 export default function ProfilesNavigator() {
   return (
     <NativeBaseProvider theme={paleBluePixelTheme}>
       <Stack.Navigator
         screenOptions={{
+          headerBackImage: () => (
+            <Ionicons name="md-arrow-back-outline" size={24} color="white" />
+          ),
           headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: "black",
