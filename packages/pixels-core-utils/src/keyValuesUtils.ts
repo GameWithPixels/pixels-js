@@ -49,3 +49,21 @@ export function valuesToKeys<V, T extends { [key: string]: V }>(
     }
   });
 }
+
+/**
+ * Returns the key name corresponding to a given value
+ * according the passed object mapping keys to values.
+ * @param value The value.
+ * @param keyValues Object mapping keys to values.
+ * @returns A string with the name for the value.
+ */
+export function getValueKeyName<T, KeyValuesType extends { [key: string]: T }>(
+  value: T,
+  keyValues: KeyValuesType
+): keyof KeyValuesType | undefined {
+  for (const [key, val] of Object.entries(keyValues)) {
+    if (val === value) {
+      return key;
+    }
+  }
+}

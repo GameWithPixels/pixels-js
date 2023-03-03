@@ -1,5 +1,5 @@
+import { getValueKeyName } from "@systemic-games/pixels-core-utils";
 import {
-  getPixelEnumName,
   PixelBatteryStateValues,
   PixelRollStateValues,
   usePixelStatus,
@@ -99,7 +99,7 @@ function PixelDetailsImpl({
       </TextEntry>
       <TextEntry title={t("chargingState")}>
         {t(
-          getPixelEnumName(telemetry?.batteryState, PixelBatteryStateValues) ??
+          getValueKeyName(telemetry?.batteryState, PixelBatteryStateValues) ??
             "unknown"
         )}
       </TextEntry>
@@ -119,7 +119,7 @@ function PixelDetailsImpl({
       <TextEntry title={t("rollState")}>
         {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
         {t(
-          getPixelEnumName(telemetry?.rollState, PixelRollStateValues) ??
+          getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
             "unknown"
         )}
       </TextEntry>
@@ -154,7 +154,8 @@ function PixelDetailsImpl({
             {t("resetProfile")}
           </Button>
           <Button
-            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}>
+            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}
+          >
             {t("exitValidationMode")}
           </Button>
           <Button onPress={() => pixelDispatcher.dispatch("disableCharging")}>

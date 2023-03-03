@@ -15,6 +15,7 @@ import {
   assertNever,
   bitsToFlags,
   combineFlags,
+  getValueKeyName,
   keysToValues,
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
@@ -66,17 +67,6 @@ import {
   createActionSetData,
   createConditionSetData,
 } from "./profile";
-
-function getPixelEnumName<EnumType, EnumNames extends string>(
-  value: EnumType,
-  enumValues: { [key in EnumNames]: EnumType }
-): EnumNames | undefined {
-  for (const [key, val] of Object.entries(enumValues)) {
-    if (val === value) {
-      return key as EnumNames;
-    }
-  }
-}
 
 export function toProfile(
   data: Readonly<ProfileData>,
@@ -306,7 +296,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
   const conditions = createConditionSetData();
   const actions = createActionSetData();
   const rules = profile.rules.map((r) => {
-    const condType = getPixelEnumName(r.condition.type, ConditionTypeValues);
+    const condType = getValueKeyName(r.condition.type, ConditionTypeValues);
     if (!condType) {
       throw new Error(`Unsupported condition type: ${r.condition.type}`);
     }
@@ -394,7 +384,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
         index: condIndex,
       },
       actions: r.actions.map((action) => {
-        const actType = getPixelEnumName(action.type, ActionTypeValues);
+        const actType = getValueKeyName(action.type, ActionTypeValues);
         if (!actType) {
           throw new Error(`Unsupported action type: ${action.type}`);
         }
@@ -415,7 +405,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
             break;
           case "runOnDevice": {
             const remoteType = (action as EditActionRunOnDevice).remoteType;
-            const actRemoteType = getPixelEnumName(
+            const actRemoteType = getValueKeyName(
               remoteType,
               RemoteActionTypeValues
             );
@@ -488,7 +478,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
   type: keyof AnimationSetData;
   data: AnimationSetData[keyof AnimationSetData][number];
 } {
-  const type = getPixelEnumName(animation.type, AnimationTypeValues);
+  const type = getValueKeyName(animation.type, AnimationTypeValues);
   if (!type) {
     throw new Error(`Unsupported animation type: ${animation.type}`);
   }

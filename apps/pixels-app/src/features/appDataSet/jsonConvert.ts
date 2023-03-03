@@ -1,6 +1,7 @@
 import {
   assertNever,
   bitsToFlags,
+  getValueKeyName,
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
 import {
@@ -18,7 +19,6 @@ import {
   Json,
   Serializable,
 } from "@systemic-games/pixels-edit-animation";
-import { getPixelEnumName } from "@systemic-games/react-native-pixels-connect";
 import { fromByteArray } from "base64-js";
 
 import generateUuid from "~/features/generateUuid";
@@ -45,7 +45,7 @@ function toKeyframesBase64(keyframes?: Readonly<Json.Keyframe[]>): string {
 
 function toColor(color?: Readonly<Json.Color>): string {
   if (color) {
-    const mode = getPixelEnumName(color.type, ColorModeValues);
+    const mode = getValueKeyName(color.type, ColorModeValues);
     if (!mode) {
       throw new Error(`Unsupported color mode: ${color.type}`);
     }
@@ -111,7 +111,7 @@ function toAnimationsAndGradients(
   }
   if (animations) {
     animations.forEach((anim, animIndex) => {
-      const type = getPixelEnumName(anim.type, AnimationTypeValues);
+      const type = getValueKeyName(anim.type, AnimationTypeValues);
       if (!type) {
         throw new Error(`Unsupported animation type: ${anim.type}`);
       }
@@ -222,7 +222,7 @@ function toCondition(
       index: arr.length - 1,
     };
   }
-  const type = getPixelEnumName(condition.type, ConditionTypeValues);
+  const type = getValueKeyName(condition.type, ConditionTypeValues);
   if (!type) {
     throw new Error(`Unsupported condition type: ${condition.type}`);
   }
@@ -285,7 +285,7 @@ function toActions(
     (act): act is Required<Json.Action> => !!act.type && !!act.data
   );
   return validActions?.map((action) => {
-    const type = getPixelEnumName(action.type, ActionTypeValues);
+    const type = getValueKeyName(action.type, ActionTypeValues);
     if (!type) {
       throw new Error(`Unsupported action type: ${action.type}`);
     }

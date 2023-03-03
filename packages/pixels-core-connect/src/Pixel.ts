@@ -10,6 +10,7 @@ import {
   createTypedEventEmitter,
   delay,
   EventReceiver,
+  getValueKeyName,
   safeAssign,
 } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
@@ -54,7 +55,6 @@ import {
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import getPixelCharging from "./getPixelCharging";
-import getPixelEnumName from "./getPixelEnumName";
 
 // Returns a string with the current time with a millisecond precision
 function _getTime(): string {
@@ -231,7 +231,7 @@ export default class Pixel implements IPixel {
   /** Gets the Pixel design and color. */
   get designAndColor(): PixelDesignAndColorNames {
     return (
-      getPixelEnumName(this._info?.designAndColor, PixelDesignAndColorValues) ??
+      getValueKeyName(this._info?.designAndColor, PixelDesignAndColorValues) ??
       "unknown"
     );
   }
@@ -308,7 +308,7 @@ export default class Pixel implements IPixel {
       const msg = msgOrType as RollState;
       const roll = {
         face: msg.faceIndex + 1,
-        state: getPixelEnumName(msg.state, PixelRollStateValues) ?? "unknown",
+        state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
       };
       // Notify all die roll events
       this._rollState = roll;
@@ -410,7 +410,7 @@ export default class Pixel implements IPixel {
           this._rollState = {
             face: this._info.rollFaceIndex + 1,
             state:
-              getPixelEnumName(this._info.rollState, PixelRollStateValues) ??
+              getValueKeyName(this._info.rollState, PixelRollStateValues) ??
               "unknown",
           };
 
@@ -614,8 +614,8 @@ export default class Pixel implements IPixel {
   }
 
   /**
-    * Request Pixel die to turn on/off charging
-    */
+   * Request Pixel die to turn on/off charging
+   */
   async forceEnableCharging(enable: boolean): Promise<void> {
     if (enable) {
       await this.sendMessage(
@@ -665,7 +665,7 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Discharges the pixel as fast as possible by lighting up all leds
+   * Discharges the pixel as fast as possible by lighting up all LEDs
    * @returns A promise.
    */
   async discharge(): Promise<void> {
@@ -677,7 +677,8 @@ export default class Pixel implements IPixel {
       faceMask: AnimConstants.faceMaskAllLEDs,
       loop: false,
     });
-    while (true) { // We are counting on the disconnect exception to happen!
+    while (true) {
+      // We are counting on the disconnect exception to happen!
       await this.sendAndWaitForResponse(
         blinkMsg,
         MessageTypeValues.blinkFinished
@@ -686,7 +687,7 @@ export default class Pixel implements IPixel {
     }
   }
 
-/**
+  /**
    * Requests the Pixel to stop all animations currently playing.
    */
   async stopAllAnimations(): Promise<void> {

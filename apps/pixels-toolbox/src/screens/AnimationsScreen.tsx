@@ -1,4 +1,7 @@
-import { assertNever } from "@systemic-games/pixels-core-utils";
+import {
+  assertNever,
+  getValueKeyName,
+} from "@systemic-games/pixels-core-utils";
 import {
   loadAppDataSet,
   AppDataSet,
@@ -18,7 +21,6 @@ import {
   createDataSetForAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  getPixelEnumName,
   AnimationTypeValues,
   Color,
   Constants,
@@ -450,7 +452,7 @@ function AnimationPage() {
                 onPress={() => {
                   setAnimList((anims) => {
                     const anim = new itemInfo.item();
-                    anim.name = `${getPixelEnumName(
+                    anim.name = `${getValueKeyName(
                       anim.type,
                       AnimationTypeValues
                     )} #${anims.length}`;

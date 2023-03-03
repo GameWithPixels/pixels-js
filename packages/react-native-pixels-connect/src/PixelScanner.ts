@@ -1,5 +1,4 @@
 import {
-  getPixelEnumName,
   PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelUuids,
@@ -7,6 +6,7 @@ import {
 import {
   createTypedEventEmitter,
   EventReceiver,
+  getValueKeyName,
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
 import {
@@ -32,7 +32,7 @@ export default class PixelScanner {
   // Our event emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelScannerEventMap>();
   // Map of system id to scanned Pixel
-  private readonly _scannedPixels: Map<string, ScannedPixel> = new Map();
+  private readonly _scannedPixels = new Map<string, ScannedPixel>();
   private readonly _onScannedPeripheral: (p: ScannedPeripheralEvent) => void;
   private _scanCount = 0;
 
@@ -174,10 +174,9 @@ export default class PixelScanner {
         );
       }
       scannedPixel.designAndColor =
-        getPixelEnumName(designAndColor, PixelDesignAndColorValues) ??
-        "unknown";
+        getValueKeyName(designAndColor, PixelDesignAndColorValues) ?? "unknown";
       scannedPixel.rollState =
-        getPixelEnumName(rollState, PixelRollStateValues) ?? "unknown";
+        getValueKeyName(rollState, PixelRollStateValues) ?? "unknown";
     }
 
     if (scannedPixel.pixelId) {
