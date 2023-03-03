@@ -16,6 +16,7 @@ import {
 
 import type ScannedPixel from "./ScannedPixel";
 import SequentialDataReader from "./SequentialDataReader";
+import { registerScannedPixel } from "./allScannedPixels";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -180,6 +181,7 @@ export default class PixelScanner {
     }
 
     if (scannedPixel.pixelId) {
+      registerScannedPixel(scannedPixel);
       const isNew = !this._scannedPixels.has(scannedPixel.systemId);
       this._scannedPixels.set(scannedPixel.systemId, scannedPixel);
       if (isNew) {

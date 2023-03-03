@@ -1,7 +1,9 @@
 import { Pixel } from "@systemic-games/pixels-core-connect";
+import { assert } from "@systemic-games/pixels-core-utils";
 
 import BleSession from "./BleSession";
 import type ScannedPixel from "./ScannedPixel";
+import { getScannedPixel } from "./allScannedPixels";
 export { type ScannedPixel };
 
 const _pixels = new Map<string, Pixel>();
@@ -9,28 +11,33 @@ const _pixels = new Map<string, Pixel>();
 /**
  * Returns a Pixel instance for the corresponding scanned Pixel instance of Pixel id.
  * The same instance is returned when called multiple times for the same Pixel.
- * @param scannedPixelOrSystemId The {@link ScannedPixel} instance or the BLE system id
- *                               of the die to connect to.
+ * @param pixel Identify which Pixel to use.
+ *              It can be either an object with a systemId string property,
+ *              or the system id as a string
+ *              or the Pixel id as a number.
  * @param logFunc Optional function used to log Pixel connection and messaging activity.
  * @param logMessages Optional boolean to request logging messaging activity using the
  *                    passed logger function.
  * @returns A {@link Pixel} instance.
  */
 export default function (
-  // TODO take pixelId
-  scannedPixelOrSystemId: ScannedPixel | string,
+  pixel: string | number | Pick<ScannedPixel, "systemId">,
   logFunc?: (msg: unknown) => void,
   logMessages?: boolean
 ): Pixel {
   const systemdId =
-    typeof scannedPixelOrSystemId === "string"
-      ? scannedPixelOrSystemId
-      : scannedPixelOrSystemId.systemId;
+    typeof pixel === "string"
+      ? pixel
+      : (typeof pixel === "number" ? getScannedPixel(pixel) : pixel)?.systemId;
+  assert(
+    systemdId && systemdId.length > 0,
+    `getPixel(): Invalid argument: ${(pixel as any).systemId ?? pixel}`
+  );
   // Keep Pixel instances
-  let pixel = _pixels.get(systemdId);
-  if (!pixel) {
-    pixel = new Pixel(new BleSession(systemdId), logFunc, logMessages);
-    _pixels.set(systemdId, pixel);
+  let thePixel = _pixels.get(systemdId);
+  if (!thePixel) {
+    thePixel = new Pixel(new BleSession(systemdId), logFunc, logMessages);
+    _pixels.set(systemdId, thePixel);
   }
-  return pixel;
+  return thePixel;
 }
