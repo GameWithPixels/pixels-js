@@ -21,9 +21,7 @@ const _pixels = new Map<string, Pixel>();
  * @returns A {@link Pixel} instance.
  */
 export default function (
-  pixel: string | number | Pick<ScannedPixel, "systemId">,
-  logFunc?: (msg: unknown) => void,
-  logMessages?: boolean
+  pixel: string | number | Pick<ScannedPixel, "systemId">
 ): Pixel {
   const systemdId =
     typeof pixel === "string"
@@ -36,7 +34,7 @@ export default function (
   // Keep Pixel instances
   let thePixel = _pixels.get(systemdId);
   if (!thePixel) {
-    thePixel = new Pixel(new BleSession(systemdId), logFunc, logMessages);
+    thePixel = new Pixel(new BleSession(systemdId));
     _pixels.set(systemdId, thePixel);
   }
   return thePixel;

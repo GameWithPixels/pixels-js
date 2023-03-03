@@ -156,7 +156,6 @@ export class PixelError extends Error {
  * @category Pixel
  */
 export interface IPixel {
-  // TODO rename to PixelInfo
   readonly systemId: string;
   readonly pixelId: number;
   readonly name: string;
@@ -182,8 +181,8 @@ export default class Pixel implements IPixel {
   private readonly _msgEvEmitter = new EventEmitter();
 
   // Log function
-  private readonly _logFunc: (msg: unknown) => void;
-  private readonly _logMessages: boolean;
+  private _logFunc: (msg: unknown) => void = console.log;
+  private _logMessages = false;
 
   // Connection data
   private readonly _session: PixelSession;
@@ -197,6 +196,22 @@ export default class Pixel implements IPixel {
     isCharging: false,
   };
   private _rssi = 0;
+
+  /** */
+  get logMessages(): boolean {
+    return this._logMessages;
+  }
+  set logMessages(enabled: boolean) {
+    this._logMessages = enabled;
+  }
+
+  /** */
+  get logger(): (msg: unknown) => void {
+    return this._logFunc;
+  }
+  set logger(logger: (msg: unknown) => void) {
+    this._logFunc = logger;
+  }
 
   /** Gets this Pixel's last known connection status.*/
   get status(): PixelStatus {
@@ -284,13 +299,7 @@ export default class Pixel implements IPixel {
   /**
    * Instantiates a Pixel.
    */
-  constructor(
-    session: PixelSession,
-    logFunc?: (msg: unknown) => void,
-    logMessages = false
-  ) {
-    this._logFunc = logFunc ?? console.log;
-    this._logMessages = logMessages;
+  constructor(session: PixelSession) {
     // TODO clean up events on release
     session.setConnectionEventListener(({ connectionStatus }) => {
       if (connectionStatus !== "connected" && connectionStatus !== "ready") {
@@ -895,10 +904,12 @@ export default class Pixel implements IPixel {
 
   // Log the given message prepended with a timestamp and the Pixel name
   private _log(msg: unknown): void {
-    if (isMessage(msg)) {
-      this._logFunc(msg);
-    } else {
-      this._logFunc(`[${_getTime()} - Pixel ${this.name}] ${msg}`);
+    if (this._logFunc) {
+      if (isMessage(msg)) {
+        this._logFunc(msg);
+      } else {
+        this._logFunc(`[${_getTime()} - Pixel ${this.name}] ${msg}`);
+      }
     }
   }
 
