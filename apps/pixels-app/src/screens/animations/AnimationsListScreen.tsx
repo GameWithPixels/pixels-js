@@ -82,9 +82,9 @@ export default function AnimationsListScreen({
       const dupAnim = anim.duplicate(generateUuid());
       dupAnim.name += " copy";
       // Insert in list after the original animation
-      addAnimation(dupAnim, animations.indexOf(anim) + 1);
+      addAnimation(dupAnim, anim);
     },
-    [addAnimation, animations]
+    [addAnimation]
   );
 
   // Action sheet

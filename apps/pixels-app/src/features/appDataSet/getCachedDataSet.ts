@@ -16,13 +16,13 @@ export default function (
 ): DataSet {
   let animData = profilesDataSet.get(profileOrAnim);
   if (!animData) {
-    // Remove any previous profile or animation with uuid
+    // Remove previous profile or animation with same uuid
     if (profileOrAnim.uuid) {
-      const oldEdit = [...profilesDataSet.keys()].find(
+      const prev = [...profilesDataSet.keys()].find(
         (k) => k.uuid === profileOrAnim.uuid
       );
-      if (oldEdit) {
-        profilesDataSet.delete(oldEdit);
+      if (prev) {
+        profilesDataSet.delete(prev);
       }
     }
     // Remove readonly

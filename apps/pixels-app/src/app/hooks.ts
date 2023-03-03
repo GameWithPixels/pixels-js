@@ -12,6 +12,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
 import { RootState, AppDispatch, store } from "./store";
 
+import DataMap from "~/features/DataMap";
 import {
   addProfile,
   updateProfile,
@@ -117,14 +118,17 @@ export function useAppProfiles(): Readonly<EditProfile>[] {
 
 export function useAppAddProfile(): (
   profile: Readonly<EditProfile>,
-  insertIndex?: number
+  insertAfter?: Readonly<EditProfile>
 ) => void {
   const dispatch = useAppDispatch();
   return useCallback(
-    (profile: Readonly<EditProfile>, insertIndex?: number) => {
+    (profile: Readonly<EditProfile>, insertAfter?: Readonly<EditProfile>) => {
       assert(profile.uuid, "useAppAddProfile(): Profile doesn't have a uuid");
       dispatch(
-        addProfile({ profile: Serializable.fromProfile(profile), insertIndex })
+        addProfile({
+          profile: Serializable.fromProfile(profile),
+          afterUuid: insertAfter?.uuid,
+        })
       );
     },
     [dispatch]
@@ -257,6 +261,11 @@ export function getTempAnimationFromUuid(uuid: string): EditAnimation {
   return tempAnim;
 }
 
+const animCache = new DataMap<
+  Serializable.AnimationData,
+  Readonly<EditAnimation>
+>();
+
 export function useAppAnimations(): Readonly<EditAnimation>[] {
   const animations = useAppSelector((state) => state.profilesSet.animations);
   const patterns = useAppPatterns();
@@ -268,32 +277,38 @@ export function useAppAnimations(): Readonly<EditAnimation>[] {
         .filter(Array.isArray)
         .map((entry) =>
           entry[1].map((animData: any) =>
-            // TODO animData typing
-            Serializable.toAnimation(
-              entry[0] as keyof Serializable.AnimationSetData,
+            animCache.getOrCreate(
               animData,
-              (patternUuid) => {
-                if (patternUuid) {
-                  const pattern = patterns.find((p) => p.uuid === patternUuid);
-                  assert(
-                    pattern,
-                    `useAppAnimations(): No pattern with uuid ${patternUuid}`
-                  );
-                  return pattern as EditPattern; // TODO readonly
-                }
-              },
-              (gradientUuid) => {
-                if (gradientUuid) {
-                  const gradient = gradients.find(
-                    (g) => g.uuid === gradientUuid
-                  );
-                  assert(
-                    gradient,
-                    `useAppAnimations(): No gradient with uuid ${gradientUuid}`
-                  );
-                  return gradient as EditRgbGradient; // TODO readonly
-                }
-              }
+              // TODO animData typing
+              () =>
+                Serializable.toAnimation(
+                  entry[0] as keyof Serializable.AnimationSetData,
+                  animData,
+                  (patternUuid) => {
+                    if (patternUuid) {
+                      const pattern = patterns.find(
+                        (p) => p.uuid === patternUuid
+                      );
+                      assert(
+                        pattern,
+                        `useAppAnimations(): No pattern with uuid ${patternUuid}`
+                      );
+                      return pattern as EditPattern; // TODO readonly
+                    }
+                  },
+                  (gradientUuid) => {
+                    if (gradientUuid) {
+                      const gradient = gradients.find(
+                        (g) => g.uuid === gradientUuid
+                      );
+                      assert(
+                        gradient,
+                        `useAppAnimations(): No gradient with uuid ${gradientUuid}`
+                      );
+                      return gradient as EditRgbGradient; // TODO readonly
+                    }
+                  }
+                )
             )
           )
         )
@@ -304,16 +319,24 @@ export function useAppAnimations(): Readonly<EditAnimation>[] {
 
 export function useAppAddAnimation(): (
   animation: Readonly<EditAnimation>,
-  _insertIndex?: number
+  insertAfter?: Readonly<EditAnimation>
 ) => void {
   const dispatch = useAppDispatch();
   return useCallback(
-    (animation: Readonly<EditAnimation>) => {
+    (
+      animation: Readonly<EditAnimation>,
+      insertAfter?: Readonly<EditAnimation>
+    ) => {
       assert(
         animation.uuid,
         "useAppAddAnimation(): animation doesn't have a uuid"
       );
-      dispatch(addAnimation(Serializable.fromAnimation(animation)));
+      dispatch(
+        addAnimation({
+          ...Serializable.fromAnimation(animation),
+          afterUuid: insertAfter?.uuid,
+        })
+      );
     },
     [dispatch]
   );
@@ -345,6 +368,7 @@ export function useAppRemoveAnimation(): (
         animation.uuid,
         "useAppRemoveAnimation(): animation doesn't have a uuid"
       );
+      animCache.deleteValue(animation);
       dispatch(removeAnimation(animation.uuid));
     },
     [dispatch]
@@ -355,24 +379,35 @@ export function useAppRemoveAnimation(): (
 // Patterns
 //
 
+const patternsCache = new DataMap<
+  Serializable.PatternData,
+  Readonly<EditPattern>
+>();
+
 export function useAppPatterns(): Readonly<EditPattern>[] {
   const patternsData = useAppSelector((state) => state.profilesSet.patterns);
   return useMemo(
-    () => patternsData.map(Serializable.toPattern),
+    () =>
+      patternsData.map((p) =>
+        patternsCache.getOrCreate(p, () => Serializable.toPattern(p))
+      ),
     [patternsData]
   );
 }
 
 export function useAppAddPattern(): (
   pattern: Readonly<EditPattern>,
-  insertIndex?: number
+  insertAfter?: Readonly<EditPattern>
 ) => void {
   const dispatch = useAppDispatch();
   return useCallback(
-    (pattern: Readonly<EditPattern>, insertIndex?: number) => {
+    (pattern: Readonly<EditPattern>, insertAfter?: Readonly<EditPattern>) => {
       assert(pattern.uuid, "useAppAddPattern(): pattern doesn't have a uuid");
       dispatch(
-        addPattern({ pattern: Serializable.fromPattern(pattern), insertIndex })
+        addPattern({
+          pattern: Serializable.fromPattern(pattern),
+          afterUuid: insertAfter?.uuid,
+        })
       );
     },
     [dispatch]
@@ -405,6 +440,7 @@ export function useAppRemovePattern(): (
         pattern.uuid,
         "useAppRemovePattern(): pattern doesn't have a uuid"
       );
+      patternsCache.deleteValue(pattern);
       dispatch(removePattern(pattern.uuid));
     },
     [dispatch]
@@ -415,10 +451,17 @@ export function useAppRemovePattern(): (
 // Gradients
 //
 
+const gradientsCache = new DataMap<
+  Serializable.GradientData,
+  Readonly<EditRgbGradient>
+>();
 export function useAppGradients(): Readonly<EditRgbGradient>[] {
   const gradientsData = useAppSelector((state) => state.profilesSet.gradients);
   return useMemo(
-    () => gradientsData.map(Serializable.toGradient),
+    () =>
+      gradientsData.map((g) =>
+        gradientsCache.getOrCreate(g, () => Serializable.toGradient(g))
+      ),
     [gradientsData]
   );
 }

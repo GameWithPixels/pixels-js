@@ -85,9 +85,9 @@ export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
       const dupProfile = profile.duplicate(generateUuid());
       dupProfile.name += " copy";
       // Insert in list after the original profile
-      addProfile(dupProfile, profiles.indexOf(profile) + 1);
+      addProfile(dupProfile, profile);
     },
-    [addProfile, profiles]
+    [addProfile]
   );
 
   const addToFavorites = React.useCallback(

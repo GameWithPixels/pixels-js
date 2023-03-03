@@ -43,8 +43,18 @@ function findAnimation(
   }
 }
 
-function insert<T>(value: T, array: T[], index?: number) {
-  if (index && index >= 0 && index < array.length) {
+function insert<T extends Serializable.UniqueData>(
+  value: T,
+  array: T[],
+  afterUuid?: string
+) {
+  if (afterUuid) {
+    const index = array.findIndex((d) => d.uuid === afterUuid);
+    if (index < 0) {
+      console.warn(
+        `Redux: Could not find data with uuid ${afterUuid} to insert new value after it`
+      );
+    }
     array.splice(index, 0, value);
   } else {
     array.push(value);
@@ -68,11 +78,11 @@ const profilesSetSlice = createSlice({
       state,
       action: PayloadAction<{
         profile: Serializable.ProfileData;
-        insertIndex: number | undefined;
+        afterUuid: string | undefined;
       }>
     ) {
-      const { profile, insertIndex } = action.payload;
-      insert(profile, state.profiles, insertIndex);
+      const { profile, afterUuid } = action.payload;
+      insert(profile, state.profiles, afterUuid);
       console.log(">> REDUX", "addProfile", profile.uuid);
     },
 
@@ -107,6 +117,7 @@ const profilesSetSlice = createSlice({
       action: PayloadAction<{
         type: keyof Serializable.AnimationSetData;
         data: Serializable.AnimationData;
+        afterUuid: string | undefined;
       }>
     ) {
       const { type, data } = action.payload;
@@ -165,11 +176,11 @@ const profilesSetSlice = createSlice({
       state,
       action: PayloadAction<{
         pattern: Serializable.PatternData;
-        insertIndex: number | undefined;
+        afterUuid: string | undefined;
       }>
     ) {
-      const { pattern, insertIndex } = action.payload;
-      insert(pattern, state.patterns, insertIndex);
+      const { pattern, afterUuid } = action.payload;
+      insert(pattern, state.patterns, afterUuid);
       console.log(">> REDUX", "addPattern", pattern.uuid);
     },
 
@@ -203,11 +214,11 @@ const profilesSetSlice = createSlice({
       state,
       action: PayloadAction<{
         gradient: Serializable.GradientData;
-        insertIndex: number | undefined;
+        afterUuid: string | undefined;
       }>
     ) {
-      const { gradient, insertIndex } = action.payload;
-      insert(gradient, state.gradients, insertIndex);
+      const { gradient, afterUuid } = action.payload;
+      insert(gradient, state.gradients, afterUuid);
       console.log(">> REDUX", "addGradient", gradient.uuid);
     },
 
