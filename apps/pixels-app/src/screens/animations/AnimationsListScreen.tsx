@@ -9,10 +9,10 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   PixelAppPage,
-  LightingPatternCard,
+  AnimationCard,
   createSwipeableSideButton,
   Card,
-  LightingPatternCardProps,
+  AnimationCardProps,
   getAnimationTitle,
   useDisclose,
 } from "@systemic-games/react-native-pixels-components";
@@ -43,7 +43,7 @@ import { AnimationsListScreenProps } from "~/navigation";
  * Custom profile card widget for the option to create a new profile.
  * @param props See {@link ProfileCardProps} for props parameters.
  */
-function CreatePatternWidget(props: Omit<LightingPatternCardProps, "title">) {
+function CreatePatternWidget(props: Omit<AnimationCardProps, "title">) {
   return (
     <Pressable
       onPress={() => {
@@ -57,7 +57,7 @@ function CreatePatternWidget(props: Omit<LightingPatternCardProps, "title">) {
         minH="50px"
         w={props.w}
         h={props.h}
-        space={props.verticalSpace}
+        space={props.space}
         borderWidth={props.borderWidth}
       >
         <Ionicons name="add-circle-outline" size={24} color="white" />
@@ -139,7 +139,7 @@ export default function AnimationsListScreen({
                       ],
                     })}
                   >
-                    <LightingPatternCard
+                    <AnimationCard
                       onPress={() =>
                         navigation.navigate("AnimationEdit", {
                           animationUuid: anim.uuid,

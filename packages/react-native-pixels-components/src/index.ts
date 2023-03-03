@@ -12,7 +12,7 @@ export * from "./components/ProfileCard";
 export * from "./components/DiceInfo";
 export * from "./components/ProfilesScrollView";
 export * from "./components/ProfilesActionSheet";
-export * from "./components/PatternCards";
+export * from "./components/AnimationCards";
 export * from "./components/RuleComparisonWidget";
 export * from "./components/FaceSelector";
 export * from "./components/ProfileRulesCard";

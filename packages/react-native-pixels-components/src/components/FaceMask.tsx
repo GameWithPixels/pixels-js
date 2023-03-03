@@ -13,7 +13,7 @@ import {
   usePropsResolution,
   IModalProps,
 } from "native-base";
-import React, { useEffect } from "react";
+import React from "react";
 
 /**
  * Props for {@link FaceMask} component.
@@ -41,7 +41,7 @@ export function FaceMask(props: FaceMaskProps) {
     bitsToFaceIndex(props.maskNumber)
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     setGroupValue(bitsToFaceIndex(props.maskNumber));
   }, [props.maskNumber]);
 

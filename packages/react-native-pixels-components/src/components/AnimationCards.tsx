@@ -47,12 +47,7 @@ export function PatternCard(props: PatternCardProps) {
   );
 }
 
-// export interface LightingPatternsInfo {
-//   editAnimation: EditAnimation;
-//   imageRequirePath: ImageSourcePropType;
-// }
-
-export interface LightingPatternCardProps {
+export interface AnimationCardProps {
   title: string;
   name?: string;
   dieRenderer?: () => React.ReactNode;
@@ -60,7 +55,7 @@ export interface LightingPatternCardProps {
   w?: number | string;
   h?: number | string;
   p?: number | string;
-  verticalSpace?: number;
+  space?: number;
   borderWidth?: number;
   imageSize?: number | SizeType | string;
   textSize?: number | SizeType | string;
@@ -68,14 +63,10 @@ export interface LightingPatternCardProps {
   //To be used with the list in which the cards are placed and displayed for selection highlight
 }
 
-export function LightingPatternCard(props: LightingPatternCardProps) {
+export function AnimationCard(props: AnimationCardProps) {
   return (
-    <Pressable
-      onPress={() => {
-        props.onPress?.();
-      }}
-    >
-      <Card {...props} borderWidth={props.borderWidth}>
+    <Pressable onPress={props.onPress}>
+      <Card {...props}>
         <HStack p={1} h="100%" alignItems="center">
           <Box flex={1} alignItems="center">
             <Text isTruncated fontSize="lg" bold>

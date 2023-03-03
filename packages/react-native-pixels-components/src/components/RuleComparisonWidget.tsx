@@ -19,7 +19,7 @@ import {
   ColorType,
   SizeType,
 } from "native-base/lib/typescript/components/types";
-import React, { useCallback } from "react";
+import React from "react";
 
 function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
   const title =
@@ -91,7 +91,7 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
     }
   }, [values]);
   const onChange = props.onChange;
-  const onPress = useCallback(
+  const onPress = React.useCallback(
     (item: string) =>
       setSelectedOptions((options) => {
         const index = options.indexOf(item);

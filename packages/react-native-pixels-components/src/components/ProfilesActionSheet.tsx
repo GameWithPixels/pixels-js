@@ -33,16 +33,12 @@ export interface ProfilesActionSheetProps {
  * @param props See {@link ProfilesActionSheetProps} for props parameters.
  */
 export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
-  const [selectedProfile, SetSelectedProfile] = React.useState<number>();
+  const [selectedProfile, setSelectedProfile] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
       {/* Trigger of the actionsheet drawer */}
-      <Pressable
-        onPress={() => {
-          onOpen();
-        }}
-      >
+      <Pressable onPress={onOpen}>
         {!props.trigger ? (
           <Card
             minW="10px"
@@ -88,7 +84,7 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
                     selectable
                     profileIndexInList={i}
                     selectedProfileIndex={selectedProfile}
-                    onSelected={SetSelectedProfile}
+                    onSelected={setSelectedProfile}
                     profileName={profile.name}
                     dieRender={() => props.dieRender(profile)}
                   />

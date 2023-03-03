@@ -11,9 +11,9 @@ import {
   ScrollView,
   Text,
 } from "native-base";
-import React, { useEffect } from "react";
+import React from "react";
 
-import { PatternCard } from "./PatternCards";
+import { PatternCard } from "./AnimationCards";
 
 /**
  * Props for PatternsActionSheet component.
@@ -135,7 +135,7 @@ export function AnimationsActionSheet({
   const [_selectedAnimation, setSelectedAnimation] =
     React.useState<Readonly<EditAnimation>>();
 
-  useEffect(() => {
+  React.useEffect(() => {
     setAnimationsList(animations);
     const initialAnim = initialAnimation;
 
