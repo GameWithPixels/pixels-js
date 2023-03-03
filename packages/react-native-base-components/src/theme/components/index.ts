@@ -1,3 +1,4 @@
+import ActionSheetList from "./ActionSheetList";
 import AppPage from "./AppPage";
 import BottomToolBar from "./BottomToolBar";
 import Card from "./Card";
@@ -7,6 +8,7 @@ import Slider from "./Slider";
 import Toggle from "./Toggle";
 
 export default {
+  ActionSheetList,
   AppPage,
   BottomToolBar,
   Card,
