@@ -1,22 +1,23 @@
 import { DrawerScreenProps } from "@react-navigation/drawer";
 import type { StackScreenProps } from "@react-navigation/stack";
 
-// Main menu
+// Main screens
 export type RootScreensParamList = {
   HomeNavigator: undefined;
   Validation: undefined;
+  FirmwareUpdateNavigator: undefined;
   Stats: undefined;
   Roll: undefined;
   Animations: undefined;
   DiceRenderer: undefined;
 };
 
+// Home screen and sub screens
 export type HomeNavigatorProps = DrawerScreenProps<
   RootScreensParamList,
   "HomeNavigator"
 >;
 
-// Home screen and sub screens
 export type HomeScreensParamList = {
   Home: undefined;
   DieDetails: { pixelId: number };
@@ -31,4 +32,15 @@ export type DieDetailsProps = StackScreenProps<
 export type SelectDfuFilesProps = StackScreenProps<
   HomeScreensParamList,
   "SelectDfuFiles"
+>;
+
+// Firmware Update screen and sub screens
+export type FirmwareUpdateParamList = {
+  FirmwareUpdate: undefined;
+  SelectDfuFiles: undefined;
+};
+
+export type FirmwareUpdateProps = StackScreenProps<
+  FirmwareUpdateParamList,
+  "FirmwareUpdate"
 >;

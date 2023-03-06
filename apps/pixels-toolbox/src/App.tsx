@@ -14,6 +14,7 @@ import * as Sentry from "sentry-expo";
 import { store } from "./app/store";
 import AnimationsScreen from "./screens/AnimationsScreen";
 import DiceRenderer from "./screens/DiceRenderer";
+import FirmwareUpdateNavigator from "./screens/FirmwareUpdateNavigator";
 import HomeNavigator from "./screens/HomeNavigator";
 import theme from "./theme";
 
@@ -74,6 +75,11 @@ function App() {
                   name="Validation"
                   component={ValidationScreen}
                   options={{ title: t("factoryValidation") }}
+                />
+                <Drawer.Screen
+                  name="FirmwareUpdateNavigator"
+                  component={FirmwareUpdateNavigator}
+                  options={{ title: t("firmwareUpdate") }}
                 />
                 <Drawer.Screen name="Roll" component={RollScreen} />
                 <Drawer.Screen name="Animations" component={AnimationsScreen} />
