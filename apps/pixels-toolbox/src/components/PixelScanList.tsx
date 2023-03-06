@@ -8,18 +8,21 @@ import {
   Text,
   VStack,
 } from "native-base";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+// eslint-disable-next-line import/namespace
+import { ListRenderItemInfo } from "react-native";
 
 import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
 
 export default function ({
-  onSelected,
+  onSelect: onSelected,
   onClose,
   refreshInterval,
 }: {
-  onSelected: (pixel: ScannedPixel) => void;
+  onSelect: (pixel: ScannedPixel) => void;
   onClose?: () => void;
   refreshInterval?: number;
 }) {
@@ -28,6 +31,22 @@ export default function ({
     refreshInterval,
   });
   useErrorWithHandler(lastError);
+
+  // FlatList components
+  const Separator = useCallback(() => <Box height={5} />, []);
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<ScannedPixel>) => (
+      <Pressable
+        onPress={() => onSelected(item)}
+        borderColor="gray.500"
+        borderWidth={2}
+      >
+        <PixelInfoCard pixel={item} />
+      </Pressable>
+    ),
+    [onSelected]
+  );
+
   const { t } = useTranslation();
   return (
     <VStack flex={1} space="1%" alignItems="center">
@@ -48,17 +67,9 @@ export default function ({
           <FlatList
             width="100%"
             data={scannedPixels}
-            renderItem={(itemInfo) => (
-              <Pressable
-                onPress={() => onSelected(itemInfo.item)}
-                borderColor="gray.500"
-                borderWidth={2}
-              >
-                <PixelInfoCard pixel={itemInfo.item} />
-              </Pressable>
-            )}
             keyExtractor={(p) => p.pixelId.toString()}
-            ItemSeparatorComponent={() => <Box height={5} />}
+            renderItem={renderItem}
+            ItemSeparatorComponent={Separator}
             contentContainerStyle={{ flexGrow: 1 }}
           />
         </>

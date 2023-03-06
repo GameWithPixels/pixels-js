@@ -24,6 +24,7 @@ import {
   Constants,
   getPixel,
   usePixelConnect,
+  ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import {
   Button,
@@ -34,7 +35,7 @@ import {
   Text,
   VStack,
 } from "native-base";
-import { useMemo, useReducer, useState } from "react";
+import { useCallback, useMemo, useReducer, useState } from "react";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import AppPage from "~/components/AppPage";
@@ -209,6 +210,10 @@ function getPropValueString(
   throw new Error(`Unsupported animation property key: ${propertyKey}`);
 }
 
+function Separator() {
+  return <Box h={sr(3)} />;
+}
+
 function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
   const [_, forceUpdate] = useReducer((b) => !b, false);
   function update<T>(value: T) {
@@ -278,7 +283,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <FlatList
           data={colorMap}
-          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          ItemSeparatorComponent={Separator}
           renderItem={(itemInfo) => (
             <Button
               key={itemInfo.item.name}
@@ -296,7 +301,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <FlatList
           data={gradients}
-          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          ItemSeparatorComponent={Separator}
           renderItem={(itemInfo) => (
             <Button
               key={itemInfo.item.name}
@@ -314,7 +319,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <FlatList
           data={patterns}
-          ItemSeparatorComponent={() => <Box h={sr(3)} />}
+          ItemSeparatorComponent={Separator}
           renderItem={(itemInfo) => (
             <Button
               key={itemInfo.item.name}
@@ -354,12 +359,15 @@ function AnimationPage() {
 
   useErrorWithHandler(lastError);
 
+  const onSelect = useCallback(
+    (sp: ScannedPixel) => connectDispatch("connect", getPixel(sp)),
+    [connectDispatch]
+  );
+
   return (
     <>
       {!pixel ? (
-        <PixelScanList
-          onSelected={(sp) => connectDispatch("connect", getPixel(sp))}
-        />
+        <PixelScanList onSelect={onSelect} />
       ) : (
         <VStack space={sr(3)}>
           <Text>{`Connection status: ${status}`}</Text>
@@ -404,7 +412,7 @@ function AnimationPage() {
               </Button>
               <FlatList
                 data={animWidgets}
-                ItemSeparatorComponent={() => <Box h={sr(3)} />}
+                ItemSeparatorComponent={Separator}
                 renderItem={(itemInfo) => (
                   <Button onPress={() => setWidget(itemInfo.item)}>
                     {`${itemInfo.item.displayName}: ${getPropValueString(
@@ -421,7 +429,7 @@ function AnimationPage() {
               <Text bold>Effects:</Text>
               <FlatList
                 data={animList}
-                ItemSeparatorComponent={() => <Box h={sr(3)} />}
+                ItemSeparatorComponent={Separator}
                 renderItem={(itemInfo) => (
                   <Button
                     onPress={() => {
@@ -436,7 +444,7 @@ function AnimationPage() {
           <Text bold>Add Effect:</Text>
           <FlatList
             data={editAnimationTypes}
-            ItemSeparatorComponent={() => <Box h={sr(3)} />}
+            ItemSeparatorComponent={Separator}
             renderItem={(itemInfo) => (
               <Button
                 onPress={() => {

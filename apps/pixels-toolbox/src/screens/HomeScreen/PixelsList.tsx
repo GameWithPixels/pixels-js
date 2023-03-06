@@ -2,14 +2,16 @@ import { Box, Center, FlatList, Text, useDisclose } from "native-base";
 import { useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
 // eslint-disable-next-line import/namespace
-import { RefreshControl } from "react-native";
+import { ListRenderItemInfo, RefreshControl } from "react-native";
 
 import ApplyAllActionsheet from "./ApplyAllActionsheet";
 
 import EmojiButton from "~/components/EmojiButton";
 import PixelSwipeableCard from "~/components/PixelSwipeableCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
-import { PixelDispatcherAction } from "~/features/pixels/PixelDispatcher";
+import PixelDispatcher, {
+  PixelDispatcherAction,
+} from "~/features/pixels/PixelDispatcher";
 import useFocusPixelDispatcherScanner from "~/features/pixels/hooks/useFocusPixelDispatcherScanner";
 import { sr } from "~/styles";
 
@@ -35,6 +37,21 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
   const { t } = useTranslation();
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // FlatList components
+  const Separator = useCallback(() => <Box h={sr(8)} />, []);
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<PixelDispatcher>) => (
+      <PixelSwipeableCard
+        pixelDispatcher={item}
+        moreInfo={showMoreInfo}
+        onShowDetails={() => onDieDetails(item.pixelId)}
+        swipeableItemsWidth={sr("25%")}
+      />
+    ),
+    [onDieDetails, showMoreInfo]
+  );
+
   return (
     <>
       <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
@@ -50,16 +67,9 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
         <FlatList
           width="100%"
           data={pixelDispatchers}
-          renderItem={(itemInfo) => (
-            <PixelSwipeableCard
-              pixelDispatcher={itemInfo.item}
-              moreInfo={showMoreInfo}
-              onShowDetails={() => onDieDetails(itemInfo.item.pixelId)}
-              swipeableItemsWidth={sr("25%")}
-            />
-          )}
           keyExtractor={(p) => p.pixelId.toString()}
-          ItemSeparatorComponent={() => <Box height={sr(8)} />}
+          renderItem={renderItem}
+          ItemSeparatorComponent={Separator}
           contentContainerStyle={{ flexGrow: 1 }}
           refreshControl={
             <RefreshControl

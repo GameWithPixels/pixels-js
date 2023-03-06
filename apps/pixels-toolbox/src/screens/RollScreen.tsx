@@ -1,9 +1,11 @@
 import {
+  ScannedPixel,
   getPixel,
   usePixelConnect,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import { Center, Pressable, Text } from "native-base";
+import { useCallback } from "react";
 
 import AppPage from "~/components/AppPage";
 import PixelScanList from "~/components/PixelScanList";
@@ -14,6 +16,11 @@ function RollPage() {
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
   const [rollState] = usePixelValue(pixel, "rollState");
   useErrorWithHandler(lastError);
+
+  const onSelect = useCallback(
+    (sp: ScannedPixel) => connectDispatch("connect", getPixel(sp)),
+    [connectDispatch]
+  );
 
   const isConnecting = status === "connecting" || status === "identifying";
   const backgroundColor =
@@ -27,9 +34,7 @@ function RollPage() {
   return (
     <>
       {!pixel ? (
-        <PixelScanList
-          onSelected={(sp) => connectDispatch("connect", getPixel(sp))}
-        />
+        <PixelScanList onSelect={onSelect} />
       ) : (
         <Pressable onPress={() => connectDispatch("disconnect")}>
           <Center

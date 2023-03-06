@@ -1,7 +1,9 @@
 import { useAssets } from "expo-asset";
 import { Box, Center, FlatList, Pressable, Text, VStack } from "native-base";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
+// eslint-disable-next-line import/namespace
+import { ListRenderItemInfo } from "react-native";
 
 import dfuFilesZip from "!/dfu-files.zip";
 import { useAppDispatch } from "~/app/hooks";
@@ -56,6 +58,33 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
     }
   }, [assets, assetsError, errorHandler]);
 
+  // FlatList components
+  const Separator = useCallback(() => <Box h={sr(8)} />, []);
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<DfuFileInfo[]>) => (
+      <Pressable
+        onPress={() => {
+          appDispatch(setDfuFiles(item.map((i) => i.pathname)));
+          navigation.goBack();
+        }}
+      >
+        <VStack
+          variant="cardWithBorder"
+          width="100%"
+          alignItems="center"
+          space={sr(5)}
+          py={sr(8)}
+        >
+          <Text variant="h2">
+            {`📅 ${toLocaleDateTimeString(item[0].date ?? new Date(0))}`}
+          </Text>
+          <Text>Type: {item.map((i) => i.type ?? "unknown").join(", ")}</Text>
+        </VStack>
+      </Pressable>
+    ),
+    [appDispatch, navigation]
+  );
+
   return (
     <Center left="2%" width="96%">
       {!dfuFilesByDate ? (
@@ -67,37 +96,10 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           </Text>
           <FlatList
             width="100%"
-            ItemSeparatorComponent={() => <Box h={sr(8)} />}
             data={dfuFilesByDate}
-            renderItem={(itemInfo) => (
-              <Pressable
-                onPress={() => {
-                  appDispatch(
-                    setDfuFiles(itemInfo.item.map((i) => i.pathname))
-                  );
-                  navigation.goBack();
-                }}
-              >
-                <VStack
-                  variant="cardWithBorder"
-                  width="100%"
-                  alignItems="center"
-                  space={sr(5)}
-                  py={sr(8)}
-                >
-                  <Text variant="h2">
-                    {`📅 ${toLocaleDateTimeString(
-                      itemInfo.item[0].date ?? new Date(0)
-                    )}`}
-                  </Text>
-                  <Text>
-                    Type:{" "}
-                    {itemInfo.item.map((i) => i.type ?? "unknown").join(", ")}
-                  </Text>
-                </VStack>
-              </Pressable>
-            )}
             keyExtractor={(files) => files[0].pathname}
+            renderItem={renderItem}
+            ItemSeparatorComponent={Separator}
             contentContainerStyle={{ flexGrow: 1 }}
           />
         </>

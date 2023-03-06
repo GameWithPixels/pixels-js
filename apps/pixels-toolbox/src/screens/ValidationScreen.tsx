@@ -1,4 +1,7 @@
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
+import {
+  Pixel,
+  ScannedPixel,
+} from "@systemic-games/react-native-pixels-connect";
 import {
   extendTheme,
   useColorModeValue,
@@ -11,7 +14,7 @@ import {
   VStack,
   Box,
 } from "native-base";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
 import {
@@ -196,13 +199,16 @@ function DecodePixelIdPage({
   // Scan list
   const [showScanList, setShowScanList] = useState(false);
 
+  const onSelect = useCallback(
+    (sp: ScannedPixel) => onDecodedPixelId(sp.pixelId),
+    [onDecodedPixelId]
+  );
+  const onClose = useCallback(() => setShowScanList(false), []);
+
   const bg = useBackgroundColor();
   return showScanList ? (
     <Box w="100%" h="100%" bg={bg}>
-      <PixelScanList
-        onSelected={(p) => onDecodedPixelId(p.pixelId)}
-        onClose={() => setShowScanList(false)}
-      />
+      <PixelScanList onSelect={onSelect} onClose={onClose} />
     </Box>
   ) : (
     <Center w="100%" h="100%" bg={bg}>
