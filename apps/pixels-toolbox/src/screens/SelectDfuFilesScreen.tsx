@@ -1,6 +1,15 @@
 import { useAssets } from "expo-asset";
-import { Box, Center, FlatList, Pressable, Text, VStack } from "native-base";
-import { useCallback, useEffect, useState } from "react";
+import {
+  Box,
+  Center,
+  FlatList,
+  HStack,
+  Pressable,
+  Switch,
+  Text,
+  VStack,
+} from "native-base";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 // eslint-disable-next-line import/namespace
 import { ListRenderItemInfo } from "react-native";
@@ -12,13 +21,12 @@ import getDfuFileInfo, { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 import { setDfuFiles } from "~/features/store/dfuFilesSlice";
 import { SelectDfuFilesProps } from "~/navigation";
-import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   const errorHandler = useErrorHandler();
   const [assets, assetsError] = useAssets([dfuFilesZip]);
-  const [dfuFilesByDate, setDfuFilesByDate] = useState<DfuFileInfo[][]>();
+  const [allDfuFiles, setAllDfuFiles] = useState<DfuFileInfo[][]>();
   const appDispatch = useAppDispatch();
   //const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
 
@@ -42,7 +50,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
               );
             }
           });
-          setDfuFilesByDate(
+          setAllDfuFiles(
             [...filesByDate.values()].sort(
               (a, b) =>
                 (b[0].date?.getTime() ?? 0) - (a[0].date?.getTime() ?? 0)
@@ -58,8 +66,20 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
     }
   }, [assets, assetsError, errorHandler]);
 
+  // Files to show
+  const [showBootloaders, setShowBootloaders] = useState(false);
+  const dfuFiles = useMemo(() => {
+    if (!allDfuFiles || showBootloaders) {
+      return allDfuFiles;
+    } else {
+      return allDfuFiles.filter(
+        (filesInfo) => filesInfo.length > 1 || filesInfo[0]?.type === "firmware"
+      );
+    }
+  }, [allDfuFiles, showBootloaders]);
+
   // FlatList components
-  const Separator = useCallback(() => <Box h={sr(8)} />, []);
+  const Separator = useCallback(() => <Box h={3} />, []);
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<DfuFileInfo[]>) => (
       <Pressable
@@ -72,8 +92,8 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           variant="cardWithBorder"
           width="100%"
           alignItems="center"
-          space={sr(5)}
-          py={sr(8)}
+          space={3}
+          py={5}
         >
           <Text variant="h2">
             {`📅 ${toLocaleDateTimeString(item[0].date ?? new Date(0))}`}
@@ -87,18 +107,22 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
 
   return (
     <Center left="2%" width="96%">
-      {!dfuFilesByDate ? (
-        <Text italic my={sr(5)}>
+      {!dfuFiles ? (
+        <Text italic my={3}>
           Reading DFU files...
         </Text>
-      ) : dfuFilesByDate.length ? (
+      ) : dfuFiles.length ? (
         <>
-          <Text italic my={sr(5)}>
-            Tap On Bootloader/Firmware To Select:
+          <HStack my={3} space={3} alignItems="center">
+            <Text>Show Standalone Bootloaders</Text>
+            <Switch onToggle={setShowBootloaders} value={showBootloaders} />
+          </HStack>
+          <Text bold my={3}>
+            Select Firmware:
           </Text>
           <FlatList
             width="100%"
-            data={dfuFilesByDate}
+            data={dfuFiles}
             keyExtractor={(files) => files[0].pathname}
             renderItem={renderItem}
             ItemSeparatorComponent={Separator}
