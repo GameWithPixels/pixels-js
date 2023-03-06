@@ -7,23 +7,25 @@ const Scanner = {
     services: string | string[],
     onScannedPeripheral: (p: ScannedPeripheral) => void
   ): Promise<void> {
-    _listener = (ev: ScannedPeripheralEvent) =>
+    const listener = (ev: ScannedPeripheralEvent) =>
       onScannedPeripheral(ev.peripheral);
 
     // Scan
     await Central.scanForPeripheralsWithServices(services);
 
     // Subscribe to scan events
-    Central.addScannedPeripheralEventListener(_listener);
+    Central.addScannedPeripheralEventListener(listener);
+    _listener = listener;
   },
 
   async stop(): Promise<void> {
     if (_listener) {
+      const listener = _listener;
+      _listener = undefined;
+      Central.removeScannedPeripheralEventListener(listener);
+
       // Stop listening to stop scan events
       await Central.stopScanning();
-
-      Central.removeScannedPeripheralEventListener(_listener);
-      _listener = undefined;
     }
   },
 };
