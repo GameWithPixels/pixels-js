@@ -88,7 +88,9 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   return (
     <Center left="2%" width="96%">
       {!dfuFilesByDate ? (
-        <Text italic>Reading DFU files...</Text>
+        <Text italic my={sr(5)}>
+          Reading DFU files...
+        </Text>
       ) : dfuFilesByDate.length ? (
         <>
           <Text italic my={sr(5)}>

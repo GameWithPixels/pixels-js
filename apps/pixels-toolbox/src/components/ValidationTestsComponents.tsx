@@ -162,7 +162,25 @@ export function UpdateFirmware({
   }, [resolveScanPromise, scannedPixels]);
 
   // Firmware update
-  const [updateFirmware, dfuState, dfuProgress] = useUpdateFirmware();
+  const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
+    useUpdateFirmware();
+  const [resolveRejectDfuPromise, setResolveRejectDfuPromise] = useState<{
+    resolve: () => void;
+    reject: (error: Error) => void;
+  }>();
+  useEffect(() => {
+    if (resolveRejectDfuPromise) {
+      const { resolve, reject } = resolveRejectDfuPromise;
+      if (dfuLastError) {
+        reject(dfuLastError);
+      } else if (dfuState === "dfuAborted") {
+        reject(new Error("Firmware update aborted"));
+      } else if (dfuState === "dfuCompleted") {
+        resolve();
+      }
+    }
+  }, [dfuLastError, dfuState, resolveRejectDfuPromise]);
+
   const taskChain = useTaskChain(
     action,
     useCallback(async () => {
@@ -224,7 +242,11 @@ export function UpdateFirmware({
         // Start DFU
         const mostRecent = Math.max(blDate.getTime(), fwDate.getTime());
         if (mostRecent > scannedPixel.firmwareDate.getTime()) {
-          await updateFirmware(scannedPixel.address, blPath, fwPath);
+          const dfuPromise = new Promise<void>((resolve, reject) => {
+            setResolveRejectDfuPromise({ resolve, reject });
+          });
+          updateFirmware(scannedPixel.address, blPath, fwPath);
+          await dfuPromise;
         } else {
           console.log("Skipping firmware update");
         }
@@ -233,11 +255,13 @@ export function UpdateFirmware({
         title: t("firmwareUpdate"),
         children: (
           <>
-            <Text variant="comment">
-              {dfuState
-                ? t("dfuStateWithStatus", { status: t(dfuState) })
-                : t("initializing")}
-            </Text>
+            {dfuState && (
+              <Text variant="comment">
+                {t("dfuStateWithStatus", {
+                  status: t(dfuState),
+                })}
+              </Text>
+            )}
             {dfuProgress >= 0 && <ProgressBar percent={dfuProgress} />}
           </>
         ),

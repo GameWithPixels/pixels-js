@@ -17,7 +17,7 @@ export default async function (
   const dfuOptions = {
     retries: 3,
     dfuStateListener: ({ state }: DfuStateEvent) => {
-      console.log(`DFU state: ${state}`);
+      console.log(`DFU state changed: ${state}`);
       setDfuState?.(state);
     },
     dfuProgressListener: ({ percent }: DfuProgressEvent) => {
@@ -31,21 +31,22 @@ export default async function (
 
   // Update bootloader
   if (hasBootloader) {
-    console.log(
-      `Starting DFU for device ${addrStr} with bootloader ${bootloaderPath}`
-    );
     try {
+      console.log(
+        `Starting DFU for device ${addrStr} with bootloader ${bootloaderPath}`
+      );
       await startDfu(pixelAddress, bootloaderPath, dfuOptions);
     } catch (error: any) {
       if (error.message === "FW version failure") {
         // Bootloader already up-to-date
         console.log("Bootloader is same version or more recent");
         if (hasFirmware) {
-          // Give DFU library a break, otherwise we risk getting the FW version failure again
-          // on the firmware update
+          // Give DFU library a break, otherwise we risk getting the same FW version failure
+          // on the firmware update below
           await delay(100);
         }
       } else {
+        console.log("DFU bootloader error:", error);
         throw error;
       }
     }
@@ -53,10 +54,15 @@ export default async function (
 
   // Update firmware
   if (hasFirmware) {
-    console.log(
-      `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
-    );
-    const addr = pixelAddress + (hasBootloader ? 1 : 0);
-    await startDfu(addr, firmwarePath, dfuOptions);
+    try {
+      console.log(
+        `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
+      );
+      const addr = pixelAddress + (hasBootloader ? 1 : 0);
+      await startDfu(addr, firmwarePath, dfuOptions);
+    } catch (error) {
+      console.log("DFU firmware error:", error);
+      throw error;
+    }
   }
 }
