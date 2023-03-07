@@ -10,12 +10,18 @@ import {
 } from "native-base";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-// eslint-disable-next-line import/namespace
-import { ListRenderItemInfo } from "react-native";
 
 import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
+
+function keyExtractor(p: ScannedPixel) {
+  return p.systemId;
+}
+
+function Separator() {
+  return <Box height={3} />;
+}
 
 export default function ({
   onSelect: onSelected,
@@ -32,10 +38,9 @@ export default function ({
   });
   useErrorWithHandler(lastError);
 
-  // FlatList components
-  const Separator = useCallback(() => <Box height={5} />, []);
+  // FlatList item rendering
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<ScannedPixel>) => (
+    ({ item }: { item: ScannedPixel }) => (
       <Pressable
         onPress={() => onSelected(item)}
         borderColor="gray.500"
@@ -67,10 +72,9 @@ export default function ({
           <FlatList
             width="100%"
             data={scannedPixels}
-            keyExtractor={(p) => p.pixelId.toString()}
             renderItem={renderItem}
+            keyExtractor={keyExtractor}
             ItemSeparatorComponent={Separator}
-            contentContainerStyle={{ flexGrow: 1 }}
           />
         </>
       )}

@@ -36,12 +36,13 @@ import {
   VStack,
 } from "native-base";
 import { useCallback, useMemo, useReducer, useState } from "react";
+// eslint-disable-next-line import/namespace
+import { StyleSheet } from "react-native";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import AppPage from "~/components/AppPage";
 import PixelScanList from "~/components/PixelScanList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
-import { sr } from "~/styles";
 import range from "~/utils/range";
 
 // function test() {
@@ -211,7 +212,7 @@ function getPropValueString(
 }
 
 function Separator() {
-  return <Box h={sr(3)} />;
+  return <Box h={2} />;
 }
 
 function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
@@ -229,7 +230,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
           <Text bold>{`${widget.displayName}: ${widget.getValue()}`}</Text>
           <Slider
             width="80%"
-            height={sr(40)}
+            height={40}
             value={widget.getValue()}
             minValue={widget?.min ?? 0}
             maxValue={widget?.max ?? 1}
@@ -283,7 +284,6 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <FlatList
           data={colorMap}
-          ItemSeparatorComponent={Separator}
           renderItem={(itemInfo) => (
             <Button
               key={itemInfo.item.name}
@@ -292,7 +292,8 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={{ flexGrow: 1 }}
+          ItemSeparatorComponent={Separator}
+          contentContainerStyle={styles.contentContainerStyle}
         />
       );
     }
@@ -301,7 +302,6 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <FlatList
           data={gradients}
-          ItemSeparatorComponent={Separator}
           renderItem={(itemInfo) => (
             <Button
               key={itemInfo.item.name}
@@ -310,7 +310,8 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={{ flexGrow: 1 }}
+          ItemSeparatorComponent={Separator}
+          contentContainerStyle={styles.contentContainerStyle}
         />
       );
 
@@ -319,7 +320,6 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       return (
         <FlatList
           data={patterns}
-          ItemSeparatorComponent={Separator}
           renderItem={(itemInfo) => (
             <Button
               key={itemInfo.item.name}
@@ -328,7 +328,8 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={{ flexGrow: 1 }}
+          ItemSeparatorComponent={Separator}
+          contentContainerStyle={styles.contentContainerStyle}
         />
       );
 
@@ -369,7 +370,7 @@ function AnimationPage() {
       {!pixel ? (
         <PixelScanList onSelect={onSelect} />
       ) : (
-        <VStack space={sr(3)}>
+        <VStack space={2}>
           <Text>{`Connection status: ${status}`}</Text>
           <Button onPress={() => connectDispatch("disconnect")}>
             Disconnect
@@ -412,7 +413,6 @@ function AnimationPage() {
               </Button>
               <FlatList
                 data={animWidgets}
-                ItemSeparatorComponent={Separator}
                 renderItem={(itemInfo) => (
                   <Button onPress={() => setWidget(itemInfo.item)}>
                     {`${itemInfo.item.displayName}: ${getPropValueString(
@@ -421,7 +421,8 @@ function AnimationPage() {
                     )}`}
                   </Button>
                 )}
-                contentContainerStyle={{ flexGrow: 1 }}
+                ItemSeparatorComponent={Separator}
+                contentContainerStyle={styles.contentContainerStyle}
               />
             </>
           ) : (
@@ -429,7 +430,6 @@ function AnimationPage() {
               <Text bold>Effects:</Text>
               <FlatList
                 data={animList}
-                ItemSeparatorComponent={Separator}
                 renderItem={(itemInfo) => (
                   <Button
                     onPress={() => {
@@ -437,14 +437,14 @@ function AnimationPage() {
                     }}
                   >{`Edit ${itemInfo.item.name}`}</Button>
                 )}
-                contentContainerStyle={{ flexGrow: 1 }}
+                ItemSeparatorComponent={Separator}
+                contentContainerStyle={styles.contentContainerStyle}
               />
             </>
           )}
           <Text bold>Add Effect:</Text>
           <FlatList
             data={editAnimationTypes}
-            ItemSeparatorComponent={Separator}
             renderItem={(itemInfo) => (
               <Button
                 onPress={() => {
@@ -461,7 +461,8 @@ function AnimationPage() {
                 {itemInfo.item.name.replace(EditAnimation.name, "")}
               </Button>
             )}
-            contentContainerStyle={{ flexGrow: 1 }}
+            ItemSeparatorComponent={Separator}
+            contentContainerStyle={styles.contentContainerStyle}
           />
         </VStack>
       )}
@@ -476,3 +477,7 @@ export default function () {
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  contentContainerStyle: { flexGrow: 1 },
+});

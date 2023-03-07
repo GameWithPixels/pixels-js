@@ -1,8 +1,9 @@
+import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import { Box, Center, FlatList, Text, useDisclose } from "native-base";
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 // eslint-disable-next-line import/namespace
-import { ListRenderItemInfo, RefreshControl } from "react-native";
+import { RefreshControl } from "react-native";
 
 import ApplyAllActionsheet from "./ApplyAllActionsheet";
 
@@ -13,7 +14,14 @@ import PixelDispatcher, {
   PixelDispatcherAction,
 } from "~/features/pixels/PixelDispatcher";
 import useFocusPixelDispatcherScanner from "~/features/pixels/hooks/useFocusPixelDispatcherScanner";
-import { sr } from "~/styles";
+
+function keyExtractor(p: ScannedPixel) {
+  return p.systemId;
+}
+
+function Separator() {
+  return <Box h={2} />;
+}
 
 interface PixelsListProps {
   onDieDetails: (pixelId: number) => void;
@@ -38,23 +46,38 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // FlatList components
-  const Separator = useCallback(() => <Box h={sr(8)} />, []);
+  // FlatList item rendering
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<PixelDispatcher>) => (
+    ({ item: dispatcher }: { item: PixelDispatcher }) => (
       <PixelSwipeableCard
-        pixelDispatcher={item}
+        pixelDispatcher={dispatcher}
         moreInfo={showMoreInfo}
-        onShowDetails={() => onDieDetails(item.pixelId)}
-        swipeableItemsWidth={sr("25%")}
+        onShowDetails={() => onDieDetails(dispatcher.pixelId)}
+        swipeableItemsWidth={80}
       />
     ),
     [onDieDetails, showMoreInfo]
   );
+  const refreshControl = useMemo(
+    () => (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={() => {
+          setRefreshing(true);
+          scannerDispatch("clear");
+          setTimeout(() => {
+            // Wait of 1 second before stopping the refresh animation
+            setRefreshing(false);
+          }, 1000);
+        }}
+      />
+    ),
+    [refreshing, scannerDispatch]
+  );
 
   return (
     <>
-      <Center flexDir="row" my={sr(8)} width="100%" alignItems="baseline">
+      <Center flexDir="row" my={2} width="100%" alignItems="baseline">
         <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>ℹ️</EmojiButton>
         <Center flex={1}>
           <Text variant="h2">
@@ -67,23 +90,10 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
         <FlatList
           width="100%"
           data={pixelDispatchers}
-          keyExtractor={(p) => p.pixelId.toString()}
+          keyExtractor={keyExtractor}
           renderItem={renderItem}
           ItemSeparatorComponent={Separator}
-          contentContainerStyle={{ flexGrow: 1 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                scannerDispatch("clear");
-                setTimeout(() => {
-                  // Wait of 1 second before stopping the refresh animation
-                  setRefreshing(false);
-                }, 1000);
-              }}
-            />
-          }
+          refreshControl={refreshControl}
         />
       ) : (
         <Text italic>{t("noPixelsFound")}</Text>

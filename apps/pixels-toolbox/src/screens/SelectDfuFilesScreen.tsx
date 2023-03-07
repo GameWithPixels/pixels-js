@@ -11,8 +11,6 @@ import {
 } from "native-base";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
-// eslint-disable-next-line import/namespace
-import { ListRenderItemInfo } from "react-native";
 
 import dfuFilesZip from "!/dfu-files.zip";
 import { useAppDispatch } from "~/app/hooks";
@@ -22,6 +20,14 @@ import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 import { setDfuFiles } from "~/features/store/dfuFilesSlice";
 import { SelectDfuFilesProps } from "~/navigation";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+
+function keyExtractor(files: DfuFileInfo[]) {
+  return files[0].pathname;
+}
+
+function Separator() {
+  return <Box h={2} />;
+}
 
 function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   const errorHandler = useErrorHandler();
@@ -78,13 +84,12 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
     }
   }, [allDfuFiles, showBootloaders]);
 
-  // FlatList components
-  const Separator = useCallback(() => <Box h={3} />, []);
+  // FlatList item rendering
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<DfuFileInfo[]>) => (
+    ({ item: filesInfo }: { item: DfuFileInfo[] }) => (
       <Pressable
         onPress={() => {
-          appDispatch(setDfuFiles(item.map((i) => i.pathname)));
+          appDispatch(setDfuFiles(filesInfo.map((i) => i.pathname)));
           navigation.goBack();
         }}
       >
@@ -92,13 +97,15 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           variant="cardWithBorder"
           width="100%"
           alignItems="center"
-          space={3}
-          py={5}
+          space={1}
+          py={2}
         >
           <Text variant="h2">
-            {`📅 ${toLocaleDateTimeString(item[0].date ?? new Date(0))}`}
+            {`📅 ${toLocaleDateTimeString(filesInfo[0].date ?? new Date(0))}`}
           </Text>
-          <Text>Type: {item.map((i) => i.type ?? "unknown").join(", ")}</Text>
+          <Text>
+            Type: {filesInfo.map((i) => i.type ?? "unknown").join(", ")}
+          </Text>
         </VStack>
       </Pressable>
     ),
@@ -113,20 +120,19 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
         </Text>
       ) : dfuFiles.length ? (
         <>
-          <HStack my={3} space={3} alignItems="center">
+          <HStack my={2} space={3} alignItems="center">
             <Text>Show Standalone Bootloaders</Text>
             <Switch onToggle={setShowBootloaders} value={showBootloaders} />
           </HStack>
-          <Text bold my={3}>
+          <Text bold my={2}>
             Select Firmware:
           </Text>
           <FlatList
             width="100%"
             data={dfuFiles}
-            keyExtractor={(files) => files[0].pathname}
+            keyExtractor={keyExtractor}
             renderItem={renderItem}
             ItemSeparatorComponent={Separator}
-            contentContainerStyle={{ flexGrow: 1 }}
           />
         </>
       ) : (
