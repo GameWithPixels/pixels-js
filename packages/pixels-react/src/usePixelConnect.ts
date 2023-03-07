@@ -28,7 +28,8 @@ export default function (
   Error?
 ] {
   const [lastError, setLastError] = useState<Error>();
-  const pixelRef = useRef<Pixel | undefined>(pixel);
+  const [curPixel, setCurPixel] = useState(pixel);
+  const pixelToDisco = useRef<Pixel | null>(null);
 
   // Create the dispatch function
   const dispatch = useCallback(
@@ -37,27 +38,31 @@ export default function (
       setLastError(undefined);
       switch (action) {
         case "connect":
-          // Store Pixel
-          if (!pixel) {
-            // Re-use the current Pixel if none given
-            pixel = pixelRef.current;
-          }
-          if (pixel) {
-            if (pixel !== pixelRef.current) {
-              // Disconnect from a previous Pixel
-              pixelRef.current?.disconnect().catch((error) =>
-                // We don't want to return this error as we are in a connect action
-                console.warn(`Error disconnecting Pixel :${error}`)
-              );
+          setCurPixel((curPixel) => {
+            // Store Pixel
+            if (!pixel) {
+              // Re-use the current Pixel if none given
+              pixel = curPixel;
             }
-            // Connect to our Pixel
-            pixelRef.current = pixel;
-            pixel.connect().catch(setLastError);
-          }
+            if (pixel) {
+              if (pixel !== curPixel) {
+                // Disconnect from a previous Pixel
+                curPixel?.disconnect().catch((error) =>
+                  // We don't want to return this error as we are in a connect action
+                  console.warn(`Error disconnecting Pixel :${error}`)
+                );
+              }
+              // Connect to our Pixel
+              pixelToDisco.current = pixel;
+              pixel.connect().catch(setLastError);
+            }
+            return pixel;
+          });
           break;
         case "disconnect":
           // Disconnect from our stored Pixel
-          pixelRef.current?.disconnect().catch(setLastError);
+          pixelToDisco.current?.disconnect().catch(setLastError);
+          pixelToDisco.current = null;
           break;
         default:
           assertNever(action);
@@ -74,10 +79,5 @@ export default function (
     return () => dispatch("disconnect");
   }, [dispatch, pixel]);
 
-  return [
-    usePixelStatus(pixelRef.current),
-    pixelRef.current,
-    dispatch,
-    lastError,
-  ];
+  return [usePixelStatus(curPixel), curPixel, dispatch, lastError];
 }
