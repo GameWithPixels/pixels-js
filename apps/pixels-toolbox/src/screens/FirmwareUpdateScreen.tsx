@@ -1,4 +1,3 @@
-import { ScannedPeripheral } from "@systemic-games/react-native-bluetooth-le";
 import { BLE } from "@systemic-games/react-native-pixels-connect";
 import {
   Box,
@@ -9,11 +8,11 @@ import {
   Pressable,
   Text,
 } from "native-base";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 // eslint-disable-next-line import/namespace
-import { ListRenderItemInfo, RefreshControl } from "react-native";
+import { RefreshControl } from "react-native";
 
 import { useAppSelector } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
@@ -27,13 +26,21 @@ function formatAddress(address: number): string {
   return address.toString(16).toUpperCase();
 }
 
-function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
+function PeripheralInfo({ peripheral }: { peripheral: BLE.ScannedPeripheral }) {
   return (
     <>
       <Text>Name: {peripheral.name}</Text>
-      <Text>BLE Address: {formatAddress(peripheral.address)}</Text>
+      <Text>Address: {formatAddress(peripheral.address)}</Text>
+      <Text>RSSI: {peripheral.advertisementData.rssi}</Text>
     </>
   );
+}
+
+function keyExtractor(p: BLE.ScannedPeripheral) {
+  return p.systemId;
+}
+function Separator() {
+  return <Box height={3} />;
 }
 
 // We want this page to automatically update devices that have a firmware that crashes
@@ -69,11 +76,11 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   }, [dfuFiles]);
 
   // DFU
-  const [dfuTarget, setDfuTarget] = useState<ScannedPeripheral>();
+  const [dfuTarget, setDfuTarget] = useState<BLE.ScannedPeripheral>();
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
     useUpdateFirmware();
   const onSelect = useCallback(
-    (sp: ScannedPeripheral) => {
+    (sp: BLE.ScannedPeripheral) => {
       setDfuTarget((dfuTarget) => {
         if (!dfuTarget) {
           const filesInfo = dfuFiles.map(getDfuFileInfo);
@@ -105,42 +112,62 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   const [scannedPeripherals, setScannedPeripherals] = useState<
     BLE.ScannedPeripheral[]
   >([]);
+  const pendingScans = useRef<BLE.ScannedPeripheral[]>([]);
+  // Queue scan events and process them in batch
   useEffect(() => {
     BLE.Scanner.start("", (sp: BLE.ScannedPeripheral) => {
-      setScannedPeripherals((arr) => {
-        const index = arr.findIndex((item) => item.systemId === sp.systemId);
-        if (index < 0) {
-          return [...arr, sp];
-        } else {
-          // Compare with previous entry
-          const oldSp = arr[index];
-          const keys = Object.keys(sp) as (keyof typeof sp)[];
-          const oldKeys = Object.keys(oldSp) as (keyof typeof sp)[];
-          const areSameKeys =
-            keys.length === oldKeys.length &&
-            keys.every((k) => oldKeys.includes(k));
-          if (!areSameKeys || !keys.every((k) => sp[k] === oldSp[k])) {
-            const cpy = [...arr];
-            cpy[index] = sp;
-            return cpy;
-          }
-          return arr;
-        }
-      });
+      const arr = pendingScans.current;
+      const i = arr.findIndex((item) => item.systemId === sp.systemId);
+      if (i < 0) {
+        arr.push(sp);
+      } else {
+        arr[i] = sp;
+      }
     }).catch(errorHandler);
     return () => {
       BLE.Scanner.stop().catch(errorHandler);
     };
+  }, [errorHandler]);
+  // Process scan events in batches
+  useEffect(() => {
+    const id = setInterval(
+      () =>
+        setScannedPeripherals((arr) => {
+          if (pendingScans.current.length) {
+            arr = [...arr];
+            pendingScans.current.forEach((sp) => {
+              const index = arr.findIndex(
+                (item) => item.systemId === sp.systemId
+              );
+              if (index < 0) {
+                arr.push(sp);
+              } else {
+                arr[index] = sp;
+              }
+            });
+          }
+          return arr;
+        }),
+      1000 // Update every second
+    );
+    return () => {
+      clearInterval(id);
+    };
   }, [errorHandler, onSelect]);
 
-  // FlatList components
+  // Values for UI
+  const { t } = useTranslation();
+  const [refreshing, setRefreshing] = useState(false);
+  const [errorCleared, setErrorCleared] = useState(false);
+  useEffect(() => dfuLastError && setErrorCleared(false), [dfuLastError]);
+
+  // FlatList item rendering
   const renderItem = useCallback(
-    ({ item: sp }: ListRenderItemInfo<ScannedPeripheral>) => (
+    ({ item: sp }: { item: BLE.ScannedPeripheral }) => (
       <Pressable
         onPress={() => onSelect(sp)}
         borderColor="gray.500"
         borderWidth={2}
-        height={60}
         alignItems="center"
         justifyContent="center"
       >
@@ -149,13 +176,22 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
     ),
     [onSelect]
   );
-  const Separator = useCallback(() => <Box height={5} />, []);
-
-  // Values for UI
-  const { t } = useTranslation();
-  const [refreshing, setRefreshing] = useState(false);
-  const [errorCleared, setErrorCleared] = useState(false);
-  useEffect(() => dfuLastError && setErrorCleared(false), [dfuLastError]);
+  const refreshControl = useMemo(
+    () => (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={() => {
+          setRefreshing(true);
+          setScannedPeripherals([]);
+          setTimeout(() => {
+            // Wait of 1 second before stopping the refresh animation
+            setRefreshing(false);
+          }, 1000);
+        }}
+      />
+    ),
+    [refreshing]
+  );
 
   return (
     <Box m={3}>
@@ -186,23 +222,10 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
               <FlatList
                 width="100%"
                 data={scannedPeripherals}
-                keyExtractor={(p) => p.systemId}
                 renderItem={renderItem}
+                keyExtractor={keyExtractor}
                 ItemSeparatorComponent={Separator}
-                contentContainerStyle={{ flexGrow: 1 }}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={() => {
-                      setRefreshing(true);
-                      setScannedPeripherals([]);
-                      setTimeout(() => {
-                        // Wait of 1 second before stopping the refresh animation
-                        setRefreshing(false);
-                      }, 1000);
-                    }}
-                  />
-                }
+                refreshControl={refreshControl}
               />
             </>
           )}
