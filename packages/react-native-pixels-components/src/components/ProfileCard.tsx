@@ -1,10 +1,11 @@
 import { AntDesign } from "@expo/vector-icons";
-import { Card } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, HStack, VStack, Box } from "native-base";
 import {
-  ColorType,
-  SizeType,
-} from "native-base/lib/typescript/components/types";
+  Card,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
+import { Pressable, Text, Box, IFlexProps } from "native-base";
+import { SizeType } from "native-base/lib/typescript/components/types";
 import React from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
@@ -23,14 +24,9 @@ export interface ProfileInfo {
 /**
  * Props for selectable and pressable profile cards
  */
-export interface ProfileCardProps {
-  profileName: string;
-  dieRender: () => React.ReactNode; // TODO dieRenderer
-  bg?: ColorType;
-  w?: number | string;
-  h?: number | string;
-  p?: number | string;
-  space?: number; // vertical spacing between elements in the profile card
+export interface ProfileCardProps extends IFlexProps {
+  name: string;
+  dieRenderer?: () => React.ReactNode; // TODO dieRenderer
   borderWidth?: number;
   imageSize?: number | SizeType | string;
   textSize?: number | SizeType | string;
@@ -45,31 +41,40 @@ export interface ProfileCardProps {
  * A pressable profile card to display dice profiles
  * @param props See {@link ProfileCardProps} for props parameters
  */
-export function ProfileCard(props: ProfileCardProps) {
-  const selectedProfileIndex = props.selectedProfileIndex;
-  const isSelected = props.selectable
-    ? selectedProfileIndex === props.profileIndexInList
+export function ProfileCard({
+  name,
+  dieRenderer,
+  borderWidth,
+  imageSize,
+  textSize,
+  onPress,
+  profileIndexInList,
+  selectedProfileIndex,
+  selectable,
+  onSelected,
+  ...flexProps
+}: ProfileCardProps) {
+  const isSelected = selectable
+    ? selectedProfileIndex === profileIndexInList
     : false;
   return (
     <Pressable
       onPress={() => {
-        props.onSelected?.(props.profileIndexInList);
-        props.onPress?.();
+        onSelected?.(profileIndexInList);
+        onPress?.();
       }}
     >
       <Card
         bg={null}
-        p={props.p}
         minW="100%"
         minH="50px"
-        w={props.w}
-        h={props.h}
-        space={props.space}
-        borderWidth={isSelected ? 2 : props.borderWidth}
+        justifyContent="space-between"
+        {...flexProps}
+        borderWidth={isSelected ? 2 : borderWidth}
       >
-        <Box size={props.imageSize}>{props.dieRender()}</Box>
-        <Text isTruncated fontSize={props.textSize} bold>
-          {props.profileName}
+        {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
+        <Text isTruncated fontSize={textSize} bold>
+          {name}
         </Text>
       </Card>
     </Pressable>
@@ -80,61 +85,59 @@ export function ProfileCard(props: ProfileCardProps) {
  * Props for {@link DetailedProfileCard}.
  */
 export interface DetailedProfileCardProps extends ProfileCardProps {
-  profileWithSound?: boolean;
-  profileDescription?: string;
-  profileCategory?: string;
-
-  // Maybe for when renderer will be used
-  renderer?: React.ReactNode;
+  hasSound?: boolean;
+  description?: string;
 }
 
 /**
  * More detailed horizontal profile card for displaying profiles information.
  * @param props See {@link DetailedProfileCardProps} for props params.
  */
-export function DetailedProfileCard(props: DetailedProfileCardProps) {
-  const selectedProfileIndex = props.selectedProfileIndex;
-  const isSelected = props.selectable
-    ? selectedProfileIndex === props.profileIndexInList
+export function DetailedProfileCard({
+  name,
+  dieRenderer,
+  borderWidth,
+  imageSize,
+  textSize = "lg",
+  onPress,
+  profileIndexInList,
+  selectedProfileIndex,
+  selectable,
+  onSelected,
+  hasSound,
+  description,
+  ...flexProps
+}: DetailedProfileCardProps) {
+  const isSelected = selectable
+    ? selectedProfileIndex === profileIndexInList
     : false;
 
   return (
     <Pressable
       onPress={() => {
-        props.onSelected?.(props.profileIndexInList);
-        props.onPress?.();
+        onSelected?.(profileIndexInList);
+        onPress?.();
       }}
     >
-      <Card
-        bg={null}
-        p={props.p}
-        minW="100%"
-        minH="50px"
-        w={props.w}
-        h={props.h}
-        space={props.space}
-        borderWidth={isSelected ? 2 : props.borderWidth}
-      >
-        <HStack p={1} h="100%" alignItems="center">
-          <Box flex={1}>
-            <Box size={props.imageSize}>{props.dieRender()}</Box>
-          </Box>
-          <Box flex={1}>
-            <Text isTruncated fontSize={props.textSize} bold>
-              {props.profileName}
-            </Text>
-          </Box>
-          <VStack flex={1} alignItems="center">
-            {props.profileWithSound && (
-              <HStack flex={1} alignItems="center">
-                <AntDesign name="sound" size={24} color="white" />
-              </HStack>
+      <Card p={3} borderWidth={isSelected ? 2 : borderWidth} {...flexProps}>
+        <FastHStack h="100%">
+          {/* Die render */}
+          {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
+          {/* Profile info */}
+          <FastVStack ml={5} justifyContent="space-around" flexGrow={1}>
+            <FastHStack>
+              <Text pr={hasSound ? 2 : 0} isTruncated fontSize={textSize} bold>
+                {name}
+              </Text>
+              {hasSound && <AntDesign name="sound" size={24} color="white" />}
+            </FastHStack>
+            {description && description.length > 0 && (
+              <Text isTruncated fontSize={textSize} italic>
+                {description}
+              </Text>
             )}
-            <HStack flex={1} alignItems="center">
-              <Text bold>Type/Category</Text>
-            </HStack>
-          </VStack>
-        </HStack>
+          </FastVStack>
+        </FastHStack>
       </Card>
     </Pressable>
   );

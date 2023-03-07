@@ -3,17 +3,19 @@ import { EditRgbKeyframe } from "@systemic-games/pixels-edit-animation";
 import {
   ColorWheel,
   ColorWheelColorType,
+  FastButton,
+  FastButtonProps,
+  FastHStack,
+  FastVStack,
 } from "@systemic-games/react-native-base-components";
 import {
   Text,
-  HStack,
-  VStack,
-  Button,
   usePropsResolution,
   IModalProps,
   Actionsheet,
   Box,
   ScrollView,
+  Pressable,
 } from "native-base";
 import {
   ColorType,
@@ -21,18 +23,13 @@ import {
 } from "native-base/lib/typescript/components/types";
 import React from "react";
 // eslint-disable-next-line import/namespace
-import { GestureResponderEvent, Pressable } from "react-native";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 
-interface SimpleColorButtonProps {
-  color: ColorType;
-  onPress: ((event: GestureResponderEvent) => void) | null | undefined;
-}
 /**
  * Simple button for selecting basic color shade
  */
-function SimpleColorButton(props: SimpleColorButtonProps) {
-  return <Button h={8} w={8} bg={props.color} onPress={props.onPress} />;
+function ColorButton(props: FastButtonProps) {
+  return <FastButton h={8} w={8} bg={props.color} {...props} />;
 }
 
 /**
@@ -69,29 +66,29 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
   const [selectedColor, setSelectedColor] = React.useState(props.initialColor);
   return (
     <>
-      <VStack space={2}>
+      <FastVStack>
         <Text bold textAlign="left">
           Simple color
         </Text>
-        <HStack space={2}>
-          <Button
-            onPress={() => setShowModal(true)}
-            bg={selectedColor}
-            w={resolvedProps.triggerW}
-            h={resolvedProps.triggerH}
-          >
-            <Ionicons name="color-palette-outline" size={24} color="white" />
-          </Button>
-        </HStack>
+        <FastButton
+          mt={2}
+          onPress={() => setShowModal(true)}
+          bg={selectedColor}
+          w={resolvedProps.triggerW}
+          h={resolvedProps.triggerH}
+        >
+          <Ionicons name="color-palette-outline" size={24} color="white" />
+        </FastButton>
         {/* CheckBox override face component would be here */}
-      </VStack>
+      </FastVStack>
+
       <Actionsheet
         maxHeight="100%"
         isOpen={showModal}
         onClose={() => setShowModal(false)}
       >
         <Actionsheet.Content maxHeight="100%" minHeight="95%">
-          <VStack p={2} alignItems="center" space={5} w="100%">
+          <FastVStack p={2} alignItems="center" w="100%">
             <Box
               p={2}
               rounded="2xl"
@@ -109,7 +106,7 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 {dieRenderer()}
               </Box> */}
             </Box>
-            <Box p={2}>
+            <Box mt={5} p={2}>
               <ColorWheel
                 initialColor={selectedColor}
                 onSelectColor={(hexColor) => {
@@ -118,8 +115,8 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                 }}
               />
             </Box>
-            <HStack space={2}>
-              <SimpleColorButton
+            <FastHStack mt={5}>
+              <ColorButton
                 color="black"
                 onPress={() => {
                   setSelectedColor("black");
@@ -127,7 +124,8 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                   setShowModal(false);
                 }}
               />
-              <SimpleColorButton
+              <ColorButton
+                ml={2}
                 color="white"
                 onPress={() => {
                   setSelectedColor("white");
@@ -135,7 +133,8 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                   setShowModal(false);
                 }}
               />
-              <SimpleColorButton
+              <ColorButton
+                ml={2}
                 color="red.500"
                 onPress={() => {
                   setSelectedColor("red.500");
@@ -143,7 +142,8 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                   setShowModal(false);
                 }}
               />
-              <SimpleColorButton
+              <ColorButton
+                ml={2}
                 color="green.500"
                 onPress={() => {
                   setSelectedColor("green.500");
@@ -151,7 +151,8 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                   setShowModal(false);
                 }}
               />
-              <SimpleColorButton
+              <ColorButton
+                ml={2}
                 color="blue.500"
                 onPress={() => {
                   setSelectedColor("blue.500");
@@ -159,8 +160,8 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
                   setShowModal(false);
                 }}
               />
-            </HStack>
-          </VStack>
+            </FastHStack>
+          </FastVStack>
         </Actionsheet.Content>
       </Actionsheet>
     </>
@@ -189,22 +190,22 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
 
   return (
     <>
-      <VStack space={2}>
+      <FastVStack>
         <Text bold textAlign="left">
           Gradient color
         </Text>
-        <HStack space={2}>
-          <Button
-            onPress={() => setShowModal(true)}
-            bg={selectedColor}
-            w={props.triggerW}
-            h={props.triggerH}
-          >
-            <Ionicons name="color-palette-outline" size={24} color="white" />
-          </Button>
-        </HStack>
+        <FastButton
+          mt={2}
+          onPress={() => setShowModal(true)}
+          bg={selectedColor}
+          w={props.triggerW}
+          h={props.triggerH}
+        >
+          <Ionicons name="color-palette-outline" size={24} color="white" />
+        </FastButton>
         {/* CheckBox override face component would be here */}
-      </VStack>
+      </FastVStack>
+
       <Actionsheet
         maxHeight="95%"
         isOpen={showModal}
@@ -212,7 +213,7 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
       >
         <Actionsheet.Content maxHeight="95%" minHeight="95%">
           <ScrollView>
-            <VStack p={2} alignItems="center" space={2} w="100%">
+            <FastVStack p={2} alignItems="center" w="100%">
               <Box width="100%" alignItems="center">
                 <Svg height="200" width="100%">
                   <Defs>
@@ -265,8 +266,8 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                   />
                 </Svg>
               </Box>
-              <Box w="100%" h={110} bg="pixelColors.highlightGray" p={2}>
-                <HStack w="100%" h="100%">
+              <Box mt={2} w="100%" h={110} bg="pixelColors.highlightGray" p={2}>
+                <FastHStack w="100%" h="100%">
                   <Box flex={1}>
                     <Pressable
                       onPress={() => {
@@ -409,9 +410,9 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                       </Svg>
                     </Box>
                   </Pressable> */}
-                </HStack>
+                </FastHStack>
               </Box>
-              <Box p={2} width="100%" alignItems="center">
+              <Box mt={2} p={2} width="100%" alignItems="center">
                 <ColorWheel
                   initialColor={selectedColor}
                   onSelectColor={setSelectedColor}
@@ -429,44 +430,48 @@ export function GradientColorSelection(props: GradientColorSelectionProps) {
                   }}
                 />
               </Box>
-              <HStack space={2}>
-                <SimpleColorButton
+              <FastHStack mt={2}>
+                <ColorButton
                   color="black"
                   onPress={() => {
                     setSelectedColor("black");
                     setShowModal(false);
                   }}
                 />
-                <SimpleColorButton
+                <ColorButton
+                  ml={20}
                   color="white"
                   onPress={() => {
                     setSelectedColor("white");
                     setShowModal(false);
                   }}
                 />
-                <SimpleColorButton
+                <ColorButton
+                  ml={2}
                   color="red.500"
                   onPress={() => {
                     setSelectedColor("red.500");
                     setShowModal(false);
                   }}
                 />
-                <SimpleColorButton
+                <ColorButton
+                  ml={2}
                   color="green.500"
                   onPress={() => {
                     setSelectedColor("green.500");
                     setShowModal(false);
                   }}
                 />
-                <SimpleColorButton
+                <ColorButton
+                  ml={2}
                   color="blue.500"
                   onPress={() => {
                     setSelectedColor("blue.500");
                     setShowModal(false);
                   }}
                 />
-              </HStack>
-            </VStack>
+              </FastHStack>
+            </FastVStack>
           </ScrollView>
         </Actionsheet.Content>
       </Actionsheet>

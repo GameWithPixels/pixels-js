@@ -10,6 +10,6 @@ export default {
     boxTextFontSize: "md",
     // Faces checkboxes
     checkBoxSize: "lg",
-    checkBoxP: 2,
+    checkBoxMargin: 2,
   },
 };

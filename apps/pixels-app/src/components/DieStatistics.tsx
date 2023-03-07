@@ -67,7 +67,6 @@ export default function DieStatistics({
                 w={sr(170)}
                 h={sr(140)}
                 maxW="100%"
-                space={2}
                 alignItems="center"
                 bg="primary.300"
               >
@@ -77,7 +76,7 @@ export default function DieStatistics({
                     Rolls
                   </Text>
                 </HStack>
-                <HStack space={2} alignItems="center" p={2}>
+                <HStack mt={2} space={2} alignItems="center" p={2}>
                   {showSessionStats ? (
                     <Box w="100%">
                       <Text>Session</Text>
@@ -103,7 +102,6 @@ export default function DieStatistics({
                 w={sr(170)}
                 h={sr(140)}
                 maxW="100%"
-                space={2}
                 alignItems="center"
                 bg="primary.300"
               >
@@ -117,7 +115,7 @@ export default function DieStatistics({
                     Use Time
                   </Text>
                 </HStack>
-                <HStack space={2} alignItems="center" p={2}>
+                <HStack mt={2} space={2} alignItems="center" p={2}>
                   {showSessionStats ? (
                     <Box w="100%">
                       <Text>Session</Text>
@@ -143,27 +141,27 @@ export default function DieStatistics({
           </Center>
           {!showSessionStats ? (
             //Lifetime histogram
-            <Card w={sr(350)} bg="primary.300" space={sr(4)}>
+            <Card w={sr(350)} bg="primary.300">
               <HStack space={sr(3)} alignItems="baseline">
                 <Ionicons name="stats-chart" size={30} color="black" />
                 <Text bold fontSize="xl">
                   Lifetime Rolls Per Face
                 </Text>
               </HStack>
-              <Center width={sr(320)} h={sr(150)} alignSelf="center">
+              <Center mt={sr(4)} width={sr(320)} h={sr(150)} alignSelf="center">
                 <Histogram viewRatio={2} rolls={lifetimeRolls} />
               </Center>
             </Card>
           ) : (
             //Session histogram
-            <Card w={sr(350)} bg="primary.300" space={sr(4)}>
+            <Card w={sr(350)} bg="primary.300">
               <HStack space={3} alignItems="baseline">
                 <Ionicons name="stats-chart" size={30} color="black" />
                 <Text bold fontSize="xl">
                   Session Rolls Per Face
                 </Text>
               </HStack>
-              <Center width={sr(320)} h={sr(150)} alignSelf="center">
+              <Center mt={sr(4)} width={sr(320)} h={sr(150)} alignSelf="center">
                 <Histogram viewRatio={2} rolls={sessionRolls} />
               </Center>
             </Card>

@@ -1,17 +1,12 @@
 import {
   Card,
+  FastBox,
+  FastButton,
+  FastHStack,
+  FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import {
-  HStack,
-  VStack,
-  Text,
-  Box,
-  Image,
-  Pressable,
-  Button,
-  Spacer,
-} from "native-base";
+import { Text, Image, Pressable, Spacer } from "native-base";
 import React from "react";
 
 import { sr } from "../utils";
@@ -52,41 +47,40 @@ export function PairedPixelInfoComponent({
   return (
     <Pressable onPress={onPress}>
       <Card borderWidth={1.5} minW={100} w="100%" h={110}>
-        <HStack space={6} alignItems="center" maxW="100%" h="100%">
+        <FastHStack alignItems="center" maxW="100%" h="100%">
+          {/* Die render */}
           {dieRenderer && (
-            <Box h={sr(70)} w={sr(70)}>
+            <FastBox h={sr(70)} w={sr(70)}>
               {dieRenderer()}
-            </Box>
+            </FastBox>
           )}
-          {/* dice infos */}
-          <HStack space={sr(25)} h="100%" w="100%">
-            <VStack space={1} alignItems="baseline" h="100%">
-              <Text flex={1} bold fontSize="lg">
-                {pixel.name}
-              </Text>
-              <Text flex={1} fontSize="xs">
-                Face up: {pixel.ledCount}
-              </Text>
-              <Box flex={1}>
-                <BatteryLevel
-                  percentage={pixel.batteryLevel}
-                  isCharging={pixel.isCharging}
-                />
-              </Box>
-            </VStack>
-            <VStack space={1} alignItems="baseline" h="100%">
-              <Text flex={1} fontSize="2xs" isTruncated>
-                Firmware: {pixel.firmwareDate.toLocaleDateString()}
-              </Text>
-              <Text flex={1} isTruncated fontSize="xs">
-                Profile: {profileName}
-              </Text>
-              <Box flex={1}>
-                <RSSIStrength percentage={pixel.rssi} />
-              </Box>
-            </VStack>
-          </HStack>
-        </HStack>
+          {/* Pixel info */}
+          <FastVStack ml={10} alignItems="baseline" h="100%">
+            <Text flex={1} bold fontSize="lg">
+              {pixel.name}
+            </Text>
+            <Text mt={1} flex={1} fontSize="xs">
+              Face up: {pixel.ledCount}
+            </Text>
+            <FastBox mt={1} flex={1}>
+              <BatteryLevel
+                percentage={pixel.batteryLevel}
+                isCharging={pixel.isCharging}
+              />
+            </FastBox>
+          </FastVStack>
+          <FastVStack ml={10} alignItems="baseline" h="100%">
+            <Text flex={1} fontSize="2xs" isTruncated>
+              Firmware: {pixel.firmwareDate.toLocaleDateString()}
+            </Text>
+            <Text mt={1} flex={1} isTruncated fontSize="xs">
+              Profile: {profileName}
+            </Text>
+            <FastBox mt={1} flex={1}>
+              <RSSIStrength percentage={pixel.rssi} />
+            </FastBox>
+          </FastVStack>
+        </FastHStack>
       </Card>
     </Pressable>
   );
@@ -117,41 +111,42 @@ export function SquarePairedPixelInfo({
           p={sr(7)}
           w={w}
           minH={sr(40)}
-          space={1}
           h={h}
         >
           <Text fontSize="lg" bold alignSelf="center">
             {pixel.name}
           </Text>
-          <Box alignItems="center" paddingBottom={sr(2)}>
+          <FastBox mt={1} alignItems="center" pb={sr(2)}>
             {/* PlaceHolderImage : would be replaced by 3d render of dice */}
             <Image
               size={sr(70)}
               // source={pixel.imageRequirePath}
               alt="placeHolder"
             />
-          </Box>
-          <Text isTruncated fontSize="xs">
+          </FastBox>
+          <Text mt={1} isTruncated fontSize="xs">
             Profile: Unknown
           </Text>
-          <Text fontSize="xs">Face Up: {pixel.ledCount}</Text>
-          <HStack space={sr(2)} w="100%">
-            <Box flex={1}>
+          <Text mt={1} fontSize="xs">
+            Face Up: {pixel.ledCount}
+          </Text>
+          <FastHStack mt={1} w="100%">
+            <FastBox flex={1}>
               <BatteryLevel
                 _icon={{ size: "md" }}
                 _text={{ fontSize: "sm" }}
                 percentage={pixel.batteryLevel}
                 isCharging={pixel.isCharging}
               />
-            </Box>
-            <Box flex={1}>
+            </FastBox>
+            <FastBox ml={1} flex={1}>
               <RSSIStrength
                 _icon={{ size: "md" }}
                 _text={{ fontSize: "sm" }}
                 percentage={pixel.rssi}
               />
-            </Box>
-          </HStack>
+            </FastBox>
+          </FastHStack>
         </Card>
       </Pressable>
     </>
@@ -178,35 +173,37 @@ export function ScannedPixelInfoComponent({
       }}
     >
       <Card borderWidth={1.5} w="100%" h={sr(height)} alignItems="center">
-        <HStack space={sr(8)} alignItems="center" maxW="100%">
+        <FastHStack alignItems="center" maxW="100%">
           {dieRenderer && (
-            <Box h={sr(60)} w={sr(60)}>
+            <FastBox h={sr(60)} w={sr(60)}>
               {dieRenderer()}
-            </Box>
+            </FastBox>
           )}
           {/* dice infos */}
-          <HStack alignItems="baseline" flex={2}>
-            <VStack space={sr(2)}>
+          <FastHStack ml={4} alignItems="baseline" flex={2}>
+            <FastVStack flexGrow={1}>
               <Text fontSize="md" bold>
                 {pixel.name}
               </Text>
-              <Text fontSize="xs">Face Up: {pixel.ledCount} </Text>
-            </VStack>
-            <Spacer />
-            <VStack space={2} paddingRight={sr(5)}>
+              <Text mt={1} fontSize="xs">
+                Face Up: {pixel.ledCount}{" "}
+              </Text>
+            </FastVStack>
+            <FastVStack mr={sr(5)}>
               <BatteryLevel
+                mt={2}
                 percentage={pixel.batteryLevel}
                 isCharging={pixel.isCharging}
               />
-              <RSSIStrength percentage={pixel.rssi} />
-            </VStack>
-          </HStack>
-        </HStack>
+              <RSSIStrength mt={2} percentage={pixel.rssi} />
+            </FastVStack>
+          </FastHStack>
+        </FastHStack>
         <Spacer />
         {pressed && (
-          <Button w={sr(300)} onPress={onPress} alignItems="center">
+          <FastButton w={sr(300)} onPress={onPress}>
             Pair Die
-          </Button>
+          </FastButton>
         )}
       </Card>
     </Pressable>

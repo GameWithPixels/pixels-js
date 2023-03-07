@@ -8,7 +8,7 @@ import { Die3D } from "@systemic-games/pixels-three";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 import { Text } from "native-base";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 
 import createDie3DAsync from "./createDie3DAsync";
@@ -138,34 +138,34 @@ export interface DieRendererProps {
  * See {@link DieRendererProps} for the supported props.
  */
 export default function ({ renderData }: DieRendererProps) {
-  const errorHandler = useErrorHandler();
+  // const errorHandler = useErrorHandler();
 
-  // Load die 3d object
-  const [die3d, setDie3d] = useState<Die3D>();
-  useEffect(() => {
-    if (!die3d) {
-      createDie3DAsync().then(setDie3d).catch(errorHandler);
-    }
-  }, [die3d, errorHandler]);
+  // // Load die 3d object
+  // const [die3d, setDie3d] = React.useState<Die3D>();
+  // React.useEffect(() => {
+  //   if (!die3d) {
+  //     createDie3DAsync().then(setDie3d).catch(errorHandler);
+  //   }
+  // }, [die3d, errorHandler]);
 
-  // Create an instance to play the animation
-  const animInstanceRef = useRef<AnimationInstance[]>([]);
-  const animations = renderData?.animations;
-  const animationBits = renderData?.animationBits;
-  useEffect(() => {
-    if (animations && animationBits) {
-      const anims = Array.isArray(animations) ? animations : [animations];
-      animInstanceRef.current = anims.map((a) =>
-        a.createInstance(animationBits)
-      );
-    } else {
-      animInstanceRef.current = [];
-    }
-  }, [animations, animationBits]);
+  // // Create an instance to play the animation
+  // const animInstanceRef = React.useRef<AnimationInstance[]>([]);
+  // const animations = renderData?.animations;
+  // const animationBits = renderData?.animationBits;
+  // React.useEffect(() => {
+  //   if (animations && animationBits) {
+  //     const anims = Array.isArray(animations) ? animations : [animations];
+  //     animInstanceRef.current = anims.map((a) =>
+  //       a.createInstance(animationBits)
+  //     );
+  //   } else {
+  //     animInstanceRef.current = [];
+  //   }
+  // }, [animations, animationBits]);
 
   return (
     <>
-      {!die3d ? (
+      {/* {!die3d ? (
         <Text>Loading...</Text>
       ) : (
         <GLView
@@ -174,7 +174,7 @@ export default function ({ renderData }: DieRendererProps) {
           }
           style={{ flex: 1 }}
         />
-      )}
+      )} */}
     </>
   );
 }

@@ -205,7 +205,7 @@ export default function ({
                   ? ""
                   : pixelDispatcher.isFirmwareUpdateQueued
                   ? t("cancelFirmwareUpdate")
-                  : t("updateFirmware")
+                  : t("updateFirmware").replace(" ", "\n")
                 : t("blink")
             }
             backgroundColor={isDisco ? "purple.500" : "orange.500"}

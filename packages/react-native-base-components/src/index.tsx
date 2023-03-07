@@ -5,13 +5,12 @@ export * from "./useDisclose";
 export * from "./components/Card";
 export * from "./components/Toggle";
 export * from "./components/PercentageDisplay";
-export * from "./components/ActionSheetList";
+export * from "./components/ActionsheetList";
 export * from "./components/AppPage";
-export * from "./components/BottomToolbar";
 export * from "./components/ProgressBar";
 export * from "./components/ColorWheel";
 export * from "./components/Slider";
-export * from "./components/Swipeable";
+export * from "./components/SwipeableButtons";
 export * from "./components/Histogram";
 
 export * from "./components/HView";

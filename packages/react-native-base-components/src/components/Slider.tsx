@@ -1,15 +1,16 @@
 import {
   Text,
-  HStack,
-  VStack,
   Slider,
-  Box,
   Spacer,
   usePropsResolution,
   ISliderProps,
+  View,
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
+
+import { FastHStack } from "./FastHStack";
+import { FastVStack } from "./FastVStack";
 
 export interface SliderProps extends ISliderProps {
   sliderTitle?: string;
@@ -29,10 +30,10 @@ export function SliderComponent(props: SliderProps) {
   const [onChangeValue, setOnChangeValue] = React.useState(defaultValue);
   const resolvedProps = usePropsResolution("Slider", props);
   return (
-    <VStack space={1}>
+    <FastVStack>
       <Text bold>{resolvedProps.sliderTitle}</Text>
-      <HStack space={2.5} alignItems="center">
-        <Box
+      <FastHStack mt={1} alignItems="center">
+        <View
           w={resolvedProps.sliderBoxWidth}
           rounded={resolvedProps.rounded}
           px={resolvedProps.sliderBoxPx}
@@ -56,9 +57,9 @@ export function SliderComponent(props: SliderProps) {
             </Slider.Track>
             <Slider.Thumb bg={resolvedProps.thumbColor} />
           </Slider>
-        </Box>
+        </View>
         <Spacer />
-        <Box
+        <View
           rounded={resolvedProps.rounded}
           px={resolvedProps.unitBoxPx}
           py={resolvedProps.unitBoxPy}
@@ -69,8 +70,8 @@ export function SliderComponent(props: SliderProps) {
           <Text alignSelf="center">
             {props.unitType ? onChangeValue + props.unitType : onChangeValue}
           </Text>
-        </Box>
-      </HStack>
-    </VStack>
+        </View>
+      </FastHStack>
+    </FastVStack>
   );
 }

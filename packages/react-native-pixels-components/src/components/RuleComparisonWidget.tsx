@@ -1,13 +1,14 @@
 import {
-  ActionSheetListItemData,
+  ActionsheetListItemData,
+  FastBox,
+  FastHStack,
+  FastVStack,
+  HView,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import {
-  Box,
   Button,
-  VStack,
   Text,
-  HStack,
   ChevronDownIcon,
   Actionsheet,
   Spacer,
@@ -111,9 +112,9 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <VStack>
-        <Text>{props.title}</Text>
-        <Box w="100%">
+      <FastVStack>
+        <Text bold>{props.title}</Text>
+        <FastBox mt={2} w="100%">
           {values.length < 4 ? (
             <Button.Group isAttached>
               {values.map((item, i) => (
@@ -131,29 +132,25 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
             </Button.Group>
           ) : (
             <Pressable onPress={onOpen}>
-              <HStack
-                p={3}
-                paddingLeft={4}
+              <HView
+                p={2}
+                pl={4}
                 w="100%"
                 alignItems="center"
                 rounded="lg"
                 bg="darkBlue.800"
-                minH={50}
               >
-                <Box flex={2}>
-                  <Text fontSize="sm">
+                <FastBox flex={2}>
+                  <Text fontSize="sm" flexGrow={1}>
                     {BatteryConditionTitleFromOptions(selectedOptions)}
                   </Text>
-                </Box>
-                <Spacer />
-                <Box>
-                  <ChevronDownIcon />
-                </Box>
-              </HStack>
+                </FastBox>
+                <ChevronDownIcon />
+              </HView>
             </Pressable>
           )}
-        </Box>
-      </VStack>
+        </FastBox>
+      </FastVStack>
 
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
@@ -191,22 +188,20 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
 }
 
 export interface RuleConditionSelectionProps {
-  possibleConditions: ActionSheetListItemData[];
+  possibleConditions: ActionsheetListItemData[];
   conditionTitle?: string;
 }
 
 export function RuleConditionSelection(props: RuleConditionSelectionProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
-  const title = "When";
-
   return (
     <>
-      <HStack h={70} width="100%" alignItems="center">
-        <Box flex={1}>
-          <Text fontSize="2xl">{title}</Text>
-        </Box>
+      <FastHStack w="100%" alignItems="center">
+        <Text fontSize="2xl" flex={1}>
+          When
+        </Text>
         <Pressable flex={2} onPress={onOpen}>
-          <HStack
+          <HView
             p={3}
             paddingLeft={4}
             w="100%"
@@ -214,16 +209,16 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
             rounded="lg"
             bg="darkBlue.800"
           >
-            <Box flex={2}>
-              <Text fontSize="sm">{props.conditionTitle}</Text>
-            </Box>
+            <Text fontSize="sm" flex={2}>
+              {props.conditionTitle}
+            </Text>
             <Spacer />
-            <Box>
+            <FastBox>
               <ChevronDownIcon />
-            </Box>
-          </HStack>
+            </FastBox>
+          </HView>
         </Pressable>
-      </HStack>
+      </FastHStack>
 
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
@@ -249,7 +244,7 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
 }
 
 export interface RuleActionSelectionProps {
-  possibleActions: ActionSheetListItemData[];
+  possibleActions: ActionsheetListItemData[];
   actionTitle?: string;
 }
 
@@ -257,29 +252,26 @@ export function RuleActionSelection(props: RuleActionSelectionProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <HStack h={70} width="100%" alignItems="center">
-        <Box flex={1}>
-          <Text fontSize="2xl">Then</Text>
-        </Box>
+      <FastHStack w="100%" alignItems="center">
+        <Text fontSize="2xl" flex={1}>
+          Then
+        </Text>
         <Pressable flex={2} onPress={onOpen}>
-          <HStack
-            p={3}
+          <HView
+            p={2}
             paddingLeft={4}
             w="100%"
             alignItems="center"
             rounded="lg"
             bg="darkBlue.800"
           >
-            <Box flex={8}>
-              <Text fontSize="sm">{props.actionTitle}</Text>
-            </Box>
-            <Spacer />
-            <Box>
-              <ChevronDownIcon />
-            </Box>
-          </HStack>
+            <Text fontSize="sm" flexGrow={1}>
+              {props.actionTitle}
+            </Text>
+            <ChevronDownIcon />
+          </HView>
         </Pressable>
-      </HStack>
+      </FastHStack>
 
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>

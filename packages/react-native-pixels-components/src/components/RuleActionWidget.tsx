@@ -9,7 +9,12 @@ import {
   getEditWidgetsData,
   EditActionRunOnDevice,
 } from "@systemic-games/pixels-edit-animation";
-import { Box, Button, HStack, Text, VStack } from "native-base";
+import {
+  FastBox,
+  FastButton,
+  FastHStack,
+} from "@systemic-games/react-native-base-components";
+import { Box, IFlexProps, View } from "native-base";
 import React from "react";
 
 import { getActionTitle } from "../titlesUtils";
@@ -27,32 +32,38 @@ function ActionEditor({
   userTextsParams: RenderWidgetProps["userTextsParams"];
   dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
 }) {
-  const actionWIdgets = React.useMemo(() => {
+  const actionWidgets = React.useMemo(() => {
     return getEditWidgetsData(editAction);
   }, [editAction]);
+  const widgets = React.useMemo(
+    () =>
+      actionWidgets.map((widget, i) => (
+        <FastBox key={i} mt={i > 0 ? 2 : 0}>
+          <RenderWidget
+            widget={widget}
+            animationsParams={{
+              animations,
+              dieRenderer,
+            }}
+            userTextsParams={userTextsParams}
+          />
+        </FastBox>
+      )),
+    [actionWidgets, animations, dieRenderer, userTextsParams]
+  );
   return (
-    <VStack p={2} space={2} bg="gray.700" rounded="md">
-      {actionWIdgets.map((widget, key) => (
-        <RenderWidget
-          key={key}
-          widget={widget}
-          animationsParams={{
-            animations,
-            dieRenderer,
-          }}
-          userTextsParams={userTextsParams}
-        />
-      ))}
-    </VStack>
+    <View p={2} bg="gray.700" rounded="md">
+      {widgets}
+    </View>
   );
 }
 
-export interface RuleActionWidgetProps extends React.PropsWithChildren {
+export interface RuleActionWidgetProps extends IFlexProps {
   action: EditAction;
   animations: Readonly<EditAnimation>[];
   userTextsParams: RenderWidgetProps["userTextsParams"];
   dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
-  onReplace?: ((action: EditAction) => void) | null | undefined;
+  onReplace?: ((newAction: EditAction) => void) | null | undefined;
   onDelete?: (() => void) | null | undefined;
 }
 
@@ -67,6 +78,7 @@ export function RuleActionWidget({
   dieRenderer,
   onReplace,
   onDelete,
+  ...flexProps
 }: RuleActionWidgetProps) {
   const [editAction, setEditAction] = React.useState(action);
   const actionTitle = React.useMemo(
@@ -79,63 +91,73 @@ export function RuleActionWidget({
       ),
     [editAction]
   );
+  const possibleActions = React.useMemo(
+    () => [
+      {
+        label: getActionTitle(ActionTypeValues.playAnimation),
+        onSelect: () => {
+          const act = new EditActionPlayAnimation();
+          setEditAction(act);
+          onReplace?.(act);
+        },
+      },
+      {
+        label: getActionTitle(
+          ActionTypeValues.runOnDevice,
+          RemoteActionTypeValues.playAudioClip
+        ),
+        onSelect: () => {
+          const act = new EditActionPlayAudioClip();
+          setEditAction(act);
+          onReplace?.(act);
+        },
+      },
+      {
+        label: getActionTitle(
+          ActionTypeValues.runOnDevice,
+          RemoteActionTypeValues.makeWebRequest
+        ),
+        onSelect: () => {
+          const act = new EditActionMakeWebRequest();
+          setEditAction(act);
+          onReplace?.(act);
+        },
+      },
+    ],
+    [onReplace]
+  );
+  const onDeleteMemo = React.useCallback(() => onDelete?.(), [onDelete]);
   return (
-    <VStack
-      space={2}
-      p={4}
+    <Box
+      p={3}
       borderWidth={1}
       borderColor="gray.300"
       rounded="lg"
       bg="darkBlue.700"
+      {...flexProps}
     >
-      <HStack space={2} width="100%" alignItems="center">
-        <Box flex={10} w="100%">
+      <FastHStack mb={2} w="100%" alignItems="center">
+        <FastBox flex={10} w="100%">
           <RuleActionSelection
             actionTitle={actionTitle}
-            possibleActions={[
-              {
-                label: getActionTitle(ActionTypeValues.playAnimation),
-                onSelect: () => {
-                  const act = new EditActionPlayAnimation();
-                  setEditAction(act);
-                  onReplace?.(act);
-                },
-              },
-              {
-                label: getActionTitle(
-                  ActionTypeValues.runOnDevice,
-                  RemoteActionTypeValues.playAudioClip
-                ),
-                onSelect: () => {
-                  const act = new EditActionPlayAudioClip();
-                  setEditAction(act);
-                  onReplace?.(act);
-                },
-              },
-              {
-                label: getActionTitle(
-                  ActionTypeValues.runOnDevice,
-                  RemoteActionTypeValues.makeWebRequest
-                ),
-                onSelect: () => {
-                  const act = new EditActionMakeWebRequest();
-                  setEditAction(act);
-                  onReplace?.(act);
-                },
-              },
-            ]}
+            possibleActions={possibleActions}
           />
-        </Box>
-        <Button onPress={onDelete} flex={1}>
-          <Text fontSize="xl">X</Text>
-        </Button>
-      </HStack>
+        </FastBox>
+        <FastButton
+          ml={2}
+          onPress={onDeleteMemo}
+          flex={1}
+          _text={{ fontSize: "xs", bold: true }}
+        >
+          X
+        </FastButton>
+      </FastHStack>
       <ActionEditor
         editAction={editAction}
         animations={animations}
         userTextsParams={userTextsParams}
         dieRenderer={dieRenderer}
       />
-    </VStack>
+    </Box>
   );
 }

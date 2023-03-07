@@ -220,7 +220,7 @@ export default function PixelDetailScreen({
               </HStack>
               <ProfilesScrollView
                 profiles={profiles}
-                dieRender={(profile) => (
+                dieRenderer={(profile) => (
                   <DieRenderer renderData={getCachedDataSet(profile)} />
                 )}
                 onPress={(profile) => {

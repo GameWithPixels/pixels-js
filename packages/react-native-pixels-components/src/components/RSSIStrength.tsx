@@ -2,28 +2,25 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   PercentageDisplay,
   IconParams,
+  FastHStack,
 } from "@systemic-games/react-native-base-components";
 import {
-  Box,
   Center,
-  HStack,
+  IFlexProps,
   IIconProps,
   ITextProps,
   Text,
   usePropsResolution,
 } from "native-base";
 
-import { PixelTheme } from "../theme";
-
 /**
  * Props for {@link RSSIStrength} component.
  */
-interface RSSIStrengthProps {
+interface RSSIStrengthProps extends IFlexProps {
   percentage: number; // current rssi strength value (from 0 to 1)
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
   _icon?: Partial<IIconProps>; // parameter fro styling battery icon size
-  size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for RSSIStrength component
-  //size?: "sm" | "md" | "lg" | "xl" | "2xl";
+  // TODO size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for RSSIStrength component
 }
 
 // RSSI level icons to display from min to max as required by PercentageDisplay
@@ -40,21 +37,24 @@ const icons: IconParams[] = [
  * @param props See {@link RSSIStrengthProps} for props parameters
  */
 export function RSSIStrength(props: RSSIStrengthProps) {
-  const resolvedProps = usePropsResolution("RSSIStrength", props);
-  const rssiStrength = 100 + resolvedProps.percentage;
+  const { percentage, _text, _icon, colors, ...flexProps } = usePropsResolution(
+    "RSSIStrength",
+    props
+  );
+  const rssiStrength = 100 + percentage;
   return (
-    <Center flex={1}>
-      <HStack space={2} alignItems="center" w="100%">
-        <Box>
-          <PercentageDisplay
-            icons={icons}
-            colors={resolvedProps.colors}
-            percentage={rssiStrength}
-            _icon={resolvedProps._icon}
-          />
-        </Box>
-        <Text {...resolvedProps._text}>{rssiStrength + "%"}</Text>
-      </HStack>
+    <Center flex={1} {...flexProps}>
+      <FastHStack alignItems="center" w="100%">
+        <PercentageDisplay
+          icons={icons}
+          colors={colors}
+          percentage={rssiStrength}
+          _icon={_icon}
+        />
+        <Text {..._text} ml={2}>
+          {rssiStrength + "%"}
+        </Text>
+      </FastHStack>
     </Center>
   );
 }

@@ -1,5 +1,7 @@
-import { PixelAppPage } from "@systemic-games/react-native-pixels-components";
-import { Button } from "native-base";
+import {
+  FastButton,
+  PixelAppPage,
+} from "@systemic-games/react-native-pixels-components";
 
 import { useAppDispatch } from "~/app/hooks";
 import { resetProfilesToDefault } from "~/features/appDataSet/profilesSetSlice";
@@ -14,7 +16,7 @@ export default function () {
   };
   return (
     <PixelAppPage>
-      <Button onPress={resetSettings}>Reset Settings</Button>
+      <FastButton onPress={resetSettings}>Reset Settings</FastButton>
     </PixelAppPage>
   );
 }

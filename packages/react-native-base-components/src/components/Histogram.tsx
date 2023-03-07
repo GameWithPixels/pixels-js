@@ -7,7 +7,7 @@ export interface HistogramProps {
   viewRatio: number;
 }
 
-export function Histogram({ rolls }: HistogramProps) {
+export const Histogram = React.memo(function ({ rolls }: HistogramProps) {
   const [size, setSize] = React.useState({ w: 100, h: 100 });
   const fontSize = 4;
   const numGradValues = 5;
@@ -74,4 +74,4 @@ export function Histogram({ rolls }: HistogramProps) {
       </Svg>
     </Box>
   );
-}
+});

@@ -1,5 +1,5 @@
 import { ProgressBar } from "@systemic-games/react-native-base-components";
-import { Center, HStack, Modal, Text } from "native-base";
+import { Center, Modal, Text } from "native-base";
 import React from "react";
 
 /**
@@ -20,9 +20,7 @@ export function LoadingPopup(props: LoadingPopupProps) {
       <Modal.Content>
         <Modal.Header>
           <Center>
-            <HStack space={2}>
-              <Text>{props.title}</Text>
-            </HStack>
+            <Text>{props.title}</Text>
           </Center>
         </Modal.Header>
         <Modal.Body minH={1}>

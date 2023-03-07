@@ -7,8 +7,6 @@ import {
 } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
-// eslint-disable-next-line import/namespace
-import { ListRenderItemInfo } from "react-native";
 
 /**
  * Data of every item that will appear in the Actionsheet drawer.
@@ -16,34 +14,31 @@ import { ListRenderItemInfo } from "react-native";
  * @param item item object as any type of ReactNode to replace default Actionsheet.item
  * @param onPress function executed the Actionsheet.item or custom item is pressed
  */
-export interface ActionSheetListItemData {
+export interface ActionsheetListItemData {
   label: string; // text/title/label of the item
   onSelect?: ((label: string) => void) | null; // function executed when the item is pressed
 }
 
 /**
- * Props for {@link ActionSheet} component.
+ * Props for {@link ActionsheetList} component.
  */
-export interface ActionSheetListProps extends IActionsheetProps {
-  itemsData: ActionSheetListItemData[]; // Text to display on each item and action to call
+export interface ActionsheetListProps extends IActionsheetProps {
+  itemsData: ActionsheetListItemData[]; // Text to display on each item and action to call
   title?: string;
   sheetBgColor?: ColorType;
 }
 
 /**
  * ActionSheet drawer component. Can be triggered by any given component and display default Actionsheet.items or custom children.
- * @param props See {@link ActionSheetListProps} for props parameters.
+ * @param props See {@link ActionsheetListProps} for props parameters.
  */
-export const ActionSheetList = React.memo(function (
-  props: ActionSheetListProps
+export const ActionsheetList = React.memo(function (
+  props: ActionsheetListProps
 ) {
-  const resolvedProps = usePropsResolution(
-    "ActionSheetList",
-    props
-  ) as ActionSheetListProps;
-  const { sheetBgColor, onClose } = resolvedProps;
+  const { title, sheetBgColor, itemsData, onClose, ...resolvedProps } =
+    usePropsResolution("ActionsheetList", props) as ActionsheetListProps;
   const renderItem = React.useCallback(
-    ({ item, index }: ListRenderItemInfo<ActionSheetListItemData>) => {
+    ({ item, index }: { item: ActionsheetListItemData; index: number }) => {
       return (
         <Actionsheet.Item
           key={index}
@@ -63,17 +58,17 @@ export const ActionSheetList = React.memo(function (
     [onClose, sheetBgColor]
   );
   return (
-    <Actionsheet {...resolvedProps}>
-      <Actionsheet.Content bg={resolvedProps.sheetBgColor}>
-        {resolvedProps.title && (
+    <Actionsheet onClose={onClose} {...resolvedProps}>
+      <Actionsheet.Content bg={sheetBgColor}>
+        {title && (
           <Text bold fontSize="16" px={4}>
-            {resolvedProps.title}
+            {title}
           </Text>
         )}
         <FlatList
-          width="100%"
-          data={resolvedProps.itemsData}
+          data={itemsData}
           renderItem={renderItem}
+          width="100%"
           height={300}
         />
       </Actionsheet.Content>

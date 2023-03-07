@@ -1,17 +1,20 @@
 import { bitsToIndices, combineFlags } from "@systemic-games/pixels-core-utils";
 import { getFaceMask } from "@systemic-games/pixels-edit-animation";
 import {
+  FastButton,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
+import {
   Text,
-  HStack,
   Center,
-  VStack,
-  Box,
   Pressable,
   Modal,
-  Button,
   Checkbox,
   usePropsResolution,
   IModalProps,
+  Button,
+  View,
 } from "native-base";
 import React from "react";
 
@@ -33,28 +36,22 @@ function bitsToFaceIndex(maskNumber: number) {
  * @param props See {@link FaceMaskProps} for props parameters.
  */
 export function FaceMask(props: FaceMaskProps) {
-  const buttonsArray = Array(props.dieFaces).fill(0);
-
+  const facesArray = Array.from({ length: props.dieFaces }, (_, i) => i + 1);
   const resolvedProps = usePropsResolution("FaceMask", props);
   const [showModal, setShowModal] = React.useState(false);
   const [groupValue, setGroupValue] = React.useState<string[]>(
     bitsToFaceIndex(props.maskNumber)
   );
-
-  React.useEffect(() => {
-    setGroupValue(bitsToFaceIndex(props.maskNumber));
-  }, [props.maskNumber]);
-
   return (
     <>
-      <VStack>
+      <FastVStack>
         <Text bold> Face mask</Text>
         <Pressable
           onPress={() => {
             setShowModal(true);
           }}
         >
-          <Box
+          <View
             p="1"
             minH={resolvedProps.boxMinH}
             w={resolvedProps.boxW}
@@ -62,7 +59,7 @@ export function FaceMask(props: FaceMaskProps) {
             bg={resolvedProps.boxBg}
             alignContent="center"
           >
-            <HStack alignSelf="center" space={1} flexWrap="wrap">
+            <FastHStack alignSelf="center" flexWrap="wrap">
               {groupValue.length === 0 ? (
                 <Text>No faces selected</Text>
               ) : (
@@ -72,10 +69,11 @@ export function FaceMask(props: FaceMaskProps) {
                     .join(" / ")}
                 </Text>
               )}
-            </HStack>
-          </Box>
+            </FastHStack>
+          </View>
         </Pressable>
-      </VStack>
+      </FastVStack>
+
       <Modal
         isOpen={showModal}
         onClose={() => {
@@ -90,7 +88,7 @@ export function FaceMask(props: FaceMaskProps) {
         <Modal.Content bg={resolvedProps.bg}>
           <Center>
             <Modal.Header bg={resolvedProps.bg} fontSize={20}>
-              Select faces
+              Select Faces
             </Modal.Header>
           </Center>
           <Modal.Body bg={resolvedProps.bg}>
@@ -101,66 +99,53 @@ export function FaceMask(props: FaceMaskProps) {
                   setGroupValue(values || []);
                 }}
               >
-                <HStack space={2} flexWrap="wrap">
-                  {buttonsArray.map((_e, i) => (
-                    <Box key={i} p={resolvedProps.checkBoxP}>
-                      <Checkbox
-                        w={50}
-                        size={resolvedProps.checkBoxSize}
-                        alignSelf="center"
-                        key={i}
-                        value={(i + 1).toString()}
-                      >
-                        {i + 1}
-                      </Checkbox>
-                    </Box>
+                <FastHStack flexWrap="wrap">
+                  {facesArray.map((f) => (
+                    <Checkbox
+                      key={f}
+                      ml={f > 1 ? 2 : 0}
+                      m={resolvedProps.checkBoxMargin}
+                      w={50}
+                      size={resolvedProps.checkBoxSize}
+                      alignSelf="center"
+                      value={f.toString()}
+                    >
+                      {f}
+                    </Checkbox>
                   ))}
-                </HStack>
+                </FastHStack>
               </Checkbox.Group>
             </Center>
           </Modal.Body>
           <Center>
             <Modal.Footer bg={resolvedProps.bg}>
               <Button.Group space={2}>
-                <Button
+                <FastButton
                   h={10}
                   w={60}
                   onPress={() => {
-                    // setShowModal(false);
-                    const faces = [];
-                    for (let i = 1; i <= props.dieFaces; ++i) {
-                      faces.push(i.toString());
-                    }
-                    setGroupValue(faces);
-
                     setShowModal(false);
+                    setGroupValue(facesArray.map((n) => n.toString()));
                     // Combine the selected face into one maskValue
                     const maskValue = combineFlags(
-                      faces.map((f) => getFaceMask(Number(f)))
+                      facesArray.map((f) => getFaceMask(f))
                     );
-                    if (props.onCloseAction) props.onCloseAction(maskValue);
+                    props.onCloseAction?.(maskValue);
                   }}
                 >
                   All
-                </Button>
-                <Button
+                </FastButton>
+                <FastButton
                   h={10}
                   w={60}
                   onPress={() => {
-                    // setShowModal(false);
-                    setGroupValue([]);
-
-                    const groupValues: string[] = [];
                     setShowModal(false);
-                    // Combine the selected face into one maskValue
-                    const maskValue = combineFlags(
-                      groupValues.map((f) => getFaceMask(Number(f)))
-                    );
-                    if (props.onCloseAction) props.onCloseAction(maskValue);
+                    setGroupValue([]);
+                    props.onCloseAction?.(0);
                   }}
                 >
                   None
-                </Button>
+                </FastButton>
               </Button.Group>
             </Modal.Footer>
           </Center>

@@ -1,6 +1,8 @@
 export default {
   defaultProps: {
-    p: 2.5,
+    px: 2,
+    pt: 2,
+    pb: 1,
     h: "100%",
     w: "100%",
     lightBg: "primary.400",

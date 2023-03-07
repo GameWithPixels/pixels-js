@@ -2,17 +2,10 @@ import { Feather } from "@expo/vector-icons";
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
+  FastHStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import {
-  Actionsheet,
-  Box,
-  Center,
-  HStack,
-  Pressable,
-  ScrollView,
-  Text,
-} from "native-base";
+import { Actionsheet, Center, Pressable, ScrollView, Text } from "native-base";
 import React from "react";
 
 import { ProfileCard } from "./ProfileCard";
@@ -24,7 +17,7 @@ export interface ProfilesActionSheetProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
   profiles: Readonly<EditProfile>[]; // array of profiles information to be displayed inside the component
-  dieRender: (profile: Readonly<EditProfile>) => React.ReactNode;
+  dieRenderer: (profile: Readonly<EditProfile>) => React.ReactNode;
   w?: number;
   h?: number;
 }
@@ -47,7 +40,6 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
             p={1}
             h={props.h}
             alignItems="center"
-            space={1}
           >
             <Center w="90%" flexWrap="wrap">
               <Text bold fontSize="sm" alignSelf="center">
@@ -57,7 +49,7 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
                 Profiles
               </Text>
             </Center>
-            <Center>
+            <Center mt={1}>
               <Feather name="more-horizontal" size={35} color="white" />
             </Center>
           </Card>
@@ -73,24 +65,23 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
             {props.drawerTitle ? props.drawerTitle : "Available Profiles"}
           </Text>
           <ScrollView>
-            <HStack flexWrap="wrap" w="100%">
+            <FastHStack flexWrap="wrap" w="100%">
               {props.profiles?.map((profile, i) => (
-                <Box key={i} p={1}>
-                  <ProfileCard
-                    w="105px"
-                    h="130px"
-                    space={1}
-                    imageSize={70}
-                    selectable
-                    profileIndexInList={i}
-                    selectedProfileIndex={selectedProfile}
-                    onSelected={setSelectedProfile}
-                    profileName={profile.name}
-                    dieRender={() => props.dieRender(profile)}
-                  />
-                </Box>
+                <ProfileCard
+                  key={i}
+                  p={1}
+                  w="105px"
+                  h="130px"
+                  imageSize={70}
+                  selectable
+                  profileIndexInList={i}
+                  selectedProfileIndex={selectedProfile}
+                  onSelected={setSelectedProfile}
+                  name={profile.name}
+                  dieRenderer={() => props.dieRenderer(profile)}
+                />
               ))}
-            </HStack>
+            </FastHStack>
           </ScrollView>
         </Actionsheet.Content>
       </Actionsheet>

@@ -52,10 +52,6 @@ const fontSizes = {
 };
 
 const buttonTheme = {
-  baseStyle: {
-    minW: "2",
-    minH: "2",
-  },
   defaultProps: {
     bg: "primary.500",
     rounded: "lg",

@@ -6,17 +6,19 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
-  createSwipeableSideButton,
   ProfileRulesCard,
   PixelAppPage,
   getActionDescription,
   getConditionDescription,
+  SwipeableButtons,
+  FastVStack,
 } from "@systemic-games/react-native-pixels-components";
-import { Box, HStack, Pressable, VStack, Text } from "native-base";
+import { Box, Pressable, Text } from "native-base";
 import React from "react";
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
+  DragEndParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
 
@@ -45,10 +47,6 @@ function CreateRuleWidget({ onPress }: { onPress: () => void }) {
       </Card>
     </Pressable>
   );
-}
-
-function SeparatorItem() {
-  return <Box h={2} />;
 }
 
 export default function ProfilesRulesScreen({
@@ -119,67 +117,78 @@ export default function ProfilesRulesScreen({
     drag,
     isActive,
   }: RenderItemParams<EditRule>) {
+    const onPress = React.useCallback(() => {
+      navigation.navigate("ProfileEditRule", {
+        profileUuid: profile.uuid,
+        ruleIndex: profile.rules.indexOf(rule),
+      });
+    }, [rule]);
+
+    const buttons = React.useMemo(
+      () => [
+        {
+          onPress: () => duplicateRule(rule),
+          bg: "blue.500",
+          children: (
+            <MaterialIcons name="content-copy" size={24} color="white" />
+          ),
+        },
+        {
+          onPress: () => deleteRule(rule),
+          bg: "red.500",
+          children: (
+            <MaterialIcons name="delete-outline" size={24} color="white" />
+          ),
+        },
+      ],
+      [rule]
+    );
+
+    const renderActions = React.useCallback(
+      () => <SwipeableButtons width={120} buttons={buttons} />,
+      [buttons]
+    );
+
+    const data = React.useMemo(
+      () => ({
+        actions: rule.actions.map(getActionDescription),
+        condition: getConditionDescription(rule.condition),
+      }),
+      [rule.actions, rule.condition]
+    );
+
+    const containerStyle = React.useMemo(() => ({ marginVertical: 4 }), []);
+
     return (
       <ScaleDecorator>
         <Swipeable
-          renderRightActions={createSwipeableSideButton({
-            w: 120,
-            buttons: [
-              {
-                onPress: () => duplicateRule(rule),
-                bg: "blue.500",
-                icon: (
-                  <MaterialIcons name="content-copy" size={24} color="white" />
-                ),
-              },
-              {
-                onPress: () => deleteRule(rule),
-                bg: "red.500",
-                icon: (
-                  <MaterialIcons
-                    name="delete-outline"
-                    size={24}
-                    color="white"
-                  />
-                ),
-              },
-            ],
-          })}
+          containerStyle={containerStyle}
+          renderRightActions={renderActions}
         >
-          <Pressable
-            onPress={() => {
-              navigation.navigate("ProfileEditRule", {
-                profileUuid: profile.uuid,
-                ruleIndex: profile.rules.indexOf(rule),
-              });
-            }}
-            onLongPress={() => {
-              drag();
-            }}
-            disabled={isActive}
-          >
-            <ProfileRulesCard
-              ruleCardInfo={{
-                actions: rule.actions.map(getActionDescription),
-                condition: getConditionDescription(rule.condition),
-              }}
-            />
+          <Pressable onPress={onPress} onLongPress={drag} disabled={isActive}>
+            <ProfileRulesCard data={data} />
           </Pressable>
         </Swipeable>
       </ScaleDecorator>
     );
   }
 
+  const onDragEnd = React.useCallback(
+    ({ data }: DragEndParams<EditRule>) => {
+      profile.rules.length = 0;
+      profile.rules.push(...data);
+    },
+    [profile.rules]
+  );
+  const containerStyle = React.useMemo(() => ({ flex: 1 }), []);
+
   return (
     <PixelAppPage>
-      <VStack space={2} width="100%">
-        <HStack alignItems="center" width="100%">
-          <Box flex={1}>
-            <Box w={100} h={100}>
-              <DieRenderer renderData={getCachedDataSet(profile)} />
-            </Box>
-          </Box>
-          {/* <Box flex={2.5}>
+      <FastVStack w="100%" h="100%">
+        <Box alignSelf="center" w={100} h={100}>
+          <DieRenderer renderData={getCachedDataSet(profile)} />
+        </Box>
+        {/* <Box flex={2.5}>
             <Input
               bg="pixelColors.highlightGray"
               variant="filled"
@@ -204,22 +213,16 @@ export default function ProfilesRulesScreen({
               multiline
             />
           </Box> */}
-        </HStack>
-        <Text bold>Rules for this profile : </Text>
         <CreateRuleWidget onPress={addRule} />
-        <Box h="68%" p={1}>
-          <DraggableFlatList
-            data={profile.rules}
-            onDragEnd={({ data }) => {
-              profile.rules.length = 0;
-              profile.rules.push(...data);
-            }}
-            keyExtractor={getKeyForRule}
-            renderItem={RenderItem}
-            ItemSeparatorComponent={SeparatorItem}
-          />
-        </Box>
-      </VStack>
+        <Text bold>Rules for this profile:</Text>
+        <DraggableFlatList
+          data={profile.rules}
+          renderItem={RenderItem}
+          keyExtractor={getKeyForRule}
+          containerStyle={containerStyle}
+          onDragEnd={onDragEnd}
+        />
+      </FastVStack>
     </PixelAppPage>
   );
 }

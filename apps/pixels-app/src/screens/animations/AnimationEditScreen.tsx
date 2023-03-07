@@ -1,3 +1,4 @@
+// import { FontAwesome5 } from "@expo/vector-icons";
 import {
   EditAnimation,
   EditAnimationGradient, // simple gradient
@@ -10,15 +11,18 @@ import {
   EditAnimationNoise,
   EditPattern,
   createDataSetForAnimation,
+  EditWidgetData,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  AnimationTypeSelector,
-  Card,
   PixelAppPage,
+  AnimationTypeSelector,
   RenderWidget,
   getAnimationTitle,
+  FastVStack,
+  FastButton,
+  FastBox,
 } from "@systemic-games/react-native-pixels-components";
-import { VStack, ScrollView, Button, Box } from "native-base";
+import { FlatList, Box } from "native-base";
 import React from "react";
 
 import {
@@ -41,6 +45,7 @@ function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
     () => getEditWidgetsData(editAnim),
     [editAnim]
   );
+
   const patternAnimsRef = React.useRef(
     new Map<Readonly<EditPattern>, EditAnimation>()
   );
@@ -56,25 +61,48 @@ function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
     }
     return getCachedDataSet(anim);
   }, []);
+
+  const Separator = React.useCallback(() => {
+    return <FastBox h={2} />;
+  }, []);
+
+  const patternsParams = React.useMemo(
+    () => ({
+      patterns,
+      dieRenderer: (pattern: Readonly<EditPattern>) => (
+        <DieRenderer renderData={getRenderData(pattern)} />
+      ),
+    }),
+    [getRenderData, patterns]
+  );
+
+  const renderItem = React.useCallback(
+    ({
+      item: widget,
+      index,
+    }: {
+      item: Readonly<EditWidgetData>;
+      index: number;
+    }) => (
+      <RenderWidget
+        key={index}
+        widget={widget}
+        patternsParams={patternsParams}
+      />
+    ),
+    [patternsParams]
+  );
+
   return (
-    <>
-      <ScrollView>
-        <VStack p={2} h="100%" space={2} bg="gray.700" rounded="md">
-          {animWidgets.map((widget, key) => (
-            <RenderWidget
-              key={key}
-              widget={widget}
-              patternsParams={{
-                patterns,
-                dieRenderer: (pattern) => (
-                  <DieRenderer renderData={getRenderData(pattern)} />
-                ),
-              }}
-            />
-          ))}
-        </VStack>
-      </ScrollView>
-    </>
+    <FlatList
+      data={animWidgets}
+      renderItem={renderItem}
+      ItemSeparatorComponent={Separator}
+      p={2}
+      h="100%"
+      bg="gray.700"
+      rounded="md"
+    />
   );
 }
 
@@ -85,27 +113,76 @@ export default function AnimationEditScreen({
     () => getTempAnimationFromUuid(route.params.animationUuid) // TODO not updated if animationUuid changes
   );
 
-  const [renderData, setRenderData] = React.useState(
-    createDataSetForAnimation(editAnim).toDataSet()
-  );
-
   const updateAnim = useAppUpdateAnimation();
   const lastAnimRef = React.useRef(editAnim);
   lastAnimRef.current = editAnim;
   React.useEffect(() => {
     return () => {
+      // TODO update anim on leave
       updateAnim(lastAnimRef.current);
     };
   }, [updateAnim]);
+
+  const [renderData, setRenderData] = React.useState(
+    createDataSetForAnimation(editAnim).toDataSet()
+  );
+  const updateDieRender = React.useCallback(
+    () => setRenderData(createDataSetForAnimation(editAnim).toDataSet()),
+    [editAnim]
+  );
 
   const animTypeText = React.useMemo(
     () => getAnimationTitle(editAnim.type),
     [editAnim.type]
   );
 
+  const animTypes = React.useMemo(
+    () => [
+      {
+        label: getAnimationTitle(AnimationTypeValues.simple),
+        onSelect: () => {
+          setEditAnim(new EditAnimationSimple({ uuid: editAnim.uuid }));
+        },
+      },
+      {
+        label: getAnimationTitle(AnimationTypeValues.rainbow),
+        onSelect: () => {
+          setEditAnim(new EditAnimationRainbow({ uuid: editAnim.uuid }));
+        },
+      },
+      {
+        label: getAnimationTitle(AnimationTypeValues.gradient),
+        onSelect: () => {
+          setEditAnim(new EditAnimationGradient({ uuid: editAnim.uuid }));
+        },
+      },
+      {
+        label: getAnimationTitle(AnimationTypeValues.keyframed),
+        onSelect: () => {
+          setEditAnim(new EditAnimationKeyframed({ uuid: editAnim.uuid }));
+        },
+      },
+      {
+        label: getAnimationTitle(AnimationTypeValues.gradientPattern),
+        onSelect: () => {
+          setEditAnim(
+            new EditAnimationGradientPattern({ uuid: editAnim.uuid })
+          );
+        },
+      },
+      {
+        label: getAnimationTitle(AnimationTypeValues.noise),
+        onSelect: () => {
+          setEditAnim(new EditAnimationNoise({ uuid: editAnim.uuid }));
+        },
+      },
+    ],
+    [editAnim.uuid]
+  );
+
   return (
     <PixelAppPage>
-      <VStack space={2} h="100%">
+      <FastVStack h="100%">
         {/* <Center bg="white" rounded="lg" px={2} h={9}>
           <Input
             InputRightElement={
@@ -117,64 +194,17 @@ export default function AnimationEditScreen({
             color="black"
           />
         </Center> */}
-        <Card bg="pixelColors.softBlack" shadow={0} w="100%" p={0} />
         <Box p={1} w="100%" h={200} rounded="lg">
           <DieRenderer renderData={renderData} />
-          <Button
-            onPress={() =>
-              setRenderData(createDataSetForAnimation(editAnim).toDataSet())
-            }
-          >
-            Apply
-          </Button>
+          <FastButton onPress={updateDieRender}>Apply</FastButton>
         </Box>
         <AnimationTypeSelector
+          my={2}
           label={animTypeText}
-          itemsData={[
-            {
-              label: getAnimationTitle(AnimationTypeValues.simple),
-              onSelect: () => {
-                setEditAnim(new EditAnimationSimple({ uuid: editAnim.uuid }));
-              },
-            },
-            {
-              label: getAnimationTitle(AnimationTypeValues.rainbow),
-              onSelect: () => {
-                setEditAnim(new EditAnimationRainbow({ uuid: editAnim.uuid }));
-              },
-            },
-            {
-              label: getAnimationTitle(AnimationTypeValues.gradient),
-              onSelect: () => {
-                setEditAnim(new EditAnimationGradient({ uuid: editAnim.uuid }));
-              },
-            },
-            {
-              label: getAnimationTitle(AnimationTypeValues.keyframed),
-              onSelect: () => {
-                setEditAnim(
-                  new EditAnimationKeyframed({ uuid: editAnim.uuid })
-                );
-              },
-            },
-            {
-              label: getAnimationTitle(AnimationTypeValues.gradientPattern),
-              onSelect: () => {
-                setEditAnim(
-                  new EditAnimationGradientPattern({ uuid: editAnim.uuid })
-                );
-              },
-            },
-            {
-              label: getAnimationTitle(AnimationTypeValues.noise),
-              onSelect: () => {
-                setEditAnim(new EditAnimationNoise({ uuid: editAnim.uuid }));
-              },
-            },
-          ]}
+          itemsData={animTypes}
         />
         <AnimationEditor editAnim={editAnim} />
-      </VStack>
+      </FastVStack>
     </PixelAppPage>
   );
 }

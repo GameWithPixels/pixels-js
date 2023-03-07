@@ -1,4 +1,4 @@
-import { Box, Progress, Text, usePropsResolution } from "native-base";
+import { Progress, Text, usePropsResolution, View } from "native-base";
 import {
   ColorType,
   SizeType,
@@ -28,7 +28,7 @@ export function ProgressBar(props: ProgressBarProps) {
     props
   ) as ProgressBarProps;
   return (
-    <Box bg={resolvedProps.boxBg} p="3" rounded="lg">
+    <View bg={resolvedProps.boxBg} p="3" rounded="lg">
       <Progress
         value={props.progress}
         size={resolvedProps.size}
@@ -43,6 +43,6 @@ export function ProgressBar(props: ProgressBarProps) {
             : props.progress + "%"}
         </Text>
       )}
-    </Box>
+    </View>
   );
 }

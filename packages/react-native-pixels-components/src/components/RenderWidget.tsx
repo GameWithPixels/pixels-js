@@ -21,13 +21,11 @@ import {
 import { Text } from "native-base";
 import React from "react";
 
+import { AnimationSelector } from "./AnimationSelector";
 import { GradientColorSelection, SimpleColorSelection } from "./ColorSelection";
 import { FaceMask } from "./FaceMask";
 import { FaceSelector, PlayBackFace } from "./FaceSelector";
-import {
-  AnimationsActionSheet,
-  PatternActionSheet,
-} from "./PatternsActionSheet";
+import { PatternSelector } from "./PatternSelector";
 import { RuleComparisonWidget } from "./RuleComparisonWidget";
 import { UserTextSelection } from "./UserTextSelection";
 
@@ -59,11 +57,15 @@ export function RenderWidget({
 }: RenderWidgetProps) {
   // Trigger a re-render whenever the value is updated
   const [_, forceUpdate] = React.useReducer((b) => !b, false);
-  const update = (value: any) => {
-    // @ts-ignore
-    widget.update(value);
-    forceUpdate();
-  };
+  const update = React.useCallback(
+    (value: any) => {
+      // @ts-ignore
+      widget.update(value);
+      forceUpdate();
+    },
+    [widget]
+  );
+
   const type = widget.type;
   switch (type) {
     case "toggle":
@@ -147,7 +149,8 @@ export function RenderWidget({
         "RenderWidget requires `patternsParams` to be set to render a RGB pattern"
       );
       return (
-        <PatternActionSheet
+        <PatternSelector
+          title={widget.displayName}
           initialPattern={widget.getValue()}
           patterns={patternsParams?.patterns}
           dieRenderer={patternsParams.dieRenderer}
@@ -163,7 +166,8 @@ export function RenderWidget({
         "RenderWidget requires `patternsParams` to be set to render a grayscale pattern"
       );
       return (
-        <PatternActionSheet
+        <PatternSelector
+          title={widget.displayName}
           initialPattern={widget.getValue()}
           patterns={patternsParams?.patterns}
           dieRenderer={patternsParams.dieRenderer}
@@ -225,7 +229,8 @@ export function RenderWidget({
         "RenderWidget requires `animationsParams` to be set to render a grayscale pattern"
       );
       return (
-        <AnimationsActionSheet
+        <AnimationSelector
+          title={widget.displayName}
           animations={animationsParams?.animations}
           dieRenderer={animationsParams.dieRenderer}
           initialAnimation={widget.getValue()}

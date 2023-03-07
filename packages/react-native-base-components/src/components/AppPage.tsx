@@ -1,4 +1,4 @@
-import { Box, StatusBar, usePropsResolution } from "native-base";
+import { Box, IFlexProps, StatusBar, usePropsResolution } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -6,7 +6,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 /**
  * Props for AppPage component.
  */
-export interface AppPageProps extends React.PropsWithChildren {
+export interface AppPageProps extends IFlexProps {
   h?: number | string;
   w?: number | string;
   p?: number | string;
@@ -22,16 +22,7 @@ export function AppPage(props: AppPageProps) {
   return (
     <SafeAreaProvider>
       <StatusBar />
-      <Box
-        paddingX={2}
-        paddingTop={2}
-        paddingBottom={1}
-        bg={resolvedProps.bg}
-        h={resolvedProps.h}
-        w={resolvedProps.w}
-      >
-        {props.children}
-      </Box>
+      <Box {...resolvedProps} />
     </SafeAreaProvider>
   );
 }

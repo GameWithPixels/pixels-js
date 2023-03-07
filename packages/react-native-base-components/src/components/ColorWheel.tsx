@@ -1,5 +1,5 @@
 import { ColorUtils } from "@systemic-games/pixels-core-animation";
-import { Box, Button, Center, VStack } from "native-base";
+import { Button } from "native-base";
 import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 import Svg, { Defs, Polygon, RadialGradient, Stop } from "react-native-svg";
@@ -9,6 +9,9 @@ import {
   generateColorWheel,
   Point,
 } from "../colorWheelUtils";
+import { FastBox } from "./FastBox";
+import { FastButton } from "./FastButton";
+import { FastVStack } from "./FastVStack";
 
 /**
  * Transform coordinate points into a single string for svg path.
@@ -95,7 +98,7 @@ export function ColorWheel(props: ColorWheelProps) {
     return (
       <>
         {shapes.map((s, i) => (
-          <Box key={i}>
+          <FastBox key={i}>
             <Defs>
               <RadialGradient
                 id={toStringColor(s.color)}
@@ -143,7 +146,7 @@ export function ColorWheel(props: ColorWheelProps) {
                 props.onSelectColor?.(toStringColor(s.color));
               }}
             />
-          </Box>
+          </FastBox>
         ))}
       </>
     );
@@ -165,57 +168,55 @@ export function ColorWheel(props: ColorWheelProps) {
     );
   };
   return (
-    <Center width="100%">
-      <VStack space={2} w="100%" alignItems="center">
-        <Button.Group isAttached w="100%">
-          <Button
-            flex={1}
-            bgColor={
-              wheelColorType === ColorWheelColorType.dim
-                ? buttonHighlightColor
-                : "primary.500"
-            }
-            onPress={() => {
-              setWheelColorType(ColorWheelColorType.dim);
-              setColorBrightness(0.5);
-            }}
-          >
-            Dim
-          </Button>
-          <Button
-            flex={1}
-            bgColor={
-              wheelColorType === ColorWheelColorType.normal
-                ? buttonHighlightColor
-                : "primary.500"
-            }
-            onPress={() => {
-              setWheelColorType(ColorWheelColorType.normal);
-              setColorBrightness(1);
-            }}
-          >
-            Normal
-          </Button>
-          <Button
-            flex={1}
-            bgColor={
-              wheelColorType === ColorWheelColorType.bright
-                ? buttonHighlightColor
-                : "primary.500"
-            }
-            onPress={() => {
-              setWheelColorType(ColorWheelColorType.bright);
-              setColorBrightness(2);
-            }}
-          >
-            Bright
-          </Button>
-        </Button.Group>
-        <Svg height={300} width={300} viewBox="0 0 80 80">
-          {polygons()}
-          {selector()}
-        </Svg>
-      </VStack>
-    </Center>
+    <FastVStack w="100%" alignItems="center">
+      <Button.Group mb={2} isAttached w="100%">
+        <FastButton
+          flex={1}
+          bgColor={
+            wheelColorType === ColorWheelColorType.dim
+              ? buttonHighlightColor
+              : "primary.500"
+          }
+          onPress={() => {
+            setWheelColorType(ColorWheelColorType.dim);
+            setColorBrightness(0.5);
+          }}
+        >
+          Dim
+        </FastButton>
+        <FastButton
+          flex={1}
+          bgColor={
+            wheelColorType === ColorWheelColorType.normal
+              ? buttonHighlightColor
+              : "primary.500"
+          }
+          onPress={() => {
+            setWheelColorType(ColorWheelColorType.normal);
+            setColorBrightness(1);
+          }}
+        >
+          Normal
+        </FastButton>
+        <FastButton
+          flex={1}
+          bgColor={
+            wheelColorType === ColorWheelColorType.bright
+              ? buttonHighlightColor
+              : "primary.500"
+          }
+          onPress={() => {
+            setWheelColorType(ColorWheelColorType.bright);
+            setColorBrightness(2);
+          }}
+        >
+          Bright
+        </FastButton>
+      </Button.Group>
+      <Svg height={300} width={300} viewBox="0 0 80 80">
+        {polygons()}
+        {selector()}
+      </Svg>
+    </FastVStack>
   );
 }

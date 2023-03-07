@@ -55,7 +55,7 @@ function insert<T extends Serializable.UniqueData>(
         `Redux: Could not find data with uuid ${afterUuid} to insert new value after it`
       );
     }
-    array.splice(index, 0, value);
+    array.splice(index + 1, 0, value);
   } else {
     array.push(value);
   }

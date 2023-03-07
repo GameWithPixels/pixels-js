@@ -67,8 +67,9 @@ function PairedPixelList({
               switchPixelsDisplay(!pixelsDisplay);
             }}
             isChecked={pixelsDisplay}
-            icon={<AntDesign name="bars" size={24} color="white" />}
-          />
+          >
+            <AntDesign name="bars" size={24} color="white" />
+          </Toggle>
           <AntDesign name="appstore-o" size={22} color="white" />
         </HStack>
         <Box rounded="md" p={2} bg="gray.700" width="100%">
@@ -82,22 +83,21 @@ function PairedPixelList({
                 )?.profileUuid;
                 const profile = profiles.find((p) => p.uuid === uuid);
                 return (
-                  <Box p={1} key={pixel.pixelId} width="100%">
-                    <PairedPixelInfoComponent
-                      pixel={pixel}
-                      profileName={profile?.name}
-                      onPress={() => onPress(pixel)}
-                      dieRenderer={() => {
-                        return (
-                          <DieRenderer
-                            renderData={
-                              profile ? getCachedDataSet(profile) : undefined
-                            }
-                          />
-                        );
-                      }}
-                    />
-                  </Box>
+                  <PairedPixelInfoComponent
+                    key={pixel.pixelId}
+                    pixel={pixel}
+                    profileName={profile?.name}
+                    onPress={() => onPress(pixel)}
+                    dieRenderer={() => {
+                      return (
+                        <DieRenderer
+                          renderData={
+                            profile ? getCachedDataSet(profile) : undefined
+                          }
+                        />
+                      );
+                    }}
+                  />
                 );
               })}
             </VStack>

@@ -1,5 +1,4 @@
 export default {
-  baseStyle: {},
   defaultProps: {
     rounded: "lg",
     bg: "primary.700",

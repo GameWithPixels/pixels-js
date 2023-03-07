@@ -11,7 +11,8 @@ import {
   EditConditionRolling,
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
-import { Box, HStack, VStack } from "native-base";
+import { FastBox } from "@systemic-games/react-native-base-components";
+import { View } from "native-base";
 import React from "react";
 
 import { getConditionTitle } from "../titlesUtils";
@@ -27,11 +28,13 @@ function ConditionEditor({ editCondition }: ConditionEditorProps) {
     return getEditWidgetsData(editCondition);
   }, [editCondition]);
   return (
-    <VStack p={2} space={2} bg="gray.700" rounded="md">
-      {conditionWidgets.map((widget, key) => (
-        <RenderWidget key={key} widget={widget} />
+    <View mt={2} p={2} bg="gray.700" rounded="md">
+      {conditionWidgets.map((widget, i) => (
+        <FastBox key={i} pt={i > 0 ? 2 : 0}>
+          <RenderWidget widget={widget} />
+        </FastBox>
       ))}
-    </VStack>
+    </View>
   );
 }
 
@@ -42,60 +45,52 @@ export interface RuleConditionWidgetProps extends React.PropsWithChildren {
 
 export function RuleConditionWidget(props: RuleConditionWidgetProps) {
   return (
-    <VStack
-      space={2}
-      p={4}
+    <View
+      p={3}
       borderWidth={1}
       borderColor="gray.300"
       rounded="lg"
       bg="darkBlue.700"
     >
-      <HStack space={2} width="100%" alignItems="center">
-        <Box flex={10} w="100%">
-          <RuleConditionSelection
-            conditionTitle={getConditionTitle(props.condition.type)}
-            possibleConditions={[
-              {
-                label: getConditionTitle(ConditionTypeValues.faceCompare),
-                onSelect: () =>
-                  props.setCondition(new EditConditionFaceCompare()),
-              },
-              {
-                label: getConditionTitle(ConditionTypeValues.helloGoodbye),
-                onSelect: () =>
-                  props.setCondition(new EditConditionHelloGoodbye()),
-              },
-              {
-                label: getConditionTitle(ConditionTypeValues.handling),
-                onSelect: () => props.setCondition(new EditConditionHandling()),
-              },
-              {
-                label: getConditionTitle(ConditionTypeValues.rolling),
-                onSelect: () => props.setCondition(new EditConditionRolling()),
-              },
-              {
-                label: getConditionTitle(ConditionTypeValues.crooked),
-                onSelect: () => props.setCondition(new EditConditionCrooked()),
-              },
-              {
-                label: getConditionTitle(ConditionTypeValues.connectionState),
-                onSelect: () =>
-                  props.setCondition(new EditConditionConnectionState()),
-              },
-              {
-                label: getConditionTitle(ConditionTypeValues.batteryState),
-                onSelect: () =>
-                  props.setCondition(new EditConditionBatteryState()),
-              },
-              {
-                label: getConditionTitle(ConditionTypeValues.idle),
-                onSelect: () => props.setCondition(new EditConditionIdle()),
-              },
-            ]}
-          />
-        </Box>
-      </HStack>
+      <RuleConditionSelection
+        conditionTitle={getConditionTitle(props.condition.type)}
+        possibleConditions={[
+          {
+            label: getConditionTitle(ConditionTypeValues.faceCompare),
+            onSelect: () => props.setCondition(new EditConditionFaceCompare()),
+          },
+          {
+            label: getConditionTitle(ConditionTypeValues.helloGoodbye),
+            onSelect: () => props.setCondition(new EditConditionHelloGoodbye()),
+          },
+          {
+            label: getConditionTitle(ConditionTypeValues.handling),
+            onSelect: () => props.setCondition(new EditConditionHandling()),
+          },
+          {
+            label: getConditionTitle(ConditionTypeValues.rolling),
+            onSelect: () => props.setCondition(new EditConditionRolling()),
+          },
+          {
+            label: getConditionTitle(ConditionTypeValues.crooked),
+            onSelect: () => props.setCondition(new EditConditionCrooked()),
+          },
+          {
+            label: getConditionTitle(ConditionTypeValues.connectionState),
+            onSelect: () =>
+              props.setCondition(new EditConditionConnectionState()),
+          },
+          {
+            label: getConditionTitle(ConditionTypeValues.batteryState),
+            onSelect: () => props.setCondition(new EditConditionBatteryState()),
+          },
+          {
+            label: getConditionTitle(ConditionTypeValues.idle),
+            onSelect: () => props.setCondition(new EditConditionIdle()),
+          },
+        ]}
+      />
       <ConditionEditor editCondition={props.condition} />
-    </VStack>
+    </View>
   );
 }

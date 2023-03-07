@@ -1,12 +1,8 @@
-import {
-  HStack,
-  Switch,
-  ISwitchProps,
-  Text,
-  usePropsResolution,
-} from "native-base";
+import { Switch, ISwitchProps, Text, usePropsResolution } from "native-base";
 import { SizeType } from "native-base/lib/typescript/components/types";
 import React from "react";
+
+import { FastHStack } from "./FastHStack";
 
 /**
  * Props for {@link Toggle} component.
@@ -16,7 +12,6 @@ export interface ToggleProps extends ISwitchProps {
   textSize?: string | number | SizeType;
   toggleSize?: SizeType;
   space?: number | string; // Spacing between text and toggle
-  icon?: React.ReactNode | React.ReactNode[]; // Icon displayed ont the left of the toggle
 }
 
 /**
@@ -25,18 +20,21 @@ export interface ToggleProps extends ISwitchProps {
  * @param props See {@link ToggleProps} for props parameters.
  */
 export function Toggle(props: ToggleProps) {
-  const resolvedProps = usePropsResolution("Toggle", props) as ToggleProps;
+  const { title, textSize, children, ...resolvedProps } = usePropsResolution(
+    "Toggle",
+    props
+  ) as ToggleProps;
   return (
-    <HStack space={resolvedProps.space} alignItems="center">
-      <Text fontSize={props.textSize}>{props.title}</Text>
-      {props.icon}
+    <FastHStack alignItems="center">
+      <Text mr={resolvedProps.space} fontSize={textSize}>
+        {title}
+      </Text>
+      {children}
       <Switch
         {...resolvedProps}
-        onThumbColor={resolvedProps.onThumbColor}
-        offThumbColor={resolvedProps.offThumbColor}
-        onTrackColor={resolvedProps.onTrackColor}
+        ml={children ? resolvedProps.space : 0}
         size={resolvedProps.toggleSize}
       />
-    </HStack>
+    </FastHStack>
   );
 }

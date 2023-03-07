@@ -2,11 +2,11 @@ import { Fontisto } from "@expo/vector-icons";
 import {
   PercentageDisplay,
   IconParams,
+  FastHStack,
 } from "@systemic-games/react-native-base-components";
 import {
-  Box,
   Center,
-  HStack,
+  IFlexProps,
   IIconProps,
   ITextProps,
   Text,
@@ -14,18 +14,15 @@ import {
 } from "native-base";
 import React from "react";
 
-import { PixelTheme } from "../theme";
-
 /**
  * Props for {@link BatteryLevel} component.
  */
-interface BatteryLevelProps {
+interface BatteryLevelProps extends IFlexProps {
   percentage: number; // current battery percentage value (between 0 and 1)
   isCharging?: boolean;
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
   _icon?: Partial<IIconProps>; // parameter fro styling battery icon size
-  size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for BatteryLevel component
-  // size?: "sm" | "md" | "lg" | "xl" | "2xl";
+  // TODO size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for BatteryLevel component
 }
 
 // Battery icons to display from empty to full as required by PercentageDisplay
@@ -42,23 +39,22 @@ const icons: IconParams[] = [
  * @param props See {@link BatteryLevelProps} for props parameters.
  */
 export function BatteryLevel(props: BatteryLevelProps) {
-  const resolvedProps = usePropsResolution("BatteryLevel", props);
+  const { percentage, isCharging, _text, _icon, colors, ...flexProps } =
+    usePropsResolution("BatteryLevel", props);
   return (
-    <Center>
-      <HStack space={3} alignItems="center" w="100%">
-        <Box>
-          <PercentageDisplay
-            _icon={resolvedProps._icon}
-            icons={icons}
-            colors={resolvedProps.colors}
-            percentage={resolvedProps.percentage}
-          />
-        </Box>
-        <Text {...resolvedProps._text}>
-          {resolvedProps.isCharging ? "⚡" : ""}
-          {resolvedProps.percentage + "%"}
+    <Center {...flexProps}>
+      <FastHStack alignItems="center" w="100%">
+        <PercentageDisplay
+          _icon={_icon}
+          icons={icons}
+          colors={colors}
+          percentage={percentage}
+        />
+        <Text {..._text} ml={3}>
+          {isCharging ? "⚡" : ""}
+          {percentage + "%"}
         </Text>
-      </HStack>
+      </FastHStack>
     </Center>
   );
 }
