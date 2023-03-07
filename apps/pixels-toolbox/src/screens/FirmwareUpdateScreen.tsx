@@ -1,4 +1,8 @@
-import { BLE } from "@systemic-games/react-native-pixels-connect";
+import {
+  BleScanner,
+  Central,
+  ScannedPeripheral,
+} from "@systemic-games/react-native-pixels-connect";
 import {
   Box,
   Button,
@@ -26,7 +30,7 @@ function formatAddress(address: number): string {
   return address.toString(16).toUpperCase();
 }
 
-function PeripheralInfo({ peripheral }: { peripheral: BLE.ScannedPeripheral }) {
+function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
   return (
     <>
       <Text>Name: {peripheral.name}</Text>
@@ -36,7 +40,7 @@ function PeripheralInfo({ peripheral }: { peripheral: BLE.ScannedPeripheral }) {
   );
 }
 
-function keyExtractor(p: BLE.ScannedPeripheral) {
+function keyExtractor(p: ScannedPeripheral) {
   return p.systemId;
 }
 function Separator() {
@@ -76,11 +80,11 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   }, [dfuFiles]);
 
   // DFU
-  const [dfuTarget, setDfuTarget] = useState<BLE.ScannedPeripheral>();
+  const [dfuTarget, setDfuTarget] = useState<ScannedPeripheral>();
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
     useUpdateFirmware();
   const onSelect = useCallback(
-    (sp: BLE.ScannedPeripheral) => {
+    (sp: ScannedPeripheral) => {
       setDfuTarget((dfuTarget) => {
         if (!dfuTarget) {
           const filesInfo = dfuFiles.map(getDfuFileInfo);
@@ -90,7 +94,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
           const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
           if (firmware?.pathname?.length) {
             dfuTarget = sp;
-            BLE.Central.connectPeripheral(sp.systemId, (e) => {
+            Central.connectPeripheral(sp.systemId, (e) => {
               if (e.connectionStatus === "ready") {
                 console.log("updateFirmware", sp.address, firmware?.pathname);
                 updateFirmware(
@@ -110,12 +114,12 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
 
   // Scan list
   const [scannedPeripherals, setScannedPeripherals] = useState<
-    BLE.ScannedPeripheral[]
+    ScannedPeripheral[]
   >([]);
-  const pendingScans = useRef<BLE.ScannedPeripheral[]>([]);
+  const pendingScans = useRef<ScannedPeripheral[]>([]);
   // Queue scan events and process them in batch
   useEffect(() => {
-    BLE.Scanner.start("", (sp: BLE.ScannedPeripheral) => {
+    BleScanner.start("", (sp: ScannedPeripheral) => {
       const arr = pendingScans.current;
       const i = arr.findIndex((item) => item.systemId === sp.systemId);
       if (i < 0) {
@@ -125,7 +129,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
       }
     }).catch(errorHandler);
     return () => {
-      BLE.Scanner.stop().catch(errorHandler);
+      BleScanner.stop().catch(errorHandler);
     };
   }, [errorHandler]);
   // Process scan events in batches
@@ -163,7 +167,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
 
   // FlatList item rendering
   const renderItem = useCallback(
-    ({ item: sp }: { item: BLE.ScannedPeripheral }) => (
+    ({ item: sp }: { item: ScannedPeripheral }) => (
       <Pressable
         onPress={() => onSelect(sp)}
         borderColor="gray.500"

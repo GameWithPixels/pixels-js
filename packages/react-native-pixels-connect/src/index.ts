@@ -1,7 +1,4 @@
-import * as BLE from "@systemic-games/react-native-bluetooth-le";
-export { BLE };
-
-export * from "./ble";
+export * from "@systemic-games/react-native-bluetooth-le";
 
 export { default as PixelScanner } from "./PixelScanner";
 export * from "./PixelScanner";

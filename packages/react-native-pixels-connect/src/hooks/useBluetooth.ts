@@ -1,12 +1,11 @@
+import { Central } from "@systemic-games/react-native-bluetooth-le";
 import { useEffect } from "react";
-
-import { initializeBle, shutdownBle } from "../ble";
 
 export function useBluetooth(): void {
   useEffect(() => {
-    initializeBle().catch(console.error);
+    Central.initialize().catch(console.error);
     return () => {
-      shutdownBle().catch(console.error);
+      Central.shutdown().catch(console.error);
     };
   }, []);
 }
