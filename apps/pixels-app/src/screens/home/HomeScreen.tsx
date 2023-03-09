@@ -182,7 +182,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   useFocusEffect(
     React.useCallback(() => {
-      setTimeout(() => scannerDispatch("start"), 1000); //TODO remove this delay
+      scannerDispatch("start");
       return () => {
         scannerDispatch("stop");
       };
