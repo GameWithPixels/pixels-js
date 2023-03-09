@@ -110,13 +110,13 @@ export interface ScannedPeripheral extends Device {
 
 const Central = {
   // May be called multiple times
-  async initialize(): Promise<void> {
+  initialize(): void {
     if (!_connStatusSubs) {
       if (!_nativeEmitter) {
         _nativeEmitter = new NativeEventEmitter(BluetoothLE);
       }
       // Initialize native module and event emitter
-      await BluetoothLE.bleInitialize();
+      // await BluetoothLE.bleInitialize();
 
       // Listen to native connection events
       _connStatusSubs = _nativeEmitter.addListener(
@@ -191,7 +191,7 @@ const Central = {
     }
   },
 
-  async shutdown(): Promise<void> {
+  shutdown(): void {
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
     _connStatusSubs?.remove();
@@ -199,7 +199,7 @@ const Central = {
     _valueChangedSubs?.remove();
     _valueChangedSubs = undefined;
     _peripherals.clear();
-    await BluetoothLE.bleShutdown();
+    // await BluetoothLE.bleShutdown();
     console.log("[BLE] Central has shutdown");
   },
 

@@ -3,9 +3,9 @@ import { useEffect } from "react";
 
 export function useBluetooth(): void {
   useEffect(() => {
-    Central.initialize().catch(console.error);
+    Central.initialize();
     return () => {
-      Central.shutdown().catch(console.error);
+      Central.shutdown();
     };
   }, []);
 }
