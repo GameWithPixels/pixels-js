@@ -1,6 +1,9 @@
-import { Box, IBoxProps } from "native-base";
+import { FastBox, FastBoxProps } from "./FastBox";
 
-export function FastHStack(props: IBoxProps) {
+/**
+ * Simpler version of Native Base HStack without theme support and with less props.
+ */
+export function FastHStack(props: FastBoxProps) {
   // No theming here, so no call to usePropsResolution()
-  return <Box {...props} flexDir="row" />;
+  return <FastBox {...props} flexDir="row" />;
 }

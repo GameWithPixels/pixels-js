@@ -14,6 +14,8 @@ export * from "./components/Slider";
 export * from "./components/Swipeable";
 export * from "./components/Histogram";
 
+export * from "./components/HView";
 export * from "./components/FastVStack";
 export * from "./components/FastHStack";
 export * from "./components/FastButton";
+export * from "./components/FastBox";
