@@ -119,8 +119,8 @@ export function DetailedProfileCard({
         onPress?.();
       }}
     >
-      <Card p={3} borderWidth={isSelected ? 2 : borderWidth} {...flexProps}>
-        <FastHStack h="100%">
+      <Card p={1} borderWidth={isSelected ? 2 : borderWidth} {...flexProps}>
+        <FastHStack w="100%">
           {/* Die render */}
           {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
           {/* Profile info */}

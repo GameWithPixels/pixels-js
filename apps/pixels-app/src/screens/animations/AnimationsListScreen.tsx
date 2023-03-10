@@ -10,7 +10,7 @@ import {
   PixelAppPage,
   SwipeableButtons,
 } from "@systemic-games/react-native-pixels-components";
-import { FlatList } from "native-base";
+import { ScrollView } from "native-base";
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
 
@@ -104,7 +104,7 @@ const AnimationSwipeableCard = React.memo(function ({
         dieRenderer={dieRenderer}
         w="100%"
         h={100}
-        imageSize={70}
+        imageSize={90}
         borderWidth={1}
       />
     </Swipeable>
@@ -158,7 +158,8 @@ function AnimationsList({
 
   return (
     <>
-      <FlatList
+      {/* TODO GLView is crashing when used in FlatList */}
+      {/* <FlatList
         data={animations}
         renderItem={renderItem}
         initialNumToRender={8}
@@ -167,8 +168,10 @@ function AnimationsList({
         bg="gray.700"
         rounded="lg"
         p={2}
-      />
-
+      /> */}
+      <ScrollView w="100%" bg="gray.700" rounded="lg" p={2}>
+        {animations.map((anim) => renderItem({ item: anim }))}
+      </ScrollView>
       {/* Action sheet for exporting an animation */}
       <ExportEntityActionsheet isOpen={isOpen} onClose={onClose} />
     </>

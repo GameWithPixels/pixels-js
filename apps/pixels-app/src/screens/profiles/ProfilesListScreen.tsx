@@ -133,7 +133,7 @@ function ProfileSwipeableCard({
         hasSound={false}
         w="100%"
         h={100}
-        imageSize={70}
+        imageSize={90}
         borderWidth={1}
       />
     </Swipeable>

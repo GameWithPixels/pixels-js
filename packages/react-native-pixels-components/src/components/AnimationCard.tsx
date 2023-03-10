@@ -28,8 +28,8 @@ export function AnimationCard({
 }: AnimationCardProps) {
   return (
     <Pressable onPress={onPress}>
-      <Card p={3} {...flexProps}>
-        <FastHStack h="100%">
+      <Card p={1} {...flexProps}>
+        <FastHStack w="100%">
           {/* Die render */}
           {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
           {/* Animation info */}
