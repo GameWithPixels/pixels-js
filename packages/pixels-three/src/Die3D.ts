@@ -52,6 +52,13 @@ export default class Die3D extends THREE.Object3D {
     });
   }
 
+  dispose(): void {
+    this._lights.forEach((l) => l.dispose());
+    this._lights.length = 0;
+    this._materials.forEach((m) => m.dispose());
+    this._materials.length = 0;
+  }
+
   getLEDColor(index: number): THREE.Color {
     this._checkLEDIndex(index);
     return this._materials[index].emissive.clone();

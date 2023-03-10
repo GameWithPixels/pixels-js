@@ -10,112 +10,158 @@ import { Renderer, THREE } from "expo-three";
 import { Text } from "native-base";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
+// eslint-disable-next-line import/namespace
+import { StyleSheet } from "react-native";
 
 import createDie3DAsync from "./createDie3DAsync";
 
-function onContextCreate(
-  gl: ExpoWebGLRenderingContext,
-  die3d: Die3D,
-  getAnimInstances: () => AnimationInstance[]
-): void {
-  // Renderer
-  const renderer = new Renderer({ gl, alpha: true });
-  // set size of buffer to be equal to drawing buffer width
-  renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
+class SceneRenderer {
+  private readonly _die3d: Die3D;
+  private readonly _getAnimInstances: () => AnimationInstance[];
+  private _renderScene?: () => void;
+  private _dispose?: () => void;
 
-  // Camera
-  const ratio = gl.drawingBufferWidth / gl.drawingBufferHeight;
-  const camera = new THREE.PerspectiveCamera(15, ratio, 0.1, 800);
-  camera.position.set(18, 84, -68);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  constructor(die3d: Die3D, getAnimInstances: () => AnimationInstance[]) {
+    this._die3d = die3d;
+    this._getAnimInstances = getAnimInstances;
+  }
 
-  // Scene
-  const scene = new THREE.Scene();
+  shutdown() {
+    this._dispose?.();
+  }
 
-  // Place die in scene
-  scene.add(die3d);
+  setup(gl: ExpoWebGLRenderingContext): void {
+    try {
+      // Renderer
+      const renderer = new Renderer({ gl, alpha: true });
+      // set size of buffer to be equal to drawing buffer width
+      renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-  // Light setup
-  const whiteLight = new THREE.PointLight(0xfdfdfd, 1.5, 100);
-  whiteLight.position.set(9, 27, -15);
-  scene.add(whiteLight);
+      // Camera
+      const ratio = gl.drawingBufferWidth / gl.drawingBufferHeight;
+      const camera = new THREE.PerspectiveCamera(15, ratio, 0.1, 800);
+      camera.position.set(18, 84, -68);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-  // const blueLight = new THREE.PointLight(0x0090ff, 1, 100);
-  // blueLight.position.set(-14, -6, -19);
-  // scene.add(blueLight);
+      // Scene
+      const scene = new THREE.Scene();
 
-  // const redLight = new THREE.PointLight(0xff4962, 1, 100);
-  // redLight.position.set(31, -11, -4);
-  // scene.add(redLight);
+      // Place die in scene
+      scene.add(this._die3d);
 
-  // Create render function
-  let lastTime = Date.now();
-  let lastAnims: AnimationInstance[] = [];
-  let animIndex = 0;
-  let errored = false;
-  const render = () => {
-    requestAnimationFrame(render);
-    const time = Date.now();
+      // Light setup
+      const whiteLight = new THREE.PointLight(0xfdfdfd, 1.5, 100);
+      whiteLight.position.set(9, 27, -15);
+      scene.add(whiteLight);
 
-    // Rotate die
-    die3d.rotation.y -= (time - lastTime) / 5000;
-    lastTime = time;
+      // const blueLight = new THREE.PointLight(0x0090ff, 1, 100);
+      // blueLight.position.set(-14, -6, -19);
+      // scene.add(blueLight);
 
-    // Update animation
-    const anims = getAnimInstances();
-    let changed = lastAnims !== anims;
-    if (changed) {
-      lastAnims = anims;
-      animIndex = 0;
-      errored = false;
-      // Turn all LEDs off
-      die3d.clearLEDs();
-    }
-    if (!errored && anims?.length) {
-      if (
-        !changed &&
-        anims[animIndex].startTime + anims[animIndex].duration < time
-      ) {
-        // Switch to next animation
-        animIndex = (animIndex + 1) % anims.length;
-        changed = true;
+      // const redLight = new THREE.PointLight(0xff4962, 1, 100);
+      // redLight.position.set(31, -11, -4);
+      // scene.add(redLight);
+
+      const alreadyRendering = this._renderScene;
+      this._dispose?.();
+
+      this._renderScene = () => {
+        renderer.render(scene, camera);
+        gl.endFrameEXP();
+      };
+      this._dispose = () => {
+        whiteLight.dispose();
+        this._renderScene = undefined;
+      };
+
+      if (!alreadyRendering) {
+        this._setupRenderLoop();
       }
-      const anim = anims[animIndex];
-      try {
-        if (changed) {
-          // Start animation
-          anim.start(time);
-        }
-        // Get LEDs colors
-        const indices: number[] = Array(20).fill(0);
-        const colors: number[] = Array(20).fill(0);
-        const count = anim.updateLEDs(time, indices, colors);
-        // Light up die
-        const c = new THREE.Color();
-        for (let i = 0; i < count; ++i) {
-          const colorValue = colors[i];
-          c.setRGB(
-            GammaUtils.reverseGamma8((colorValue >> 16) & 0xff) / 255,
-            GammaUtils.reverseGamma8((colorValue >> 8) & 0xff) / 255,
-            GammaUtils.reverseGamma8(colorValue & 0xff) / 255
+    } catch (error) {
+      console.error("Error while setting up ThreeJS scene graph", error);
+    }
+  }
+
+  private _setupRenderLoop() {
+    // Create render function
+    let lastTime = Date.now();
+    let lastAnims: AnimationInstance[] = [];
+    let animIndex = 0;
+
+    const frameRender = () => {
+      if (this._renderScene) {
+        try {
+          const time = Date.now();
+
+          // Rotate die
+          this._die3d.rotation.y -= (time - lastTime) / 5000;
+          lastTime = time;
+
+          // Update animation
+          const anims = this._getAnimInstances();
+          let changed = lastAnims !== anims;
+          if (changed) {
+            lastAnims = anims;
+            animIndex = 0;
+            // Turn all LEDs off
+            this._die3d.clearLEDs();
+          }
+
+          if (anims?.length) {
+            if (
+              !changed &&
+              anims[animIndex].startTime + anims[animIndex].duration < time
+            ) {
+              // Switch to next animation
+              animIndex = (animIndex + 1) % anims.length;
+              changed = true;
+            }
+            const anim = anims[animIndex];
+            if (changed) {
+              // Start animation
+              anim.start(time);
+            }
+            // Get LEDs colors
+            const indices: number[] = Array(20).fill(0);
+            const colors: number[] = Array(20).fill(0);
+            const count = anim.updateLEDs(time, indices, colors);
+            // Light up die
+            const c = new THREE.Color();
+            for (let i = 0; i < count; ++i) {
+              const colorValue = colors[i];
+              c.setRGB(
+                GammaUtils.reverseGamma8((colorValue >> 16) & 0xff) / 255,
+                GammaUtils.reverseGamma8((colorValue >> 8) & 0xff) / 255,
+                GammaUtils.reverseGamma8(colorValue & 0xff) / 255
+              );
+              this._die3d.setLEDColor(indices[i], c);
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          console.warn(
+            `Error while animating LEDs for Die3D, stop rendering to avoid further errors`
           );
-          die3d.setLEDColor(indices[i], c);
+          // Cleanup
+          this._dispose?.();
         }
-      } catch (error) {
-        console.error(error);
-        console.warn(
-          `Error playing animation at index ${animIndex}, stop playing to avoid further errors`
-        );
-        errored = true;
+        try {
+          this._renderScene?.();
+          requestAnimationFrame(frameRender);
+        } catch (error) {
+          console.error(error);
+          console.warn(
+            `Error rendering Die3D, stop rendering to avoid further errors`
+          );
+          // Cleanup
+          this._dispose?.();
+        }
       }
-    }
+    };
 
-    renderer.render(scene, camera);
-    gl.endFrameEXP();
-  };
-
-  // Render
-  render();
+    // Render
+    frameRender();
+  }
 }
 
 /**
@@ -138,43 +184,58 @@ export interface DieRendererProps {
  * See {@link DieRendererProps} for the supported props.
  */
 export default function ({ renderData }: DieRendererProps) {
-  // const errorHandler = useErrorHandler();
+  const errorHandler = useErrorHandler();
 
-  // // Load die 3d object
-  // const [die3d, setDie3d] = React.useState<Die3D>();
-  // React.useEffect(() => {
-  //   if (!die3d) {
-  //     createDie3DAsync().then(setDie3d).catch(errorHandler);
-  //   }
-  // }, [die3d, errorHandler]);
+  const [loaded, setLoaded] = React.useState(false);
+  const rendererRef = React.useRef<SceneRenderer>();
 
-  // // Create an instance to play the animation
-  // const animInstanceRef = React.useRef<AnimationInstance[]>([]);
-  // const animations = renderData?.animations;
-  // const animationBits = renderData?.animationBits;
-  // React.useEffect(() => {
-  //   if (animations && animationBits) {
-  //     const anims = Array.isArray(animations) ? animations : [animations];
-  //     animInstanceRef.current = anims.map((a) =>
-  //       a.createInstance(animationBits)
-  //     );
-  //   } else {
-  //     animInstanceRef.current = [];
-  //   }
-  // }, [animations, animationBits]);
+  // Load die 3d object
+  React.useEffect(() => {
+    createDie3DAsync()
+      .then((die3d) => {
+        setLoaded(true);
+        rendererRef.current = new SceneRenderer(
+          die3d,
+          () => animInstanceRef.current
+        );
+      })
+      .catch(errorHandler);
+    return () => {
+      rendererRef.current?.shutdown();
+    };
+  }, [errorHandler]);
+
+  // Create an instance to play the animation
+  const animInstanceRef = React.useRef<AnimationInstance[]>([]);
+  const animations = renderData?.animations;
+  const animationBits = renderData?.animationBits;
+  React.useEffect(() => {
+    if (animations && animationBits) {
+      const anims = Array.isArray(animations) ? animations : [animations];
+      animInstanceRef.current = anims.map((a) =>
+        a.createInstance(animationBits)
+      );
+    } else {
+      animInstanceRef.current = [];
+    }
+  }, [animations, animationBits]);
+
+  const onContextCreate = React.useCallback(
+    (gl: ExpoWebGLRenderingContext) => rendererRef.current?.setup(gl),
+    []
+  );
 
   return (
     <>
-      {/* {!die3d ? (
+      {!loaded ? (
         <Text>Loading...</Text>
       ) : (
-        <GLView
-          onContextCreate={(gl) =>
-            onContextCreate(gl, die3d, () => animInstanceRef.current)
-          }
-          style={{ flex: 1 }}
-        />
-      )} */}
+        <GLView onContextCreate={onContextCreate} style={styles.glview} />
+      )}
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  glview: { flex: 1 },
+});
