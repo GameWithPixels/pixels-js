@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
-import * as Sentry from "sentry-expo";
+// import * as Sentry from "sentry-expo";
 
 import { store } from "./app/store";
 import AnimationsScreen from "./screens/AnimationsScreen";
@@ -32,18 +32,18 @@ LogBox.ignoreLogs([
 ]);
 
 // Use Sentry for crash reporting
-Sentry.init({
-  dsn: "https://cc730e3207d64053b222cede5599338d@o1258420.ingest.sentry.io/6512529",
-  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-  // We recommend adjusting this value in production.
-  tracesSampleRate: 1.0,
-  enableInExpoDevelopment: true,
-  debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
-});
+// Sentry.init({
+//   dsn: "https://cc730e3207d64053b222cede5599338d@o1258420.ingest.sentry.io/6512529",
+//   // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+//   // We recommend adjusting this value in production.
+//   tracesSampleRate: 1.0,
+//   enableInExpoDevelopment: true,
+//   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+// });
 
 const Drawer = createDrawerNavigator<RootScreensParamList>();
 
-function App() {
+export default function App() {
   useBluetooth();
   const { t } = useTranslation();
   const drawerBackground = themeTools.getColor(theme, "coolGray.700"); // TODO dark/light
@@ -93,4 +93,4 @@ function App() {
   );
 }
 
-export default Sentry.Native.wrap(App);
+// export default Sentry.Native.wrap(App);

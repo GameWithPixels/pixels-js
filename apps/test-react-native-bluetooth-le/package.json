@@ -29,8 +29,8 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
     "@systemic-games/react-native-bluetooth-le": "*",
-    "react": "18.1.0",
-    "react-native": "0.70.6"
+    "react": "18.2.0",
+    "react-native": "0.71.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",

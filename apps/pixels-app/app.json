@@ -4,6 +4,9 @@
     "slug": "pixels-app",
     "owner": "gamewithpixels",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -12,7 +15,6 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/34c3f779-76ea-4e69-a434-540652c32c79"
     },
     "assetBundlePatterns": [
@@ -20,23 +22,26 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "runtimeVersion": {
-        "policy": "appVersion"
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#ffffff"
       },
       "package": "com.systemicgames.pixelsapp",
-      "runtimeVersion": "1.0.0"
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "./withAndroidPermissions"
+      "./withAndroidPermissions",
+      "react-native-vision-camera"
     ],
     "extra": {
       "eas": {

@@ -4,7 +4,9 @@
     "slug": "pixels-toolbox",
     "owner": "gamewithpixels",
     "version": "1.5.14",
-    "sdkVersion": "47.0.0",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "platforms": [
       "ios",
       "android"
@@ -25,13 +27,7 @@
       "assets/**/*"
     ],
     "ios": {
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera."
-      },
-      "runtimeVersion": {
-        "policy": "appVersion"
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -41,21 +37,15 @@
       "package": "com.systemic.pixelstoolbox",
       "permissions": [
         "android.permission.CAMERA"
-      ],
-      "runtimeVersion": "1.0.0"
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "./withAndroidPermissions",
-      "sentry-expo",
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
-        }
-      ],
+      "expo-localization",
+      "react-native-vision-camera",
       [
         "expo-build-properties",
         {
