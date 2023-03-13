@@ -1,7 +1,6 @@
 {
   "extends": "./tsconfig.expo.build",
   "compilerOptions": {
-    "strict": true,
     "composite": true,
     "declaration": true,
     "declarationMap": true,

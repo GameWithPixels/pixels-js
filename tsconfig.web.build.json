@@ -5,6 +5,7 @@
     ],
     "target": "es2017",
     "strict": true,
+    "strictNullChecks": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
