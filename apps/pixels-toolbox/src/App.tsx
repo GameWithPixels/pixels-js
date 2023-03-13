@@ -29,6 +29,8 @@ import "~/i18n";
 LogBox.ignoreLogs([
   // Ignore Sentry warnings
   "Sentry Logger [warn]:",
+  // Ignore warning caused by AnimatedComponent using findNodeHandle
+  "Warning: findNodeHandle is deprecated in StrictMode.",
 ]);
 
 // Use Sentry for crash reporting
