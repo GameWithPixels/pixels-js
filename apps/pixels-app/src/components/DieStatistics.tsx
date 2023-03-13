@@ -45,7 +45,7 @@ export default function DieStatistics({
         <Spacer />
         <HStack alignItems="center" space={1}>
           <Toggle
-            textSize="xs"
+            fontSize="xs"
             title="Lifetime"
             onValueChange={() => {
               setShowSessionStats(!showSessionStats);

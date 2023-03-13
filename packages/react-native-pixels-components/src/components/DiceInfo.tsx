@@ -1,5 +1,6 @@
 import {
   Card,
+  CardProps,
   FastBox,
   FastButton,
   FastHStack,
@@ -26,9 +27,7 @@ export interface PixelInfo {
 /**
  * Props for components displaying dice information.
  */
-export interface PixelInfoCardProps {
-  h?: number | string;
-  w?: number | string;
+export interface PixelInfoCardProps extends CardProps {
   pixel: PixelInfo;
   profileName?: string;
   onPress?: () => void;
@@ -43,10 +42,11 @@ export function PairedPixelInfoComponent({
   profileName,
   onPress,
   dieRenderer,
+  ...flexProps
 }: PixelInfoCardProps) {
   return (
     <Pressable onPress={onPress}>
-      <Card borderWidth={1.5} minW={100} w="100%" h={110}>
+      <Card borderWidth={1.5} minW={100} w="100%" h={110} {...flexProps}>
         <FastHStack alignItems="center" maxW="100%" h="100%">
           {/* Die render */}
           {dieRenderer && (
@@ -91,65 +91,61 @@ export function PairedPixelInfoComponent({
  * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
  */
 export function SquarePairedPixelInfo({
-  h,
-  w,
   pixel,
   onPress,
+  ...flexProps
 }: PixelInfoCardProps) {
   const { onOpen } = useDisclose();
   return (
-    <>
-      <Pressable
-        onPress={() => {
-          onPress?.();
-          onOpen();
-        }}
+    <Pressable
+      onPress={() => {
+        onPress?.();
+        onOpen();
+      }}
+    >
+      <Card
+        paddingTop={0}
+        borderWidth={1}
+        p={sr(7)}
+        minH={sr(40)}
+        {...flexProps}
       >
-        <Card
-          paddingTop={0}
-          borderWidth={1}
-          p={sr(7)}
-          w={w}
-          minH={sr(40)}
-          h={h}
-        >
-          <Text fontSize="lg" bold alignSelf="center">
-            {pixel.name}
-          </Text>
-          <FastBox mt={1} alignItems="center" pb={sr(2)}>
-            {/* PlaceHolderImage : would be replaced by 3d render of dice */}
-            <Image
-              size={sr(70)}
-              // source={pixel.imageRequirePath}
-              alt="placeHolder"
+        <Text fontSize="lg" bold alignSelf="center">
+          {pixel.name}
+        </Text>
+        <FastBox mt={1} alignItems="center" pb={sr(2)}>
+          {/* PlaceHolderImage : would be replaced by 3d render of dice */}
+          <Image
+            size={sr(70)}
+            // source={pixel.imageRequirePath}
+            alt="placeHolder"
+          />
+        </FastBox>
+        <Text mt={1} isTruncated fontSize="xs">
+          Profile: Unknown
+        </Text>
+        <Text mt={1} fontSize="xs">
+          Face Up: {pixel.ledCount}
+        </Text>
+        <FastHStack mt={1} w="100%">
+          <FastBox flex={1}>
+            <BatteryLevel
+              _icon={iconStyle}
+              _text={textStyle}
+              percentage={pixel.batteryLevel}
+              isCharging={pixel.isCharging}
             />
           </FastBox>
-          <Text mt={1} isTruncated fontSize="xs">
-            Profile: Unknown
-          </Text>
-          <Text mt={1} fontSize="xs">
-            Face Up: {pixel.ledCount}
-          </Text>
-          <FastHStack mt={1} w="100%">
-            <FastBox flex={1}>
-              <BatteryLevel
-                _icon={{ size: "md" }}
-                _text={{ fontSize: "sm" }}
-                percentage={pixel.batteryLevel}
-                isCharging={pixel.isCharging}
-              />
-            </FastBox>
-            <FastBox ml={1} flex={1}>
-              <RSSIStrength
-                _icon={{ size: "md" }}
-                _text={{ fontSize: "sm" }}
-                percentage={pixel.rssi}
-              />
-            </FastBox>
-          </FastHStack>
-        </Card>
-      </Pressable>
-    </>
+          <FastBox ml={1} flex={1}>
+            <RSSIStrength
+              _icon={iconStyle}
+              _text={textStyle}
+              percentage={pixel.rssi}
+            />
+          </FastBox>
+        </FastHStack>
+      </Card>
+    </Pressable>
   );
 }
 
@@ -161,10 +157,10 @@ export function ScannedPixelInfoComponent({
   pixel,
   onPress,
   dieRenderer,
+  ...flexProps
 }: PixelInfoCardProps) {
   const [pressed, setPressed] = React.useState(false);
   const [height, setHeight] = React.useState(100);
-
   return (
     <Pressable
       onPress={() => {
@@ -172,7 +168,13 @@ export function ScannedPixelInfoComponent({
         setPressed(true);
       }}
     >
-      <Card borderWidth={1.5} w="100%" h={sr(height)} alignItems="center">
+      <Card
+        borderWidth={1.5}
+        w="100%"
+        h={sr(height)}
+        alignItems="center"
+        {...flexProps}
+      >
         <FastHStack alignItems="center" maxW="100%">
           {dieRenderer && (
             <FastBox h={sr(60)} w={sr(60)}>
@@ -209,3 +211,6 @@ export function ScannedPixelInfoComponent({
     </Pressable>
   );
 }
+
+const iconStyle = { size: "md" };
+const textStyle = { fontSize: "sm" };

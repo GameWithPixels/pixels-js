@@ -15,6 +15,8 @@ import {
 } from "@systemic-games/react-native-pixels-components";
 import { Box, Pressable, Text } from "native-base";
 import React from "react";
+// eslint-disable-next-line import/namespace
+import { StyleSheet } from "react-native";
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
@@ -46,6 +48,78 @@ function CreateRuleWidget({ onPress }: { onPress: () => void }) {
         </Text>
       </Card>
     </Pressable>
+  );
+}
+
+function DraggableRuleItem({
+  navigation,
+  rule,
+  profileUuid,
+  ruleIndex,
+  drag,
+  isActive,
+  duplicateRule,
+  deleteRule,
+}: {
+  navigation: ProfileRulesScreenProps["navigation"];
+  rule: EditRule;
+  profileUuid: string;
+  ruleIndex: number;
+  drag: () => void;
+  isActive: boolean;
+  duplicateRule?: (rule: EditRule) => void;
+  deleteRule?: (rule: EditRule) => void;
+}) {
+  const onPress = React.useCallback(() => {
+    navigation.navigate("ProfileEditRule", {
+      profileUuid,
+      ruleIndex,
+    });
+  }, [navigation, profileUuid, ruleIndex]);
+
+  const buttons = React.useMemo(
+    () => [
+      {
+        onPress: () => duplicateRule?.(rule),
+        bg: "blue.500",
+        children: <MaterialIcons name="content-copy" size={24} color="white" />,
+      },
+      {
+        onPress: () => deleteRule?.(rule),
+        bg: "red.500",
+        children: (
+          <MaterialIcons name="delete-outline" size={24} color="white" />
+        ),
+      },
+    ],
+    [deleteRule, duplicateRule, rule]
+  );
+
+  const renderActions = React.useCallback(
+    () => <SwipeableButtons width={120} buttons={buttons} />,
+    [buttons]
+  );
+
+  const condition = React.useMemo(
+    () => getConditionDescription(rule.condition),
+    [rule.condition]
+  );
+  const actions = React.useMemo(
+    () => rule.actions.map(getActionDescription),
+    [rule.actions]
+  );
+
+  return (
+    <ScaleDecorator>
+      <Swipeable
+        containerStyle={styles.ruleItemContainerStyle}
+        renderRightActions={renderActions}
+      >
+        <Pressable onPress={onPress} onLongPress={drag} disabled={isActive}>
+          <ProfileRulesCard condition={condition} actions={actions} />
+        </Pressable>
+      </Swipeable>
+    </ScaleDecorator>
   );
 }
 
@@ -112,66 +186,21 @@ export default function ProfilesRulesScreen({
     return index.toString();
   }, []);
 
-  function RenderItem({
-    item: rule,
-    drag,
-    isActive,
-  }: RenderItemParams<EditRule>) {
-    const onPress = React.useCallback(() => {
-      navigation.navigate("ProfileEditRule", {
-        profileUuid: profile.uuid,
-        ruleIndex: profile.rules.indexOf(rule),
-      });
-    }, [rule]);
-
-    const buttons = React.useMemo(
-      () => [
-        {
-          onPress: () => duplicateRule(rule),
-          bg: "blue.500",
-          children: (
-            <MaterialIcons name="content-copy" size={24} color="white" />
-          ),
-        },
-        {
-          onPress: () => deleteRule(rule),
-          bg: "red.500",
-          children: (
-            <MaterialIcons name="delete-outline" size={24} color="white" />
-          ),
-        },
-      ],
-      [rule]
-    );
-
-    const renderActions = React.useCallback(
-      () => <SwipeableButtons width={120} buttons={buttons} />,
-      [buttons]
-    );
-
-    const data = React.useMemo(
-      () => ({
-        actions: rule.actions.map(getActionDescription),
-        condition: getConditionDescription(rule.condition),
-      }),
-      [rule.actions, rule.condition]
-    );
-
-    const containerStyle = React.useMemo(() => ({ marginVertical: 4 }), []);
-
-    return (
-      <ScaleDecorator>
-        <Swipeable
-          containerStyle={containerStyle}
-          renderRightActions={renderActions}
-        >
-          <Pressable onPress={onPress} onLongPress={drag} disabled={isActive}>
-            <ProfileRulesCard data={data} />
-          </Pressable>
-        </Swipeable>
-      </ScaleDecorator>
-    );
-  }
+  const renderItem = React.useCallback(
+    ({ item: rule, drag, isActive }: RenderItemParams<EditRule>) => (
+      <DraggableRuleItem
+        navigation={navigation}
+        rule={rule}
+        profileUuid={profile.uuid}
+        ruleIndex={profile.rules.indexOf(rule)}
+        drag={drag}
+        isActive={isActive}
+        duplicateRule={duplicateRule}
+        deleteRule={deleteRule}
+      />
+    ),
+    [deleteRule, duplicateRule, navigation, profile.rules, profile.uuid]
+  );
 
   const onDragEnd = React.useCallback(
     ({ data }: DragEndParams<EditRule>) => {
@@ -217,7 +246,7 @@ export default function ProfilesRulesScreen({
         <Text bold>Rules for this profile:</Text>
         <DraggableFlatList
           data={profile.rules}
-          renderItem={RenderItem}
+          renderItem={renderItem}
           keyExtractor={getKeyForRule}
           containerStyle={containerStyle}
           onDragEnd={onDragEnd}
@@ -226,3 +255,7 @@ export default function ProfilesRulesScreen({
     </PixelAppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  ruleItemContainerStyle: { marginVertical: 4 },
+});

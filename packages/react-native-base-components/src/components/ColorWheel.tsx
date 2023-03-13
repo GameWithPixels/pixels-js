@@ -1,6 +1,5 @@
 import { ColorUtils } from "@systemic-games/pixels-core-animation";
 import { Button } from "native-base";
-import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 import Svg, { Defs, Polygon, RadialGradient, Stop } from "react-native-svg";
 
@@ -74,7 +73,7 @@ export function ColorWheel(props: ColorWheelProps) {
     ColorWheelColorType.normal
   );
   const [colorBrightness, setColorBrightness] = React.useState(1);
-  const buttonHighlightColor: ColorType = "pixelColors.highlightGray";
+  const buttonHighlightColor = "pixelColors.highlightGray";
   const wheelParams = props.wheelParams
     ? props.wheelParams
     : {

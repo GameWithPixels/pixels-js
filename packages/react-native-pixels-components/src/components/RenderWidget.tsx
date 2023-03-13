@@ -95,8 +95,6 @@ export function RenderWidget({
           defaultValue={widget.getValue()}
           step={widget.step ?? 1}
           unitType={widget.unit}
-          unitTextColor={undefined}
-          sliderThumbColor={undefined}
           onSelectedValue={update}
         />
       );
@@ -110,8 +108,6 @@ export function RenderWidget({
           defaultValue={widget.getValue()}
           step={widget.step ?? 0.001}
           unitType={widget.unit}
-          unitTextColor={undefined}
-          sliderThumbColor={undefined}
           onSelectedValue={update}
         />
       );

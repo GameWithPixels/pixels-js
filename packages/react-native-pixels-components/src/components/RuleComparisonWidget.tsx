@@ -1,6 +1,7 @@
 import {
   ActionsheetListItemData,
   FastBox,
+  FastBoxProps,
   FastHStack,
   FastVStack,
   HView,
@@ -15,11 +16,8 @@ import {
   Pressable,
   ScrollView,
   IButtonProps,
+  ITextProps,
 } from "native-base";
-import {
-  ColorType,
-  SizeType,
-} from "native-base/lib/typescript/components/types";
 import React from "react";
 
 function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
@@ -37,7 +35,7 @@ function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
 
 interface customButtonProps extends IButtonProps {
   title?: string;
-  titleFontSize?: number | SizeType;
+  titleFontSize?: ITextProps["fontSize"];
   keyIndex: number;
   itemsLength: number;
   isSelected: boolean;
@@ -69,10 +67,8 @@ export interface RuleComparisonWidgetProps {
   title?: string;
   values: string[];
   initialValues: string[];
-  bg?: ColorType;
   borderWidth?: number;
-  borderColor?: ColorType;
-  fontSize?: number | SizeType;
+  fontSize?: ITextProps["fontSize"];
   onChange?: (keys: string[]) => void; // widget.update
   isLeft?: boolean;
   isRight?: boolean;
@@ -188,8 +184,8 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
 }
 
 export interface RuleConditionSelectionProps {
-  possibleConditions: ActionsheetListItemData[];
-  conditionTitle?: string;
+  conditions: ActionsheetListItemData[];
+  title?: string;
 }
 
 export function RuleConditionSelection(props: RuleConditionSelectionProps) {
@@ -210,7 +206,7 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
             bg="darkBlue.800"
           >
             <Text fontSize="sm" flex={2}>
-              {props.conditionTitle}
+              {props.title}
             </Text>
             <Spacer />
             <FastBox>
@@ -223,7 +219,7 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
           <ScrollView w="100%">
-            {props.possibleConditions.map(({ label, onSelect }, key) => (
+            {props.conditions.map(({ label, onSelect }, key) => (
               <Actionsheet.Item
                 alignItems="center"
                 key={key}
@@ -243,16 +239,20 @@ export function RuleConditionSelection(props: RuleConditionSelectionProps) {
   );
 }
 
-export interface RuleActionSelectionProps {
-  possibleActions: ActionsheetListItemData[];
-  actionTitle?: string;
+export interface RuleActionSelectionProps extends FastBoxProps {
+  actions: ActionsheetListItemData[];
+  title?: string;
 }
 
-export function RuleActionSelection(props: RuleActionSelectionProps) {
+export function RuleActionSelection({
+  actions,
+  title,
+  ...flexProps
+}: RuleActionSelectionProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastHStack w="100%" alignItems="center">
+      <FastHStack alignItems="center" {...flexProps}>
         <Text fontSize="2xl" flex={1}>
           Then
         </Text>
@@ -266,7 +266,7 @@ export function RuleActionSelection(props: RuleActionSelectionProps) {
             bg="darkBlue.800"
           >
             <Text fontSize="sm" flexGrow={1}>
-              {props.actionTitle}
+              {title}
             </Text>
             <ChevronDownIcon />
           </HView>
@@ -276,7 +276,7 @@ export function RuleActionSelection(props: RuleActionSelectionProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
           <ScrollView w="100%">
-            {props.possibleActions.map(({ label, onSelect }, key) => (
+            {actions.map(({ label, onSelect }, key) => (
               <Actionsheet.Item
                 alignItems="center"
                 key={key}

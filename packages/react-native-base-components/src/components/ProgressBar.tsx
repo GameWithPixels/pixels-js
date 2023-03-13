@@ -1,8 +1,10 @@
-import { Progress, Text, usePropsResolution, View } from "native-base";
 import {
-  ColorType,
-  SizeType,
-} from "native-base/lib/typescript/components/types";
+  Box,
+  IBoxProps,
+  Progress,
+  Text,
+  usePropsResolution,
+} from "native-base";
 import React from "react";
 
 /**
@@ -11,9 +13,9 @@ import React from "react";
 export interface ProgressBarProps {
   progress?: number; // current progress value
   loadingText?: string; // text placed before percentage value
-  boxBg?: ColorType;
-  size?: SizeType; // size possibilities of the progressbar
-  filledTrackBg?: ColorType;
+  boxBg?: IBoxProps["bg"];
+  size?: IBoxProps["size"]; // size possibilities of the progressbar
+  filledTrackBg?: IBoxProps["bg"];
   showPercentage?: boolean; // show or hide current percentage progress
   onProgressEnd?: (() => void) | null | undefined; // function to be executed when progress end
 }
@@ -28,7 +30,7 @@ export function ProgressBar(props: ProgressBarProps) {
     props
   ) as ProgressBarProps;
   return (
-    <View bg={resolvedProps.boxBg} p="3" rounded="lg">
+    <Box bg={resolvedProps.boxBg} p="3" rounded="lg">
       <Progress
         value={props.progress}
         size={resolvedProps.size}
@@ -43,6 +45,6 @@ export function ProgressBar(props: ProgressBarProps) {
             : props.progress + "%"}
         </Text>
       )}
-    </View>
+    </Box>
   );
 }

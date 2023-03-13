@@ -13,6 +13,7 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import { FastBox } from "@systemic-games/react-native-base-components";
 import { View } from "native-base";
+import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
 import { getConditionTitle } from "../titlesUtils";
@@ -38,12 +39,57 @@ function ConditionEditor({ editCondition }: ConditionEditorProps) {
   );
 }
 
-export interface RuleConditionWidgetProps extends React.PropsWithChildren {
+export interface RuleConditionWidgetProps extends IViewProps {
   condition: EditCondition;
   setCondition: (condition: EditCondition) => void;
 }
 
-export function RuleConditionWidget(props: RuleConditionWidgetProps) {
+export function RuleConditionWidget({
+  condition,
+  setCondition,
+  ...flexProps
+}: RuleConditionWidgetProps) {
+  const title = React.useMemo(
+    () => getConditionTitle(condition.type),
+    [condition.type]
+  );
+  const conditions = React.useMemo(
+    () => [
+      {
+        label: getConditionTitle(ConditionTypeValues.faceCompare),
+        onSelect: () => setCondition(new EditConditionFaceCompare()),
+      },
+      {
+        label: getConditionTitle(ConditionTypeValues.helloGoodbye),
+        onSelect: () => setCondition(new EditConditionHelloGoodbye()),
+      },
+      {
+        label: getConditionTitle(ConditionTypeValues.handling),
+        onSelect: () => setCondition(new EditConditionHandling()),
+      },
+      {
+        label: getConditionTitle(ConditionTypeValues.rolling),
+        onSelect: () => setCondition(new EditConditionRolling()),
+      },
+      {
+        label: getConditionTitle(ConditionTypeValues.crooked),
+        onSelect: () => setCondition(new EditConditionCrooked()),
+      },
+      {
+        label: getConditionTitle(ConditionTypeValues.connectionState),
+        onSelect: () => setCondition(new EditConditionConnectionState()),
+      },
+      {
+        label: getConditionTitle(ConditionTypeValues.batteryState),
+        onSelect: () => setCondition(new EditConditionBatteryState()),
+      },
+      {
+        label: getConditionTitle(ConditionTypeValues.idle),
+        onSelect: () => setCondition(new EditConditionIdle()),
+      },
+    ],
+    [setCondition]
+  );
   return (
     <View
       p={3}
@@ -51,46 +97,10 @@ export function RuleConditionWidget(props: RuleConditionWidgetProps) {
       borderColor="gray.300"
       rounded="lg"
       bg="darkBlue.700"
+      {...flexProps}
     >
-      <RuleConditionSelection
-        conditionTitle={getConditionTitle(props.condition.type)}
-        possibleConditions={[
-          {
-            label: getConditionTitle(ConditionTypeValues.faceCompare),
-            onSelect: () => props.setCondition(new EditConditionFaceCompare()),
-          },
-          {
-            label: getConditionTitle(ConditionTypeValues.helloGoodbye),
-            onSelect: () => props.setCondition(new EditConditionHelloGoodbye()),
-          },
-          {
-            label: getConditionTitle(ConditionTypeValues.handling),
-            onSelect: () => props.setCondition(new EditConditionHandling()),
-          },
-          {
-            label: getConditionTitle(ConditionTypeValues.rolling),
-            onSelect: () => props.setCondition(new EditConditionRolling()),
-          },
-          {
-            label: getConditionTitle(ConditionTypeValues.crooked),
-            onSelect: () => props.setCondition(new EditConditionCrooked()),
-          },
-          {
-            label: getConditionTitle(ConditionTypeValues.connectionState),
-            onSelect: () =>
-              props.setCondition(new EditConditionConnectionState()),
-          },
-          {
-            label: getConditionTitle(ConditionTypeValues.batteryState),
-            onSelect: () => props.setCondition(new EditConditionBatteryState()),
-          },
-          {
-            label: getConditionTitle(ConditionTypeValues.idle),
-            onSelect: () => props.setCondition(new EditConditionIdle()),
-          },
-        ]}
-      />
-      <ConditionEditor editCondition={props.condition} />
+      <RuleConditionSelection title={title} conditions={conditions} />
+      <ConditionEditor editCondition={condition} />
     </View>
   );
 }

@@ -1,11 +1,11 @@
 import { AntDesign } from "@expo/vector-icons";
 import {
   Card,
+  CardProps,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Box, IFlexProps } from "native-base";
-import { SizeType } from "native-base/lib/typescript/components/types";
+import { Pressable, Text, Box, ITextProps, IBoxProps } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
@@ -24,12 +24,12 @@ export interface ProfileInfo {
 /**
  * Props for selectable and pressable profile cards
  */
-export interface ProfileCardProps extends IFlexProps {
+export interface ProfileCardProps extends CardProps {
   name: string;
   dieRenderer?: () => React.ReactNode; // TODO dieRenderer
   borderWidth?: number;
-  imageSize?: number | SizeType | string;
-  textSize?: number | SizeType | string;
+  imageSize?: IBoxProps["size"];
+  textSize?: ITextProps["fontSize"];
   onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
   //To be used with the list in which the cards are placed and displayed for selection highlight
   profileIndexInList?: number; // the card profile index within all the currently available profiles in the list
@@ -37,6 +37,7 @@ export interface ProfileCardProps extends IFlexProps {
   selectable?: boolean; // used to disable the selection highlight (used until actual selection system is done)
   onSelected?: React.Dispatch<React.SetStateAction<number | undefined>>; // set the currently selected profile with the profile card index
 }
+
 /**
  * A pressable profile card to display dice profiles
  * @param props See {@link ProfileCardProps} for props parameters
@@ -69,8 +70,8 @@ export function ProfileCard({
         minW="100%"
         minH="50px"
         justifyContent="space-between"
-        {...flexProps}
         borderWidth={isSelected ? 2 : borderWidth}
+        {...flexProps}
       >
         {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
         <Text isTruncated fontSize={textSize} bold>

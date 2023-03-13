@@ -160,14 +160,14 @@ function AnimationsList({
     <>
       {/* TODO GLView is crashing when used in FlatList */}
       {/* <FlatList
-        data={animations}
-        renderItem={renderItem}
-        initialNumToRender={8}
-        windowSize={11}
         w="100%"
         bg="gray.700"
         rounded="lg"
         p={2}
+        data={animations}
+        renderItem={renderItem}
+        initialNumToRender={8}
+        windowSize={11}
       /> */}
       <ScrollView w="100%" bg="gray.700" rounded="lg" p={2}>
         {animations.map((anim) => renderItem({ item: anim }))}

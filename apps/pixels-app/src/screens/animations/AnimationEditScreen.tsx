@@ -34,6 +34,10 @@ import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { AnimationEditScreenProps } from "~/navigation";
 
+function Separator() {
+  return <FastBox h={2} />;
+}
+
 /**
  * Container component for {@link RenderWidget} to display widgets for animation edition.
  * @param editAnim type of animation for widgets to display.
@@ -60,10 +64,6 @@ function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
       patternAnimsRef.current.set(pattern, anim);
     }
     return getCachedDataSet(anim);
-  }, []);
-
-  const Separator = React.useCallback(() => {
-    return <FastBox h={2} />;
   }, []);
 
   const patternsParams = React.useMemo(
@@ -95,13 +95,13 @@ function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
 
   return (
     <FlatList
-      data={animWidgets}
-      renderItem={renderItem}
-      ItemSeparatorComponent={Separator}
       p={2}
       h="100%"
       bg="gray.700"
       rounded="md"
+      data={animWidgets}
+      renderItem={renderItem}
+      ItemSeparatorComponent={Separator}
     />
   );
 }

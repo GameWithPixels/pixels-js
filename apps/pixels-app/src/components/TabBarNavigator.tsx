@@ -1,9 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Image, Theme, themeTools } from "native-base";
-import {
-  ColorType,
-  SizeType,
-} from "native-base/lib/typescript/components/types";
+import { IImageProps, Image, Theme, themeTools } from "native-base";
 // eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
@@ -12,23 +8,25 @@ import { RootStackParamList } from "~/navigation";
 const Tab = createBottomTabNavigator<RootStackParamList>();
 
 /**
- * Data and props of a TabBar item that will be displayed inside the tab bar component.
- * @param screen See {@link ScreenItem} for details about this specific parameter.
- */
-export interface TabBarItem {
-  screen: ScreenItem;
-  imageRequirePath: ImageSourcePropType;
-  TabSelectedColor?: ColorType;
-  iconSize?: number | SizeType;
-  TabUnselectedColor?: ColorType;
-}
-/**
  * Data for a screen component inside the tab navigator.
  */
 export interface ScreenItem {
   name: keyof RootStackParamList;
   component: React.ComponentType;
 }
+
+/**
+ * Data and props of a TabBar item that will be displayed inside the tab bar component.
+ * @param screen See {@link ScreenItem} for details about this specific parameter.
+ */
+export interface TabBarItem {
+  screen: ScreenItem;
+  imageRequirePath: ImageSourcePropType;
+  TabSelectedColor?: IImageProps["tintColor"];
+  iconSize?: IImageProps["size"];
+  TabUnselectedColor?: IImageProps["tintColor"];
+}
+
 /**
  * Props for TabBarComponent.
  * @param items See {@link TabBarItem} for details about this specific parameter
@@ -36,7 +34,7 @@ export interface ScreenItem {
 interface TabBarNavigatorProps {
   theme: Theme;
   height?: number;
-  tabBackgroundColor?: ColorType;
+  tabBackgroundColor?: IImageProps["tintColor"];
   items?: TabBarItem[];
 }
 

@@ -88,15 +88,13 @@ function PairedPixelList({
                     pixel={pixel}
                     profileName={profile?.name}
                     onPress={() => onPress(pixel)}
-                    dieRenderer={() => {
-                      return (
-                        <DieRenderer
-                          renderData={
-                            profile ? getCachedDataSet(profile) : undefined
-                          }
-                        />
-                      );
-                    }}
+                    dieRenderer={() => (
+                      <DieRenderer
+                        renderData={
+                          profile ? getCachedDataSet(profile) : undefined
+                        }
+                      />
+                    )}
                   />
                 );
               })}

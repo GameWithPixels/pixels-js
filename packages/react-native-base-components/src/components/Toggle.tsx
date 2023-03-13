@@ -1,5 +1,11 @@
-import { Switch, ISwitchProps, Text, usePropsResolution } from "native-base";
-import { SizeType } from "native-base/lib/typescript/components/types";
+import {
+  Switch,
+  ISwitchProps,
+  Text,
+  usePropsResolution,
+  IBoxProps,
+  ITextProps,
+} from "native-base";
 import React from "react";
 
 import { FastHStack } from "./FastHStack";
@@ -9,8 +15,8 @@ import { FastHStack } from "./FastHStack";
  */
 export interface ToggleProps extends ISwitchProps {
   title?: string; // Text displayed on the left of the toggle
-  textSize?: string | number | SizeType;
-  toggleSize?: SizeType;
+  toggleSize?: IBoxProps["size"];
+  fontSize?: ITextProps["fontSize"];
   space?: number | string; // Spacing between text and toggle
 }
 
@@ -20,10 +26,12 @@ export interface ToggleProps extends ISwitchProps {
  * @param props See {@link ToggleProps} for props parameters.
  */
 export function Toggle(props: ToggleProps) {
-  const { title, textSize, children, ...resolvedProps } = usePropsResolution(
-    "Toggle",
-    props
-  ) as ToggleProps;
+  const {
+    title,
+    fontSize: textSize,
+    children,
+    ...resolvedProps
+  } = usePropsResolution("Toggle", props) as ToggleProps;
   return (
     <FastHStack alignItems="center">
       <Text mr={resolvedProps.space} fontSize={textSize}>

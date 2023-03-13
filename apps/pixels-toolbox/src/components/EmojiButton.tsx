@@ -4,12 +4,8 @@ import { sr } from "~/styles";
 
 export default function (props: IButtonProps) {
   return (
-    <Button
-      size="lg"
-      _text={{ fontSize: "2xl" }}
-      px={sr(6)}
-      py={sr(3)}
-      {...props}
-    />
+    <Button size="lg" _text={textStyle} px={sr(6)} py={sr(3)} {...props} />
   );
 }
+
+const textStyle = { fontSize: "2xl" };

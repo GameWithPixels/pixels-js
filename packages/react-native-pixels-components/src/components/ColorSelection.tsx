@@ -17,10 +17,6 @@ import {
   ScrollView,
   Pressable,
 } from "native-base";
-import {
-  ColorType,
-  SizeType,
-} from "native-base/lib/typescript/components/types";
 import React from "react";
 // eslint-disable-next-line import/namespace
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
@@ -37,24 +33,11 @@ function ColorButton(props: FastButtonProps) {
  */
 interface ColorSelectionProps extends IModalProps {
   initialColor?: string;
-  modalBg?: ColorType; // modal general background color
-  triggerBg?: ColorType; // modal trigger element initial background color
-  triggerH?: SizeType; // trigger element height
-  triggerW?: SizeType; // trigger element width
+  triggerH?: FastButtonProps["h"]; // trigger element height
+  triggerW?: FastButtonProps["w"]; // trigger element width
   onColorSelected?: ((value: string) => void) | null | undefined; // action when a color was selected trough the color selection component
 }
-/**
- * Props for customizing elements and behavior of a ColorSelection or GradientColorSelection component.
- */
-interface GradientColorSelectionProps extends IModalProps {
-  initialColor?: string;
-  initialKeyFrames?: EditRgbKeyframe[];
-  modalBg?: ColorType; // modal general background color
-  triggerBg?: ColorType; // modal trigger element initial background color
-  triggerH?: SizeType; // trigger element height
-  triggerW?: SizeType; // trigger element width
-  onColorSelected?: ((keyframes: EditRgbKeyframe[]) => void) | null | undefined; // action when a color was selected trough the color selection component
-}
+
 /**
  * Color selection component used for selecting a single color shade from a color wheel / color picker.
  * {@link ColorSelectionProps} for the component props to customize some elements.
@@ -166,6 +149,17 @@ export function SimpleColorSelection(props: ColorSelectionProps) {
       </Actionsheet>
     </>
   );
+}
+
+/**
+ * Props for customizing elements and behavior of a ColorSelection or GradientColorSelection component.
+ */
+interface GradientColorSelectionProps extends IModalProps {
+  initialColor?: string;
+  initialKeyFrames?: EditRgbKeyframe[];
+  onColorSelected?: ((keyframes: EditRgbKeyframe[]) => void) | null | undefined; // action when a color was selected trough the color selection component
+  triggerH?: FastButtonProps["h"]; // trigger element height
+  triggerW?: FastButtonProps["w"]; // trigger element width
 }
 
 export function GradientColorSelection(props: GradientColorSelectionProps) {

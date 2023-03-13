@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { CardProps } from "@systemic-games/react-native-pixels-components";
 import {
   Card,
-  IFlexProps,
   IPressableProps,
   ITextProps,
   Pressable,
@@ -9,7 +9,7 @@ import {
 } from "native-base";
 import React from "react";
 
-interface CreateEntityButtonProps extends IFlexProps {
+interface CreateEntityButtonProps extends CardProps {
   onPress?: IPressableProps["onPress"];
   fontSize?: ITextProps["fontSize"];
 }
@@ -18,11 +18,11 @@ export default function ({
   children,
   onPress,
   fontSize,
-  ...props
+  ...flexProps
 }: CreateEntityButtonProps) {
   return (
     <Pressable onPress={onPress}>
-      <Card bg={null} minW="100%" minH="50px" {...props}>
+      <Card bg={null} w="100%" {...flexProps}>
         <Ionicons name="add-circle-outline" size={24} color="white" />
         <Text isTruncated fontSize={fontSize} bold children={children} />
       </Card>

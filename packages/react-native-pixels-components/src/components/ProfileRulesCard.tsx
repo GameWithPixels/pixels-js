@@ -6,10 +6,8 @@ import { Text, View } from "native-base";
 
 export interface ProfileRulesCardProps {
   onPress?: (() => void) | null | undefined;
-  data?: {
-    condition?: string;
-    actions?: string[];
-  };
+  condition?: string;
+  actions?: string[];
 }
 
 export function ProfileRulesCard(props: ProfileRulesCardProps) {
@@ -37,11 +35,11 @@ export function ProfileRulesCard(props: ProfileRulesCardProps) {
             bg="darkBlue.900"
             p={1.5}
           >
-            {props.data?.condition}
+            {props.condition}
           </Text>
         </FastHStack>
         <View mt={2} bg="gray.600" rounded="lg" p={1.5}>
-          {props.data?.actions?.map((action, i) => (
+          {props.actions?.map((action, i) => (
             <FastHStack key={i} mt={i > 0 ? 2 : 0} flex={1} alignItems="center">
               <Text flex={1}>Then</Text>
               <Text ml={3} flex={7} rounded="lg" bg="darkBlue.900" p={1.5}>

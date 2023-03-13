@@ -14,24 +14,28 @@ import {
   FastButton,
   FastHStack,
 } from "@systemic-games/react-native-base-components";
-import { Box, IFlexProps, View } from "native-base";
+import { View } from "native-base";
+import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
 import { getActionTitle } from "../titlesUtils";
 import { RenderWidget, RenderWidgetProps } from "./RenderWidget";
 import { RuleActionSelection } from "./RuleComparisonWidget";
 
+interface ActionEditorProps extends IViewProps {
+  editAction: EditAction;
+  animations: Readonly<EditAnimation>[];
+  userTextsParams: RenderWidgetProps["userTextsParams"];
+  dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
+}
+
 function ActionEditor({
   editAction,
   animations,
   userTextsParams,
   dieRenderer,
-}: {
-  editAction: EditAction;
-  animations: Readonly<EditAnimation>[];
-  userTextsParams: RenderWidgetProps["userTextsParams"];
-  dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
-}) {
+  ...flexProps
+}: ActionEditorProps) {
   const actionWidgets = React.useMemo(() => {
     return getEditWidgetsData(editAction);
   }, [editAction]);
@@ -52,13 +56,13 @@ function ActionEditor({
     [actionWidgets, animations, dieRenderer, userTextsParams]
   );
   return (
-    <View p={2} bg="gray.700" rounded="md">
+    <View p={2} bg="gray.700" rounded="md" {...flexProps}>
       {widgets}
     </View>
   );
 }
 
-export interface RuleActionWidgetProps extends IFlexProps {
+export interface RuleActionWidgetProps extends IViewProps {
   action: EditAction;
   animations: Readonly<EditAnimation>[];
   userTextsParams: RenderWidgetProps["userTextsParams"];
@@ -91,7 +95,7 @@ export function RuleActionWidget({
       ),
     [editAction]
   );
-  const possibleActions = React.useMemo(
+  const actions = React.useMemo(
     () => [
       {
         label: getActionTitle(ActionTypeValues.playAnimation),
@@ -128,7 +132,7 @@ export function RuleActionWidget({
   );
   const onDeleteMemo = React.useCallback(() => onDelete?.(), [onDelete]);
   return (
-    <Box
+    <View
       p={3}
       borderWidth={1}
       borderColor="gray.300"
@@ -136,13 +140,13 @@ export function RuleActionWidget({
       bg="darkBlue.700"
       {...flexProps}
     >
-      <FastHStack mb={2} w="100%" alignItems="center">
-        <FastBox flex={10} w="100%">
-          <RuleActionSelection
-            actionTitle={actionTitle}
-            possibleActions={possibleActions}
-          />
-        </FastBox>
+      <FastHStack w="100%" alignItems="center">
+        <RuleActionSelection
+          flex={10}
+          w="100%"
+          title={actionTitle}
+          actions={actions}
+        />
         <FastButton
           ml={2}
           onPress={onDeleteMemo}
@@ -153,11 +157,12 @@ export function RuleActionWidget({
         </FastButton>
       </FastHStack>
       <ActionEditor
+        mt={2}
         editAction={editAction}
         animations={animations}
         userTextsParams={userTextsParams}
         dieRenderer={dieRenderer}
       />
-    </Box>
+    </View>
   );
 }

@@ -1,5 +1,4 @@
 import { Icon, IIconProps } from "native-base";
-import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 // eslint-disable-next-line import/namespace
 
@@ -14,7 +13,7 @@ export type IconParams = {
 export interface PercentageDisplayProps {
   percentage: number; // current percentage value (from 0 to 1)
   icons: IconParams[]; //icons must be stored as : first icon = empty percentage,[...], last icon = full percentage
-  colors?: ColorType[]; //colors must be stored as : first color = empty percentage color,[...], last color = full percentage color
+  colors?: IIconProps["color"][]; //colors must be stored as : first color = empty percentage color,[...], last color = full percentage color
   _icon?: Partial<IIconProps>; // parameter for styling icon size
 }
 

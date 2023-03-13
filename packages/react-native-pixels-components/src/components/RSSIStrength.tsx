@@ -2,21 +2,20 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   PercentageDisplay,
   IconParams,
-  FastHStack,
 } from "@systemic-games/react-native-base-components";
 import {
-  Center,
-  IFlexProps,
   IIconProps,
   ITextProps,
   Text,
+  View,
   usePropsResolution,
 } from "native-base";
+import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 
 /**
  * Props for {@link RSSIStrength} component.
  */
-interface RSSIStrengthProps extends IFlexProps {
+interface RSSIStrengthProps extends IViewProps {
   percentage: number; // current rssi strength value (from 0 to 1)
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
   _icon?: Partial<IIconProps>; // parameter fro styling battery icon size
@@ -43,18 +42,21 @@ export function RSSIStrength(props: RSSIStrengthProps) {
   );
   const rssiStrength = 100 + percentage;
   return (
-    <Center flex={1} {...flexProps}>
-      <FastHStack alignItems="center" w="100%">
-        <PercentageDisplay
-          icons={icons}
-          colors={colors}
-          percentage={rssiStrength}
-          _icon={_icon}
-        />
-        <Text {..._text} ml={2}>
-          {rssiStrength + "%"}
-        </Text>
-      </FastHStack>
-    </Center>
+    <View
+      flexDir="row"
+      alignItems="center"
+      justifyContent="center"
+      {...flexProps}
+    >
+      <PercentageDisplay
+        icons={icons}
+        colors={colors}
+        percentage={rssiStrength}
+        _icon={_icon}
+      />
+      <Text {..._text} ml={2}>
+        {rssiStrength + "%"}
+      </Text>
+    </View>
   );
 }

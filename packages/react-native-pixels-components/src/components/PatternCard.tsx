@@ -1,15 +1,14 @@
-import { Card } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Box, IFlexProps } from "native-base";
-import { SizeType } from "native-base/lib/typescript/components/types";
+import { Card, CardProps } from "@systemic-games/react-native-base-components";
+import { Pressable, Text, Box, IBoxProps, ITextProps } from "native-base";
 import React from "react";
 
-export interface PatternCardProps extends IFlexProps {
+export interface PatternCardProps extends CardProps {
   patternName: string;
   dieRenderer?: () => React.ReactNode;
   space?: number; // vertical spacing between elements in the profile card
   borderWidth?: number;
-  imageSize?: number | SizeType | string;
-  fontSize?: number | SizeType | string;
+  imageSize?: IBoxProps["size"];
+  fontSize?: ITextProps["fontSize"];
   onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
   //To be used with the list in which the cards are placed and displayed for selection highlight
   patternIndexInList?: number; // the card profile index within all the currently available profiles in the list
@@ -41,7 +40,7 @@ export function PatternCard({
         onPress?.();
       }}
     >
-      <Card {...flexProps} borderWidth={isSelected ? 3 : borderWidth}>
+      <Card borderWidth={isSelected ? 3 : borderWidth} {...flexProps}>
         {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
         <Text fontSize={fontSize}>{patternName}</Text>
       </Card>

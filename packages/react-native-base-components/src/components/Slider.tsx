@@ -6,7 +6,6 @@ import {
   ISliderProps,
   View,
 } from "native-base";
-import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 
 import { FastHStack } from "./FastHStack";
@@ -17,10 +16,6 @@ export interface SliderProps extends ISliderProps {
   minValue?: number;
   maxValue?: number;
   unitType?: string;
-  unitTextColor?: ColorType;
-  sliderThumbColor?: ColorType;
-  sliderTrackColor?: ColorType;
-  sliderBoxColor?: ColorType;
   onSelectedValue?: (value: number) => void;
   onValueChange?: (() => void) | null | undefined;
 }

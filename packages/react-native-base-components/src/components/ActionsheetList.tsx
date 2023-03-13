@@ -4,8 +4,8 @@ import {
   Text,
   usePropsResolution,
   FlatList,
+  IActionsheetItemProps,
 } from "native-base";
-import { ColorType } from "native-base/lib/typescript/components/types";
 import React from "react";
 
 /**
@@ -25,7 +25,7 @@ export interface ActionsheetListItemData {
 export interface ActionsheetListProps extends IActionsheetProps {
   itemsData: ActionsheetListItemData[]; // Text to display on each item and action to call
   title?: string;
-  sheetBgColor?: ColorType;
+  sheetBgColor?: IActionsheetItemProps["bg"];
 }
 
 /**
@@ -66,10 +66,10 @@ export const ActionsheetList = React.memo(function (
           </Text>
         )}
         <FlatList
-          data={itemsData}
-          renderItem={renderItem}
           width="100%"
           height={300}
+          data={itemsData}
+          renderItem={renderItem}
         />
       </Actionsheet.Content>
     </Actionsheet>

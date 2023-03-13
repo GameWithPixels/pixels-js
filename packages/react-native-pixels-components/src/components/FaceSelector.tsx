@@ -26,6 +26,10 @@ export function FaceSelector({
     () => Array.from({ length: faceCount }, (_, i) => i + 1),
     [faceCount]
   );
+  const textStyle = React.useMemo(
+    () => ({ color: disabled ? "gray.400" : undefined }),
+    [disabled]
+  );
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
@@ -33,7 +37,7 @@ export function FaceSelector({
         onPress={onOpen}
         disabled={disabled}
         bg={disabled ? "gray.600" : undefined}
-        _text={{ color: disabled ? "gray.400" : undefined }}
+        _text={textStyle}
       >
         {face}
       </FastButton>

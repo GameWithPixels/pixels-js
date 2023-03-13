@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Card,
+  CardProps,
   FastHStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -13,33 +14,37 @@ import { ProfileCard } from "./ProfileCard";
 /**
  * Props for ProfilesActionSheet component.
  */
-export interface ProfilesActionSheetProps {
+export interface ProfilesActionSheetProps extends CardProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
   profiles: Readonly<EditProfile>[]; // array of profiles information to be displayed inside the component
-  dieRenderer: (profile: Readonly<EditProfile>) => React.ReactNode;
-  w?: number;
-  h?: number;
+  dieRenderer?: (profile: Readonly<EditProfile>) => React.ReactNode;
 }
+
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
  * @param props See {@link ProfilesActionSheetProps} for props parameters.
  */
-export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
+export function ProfilesActionSheet({
+  trigger,
+  drawerTitle,
+  profiles,
+  dieRenderer,
+  ...flexProps
+}: ProfilesActionSheetProps) {
   const [selectedProfile, setSelectedProfile] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
       {/* Trigger of the actionsheet drawer */}
       <Pressable onPress={onOpen}>
-        {!props.trigger ? (
+        {!trigger ? (
           <Card
             minW="10px"
             minH="10px"
-            w={props.w}
             p={1}
-            h={props.h}
             alignItems="center"
+            {...flexProps}
           >
             <Center w="90%" flexWrap="wrap">
               <Text bold fontSize="sm" alignSelf="center">
@@ -54,7 +59,7 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
             </Center>
           </Card>
         ) : (
-          props.trigger
+          trigger
         )}
       </Pressable>
 
@@ -62,11 +67,11 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
       <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
         <Actionsheet.Content maxH="100%" h="630px">
           <Text bold paddingBottom={5}>
-            {props.drawerTitle ? props.drawerTitle : "Available Profiles"}
+            {drawerTitle ?? "Available Profiles"}
           </Text>
           <ScrollView>
             <FastHStack flexWrap="wrap" w="100%">
-              {props.profiles?.map((profile, i) => (
+              {profiles?.map((profile, i) => (
                 <ProfileCard
                   key={i}
                   p={1}
@@ -78,7 +83,9 @@ export function ProfilesActionSheet(props: ProfilesActionSheetProps) {
                   selectedProfileIndex={selectedProfile}
                   onSelected={setSelectedProfile}
                   name={profile.name}
-                  dieRenderer={() => props.dieRenderer(profile)}
+                  dieRenderer={
+                    dieRenderer ? () => dieRenderer(profile) : undefined
+                  }
                 />
               ))}
             </FastHStack>

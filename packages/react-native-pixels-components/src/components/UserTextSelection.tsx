@@ -5,13 +5,12 @@ import {
   FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { Input, Text } from "native-base";
-import { SizeType } from "native-base/lib/typescript/components/types";
+import { ITextProps, Input, Text } from "native-base";
 import React from "react";
 
 export interface UserTextSelectionProps {
   title?: string; // Text displayed above the input
-  textSize?: string | number | SizeType;
+  textSize?: ITextProps["fontSize"];
   space?: number | string; // Spacing between text and toggle
   value?: string | undefined;
   onValueChange?: (valueOrUuid: string) => void;

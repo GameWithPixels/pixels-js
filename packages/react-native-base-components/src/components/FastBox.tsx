@@ -32,6 +32,11 @@ export interface FastBoxProps
       | "marginBottom"
       | "marginLeft"
       | "marginRight"
+      | "borderRadius"
+      | "borderColor"
+      | "borderStyle"
+      | "borderWidth"
+      | "opacity"
     > {
   flexDir?: ViewStyle["flexDirection"];
   w?: ViewStyle["width"];
@@ -88,11 +93,18 @@ export function FastBox({ children, ...props }: FastBoxProps) {
       marginBottom: props.marginBottom ?? props.mb,
       marginLeft: props.marginLeft ?? props.ml,
       marginRight: props.marginRight ?? props.mr,
+      borderColor: props.borderColor,
+      borderStyle: props.borderStyle,
+      borderWidth: props.borderWidth,
+      opacity: props.opacity,
     }),
     [
       props.alignContent,
       props.alignItems,
       props.alignSelf,
+      props.borderColor,
+      props.borderStyle,
+      props.borderWidth,
       props.flex,
       props.flexDir,
       props.flexDirection,
@@ -119,6 +131,7 @@ export function FastBox({ children, ...props }: FastBoxProps) {
       props.mt,
       props.mx,
       props.my,
+      props.opacity,
       props.p,
       props.paddingBottom,
       props.paddingHorizontal,

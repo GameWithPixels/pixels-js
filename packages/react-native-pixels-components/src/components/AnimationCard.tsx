@@ -1,18 +1,18 @@
 import {
   Card,
+  CardProps,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Box, IFlexProps } from "native-base";
-import { SizeType } from "native-base/lib/typescript/components/types";
+import { Pressable, Text, Box, IBoxProps, ITextProps } from "native-base";
 import React from "react";
 
-export interface AnimationCardProps extends IFlexProps {
+export interface AnimationCardProps extends CardProps {
   title: string;
   name?: string;
   dieRenderer?: () => React.ReactNode;
-  imageSize?: number | SizeType | string;
-  textSize?: number | SizeType | string;
+  imageSize?: IBoxProps["size"];
+  fontSize?: ITextProps["fontSize"];
   onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
   //To be used with the list in which the cards are placed and displayed for selection highlight
 }
@@ -22,7 +22,7 @@ export function AnimationCard({
   name,
   dieRenderer,
   imageSize,
-  textSize = "lg",
+  fontSize = "lg",
   onPress,
   ...flexProps
 }: AnimationCardProps) {
@@ -34,7 +34,7 @@ export function AnimationCard({
           {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
           {/* Animation info */}
           <FastVStack ml={5} justifyContent="space-around" flexGrow={1}>
-            <Text isTruncated fontSize={textSize} bold>
+            <Text isTruncated fontSize={fontSize} bold>
               {name}
             </Text>
             <Text italic>{title}</Text>

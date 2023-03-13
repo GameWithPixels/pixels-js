@@ -2,22 +2,21 @@ import { Fontisto } from "@expo/vector-icons";
 import {
   PercentageDisplay,
   IconParams,
-  FastHStack,
 } from "@systemic-games/react-native-base-components";
 import {
-  Center,
-  IFlexProps,
   IIconProps,
   ITextProps,
   Text,
+  View,
   usePropsResolution,
 } from "native-base";
+import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
 /**
  * Props for {@link BatteryLevel} component.
  */
-interface BatteryLevelProps extends IFlexProps {
+interface BatteryLevelProps extends IViewProps {
   percentage: number; // current battery percentage value (between 0 and 1)
   isCharging?: boolean;
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
@@ -42,19 +41,22 @@ export function BatteryLevel(props: BatteryLevelProps) {
   const { percentage, isCharging, _text, _icon, colors, ...flexProps } =
     usePropsResolution("BatteryLevel", props);
   return (
-    <Center {...flexProps}>
-      <FastHStack alignItems="center" w="100%">
-        <PercentageDisplay
-          _icon={_icon}
-          icons={icons}
-          colors={colors}
-          percentage={percentage}
-        />
-        <Text {..._text} ml={3}>
-          {isCharging ? "⚡" : ""}
-          {percentage + "%"}
-        </Text>
-      </FastHStack>
-    </Center>
+    <View
+      flexDir="row"
+      alignItems="center"
+      justifyContent="center"
+      {...flexProps}
+    >
+      <PercentageDisplay
+        _icon={_icon}
+        icons={icons}
+        colors={colors}
+        percentage={percentage}
+      />
+      <Text {..._text} ml={3}>
+        {isCharging ? "⚡" : ""}
+        {percentage + "%"}
+      </Text>
+    </View>
   );
 }
