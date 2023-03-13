@@ -12,7 +12,7 @@ import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
-import { widget, range, name } from "./decorators";
+import { widget, range, name, observable } from "./decorators";
 
 export default class EditAnimationGradient extends EditAnimation {
   get type(): AnimationType {
@@ -22,10 +22,12 @@ export default class EditAnimationGradient extends EditAnimation {
   @widget("faceMask")
   @range(1, 20, 1)
   @name("Face Mask")
+  @observable
   faces: number;
 
   @widget("gradient")
   @name("Gradient")
+  @observable
   gradient?: EditRgbGradient;
 
   constructor(opt?: {

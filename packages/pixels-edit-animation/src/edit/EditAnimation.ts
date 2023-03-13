@@ -7,7 +7,7 @@ import {
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
 import Editable from "./Editable";
-import { widget, range, unit, name } from "./decorators";
+import { widget, range, unit, name, observable } from "./decorators";
 
 /**
  * Base class for animation editing classes.
@@ -20,6 +20,7 @@ export default abstract class EditAnimation extends Editable {
   @range(0.1, 30, 0.1)
   @unit("s")
   @name("Duration")
+  @observable
   /** Animation duration in seconds. */
   duration: number;
 

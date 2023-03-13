@@ -10,7 +10,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
-import { name, widget } from "./decorators";
+import { name, observable, widget } from "./decorators";
 
 export default class EditAnimationKeyframed extends EditAnimation {
   get type(): AnimationType {
@@ -19,10 +19,12 @@ export default class EditAnimationKeyframed extends EditAnimation {
 
   @widget("rgbPattern")
   @name("LED Pattern")
+  @observable
   pattern?: EditPattern;
 
   @widget("toggle")
   @name("Traveling Order")
+  @observable
   traveling: boolean;
 
   constructor(opt?: {

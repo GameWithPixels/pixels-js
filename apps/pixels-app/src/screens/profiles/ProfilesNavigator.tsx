@@ -2,9 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NativeBaseProvider } from "native-base";
 
-import ProfileEditRuleScreen from "./ProfileEditRuleScreen";
-import ProfilesRulesScreen from "./ProfileRulesScreen";
+import ProfileEditScreen from "./ProfileEditScreen";
 import { ProfilesListScreen } from "./ProfilesListScreen";
+import RuleEditScreen from "./RuleEditScreen";
 
 import { ProfilesScreenStackParamList } from "~/navigation";
 import { paleBluePixelTheme } from "~/themes";
@@ -34,15 +34,15 @@ export default function ProfilesNavigator() {
           }}
         />
         <Stack.Screen
-          name="ProfileRules"
-          component={ProfilesRulesScreen}
+          name="ProfileEdit"
+          component={ProfileEditScreen}
           options={{
-            title: "Profile Rules",
+            title: "Edit Profile",
           }}
         />
         <Stack.Screen
-          name="ProfileEditRule"
-          component={ProfileEditRuleScreen}
+          name="RuleEdit"
+          component={RuleEditScreen}
           options={{
             title: "Edit Rule",
           }}

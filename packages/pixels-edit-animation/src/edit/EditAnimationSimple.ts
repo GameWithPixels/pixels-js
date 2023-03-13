@@ -12,7 +12,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAnimation from "./EditAnimation";
 import EditColor from "./EditColor";
 import EditDataSet from "./EditDataSet";
-import { widget, range, name } from "./decorators";
+import { widget, range, name, observable } from "./decorators";
 
 export default class EditAnimationSimple extends EditAnimation {
   get type(): AnimationType {
@@ -22,20 +22,24 @@ export default class EditAnimationSimple extends EditAnimation {
   @widget("faceMask")
   @range(1, 20, 1)
   @name("Face Mask")
+  @observable
   faces: number;
 
   @widget("color")
   @name("Color")
+  @observable
   color: EditColor;
 
   @widget("count")
   @range(1, 10)
   @name("Repeat Count")
+  @observable
   count: number;
 
   @widget("slider")
   @range(0, 1)
   @name("Fading Sharpness")
+  @observable
   fade: number;
 
   constructor(opt?: {

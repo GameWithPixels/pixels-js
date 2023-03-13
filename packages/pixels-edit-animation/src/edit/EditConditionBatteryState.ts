@@ -11,7 +11,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, widget, range, unit, values } from "./decorators";
+import { name, widget, range, unit, values, observable } from "./decorators";
 
 export default class EditConditionBatteryState extends EditCondition {
   get type(): ActionType {
@@ -21,11 +21,13 @@ export default class EditConditionBatteryState extends EditCondition {
   @widget("bitField")
   @name("Battery State")
   @values(BatteryStateFlagsValues)
+  @observable
   flags: BatteryStateFlags;
 
   @widget("slider")
   @range(5, 60)
   @unit("s")
+  @observable
   recheckAfter: number;
 
   constructor(opt?: { flags?: BatteryStateFlags; recheckAfter?: number }) {

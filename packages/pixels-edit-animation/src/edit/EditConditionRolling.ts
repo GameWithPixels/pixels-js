@@ -9,7 +9,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { range, unit, widget } from "./decorators";
+import { observable, range, unit, widget } from "./decorators";
 
 export default class EditConditionRolling extends EditCondition {
   get type(): ActionType {
@@ -19,6 +19,7 @@ export default class EditConditionRolling extends EditCondition {
   @widget("slider")
   @range(0.5, 5, 0.1)
   @unit("s")
+  @observable
   recheckAfter: number;
 
   constructor(opt?: { recheckAfter?: number }) {

@@ -8,9 +8,11 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import Editable from "./Editable";
+import { observable } from "./decorators";
 
 export default class EditPattern extends Editable {
-  readonly gradients: EditRgbGradient[];
+  @observable
+  gradients: EditRgbGradient[];
 
   get duration(): number {
     return this.gradients.length

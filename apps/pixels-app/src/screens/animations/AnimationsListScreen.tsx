@@ -117,21 +117,21 @@ function AnimationsList({
   navigation: AnimationsListScreenProps["navigation"];
 }) {
   const animations = useAppAnimations();
-  const addAnimation = useAppAddAnimation();
-  const removeAnimation = useAppRemoveAnimation();
+  const add = useAppAddAnimation();
+  const remove = useAppRemoveAnimation();
 
-  const duplicateAnimation = React.useCallback(
+  const duplicate = React.useCallback(
     (anim: Readonly<EditAnimation>) => {
       // Copy the animation that needs to be duplicated
       const dupAnim = anim.duplicate(generateUuid());
       dupAnim.name += " copy";
       // Insert in list after the original animation
-      addAnimation(dupAnim, anim);
+      add(dupAnim, anim);
     },
-    [addAnimation]
+    [add]
   );
 
-  const editAnimation = React.useCallback(
+  const edit = React.useCallback(
     (anim: Readonly<EditAnimation>) =>
       navigation.navigate("AnimationEdit", {
         animationUuid: anim.uuid,
@@ -147,13 +147,13 @@ function AnimationsList({
       <AnimationSwipeableCard
         key={anim.uuid}
         animation={anim}
-        onPress={editAnimation}
-        onDuplicate={duplicateAnimation}
-        onRemove={removeAnimation}
+        onPress={edit}
+        onDuplicate={duplicate}
+        onRemove={remove}
         onExport={onOpen}
       />
     ),
-    [duplicateAnimation, editAnimation, onOpen, removeAnimation]
+    [duplicate, edit, onOpen, remove]
   );
 
   return (

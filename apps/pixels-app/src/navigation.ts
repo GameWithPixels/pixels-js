@@ -1,4 +1,5 @@
 import { StackScreenProps } from "@react-navigation/stack";
+import { EditRule } from "@systemic-games/pixels-edit-animation";
 
 //
 // Main screens stack
@@ -57,8 +58,8 @@ export type AnimationEditScreenProps = StackScreenProps<
 //
 export type ProfilesScreenStackParamList = {
   ProfilesList: undefined;
-  ProfileRules: { profileUuid: string };
-  ProfileEditRule: { profileUuid: string; ruleIndex: number };
+  ProfileEdit: { profileUuid: string };
+  RuleEdit: { observableRule: EditRule }; // At the moment it's just easier to pass an observable EditRule object rather than a serializable one
 };
 
 export type ProfilesListScreenProps = StackScreenProps<
@@ -66,12 +67,12 @@ export type ProfilesListScreenProps = StackScreenProps<
   "ProfilesList"
 >;
 
-export type ProfileRulesScreenProps = StackScreenProps<
+export type ProfileEditScreenProps = StackScreenProps<
   ProfilesScreenStackParamList,
-  "ProfileRules"
+  "ProfileEdit"
 >;
 
-export type ProfileEditRuleScreenProps = StackScreenProps<
+export type RuleEditScreenProps = StackScreenProps<
   ProfilesScreenStackParamList,
-  "ProfileEditRule"
+  "RuleEdit"
 >;

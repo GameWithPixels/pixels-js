@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from "react";
 // eslint-disable-next-line import/namespace
 import { View as RnView, ViewStyle } from "react-native";
 
+// No color in these props so it's compatible with Native Base style props
 export interface FastBoxProps
   extends PropsWithChildren,
     Pick<
@@ -33,7 +34,6 @@ export interface FastBoxProps
       | "marginLeft"
       | "marginRight"
       | "borderRadius"
-      | "borderColor"
       | "borderStyle"
       | "borderWidth"
       | "opacity"
@@ -93,7 +93,6 @@ export function FastBox({ children, ...props }: FastBoxProps) {
       marginBottom: props.marginBottom ?? props.mb,
       marginLeft: props.marginLeft ?? props.ml,
       marginRight: props.marginRight ?? props.mr,
-      borderColor: props.borderColor,
       borderStyle: props.borderStyle,
       borderWidth: props.borderWidth,
       opacity: props.opacity,
@@ -102,7 +101,6 @@ export function FastBox({ children, ...props }: FastBoxProps) {
       props.alignContent,
       props.alignItems,
       props.alignSelf,
-      props.borderColor,
       props.borderStyle,
       props.borderWidth,
       props.flex,

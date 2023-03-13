@@ -6,9 +6,13 @@ import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRule from "./EditRule";
 import Editable from "./Editable";
+import { observable } from "./decorators";
 
 export default class EditProfile extends Editable {
+  @observable
   description: string;
+
+  @observable
   rules: EditRule[];
 
   constructor(opt?: {

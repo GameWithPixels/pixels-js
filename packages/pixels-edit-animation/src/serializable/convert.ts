@@ -70,9 +70,29 @@ import {
 
 export function toProfile(
   data: Readonly<ProfileData>,
-  getAnimation: (uuid?: string) => EditAnimation | undefined,
-  getAudioClip: (uuid?: string) => EditAudioClip | undefined
+  getAnimation: (uuid: string) => EditAnimation | undefined,
+  getAudioClip: (uuid: string) => EditAudioClip | undefined,
+  allowMissingDependency = false
 ): EditProfile {
+  const checkGetAnimation = (uuid?: string): EditAnimation | undefined => {
+    if (uuid) {
+      const anim = getAnimation(uuid);
+      if (!allowMissingDependency && !anim) {
+        throw new Error(`toProfile(): No animation with uuid ${uuid}`);
+      }
+      return anim;
+    }
+  };
+  const checkGetAudioClip = (uuid?: string): EditAudioClip | undefined => {
+    if (uuid) {
+      const clip = getAudioClip(uuid);
+      if (!allowMissingDependency && !clip) {
+        throw new Error(`toProfile(): No audio clip with uuid ${uuid}`);
+      }
+      return clip;
+    }
+  };
+
   const rules = data.rules.map((r) => {
     let condition: EditCondition;
     const condType = r.condition.type;
@@ -175,7 +195,7 @@ export function toProfile(
           assert(actData, `No data for ${actType} action at index ${a.index}`);
           return new EditActionPlayAnimation({
             ...actData,
-            animation: getAnimation(actData.animationUuid),
+            animation: checkGetAnimation(actData.animationUuid),
           });
         }
         case "playAudioClip": {
@@ -183,7 +203,7 @@ export function toProfile(
           assert(actData, `No data for ${actType} action at index ${a.index}`);
           return new EditActionPlayAudioClip({
             ...actData,
-            clip: getAudioClip(actData.clipUuid),
+            clip: checkGetAudioClip(actData.clipUuid),
           });
         }
         case "makeWebRequest": {
@@ -203,9 +223,28 @@ export function toProfile(
 export function toAnimation<T extends keyof AnimationSetData>(
   type: T,
   data: Readonly<AnimationSetData[T][number]>,
-  getPattern: (uuid?: string) => EditPattern | undefined,
-  getGradient: (uuid?: string) => EditRgbGradient | undefined
+  getPattern: (uuid: string) => EditPattern | undefined,
+  getGradient: (uuid: string) => EditRgbGradient | undefined,
+  allowMissingDependency = false
 ): EditAnimation {
+  const checkGetPattern = (uuid?: string): EditPattern | undefined => {
+    if (uuid) {
+      const pattern = getPattern(uuid);
+      if (!allowMissingDependency && !pattern) {
+        throw new Error(`toAnimation(): No pattern with uuid ${uuid}`);
+      }
+      return pattern;
+    }
+  };
+  const checkGetGradient = (uuid?: string): EditRgbGradient | undefined => {
+    if (uuid) {
+      const gradient = getGradient(uuid);
+      if (!allowMissingDependency && !gradient) {
+        throw new Error(`toAnimation(): No gradient with uuid ${uuid}`);
+      }
+      return gradient;
+    }
+  };
   switch (type) {
     case "simple": {
       const animData = data as AnimationSimpleData;
@@ -222,30 +261,30 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationKeyframedData;
       return new EditAnimationKeyframed({
         ...animData,
-        pattern: getPattern(animData.patternUuid),
+        pattern: checkGetPattern(animData.patternUuid),
       });
     }
     case "gradientPattern": {
       const animData = data as AnimationGradientPatternData;
       return new EditAnimationGradientPattern({
         ...animData,
-        pattern: getPattern(animData.patternUuid),
-        gradient: getGradient(animData.gradientUuid),
+        pattern: checkGetPattern(animData.patternUuid),
+        gradient: checkGetGradient(animData.gradientUuid),
       });
     }
     case "gradient": {
       const animData = data as AnimationGradientData;
       return new EditAnimationGradient({
         ...animData,
-        gradient: getGradient(animData.gradientUuid),
+        gradient: checkGetGradient(animData.gradientUuid),
       });
     }
     case "noise": {
       const animData = data as AnimationNoiseData;
       return new EditAnimationNoise({
         ...animData,
-        gradient: getGradient(animData.gradientUuid),
-        blinkGradient: getGradient(animData.blinkGradientUuid),
+        gradient: checkGetGradient(animData.gradientUuid),
+        blinkGradient: checkGetGradient(animData.blinkGradientUuid),
       });
     }
     default:

@@ -7,9 +7,13 @@ import {
 
 import EditColor from "./EditColor";
 import EditDataSet from "./EditDataSet";
+import { observable } from "./decorators";
 
 export default class EditRgbKeyframe {
+  @observable
   time: number;
+
+  @observable
   color: Color;
 
   constructor(opt?: { time?: number; color?: Color }) {

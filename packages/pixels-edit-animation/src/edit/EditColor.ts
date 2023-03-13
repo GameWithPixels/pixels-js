@@ -6,9 +6,13 @@ import {
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { ColorModeNames } from "./ColorMode";
+import { observable } from "./decorators";
 
 export default class EditColor {
+  @observable
   mode: ColorModeNames;
+
+  @observable
   color: Color; // Used when type is "rgb"
 
   constructor(

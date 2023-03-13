@@ -11,7 +11,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, values, widget } from "./decorators";
+import { name, observable, values, widget } from "./decorators";
 
 export default class EditConditionHelloGoodbye extends EditCondition {
   get type(): ActionType {
@@ -21,6 +21,7 @@ export default class EditConditionHelloGoodbye extends EditCondition {
   @widget("bitField")
   @name("Hello / Goodbye")
   @values(HelloGoodbyeFlagsValues)
+  @observable
   flags: HelloGoodbyeFlags;
 
   constructor(opt?: { flags?: HelloGoodbyeFlags }) {

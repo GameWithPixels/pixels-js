@@ -500,7 +500,6 @@ const theme = extendTheme({
       variants: {
         comment: {
           italic: true,
-          fontWeight: "1xl",
         },
       },
     },

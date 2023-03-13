@@ -12,7 +12,7 @@ import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
-import { widget, range, name } from "./decorators";
+import { widget, range, name, observable } from "./decorators";
 
 export default class EditAnimationNoise extends EditAnimation {
   get type(): AnimationType {
@@ -21,30 +21,36 @@ export default class EditAnimationNoise extends EditAnimation {
 
   @widget("gradient")
   @name("Overall Gradient")
+  @observable
   gradient?: EditRgbGradient;
 
   @widget("faceMask")
   @range(1, 20, 1)
   @name("Face Mask")
+  @observable
   faces: number;
 
   @widget("slider")
   @range(0.001, 0.1)
   @name("Blink Duration Ratio")
+  @observable
   blinkDuration: number;
 
   @widget("gradient")
   @name("Individual Gradient")
+  @observable
   blinkGradient?: EditRgbGradient;
 
   @widget("slider")
   @range(10, 100)
   @name("Blink Count")
+  @observable
   blinkCount: number;
 
   @widget("slider")
   @range(0, 1)
   @name("Fading Sharpness")
+  @observable
   fade: number;
 
   constructor(opt?: {

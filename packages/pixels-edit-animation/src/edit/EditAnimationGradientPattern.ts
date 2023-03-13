@@ -12,7 +12,7 @@ import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
-import { widget, name } from "./decorators";
+import { widget, name, observable } from "./decorators";
 
 export default class EditAnimationGradientPattern extends EditAnimation {
   get type(): AnimationType {
@@ -21,14 +21,17 @@ export default class EditAnimationGradientPattern extends EditAnimation {
 
   @widget("grayscalePattern")
   @name("LED Pattern")
+  @observable
   pattern?: EditPattern;
 
   @widget("gradient")
   @name("RGB Gradient")
+  @observable
   gradient?: EditRgbGradient;
 
   @widget("toggle")
   @name("Override color based on face")
+  @observable
   overrideWithFace: boolean;
 
   constructor(opt?: {

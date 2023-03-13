@@ -1,4 +1,4 @@
-import { name, widget } from "./decorators";
+import { name, observable, widget } from "./decorators";
 
 /** Base class for classes used to create and edit animations. */
 export default abstract class Editable {
@@ -6,6 +6,7 @@ export default abstract class Editable {
 
   @widget("string")
   @name("Name")
+  @observable
   name: string;
 
   get uuid() {

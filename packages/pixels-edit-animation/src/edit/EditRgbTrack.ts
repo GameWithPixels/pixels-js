@@ -3,10 +3,14 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
+import { observable } from "./decorators";
 
 export default class EditRgbTrack {
-  readonly ledIndices: number[] = [];
-  readonly gradient: EditRgbGradient;
+  @observable
+  ledIndices: number[] = [];
+
+  @observable
+  gradient: EditRgbGradient;
 
   get empty(): boolean {
     return this.gradient.empty;

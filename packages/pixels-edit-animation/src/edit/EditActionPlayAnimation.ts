@@ -11,20 +11,23 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAction from "./EditAction";
 import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
-import { name, range, widget } from "./decorators";
+import { name, observable, range, widget } from "./decorators";
 
 export default class EditActionPlayAnimation extends EditAction {
   @widget("animation")
   @name("Lighting Pattern")
+  @observable
   animation?: EditAnimation;
 
   @widget("playbackFace")
   @name("Play On Face")
+  @observable
   face: number; // Face value
 
   @widget("count")
   @range(1, 10)
   @name("Repeat Count")
+  @observable
   loopCount: number;
 
   constructor(opt?: {

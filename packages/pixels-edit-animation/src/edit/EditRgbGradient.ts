@@ -2,9 +2,11 @@ import { Color } from "@systemic-games/pixels-core-animation";
 
 import EditRgbKeyframe from "./EditRgbKeyframe";
 import Editable from "./Editable";
+import { observable } from "./decorators";
 
 export default class EditRgbGradient extends Editable {
-  readonly keyframes: EditRgbKeyframe[];
+  @observable
+  keyframes: EditRgbKeyframe[];
 
   get empty(): boolean {
     return !this.keyframes.length;

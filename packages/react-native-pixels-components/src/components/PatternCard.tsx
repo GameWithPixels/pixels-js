@@ -33,13 +33,12 @@ export function PatternCard({
   const isSelected = selectable
     ? selectedPatternIndex === patternIndexInList
     : false;
+  const onPressMemo = React.useCallback(() => {
+    onSelected?.(patternIndexInList);
+    onPress?.();
+  }, [onPress, onSelected, patternIndexInList]);
   return (
-    <Pressable
-      onPress={() => {
-        onSelected?.(patternIndexInList);
-        onPress?.();
-      }}
-    >
+    <Pressable onPress={onPressMemo}>
       <Card borderWidth={isSelected ? 3 : borderWidth} {...flexProps}>
         {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
         <Text fontSize={fontSize}>{patternName}</Text>

@@ -13,11 +13,12 @@ import EditAction from "./EditAction";
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
 import EditAudioClip from "./EditAudioClip";
 import EditDataSet from "./EditDataSet";
-import { name, widget } from "./decorators";
+import { name, observable, widget } from "./decorators";
 
 export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
   @widget("audioClip")
   @name("Audio Clip")
+  @observable
   clip?: EditAudioClip;
 
   constructor(opt?: { clip?: EditAudioClip }) {

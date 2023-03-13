@@ -2,13 +2,13 @@ import {
   ActionsheetList,
   FastButton,
   FastHStack,
-  FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { ITextProps, Input, Text } from "native-base";
+import { ITextProps, Input, Text, View } from "native-base";
+import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
-export interface UserTextSelectionProps {
+export interface UserTextProps extends IViewProps {
   title?: string; // Text displayed above the input
   textSize?: ITextProps["fontSize"];
   space?: number | string; // Spacing between text and toggle
@@ -17,14 +17,15 @@ export interface UserTextSelectionProps {
   availableTexts?: string[];
 }
 
-export function UserTextSelection({
+export function UserText({
   title,
   textSize,
   space = 3,
   value,
   onValueChange,
   availableTexts,
-}: UserTextSelectionProps) {
+  ...flexProps
+}: UserTextProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   const data = React.useMemo(
     () =>
@@ -35,7 +36,7 @@ export function UserTextSelection({
   );
   return (
     <>
-      <FastVStack>
+      <View {...flexProps}>
         <Text bold fontSize={textSize}>
           {title}
         </Text>
@@ -55,7 +56,7 @@ export function UserTextSelection({
             </FastButton>
           )}
         </FastHStack>
-      </FastVStack>
+      </View>
 
       {/* Actionsheet drawer */}
       <ActionsheetList

@@ -3,7 +3,6 @@ import {
   FastBox,
   FastBoxProps,
   FastHStack,
-  FastVStack,
   HView,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -17,7 +16,9 @@ import {
   ScrollView,
   IButtonProps,
   ITextProps,
+  View,
 } from "native-base";
+import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
 function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
@@ -63,22 +64,26 @@ export interface ItemData {
   onPress?: (() => void) | null | undefined;
 }
 
-export interface RuleComparisonWidgetProps {
+export interface RuleComparisonWidgetProps extends IViewProps {
   title?: string;
   values: string[];
   initialValues: string[];
-  borderWidth?: number;
-  fontSize?: ITextProps["fontSize"];
+  buttonBorderWidth?: number;
+  buttonFontSize?: ITextProps["fontSize"];
   onChange?: (keys: string[]) => void; // widget.update
-  isLeft?: boolean;
-  isRight?: boolean;
 }
 
-export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
-  const values = props.values;
-  const [selectedOptions, setSelectedOptions] = React.useState<string[]>(
-    props.initialValues
-  );
+export function RuleComparisonWidget({
+  title,
+  values,
+  initialValues,
+  buttonBorderWidth,
+  buttonFontSize,
+  onChange,
+  ...flexProps
+}: RuleComparisonWidgetProps) {
+  const [selectedOptions, setSelectedOptions] =
+    React.useState<string[]>(initialValues);
   const valuesRef = React.useRef(values);
   React.useEffect(() => {
     // Clear selected options if the list of values changes
@@ -87,7 +92,6 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
       setSelectedOptions([]);
     }
   }, [values]);
-  const onChange = props.onChange;
   const onPress = React.useCallback(
     (item: string) =>
       setSelectedOptions((options) => {
@@ -108,8 +112,8 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack>
-        <Text bold>{props.title}</Text>
+      <View {...flexProps}>
+        <Text bold>{title}</Text>
         <FastBox mt={2} w="100%">
           {values.length < 4 ? (
             <Button.Group isAttached>
@@ -117,10 +121,10 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
                 <CustomButton
                   key={i}
                   keyIndex={i}
-                  itemsLength={props.values.length - 1}
+                  itemsLength={values.length - 1}
                   title={item}
-                  titleFontSize={props.fontSize}
-                  borderWidth={props.borderWidth}
+                  titleFontSize={buttonFontSize}
+                  borderWidth={buttonBorderWidth}
                   isSelected={selectedOptions.includes(item)}
                   onPress={() => onPress(item)}
                 />
@@ -146,7 +150,7 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
             </Pressable>
           )}
         </FastBox>
-      </FastVStack>
+      </View>
 
       <Actionsheet isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content>
@@ -170,8 +174,8 @@ export function RuleComparisonWidget(props: RuleComparisonWidgetProps) {
                 keyIndex={i}
                 itemsLength={values.length - 1}
                 title={item}
-                titleFontSize={props.fontSize}
-                borderWidth={props.borderWidth}
+                titleFontSize={buttonFontSize}
+                borderWidth={buttonBorderWidth}
                 isSelected={selectedOptions.includes(item)}
                 onPress={() => onPress(item)}
               />

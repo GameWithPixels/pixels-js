@@ -10,7 +10,7 @@ import {
 import { useCallback, useMemo } from "react";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
-import { RootState, AppDispatch, store } from "./store";
+import { RootState, AppDispatch } from "./store";
 
 import DataMap from "~/features/DataMap";
 import {
@@ -63,30 +63,6 @@ export function useAppRemovePairedDie(): (pixelId: number) => void {
 // Profiles
 //
 
-function createProfileFromUuid(uuid: string): EditProfile {
-  const profilesSet = store.getState().profilesSet;
-  const profile = profilesSet.profiles.find((p) => p.uuid === uuid);
-  assert(profile, `createProfileFromUuid(): No profile with uuid ${uuid}`);
-  return Serializable.toProfile(
-    profile,
-    createStandaloneAnimationFromUuid,
-    (audioClipUuid) => {
-      if (audioClipUuid) {
-        return new EditAudioClip({ uuid: audioClipUuid });
-      }
-    }
-  );
-}
-
-let tempProfile: EditProfile | undefined;
-
-export function getTempProfileFromUuid(uuid: string): EditProfile {
-  if (tempProfile?.uuid !== uuid) {
-    tempProfile = createProfileFromUuid(uuid);
-  }
-  return tempProfile;
-}
-
 export function useAppProfiles(): Readonly<EditProfile>[] {
   const profilesSet = useAppSelector((state) => state.profilesSet);
   const animations = useAppAnimations();
@@ -95,21 +71,9 @@ export function useAppProfiles(): Readonly<EditProfile>[] {
       profilesSet.profiles.map((data) =>
         Serializable.toProfile(
           data,
-          (animUuid) => {
-            if (animUuid) {
-              const anim = animations.find((a) => a.uuid === animUuid);
-              assert(
-                anim,
-                `useAppProfiles(): No animation with uuid ${animUuid}`
-              );
-              return anim as EditAnimation; // TODO readonly
-            }
-          },
-          (audioClipUuid) => {
-            if (audioClipUuid) {
-              return new EditAudioClip({ uuid: audioClipUuid });
-            }
-          }
+          (animUuid) =>
+            animations.find((a) => a.uuid === animUuid) as EditAnimation, // TODO readonly
+          (clipUuid) => new EditAudioClip({ uuid: clipUuid })
         )
       ),
     [animations, profilesSet.profiles]
@@ -171,96 +135,6 @@ export function useAppRemoveProfile(): (
 // Animations
 //
 
-let tempAnim: EditAnimation | undefined;
-
-function createStandaloneAnimation<
-  T extends keyof Serializable.AnimationSetData
->(
-  type: T,
-  data: Readonly<Serializable.AnimationSetData[T][number]>,
-  patterns: Serializable.PatternData[],
-  gradients: Serializable.GradientData[]
-): EditAnimation {
-  const patternsMap = new Map<string, EditPattern>();
-  const gradientsMap = new Map<string, EditRgbGradient>();
-  return Serializable.toAnimation(
-    type,
-    data,
-    (patternUuid) => {
-      if (patternUuid) {
-        const pattern = patternsMap.get(patternUuid);
-        if (pattern) {
-          return pattern;
-        } else {
-          const patternData = patterns.find((p) => p.uuid === patternUuid);
-          assert(
-            patternData,
-            `createStandaloneAnimation(): No pattern with uuid ${patternUuid}`
-          );
-          const pattern = Serializable.toPattern(patternData);
-          patternsMap.set(patternUuid, pattern);
-          return pattern;
-        }
-      }
-    },
-    (gradientUuid) => {
-      if (gradientUuid) {
-        const gradient = gradientsMap.get(gradientUuid);
-        if (gradient) {
-          return gradient;
-        } else {
-          const gradientData = gradients.find((g) => g.uuid === gradientUuid);
-          assert(
-            gradientData,
-            `createStandaloneAnimation(): No gradient with uuid ${gradientUuid}`
-          );
-          const gradient = Serializable.toGradient(gradientData);
-          gradientsMap.set(gradientUuid, gradient);
-          return gradient;
-        }
-      }
-    }
-  );
-}
-
-function createStandaloneAnimationFromUuid(
-  uuid?: string
-): EditAnimation | undefined {
-  if (uuid) {
-    const profilesSet = store.getState().profilesSet;
-    // Get all animation arrays
-    const animArrays = Object.entries(profilesSet.animations).filter(
-      Array.isArray
-    );
-    // And search for our animation
-    for (let i = 0; i < animArrays.length; ++i) {
-      const animData = animArrays[i][1].find(
-        (a: Serializable.AnimationData) => a.uuid === uuid
-      );
-      if (animData) {
-        // Create a new EditAnimation instance
-        return createStandaloneAnimation(
-          animArrays[i][0] as keyof Serializable.AnimationSetData,
-          animData,
-          profilesSet.patterns,
-          profilesSet.gradients
-        );
-      }
-    }
-    throw new Error(
-      `createStandaloneAnimationFromUuid: No animation with uuid ${uuid}`
-    );
-  }
-}
-
-export function getTempAnimationFromUuid(uuid: string): EditAnimation {
-  if (tempAnim?.uuid !== uuid) {
-    tempAnim = createStandaloneAnimationFromUuid(uuid);
-    assert(tempAnim);
-  }
-  return tempAnim;
-}
-
 const animCache = new DataMap<
   Serializable.AnimationData,
   Readonly<EditAnimation>
@@ -284,30 +158,12 @@ export function useAppAnimations(): Readonly<EditAnimation>[] {
                 Serializable.toAnimation(
                   entry[0] as keyof Serializable.AnimationSetData,
                   animData,
-                  (patternUuid) => {
-                    if (patternUuid) {
-                      const pattern = patterns.find(
-                        (p) => p.uuid === patternUuid
-                      );
-                      assert(
-                        pattern,
-                        `useAppAnimations(): No pattern with uuid ${patternUuid}`
-                      );
-                      return pattern as EditPattern; // TODO readonly
-                    }
-                  },
-                  (gradientUuid) => {
-                    if (gradientUuid) {
-                      const gradient = gradients.find(
-                        (g) => g.uuid === gradientUuid
-                      );
-                      assert(
-                        gradient,
-                        `useAppAnimations(): No gradient with uuid ${gradientUuid}`
-                      );
-                      return gradient as EditRgbGradient; // TODO readonly
-                    }
-                  }
+                  (patternUuid) =>
+                    patterns.find((p) => p.uuid === patternUuid) as EditPattern, // TODO readonly
+                  (gradientUuid) =>
+                    gradients.find(
+                      (g) => g.uuid === gradientUuid
+                    ) as EditRgbGradient // TODO readonly
                 )
             )
           )

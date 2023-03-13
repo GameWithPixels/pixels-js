@@ -11,7 +11,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, range, values, widget } from "./decorators";
+import { name, observable, range, values, widget } from "./decorators";
 
 export default class EditConditionFaceCompare extends EditCondition {
   get type(): ActionType {
@@ -21,11 +21,13 @@ export default class EditConditionFaceCompare extends EditCondition {
   @widget("bitField")
   @name("Comparison")
   @values(FaceCompareFlagsValues)
+  @observable
   flags: FaceCompareFlags;
 
   @widget("face")
   @range(1, 20)
   @name("Than")
+  @observable
   face: number; // Face value
 
   constructor(opt?: { flags?: FaceCompareFlags; face?: number }) {

@@ -210,7 +210,23 @@ export function skipEnum(target: object, propertyKey: string): void {
   addMetadata(skipEnumKey, target, { propertyKey });
 }
 
-// Get properties with a display order decorator
-export function getPropsWithSkipEnum(target: object): DisplayOrderProperty[] {
-  return getMetadata(displayOrderKey, target);
+// Get properties with a skip enum decorator
+export function getPropsWithSkipEnum(target: object): PropertyData[] {
+  return getMetadata(skipEnumKey, target);
+}
+
+//
+// Observable property
+//
+
+const observableKey = Symbol("pixelObservable");
+
+// Skip decorator
+export function observable(target: object, propertyKey: string): void {
+  addMetadata(observableKey, target, { propertyKey });
+}
+
+// Get properties with a observable decorator
+export function getPropsWithObservable(target: object): PropertyData[] {
+  return getMetadata(observableKey, target);
 }

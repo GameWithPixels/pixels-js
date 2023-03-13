@@ -62,6 +62,8 @@
     "expo-status-bar": "~1.4.2",
     "expo-three": "^7.0.0",
     "expo-updates": "~0.15.6",
+    "mobx": "^6.8.0",
+    "mobx-react-lite": "^3.4.3",
     "native-base": "~3.4.25",
     "react": "18.1.0",
     "react-dom": "18.1.0",

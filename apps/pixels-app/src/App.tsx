@@ -2,6 +2,7 @@ import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { PixelTheme } from "@systemic-games/react-native-pixels-components";
 import { useBluetooth } from "@systemic-games/react-native-pixels-connect";
+import { configure } from "mobx";
 import { Center, NativeBaseProvider, Text } from "native-base";
 import React from "react";
 // eslint-disable-next-line import/namespace
@@ -16,6 +17,10 @@ import PatternsNavigator from "./screens/animations/AnimationsNavigator";
 import ProfilesNavigator from "./screens/profiles/ProfilesNavigator";
 
 import HomeNavigator from "~/screens/home/HomeNavigator";
+
+configure({
+  enforceActions: "never",
+});
 
 LogBox.ignoreLogs([
   // From NativeBase

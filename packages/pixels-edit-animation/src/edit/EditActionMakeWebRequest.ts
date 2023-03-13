@@ -12,15 +12,17 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAction from "./EditAction";
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
 import EditDataSet from "./EditDataSet";
-import { name, widget } from "./decorators";
+import { name, observable, widget } from "./decorators";
 
 export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
   @widget("userText")
   @name("URL")
+  @observable
   url: string;
 
   @widget("userText")
   @name("Value")
+  @observable
   value: string;
 
   constructor(opt?: { url?: string; value?: string }) {

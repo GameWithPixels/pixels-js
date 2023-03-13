@@ -5,10 +5,14 @@ import EditAction from "./EditAction";
 import EditAnimation from "./EditAnimation";
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
+import { observable } from "./decorators";
 
 export default class EditRule {
+  @observable
   condition: EditCondition;
-  readonly actions: EditAction[];
+
+  @observable
+  actions: EditAction[];
 
   constructor(condition: EditCondition, opt?: { actions?: EditAction[] }) {
     this.condition = condition;

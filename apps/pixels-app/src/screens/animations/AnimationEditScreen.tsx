@@ -1,4 +1,4 @@
-// import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import {
   EditAnimation,
   EditAnimationGradient, // simple gradient
@@ -16,26 +16,48 @@ import {
 import {
   PixelAppPage,
   AnimationTypeSelector,
-  RenderWidget,
   getAnimationTitle,
   FastVStack,
-  FastButton,
   FastBox,
+  createWidgetComponent,
 } from "@systemic-games/react-native-pixels-components";
-import { FlatList, Box } from "native-base";
+import { observer } from "mobx-react-lite";
+import { FlatList, Input, View } from "native-base";
 import React from "react";
 
-import {
-  getTempAnimationFromUuid,
-  useAppPatterns,
-  useAppUpdateAnimation,
-} from "~/app/hooks";
+import { useAppPatterns, useAppUpdateAnimation } from "~/app/hooks";
+import FromStore from "~/features/FromStore";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
+import { makeObservable } from "~/features/makeObservable";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { AnimationEditScreenProps } from "~/navigation";
 
+const penIcon = <FontAwesome5 name="pen" size={18} color="black" />;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ObservableInputAnimName = observer(function ({
+  observableAnim,
+}: {
+  observableAnim: EditAnimation;
+}) {
+  return (
+    <Input
+      bg="white"
+      rounded="lg"
+      px={2}
+      h={9}
+      InputRightElement={penIcon}
+      size="lg"
+      variant="unstyled"
+      value={observableAnim.name}
+      onChangeText={(text) => (observableAnim.name = text)}
+      color="black"
+    />
+  );
+});
+
 function Separator() {
-  return <FastBox h={2} />;
+  return <FastBox h={5} />;
 }
 
 /**
@@ -43,11 +65,15 @@ function Separator() {
  * @param editAnim type of animation for widgets to display.
  * @returns a ScrollView of edition widgets corresponding to the type of animation.
  */
-function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
+function AnimationEditor({
+  observableAnim,
+}: {
+  observableAnim: EditAnimation;
+}) {
   const patterns = useAppPatterns();
   const animWidgets = React.useMemo(
-    () => getEditWidgetsData(editAnim),
-    [editAnim]
+    () => getEditWidgetsData(observableAnim),
+    [observableAnim]
   );
 
   const patternAnimsRef = React.useRef(
@@ -78,18 +104,17 @@ function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
 
   const renderItem = React.useCallback(
     ({
-      item: widget,
+      item: widgetData,
       index,
     }: {
       item: Readonly<EditWidgetData>;
       index: number;
-    }) => (
-      <RenderWidget
-        key={index}
-        widget={widget}
-        patternsParams={patternsParams}
-      />
-    ),
+    }) => {
+      const Widget = observer(
+        createWidgetComponent(widgetData, { patternsParams })
+      );
+      return <Widget key={index} />;
+    },
     [patternsParams]
   );
 
@@ -106,104 +131,98 @@ function AnimationEditor({ editAnim }: { editAnim: EditAnimation }) {
   );
 }
 
+const ObservableDieRender = observer(function ({
+  observableAnim,
+}: {
+  observableAnim: EditAnimation;
+}) {
+  return (
+    <DieRenderer
+      renderData={createDataSetForAnimation(observableAnim).toDataSet()}
+    />
+  );
+});
+
 export default function AnimationEditScreen({
   route,
 }: AnimationEditScreenProps) {
-  const [editAnim, setEditAnim] = React.useState(
-    () => getTempAnimationFromUuid(route.params.animationUuid) // TODO not updated if animationUuid changes
+  const [observableAnim, setEditAnim] = React.useState(() =>
+    makeObservable(FromStore.loadAnimation(route.params.animationUuid))
   );
-
   const updateAnim = useAppUpdateAnimation();
-  const lastAnimRef = React.useRef(editAnim);
-  lastAnimRef.current = editAnim;
+
+  // TODO anim is always saved on leaving screen
+  const lastAnimRef = React.useRef(observableAnim);
+  lastAnimRef.current = observableAnim;
   React.useEffect(() => {
     return () => {
-      // TODO update anim on leave
       updateAnim(lastAnimRef.current);
     };
   }, [updateAnim]);
 
-  const [renderData, setRenderData] = React.useState(
-    createDataSetForAnimation(editAnim).toDataSet()
-  );
-  const updateDieRender = React.useCallback(
-    () => setRenderData(createDataSetForAnimation(editAnim).toDataSet()),
-    [editAnim]
-  );
-
   const animTypeText = React.useMemo(
-    () => getAnimationTitle(editAnim.type),
-    [editAnim.type]
+    () => getAnimationTitle(observableAnim.type),
+    [observableAnim]
   );
 
+  const uuid = observableAnim.uuid;
   const animTypes = React.useMemo(
     () => [
       {
         label: getAnimationTitle(AnimationTypeValues.simple),
         onSelect: () => {
-          setEditAnim(new EditAnimationSimple({ uuid: editAnim.uuid }));
+          setEditAnim(makeObservable(new EditAnimationSimple({ uuid })));
         },
       },
       {
         label: getAnimationTitle(AnimationTypeValues.rainbow),
         onSelect: () => {
-          setEditAnim(new EditAnimationRainbow({ uuid: editAnim.uuid }));
+          setEditAnim(makeObservable(new EditAnimationRainbow({ uuid })));
         },
       },
       {
         label: getAnimationTitle(AnimationTypeValues.gradient),
         onSelect: () => {
-          setEditAnim(new EditAnimationGradient({ uuid: editAnim.uuid }));
+          setEditAnim(makeObservable(new EditAnimationGradient({ uuid })));
         },
       },
       {
         label: getAnimationTitle(AnimationTypeValues.keyframed),
         onSelect: () => {
-          setEditAnim(new EditAnimationKeyframed({ uuid: editAnim.uuid }));
+          setEditAnim(makeObservable(new EditAnimationKeyframed({ uuid })));
         },
       },
       {
         label: getAnimationTitle(AnimationTypeValues.gradientPattern),
         onSelect: () => {
           setEditAnim(
-            new EditAnimationGradientPattern({ uuid: editAnim.uuid })
+            makeObservable(new EditAnimationGradientPattern({ uuid }))
           );
         },
       },
       {
         label: getAnimationTitle(AnimationTypeValues.noise),
         onSelect: () => {
-          setEditAnim(new EditAnimationNoise({ uuid: editAnim.uuid }));
+          setEditAnim(makeObservable(new EditAnimationNoise({ uuid })));
         },
       },
     ],
-    [editAnim.uuid]
+    [uuid]
   );
 
   return (
     <PixelAppPage>
       <FastVStack h="100%">
-        {/* <Center bg="white" rounded="lg" px={2} h={9}>
-          <Input
-            InputRightElement={
-              <FontAwesome5 name="pen" size={18} color="black" />
-            }
-            size="lg"
-            variant="unstyled"
-            placeholder={editAnim.name}
-            color="black"
-          />
-        </Center> */}
-        <Box p={1} w="100%" h={200} rounded="lg">
-          <DieRenderer renderData={renderData} />
-          <FastButton onPress={updateDieRender}>Apply</FastButton>
-        </Box>
+        {/* <ObservableInputAnimName observableAnim={observableAnim} /> */}
+        <View p={1} w="100%" h={200} rounded="lg">
+          <ObservableDieRender observableAnim={observableAnim} />
+        </View>
         <AnimationTypeSelector
           my={2}
           label={animTypeText}
           itemsData={animTypes}
         />
-        <AnimationEditor editAnim={editAnim} />
+        <AnimationEditor observableAnim={observableAnim} />
       </FastVStack>
     </PixelAppPage>
   );
