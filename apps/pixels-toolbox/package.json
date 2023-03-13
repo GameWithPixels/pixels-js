@@ -59,7 +59,6 @@
     "expo-splash-screen": "~0.18.1",
     "expo-status-bar": "~1.4.4",
     "expo-system-ui": "~2.2.1",
-    "expo-three": "^7.0.0",
     "expo-updates": "~0.16.3",
     "i18next": "^22.0.0",
     "native-base": "~3.4.28",
@@ -76,8 +75,7 @@
     "react-native-zip-archive": "^6.0.9",
     "react-redux": "^8.0.5",
     "redux": "^4.2.1",
-    "reflect-metadata": "^0.1.13",
-    "three": "^0.145.0"
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",

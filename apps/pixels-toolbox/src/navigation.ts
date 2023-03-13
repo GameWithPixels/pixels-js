@@ -9,7 +9,6 @@ export type RootScreensParamList = {
   Stats: undefined;
   Roll: undefined;
   Animations: undefined;
-  DiceRenderer: undefined;
 };
 
 // Home screen and sub screens

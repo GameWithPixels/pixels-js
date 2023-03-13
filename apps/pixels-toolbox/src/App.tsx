@@ -13,7 +13,6 @@ import { Provider } from "react-redux";
 
 import { store } from "./app/store";
 import AnimationsScreen from "./screens/AnimationsScreen";
-import DiceRenderer from "./screens/DiceRenderer";
 import FirmwareUpdateNavigator from "./screens/FirmwareUpdateNavigator";
 import HomeNavigator from "./screens/HomeNavigator";
 import theme from "./theme";
@@ -31,6 +30,9 @@ LogBox.ignoreLogs([
   "Sentry Logger [warn]:",
   // Ignore warning caused by AnimatedComponent using findNodeHandle
   "Warning: findNodeHandle is deprecated in StrictMode.",
+  // More from reanimated
+  "Warning: Using UNSAFE_componentWillMount in strict mode is not recommended",
+  "Warning: Using UNSAFE_componentWillReceiveProps in strict mode is not recommended",
 ]);
 
 // Use Sentry for crash reporting
@@ -85,7 +87,6 @@ export default function App() {
                 />
                 <Drawer.Screen name="Roll" component={RollScreen} />
                 <Drawer.Screen name="Animations" component={AnimationsScreen} />
-                <Drawer.Screen name="DiceRenderer" component={DiceRenderer} />
               </Drawer.Navigator>
             </NavigationContainer>
           </NativeBaseProvider>
