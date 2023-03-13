@@ -55,6 +55,7 @@
         {
           "android": {
             "kotlinVersion": "1.7.0",
+            "flipper": "0.183.0",
             "packagingOptions": {
               "pickFirst": [
                 "lib/armeabi-v7a/libfolly_runtime.so",

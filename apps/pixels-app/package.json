@@ -43,6 +43,7 @@
     "base64-js": "^1.5.1",
     "expo": "~48.0.6",
     "expo-asset": "~8.9.1",
+    "expo-build-properties": "~0.5.1",
     "expo-crypto": "~12.2.1",
     "expo-dev-client": "~2.1.5",
     "expo-file-system": "~15.2.2",

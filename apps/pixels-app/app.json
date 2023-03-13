@@ -41,7 +41,15 @@
     },
     "plugins": [
       "./withAndroidPermissions",
-      "react-native-vision-camera"
+      "react-native-vision-camera",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "flipper": "0.182.0"
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
