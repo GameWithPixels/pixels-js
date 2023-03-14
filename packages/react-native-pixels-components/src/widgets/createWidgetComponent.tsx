@@ -25,6 +25,10 @@ import {
 import { Text } from "native-base";
 import React from "react";
 
+import { FaceMaskWidget } from "./FaceMaskWidget";
+import { PlaybackFaceWidget } from "./PlaybackFaceWidget";
+import { RuleComparisonWidget } from "./RuleComparisonWidget";
+import { UserTextWidget } from "./UserTextWidget";
 import { AnimationSelector } from "../components/AnimationSelector";
 import {
   GradientColorSelector,
@@ -32,10 +36,6 @@ import {
 } from "../components/ColorSelector";
 import { FaceSelector } from "../components/FaceSelector";
 import { PatternSelector } from "../components/PatternSelector";
-import { FaceMaskWidget } from "./FaceMaskWidget";
-import { PlaybackFaceWidget } from "./PlaybackFaceWidget";
-import { RuleComparisonWidget } from "./RuleComparisonWidget";
-import { UserTextWidget } from "./UserTextWidget";
 
 export type CreateWidgetComponentOptionals = Required<
   Exclude<Parameters<typeof createWidgetComponent>[1], undefined>

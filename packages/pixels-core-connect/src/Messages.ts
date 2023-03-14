@@ -105,7 +105,7 @@ export type MessageTypeNames = keyof typeof MessageTypeValues;
  * The "enum" type for {@link MessageTypeValues}.
  * @category Message
  */
-export type MessageType = typeof MessageTypeValues[MessageTypeNames];
+export type MessageType = (typeof MessageTypeValues)[MessageTypeNames];
 
 /**
  * Base type for all Pixels messages.
@@ -311,7 +311,7 @@ export type PixelDesignAndColorNames = keyof typeof PixelDesignAndColorValues;
  * @category Message
  */
 export type PixelDesignAndColor =
-  typeof PixelDesignAndColorValues[PixelDesignAndColorNames];
+  (typeof PixelDesignAndColorValues)[PixelDesignAndColorNames];
 
 /**
  * Message send by a Pixel after receiving a "WhoAmI".
@@ -399,7 +399,7 @@ export type PixelRollStateNames = keyof typeof PixelRollStateValues;
  * The "enum" type for {@link PixelRollStateValues}.
  * @category Message
  */
-export type PixelRollState = typeof PixelRollStateValues[PixelRollStateNames];
+export type PixelRollState = (typeof PixelRollStateValues)[PixelRollStateNames];
 
 /**
  * Message send by a Pixel to notify of its rolling state.
@@ -664,7 +664,7 @@ export type TransferInstantAnimationsSetAckTypeNames =
  * @category Message
  */
 export type TransferInstantAnimationSetAckType =
-  typeof TransferInstantAnimationsSetAckTypeValues[TransferInstantAnimationsSetAckTypeNames];
+  (typeof TransferInstantAnimationsSetAckTypeValues)[TransferInstantAnimationsSetAckTypeNames];
 
 /**
  * Message send by a Pixel after receiving a TransferTestAnimationSet request.
@@ -734,7 +734,7 @@ export type TelemetryRequestModeNames = keyof typeof TelemetryRequestModeValues;
  * @category Message
  */
 export type TelemetryRequestMode =
-  typeof TelemetryRequestModeValues[TelemetryRequestModeNames];
+  (typeof TelemetryRequestModeValues)[TelemetryRequestModeNames];
 
 /**
  * Message send to a Pixel to have it start or stop sending telemetry messages.
@@ -840,7 +840,7 @@ export type BatteryStateNames = keyof typeof PixelBatteryStateValues;
  * The "enum" type for {@link PixelBatteryStateValues}.
  * @category Message
  */
-export type BatteryState = typeof PixelBatteryStateValues[BatteryStateNames];
+export type BatteryState = (typeof PixelBatteryStateValues)[BatteryStateNames];
 
 /**
  * Message send by a Pixel to notify of its battery level and state.

@@ -61,11 +61,11 @@ export class DicePool extends EventTarget {
     const prevLabel = this.findLabel(pixel);
     if (prevLabel) {
       // Return false if adding it with a different name, otherwise return true
-      return !label || !label.length || label === prevLabel;
+      return !label?.length || label === prevLabel;
     }
 
     // Generate label if none given
-    if (!label || !label.length) {
+    if (!label?.length) {
       label = DicePool.generateLabel(pixel);
     }
 

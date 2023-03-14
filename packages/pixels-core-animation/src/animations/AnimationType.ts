@@ -26,4 +26,4 @@ export type AnimationTypeNames = keyof typeof AnimationTypeValues;
  * The "enum" type for {@link AnimationTypeValues}.
  * @category Animation
  */
-export type AnimationType = typeof AnimationTypeValues[AnimationTypeNames];
+export type AnimationType = (typeof AnimationTypeValues)[AnimationTypeNames];

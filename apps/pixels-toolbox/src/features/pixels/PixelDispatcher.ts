@@ -23,8 +23,8 @@ import {
   MessageTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 
-import getDfuFileInfo from "../dfu/getDfuFileInfo";
 import { getDieType } from "./DieType";
+import getDfuFileInfo from "../dfu/getDfuFileInfo";
 
 import { store } from "~/app/store";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";

@@ -25,7 +25,7 @@ export type HelloGoodbyeFlagsNames = keyof typeof HelloGoodbyeFlagsValues;
  * @category Profile Condition
  */
 export type HelloGoodbyeFlags =
-  typeof HelloGoodbyeFlagsValues[HelloGoodbyeFlagsNames];
+  (typeof HelloGoodbyeFlagsValues)[HelloGoodbyeFlagsNames];
 
 /**
  * Condition that triggers on a life state event

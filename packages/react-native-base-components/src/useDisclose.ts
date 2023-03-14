@@ -7,7 +7,7 @@ import React from "react";
  * @returns An object with isOpen, onOpen, onClose, onToggle properties.
  */
 export function useDisclose(initState?: boolean) {
-  const [isOpen, setIsOpen] = React.useState(initState || false);
+  const [isOpen, setIsOpen] = React.useState(initState ?? false);
   const onOpen = React.useCallback(() => {
     setIsOpen(true);
   }, []);
