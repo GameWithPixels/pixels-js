@@ -18,7 +18,6 @@ export default class EditAnimationRainbow extends EditAnimation {
   }
 
   @widget("faceMask")
-  @range(1, 20, 1)
   @name("Face Mask")
   @observable
   faces: number;

@@ -42,15 +42,13 @@ export function bitsToFlags(value?: number): number[] {
  * @returns The combined value.
  */
 export function combineFlags(flags: number[]): number {
-  return flags.length
-    ? flags.reduce((mask, f) => {
-        assert(
-          f < 0x80000000,
-          "combineFlags: Flag value greater or equal to 2^31, can't combine using OR operator"
-        );
-        return mask | f;
-      })
-    : 0;
+  return flags.reduce((mask, f) => {
+    assert(
+      f < 0x80000000,
+      "combineFlags: Flag value greater or equal to 2^31, can't combine using OR operator"
+    );
+    return mask | f;
+  }, 0);
 }
 
 /**

@@ -25,7 +25,6 @@ export default class EditAnimationNoise extends EditAnimation {
   gradient?: EditRgbGradient;
 
   @widget("faceMask")
-  @range(1, 20, 1)
   @name("Face Mask")
   @observable
   faces: number;

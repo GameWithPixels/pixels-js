@@ -30,7 +30,7 @@ export function getFaceMask(faceValueOrFaceList: number | number[]): number {
     );
     return (1 << (n - 1)) >>> 0;
   } else {
-    return faceValueOrFaceList.reduce((mask, n) => getFaceMask(n) | mask);
+    return faceValueOrFaceList.reduce((mask, n) => getFaceMask(n) | mask, 0);
   }
 }
 
