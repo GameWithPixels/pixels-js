@@ -43,12 +43,12 @@ export function bitsToFlags(value?: number): number[] {
  */
 export function combineFlags(flags: number[]): number {
   return flags.length
-    ? flags.reduce((prev, cur) => {
+    ? flags.reduce((mask, f) => {
         assert(
-          cur < 0x80000000,
-          "Flag value greater or equal to 2^31, can't combine using OR operator"
+          f < 0x80000000,
+          "combineFlags: Flag value greater or equal to 2^31, can't combine using OR operator"
         );
-        return prev | cur;
+        return mask | f;
       })
     : 0;
 }
@@ -64,7 +64,7 @@ export function combineFlags(flags: number[]): number {
 export function bitIndexToFlag(bitIndex: number) {
   assert(
     bitIndex < 53,
-    "Bit index greater than maximum precision of 64 bits floating-point numbers (52 bits mantissa)"
+    "bitIndexToFlag: Bit index greater than maximum precision of 64 bits floating-point numbers (52 bits mantissa)"
   );
   return Math.pow(2, bitIndex);
 }

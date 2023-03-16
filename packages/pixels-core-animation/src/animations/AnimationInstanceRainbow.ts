@@ -1,6 +1,6 @@
 import * as Color32Utils from "../color/color32Utils";
 import * as GammaUtils from "../color/gammaUtils";
-import getFaceIndex from "../getFaceIndex";
+import { getFaceIndex } from "../faceUtils";
 import AnimationInstance from "./AnimationInstance";
 import AnimationRainbow from "./AnimationRainbow";
 import Constants from "./Constants";

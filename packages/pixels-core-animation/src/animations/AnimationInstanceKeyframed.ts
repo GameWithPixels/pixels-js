@@ -1,4 +1,4 @@
-import getFaceIndex from "../getFaceIndex";
+import { getFaceIndex } from "../faceUtils";
 import AnimationInstance from "./AnimationInstance";
 import AnimationKeyframed from "./AnimationKeyframed";
 
