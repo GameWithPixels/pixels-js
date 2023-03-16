@@ -27,7 +27,11 @@
       "assets/**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
+      },
+      "bundleIdentifier": "com.systemic.pixelstoolbox"
     },
     "android": {
       "adaptiveIcon": {
@@ -50,6 +54,7 @@
         "expo-build-properties",
         {
           "android": {
+            "kotlinVersion": "1.7.0",
             "packagingOptions": {
               "pickFirst": [
                 "lib/armeabi-v7a/libfolly_runtime.so",
