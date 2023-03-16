@@ -56,5 +56,5 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation 'no.nordicsemi.android:dfu:2.1.0' // Version >= 2.2.0 require minSDK = 33
+    implementation 'no.nordicsemi.android:dfu:2.3.0'
 }
