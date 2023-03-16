@@ -2,26 +2,23 @@ import { Fontisto } from "@expo/vector-icons";
 import {
   PercentageDisplay,
   IconParams,
+  FastBoxProps,
+  FastHStack,
 } from "@systemic-games/react-native-base-components";
-import {
-  IIconProps,
-  ITextProps,
-  Text,
-  View,
-  usePropsResolution,
-} from "native-base";
-import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
+import { IIconProps, ITextProps, Text, usePropsResolution } from "native-base";
 import React from "react";
+
+import { PixelTheme } from "../theme";
 
 /**
  * Props for {@link BatteryLevel} component.
  */
-interface BatteryLevelProps extends IViewProps {
+interface BatteryLevelProps extends FastBoxProps {
   percentage: number; // current battery percentage value (between 0 and 1)
   isCharging?: boolean;
+  size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for BatteryLevel component
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
   _icon?: Partial<IIconProps>; // parameter fro styling battery icon size
-  // TODO size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for BatteryLevel component
 }
 
 // Battery icons to display from empty to full as required by PercentageDisplay
@@ -38,15 +35,11 @@ const icons: IconParams[] = [
  * @param props See {@link BatteryLevelProps} for props parameters.
  */
 export function BatteryLevel(props: BatteryLevelProps) {
+  // TODO theme sizes not used
   const { percentage, isCharging, _text, _icon, colors, ...flexProps } =
     usePropsResolution("BatteryLevel", props);
   return (
-    <View
-      flexDir="row"
-      alignItems="center"
-      justifyContent="center"
-      {...flexProps}
-    >
+    <FastHStack alignItems="center" justifyContent="center" {...flexProps}>
       <PercentageDisplay
         _icon={_icon}
         icons={icons}
@@ -57,6 +50,6 @@ export function BatteryLevel(props: BatteryLevelProps) {
         {isCharging ? "⚡" : ""}
         {percentage + "%"}
       </Text>
-    </View>
+    </FastHStack>
   );
 }

@@ -13,23 +13,28 @@ import {
   EditPattern,
   EditRgbGradient,
   EditWidgetData,
+  facesMaskToValues,
+  getFaceMask,
 } from "@systemic-games/pixels-edit-animation";
 import {
+  FastBoxProps,
   SliderComponent,
   Toggle,
 } from "@systemic-games/react-native-base-components";
 import { Text } from "native-base";
-import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
-import { AnimationSelector } from "./AnimationSelector";
-import { GradientColorSelection, SimpleColorSelection } from "./ColorSelection";
-import { FaceMask } from "./FaceMask";
-import { FaceSelector } from "./FaceSelector";
-import { PatternSelector } from "./PatternSelector";
-import { PlaybackFace } from "./PlaybackFace";
+import { AnimationSelector } from "../components/AnimationSelector";
+import {
+  GradientColorSelector,
+  SimpleColorSelector,
+} from "../components/ColorSelector";
+import { FaceSelector } from "../components/FaceSelector";
+import { PatternSelector } from "../components/PatternSelector";
+import { FaceMaskWidget } from "./FaceMaskWidget";
+import { PlaybackFaceWidget } from "./PlaybackFaceWidget";
 import { RuleComparisonWidget } from "./RuleComparisonWidget";
-import { UserText } from "./UserText";
+import { UserTextWidget } from "./UserTextWidget";
 
 export type CreateWidgetComponentOptionals = Required<
   Exclude<Parameters<typeof createWidgetComponent>[1], undefined>
@@ -55,11 +60,11 @@ export function createWidgetComponent(
       availableTexts: string[];
     };
   }
-): (props: IViewProps) => JSX.Element {
+): (props: FastBoxProps) => JSX.Element {
   const type = widgetData.type;
   switch (type) {
     case "toggle":
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <Toggle
           {...props}
           value={widgetData.getValue()}
@@ -69,8 +74,8 @@ export function createWidgetComponent(
       );
 
     case "string":
-      return (props: IViewProps) => (
-        <UserText
+      return (props: FastBoxProps) => (
+        <UserTextWidget
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}
@@ -79,7 +84,7 @@ export function createWidgetComponent(
       );
 
     case "count":
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <SliderComponent
           {...props}
           sliderTitle={widgetData.displayName}
@@ -88,12 +93,12 @@ export function createWidgetComponent(
           defaultValue={widgetData.getValue()}
           step={widgetData.step ?? 1}
           unitType={widgetData.unit}
-          onSelectedValue={widgetData.update}
+          onValueChange={widgetData.update}
         />
       );
 
     case "slider":
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <SliderComponent
           {...props}
           sliderTitle={widgetData.displayName}
@@ -102,37 +107,37 @@ export function createWidgetComponent(
           defaultValue={widgetData.getValue()}
           step={widgetData.step ?? 0.001}
           unitType={widgetData.unit}
-          onSelectedValue={widgetData.update}
+          onValueChange={widgetData.update}
         />
       );
 
     case "color":
-      return (props: IViewProps) => (
-        <SimpleColorSelection
+      return (props: FastBoxProps) => (
+        <SimpleColorSelector
           {...props}
           initialColor={widgetData.getValue().color.toString()}
-          onColorSelected={(color) =>
+          onColorChange={(color) =>
             widgetData.update(new EditColor(new Color(color)))
           }
         />
       );
 
     case "faceMask":
-      return (props: IViewProps) => (
-        <FaceMask
+      return (props: FastBoxProps) => (
+        <FaceMaskWidget
           {...props}
-          maskNumber={widgetData.getValue()}
-          dieFaces={widgetData.max ?? 20}
-          onCloseAction={widgetData.update}
+          faces={facesMaskToValues(widgetData.getValue())}
+          onFaceMaskChange={(faces) => widgetData.update(getFaceMask(faces))}
+          faceCount={20}
         />
       );
 
     case "gradient":
-      return (props: IViewProps) => (
-        <GradientColorSelection
+      return (props: FastBoxProps) => (
+        <GradientColorSelector
           {...props}
           triggerW="100%"
-          onColorSelected={(keyframes) =>
+          onGradientChange={(keyframes) =>
             widgetData.update(new EditRgbGradient({ keyframes }))
           }
         />
@@ -144,14 +149,14 @@ export function createWidgetComponent(
         patternsParams,
         "createWidgetComponent: `patternsParams` required to render a RGB pattern widget"
       );
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <PatternSelector
           {...props}
           title={widgetData.displayName}
           initialPattern={widgetData.getValue()}
           patterns={patternsParams?.patterns}
           dieRenderer={patternsParams.dieRenderer}
-          onSelectPattern={(pattern) => {
+          onPatternChange={(pattern) => {
             widgetData.update(pattern as EditPattern); // TODO pattern is readonly
           }}
         />
@@ -164,14 +169,14 @@ export function createWidgetComponent(
         patternsParams,
         "createWidgetComponent: `patternsParams` required to render a grayscale pattern widget"
       );
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <PatternSelector
           {...props}
           title={widgetData.displayName}
           initialPattern={widgetData.getValue()}
           patterns={patternsParams?.patterns}
           dieRenderer={patternsParams.dieRenderer}
-          onSelectPattern={(pattern) => {
+          onPatternChange={(pattern) => {
             widgetData.update(pattern as EditPattern); // TODO pattern is readonly
           }}
         />
@@ -190,14 +195,15 @@ export function createWidgetComponent(
         bitsToFlags(widgetData.getValue()),
         widgetData.values
       ) as string[];
-      return (props: IViewProps) => (
+
+      return (props: FastBoxProps) => (
         <RuleComparisonWidget
           {...props}
           title={widgetData.displayName}
           values={valuesTitles}
           initialValues={initialValues}
-          onChange={(keys) => {
-            const changedValues = keysToValues(keys, widgetData.values);
+          onValuesChange={(values) => {
+            const changedValues = keysToValues(values, widgetData.values);
             const bits =
               changedValues.length < 1 ? 0 : combineFlags(changedValues);
             widgetData.update(bits);
@@ -207,23 +213,23 @@ export function createWidgetComponent(
     }
 
     case "face":
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <FaceSelector
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}
-          onChange={widgetData.update}
+          onFaceChange={widgetData.update}
           faceCount={20}
         />
       );
 
     case "playbackFace":
-      return (props: IViewProps) => (
-        <PlaybackFace
+      return (props: FastBoxProps) => (
+        <PlaybackFaceWidget
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}
-          onChange={widgetData.update}
+          onFaceChange={widgetData.update}
           faceCount={20}
         />
       );
@@ -234,20 +240,20 @@ export function createWidgetComponent(
         animationsParams,
         "createWidgetComponent: `animationsParams` required to render a grayscale pattern widget"
       );
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <AnimationSelector
           {...props}
           title={widgetData.displayName}
           animations={animationsParams?.animations}
           dieRenderer={animationsParams.dieRenderer}
           initialAnimation={widgetData.getValue()}
-          onSelectAnimation={(anim) => widgetData.update(anim as EditAnimation)} // TODO readonly animation
+          onAnimationChange={(anim) => widgetData.update(anim as EditAnimation)} // TODO readonly animation
         />
       );
     }
 
     case "audioClip":
-      return (props: IViewProps) => (
+      return (props: FastBoxProps) => (
         <Text {...props}>Audio Clip Selector Placeholder</Text>
       );
 
@@ -257,8 +263,8 @@ export function createWidgetComponent(
         userTextsParams,
         "RenderWidget: `userTextsParams` required to render a user text widget"
       );
-      return (props: IViewProps) => (
-        <UserText
+      return (props: FastBoxProps) => (
+        <UserTextWidget
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}

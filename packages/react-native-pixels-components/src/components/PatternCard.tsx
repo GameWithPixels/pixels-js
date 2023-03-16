@@ -30,9 +30,7 @@ export function PatternCard({
   onSelected,
   ...flexProps
 }: PatternCardProps) {
-  const isSelected = selectable
-    ? selectedPatternIndex === patternIndexInList
-    : false;
+  const isSelected = selectable && selectedPatternIndex === patternIndexInList;
   const onPressMemo = React.useCallback(() => {
     onSelected?.(patternIndexInList);
     onPress?.();

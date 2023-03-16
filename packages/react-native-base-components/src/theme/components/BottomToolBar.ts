@@ -9,6 +9,6 @@ export default {
     itemsWidth: "105%",
     itemsHeight: "105%",
     itemsRounded: "lg",
-    textSize: "12",
+    fontSize: "12",
   },
 };

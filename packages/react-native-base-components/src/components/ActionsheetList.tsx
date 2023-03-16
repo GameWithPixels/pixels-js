@@ -5,6 +5,7 @@ import {
   usePropsResolution,
   FlatList,
   IActionsheetItemProps,
+  ScrollView,
 } from "native-base";
 import React from "react";
 
@@ -65,12 +66,35 @@ export const ActionsheetList = React.memo(function (
             {title}
           </Text>
         )}
-        <FlatList
-          width="100%"
-          height={300}
-          data={itemsData}
-          renderItem={renderItem}
-        />
+        <FlatList w="100%" data={itemsData} renderItem={renderItem} />
+      </Actionsheet.Content>
+    </Actionsheet>
+  );
+});
+
+export const ActionsheetScrollView = React.memo(function ({
+  itemsData,
+  onClose,
+  ...props
+}: { itemsData: ActionsheetListItemData[] } & IActionsheetProps) {
+  return (
+    <Actionsheet onClose={onClose} {...props}>
+      <Actionsheet.Content>
+        <ScrollView w="100%">
+          {itemsData.map(({ label, onSelect }, key) => (
+            <Actionsheet.Item
+              key={key}
+              alignItems="center"
+              width="100%"
+              onPress={() => {
+                onSelect?.(label);
+                onClose?.();
+              }}
+            >
+              <Text fontSize="md">{label}</Text>
+            </Actionsheet.Item>
+          ))}
+        </ScrollView>
       </Actionsheet.Content>
     </Actionsheet>
   );

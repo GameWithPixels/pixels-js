@@ -16,14 +16,20 @@ export interface SliderProps extends ISliderProps {
   minValue?: number;
   maxValue?: number;
   unitType?: string;
-  onSelectedValue?: (value: number) => void;
-  onValueChange?: (() => void) | null | undefined;
+  onValueChange?: (value: number) => void;
 }
 
 export function SliderComponent(props: SliderProps) {
+  const resolvedProps = usePropsResolution("Slider", props);
   const defaultValue = props.defaultValue;
   const [onChangeValue, setOnChangeValue] = React.useState(defaultValue);
-  const resolvedProps = usePropsResolution("Slider", props);
+  const onChange = React.useCallback(
+    (value: number) => {
+      setOnChangeValue(value);
+      props.onValueChange?.(value);
+    },
+    [props]
+  );
   return (
     <FastVStack>
       <Text bold>{resolvedProps.sliderTitle}</Text>
@@ -42,10 +48,7 @@ export function SliderComponent(props: SliderProps) {
             maxValue={resolvedProps.maxValue}
             size={resolvedProps.size}
             step={resolvedProps.step}
-            onChange={(v) => {
-              setOnChangeValue(v);
-              props.onSelectedValue?.(v);
-            }}
+            onChange={onChange}
           >
             <Slider.Track shadow={1}>
               <Slider.FilledTrack bg={resolvedProps.trackColor} />

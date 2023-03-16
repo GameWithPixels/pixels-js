@@ -1,43 +1,44 @@
 import {
   ActionsheetList,
+  FastBoxProps,
   FastButton,
   FastHStack,
+  FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { ITextProps, Input, Text, View } from "native-base";
-import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
+import { ITextProps, Input, Text } from "native-base";
 import React from "react";
 
-export interface UserTextProps extends IViewProps {
+export interface UserTextWidgetProps extends FastBoxProps {
   title?: string; // Text displayed above the input
-  textSize?: ITextProps["fontSize"];
+  fontSize?: ITextProps["fontSize"];
   space?: number | string; // Spacing between text and toggle
-  value?: string | undefined;
-  onValueChange?: (valueOrUuid: string) => void;
+  value?: string;
+  onValueChange: (valueOrUuid: string) => void;
   availableTexts?: string[];
 }
 
-export function UserText({
+export function UserTextWidget({
   title,
-  textSize,
+  fontSize,
   space = 3,
   value,
-  onValueChange,
+  onValueChange: onChange,
   availableTexts,
   ...flexProps
-}: UserTextProps) {
+}: UserTextWidgetProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   const data = React.useMemo(
     () =>
       [...new Set(availableTexts)]
         .sort()
-        .map((label) => ({ label, onSelect: onValueChange })),
-    [availableTexts, onValueChange]
+        .map((label) => ({ label, onSelect: onChange })),
+    [availableTexts, onChange]
   );
   return (
     <>
-      <View {...flexProps}>
-        <Text bold fontSize={textSize}>
+      <FastVStack {...flexProps}>
+        <Text bold fontSize={fontSize}>
           {title}
         </Text>
         <FastHStack mt={space}>
@@ -48,7 +49,7 @@ export function UserText({
             placeholder="Type Text"
             placeholderTextColor="gray.400"
             value={value}
-            onChangeText={onValueChange}
+            onChangeText={onChange}
           />
           {!!data.length && (
             <FastButton ml={3} onPress={onOpen}>
@@ -56,7 +57,7 @@ export function UserText({
             </FastButton>
           )}
         </FastHStack>
-      </View>
+      </FastVStack>
 
       {/* Actionsheet drawer */}
       <ActionsheetList

@@ -1,15 +1,14 @@
 export default {
   defaultProps: {
+    _text: {
+      fontSize: "md",
+    },
     // Modal
-    bg: "primary.900",
-    // trigger box
-    boxMinH: 9,
-    boxW: "100%",
-    boxRounded: "lg",
-    boxBg: "primary.700",
-    boxTextFontSize: "md",
+    modalBg: "primary.900",
     // Faces checkboxes
-    checkBoxSize: "lg",
-    checkBoxMargin: 2,
+    _checkBox: {
+      size: "lg",
+      margin: 2,
+    },
   },
 };

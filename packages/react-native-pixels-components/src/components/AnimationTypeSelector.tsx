@@ -4,10 +4,9 @@ import {
   ActionsheetListItemData,
   FastBoxProps,
   FastVStack,
-  HView,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { Text, ChevronRightIcon, Spacer, Pressable } from "native-base";
+import { Text, ChevronRightIcon, Spacer, Pressable, View } from "native-base";
 import React from "react";
 
 interface TriggerProps {
@@ -19,12 +18,19 @@ interface TriggerProps {
  */
 function TriggerElement(props: TriggerProps) {
   return (
-    <HView w="100%" p={2} bg="primary.700" rounded="lg" alignItems="center">
+    <View
+      flexDir="row"
+      w="100%"
+      p={2}
+      bg="primary.700"
+      rounded="lg"
+      alignItems="center"
+    >
       <MaterialCommunityIcons name="light-flood-up" size={24} color="white" />
       <Text ml={2}>{props.title}</Text>
       <Spacer />
       <ChevronRightIcon tintColor="white" />
-    </HView>
+    </View>
   );
 }
 
@@ -43,12 +49,12 @@ interface AnimationTypeSelectorProps extends FastBoxProps {
 export function AnimationTypeSelector({
   label,
   itemsData,
-  ...props
+  ...flexProps
 }: AnimationTypeSelectorProps) {
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack {...props}>
+      <FastVStack {...flexProps}>
         <Text bold>Lighting Style</Text>
         <Pressable mt={1} onPress={onOpen}>
           <TriggerElement title={label} />
@@ -56,9 +62,9 @@ export function AnimationTypeSelector({
       </FastVStack>
 
       <ActionsheetList
-        itemsData={itemsData}
         isOpen={isOpen}
         onClose={onClose}
+        itemsData={itemsData}
       />
     </>
   );

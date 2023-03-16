@@ -26,15 +26,13 @@ export interface ToggleProps extends ISwitchProps {
  * @param props See {@link ToggleProps} for props parameters.
  */
 export function Toggle(props: ToggleProps) {
-  const {
-    title,
-    fontSize: textSize,
-    children,
-    ...resolvedProps
-  } = usePropsResolution("Toggle", props) as ToggleProps;
+  const { title, children, ...resolvedProps } = usePropsResolution(
+    "Toggle",
+    props
+  ) as ToggleProps;
   return (
     <FastHStack alignItems="center">
-      <Text mr={resolvedProps.space} fontSize={textSize}>
+      <Text mr={resolvedProps.space} fontSize={resolvedProps.fontSize}>
         {title}
       </Text>
       {children}

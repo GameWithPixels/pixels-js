@@ -1,5 +1,6 @@
 import { EditPattern } from "@systemic-games/pixels-edit-animation";
 import {
+  FastBoxProps,
   FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -18,14 +19,14 @@ import { PatternCard } from "./PatternCard";
 /**
  * Props for PatternSelector component.
  */
-export interface PatternSelectorProps {
+export interface PatternSelectorProps extends FastBoxProps {
   title: string;
   patterns: Readonly<EditPattern>[];
   trigger?: React.ReactNode;
   drawerTitle?: string;
   dieRenderer?: (pattern: Readonly<EditPattern>) => React.ReactNode;
-  onSelectPattern?:
-    | ((editPattern: Readonly<EditPattern>) => void)
+  onPatternChange?:
+    | ((pattern: Readonly<EditPattern>) => void)
     | null
     | undefined;
   initialPattern?: Readonly<EditPattern>;
@@ -41,14 +42,15 @@ export function PatternSelector({
   trigger,
   drawerTitle,
   dieRenderer,
-  onSelectPattern,
+  onPatternChange: onSelect,
   initialPattern,
+  ...flexProps
 }: PatternSelectorProps) {
   const [selectedPattern, setSelectedPattern] = React.useState(initialPattern);
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack>
+      <FastVStack {...flexProps}>
         <Text>{title}</Text>
         {/* Trigger of the actionsheet drawer */}
         <Pressable
@@ -81,7 +83,7 @@ export function PatternSelector({
         dieRenderer={dieRenderer}
         onSelect={(pattern) => {
           setSelectedPattern(pattern);
-          onSelectPattern?.(pattern);
+          onSelect?.(pattern);
           onClose();
         }}
       />

@@ -10,7 +10,6 @@ import {
 import {
   BatteryLevel,
   LoadingPopup,
-  ProfilesScrollView,
   PixelAppPage,
   RSSIStrength,
   sr,
@@ -43,6 +42,7 @@ import {
   useAppUpdatePairedDie,
 } from "~/app/hooks";
 import DieStatistics from "~/components/DieStatistics";
+import { ProfileSelector } from "~/components/ProfileSelector";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import httpPost from "~/features/httpPost";
 import DieRenderer from "~/features/render3d/DieRenderer";
@@ -218,7 +218,7 @@ export default function PixelDetailScreen({
                 <AntDesign name="profile" size={24} color="white" />
                 <Text bold>Recent Profiles:</Text>
               </HStack>
-              <ProfilesScrollView
+              <ProfileSelector
                 profiles={profiles}
                 dieRenderer={(profile) => (
                   <DieRenderer renderData={getCachedDataSet(profile)} />

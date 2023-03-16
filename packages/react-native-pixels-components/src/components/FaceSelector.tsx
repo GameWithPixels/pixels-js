@@ -1,4 +1,5 @@
 import {
+  FastBoxProps,
   FastButton,
   FastVStack,
   useDisclose,
@@ -6,27 +7,24 @@ import {
 import { Actionsheet, IActionsheetProps, ScrollView, Text } from "native-base";
 import React from "react";
 
-export interface FaceSelectorProps {
+export interface FaceSelectorProps extends FastBoxProps {
   title?: string;
-  faceCount: number;
   value: number;
-  onChange?: (faceIndex: number) => void;
+  onFaceChange: (faceIndex: number) => void;
+  faceCount: number;
   disabled?: boolean;
 }
 
 export function FaceSelector({
   title,
-  faceCount,
   value,
-  onChange,
+  onFaceChange: onChange,
+  faceCount,
   disabled,
+  ...flexProps
 }: FaceSelectorProps) {
-  const faces = React.useMemo(
-    () => Array.from({ length: faceCount }, (_, i) => i + 1),
-    [faceCount]
-  );
   const textStyle = React.useMemo(
-    () => ({ color: disabled ? "gray.400" : undefined }),
+    () => ({ color: disabled ? "gray.400" : null }),
     [disabled]
   );
   const { isOpen, onOpen, onClose } = useDisclose();
@@ -39,43 +37,44 @@ export function FaceSelector({
   );
   return (
     <>
-      <FastVStack w="100%">
+      <FastVStack {...flexProps}>
         {title && <Text bold>{title}</Text>}
         <FastButton
           onPress={onOpen}
           disabled={disabled}
-          bg={disabled ? "gray.600" : undefined}
+          bg={disabled ? "gray.600" : null}
           _text={textStyle}
         >
-          {value}
+          {/* When no value render a space character so button doesn't change size */}
+          {value > 0 ? value : " "}
         </FastButton>
       </FastVStack>
 
       <FacesActionsheet
         isOpen={isOpen}
         onClose={onClose}
-        faces={faces}
+        faceCount={faceCount}
         onSelect={onSelect}
       />
     </>
   );
 }
 
-interface FacesActionsheetProps extends IActionsheetProps {
-  faces: number[];
-  onSelect?: (face: number) => void;
-}
-
 function FacesActionsheet({
-  faces,
   onSelect,
+  faceCount,
   ...actionsheetProps
-}: FacesActionsheetProps) {
+}: { onSelect: (face: number) => void } & Pick<FaceSelectorProps, "faceCount"> &
+  IActionsheetProps) {
+  const allFaces = React.useMemo(
+    () => Array.from({ length: faceCount }, (_, i) => i + 1),
+    [faceCount]
+  );
   return (
     <Actionsheet {...actionsheetProps}>
       <Actionsheet.Content maxHeight={400} minHeight={200}>
         <ScrollView h="100%" w="100%">
-          {faces.map((face) => (
+          {allFaces.map((face) => (
             <Actionsheet.Item
               onPress={() => onSelect?.(face)}
               alignItems="center"

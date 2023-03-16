@@ -12,9 +12,9 @@ import React from "react";
 import { ProfileCard } from "./ProfileCard";
 
 /**
- * Props for ProfilesActionSheet component.
+ * Props for ProfilesActionsheet component.
  */
-export interface ProfilesActionSheetProps extends CardProps {
+export interface ProfilesActionsheetProps extends CardProps {
   trigger?: React.ReactNode;
   drawerTitle?: string;
   profiles: Readonly<EditProfile>[]; // array of profiles information to be displayed inside the component
@@ -23,15 +23,15 @@ export interface ProfilesActionSheetProps extends CardProps {
 
 /**
  * Actionsheet drawer of profiles to be opened to display a vertical scroll view of pressable and selectable profile cards.
- * @param props See {@link ProfilesActionSheetProps} for props parameters.
+ * @param props See {@link ProfilesActionsheetProps} for props parameters.
  */
-export function ProfilesActionSheet({
+export function ProfilesActionsheet({
   trigger,
   drawerTitle,
   profiles,
   dieRenderer,
   ...flexProps
-}: ProfilesActionSheetProps) {
+}: ProfilesActionsheetProps) {
   const [selectedProfile, setSelectedProfile] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
@@ -64,7 +64,7 @@ export function ProfilesActionSheet({
       </Pressable>
 
       {/* Actionsheet drawer */}
-      <Actionsheet isOpen={isOpen} onClose={onClose} alignContent="center">
+      <Actionsheet alignContent="center" isOpen={isOpen} onClose={onClose}>
         <Actionsheet.Content maxH="100%" h="630px">
           <Text bold paddingBottom={5}>
             {drawerTitle ?? "Available Profiles"}

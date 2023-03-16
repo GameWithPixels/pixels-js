@@ -1,18 +1,22 @@
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
-import { FastHStack } from "@systemic-games/react-native-base-components";
+import {
+  FastBoxProps,
+  FastHStack,
+} from "@systemic-games/react-native-base-components";
+import {
+  ProfileCard,
+  ProfilesActionsheet,
+  sr,
+} from "@systemic-games/react-native-pixels-components";
 import { ScrollView, ChevronLeftIcon, ChevronRightIcon } from "native-base";
 import React from "react";
 
-import { sr } from "../utils";
-import { ProfileCard } from "./ProfileCard";
-import { ProfilesActionSheet } from "./ProfilesActionSheet";
-
 /**
- * Props for the {@link ProfilesScrollView}.
+ * Props for the {@link ProfileSelector}.
  * @param profiles list of available profiles.
  * @param onPress function given to all the profiles to execute when pressed.
  */
-export interface ProfilesScrollViewProps {
+export interface ProfileSelectorProps extends FastBoxProps {
   profiles: Readonly<EditProfile>[];
   dieRenderer: (profile: Readonly<EditProfile>) => React.ReactNode;
   onPress?: ((profile: Readonly<EditProfile>) => void) | null | undefined;
@@ -20,12 +24,17 @@ export interface ProfilesScrollViewProps {
 
 /**
  * A horizontal scroll list of profiles to be selected
- * @param props See {@link ProfilesScrollViewProps} for props parameters
+ * @param props See {@link ProfileSelectorProps} for props parameters
  */
-export function ProfilesScrollView(props: ProfilesScrollViewProps) {
+export function ProfileSelector({
+  profiles,
+  dieRenderer,
+  onPress,
+  ...flexProps
+}: ProfileSelectorProps) {
   const [selectedProfile, setSelectedProfile] = React.useState<number>();
   return (
-    <FastHStack alignItems="center">
+    <FastHStack alignItems="center" {...flexProps}>
       <ChevronLeftIcon />
       <ScrollView
         horizontal
@@ -37,27 +46,27 @@ export function ProfilesScrollView(props: ProfilesScrollViewProps) {
         decelerationRate="normal"
       >
         <FastHStack>
-          {props.profiles.slice(0, 8).map((profile, i) => (
+          {profiles.slice(0, 8).map((profile, i) => (
             <ProfileCard
               key={i}
               ml={i > 0 ? 2 : 0}
               w={sr(110)}
               imageSize={sr(50)}
-              textSize="xs"
+              fontSize="xs"
               p={sr(4)}
               name={profile.name}
               profileIndexInList={i}
               onSelected={setSelectedProfile}
-              onPress={() => props.onPress?.(profile)}
+              onPress={() => onPress?.(profile)}
               selectedProfileIndex={selectedProfile}
               selectable
-              dieRenderer={() => props.dieRenderer(profile)}
+              dieRenderer={() => dieRenderer(profile)}
             />
           ))}
-          <ProfilesActionSheet
+          <ProfilesActionsheet
             w={sr(110)}
-            profiles={props.profiles}
-            dieRenderer={props.dieRenderer}
+            profiles={profiles}
+            dieRenderer={dieRenderer}
           />
         </FastHStack>
       </ScrollView>

@@ -24,7 +24,6 @@ const ObservableActionsList = observer(function ({
 }: {
   observableRule: EditRule;
 }) {
-  console.log("ObservableActionsList");
   const animations = useAppAnimations();
   const appUserTexts = useAppUserTexts();
   const userTextsParams = React.useMemo(
@@ -45,11 +44,11 @@ const ObservableActionsList = observer(function ({
       const index = observableRule.actions.indexOf(action);
       assert(index >= 0, "Trying to replace unknown action");
       const actions = [...observableRule.actions];
-      actions.splice(
-        index,
-        1,
-        newAction as EditAction // If undefined => just remove item at given index
-      );
+      if (newAction) {
+        actions.splice(index, 1, newAction);
+      } else {
+        actions.splice(index, 1);
+      }
       observableRule.actions = actions;
     },
     [observableRule]

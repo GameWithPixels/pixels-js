@@ -14,7 +14,7 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import { FastBox } from "@systemic-games/react-native-base-components";
 import {
-  RuleConditionSelection,
+  RuleConditionSelector,
   getConditionTitle,
   createWidgetComponent,
 } from "@systemic-games/react-native-pixels-components";
@@ -75,7 +75,7 @@ const ObservableConditionSelection = observer(function ({
     [observableRule]
   );
 
-  return <RuleConditionSelection title={title} conditions={conditions} />;
+  return <RuleConditionSelector title={title} conditions={conditions} />;
 });
 
 function Separator() {
@@ -87,7 +87,6 @@ const ObservableCondition = observer(function ({
 }: {
   observableRule: EditRule;
 }) {
-  console.log("ObservableCondition");
   const conditionWidgets = React.useMemo(() => {
     return getEditWidgetsData(observableRule.condition);
   }, [observableRule.condition]);
@@ -118,7 +117,6 @@ export default function ({
 }: {
   observableRule: EditRule;
 } & IViewProps) {
-  console.log("ObservableConditionEditor");
   return (
     <View
       p={3}

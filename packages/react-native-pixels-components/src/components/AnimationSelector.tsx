@@ -1,5 +1,6 @@
 import { EditAnimation } from "@systemic-games/pixels-edit-animation";
 import {
+  FastBoxProps,
   FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -18,13 +19,13 @@ import { PatternCard } from "./PatternCard";
 /**
  * Props for AnimationsSelector component.
  */
-export interface AnimationSelectorProps {
+export interface AnimationSelectorProps extends FastBoxProps {
   title: string;
   animations: Readonly<EditAnimation>[];
   trigger?: React.ReactNode;
   drawerTitle?: string;
   dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
-  onSelectAnimation?: (editAnimation: Readonly<EditAnimation>) => void;
+  onAnimationChange?: (editAnimation: Readonly<EditAnimation>) => void;
   initialAnimation?: Readonly<EditAnimation>;
 }
 
@@ -38,14 +39,15 @@ export function AnimationSelector({
   trigger,
   drawerTitle,
   dieRenderer,
-  onSelectAnimation,
+  onAnimationChange: onSelectAnimation,
   initialAnimation,
+  ...flexProps
 }: AnimationSelectorProps) {
   const [selectedAnim, setSelectedAnim] = React.useState(initialAnimation);
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack>
+      <FastVStack {...flexProps}>
         <Text>{title}</Text>
         {/* Trigger of the actionsheet drawer */}
         <Pressable onPress={onOpen}>
@@ -109,7 +111,6 @@ function AnimationsActionsheet({
             justifyContent: "space-evenly",
           }}
         >
-          {/* <FastHStack flexWrap="wrap"> */}
           {animations?.map((animation, i) => (
             <PatternCard
               key={animation.uuid}
@@ -126,7 +127,6 @@ function AnimationsActionsheet({
               dieRenderer={dieRenderer && (() => dieRenderer(animation))}
             />
           ))}
-          {/* </FastHStack> */}
         </ScrollView>
       </Actionsheet.Content>
     </Actionsheet>

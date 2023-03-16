@@ -29,7 +29,7 @@ export interface ProfileCardProps extends CardProps {
   dieRenderer?: () => React.ReactNode; // TODO dieRenderer
   borderWidth?: number;
   imageSize?: IBoxProps["size"];
-  textSize?: ITextProps["fontSize"];
+  fontSize?: ITextProps["fontSize"];
   onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
   //To be used with the list in which the cards are placed and displayed for selection highlight
   profileIndexInList?: number; // the card profile index within all the currently available profiles in the list
@@ -47,7 +47,7 @@ export function ProfileCard({
   dieRenderer,
   borderWidth,
   imageSize,
-  textSize,
+  fontSize,
   onPress,
   profileIndexInList,
   selectedProfileIndex,
@@ -74,7 +74,7 @@ export function ProfileCard({
         {...flexProps}
       >
         {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
-        <Text isTruncated fontSize={textSize} bold>
+        <Text isTruncated bold fontSize={fontSize}>
           {name}
         </Text>
       </Card>
@@ -99,7 +99,7 @@ export function DetailedProfileCard({
   dieRenderer,
   borderWidth,
   imageSize,
-  textSize = "lg",
+  fontSize = "lg",
   onPress,
   profileIndexInList,
   selectedProfileIndex,
@@ -127,13 +127,13 @@ export function DetailedProfileCard({
           {/* Profile info */}
           <FastVStack ml={5} justifyContent="space-around" flexGrow={1}>
             <FastHStack>
-              <Text pr={hasSound ? 2 : 0} isTruncated fontSize={textSize} bold>
+              <Text pr={hasSound ? 2 : 0} isTruncated fontSize={fontSize} bold>
                 {name}
               </Text>
               {hasSound && <AntDesign name="sound" size={24} color="white" />}
             </FastHStack>
             {description && description.length > 0 && (
-              <Text isTruncated fontSize={textSize} italic>
+              <Text isTruncated fontSize={fontSize} italic>
                 {description}
               </Text>
             )}

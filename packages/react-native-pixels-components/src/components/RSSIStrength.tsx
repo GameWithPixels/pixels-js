@@ -2,24 +2,21 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   PercentageDisplay,
   IconParams,
+  FastHStack,
+  FastBoxProps,
 } from "@systemic-games/react-native-base-components";
-import {
-  IIconProps,
-  ITextProps,
-  Text,
-  View,
-  usePropsResolution,
-} from "native-base";
-import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
+import { IIconProps, ITextProps, Text, usePropsResolution } from "native-base";
+
+import { PixelTheme } from "../theme";
 
 /**
  * Props for {@link RSSIStrength} component.
  */
-interface RSSIStrengthProps extends IViewProps {
+interface RSSIStrengthProps extends FastBoxProps {
   percentage: number; // current rssi strength value (from 0 to 1)
+  size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for RSSIStrength component
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
   _icon?: Partial<IIconProps>; // parameter fro styling battery icon size
-  // TODO size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for RSSIStrength component
 }
 
 // RSSI level icons to display from min to max as required by PercentageDisplay
@@ -36,18 +33,14 @@ const icons: IconParams[] = [
  * @param props See {@link RSSIStrengthProps} for props parameters
  */
 export function RSSIStrength(props: RSSIStrengthProps) {
+  // TODO theme sizes not used
   const { percentage, _text, _icon, colors, ...flexProps } = usePropsResolution(
     "RSSIStrength",
     props
   );
   const rssiStrength = 100 + percentage;
   return (
-    <View
-      flexDir="row"
-      alignItems="center"
-      justifyContent="center"
-      {...flexProps}
-    >
+    <FastHStack alignItems="center" justifyContent="center" {...flexProps}>
       <PercentageDisplay
         icons={icons}
         colors={colors}
@@ -57,6 +50,6 @@ export function RSSIStrength(props: RSSIStrengthProps) {
       <Text {..._text} ml={2}>
         {rssiStrength + "%"}
       </Text>
-    </View>
+    </FastHStack>
   );
 }

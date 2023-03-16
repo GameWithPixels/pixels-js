@@ -17,7 +17,7 @@ import {
   createWidgetComponent,
   CreateWidgetComponentOptionals,
   getActionTitle,
-  RuleActionSelection,
+  RuleActionSelector,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
 import { View } from "native-base";
@@ -62,7 +62,7 @@ const ObservableActionSelector = observer(function ({
   );
 
   return (
-    <RuleActionSelection
+    <RuleActionSelector
       flex={10}
       w="100%"
       title={actionTitle}
@@ -90,7 +90,6 @@ export default function ({
   onDelete,
   ...flexProps
 }: ObservableActionEditorProps) {
-  console.log("ObservableActionEditor");
   const actionWidgets = React.useMemo(() => {
     return getEditWidgetsData(observableAction);
   }, [observableAction]);

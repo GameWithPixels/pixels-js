@@ -5,9 +5,8 @@ import {
   FastButton,
   FastHStack,
   FastVStack,
-  useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { Text, Image, Pressable, Spacer } from "native-base";
+import { Text, Image, Pressable } from "native-base";
 import React from "react";
 
 import { sr } from "../utils";
@@ -33,6 +32,7 @@ export interface PixelInfoCardProps extends CardProps {
   onPress?: () => void;
   dieRenderer?: () => React.ReactNode;
 }
+
 /**
  * Horizontal info card for displaying paired dice
  * @param PixelInfoCardProps See {@link PixelInfoCardProps} for props parameters.
@@ -42,11 +42,11 @@ export function PairedPixelInfoComponent({
   profileName,
   onPress,
   dieRenderer,
-  ...flexProps
+  ...cardProps
 }: PixelInfoCardProps) {
   return (
     <Pressable onPress={onPress}>
-      <Card borderWidth={1.5} minW={100} w="100%" h={110} {...flexProps}>
+      <Card borderWidth={1.5} minW={100} w="100%" h={110} {...cardProps}>
         <FastHStack alignItems="center" maxW="100%" h="100%">
           {/* Die render */}
           {dieRenderer && (
@@ -93,22 +93,16 @@ export function PairedPixelInfoComponent({
 export function SquarePairedPixelInfo({
   pixel,
   onPress,
-  ...flexProps
+  ...cardProps
 }: PixelInfoCardProps) {
-  const { onOpen } = useDisclose();
   return (
-    <Pressable
-      onPress={() => {
-        onPress?.();
-        onOpen();
-      }}
-    >
+    <Pressable onPress={onPress}>
       <Card
         paddingTop={0}
         borderWidth={1}
         p={sr(7)}
         minH={sr(40)}
-        {...flexProps}
+        {...cardProps}
       >
         <Text fontSize="lg" bold alignSelf="center">
           {pixel.name}
@@ -159,15 +153,14 @@ export function ScannedPixelInfoComponent({
   dieRenderer,
   ...flexProps
 }: PixelInfoCardProps) {
-  const [pressed, setPressed] = React.useState(false);
+  const [unfolded, setUnfolded] = React.useState(false);
   const [height, setHeight] = React.useState(100);
+  const onToggle = React.useCallback(() => {
+    setHeight(180);
+    setUnfolded((b) => !b);
+  }, []);
   return (
-    <Pressable
-      onPress={() => {
-        setHeight(180);
-        setPressed(true);
-      }}
-    >
+    <Pressable onPress={onToggle}>
       <Card
         borderWidth={1.5}
         w="100%"
@@ -201,8 +194,7 @@ export function ScannedPixelInfoComponent({
             </FastVStack>
           </FastHStack>
         </FastHStack>
-        <Spacer />
-        {pressed && (
+        {unfolded && (
           <FastButton w={sr(300)} onPress={onPress}>
             Pair Die
           </FastButton>
