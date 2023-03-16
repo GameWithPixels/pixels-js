@@ -92,7 +92,7 @@ const ObservableCondition = observer(function ({
   }, [observableRule.condition]);
   const renderItem = React.useCallback(
     ({ item: widgetData }: { item: EditWidgetData }) => {
-      const Widget = observer(createWidgetComponent(widgetData));
+      const Widget = createWidgetComponent(widgetData);
       return <Widget />;
     },
     []

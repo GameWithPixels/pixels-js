@@ -110,9 +110,7 @@ function AnimationEditor({
       item: Readonly<EditWidgetData>;
       index: number;
     }) => {
-      const Widget = observer(
-        createWidgetComponent(widgetData, { patternsParams })
-      );
+      const Widget = createWidgetComponent(widgetData, { patternsParams });
       return <Widget key={index} />;
     },
     [patternsParams]

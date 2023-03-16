@@ -103,12 +103,10 @@ export default function ({
   const widgets = React.useMemo(
     () =>
       actionWidgets.map((widget, i) => {
-        const Widget = observer(
-          createWidgetComponent(widget, {
-            animationsParams,
-            userTextsParams,
-          })
-        );
+        const Widget = createWidgetComponent(widget, {
+          animationsParams,
+          userTextsParams,
+        });
         return <Widget key={i} mt={i > 0 ? 2 : 0} />;
       }),
     [actionWidgets, animationsParams, userTextsParams]

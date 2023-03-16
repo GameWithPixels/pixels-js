@@ -12,6 +12,7 @@ import {
   EditColor,
   EditPattern,
   EditRgbGradient,
+  EditRgbKeyframe,
   EditWidgetData,
   facesMaskToValues,
   getFaceMask,
@@ -40,6 +41,26 @@ export type CreateWidgetComponentOptionals = Required<
   Exclude<Parameters<typeof createWidgetComponent>[1], undefined>
 >;
 
+// This helper wraps the given widget component to automatically re-render on value change
+function makeAutoUpdate<T>(
+  update: (value: T) => void,
+  widget: (
+    props: FastBoxProps & {
+      autoUpdate: (value: T) => void;
+    }
+  ) => JSX.Element
+): (props: FastBoxProps) => JSX.Element {
+  const WrappedWidget = (props: FastBoxProps) => {
+    const [_, forceUpdate] = React.useReducer((b) => !b, false);
+    const autoUpdate = React.useCallback((value: T) => {
+      update(value);
+      forceUpdate();
+    }, []);
+    return widget({ autoUpdate, ...props });
+  };
+  return WrappedWidget;
+}
+
 /**
  * Render a widget corresponding to a widget type from {@link EditWidgetData}.
  * @param widget widget information object.
@@ -64,27 +85,27 @@ export function createWidgetComponent(
   const type = widgetData.type;
   switch (type) {
     case "toggle":
-      return (props: FastBoxProps) => (
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <Toggle
           {...props}
           value={widgetData.getValue()}
           title={widgetData.displayName}
-          onValueChange={widgetData.update}
+          onValueChange={autoUpdate}
         />
-      );
+      ));
 
     case "string":
-      return (props: FastBoxProps) => (
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <UserTextWidget
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}
-          onValueChange={widgetData.update}
+          onValueChange={autoUpdate}
         />
-      );
+      ));
 
     case "count":
-      return (props: FastBoxProps) => (
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <SliderComponent
           {...props}
           sliderTitle={widgetData.displayName}
@@ -93,12 +114,12 @@ export function createWidgetComponent(
           defaultValue={widgetData.getValue()}
           step={widgetData.step ?? 1}
           unitType={widgetData.unit}
-          onValueChange={widgetData.update}
+          onValueChange={autoUpdate}
         />
-      );
+      ));
 
     case "slider":
-      return (props: FastBoxProps) => (
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <SliderComponent
           {...props}
           sliderTitle={widgetData.displayName}
@@ -107,40 +128,46 @@ export function createWidgetComponent(
           defaultValue={widgetData.getValue()}
           step={widgetData.step ?? 0.001}
           unitType={widgetData.unit}
-          onValueChange={widgetData.update}
+          onValueChange={autoUpdate}
         />
-      );
+      ));
 
     case "color":
-      return (props: FastBoxProps) => (
-        <SimpleColorSelector
-          {...props}
-          initialColor={widgetData.getValue().color.toString()}
-          onColorChange={(color) =>
-            widgetData.update(new EditColor(new Color(color)))
-          }
-        />
+      return makeAutoUpdate(
+        (color: string) => widgetData.update(new EditColor(new Color(color))),
+        ({ autoUpdate, ...props }) => (
+          <SimpleColorSelector
+            {...props}
+            initialColor={widgetData.getValue().color.toString()}
+            onColorChange={autoUpdate}
+          />
+        )
       );
 
     case "faceMask":
-      return (props: FastBoxProps) => (
-        <FaceMaskWidget
-          {...props}
-          faces={facesMaskToValues(widgetData.getValue())}
-          onFaceMaskChange={(faces) => widgetData.update(getFaceMask(faces))}
-          faceCount={20}
-        />
+      return makeAutoUpdate(
+        (faces: number[]) => widgetData.update(getFaceMask(faces)),
+        ({ autoUpdate, ...props }) => (
+          <FaceMaskWidget
+            {...props}
+            faces={facesMaskToValues(widgetData.getValue())}
+            onFaceMaskChange={autoUpdate}
+            faceCount={20}
+          />
+        )
       );
 
     case "gradient":
-      return (props: FastBoxProps) => (
-        <GradientColorSelector
-          {...props}
-          triggerW="100%"
-          onGradientChange={(keyframes) =>
-            widgetData.update(new EditRgbGradient({ keyframes }))
-          }
-        />
+      return makeAutoUpdate(
+        (keyframes: EditRgbKeyframe[]) =>
+          widgetData.update(new EditRgbGradient({ keyframes })),
+        ({ autoUpdate, ...props }) => (
+          <GradientColorSelector
+            {...props}
+            triggerW="100%"
+            onGradientChange={autoUpdate}
+          />
+        )
       );
 
     case "rgbPattern": {
@@ -149,17 +176,19 @@ export function createWidgetComponent(
         patternsParams,
         "createWidgetComponent: `patternsParams` required to render a RGB pattern widget"
       );
-      return (props: FastBoxProps) => (
-        <PatternSelector
-          {...props}
-          title={widgetData.displayName}
-          initialPattern={widgetData.getValue()}
-          patterns={patternsParams?.patterns}
-          dieRenderer={patternsParams.dieRenderer}
-          onPatternChange={(pattern) => {
-            widgetData.update(pattern as EditPattern); // TODO pattern is readonly
-          }}
-        />
+      // TODO pattern is readonly
+      return makeAutoUpdate(
+        (pattern) => widgetData.update(pattern as EditPattern),
+        ({ autoUpdate, ...props }) => (
+          <PatternSelector
+            {...props}
+            title={widgetData.displayName}
+            initialPattern={widgetData.getValue()}
+            patterns={patternsParams?.patterns}
+            dieRenderer={patternsParams.dieRenderer}
+            onPatternChange={autoUpdate}
+          />
+        )
       );
     }
 
@@ -169,17 +198,19 @@ export function createWidgetComponent(
         patternsParams,
         "createWidgetComponent: `patternsParams` required to render a grayscale pattern widget"
       );
-      return (props: FastBoxProps) => (
-        <PatternSelector
-          {...props}
-          title={widgetData.displayName}
-          initialPattern={widgetData.getValue()}
-          patterns={patternsParams?.patterns}
-          dieRenderer={patternsParams.dieRenderer}
-          onPatternChange={(pattern) => {
-            widgetData.update(pattern as EditPattern); // TODO pattern is readonly
-          }}
-        />
+      // TODO pattern is readonly
+      return makeAutoUpdate(
+        (pattern) => widgetData.update(pattern as EditPattern),
+        ({ autoUpdate, ...props }) => (
+          <PatternSelector
+            {...props}
+            title={widgetData.displayName}
+            initialPattern={widgetData.getValue()}
+            patterns={patternsParams?.patterns}
+            dieRenderer={patternsParams.dieRenderer}
+            onPatternChange={autoUpdate}
+          />
+        )
       );
     }
 
@@ -196,43 +227,46 @@ export function createWidgetComponent(
         widgetData.values
       ) as string[];
 
-      return (props: FastBoxProps) => (
-        <RuleComparisonWidget
-          {...props}
-          title={widgetData.displayName}
-          values={valuesTitles}
-          initialValues={initialValues}
-          onValuesChange={(values) => {
-            const changedValues = keysToValues(values, widgetData.values);
-            const bits =
-              changedValues.length < 1 ? 0 : combineFlags(changedValues);
-            widgetData.update(bits);
-          }}
-        />
+      return makeAutoUpdate(
+        (values: string[]) => {
+          const changedValues = keysToValues(values, widgetData.values);
+          const bits =
+            changedValues.length < 1 ? 0 : combineFlags(changedValues);
+          widgetData.update(bits);
+        },
+        ({ autoUpdate, ...props }) => (
+          <RuleComparisonWidget
+            {...props}
+            title={widgetData.displayName}
+            values={valuesTitles}
+            initialValues={initialValues}
+            onValuesChange={autoUpdate}
+          />
+        )
       );
     }
 
     case "face":
-      return (props: FastBoxProps) => (
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <FaceSelector
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}
-          onFaceChange={widgetData.update}
+          onFaceChange={autoUpdate}
           faceCount={20}
         />
-      );
+      ));
 
     case "playbackFace":
-      return (props: FastBoxProps) => (
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <PlaybackFaceWidget
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}
-          onFaceChange={widgetData.update}
+          onFaceChange={autoUpdate}
           faceCount={20}
         />
-      );
+      ));
 
     case "animation": {
       const animationsParams = opt?.animationsParams;
@@ -240,22 +274,27 @@ export function createWidgetComponent(
         animationsParams,
         "createWidgetComponent: `animationsParams` required to render a grayscale pattern widget"
       );
-      return (props: FastBoxProps) => (
-        <AnimationSelector
-          {...props}
-          title={widgetData.displayName}
-          animations={animationsParams?.animations}
-          dieRenderer={animationsParams.dieRenderer}
-          initialAnimation={widgetData.getValue()}
-          onAnimationChange={(anim) => widgetData.update(anim as EditAnimation)} // TODO readonly animation
-        />
+      // TODO readonly animation
+      return makeAutoUpdate(
+        (anim) => widgetData.update(anim as EditAnimation),
+        ({ autoUpdate, ...props }) => (
+          <AnimationSelector
+            {...props}
+            title={widgetData.displayName}
+            animations={animationsParams?.animations}
+            dieRenderer={animationsParams.dieRenderer}
+            initialAnimation={widgetData.getValue()}
+            onAnimationChange={autoUpdate}
+          />
+        )
       );
     }
 
     case "audioClip":
-      return (props: FastBoxProps) => (
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <Text {...props}>Audio Clip Selector Placeholder</Text>
-      );
+      ));
 
     case "userText": {
       const userTextsParams = opt?.userTextsParams;
@@ -263,15 +302,15 @@ export function createWidgetComponent(
         userTextsParams,
         "RenderWidget: `userTextsParams` required to render a user text widget"
       );
-      return (props: FastBoxProps) => (
+      return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
         <UserTextWidget
           {...props}
           title={widgetData.displayName}
           value={widgetData.getValue()}
-          onValueChange={widgetData.update}
+          onValueChange={autoUpdate}
           availableTexts={userTextsParams.availableTexts}
         />
-      );
+      ));
     }
 
     default:
