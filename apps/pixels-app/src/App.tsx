@@ -52,29 +52,25 @@ export default function App() {
                 {
                   screen: { name: "DiceBag", component: HomeNavigator },
                   imageRequirePath: require("!/UI_Icons/D10.png"),
-                  TabSelectedColor: "pixelColors.red",
-                  TabUnselectedColor: "pixelColors.red",
+                  selectedColor: "pixelColors.red",
                   iconSize: 9,
                 },
                 {
                   screen: { name: "Profiles", component: ProfilesNavigator },
                   imageRequirePath: require("!/UI_Icons/id-card.png"),
-                  TabSelectedColor: "pixelColors.purple",
-                  TabUnselectedColor: "pixelColors.purple",
+                  selectedColor: "pixelColors.purple",
                   iconSize: 10,
                 },
                 {
                   screen: { name: "Patterns", component: PatternsNavigator },
                   imageRequirePath: require("!/UI_Icons/pixels-fill.png"),
-                  TabSelectedColor: "pixelColors.green",
-                  TabUnselectedColor: "pixelColors.green",
+                  selectedColor: "pixelColors.green",
                   iconSize: 9,
                 },
                 {
                   screen: { name: "Settings", component: AppSettings },
                   imageRequirePath: require("!/UI_Icons/diagram.png"),
-                  TabSelectedColor: "pixelColors.yellow",
-                  TabUnselectedColor: "pixelColors.yellow",
+                  selectedColor: "pixelColors.yellow",
                   iconSize: 9,
                 },
               ]}

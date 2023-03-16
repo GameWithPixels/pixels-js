@@ -22,9 +22,8 @@ export interface ScreenItem {
 export interface TabBarItem {
   screen: ScreenItem;
   imageRequirePath: ImageSourcePropType;
-  TabSelectedColor?: IImageProps["tintColor"];
+  selectedColor?: IImageProps["tintColor"];
   iconSize?: IImageProps["size"];
-  TabUnselectedColor?: IImageProps["tintColor"];
 }
 
 /**
@@ -52,7 +51,8 @@ export function TabBarNavigator({
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: false,
+        // headerShown: false, // This option causes a flicker, instead we're giving it an empty header component
+        header: () => <></>,
         tabBarStyle: {
           borderTopWidth: 0,
           backgroundColor: tabBackgroundColor
@@ -73,12 +73,12 @@ export function TabBarNavigator({
               <Image
                 alt="item"
                 source={itemInfo.imageRequirePath}
-                tintColor={focused ? itemInfo.TabSelectedColor : "gray.500"}
+                tintColor={focused ? itemInfo.selectedColor : "gray.500"}
                 size={itemInfo.iconSize}
               />
             ),
-            tabBarActiveTintColor: itemInfo.TabSelectedColor
-              ? themeTools.getColor(theme, itemInfo.TabSelectedColor.toString())
+            tabBarActiveTintColor: itemInfo.selectedColor
+              ? themeTools.getColor(theme, itemInfo.selectedColor.toString())
               : null,
             tabBarInactiveTintColor: themeTools.getColor(theme, "gray.500"),
           }}
