@@ -230,12 +230,12 @@ export default function ({ renderData }: DieRendererProps) {
       {!loaded ? (
         <Text>Loading...</Text>
       ) : (
-        <GLView onContextCreate={onContextCreate} style={styles.glview} />
+        <GLView onContextCreate={onContextCreate} style={styles.glView} />
       )}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  glview: { flex: 1 },
+  glView: { flex: 1 },
 });

@@ -295,7 +295,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             </Button>
           )}
           ItemSeparatorComponent={Separator}
-          contentContainerStyle={styles.contentContainerStyle}
+          contentContainerStyle={styles.contentContainer}
         />
       );
     }
@@ -313,7 +313,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             </Button>
           )}
           ItemSeparatorComponent={Separator}
-          contentContainerStyle={styles.contentContainerStyle}
+          contentContainerStyle={styles.contentContainer}
         />
       );
 
@@ -331,7 +331,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             </Button>
           )}
           ItemSeparatorComponent={Separator}
-          contentContainerStyle={styles.contentContainerStyle}
+          contentContainerStyle={styles.contentContainer}
         />
       );
 
@@ -424,7 +424,7 @@ function AnimationPage() {
                   </Button>
                 )}
                 ItemSeparatorComponent={Separator}
-                contentContainerStyle={styles.contentContainerStyle}
+                contentContainerStyle={styles.contentContainer}
               />
             </>
           ) : (
@@ -440,7 +440,7 @@ function AnimationPage() {
                   >{`Edit ${itemInfo.item.name}`}</Button>
                 )}
                 ItemSeparatorComponent={Separator}
-                contentContainerStyle={styles.contentContainerStyle}
+                contentContainerStyle={styles.contentContainer}
               />
             </>
           )}
@@ -464,7 +464,7 @@ function AnimationPage() {
               </Button>
             )}
             ItemSeparatorComponent={Separator}
-            contentContainerStyle={styles.contentContainerStyle}
+            contentContainerStyle={styles.contentContainer}
           />
         </VStack>
       )}
@@ -481,5 +481,5 @@ export default function () {
 }
 
 const styles = StyleSheet.create({
-  contentContainerStyle: { flexGrow: 1 },
+  contentContainer: { flexGrow: 1 },
 });

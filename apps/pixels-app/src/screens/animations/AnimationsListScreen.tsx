@@ -169,7 +169,7 @@ function AnimationsList({
         initialNumToRender={8}
         windowSize={11}
       /> */}
-      <ScrollView w="100%" bg="gray.700" rounded="lg" p={2}>
+      <ScrollView w="100%" bg="gray.700" rounded="lg" p={1}>
         {animations.map((anim) => renderItem({ item: anim }))}
       </ScrollView>
       {/* Action sheet for exporting an animation */}

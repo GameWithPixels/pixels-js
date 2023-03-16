@@ -24,6 +24,7 @@ import {
 import { observer } from "mobx-react-lite";
 import { FlatList, Input, View } from "native-base";
 import React from "react";
+import { StyleSheet } from "react-native";
 
 import { useAppPatterns, useAppUpdateAnimation } from "~/app/hooks";
 import FromStore from "~/features/FromStore";
@@ -118,13 +119,15 @@ function AnimationEditor({
 
   return (
     <FlatList
-      p={2}
+      mt={2}
+      px={2}
       h="100%"
       bg="gray.700"
       rounded="md"
       data={animWidgets}
       renderItem={renderItem}
       ItemSeparatorComponent={Separator}
+      contentContainerStyle={styles.animationsListContainer}
     />
   );
 }
@@ -225,3 +228,7 @@ export default function AnimationEditScreen({
     </PixelAppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  animationsListContainer: { paddingVertical: 6 },
+});

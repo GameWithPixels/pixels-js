@@ -210,14 +210,14 @@ export function ProfilesList({
   return (
     <>
       <ScrollView>
-        <FastHStack my={2} p={2} alignItems="center">
+        <FastHStack my={1} p={2} alignItems="center">
           <AntDesign name="staro" size={24} color="white" />
           <Text ml={3} bold>
             Favorites:
           </Text>
         </FastHStack>
 
-        <View p={2} rounded="lg" bg="gray.700">
+        <View p={1} mt={2} rounded="lg" bg="gray.700">
           {favoriteProfilesList.map((profile) => (
             <ProfileSwipeableCard
               key={profile.uuid}
@@ -232,14 +232,14 @@ export function ProfilesList({
           ))}
         </View>
 
-        <FastHStack my={2} alignItems="center">
+        <FastHStack my={1} mt={5} alignItems="center">
           <AntDesign name="profile" size={24} color="white" />
           <Text ml={3} bold>
             Profiles list:
           </Text>
         </FastHStack>
 
-        <View p={2} rounded="lg" bg="gray.700">
+        <View p={1} mt={2} rounded="lg" bg="gray.700">
           {profiles.map((profile) => (
             <ProfileSwipeableCard
               key={profile.uuid}

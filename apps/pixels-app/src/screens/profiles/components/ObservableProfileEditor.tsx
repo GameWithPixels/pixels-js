@@ -126,7 +126,7 @@ const ObservableDraggableRuleItem = observer(function ({
   return (
     <ScaleDecorator>
       <Swipeable
-        containerStyle={styles.ruleItemContainerStyle}
+        containerStyle={styles.ruleItemContainer}
         renderRightActions={renderActions}
       >
         <Pressable onPress={onPress} onLongPress={drag} disabled={isActive}>
@@ -208,7 +208,7 @@ const ObservableRulesListEditor = observer(function ({
       data={observableProfile.rules}
       renderItem={renderItem}
       keyExtractor={getKey}
-      containerStyle={styles.rulesListContainerStyle}
+      containerStyle={styles.rulesListContainer}
       onDragEnd={onDragEnd}
     />
   );
@@ -243,7 +243,7 @@ export default function ({
       <CreateEntityButton mt={2} onPress={add}>
         CREATE NEW RULE
       </CreateEntityButton>
-      <Text mt={2} bold>
+      <Text mt={2} mb={4} bold>
         Rules for this profile:
       </Text>
       <ObservableRulesListEditor
@@ -255,6 +255,6 @@ export default function ({
 }
 
 const styles = StyleSheet.create({
-  ruleItemContainerStyle: { marginVertical: 4 },
-  rulesListContainerStyle: { flex: 1, marginTop: 4 },
+  ruleItemContainer: { marginVertical: 4 },
+  rulesListContainer: { flex: 1 },
 });
