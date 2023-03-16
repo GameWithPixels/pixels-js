@@ -1,6 +1,5 @@
 import {
   BleScanner,
-  Central,
   ScannedPeripheral,
 } from "@systemic-games/react-native-pixels-connect";
 import {
@@ -94,16 +93,11 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
           const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
           if (firmware?.pathname?.length) {
             dfuTarget = sp;
-            Central.connectPeripheral(sp.systemId, (e) => {
-              if (e.connectionStatus === "ready") {
-                console.log("updateFirmware", sp.address, firmware?.pathname);
-                updateFirmware(
-                  sp.address,
-                  bootloader?.pathname,
-                  firmware?.pathname
-                );
-              }
-            });
+            updateFirmware(
+              sp.address,
+              bootloader?.pathname,
+              firmware?.pathname
+            );
           }
         }
         return dfuTarget;

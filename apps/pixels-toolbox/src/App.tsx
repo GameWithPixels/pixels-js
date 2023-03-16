@@ -3,9 +3,7 @@ import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { useBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, themeTools } from "native-base";
-import { StrictMode } from "react";
 import { useTranslation } from "react-i18next";
-// eslint-disable-next-line import/namespace
 import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
@@ -52,47 +50,47 @@ export default function App() {
   const { t } = useTranslation();
   const drawerBackground = themeTools.getColor(theme, "coolGray.700"); // TODO dark/light
   return (
-    <StrictMode>
-      <Provider store={store}>
-        <SafeAreaProvider>
-          <StatusBar style="light" />
-          <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
-            <NavigationContainer theme={DarkTheme}>
-              <Drawer.Navigator
-                screenOptions={{
-                  headerTitleStyle: {
-                    fontWeight: "bold",
-                    fontSize: sr(26),
-                  },
-                  headerTitleAlign: "center",
-                  drawerStyle: {
-                    backgroundColor: drawerBackground,
-                  },
-                }}
-              >
-                <Drawer.Screen
-                  name="HomeNavigator"
-                  component={HomeNavigator}
-                  options={{ title: t("pixelsScanner") }}
-                />
-                <Drawer.Screen
-                  name="Validation"
-                  component={ValidationScreen}
-                  options={{ title: t("factoryValidation") }}
-                />
-                <Drawer.Screen
-                  name="FirmwareUpdateNavigator"
-                  component={FirmwareUpdateNavigator}
-                  options={{ title: t("firmwareUpdate") }}
-                />
-                <Drawer.Screen name="Roll" component={RollScreen} />
-                <Drawer.Screen name="Animations" component={AnimationsScreen} />
-              </Drawer.Navigator>
-            </NavigationContainer>
-          </NativeBaseProvider>
-        </SafeAreaProvider>
-      </Provider>
-    </StrictMode>
+    // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
+    <Provider store={store}>
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
+          <NavigationContainer theme={DarkTheme}>
+            <Drawer.Navigator
+              screenOptions={{
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  fontSize: sr(26),
+                },
+                headerTitleAlign: "center",
+                drawerStyle: {
+                  backgroundColor: drawerBackground,
+                },
+              }}
+            >
+              <Drawer.Screen
+                name="HomeNavigator"
+                component={HomeNavigator}
+                options={{ title: t("pixelsScanner") }}
+              />
+              <Drawer.Screen
+                name="Validation"
+                component={ValidationScreen}
+                options={{ title: t("factoryValidation") }}
+              />
+              <Drawer.Screen
+                name="FirmwareUpdateNavigator"
+                component={FirmwareUpdateNavigator}
+                options={{ title: t("firmwareUpdate") }}
+              />
+              <Drawer.Screen name="Roll" component={RollScreen} />
+              <Drawer.Screen name="Animations" component={AnimationsScreen} />
+            </Drawer.Navigator>
+          </NavigationContainer>
+        </NativeBaseProvider>
+      </SafeAreaProvider>
+    </Provider>
+    // </StrictMode>
   );
 }
 
