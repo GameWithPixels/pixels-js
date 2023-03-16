@@ -16,7 +16,7 @@
 <li><a href="_systemic_games_react_native_nordic_nrf5_dfu.html">@systemic-games/react-native-nordic-nrf5-dfu</a></li></ul>
 <h1>Module @systemic-games/react-native-nordic-nrf5-dfu</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/e0a98f3/packages/react-native-nordic-nrf5-dfu/src/index.ts#L2">packages/react-native-nordic-nrf5-dfu/src/index.ts:2</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/33a3585/packages/react-native-nordic-nrf5-dfu/src/index.ts#L2">packages/react-native-nordic-nrf5-dfu/src/index.ts:2</a></li></ul></aside>
 <section class="tsd-panel-group">
 <section class="tsd-panel tsd-typography">
 <a href="#react-native-nordic-nrf5-dfu" id="react-native-nordic-nrf5-dfu" style="color: inherit; text-decoration: none;">
@@ -28,7 +28,7 @@
 <a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
   <h2>Installation</h2>
 </a>
-<pre><code class="language-sh"><span class="hl-0">npm install @systemic-games/react-native-nordic-nrf5-dfu</span>
+<pre><code class="language-sh"><span class="hl-0">npm </span><span class="hl-1">install</span><span class="hl-0"> </span><span class="hl-1">@systemic-games/react-native-nordic-nrf5-dfu</span>
 </code></pre>
 <p>Note: this package is using Nordic DFU libraries for
 <a href="https://github.com/NordicSemiconductor/Android-DFU-Library">Android</a>
@@ -37,11 +37,11 @@ and <a href="https://github.com/NordicSemiconductor/IOS-DFU-Library">iOS</a>.</p
 <a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
   <h2>Usage</h2>
 </a>
-<pre><code class="language-js"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">startDfu</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-4">&quot;@systemic-games/react-native-nordic-nrf5-dfu&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-5">async</span><span class="hl-0"> </span><span class="hl-5">function</span><span class="hl-0"> </span><span class="hl-1">uploadFirmware</span><span class="hl-0">(</span><br/><span class="hl-0">  </span><span class="hl-3">firmwareZipPathname</span><span class="hl-0">: </span><span class="hl-6">string</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-3">deviceAddress</span><span class="hl-0">: </span><span class="hl-6">string</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-3">deviceName</span><span class="hl-0">?: </span><span class="hl-6">string</span><br/><span class="hl-0">) {</span><br/><span class="hl-0">  </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-1">startDfu</span><span class="hl-0">(</span><span class="hl-3">deviceAddress</span><span class="hl-0">, </span><span class="hl-3">firmwareZipPathname</span><span class="hl-0">, {</span><br/><span class="hl-0">    </span><span class="hl-3">deviceName:</span><span class="hl-0"> </span><span class="hl-3">deviceName</span><span class="hl-0">,</span><br/><span class="hl-0">    </span><span class="hl-3">retries:</span><span class="hl-0"> </span><span class="hl-10">3</span><span class="hl-0">,</span><br/><span class="hl-0">    </span><span class="hl-1">dfuStateListener</span><span class="hl-3">:</span><span class="hl-0"> ({ </span><span class="hl-3">state</span><span class="hl-0"> }) </span><span class="hl-5">=&gt;</span><span class="hl-0"> </span><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-4">&quot;DFU state:&quot;</span><span class="hl-0">, </span><span class="hl-3">state</span><span class="hl-0">),</span><br/><span class="hl-0">    </span><span class="hl-1">dfuProgressListener</span><span class="hl-3">:</span><span class="hl-0"> ({ </span><span class="hl-3">percent</span><span class="hl-0"> }) </span><span class="hl-5">=&gt;</span><span class="hl-0"> </span><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-4">&quot;DFU progress:&quot;</span><span class="hl-0">, </span><span class="hl-3">percent</span><span class="hl-0">),</span><br/><span class="hl-0">  });</span><br/><span class="hl-0">}</span>
+<pre><code class="language-js"><span class="hl-3">import</span><span class="hl-0"> { </span><span class="hl-4">startDfu</span><span class="hl-0"> } </span><span class="hl-3">from</span><span class="hl-0"> </span><span class="hl-1">&quot;@systemic-games/react-native-nordic-nrf5-dfu&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-5">async</span><span class="hl-0"> </span><span class="hl-5">function</span><span class="hl-0"> </span><span class="hl-2">uploadFirmware</span><span class="hl-0">(</span><br/><span class="hl-0">  </span><span class="hl-4">firmwareZipPathname</span><span class="hl-0">: </span><span class="hl-6">string</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-4">deviceAddress</span><span class="hl-0">: </span><span class="hl-6">string</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-4">deviceName</span><span class="hl-0">?: </span><span class="hl-6">string</span><br/><span class="hl-0">) {</span><br/><span class="hl-0">  </span><span class="hl-3">await</span><span class="hl-0"> </span><span class="hl-2">startDfu</span><span class="hl-0">(</span><span class="hl-4">deviceAddress</span><span class="hl-0">, </span><span class="hl-4">firmwareZipPathname</span><span class="hl-0">, {</span><br/><span class="hl-0">    </span><span class="hl-4">deviceName:</span><span class="hl-0"> </span><span class="hl-4">deviceName</span><span class="hl-0">,</span><br/><span class="hl-0">    </span><span class="hl-4">retries:</span><span class="hl-0"> </span><span class="hl-10">3</span><span class="hl-0">,</span><br/><span class="hl-0">    </span><span class="hl-2">dfuStateListener</span><span class="hl-4">:</span><span class="hl-0"> ({ </span><span class="hl-4">state</span><span class="hl-0"> }) </span><span class="hl-5">=&gt;</span><span class="hl-0"> </span><span class="hl-4">console</span><span class="hl-0">.</span><span class="hl-2">log</span><span class="hl-0">(</span><span class="hl-1">&quot;DFU state:&quot;</span><span class="hl-0">, </span><span class="hl-4">state</span><span class="hl-0">),</span><br/><span class="hl-0">    </span><span class="hl-2">dfuProgressListener</span><span class="hl-4">:</span><span class="hl-0"> ({ </span><span class="hl-4">percent</span><span class="hl-0"> }) </span><span class="hl-5">=&gt;</span><span class="hl-0"> </span><span class="hl-4">console</span><span class="hl-0">.</span><span class="hl-2">log</span><span class="hl-0">(</span><span class="hl-1">&quot;DFU progress:&quot;</span><span class="hl-0">, </span><span class="hl-4">percent</span><span class="hl-0">),</span><br/><span class="hl-0">  });</span><br/><span class="hl-0">}</span>
 </code></pre>
 <p>Android requires that you have <code>FOREGROUND_SERVICE</code> permissions.
 You will need the following in your AndroidManifest.xml</p>
-<pre><code><span class="hl-0">&lt;</span><span class="hl-3">uses</span><span class="hl-0">-</span><span class="hl-3">permission</span><span class="hl-0"> </span><span class="hl-11">android</span><span class="hl-0">:</span><span class="hl-3">name</span><span class="hl-0">=</span><span class="hl-4">&quot;android.permission.FOREGROUND_SERVICE&quot;</span><span class="hl-0"> /&gt;</span>
+<pre><code><span class="hl-0">&lt;</span><span class="hl-4">uses</span><span class="hl-0">-</span><span class="hl-4">permission</span><span class="hl-0"> </span><span class="hl-11">android</span><span class="hl-0">:</span><span class="hl-4">name</span><span class="hl-0">=</span><span class="hl-1">&quot;android.permission.FOREGROUND_SERVICE&quot;</span><span class="hl-0"> /&gt;</span>
 </code></pre>
 
 <a href="#development-workflow" id="development-workflow" style="color: inherit; text-decoration: none;">
@@ -55,19 +55,19 @@ You will need the following in your AndroidManifest.xml</p>
 </blockquote>
 <p>While developing, you can run the <a href="/example/">example app</a> to test your changes. Any changes you make in your library&#39;s JavaScript code will be reflected in the example app without a rebuild. If you change any native code, then you&#39;ll need to rebuild the example app.</p>
 <p>To start the packager:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example start</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">start</span>
 </code></pre>
 <p>To run the example app on Android:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example android</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">android</span>
 </code></pre>
 <p>To run the example app on iOS:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example ios</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">ios</span>
 </code></pre>
 <p>Make sure your code passes TypeScript and ESLint. Run the following to verify:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn typescript</span><br/><span class="hl-0">yarn lint</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">typescript</span><br/><span class="hl-0">yarn </span><span class="hl-1">lint</span>
 </code></pre>
 <p>To fix formatting errors, run the following:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn lint --fix</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">lint</span><span class="hl-0"> </span><span class="hl-1">--fix</span>
 </code></pre>
 <p>Remember to add tests for your change if possible. Run the unit tests by:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">test</span>
@@ -101,7 +101,7 @@ You will need the following in your AndroidManifest.xml</p>
 </a>
 <p>We use <a href="https://github.com/release-it/release-it">release-it</a> to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.</p>
 <p>To publish new versions, run the following:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn release</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">release</span>
 </code></pre>
 
 <a href="#scripts" id="scripts" style="color: inherit; text-decoration: none;">

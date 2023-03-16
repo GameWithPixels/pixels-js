@@ -16,7 +16,7 @@
 <li><a href="_systemic_games_react_native_pixels_connect.html">@systemic-games/react-native-pixels-connect</a></li></ul>
 <h1>Module @systemic-games/react-native-pixels-connect</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/e0a98f3/packages/react-native-pixels-connect/src/index.ts#L1">packages/react-native-pixels-connect/src/index.ts:1</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/33a3585/packages/react-native-pixels-connect/src/index.ts#L1">packages/react-native-pixels-connect/src/index.ts:1</a></li></ul></aside>
 <section class="tsd-panel-group">
 <section class="tsd-panel tsd-typography">
 <a href="#react-native-pixels-connect" id="react-native-pixels-connect" style="color: inherit; text-decoration: none;">
@@ -28,13 +28,13 @@
 <a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
   <h2>Installation</h2>
 </a>
-<pre><code class="language-sh"><span class="hl-0">npm install react-native-pixels-connect</span>
+<pre><code class="language-sh"><span class="hl-0">npm </span><span class="hl-1">install</span><span class="hl-0"> </span><span class="hl-1">react-native-pixels-connect</span>
 </code></pre>
 
 <a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
   <h2>Usage</h2>
 </a>
-<pre><code class="language-js"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">multiply</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-4">&quot;react-native-pixels-connect&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-8">// ...</span><br/><br/><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-7">result</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-1">multiply</span><span class="hl-0">(</span><span class="hl-10">3</span><span class="hl-0">, </span><span class="hl-10">7</span><span class="hl-0">);</span>
+<pre><code class="language-js"><span class="hl-3">import</span><span class="hl-0"> { </span><span class="hl-4">multiply</span><span class="hl-0"> } </span><span class="hl-3">from</span><span class="hl-0"> </span><span class="hl-1">&quot;react-native-pixels-connect&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-8">// ...</span><br/><br/><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-7">result</span><span class="hl-0"> = </span><span class="hl-3">await</span><span class="hl-0"> </span><span class="hl-2">multiply</span><span class="hl-0">(</span><span class="hl-10">3</span><span class="hl-0">, </span><span class="hl-10">7</span><span class="hl-0">);</span>
 </code></pre>
 
 <a href="#development-workflow" id="development-workflow" style="color: inherit; text-decoration: none;">
@@ -48,22 +48,22 @@
 </blockquote>
 <p>While developing, you can run the <a href="/example/">example app</a> to test your changes. Any changes you make in your library&#39;s JavaScript code will be reflected in the example app without a rebuild. If you change any native code, then you&#39;ll need to rebuild the example app.</p>
 <p>To start the packager:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example start</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">start</span>
 </code></pre>
 <p>To run the example app on Android:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example android</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">android</span>
 </code></pre>
 <p>To run the example app on iOS:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example ios</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">ios</span>
 </code></pre>
 <p>To run the example app on Web:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example web</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">web</span>
 </code></pre>
 <p>Make sure your code passes TypeScript and ESLint. Run the following to verify:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn typescript</span><br/><span class="hl-0">yarn lint</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">typescript</span><br/><span class="hl-0">yarn </span><span class="hl-1">lint</span>
 </code></pre>
 <p>To fix formatting errors, run the following:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn lint --fix</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">lint</span><span class="hl-0"> </span><span class="hl-1">--fix</span>
 </code></pre>
 <p>Remember to add tests for your change if possible. Run the unit tests by:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">test</span>
@@ -95,7 +95,7 @@
 </a>
 <p>We use <a href="https://github.com/release-it/release-it">release-it</a> to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.</p>
 <p>To publish new versions, run the following:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn release</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">release</span>
 </code></pre>
 
 <a href="#scripts" id="scripts" style="color: inherit; text-decoration: none;">
@@ -171,6 +171,12 @@
 <div class="tsd-index-list"><a href="../classes/_systemic_games_react_native_pixels_connect.Color.html" class="tsd-index-link tsd-kind-class tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Color</span></a>
 </div></section>
 <section class="tsd-index-section">
+<h3 class="tsd-index-heading">Face Utils</h3>
+<div class="tsd-index-list"><a href="../functions/_systemic_games_react_native_pixels_connect.facesMaskToValues.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-64-path"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)" id="icon-64-text"></path></svg><span>faces<wbr/>Mask<wbr/>To<wbr/>Values</span></a>
+<a href="../functions/_systemic_games_react_native_pixels_connect.getFaceIndex.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Face<wbr/>Index</span></a>
+<a href="../functions/_systemic_games_react_native_pixels_connect.getFaceMask.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Face<wbr/>Mask</span></a>
+</div></section>
+<section class="tsd-index-section">
 <h3 class="tsd-index-heading">Message</h3>
 <div class="tsd-index-list"><a href="../enums/_systemic_games_react_native_pixels_connect.MessageTypeValues.html" class="tsd-index-link tsd-kind-enum tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8-path"></use><use href="#icon-8-text"></use></svg><span>Message<wbr/>Type<wbr/>Values</span></a>
 <a href="../enums/_systemic_games_react_native_pixels_connect.PixelBatteryStateValues.html" class="tsd-index-link tsd-kind-enum tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8-path"></use><use href="#icon-8-text"></use></svg><span>Pixel<wbr/>Battery<wbr/>State<wbr/>Values</span></a>
@@ -220,7 +226,7 @@
 <a href="../types/_systemic_games_react_native_pixels_connect.TelemetryRequestModeNames.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Telemetry<wbr/>Request<wbr/>Mode<wbr/>Names</span></a>
 <a href="../types/_systemic_games_react_native_pixels_connect.TransferInstantAnimationSetAckType.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Transfer<wbr/>Instant<wbr/>Animation<wbr/>Set<wbr/>Ack<wbr/>Type</span></a>
 <a href="../types/_systemic_games_react_native_pixels_connect.TransferInstantAnimationsSetAckTypeNames.html" class="tsd-index-link tsd-kind-type-alias tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Transfer<wbr/>Instant<wbr/>Animations<wbr/>Set<wbr/>Ack<wbr/>Type<wbr/>Names</span></a>
-<a href="../functions/_systemic_games_react_native_pixels_connect.deserializeMessage.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-64-path"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)" id="icon-64-text"></path></svg><span>deserialize<wbr/>Message</span></a>
+<a href="../functions/_systemic_games_react_native_pixels_connect.deserializeMessage.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>deserialize<wbr/>Message</span></a>
 <a href="../functions/_systemic_games_react_native_pixels_connect.getMessageName.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Message<wbr/>Name</span></a>
 <a href="../functions/_systemic_games_react_native_pixels_connect.getMessageType.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Message<wbr/>Type</span></a>
 <a href="../functions/_systemic_games_react_native_pixels_connect.instantiateMessage.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>instantiate<wbr/>Message</span></a>
@@ -268,7 +274,6 @@
 <a href="../variables/_systemic_games_react_native_pixels_connect.BluetoothLE.html" class="tsd-index-link tsd-kind-variable tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg><span>BluetoothLE</span></a>
 <a href="../variables/_systemic_games_react_native_pixels_connect.Central.html" class="tsd-index-link tsd-kind-variable tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg><span>Central</span></a>
 <a href="../variables/_systemic_games_react_native_pixels_connect.PixelUuids.html" class="tsd-index-link tsd-kind-variable tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg><span>Pixel<wbr/>Uuids</span></a>
-<a href="../functions/_systemic_games_react_native_pixels_connect.getFaceMask.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Face<wbr/>Mask</span></a>
 <a href="../functions/_systemic_games_react_native_pixels_connect.getPixel.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Pixel</span></a>
 <a href="../functions/_systemic_games_react_native_pixels_connect.getPixelCharging.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Pixel<wbr/>Charging</span></a>
 <a href="../functions/_systemic_games_react_native_pixels_connect.getPixelUniqueName.html" class="tsd-index-link tsd-kind-function tsd-parent-kind-module"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg><span>get<wbr/>Pixel<wbr/>Unique<wbr/>Name</span></a>
@@ -552,9 +557,11 @@
 <li class="tsd-kind-variable tsd-parent-kind-module"><a href="../variables/_systemic_games_react_native_pixels_connect.Constants.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg>Constants</a></li>
 <li class="tsd-kind-variable tsd-parent-kind-module"><a href="../variables/_systemic_games_react_native_pixels_connect.PixelUuids.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-32-path"></use><use href="#icon-32-text"></use></svg>Pixel<wbr/>Uuids</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.deserializeMessage.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>deserialize<wbr/>Message</a></li>
+<li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.facesMaskToValues.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>faces<wbr/>Mask<wbr/>To<wbr/>Values</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.getActionTypeDisplayName.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Action<wbr/>Type<wbr/>Display<wbr/>Name</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.getAnimationTypeDisplayName.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Animation<wbr/>Type<wbr/>Display<wbr/>Name</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.getConditionTypeDisplayName.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Condition<wbr/>Type<wbr/>Display<wbr/>Name</a></li>
+<li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.getFaceIndex.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Face<wbr/>Index</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.getFaceMask.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Face<wbr/>Mask</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.getMessageName.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Message<wbr/>Name</a></li>
 <li class="tsd-kind-function tsd-parent-kind-module"><a href="../functions/_systemic_games_react_native_pixels_connect.getMessageType.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>get<wbr/>Message<wbr/>Type</a></li>

@@ -16,7 +16,7 @@
 <li><a href="_systemic_games_react_native_bluetooth_le.html">@systemic-games/react-native-bluetooth-le</a></li></ul>
 <h1>Module @systemic-games/react-native-bluetooth-le</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/e0a98f3/packages/react-native-bluetooth-le/src/index.ts#L1">packages/react-native-bluetooth-le/src/index.ts:1</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/33a3585/packages/react-native-bluetooth-le/src/index.ts#L1">packages/react-native-bluetooth-le/src/index.ts:1</a></li></ul></aside>
 <section class="tsd-panel-group">
 <section class="tsd-panel tsd-typography">
 <a href="#react-native-bluetooth-le" id="react-native-bluetooth-le" style="color: inherit; text-decoration: none;">
@@ -28,13 +28,13 @@
 <a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
   <h2>Installation</h2>
 </a>
-<pre><code class="language-sh"><span class="hl-0">npm install @systemic-games/react-native-bluetooth-le</span>
+<pre><code class="language-sh"><span class="hl-0">npm </span><span class="hl-1">install</span><span class="hl-0"> </span><span class="hl-1">@systemic-games/react-native-bluetooth-le</span>
 </code></pre>
 
 <a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
   <h2>Usage</h2>
 </a>
-<pre><code class="language-js"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">NativeEventEmitter</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-4">&quot;react-native&quot;</span><span class="hl-0">;</span><br/><span class="hl-2">import</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-3">BluetoothLE</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-3">BleEvent</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-3">BleScanResultEvent</span><br/><span class="hl-0">} </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-4">&quot;@systemic-games/react-native-bluetooth-le&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-3">BluetoothLE</span><span class="hl-0">.</span><span class="hl-1">bleInitialize</span><span class="hl-0">();</span><br/><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-7">eventEmitter</span><span class="hl-0"> = </span><span class="hl-5">new</span><span class="hl-0"> </span><span class="hl-1">NativeEventEmitter</span><span class="hl-0">(</span><span class="hl-3">BluetoothLE</span><span class="hl-0">);</span><br/><span class="hl-3">eventEmitter</span><span class="hl-0">.</span><span class="hl-1">addListener</span><span class="hl-0">(</span><span class="hl-3">BleEvent</span><span class="hl-0">.</span><span class="hl-3">scanResult</span><span class="hl-0">, (</span><span class="hl-3">ev</span><span class="hl-0">: </span><span class="hl-6">BleScanResultEvent</span><span class="hl-0">) </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-2">if</span><span class="hl-0"> (</span><span class="hl-5">typeof</span><span class="hl-0"> </span><span class="hl-3">ev</span><span class="hl-0"> === </span><span class="hl-4">&quot;string&quot;</span><span class="hl-0">) {</span><br/><span class="hl-0">    </span><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-4">`Scan error: </span><span class="hl-5">${</span><span class="hl-3">ev</span><span class="hl-5">}</span><span class="hl-4">`</span><span class="hl-0">);</span><br/><span class="hl-0">  } </span><span class="hl-2">else</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-4">`Discovered device: </span><span class="hl-5">${</span><span class="hl-3">ev</span><span class="hl-9">.</span><span class="hl-3">device</span><span class="hl-5">}</span><span class="hl-4">`</span><span class="hl-0">);</span><br/><span class="hl-0">  }</span><br/><span class="hl-0">});</span><br/><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-7">serviceUuid</span><span class="hl-0"> = </span><span class="hl-4">&quot;6e400001-b5a3-f393-e0a9-e50e24dcca9e&quot;</span><span class="hl-0">;</span><br/><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">BluetoothLE</span><span class="hl-0">.</span><span class="hl-1">startScan</span><span class="hl-0">(</span><span class="hl-3">serviceUuid</span><span class="hl-0">);</span>
+<pre><code class="language-js"><span class="hl-3">import</span><span class="hl-0"> { </span><span class="hl-4">NativeEventEmitter</span><span class="hl-0"> } </span><span class="hl-3">from</span><span class="hl-0"> </span><span class="hl-1">&quot;react-native&quot;</span><span class="hl-0">;</span><br/><span class="hl-3">import</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-4">BluetoothLE</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-4">BleEvent</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-4">BleScanResultEvent</span><br/><span class="hl-0">} </span><span class="hl-3">from</span><span class="hl-0"> </span><span class="hl-1">&quot;@systemic-games/react-native-bluetooth-le&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">BluetoothLE</span><span class="hl-0">.</span><span class="hl-2">bleInitialize</span><span class="hl-0">();</span><br/><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-7">eventEmitter</span><span class="hl-0"> = </span><span class="hl-5">new</span><span class="hl-0"> </span><span class="hl-2">NativeEventEmitter</span><span class="hl-0">(</span><span class="hl-4">BluetoothLE</span><span class="hl-0">);</span><br/><span class="hl-4">eventEmitter</span><span class="hl-0">.</span><span class="hl-2">addListener</span><span class="hl-0">(</span><span class="hl-4">BleEvent</span><span class="hl-0">.</span><span class="hl-4">scanResult</span><span class="hl-0">, (</span><span class="hl-4">ev</span><span class="hl-0">: </span><span class="hl-6">BleScanResultEvent</span><span class="hl-0">) </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-3">if</span><span class="hl-0"> (</span><span class="hl-5">typeof</span><span class="hl-0"> </span><span class="hl-4">ev</span><span class="hl-0"> === </span><span class="hl-1">&quot;string&quot;</span><span class="hl-0">) {</span><br/><span class="hl-0">    </span><span class="hl-4">console</span><span class="hl-0">.</span><span class="hl-2">log</span><span class="hl-0">(</span><span class="hl-1">`Scan error: </span><span class="hl-5">${</span><span class="hl-4">ev</span><span class="hl-5">}</span><span class="hl-1">`</span><span class="hl-0">);</span><br/><span class="hl-0">  } </span><span class="hl-3">else</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-4">console</span><span class="hl-0">.</span><span class="hl-2">log</span><span class="hl-0">(</span><span class="hl-1">`Discovered device: </span><span class="hl-5">${</span><span class="hl-4">ev</span><span class="hl-9">.</span><span class="hl-4">device</span><span class="hl-5">}</span><span class="hl-1">`</span><span class="hl-0">);</span><br/><span class="hl-0">  }</span><br/><span class="hl-0">});</span><br/><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-7">serviceUuid</span><span class="hl-0"> = </span><span class="hl-1">&quot;6e400001-b5a3-f393-e0a9-e50e24dcca9e&quot;</span><span class="hl-0">;</span><br/><span class="hl-3">await</span><span class="hl-0"> </span><span class="hl-4">BluetoothLE</span><span class="hl-0">.</span><span class="hl-2">startScan</span><span class="hl-0">(</span><span class="hl-4">serviceUuid</span><span class="hl-0">);</span>
 </code></pre>
 
 <a href="#development-workflow" id="development-workflow" style="color: inherit; text-decoration: none;">
@@ -48,19 +48,19 @@
 </blockquote>
 <p>While developing, you can run the <a href="/example/">example app</a> to test your changes. Any changes you make in your library&#39;s JavaScript code will be reflected in the example app without a rebuild. If you change any native code, then you&#39;ll need to rebuild the example app.</p>
 <p>To start Metro:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example start</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">start</span>
 </code></pre>
 <p>To run the example app on Android:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example android</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">android</span>
 </code></pre>
 <p>To run the example app on iOS:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn example ios</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">example</span><span class="hl-0"> </span><span class="hl-1">ios</span>
 </code></pre>
 <p>Make sure your code passes TypeScript and ESLint. Run the following to verify:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn typescript</span><br/><span class="hl-0">yarn lint</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">typescript</span><br/><span class="hl-0">yarn </span><span class="hl-1">lint</span>
 </code></pre>
 <p>To fix formatting errors, run the following:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn lint --fix</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">lint</span><span class="hl-0"> </span><span class="hl-1">--fix</span>
 </code></pre>
 <p>Remember to add tests for your change if possible. Run the unit tests by:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">test</span>
@@ -87,7 +87,7 @@
 </a>
 <p>We use <a href="https://github.com/release-it/release-it">release-it</a> to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.</p>
 <p>To publish new versions, run the following:</p>
-<pre><code class="language-sh"><span class="hl-0">yarn release</span>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">release</span>
 </code></pre>
 
 <a href="#scripts" id="scripts" style="color: inherit; text-decoration: none;">
