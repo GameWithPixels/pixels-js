@@ -25,9 +25,9 @@ import {
 import { Text } from "native-base";
 import React from "react";
 
+import { BitFieldWidget } from "./BitFieldWidget";
 import { FaceMaskWidget } from "./FaceMaskWidget";
 import { PlaybackFaceWidget } from "./PlaybackFaceWidget";
-import { RuleComparisonWidget } from "./RuleComparisonWidget";
 import { UserTextWidget } from "./UserTextWidget";
 import { AnimationSelector } from "../components/AnimationSelector";
 import {
@@ -235,7 +235,7 @@ export function createWidgetComponent(
           widgetData.update(bits);
         },
         ({ autoUpdate, ...props }) => (
-          <RuleComparisonWidget
+          <BitFieldWidget
             {...props}
             title={widgetData.displayName}
             values={valuesTitles}
