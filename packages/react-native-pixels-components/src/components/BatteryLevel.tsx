@@ -16,7 +16,7 @@ import { PixelTheme } from "../theme";
 interface BatteryLevelProps extends FastBoxProps {
   percentage: number; // current battery percentage value (between 0 and 1)
   isCharging?: boolean;
-  size?: keyof (typeof PixelTheme)["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for BatteryLevel component
+  size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for BatteryLevel component
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
   _icon?: Partial<IIconProps>; // parameter fro styling battery icon size
 }

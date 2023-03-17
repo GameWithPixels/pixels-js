@@ -92,7 +92,7 @@ export const MessageTypeValues = {
 
 /** The "enum" type for {@link MessageTypeValues}. */
 export type MessageType =
-  (typeof MessageTypeValues)[keyof typeof MessageTypeValues];
+  typeof MessageTypeValues[keyof typeof MessageTypeValues];
 
 /**
  * Base type for all Pixels messages.
@@ -269,7 +269,7 @@ export const PixelDesignAndColorValues = {
 
 /** The "enum" type for {@link PixelDesignAndColorValues}. */
 export type PixelDesignAndColor =
-  (typeof PixelDesignAndColorValues)[keyof typeof PixelDesignAndColorValues];
+  typeof PixelDesignAndColorValues[keyof typeof PixelDesignAndColorValues];
 
 /** Message send by a Pixel after receiving a "WhoAmI". */
 export class IAmADie implements Message {
@@ -322,7 +322,7 @@ export const PixelRollStateValues = {
 
 /** The "enum" type for {@link PixelRollStateValues}. */
 export type PixelRollState =
-  (typeof PixelRollStateValues)[keyof typeof PixelRollStateValues];
+  typeof PixelRollStateValues[keyof typeof PixelRollStateValues];
 
 /** Message send by a Pixel to notify of its rolling state. */
 export class RollState implements Message {

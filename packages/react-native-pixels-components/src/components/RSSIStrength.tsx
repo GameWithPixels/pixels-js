@@ -14,7 +14,7 @@ import { PixelTheme } from "../theme";
  */
 interface RSSIStrengthProps extends FastBoxProps {
   percentage: number; // current rssi strength value (from 0 to 1)
-  size?: keyof (typeof PixelTheme)["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for RSSIStrength component
+  size?: keyof typeof PixelTheme["components"]["BatteryLevel"]["sizes"]; // sizes possibilities for RSSIStrength component
   _text?: Partial<ITextProps>; // parameters for styling battery level text size
   _icon?: Partial<IIconProps>; // parameter fro styling battery icon size
 }

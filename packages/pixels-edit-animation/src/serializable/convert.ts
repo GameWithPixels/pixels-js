@@ -22,23 +22,6 @@ import {
 import { fromByteArray, toByteArray } from "base64-js";
 
 import {
-  AnimationGradientData,
-  AnimationGradientPatternData,
-  AnimationKeyframedData,
-  AnimationNoiseData,
-  AnimationRainbowData,
-  AnimationSetData,
-  AnimationSimpleData,
-} from "./animations";
-import { GradientData } from "./gradient";
-import { PatternData } from "./pattern";
-import {
-  ActionSetData,
-  ProfileData,
-  createActionSetData,
-  createConditionSetData,
-} from "./profile";
-import {
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditActionRunOnDevice,
@@ -67,6 +50,23 @@ import {
   EditRule,
 } from "../edit";
 import EditActionMakeWebRequest from "../edit/EditActionMakeWebRequest";
+import {
+  AnimationGradientData,
+  AnimationGradientPatternData,
+  AnimationKeyframedData,
+  AnimationNoiseData,
+  AnimationRainbowData,
+  AnimationSetData,
+  AnimationSimpleData,
+} from "./animations";
+import { GradientData } from "./gradient";
+import { PatternData } from "./pattern";
+import {
+  ActionSetData,
+  ProfileData,
+  createActionSetData,
+  createConditionSetData,
+} from "./profile";
 
 export function toProfile(
   data: Readonly<ProfileData>,

@@ -25,10 +25,6 @@ import {
 import { Text } from "native-base";
 import React from "react";
 
-import { BitFieldWidget } from "./BitFieldWidget";
-import { FaceMaskWidget } from "./FaceMaskWidget";
-import { PlaybackFaceWidget } from "./PlaybackFaceWidget";
-import { UserTextWidget } from "./UserTextWidget";
 import { AnimationSelector } from "../components/AnimationSelector";
 import {
   GradientColorSelector,
@@ -36,6 +32,10 @@ import {
 } from "../components/ColorSelector";
 import { FaceSelector } from "../components/FaceSelector";
 import { PatternSelector } from "../components/PatternSelector";
+import { BitFieldWidget } from "./BitFieldWidget";
+import { FaceMaskWidget } from "./FaceMaskWidget";
+import { PlaybackFaceWidget } from "./PlaybackFaceWidget";
+import { UserTextWidget } from "./UserTextWidget";
 
 export type CreateWidgetComponentOptionals = Required<
   Exclude<Parameters<typeof createWidgetComponent>[1], undefined>

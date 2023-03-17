@@ -1,6 +1,6 @@
+import { getFaceIndex } from "../faceUtils";
 import AnimationInstance from "./AnimationInstance";
 import AnimationKeyframed from "./AnimationKeyframed";
-import { getFaceIndex } from "../faceUtils";
 
 /**
  * @category Animation Instance

@@ -26,4 +26,4 @@ export type ConditionTypeNames = keyof typeof ConditionTypeValues;
  * The "enum" type for {@link ConditionTypeValues}.
  * @category Profile Condition
  */
-export type ConditionType = (typeof ConditionTypeValues)[ConditionTypeNames];
+export type ConditionType = typeof ConditionTypeValues[ConditionTypeNames];

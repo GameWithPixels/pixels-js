@@ -2,10 +2,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { PixelScannerAction } from "@systemic-games/react-native-pixels-connect";
 import { useCallback } from "react";
 
+import PixelDispatcher from "../PixelDispatcher";
 import usePixelDispatcherScanner, {
   UsePixelDispatcherScannerOptions,
 } from "./usePixelDispatcherScanner";
-import PixelDispatcher from "../PixelDispatcher";
 
 interface UseFocusPixelDispatcherScannerOptions
   extends UsePixelDispatcherScannerOptions {}

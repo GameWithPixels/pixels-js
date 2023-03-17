@@ -1,8 +1,8 @@
 import { theme as BaseTheme } from "@systemic-games/react-native-base-components";
 import { extendTheme } from "native-base";
 
-import pixelComponents from "./components";
 import { sr } from "../utils";
+import pixelComponents from "./components";
 
 const pixelColors = {
   dark: "#100F1E",

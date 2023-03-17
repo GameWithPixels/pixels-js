@@ -1,5 +1,5 @@
 export const ValidationFormFactors = ["boardNoCoil", "board", "die"] as const;
-export type ValidationFormFactor = (typeof ValidationFormFactors)[number];
+export type ValidationFormFactor = typeof ValidationFormFactors[number];
 
 export function getBoardOrDie(
   formFactor: ValidationFormFactor

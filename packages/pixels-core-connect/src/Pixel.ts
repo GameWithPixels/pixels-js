@@ -8,7 +8,6 @@ import {
   assert,
   byteSizeOf,
   createTypedEventEmitter,
-  delay,
   EventReceiver,
   getValueKeyName,
   safeAssign,
@@ -680,7 +679,7 @@ export default class Pixel implements IPixel {
    */
   async discharge(currentMA: number): Promise<void> {
     const dischargeMsg = safeAssign(new Discharge(), {
-      currentMA: currentMA
+      currentMA,
     });
     await this.sendMessage(dischargeMsg);
   }

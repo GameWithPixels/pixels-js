@@ -160,7 +160,8 @@ function PixelDetailsImpl({
             {t("resetProfile")}
           </Button>
           <Button
-            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}>
+            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}
+          >
             {t("exitValidationMode")}
           </Button>
         </VStack>

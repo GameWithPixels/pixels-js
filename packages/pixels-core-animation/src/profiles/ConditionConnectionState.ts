@@ -24,7 +24,7 @@ export type ConnectionStateFlagsNames = keyof typeof ConnectionStateFlagsValues;
  * @category Profile Condition
  */
 export type ConnectionStateFlags =
-  (typeof ConnectionStateFlagsValues)[ConnectionStateFlagsNames];
+  typeof ConnectionStateFlagsValues[ConnectionStateFlagsNames];
 
 /**
  * Condition that triggers on connection events.

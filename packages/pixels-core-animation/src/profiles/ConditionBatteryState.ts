@@ -32,7 +32,7 @@ export type BatteryStateFlagsNames = keyof typeof BatteryStateFlagsValues;
  * @category Profile Condition
  */
 export type BatteryStateFlags =
-  (typeof BatteryStateFlagsValues)[BatteryStateFlagsNames];
+  typeof BatteryStateFlagsValues[BatteryStateFlagsNames];
 
 /**
  * Condition that triggers on battery state events.

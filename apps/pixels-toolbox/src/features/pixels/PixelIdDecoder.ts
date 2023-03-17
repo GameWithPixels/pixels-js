@@ -1,5 +1,5 @@
 export const RbgColorNames = ["red", "green", "blue"] as const;
-export type RbgColor = (typeof RbgColorNames)[number];
+export type RbgColor = typeof RbgColorNames[number];
 
 const crcDivisor = "1011";
 const crcBitCount = crcDivisor.length - 1;
