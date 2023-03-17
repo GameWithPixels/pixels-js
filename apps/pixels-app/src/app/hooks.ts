@@ -63,17 +63,24 @@ export function useAppRemovePairedDie(): (pixelId: number) => void {
 // Profiles
 //
 
+const profilesCache = new DataMap<
+  Serializable.ProfileData,
+  Readonly<EditProfile>
+>();
+
 export function useAppProfiles(): Readonly<EditProfile>[] {
   const profilesSet = useAppSelector((state) => state.profilesSet);
   const animations = useAppAnimations();
   return useMemo(
     () =>
-      profilesSet.profiles.map((data) =>
-        Serializable.toProfile(
-          data,
-          (animUuid) =>
-            animations.find((a) => a.uuid === animUuid) as EditAnimation, // TODO readonly
-          (clipUuid) => new EditAudioClip({ uuid: clipUuid })
+      profilesSet.profiles.map((profileData) =>
+        profilesCache.getOrCreate(profileData, () =>
+          Serializable.toProfile(
+            profileData,
+            (animUuid) =>
+              animations.find((a) => a.uuid === animUuid) as EditAnimation, // TODO readonly
+            (clipUuid) => new EditAudioClip({ uuid: clipUuid })
+          )
         )
       ),
     [animations, profilesSet.profiles]
@@ -125,6 +132,7 @@ export function useAppRemoveProfile(): (
         profile.uuid,
         "useAppRemoveProfile(): Profile doesn't have a uuid"
       );
+      profilesCache.deleteValue(profile);
       dispatch(removeProfile(profile.uuid));
     },
     [dispatch]
