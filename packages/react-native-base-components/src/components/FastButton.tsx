@@ -5,6 +5,7 @@ import {
   Text,
   usePropsResolution,
 } from "native-base";
+import React from "react";
 
 export interface FastButtonProps extends IPressableProps {
   children?: React.ReactNode;
@@ -20,13 +21,18 @@ export function FastButton(props: FastButtonProps) {
     "FastButton",
     props
   ) as FastButtonProps;
-  return (
-    <Pressable alignItems="center" justifyContent="center" {...resolvedProps}>
-      {typeof children === "string" || typeof children === "number" ? (
+  const childrenNode = React.useMemo(
+    () =>
+      typeof children === "string" || typeof children === "number" ? (
         <Text {..._text}>{children}</Text>
       ) : (
         children
-      )}
+      ),
+    [_text, children]
+  );
+  return (
+    <Pressable alignItems="center" justifyContent="center" {...resolvedProps}>
+      {childrenNode}
     </Pressable>
   );
 }
