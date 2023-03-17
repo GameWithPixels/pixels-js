@@ -43,6 +43,7 @@ export type PixelDispatcherAction =
   | "dequeueFirmwareUpdate"
   | "exitValidationMode"
   | "discharge"
+  | "stopDischarge"
   | "enableCharging"
   | "disableCharging";
 
@@ -232,7 +233,10 @@ export default class PixelDispatcher implements IPixel {
         this._watch(this._calibrate());
         break;
       case "discharge":
-        this._watch(this._discharge());
+        this._watch(this._discharge(50));
+        break;
+      case "stopDischarge":
+        this._watch(this._discharge(0));
         break;
       case "updateProfile":
         this._watch(this._updateProfile());
@@ -306,9 +310,9 @@ export default class PixelDispatcher implements IPixel {
     }
   }
 
-  private async _discharge(): Promise<void> {
+  private async _discharge(currentMA: number): Promise<void> {
     if (this.isReady) {
-      await this._pixel.discharge();
+      await this._pixel.discharge(currentMA);
     }
   }
 

@@ -113,6 +113,7 @@ i18n
           rainbow: "Rainbow",
           resetProfile: "Reset Profile",
           discharge: "Discharge",
+          stopDischarge: "Stop Discharging",
           enableCharging: "Enable Charging",
           disableCharging: "Disable Charging",
 
@@ -269,6 +270,7 @@ i18n
           rainbow: "彩虹动画效果",
           resetProfile: "重置资料",
           discharge: "Discharge",
+          stopDischarge: "Stop Discharging",
           enableCharging: "Enable Charging",
           disableCharging: "Disable Charging",
 

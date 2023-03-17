@@ -82,6 +82,7 @@ export const MessageTypeValues = {
   temperature: enumValue(),
   enableCharging: enumValue(),
   disableCharging: enumValue(),
+  discharge: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
@@ -1060,6 +1061,18 @@ export class Temperature implements PixelMessage {
   batteryTemperatureTimes100 = 0;
 }
 
+export class Discharge implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.discharge;
+
+  /**
+   * The current draw, in MilliAmps, or 0 to reset
+   */
+  @serializable(1)
+  currentMA = 0;
+}
+
 // Returns the list of message classes defined in this file.
 function _getMessageClasses(): MessageClass[] {
   return [
@@ -1088,5 +1101,6 @@ function _getMessageClasses(): MessageClass[] {
     TransferInstantAnimationSetAck,
     PlayInstantAnimation,
     Temperature,
+    Discharge,
   ];
 }

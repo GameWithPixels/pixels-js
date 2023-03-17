@@ -52,6 +52,7 @@ import {
   RequestRssi,
   TelemetryRequestModeValues,
   RemoteAction,
+  Discharge,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import getPixelCharging from "./getPixelCharging";
@@ -677,23 +678,11 @@ export default class Pixel implements IPixel {
    * Discharges the pixel as fast as possible by lighting up all LEDs
    * @returns A promise.
    */
-  async discharge(): Promise<void> {
-    const blinkMsg = safeAssign(new Blink(), {
-      color: Color32Utils.toColor32(Color.brightWhite),
-      count: 1,
-      duration: 6000,
-      fade: 10,
-      faceMask: AnimConstants.faceMaskAllLEDs,
-      loop: false,
+  async discharge(currentMA: number): Promise<void> {
+    const dischargeMsg = safeAssign(new Discharge(), {
+      currentMA: currentMA
     });
-    while (true) {
-      // We are counting on the disconnect exception to happen!
-      await this.sendAndWaitForResponse(
-        blinkMsg,
-        MessageTypeValues.blinkFinished
-      );
-      await delay(3000);
-    }
+    await this.sendMessage(dischargeMsg);
   }
 
   /**

@@ -129,37 +129,39 @@ function PixelDetailsImpl({
           <Button onPress={() => pixelDispatcher.dispatch("connect")}>
             {t("connect")}
           </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-            {t("blink")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
-            {t("calibrate")}
-          </Button>
           <Button onPress={() => pixelDispatcher.dispatch("discharge")}>
             {t("discharge")}
           </Button>
           <Button onPress={() => pixelDispatcher.dispatch("enableCharging")}>
             {t("enableCharging")}
           </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("blink")}>
+            {t("blink")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
+            {t("calibrate")}
+          </Button>
         </VStack>
         <VStack flex={1} space={sr(5)}>
           <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
             {t("disconnect")}
           </Button>
+          {/* TODO stop querying for voltage, rssi, etc. */}
+          <Button onPress={() => pixelDispatcher.dispatch("stopDischarge")}>
+            {t("stopDischarge")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("disableCharging")}>
+            {t("disableCharging")}
+          </Button>
           <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
             {t("rainbow")}
           </Button>
-          {/* TODO stop querying for voltage, rssi, etc. */}
           <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
             {t("resetProfile")}
           </Button>
           <Button
-            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}
-          >
+            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}>
             {t("exitValidationMode")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("disableCharging")}>
-            {t("disableCharging")}
           </Button>
         </VStack>
       </HStack>
