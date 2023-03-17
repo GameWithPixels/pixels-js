@@ -24,6 +24,8 @@ import { View } from "native-base";
 import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
+import { makeObservable } from "~/features/makeObservable";
+
 const ObservableActionSelector = observer(function ({
   observableAction,
   onReplace,
@@ -41,21 +43,24 @@ const ObservableActionSelector = observer(function ({
     () => [
       {
         label: getActionTitle(ActionTypeValues.playAnimation),
-        onSelect: () => onReplace?.(new EditActionPlayAnimation()),
+        onSelect: () =>
+          onReplace?.(makeObservable(new EditActionPlayAnimation())),
       },
       {
         label: getActionTitle(
           ActionTypeValues.runOnDevice,
           RemoteActionTypeValues.playAudioClip
         ),
-        onSelect: () => onReplace?.(new EditActionPlayAudioClip()),
+        onSelect: () =>
+          onReplace?.(makeObservable(new EditActionPlayAudioClip())),
       },
       {
         label: getActionTitle(
           ActionTypeValues.runOnDevice,
           RemoteActionTypeValues.makeWebRequest
         ),
-        onSelect: () => onReplace?.(new EditActionMakeWebRequest()),
+        onSelect: () =>
+          onReplace?.(makeObservable(new EditActionMakeWebRequest())),
       },
     ],
     [onReplace]
