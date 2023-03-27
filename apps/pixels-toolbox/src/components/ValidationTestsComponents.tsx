@@ -112,15 +112,16 @@ interface MessageYesNoProps {
 }
 
 function MessageYesNo({ message, onYes, onNo, hideYesNo }: MessageYesNoProps) {
+  const { t } = useTranslation();
   return (
     <>
       <Text variant="comment">{message}</Text>
       {!hideYesNo && (
         <HStack>
           <Button mr="5%" onPress={onYes}>
-            ☑️
+            {t("yes")}
           </Button>
-          <Button onPress={onNo}>❌</Button>
+          <Button onPress={onNo}>{t("no")}</Button>
         </HStack>
       )}
     </>
@@ -360,8 +361,11 @@ export function ConnectPixel({
         if (!scannedPixelRef.current) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
+        // Get our Pixel and connect to it
         const pixel = getPixel(scannedPixelRef.current);
         await pixel.connect();
+        // Make sure we don't have any animation that are playing
+        await pixel.stopAllAnimations();
         setPixel(pixel);
       }, []),
       createTaskStatusContainer(t("connect"))
