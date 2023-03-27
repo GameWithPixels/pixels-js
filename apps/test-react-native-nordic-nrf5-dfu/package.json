@@ -31,7 +31,7 @@
     "@systemic-games/react-native-bluetooth-le": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
     "react": "18.2.0",
-    "react-native": "0.71.3",
+    "react-native": "0.71.4",
     "react-native-document-picker": "^8.1.2",
     "react-native-fs": "^2.20.0"
   },
