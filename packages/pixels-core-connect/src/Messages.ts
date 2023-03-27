@@ -48,7 +48,7 @@ export const MessageTypeValues = {
   programDefaultAnimationSet: enumValue(),
   programDefaultAnimationSetFinished: enumValue(),
   blink: enumValue(),
-  blinkFinished: enumValue(),
+  blinkAck: enumValue(),
   requestDefaultAnimationSetColor: enumValue(),
   defaultAnimationSetColor: enumValue(),
   requestBatteryLevel: enumValue(),
@@ -83,6 +83,8 @@ export const MessageTypeValues = {
   enableCharging: enumValue(),
   disableCharging: enumValue(),
   discharge: enumValue(),
+  blinkId: enumValue(),
+  blinkIdAck: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
@@ -106,7 +108,7 @@ export type MessageTypeNames = keyof typeof MessageTypeValues;
  * The "enum" type for {@link MessageTypeValues}.
  * @category Message
  */
-export type MessageType = typeof MessageTypeValues[MessageTypeNames];
+export type MessageType = (typeof MessageTypeValues)[MessageTypeNames];
 
 /**
  * Base type for all Pixels messages.
@@ -312,7 +314,7 @@ export type PixelDesignAndColorNames = keyof typeof PixelDesignAndColorValues;
  * @category Message
  */
 export type PixelDesignAndColor =
-  typeof PixelDesignAndColorValues[PixelDesignAndColorNames];
+  (typeof PixelDesignAndColorValues)[PixelDesignAndColorNames];
 
 /**
  * Message send by a Pixel after receiving a "WhoAmI".
@@ -400,7 +402,7 @@ export type PixelRollStateNames = keyof typeof PixelRollStateValues;
  * The "enum" type for {@link PixelRollStateValues}.
  * @category Message
  */
-export type PixelRollState = typeof PixelRollStateValues[PixelRollStateNames];
+export type PixelRollState = (typeof PixelRollStateValues)[PixelRollStateNames];
 
 /**
  * Message send by a Pixel to notify of its rolling state.
@@ -665,7 +667,7 @@ export type TransferInstantAnimationsSetAckTypeNames =
  * @category Message
  */
 export type TransferInstantAnimationSetAckType =
-  typeof TransferInstantAnimationsSetAckTypeValues[TransferInstantAnimationsSetAckTypeNames];
+  (typeof TransferInstantAnimationsSetAckTypeValues)[TransferInstantAnimationsSetAckTypeNames];
 
 /**
  * Message send by a Pixel after receiving a TransferTestAnimationSet request.
@@ -735,7 +737,7 @@ export type TelemetryRequestModeNames = keyof typeof TelemetryRequestModeValues;
  * @category Message
  */
 export type TelemetryRequestMode =
-  typeof TelemetryRequestModeValues[TelemetryRequestModeNames];
+  (typeof TelemetryRequestModeValues)[TelemetryRequestModeNames];
 
 /**
  * Message send to a Pixel to have it start or stop sending telemetry messages.
@@ -841,7 +843,7 @@ export type BatteryStateNames = keyof typeof PixelBatteryStateValues;
  * The "enum" type for {@link PixelBatteryStateValues}.
  * @category Message
  */
-export type BatteryState = typeof PixelBatteryStateValues[BatteryStateNames];
+export type BatteryState = (typeof PixelBatteryStateValues)[BatteryStateNames];
 
 /**
  * Message send by a Pixel to notify of its battery level and state.
@@ -1067,10 +1069,26 @@ export class Discharge implements PixelMessage {
   readonly type = MessageTypeValues.discharge;
 
   /**
-   * The current draw, in MilliAmps, or 0 to reset
+   * The current draw, in mA, or 0 to reset.
    */
   @serializable(1)
   currentMA = 0;
+}
+
+export class BlinkId implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.blinkId;
+
+  /**
+   * The brightness of the blinking LEDs.
+   */
+  @serializable(1)
+  brightness = 0;
+
+  /** Whether to indefinitely loop the animation. */
+  @serializable(1)
+  loop = false;
 }
 
 // Returns the list of message classes defined in this file.
@@ -1102,5 +1120,6 @@ function _getMessageClasses(): MessageClass[] {
     PlayInstantAnimation,
     Temperature,
     Discharge,
+    BlinkId,
   ];
 }

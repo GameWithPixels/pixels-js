@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/namespace
 import { NativeModule, NativeModules, Platform } from "react-native";
 
 const LINKING_ERROR =

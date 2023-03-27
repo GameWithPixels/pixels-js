@@ -1,5 +1,4 @@
 import { createTypedEventEmitter } from "@systemic-games/pixels-core-utils";
-// eslint-disable-next-line import/namespace
 import { NativeEventEmitter, EmitterSubscription } from "react-native";
 
 import {

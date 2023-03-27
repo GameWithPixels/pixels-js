@@ -1,7 +1,7 @@
 import {
   PixelDesignAndColorValues,
   PixelRollStateValues,
-  PixelUuids,
+  PixelBleUuids,
 } from "@systemic-games/pixels-core-connect";
 import {
   createTypedEventEmitter,
@@ -66,7 +66,7 @@ export default class PixelScanner {
   start(): Promise<void> {
     return _queue.run(async () => {
       // Scan for Pixels
-      await Central.scanForPeripheralsWithServices(PixelUuids.serviceUuid);
+      await Central.scanForPeripheralsWithServices(PixelBleUuids.service);
       // Increment counter once the scan has successfully started
       ++_globalScanCount;
 

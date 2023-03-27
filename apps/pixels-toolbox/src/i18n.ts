@@ -116,6 +116,7 @@ i18n
           stopDischarge: "Stop Discharging",
           enableCharging: "Enable Charging",
           disableCharging: "Disable Charging",
+          blinkId: "Blink Id",
 
           // Validation
           factoryValidation: "Factory Validation",
@@ -273,6 +274,7 @@ i18n
           stopDischarge: "Stop Discharging",
           enableCharging: "Enable Charging",
           disableCharging: "Disable Charging",
+          blinkId: "Blink Id",
 
           // Validation
           factoryValidation: "工厂测试",

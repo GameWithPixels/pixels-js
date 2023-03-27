@@ -52,6 +52,7 @@ import {
   TelemetryRequestModeValues,
   RemoteAction,
   Discharge,
+  BlinkId,
 } from "./Messages";
 import PixelSession from "./PixelSession";
 import getPixelCharging from "./getPixelCharging";
@@ -651,7 +652,7 @@ export default class Pixel implements IPixel {
    */
   async blink(
     color: Color,
-    options?: {
+    opt?: {
       count?: number;
       duration?: number;
       fade?: number;
@@ -661,16 +662,21 @@ export default class Pixel implements IPixel {
   ): Promise<void> {
     const blinkMsg = safeAssign(new Blink(), {
       color: Color32Utils.toColor32(color),
-      count: options?.count ?? 1,
-      duration: options?.duration ?? 1000,
-      fade: 255 * (options?.fade ?? 0),
-      faceMask: options?.faceMask ?? AnimConstants.faceMaskAllLEDs,
-      loop: options?.loop ?? false,
+      count: opt?.count ?? 1,
+      duration: opt?.duration ?? 1000,
+      fade: 255 * (opt?.fade ?? 0),
+      faceMask: opt?.faceMask ?? AnimConstants.faceMaskAllLEDs,
+      loop: opt?.loop ?? false,
     });
-    await this.sendAndWaitForResponse(
-      blinkMsg,
-      MessageTypeValues.blinkFinished
-    );
+    await this.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkAck);
+  }
+
+  async blinkId(opt?: { brightness?: number; loop?: boolean }) {
+    const blinkMsg = safeAssign(new BlinkId(), {
+      brightness: opt?.brightness ?? 0x10,
+      loop: opt?.loop ?? false,
+    });
+    await this.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkIdAck);
   }
 
   /**

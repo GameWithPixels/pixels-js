@@ -138,6 +138,9 @@ function PixelDetailsImpl({
           <Button onPress={() => pixelDispatcher.dispatch("blink")}>
             {t("blink")}
           </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
+            {t("blinkId")}
+          </Button>
           <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
             {t("calibrate")}
           </Button>

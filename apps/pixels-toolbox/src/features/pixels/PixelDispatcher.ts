@@ -23,8 +23,8 @@ import {
   MessageTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 
-import getDfuFileInfo from "../dfu/getDfuFileInfo";
 import { getDieType } from "./DieType";
+import getDfuFileInfo from "../dfu/getDfuFileInfo";
 
 import { store } from "~/app/store";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
@@ -36,6 +36,7 @@ export type PixelDispatcherAction =
   | "disconnect"
   | "reportRssi"
   | "blink"
+  | "blinkId"
   | "playRainbow"
   | "calibrate"
   | "updateProfile"
@@ -215,31 +216,34 @@ export default class PixelDispatcher implements IPixel {
   dispatch(action: PixelDispatcherAction) {
     switch (action) {
       case "connect":
-        this._watch(this._pixel.connect());
+        this._guard(this._pixel.connect());
         break;
       case "disconnect":
-        this._watch(this._pixel.disconnect());
+        this._guard(this._pixel.disconnect());
         break;
       case "reportRssi":
-        this._watch(this._reportRssi());
+        this._guard(this._reportRssi());
         break;
       case "blink":
-        this._watch(this._blink());
+        this._guard(this._blink());
+        break;
+      case "blinkId":
+        this._guard(this._blinkId());
         break;
       case "playRainbow":
-        this._watch(this._playRainbow());
+        this._guard(this._playRainbow());
         break;
       case "calibrate":
-        this._watch(this._calibrate());
+        this._guard(this._calibrate());
         break;
       case "discharge":
-        this._watch(this._discharge(50));
+        this._guard(this._discharge(50));
         break;
       case "stopDischarge":
-        this._watch(this._discharge(0));
+        this._guard(this._discharge(0));
         break;
       case "updateProfile":
-        this._watch(this._updateProfile());
+        this._guard(this._updateProfile());
         break;
       case "queueFirmwareUpdate":
         this._queueFirmwareUpdate();
@@ -248,20 +252,20 @@ export default class PixelDispatcher implements IPixel {
         this._dequeueFirmwareUpdate();
         break;
       case "exitValidationMode":
-        this._exitValidationMode();
+        this._guard(this._exitValidationMode());
         break;
       case "enableCharging":
-        this._forceEnableCharging(true);
+        this._guard(this._forceEnableCharging(true));
         break;
       case "disableCharging":
-        this._forceEnableCharging(false);
+        this._guard(this._forceEnableCharging(false));
         break;
       default:
         assertNever(action);
     }
   }
 
-  private _watch(promise: Promise<unknown>): void {
+  private _guard(promise: Promise<unknown>): void {
     promise?.catch((error) => this._evEmitter.emit("error", error));
   }
 
@@ -279,6 +283,12 @@ export default class PixelDispatcher implements IPixel {
   private async _blink(): Promise<void> {
     if (this.isReady) {
       await this._pixel.blink(Color.dimOrange);
+    }
+  }
+
+  private async _blinkId(): Promise<void> {
+    if (this.isReady) {
+      await this._pixel.blinkId({ brightness: 0x10, loop: true });
     }
   }
 
@@ -350,7 +360,7 @@ export default class PixelDispatcher implements IPixel {
       this._evEmitter.emit("firmwareUpdateQueued", true);
       // Run update immediately if it's the only pending request
       if (_pendingDFUs.length === 1) {
-        this._watch(this._updateFirmware());
+        this._guard(this._updateFirmware());
       }
     }
   }
@@ -361,13 +371,13 @@ export default class PixelDispatcher implements IPixel {
       _pendingDFUs.splice(i);
       this._evEmitter.emit("firmwareUpdateQueued", false);
       // Run next update if any
-      this._watch(_pendingDFUs[0]?._updateFirmware());
+      this._guard(_pendingDFUs[0]?._updateFirmware());
     } else if (i === 0) {
       // TODO abort ongoing DFU
     }
   }
 
-  private async _updateFirmware() {
+  private async _updateFirmware(): Promise<void> {
     const filesInfo = this._getDfuFiles().map(getDfuFileInfo);
     const bootloader = filesInfo.filter((i) => i.type === "bootloader")[0];
     const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
@@ -385,10 +395,10 @@ export default class PixelDispatcher implements IPixel {
     }
   }
 
-  private _exitValidationMode(): void {
+  private async _exitValidationMode(): Promise<void> {
     if (this.isReady) {
       // Exit validation mode, don't wait for response as die will restart
-      this._pixel.sendMessage(MessageTypeValues.exitValidation, true);
+      await this._pixel.sendMessage(MessageTypeValues.exitValidation, true);
     }
   }
 }

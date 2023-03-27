@@ -1,4 +1,7 @@
-import { PixelSession, PixelUuids } from "@systemic-games/pixels-core-connect";
+import {
+  PixelSession,
+  PixelBleUuids,
+} from "@systemic-games/pixels-core-connect";
 import {
   Central,
   PeripheralCharacteristicValueChangedEvent,
@@ -59,16 +62,16 @@ export default class BleSession extends PixelSession {
 
     await Central.subscribeCharacteristic(
       this.pixelSystemId,
-      PixelUuids.serviceUuid,
-      PixelUuids.notifyCharacteristicUuid,
+      PixelBleUuids.service,
+      PixelBleUuids.notifyCharacteristic,
       internalListener
     );
 
     return () => {
       Central.unsubscribeCharacteristic(
         this.pixelSystemId,
-        PixelUuids.serviceUuid,
-        PixelUuids.notifyCharacteristicUuid
+        PixelBleUuids.service,
+        PixelBleUuids.notifyCharacteristic
       ).catch(() => {});
       //TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
     };
@@ -84,8 +87,8 @@ export default class BleSession extends PixelSession {
     // }
     await Central.writeCharacteristic(
       this.pixelSystemId,
-      PixelUuids.serviceUuid,
-      PixelUuids.writeCharacteristicUuid,
+      PixelBleUuids.service,
+      PixelBleUuids.writeCharacteristic,
       data,
       { withoutResponse, timeoutMs }
     );

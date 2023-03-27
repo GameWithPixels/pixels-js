@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/namespace
 import { Platform, PermissionsAndroid } from "react-native";
 
 export default async function (): Promise<boolean> {

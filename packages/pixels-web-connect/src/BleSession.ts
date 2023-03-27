@@ -1,4 +1,7 @@
-import { PixelSession, PixelUuids } from "@systemic-games/pixels-core-connect";
+import {
+  PixelSession,
+  PixelBleUuids,
+} from "@systemic-games/pixels-core-connect";
 
 import PixelDevices from "./PixelDevices";
 
@@ -56,12 +59,12 @@ export default class BleSession extends PixelSession {
         this._notifyConnectionEvent("connected");
 
         // Create session
-        const service = await server.getPrimaryService(PixelUuids.serviceUuid);
+        const service = await server.getPrimaryService(PixelBleUuids.service);
         this._notify = await service.getCharacteristic(
-          PixelUuids.notifyCharacteristicUuid
+          PixelBleUuids.notifyCharacteristic
         );
         this._write = await service.getCharacteristic(
-          PixelUuids.writeCharacteristicUuid
+          PixelBleUuids.writeCharacteristic
         );
 
         this._notifyConnectionEvent("ready");
