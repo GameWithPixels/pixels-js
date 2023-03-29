@@ -270,11 +270,11 @@ i18n
           calibrate: "校准",
           rainbow: "彩虹动画效果",
           resetProfile: "重置资料",
-          discharge: "Discharge",
-          stopDischarge: "Stop Discharging",
-          enableCharging: "Enable Charging",
-          disableCharging: "Disable Charging",
-          blinkId: "Blink Id",
+          discharge: "放电",
+          stopDischarge: "停止放电",
+          enableCharging: "开始充电",
+          disableCharging: "停止充电",
+          blinkId: "闪烁ID",
 
           // Validation
           factoryValidation: "工厂测试",
