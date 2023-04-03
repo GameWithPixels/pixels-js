@@ -106,7 +106,7 @@ function toAnimationsAndGradients(
     value: NonNullable<Serializable.AnimationSetData[T]>[number]
   ) {
     animMap.set(index, value.uuid);
-    const arr = animSet[type] as typeof value[];
+    const arr = animSet[type] as (typeof value)[];
     arr.push(value);
   }
   if (animations) {
@@ -215,7 +215,7 @@ function toCondition(
     type: T,
     cond: NonNullable<Serializable.ConditionSetData[T]>[number]
   ) {
-    const arr = inOutConditionSet[type] as typeof cond[];
+    const arr = inOutConditionSet[type] as (typeof cond)[];
     arr.push(cond);
     return {
       type,
@@ -274,7 +274,7 @@ function toActions(
     type: T,
     act: NonNullable<Serializable.ActionSetData[T]>[number]
   ) {
-    const arr = inOutActionSet[type] as typeof act[];
+    const arr = inOutActionSet[type] as (typeof act)[];
     arr.push(act);
     return {
       type,

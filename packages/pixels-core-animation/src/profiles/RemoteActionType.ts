@@ -22,4 +22,4 @@ export type RemoteActionTypeNames = keyof typeof RemoteActionTypeValues;
  * @category Profile Action
  */
 export type RemoteActionType =
-  typeof RemoteActionTypeValues[RemoteActionTypeNames];
+  (typeof RemoteActionTypeValues)[RemoteActionTypeNames];

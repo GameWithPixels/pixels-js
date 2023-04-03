@@ -1,10 +1,10 @@
+import { ActionType, ActionTypeValues } from "./ActionType";
+import { ConditionType, ConditionTypeValues } from "./ConditionType";
+import { RemoteActionType, RemoteActionTypeValues } from "./RemoteActionType";
 import {
   AnimationType,
   AnimationTypeValues,
 } from "../animations/AnimationType";
-import { ActionType, ActionTypeValues } from "./ActionType";
-import { ConditionType, ConditionTypeValues } from "./ConditionType";
-import { RemoteActionType, RemoteActionTypeValues } from "./RemoteActionType";
 
 /**
  * @category Profile

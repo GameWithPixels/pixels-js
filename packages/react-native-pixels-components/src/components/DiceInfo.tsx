@@ -9,9 +9,9 @@ import {
 import { Text, Image, Pressable } from "native-base";
 import React from "react";
 
-import { sr } from "../utils";
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
+import { sr } from "../utils";
 
 export interface PixelInfo {
   readonly name: string;

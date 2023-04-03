@@ -3,14 +3,14 @@ import { Button } from "native-base";
 import React from "react";
 import Svg, { Defs, Polygon, RadialGradient, Stop } from "react-native-svg";
 
+import { FastBox } from "./FastBox";
+import { FastButton } from "./FastButton";
+import { FastVStack } from "./FastVStack";
 import {
   findColorWheelSlice,
   generateColorWheel,
   Point,
 } from "../colorWheelUtils";
-import { FastBox } from "./FastBox";
-import { FastButton } from "./FastButton";
-import { FastVStack } from "./FastVStack";
 
 /**
  * Transform coordinate points into a single string for svg path.

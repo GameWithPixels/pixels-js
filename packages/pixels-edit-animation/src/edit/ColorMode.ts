@@ -16,4 +16,4 @@ export const ColorModeValues = {
 export type ColorModeNames = keyof typeof ColorModeValues;
 
 /** The "enum" type for {@link ColorModeValues}. */
-export type ColorMode = typeof ColorModeValues[ColorModeNames];
+export type ColorMode = (typeof ColorModeValues)[ColorModeNames];

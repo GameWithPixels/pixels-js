@@ -27,7 +27,7 @@ export type FaceCompareFlagsNames = keyof typeof FaceCompareFlagsValues;
  * @category Profile Condition
  */
 export type FaceCompareFlags =
-  typeof FaceCompareFlagsValues[FaceCompareFlagsNames];
+  (typeof FaceCompareFlagsValues)[FaceCompareFlagsNames];
 
 /**
  * Condition that triggers when the Pixel has landed on a face.
