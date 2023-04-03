@@ -51,9 +51,8 @@ import {
   RequestRssi,
   TelemetryRequestModeValues,
   RemoteAction,
-  Discharge,
-  BlinkId,
 } from "./Messages";
+import { PixelInfo } from "./PixelInfo";
 import PixelSession from "./PixelSession";
 import isPixelChargingOrDone from "./isPixelChargingOrDone";
 
@@ -153,30 +152,12 @@ export class PixelError extends Error {
 }
 
 /**
- * Common accessible values for all Pixel implementations.
- * @category Pixel
- */
-export interface IPixel {
-  readonly systemId: string;
-  readonly pixelId: number;
-  readonly name: string;
-  readonly ledCount: number;
-  readonly designAndColor: PixelDesignAndColorNames;
-  readonly firmwareDate: Date;
-  readonly rssi: number;
-  readonly batteryLevel: number; // Percentage
-  readonly isCharging: boolean;
-  readonly rollState: PixelRollStateNames;
-  readonly currentFace: number; // Face value (not index)
-}
-
-/**
  * Represents a Pixels die.
  * Most of its methods require the instance to be connected to the Pixel device.
  * Call the {@link connect} method to initiate a connection.
  * @category Pixel
  */
-export default class Pixel implements IPixel {
+export default class Pixel implements PixelInfo {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
@@ -644,52 +625,6 @@ export default class Pixel implements IPixel {
       loop: opt?.loop ?? false,
     });
     await this.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkAck);
-  }
-
-  /**
-   * Requests Pixel to blink its Pixel id with red, green, blue light patterns
-   * and wait for a confirmation.
-   * @param opt.brightness Brightness between 0 and 1.
-   * @param opt.loop Whether to indefinitely loop the animation.
-   */
-  async blinkId(opt?: { brightness?: number; loop?: boolean }) {
-    const blinkMsg = safeAssign(new BlinkId(), {
-      brightness: opt?.brightness ? 255 * opt?.brightness : 0x10,
-      loop: opt?.loop ?? false,
-    });
-    await this.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkIdAck);
-  }
-
-  /**
-   * Requests Pixel to turn on/off charging.
-   * @param enable Whether to enable charging feature.
-   */
-  async forceEnableCharging(enable: boolean): Promise<void> {
-    if (enable) {
-      await this.sendMessage(
-        MessageTypeValues.enableCharging,
-        true // withoutAck
-      );
-    } else {
-      await this.sendMessage(
-        MessageTypeValues.disableCharging,
-        true // withoutAck
-      );
-    }
-  }
-
-  /**
-   * Discharges the pixel as fast as possible by lighting up all LEDs.
-   * @param currentMA The (approximate) desired discharge current, or false to stop discharging.
-   */
-  async discharge(currentMA: number | boolean): Promise<void> {
-    if (typeof currentMA === "boolean") {
-      currentMA = currentMA ? 10 : 0;
-    }
-    const dischargeMsg = safeAssign(new Discharge(), {
-      currentMA,
-    });
-    await this.sendMessage(dischargeMsg);
   }
 
   /**

@@ -8,3 +8,4 @@ export { default as repeatConnect } from "./repeatConnect";
 export { default as toFullUuid } from "./toFullUuid";
 export * from "./Messages";
 export * from "./Pixel";
+export * from "./PixelInfo";

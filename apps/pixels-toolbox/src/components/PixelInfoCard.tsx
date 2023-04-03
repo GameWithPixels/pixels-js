@@ -1,4 +1,4 @@
-import { IPixel } from "@systemic-games/react-native-pixels-connect";
+import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
 import { Center, HStack, Text, VStack } from "native-base";
 import { memo, PropsWithChildren } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,11 +7,11 @@ import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 export interface PixelInfoCardProps extends PropsWithChildren {
-  pixel: IPixel;
+  pixel: PixelInfo;
   moreInfo?: boolean;
 }
 
-function PixelMoreInfo({ pixel }: { pixel: IPixel }) {
+function PixelMoreInfo({ pixel }: { pixel: PixelInfo }) {
   const { t } = useTranslation();
   const pixIdHex = pixel.pixelId
     .toString(16)

@@ -12,7 +12,7 @@ import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
   getPixel,
-  IPixel,
+  PixelInfo,
   Pixel,
   PixelDesignAndColorNames,
   PixelRollStateNames,
@@ -24,6 +24,11 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 import { getDieType } from "./DieType";
+import {
+  pixelBlinkId,
+  pixelDischarge,
+  pixelForceEnableCharging,
+} from "./extensions";
 import getDfuFileInfo from "../dfu/getDfuFileInfo";
 
 import { store } from "~/app/store";
@@ -67,7 +72,7 @@ const _pendingDFUs: PixelDispatcher[] = [];
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
-export default class PixelDispatcher implements IPixel {
+export default class PixelDispatcher implements PixelInfo {
   private _scannedPixel: ScannedPixel;
   private _lastBleActivity: Date;
   private _pixel: Pixel;
@@ -269,7 +274,7 @@ export default class PixelDispatcher implements IPixel {
     promise?.catch((error) => this._evEmitter.emit("error", error));
   }
 
-  private _getIPixel(): IPixel {
+  private _getIPixel(): PixelInfo {
     // TODO once disconnected, should return _pixel until _scannedPixel is updated
     return this.status === "disconnected" ? this._scannedPixel : this._pixel;
   }
@@ -288,7 +293,7 @@ export default class PixelDispatcher implements IPixel {
 
   private async _blinkId(): Promise<void> {
     if (this.isReady) {
-      await this._pixel.blinkId({ brightness: 0x10, loop: true });
+      await pixelBlinkId(this._pixel, { brightness: 0x10, loop: true });
     }
   }
 
@@ -322,13 +327,13 @@ export default class PixelDispatcher implements IPixel {
 
   private async _discharge(currentMA: number): Promise<void> {
     if (this.isReady) {
-      await this._pixel.discharge(currentMA);
+      await pixelDischarge(this._pixel, currentMA);
     }
   }
 
   private async _forceEnableCharging(enable: boolean): Promise<void> {
     if (this.isReady) {
-      await this._pixel.forceEnableCharging(enable);
+      await pixelForceEnableCharging(this._pixel, enable);
     }
   }
 
