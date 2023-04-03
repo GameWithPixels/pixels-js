@@ -107,20 +107,20 @@ export default function ({
   }, [pixelDispatcher]);
 
   // Subscribe to state change events to force updating the UI
-  const [_, forceUpdate] = useReducer((b) => !b, false);
+  const [_, triggerRender] = useReducer((b) => !b, false);
   useFocusEffect(
     useCallback(() => {
       // Re-render for every status, roll and battery event
-      pixelDispatcher.addEventListener("status", forceUpdate);
-      pixelDispatcher.addEventListener("rollState", forceUpdate);
-      // pixelDispatcher.addEventListener("rssi", forceUpdate);
-      // pixelDispatcher.addEventListener("batteryState", forceUpdate);
+      pixelDispatcher.addEventListener("status", triggerRender);
+      pixelDispatcher.addEventListener("rollState", triggerRender);
+      // pixelDispatcher.addEventListener("rssi", triggerRender);
+      // pixelDispatcher.addEventListener("batteryState", triggerRender);
       pixelDispatcher.dispatch("reportRssi");
       return () => {
-        pixelDispatcher.removeEventListener("status", forceUpdate);
-        pixelDispatcher.removeEventListener("rollState", forceUpdate);
-        // pixelDispatcher.removeEventListener("rssi", forceUpdate);
-        // pixelDispatcher.removeEventListener("batteryState", forceUpdate);
+        pixelDispatcher.removeEventListener("status", triggerRender);
+        pixelDispatcher.removeEventListener("rollState", triggerRender);
+        // pixelDispatcher.removeEventListener("rssi", triggerRender);
+        // pixelDispatcher.removeEventListener("batteryState", triggerRender);
       };
     }, [pixelDispatcher])
   );
@@ -145,7 +145,7 @@ export default function ({
   // Refresh UI at least every 5 seconds
   useFocusEffect(() => {
     // Called on every render!
-    const id = setTimeout(forceUpdate, 5000);
+    const id = setTimeout(triggerRender, 5000);
     return () => {
       clearTimeout(id);
     };

@@ -15,7 +15,7 @@ import Rule from "./profiles/Rule";
 
 /**
  * Data Set is the set of a profile, conditions, rules, animations and colors
- * stored in the memory of a Pixel die. This data gets transferred straight to the dice.
+ * stored in the memory of a Pixels die. This data gets transferred straight to the dice.
  * For that purpose, the data is essentially 'exploded' into flat buffers. i.e. all
  * the key-frames of all the animations are stored in a single key-frame array, and
  * individual tracks reference 'their' key-frames using an offset and count into that array.

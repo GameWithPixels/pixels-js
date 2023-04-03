@@ -7,13 +7,13 @@ import { useEffect, useReducer } from "react";
  * @returns The status of the given Pixel.
  */
 export default function (pixel?: Pixel): PixelStatus | undefined {
-  const [_, forceUpdate] = useReducer((b) => !b, false);
+  const [_, triggerRender] = useReducer((b) => !b, false);
 
   // Subscribe to status event to trigger a React update on status change
   useEffect(() => {
-    pixel?.addEventListener("status", forceUpdate);
+    pixel?.addEventListener("status", triggerRender);
     return () => {
-      pixel?.removeEventListener("status", forceUpdate);
+      pixel?.removeEventListener("status", triggerRender);
     };
   }, [pixel]);
 

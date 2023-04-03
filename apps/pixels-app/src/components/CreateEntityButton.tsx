@@ -24,7 +24,9 @@ export default function ({
     <Pressable onPress={onPress}>
       <Card bg={null} w="100%" {...flexProps}>
         <Ionicons name="add-circle-outline" size={24} color="white" />
-        <Text isTruncated fontSize={fontSize} bold children={children} />
+        <Text isTruncated fontSize={fontSize} bold>
+          {children}
+        </Text>
       </Card>
     </Pressable>
   );

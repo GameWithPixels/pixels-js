@@ -143,7 +143,7 @@ const ValidationTests = {
     // Turn on telemetry and wait for data
     await pixel.sendMessage(
       safeAssign(new RequestTelemetry(), {
-        requestMode: TelemetryRequestModeValues.repeat,
+        requestMode: TelemetryRequestModeValues.automatic,
       })
     );
     let onTelemetry: ((msg: MessageOrType) => void) | undefined;

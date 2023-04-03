@@ -218,10 +218,10 @@ function Separator() {
 }
 
 function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
-  const [_, forceUpdate] = useReducer((b) => !b, false);
+  const [_, triggerRender] = useReducer((b) => !b, false);
   function update<T>(value: T) {
     (widget.update as (v: T) => void)(value);
-    forceUpdate();
+    triggerRender();
   }
   const type = widget.type;
   switch (type) {

@@ -2,7 +2,7 @@ export { default as Pixel } from "./Pixel";
 export { default as PixelSession } from "./PixelSession";
 export * from "./PixelSession";
 export { default as PixelBleUuids } from "./PixelBleUuids";
-export { default as getPixelCharging } from "./getPixelCharging";
+export { default as isPixelChargingOrDone } from "./isPixelChargingOrDone";
 export { default as getPixelUniqueName } from "./getPixelUniqueName";
 export { default as repeatConnect } from "./repeatConnect";
 export { default as toFullUuid } from "./toFullUuid";

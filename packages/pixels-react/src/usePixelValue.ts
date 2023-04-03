@@ -24,12 +24,12 @@ function _autoRequest(
   pixel: Pixel,
   refreshInt: number,
   request: () => Promise<unknown>,
-  forceUpdate: () => void
+  triggerRender: () => void
 ): () => void {
   // Force updating on status change
   const onStatus = (status: PixelStatus) => {
     if (status === "ready" || status === "disconnected") {
-      forceUpdate();
+      triggerRender();
     }
   };
   // Request value with given interval
@@ -50,14 +50,14 @@ function _requestValue(
   msgToSend: MessageType,
   msgHandler: (msg: MessageOrType) => void,
   setLastError: (error: Error) => void,
-  forceUpdate: () => void
+  triggerRender: () => void
 ): () => void {
   // Value requester
   const request = () => pixel.sendMessage(msgToSend).catch(setLastError);
   // Listen for the given response message
   pixel.addMessageListener(msgName, msgHandler);
   // Setup auto requesting
-  const unsubscribe = _autoRequest(pixel, refreshInt, request, forceUpdate);
+  const unsubscribe = _autoRequest(pixel, refreshInt, request, triggerRender);
   return () => {
     pixel.removeMessageListener(msgName, msgHandler);
     unsubscribe();
@@ -71,14 +71,14 @@ function _requestProp<T extends keyof PixelEventMap>(
   queryFunc: () => Promise<unknown>,
   evHandler: EventReceiver<PixelEventMap[T]>,
   setLastError: (error: Error) => void,
-  forceUpdate: () => void
+  triggerRender: () => void
 ): () => void {
   // Listen for the given event
   pixel.addEventListener(propEvent, evHandler);
   // Value requester
   const request = () => queryFunc().catch(setLastError);
   // Setup auto requesting
-  const unsubscribe = _autoRequest(pixel, refreshInt, request, forceUpdate);
+  const unsubscribe = _autoRequest(pixel, refreshInt, request, triggerRender);
   return () => {
     pixel.removeEventListener(propEvent, evHandler);
     unsubscribe();
@@ -162,7 +162,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
     lastTime: number;
     timeoutId?: ReturnType<typeof setTimeout>;
   }>({ lastTime: 0 });
-  const [_, forceUpdate] = useReducer((b) => !b, false);
+  const [_, triggerRender] = useReducer((b) => !b, false);
 
   // Options default values
   const minInterval = options?.minInterval ?? 5000;
@@ -290,7 +290,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
               setValue(val as ValueType);
             },
             setLastError,
-            forceUpdate
+            triggerRender
           );
 
         case "telemetry": {
@@ -303,7 +303,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           pixel
             .sendMessage(
               safeAssign(new RequestTelemetry(), {
-                requestMode: TelemetryRequestModeValues.repeat,
+                requestMode: TelemetryRequestModeValues.automatic,
                 minInterval,
               })
             )

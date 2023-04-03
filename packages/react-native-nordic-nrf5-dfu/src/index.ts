@@ -79,7 +79,7 @@ export interface StartDfuOptions {
   /**
    * The reboot time in milliseconds.
    * @defaultValue 0 ms.
-   * @remarks (Android only).
+   * @remarks Android only.
    */
   rebootTime?: number;
   /**

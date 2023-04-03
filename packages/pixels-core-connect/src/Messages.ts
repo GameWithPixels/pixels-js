@@ -111,8 +111,8 @@ export type MessageTypeNames = keyof typeof MessageTypeValues;
 export type MessageType = (typeof MessageTypeValues)[MessageTypeNames];
 
 /**
- * Base type for all Pixels messages.
- * Note: messages that have no specific data don't require a class,
+ * Base type for all Pixel messages.
+ * @remarks Messages that have no data don't require a class,
  * a {@link MessageTypeValues} is used instead.
  * @category Message
  */
@@ -271,7 +271,6 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
 /**
  * Generic class representing any message without any data.
  * @category Message
- * @category Message
  */
 export class GenericPixelMessage implements PixelMessage {
   /** Type of the message. */
@@ -310,14 +309,15 @@ export const PixelDesignAndColorValues = {
  */
 export type PixelDesignAndColorNames = keyof typeof PixelDesignAndColorValues;
 
-/**The "enum" type for {@link PixelDesignAndColorValues}.
+/**
+ * The "enum" type for {@link PixelDesignAndColorValues}.
  * @category Message
  */
 export type PixelDesignAndColor =
   (typeof PixelDesignAndColorValues)[PixelDesignAndColorNames];
 
 /**
- * Message send by a Pixel after receiving a "WhoAmI".
+ * Message send by a Pixel after receiving a "WhoAmI" message.
  * @category Message
  */
 export class IAmADie implements PixelMessage {
@@ -355,9 +355,9 @@ export class IAmADie implements PixelMessage {
   @serializable(1)
   rollState = PixelRollStateValues.unknown;
 
-  /** Face number (if applicable), starts at 0. */
+  /** Face index, starts at 0. */
   @serializable(1)
-  rollFaceIndex = 0;
+  currentFace = 0;
 
   // Battery level
 
@@ -650,8 +650,11 @@ export class TransferTestAnimationSet implements PixelMessage {
  * @category Message
  */
 export const TransferInstantAnimationsSetAckTypeValues = {
+  /** Die is ready to download animation set. */
   download: enumValue(0),
+  /** Die already has the contents of the animation set. */
   upToDate: enumValue(),
+  /** Die doesn't have enough memory to store animation set. */
   noMemory: enumValue(),
 } as const;
 
@@ -716,14 +719,19 @@ export class RemoteAction implements PixelMessage {
 }
 
 /**
- * The list of available modes for telemetry requests.
+ * Available modes for telemetry requests.
  * @enum
  * @category Message
  */
 export const TelemetryRequestModeValues = {
+  /* Request Pixel to stop automatically sending telemetry updates. */
   off: enumValue(0),
+
+  /* Request Pixel to immediately send a single telemetry update. */
   once: enumValue(),
-  repeat: enumValue(),
+
+  /* Request Pixel to automatically send telemetry updates. */
+  automatic: enumValue(),
 } as const;
 
 /**
@@ -795,9 +803,10 @@ export class Blink implements PixelMessage {
  * @category Message
  */
 export const PixelBatteryStateValues = {
+  // The Pixel battery state could not be determined.
   unknown: enumValue(0),
 
-  // Battery looks fine, nothing is happening.
+  /** Battery looks fine, nothing is happening. */
   ok: enumValue(),
 
   // Battery level is low, notify user they should recharge.
@@ -872,11 +881,16 @@ export class RequestRssi implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.requestRssi;
 
+  /** Telemetry mode used for sending the RSSI update(s). */
   @serializable(1)
   requestMode = TelemetryRequestModeValues.off;
 
+  /**
+   * Minimum interval in milliseconds between two updates.
+   * (0 for no cap on rate)
+   */
   @serializable(2)
-  minInterval = 0; // Milliseconds, 0 for no cap on rate
+  minInterval = 0;
 }
 
 /**

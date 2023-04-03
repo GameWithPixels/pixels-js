@@ -55,7 +55,7 @@ import {
   BlinkId,
 } from "./Messages";
 import PixelSession from "./PixelSession";
-import getPixelCharging from "./getPixelCharging";
+import isPixelChargingOrDone from "./isPixelChargingOrDone";
 
 // Returns a string with the current time with a millisecond precision
 function _getTime(): string {
@@ -171,8 +171,8 @@ export interface IPixel {
 }
 
 /**
- * Represents a Pixel die.
- * Most of its methods require that the instance is connected to the Pixel device.
+ * Represents a Pixels die.
+ * Most of its methods require the instance to be connected to the Pixel device.
  * Call the {@link connect} method to initiate a connection.
  * @category Pixel
  */
@@ -198,7 +198,7 @@ export default class Pixel implements IPixel {
   };
   private _rssi = 0;
 
-  /** */
+  /** Toggle logging information about each send and received message. */
   get logMessages(): boolean {
     return this._logMessages;
   }
@@ -206,7 +206,7 @@ export default class Pixel implements IPixel {
     this._logMessages = enabled;
   }
 
-  /** */
+  /** Set logger to use by this instance. */
   get logger(): (msg: unknown) => void {
     return this._logFunc;
   }
@@ -214,17 +214,17 @@ export default class Pixel implements IPixel {
     this._logFunc = logger;
   }
 
-  /** Gets this Pixel's last known connection status.*/
+  /** Gets the Pixel last known connection status. */
   get status(): PixelStatus {
     return this._status;
   }
 
-  /** Shorthand for checking if Pixel status is "ready". */
+  /** Shorthand property that indicates if the Pixel status is "ready". */
   get isReady(): boolean {
     return this.status === "ready";
   }
 
-  /** Gets the id assigned by the OS to Pixel Bluetooth peripheral. */
+  /** Gets the unique id assigned by the OS to Pixel Bluetooth peripheral. */
   get systemId(): string {
     return this._session.pixelSystemId;
   }
@@ -239,7 +239,7 @@ export default class Pixel implements IPixel {
     return this._session.pixelName;
   }
 
-  /** Gets the number of LEDs for this Pixel die, may be 0 until connected to device. */
+  /** Gets the number of LEDs for this Pixels die, may be 0 until connected to device. */
   get ledCount(): number {
     return this._info?.ledCount ?? 0;
   }
@@ -274,7 +274,8 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Gets the Pixel battery charging state.
+   * Gets whether the Pixel battery is charging or not.
+   * Also 'true' if fully charged but still on charger.
    * @remarks The charging state is automatically updated when connected.
    */
   get isCharging(): boolean {
@@ -300,6 +301,7 @@ export default class Pixel implements IPixel {
   /**
    * Instantiates a Pixel.
    */
+  // TODO initialize optionally with ScannedPixel
   constructor(session: PixelSession) {
     // TODO clean up events on release
     session.setConnectionEventListener(({ connectionStatus }) => {
@@ -332,7 +334,7 @@ export default class Pixel implements IPixel {
       const msg = msgOrType as BatteryLevel;
       const battery = {
         level: msg.levelPercent,
-        isCharging: getPixelCharging(msg.state),
+        isCharging: isPixelChargingOrDone(msg.state),
       };
       if (
         battery.level !== this._batteryState.level ||
@@ -378,75 +380,24 @@ export default class Pixel implements IPixel {
    */
   async connect(): Promise<Pixel> {
     //TODO add timeout
-    // Our connect function
+    //TODO should we try to connect even if status is not disconnected?
+    if (this.status !== "disconnected") {
+      throw new PixelError(
+        this,
+        `Can only connect when in disconnected state, not in ${this.status} state`
+      );
+    }
+
+    await this._session.connect();
     try {
-      //TODO should we try to connect even if status is not disconnected?
-      if (this.status !== "disconnected") {
-        throw new PixelError(
-          this,
-          `Can only connect when in disconnected state, not in ${this.status} state`
-        );
-      }
-
-      await this._session.connect();
-
-      // @ts-expect-error status was already tested above but should have changed since
-      if (this.status === "connecting") {
-        // Notify connected
-        this._updateStatus("identifying");
-
-        this._log("Subscribing");
-        await this._session.subscribe((dv: DataView) =>
-          this._onValueChanged(dv)
-        );
-
-        // Identify Pixel
-        this._log("Waiting on identification message");
-        const response = await this.sendAndWaitForResponse(
-          MessageTypeValues.whoAreYou,
-          MessageTypeValues.iAmADie
-        );
-
-        if (this.status === "identifying") {
-          this._info = response as IAmADie;
-
-          this._batteryState = {
-            level: this._info.batteryLevelPercent,
-            isCharging: getPixelCharging(this._info.batteryState),
-          };
-
-          // We don't raise roll and roll state events as those should occur
-          // only when the die is actually moved
-          this._rollState = {
-            face: this._info.rollFaceIndex + 1,
-            state:
-              getValueKeyName(this._info.rollState, PixelRollStateValues) ??
-              "unknown",
-          };
-
-          // We're ready!
-          this._updateStatus("ready");
-
-          // Notify battery state
-          this._evEmitter.emit("battery", { ...this._batteryState });
-        }
-      }
-
-      //TODO also check status change counter
-      // @ts-expect-error status was already tested above but should have changed since
-      if (this.status !== "ready") {
-        throw new PixelError(
-          this,
-          `Status changed while connecting, now in ${this.status} state`
-        );
-      }
-      return this;
+      await this._internalSetup();
     } catch (error) {
       // Disconnect but ignore any error as we are in an unknown state
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       this._session.disconnect().catch(() => {});
       throw error;
     }
+    return this;
   }
 
   /**
@@ -524,61 +475,102 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Send a message to the Pixel.
-   * @param msgOrType
-   * @param withoutResponse
+   * Waits for a message from the Pixel.
+   * @param expectedMsgType Type of the message to expect.
+   * @param timeoutMs Timeout before aborting the wait.
+   * @returns A promise with the received message of the expected type.
+   */
+  private waitForMessage(
+    expectedMsgType: MessageType,
+    timeoutMs = Constants.ackMessageTimeout
+  ): Promise<MessageOrType> {
+    return new Promise((resolve, reject) => {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const onMessage = (msg: MessageOrType) => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = undefined;
+          this.removeMessageListener(expectedMsgType, onMessage);
+          resolve(msg);
+        }
+      };
+      timeoutId = setTimeout(() => {
+        if (timeoutId) {
+          timeoutId = undefined;
+          this.removeMessageListener(expectedMsgType, onMessage);
+          reject(
+            new Error(
+              `Timeout of ${timeoutMs}ms waiting on message ` +
+                getMessageName(expectedMsgType)
+            )
+          );
+        }
+      }, timeoutMs);
+      this.addMessageListener(expectedMsgType, onMessage);
+    });
+  }
+
+  /**
+   * Sends a message to the Pixel.
+   * @param msgOrType Message with the data to send or just a message type.
+   * @param withoutAck Whether to request a confirmation that the message was received.
    */
   async sendMessage(
     msgOrType: MessageOrType,
-    withoutResponse = false
+    withoutAck = false
   ): Promise<void> {
     const msgName = getMessageName(msgOrType);
     if (this._logMessages) {
       this._log(`Sending message ${msgName} (${getMessageType(msgOrType)})}`);
     }
     const data = serializeMessage(msgOrType);
-    await this._session.writeValue(data, withoutResponse);
+    await this._session.writeValue(data, withoutAck);
   }
 
   /**
-   * Send a message to the Pixel and wait for a specific reply.
-   * @param msgOrTypeToSend
-   * @param expectedMsgType
-   * @param timeoutMs
-   * @returns
+   * Sends a message to the Pixel and wait for a specific response.
+   * @param msgOrTypeToSend Message with the data to send or just a message type.
+   * @param responseType Expected response type.
+   * @param timeoutMs Timeout in mill-seconds before aborting waiting for the response.
+   * @returns A promise resolving to a message type or a message object.
    */
   async sendAndWaitForResponse(
     msgOrTypeToSend: MessageOrType,
-    expectedMsgType: MessageType,
+    responseType: MessageType,
     timeoutMs = Constants.ackMessageTimeout
   ): Promise<MessageOrType> {
     // Get the session object, throws an error if invalid
     const result = await Promise.all([
-      this._waitForMsg(expectedMsgType, timeoutMs),
+      this.waitForMessage(responseType, timeoutMs),
       this.sendMessage(msgOrTypeToSend),
     ]);
     return result[0];
   }
 
   /**
-   * Send a message and wait for a specific reply.
-   * @param msgOrType
-   * @param responseMsgClass
-   * @returns
+   * Sends a message to the Pixel and wait for a specific response
+   * which is returned casted to the expected type.
+   * @param msgOrTypeToSend Message with the data to send or just a message type.
+   * @param responseType Expected response class type.
+   * @param responseType Expected response type.
+   * @returns A promise resolving to a message object of the expected type.
    */
-  async sendAndWaitForResponseObj<T extends PixelMessage>(
-    msgOrType: MessageOrType,
-    responseMsgClass: new () => T
+  async sendAndWaitForTypedResponse<T extends PixelMessage>(
+    msgOrTypeToSend: MessageOrType,
+    responseType: { new (): T },
+    timeoutMs = Constants.ackMessageTimeout
   ): Promise<T> {
-    const msg = await this.sendAndWaitForResponse(
-      msgOrType,
-      getMessageType(responseMsgClass)
-    );
-    return msg as T;
+    // Get the session object, throws an error if invalid
+    return (await this.sendAndWaitForResponse(
+      msgOrTypeToSend,
+      new responseType().type,
+      timeoutMs
+    )) as T;
   }
 
   /**
-   * Request Pixel to change its name.
+   * Requests Pixel to change its name.
+   * @param name New name to assign to the Pixel.
    */
   async rename(name: string): Promise<void> {
     if (name.length) {
@@ -590,14 +582,14 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Request Pixel to start faces calibration sequence.
+   * Requests Pixel to start faces calibration sequence.
    */
   async startCalibration(): Promise<void> {
     await this.sendMessage(MessageTypeValues.calibrate);
   }
 
   /**
-   * Request Pixel to regularly send its measured RSSI value.
+   * Requests Pixel to regularly send its measured RSSI value.
    * @param activate Whether to turn or turn off this feature.
    * @param minInterval The minimum time interval in milliseconds
    *                    between two RSSI updates.
@@ -606,7 +598,7 @@ export default class Pixel implements IPixel {
     await this.sendMessage(
       safeAssign(new RequestRssi(), {
         requestMode: activate
-          ? TelemetryRequestModeValues.repeat
+          ? TelemetryRequestModeValues.automatic
           : TelemetryRequestModeValues.off,
         minInterval,
       })
@@ -614,40 +606,23 @@ export default class Pixel implements IPixel {
   }
 
   /**
-   * Request Pixel die to turn off.
+   * Requests Pixel to turn itself off.
    */
   async turnOff(): Promise<void> {
     await this.sendMessage(
       MessageTypeValues.sleep,
-      true // withoutResponse
+      true // withoutAck
     );
   }
 
   /**
-   * Request Pixel die to turn on/off charging
-   */
-  async forceEnableCharging(enable: boolean): Promise<void> {
-    if (enable) {
-      await this.sendMessage(
-        MessageTypeValues.enableCharging,
-        true // withoutResponse
-      );
-    } else {
-      await this.sendMessage(
-        MessageTypeValues.disableCharging,
-        true // withoutResponse
-      );
-    }
-  }
-
-  /**
-   * Requests the Pixel to blink and wait for a confirmation.
+   * Requests Pixel to blink and wait for a confirmation.
    * @param color Blink color.
-   * @param options.count Number of blinks.
-   * @param options.duration Total duration in milliseconds.
-   * @param options.fade Amount of in and out fading, 0: sharp transition, 1: max fading.
-   * @param options.faceMask Select which faces to light up.
-   * @param options.loop Whether to indefinitely loop the animation.
+   * @param opt.count Number of blinks.
+   * @param opt.duration Total duration of the animation in milliseconds.
+   * @param opt.fade Amount of in and out fading, 0: sharp transition, 1: maximum fading.
+   * @param opt.faceMask Select which faces to light up.
+   * @param opt.loop Whether to indefinitely loop the animation.
    * @returns A promise.
    */
   async blink(
@@ -671,19 +646,46 @@ export default class Pixel implements IPixel {
     await this.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkAck);
   }
 
+  /**
+   * Requests Pixel to blink its Pixel id with red, green, blue light patterns
+   * and wait for a confirmation.
+   * @param opt.brightness Brightness between 0 and 1.
+   * @param opt.loop Whether to indefinitely loop the animation.
+   */
   async blinkId(opt?: { brightness?: number; loop?: boolean }) {
     const blinkMsg = safeAssign(new BlinkId(), {
-      brightness: opt?.brightness ?? 0x10,
+      brightness: opt?.brightness ? 255 * opt?.brightness : 0x10,
       loop: opt?.loop ?? false,
     });
     await this.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkIdAck);
   }
 
   /**
-   * Discharges the pixel as fast as possible by lighting up all LEDs
-   * @returns A promise.
+   * Requests Pixel to turn on/off charging.
+   * @param enable Whether to enable charging feature.
    */
-  async discharge(currentMA: number): Promise<void> {
+  async forceEnableCharging(enable: boolean): Promise<void> {
+    if (enable) {
+      await this.sendMessage(
+        MessageTypeValues.enableCharging,
+        true // withoutAck
+      );
+    } else {
+      await this.sendMessage(
+        MessageTypeValues.disableCharging,
+        true // withoutAck
+      );
+    }
+  }
+
+  /**
+   * Discharges the pixel as fast as possible by lighting up all LEDs.
+   * @param currentMA The (approximate) desired discharge current, or false to stop discharging.
+   */
+  async discharge(currentMA: number | boolean): Promise<void> {
+    if (typeof currentMA === "boolean") {
+      currentMA = currentMA ? 10 : 0;
+    }
     const dischargeMsg = safeAssign(new Discharge(), {
       currentMA,
     });
@@ -731,7 +733,7 @@ export default class Pixel implements IPixel {
       ruleCount: dataSet.rules.length,
     });
 
-    const transferAck = await this.sendAndWaitForResponseObj(
+    const transferAck = await this.sendAndWaitForTypedResponse(
       transferMsg,
       TransferAnimationSetAck
     );
@@ -789,7 +791,7 @@ export default class Pixel implements IPixel {
       hash,
     });
 
-    const ack = await this.sendAndWaitForResponseObj(
+    const ack = await this.sendAndWaitForTypedResponse(
       prepareDie,
       TransferTestAnimationSetAck
     );
@@ -852,7 +854,7 @@ export default class Pixel implements IPixel {
       hash,
     });
 
-    const ack = await this.sendAndWaitForResponseObj(
+    const ack = await this.sendAndWaitForTypedResponse(
       prepareDie,
       TransferInstantAnimationSetAck
     );
@@ -907,6 +909,55 @@ export default class Pixel implements IPixel {
     }
   }
 
+  private async _internalSetup(): Promise<void> {
+    if (this.status === "connecting") {
+      // Notify connected
+      this._updateStatus("identifying");
+
+      this._log("Subscribing");
+      await this._session.subscribe((dv: DataView) => this._onValueChanged(dv));
+
+      // Identify Pixel
+      this._log("Waiting on identification message");
+      const response = await this.sendAndWaitForResponse(
+        MessageTypeValues.whoAreYou,
+        MessageTypeValues.iAmADie
+      );
+
+      // @ts-expect-error status was already tested above but could have changed since
+      if (this.status === "identifying") {
+        this._info = response as IAmADie;
+        this._batteryState = {
+          level: this._info.batteryLevelPercent,
+          isCharging: isPixelChargingOrDone(this._info.batteryState),
+        };
+
+        // We don't raise roll and roll state events as those should occur
+        // only when the die is actually moved
+        this._rollState = {
+          face: this._info.currentFace + 1,
+          state:
+            getValueKeyName(this._info.rollState, PixelRollStateValues) ??
+            "unknown",
+        };
+
+        // We're ready!
+        this._updateStatus("ready");
+
+        // Notify battery state
+        this._evEmitter.emit("battery", { ...this._batteryState });
+      }
+    }
+
+    //TODO also check status change counter
+    if (this.status !== "ready") {
+      throw new PixelError(
+        this,
+        `Status changed while connecting, now in ${this.status} state`
+      );
+    }
+  }
+
   private _updateStatus(status: PixelStatus): void {
     if (this._status !== status) {
       this._status = status;
@@ -940,37 +991,6 @@ export default class Pixel implements IPixel {
     } catch (error) {
       this._log("CharacteristicValueChanged error: " + error);
     }
-  }
-
-  // Helper method that waits for a message from Pixel
-  private _waitForMsg(
-    expectedMsgType: MessageType,
-    timeoutMs = Constants.ackMessageTimeout
-  ): Promise<MessageOrType> {
-    return new Promise((resolve, reject) => {
-      let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      const onMessage = (msg: MessageOrType) => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = undefined;
-          this.removeMessageListener(expectedMsgType, onMessage);
-          resolve(msg);
-        }
-      };
-      timeoutId = setTimeout(() => {
-        if (timeoutId) {
-          timeoutId = undefined;
-          this.removeMessageListener(expectedMsgType, onMessage);
-          reject(
-            new Error(
-              `Timeout of ${timeoutMs}ms waiting on message ` +
-                getMessageName(expectedMsgType)
-            )
-          );
-        }
-      }, timeoutMs);
-      this.addMessageListener(expectedMsgType, onMessage);
-    });
   }
 
   // Upload the given data to the Pixel
