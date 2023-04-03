@@ -15,10 +15,4 @@ export const ActionTypeValues = {
  * The names for the "enum" type {@link ActionTypeValues}.
  * @category Profile Action
  */
-export type ActionTypeNames = keyof typeof ActionTypeValues;
-
-/**
- * The "enum" type for {@link ActionTypeValues}.
- * @category Profile Action
- */
-export type ActionType = (typeof ActionTypeValues)[ActionTypeNames];
+export type ActionType = keyof typeof ActionTypeValues;

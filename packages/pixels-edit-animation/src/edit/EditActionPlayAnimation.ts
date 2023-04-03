@@ -1,7 +1,5 @@
 import {
   DataSet,
-  ActionType,
-  ActionTypeValues,
   Action,
   ActionPlayAnimation,
   Constants,
@@ -14,6 +12,8 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, range, widget } from "./decorators";
 
 export default class EditActionPlayAnimation extends EditAction {
+  readonly type = "playAnimation";
+
   @widget("animation")
   @name("Lighting Pattern")
   @observable
@@ -39,10 +39,6 @@ export default class EditActionPlayAnimation extends EditAction {
     this.animation = opt?.animation;
     this.face = opt?.face ?? Constants.currentFaceIndex;
     this.loopCount = opt?.loopCount ?? 1;
-  }
-
-  get type(): ActionType {
-    return ActionTypeValues.playAnimation;
   }
 
   toAction(editSet: EditDataSet, _set: DataSet, _actionId: number): Action {

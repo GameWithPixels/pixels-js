@@ -1,8 +1,8 @@
 import {
-  BatteryStateFlagsNames,
-  ConnectionStateFlagsNames,
-  FaceCompareFlagsNames,
-  HelloGoodbyeFlagsNames,
+  BatteryStateFlags,
+  ConnectionStateFlags,
+  FaceCompareFlags,
+  HelloGoodbyeFlags,
 } from "@systemic-games/pixels-core-animation";
 
 import { AnimationSetData } from "./animations";
@@ -26,20 +26,20 @@ export interface ProfilesSetData {
 export interface ProfileData extends UniqueNamedData {
   conditions: {
     helloGoodbye: {
-      flags: HelloGoodbyeFlagsNames[];
+      flags: HelloGoodbyeFlags[];
     }[];
     rolling: {
       recheckAfter: number;
     }[];
     faceCompare: {
       face: number;
-      flags: FaceCompareFlagsNames[];
+      flags: FaceCompareFlags[];
     }[];
     connectionState: {
-      flags: ConnectionStateFlagsNames[];
+      flags: ConnectionStateFlags[];
     }[];
     batteryState: {
-      flags: BatteryStateFlagsNames[];
+      flags: BatteryStateFlags[];
       recheckAfter: number;
     }[];
     idle: {

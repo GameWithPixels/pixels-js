@@ -1,11 +1,7 @@
 import {
   DataSet,
-  ActionType,
-  ActionTypeValues,
   Action,
   ActionMakeWebRequest,
-  RemoteActionType,
-  RemoteActionTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -15,6 +11,9 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, widget } from "./decorators";
 
 export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
+  readonly type = "runOnDevice";
+  readonly remoteType = "makeWebRequest";
+
   @widget("userText")
   @name("URL")
   @observable
@@ -29,14 +28,6 @@ export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
     super();
     this.url = opt?.url ?? "";
     this.value = opt?.value ?? "";
-  }
-
-  get type(): ActionType {
-    return ActionTypeValues.runOnDevice;
-  }
-
-  get remoteType(): RemoteActionType {
-    return RemoteActionTypeValues.makeWebRequest;
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {

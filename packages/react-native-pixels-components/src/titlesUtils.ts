@@ -1,11 +1,10 @@
-import { bitsToFlags } from "@systemic-games/pixels-core-utils";
+import { assertNever, bitsToFlags } from "@systemic-games/pixels-core-utils";
 import {
   RemoteActionType,
   ActionType,
   AnimationType,
   BatteryStateFlagsValues,
   ConditionType,
-  ConditionTypeValues,
   ConnectionStateFlagsValues,
   EditAction,
   EditActionMakeWebRequest,
@@ -25,7 +24,7 @@ import {
 
 export function getActionTitle(
   actionType: ActionType,
-  actionRemoteType: RemoteActionType = 0
+  actionRemoteType: RemoteActionType = "none"
 ): string {
   const title = getActionTypeDisplayName(actionType, actionRemoteType)?.name;
   if (!title) {
@@ -75,19 +74,19 @@ export function getAnimationTitle(animationType: AnimationType): string {
   return title;
 }
 
-export function getConditionTitle(actionType: ConditionType): string {
-  const title = getConditionTypeDisplayName(actionType)?.name;
+export function getConditionTitle(conditionType: ConditionType): string {
+  const title = getConditionTypeDisplayName(conditionType)?.name;
   return title ?? "No action selected";
 }
 
 export function getConditionDescription(condition: EditCondition): string {
-  if (condition) {
+  if (condition?.type !== "none") {
     const type = condition.type;
     switch (type) {
-      case ConditionTypeValues.handling:
+      case "handling":
         return "die is picked up";
 
-      case ConditionTypeValues.batteryState:
+      case "batteryState":
         return (
           "Battery is " +
           bitsToFlags((condition as EditConditionBatteryState).flags)
@@ -108,7 +107,7 @@ export function getConditionDescription(condition: EditCondition): string {
             .join(" or ")
         );
 
-      case ConditionTypeValues.connectionState:
+      case "connectionState":
         return (
           " Die is " +
           bitsToFlags((condition as EditConditionConnectionState).flags).map(
@@ -125,10 +124,10 @@ export function getConditionDescription(condition: EditCondition): string {
           )
         );
 
-      case ConditionTypeValues.crooked:
+      case "crooked":
         return "die is crooked";
 
-      case ConditionTypeValues.faceCompare:
+      case "faceCompare":
         return (
           "Die roll is " +
           bitsToFlags((condition as EditConditionFaceCompare).flags)
@@ -149,7 +148,7 @@ export function getConditionDescription(condition: EditCondition): string {
           (condition as EditConditionFaceCompare).face
         );
 
-      case ConditionTypeValues.helloGoodbye:
+      case "helloGoodbye":
         return (
           "Die is " +
           bitsToFlags((condition as EditConditionHelloGoodbye).flags)
@@ -166,11 +165,14 @@ export function getConditionDescription(condition: EditCondition): string {
             .join(" or ")
         );
 
-      case ConditionTypeValues.idle:
+      case "idle":
         return "Die is idle";
 
-      case ConditionTypeValues.rolling:
+      case "rolling":
         return "Die is rolling";
+
+      default:
+        assertNever(type, `Unknown type: ${type}`);
     }
   }
   return "No condition selected";

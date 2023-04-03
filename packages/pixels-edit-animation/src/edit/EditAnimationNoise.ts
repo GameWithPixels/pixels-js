@@ -1,6 +1,4 @@
 import {
-  AnimationType,
-  AnimationTypeValues,
   AnimationBits,
   AnimationPreset,
   AnimationNoise,
@@ -15,9 +13,7 @@ import EditRgbTrack from "./EditRgbTrack";
 import { widget, range, name, observable } from "./decorators";
 
 export default class EditAnimationNoise extends EditAnimation {
-  get type(): AnimationType {
-    return AnimationTypeValues.noise;
-  }
+  readonly type = "noise";
 
   @widget("gradient")
   @name("Overall Gradient")

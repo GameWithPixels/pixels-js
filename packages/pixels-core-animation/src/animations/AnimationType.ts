@@ -20,10 +20,4 @@ export const AnimationTypeValues = {
  * The names for the "enum" type {@link AnimationTypeValues}.
  * @category Animation
  */
-export type AnimationTypeNames = keyof typeof AnimationTypeValues;
-
-/**
- * The "enum" type for {@link AnimationTypeValues}.
- * @category Animation
- */
-export type AnimationType = (typeof AnimationTypeValues)[AnimationTypeNames];
+export type AnimationType = keyof typeof AnimationTypeValues;

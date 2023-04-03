@@ -7,7 +7,6 @@ import {
   EditAnimationRainbow, // rainbow
   EditAnimationSimple,
   getEditWidgetsData,
-  AnimationTypeValues,
   EditAnimationNoise,
   EditPattern,
   createDataSetForAnimation,
@@ -170,31 +169,31 @@ export default function AnimationEditScreen({
   const animTypes = React.useMemo(
     () => [
       {
-        label: getAnimationTitle(AnimationTypeValues.simple),
+        label: getAnimationTitle("simple"),
         onSelect: () => {
           setEditAnim(makeObservable(new EditAnimationSimple({ uuid })));
         },
       },
       {
-        label: getAnimationTitle(AnimationTypeValues.rainbow),
+        label: getAnimationTitle("rainbow"),
         onSelect: () => {
           setEditAnim(makeObservable(new EditAnimationRainbow({ uuid })));
         },
       },
       {
-        label: getAnimationTitle(AnimationTypeValues.gradient),
+        label: getAnimationTitle("gradient"),
         onSelect: () => {
           setEditAnim(makeObservable(new EditAnimationGradient({ uuid })));
         },
       },
       {
-        label: getAnimationTitle(AnimationTypeValues.keyframed),
+        label: getAnimationTitle("keyframed"),
         onSelect: () => {
           setEditAnim(makeObservable(new EditAnimationKeyframed({ uuid })));
         },
       },
       {
-        label: getAnimationTitle(AnimationTypeValues.gradientPattern),
+        label: getAnimationTitle("gradientPattern"),
         onSelect: () => {
           setEditAnim(
             makeObservable(new EditAnimationGradientPattern({ uuid }))
@@ -202,7 +201,7 @@ export default function AnimationEditScreen({
         },
       },
       {
-        label: getAnimationTitle(AnimationTypeValues.noise),
+        label: getAnimationTitle("noise"),
         onSelect: () => {
           setEditAnim(makeObservable(new EditAnimationNoise({ uuid })));
         },

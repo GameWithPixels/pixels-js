@@ -1,10 +1,9 @@
-import { ActionType, ActionTypeValues } from "./ActionType";
-import { ConditionType, ConditionTypeValues } from "./ConditionType";
-import { RemoteActionType, RemoteActionTypeValues } from "./RemoteActionType";
-import {
-  AnimationType,
-  AnimationTypeValues,
-} from "../animations/AnimationType";
+import { assertNever } from "@systemic-games/pixels-core-utils";
+
+import { ActionType } from "./ActionType";
+import { ConditionType } from "./ConditionType";
+import { RemoteActionType } from "./RemoteActionType";
+import { AnimationType } from "../animations/AnimationType";
 
 /**
  * @category Profile
@@ -21,20 +20,27 @@ export function getAnimationTypeDisplayName(
   animType: AnimationType
 ): NameAndOrder | undefined {
   switch (animType) {
-    case AnimationTypeValues.none:
+    case "none":
       return;
-    case AnimationTypeValues.simple:
+    case "simple":
       return { name: "Simple Flashes", order: 0 };
-    case AnimationTypeValues.rainbow:
+    case "rainbow":
       return { name: "Colorful Rainbow", order: 1 };
-    case AnimationTypeValues.keyframed:
+    case "keyframed":
       return { name: "Color LED Pattern", order: 3 };
-    case AnimationTypeValues.gradientPattern:
+    case "gradientPattern":
       return { name: "Gradient LED Pattern", order: 4 };
-    case AnimationTypeValues.gradient:
+    case "gradient":
       return { name: "Simple Gradient", order: 2 };
-    case AnimationTypeValues.noise:
+    case "noise":
       return { name: "Noise", order: 5 };
+    case "cycle":
+    case "name":
+      throw new Error(
+        `getAnimationTypeDisplayName: unsupported animation type: ${animType}`
+      );
+    default:
+      assertNever(animType, `Unknown animation type: ${animType}`);
   }
 }
 
@@ -43,20 +49,30 @@ export function getAnimationTypeDisplayName(
  */
 export function getActionTypeDisplayName(
   actionType: ActionType,
-  actionRemoteType: RemoteActionType = 0
+  actionRemoteType: RemoteActionType = "none"
 ): NameAndOrder | undefined {
   switch (actionType) {
-    case ActionTypeValues.none:
+    case "none":
       return;
-    case ActionTypeValues.playAnimation:
+    case "playAnimation":
       return { name: "Trigger Pattern", order: 0 };
-    case ActionTypeValues.runOnDevice:
+    case "runOnDevice":
       switch (actionRemoteType) {
-        case RemoteActionTypeValues.playAudioClip:
+        case "none":
+          return;
+        case "playAudioClip":
           return { name: "Play Audio Clip", order: 1 };
-        case RemoteActionTypeValues.makeWebRequest:
+        case "makeWebRequest":
           return { name: "Make Web Request", order: 2 };
+        default:
+          assertNever(
+            actionRemoteType,
+            `Unknown action remote type: ${actionRemoteType}`
+          );
       }
+      break;
+    default:
+      assertNever(actionType, `Unknown action type: ${actionType}`);
   }
 }
 
@@ -67,23 +83,25 @@ export function getConditionTypeDisplayName(
   conditionType: ConditionType
 ): NameAndOrder | undefined {
   switch (conditionType) {
-    case ConditionTypeValues.none:
+    case "none":
       return;
-    case ConditionTypeValues.helloGoodbye:
+    case "helloGoodbye":
       return { name: "Pixel wakes up / sleeps", order: 0 };
-    case ConditionTypeValues.handling:
+    case "handling":
       return { name: "Pixel is picked up", order: 1 };
-    case ConditionTypeValues.rolling:
+    case "rolling":
       return { name: "Pixel is rolling", order: 2 };
-    case ConditionTypeValues.faceCompare:
+    case "faceCompare":
       return { name: "Pixel roll is...", order: 3 };
-    case ConditionTypeValues.crooked:
+    case "crooked":
       return { name: "Pixel is crooked", order: 4 };
-    case ConditionTypeValues.connectionState:
+    case "connectionState":
       return { name: "Bluetooth Event...", order: 5 };
-    case ConditionTypeValues.batteryState:
+    case "batteryState":
       return { name: "Battery Event...", order: 6 };
-    case ConditionTypeValues.idle:
+    case "idle":
       return { name: "Pixel is idle for...", order: 7 };
+    default:
+      assertNever(conditionType, `Unknown condition type: ${conditionType}`);
   }
 }

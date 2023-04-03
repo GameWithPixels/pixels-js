@@ -15,11 +15,4 @@ export const RemoteActionTypeValues = {
  * The names for the "enum" type {@link RemoteActionTypeValues}.
  * @category Profile Action
  */
-export type RemoteActionTypeNames = keyof typeof RemoteActionTypeValues;
-
-/**
- * The "enum" type for {@link RemoteActionTypeValues}.
- * @category Profile Action
- */
-export type RemoteActionType =
-  (typeof RemoteActionTypeValues)[RemoteActionTypeNames];
+export type RemoteActionType = keyof typeof RemoteActionTypeValues;

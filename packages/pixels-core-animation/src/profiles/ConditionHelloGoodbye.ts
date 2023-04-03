@@ -1,7 +1,7 @@
 import { enumFlag, serializable } from "@systemic-games/pixels-core-utils";
 
 import Condition from "./Condition";
-import { ConditionType, ConditionTypeValues } from "./ConditionType";
+import { ConditionTypeValues } from "./ConditionType";
 
 /**
  * Indicates whether the condition should trigger on Hello,
@@ -18,14 +18,7 @@ export const HelloGoodbyeFlagsValues = {
  * The names for the "enum" type {@link HelloGoodbyeFlagsValues}.
  * @category Profile Condition
  */
-export type HelloGoodbyeFlagsNames = keyof typeof HelloGoodbyeFlagsValues;
-
-/**
- * The "enum" type for {@link HelloGoodbyeFlagsValues}.
- * @category Profile Condition
- */
-export type HelloGoodbyeFlags =
-  (typeof HelloGoodbyeFlagsValues)[HelloGoodbyeFlagsNames];
+export type HelloGoodbyeFlags = keyof typeof HelloGoodbyeFlagsValues;
 
 /**
  * Condition that triggers on a life state event
@@ -33,8 +26,8 @@ export type HelloGoodbyeFlags =
  */
 export default class ConditionHelloGoodbye implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.helloGoodbye;
+  type: number = ConditionTypeValues.helloGoodbye;
 
   @serializable(1, { padding: 2 })
-  flags: HelloGoodbyeFlags = 0;
+  flags: number = 0;
 }

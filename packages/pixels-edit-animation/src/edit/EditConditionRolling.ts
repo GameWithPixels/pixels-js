@@ -1,8 +1,6 @@
 import {
   DataSet,
-  ActionType,
   Condition,
-  ConditionTypeValues,
   ConditionRolling,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
@@ -12,9 +10,7 @@ import EditDataSet from "./EditDataSet";
 import { observable, range, unit, widget } from "./decorators";
 
 export default class EditConditionRolling extends EditCondition {
-  get type(): ActionType {
-    return ConditionTypeValues.rolling;
-  }
+  readonly type = "rolling";
 
   @widget("slider")
   @range(0.5, 5, 0.1)

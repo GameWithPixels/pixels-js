@@ -1,7 +1,7 @@
 import { enumFlag, serializable } from "@systemic-games/pixels-core-utils";
 
 import Condition from "./Condition";
-import { ConditionType, ConditionTypeValues } from "./ConditionType";
+import { ConditionTypeValues } from "./ConditionType";
 
 /**
  * Flags used to indicate how we treat the face,
@@ -20,14 +20,7 @@ export const FaceCompareFlagsValues = {
  * The names for the "enum" type {@link FaceCompareFlagsValues}.
  * @category Profile Condition
  */
-export type FaceCompareFlagsNames = keyof typeof FaceCompareFlagsValues;
-
-/**
- * The "enum" type for {@link FaceCompareFlagsValues}.
- * @category Profile Condition
- */
-export type FaceCompareFlags =
-  (typeof FaceCompareFlagsValues)[FaceCompareFlagsNames];
+export type FaceCompareFlags = keyof typeof FaceCompareFlagsValues;
 
 /**
  * Condition that triggers when the Pixel has landed on a face.
@@ -35,11 +28,11 @@ export type FaceCompareFlags =
  */
 export default class ConditionFaceCompare implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.faceCompare;
+  type: number = ConditionTypeValues.faceCompare;
 
   @serializable(1)
   faceIndex = 0;
 
   @serializable(1, { padding: 1 })
-  flags: FaceCompareFlags = 0;
+  flags: number = 0;
 }

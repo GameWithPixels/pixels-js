@@ -1,6 +1,4 @@
 import {
-  AnimationType,
-  AnimationTypeValues,
   AnimationBits,
   AnimationPreset,
   AnimationGradientPattern,
@@ -15,9 +13,7 @@ import EditRgbTrack from "./EditRgbTrack";
 import { widget, name, observable } from "./decorators";
 
 export default class EditAnimationGradientPattern extends EditAnimation {
-  get type(): AnimationType {
-    return AnimationTypeValues.gradientPattern;
-  }
+  readonly type = "gradientPattern";
 
   @widget("grayscalePattern")
   @name("LED Pattern")

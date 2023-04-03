@@ -1,12 +1,12 @@
 import AnimationBits from "./AnimationBits";
 import AnimationInstance from "./AnimationInstance";
-import { AnimationType } from "./AnimationType";
 
 /**
  * @category Animation
  */
 export default interface AnimationPreset {
-  readonly type: AnimationType;
+  /** See {@link AnimationTypeValues} for possible values. */
+  readonly type: number;
   duration: number; // In milliseconds
 
   createInstance(bits: AnimationBits): AnimationInstance;

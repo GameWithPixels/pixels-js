@@ -1,11 +1,7 @@
 import {
-  RemoteActionTypeValues,
-  ActionTypeValues,
-  AnimationTypeValues,
   BatteryStateFlagsValues,
   Color,
   ColorUtils,
-  ConditionTypeValues,
   ConnectionStateFlagsValues,
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
@@ -15,7 +11,6 @@ import {
   assertNever,
   bitsToFlags,
   combineFlags,
-  getValueKeyName,
   keysToValues,
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
@@ -335,10 +330,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
   const conditions = createConditionSetData();
   const actions = createActionSetData();
   const rules = profile.rules.map((r) => {
-    const condType = getValueKeyName(r.condition.type, ConditionTypeValues);
-    if (!condType) {
-      throw new Error(`Unsupported condition type: ${r.condition.type}`);
-    }
+    const condType = r.condition.type;
     let condIndex = 0;
     switch (condType) {
       case "none":
@@ -423,10 +415,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
         index: condIndex,
       },
       actions: r.actions.map((action) => {
-        const actType = getValueKeyName(action.type, ActionTypeValues);
-        if (!actType) {
-          throw new Error(`Unsupported action type: ${action.type}`);
-        }
+        const actType = action.type;
         let retActType: keyof ActionSetData;
         switch (actType) {
           case "none":
@@ -444,19 +433,12 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
             break;
           case "runOnDevice": {
             const remoteType = (action as EditActionRunOnDevice).remoteType;
-            const actRemoteType = getValueKeyName(
-              remoteType,
-              RemoteActionTypeValues
-            );
-            if (!actRemoteType) {
-              throw new Error(`Unsupported remote action type: ${remoteType}`);
-            }
-            switch (actRemoteType) {
+            switch (remoteType) {
               case "none":
-                throw new Error(`Invalid remote action type: ${actRemoteType}`);
+                throw new Error(`Invalid remote action type: ${remoteType}`);
               case "playAudioClip":
                 {
-                  retActType = actRemoteType;
+                  retActType = remoteType;
                   const act = action as EditActionPlayAudioClip;
                   actions[retActType].push({
                     clipUuid: act.clip?.uuid,
@@ -464,7 +446,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
                 }
                 break;
               case "makeWebRequest": {
-                retActType = actRemoteType;
+                retActType = remoteType;
                 const act = action as EditActionMakeWebRequest;
                 actions[retActType].push({
                   url: act.url,
@@ -474,8 +456,8 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
               }
               default:
                 assertNever(
-                  actRemoteType,
-                  `Unsupported remote action type: ${actRemoteType}`
+                  remoteType,
+                  `Unsupported remote action type: ${remoteType}`
                 );
             }
             break;
@@ -517,10 +499,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
   type: keyof AnimationSetData;
   data: AnimationSetData[keyof AnimationSetData][number];
 } {
-  const type = getValueKeyName(animation.type, AnimationTypeValues);
-  if (!type) {
-    throw new Error(`Unsupported animation type: ${animation.type}`);
-  }
+  const type = animation.type;
   switch (type) {
     case "none":
       throw new Error(`Invalid animation type: ${type}`);

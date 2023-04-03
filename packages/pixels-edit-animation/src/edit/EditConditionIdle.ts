@@ -1,8 +1,6 @@
 import {
   DataSet,
-  ActionType,
   Condition,
-  ConditionTypeValues,
   ConditionIdle,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
@@ -12,9 +10,7 @@ import EditDataSet from "./EditDataSet";
 import { observable, range, unit, widget } from "./decorators";
 
 export default class EditConditionIdle extends EditCondition {
-  get type(): ActionType {
-    return ConditionTypeValues.idle;
-  }
+  readonly type = "idle";
 
   @widget("slider")
   @range(0.5, 30, 0.5)

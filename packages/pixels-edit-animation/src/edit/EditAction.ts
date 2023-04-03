@@ -8,7 +8,7 @@ import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 
 export default abstract class EditAction {
-  abstract get type(): ActionType;
+  abstract readonly type: ActionType;
 
   abstract toAction(
     editSet: EditDataSet,

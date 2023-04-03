@@ -1,5 +1,4 @@
 import {
-  ConditionTypeValues,
   EditConditionBatteryState,
   EditConditionConnectionState,
   EditConditionCrooked,
@@ -35,40 +34,40 @@ const ObservableConditionSelection = observer(function ({
   const conditions = React.useMemo(
     () => [
       {
-        label: getConditionTitle(ConditionTypeValues.faceCompare),
+        label: getConditionTitle("faceCompare"),
         onSelect: () =>
           (observableRule.condition = new EditConditionFaceCompare()),
       },
       {
-        label: getConditionTitle(ConditionTypeValues.helloGoodbye),
+        label: getConditionTitle("helloGoodbye"),
         onSelect: () =>
           (observableRule.condition = new EditConditionHelloGoodbye()),
       },
       {
-        label: getConditionTitle(ConditionTypeValues.handling),
+        label: getConditionTitle("handling"),
         onSelect: () =>
           (observableRule.condition = new EditConditionHandling()),
       },
       {
-        label: getConditionTitle(ConditionTypeValues.rolling),
+        label: getConditionTitle("rolling"),
         onSelect: () => (observableRule.condition = new EditConditionRolling()),
       },
       {
-        label: getConditionTitle(ConditionTypeValues.crooked),
+        label: getConditionTitle("crooked"),
         onSelect: () => (observableRule.condition = new EditConditionCrooked()),
       },
       {
-        label: getConditionTitle(ConditionTypeValues.connectionState),
+        label: getConditionTitle("connectionState"),
         onSelect: () =>
           (observableRule.condition = new EditConditionConnectionState()),
       },
       {
-        label: getConditionTitle(ConditionTypeValues.batteryState),
+        label: getConditionTitle("batteryState"),
         onSelect: () =>
           (observableRule.condition = new EditConditionBatteryState()),
       },
       {
-        label: getConditionTitle(ConditionTypeValues.idle),
+        label: getConditionTitle("idle"),
         onSelect: () => (observableRule.condition = new EditConditionIdle()),
       },
     ],

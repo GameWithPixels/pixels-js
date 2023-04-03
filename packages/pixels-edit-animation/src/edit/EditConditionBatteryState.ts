@@ -1,9 +1,6 @@
 import {
   DataSet,
-  ActionType,
-  ConditionTypeValues,
   Condition,
-  BatteryStateFlags,
   ConditionBatteryState,
   BatteryStateFlagsValues,
 } from "@systemic-games/pixels-core-animation";
@@ -14,15 +11,13 @@ import EditDataSet from "./EditDataSet";
 import { name, widget, range, unit, values, observable } from "./decorators";
 
 export default class EditConditionBatteryState extends EditCondition {
-  get type(): ActionType {
-    return ConditionTypeValues.batteryState;
-  }
+  readonly type = "batteryState";
 
   @widget("bitField")
   @name("Battery State")
   @values(BatteryStateFlagsValues)
   @observable
-  flags: BatteryStateFlags;
+  flags: number;
 
   @widget("slider")
   @range(5, 60)
@@ -30,7 +25,7 @@ export default class EditConditionBatteryState extends EditCondition {
   @observable
   recheckAfter: number;
 
-  constructor(opt?: { flags?: BatteryStateFlags; recheckAfter?: number }) {
+  constructor(opt?: { flags?: number; recheckAfter?: number }) {
     super();
     this.flags = opt?.flags ?? 0;
     this.recheckAfter = opt?.recheckAfter ?? 1;

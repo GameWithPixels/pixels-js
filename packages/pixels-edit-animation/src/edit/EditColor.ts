@@ -5,19 +5,17 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
-import { ColorModeNames } from "./ColorMode";
+import { ColorMode } from "./ColorMode";
 import { observable } from "./decorators";
 
 export default class EditColor {
   @observable
-  mode: ColorModeNames;
+  mode: ColorMode;
 
   @observable
   color: Color; // Used when type is "rgb"
 
-  constructor(
-    colorOrMode: Color | Exclude<ColorModeNames, "rgb"> = Color.black
-  ) {
+  constructor(colorOrMode: Color | Exclude<ColorMode, "rgb"> = Color.black) {
     if (typeof colorOrMode === "string") {
       this.mode = colorOrMode;
       this.color = Color.black;

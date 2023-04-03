@@ -1,7 +1,7 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
 
 import Action from "./Action";
-import { ActionType, ActionTypeValues } from "./ActionType";
+import { ActionTypeValues } from "./ActionType";
 
 /**
  * Action to play an animation.
@@ -9,7 +9,7 @@ import { ActionType, ActionTypeValues } from "./ActionType";
  */
 export default class ActionPlayAnimation implements Action {
   @serializable(1)
-  type: ActionType = ActionTypeValues.playAnimation;
+  type: number = ActionTypeValues.playAnimation;
 
   @serializable(1)
   animIndex = 0;

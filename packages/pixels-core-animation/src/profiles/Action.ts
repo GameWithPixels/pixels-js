@@ -1,5 +1,3 @@
-import { ActionType } from "./ActionType";
-
 /**
  * Base interface for Actions.
  * Stores the actual type so that we can cast the data
@@ -7,5 +5,6 @@ import { ActionType } from "./ActionType";
  * @category Profile Action
  */
 export default interface Action {
-  type: ActionType;
+  /** See {@link ActionTypeValues} for possible values. */
+  type: number;
 }

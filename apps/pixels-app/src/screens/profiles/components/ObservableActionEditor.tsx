@@ -1,6 +1,4 @@
 import {
-  RemoteActionTypeValues,
-  ActionTypeValues,
   EditAction,
   EditActionMakeWebRequest,
   EditActionPlayAnimation,
@@ -42,23 +40,17 @@ const ObservableActionSelector = observer(function ({
   const actions = React.useMemo(
     () => [
       {
-        label: getActionTitle(ActionTypeValues.playAnimation),
+        label: getActionTitle("playAnimation"),
         onSelect: () =>
           onReplace?.(makeObservable(new EditActionPlayAnimation())),
       },
       {
-        label: getActionTitle(
-          ActionTypeValues.runOnDevice,
-          RemoteActionTypeValues.playAudioClip
-        ),
+        label: getActionTitle("runOnDevice", "playAudioClip"),
         onSelect: () =>
           onReplace?.(makeObservable(new EditActionPlayAudioClip())),
       },
       {
-        label: getActionTitle(
-          ActionTypeValues.runOnDevice,
-          RemoteActionTypeValues.makeWebRequest
-        ),
+        label: getActionTitle("runOnDevice", "makeWebRequest"),
         onSelect: () =>
           onReplace?.(makeObservable(new EditActionMakeWebRequest())),
       },

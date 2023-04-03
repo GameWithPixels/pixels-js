@@ -1,10 +1,7 @@
 import {
   DataSet,
-  ActionType,
-  ConditionTypeValues,
   Condition,
   ConditionConnectionState,
-  ConnectionStateFlags,
   ConnectionStateFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
@@ -14,17 +11,15 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, values, widget } from "./decorators";
 
 export default class EditConditionConnectionState extends EditCondition {
-  get type(): ActionType {
-    return ConditionTypeValues.connectionState;
-  }
+  readonly type = "connectionState";
 
   @widget("bitField")
   @name("Connection Event")
   @values(ConnectionStateFlagsValues)
   @observable
-  flags: ConnectionStateFlags;
+  flags: number;
 
-  constructor(opt?: { flags?: ConnectionStateFlags }) {
+  constructor(opt?: { flags?: number }) {
     super();
     this.flags = opt?.flags ?? 0;
   }

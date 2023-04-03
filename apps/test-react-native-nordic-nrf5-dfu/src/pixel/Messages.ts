@@ -267,16 +267,12 @@ export const PixelDesignAndColorValues = {
   Aurora_Sky: enumValue(),
 } as const;
 
-/** The "enum" type for {@link PixelDesignAndColorValues}. */
-export type PixelDesignAndColor =
-  (typeof PixelDesignAndColorValues)[keyof typeof PixelDesignAndColorValues];
-
 /** Message send by a Pixel after receiving a "WhoAmI". */
 export class IAmADie implements Message {
   readonly type: MessageType = MessageTypeValues.IAmADie;
 
   readonly diceType: number;
-  readonly designAndColor: PixelDesignAndColor;
+  readonly designAndColor: number;
   readonly dataSetHash: number;
   readonly pixelId: number;
   readonly flashSize: number;
@@ -284,7 +280,7 @@ export class IAmADie implements Message {
 
   constructor(
     diceType: number,
-    designAndColor: PixelDesignAndColor,
+    designAndColor: number,
     dataSetHash: number,
     pixelId: number,
     flashSize: number,
@@ -320,22 +316,18 @@ export const PixelRollStateValues = {
   Crooked: enumValue(),
 } as const;
 
-/** The "enum" type for {@link PixelRollStateValues}. */
-export type PixelRollState =
-  (typeof PixelRollStateValues)[keyof typeof PixelRollStateValues];
-
 /** Message send by a Pixel to notify of its rolling state. */
 export class RollState implements Message {
   readonly type: MessageType = MessageTypeValues.RollState;
 
   /** Current roll state. */
-  readonly state: PixelRollState;
+  readonly state: number;
 
   /** Face number (if applicable), starts at 1. */
   readonly face: number;
 
   /** Instantiates a roll state message from a {@link PixelRollStateValues} and face number. */
-  constructor(state: PixelRollState, face: number) {
+  constructor(state: number, face: number) {
     this.state = state;
     this.face = face;
   }

@@ -1,6 +1,4 @@
 import {
-  AnimationType,
-  AnimationTypeValues,
   AnimationBits,
   AnimationPreset,
   AnimationKeyframed,
@@ -13,9 +11,7 @@ import EditPattern from "./EditPattern";
 import { name, observable, widget } from "./decorators";
 
 export default class EditAnimationKeyframed extends EditAnimation {
-  get type(): AnimationType {
-    return AnimationTypeValues.keyframed;
-  }
+  readonly type = "keyframed";
 
   @widget("rgbPattern")
   @name("LED Pattern")

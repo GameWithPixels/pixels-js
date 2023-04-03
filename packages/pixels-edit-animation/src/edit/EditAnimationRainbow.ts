@@ -1,6 +1,4 @@
 import {
-  AnimationType,
-  AnimationTypeValues,
   AnimationBits,
   AnimationPreset,
   AnimationRainbow,
@@ -13,9 +11,7 @@ import EditDataSet from "./EditDataSet";
 import { widget, range, name, observable } from "./decorators";
 
 export default class EditAnimationRainbow extends EditAnimation {
-  get type(): AnimationType {
-    return AnimationTypeValues.rainbow;
-  }
+  readonly type = "rainbow";
 
   @widget("faceMask")
   @name("Face Mask")

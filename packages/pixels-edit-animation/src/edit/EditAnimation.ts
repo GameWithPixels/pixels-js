@@ -13,8 +13,8 @@ import { widget, range, unit, name, observable } from "./decorators";
  * Base class for animation editing classes.
  */
 export default abstract class EditAnimation extends Editable {
-  /** The animation type (constant). */
-  abstract get type(): AnimationType;
+  /** The animation type. */
+  abstract readonly type: AnimationType;
 
   @widget("slider")
   @range(0.1, 30, 0.1)

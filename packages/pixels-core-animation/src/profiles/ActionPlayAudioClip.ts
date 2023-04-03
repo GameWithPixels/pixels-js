@@ -1,8 +1,8 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
 
 import Action from "./Action";
-import { ActionType, ActionTypeValues } from "./ActionType";
-import { RemoteActionType, RemoteActionTypeValues } from "./RemoteActionType";
+import { ActionTypeValues } from "./ActionType";
+import { RemoteActionTypeValues } from "./RemoteActionType";
 
 /**
  * Action to play a sound on the connected device.
@@ -10,10 +10,10 @@ import { RemoteActionType, RemoteActionTypeValues } from "./RemoteActionType";
  */
 export default class ActionPlayAudioClip implements Action {
   @serializable(1)
-  type: ActionType = ActionTypeValues.runOnDevice;
+  type: number = ActionTypeValues.runOnDevice;
 
   @serializable(1)
-  remoteType: RemoteActionType = RemoteActionTypeValues.playAudioClip;
+  remoteType: number = RemoteActionTypeValues.playAudioClip;
 
   @serializable(2)
   actionId = 0;

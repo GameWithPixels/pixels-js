@@ -1,7 +1,7 @@
 import { enumFlag, serializable } from "@systemic-games/pixels-core-utils";
 
 import Condition from "./Condition";
-import { ConditionType, ConditionTypeValues } from "./ConditionType";
+import { ConditionTypeValues } from "./ConditionType";
 
 /**
  * Indicates when the condition should trigger connected, disconnected, or both.
@@ -17,14 +17,7 @@ export const ConnectionStateFlagsValues = {
  * The names for the "enum" type {@link ConnectionStateFlagsValues}.
  * @category Profile Condition
  */
-export type ConnectionStateFlagsNames = keyof typeof ConnectionStateFlagsValues;
-
-/**
- * The "enum" type for {@link ConnectionStateFlagsValues}.
- * @category Profile Condition
- */
-export type ConnectionStateFlags =
-  (typeof ConnectionStateFlagsValues)[ConnectionStateFlagsNames];
+export type ConnectionStateFlags = keyof typeof ConnectionStateFlagsValues;
 
 /**
  * Condition that triggers on connection events.
@@ -32,8 +25,8 @@ export type ConnectionStateFlags =
  */
 export default class ConditionConnectionState implements Condition {
   @serializable(1)
-  type: ConditionType = ConditionTypeValues.connectionState;
+  type: number = ConditionTypeValues.connectionState;
 
   @serializable(1, { padding: 2 })
-  flags: ConnectionStateFlags = 0;
+  flags: number = 0;
 }

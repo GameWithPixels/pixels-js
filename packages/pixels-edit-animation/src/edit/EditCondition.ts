@@ -7,7 +7,7 @@ import {
 import EditDataSet from "./EditDataSet";
 
 export default abstract class EditCondition {
-  abstract get type(): ConditionType;
+  abstract readonly type: ConditionType;
   abstract toCondition(editSet: EditDataSet, set: DataSet): Condition;
   abstract duplicate(): EditCondition;
 }

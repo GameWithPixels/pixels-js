@@ -1,6 +1,4 @@
 import {
-  AnimationType,
-  AnimationTypeValues,
   AnimationBits,
   AnimationPreset,
   AnimationGradient,
@@ -15,9 +13,7 @@ import EditRgbTrack from "./EditRgbTrack";
 import { widget, name, observable } from "./decorators";
 
 export default class EditAnimationGradient extends EditAnimation {
-  get type(): AnimationType {
-    return AnimationTypeValues.gradient;
-  }
+  readonly type = "gradient";
 
   @widget("faceMask")
   @name("Face Mask")
