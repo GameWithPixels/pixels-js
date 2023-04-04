@@ -57,7 +57,7 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
-    implementation 'no.nordicsemi.android:ble:2.4.0'
+    implementation 'no.nordicsemi.android:ble:2.5.1'
     implementation 'no.nordicsemi.android.support.v18:scanner:1.6.0'
     implementation 'com.android.support:support-annotations:28.0.0'
 }
