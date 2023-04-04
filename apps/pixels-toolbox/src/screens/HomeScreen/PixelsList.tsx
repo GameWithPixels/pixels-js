@@ -10,7 +10,6 @@ import ApplyAllActionsheet from "./ApplyAllActionsheet";
 
 import EmojiButton from "~/components/EmojiButton";
 import PixelSwipeableCard from "~/components/PixelSwipeableCard";
-import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import PixelDispatcher, {
   PixelDispatcherAction,
 } from "~/features/pixels/PixelDispatcher";
@@ -32,7 +31,6 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
   // Scanning
   const [pixelDispatchers, scannerDispatch, lastError] =
     useFocusPixelDispatcherScanner();
-  useErrorWithHandler(lastError);
 
   // Actions dispatched to all Pixels
   const dispatchAllDisclose = useDisclose();
@@ -87,7 +85,9 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
         </Center>
         <EmojiButton onPress={dispatchAllDisclose.onOpen}>⚙️</EmojiButton>
       </Center>
-      {pixelDispatchers.length ? (
+      {lastError ? (
+        <Text>{`${lastError}`}</Text>
+      ) : pixelDispatchers.length ? (
         <FlatList
           width="100%"
           data={pixelDispatchers}
