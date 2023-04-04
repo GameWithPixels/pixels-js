@@ -3,22 +3,23 @@ import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { useBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, themeTools } from "native-base";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 // import * as Sentry from "sentry-expo";
 
-import { store } from "./app/store";
-import AnimationsScreen from "./screens/AnimationsScreen";
-import FirmwareUpdateNavigator from "./screens/FirmwareUpdateNavigator";
-import HomeNavigator from "./screens/HomeNavigator";
-import theme from "./theme";
-
+import { store } from "~/app/store";
 import { type RootScreensParamList } from "~/navigation";
+import AnimationsScreen from "~/screens/AnimationsScreen";
+import FirmwareUpdateNavigator from "~/screens/FirmwareUpdateNavigator";
+import HomeNavigator from "~/screens/HomeNavigator";
 import RollScreen from "~/screens/RollScreen";
+import { SettingsScreen } from "~/screens/SettingsScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
 import { sr } from "~/styles";
+import theme from "~/theme";
 
 // Import internationalization file so it's initialized
 import "~/i18n";
@@ -49,6 +50,7 @@ export default function App() {
   useBluetooth();
   const { t } = useTranslation();
   const drawerBackground = themeTools.getColor(theme, "coolGray.700"); // TODO dark/light
+
   return (
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <Provider store={store}>
@@ -85,6 +87,7 @@ export default function App() {
               />
               <Drawer.Screen name="Roll" component={RollScreen} />
               <Drawer.Screen name="Animations" component={AnimationsScreen} />
+              <Drawer.Screen name="Settings" component={SettingsScreen} />
             </Drawer.Navigator>
           </NavigationContainer>
         </NativeBaseProvider>

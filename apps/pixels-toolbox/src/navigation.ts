@@ -9,6 +9,7 @@ export type RootScreensParamList = {
   Stats: undefined;
   Roll: undefined;
   Animations: undefined;
+  Settings: undefined;
 };
 
 // Home screen and sub screens
