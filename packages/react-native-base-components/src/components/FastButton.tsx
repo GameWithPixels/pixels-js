@@ -30,9 +30,5 @@ export function FastButton(props: FastButtonProps) {
       ),
     [_text, children]
   );
-  return (
-    <Pressable alignItems="center" justifyContent="center" {...resolvedProps}>
-      {childrenNode}
-    </Pressable>
-  );
+  return <Pressable {...resolvedProps}>{childrenNode}</Pressable>;
 }
