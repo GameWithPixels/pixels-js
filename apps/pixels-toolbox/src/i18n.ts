@@ -117,6 +117,7 @@ i18n
           enableCharging: "Enable Charging",
           disableCharging: "Disable Charging",
           blinkId: "Blink Id",
+          updatingFirmware: "Updating Firmware",
 
           // Validation
           factoryValidation: "Factory Validation",

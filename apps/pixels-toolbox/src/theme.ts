@@ -1,3 +1,4 @@
+import { theme as defaultTheme } from "@systemic-games/react-native-base-components";
 import { extendTheme } from "native-base";
 
 function containerVariants() {
@@ -102,6 +103,25 @@ const theme = extendTheme({
             _text: {
               color: "coolGray.700",
             },
+          },
+        },
+      },
+    },
+    FastButton: {
+      baseStyle: {
+        ...defaultTheme.components.FastButton.baseStyle,
+        px: 1,
+        py: 1.5,
+        _text: {
+          fontSize: "md",
+        },
+        _dark: {
+          bg: "coolGray.600",
+          _pressed: {
+            bg: "coolGray.700",
+          },
+          _text: {
+            color: "warmGray.200",
           },
         },
       },

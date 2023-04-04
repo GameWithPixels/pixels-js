@@ -1,11 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useReducer } from "react";
+import React from "react";
 
 export default function (updateInterval: number) {
-  const [_, triggerRender] = useReducer((b) => !b, false);
+  const [_, triggerRender] = React.useReducer((b) => !b, false);
   useFocusEffect(
     // Refresh UI
-    useCallback(() => {
+    React.useCallback(() => {
       const id = setInterval(triggerRender, updateInterval);
       return () => {
         clearInterval(id);

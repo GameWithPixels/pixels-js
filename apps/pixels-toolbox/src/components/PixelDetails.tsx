@@ -1,18 +1,25 @@
 import { getValueKeyName } from "@systemic-games/pixels-core-utils";
 import {
+  FastBox,
+  FastButton,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
+import {
+  Pixel,
   PixelBatteryStateValues,
   PixelRollStateValues,
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import { Button, Center, HStack, ITextProps, Text, VStack } from "native-base";
-import { memo, useEffect, useState } from "react";
+import { ITextProps, Text } from "native-base";
+import React from "react";
 import { useTranslation } from "react-i18next";
 
 import ProgressBar from "./ProgressBar";
 
+import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import { sr } from "~/styles";
 
 function TextEntry({
   children,
@@ -21,7 +28,7 @@ function TextEntry({
 }: { title: string } & ITextProps) {
   const { t } = useTranslation();
   return (
-    <Text {...props}>
+    <Text mb={1} {...props}>
       <Text bold>
         {title}
         {t("colonSeparator")}
@@ -31,43 +38,10 @@ function TextEntry({
   );
 }
 
-function PixelDetailsImpl({
-  pixelDispatcher,
-}: {
-  pixelDispatcher: PixelDispatcher;
-}) {
-  const [lastError, setLastError] = useState<Error>();
-  const [updateProgress, setUpdateProgress] = useState<number>();
-  useEffect(() => {
-    pixelDispatcher.addEventListener("error", setLastError);
-    pixelDispatcher.addEventListener(
-      "profileUpdateProgress",
-      setUpdateProgress
-    );
-    return () => {
-      pixelDispatcher.removeEventListener("error", setLastError);
-      pixelDispatcher.removeEventListener(
-        "profileUpdateProgress",
-        setUpdateProgress
-      );
-    };
-  }, [pixelDispatcher]);
-  const pixel = pixelDispatcher.pixel;
-  const status = usePixelStatus(pixel);
-  const [telemetry] = usePixelValue(pixel, "telemetry", { minInterval: 1000 });
-
-  // Prepare some values
+function BaseInfo({ pixel }: { pixel: Pixel }) {
   const { t } = useTranslation();
-  const x = telemetry?.accX ?? 0;
-  const y = telemetry?.accY ?? 0;
-  const z = telemetry?.accZ ?? 0;
-  const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
   return (
-    <VStack space={sr(5)}>
-      <Text variant="h2">{pixelDispatcher.name}</Text>
-      <TextEntry my={sr(5)} title={t("status")}>
-        {status ? t(status) : ""}
-      </TextEntry>
+    <>
       <TextEntry title={t("pixelId")}>{pixel.pixelId}</TextEntry>
       <TextEntry title={t("leds")}>
         {pixel.ledCount}, {pixel.designAndColor}
@@ -75,8 +49,24 @@ function PixelDetailsImpl({
       <TextEntry title={t("firmware")}>
         {pixel.firmwareDate.toString()}
       </TextEntry>
+    </>
+  );
+}
+
+function TelemetryInfo({ pixel }: { pixel: Pixel }) {
+  const [telemetry] = usePixelValue(pixel, "telemetry", { minInterval: 1000 });
+  const x = telemetry?.accX ?? 0;
+  const y = telemetry?.accY ?? 0;
+  const z = telemetry?.accZ ?? 0;
+  const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
+
+  const { t } = useTranslation();
+  return useAppBackgroundState() === "active" ? (
+    <>
       <TextEntry title={t("battery")}>
-        {t("percentWithValue", { value: telemetry?.batteryLevelPercent ?? 0 })}
+        {t("percentWithValue", {
+          value: telemetry?.batteryLevelPercent ?? 0,
+        })}
         {t("commaSeparator")}
         {t("voltageWithValue", {
           value: telemetry ? telemetry.voltageTimes50 / 50 : 0,
@@ -124,64 +114,138 @@ function PixelDetailsImpl({
         )}
       </TextEntry>
       <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
-      <HStack space={sr(5)}>
-        <VStack flex={1} space={sr(5)}>
-          <Button onPress={() => pixelDispatcher.dispatch("connect")}>
-            {t("connect")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("discharge")}>
-            {t("discharge")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("enableCharging")}>
-            {t("enableCharging")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-            {t("blink")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
-            {t("blinkId")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
-            {t("calibrate")}
-          </Button>
-        </VStack>
-        <VStack flex={1} space={sr(5)}>
-          <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
-            {t("disconnect")}
-          </Button>
-          {/* TODO stop querying for voltage, rssi, etc. */}
-          <Button onPress={() => pixelDispatcher.dispatch("stopDischarge")}>
-            {t("stopDischarge")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("disableCharging")}>
-            {t("disableCharging")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
-            {t("rainbow")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
-            {t("resetProfile")}
-          </Button>
-          <Button
-            onPress={() => pixelDispatcher.dispatch("exitValidationMode")}
-          >
-            {t("exitValidationMode")}
-          </Button>
-        </VStack>
-      </HStack>
-      {updateProgress !== undefined && (
-        <Center my={sr(5)}>
-          <ProgressBar percent={updateProgress} />
-        </Center>
-      )}
-      {lastError && (
-        <>
-          <Text color="red.500">{`Error: ${lastError}`}</Text>
-          <Button onPress={() => setLastError(undefined)}>Clear Error</Button>
-        </>
-      )}
-    </VStack>
+    </>
+  ) : (
+    <></>
   );
 }
 
-export default memo(PixelDetailsImpl);
+const BottomButtons = React.memo(function ({
+  pixelDispatcher,
+}: {
+  pixelDispatcher: PixelDispatcher;
+}) {
+  const { t } = useTranslation();
+  return (
+    <FastHStack>
+      <FastVStack flex={1} mr={2}>
+        <FastButton onPress={() => pixelDispatcher.dispatch("connect")}>
+          {t("connect")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("discharge")}
+        >
+          {t("discharge")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("enableCharging")}
+        >
+          {t("enableCharging")}
+        </FastButton>
+        <FastButton mt={2} onPress={() => pixelDispatcher.dispatch("blink")}>
+          {t("blink")}
+        </FastButton>
+        <FastButton mt={2} onPress={() => pixelDispatcher.dispatch("blinkId")}>
+          {t("blinkId")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("calibrate")}
+        >
+          {t("calibrate")}
+        </FastButton>
+      </FastVStack>
+      <FastVStack flex={1} ml={2}>
+        <FastButton onPress={() => pixelDispatcher.dispatch("disconnect")}>
+          {t("disconnect")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("stopDischarge")}
+        >
+          {t("stopDischarge")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("disableCharging")}
+        >
+          {t("disableCharging")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("playRainbow")}
+        >
+          {t("rainbow")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("updateProfile")}
+        >
+          {t("resetProfile")}
+        </FastButton>
+        <FastButton
+          mt={2}
+          onPress={() => pixelDispatcher.dispatch("exitValidationMode")}
+        >
+          {t("exitValidationMode")}
+        </FastButton>
+      </FastVStack>
+    </FastHStack>
+  );
+});
+
+export default function PixelDetails({
+  pixelDispatcher,
+}: {
+  pixelDispatcher: PixelDispatcher;
+}) {
+  const [lastError, setLastError] = React.useState<Error>();
+
+  const [updateProgress, setUpdateProgress] = React.useState<number>();
+  React.useEffect(() => {
+    pixelDispatcher.addEventListener("error", setLastError);
+    pixelDispatcher.addEventListener(
+      "profileUpdateProgress",
+      setUpdateProgress
+    );
+    return () => {
+      pixelDispatcher.removeEventListener("error", setLastError);
+      pixelDispatcher.removeEventListener(
+        "profileUpdateProgress",
+        setUpdateProgress
+      );
+    };
+  }, [pixelDispatcher]);
+
+  const pixel = pixelDispatcher.pixel;
+  const status = usePixelStatus(pixel);
+
+  const { t } = useTranslation();
+  return (
+    <FastVStack>
+      <Text variant="h2">{pixelDispatcher.name}</Text>
+      <TextEntry mt={2} mb={2} title={t("status")}>
+        {status ? t(status) : ""}
+      </TextEntry>
+      <BaseInfo pixel={pixel} />
+      <TelemetryInfo pixel={pixel} />
+      {lastError && (
+        <>
+          <Text color="red.500">{`Error: ${lastError}`}</Text>
+          <FastButton mb={2} onPress={() => setLastError(undefined)}>
+            Clear Error
+          </FastButton>
+        </>
+      )}
+      {updateProgress !== undefined && (
+        <FastBox my={10}>
+          <Text>{t("updatingFirmware") + t("colonSeparator")}</Text>
+          <ProgressBar percent={updateProgress} />
+        </FastBox>
+      )}
+      <BottomButtons pixelDispatcher={pixelDispatcher} />
+    </FastVStack>
+  );
+}
