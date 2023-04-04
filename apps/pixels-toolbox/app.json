@@ -4,9 +4,7 @@
     "slug": "pixels-toolbox",
     "owner": "gamewithpixels",
     "version": "1.6.2",
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
+    "runtimeVersion": "48.1",
     "platforms": [
       "ios",
       "android"
