@@ -18,24 +18,22 @@ import {
   createDataSetForAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
+  FastBox,
+  FastButton,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
+import {
   Color,
   Constants,
   getPixel,
   usePixelConnect,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
-import {
-  Button,
-  Box,
-  FlatList,
-  HStack,
-  Slider,
-  Text,
-  VStack,
-} from "native-base";
+import { Slider, Text } from "native-base";
 import { useCallback, useMemo, useReducer, useState } from "react";
 // eslint-disable-next-line import/namespace
-import { StyleSheet } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import AppPage from "~/components/AppPage";
@@ -210,7 +208,7 @@ function getPropValueString(
 }
 
 function Separator() {
-  return <Box h={2} />;
+  return <FastBox h={2} />;
 }
 
 function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
@@ -266,13 +264,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <>
           <Text bold>{widget.displayName}</Text>
           {facesGroups.map((faces, i) => (
-            <HStack key={i}>
+            <FastHStack key={i}>
               {faces.map((face) => (
-                <Button key={face} onPress={() => update(face)}>
+                <FastButton key={face} onPress={() => update(face)}>
                   {face.toString()}
-                </Button>
+                </FastButton>
               ))}
-            </HStack>
+            </FastHStack>
           ))}
         </>
       );
@@ -283,12 +281,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <FlatList
           data={colorMap}
           renderItem={(itemInfo) => (
-            <Button
+            <FastButton
               key={itemInfo.item.name}
+              mt={2}
               onPress={() => update(itemInfo.item.color)}
             >
               {itemInfo.item.name}
-            </Button>
+            </FastButton>
           )}
           ItemSeparatorComponent={Separator}
           contentContainerStyle={styles.contentContainer}
@@ -301,14 +300,14 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <FlatList
           data={gradients}
           renderItem={(itemInfo) => (
-            <Button
+            <FastButton
               key={itemInfo.item.name}
+              mt={2}
               onPress={() => update(itemInfo.item.gradient)}
             >
               {itemInfo.item.name}
-            </Button>
+            </FastButton>
           )}
-          ItemSeparatorComponent={Separator}
           contentContainerStyle={styles.contentContainer}
         />
       );
@@ -319,14 +318,14 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <FlatList
           data={patterns}
           renderItem={(itemInfo) => (
-            <Button
+            <FastButton
               key={itemInfo.item.name}
+              mt={2}
               onPress={() => update(itemInfo.item)}
             >
               {itemInfo.item.name}
-            </Button>
+            </FastButton>
           )}
-          ItemSeparatorComponent={Separator}
           contentContainerStyle={styles.contentContainer}
         />
       );
@@ -368,12 +367,13 @@ function AnimationPage() {
       {!pixel ? (
         <PixelScanList onSelect={onSelect} />
       ) : (
-        <VStack space={2}>
+        <FastVStack>
           <Text>{`Connection status: ${status}`}</Text>
-          <Button onPress={() => connectDispatch("disconnect")}>
+          <FastButton mt={2} onPress={() => connectDispatch("disconnect")}>
             Disconnect
-          </Button>
-          <Button
+          </FastButton>
+          <FastButton
+            mt={2}
             onPress={() => {
               if (animList.length) {
                 pixel.playTestAnimation(
@@ -383,18 +383,23 @@ function AnimationPage() {
             }}
           >
             Play
-          </Button>
+          </FastButton>
           {editAnim && widget ? (
             <>
-              <Text bold>{`Editing ${widget.displayName}`}</Text>
-              <Button onPress={() => setWidget(undefined)}>Back</Button>
+              <Text mt={2} bold>{`Editing ${widget.displayName}`}</Text>
+              <FastButton m={2} onPress={() => setWidget(undefined)}>
+                Back
+              </FastButton>
               <RenderAnimWidget widget={widget} />
             </>
           ) : editAnim ? (
             <>
-              <Text bold>{`Editing ${editAnim.name}`}</Text>
-              <Button onPress={() => setEditAnim(undefined)}>Back</Button>
-              <Button
+              <Text mt={2} bold>{`Editing ${editAnim.name}`}</Text>
+              <FastButton mt={2} onPress={() => setEditAnim(undefined)}>
+                Back
+              </FastButton>
+              <FastButton
+                my={2}
                 onPress={() => {
                   setEditAnim(undefined);
                   setAnimList((animList) => {
@@ -408,43 +413,49 @@ function AnimationPage() {
                 }}
               >
                 Remove
-              </Button>
+              </FastButton>
               <FlatList
                 data={animWidgets}
                 renderItem={(itemInfo) => (
-                  <Button onPress={() => setWidget(itemInfo.item)}>
+                  <FastButton mt={2} onPress={() => setWidget(itemInfo.item)}>
                     {`${itemInfo.item.displayName}: ${getPropValueString(
                       editAnim,
                       itemInfo.item.propertyKey
                     )}`}
-                  </Button>
+                  </FastButton>
                 )}
-                ItemSeparatorComponent={Separator}
                 contentContainerStyle={styles.contentContainer}
               />
             </>
           ) : (
             <>
-              <Text bold>Effects:</Text>
+              <Text m={2} bold>
+                Effects:
+              </Text>
               <FlatList
                 data={animList}
                 renderItem={(itemInfo) => (
-                  <Button
+                  <FastButton
+                    mt={2}
                     onPress={() => {
                       setEditAnim(itemInfo.item);
                     }}
-                  >{`Edit ${itemInfo.item.name}`}</Button>
+                  >
+                    {`Edit ${itemInfo.item.name}`}
+                  </FastButton>
                 )}
-                ItemSeparatorComponent={Separator}
                 contentContainerStyle={styles.contentContainer}
               />
             </>
           )}
-          <Text bold>Add Effect:</Text>
+          <Text my={2} bold>
+            Add Effect:
+          </Text>
           <FlatList
             data={editAnimationTypes}
             renderItem={(itemInfo) => (
-              <Button
+              <FastButton
+                mt={2}
                 onPress={() => {
                   setAnimList((anims) => {
                     const anim = new itemInfo.item();
@@ -454,12 +465,11 @@ function AnimationPage() {
                 }}
               >
                 {itemInfo.item.name.replace(EditAnimation.name, "")}
-              </Button>
+              </FastButton>
             )}
-            ItemSeparatorComponent={Separator}
             contentContainerStyle={styles.contentContainer}
           />
-        </VStack>
+        </FastVStack>
       )}
     </>
   );

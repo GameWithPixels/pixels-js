@@ -10,6 +10,9 @@ export default StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  containerFullWidth: {
+    width: "100%",
+  },
   containerFooter: {
     alignItems: "center",
   },

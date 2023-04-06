@@ -1,16 +1,12 @@
-import { useAssets } from "expo-asset";
 import {
-  Box,
-  Center,
-  FlatList,
-  HStack,
-  Pressable,
-  Switch,
-  Text,
-  VStack,
-} from "native-base";
+  FastBox,
+  FastHStack,
+} from "@systemic-games/react-native-base-components";
+import { useAssets } from "expo-asset";
+import { Pressable, Switch, Text, VStack } from "native-base";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
+import { FlatList } from "react-native";
 
 import dfuFilesZip from "!/dfu-files.zip";
 import { useAppDispatch } from "~/app/hooks";
@@ -19,6 +15,7 @@ import getDfuFileInfo, { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 import { setDfuFiles } from "~/features/store/dfuFilesSlice";
 import { SelectDfuFilesProps } from "~/navigation";
+import styles from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function keyExtractor(files: DfuFileInfo[]) {
@@ -26,7 +23,7 @@ function keyExtractor(files: DfuFileInfo[]) {
 }
 
 function Separator() {
-  return <Box h={2} />;
+  return <FastBox h={2} />;
 }
 
 function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
@@ -99,6 +96,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           alignItems="center"
           space={1}
           py={2}
+          my={1}
         >
           <Text variant="h2">
             {`📅 ${toLocaleDateTimeString(filesInfo[0].date ?? new Date(0))}`}
@@ -113,22 +111,22 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   );
 
   return (
-    <Center left="2%" width="96%">
+    <FastBox flex={1} alignItems="center" px={3}>
       {!dfuFiles ? (
         <Text italic my={3}>
           Reading DFU files...
         </Text>
       ) : dfuFiles.length ? (
         <>
-          <HStack my={2} space={3} alignItems="center">
+          <FastHStack my={2} alignItems="center">
             <Text>Show Standalone Bootloaders</Text>
             <Switch onToggle={setShowBootloaders} value={showBootloaders} />
-          </HStack>
+          </FastHStack>
           <Text bold my={2}>
             Select Firmware:
           </Text>
           <FlatList
-            width="100%"
+            style={styles.containerFullWidth}
             data={dfuFiles}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
@@ -138,7 +136,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
       ) : (
         <Text bold>No files found in assets/dfu-files.zip!</Text>
       )}
-    </Center>
+    </FastBox>
   );
 }
 

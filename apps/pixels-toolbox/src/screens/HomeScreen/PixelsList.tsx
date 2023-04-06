@@ -1,10 +1,12 @@
-import { useDisclose } from "@systemic-games/react-native-pixels-components";
+import {
+  FastBox,
+  useDisclose,
+} from "@systemic-games/react-native-pixels-components";
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
-import { Box, Center, FlatList, Text } from "native-base";
+import { Text } from "native-base";
 import { useState, useCallback, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-// eslint-disable-next-line import/namespace
-import { RefreshControl } from "react-native";
+import { FlatList, RefreshControl } from "react-native";
 
 import ApplyAllActionsheet from "./ApplyAllActionsheet";
 
@@ -14,13 +16,14 @@ import PixelDispatcher, {
   PixelDispatcherAction,
 } from "~/features/pixels/PixelDispatcher";
 import useFocusPixelDispatcherScanner from "~/features/pixels/hooks/useFocusPixelDispatcherScanner";
+import styles from "~/styles";
 
 function keyExtractor(p: ScannedPixel) {
   return p.systemId;
 }
 
 function Separator() {
-  return <Box h={2} />;
+  return <FastBox h={2} />;
 }
 
 interface PixelsListProps {
@@ -52,7 +55,6 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
         pixelDispatcher={dispatcher}
         moreInfo={showMoreInfo}
         onShowDetails={() => onDieDetails(dispatcher.pixelId)}
-        swipeableItemsWidth={80}
       />
     ),
     [onDieDetails, showMoreInfo]
@@ -76,20 +78,24 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
 
   return (
     <>
-      <Center flexDir="row" my={2} width="100%" alignItems="baseline">
+      <FastBox
+        my={8}
+        width="100%"
+        flexDir="row"
+        alignItems="baseline"
+        justifyContent="space-between"
+      >
         <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>ℹ️</EmojiButton>
-        <Center flex={1}>
-          <Text variant="h2">
-            {t("pixelsWithCount", { count: pixelDispatchers.length })}
-          </Text>
-        </Center>
+        <Text variant="h2">
+          {t("pixelsWithCount", { count: pixelDispatchers.length })}
+        </Text>
         <EmojiButton onPress={dispatchAllDisclose.onOpen}>⚙️</EmojiButton>
-      </Center>
+      </FastBox>
       {lastError ? (
         <Text>{`${lastError}`}</Text>
       ) : pixelDispatchers.length ? (
         <FlatList
-          width="100%"
+          style={styles.containerFullWidth}
           data={pixelDispatchers}
           keyExtractor={keyExtractor}
           renderItem={renderItem}

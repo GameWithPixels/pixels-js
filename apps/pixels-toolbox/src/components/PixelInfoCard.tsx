@@ -1,5 +1,9 @@
+import {
+  FastBox,
+  FastHStack,
+} from "@systemic-games/react-native-base-components";
 import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
-import { Center, HStack, Text, VStack } from "native-base";
+import { Text, VStack } from "native-base";
 import { memo, PropsWithChildren } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -24,11 +28,11 @@ function PixelMoreInfo({ pixel }: { pixel: PixelInfo }) {
         {t("colonSeparator")}
         {fwDate}
       </Text>
-      <HStack space="8%">
+      <FastHStack w="100%" justifyContent="space-around">
         <Text>{`🆔 ${pixIdHex}`}</Text>
         <Text>{`${t(pixel.designAndColor)}`}</Text>
         <Text>{`${pixel.ledCount}🚦`}</Text>
-      </HStack>
+      </FastHStack>
     </>
   );
 }
@@ -40,16 +44,15 @@ function PixelInfoCardImpl({ children, pixel, moreInfo }: PixelInfoCardProps) {
     <VStack
       variant="cardWithBorder"
       alignItems="center"
-      px={2}
+      px={3}
       py={1}
       space={1}
-      w="100%"
     >
-      <Center flexDir="row">
+      <FastBox flexDir="row" justifyContent="center">
         <Text variant="h2">{pixel.name}</Text>
-      </Center>
+      </FastBox>
       {moreInfo && <PixelMoreInfo pixel={pixel} />}
-      <HStack space="8%">
+      <FastHStack w="100%" justifyContent="space-around">
         <Text>{`📶 ${t("dBWithValue", { value: pixel.rssi })}`}</Text>
         <Text>{`${charging} ${t("percentWithValue", {
           value: pixel.batteryLevel,
@@ -58,7 +61,7 @@ function PixelInfoCardImpl({ children, pixel, moreInfo }: PixelInfoCardProps) {
           <Text>{`🎲 ${pixel.currentFace} `}</Text>
           <Text italic>{`(${t(pixel.rollState)})`}</Text>
         </Text>
-      </HStack>
+      </FastHStack>
       {children}
     </VStack>
   );

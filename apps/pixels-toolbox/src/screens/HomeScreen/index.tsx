@@ -1,4 +1,5 @@
-import { Box, Center, Link, Text } from "native-base";
+import { FastBox } from "@systemic-games/react-native-base-components";
+import { Link, Text } from "native-base";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 // eslint-disable-next-line import/namespace
@@ -42,7 +43,7 @@ function HomePage({ navigation }: HomeProps) {
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
-      <Box flex={1} alignItems="center" left="2%" width="96%">
+      <FastBox flex={1} alignItems="center" px={3}>
         <Text pl="7%" mb={3} alignSelf="flex-start">
           ↖️ <Text italic>{t("openMenuToGoToValidation")}</Text>
         </Text>
@@ -50,9 +51,9 @@ function HomePage({ navigation }: HomeProps) {
           {selectedFwLabel ?? t("tapToSelectFirmware")}
         </Link>
         <PixelsList onDieDetails={onDieDetails} />
-      </Box>
+      </FastBox>
       {/* Footer showing app and system info */}
-      <Center mt={8}>
+      <FastBox mt={8} alignSelf="center">
         <Text italic>
           {t("screenWithSize", {
             width: Math.round(window.width),
@@ -64,7 +65,7 @@ function HomePage({ navigation }: HomeProps) {
               version: Platform.Version,
             })}
         </Text>
-      </Center>
+      </FastBox>
     </>
   );
 }

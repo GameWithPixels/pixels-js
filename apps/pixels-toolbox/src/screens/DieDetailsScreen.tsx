@@ -1,14 +1,14 @@
-import { Button, ScrollView, VStack } from "native-base";
+import { FastVStack } from "@systemic-games/react-native-base-components";
 import { useEffect } from "react";
 import { useErrorHandler } from "react-error-boundary";
-import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
 
 import AppPage from "~/components/AppPage";
 import PixelDetails from "~/components/PixelDetails";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { DieDetailsProps } from "~/navigation";
 
-function DieDetailsPage({ route, navigation }: DieDetailsProps) {
+function DieDetailsPage({ route }: DieDetailsProps) {
   const errorHandler = useErrorHandler();
   const { pixelId } = route.params;
   const pixelDispatcher = PixelDispatcher.findInstance(pixelId);
@@ -18,16 +18,12 @@ function DieDetailsPage({ route, navigation }: DieDetailsProps) {
     }
   }, [errorHandler, pixelDispatcher, pixelId]);
 
-  const { t } = useTranslation();
   return (
-    <VStack mx={10} flex={1}>
+    <FastVStack mx={10} flex={1}>
       <ScrollView>
         {pixelDispatcher && <PixelDetails pixelDispatcher={pixelDispatcher} />}
       </ScrollView>
-      <Button mt={10} onPress={() => navigation.goBack()}>
-        {t("close")}
-      </Button>
-    </VStack>
+    </FastVStack>
   );
 }
 

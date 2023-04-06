@@ -1,6 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
-import { useDisclose } from "@systemic-games/react-native-pixels-components";
+import {
+  FastButton,
+  FastHStack,
+  FastVStack,
+  useDisclose,
+} from "@systemic-games/react-native-pixels-components";
 import {
   AlertDialog,
   Box,
@@ -8,8 +13,6 @@ import {
   IBoxProps,
   Pressable,
   Text,
-  VStack,
-  Center,
 } from "native-base";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,14 +39,12 @@ export interface SwipeablePixelCardProps
   extends Omit<PixelInfoCardProps, "pixel"> {
   pixelDispatcher: PixelDispatcher;
   onShowDetails: () => void;
-  swipeableItemsWidth: number;
 }
 
 export default function ({
   children,
   pixelDispatcher,
   onShowDetails,
-  swipeableItemsWidth,
   ...props
 }: SwipeablePixelCardProps) {
   const [lastError, setLastError] = useState<Error>();
@@ -181,23 +182,22 @@ export default function ({
         }
         swipeable.close();
       }}
-      leftThreshold={swipeableItemsWidth}
       renderLeftActions={() =>
         !dfuQueued && (
           <SwipeableItemView
+            px={1}
             label={t(isDisco ? "connect" : "disconnect")}
             backgroundColor={isDisco ? "green.500" : "red.500"}
-            _text={{ mx: 20, color: "gray.100", bold: true }}
+            _text={{ mx: 5, color: "gray.100", bold: true }}
           />
         )
       }
-      rightThreshold={swipeableItemsWidth}
       renderRightActions={() =>
         (!isDisco ||
           (pixelDispatcher.canUpdateFirmware &&
             !pixelDispatcher.isUpdatingFirmware)) && (
           <SwipeableItemView
-            width={swipeableItemsWidth}
+            px={1}
             label={
               isDisco
                 ? pixelDispatcher.isUpdatingFirmware
@@ -208,7 +208,7 @@ export default function ({
                 : t("blink")
             }
             backgroundColor={isDisco ? "purple.500" : "orange.500"}
-            _text={{ mx: 20, color: "gray.100", bold: true }}
+            _text={{ mx: 5, color: "gray.100", bold: true }}
           />
         )
       }
@@ -216,16 +216,20 @@ export default function ({
       <Pressable onPress={() => onShowDetails()}>
         <PixelInfoCard pixel={pixelDispatcher} {...props}>
           {pixelDispatcher.canUpdateFirmware && (
-            <Text position="absolute" top={8} right={8}>
+            <Text position="absolute" top={1} right={2}>
               ⬆️
             </Text>
           )}
-          <VStack mt={-1} space={2} alignItems="center" width="100%">
+          <FastVStack mt={-1} alignItems="center" width="100%">
             {/* Show either DFU progress, profile update progress, connect state or advertising state */}
             {dfuQueued ? (
               // DFU status and progress
               dfuState !== "dfuCompleted" ? (
-                <Center width="100%" flexDir="row">
+                <FastHStack
+                  width="100%"
+                  alignItems="center"
+                  justifyContent="center"
+                >
                   <Text>{t("firmwareUpdate")}: </Text>
                   {dfuState === "dfuStarting" && dfuProgress > 0 ? (
                     <Box flex={1}>
@@ -234,18 +238,22 @@ export default function ({
                   ) : (
                     <Text italic>{t(dfuState)}</Text>
                   )}
-                </Center>
+                </FastHStack>
               ) : (
                 <Text>{t("waitingOnFirmwareUpdate")}</Text>
               )
             ) : profileUpdate ? (
               // Profile update progress
-              <Center width="100%" flexDir="row">
+              <FastHStack
+                width="100%"
+                alignItems="center"
+                justifyContent="center"
+              >
                 <Text>Profile Update: </Text>
                 <Box flex={1}>
                   <ProgressBar percent={profileUpdate} />
                 </Box>
-              </Center>
+              </FastHStack>
             ) : isDisco && lastSeen > 5 ? (
               // Pixel is disconnected and hasn't been seen for a while (no advertising)
               <Text italic>{`${t("unavailable")} (${
@@ -270,12 +278,12 @@ export default function ({
             {lastError && (
               <>
                 <Text color="red.500">{lastError?.message}</Text>
-                <Button onPress={() => setLastError(undefined)}>
+                <FastButton onPress={() => setLastError(undefined)}>
                   {t("clearError")}
-                </Button>
+                </FastButton>
               </>
             )}
-          </VStack>
+          </FastVStack>
         </PixelInfoCard>
       </Pressable>
       <AlertDialog

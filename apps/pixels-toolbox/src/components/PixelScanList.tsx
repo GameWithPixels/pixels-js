@@ -1,15 +1,14 @@
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import {
-  Button,
-  Box,
-  FlatList,
-  HStack,
-  Pressable,
-  Text,
-  VStack,
-} from "native-base";
+  FastBox,
+  FastButton,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
+import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
+import { Pressable, Text } from "native-base";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { FlatList } from "react-native";
 
 import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
@@ -20,7 +19,7 @@ function keyExtractor(p: ScannedPixel) {
 }
 
 function Separator() {
-  return <Box height={3} />;
+  return <FastBox height={3} />;
 }
 
 export default function ({
@@ -54,23 +53,29 @@ export default function ({
 
   const { t } = useTranslation();
   return (
-    <VStack flex={1} space="1%" alignItems="center">
-      <HStack space="2%">
-        {onClose && <Button onPress={onClose}>{t("close")}</Button>}
-        <Button onPress={() => scannerDispatch("clear")}>
+    <FastVStack flex={1} alignItems="center">
+      <FastHStack>
+        {onClose && (
+          <FastButton mr={3} onPress={onClose}>
+            {t("close")}
+          </FastButton>
+        )}
+        <FastButton onPress={() => scannerDispatch("clear")}>
           {t("clearScanList")}
-        </Button>
-      </HStack>
-      <Text bold>
+        </FastButton>
+      </FastHStack>
+      <Text mt={1} bold>
         {scannedPixels.length
           ? t("scannedPixelsWithCount", { count: scannedPixels.length })
           : t("noPixelsFound")}
       </Text>
       {scannedPixels.length > 0 && (
         <>
-          <Text italic>{t("tapOnItemToSelect")}</Text>
+          <Text m={1} italic>
+            {t("tapOnItemToSelect")}
+          </Text>
           <FlatList
-            width="100%"
+            //width="100%"
             data={scannedPixels}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
@@ -78,6 +83,6 @@ export default function ({
           />
         </>
       )}
-    </VStack>
+    </FastVStack>
   );
 }

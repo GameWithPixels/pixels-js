@@ -1,21 +1,17 @@
 import {
+  FastBox,
+  FastButton,
+} from "@systemic-games/react-native-base-components";
+import {
   BleScanner,
   ScannedPeripheral,
 } from "@systemic-games/react-native-pixels-connect";
-import {
-  Box,
-  Button,
-  Center,
-  FlatList,
-  Link,
-  Pressable,
-  Text,
-} from "native-base";
+import { Link, Pressable, Text } from "native-base";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 // eslint-disable-next-line import/namespace
-import { RefreshControl } from "react-native";
+import { FlatList, RefreshControl } from "react-native";
 
 import { useAppSelector } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
@@ -23,6 +19,7 @@ import ProgressBar from "~/components/ProgressBar";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import { FirmwareUpdateProps } from "~/navigation";
+import styles from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function formatAddress(address: number): string {
@@ -43,7 +40,7 @@ function keyExtractor(p: ScannedPeripheral) {
   return p.systemId;
 }
 function Separator() {
-  return <Box height={3} />;
+  return <FastBox height={3} />;
 }
 
 // We want this page to automatically update devices that have a firmware that crashes
@@ -192,15 +189,15 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   );
 
   return (
-    <Box m={3}>
+    <FastBox m={3}>
       {dfuLastError && !errorCleared ? (
         // Got an error
-        <Center>
+        <FastBox alignContent="center" justifyContent="center">
           <Text color="red.500">{`${dfuLastError}`}</Text>
-          <Button m={3} w={100} onPress={() => setErrorCleared(true)}>
+          <FastButton m={3} w={100} onPress={() => setErrorCleared(true)}>
             {t("ok")}
-          </Button>
-        </Center>
+          </FastButton>
+        </FastBox>
       ) : !dfuState ? (
         <>
           <Link
@@ -218,7 +215,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
                 Bluetooth Scanned Peripherals:
               </Text>
               <FlatList
-                width="100%"
+                style={styles.containerFullWidth}
                 data={scannedPeripherals}
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
@@ -230,7 +227,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
         </>
       ) : (
         // Updating Firmware
-        <Center width="100%">
+        <FastBox width="100%" alignContent="center" justifyContent="center">
           <Text mb={3} bold>
             Selected Peripheral:
           </Text>
@@ -239,9 +236,9 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
             Performing Firmware Update:
           </Text>
           {dfuState === "dfuStarting" && dfuProgress > 0 ? (
-            <Box w="100%" p={2}>
+            <FastBox w="100%" p={2}>
               <ProgressBar percent={dfuProgress} />
-            </Box>
+            </FastBox>
           ) : (
             <Text italic>
               {t("dfuStateWithStatus", {
@@ -249,9 +246,9 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
               })}
             </Text>
           )}
-        </Center>
+        </FastBox>
       )}
-    </Box>
+    </FastBox>
   );
 }
 
