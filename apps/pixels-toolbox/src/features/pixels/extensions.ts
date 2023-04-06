@@ -2,7 +2,6 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import {
   BlinkId,
   Discharge,
-  MessageTypeValues,
   Pixel,
 } from "@systemic-games/react-native-pixels-connect";
 
@@ -20,7 +19,7 @@ export async function pixelBlinkId(
     brightness: opt?.brightness ? 255 * opt?.brightness : 0x10,
     loop: opt?.loop ?? false,
   });
-  await pixel.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkIdAck);
+  await pixel.sendAndWaitForResponse(blinkMsg, "blinkIdAck");
 }
 
 /**
@@ -33,12 +32,12 @@ export async function pixelForceEnableCharging(
 ): Promise<void> {
   if (enable) {
     await pixel.sendMessage(
-      MessageTypeValues.enableCharging,
+      "enableCharging",
       true // withoutAck
     );
   } else {
     await pixel.sendMessage(
-      MessageTypeValues.disableCharging,
+      "disableCharging",
       true // withoutAck
     );
   }

@@ -14,13 +14,12 @@ import {
   getPixel,
   PixelInfo,
   Pixel,
-  PixelDesignAndColorNames,
-  PixelRollStateNames,
+  PixelDesignAndColor,
+  PixelRollState,
   PixelStatus,
   PixelRollData,
   ScannedPixel,
   PixelBatteryData,
-  MessageTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { getDieType } from "./DieType";
@@ -97,7 +96,7 @@ export default class PixelDispatcher implements PixelInfo {
     return this._getIPixel().ledCount;
   }
 
-  get designAndColor(): PixelDesignAndColorNames {
+  get designAndColor(): PixelDesignAndColor {
     return this._getIPixel().designAndColor;
   }
 
@@ -117,7 +116,7 @@ export default class PixelDispatcher implements PixelInfo {
     return this._getIPixel().isCharging;
   }
 
-  get rollState(): PixelRollStateNames {
+  get rollState(): PixelRollState {
     return this._getIPixel().rollState;
   }
 
@@ -403,7 +402,7 @@ export default class PixelDispatcher implements PixelInfo {
   private async _exitValidationMode(): Promise<void> {
     if (this.isReady) {
       // Exit validation mode, don't wait for response as die will restart
-      await this._pixel.sendMessage(MessageTypeValues.exitValidation, true);
+      await this._pixel.sendMessage("exitValidation", true);
     }
   }
 }

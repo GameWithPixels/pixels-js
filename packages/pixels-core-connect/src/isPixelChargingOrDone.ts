@@ -1,4 +1,4 @@
-import { BatteryState, PixelBatteryStateValues } from "./Messages";
+import { PixelBatteryStateValues } from "./Messages";
 
 /**
  * Returns whether the given battery controller state means that the pixel
@@ -6,7 +6,7 @@ import { BatteryState, PixelBatteryStateValues } from "./Messages";
  * @param value The Pixel battery state.
  * @returns Whether the Pixel is charging.
  */
-export default function (value: BatteryState | undefined): boolean {
+export default function (value: number | undefined): boolean {
   switch (value) {
     case PixelBatteryStateValues.charging:
     case PixelBatteryStateValues.trickleCharge:

@@ -102,13 +102,7 @@ export const MessageTypeValues = {
  * The names for the "enum" type {@link MessageTypeValues}.
  * @category Message
  */
-export type MessageTypeNames = keyof typeof MessageTypeValues;
-
-/**
- * The "enum" type for {@link MessageTypeValues}.
- * @category Message
- */
-export type MessageType = (typeof MessageTypeValues)[MessageTypeNames];
+export type MessageType = keyof typeof MessageTypeValues;
 
 /**
  * Base type for all Pixel messages.
@@ -118,7 +112,7 @@ export type MessageType = (typeof MessageTypeValues)[MessageTypeNames];
  */
 export interface PixelMessage {
   /** Type of the message. */
-  readonly type: MessageType;
+  readonly type: number;
 }
 
 /**
@@ -135,26 +129,47 @@ export type MessageOrType = PixelMessage | MessageType;
  */
 export type MessageClass = new () => PixelMessage;
 
-// Lookup table from MessageType to MessageClass
-let _messageClassesLookup: Readonly<Map<MessageType, MessageClass>>;
-function _getMessageClass(msgType: MessageType): MessageClass | undefined {
-  if (!_messageClassesLookup) {
-    _messageClassesLookup = new Map(
-      _getMessageClasses().map((m) => [new m().type, m])
-    );
+// Lookup table from message type value to message name
+const _messageNamesLookup: Readonly<MessageType[]> = [];
+function _getMessageNameFromValue(typeValue: number): MessageType | undefined {
+  if (!_messageNamesLookup.length) {
+    const lookup = _messageNamesLookup as MessageType[];
+    for (const [key, value] of Object.entries(MessageTypeValues)) {
+      lookup[value] = key as MessageType;
+    }
   }
-  return _messageClassesLookup.get(msgType);
+  return _messageNamesLookup[typeValue];
 }
 
 // Lookup table from MessageClass to MessageType
-let _reverseMessageClassesLookup: Readonly<Map<MessageClass, MessageType>>;
-function _getMessageClassType(msgClass: MessageClass): MessageType {
-  if (!_reverseMessageClassesLookup) {
-    _reverseMessageClassesLookup = new Map(
-      _getMessageClasses().map((m) => [m, new m().type])
-    );
+const _reverseMsgClassesLookup: Readonly<Map<MessageClass, number>> = new Map();
+function _getMessageTypeValue(msgClass: MessageClass): number {
+  if (!_reverseMsgClassesLookup) {
+    const lookup = _reverseMsgClassesLookup as Map<MessageClass, number>;
+    for (const ctor of _getMessageClasses()) {
+      lookup.set(ctor, new ctor().type);
+    }
   }
-  return _reverseMessageClassesLookup.get(msgClass) ?? MessageTypeValues.none;
+  return _reverseMsgClassesLookup.get(msgClass) ?? MessageTypeValues.none;
+}
+
+// Lookup table from message type value to MessageClass
+const _messageClassesLookup: Readonly<Map<number, MessageClass>> = new Map();
+function _getMessageClass(msgTypeValue: number): MessageClass | undefined {
+  if (!_messageClassesLookup.size) {
+    const lookup = _messageClassesLookup as Map<number, MessageClass>;
+    for (const ctor of _getMessageClasses()) {
+      lookup.set(new ctor().type, ctor);
+    }
+  }
+  return _messageClassesLookup.get(msgTypeValue);
+}
+
+// Get message type value from message type
+function _checkGetMessageTypeValue(msgType: MessageType): number {
+  const typeValue = MessageTypeValues[msgType];
+  assert(typeValue, `No Pixel message type value for ${msgType}`);
+  return typeValue;
 }
 
 /**
@@ -163,24 +178,14 @@ function _getMessageClassType(msgClass: MessageClass): MessageType {
  * @returns The message type.
  * @category Message
  */
-export function getMessageType(
+export function getMessageTypeValue(
   msgOrTypeOrClass: MessageOrType | MessageClass
-): MessageType {
+): number {
   return typeof msgOrTypeOrClass === "function"
-    ? _getMessageClassType(msgOrTypeOrClass)
-    : typeof msgOrTypeOrClass === "number"
-    ? msgOrTypeOrClass
+    ? _getMessageTypeValue(msgOrTypeOrClass)
+    : typeof msgOrTypeOrClass === "string"
+    ? _checkGetMessageTypeValue(msgOrTypeOrClass)
     : msgOrTypeOrClass.type;
-}
-
-/**
- * Type predicate for {@link PixelMessage} class.
- * @param obj Any object.
- * @returns Whether the given object is a {@link PixelMessage}.
- * @category Message
- */
-export function isMessage(obj: unknown): obj is PixelMessage {
-  return (obj as PixelMessage).type !== undefined;
 }
 
 /**
@@ -189,14 +194,24 @@ export function isMessage(obj: unknown): obj is PixelMessage {
  * @returns The message name.
  * @category Message
  */
-export function getMessageName(msgOrType: MessageOrType): MessageTypeNames {
-  const msgType = getMessageType(msgOrType);
-  for (const [key, value] of Object.entries(MessageTypeValues)) {
-    if (value === msgType) {
-      return key as MessageTypeNames;
+export function getMessageType(
+  msgOrTypeOrTypeValue: MessageOrType | number
+): MessageType {
+  if (typeof msgOrTypeOrTypeValue === "string") {
+    return msgOrTypeOrTypeValue;
+  } else {
+    const typeValue =
+      typeof msgOrTypeOrTypeValue === "number"
+        ? msgOrTypeOrTypeValue
+        : msgOrTypeOrTypeValue.type;
+    const type = _getMessageNameFromValue(typeValue);
+    if (type) {
+      return type;
     }
+    throw Error(
+      `getMessageName: ${typeValue} is not a value in MessageTypeValues`
+    );
   }
-  throw Error(`${msgType} is not a value in ${MessageTypeValues}`);
 }
 
 /**
@@ -206,11 +221,12 @@ export function getMessageName(msgOrType: MessageOrType): MessageTypeNames {
  * @category Message
  */
 export function instantiateMessage(type: MessageType): PixelMessage {
-  const ctor = _getMessageClass(type);
+  const typeValue = _checkGetMessageTypeValue(type);
+  const ctor = _getMessageClass(typeValue);
   if (ctor) {
     return new ctor();
   } else {
-    return new GenericPixelMessage(type);
+    return new GenericPixelMessage(typeValue);
   }
 }
 
@@ -220,18 +236,26 @@ export function instantiateMessage(type: MessageType): PixelMessage {
  * @returns The serialized data.
  * @category Message
  */
-export function serializeMessage(msgOrType: MessageOrType): ArrayBuffer {
-  if (typeof msgOrType === "number") {
-    return Uint8Array.of(msgOrType);
-  } else {
-    const [dataView] = serialize(msgOrType);
+export function serializeMessage(
+  msgOrTypeOrTypeValue: MessageOrType | number
+): ArrayBuffer {
+  if (typeof msgOrTypeOrTypeValue === "object") {
+    const msg = msgOrTypeOrTypeValue;
+    const [dataView] = serialize(msg);
     assert(dataView.byteLength > 0, "Got empty buffer from deserialization");
     assert(
-      dataView.getUint8(0) === getMessageType(msgOrType),
+      dataView.getUint8(0) === getMessageTypeValue(msg),
       `Unexpected message type, got ${dataView.getUint8(0)} ` +
-        `instead of ${getMessageType(msgOrType)}`
+        `instead of ${getMessageTypeValue(msg)}`
     );
     return dataView.buffer;
+  } else {
+    const typeValue =
+      typeof msgOrTypeOrTypeValue === "number"
+        ? msgOrTypeOrTypeValue
+        : MessageTypeValues[msgOrTypeOrTypeValue];
+    assert(typeValue, `No Pixel message value for ${msgOrTypeOrTypeValue}`);
+    return Uint8Array.of(typeValue);
   }
 }
 
@@ -245,13 +269,12 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
   if (!buffer?.byteLength) {
     throw new SerializationError("Can't deserialize a null or empty buffer");
   }
-
   const dataView = new DataView(buffer);
-  const msgType = dataView.getUint8(0);
+  const msgTypeValue = dataView.getUint8(0);
   if (buffer.byteLength === 1) {
-    return msgType;
+    return getMessageType(msgTypeValue);
   } else {
-    const msg = instantiateMessage(msgType);
+    const msg = instantiateMessage(getMessageType(msgTypeValue));
     const [_, byteRead] = deserialize(msg, dataView);
     if (byteRead !== buffer.byteLength) {
       console.log(
@@ -261,8 +284,8 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
       );
     }
     assert(
-      msg.type === msgType,
-      `Incorrect message type after deserializing ${msg.type} but expecting ${msgType}`
+      msg.type === msgTypeValue,
+      `Incorrect message type after deserializing ${msg.type} but expecting ${msgTypeValue}`
     );
     return msg;
   }
@@ -275,9 +298,9 @@ export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
 export class GenericPixelMessage implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type: MessageType;
+  readonly type: number;
 
-  constructor(type: MessageType) {
+  constructor(type: number) {
     this.type = type;
   }
 }
@@ -307,14 +330,7 @@ export const PixelDesignAndColorValues = {
  * The names for the "enum" type {@link PixelDesignAndColorValues}.
  * @category Message
  */
-export type PixelDesignAndColorNames = keyof typeof PixelDesignAndColorValues;
-
-/**
- * The "enum" type for {@link PixelDesignAndColorValues}.
- * @category Message
- */
-export type PixelDesignAndColor =
-  (typeof PixelDesignAndColorValues)[PixelDesignAndColorNames];
+export type PixelDesignAndColor = keyof typeof PixelDesignAndColorValues;
 
 /**
  * Message send by a Pixel after receiving a "WhoAmI" message.
@@ -396,13 +412,7 @@ export const PixelRollStateValues = {
  * The names for the "enum" type {@link PixelRollStateValues}.
  * @category Message
  */
-export type PixelRollStateNames = keyof typeof PixelRollStateValues;
-
-/**
- * The "enum" type for {@link PixelRollStateValues}.
- * @category Message
- */
-export type PixelRollState = (typeof PixelRollStateValues)[PixelRollStateNames];
+export type PixelRollState = keyof typeof PixelRollStateValues;
 
 /**
  * Message send by a Pixel to notify of its rolling state.
@@ -662,15 +672,8 @@ export const TransferInstantAnimationsSetAckTypeValues = {
  * The names for the "enum" type {@link TransferInstantAnimationsSetAckTypeValues}.
  * @category Message
  */
-export type TransferInstantAnimationsSetAckTypeNames =
+export type TransferInstantAnimationsSetAckType =
   keyof typeof TransferInstantAnimationsSetAckTypeValues;
-
-/**
- * The "enum" type for {@link TransferInstantAnimationsSetAckTypeValues}.
- * @category Message
- */
-export type TransferInstantAnimationSetAckType =
-  (typeof TransferInstantAnimationsSetAckTypeValues)[TransferInstantAnimationsSetAckTypeNames];
 
 /**
  * Message send by a Pixel after receiving a TransferTestAnimationSet request.
@@ -738,14 +741,7 @@ export const TelemetryRequestModeValues = {
  * The names for the "enum" type {@link TelemetryRequestModeValues}.
  * @category Message
  */
-export type TelemetryRequestModeNames = keyof typeof TelemetryRequestModeValues;
-
-/**
- * The "enum" type for {@link TelemetryRequestModeValues}.
- * @category Message
- */
-export type TelemetryRequestMode =
-  (typeof TelemetryRequestModeValues)[TelemetryRequestModeNames];
+export type TelemetryRequestMode = keyof typeof TelemetryRequestModeValues;
 
 /**
  * Message send to a Pixel to have it start or stop sending telemetry messages.
@@ -846,13 +842,7 @@ export const PixelBatteryStateValues = {
  * The names for the "enum" type {@link PixelBatteryStateValues}.
  * @category Message
  */
-export type BatteryStateNames = keyof typeof PixelBatteryStateValues;
-
-/**
- * The "enum" type for {@link PixelBatteryStateValues}.
- * @category Message
- */
-export type BatteryState = (typeof PixelBatteryStateValues)[BatteryStateNames];
+export type BatteryState = keyof typeof PixelBatteryStateValues;
 
 /**
  * Message send by a Pixel to notify of its battery level and state.
@@ -973,7 +963,7 @@ export class SetDesignAndColor implements PixelMessage {
 
   /** A value from the {@link PixelDesignAndColorValues} enumeration.*/
   @serializable(1)
-  designAndColor: PixelDesignAndColor = 0;
+  designAndColor: number = 0;
 }
 
 /**

@@ -16,11 +16,9 @@ import { EventEmitter } from "events";
 
 import Constants from "./Constants";
 import {
-  MessageTypeValues,
   MessageType,
   MessageOrType,
-  isMessage,
-  getMessageName,
+  getMessageType,
   deserializeMessage,
   IAmADie,
   RollState,
@@ -28,7 +26,6 @@ import {
   Rssi,
   Blink,
   PixelMessage,
-  getMessageType,
   TransferAnimationSet,
   TransferAnimationSetAck,
   TransferTestAnimationSet,
@@ -45,9 +42,8 @@ import {
   SetName,
   PixelDesignAndColorValues,
   PixelRollStateValues,
-  PixelRollStateNames,
-  PixelDesignAndColorNames,
-  MessageTypeNames,
+  PixelRollState,
+  PixelDesignAndColor,
   RequestRssi,
   TelemetryRequestModeValues,
   RemoteAction,
@@ -89,7 +85,7 @@ export type PixelStatus =
  */
 export interface PixelRollData {
   face: number;
-  state: PixelRollStateNames;
+  state: PixelRollState;
 }
 
 /**
@@ -226,7 +222,7 @@ export default class Pixel implements PixelInfo {
   }
 
   /** Gets the Pixel design and color. */
-  get designAndColor(): PixelDesignAndColorNames {
+  get designAndColor(): PixelDesignAndColor {
     return (
       getValueKeyName(this._info?.designAndColor, PixelDesignAndColorValues) ??
       "unknown"
@@ -267,7 +263,7 @@ export default class Pixel implements PixelInfo {
    * Gets the Pixel roll state.
    * @remarks The roll state is automatically updated when connected.
    */
-  get rollState(): PixelRollStateNames {
+  get rollState(): PixelRollState {
     return this._rollState.state;
   }
 
@@ -427,12 +423,12 @@ export default class Pixel implements PixelInfo {
    * @param listener The callback function.
    */
   addMessageListener(
-    msgType: MessageType | MessageTypeNames,
+    msgType: MessageType,
     listener: (this: Pixel, message: MessageOrType) => void
   ): void {
     this._msgEvEmitter.addListener(
       `message${
-        typeof msgType === "string" ? msgType : getMessageName(msgType)
+        typeof msgType === "string" ? msgType : getMessageType(msgType)
       }`,
       listener
     );
@@ -444,12 +440,12 @@ export default class Pixel implements PixelInfo {
    * @param listener The callback function to unregister.
    */
   removeMessageListener(
-    msgType: MessageType | MessageTypeNames,
+    msgType: MessageType,
     listener: (this: Pixel, msg: MessageOrType) => void
   ): void {
     this._msgEvEmitter.removeListener(
       `message${
-        typeof msgType === "string" ? msgType : getMessageName(msgType)
+        typeof msgType === "string" ? msgType : getMessageType(msgType)
       }`,
       listener
     );
@@ -482,7 +478,7 @@ export default class Pixel implements PixelInfo {
           reject(
             new Error(
               `Timeout of ${timeoutMs}ms waiting on message ` +
-                getMessageName(expectedMsgType)
+                getMessageType(expectedMsgType)
             )
           );
         }
@@ -497,14 +493,16 @@ export default class Pixel implements PixelInfo {
    * @param withoutAck Whether to request a confirmation that the message was received.
    */
   async sendMessage(
-    msgOrType: MessageOrType,
+    msgOrTypeOrTypeValue: MessageOrType,
     withoutAck = false
   ): Promise<void> {
-    const msgName = getMessageName(msgOrType);
     if (this._logMessages) {
-      this._log(`Sending message ${msgName} (${getMessageType(msgOrType)})}`);
+      const msgName = getMessageType(msgOrTypeOrTypeValue);
+      this._log(
+        `Sending message ${msgName} (${getMessageType(msgOrTypeOrTypeValue)})}`
+      );
     }
-    const data = serializeMessage(msgOrType);
+    const data = serializeMessage(msgOrTypeOrTypeValue);
     await this._session.writeValue(data, withoutAck);
   }
 
@@ -544,7 +542,7 @@ export default class Pixel implements PixelInfo {
     // Get the session object, throws an error if invalid
     return (await this.sendAndWaitForResponse(
       msgOrTypeToSend,
-      new responseType().type,
+      getMessageType(new responseType().type),
       timeoutMs
     )) as T;
   }
@@ -557,7 +555,7 @@ export default class Pixel implements PixelInfo {
     if (name.length) {
       await this.sendAndWaitForResponse(
         safeAssign(new SetName(), { name }),
-        MessageTypeValues.setNameAck
+        "setNameAck"
       );
     }
   }
@@ -566,7 +564,7 @@ export default class Pixel implements PixelInfo {
    * Requests Pixel to start faces calibration sequence.
    */
   async startCalibration(): Promise<void> {
-    await this.sendMessage(MessageTypeValues.calibrate);
+    await this.sendMessage("calibrate");
   }
 
   /**
@@ -591,7 +589,7 @@ export default class Pixel implements PixelInfo {
    */
   async turnOff(): Promise<void> {
     await this.sendMessage(
-      MessageTypeValues.sleep,
+      "sleep",
       true // withoutAck
     );
   }
@@ -624,14 +622,14 @@ export default class Pixel implements PixelInfo {
       faceMask: opt?.faceMask ?? AnimConstants.faceMaskAllLEDs,
       loop: opt?.loop ?? false,
     });
-    await this.sendAndWaitForResponse(blinkMsg, MessageTypeValues.blinkAck);
+    await this.sendAndWaitForResponse(blinkMsg, "blinkAck");
   }
 
   /**
    * Requests the Pixel to stop all animations currently playing.
    */
   async stopAllAnimations(): Promise<void> {
-    await this.sendMessage(MessageTypeValues.stopAllAnimations);
+    await this.sendMessage("stopAllAnimations");
   }
 
   /**
@@ -688,7 +686,7 @@ export default class Pixel implements PixelInfo {
       );
 
       await this._uploadBulkDataWithAck(
-        MessageTypeValues.transferAnimationSetFinished,
+        "transferAnimationSetFinished",
         data,
         progressCallback
       );
@@ -742,7 +740,7 @@ export default class Pixel implements PixelInfo {
               `and hash 0x${hashStr}`
           );
           await this._uploadBulkDataWithAck(
-            MessageTypeValues.transferTestAnimationSetFinished,
+            "transferTestAnimationSetFinished",
             data,
             progressCallback
           );
@@ -805,7 +803,7 @@ export default class Pixel implements PixelInfo {
               `and hash 0x${hashStr}`
           );
           await this._uploadBulkDataWithAck(
-            MessageTypeValues.transferInstantAnimationSetFinished,
+            "transferInstantAnimationSetFinished",
             data,
             progressCallback
           );
@@ -836,7 +834,7 @@ export default class Pixel implements PixelInfo {
   // Log the given message prepended with a timestamp and the Pixel name
   private _log(msg: unknown): void {
     if (this._logFunc) {
-      if (isMessage(msg)) {
+      if ((msg as PixelMessage)?.type) {
         this._logFunc(msg);
       } else {
         this._logFunc(`[${_getTime()} - Pixel ${this.name}] ${msg}`);
@@ -855,8 +853,8 @@ export default class Pixel implements PixelInfo {
       // Identify Pixel
       this._log("Waiting on identification message");
       const response = await this.sendAndWaitForResponse(
-        MessageTypeValues.whoAreYou,
-        MessageTypeValues.iAmADie
+        "whoAreYou",
+        "iAmADie"
       );
 
       // @ts-expect-error status was already tested above but could have changed since
@@ -905,8 +903,8 @@ export default class Pixel implements PixelInfo {
   private _onValueChanged(dataView: DataView) {
     try {
       const msgOrType = deserializeMessage(dataView.buffer);
-      const msgName = getMessageName(msgOrType);
       if (msgOrType) {
+        const msgName = getMessageType(msgOrType);
         if (this._logMessages) {
           this._log(
             `Received message ${msgName} (${getMessageType(msgOrType)})}`
@@ -988,7 +986,7 @@ export default class Pixel implements PixelInfo {
     // Send setup message
     const setupMsg = new BulkSetup();
     setupMsg.size = remainingSize;
-    await this.sendAndWaitForResponse(setupMsg, MessageTypeValues.bulkSetupAck);
+    await this.sendAndWaitForResponse(setupMsg, "bulkSetupAck");
     this._log("Ready for receiving data");
 
     // Then transfer data
@@ -1001,7 +999,7 @@ export default class Pixel implements PixelInfo {
       dataMsg.data = data.slice(offset, offset + dataMsg.size);
 
       //TODO test disconnecting die in middle of transfer
-      await this.sendAndWaitForResponse(dataMsg, MessageTypeValues.bulkDataAck);
+      await this.sendAndWaitForResponse(dataMsg, "bulkDataAck");
 
       remainingSize -= dataMsg.size;
       offset += dataMsg.size;

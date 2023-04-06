@@ -1,12 +1,10 @@
 import {
   Pixel,
   MessageOrType,
-  MessageTypeValues,
   Telemetry,
   RequestTelemetry,
   PixelStatus,
   Temperature,
-  MessageTypeNames,
   PixelRollData,
   PixelBatteryData,
   MessageType,
@@ -46,7 +44,7 @@ function _autoRequest(
 function _requestValue(
   pixel: Pixel,
   refreshInt: number,
-  msgName: MessageTypeNames,
+  msgType: MessageType,
   msgToSend: MessageType,
   msgHandler: (msg: MessageOrType) => void,
   setLastError: (error: Error) => void,
@@ -55,11 +53,11 @@ function _requestValue(
   // Value requester
   const request = () => pixel.sendMessage(msgToSend).catch(setLastError);
   // Listen for the given response message
-  pixel.addMessageListener(msgName, msgHandler);
+  pixel.addMessageListener(msgType, msgHandler);
   // Setup auto requesting
   const unsubscribe = _autoRequest(pixel, refreshInt, request, triggerRender);
   return () => {
-    pixel.removeMessageListener(msgName, msgHandler);
+    pixel.removeMessageListener(msgType, msgHandler);
     unsubscribe();
   };
 }
@@ -280,7 +278,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             pixel,
             minInterval,
             "temperature",
-            MessageTypeValues.requestTemperature,
+            "requestTemperature",
             (msg: MessageOrType) => {
               const tmp = msg as Temperature;
               const val = {

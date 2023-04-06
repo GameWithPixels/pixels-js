@@ -4,7 +4,6 @@ import {
   Pixel,
   PixelStatus,
   LEDLoopback,
-  MessageTypeValues,
   RequestTelemetry,
   Telemetry,
   DataSet,
@@ -63,8 +62,8 @@ async function blinkForever(
 const ValidationTests = {
   checkLEDLoopback: async (pixel: Pixel): Promise<void> => {
     const msg = await pixel.sendAndWaitForResponse(
-      MessageTypeValues.testLEDLoopback,
-      MessageTypeValues.ledLoopback
+      "testLEDLoopback",
+      "ledLoopback"
     );
     const ledLoopback = msg as LEDLoopback;
     console.log(`LED loopback value: ${ledLoopback.value}`);
@@ -78,7 +77,7 @@ const ValidationTests = {
       safeAssign(new RequestTelemetry(), {
         requestMode: TelemetryRequestModeValues.once,
       }),
-      MessageTypeValues.telemetry
+      "telemetry"
     );
     const telemetry = response as Telemetry;
     const voltage = telemetry.voltageTimes50 / 50;
@@ -99,7 +98,7 @@ const ValidationTests = {
       safeAssign(new RequestRssi(), {
         requestMode: TelemetryRequestModeValues.once,
       }),
-      MessageTypeValues.rssi
+      "rssi"
     )) as Rssi;
 
     console.log(`RSSI is ${rssi.value}`);
@@ -306,7 +305,7 @@ const ValidationTests = {
 
   exitValidationMode: async (pixel: Pixel): Promise<void> => {
     // Exit validation mode, don't wait for response as die will restart
-    await pixel.sendMessage(MessageTypeValues.exitValidation, true);
+    await pixel.sendMessage("exitValidation", true);
   },
 
   waitDisconnected: async (
