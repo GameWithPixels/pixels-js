@@ -2,7 +2,11 @@ import { theme as BaseTheme } from "@systemic-games/react-native-base-components
 import { extendTheme } from "native-base";
 
 import pixelComponents from "./components";
-import { sr } from "../utils";
+
+// Because native base map some integer sizes to other values :(
+function sr(value: number) {
+  return 0.98 * value;
+}
 
 const pixelColors = {
   dark: "#100F1E",

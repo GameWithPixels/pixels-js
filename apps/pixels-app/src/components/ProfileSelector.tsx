@@ -6,7 +6,6 @@ import {
 import {
   ProfileCard,
   ProfilesActionsheet,
-  sr,
 } from "@systemic-games/react-native-pixels-components";
 import { ScrollView, ChevronLeftIcon, ChevronRightIcon } from "native-base";
 import React from "react";
@@ -38,8 +37,8 @@ export function ProfileSelector({
       <ChevronLeftIcon />
       <ScrollView
         horizontal
-        h={sr(85)}
-        w={sr(350)}
+        h={85}
+        w={350}
         snapToAlignment="start"
         snapToInterval={115}
         fadingEdgeLength={20}
@@ -50,10 +49,10 @@ export function ProfileSelector({
             <ProfileCard
               key={i}
               ml={i > 0 ? 2 : 0}
-              w={sr(110)}
-              imageSize={sr(50)}
+              w={110}
+              imageSize={50}
               fontSize="xs"
-              p={sr(4)}
+              p={4}
               name={profile.name}
               profileIndexInList={i}
               onSelected={setSelectedProfile}
@@ -64,7 +63,7 @@ export function ProfileSelector({
             />
           ))}
           <ProfilesActionsheet
-            w={sr(110)}
+            w={110}
             profiles={profiles}
             dieRenderer={dieRenderer}
           />

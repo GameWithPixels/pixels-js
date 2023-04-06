@@ -6,7 +6,6 @@ import {
   PairedPixelInfoComponent,
   ScannedPixelInfoComponent,
   SquarePairedPixelInfo,
-  sr,
 } from "@systemic-games/react-native-pixels-components";
 import {
   ScannedPixel,
@@ -106,7 +105,7 @@ function PairedPixelList({
                   <Box p={1} alignSelf="center" key={pixel.pixelId} w="50%">
                     <SquarePairedPixelInfo
                       w="100%"
-                      h={sr(200)}
+                      h={200}
                       pixel={pixel}
                       onPress={() => onPress(pixel)}
                       dieRenderer={() => <DieRenderer />}

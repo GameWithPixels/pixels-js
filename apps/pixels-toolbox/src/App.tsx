@@ -18,7 +18,6 @@ import HomeNavigator from "~/screens/HomeNavigator";
 import RollScreen from "~/screens/RollScreen";
 import { SettingsScreen } from "~/screens/SettingsScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
-import { sr } from "~/styles";
 import theme from "~/theme";
 
 // Import internationalization file so it's initialized
@@ -62,7 +61,7 @@ export default function App() {
               screenOptions={{
                 headerTitleStyle: {
                   fontWeight: "bold",
-                  fontSize: sr(26),
+                  fontSize: 26,
                 },
                 headerTitleAlign: "center",
                 drawerStyle: {

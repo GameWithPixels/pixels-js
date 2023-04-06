@@ -7,7 +7,6 @@ import AppPage from "~/components/AppPage";
 import PixelDetails from "~/components/PixelDetails";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { DieDetailsProps } from "~/navigation";
-import { sr } from "~/styles";
 
 function DieDetailsPage({ route, navigation }: DieDetailsProps) {
   const errorHandler = useErrorHandler();
@@ -21,11 +20,11 @@ function DieDetailsPage({ route, navigation }: DieDetailsProps) {
 
   const { t } = useTranslation();
   return (
-    <VStack mx={sr(10)} flex={1}>
+    <VStack mx={10} flex={1}>
       <ScrollView>
         {pixelDispatcher && <PixelDetails pixelDispatcher={pixelDispatcher} />}
       </ScrollView>
-      <Button mt={sr(10)} onPress={() => navigation.goBack()}>
+      <Button mt={10} onPress={() => navigation.goBack()}>
         {t("close")}
       </Button>
     </VStack>

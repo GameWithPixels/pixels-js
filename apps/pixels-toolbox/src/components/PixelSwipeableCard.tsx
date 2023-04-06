@@ -19,7 +19,6 @@ import PixelInfoCard, { PixelInfoCardProps } from "./PixelInfoCard";
 import ProgressBar from "./ProgressBar";
 
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import { sr } from "~/styles";
 
 function SwipeableItemView({
   label,
@@ -188,7 +187,7 @@ export default function ({
           <SwipeableItemView
             label={t(isDisco ? "connect" : "disconnect")}
             backgroundColor={isDisco ? "green.500" : "red.500"}
-            _text={{ mx: sr(20), color: "gray.100", bold: true }}
+            _text={{ mx: 20, color: "gray.100", bold: true }}
           />
         )
       }
@@ -209,7 +208,7 @@ export default function ({
                 : t("blink")
             }
             backgroundColor={isDisco ? "purple.500" : "orange.500"}
-            _text={{ mx: sr(20), color: "gray.100", bold: true }}
+            _text={{ mx: 20, color: "gray.100", bold: true }}
           />
         )
       }
@@ -217,17 +216,11 @@ export default function ({
       <Pressable onPress={() => onShowDetails()}>
         <PixelInfoCard pixel={pixelDispatcher} {...props}>
           {pixelDispatcher.canUpdateFirmware && (
-            <Text position="absolute" top={sr(8)} right={sr(8)}>
+            <Text position="absolute" top={8} right={8}>
               ⬆️
             </Text>
           )}
-          <VStack
-            mb={sr(5)}
-            mt={sr(-3)}
-            space={sr(5)}
-            alignItems="center"
-            width="100%"
-          >
+          <VStack mt={-1} space={2} alignItems="center" width="100%">
             {/* Show either DFU progress, profile update progress, connect state or advertising state */}
             {dfuQueued ? (
               // DFU status and progress

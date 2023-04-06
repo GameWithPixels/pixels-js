@@ -1,8 +1,6 @@
 // eslint-disable-next-line import/namespace
 import { StyleSheet, View } from "react-native";
 
-import { sr } from "~/styles";
-
 export interface ProgressBarProps {
   percent: number;
 }
@@ -26,15 +24,15 @@ export default function ({ percent }: ProgressBarProps) {
 const styles = StyleSheet.create({
   progressBarBackground: {
     backgroundColor: "grey",
-    borderRadius: sr(5),
-    height: sr(20),
+    borderRadius: 5,
+    height: 20,
     width: "100%",
-    padding: sr(2),
+    padding: 2,
     alignSelf: "center",
   },
   progressBarForeground: {
     backgroundColor: "blue",
-    borderRadius: sr(5),
+    borderRadius: 5,
     height: "100%",
   },
 });

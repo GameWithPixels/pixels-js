@@ -2,7 +2,6 @@ export * from "@systemic-games/react-native-base-components";
 
 export * from "./theme";
 export * from "./titlesUtils";
-export * from "./utils";
 export * from "./widgets/createWidgetComponent";
 
 export * from "./components/AnimationCard";

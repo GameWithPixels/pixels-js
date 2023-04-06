@@ -10,7 +10,6 @@ import { useAppSelector } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import { HomeProps } from "~/navigation";
-import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function HomePage({ navigation }: HomeProps) {
@@ -44,7 +43,7 @@ function HomePage({ navigation }: HomeProps) {
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
       <Box flex={1} alignItems="center" left="2%" width="96%">
-        <Text pl="7%" mb={sr(10)} alignSelf="flex-start">
+        <Text pl="7%" mb={3} alignSelf="flex-start">
           ↖️ <Text italic>{t("openMenuToGoToValidation")}</Text>
         </Text>
         <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
@@ -53,7 +52,7 @@ function HomePage({ navigation }: HomeProps) {
         <PixelsList onDieDetails={onDieDetails} />
       </Box>
       {/* Footer showing app and system info */}
-      <Center mt={sr(8)}>
+      <Center mt={8}>
         <Text italic>
           {t("screenWithSize", {
             width: Math.round(window.width),

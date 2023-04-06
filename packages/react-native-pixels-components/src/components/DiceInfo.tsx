@@ -11,7 +11,6 @@ import React from "react";
 
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
-import { sr } from "../utils";
 
 export interface PixelInfo {
   readonly name: string;
@@ -50,7 +49,7 @@ export function PairedPixelInfoComponent({
         <FastHStack alignItems="center" maxW="100%" h="100%">
           {/* Die render */}
           {dieRenderer && (
-            <FastBox h={sr(70)} w={sr(70)}>
+            <FastBox h={70} w={70}>
               {dieRenderer()}
             </FastBox>
           )}
@@ -97,20 +96,14 @@ export function SquarePairedPixelInfo({
 }: PixelInfoCardProps) {
   return (
     <Pressable onPress={onPress}>
-      <Card
-        paddingTop={0}
-        borderWidth={1}
-        p={sr(7)}
-        minH={sr(40)}
-        {...cardProps}
-      >
+      <Card paddingTop={0} borderWidth={1} p={7} minH={40} {...cardProps}>
         <Text fontSize="lg" bold alignSelf="center">
           {pixel.name}
         </Text>
-        <FastBox mt={1} alignItems="center" pb={sr(2)}>
+        <FastBox mt={1} alignItems="center" pb={2}>
           {/* PlaceHolderImage : would be replaced by 3d render of dice */}
           <Image
-            size={sr(70)}
+            size={70}
             // source={pixel.imageRequirePath}
             alt="placeHolder"
           />
@@ -164,13 +157,13 @@ export function ScannedPixelInfoComponent({
       <Card
         borderWidth={1.5}
         w="100%"
-        h={sr(height)}
+        h={height}
         alignItems="center"
         {...flexProps}
       >
         <FastHStack alignItems="center" maxW="100%">
           {dieRenderer && (
-            <FastBox h={sr(60)} w={sr(60)}>
+            <FastBox h={60} w={60}>
               {dieRenderer()}
             </FastBox>
           )}
@@ -184,7 +177,7 @@ export function ScannedPixelInfoComponent({
                 Face Up: {pixel.ledCount}{" "}
               </Text>
             </FastVStack>
-            <FastVStack mr={sr(5)}>
+            <FastVStack mr={5}>
               <BatteryLevel
                 mt={2}
                 percentage={pixel.batteryLevel}
@@ -195,7 +188,7 @@ export function ScannedPixelInfoComponent({
           </FastHStack>
         </FastHStack>
         {unfolded && (
-          <FastButton w={sr(300)} onPress={onPress}>
+          <FastButton w={300} onPress={onPress}>
             Pair Die
           </FastButton>
         )}

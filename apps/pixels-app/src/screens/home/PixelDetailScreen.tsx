@@ -12,7 +12,6 @@ import {
   LoadingPopup,
   PixelAppPage,
   RSSIStrength,
-  sr,
 } from "@systemic-games/react-native-pixels-components";
 import {
   getPixel,
@@ -156,7 +155,7 @@ export default function PixelDetailScreen({
             <Center w="100%">
               <HStack space={0} alignItems="center" paddingLeft={5}>
                 <Box w="50%" paddingLeft={0}>
-                  <Box w={sr(200)} h={sr(200)}>
+                  <Box w={200} h={200}>
                     <DieRenderer
                       renderData={
                         activeProfile && getCachedDataSet(activeProfile)
@@ -165,7 +164,7 @@ export default function PixelDetailScreen({
                   </Box>
                 </Box>
                 <Spacer />
-                <VStack flex={2} space={sr(11)} p={2} rounded="md" w="40%">
+                <VStack flex={2} space={11} p={2} rounded="md" w="40%">
                   <Button onPress={() => pixel.blink(Color.dimOrange)}>
                     <MaterialCommunityIcons
                       name="lightbulb-on-outline"

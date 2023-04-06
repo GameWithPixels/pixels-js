@@ -3,7 +3,6 @@ import { Center, HStack, Text, VStack } from "native-base";
 import { memo, PropsWithChildren } from "react";
 import { useTranslation } from "react-i18next";
 
-import { sr } from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 export interface PixelInfoCardProps extends PropsWithChildren {
@@ -41,9 +40,9 @@ function PixelInfoCardImpl({ children, pixel, moreInfo }: PixelInfoCardProps) {
     <VStack
       variant="cardWithBorder"
       alignItems="center"
-      px={sr(5)}
-      py={sr(3)}
-      space={sr(3)}
+      px={2}
+      py={1}
+      space={1}
       w="100%"
     >
       <Center flexDir="row">
