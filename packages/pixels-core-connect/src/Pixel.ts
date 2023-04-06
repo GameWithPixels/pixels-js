@@ -40,17 +40,19 @@ import {
   NotifyUserAck,
   serializeMessage,
   SetName,
-  PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelRollState,
   PixelDesignAndColor,
   RequestRssi,
   TelemetryRequestModeValues,
   RemoteAction,
+  PixelDesignAndColorValues,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 import PixelSession from "./PixelSession";
 import isPixelChargingOrDone from "./isPixelChargingOrDone";
+
+type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 // Returns a string with the current time with a millisecond precision
 function _getTime(): string {
@@ -167,13 +169,7 @@ export default class Pixel implements PixelInfo {
   private _status: PixelStatus;
 
   // Pixel data
-  private _info?: IAmADie = undefined;
-  private _rollState: PixelRollData = { face: 0, state: "unknown" };
-  private _batteryState: PixelBatteryData = {
-    level: 0,
-    isCharging: false,
-  };
-  private _rssi = 0;
+  private _info: Mutable<PixelInfo>;
 
   /** Toggle logging information about each send and received message. */
   get logMessages(): boolean {
@@ -208,7 +204,7 @@ export default class Pixel implements PixelInfo {
 
   /** Gets the unique Pixel id for the die, may be 0 until connected to device. */
   get pixelId(): number {
-    return this._info?.pixelId ?? 0;
+    return this._info.pixelId ?? 0;
   }
 
   /** Gets the Pixel name, may be empty until connected to device. */
@@ -218,20 +214,17 @@ export default class Pixel implements PixelInfo {
 
   /** Gets the number of LEDs for this Pixels die, may be 0 until connected to device. */
   get ledCount(): number {
-    return this._info?.ledCount ?? 0;
+    return this._info.ledCount ?? 0;
   }
 
   /** Gets the Pixel design and color. */
   get designAndColor(): PixelDesignAndColor {
-    return (
-      getValueKeyName(this._info?.designAndColor, PixelDesignAndColorValues) ??
-      "unknown"
-    );
+    return this._info.designAndColor;
   }
 
   /** Gets the Pixel firmware build date. */
   get firmwareDate(): Date {
-    return new Date(1000 * (this._info?.buildTimestamp ?? 0));
+    return this._info.firmwareDate;
   }
 
   /**
@@ -239,7 +232,7 @@ export default class Pixel implements PixelInfo {
    * @remarks Call {@link reportRssi} to automatically update the RSSI value.
    */
   get rssi(): number {
-    return this._rssi;
+    return this._info.rssi;
   }
 
   /**
@@ -247,7 +240,7 @@ export default class Pixel implements PixelInfo {
    * @remarks The battery level is automatically updated when connected.
    */
   get batteryLevel(): number {
-    return this._batteryState.level;
+    return this._info.batteryLevel;
   }
 
   /**
@@ -256,7 +249,7 @@ export default class Pixel implements PixelInfo {
    * @remarks The charging state is automatically updated when connected.
    */
   get isCharging(): boolean {
-    return this._batteryState.isCharging;
+    return this._info.isCharging;
   }
 
   /**
@@ -264,7 +257,7 @@ export default class Pixel implements PixelInfo {
    * @remarks The roll state is automatically updated when connected.
    */
   get rollState(): PixelRollState {
-    return this._rollState.state;
+    return this._info.rollState;
   }
 
   /**
@@ -272,14 +265,30 @@ export default class Pixel implements PixelInfo {
    * @remarks The current face is automatically updated when connected.
    */
   get currentFace(): number {
-    return this._rollState.face;
+    return this._info.currentFace;
   }
 
   /**
    * Instantiates a Pixel.
+   * @param session The session used to communicate with the Pixel.
+   * @param info Some optional extra info.
    */
-  // TODO initialize optionally with ScannedPixel
-  constructor(session: PixelSession) {
+  constructor(session: PixelSession, info?: PixelInfo) {
+    this._info = info
+      ? { ...info }
+      : {
+          systemId: "",
+          pixelId: 0,
+          name: "",
+          ledCount: 0,
+          designAndColor: "unknown",
+          firmwareDate: new Date(),
+          rssi: 0,
+          batteryLevel: 0,
+          isCharging: false,
+          rollState: "unknown",
+          currentFace: 0,
+        };
     // TODO clean up events on release
     session.setConnectionEventListener(({ connectionStatus }) => {
       if (connectionStatus !== "connected" && connectionStatus !== "ready") {
@@ -300,7 +309,6 @@ export default class Pixel implements PixelInfo {
         state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
       };
       // Notify all die roll events
-      this._rollState = roll;
       this._evEmitter.emit("rollState", { ...roll });
       if (roll.state === "onFace") {
         this._evEmitter.emit("roll", roll.face);
@@ -314,19 +322,20 @@ export default class Pixel implements PixelInfo {
         isCharging: isPixelChargingOrDone(msg.state),
       };
       if (
-        battery.level !== this._batteryState.level ||
-        battery.isCharging !== this._batteryState.isCharging
+        battery.level !== this._info.batteryLevel ||
+        battery.isCharging !== this._info.isCharging
       ) {
-        this._batteryState = battery;
-        this._evEmitter.emit("battery", { ...battery });
+        battery.level = this._info.batteryLevel;
+        battery.isCharging = this._info.isCharging;
+        this._evEmitter.emit("battery", battery);
       }
     });
     // Subscribe to rssi messages and emit event
     this.addMessageListener("rssi", (msgOrType) => {
       const msg = msgOrType as Rssi;
-      if (msg.value !== this._rssi) {
-        this._rssi = msg.value;
-        this._evEmitter.emit("rssi", this._rssi);
+      if (msg.value !== this._info.rssi) {
+        this._info.rssi = msg.value;
+        this._evEmitter.emit("rssi", msg.value);
       }
     });
     // Subscribe to user message requests
@@ -356,24 +365,61 @@ export default class Pixel implements PixelInfo {
    * @returns A promise resolving to this instance.
    */
   async connect(): Promise<Pixel> {
-    //TODO add timeout
-    //TODO should we try to connect even if status is not disconnected?
-    if (this.status !== "disconnected") {
+    //TODO implement connection timeout
+
+    // First connect to the peripheral
+    await this._session.connect();
+
+    // Then prepare our instance for communications with the Pixel
+    if (this.status === "connecting") {
+      // Notify we're connected and proceeding with die identification
+      this._updateStatus("identifying");
+
+      try {
+        await this._internalSetup();
+
+        // We're ready!
+        //@ts-expect-error the status could have changed during the above async call
+        if (this.status === "identifying") {
+          this._updateStatus("ready");
+
+          // Notify battery state
+          this._evEmitter.emit("battery", {
+            level: this._info.batteryLevel,
+            isCharging: this._info.isCharging,
+          });
+
+          // We don't raise roll and roll state events as those should occur
+          // only when the die is actually moved
+        }
+      } catch (error) {
+        // Disconnect but ignore any error
+        try {
+          await this._session.disconnect();
+        } catch {}
+        throw error;
+      }
+    } else if (this.status === "identifying") {
+      // TODO connection timeout
+      await new Promise<void>((resolve) => {
+        const onStatusChange = (status: PixelStatus) => {
+          if (status !== "identifying") {
+            this.removeEventListener("status", onStatusChange);
+            resolve();
+          }
+        };
+        this.addEventListener("status", onStatusChange);
+      });
+    }
+
+    // Check if a status change occurred during the connection process
+    if (this.status !== "ready") {
       throw new PixelError(
         this,
-        `Can only connect when in disconnected state, not in ${this.status} state`
+        `Connection cancelled (current state is ${this.status})`
       );
     }
 
-    await this._session.connect();
-    try {
-      await this._internalSetup();
-    } catch (error) {
-      // Disconnect but ignore any error as we are in an unknown state
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      this._session.disconnect().catch(() => {});
-      throw error;
-    }
     return this;
   }
 
@@ -843,52 +889,24 @@ export default class Pixel implements PixelInfo {
   }
 
   private async _internalSetup(): Promise<void> {
-    if (this.status === "connecting") {
-      // Notify connected
-      this._updateStatus("identifying");
+    this._log("Subscribing");
+    await this._session.subscribe((dv: DataView) => this._onValueChanged(dv));
 
-      this._log("Subscribing");
-      await this._session.subscribe((dv: DataView) => this._onValueChanged(dv));
-
-      // Identify Pixel
-      this._log("Waiting on identification message");
-      const response = await this.sendAndWaitForResponse(
-        "whoAreYou",
-        "iAmADie"
-      );
-
-      // @ts-expect-error status was already tested above but could have changed since
-      if (this.status === "identifying") {
-        this._info = response as IAmADie;
-        this._batteryState = {
-          level: this._info.batteryLevelPercent,
-          isCharging: isPixelChargingOrDone(this._info.batteryState),
-        };
-
-        // We don't raise roll and roll state events as those should occur
-        // only when the die is actually moved
-        this._rollState = {
-          face: this._info.currentFace + 1,
-          state:
-            getValueKeyName(this._info.rollState, PixelRollStateValues) ??
-            "unknown",
-        };
-
-        // We're ready!
-        this._updateStatus("ready");
-
-        // Notify battery state
-        this._evEmitter.emit("battery", { ...this._batteryState });
-      }
-    }
-
-    //TODO also check status change counter
-    if (this.status !== "ready") {
-      throw new PixelError(
-        this,
-        `Status changed while connecting, now in ${this.status} state`
-      );
-    }
+    // Identify Pixel
+    this._log("Waiting on identification message");
+    const resp = await this.sendAndWaitForResponse("whoAreYou", "iAmADie");
+    const iAmADie = resp as IAmADie;
+    this._info.ledCount = iAmADie.ledCount;
+    this._info.designAndColor =
+      getValueKeyName(iAmADie.designAndColor, PixelDesignAndColorValues) ??
+      "unknown";
+    this._info.pixelId = iAmADie.pixelId;
+    this._info.firmwareDate = new Date(1000 * iAmADie.buildTimestamp);
+    this._info.rollState =
+      getValueKeyName(iAmADie.rollState, PixelRollStateValues) ?? "unknown";
+    this._info.currentFace = iAmADie.currentFaceIndex + 1;
+    this._info.batteryLevel = iAmADie.batteryLevelPercent;
+    this._info.isCharging = isPixelChargingOrDone(iAmADie.batteryState);
   }
 
   private _updateStatus(status: PixelStatus): void {

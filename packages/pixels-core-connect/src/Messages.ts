@@ -373,7 +373,7 @@ export class IAmADie implements PixelMessage {
 
   /** Face index, starts at 0. */
   @serializable(1)
-  currentFace = 0;
+  currentFaceIndex = 0;
 
   // Battery level
 

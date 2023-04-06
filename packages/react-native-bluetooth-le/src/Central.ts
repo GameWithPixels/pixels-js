@@ -59,7 +59,6 @@ type PeripheralState =
 interface PeripheralInfo {
   scannedPeripheral: ScannedPeripheral;
   state: PeripheralState;
-  stateCounter: number; // Incremented every time state is changed
   requiredServices: string;
   connStatusCallback?: (ev: PeripheralConnectionEvent) => void;
   valueChangedCallbacks: Map<
@@ -132,7 +131,6 @@ const Central = {
                 pInf.state !== ev.connectionStatus
               ) {
                 pInf.state = ev.connectionStatus;
-                pInf.stateCounter += 1;
               }
               pInf.connStatusCallback?.({
                 peripheral: pInf.scannedPeripheral,
@@ -284,7 +282,6 @@ const Central = {
                 _peripherals.set(ev.device.systemId, {
                   scannedPeripheral: peripheral,
                   state: "disconnected",
-                  stateCounter: 0,
                   requiredServices,
                   valueChangedCallbacks: new Map(),
                 });
@@ -385,7 +382,6 @@ const Central = {
           pInf.requiredServices ?? "",
           false
         );
-        const stateCounter = pInf.stateCounter;
 
         // Set MTU
         console.log(`[BLE ${name}] Connected, updating MTU...`);
@@ -396,13 +392,16 @@ const Central = {
           );
           console.log(`[BLE ${name}] MTU set to ${mtu}`);
         } catch {
-          // Can't change MTU more than once
-          //TODO check for Error (0x4): GATT INVALID PDU
-          console.log(`[BLE ${name}] MTU not set`);
+          const mtu = await BluetoothLE.getPeripheralMtu(sysId);
+          if (mtu <= 23) {
+            // Note: we can't change MTU more than once
+            //TODO check for Error (0x4): GATT INVALID PDU
+            console.log(`[BLE ${name}] MTU not changed: ${mtu}`);
+          }
         }
 
         // Continue if there wasn't any state change since we got connected
-        if (stateCounter === pInf.stateCounter && pInf.state === "connecting") {
+        if (pInf.state === "connecting") {
           // Log services and characteristics
           // const services = await BluetoothLE.getDiscoveredServices(sysId);
           // const logs: string[][] = [];
@@ -439,19 +438,9 @@ const Central = {
           //   console.log(`[BLE ${name}] No service discovered`);
           // }
 
-          // And finally set state to "ready" if there wasn't any state change since we got connected
-          if (
-            stateCounter === pInf.stateCounter &&
-            pInf.state === "connecting"
-          ) {
-            pInf.state = "ready";
-            pInf.stateCounter += 1;
-          } else {
-            throw new Error(
-              `Got disconnected while connecting to peripheral ${name}`
-            );
-          }
-        } else {
+          // And finally set state to "ready"
+          pInf.state = "ready";
+        } else if (pInf.state !== "ready") {
           throw new Error(
             `Got disconnected while connecting to peripheral ${name}`
           );
