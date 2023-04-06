@@ -276,6 +276,7 @@ i18n
           enableCharging: "开始充电",
           disableCharging: "停止充电",
           blinkId: "闪烁ID",
+          updatingFirmware: "更新固件中",
 
           // Validation
           factoryValidation: "工厂测试",
