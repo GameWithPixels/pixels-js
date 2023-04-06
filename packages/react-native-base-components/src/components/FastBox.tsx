@@ -16,6 +16,8 @@ export interface FastBoxProps
       | "alignItems"
       | "alignContent"
       | "justifyContent"
+      | "left"
+      | "right"
       | "width"
       | "maxWidth"
       | "height"
@@ -81,6 +83,8 @@ export function FastBox({ children, ...props }: FastBoxProps) {
           alignItems: props.alignItems,
           alignContent: props.alignContent,
           justifyContent: props.justifyContent,
+          left: props.left,
+          right: props.right,
           width: props.width ?? props.w,
           maxWidth: props.maxWidth ?? props.maxW,
           height: props.height ?? props.h,
@@ -119,6 +123,7 @@ export function FastBox({ children, ...props }: FastBoxProps) {
       props.h,
       props.height,
       props.justifyContent,
+      props.left,
       props.m,
       props.margin,
       props.marginBottom,
@@ -151,6 +156,7 @@ export function FastBox({ children, ...props }: FastBoxProps) {
       props.pt,
       props.px,
       props.py,
+      props.right,
       props.w,
       props.width,
     ]
