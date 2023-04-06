@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/core";
 import {
   FastBox,
   FastHStack,
@@ -87,7 +88,7 @@ function EasCard() {
     setUpdateStatus(errMsg?.length ? `${msg}\n${errMsg}` : msg);
   }, []);
 
-  // List to update events (doesn't seem to work so far)
+  // List to update events (I'm not getting any with expo-updates 0.16.4)
   // const eventListener = React.useCallback((ev: Updates.UpdateEvent) => {
   //   setUpdateStatus(`${ev.type}`);
   //   if (ev.type === Updates.UpdateEventType.ERROR) {
@@ -146,11 +147,13 @@ function EasCard() {
   }, [setUpdateError]);
 
   // Auto-check for updates once
-  React.useEffect(() => {
-    if (!__DEV__) {
-      check();
-    }
-  }, [check]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!__DEV__) {
+        check();
+      }
+    }, [check])
+  );
 
   // Modal
   const [infoVisible, setInfoVisible] = React.useState(false);
