@@ -1,39 +1,23 @@
 import { useFocusEffect } from "@react-navigation/core";
-import {
-  FastBox,
-  FastHStack,
-} from "@systemic-games/react-native-base-components";
+import { FastHStack } from "@systemic-games/react-native-base-components";
 import * as Updates from "expo-updates";
 import * as React from "react";
-import {
-  Appearance,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import {
   Button,
   Card,
   Divider,
   List,
   Modal,
-  MD3DarkTheme as DarkTheme,
-  MD3LightTheme as LightTheme,
   Portal,
-  Provider as PaperProvider,
   RadioButton,
   Text,
   Title,
   useTheme,
 } from "react-native-paper";
 
-export type ThemeMode = "system" | "dark" | "light";
-
-export const PreferencesContext = React.createContext({
-  themeMode: "system" as ThemeMode,
-  setThemeMode: (_mode: ThemeMode) => {},
-});
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
 
 function toYesNo(value: boolean) {
   return value ? "Yes" : "No";
@@ -46,11 +30,13 @@ function ThemeRadio({
   label: string;
   themeMode: ThemeMode;
 }) {
-  const { themeMode: currentThemeMode, setThemeMode } =
-    React.useContext(PreferencesContext);
+  const currentThemeMode = useAppSelector(
+    (state) => state.displaySettings.themeMode
+  );
+  const appDispatch = useAppDispatch();
   const setMode = React.useCallback(
-    () => setThemeMode(themeMode),
-    [setThemeMode, themeMode]
+    () => appDispatch(setThemeMode(themeMode)),
+    [appDispatch, themeMode]
   );
   return (
     <Pressable onPress={setMode} style={styles.radioPressable}>
@@ -66,7 +52,7 @@ function ThemeRadio({
 
 function ThemeCard() {
   return (
-    <Card>
+    <Card style={styles.mb10}>
       <Card.Content>
         <Title>Theme</Title>
         <FastHStack px={5} justifyContent="space-between">
@@ -160,7 +146,7 @@ function EasCard() {
 
   return (
     <>
-      <Card>
+      <Card style={styles.mb10}>
         <Card.Content>
           <Title>EAS Updates</Title>
           <Text style={styles.text}>{`Status: ${updateStatus}`}</Text>
@@ -245,44 +231,37 @@ function AppInfoModal({
   );
 }
 
-function OptionsPage() {
+export function SettingsScreen() {
   const theme = useTheme();
   return (
     <ScrollView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ThemeCard />
-      <FastBox h={10} />
       <EasCard />
-      <FastBox h={10} />
     </ScrollView>
   );
 }
 
-export function SettingsScreen() {
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>("dark");
-  const preferences = React.useMemo(
-    () => ({
-      themeMode,
-      setThemeMode,
-    }),
-    [themeMode]
-  );
-
-  const mode = themeMode === "system" ? Appearance.getColorScheme() : themeMode;
-  const theme = mode === "dark" ? DarkTheme : LightTheme;
-
-  return (
-    <PreferencesContext.Provider value={preferences}>
-      <PaperProvider theme={theme}>
-        <OptionsPage />
-      </PaperProvider>
-    </PreferencesContext.Provider>
-  );
-}
-
 const styles = StyleSheet.create({
-  text: { margin: 5 },
-  textError: { margin: 5, fontWeight: "bold", color: "red" },
-  divider: { margin: 5 },
-  radioPressable: { flexDirection: "row", alignItems: "center" },
-  easCardButtons: { flexDirection: "row", justifyContent: "space-between" },
+  mb10: {
+    marginBottom: 10,
+  },
+  text: {
+    margin: 5,
+  },
+  textError: {
+    margin: 5,
+    fontWeight: "bold",
+    color: "red",
+  },
+  divider: {
+    margin: 5,
+  },
+  radioPressable: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  easCardButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
 });
