@@ -3,8 +3,8 @@ import {
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
 
-import PixelScanner from "./PixelScanner";
-import ScannedPixel from "./ScannedPixel";
+import { PixelScanner } from "./PixelScanner";
+import { ScannedPixel } from "./ScannedPixel";
 
 /**
  * Actions to be taken on a {@link PixelScanList} instance.
@@ -32,7 +32,7 @@ export type PixelScanFilter =
  * Subscribe to the "updated" event to get notified
  * when the list is changed.
  */
-export default class PixelScanNotifier {
+export class PixelScanNotifier {
   private readonly _scanner = new PixelScanner();
   private readonly _queue = new SequentialPromiseQueue();
   private readonly _pixels: ScannedPixel[] = [];

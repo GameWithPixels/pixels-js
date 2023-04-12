@@ -2,9 +2,8 @@ import { Pixel } from "@systemic-games/pixels-core-connect";
 import { assert } from "@systemic-games/pixels-core-utils";
 
 import BleSession from "./BleSession";
-import type ScannedPixel from "./ScannedPixel";
+import { type ScannedPixel } from "./ScannedPixel";
 import { getScannedPixel } from "./allScannedPixels";
-export { type ScannedPixel };
 
 const _pixels = new Map<string, Pixel>();
 
@@ -20,7 +19,7 @@ const _pixels = new Map<string, Pixel>();
  *                    passed logger function.
  * @returns A {@link Pixel} instance.
  */
-export default function (
+export function getPixel(
   pixel: string | number | Pick<ScannedPixel, "systemId">
 ): Pixel {
   const systemdId =

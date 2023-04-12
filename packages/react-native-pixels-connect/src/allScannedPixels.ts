@@ -1,4 +1,4 @@
-import ScannedPixel from "./ScannedPixel";
+import { ScannedPixel } from "./ScannedPixel";
 
 const _pixelIdMap = new Map<number, ScannedPixel>();
 

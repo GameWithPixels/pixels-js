@@ -14,7 +14,7 @@ import {
   ScannedPeripheralEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 
-import type ScannedPixel from "./ScannedPixel";
+import { ScannedPixel } from "./ScannedPixel";
 import SequentialDataReader from "./SequentialDataReader";
 import { registerScannedPixel } from "./allScannedPixels";
 
@@ -27,9 +27,9 @@ export type PixelScannerEventMap = {
 };
 
 const _queue = new SequentialPromiseQueue();
-let _globalScanCount = 0;
+let _globalScanCount = 0; // TODO remove this
 
-export default class PixelScanner {
+export class PixelScanner {
   // Our event emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelScannerEventMap>();
   // Map of system id to scanned Pixel

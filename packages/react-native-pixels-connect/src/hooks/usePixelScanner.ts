@@ -1,8 +1,8 @@
 import { getPixelUniqueName } from "@systemic-games/pixels-core-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import PixelScanNotifier from "./../PixelScanNotifier";
-import ScannedPixel from "../ScannedPixel";
+import { PixelScanNotifier } from "./../PixelScanNotifier";
+import { ScannedPixel } from "../ScannedPixel";
 
 /**
  * Actions to be taken on the Pixel scanner.

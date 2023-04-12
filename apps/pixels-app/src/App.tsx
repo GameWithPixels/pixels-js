@@ -1,7 +1,7 @@
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { PixelTheme } from "@systemic-games/react-native-pixels-components";
-import { useBluetooth } from "@systemic-games/react-native-pixels-connect";
+import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { configure } from "mobx";
 import { Center, NativeBaseProvider, Text } from "native-base";
 import React from "react";
@@ -31,8 +31,10 @@ LogBox.ignoreLogs([
   /ImmutableStateInvariantMiddleware took */,
 ]);
 
+// Initialize Bluetooth globally
+initBluetooth();
+
 export default function App() {
-  useBluetooth();
   return (
     <Provider store={store}>
       <NativeBaseProvider theme={PixelTheme}>

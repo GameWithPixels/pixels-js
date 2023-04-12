@@ -1,6 +1,6 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
-import { useBluetooth } from "@systemic-games/react-native-pixels-connect";
+import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, themeTools } from "native-base";
 import React from "react";
@@ -47,11 +47,12 @@ LogBox.ignoreLogs([
 //   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 // });
 
+// Initialize Bluetooth globally
+initBluetooth();
+
 const Drawer = createDrawerNavigator<RootScreensParamList>();
 
 function MyApp() {
-  useBluetooth();
-
   const themeMode = useAppSelector((state) => state.displaySettings.themeMode);
   const darkOrLight =
     themeMode === "system" ? Appearance.getColorScheme() : themeMode;
