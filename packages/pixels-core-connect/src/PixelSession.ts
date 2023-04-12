@@ -18,7 +18,7 @@ export interface PixelSessionConnectionEvent {
  * Represents a session with a Pixel die.
  * This class is used to abstract the underlying platform used to connect to Pixels.
  */
-export default abstract class PixelSession {
+export abstract class PixelSession {
   protected readonly _pixelSystemId: string;
   protected _connStatusCb?: (ev: PixelSessionConnectionEvent) => void;
   private _lastConnStatus: PixelSessionConnectionStatus;

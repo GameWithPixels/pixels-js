@@ -5,6 +5,6 @@ import { PixelInfo } from "./PixelInfo";
  * @param pixel An object representing a Pixel.
  * @returns A name guaranteed to be unique across Pixel peripherals.
  */
-export default function (pixel: Pick<PixelInfo, "pixelId" | "name">) {
+export function getPixelUniqueName(pixel: Pick<PixelInfo, "pixelId" | "name">) {
   return `${pixel.name}$[${pixel.pixelId}]`;
 }

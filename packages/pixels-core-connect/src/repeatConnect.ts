@@ -1,5 +1,5 @@
-import Pixel from "./Pixel";
-import exponentialBackOff from "./exponentialBackOff";
+import { Pixel } from "./Pixel";
+import { exponentialBackOff } from "./exponentialBackOff";
 
 /**
  * Repeatedly attempts to connect a Pixel die using an exponential back off
@@ -13,6 +13,6 @@ import exponentialBackOff from "./exponentialBackOff";
  * @param pixel The Pixel to connect to.
  * @param retries Number of retries before aborting.
  */
-export default async function (pixel: Pixel, retries = 4): Promise<void> {
+export async function repeatConnect(pixel: Pixel, retries = 4): Promise<void> {
   await exponentialBackOff(retries, 1000, pixel.connect.bind(pixel));
 }

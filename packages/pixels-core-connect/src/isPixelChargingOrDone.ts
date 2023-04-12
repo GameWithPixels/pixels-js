@@ -6,7 +6,7 @@ import { PixelBatteryStateValues } from "./Messages";
  * @param value The Pixel battery state.
  * @returns Whether the Pixel is charging.
  */
-export default function (value: number | undefined): boolean {
+export function isPixelChargingOrDone(value: number | undefined): boolean {
   switch (value) {
     case PixelBatteryStateValues.charging:
     case PixelBatteryStateValues.trickleCharge:

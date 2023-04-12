@@ -49,8 +49,8 @@ import {
   PixelDesignAndColorValues,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
-import PixelSession from "./PixelSession";
-import isPixelChargingOrDone from "./isPixelChargingOrDone";
+import { PixelSession } from "./PixelSession";
+import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -155,7 +155,7 @@ export class PixelError extends Error {
  * Call the {@link connect} method to initiate a connection.
  * @category Pixel
  */
-export default class Pixel implements PixelInfo {
+export class Pixel implements PixelInfo {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();

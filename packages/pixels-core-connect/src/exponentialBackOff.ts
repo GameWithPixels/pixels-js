@@ -14,7 +14,7 @@ import { delay } from "@systemic-games/pixels-core-utils";
  * @param onRejected Called when all retries have failed.
  * @param onWillRetry Called before scheduling a retry.
  */
-export default async function exponentialBackOff(
+export async function exponentialBackOff(
   retries: number,
   delayMs: number,
   executor: () => Promise<unknown>,
