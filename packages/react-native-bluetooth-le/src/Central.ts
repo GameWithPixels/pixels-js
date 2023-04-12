@@ -12,6 +12,7 @@ import {
   BleCharacteristicValueChangedEvent,
 } from "./BluetoothLE";
 import Constants from "./Constants";
+import * as Errors from "./Errors";
 import requestPermissions from "./requestPermissions";
 
 function _toArray(strList?: string): string[] {
@@ -94,9 +95,7 @@ function _getSystemId(peripheral: PeripheralOrSystemId): string {
 function _getPeripheralInfo(peripheral: PeripheralOrSystemId): PeripheralInfo {
   const pInf = _peripherals.get(_getSystemId(peripheral));
   if (!pInf) {
-    throw new Error(
-      `No peripheral found with SystemId=${_getSystemId(peripheral)}`
-    );
+    throw new Errors.UnknownPeripheralError(_getSystemId(peripheral));
   }
   return pInf;
 }
@@ -245,12 +244,12 @@ const Central = {
     services: string | string[]
   ): Promise<void> {
     if (!_nativeEmitter) {
-      throw new Error("Central not ready for scanning");
+      throw new Errors.CentralNotReadyError();
     }
 
     // Ask for permissions on Android
     if (!(await requestPermissions())) {
-      throw Error("Bluetooth permissions denied");
+      throw new Errors.BluetoothPermissionsDeniedError();
     }
 
     // Start BLE scanning
@@ -354,10 +353,7 @@ const Central = {
       !connectionStatusCallback &&
       pInf.connStatusCallback !== connectionStatusCallback
     ) {
-      throw new Error(
-        `Peripheral ${name} was already assigned a connection status callback` +
-          " call disconnect first before assigning a new callback"
-      );
+      throw new Errors.ConnectError(name, "InUse");
     }
 
     console.log(
@@ -441,9 +437,7 @@ const Central = {
           // And finally set state to "ready"
           pInf.state = "ready";
         } else if (pInf.state !== "ready") {
-          throw new Error(
-            `Got disconnected while connecting to peripheral ${name}`
-          );
+          throw new Errors.ConnectError(name, "Disconnected");
         }
       } catch (error) {
         Central.disconnectPeripheral(peripheral).catch((e) =>
@@ -454,7 +448,7 @@ const Central = {
         throw error;
       }
     } else {
-      throw new Error(`Failed to create native peripheral for ${name}`);
+      throw new Errors.ConnectError(name, "NativeError");
     }
   },
 
