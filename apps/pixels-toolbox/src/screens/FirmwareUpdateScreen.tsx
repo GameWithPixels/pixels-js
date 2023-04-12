@@ -10,7 +10,6 @@ import { Link, Pressable, Text } from "native-base";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
-// eslint-disable-next-line import/namespace
 import { FlatList, RefreshControl } from "react-native";
 
 import { useAppSelector } from "~/app/hooks";

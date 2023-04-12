@@ -21,7 +21,6 @@ import {
   IActionsheetProps,
 } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 
 /**

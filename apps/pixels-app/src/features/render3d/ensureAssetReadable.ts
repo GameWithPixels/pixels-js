@@ -1,6 +1,5 @@
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
-// eslint-disable-next-line import/namespace
 import { Platform } from "react-native";
 
 /**

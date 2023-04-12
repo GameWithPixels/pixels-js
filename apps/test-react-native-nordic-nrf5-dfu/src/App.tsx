@@ -13,7 +13,6 @@ import {
   Button,
   SafeAreaView,
   StatusBar,
-  // eslint-disable-next-line import/namespace
 } from "react-native";
 import DocumentPicker, { types } from "react-native-document-picker";
 import RNFS from "react-native-fs";

@@ -15,7 +15,6 @@ import {
 import { observer } from "mobx-react-lite";
 import { Box, Input, Pressable, Text } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
 import { StyleSheet } from "react-native";
 import DraggableFlatList, {
   ScaleDecorator,

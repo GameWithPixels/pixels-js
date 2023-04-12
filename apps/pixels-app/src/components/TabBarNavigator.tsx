@@ -1,6 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { IImageProps, Image, Theme, themeTools } from "native-base";
-// eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 
 import { RootStackParamList } from "~/navigation";

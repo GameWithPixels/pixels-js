@@ -2,7 +2,6 @@ import { FastBox } from "@systemic-games/react-native-base-components";
 import { Link, Text } from "native-base";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-// eslint-disable-next-line import/namespace
 import { Platform, useWindowDimensions } from "react-native";
 
 import PixelsList from "./PixelsList";

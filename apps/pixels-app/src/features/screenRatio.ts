@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/namespace
 import { Dimensions } from "react-native";
 
 const screenRatio = Dimensions.get("window").width / 400;

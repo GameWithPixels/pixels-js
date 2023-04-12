@@ -32,7 +32,6 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { Slider, Text } from "native-base";
 import { useCallback, useMemo, useReducer, useState } from "react";
-// eslint-disable-next-line import/namespace
 import { FlatList, StyleSheet } from "react-native";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";

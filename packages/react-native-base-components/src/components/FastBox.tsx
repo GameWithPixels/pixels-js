@@ -1,5 +1,4 @@
 import React, { PropsWithChildren } from "react";
-// eslint-disable-next-line import/namespace
 import { View as RnView, ViewStyle, StyleSheet } from "react-native";
 
 // No color in these props so it's compatible with Native Base style props

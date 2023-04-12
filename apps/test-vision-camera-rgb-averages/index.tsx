@@ -1,6 +1,5 @@
 import "react-native-reanimated";
 
-// eslint-disable-next-line import/namespace
 import { AppRegistry } from "react-native";
 
 import { name as appName } from "./app.json";

@@ -4,7 +4,6 @@ import {
 } from "@systemic-games/vision-camera-rgb-averages";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-// eslint-disable-next-line import/namespace
 import { StyleSheet, View, Text } from "react-native";
 import { runOnJS } from "react-native-reanimated";
 import {

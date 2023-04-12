@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/namespace
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({

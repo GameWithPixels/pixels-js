@@ -14,7 +14,6 @@ import {
   EmitterSubscription,
   Platform,
   PermissionsAndroid,
-  // eslint-disable-next-line import/namespace
 } from "react-native";
 
 import {

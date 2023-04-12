@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/namespace
 import { StyleSheet, View } from "react-native";
 
 export interface ProgressBarProps {

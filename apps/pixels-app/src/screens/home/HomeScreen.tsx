@@ -21,7 +21,6 @@ import {
   VStack,
 } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
 import { RefreshControl } from "react-native";
 
 import {

@@ -5,7 +5,6 @@ import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { configure } from "mobx";
 import { Center, NativeBaseProvider, Text } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
 import { LogBox } from "react-native";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";

@@ -1,6 +1,5 @@
 import { Icon, IIconProps } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
 
 export type IconParams = {
   category: any;

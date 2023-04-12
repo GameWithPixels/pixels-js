@@ -10,7 +10,6 @@ import { Renderer, THREE } from "expo-three";
 import { Text } from "native-base";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
-// eslint-disable-next-line import/namespace
 import { StyleSheet } from "react-native";
 
 import createDie3DAsync from "./createDie3DAsync";

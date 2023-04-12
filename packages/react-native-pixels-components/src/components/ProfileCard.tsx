@@ -7,7 +7,6 @@ import {
 } from "@systemic-games/react-native-base-components";
 import { Pressable, Text, Box, ITextProps, IBoxProps } from "native-base";
 import React from "react";
-// eslint-disable-next-line import/namespace
 import { ImageSourcePropType } from "react-native";
 /**
  * Basic profile information for minimal display.

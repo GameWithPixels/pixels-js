@@ -23,7 +23,6 @@ import {
   Platform,
   PermissionsAndroid,
   ScrollView,
-  // eslint-disable-next-line import/namespace
 } from "react-native";
 
 // https://stackoverflow.com/a/34310051
