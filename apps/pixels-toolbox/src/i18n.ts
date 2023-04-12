@@ -3,6 +3,17 @@ import * as Localization from "expo-localization";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
+export function capitalize(str: string): string {
+  const l = str?.length;
+  if (!l) {
+    return str;
+  } else if (l === 1) {
+    return str.toUpperCase()
+  } else {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+};
+
 i18n
   .use({
     type: "languageDetector",
