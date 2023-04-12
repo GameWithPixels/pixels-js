@@ -128,7 +128,8 @@ i18n
           enableCharging: "Enable Charging",
           disableCharging: "Disable Charging",
           blinkId: "Blink Id",
-          updatingFirmware: "Updating Firmware",
+          // updatingFirmware: "Updating Firmware",
+          updatingProfile: "Updating Profile",
 
           // Validation
           factoryValidation: "Factory Validation",
@@ -287,7 +288,8 @@ i18n
           enableCharging: "开始充电",
           disableCharging: "停止充电",
           blinkId: "闪烁ID",
-          updatingFirmware: "更新固件中",
+          // updatingFirmware: "更新固件中",
+          updatingProfile: "Updating Profile",
 
           // Validation
           factoryValidation: "工厂测试",

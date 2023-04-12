@@ -1,7 +1,5 @@
 import { getValueKeyName } from "@systemic-games/pixels-core-utils";
 import {
-  FastBox,
-  FastButton,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
@@ -12,34 +10,57 @@ import {
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import { ITextProps, Text } from "native-base";
-import React from "react";
+import React, { PropsWithChildren } from "react";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
+import {
+  Button as PaperButton,
+  ButtonProps,
+  Card,
+  Modal,
+  Portal,
+  Text,
+  useTheme,
+} from "react-native-paper";
 
-import ProgressBar from "./ProgressBar";
-
+import ProgressBar from "~/components/ProgressBar";
 import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { capitalize } from "~/i18n";
 
-function TextEntry({
+interface TextEntryBaseProps extends PropsWithChildren {
+  title: string;
+  colonSeparator: string;
+}
+
+function TextEntryBase({
   children,
   title,
-  ...props
-}: { title: string } & ITextProps) {
-  const { t } = useTranslation();
+  colonSeparator,
+}: TextEntryBaseProps) {
   return (
-    <Text mb={1} {...props}>
-      <Text bold>
-        {title}
-        {t("colonSeparator")}
+    <Text style={styles.mv1} variant="bodyLarge">
+      <Text style={styles.textBold}>
+        {capitalize(title)}
+        {colonSeparator}
       </Text>
-      <Text italic>{children}</Text>
+      <Text style={styles.textItalic}>{children}</Text>
     </Text>
   );
 }
 
+function useTextEntry(colonSeparator: string) {
+  return (props: Omit<TextEntryBaseProps, "colonSeparator">) =>
+    TextEntryBase({ colonSeparator, ...props });
+}
+
+function Button({ ...props }: Omit<ButtonProps, "style">) {
+  return <PaperButton style={styles.mv3} mode="contained-tonal" {...props} />;
+}
+
 function BaseInfo({ pixel }: { pixel: Pixel }) {
   const { t } = useTranslation();
+  const TextEntry = useTextEntry(t("colonSeparator"));
   return (
     <>
       <TextEntry title={t("pixelId")}>{pixel.pixelId}</TextEntry>
@@ -60,7 +81,9 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   const z = telemetry?.accZ ?? 0;
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
 
+  // Values for UI
   const { t } = useTranslation();
+  const TextEntry = useTextEntry(t("colonSeparator"));
   return useAppBackgroundState() === "active" ? (
     <>
       <TextEntry title={t("battery")}>
@@ -120,7 +143,7 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   );
 }
 
-const BottomButtons = React.memo(function ({
+function BottomButtons({
   pixelDispatcher,
 }: {
   pixelDispatcher: PixelDispatcher;
@@ -129,80 +152,112 @@ const BottomButtons = React.memo(function ({
   return (
     <FastHStack>
       <FastVStack flex={1} mr={2}>
-        <FastButton onPress={() => pixelDispatcher.dispatch("connect")}>
+        <Button onPress={() => pixelDispatcher.dispatch("connect")}>
           {t("connect")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("discharge")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("discharge")}>
           {t("discharge")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("enableCharging")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("enableCharging")}>
           {t("enableCharging")}
-        </FastButton>
-        <FastButton mt={2} onPress={() => pixelDispatcher.dispatch("blink")}>
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("blink")}>
           {t("blink")}
-        </FastButton>
-        <FastButton mt={2} onPress={() => pixelDispatcher.dispatch("blinkId")}>
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
           {t("blinkId")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("calibrate")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
           {t("calibrate")}
-        </FastButton>
+        </Button>
       </FastVStack>
       <FastVStack flex={1} ml={2}>
-        <FastButton onPress={() => pixelDispatcher.dispatch("disconnect")}>
+        <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
           {t("disconnect")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("stopDischarge")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("stopDischarge")}>
           {t("stopDischarge")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("disableCharging")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("disableCharging")}>
           {t("disableCharging")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("playRainbow")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
           {t("rainbow")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("updateProfile")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
           {t("resetProfile")}
-        </FastButton>
-        <FastButton
-          mt={2}
-          onPress={() => pixelDispatcher.dispatch("exitValidationMode")}
-        >
+        </Button>
+        <Button onPress={() => pixelDispatcher.dispatch("exitValidationMode")}>
           {t("exitValidationMode")}
-        </FastButton>
+        </Button>
       </FastVStack>
     </FastHStack>
   );
-});
+}
+
+function FirmwareUpdateModal({ updateProgress }: { updateProgress?: number }) {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  return (
+    <Portal>
+      <Modal
+        visible={!!updateProgress}
+        contentContainerStyle={{
+          backgroundColor: theme.colors.background,
+          margin: 10,
+          padding: 20,
+          borderColor: theme.colors.onPrimary,
+          borderWidth: 3,
+          borderRadius: 8,
+        }}
+      >
+        <Text style={styles.mv3} variant="bodyLarge">
+          {t("updatingProfile") + t("colonSeparator")}
+        </Text>
+        <ProgressBar percent={updateProgress ?? 0} />
+      </Modal>
+    </Portal>
+  );
+}
+
+function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  return (
+    <>
+      <Text
+        style={{
+          color: theme.colors.error,
+          fontWeight: "bold",
+          padding: 10,
+          borderColor: theme.colors.errorContainer,
+          borderWidth: 3,
+          borderRadius: 8,
+          marginTop: 20,
+          marginBottom: 10,
+          marginHorizontal: 10,
+        }}
+        variant="bodyLarge"
+      >
+        {`${error}`}
+      </Text>
+      <PaperButton style={styles.m10} mode="outlined" onPress={clear}>
+        {t("clearError")}
+      </PaperButton>
+    </>
+  );
+}
 
 export default function PixelDetails({
   pixelDispatcher,
 }: {
   pixelDispatcher: PixelDispatcher;
 }) {
+  // Error handling
   const [lastError, setLastError] = React.useState<Error>();
+  const clearError = React.useCallback(() => setLastError(undefined), []);
 
+  // Firmware update
   const [updateProgress, setUpdateProgress] = React.useState<number>();
   React.useEffect(() => {
     pixelDispatcher.addEventListener("error", setLastError);
@@ -219,33 +274,55 @@ export default function PixelDetails({
     };
   }, [pixelDispatcher]);
 
+  // Pixel
   const pixel = pixelDispatcher.pixel;
   const status = usePixelStatus(pixel);
 
+  // Values for UI
   const { t } = useTranslation();
+  const TextEntry = useTextEntry(t("colonSeparator"));
   return (
-    <FastVStack>
-      <Text variant="h2">{pixelDispatcher.name}</Text>
-      <TextEntry mt={2} mb={2} title={t("status")}>
-        {status ? t(status) : ""}
-      </TextEntry>
-      <BaseInfo pixel={pixel} />
-      <TelemetryInfo pixel={pixel} />
-      {lastError && (
-        <>
-          <Text color="red.500">{`Error: ${lastError}`}</Text>
-          <FastButton mb={2} onPress={() => setLastError(undefined)}>
-            Clear Error
-          </FastButton>
-        </>
-      )}
-      {updateProgress !== undefined && (
-        <FastBox my={10}>
-          <Text>{t("updatingFirmware") + t("colonSeparator")}</Text>
-          <ProgressBar percent={updateProgress} />
-        </FastBox>
-      )}
-      <BottomButtons pixelDispatcher={pixelDispatcher} />
-    </FastVStack>
+    <>
+      <Card>
+        <Card.Title
+          titleVariant="headlineMedium"
+          title={pixelDispatcher.name}
+        />
+        <Card.Content>
+          <View style={styles.mv3}>
+            <TextEntry title={t("status")}>{status ? t(status) : ""}</TextEntry>
+          </View>
+          <BaseInfo pixel={pixel} />
+          <TelemetryInfo pixel={pixel} />
+        </Card.Content>
+        {lastError ? (
+          <ErrorCard error={lastError} clear={clearError} />
+        ) : (
+          <Card.Actions>
+            <BottomButtons pixelDispatcher={pixelDispatcher} />
+          </Card.Actions>
+        )}
+      </Card>
+
+      <FirmwareUpdateModal updateProgress={updateProgress} />
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  mv1: {
+    marginVertical: 1,
+  },
+  mv3: {
+    marginVertical: 3,
+  },
+  m10: {
+    margin: 10,
+  },
+  textBold: {
+    fontWeight: "bold",
+  },
+  textItalic: {
+    fontStyle: "italic",
+  },
+});
