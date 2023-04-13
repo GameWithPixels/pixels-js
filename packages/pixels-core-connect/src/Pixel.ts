@@ -49,6 +49,7 @@ import {
   PixelDesignAndColorValues,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
+import { PixelInfoNotifier } from "./PixelInfoNotifier";
 import { PixelSession } from "./PixelSession";
 import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
 
@@ -86,8 +87,8 @@ export type PixelStatus =
  * @category Pixel
  */
 export interface PixelRollData {
-  face: number;
   state: PixelRollState;
+  face: number;
 }
 
 /**
@@ -155,7 +156,7 @@ export class PixelError extends Error {
  * Call the {@link connect} method to initiate a connection.
  * @category Pixel
  */
-export class Pixel implements PixelInfo {
+export class Pixel extends PixelInfoNotifier {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
@@ -274,6 +275,7 @@ export class Pixel implements PixelInfo {
    * @param info Some optional extra info.
    */
   constructor(session: PixelSession, info?: PixelInfo) {
+    super();
     this._info = info
       ? { ...info }
       : {
@@ -305,9 +307,19 @@ export class Pixel implements PixelInfo {
     this.addMessageListener("rollState", (msgOrType) => {
       const msg = msgOrType as RollState;
       const roll = {
-        face: msg.faceIndex + 1,
         state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
+        face: msg.faceIndex + 1,
       };
+      const stateChanged = this._info.rollState !== roll.state;
+      const faceChanged = this._info.currentFace !== roll.face;
+      if (stateChanged) {
+        this._info.rollState = roll.state;
+        this.emitPropertyEvent("rollState");
+      }
+      if (faceChanged) {
+        this._info.currentFace = roll.face;
+        this.emitPropertyEvent("currentFace");
+      }
       // Notify all die roll events
       this._evEmitter.emit("rollState", { ...roll });
       if (roll.state === "onFace") {
@@ -321,12 +333,17 @@ export class Pixel implements PixelInfo {
         level: msg.levelPercent,
         isCharging: isPixelChargingOrDone(msg.state),
       };
-      if (
-        battery.level !== this._info.batteryLevel ||
-        battery.isCharging !== this._info.isCharging
-      ) {
-        battery.level = this._info.batteryLevel;
-        battery.isCharging = this._info.isCharging;
+      const levelChanged = this._info.batteryLevel !== battery.level;
+      const chargingChanged = this._info.isCharging !== battery.isCharging;
+      if (levelChanged) {
+        this._info.batteryLevel = battery.level;
+        this.emitPropertyEvent("batteryLevel");
+      }
+      if (chargingChanged) {
+        this._info.isCharging = battery.isCharging;
+        this.emitPropertyEvent("isCharging");
+      }
+      if (levelChanged || chargingChanged) {
         this._evEmitter.emit("battery", battery);
       }
     });
@@ -335,6 +352,7 @@ export class Pixel implements PixelInfo {
       const msg = msgOrType as Rssi;
       if (msg.value !== this._info.rssi) {
         this._info.rssi = msg.value;
+        this.emitPropertyEvent("rssi");
         this._evEmitter.emit("rssi", msg.value);
       }
     });
@@ -901,12 +919,33 @@ export class Pixel implements PixelInfo {
       getValueKeyName(iAmADie.designAndColor, PixelDesignAndColorValues) ??
       "unknown";
     this._info.pixelId = iAmADie.pixelId;
-    this._info.firmwareDate = new Date(1000 * iAmADie.buildTimestamp);
-    this._info.rollState =
+    // TODO Check pixelId not changed
+    const firmwareDate = new Date(1000 * iAmADie.buildTimestamp);
+    if (this._info.firmwareDate.getTime() !== firmwareDate.getTime()) {
+      this._info.firmwareDate = firmwareDate;
+      this.emitPropertyEvent("firmwareDate");
+    }
+    const batteryLevel = iAmADie.batteryLevelPercent;
+    if (this._info.batteryLevel !== batteryLevel) {
+      this._info.batteryLevel = batteryLevel;
+      this.emitPropertyEvent("batteryLevel");
+    }
+    const isCharging = isPixelChargingOrDone(iAmADie.batteryState);
+    if (this._info.isCharging !== isCharging) {
+      this._info.isCharging = isCharging;
+      this.emitPropertyEvent("isCharging");
+    }
+    const rollState =
       getValueKeyName(iAmADie.rollState, PixelRollStateValues) ?? "unknown";
-    this._info.currentFace = iAmADie.currentFaceIndex + 1;
-    this._info.batteryLevel = iAmADie.batteryLevelPercent;
-    this._info.isCharging = isPixelChargingOrDone(iAmADie.batteryState);
+    if (this._info.rollState !== rollState) {
+      this._info.rollState = rollState;
+      this.emitPropertyEvent("rollState");
+    }
+    const currentFace = iAmADie.currentFaceIndex + 1;
+    if (this._info.currentFace !== currentFace) {
+      this._info.currentFace = currentFace;
+      this.emitPropertyEvent("currentFace");
+    }
   }
 
   private _updateStatus(status: PixelStatus): void {
