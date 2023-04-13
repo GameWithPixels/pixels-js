@@ -4,6 +4,7 @@ import {
   PixelBleUuids,
 } from "@systemic-games/pixels-core-connect";
 import {
+  assert,
   createTypedEventEmitter,
   EventReceiver,
   getValueKeyName,
@@ -17,8 +18,6 @@ import {
 import { ScannedPixel } from "./ScannedPixel";
 import SequentialDataReader from "./SequentialDataReader";
 import { registerScannedPixel } from "./allScannedPixels";
-
-type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 export type PixelScannerEventMap = {
   isScanning: boolean;
@@ -109,85 +108,107 @@ export class PixelScanner {
   }
 
   private onScannedPeripheral(ev: ScannedPeripheralEvent): void {
-    const scannedPixel: Mutable<ScannedPixel> = {
-      systemId: ev.peripheral.systemId,
-      pixelId: 0,
-      address: ev.peripheral.address,
-      name: ev.peripheral.name,
-      ledCount: 0,
-      designAndColor: "unknown",
-      firmwareDate: new Date(0),
-      rssi: ev.peripheral.advertisementData.rssi,
-      batteryLevel: 0,
-      isCharging: false,
-      rollState: "unknown",
-      currentFace: 0,
-    };
-
+    // Get the first manufacturer and service data
     const manufacturerData =
       ev.peripheral.advertisementData.manufacturersData?.[0];
-    // Check the manufacturers data, Pixels use to share some information
-    // in the advertisement packet: we should have at least 5 bytes of data
-    if (manufacturerData && manufacturerData.data?.length >= 5) {
+    const serviceData = ev.peripheral.advertisementData.servicesData?.[0];
+
+    // Check the manufacturers data
+    const isOldAdv = !serviceData && manufacturerData?.data.length === 7;
+    const hasServiceData = serviceData && serviceData.data.length >= 8;
+    if (
+      (isOldAdv || hasServiceData) &&
+      manufacturerData &&
+      manufacturerData.data?.length >= 5
+    ) {
+      // The values we want to read
+      let pixelId: number;
+      let ledCount: number;
+      let designAndColorValue: number;
+      let firmwareDate: Date;
+      let batteryLevel: number;
+      let isCharging = false;
+      let rollStateValue: number;
+      let currentFace: number;
+
       // Create a Scanned Pixel object with some default values
       const manufBuffer = new Uint8Array(manufacturerData.data);
       const manufReader = new SequentialDataReader(
         new DataView(manufBuffer.buffer)
       );
 
-      let designAndColor = 0;
-      let rollState = 0;
       // Check the services data, Pixels use to share some information
       // in the scan response packet
-      const serviceData = ev.peripheral.advertisementData.servicesData?.[0];
-      if (serviceData && serviceData.data.length >= 8) {
+      if (hasServiceData) {
         // Update the Scanned Pixel with values from manufacturers and services data
         const serviceBuffer = new Uint8Array(serviceData.data);
         const serviceReader = new SequentialDataReader(
           new DataView(serviceBuffer.buffer)
         );
 
-        scannedPixel.pixelId = serviceReader.readU32();
-        scannedPixel.firmwareDate = new Date(1000 * serviceReader.readU32());
+        pixelId = serviceReader.readU32();
+        firmwareDate = new Date(1000 * serviceReader.readU32());
 
-        scannedPixel.ledCount = manufReader.readU8();
-        designAndColor = manufReader.readU8();
-        rollState = manufReader.readU8();
-        scannedPixel.currentFace = manufReader.readU8() + 1;
+        ledCount = manufReader.readU8();
+        designAndColorValue = manufReader.readU8();
+        rollStateValue = manufReader.readU8();
+        currentFace = manufReader.readU8() + 1;
         const battery = manufReader.readU8();
         // MSB is battery charging
-        scannedPixel.batteryLevel = battery & 0x7f;
-        scannedPixel.isCharging = (battery & 0x80) > 0;
-      } else if (manufacturerData.data.length === 7) {
+        batteryLevel = battery & 0x7f;
+        isCharging = (battery & 0x80) > 0;
+      } else {
+        assert(isOldAdv);
         // Update the Scanned Pixel with values from manufacturers data
         // as advertised from before July 2022
         const companyId = manufacturerData.companyId ?? 0;
         // eslint-disable-next-line no-bitwise
-        scannedPixel.ledCount = (companyId >> 8) & 0xff;
+        ledCount = (companyId >> 8) & 0xff;
         // eslint-disable-next-line no-bitwise
-        designAndColor = companyId & 0xff;
+        designAndColorValue = companyId & 0xff;
 
-        scannedPixel.pixelId = manufReader.readU32();
-        rollState = manufReader.readU8();
-        scannedPixel.currentFace = manufReader.readU8() + 1;
-        scannedPixel.batteryLevel = Math.round(
-          (manufReader.readU8() / 255) * 100
+        pixelId = manufReader.readU32();
+        rollStateValue = manufReader.readU8();
+        currentFace = manufReader.readU8() + 1;
+        batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
+
+        firmwareDate = new Date();
+      }
+
+      if (pixelId) {
+        const systemId = ev.peripheral.systemId;
+        const designAndColor =
+          getValueKeyName(designAndColorValue, PixelDesignAndColorValues) ??
+          "unknown";
+        const rollState =
+          getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
+        const scannedPixel = {
+          systemId,
+          pixelId,
+          address: ev.peripheral.address,
+          name: ev.peripheral.name,
+          ledCount,
+          designAndColor,
+          firmwareDate,
+          rssi: ev.peripheral.advertisementData.rssi,
+          batteryLevel,
+          isCharging,
+          rollState,
+          currentFace,
+          timestamp: new Date(),
+        };
+        registerScannedPixel(scannedPixel);
+        const isNew = !this._scannedPixels.has(systemId);
+        this._scannedPixels.set(systemId, scannedPixel);
+        if (isNew) {
+          this._evEmitter.emit("newScannedPixel", scannedPixel);
+        }
+        this._evEmitter.emit("scannedPixel", scannedPixel);
+      } else {
+        console.error(
+          `Pixel ${ev.peripheral.name}: Received invalid advertising data`
         );
       }
-      scannedPixel.designAndColor =
-        getValueKeyName(designAndColor, PixelDesignAndColorValues) ?? "unknown";
-      scannedPixel.rollState =
-        getValueKeyName(rollState, PixelRollStateValues) ?? "unknown";
-    }
-
-    if (scannedPixel.pixelId) {
-      registerScannedPixel(scannedPixel);
-      const isNew = !this._scannedPixels.has(scannedPixel.systemId);
-      this._scannedPixels.set(scannedPixel.systemId, scannedPixel);
-      if (isNew) {
-        this._evEmitter.emit("newScannedPixel", scannedPixel);
-      }
-      this._evEmitter.emit("scannedPixel", scannedPixel);
     } else {
       console.error(
         `Pixel ${ev.peripheral.name}: Received unsupported advertising data`
