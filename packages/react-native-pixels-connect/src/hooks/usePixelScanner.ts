@@ -97,7 +97,7 @@ export function usePixelScanner(
     const dispatchAsync = async () => {
       if (!notifierRef.current) {
         notifierRef.current = new PixelScanNotifier();
-        notifierRef.current.listener = () => (updatedRef.current = true);
+        notifierRef.current.scanListener = () => (updatedRef.current = true);
       }
       return notifierRef.current.dispatch(action);
     };

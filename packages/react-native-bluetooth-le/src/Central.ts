@@ -188,6 +188,7 @@ const Central = {
   },
 
   shutdown(): void {
+    // TODO stop scan
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
     _connStatusSubs?.remove();
@@ -201,6 +202,10 @@ const Central = {
 
   isReady(): boolean {
     return !!_nativeEmitter;
+  },
+
+  isScanning(): boolean {
+    return !!_scanResultSubs;
   },
 
   getScannedPeripherals(): ScannedPeripheral[] {
@@ -300,6 +305,8 @@ const Central = {
         requiredServices.length ? requiredServices : undefined
       );
     } catch (error: any) {
+      _scanResultSubs?.remove();
+      _scanResultSubs = undefined;
       throw Error(`Failed to start scan: ${error.message} (${error.code})`);
     }
 

@@ -3,7 +3,7 @@ import { assert } from "@systemic-games/pixels-core-utils";
 
 import BleSession from "./BleSession";
 import { type ScannedPixel } from "./ScannedPixel";
-import { getScannedPixel } from "./allScannedPixels";
+import ScannedPixelsRegistry from "./ScannedPixelsRegistry";
 
 const _pixels = new Map<string, Pixel>();
 
@@ -25,7 +25,8 @@ export function getPixel(
   const systemdId =
     typeof pixel === "string"
       ? pixel
-      : (typeof pixel === "number" ? getScannedPixel(pixel) : pixel)?.systemId;
+      : (typeof pixel === "number" ? ScannedPixelsRegistry.find(pixel) : pixel)
+          ?.systemId;
   assert(
     systemdId && systemdId.length > 0,
     `getPixel(): Invalid argument: ${(pixel as any).systemId ?? pixel}`
