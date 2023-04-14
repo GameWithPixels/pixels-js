@@ -16,18 +16,18 @@ import {
   EventReceiver,
   safeAssign,
 } from "@systemic-games/pixels-core-utils";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import React from "react";
 
 function _autoRequest(
   pixel: Pixel,
   refreshInt: number,
   request: () => Promise<unknown>,
-  triggerRender: () => void
+  forceUpdate: () => void
 ): () => void {
   // Force updating on status change
   const onStatus = (status: PixelStatus) => {
     if (status === "ready" || status === "disconnected") {
-      triggerRender();
+      forceUpdate();
     }
   };
   // Request value with given interval
@@ -48,14 +48,14 @@ function _requestValue(
   msgToSend: MessageType,
   msgHandler: (msg: MessageOrType) => void,
   setLastError: (error: Error) => void,
-  triggerRender: () => void
+  forceUpdate: () => void
 ): () => void {
   // Value requester
   const request = () => pixel.sendMessage(msgToSend).catch(setLastError);
   // Listen for the given response message
   pixel.addMessageListener(msgType, msgHandler);
   // Setup auto requesting
-  const unsubscribe = _autoRequest(pixel, refreshInt, request, triggerRender);
+  const unsubscribe = _autoRequest(pixel, refreshInt, request, forceUpdate);
   return () => {
     pixel.removeMessageListener(msgType, msgHandler);
     unsubscribe();
@@ -69,14 +69,14 @@ function _requestProp<T extends keyof PixelEventMap>(
   queryFunc: () => Promise<unknown>,
   evHandler: EventReceiver<PixelEventMap[T]>,
   setLastError: (error: Error) => void,
-  triggerRender: () => void
+  forceUpdate: () => void
 ): () => void {
   // Listen for the given event
   pixel.addEventListener(propEvent, evHandler);
   // Value requester
   const request = () => queryFunc().catch(setLastError);
   // Setup auto requesting
-  const unsubscribe = _autoRequest(pixel, refreshInt, request, triggerRender);
+  const unsubscribe = _autoRequest(pixel, refreshInt, request, forceUpdate);
   return () => {
     pixel.removeEventListener(propEvent, evHandler);
     unsubscribe();
@@ -150,24 +150,24 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   Error?
 ] {
   type ValueType = UsePixelValueNamesMap[T];
-  const [lastError, setLastError] = useState<Error>();
-  const [value, setValue] = useState<ValueType>();
-  const [isActive, setIsActive] = useState(false);
-  const stateRef = useRef<{
+  const [lastError, setLastError] = React.useState<Error>();
+  const [value, setValue] = React.useState<ValueType>();
+  const [isActive, setIsActive] = React.useState(false);
+  const stateRef = React.useRef<{
     lastPixel?: Pixel;
     lastValueName?: keyof UsePixelValueNamesMap;
     lastValue?: ValueType;
     lastTime: number;
     timeoutId?: ReturnType<typeof setTimeout>;
   }>({ lastTime: 0 });
-  const [_, triggerRender] = useReducer((b) => !b, false);
+  const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
   // Options default values
   const minInterval = options?.minInterval ?? 5000;
   const waitOnStart = options?.explicitStart ?? false;
 
   const status = pixel?.status;
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       stateRef.current.lastPixel !== pixel ||
       stateRef.current.lastValueName !== valueName
@@ -202,7 +202,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             face: pixel.currentFace,
             state: pixel.rollState,
           } as ValueType);
-          // Roll event listener
+          // Create roll event listener
           const onRollState = (rollState: PixelRollData) =>
             setValue((prevValue) => {
               const now = Date.now();
@@ -248,7 +248,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             level: pixel.batteryLevel,
             isCharging: pixel.isCharging,
           } as ValueType);
-          // Battery event listener
+          // Create battery event listener
           const onBattery = (batteryData: PixelBatteryData) =>
             setValue(batteryData as ValueType);
           // Listen to battery events
@@ -260,9 +260,9 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
 
         case "rssi": {
           // We don't immediately set the state value as the current
-          // rssi value available with the Pixel instance is probably
-          // outdated
-          // RSSI event listener
+          // RSSI value available with the Pixel instance is probably
+          // outdated.
+          // Create RSSI event listener
           const onRssi = (rssi: number) => setValue(rssi as ValueType);
           // Listen to battery events
           pixel.addEventListener("rssi", onRssi);
@@ -288,7 +288,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
               setValue(val as ValueType);
             },
             setLastError,
-            triggerRender
+            forceUpdate
           );
 
         case "telemetry": {
@@ -323,7 +323,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   }, [isActive, pixel, minInterval, status, valueName, waitOnStart]);
 
   // Create the dispatch function
-  const dispatch = useCallback(
+  const dispatch = React.useCallback(
     (action: "start" | "stop") => setIsActive(action === "start"),
     []
   );

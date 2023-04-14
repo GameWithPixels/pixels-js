@@ -22,8 +22,8 @@ export default class SequentialPromiseQueue {
         try {
           await promise();
           resolve();
-        } catch (err) {
-          reject(err);
+        } catch (e) {
+          reject(e);
         }
         // Remove ourselves from the queue
         //assert(this._queue.indexOf(task) === 0, "Running wrong promise");

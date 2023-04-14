@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/core";
 import { FastHStack } from "@systemic-games/react-native-base-components";
 import * as Updates from "expo-updates";
-import * as React from "react";
+import React from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import {
   Button,

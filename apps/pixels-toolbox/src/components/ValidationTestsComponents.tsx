@@ -59,8 +59,8 @@ async function _playSoundAsync(source: AVPlaybackSource) {
     const sound = await _getSound(source);
     await sound.setPositionAsync(0);
     return await sound.playAsync();
-  } catch (err) {
-    console.log("Error playing sound:", err);
+  } catch (e) {
+    console.log(`Error playing sound: ${e}`);
   }
 }
 

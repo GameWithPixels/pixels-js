@@ -1,5 +1,5 @@
 import { Pixel, PixelStatus } from "@systemic-games/pixels-core-connect";
-import { useEffect, useReducer } from "react";
+import React from "react";
 
 /**
  * React Hook that updates when the status of the given Pixel changes.
@@ -7,13 +7,13 @@ import { useEffect, useReducer } from "react";
  * @returns The status of the given Pixel.
  */
 export default function (pixel?: Pixel): PixelStatus | undefined {
-  const [_, triggerRender] = useReducer((b) => !b, false);
+  const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
   // Subscribe to status event to trigger a React update on status change
-  useEffect(() => {
-    pixel?.addEventListener("status", triggerRender);
+  React.useEffect(() => {
+    pixel?.addEventListener("status", forceUpdate);
     return () => {
-      pixel?.removeEventListener("status", triggerRender);
+      pixel?.removeEventListener("status", forceUpdate);
     };
   }, [pixel]);
 

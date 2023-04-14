@@ -9,8 +9,7 @@ import {
   BleConnectionEvent,
   BleCharacteristicValueChangedEvent,
 } from "@systemic-games/react-native-bluetooth-le";
-import * as React from "react";
-import { useEffect, useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   View,
@@ -79,7 +78,7 @@ class PixelBleHelper {
   private static readonly _writeUuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
   constructor() {
-    this._ble.bleInitialize().catch((err) => console.error(err));
+    this._ble.bleInitialize().catch((e) => console.error(e));
 
     this._scanResultSub = this._evEmitter.addListener(
       BleEvent.scanResult,
@@ -280,11 +279,11 @@ interface PixelStatus {
 }
 
 export default function App() {
-  const [scannedDevices, setScannedDevices] = useState<Device[]>([]);
-  const [scanning, setScanning] = useState(false);
-  const [pixelStatuses, setPixelStatuses] = useState<PixelStatus[]>([]);
+  const [scannedDevices, setScannedDevices] = React.useState<Device[]>([]);
+  const [scanning, setScanning] = React.useState(false);
+  const [pixelStatuses, setPixelStatuses] = React.useState<PixelStatus[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Scan notification
     // eslint-disable-next-line no-shadow
     bleHelper.notifyScanStatusChanged((scanning) => {
@@ -336,7 +335,7 @@ export default function App() {
       bleHelper.notifyCharacteristicValueChanged();
       setScannedDevices(() => []);
       setPixelStatuses(() => []);
-      bleHelper.disconnectAll().catch((err) => console.log(err));
+      bleHelper.disconnectAll().catch((e) => console.log(e));
     };
   }, []);
 

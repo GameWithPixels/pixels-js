@@ -31,13 +31,14 @@ import {
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { Slider, Text } from "native-base";
-import { useCallback, useMemo, useReducer, useState } from "react";
+import React from "react";
 import { FlatList, StyleSheet } from "react-native";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import AppPage from "~/components/AppPage";
 import ScannedPixelsList from "~/components/ScannedPixelsList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import useForceUpdate from "~/features/hooks/useForceUpdate";
 import range from "~/utils/range";
 
 // function test() {
@@ -55,9 +56,9 @@ import range from "~/utils/range";
 //     console.log("deserializeMessage", msgIAmADie);
 //     const arrIAmADie = [...new Uint8Array(serializeMessage(msgIAmADie)!)];
 //     assert(JSON.stringify(dataIAmADie) === JSON.stringify(arrIAmADie));
-//   } catch (err) {
+//   } catch (e) {
 //     console.log("My error!!");
-//     console.error(err);
+//     console.error(e);
 //   }
 // }
 
@@ -211,10 +212,10 @@ function Separator() {
 }
 
 function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
-  const [_, triggerRender] = useReducer((b) => !b, false);
+  const forceUpdate = useForceUpdate();
   function update<T>(value: T) {
     (widget.update as (v: T) => void)(value);
-    triggerRender();
+    forceUpdate();
   }
   const type = widget.type;
   switch (type) {
@@ -345,10 +346,10 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
 
 function AnimationPage() {
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
-  const [animList, setAnimList] = useState<EditAnimation[]>([]);
-  const [editAnim, setEditAnim] = useState<EditAnimation | undefined>();
-  const [widget, setWidget] = useState<EditWidgetData>();
-  const animWidgets = useMemo(() => {
+  const [animList, setAnimList] = React.useState<EditAnimation[]>([]);
+  const [editAnim, setEditAnim] = React.useState<EditAnimation | undefined>();
+  const [widget, setWidget] = React.useState<EditWidgetData>();
+  const animWidgets = React.useMemo(() => {
     if (editAnim) {
       return getEditWidgetsData(editAnim);
     }
@@ -356,7 +357,7 @@ function AnimationPage() {
 
   useErrorWithHandler(lastError);
 
-  const onSelect = useCallback(
+  const onSelect = React.useCallback(
     (sp: ScannedPixel) => connectDispatch("connect", getPixel(sp)),
     [connectDispatch]
   );

@@ -7,12 +7,8 @@ import { Text, VStack } from "native-base";
 import React from "react";
 import { TFunction, useTranslation } from "react-i18next";
 
+import useForceUpdate from "~/features/hooks/useForceUpdate";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
-
-function useForceUpdate() {
-  const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
-  return forceUpdate;
-}
 
 interface PixelAndTranslation {
   pixelInfo: PixelInfoNotifier;

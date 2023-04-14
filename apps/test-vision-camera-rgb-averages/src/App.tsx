@@ -2,8 +2,7 @@ import {
   getImageRgbAverages,
   ImageRgbAverages,
 } from "@systemic-games/vision-camera-rgb-averages";
-import * as React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { runOnJS } from "react-native-reanimated";
 import {
@@ -20,11 +19,11 @@ import {
 
 export default function App() {
   const [cameraPermission, setCameraPermission] =
-    useState<CameraPermissionStatus>();
+    React.useState<CameraPermissionStatus>();
   const devices = useCameraDevices("wide-angle-camera");
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = React.useRef<Camera>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     console.log("Requesting camera permission");
     Camera.requestCameraPermission().then((perm) => {
       console.log(`Camera permission: ${perm}`);
@@ -33,9 +32,12 @@ export default function App() {
     });
   }, []);
 
-  const processRgbAverages = useCallback((rgbAverages: ImageRgbAverages) => {
-    console.log(rgbAverages);
-  }, []);
+  const processRgbAverages = React.useCallback(
+    (rgbAverages: ImageRgbAverages) => {
+      console.log(rgbAverages);
+    },
+    []
+  );
 
   // Get the average R, G and B for each image captured by the camera
   const frameProcessor = useFrameProcessor(

@@ -51,10 +51,10 @@ function makeAutoUpdate<T>(
   ) => JSX.Element
 ): (props: FastBoxProps) => JSX.Element {
   const WrappedWidget = (props: FastBoxProps) => {
-    const [_, triggerRender] = React.useReducer((b) => !b, false);
+    const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
     const autoUpdate = React.useCallback((value: T) => {
       update(value);
-      triggerRender();
+      forceUpdate();
     }, []);
     return widget({ autoUpdate, ...props });
   };

@@ -4,8 +4,7 @@ import {
   DfuProgressEvent,
   DfuStateEvent,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
-import * as React from "react";
-import { useCallback, useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   View,
@@ -20,14 +19,14 @@ import RNFS from "react-native-fs";
 import bleHelper from "./pixel/PixelBleHelper";
 
 export default function App() {
-  const [zipPath, setZipPath] = useState("");
-  const [scanStatus, setScanStatus] = useState("");
-  const [scannedDevices, setScannedDevices] = useState<Device[]>([]);
-  const [dfuState, setDfuState] = useState("");
-  const [dfuProgress, setDfuProgress] = useState(0);
-  const [lastError, setLastError] = useState("");
+  const [zipPath, setZipPath] = React.useState("");
+  const [scanStatus, setScanStatus] = React.useState("");
+  const [scannedDevices, setScannedDevices] = React.useState<Device[]>([]);
+  const [dfuState, setDfuState] = React.useState("");
+  const [dfuProgress, setDfuProgress] = React.useState(0);
+  const [lastError, setLastError] = React.useState("");
 
-  const errorHandler = useCallback((error: any) => {
+  const errorHandler = React.useCallback((error: any) => {
     if (typeof error === "string") {
       setLastError(error);
     } else if (error.message) {
@@ -39,7 +38,7 @@ export default function App() {
   }, []);
 
   // Request user to select firmware file and copy it to local folder
-  const selectFile = useCallback(async () => {
+  const selectFile = React.useCallback(async () => {
     setLastError("");
     try {
       const response = await DocumentPicker.pick({
@@ -54,14 +53,14 @@ export default function App() {
         console.log("File copied to " + destPath);
         setZipPath(destPath);
       }
-    } catch (err) {
-      errorHandler(err);
+    } catch (e) {
+      errorHandler(e);
       setZipPath("");
     }
   }, [errorHandler]);
 
   // Scan for Pixels
-  const startScan = useCallback(() => {
+  const startScan = React.useCallback(() => {
     setLastError("");
     bleHelper.subscribeConnectionStatusChanged();
     setScanStatus("scanRequested");
@@ -96,12 +95,12 @@ export default function App() {
   }, [errorHandler]);
 
   // Stop scanning
-  const stopScan = useCallback(() => {
+  const stopScan = React.useCallback(() => {
     bleHelper.stopScanning();
   }, []);
 
   // Upload selected firmware
-  const uploadFirmware = useCallback(async () => {
+  const uploadFirmware = React.useCallback(async () => {
     setLastError("");
     setDfuState("");
     setDfuProgress(0);
@@ -121,8 +120,8 @@ export default function App() {
         },
       });
       console.log("DFU successful");
-    } catch (err) {
-      errorHandler(err);
+    } catch (e) {
+      errorHandler(e);
     }
   }, [scannedDevices, zipPath, errorHandler]);
 

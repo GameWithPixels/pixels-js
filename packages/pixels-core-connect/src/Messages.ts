@@ -146,9 +146,9 @@ const _reverseMsgClassesLookup: Readonly<Map<MessageClass, number>> = new Map();
 function _getMessageTypeValue(msgClass: MessageClass): number {
   if (!_reverseMsgClassesLookup) {
     const lookup = _reverseMsgClassesLookup as Map<MessageClass, number>;
-    for (const ctor of _getMessageClasses()) {
+    _getMessageClasses().forEach((ctor) => {
       lookup.set(ctor, new ctor().type);
-    }
+    });
   }
   return _reverseMsgClassesLookup.get(msgClass) ?? MessageTypeValues.none;
 }
@@ -158,9 +158,9 @@ const _messageClassesLookup: Readonly<Map<number, MessageClass>> = new Map();
 function _getMessageClass(msgTypeValue: number): MessageClass | undefined {
   if (!_messageClassesLookup.size) {
     const lookup = _messageClassesLookup as Map<number, MessageClass>;
-    for (const ctor of _getMessageClasses()) {
+    _getMessageClasses().forEach((ctor) => {
       lookup.set(new ctor().type, ctor);
-    }
+    });
   }
   return _messageClassesLookup.get(msgTypeValue);
 }
