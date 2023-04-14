@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from "react";
-import { View as RnView, ViewStyle, StyleSheet } from "react-native";
+import { View as RnView, ViewStyle } from "react-native";
 
 // No color in these props so it's compatible with Native Base style props
 export interface FastBoxProps
@@ -61,105 +61,47 @@ export interface FastBoxProps
   mr?: ViewStyle["marginRight"];
 }
 
+function createStyle(props: Omit<FastBoxProps, "children" | "dynamicProps">) {
+  return {
+    flex: props.flex,
+    flexDirection: props.flexDirection ?? props.flexDir,
+    flexGrow: props.flexGrow,
+    flexShrink: props.flexShrink,
+    flexWrap: props.flexWrap,
+    alignSelf: props.alignSelf,
+    alignItems: props.alignItems,
+    alignContent: props.alignContent,
+    justifyContent: props.justifyContent,
+    left: props.left,
+    right: props.right,
+    width: props.width ?? props.w,
+    maxWidth: props.maxWidth ?? props.maxW,
+    height: props.height ?? props.h,
+    maxHeight: props.maxHeight ?? props.maxH,
+    padding: props.padding ?? props.p,
+    paddingHorizontal: props.paddingHorizontal ?? props.px,
+    paddingVertical: props.paddingVertical ?? props.py,
+    paddingTop: props.paddingTop ?? props.pt,
+    paddingBottom: props.paddingBottom ?? props.pb,
+    paddingLeft: props.paddingLeft ?? props.pl,
+    paddingRight: props.paddingRight ?? props.pr,
+    margin: props.margin ?? props.m,
+    marginHorizontal: props.marginHorizontal ?? props.mx,
+    marginVertical: props.marginVertical ?? props.my,
+    marginTop: props.marginTop ?? props.mt,
+    marginBottom: props.marginBottom ?? props.mb,
+    marginLeft: props.marginLeft ?? props.ml,
+    marginRight: props.marginRight ?? props.mr,
+    borderStyle: props.borderStyle,
+    borderWidth: props.borderWidth,
+    opacity: props.opacity,
+  };
+}
+
 /**
  * Simpler and (much) faster version or Native Base Box component without theme
  * support and with less props. Most notably it doesn't have a background color.
- * @important A new StyleSheet is created every time styling props changes.
- * @remarks Consider using Native Base View if you need theming or more props.
  */
 export function FastBox({ children, ...props }: FastBoxProps) {
-  const styles = React.useMemo(
-    () =>
-      // Create a style reference so its contents are passed only once through the bridge
-      StyleSheet.create({
-        box: {
-          flex: props.flex,
-          flexDirection: props.flexDirection ?? props.flexDir,
-          flexGrow: props.flexGrow,
-          flexShrink: props.flexShrink,
-          flexWrap: props.flexWrap,
-          alignSelf: props.alignSelf,
-          alignItems: props.alignItems,
-          alignContent: props.alignContent,
-          justifyContent: props.justifyContent,
-          left: props.left,
-          right: props.right,
-          width: props.width ?? props.w,
-          maxWidth: props.maxWidth ?? props.maxW,
-          height: props.height ?? props.h,
-          maxHeight: props.maxHeight ?? props.maxH,
-          padding: props.padding ?? props.p,
-          paddingHorizontal: props.paddingHorizontal ?? props.px,
-          paddingVertical: props.paddingVertical ?? props.py,
-          paddingTop: props.paddingTop ?? props.pt,
-          paddingBottom: props.paddingBottom ?? props.pb,
-          paddingLeft: props.paddingLeft ?? props.pl,
-          paddingRight: props.paddingRight ?? props.pr,
-          margin: props.margin ?? props.m,
-          marginHorizontal: props.marginHorizontal ?? props.mx,
-          marginVertical: props.marginVertical ?? props.my,
-          marginTop: props.marginTop ?? props.mt,
-          marginBottom: props.marginBottom ?? props.mb,
-          marginLeft: props.marginLeft ?? props.ml,
-          marginRight: props.marginRight ?? props.mr,
-          borderStyle: props.borderStyle,
-          borderWidth: props.borderWidth,
-          opacity: props.opacity,
-        },
-      }),
-    [
-      props.alignContent,
-      props.alignItems,
-      props.alignSelf,
-      props.borderStyle,
-      props.borderWidth,
-      props.flex,
-      props.flexDir,
-      props.flexDirection,
-      props.flexGrow,
-      props.flexShrink,
-      props.flexWrap,
-      props.h,
-      props.height,
-      props.justifyContent,
-      props.left,
-      props.m,
-      props.margin,
-      props.marginBottom,
-      props.marginHorizontal,
-      props.marginLeft,
-      props.marginRight,
-      props.marginTop,
-      props.marginVertical,
-      props.maxH,
-      props.maxHeight,
-      props.maxW,
-      props.maxWidth,
-      props.mb,
-      props.ml,
-      props.mr,
-      props.mt,
-      props.mx,
-      props.my,
-      props.opacity,
-      props.p,
-      props.padding,
-      props.paddingBottom,
-      props.paddingHorizontal,
-      props.paddingLeft,
-      props.paddingRight,
-      props.paddingTop,
-      props.paddingVertical,
-      props.pb,
-      props.pl,
-      props.pr,
-      props.pt,
-      props.px,
-      props.py,
-      props.right,
-      props.w,
-      props.width,
-    ]
-  );
-  return <RnView style={styles.box} children={children} />;
+  return <RnView style={createStyle(props)} children={children} />;
 }
