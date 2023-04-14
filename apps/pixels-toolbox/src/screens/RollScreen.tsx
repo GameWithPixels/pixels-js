@@ -8,7 +8,7 @@ import { Center, Pressable, Text } from "native-base";
 import { useCallback } from "react";
 
 import AppPage from "~/components/AppPage";
-import PixelScanList from "~/components/PixelScanList";
+import ScannedPixelsList from "~/components/ScannedPixelsList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 
 function RollPage() {
@@ -33,7 +33,7 @@ function RollPage() {
   return (
     <>
       {!pixel ? (
-        <PixelScanList onSelect={onSelect} />
+        <ScannedPixelsList onSelect={onSelect} />
       ) : (
         <Pressable onPress={() => connectDispatch("disconnect")}>
           <Center

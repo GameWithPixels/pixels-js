@@ -1,109 +1,145 @@
-import { getPixelUniqueName } from "@systemic-games/pixels-core-connect";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { assertNever } from "@systemic-games/pixels-core-utils";
+import React from "react";
 
-import { PixelScanNotifier } from "./../PixelScanNotifier";
+import { PixelScanner } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
  * Actions to be taken on the Pixel scanner.
  */
-export type PixelScannerAction = "start" | "stop" | "clear";
+export type PixelScannerDispatchAction = "start" | "stop" | "clear";
 
 /**
  * Available options for {@link usePixelScanner}.
  */
-export interface UsePixelScannerOptions {
-  sortedByName?: boolean; // Whether to sort Pixels by name
-  scanFilter?: (scannedPixel: ScannedPixel) => boolean; // Optional filter for returned scanned Pixels.
-  refreshInterval?: number; // Minimum interval between two state updates
+export interface PixelScannerOptions {
+  /** Whether to sort the Pixels list by their names. */
+  sortedByName?: boolean;
+
+  /** Optional filter to only keep certain Pixels in the list. */
+  scanFilter?: (scannedPixel: ScannedPixel) => boolean;
+
+  /**
+   * Minimum interval in milliseconds between two React state updates.
+   * A value of 0 will generate a state update on every scan event.
+   */
+  minUpdateInterval?: number;
+
+  /** Number of scanned Pixels to emulate, only use in DEV mode! */
+  __dev__emulatedPixelsCount?: number;
 }
 
 /**
- * React hook that instantiates {@link PixelScanner}
- * and use it to maintain an up-to-date list of {@link PixelDispatcher}.
- * @param options Optional arguments, see {@link UsePixelScannerOptions}.
+ * React hook that creates {@link PixelScanner} to scan for Pixels using Bluetooth.
+ * @param updateItems Callback that maps {@link ScannedPixel} to the desired type.
+ * The returned array is stored in the React state value that is returned by this function.
+ * As such, a new array must be returned to trigger a React state update.
+ * Parameters:
+ * - items: The last returned array of {@link T} objects.
+ * - updates: The list of new or updated {@link ScannedPixel} along with their
+ *            new and previous index in the list (undefined for new items).
+ * - Returns: The updated list of {@link T} objects.
+ * @param opt Optional arguments, see {@link PixelScannerOptions}.
  * @returns An array with:
- * - the list of {@link ScannedPixel},
- * - a stable reducer like function to dispatch actions to the scanner.
- * - the last encountered error.
- * @remarks On Android, BLE scanning will fail without error when started more than 5 times
- * during the last 30 seconds.
+ * - The list of {@link T} objects corresponding to the scanned Pixels.
+ * - A stable reducer like function to dispatch actions to the scanner.
+ * - The last encountered error.
+ * @remarks This hook is reserved for advanced usage. There are simpler hooks such as
+ *          {@link useScannedPixels} or {@link useScannedPixelNotifiers}.
  */
-export function usePixelScanner(
-  options?: UsePixelScannerOptions
-): [ScannedPixel[], (action: PixelScannerAction) => void, Error?] {
-  const [lastError, setLastError] = useState<Error>();
+export function usePixelScanner<T>(
+  updateItems: (
+    items: T[],
+    updates: {
+      scannedPixel: ScannedPixel;
+      index: number;
+      previousIndex?: number;
+    }[]
+  ) => T[],
+  opt?: PixelScannerOptions
+): [T[], (action: PixelScannerDispatchAction) => void, Error?] {
+  const [lastError, setLastError] = React.useState<Error>();
+  const [items, setItems] = React.useState<T[]>([]);
+  const itemsRef = React.useRef(items); // Keep track of items list outside of a state
+  const scanner = React.useMemo(() => {
+    const scanner = new PixelScanner();
+    return scanner;
+  }, []);
+
+  // Hook updateItems to scan events
+  React.useEffect(() => {
+    scanner.scanListener = (
+      _: PixelScanner,
+      updates: {
+        scannedPixel: ScannedPixel;
+        index: number;
+        previousIndex?: number;
+      }[]
+    ) => {
+      if (updates.length > 0) {
+        // Note: we don't do setItems(items => updateItems(items, ...))
+        // because that would run updateItems() callback while rendering the component
+        // hosting this hook, and thus preventing the callback from modifying other
+        // React states (we would get the "Cannot update a component  while rendering
+        // a different component" warning)
+        itemsRef.current = updateItems(itemsRef.current, updates);
+      } else {
+        itemsRef.current = [];
+      }
+      setItems(itemsRef.current);
+    };
+  }, [scanner, updateItems]);
 
   // Options default values
-  const sortedByName = options?.sortedByName ?? false;
-  const refreshInterval = options?.refreshInterval ?? 1000;
-  const scanFilter = options?.scanFilter;
-
-  // Pixels scan list and PixelDispatcher list
-  const notifierRef = useRef<PixelScanNotifier>();
-  const updatedRef = useRef(false);
-  const [pixels, setPixels] = useState<ScannedPixel[]>([]);
-
-  // Setup batch updates
-  useEffect(() => {
-    // TODO run batch updates only when getting updates
-    const intervalId = setInterval(() => {
-      if (updatedRef.current && notifierRef.current) {
-        updatedRef.current = false;
-        const scannedPixels = scanFilter
-          ? notifierRef.current.scannedPixels.filter(scanFilter)
-          : notifierRef.current.scannedPixels;
-        if (scannedPixels.length) {
-          if (sortedByName) {
-            // Note: we sort even if no new entry was added as a die name
-            // could have changed since the last sort
-            scannedPixels.sort((p1, p2) =>
-              getPixelUniqueName(p1).localeCompare(getPixelUniqueName(p2))
-            );
-          }
-          setPixels((prevPixels) => {
-            // Compare with existing list
-            const l = prevPixels.length;
-            if (scannedPixels.length !== l) {
-              return scannedPixels;
-            }
-            for (let i = 0; i < l; ++i) {
-              if (prevPixels[i] !== scannedPixels[i]) {
-                return scannedPixels;
-              }
-            }
-            return prevPixels;
-          });
-        }
-      }
-    }, refreshInterval);
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [sortedByName, refreshInterval, scanFilter]);
-
-  // Init / clean up
-  useEffect(() => {
-    // Stop scanning
-    return () => {
-      notifierRef.current
-        ?.dispatch("stop")
-        .catch((err) => console.error("Error while unmounting", err));
-    };
-  }, []);
+  const sortByName = opt?.sortedByName ?? false;
+  const minNotifyInterval = opt?.minUpdateInterval ?? 1000;
+  const scanFilter = opt?.scanFilter;
+  const emulatedCount = opt?.__dev__emulatedPixelsCount ?? 0;
+  React.useEffect(() => {
+    scanner.sortByName = sortByName;
+    scanner.minNotifyInterval = minNotifyInterval;
+    scanner.scanFilter = scanFilter;
+    scanner.__dev__emulatedPixelsCount = emulatedCount;
+  }, [emulatedCount, minNotifyInterval, scanFilter, scanner, sortByName]);
 
   // The returned dispatcher (stable)
-  const dispatch = useCallback((action: PixelScannerAction) => {
-    const dispatchAsync = async () => {
-      if (!notifierRef.current) {
-        notifierRef.current = new PixelScanNotifier();
-        notifierRef.current.scanListener = () => (updatedRef.current = true);
-      }
-      return notifierRef.current.dispatch(action);
-    };
-    setLastError(undefined);
-    dispatchAsync().catch(setLastError);
-  }, []);
+  const dispatch = React.useCallback(
+    (action: PixelScannerDispatchAction) => {
+      const dispatchAsync = async () => {
+        switch (action) {
+          case "start":
+            return scanner.start();
+          case "stop":
+            return scanner.stop();
+          case "clear":
+            return scanner.clear();
+          default:
+            assertNever(action);
+        }
+      };
+      setLastError(undefined);
+      dispatchAsync().catch(setLastError);
+    },
+    [scanner] // Stable
+  );
 
-  return [pixels, dispatch, lastError];
+  // Init & clean up effect
+  React.useEffect(
+    () => {
+      // Start scanning on mount
+      dispatch("start");
+      // Stop scanning on umount
+      return () => {
+        // We call the scanner directly so to catch and log an eventual error
+        scanner
+          .stop()
+          .catch((e) =>
+            console.error("usePixelScanner: Error while unmounting", e)
+          );
+      };
+    },
+    [dispatch, scanner] // Stable
+  );
+
+  return [items, dispatch, lastError];
 }

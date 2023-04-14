@@ -24,7 +24,7 @@ import {
 } from "react-native-vision-camera";
 
 import AppPage from "~/components/AppPage";
-import PixelScanList from "~/components/PixelScanList";
+import ScannedPixelsList from "~/components/ScannedPixelsList";
 import {
   CheckBoard,
   CheckLEDs,
@@ -208,7 +208,7 @@ function DecodePixelIdPage({
   const bg = useBackgroundColor();
   return showScanList ? (
     <Box w="100%" h="100%" bg={bg}>
-      <PixelScanList onSelect={onSelect} onClose={onClose} />
+      <ScannedPixelsList onSelect={onSelect} onClose={onClose} />
     </Box>
   ) : (
     <Center w="100%" h="100%" bg={bg}>

@@ -4,7 +4,7 @@ import {
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
+import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import { Pressable, Text } from "native-base";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,9 +12,9 @@ import { FlatList } from "react-native";
 
 import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
-import useFocusPixelScanner from "~/features/pixels/hooks/useFocusPixelScanner";
+import useFocusScannedPixelNotifiers from "~/features/pixels/hooks/useFocusScannedPixelNotifiers";
 
-function keyExtractor(p: ScannedPixel) {
+function keyExtractor(p: ScannedPixelNotifier) {
   return p.systemId;
 }
 
@@ -25,27 +25,28 @@ function Separator() {
 export default function ({
   onSelect: onSelected,
   onClose,
-  refreshInterval,
+  minUpdateInterval,
 }: {
-  onSelect: (pixel: ScannedPixel) => void;
+  onSelect: (scannedPixel: ScannedPixelNotifier) => void;
   onClose?: () => void;
-  refreshInterval?: number;
+  minUpdateInterval?: number;
 }) {
-  const [scannedPixels, scannerDispatch, lastError] = useFocusPixelScanner({
-    sortedByName: true,
-    refreshInterval,
-  });
+  const [scannedPixels, scannerDispatch, lastError] =
+    useFocusScannedPixelNotifiers({
+      sortedByName: true,
+      minUpdateInterval,
+    });
   useErrorWithHandler(lastError);
 
   // FlatList item rendering
   const renderItem = useCallback(
-    ({ item }: { item: ScannedPixel }) => (
+    ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
       <Pressable
-        onPress={() => onSelected(item)}
+        onPress={() => onSelected(scannedPixel)}
         borderColor="gray.500"
         borderWidth={2}
       >
-        <PixelInfoCard pixel={item} />
+        <PixelInfoCard pixelInfo={scannedPixel} />
       </Pressable>
     ),
     [onSelected]
@@ -75,7 +76,6 @@ export default function ({
             {t("tapOnItemToSelect")}
           </Text>
           <FlatList
-            //width="100%"
             data={scannedPixels}
             renderItem={renderItem}
             keyExtractor={keyExtractor}

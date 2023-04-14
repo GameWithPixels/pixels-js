@@ -245,6 +245,8 @@ const Central = {
     );
   },
 
+  // On Android, BLE scanning will fail without error when started
+  // more than 5 times over the last 30 seconds.
   async scanForPeripheralsWithServices(
     services: string | string[]
   ): Promise<void> {

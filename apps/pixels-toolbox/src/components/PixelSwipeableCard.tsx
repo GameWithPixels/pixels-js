@@ -1,4 +1,3 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   FastButton,
@@ -6,6 +5,7 @@ import {
   FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-pixels-components";
+import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import {
   AlertDialog,
   Box,
@@ -14,7 +14,7 @@ import {
   Pressable,
   Text,
 } from "native-base";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
@@ -36,25 +36,30 @@ function SwipeableItemView({
 }
 
 export interface SwipeablePixelCardProps
-  extends Omit<PixelInfoCardProps, "pixel"> {
-  pixelDispatcher: PixelDispatcher;
+  extends Omit<PixelInfoCardProps, "pixelInfo"> {
+  scannedPixel: ScannedPixelNotifier;
   onShowDetails: () => void;
 }
 
 export default function ({
   children,
-  pixelDispatcher,
+  scannedPixel,
   onShowDetails,
   ...props
 }: SwipeablePixelCardProps) {
-  const [lastError, setLastError] = useState<Error>();
-  const [profileUpdate, setProfileUpdate] = useState<number>();
-  const [dfuQueued, setDfuQueued] = useState(false);
-  const [dfuState, setDfuState] = useState<DfuState>("dfuCompleted");
-  const [dfuProgress, setDfuProgress] = useState<number>(0);
+  const pixelDispatcher = PixelDispatcher.getInstance(scannedPixel);
+  React.useEffect(() => {
+    pixelDispatcher.dispatch("reportRssi");
+  }, [pixelDispatcher]);
+
+  const [lastError, setLastError] = React.useState<Error>();
+  const [profileUpdate, setProfileUpdate] = React.useState<number>();
+  const [dfuQueued, setDfuQueued] = React.useState(false);
+  const [dfuState, setDfuState] = React.useState<DfuState>("dfuCompleted");
+  const [dfuProgress, setDfuProgress] = React.useState<number>(0);
 
   // Reset DFU state and progress when aborted or completed
-  useEffect(() => {
+  React.useEffect(() => {
     if (dfuState === "dfuAborted") {
       setDfuState("dfuCompleted");
       setDfuProgress(0);
@@ -65,7 +70,7 @@ export default function ({
   }, [dfuState]);
 
   // Subscribe to events for which we store the resulting state
-  useEffect(() => {
+  React.useEffect(() => {
     pixelDispatcher.addEventListener("error", setLastError);
     pixelDispatcher.addEventListener("profileUpdateProgress", setProfileUpdate);
     pixelDispatcher.addEventListener("firmwareUpdateQueued", setDfuQueued);
@@ -106,50 +111,22 @@ export default function ({
     };
   }, [pixelDispatcher]);
 
-  // Subscribe to state change events to force updating the UI
-  const [_, triggerRender] = useReducer((b) => !b, false);
-  useFocusEffect(
-    useCallback(() => {
-      // Re-render for every status, roll and battery event
-      pixelDispatcher.addEventListener("status", triggerRender);
-      pixelDispatcher.addEventListener("rollState", triggerRender);
-      // pixelDispatcher.addEventListener("rssi", triggerRender);
-      // pixelDispatcher.addEventListener("batteryState", triggerRender);
-      pixelDispatcher.dispatch("reportRssi");
-      return () => {
-        pixelDispatcher.removeEventListener("status", triggerRender);
-        pixelDispatcher.removeEventListener("rollState", triggerRender);
-        // pixelDispatcher.removeEventListener("rssi", triggerRender);
-        // pixelDispatcher.removeEventListener("batteryState", triggerRender);
-      };
-    }, [pixelDispatcher])
-  );
-
   // User notification
-  const [notifyUserData, setNotifyUserData] = useState<{
+  const [notifyUserData, setNotifyUserData] = React.useState<{
     message: string;
     onOk?: () => void;
     onCancel?: () => void;
     handled?: boolean;
   }>();
   const notifyUserDisclose = useDisclose();
-  const okRef = useRef(null);
+  const okRef = React.useRef(null);
   const open = notifyUserDisclose.onOpen;
-  useEffect(() => {
+  React.useEffect(() => {
     if (notifyUserData && !notifyUserData.handled) {
       setNotifyUserData({ ...notifyUserData, handled: true });
       open();
     }
   }, [notifyUserData, open]);
-
-  // Refresh UI at least every 5 seconds
-  useFocusEffect(() => {
-    // Called on every render!
-    const id = setTimeout(triggerRender, 5000);
-    return () => {
-      clearTimeout(id);
-    };
-  });
 
   // Values for UI
   const { t } = useTranslation();
@@ -214,7 +191,7 @@ export default function ({
       }
     >
       <Pressable onPress={() => onShowDetails()}>
-        <PixelInfoCard pixel={pixelDispatcher} {...props}>
+        <PixelInfoCard pixelInfo={pixelDispatcher} {...props}>
           {pixelDispatcher.canUpdateFirmware && (
             <Text position="absolute" top={1} right={2}>
               ⬆️

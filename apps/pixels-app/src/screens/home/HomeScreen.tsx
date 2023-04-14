@@ -9,7 +9,7 @@ import {
 } from "@systemic-games/react-native-pixels-components";
 import {
   ScannedPixel,
-  usePixelScanner,
+  useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
 import {
   Box,
@@ -172,7 +172,7 @@ function NearbyPixelsList({
 }
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
-  const [scannedPixels, scannerDispatch] = usePixelScanner();
+  const [scannedPixels, scannerDispatch] = useScannedPixels();
 
   useFocusEffect(
     React.useCallback(() => {

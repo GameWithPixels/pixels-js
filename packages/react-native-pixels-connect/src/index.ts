@@ -1,12 +1,15 @@
 export * from "@systemic-games/react-native-bluetooth-le";
 
-export * from "./PixelScanner";
-export * from "./PixelScanNotifier";
-export * from "./ScannedPixel";
-export * from "./getPixel";
+export { default as MainScanner } from "./MainScanner";
 export * from "./initBluetooth";
+export * from "./getPixel";
+export * from "./ScannedPixel";
+export * from "./ScannedPixelNotifier";
+export * from "./PixelScanner";
 
 export * from "./hooks/usePixelScanner";
+export * from "./hooks/useScannedPixels";
+export * from "./hooks/useScannedPixelNotifiers";
 
 export * from "@systemic-games/pixels-core-connect";
 export * from "@systemic-games/pixels-core-animation";

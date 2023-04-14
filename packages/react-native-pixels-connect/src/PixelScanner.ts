@@ -1,176 +1,356 @@
 import {
+  getPixelUniqueName,
   PixelDesignAndColorValues,
   PixelRollStateValues,
-  PixelBleUuids,
 } from "@systemic-games/pixels-core-connect";
 import {
   assert,
   getValueKeyName,
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
-import {
-  Central,
-  ScannedPeripheralEvent,
-} from "@systemic-games/react-native-bluetooth-le";
 
+import MainScanner from "./MainScanner";
 import { ScannedPixel } from "./ScannedPixel";
-import ScannedPixelsRegistry from "./ScannedPixelsRegistry";
-import SequentialDataReader from "./SequentialDataReader";
 
-// Execution queue
-const _queue = new SequentialPromiseQueue();
+/**
+ * Type for a callback listening to {@link PixelScanner} scan events.
+ * The 'updates' argument contains a list of new or updated scanned Pixels
+ * with their new and previous index in the list (undefined for new items).
+ * This argument is an empty array when notifying that the list has been cleared.
+ */
+export type PixelScannerListener =
+  | ((
+      scanner: PixelScanner,
+      updates: {
+        scannedPixel: ScannedPixel;
+        index: number;
+        previousIndex?: number;
+      }[]
+    ) => void)
+  | null
+  | undefined;
 
-// Track if we are subscribed to Central scan events
-let _subscribedToScanEvents = false;
+/**
+ * Type for a callback filtering {@link ScannedPixel}, used by {@link PixelScanner}.
+ */
+export type PixelScannerFilter =
+  | ((scannedPixel: ScannedPixel) => boolean)
+  | null
+  | undefined;
 
-// The listener given by the user of the scanner
-let _userListener: ((scannedPixel: ScannedPixel) => void) | undefined;
+/**
+ * Represents a list of scanned Pixels that is updated when scanning.
+ * The list is kept sorted if {@link PixelScanner.sortByName} is true.
+ * Set a callback to {@link PixelScanner.scanListener} to get notified
+ * when the list is updated.
+ */
+export class PixelScanner {
+  private readonly _queue = new SequentialPromiseQueue();
+  private readonly _pixels: {
+    scannedPixel: ScannedPixel;
+    uniqueName: string;
+  }[] = [];
+  private _scannerListener?: (pixel: ScannedPixel) => void;
+  private _userListener: PixelScannerListener;
+  private _scanFilter: PixelScannerFilter;
+  private _collator?: Intl.Collator;
+  private _minNotifyInterval = 0;
+  private _notifyTimeout?: ReturnType<typeof setTimeout>;
+  private _lastUpdate = new Date();
+  private readonly _pendingUpdates: {
+    scannedPixel: ScannedPixel;
+    index: number;
+    previousIndex?: number;
+  }[] = [];
 
-// Callback given to Central for scan events
-function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
-  const advData = ev.peripheral.advertisementData;
-  if (!advData.services?.includes(PixelBleUuids.service)) {
-    // We got an event from another scan (since Central scanning is global)
-    return;
+  // Scanning emulation
+  private _emulatedCount = 0;
+  private _emulatorTimeout?: ReturnType<typeof setTimeout>;
+
+  /**
+   * An optional listener called on getting scan events.
+   * Calls will be delayed according to {@link PixelScanner.minNotifyInterval} value.
+   */
+  get scanListener(): PixelScannerListener {
+    return this._userListener;
+  }
+  set scanListener(listener: PixelScannerListener) {
+    this._userListener = listener;
   }
 
-  // Get the first manufacturer and service data
-  const manufacturerData = advData.manufacturersData?.[0];
-  const serviceData = advData.servicesData?.[0];
+  /**
+   * An optional filter to only keep certain Pixels in the list.
+   * Setting a new filter will only affect new scan events, the current list of
+   * scanned Pixels will stay unchanged.
+   **/
+  get scanFilter(): PixelScannerFilter {
+    return this._scanFilter;
+  }
+  set scanFilter(scanFilter: PixelScannerFilter) {
+    this._scanFilter = scanFilter;
+  }
 
-  // Check the manufacturers data
-  const isOldAdv = !serviceData && manufacturerData?.data.length === 7;
-  const hasServiceData = serviceData && serviceData.data.length >= 8;
-  if (
-    (isOldAdv || hasServiceData) &&
-    manufacturerData &&
-    manufacturerData.data?.length >= 5
-  ) {
-    // The values we want to read
-    let pixelId: number;
-    let ledCount: number;
-    let designAndColorValue: number;
-    let firmwareDate: Date;
-    let batteryLevel: number;
-    let isCharging = false;
-    let rollStateValue: number;
-    let currentFace: number;
-
-    // Create a Scanned Pixel object with some default values
-    const manufBuffer = new Uint8Array(manufacturerData.data);
-    const manufReader = new SequentialDataReader(
-      new DataView(manufBuffer.buffer)
-    );
-
-    // Check the services data, Pixels use to share some information
-    // in the scan response packet
-    if (hasServiceData) {
-      // Update the Scanned Pixel with values from manufacturers and services data
-      const serviceBuffer = new Uint8Array(serviceData.data);
-      const serviceReader = new SequentialDataReader(
-        new DataView(serviceBuffer.buffer)
-      );
-
-      pixelId = serviceReader.readU32();
-      firmwareDate = new Date(1000 * serviceReader.readU32());
-
-      ledCount = manufReader.readU8();
-      designAndColorValue = manufReader.readU8();
-      rollStateValue = manufReader.readU8();
-      currentFace = manufReader.readU8() + 1;
-      const battery = manufReader.readU8();
-      // MSB is battery charging
-      batteryLevel = battery & 0x7f;
-      isCharging = (battery & 0x80) > 0;
-    } else {
-      assert(isOldAdv);
-      // Update the Scanned Pixel with values from manufacturers data
-      // as advertised from before July 2022
-      const companyId = manufacturerData.companyId ?? 0;
-      // eslint-disable-next-line no-bitwise
-      ledCount = (companyId >> 8) & 0xff;
-      // eslint-disable-next-line no-bitwise
-      designAndColorValue = companyId & 0xff;
-
-      pixelId = manufReader.readU32();
-      rollStateValue = manufReader.readU8();
-      currentFace = manufReader.readU8() + 1;
-      batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
-
-      firmwareDate = new Date();
+  /**
+   * Whether to sort the Pixels list by their names.
+   * Enabling sorting will immediately re-order the current list of scanned Pixels.
+   */
+  get sortByName(): boolean {
+    return !!this._collator;
+  }
+  set sortByName(sort: boolean) {
+    if (this.sortByName !== sort) {
+      if (sort) {
+        this._collator = new Intl.Collator();
+        if (this._sort() && this._minNotifyInterval <= 0) {
+          this._notify(Date.now());
+        }
+      } else {
+        this._collator = undefined;
+      }
     }
+  }
 
-    if (pixelId) {
-      const systemId = ev.peripheral.systemId;
-      const designAndColor =
-        getValueKeyName(designAndColorValue, PixelDesignAndColorValues) ??
-        "unknown";
-      const rollState =
-        getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
-      const scannedPixel = {
-        systemId,
-        pixelId,
-        address: ev.peripheral.address,
-        name: ev.peripheral.name,
-        ledCount,
-        designAndColor,
-        firmwareDate,
-        rssi: advData.rssi,
-        batteryLevel,
-        isCharging,
-        rollState,
-        currentFace,
-        timestamp: new Date(),
-      };
-      ScannedPixelsRegistry.register(scannedPixel);
-      _userListener?.(scannedPixel);
-    } else {
-      console.error(
-        `Pixel ${ev.peripheral.name}: Received invalid advertising data`
-      );
+  /**
+   * The minimum time interval in milliseconds between two user notifications
+   * (calls to {@link PixelScanner.scanListener}).
+   * A value of 0 will generate a notification on every scan event.
+   */
+  get minNotifyInterval(): number {
+    return this._minNotifyInterval;
+  }
+  set minNotifyInterval(interval: number) {
+    if (this._minNotifyInterval !== interval) {
+      this._minNotifyInterval = interval;
+      // Re-schedule user notification if there was any
+      if (this._notifyTimeout) {
+        clearTimeout(this._notifyTimeout);
+        if (this._minNotifyInterval > 0) {
+          const nextUpdate =
+            this._lastUpdate.getTime() + this._minNotifyInterval;
+          this._notifyTimeout = setTimeout(
+            () => this._notify(nextUpdate),
+            nextUpdate - Date.now()
+          );
+        }
+      }
     }
-  } else {
-    console.error(
-      `Pixel ${ev.peripheral.name}: Received unsupported advertising data`
-    );
+  }
+
+  /** Number of scanned Pixels to emulate, only use in DEV mode! */
+  get __dev__emulatedPixelsCount(): number {
+    return this._emulatedCount;
+  }
+  set __dev__emulatedPixelsCount(count: number) {
+    this._emulatedCount = count;
+  }
+
+  /**
+   * A copy of the optionally ordered list of scanned Pixels since
+   * the last call to {@link PixelScanner.clear}.
+   */
+  get scannedPixels(): ScannedPixel[] {
+    return this._pixels.map((e) => e.scannedPixel);
+  }
+
+  /**
+   * Starts a Bluetooth scan for Pixels and update the list as advertisement
+   * packets are being received.
+   * @returns A promise.
+   * @remarks On Android, BLE scanning will fail without error when started more
+   * than 5 times over the last 30 seconds.
+   */
+  async start(): Promise<void> {
+    return this._queue.run(async () => {
+      // Check if a scan was already started
+      if (!this._scannerListener) {
+        // Listener for scanned Pixels events
+        const listener = (sp: ScannedPixel) => {
+          if (!this._scanFilter || this._scanFilter(sp)) {
+            // Do we already have an entry for this scanned Pixel?
+            const index = this._pixels.findIndex(
+              (p) => p.scannedPixel.pixelId === sp.pixelId
+            );
+            let reorder = false;
+            if (index < 0) {
+              // New entry
+              reorder = true;
+              this._pixels.push({
+                scannedPixel: sp,
+                uniqueName: getPixelUniqueName(sp),
+              });
+            } else {
+              // Replace previous entry
+              const entry = this._pixels[index];
+              reorder = entry.scannedPixel.name !== sp.name;
+              entry.scannedPixel = sp;
+              if (reorder) {
+                entry.uniqueName = getPixelUniqueName(sp);
+              }
+            }
+            // Remove any older update for the same Pixel
+            // but keep insertions and re-ordering updates
+            const updateIndex = this._pendingUpdates.findIndex(
+              (e) =>
+                e.scannedPixel.pixelId === sp.pixelId &&
+                e.index === e.previousIndex
+            );
+            if (updateIndex >= 0) {
+              this._pendingUpdates.splice(updateIndex, 1);
+            }
+            // Queue update
+            this._pendingUpdates.push({
+              scannedPixel: sp,
+              index: index >= 0 ? index : this._pixels.length - 1,
+              previousIndex: index >= 0 ? index : undefined,
+            });
+            // Reorder if needed
+            if (reorder) {
+              this._sort();
+            }
+            // Prepare for user notification
+            const now = Date.now();
+            // Are we're past the given interval since the last notification?
+            const nextUpdate =
+              this._lastUpdate.getTime() + this._minNotifyInterval;
+            if (now >= nextUpdate) {
+              // Yes, notify immediately
+              clearTimeout(this._notifyTimeout);
+              this._notifyTimeout = undefined;
+              this._notify(now);
+            } else if (!this._notifyTimeout) {
+              // Otherwise schedule the notification for later
+              this._notifyTimeout = setTimeout(
+                () => this._notify(nextUpdate),
+                nextUpdate - now
+              );
+            }
+          }
+        };
+        // Reset updates
+        this._lastUpdate.setTime(0);
+        this._pendingUpdates.length = 0;
+        // Start scanning
+        if (this._emulatedCount <= 0) {
+          await MainScanner.addListener(listener);
+        } else {
+          // Emulate scanning
+          this._emulateScan();
+        }
+        // Update state once all operations have completed successfully
+        this._scannerListener = listener;
+      }
+    });
+  }
+
+  /**
+   * Stops scanning for Pixels.
+   * @returns A promise.
+   */
+  async stop(): Promise<void> {
+    return this._queue.run(async () => {
+      // Check if a scan was already started
+      if (this._scannerListener) {
+        // Cancel any scheduled user notification
+        clearTimeout(this._notifyTimeout);
+        this._notifyTimeout = undefined;
+        // Cancel scanning emulation
+        clearTimeout(this._emulatorTimeout);
+        this._emulatorTimeout = undefined;
+        // Stop scanning
+        await MainScanner.removeListener(this._scannerListener);
+        // Update state once all operations have completed successfully
+        this._scannerListener = undefined;
+      }
+    });
+  }
+
+  /**
+   * Clears the list of scanned Pixels.
+   * @returns A promise.
+   */
+  async clear(): Promise<void> {
+    return this._queue.run(async () => {
+      if (this._pixels.length) {
+        this._pixels.length = 0;
+        this._userListener?.(this, []);
+      }
+    });
+  }
+
+  private _notify(now: number): void {
+    this._lastUpdate.setTime(now);
+    const updates = [...this._pendingUpdates];
+    this._pendingUpdates.length = 0;
+    this._userListener?.(this, updates);
+  }
+
+  private _sort(): boolean {
+    // Check if a re-order is needed
+    const c = this._collator;
+    const needSorting =
+      c &&
+      this._pixels.length > 1 &&
+      !this._pixels.every((e, i, l) =>
+        i === 0 ? true : c.compare(l[i - 1].uniqueName, e.uniqueName) <= 0
+      );
+    if (needSorting) {
+      const unsorted = [...this._pixels];
+      this._pixels.sort((e1, e2) => c.compare(e1.uniqueName, e2.uniqueName));
+      unsorted.forEach((e, i) => {
+        const j = this._pixels.indexOf(e);
+        if (i !== j) {
+          this._pendingUpdates.push({
+            scannedPixel: e.scannedPixel,
+            index: j,
+            previousIndex: i,
+          });
+        }
+      });
+    }
+    return !!needSorting;
+  }
+
+  private _emulateScan(): void {
+    // Around 5 scan events per Pixel per second
+    this._emulatorTimeout = setTimeout(() => {
+      this._emulateScan();
+      for (let i = 1; i <= this._emulatedCount; ++i) {
+        this._scannerListener?.(PixelScanner._genScannedPixel(i));
+      }
+    }, 150 + 100 * Math.random());
+  }
+
+  private static _maxDesignAndColor = Math.max(
+    ...Object.values(PixelDesignAndColorValues)
+  );
+  private static _maxRollState = Math.max(
+    ...Object.values(PixelRollStateValues)
+  );
+
+  private static _genScannedPixel(index: number): ScannedPixel {
+    assert(index > 0);
+    return {
+      systemId: "system-id-" + index,
+      pixelId: index,
+      name: "Pixel" + index,
+      ledCount: 20,
+      designAndColor:
+        getValueKeyName(
+          1 + (index % PixelScanner._maxDesignAndColor),
+          PixelDesignAndColorValues
+        ) ?? "unknown",
+      firmwareDate: new Date(),
+      rssi: Math.round(Math.random() * -50) - 20,
+      batteryLevel: Math.round(Math.random() * 100),
+      isCharging: Math.random() > 0.5,
+      rollState:
+        getValueKeyName(
+          Math.ceil(Math.random() * PixelScanner._maxRollState),
+          PixelRollStateValues
+        ) ?? "unknown",
+      currentFace: 1 + Math.round(Math.random() * 19),
+      address: index + (index << 16) + (index << 32),
+      timestamp: new Date(),
+    };
   }
 }
-
-const PixelScanner = {
-  isScanning(): boolean {
-    return _subscribedToScanEvents && Central.isScanning();
-  },
-
-  scannedPixels(): ScannedPixel[] {
-    return ScannedPixelsRegistry.getAll();
-  },
-
-  start(listener: (scannedPixel: ScannedPixel) => void): Promise<void> {
-    return _queue.run(async () => {
-      _userListener = listener;
-      if (!_subscribedToScanEvents) {
-        // Subscribe to scan events
-        Central.addScannedPeripheralEventListener(_onScannedPeripheral);
-        _subscribedToScanEvents = true;
-      }
-      // Scan for Pixels
-      await Central.scanForPeripheralsWithServices(PixelBleUuids.service);
-    });
-  },
-
-  stop(): Promise<void> {
-    return _queue.run(async () => {
-      _userListener = undefined;
-      if (_subscribedToScanEvents) {
-        // Stop listening to scan events
-        Central.removeScannedPeripheralEventListener(_onScannedPeripheral);
-        _subscribedToScanEvents = false;
-      }
-
-      // Stop the scan
-      await Central.stopScanning();
-    });
-  },
-} as const;
-
-export default PixelScanner;

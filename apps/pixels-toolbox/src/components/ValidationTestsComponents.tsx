@@ -3,7 +3,7 @@ import {
   getPixel,
   Pixel,
   ScannedPixel,
-  usePixelScanner,
+  useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
 import { Button, HStack, Text } from "native-base";
@@ -152,7 +152,7 @@ export function UpdateFirmware({
     (pixel: ScannedPixel) => pixel.pixelId === pixelId,
     [pixelId]
   );
-  const [scannedPixels, scannerDispatch] = usePixelScanner({ scanFilter });
+  const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
   const [resolveScanPromise, setResolveScanPromise] = useState<() => void>();
   const scannedPixelRef = useRef<ScannedPixel>();
   useEffect(() => {
@@ -291,7 +291,7 @@ export function ConnectPixel({
     (pixel: ScannedPixel) => pixel.pixelId === pixelId,
     [pixelId]
   );
-  const [scannedPixels, scannerDispatch] = usePixelScanner({ scanFilter });
+  const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
   const [resolveScanPromise, setResolveScanPromise] = useState<() => void>();
   const scannedPixelRef = useRef<ScannedPixel>();
   useEffect(() => {

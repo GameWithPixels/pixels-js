@@ -6,7 +6,7 @@ import {
   Pixel,
   getPixel,
   ScannedPixel,
-  usePixelScanner,
+  useScannedPixels,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -35,7 +35,7 @@ export default function (): [
   Error?
 ] {
   const [lastError, setLastError] = useState<Error>();
-  const [scannedPixels, scannerDispatch, scanLastError] = usePixelScanner();
+  const [scannedPixels, scannerDispatch, scanLastError] = useScannedPixels();
   const [pixelId, setPixelId] = useState<number>(0);
   const [scannedPixel, setScannedPixel] = useState<ScannedPixel>();
   const [pixel, setPixel] = useState<Pixel>();

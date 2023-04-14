@@ -2,7 +2,10 @@ import {
   FastBox,
   useDisclose,
 } from "@systemic-games/react-native-pixels-components";
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
+import {
+  ScannedPixel,
+  ScannedPixelNotifier,
+} from "@systemic-games/react-native-pixels-connect";
 import { Text } from "native-base";
 import { useState, useCallback, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +18,7 @@ import PixelSwipeableCard from "~/components/PixelSwipeableCard";
 import PixelDispatcher, {
   PixelDispatcherAction,
 } from "~/features/pixels/PixelDispatcher";
-import useFocusPixelDispatcherScanner from "~/features/pixels/hooks/useFocusPixelDispatcherScanner";
+import useFocusScannedPixelNotifiers from "~/features/pixels/hooks/useFocusScannedPixelNotifiers";
 import styles from "~/styles";
 
 function keyExtractor(p: ScannedPixel) {
@@ -32,15 +35,17 @@ interface PixelsListProps {
 
 function PixelsListImpl({ onDieDetails }: PixelsListProps) {
   // Scanning
-  const [pixelDispatchers, scannerDispatch, lastError] =
-    useFocusPixelDispatcherScanner();
+  const [scannedPixels, scannerDispatch, lastError] =
+    useFocusScannedPixelNotifiers();
 
   // Actions dispatched to all Pixels
   const dispatchAllDisclose = useDisclose();
   const dispatchAll = useCallback(
     (action: PixelDispatcherAction) =>
-      pixelDispatchers.forEach((pd) => pd.dispatch(action)),
-    [pixelDispatchers]
+      scannedPixels.forEach((sp) =>
+        PixelDispatcher.getInstance(sp).dispatch(action)
+      ),
+    [scannedPixels]
   );
 
   // Values for UI
@@ -50,11 +55,11 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
 
   // FlatList item rendering
   const renderItem = useCallback(
-    ({ item: dispatcher }: { item: PixelDispatcher }) => (
+    ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
       <PixelSwipeableCard
-        pixelDispatcher={dispatcher}
+        scannedPixel={scannedPixel}
         moreInfo={showMoreInfo}
-        onShowDetails={() => onDieDetails(dispatcher.pixelId)}
+        onShowDetails={() => onDieDetails(scannedPixel.pixelId)}
       />
     ),
     [onDieDetails, showMoreInfo]
@@ -87,16 +92,16 @@ function PixelsListImpl({ onDieDetails }: PixelsListProps) {
       >
         <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>ℹ️</EmojiButton>
         <Text variant="h2">
-          {t("pixelsWithCount", { count: pixelDispatchers.length })}
+          {t("pixelsWithCount", { count: scannedPixels.length })}
         </Text>
         <EmojiButton onPress={dispatchAllDisclose.onOpen}>⚙️</EmojiButton>
       </FastBox>
       {lastError ? (
         <Text>{`${lastError}`}</Text>
-      ) : pixelDispatchers.length ? (
+      ) : scannedPixels.length ? (
         <FlatList
           style={styles.containerFullWidth}
-          data={pixelDispatchers}
+          data={scannedPixels}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           ItemSeparatorComponent={Separator}

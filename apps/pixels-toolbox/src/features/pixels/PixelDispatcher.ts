@@ -17,9 +17,8 @@ import {
   PixelDesignAndColor,
   PixelRollState,
   PixelStatus,
-  PixelRollData,
-  ScannedPixel,
-  PixelBatteryData,
+  PixelInfoNotifier,
+  ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { getDieType } from "./DieType";
@@ -53,10 +52,6 @@ export type PixelDispatcherAction =
   | "disableCharging";
 
 export interface PixelDispatcherEventMap {
-  status: PixelStatus;
-  rollState: PixelRollData;
-  battery: PixelBatteryData;
-  rssi: number;
   action: PixelDispatcherAction;
   error: Error;
   profileUpdateProgress: number | undefined;
@@ -71,16 +66,16 @@ const _pendingDFUs: PixelDispatcher[] = [];
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
-export default class PixelDispatcher implements PixelInfo {
-  private _scannedPixel: ScannedPixel;
-  private _lastBleActivity: Date;
+export default class PixelDispatcher extends PixelInfoNotifier {
+  private _scannedPixel: ScannedPixelNotifier;
+  private _lastStatusChange: Date;
   private _pixel: Pixel;
   private readonly _evEmitter =
     createTypedEventEmitter<PixelDispatcherEventMap>();
   private _isUpdatingProfile = false;
 
   get systemId(): string {
-    return this._getIPixel().systemId;
+    return this._getPixelInfo().systemId;
   }
 
   get pixelId(): number {
@@ -93,35 +88,35 @@ export default class PixelDispatcher implements PixelInfo {
   }
 
   get ledCount(): number {
-    return this._getIPixel().ledCount;
+    return this._getPixelInfo().ledCount;
   }
 
   get designAndColor(): PixelDesignAndColor {
-    return this._getIPixel().designAndColor;
+    return this._getPixelInfo().designAndColor;
   }
 
   get firmwareDate(): Date {
-    return this._getIPixel().firmwareDate;
+    return this._getPixelInfo().firmwareDate;
   }
 
   get rssi(): number {
-    return this._getIPixel().rssi;
+    return this._getPixelInfo().rssi;
   }
 
   get batteryLevel(): number {
-    return this._getIPixel().batteryLevel;
+    return this._getPixelInfo().batteryLevel;
   }
 
   get isCharging(): boolean {
-    return this._getIPixel().isCharging;
+    return this._getPixelInfo().isCharging;
   }
 
   get rollState(): PixelRollState {
-    return this._getIPixel().rollState;
+    return this._getPixelInfo().rollState;
   }
 
   get currentFace(): number {
-    return this._getIPixel().currentFace;
+    return this._getPixelInfo().currentFace;
   }
 
   get address(): number {
@@ -129,7 +124,9 @@ export default class PixelDispatcher implements PixelInfo {
   }
 
   get lastBleActivity(): Date {
-    return this._lastBleActivity;
+    return this._lastStatusChange >= this._scannedPixel.timestamp
+      ? this._lastStatusChange
+      : this._scannedPixel.timestamp;
   }
 
   get status(): PixelStatus {
@@ -169,25 +166,44 @@ export default class PixelDispatcher implements PixelInfo {
     return _instances.get(pixelId);
   }
 
-  constructor(scannedPixel: ScannedPixel) {
+  static getInstance(scannedPixel: ScannedPixelNotifier): PixelDispatcher {
+    return (
+      _instances.get(scannedPixel.pixelId) ?? new PixelDispatcher(scannedPixel)
+    );
+  }
+
+  private constructor(scannedPixel: ScannedPixelNotifier) {
+    super();
     this._scannedPixel = scannedPixel;
-    this._lastBleActivity = new Date();
+    this._lastStatusChange = new Date(0);
     this._pixel = getPixel(scannedPixel);
-    // TODO remove listeners
-    this._pixel.addEventListener("status", (status) => {
-      this._lastBleActivity = new Date();
-      this._evEmitter.emit("status", status);
-    });
-    this._pixel.addEventListener("rollState", (state) =>
-      this._evEmitter.emit("rollState", state)
-    );
-    this._pixel.addEventListener("battery", (state) =>
-      this._evEmitter.emit("battery", state)
-    );
-    this._pixel.addEventListener("rssi", (rssi) =>
-      this._evEmitter.emit("rssi", rssi)
-    );
     _instances.set(this.pixelId, this);
+    // TODO remove listeners
+    // TODO perform these notification in a generic way
+    scannedPixel.addPropertyListener("name", () =>
+      this.emitPropertyEvent("name")
+    );
+    scannedPixel.addPropertyListener("firmwareDate", () =>
+      this.emitPropertyEvent("firmwareDate")
+    );
+    scannedPixel.addPropertyListener("rssi", () =>
+      this.emitPropertyEvent("rssi")
+    );
+    scannedPixel.addPropertyListener("batteryLevel", () =>
+      this.emitPropertyEvent("batteryLevel")
+    );
+    scannedPixel.addPropertyListener("isCharging", () =>
+      this.emitPropertyEvent("isCharging")
+    );
+    scannedPixel.addPropertyListener("rollState", () =>
+      this.emitPropertyEvent("rollState")
+    );
+    scannedPixel.addPropertyListener("currentFace", () =>
+      this.emitPropertyEvent("currentFace")
+    );
+    this._pixel.addEventListener("status", (_status) => {
+      this._lastStatusChange = new Date();
+    });
   }
 
   addEventListener<K extends keyof PixelDispatcherEventMap>(
@@ -202,19 +218,6 @@ export default class PixelDispatcher implements PixelInfo {
     listener: EventReceiver<PixelDispatcherEventMap[K]>
   ): void {
     this._evEmitter.removeListener(eventName, listener);
-  }
-
-  updateScannedPixel(scannedPixel: ScannedPixel): boolean {
-    if (this._scannedPixel === scannedPixel) {
-      return false;
-    } else {
-      if (this.pixelId !== scannedPixel.pixelId) {
-        throw new Error("Pixel id doesn't match");
-      }
-      this._scannedPixel = scannedPixel;
-      this._lastBleActivity = new Date();
-      return true;
-    }
   }
 
   dispatch(action: PixelDispatcherAction) {
@@ -273,7 +276,7 @@ export default class PixelDispatcher implements PixelInfo {
     promise?.catch((error) => this._evEmitter.emit("error", error));
   }
 
-  private _getIPixel(): PixelInfo {
+  private _getPixelInfo(): PixelInfo {
     // TODO once disconnected, should return _pixel until _scannedPixel is updated
     return this.status === "disconnected" ? this._scannedPixel : this._pixel;
   }

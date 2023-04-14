@@ -36,7 +36,7 @@ import { FlatList, StyleSheet } from "react-native";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import AppPage from "~/components/AppPage";
-import PixelScanList from "~/components/PixelScanList";
+import ScannedPixelsList from "~/components/ScannedPixelsList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import range from "~/utils/range";
 
@@ -364,7 +364,7 @@ function AnimationPage() {
   return (
     <>
       {!pixel ? (
-        <PixelScanList onSelect={onSelect} />
+        <ScannedPixelsList onSelect={onSelect} />
       ) : (
         <FastVStack>
           <Text>{`Connection status: ${status}`}</Text>

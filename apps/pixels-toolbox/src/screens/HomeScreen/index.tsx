@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, useWindowDimensions } from "react-native";
 
-import PixelsList from "./PixelsList";
+import SwipeablePixelsList from "./SwipeablePixelsList";
 
 import { useAppSelector } from "~/app/hooks";
 import AppPage from "~/components/AppPage";
@@ -49,7 +49,7 @@ function HomePage({ navigation }: HomeProps) {
         <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
           {selectedFwLabel ?? t("tapToSelectFirmware")}
         </Link>
-        <PixelsList onDieDetails={onDieDetails} />
+        <SwipeablePixelsList onDieDetails={onDieDetails} />
       </FastBox>
       {/* Footer showing app and system info */}
       <FastBox mt={8} alignSelf="center">

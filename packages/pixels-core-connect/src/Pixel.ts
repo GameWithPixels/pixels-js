@@ -691,6 +691,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Requests the Pixel to stop all animations currently playing.
+   * @returns A promise.
    */
   async stopAllAnimations(): Promise<void> {
     await this.sendMessage("stopAllAnimations");
@@ -701,6 +702,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param dataSet The data set to upload.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..
+   * @returns A promise.
    */
   async transferDataSet(
     dataSet: DataSet,
@@ -768,6 +770,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param dataSet The data set containing just one animation to play.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..
+   * @returns A promise.
    */
   async playTestAnimation(
     dataSet: DataSet,
@@ -827,6 +830,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param dataSet The data set to upload.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..
+   * @returns A promise.
    */
   async transferInstantAnimations(
     dataSet: DataSet,
@@ -888,6 +892,7 @@ export class Pixel extends PixelInfoNotifier {
    * Plays the instant animation at the given index.
    * See @see transferInstantAnimations().
    * @param animIndex The index of the instant animation to play.
+   * @returns A promise.
    */
   async playInstantAnimation(animIndex: number): Promise<void> {
     await this.sendMessage(
