@@ -250,14 +250,17 @@ export class PixelScanner {
     return this._queue.run(async () => {
       // Check if a scan was already started
       if (this._scannerListener) {
-        // Cancel any scheduled user notification
-        clearTimeout(this._notifyTimeout);
-        this._notifyTimeout = undefined;
-        // Cancel scanning emulation
-        clearTimeout(this._emulatorTimeout);
-        this._emulatorTimeout = undefined;
-        // Stop scanning
-        await MainScanner.removeListener(this._scannerListener);
+        if (this._emulatorTimeout) {
+          // Cancel scanning emulation
+          clearTimeout(this._emulatorTimeout);
+          this._emulatorTimeout = undefined;
+        } else {
+          // Cancel any scheduled user notification
+          clearTimeout(this._notifyTimeout);
+          this._notifyTimeout = undefined;
+          // Stop scanning
+          await MainScanner.removeListener(this._scannerListener);
+        }
         // Update state once all operations have completed successfully
         this._scannerListener = undefined;
       }

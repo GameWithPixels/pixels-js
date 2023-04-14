@@ -1,13 +1,33 @@
-import { FastButton } from "@systemic-games/react-native-base-components";
-import { Center, Text } from "native-base";
 import { FallbackProps } from "react-error-boundary";
+import { View } from "react-native";
+import { Button, Text, useTheme } from "react-native-paper";
 
 export default function ({ error, resetErrorBoundary }: FallbackProps) {
+  const theme = useTheme();
   return (
-    <Center bg="red.500" m="5%" borderRadius="xl">
-      <Text bold>Error!</Text>
-      <Text bold>{error.message}</Text>
-      <FastButton onPress={resetErrorBoundary}>Continue</FastButton>
-    </Center>
+    <View
+      style={{
+        backgroundColor: theme.colors.errorContainer,
+        padding: 20,
+        alignItems: "center",
+      }}
+    >
+      <Text variant="headlineMedium" style={{ color: theme.colors.error }}>
+        Error!
+      </Text>
+      <Text
+        variant="bodyLarge"
+        style={{ color: theme.colors.error, marginVertical: 30 }}
+      >
+        {error.message}
+      </Text>
+      <Button
+        mode="outlined"
+        textColor={theme.colors.error}
+        onPress={resetErrorBoundary}
+      >
+        Continue
+      </Button>
+    </View>
   );
 }

@@ -14,8 +14,8 @@ import {
   VStack,
   Box,
 } from "native-base";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useErrorHandler } from "react-error-boundary";
+import React from "react";
+import { ErrorBoundary, useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
 import {
   Camera,
@@ -23,8 +23,8 @@ import {
   useCameraDevices,
 } from "react-native-vision-camera";
 
-import AppPage from "~/components/AppPage";
-import ScannedPixelsList from "~/components/ScannedPixelsList";
+import ErrorFallback from "~/components/ErrorFallback";
+import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import {
   CheckBoard,
   CheckLEDs,
@@ -131,12 +131,12 @@ function DecodePixelIdPage({
 
   // Camera
   const [cameraPermission, setCameraPermission] =
-    useState<CameraPermissionStatus>();
+    React.useState<CameraPermissionStatus>();
   const devices = useCameraDevices("wide-angle-camera");
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = React.useRef<Camera>(null);
 
   // Camera permissions
-  useEffect(() => {
+  React.useEffect(() => {
     console.log("Requesting camera permission");
     Camera.requestCameraPermission().then((perm) => {
       console.log(`Camera permission: ${perm}`);
@@ -150,10 +150,10 @@ function DecodePixelIdPage({
 
   // Camera status
   const [cameraStatus, setCameraStatus] =
-    useState<CameraStatus>("initializing");
+    React.useState<CameraStatus>("initializing");
 
   // Update camera status
-  useEffect(() => {
+  React.useEffect(() => {
     if (cameraPermission === "denied") {
       setCameraStatus("needPermission");
       errorHandler(new Error(t("needCameraPermission")));
@@ -167,16 +167,16 @@ function DecodePixelIdPage({
     usePixelIdDecoderFrameProcessor();
 
   // Notify when pixel id has been decoded
-  useEffect(() => {
+  React.useEffect(() => {
     if (pixelId) {
       onDecodedPixelId(pixelId);
     }
   }, [onDecodedPixelId, pixelId]);
 
   // Monitor color changes
-  const lastColorChangesRef = useRef<number[]>([]);
-  const [readingColors, setReadingColors] = useState(false);
-  useEffect(() => {
+  const lastColorChangesRef = React.useRef<number[]>([]);
+  const [readingColors, setReadingColors] = React.useState(false);
+  React.useEffect(() => {
     const lastColorsChanges = lastColorChangesRef.current;
     if (lastColor) {
       const now = Date.now();
@@ -197,13 +197,13 @@ function DecodePixelIdPage({
   }, [lastColor]);
 
   // Scan list
-  const [showScanList, setShowScanList] = useState(false);
+  const [showScanList, setShowScanList] = React.useState(false);
 
-  const onSelect = useCallback(
+  const onSelect = React.useCallback(
     (sp: ScannedPixel) => onDecodedPixelId(sp.pixelId),
     [onDecodedPixelId]
   );
-  const onClose = useCallback(() => setShowScanList(false), []);
+  const onClose = React.useCallback(() => setShowScanList(false), []);
 
   const bg = useBackgroundColor();
   return showScanList ? (
@@ -261,8 +261,8 @@ function RunTestsPage({
   onResult?: (result: TaskResult) => void;
 }) {
   const { t } = useTranslation();
-  const [pixel, setPixel] = useState<Pixel>();
-  const [cancel, setCancel] = useState(false);
+  const [pixel, setPixel] = React.useState<Pixel>();
+  const [cancel, setCancel] = React.useState(false);
 
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
@@ -377,8 +377,8 @@ function RunTestsPage({
       onResult?.("canceled");
     }
   };
-  const scrollRef = useRef<any>();
-  useEffect(() => {
+  const scrollRef = React.useRef<any>();
+  React.useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollToEnd();
     }
@@ -410,9 +410,9 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
-  const [formFactor, setFormFactor] = useState<ValidationFormFactor>();
-  const [dieType, setDieType] = useState<DieType>();
-  const [pixelId, setPixelId] = useState(0);
+  const [formFactor, setFormFactor] = React.useState<ValidationFormFactor>();
+  const [dieType, setDieType] = React.useState<DieType>();
+  const [pixelId, setPixelId] = React.useState(0);
 
   return !formFactor ? (
     <SelectFormFactorPage onSelected={setFormFactor} />
@@ -543,6 +543,15 @@ const theme = extendTheme({
   },
 });
 
+function AppPage({ children }: React.PropsWithChildren) {
+  return (
+    <VStack flex={1} width="100%" height="100%" variant="background">
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        {children}
+      </ErrorBoundary>
+    </VStack>
+  );
+}
 export default function () {
   return (
     <AppPage>

@@ -9,7 +9,7 @@ import {
 } from "native-base";
 import React, { useCallback, useRef, useState } from "react";
 
-import AppPage from "~/components/AppPage";
+import { AppPage } from "~/components/AppPage";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import useTestComponent, {
   TaskComponentProps,

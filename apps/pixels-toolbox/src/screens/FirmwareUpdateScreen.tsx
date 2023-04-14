@@ -1,24 +1,21 @@
-import {
-  FastBox,
-  FastButton,
-} from "@systemic-games/react-native-base-components";
+import { FastBox } from "@systemic-games/react-native-base-components";
 import {
   BleScanner,
   ScannedPeripheral,
 } from "@systemic-games/react-native-pixels-connect";
-import { Link, Pressable, Text } from "native-base";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
+import { Button, Text, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
-import AppPage from "~/components/AppPage";
+import { AppPage } from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import { FirmwareUpdateProps } from "~/navigation";
-import styles from "~/styles";
+import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function formatAddress(address: number): string {
@@ -59,8 +56,8 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
 
   // DFU file
   const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
-  const [selectedFwLabel, setSelectedFwLabel] = useState<string>();
-  useEffect(() => {
+  const [selectedFwLabel, setSelectedFwLabel] = React.useState<string>();
+  React.useEffect(() => {
     if (dfuFiles?.length) {
       setSelectedFwLabel(
         `${dfuFiles
@@ -75,10 +72,10 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   }, [dfuFiles]);
 
   // DFU
-  const [dfuTarget, setDfuTarget] = useState<ScannedPeripheral>();
+  const [dfuTarget, setDfuTarget] = React.useState<ScannedPeripheral>();
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
     useUpdateFirmware();
-  const onSelect = useCallback(
+  const onSelect = React.useCallback(
     (sp: ScannedPeripheral) => {
       setDfuTarget((dfuTarget) => {
         if (!dfuTarget) {
@@ -103,12 +100,12 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   );
 
   // Scan list
-  const [scannedPeripherals, setScannedPeripherals] = useState<
+  const [scannedPeripherals, setScannedPeripherals] = React.useState<
     ScannedPeripheral[]
   >([]);
-  const pendingScans = useRef<ScannedPeripheral[]>([]);
+  const pendingScans = React.useRef<ScannedPeripheral[]>([]);
   // Queue scan events and process them in batch
-  useEffect(() => {
+  React.useEffect(() => {
     BleScanner.start("", (sp: ScannedPeripheral) => {
       const arr = pendingScans.current;
       const i = arr.findIndex((item) => item.systemId === sp.systemId);
@@ -123,7 +120,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
     };
   }, [errorHandler]);
   // Process scan events in batches
-  useEffect(() => {
+  React.useEffect(() => {
     const id = setInterval(
       () =>
         setScannedPeripherals((arr) => {
@@ -151,26 +148,20 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
 
   // Values for UI
   const { t } = useTranslation();
-  const [refreshing, setRefreshing] = useState(false);
-  const [errorCleared, setErrorCleared] = useState(false);
-  useEffect(() => dfuLastError && setErrorCleared(false), [dfuLastError]);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [errorCleared, setErrorCleared] = React.useState(false);
+  React.useEffect(() => dfuLastError && setErrorCleared(false), [dfuLastError]);
 
   // FlatList item rendering
-  const renderItem = useCallback(
+  const renderItem = React.useCallback(
     ({ item: sp }: { item: ScannedPeripheral }) => (
-      <Pressable
-        onPress={() => onSelect(sp)}
-        borderColor="gray.500"
-        borderWidth={2}
-        alignItems="center"
-        justifyContent="center"
-      >
+      <Pressable style={styles.card} onPress={() => onSelect(sp)}>
         <PeripheralInfo peripheral={sp} />
       </Pressable>
     ),
     [onSelect]
   );
-  const refreshControl = useMemo(
+  const refreshControl = React.useMemo(
     () => (
       <RefreshControl
         refreshing={refreshing}
@@ -187,59 +178,67 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
     [refreshing]
   );
 
+  const theme = useTheme();
+
   return (
-    <FastBox m={3}>
+    <FastBox w="100%" m={3}>
       {dfuLastError && !errorCleared ? (
         // Got an error
-        <FastBox alignContent="center" justifyContent="center">
-          <Text color="red.500">{`${dfuLastError}`}</Text>
-          <FastButton m={3} w={100} onPress={() => setErrorCleared(true)}>
+        <FastBox w="100%" alignItems="center" justifyContent="center">
+          <Text
+            variant="bodyLarge"
+            style={{ color: theme.colors.error }}
+          >{`${dfuLastError}`}</Text>
+          <Button
+            mode="contained-tonal"
+            style={styles.buttonOk}
+            onPress={() => setErrorCleared(true)}
+          >
             {t("ok")}
-          </FastButton>
+          </Button>
         </FastBox>
       ) : !dfuState ? (
         <>
-          <Link
-            alignSelf="center"
+          <Button
+            labelStyle={{ alignSelf: "center", ...gs.underlined }}
             onPress={() => navigation.navigate("SelectDfuFiles")}
           >
             {selectedFwLabel ?? t("tapToSelectFirmware")}
-          </Link>
+          </Button>
           {selectedFwLabel && (
-            <>
-              <Text my={3} italic>
+            <FastBox gap={10}>
+              <Text style={gs.italic}>
                 Tap on a peripheral to attempt a Pixel firmware update.
               </Text>
-              <Text mb={3} bold>
-                Bluetooth Scanned Peripherals:
-              </Text>
+              <Text style={gs.bold}>Bluetooth Scanned Peripherals:</Text>
               <FlatList
-                style={styles.containerFullWidth}
+                style={gs.fullWidth}
                 data={scannedPeripherals}
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
                 ItemSeparatorComponent={Separator}
                 refreshControl={refreshControl}
               />
-            </>
+            </FastBox>
           )}
         </>
       ) : (
         // Updating Firmware
-        <FastBox width="100%" alignContent="center" justifyContent="center">
-          <Text mb={3} bold>
-            Selected Peripheral:
-          </Text>
+        <FastBox
+          width="100%"
+          gap={10}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Text style={gs.bold}>Selected Peripheral:</Text>
           {dfuTarget && <PeripheralInfo peripheral={dfuTarget} />}
-          <Text mt={6} mb={3} bold>
-            Performing Firmware Update:
-          </Text>
+          <Text style={gs.bold}>Performing Firmware Update:</Text>
           {dfuState === "dfuStarting" && dfuProgress > 0 ? (
             <FastBox w="100%" p={2}>
               <ProgressBar percent={dfuProgress} />
             </FastBox>
           ) : (
-            <Text italic>
+            <Text style={gs.italic}>
               {t("dfuStateWithStatus", {
                 status: dfuState ? t(dfuState) : t("initializing"),
               })}
@@ -258,3 +257,16 @@ export default function (props: FirmwareUpdateProps) {
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    borderColor: "gray",
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonOk: {
+    marginTop: 10,
+    width: 100,
+  },
+});

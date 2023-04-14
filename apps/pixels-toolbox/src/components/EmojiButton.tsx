@@ -1,10 +1,15 @@
-import {
-  FastButton,
-  FastButtonProps,
-} from "@systemic-games/react-native-base-components";
+import { StyleSheet } from "react-native";
+import { Button, ButtonProps } from "react-native-paper";
 
-export default function (props: FastButtonProps) {
-  return <FastButton _text={textStyle} px={2} py={1} m={0} {...props} />;
+export function EmojiButton(props: ButtonProps) {
+  return <Button labelStyle={styles.text} mode="outlined" {...props} />;
 }
 
-const textStyle = { fontSize: "2xl" };
+const styles = StyleSheet.create({
+  text: {
+    fontSize: 24,
+    lineHeight: undefined,
+    marginVertical: undefined,
+    marginHorizontal: undefined,
+  },
+});

@@ -17,6 +17,7 @@ import {
 } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { AppPage } from "~/components/AppPage";
 import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
 
 function toYesNo(value: boolean) {
@@ -231,13 +232,20 @@ function AppInfoModal({
   );
 }
 
-export function SettingsScreen() {
-  const theme = useTheme();
+function SettingsPage() {
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <ScrollView>
       <ThemeCard />
       <EasCard />
     </ScrollView>
+  );
+}
+
+export default function () {
+  return (
+    <AppPage>
+      <SettingsPage />
+    </AppPage>
   );
 }
 

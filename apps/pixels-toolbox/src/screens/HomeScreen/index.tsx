@@ -1,22 +1,23 @@
 import { FastBox } from "@systemic-games/react-native-base-components";
-import { Link, Text } from "native-base";
-import { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, useWindowDimensions } from "react-native";
+import { Platform, StyleSheet, useWindowDimensions } from "react-native";
+import { Button, Text } from "react-native-paper";
 
 import SwipeablePixelsList from "./SwipeablePixelsList";
 
 import { useAppSelector } from "~/app/hooks";
-import AppPage from "~/components/AppPage";
+import { AppPage } from "~/components/AppPage";
 import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import { HomeProps } from "~/navigation";
+import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function HomePage({ navigation }: HomeProps) {
   // DFU file
   const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
-  const [selectedFwLabel, setSelectedFwLabel] = useState<string>();
-  useEffect(() => {
+  const [selectedFwLabel, setSelectedFwLabel] = React.useState<string>();
+  React.useEffect(() => {
     if (dfuFiles?.length) {
       setSelectedFwLabel(
         `${dfuFiles
@@ -31,7 +32,7 @@ function HomePage({ navigation }: HomeProps) {
   }, [dfuFiles]);
 
   // Navigation
-  const onDieDetails = useCallback(
+  const onDieDetails = React.useCallback(
     (pixelId: number) => navigation.navigate("DieDetails", { pixelId }),
     [navigation]
   );
@@ -43,17 +44,20 @@ function HomePage({ navigation }: HomeProps) {
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
       <FastBox flex={1} alignItems="center" px={3}>
-        <Text pl="7%" mb={3} alignSelf="flex-start">
-          ↖️ <Text italic>{t("openMenuToGoToValidation")}</Text>
+        <Text style={styles.textValidation}>
+          ↖️ <Text style={gs.italic}>{t("openMenuToGoToValidation")}</Text>
         </Text>
-        <Link onPress={() => navigation.navigate("SelectDfuFiles")}>
+        <Button
+          onPress={() => navigation.navigate("SelectDfuFiles")}
+          labelStyle={gs.underlined}
+        >
           {selectedFwLabel ?? t("tapToSelectFirmware")}
-        </Link>
+        </Button>
         <SwipeablePixelsList onDieDetails={onDieDetails} />
       </FastBox>
       {/* Footer showing app and system info */}
       <FastBox mt={8} alignSelf="center">
-        <Text italic>
+        <Text variant="labelSmall">
           {t("screenWithSize", {
             width: Math.round(window.width),
             height: Math.round(window.height),
@@ -76,3 +80,11 @@ export default function (props: HomeProps) {
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  textValidation: {
+    marginLeft: 20,
+    margin: 3,
+    alignSelf: "flex-start",
+  },
+});

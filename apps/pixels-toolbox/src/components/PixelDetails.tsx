@@ -10,7 +10,7 @@ import {
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import {
@@ -27,8 +27,9 @@ import ProgressBar from "~/components/ProgressBar";
 import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { capitalize } from "~/i18n";
+import gs from "~/styles";
 
-interface TextEntryBaseProps extends PropsWithChildren {
+interface TextEntryBaseProps extends React.PropsWithChildren {
   title: string;
   colonSeparator: string;
 }
@@ -40,11 +41,11 @@ function TextEntryBase({
 }: TextEntryBaseProps) {
   return (
     <Text style={styles.mv1} variant="bodyLarge">
-      <Text style={styles.textBold}>
+      <Text style={gs.bold}>
         {capitalize(title)}
         {colonSeparator}
       </Text>
-      <Text style={styles.textItalic}>{children}</Text>
+      <Text style={gs.italic}>{children}</Text>
     </Text>
   );
 }
@@ -248,7 +249,7 @@ function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
   );
 }
 
-export default function PixelDetails({
+export function PixelDetails({
   pixelDispatcher,
 }: {
   pixelDispatcher: PixelDispatcher;
@@ -318,11 +319,5 @@ const styles = StyleSheet.create({
   },
   m10: {
     margin: 10,
-  },
-  textBold: {
-    fontWeight: "bold",
-  },
-  textItalic: {
-    fontStyle: "italic",
   },
 });

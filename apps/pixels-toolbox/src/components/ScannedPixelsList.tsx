@@ -1,18 +1,18 @@
 import {
   FastBox,
-  FastButton,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
 import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
-import { Pressable, Text } from "native-base";
-import { useCallback } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList } from "react-native";
+import { FlatList, Pressable, StyleSheet } from "react-native";
+import { Button, Text } from "react-native-paper";
 
 import PixelInfoCard from "~/components/PixelInfoCard";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useFocusScannedPixelNotifiers from "~/features/pixels/hooks/useFocusScannedPixelNotifiers";
+import gs from "~/styles";
 
 function keyExtractor(p: ScannedPixelNotifier) {
   return p.systemId;
@@ -22,7 +22,7 @@ function Separator() {
   return <FastBox height={3} />;
 }
 
-export default function ({
+export function ScannedPixelsList({
   onSelect: onSelected,
   onClose,
   minUpdateInterval,
@@ -39,12 +39,11 @@ export default function ({
   useErrorWithHandler(lastError);
 
   // FlatList item rendering
-  const renderItem = useCallback(
+  const renderItem = React.useCallback(
     ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
       <Pressable
+        style={styles.container}
         onPress={() => onSelected(scannedPixel)}
-        borderColor="gray.500"
-        borderWidth={2}
       >
         <PixelInfoCard pixelInfo={scannedPixel} />
       </Pressable>
@@ -55,26 +54,24 @@ export default function ({
   const { t } = useTranslation();
   return (
     <FastVStack flex={1} alignItems="center">
-      <FastHStack>
+      <FastHStack my={5}>
         {onClose && (
-          <FastButton mr={3} onPress={onClose}>
+          <Button mode="outlined" style={styles.mr5} onPress={onClose}>
             {t("close")}
-          </FastButton>
+          </Button>
         )}
-        <FastButton onPress={() => scannerDispatch("clear")}>
+        <Button mode="outlined" onPress={() => scannerDispatch("clear")}>
           {t("clearScanList")}
-        </FastButton>
+        </Button>
       </FastHStack>
-      <Text mt={1} bold>
+      <Text style={gs.bold}>
         {scannedPixels.length
           ? t("scannedPixelsWithCount", { count: scannedPixels.length })
           : t("noPixelsFound")}
       </Text>
       {scannedPixels.length > 0 && (
         <>
-          <Text m={1} italic>
-            {t("tapOnItemToSelect")}
-          </Text>
+          <Text style={gs.italic}>{t("tapOnItemToSelect")}</Text>
           <FlatList
             data={scannedPixels}
             renderItem={renderItem}
@@ -86,3 +83,13 @@ export default function ({
     </FastVStack>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    borderColor: "gray",
+    borderWidth: 2,
+  },
+  mr5: {
+    marginRight: 5,
+  },
+});

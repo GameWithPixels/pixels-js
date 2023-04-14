@@ -9,12 +9,12 @@ export default function ({ percent }: ProgressBarProps) {
   return (
     <View style={styles.progressBarBackground}>
       <View
-        style={[
-          styles.progressBarForeground,
-          {
-            width: `${clampedPercentage}%`,
-          },
-        ]}
+        style={{
+          backgroundColor: "blue",
+          borderRadius: 5,
+          width: `${clampedPercentage}%`,
+          height: "100%",
+        }}
       />
     </View>
   );
@@ -28,10 +28,5 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 2,
     alignSelf: "center",
-  },
-  progressBarForeground: {
-    backgroundColor: "blue",
-    borderRadius: 5,
-    height: "100%",
   },
 });

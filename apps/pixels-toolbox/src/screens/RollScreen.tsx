@@ -1,14 +1,16 @@
+import { FastVStack } from "@systemic-games/react-native-base-components";
 import {
   ScannedPixel,
   getPixel,
   usePixelConnect,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import { Center, Pressable, Text } from "native-base";
-import { useCallback } from "react";
+import React from "react";
+import { Pressable, StyleSheet } from "react-native";
+import { Text } from "react-native-paper";
 
-import AppPage from "~/components/AppPage";
-import ScannedPixelsList from "~/components/ScannedPixelsList";
+import { AppPage } from "~/components/AppPage";
+import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 
 function RollPage() {
@@ -16,7 +18,7 @@ function RollPage() {
   const [rollState] = usePixelValue(pixel, "rollState");
   useErrorWithHandler(lastError);
 
-  const onSelect = useCallback(
+  const onSelect = React.useCallback(
     (sp: ScannedPixel) => connectDispatch("connect", getPixel(sp)),
     [connectDispatch]
   );
@@ -35,26 +37,26 @@ function RollPage() {
       {!pixel ? (
         <ScannedPixelsList onSelect={onSelect} />
       ) : (
-        <Pressable onPress={() => connectDispatch("disconnect")}>
-          <Center
+        <Pressable
+          style={{ backgroundColor }}
+          onPress={() => connectDispatch("disconnect")}
+        >
+          <FastVStack
             width="100%"
             height="100%"
-            backgroundColor={`${backgroundColor}.600`}
+            alignItems="center"
+            justifyContent="center"
           >
             {isConnecting ? (
-              <Text fontSize={250} bold color="white">
-                ...
-              </Text>
+              <Text style={styles.text}>...</Text>
             ) : (
               status === "ready" &&
               rollState &&
               rollState.state !== "unknown" && (
-                <Text fontSize={250} bold color="white">
-                  {rollState.face}
-                </Text>
+                <Text style={styles.text}>{rollState.face}</Text>
               )
             )}
-          </Center>
+          </FastVStack>
         </Pressable>
       )}
     </>
@@ -68,3 +70,11 @@ export default function () {
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  text: {
+    fontSize: 250,
+    fontWeight: "bold",
+    color: "white",
+  },
+});

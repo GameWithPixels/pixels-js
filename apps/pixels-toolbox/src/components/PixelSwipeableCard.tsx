@@ -1,60 +1,123 @@
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
-  FastButton,
+  FastBox,
+  FastBoxProps,
   FastHStack,
   FastVStack,
   useDisclose,
-} from "@systemic-games/react-native-pixels-components";
+} from "@systemic-games/react-native-base-components";
+import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
-import {
-  AlertDialog,
-  Box,
-  Button,
-  IBoxProps,
-  Pressable,
-  Text,
-} from "native-base";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Pressable, StyleSheet, View, ViewStyle } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
+import {
+  Button,
+  Dialog,
+  Portal,
+  Text,
+  TextProps,
+  useTheme,
+} from "react-native-paper";
 
 import PixelInfoCard, { PixelInfoCardProps } from "./PixelInfoCard";
 import ProgressBar from "./ProgressBar";
 
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import gs from "~/styles";
 
-function SwipeableItemView({
-  label,
-  _text,
-  ...props
-}: IBoxProps & { label: string }) {
+function AlertDialog({
+  title,
+  message,
+  isOpen,
+  onClose,
+  onPressOk: onOk,
+  onPressCancel: onCancel,
+}: {
+  title: string;
+  message?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onPressOk?: () => void;
+  onPressCancel?: () => void;
+}) {
+  const { t } = useTranslation();
   return (
-    <Box justifyContent="center" alignItems="center" {...props}>
-      <Text {..._text}>{label}</Text>
-    </Box>
+    <Portal>
+      <Dialog
+        visible={isOpen}
+        onDismiss={onClose}
+        dismissable={!onOk && !onCancel}
+      >
+        <Dialog.Title>{title}</Dialog.Title>
+        <Dialog.Content>
+          <Text variant="bodyMedium">{message}</Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <>
+            {onCancel && (
+              <Button
+                onPress={() => {
+                  onCancel?.();
+                  onClose();
+                }}
+              >
+                {t("cancel")}
+              </Button>
+            )}
+            {onOk && (
+              <Button
+                onPress={() => {
+                  onOk?.();
+                  onClose();
+                }}
+              >
+                {t("ok")}
+              </Button>
+            )}
+          </>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
   );
 }
 
-export interface SwipeablePixelCardProps
-  extends Omit<PixelInfoCardProps, "pixelInfo"> {
-  scannedPixel: ScannedPixelNotifier;
-  onShowDetails: () => void;
+function SwipeableItemView({
+  backgroundColor,
+  label,
+  textStyle,
+  ...props
+}: FastBoxProps & {
+  backgroundColor: ViewStyle["backgroundColor"];
+  label: string;
+  textStyle: TextProps<string>["style"];
+}) {
+  return (
+    <View style={{ backgroundColor }}>
+      <FastBox alignItems="center" justifyContent="center" {...props}>
+        <Text style={textStyle}>{label}</Text>
+      </FastBox>
+    </View>
+  );
 }
 
-export default function ({
+function PixelCard({
   children,
-  scannedPixel,
-  onShowDetails,
+  pixelDispatcher,
+  dfuQueued,
+  setDfuQueued,
   ...props
-}: SwipeablePixelCardProps) {
-  const pixelDispatcher = PixelDispatcher.getInstance(scannedPixel);
+}: Omit<SwipeablePixelCardProps, "scannedPixel" | "onShowDetails"> & {
+  pixelDispatcher: PixelDispatcher;
+  dfuQueued: boolean;
+  setDfuQueued: (value: boolean) => void;
+}) {
   React.useEffect(() => {
     pixelDispatcher.dispatch("reportRssi");
   }, [pixelDispatcher]);
 
   const [lastError, setLastError] = React.useState<Error>();
   const [profileUpdate, setProfileUpdate] = React.useState<number>();
-  const [dfuQueued, setDfuQueued] = React.useState(false);
   const [dfuState, setDfuState] = React.useState<DfuState>("dfuCompleted");
   const [dfuProgress, setDfuProgress] = React.useState<number>(0);
 
@@ -109,7 +172,7 @@ export default function ({
         notifyUserListener
       );
     };
-  }, [pixelDispatcher]);
+  }, [pixelDispatcher, setDfuQueued]);
 
   // User notification
   const [notifyUserData, setNotifyUserData] = React.useState<{
@@ -119,7 +182,6 @@ export default function ({
     handled?: boolean;
   }>();
   const notifyUserDisclose = useDisclose();
-  const okRef = React.useRef(null);
   const open = notifyUserDisclose.onOpen;
   React.useEffect(() => {
     if (notifyUserData && !notifyUserData.handled) {
@@ -135,172 +197,204 @@ export default function ({
   const lastSeen = Math.round(
     (Date.now() - pixelDispatcher.lastBleActivity.getTime()) / 1000
   );
+  const theme = useTheme();
   return (
-    <Swipeable
-      onSwipeableOpen={(direction, swipeable) => {
-        if (direction === "left") {
-          if (!dfuQueued) {
-            if (isDisco) {
-              pixelDispatcher.dispatch("connect");
-            } else {
-              pixelDispatcher.dispatch("disconnect");
-            }
-          }
-        } else {
-          if (isDisco) {
-            if (pixelDispatcher.isFirmwareUpdateQueued) {
-              pixelDispatcher.dispatch("dequeueFirmwareUpdate");
-            } else {
-              pixelDispatcher.dispatch("queueFirmwareUpdate");
-            }
-          } else {
-            pixelDispatcher.dispatch("blink");
-          }
-        }
-        swipeable.close();
-      }}
-      renderLeftActions={() =>
-        !dfuQueued && (
-          <SwipeableItemView
-            px={1}
-            label={t(isDisco ? "connect" : "disconnect")}
-            backgroundColor={isDisco ? "green.500" : "red.500"}
-            _text={{ mx: 5, color: "gray.100", bold: true }}
-          />
-        )
-      }
-      renderRightActions={() =>
-        (!isDisco ||
-          (pixelDispatcher.canUpdateFirmware &&
-            !pixelDispatcher.isUpdatingFirmware)) && (
-          <SwipeableItemView
-            px={1}
-            label={
-              isDisco
-                ? pixelDispatcher.isUpdatingFirmware
-                  ? ""
-                  : pixelDispatcher.isFirmwareUpdateQueued
-                  ? t("cancelFirmwareUpdate")
-                  : t("updateFirmware").replace(" ", "\n")
-                : t("blink")
-            }
-            backgroundColor={isDisco ? "purple.500" : "orange.500"}
-            _text={{ mx: 5, color: "gray.100", bold: true }}
-          />
-        )
-      }
-    >
-      <Pressable onPress={() => onShowDetails()}>
-        <PixelInfoCard pixelInfo={pixelDispatcher} {...props}>
-          {pixelDispatcher.canUpdateFirmware && (
-            <Text position="absolute" top={1} right={2}>
-              ⬆️
-            </Text>
-          )}
-          <FastVStack mt={-1} alignItems="center" width="100%">
-            {/* Show either DFU progress, profile update progress, connect state or advertising state */}
-            {dfuQueued ? (
-              // DFU status and progress
-              dfuState !== "dfuCompleted" ? (
-                <FastHStack
-                  width="100%"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Text>{t("firmwareUpdate")}: </Text>
-                  {dfuState === "dfuStarting" && dfuProgress > 0 ? (
-                    <Box flex={1}>
-                      <ProgressBar percent={dfuProgress} />
-                    </Box>
-                  ) : (
-                    <Text italic>{t(dfuState)}</Text>
-                  )}
-                </FastHStack>
-              ) : (
-                <Text>{t("waitingOnFirmwareUpdate")}</Text>
-              )
-            ) : profileUpdate ? (
-              // Profile update progress
+    <>
+      <PixelInfoCard pixelInfo={pixelDispatcher} {...props}>
+        {pixelDispatcher.canUpdateFirmware && (
+          <Text style={styles.topRightCorner}>⬆️</Text>
+        )}
+        <FastVStack mt={-1} alignItems="center" width="100%">
+          {/* Show either DFU progress, profile update progress, connect state or advertising state */}
+          {dfuQueued ? (
+            // DFU status and progress
+            dfuState !== "dfuCompleted" ? (
               <FastHStack
                 width="100%"
                 alignItems="center"
                 justifyContent="center"
               >
-                <Text>Profile Update: </Text>
-                <Box flex={1}>
-                  <ProgressBar percent={profileUpdate} />
-                </Box>
+                <Text>{t("firmwareUpdate")}: </Text>
+                {dfuState === "dfuStarting" && dfuProgress > 0 ? (
+                  <View style={gs.flex}>
+                    <ProgressBar percent={dfuProgress} />
+                  </View>
+                ) : (
+                  <Text style={gs.italic}>{t(dfuState)}</Text>
+                )}
               </FastHStack>
-            ) : isDisco && lastSeen > 5 ? (
-              // Pixel is disconnected and hasn't been seen for a while (no advertising)
-              <Text italic>{`${t("unavailable")} (${
-                lastSeen < 120
-                  ? t("secondsWithValue", { value: lastSeen })
-                  : t("minutesWithValue", { value: Math.floor(lastSeen / 60) })
-              })`}</Text>
             ) : (
-              // Pixel is either connecting/connected or advertising
-              <Text>
-                <Text>{t("status")}: </Text>
-                <Text italic>
-                  {t(
-                    isDisco && lastSeen <= 5
-                      ? "advertising"
-                      : pixelDispatcher.status
-                  )}
-                </Text>
+              <Text>{t("waitingOnFirmwareUpdate")}</Text>
+            )
+          ) : profileUpdate ? (
+            // Profile update progress
+            <FastHStack
+              width="100%"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text>Profile Update: </Text>
+              <View style={gs.flex}>
+                <ProgressBar percent={profileUpdate} />
+              </View>
+            </FastHStack>
+          ) : isDisco && lastSeen > 5 ? (
+            // Pixel is disconnected and hasn't been seen for a while (no advertising)
+            <Text style={gs.italic}>{`${t("unavailable")} (${
+              lastSeen < 120
+                ? t("secondsWithValue", { value: lastSeen })
+                : t("minutesWithValue", {
+                    value: Math.floor(lastSeen / 60),
+                  })
+            })`}</Text>
+          ) : (
+            // Pixel is either connecting/connected or advertising
+            <Text>
+              <Text>{t("status")}: </Text>
+              <Text style={gs.italic}>
+                {t(
+                  isDisco && lastSeen <= 5
+                    ? "advertising"
+                    : pixelDispatcher.status
+                )}
               </Text>
-            )}
-            {children}
-            {lastError && (
-              <>
-                <Text color="red.500">{lastError?.message}</Text>
-                <FastButton onPress={() => setLastError(undefined)}>
-                  {t("clearError")}
-                </FastButton>
-              </>
-            )}
-          </FastVStack>
-        </PixelInfoCard>
-      </Pressable>
+            </Text>
+          )}
+          {children}
+          {lastError && (
+            <>
+              <Text style={{ color: theme.colors.error }}>
+                {lastError?.message}
+              </Text>
+              <Button mode="outlined" onPress={() => setLastError(undefined)}>
+                {t("clearError")}
+              </Button>
+            </>
+          )}
+        </FastVStack>
+      </PixelInfoCard>
+
       <AlertDialog
+        title={pixelDispatcher.name}
+        message={notifyUserData?.message}
         isOpen={notifyUserDisclose.isOpen}
         onClose={notifyUserDisclose.onClose}
-        leastDestructiveRef={okRef}
-      >
-        <AlertDialog.Content>
-          <AlertDialog.CloseButton />
-          <AlertDialog.Header>{pixelDispatcher.name}</AlertDialog.Header>
-          <AlertDialog.Body>{notifyUserData?.message}</AlertDialog.Body>
-          <AlertDialog.Footer>
-            <Button.Group space={2}>
-              <>
-                {notifyUserData?.onCancel && (
-                  <Button
-                    onPress={() => {
-                      notifyUserData.onCancel?.();
-                      notifyUserDisclose.onClose();
-                    }}
-                  >
-                    {t("cancel")}
-                  </Button>
-                )}
-                {notifyUserData?.onOk && (
-                  <Button
-                    ref={okRef}
-                    onPress={() => {
-                      notifyUserData.onOk?.();
-                      notifyUserDisclose.onClose();
-                    }}
-                  >
-                    {t("ok")}
-                  </Button>
-                )}
-              </>
-            </Button.Group>
-          </AlertDialog.Footer>
-        </AlertDialog.Content>
-      </AlertDialog>
-    </Swipeable>
+      />
+    </>
   );
 }
+
+export interface SwipeablePixelCardProps
+  extends Omit<PixelInfoCardProps, "pixelInfo"> {
+  scannedPixel: ScannedPixelNotifier;
+  onShowDetails: () => void;
+}
+
+export function PixelSwipeableCard({
+  scannedPixel,
+  onShowDetails,
+  ...props
+}: SwipeablePixelCardProps) {
+  const pixelDispatcher = PixelDispatcher.getInstance(scannedPixel);
+  const [dfuQueued, setDfuQueued] = React.useState(false);
+
+  // Values for UI
+  const { t } = useTranslation();
+  const isDisco =
+    !pixelDispatcher.status || pixelDispatcher.status === "disconnected";
+  // TODO watch those states
+  const canUpdateFirmware = pixelDispatcher.canUpdateFirmware;
+  const isFirmwareUpdateQueued = pixelDispatcher.isFirmwareUpdateQueued;
+  const isUpdatingFirmware = pixelDispatcher.isUpdatingFirmware;
+
+  // Swipeable
+  const onSwipeableOpen = React.useCallback(
+    (direction: "left" | "right", swipeable: Swipeable) => {
+      if (direction === "left") {
+        if (!dfuQueued) {
+          if (isDisco) {
+            pixelDispatcher.dispatch("connect");
+          } else {
+            pixelDispatcher.dispatch("disconnect");
+          }
+        }
+      } else {
+        if (isDisco) {
+          if (isFirmwareUpdateQueued) {
+            pixelDispatcher.dispatch("dequeueFirmwareUpdate");
+          } else {
+            pixelDispatcher.dispatch("queueFirmwareUpdate");
+          }
+        } else {
+          pixelDispatcher.dispatch("blink");
+        }
+      }
+      swipeable.close();
+    },
+    [dfuQueued, isDisco, isFirmwareUpdateQueued, pixelDispatcher]
+  );
+  const renderLeftActions = React.useCallback(
+    () =>
+      !dfuQueued && (
+        <SwipeableItemView
+          px={1}
+          label={t(isDisco ? "connect" : "disconnect")}
+          backgroundColor={isDisco ? "green.500" : "red.500"}
+          textStyle={styles.textSwipe}
+        />
+      ),
+    [dfuQueued, isDisco, t]
+  );
+  const renderRightActions = React.useCallback(
+    () =>
+      (!isDisco || (canUpdateFirmware && !isUpdatingFirmware)) && (
+        <SwipeableItemView
+          px={1}
+          label={
+            isDisco
+              ? isUpdatingFirmware
+                ? ""
+                : isFirmwareUpdateQueued
+                ? t("cancelFirmwareUpdate")
+                : t("updateFirmware").replace(" ", "\n")
+              : t("blink")
+          }
+          backgroundColor={isDisco ? "purple.500" : "orange.500"}
+          textStyle={styles.textSwipe}
+        />
+      ),
+    [canUpdateFirmware, isDisco, isFirmwareUpdateQueued, isUpdatingFirmware, t]
+  );
+
+  return (
+    <>
+      <Swipeable
+        onSwipeableOpen={onSwipeableOpen}
+        renderLeftActions={renderLeftActions}
+        renderRightActions={renderRightActions}
+      >
+        <Pressable onPress={() => onShowDetails()}>
+          <PixelCard
+            pixelDispatcher={pixelDispatcher}
+            dfuQueued={dfuQueued}
+            setDfuQueued={setDfuQueued}
+            {...props}
+          />
+        </Pressable>
+      </Swipeable>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  topRightCorner: {
+    position: "absolute",
+    top: 1,
+    right: 2,
+  },
+  textSwipe: {
+    marginHorizontal: 5,
+    color: "gray",
+    fontWeight: "bold",
+  },
+});

@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+// Global style
+const gs = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
@@ -9,11 +10,28 @@ export default StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  containerFullWidth: {
-    width: "100%",
-  },
   containerFooter: {
     alignItems: "center",
+  },
+  flex: {
+    flex: 1,
+  },
+  fullWidth: {
+    width: "100%",
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bold: {
+    fontWeight: "bold",
+  },
+  italic: {
+    fontStyle: "italic",
+  },
+  underlined: {
+    textDecorationLine: "underline",
   },
   text: {
     fontSize: 18,
@@ -38,3 +56,5 @@ export default StyleSheet.create({
     paddingHorizontal: "4%",
   },
 });
+
+export default gs;

@@ -1,14 +1,19 @@
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { DarkTheme, NavigationContainer } from "@react-navigation/native";
+import {
+  DarkTheme as NavDarkTheme,
+  DefaultTheme as NavDefaultTheme,
+  NavigationContainer,
+} from "@react-navigation/native";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
-import { NativeBaseProvider, themeTools } from "native-base";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Appearance, LogBox } from "react-native";
 import {
-  MD3DarkTheme as PaperDarkTheme,
-  MD3LightTheme as PaperLightTheme,
+  adaptNavigationTheme,
+  MD3DarkTheme,
+  MD3LightTheme,
   Provider as PaperProvider,
 } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -22,9 +27,8 @@ import AnimationsScreen from "~/screens/AnimationsScreen";
 import FirmwareUpdateNavigator from "~/screens/FirmwareUpdateNavigator";
 import HomeNavigator from "~/screens/HomeNavigator";
 import RollScreen from "~/screens/RollScreen";
-import { SettingsScreen } from "~/screens/SettingsScreen";
+import SettingsScreen from "~/screens/SettingsScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
-import theme from "~/theme";
 import "~/i18n"; // Import internationalization file so it's initialized
 
 LogBox.ignoreLogs([
@@ -50,54 +54,71 @@ LogBox.ignoreLogs([
 // Initialize Bluetooth globally
 initBluetooth();
 
+// Theming
+const navThemes = adaptNavigationTheme({
+  reactNavigationLight: NavDefaultTheme,
+  reactNavigationDark: NavDarkTheme,
+});
+
+const LightTheme = {
+  ...MD3LightTheme,
+  ...navThemes.LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    ...navThemes.LightTheme.colors,
+  },
+};
+const DarkTheme = {
+  ...MD3DarkTheme,
+  ...navThemes.DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    ...navThemes.DarkTheme.colors,
+  },
+};
+
 const Drawer = createDrawerNavigator<RootScreensParamList>();
 
-function MyApp() {
+function App() {
   const themeMode = useAppSelector((state) => state.displaySettings.themeMode);
   const darkOrLight =
     themeMode === "system" ? Appearance.getColorScheme() : themeMode;
-  const paperTheme = darkOrLight === "dark" ? PaperDarkTheme : PaperLightTheme;
-  const drawerBackground = themeTools.getColor(theme, "coolGray.700"); // TODO dark/light
+  const theme = darkOrLight === "dark" ? DarkTheme : LightTheme;
 
   const { t } = useTranslation();
 
   return (
-    <PaperProvider theme={paperTheme}>
-      <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
-        <NavigationContainer theme={DarkTheme}>
-          <Drawer.Navigator
-            screenOptions={{
-              headerTitleStyle: {
-                fontWeight: "bold",
-                fontSize: 26,
-              },
-              headerTitleAlign: "center",
-              drawerStyle: {
-                backgroundColor: drawerBackground,
-              },
-            }}
-          >
-            <Drawer.Screen
-              name="HomeNavigator"
-              component={HomeNavigator}
-              options={{ title: t("pixelsScanner") }}
-            />
-            <Drawer.Screen
-              name="Validation"
-              component={ValidationScreen}
-              options={{ title: t("factoryValidation") }}
-            />
-            <Drawer.Screen
-              name="FirmwareUpdateNavigator"
-              component={FirmwareUpdateNavigator}
-              options={{ title: t("firmwareUpdate") }}
-            />
-            <Drawer.Screen name="Roll" component={RollScreen} />
-            <Drawer.Screen name="Animations" component={AnimationsScreen} />
-            <Drawer.Screen name="Settings" component={SettingsScreen} />
-          </Drawer.Navigator>
-        </NavigationContainer>
-      </NativeBaseProvider>
+    <PaperProvider theme={theme}>
+      <NavigationContainer theme={theme}>
+        <Drawer.Navigator
+          screenOptions={{
+            headerTitleStyle: {
+              fontWeight: "bold",
+              fontSize: 26,
+            },
+            headerTitleAlign: "center",
+          }}
+        >
+          <Drawer.Screen
+            name="HomeNavigator"
+            component={HomeNavigator}
+            options={{ title: t("pixelsScanner") }}
+          />
+          <Drawer.Screen
+            name="Validation"
+            component={ValidationScreen}
+            options={{ title: t("factoryValidation") }}
+          />
+          <Drawer.Screen
+            name="FirmwareUpdateNavigator"
+            component={FirmwareUpdateNavigator}
+            options={{ title: t("firmwareUpdate") }}
+          />
+          <Drawer.Screen name="Roll" component={RollScreen} />
+          <Drawer.Screen name="Animations" component={AnimationsScreen} />
+          <Drawer.Screen name="Settings" component={SettingsScreen} />
+        </Drawer.Navigator>
+      </NavigationContainer>
     </PaperProvider>
   );
 }
@@ -108,7 +129,9 @@ export default function () {
     <ReduxProvider store={store}>
       <SafeAreaProvider>
         <StatusBar style="light" />
-        <MyApp />
+        <ActionSheetProvider>
+          <App />
+        </ActionSheetProvider>
       </SafeAreaProvider>
     </ReduxProvider>
     // </StrictMode>

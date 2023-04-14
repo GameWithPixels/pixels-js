@@ -1,22 +1,36 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { FastHStack } from "@systemic-games/react-native-base-components";
 import Constants from "expo-constants";
-import { Center, HStack, HamburgerIcon, Pressable, Text } from "native-base";
-import { memo } from "react";
+import { Pressable, StyleSheet } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-function HeaderImpl({ onPress }: { onPress?: () => void }) {
+export function Header({ onPress }: { onPress?: () => void }) {
   const { top } = useSafeAreaInsets();
+  const theme = useTheme();
   return (
-    <HStack mt={top}>
-      <Pressable width={50} height={50} onPress={onPress}>
-        <HamburgerIcon size="100%" />
+    <FastHStack mt={top}>
+      <Pressable style={styles.icon} onPress={onPress}>
+        <Ionicons name="menu" size={40} color={theme.colors.onBackground} />
       </Pressable>
-      <Center flex={1}>
-        <Text variant="h1">
-          {`Toolbox ${__DEV__ ? " 🚧" : Constants.manifest?.version}`}
-        </Text>
-      </Center>
-    </HStack>
+      <Text style={styles.text} variant="headlineMedium">
+        {`Toolbox ${__DEV__ ? " 🚧" : Constants.manifest?.version}`}
+      </Text>
+    </FastHStack>
   );
 }
 
-export default memo(HeaderImpl);
+const styles = StyleSheet.create({
+  icon: {
+    width: 50,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    flex: 1,
+    flexGrow: 1,
+    textAlign: "center",
+    alignSelf: "center",
+  },
+});

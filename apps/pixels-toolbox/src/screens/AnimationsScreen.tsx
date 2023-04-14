@@ -1,3 +1,4 @@
+import Slider from "@react-native-community/slider";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   loadAppDataSet,
@@ -19,7 +20,6 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   FastBox,
-  FastButton,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
@@ -30,15 +30,16 @@ import {
   usePixelConnect,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
-import { Slider, Text } from "native-base";
 import React from "react";
 import { FlatList, StyleSheet } from "react-native";
+import { Button, Text } from "react-native-paper";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
-import AppPage from "~/components/AppPage";
-import ScannedPixelsList from "~/components/ScannedPixelsList";
+import { AppPage } from "~/components/AppPage";
+import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useForceUpdate from "~/features/hooks/useForceUpdate";
+import gs from "~/styles";
 import range from "~/utils/range";
 
 // function test() {
@@ -223,21 +224,17 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
     case "slider": {
       return (
         <>
-          <Text bold>{`${widget.displayName}: ${widget.getValue()}`}</Text>
+          <Text style={gs.bold}>{`${
+            widget.displayName
+          }: ${widget.getValue()}`}</Text>
           <Slider
-            width="80%"
-            height={40}
+            style={styles.slider}
             value={widget.getValue()}
-            minValue={widget?.min ?? 0}
-            maxValue={widget?.max ?? 1}
+            minimumValue={widget?.min ?? 0}
+            maximumValue={widget?.max ?? 1}
             step={widget.step ?? 0.1}
-            onChange={update}
-          >
-            <Slider.Track>
-              <Slider.FilledTrack />
-            </Slider.Track>
-            <Slider.Thumb />
-          </Slider>
+            onValueChange={update}
+          />
         </>
       );
     }
@@ -248,7 +245,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
     case "playbackFace":
     case "bitField": {
       return (
-        <Text bold>{`No editor for ${
+        <Text style={gs.bold}>{`No editor for ${
           widget.displayName
         }: ${widget.getValue()}`}</Text>
       );
@@ -262,13 +259,17 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       ];
       return (
         <>
-          <Text bold>{widget.displayName}</Text>
+          <Text style={gs.bold}>{widget.displayName}</Text>
           {facesGroups.map((faces, i) => (
             <FastHStack key={i}>
               {faces.map((face) => (
-                <FastButton key={face} onPress={() => update(face)}>
+                <Button
+                  key={face}
+                  mode="contained-tonal"
+                  onPress={() => update(face)}
+                >
                   {face.toString()}
-                </FastButton>
+                </Button>
               ))}
             </FastHStack>
           ))}
@@ -281,13 +282,14 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <FlatList
           data={colorMap}
           renderItem={(itemInfo) => (
-            <FastButton
+            <Button
+              mode="contained-tonal"
               key={itemInfo.item.name}
-              mt={2}
+              style={styles.mt3}
               onPress={() => update(itemInfo.item.color)}
             >
               {itemInfo.item.name}
-            </FastButton>
+            </Button>
           )}
           ItemSeparatorComponent={Separator}
           contentContainerStyle={styles.contentContainer}
@@ -300,13 +302,14 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <FlatList
           data={gradients}
           renderItem={(itemInfo) => (
-            <FastButton
+            <Button
               key={itemInfo.item.name}
-              mt={2}
+              mode="contained-tonal"
+              style={styles.mt3}
               onPress={() => update(itemInfo.item.gradient)}
             >
               {itemInfo.item.name}
-            </FastButton>
+            </Button>
           )}
           contentContainerStyle={styles.contentContainer}
         />
@@ -318,13 +321,14 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <FlatList
           data={patterns}
           renderItem={(itemInfo) => (
-            <FastButton
+            <Button
               key={itemInfo.item.name}
-              mt={2}
+              mode="contained-tonal"
+              style={styles.mt3}
               onPress={() => update(itemInfo.item)}
             >
               {itemInfo.item.name}
-            </FastButton>
+            </Button>
           )}
           contentContainerStyle={styles.contentContainer}
         />
@@ -369,11 +373,16 @@ function AnimationPage() {
       ) : (
         <FastVStack>
           <Text>{`Connection status: ${status}`}</Text>
-          <FastButton mt={2} onPress={() => connectDispatch("disconnect")}>
+          <Button
+            mode="contained-tonal"
+            style={styles.mt3}
+            onPress={() => connectDispatch("disconnect")}
+          >
             Disconnect
-          </FastButton>
-          <FastButton
-            mt={2}
+          </Button>
+          <Button
+            mode="contained-tonal"
+            style={styles.my3}
             onPress={() => {
               if (animList.length) {
                 pixel.playTestAnimation(
@@ -383,23 +392,28 @@ function AnimationPage() {
             }}
           >
             Play
-          </FastButton>
+          </Button>
           {editAnim && widget ? (
             <>
-              <Text mt={2} bold>{`Editing ${widget.displayName}`}</Text>
-              <FastButton m={2} onPress={() => setWidget(undefined)}>
+              <Text style={gs.bold}>{`Editing ${widget.displayName}`}</Text>
+              <Button style={styles.my3} onPress={() => setWidget(undefined)}>
                 Back
-              </FastButton>
+              </Button>
               <RenderAnimWidget widget={widget} />
             </>
           ) : editAnim ? (
             <>
-              <Text mt={2} bold>{`Editing ${editAnim.name}`}</Text>
-              <FastButton mt={2} onPress={() => setEditAnim(undefined)}>
+              <Text style={gs.bold}>{`Editing ${editAnim.name}`}</Text>
+              <Button
+                mode="contained-tonal"
+                style={styles.mt3}
+                onPress={() => setEditAnim(undefined)}
+              >
                 Back
-              </FastButton>
-              <FastButton
-                my={2}
+              </Button>
+              <Button
+                mode="contained-tonal"
+                style={styles.my3}
                 onPress={() => {
                   setEditAnim(undefined);
                   setAnimList((animList) => {
@@ -413,49 +427,51 @@ function AnimationPage() {
                 }}
               >
                 Remove
-              </FastButton>
+              </Button>
               <FlatList
                 data={animWidgets}
                 renderItem={(itemInfo) => (
-                  <FastButton mt={2} onPress={() => setWidget(itemInfo.item)}>
+                  <Button
+                    mode="contained-tonal"
+                    style={styles.mt3}
+                    onPress={() => setWidget(itemInfo.item)}
+                  >
                     {`${itemInfo.item.displayName}: ${getPropValueString(
                       editAnim,
                       itemInfo.item.propertyKey
                     )}`}
-                  </FastButton>
+                  </Button>
                 )}
                 contentContainerStyle={styles.contentContainer}
               />
             </>
           ) : (
             <>
-              <Text m={2} bold>
-                Effects:
-              </Text>
+              <Text style={gs.bold}>Effects:</Text>
               <FlatList
                 data={animList}
                 renderItem={(itemInfo) => (
-                  <FastButton
-                    mt={2}
+                  <Button
+                    mode="contained-tonal"
+                    style={styles.mt3}
                     onPress={() => {
                       setEditAnim(itemInfo.item);
                     }}
                   >
                     {`Edit ${itemInfo.item.name}`}
-                  </FastButton>
+                  </Button>
                 )}
                 contentContainerStyle={styles.contentContainer}
               />
             </>
           )}
-          <Text my={2} bold>
-            Add Effect:
-          </Text>
+          <Text style={{ ...gs.bold, marginVertical: 2 }}>Add Effect:</Text>
           <FlatList
             data={editAnimationTypes}
             renderItem={(itemInfo) => (
-              <FastButton
-                mt={2}
+              <Button
+                mode="contained-tonal"
+                style={styles.mt3}
                 onPress={() => {
                   setAnimList((anims) => {
                     const anim = new itemInfo.item();
@@ -465,7 +481,7 @@ function AnimationPage() {
                 }}
               >
                 {itemInfo.item.name.replace(EditAnimation.name, "")}
-              </FastButton>
+              </Button>
             )}
             contentContainerStyle={styles.contentContainer}
           />
@@ -484,5 +500,17 @@ export default function () {
 }
 
 const styles = StyleSheet.create({
-  contentContainer: { flexGrow: 1 },
+  mt3: {
+    marginTop: 3,
+  },
+  my3: {
+    marginVertical: 3,
+  },
+  contentContainer: {
+    flexGrow: 1,
+  },
+  slider: {
+    width: "80%",
+    height: 40,
+  },
 });

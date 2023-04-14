@@ -3,19 +3,21 @@ import {
   FastHStack,
 } from "@systemic-games/react-native-base-components";
 import { PixelInfoNotifier } from "@systemic-games/react-native-pixels-connect";
-import { Text, VStack } from "native-base";
 import React from "react";
 import { TFunction, useTranslation } from "react-i18next";
+import { StyleSheet } from "react-native";
+import { Card, Text } from "react-native-paper";
 
 import useForceUpdate from "~/features/hooks/useForceUpdate";
+import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 interface PixelAndTranslation {
-  pixelInfo: PixelInfoNotifier;
+  pixel: PixelInfoNotifier;
   t: TFunction;
 }
 
-function PixelName({ pixelInfo: pixel }: Omit<PixelAndTranslation, "t">) {
+function PixelName({ pixel }: Omit<PixelAndTranslation, "t">) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -26,12 +28,12 @@ function PixelName({ pixelInfo: pixel }: Omit<PixelAndTranslation, "t">) {
   }, [pixel, forceUpdate]);
   return (
     <FastBox flexDir="row" justifyContent="center">
-      <Text variant="h2">{pixel.name}</Text>
+      <Text variant="headlineMedium">{pixel.name}</Text>
     </FastBox>
   );
 }
 
-function PixelRssi({ pixelInfo: pixel, t }: PixelAndTranslation) {
+function PixelRssi({ pixel, t }: PixelAndTranslation) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -43,7 +45,7 @@ function PixelRssi({ pixelInfo: pixel, t }: PixelAndTranslation) {
   return <Text>{`📶 ${t("dBWithValue", { value: pixel.rssi })}`}</Text>;
 }
 
-function PixelBattery({ pixelInfo: pixel, t }: PixelAndTranslation) {
+function PixelBattery({ pixel, t }: PixelAndTranslation) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -64,7 +66,7 @@ function PixelBattery({ pixelInfo: pixel, t }: PixelAndTranslation) {
   );
 }
 
-function PixelRollState({ pixelInfo: pixel, t }: PixelAndTranslation) {
+function PixelRollState({ pixel, t }: PixelAndTranslation) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -78,12 +80,12 @@ function PixelRollState({ pixelInfo: pixel, t }: PixelAndTranslation) {
   return (
     <Text>
       <Text>{`🎲 ${pixel.currentFace} `}</Text>
-      <Text italic>{`(${t(pixel.rollState)})`}</Text>
+      <Text style={gs.italic}>{`(${t(pixel.rollState)})`}</Text>
     </Text>
   );
 }
 
-function PixelFirmwareDate({ pixelInfo: pixel, t }: PixelAndTranslation) {
+function PixelFirmwareDate({ pixel, t }: PixelAndTranslation) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -93,7 +95,7 @@ function PixelFirmwareDate({ pixelInfo: pixel, t }: PixelAndTranslation) {
     };
   }, [pixel, forceUpdate]);
   return (
-    <Text>
+    <Text style={styles.textCentered}>
       {t("firmware")}
       {t("colonSeparator")}
       {toLocaleDateTimeString(pixel.firmwareDate)}
@@ -102,7 +104,7 @@ function PixelFirmwareDate({ pixelInfo: pixel, t }: PixelAndTranslation) {
 }
 
 function PixelMoreInfo(props: PixelAndTranslation) {
-  const { pixelInfo: pixel, t } = props;
+  const { pixel } = props;
   const pixIdHex = pixel.pixelId
     .toString(16)
     .padStart(8, "0")
@@ -110,9 +112,9 @@ function PixelMoreInfo(props: PixelAndTranslation) {
   return (
     <>
       <PixelFirmwareDate {...props} />
-      <FastHStack w="100%" justifyContent="space-around">
+      <FastHStack mt={5} w="100%" justifyContent="space-around">
         <Text>{`🆔 ${pixIdHex}`}</Text>
-        <Text>{`${t(pixel.designAndColor)}`}</Text>
+        <Text>{`${pixel.designAndColor}`}</Text>
         <Text>{`${pixel.ledCount}🚦`}</Text>
       </FastHStack>
     </>
@@ -130,23 +132,27 @@ export default function PixelInfoCard({
   moreInfo,
 }: PixelInfoCardProps) {
   const { t } = useTranslation();
-  const props = { pixelInfo, t };
+  const props = { pixel: pixelInfo, t };
   return (
-    <VStack
-      variant="cardWithBorder"
-      alignItems="center"
-      px={3}
-      py={1}
-      space={1}
+    <Card
+    // style={{ height: moreInfo ? 160 : 115 }}
     >
-      <PixelName pixelInfo={pixelInfo} />
-      {moreInfo && <PixelMoreInfo {...props} />}
-      <FastHStack w="100%" justifyContent="space-around">
-        <PixelRssi {...props} />
-        <PixelBattery {...props} />
-        <PixelRollState {...props} />
-      </FastHStack>
-      {children}
-    </VStack>
+      <Card.Content>
+        <PixelName pixel={pixelInfo} />
+        {moreInfo && <PixelMoreInfo {...props} />}
+        <FastHStack w="100%" my={5} justifyContent="space-around">
+          <PixelRssi {...props} />
+          <PixelBattery {...props} />
+          <PixelRollState {...props} />
+        </FastHStack>
+        {children}
+      </Card.Content>
+    </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  textCentered: {
+    textAlign: "center",
+  },
+});

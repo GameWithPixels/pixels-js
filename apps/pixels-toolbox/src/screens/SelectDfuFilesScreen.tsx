@@ -3,19 +3,19 @@ import {
   FastHStack,
 } from "@systemic-games/react-native-base-components";
 import { useAssets } from "expo-asset";
-import { Pressable, Switch, Text, VStack } from "native-base";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React from "react";
 import { useErrorHandler } from "react-error-boundary";
-import { FlatList } from "react-native";
+import { FlatList, Pressable, StyleSheet } from "react-native";
+import { Card, Switch, Text } from "react-native-paper";
 
 import dfuFilesZip from "!/dfu-files.zip";
 import { useAppDispatch } from "~/app/hooks";
-import AppPage from "~/components/AppPage";
+import { AppPage } from "~/components/AppPage";
 import getDfuFileInfo, { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import unzipDfuFiles from "~/features/dfu/unzipDfuFiles";
 import { setDfuFiles } from "~/features/store/dfuFilesSlice";
 import { SelectDfuFilesProps } from "~/navigation";
-import styles from "~/styles";
+import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function keyExtractor(files: DfuFileInfo[]) {
@@ -29,11 +29,11 @@ function Separator() {
 function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   const errorHandler = useErrorHandler();
   const [assets, assetsError] = useAssets([dfuFilesZip]);
-  const [allDfuFiles, setAllDfuFiles] = useState<DfuFileInfo[][]>();
+  const [allDfuFiles, setAllDfuFiles] = React.useState<DfuFileInfo[][]>();
   const appDispatch = useAppDispatch();
   //const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (assets) {
       if (assets.length) {
         const extractFirmwareFiles = async () => {
@@ -70,8 +70,8 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   }, [assets, assetsError, errorHandler]);
 
   // Files to show
-  const [showBootloaders, setShowBootloaders] = useState(false);
-  const dfuFiles = useMemo(() => {
+  const [showBootloaders, setShowBootloaders] = React.useState(false);
+  const dfuFiles = React.useMemo(() => {
     if (!allDfuFiles || showBootloaders) {
       return allDfuFiles;
     } else {
@@ -82,7 +82,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   }, [allDfuFiles, showBootloaders]);
 
   // FlatList item rendering
-  const renderItem = useCallback(
+  const renderItem = React.useCallback(
     ({ item: filesInfo }: { item: DfuFileInfo[] }) => (
       <Pressable
         onPress={() => {
@@ -90,21 +90,18 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           navigation.goBack();
         }}
       >
-        <VStack
-          variant="cardWithBorder"
-          width="100%"
-          alignItems="center"
-          space={1}
-          py={2}
-          my={1}
-        >
-          <Text variant="h2">
-            {`📅 ${toLocaleDateTimeString(filesInfo[0].date ?? new Date(0))}`}
-          </Text>
-          <Text>
-            Type: {filesInfo.map((i) => i.type ?? "unknown").join(", ")}
-          </Text>
-        </VStack>
+        <Card style={styles.my5}>
+          <Card.Title
+            title={`📅 ${toLocaleDateTimeString(
+              filesInfo[0].date ?? new Date(0)
+            )}`}
+          />
+          <Card.Content>
+            <Text>
+              Type: {filesInfo.map((i) => i.type ?? "unknown").join(", ")}
+            </Text>
+          </Card.Content>
+        </Card>
       </Pressable>
     ),
     [appDispatch, navigation]
@@ -113,20 +110,19 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   return (
     <FastBox flex={1} alignItems="center" px={3}>
       {!dfuFiles ? (
-        <Text italic my={3}>
-          Reading DFU files...
-        </Text>
+        <Text style={styles.my10Italic}>Reading DFU files...</Text>
       ) : dfuFiles.length ? (
         <>
           <FastHStack my={2} alignItems="center">
             <Text>Show Standalone Bootloaders</Text>
-            <Switch onToggle={setShowBootloaders} value={showBootloaders} />
+            <Switch
+              onValueChange={setShowBootloaders}
+              value={showBootloaders}
+            />
           </FastHStack>
-          <Text bold my={2}>
-            Select Firmware:
-          </Text>
+          <Text style={styles.my5Bold}>Select Firmware:</Text>
           <FlatList
-            style={styles.containerFullWidth}
+            style={gs.fullWidth}
             data={dfuFiles}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
@@ -134,7 +130,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           />
         </>
       ) : (
-        <Text bold>No files found in assets/dfu-files.zip!</Text>
+        <Text style={gs.bold}>No files found in assets/dfu-files.zip!</Text>
       )}
     </FastBox>
   );
@@ -147,3 +143,23 @@ export default function (props: SelectDfuFilesProps) {
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  my5: {
+    marginVertical: 5,
+  },
+  my10Italic: {
+    marginVertical: 10,
+    ...gs.italic,
+  },
+  my5Bold: {
+    marginVertical: 5,
+    ...gs.bold,
+  },
+  card: {
+    borderColor: "gray",
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
