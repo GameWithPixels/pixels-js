@@ -134,13 +134,11 @@ export default function PixelInfoCard({
   const { t } = useTranslation();
   const props = { pixel: pixelInfo, t };
   return (
-    <Card
-    // style={{ height: moreInfo ? 160 : 115 }}
-    >
-      <Card.Content>
+    <Card>
+      <Card.Content style={{ gap: 5 }}>
         <PixelName pixel={pixelInfo} />
         {moreInfo && <PixelMoreInfo {...props} />}
-        <FastHStack w="100%" my={5} justifyContent="space-around">
+        <FastHStack w="100%" justifyContent="space-around">
           <PixelRssi {...props} />
           <PixelBattery {...props} />
           <PixelRollState {...props} />

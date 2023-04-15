@@ -7,7 +7,11 @@ import ErrorFallback from "./ErrorFallback";
 
 // Note: call useErrorHandler() only in child components, not in the component
 // rendering the AppPage as it will crash when handling an error.
-export function AppPage({ children }: React.PropsWithChildren) {
+export function AppPage({
+  children,
+  px = 3,
+  pt = 5,
+}: React.PropsWithChildren<{ px?: number; pt?: number }>) {
   const theme = useTheme();
   return (
     <View
@@ -15,6 +19,8 @@ export function AppPage({ children }: React.PropsWithChildren) {
         flex: 1,
         width: "100%",
         height: "100%",
+        paddingHorizontal: px,
+        paddingTop: pt,
         backgroundColor: theme.colors.background,
       }}
     >

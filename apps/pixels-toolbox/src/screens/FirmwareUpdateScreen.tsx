@@ -7,7 +7,7 @@ import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import { Button, Card, Text, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
@@ -24,19 +24,18 @@ function formatAddress(address: number): string {
 
 function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
   return (
-    <>
-      <Text>Name: {peripheral.name}</Text>
-      <Text>Address: {formatAddress(peripheral.address)}</Text>
-      <Text>RSSI: {peripheral.advertisementData.rssi}</Text>
-    </>
+    <Card>
+      <Card.Content style={{ paddingHorizontal: 20 }}>
+        <Text>Name: {peripheral.name}</Text>
+        <Text>Address: {formatAddress(peripheral.address)}</Text>
+        <Text>RSSI: {peripheral.advertisementData.rssi}</Text>
+      </Card.Content>
+    </Card>
   );
 }
 
 function keyExtractor(p: ScannedPeripheral) {
   return p.systemId;
-}
-function Separator() {
-  return <FastBox height={3} />;
 }
 
 // We want this page to automatically update devices that have a firmware that crashes
@@ -155,7 +154,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: sp }: { item: ScannedPeripheral }) => (
-      <Pressable style={styles.card} onPress={() => onSelect(sp)}>
+      <Pressable onPress={() => onSelect(sp)}>
         <PeripheralInfo peripheral={sp} />
       </Pressable>
     ),
@@ -181,10 +180,10 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   const theme = useTheme();
 
   return (
-    <FastBox w="100%" m={3}>
+    <FastBox flex={1}>
       {dfuLastError && !errorCleared ? (
         // Got an error
-        <FastBox w="100%" alignItems="center" justifyContent="center">
+        <FastBox alignItems="center" justifyContent="center">
           <Text
             variant="bodyLarge"
             style={{ color: theme.colors.error }}
@@ -206,7 +205,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
             {selectedFwLabel ?? t("tapToSelectFirmware")}
           </Button>
           {selectedFwLabel && (
-            <FastBox gap={10}>
+            <FastBox gap={8}>
               <Text style={gs.italic}>
                 Tap on a peripheral to attempt a Pixel firmware update.
               </Text>
@@ -216,7 +215,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
                 data={scannedPeripherals}
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
-                ItemSeparatorComponent={Separator}
+                contentContainerStyle={gs.listContentContainer}
                 refreshControl={refreshControl}
               />
             </FastBox>
@@ -224,12 +223,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
         </>
       ) : (
         // Updating Firmware
-        <FastBox
-          width="100%"
-          gap={10}
-          alignItems="center"
-          justifyContent="center"
-        >
+        <FastBox gap={8} alignItems="center" justifyContent="center">
           <Text style={gs.bold}>Selected Peripheral:</Text>
           {dfuTarget && <PeripheralInfo peripheral={dfuTarget} />}
           <Text style={gs.bold}>Performing Firmware Update:</Text>

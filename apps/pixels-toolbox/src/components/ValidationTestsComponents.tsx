@@ -254,7 +254,7 @@ export function UpdateFirmware({
         children: (
           <>
             {dfuState && (
-              <Text variant="labelSmall">
+              <Text variant="labelLarge">
                 {t("dfuStateWithStatus", {
                   status: t(dfuState),
                 })}
@@ -451,7 +451,7 @@ export function WaitCharging({
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
-        <Text variant="labelSmall">
+        <Text variant="labelLarge">
           {t(
             notCharging
               ? "removeFromChargerWithCoilOrDie"
@@ -612,7 +612,7 @@ export function WaitFaceUp({
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
-        <Text variant="labelSmall">{t("placeBlinkingFaceUp")}</Text>
+        <Text variant="labelLarge">{t("placeBlinkingFaceUp")}</Text>
       ) : (
         <MessageYesNo
           message={t("isBlinkingFaceUp")}
@@ -641,7 +641,7 @@ export function WaitFaceUp({
       ),
       createTaskStatusContainer({
         children: !hasElapsed ? (
-          <Text variant="labelSmall">{t("placeNewBlinkingFaceUp")}</Text>
+          <Text variant="labelLarge">{t("placeNewBlinkingFaceUp")}</Text>
         ) : (
           <MessageYesNo
             message={t("isBlinkingFaceUp")}
@@ -725,7 +725,7 @@ export function WaitDieInCase({
     ),
     createTaskStatusContainer({
       children: (
-        <Text variant="labelSmall">{t("placeDieInCaseAndCloseLid")}</Text>
+        <Text variant="labelLarge">{t("placeDieInCaseAndCloseLid")}</Text>
       ),
     })
   )

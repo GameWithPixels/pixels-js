@@ -12,7 +12,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import {
   Button as PaperButton,
   ButtonProps,
@@ -40,7 +40,7 @@ function TextEntryBase({
   colonSeparator,
 }: TextEntryBaseProps) {
   return (
-    <Text style={styles.mv1} variant="bodyLarge">
+    <Text style={gs.mv3} variant="bodyLarge">
       <Text style={gs.bold}>
         {capitalize(title)}
         {colonSeparator}
@@ -56,7 +56,7 @@ function useTextEntry(colonSeparator: string) {
 }
 
 function Button({ ...props }: Omit<ButtonProps, "style">) {
-  return <PaperButton style={styles.mv3} mode="contained-tonal" {...props} />;
+  return <PaperButton style={gs.mv3} mode="contained-tonal" {...props} />;
 }
 
 function BaseInfo({ pixel }: { pixel: Pixel }) {
@@ -212,7 +212,7 @@ function FirmwareUpdateModal({ updateProgress }: { updateProgress?: number }) {
           borderRadius: 8,
         }}
       >
-        <Text style={styles.mv3} variant="bodyLarge">
+        <Text style={gs.mv3} variant="bodyLarge">
           {t("updatingProfile") + t("colonSeparator")}
         </Text>
         <ProgressBar percent={updateProgress ?? 0} />
@@ -242,7 +242,13 @@ function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
       >
         {`${error}`}
       </Text>
-      <PaperButton style={styles.m10} mode="outlined" onPress={clear}>
+      <PaperButton
+        style={{
+          margin: 10,
+        }}
+        mode="outlined"
+        onPress={clear}
+      >
         {t("clearError")}
       </PaperButton>
     </>
@@ -290,7 +296,7 @@ export function PixelDetails({
           title={pixelDispatcher.name}
         />
         <Card.Content>
-          <View style={styles.mv3}>
+          <View style={gs.mv3}>
             <TextEntry title={t("status")}>{status ? t(status) : ""}</TextEntry>
           </View>
           <BaseInfo pixel={pixel} />
@@ -309,15 +315,3 @@ export function PixelDetails({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  mv1: {
-    marginVertical: 1,
-  },
-  mv3: {
-    marginVertical: 3,
-  },
-  m10: {
-    margin: 10,
-  },
-});

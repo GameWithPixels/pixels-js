@@ -5,7 +5,7 @@ import {
 import { useAssets } from "expo-asset";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
-import { FlatList, Pressable, StyleSheet } from "react-native";
+import { FlatList, Pressable } from "react-native";
 import { Card, Switch, Text } from "react-native-paper";
 
 import dfuFilesZip from "!/dfu-files.zip";
@@ -20,10 +20,6 @@ import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function keyExtractor(files: DfuFileInfo[]) {
   return files[0].pathname;
-}
-
-function Separator() {
-  return <FastBox h={2} />;
 }
 
 function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
@@ -90,7 +86,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           navigation.goBack();
         }}
       >
-        <Card style={styles.my5}>
+        <Card>
           <Card.Title
             title={`📅 ${toLocaleDateTimeString(
               filesInfo[0].date ?? new Date(0)
@@ -108,25 +104,25 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   );
 
   return (
-    <FastBox flex={1} alignItems="center" px={3}>
+    <FastBox gap={8} alignItems="center">
       {!dfuFiles ? (
-        <Text style={styles.my10Italic}>Reading DFU files...</Text>
+        <Text style={gs.italic}>Reading DFU files...</Text>
       ) : dfuFiles.length ? (
         <>
-          <FastHStack my={2} alignItems="center">
+          <FastHStack alignItems="center">
             <Text>Show Standalone Bootloaders</Text>
             <Switch
               onValueChange={setShowBootloaders}
               value={showBootloaders}
             />
           </FastHStack>
-          <Text style={styles.my5Bold}>Select Firmware:</Text>
+          <Text style={gs.bold}>Select Firmware:</Text>
           <FlatList
             style={gs.fullWidth}
             data={dfuFiles}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
-            ItemSeparatorComponent={Separator}
+            contentContainerStyle={gs.listContentContainer}
           />
         </>
       ) : (
@@ -143,23 +139,3 @@ export default function (props: SelectDfuFilesProps) {
     </AppPage>
   );
 }
-
-const styles = StyleSheet.create({
-  my5: {
-    marginVertical: 5,
-  },
-  my10Italic: {
-    marginVertical: 10,
-    ...gs.italic,
-  },
-  my5Bold: {
-    marginVertical: 5,
-    ...gs.bold,
-  },
-  card: {
-    borderColor: "gray",
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

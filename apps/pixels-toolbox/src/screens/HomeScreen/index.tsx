@@ -43,7 +43,7 @@ function HomePage({ navigation }: HomeProps) {
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
-      <FastBox flex={1} alignItems="center" px={3}>
+      <FastBox flex={1} gap={5} alignItems="center">
         <Text style={styles.textValidation}>
           ↖️ <Text style={gs.italic}>{t("openMenuToGoToValidation")}</Text>
         </Text>
@@ -75,7 +75,7 @@ function HomePage({ navigation }: HomeProps) {
 
 export default function (props: HomeProps) {
   return (
-    <AppPage>
+    <AppPage pt={0}>
       <HomePage {...props} />
     </AppPage>
   );
@@ -84,7 +84,6 @@ export default function (props: HomeProps) {
 const styles = StyleSheet.create({
   textValidation: {
     marginLeft: 20,
-    margin: 3,
     alignSelf: "flex-start",
   },
 });

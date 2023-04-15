@@ -21,10 +21,6 @@ function keyExtractor(p: ScannedPixel) {
   return p.systemId;
 }
 
-function Separator() {
-  return <FastBox h={2} />;
-}
-
 interface SwipeablePixelsListProps {
   onDieDetails: (pixelId: number) => void;
 }
@@ -120,7 +116,6 @@ export default React.memo(function ({
   return (
     <>
       <FastBox
-        my={8}
         width="100%"
         flexDir="row"
         alignItems="baseline"
@@ -140,7 +135,7 @@ export default React.memo(function ({
           data={scannedPixels}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
-          ItemSeparatorComponent={Separator}
+          contentContainerStyle={gs.listContentContainer}
           refreshControl={refreshControl}
         />
       ) : (

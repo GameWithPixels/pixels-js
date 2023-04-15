@@ -22,14 +22,16 @@ export default function ({
   return taskStatus === "pending" ? (
     <></>
   ) : (
-    <FastVStack ml={isSubTask ? "10%" : undefined}>
+    <FastVStack gap={8} ml={isSubTask ? "10%" : undefined}>
       {title && (
-        <FastHStack>
+        <FastHStack gap={8} alignItems="center">
           <FastBox w="10%" alignItems="center" justifyContent="center">
             {taskStatus === "running" ? (
               <ActivityIndicator />
             ) : (
-              <Text>{getTaskResultEmoji(taskStatus)}</Text>
+              <Text style={{ fontSize: 20 }}>
+                {getTaskResultEmoji(taskStatus)}
+              </Text>
             )}
           </FastBox>
           <Text

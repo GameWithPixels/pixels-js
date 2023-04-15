@@ -449,19 +449,23 @@ function RunTestsPage({
     <FastVStack
       w="100%"
       h="100%"
-      p="2%"
+      gap={8}
       alignItems="center"
       justifyContent="center"
     >
       <Text variant="titleLarge">{getTestingMessage(t, settings)}</Text>
-      <ScrollView style={gs.fullWidth} ref={scrollRef}>
+      <ScrollView
+        style={gs.fullWidth}
+        contentContainerStyle={gs.listContentContainer}
+        ref={scrollRef}
+      >
         <>{taskChain.render()}</>
         {result && (
           <FastVStack alignItems="center" justifyContent="center">
             <Text style={styles.textStatus}>
               {getTaskResultEmoji(taskChain.status)}
             </Text>
-            <Text>
+            <Text variant="labelLarge">
               {t("battery")}
               {t("colonSeparator")}
               {t("percentWithValue", { value: pixel?.batteryLevel ?? 0 })}

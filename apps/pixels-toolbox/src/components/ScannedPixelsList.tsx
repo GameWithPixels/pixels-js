@@ -1,12 +1,11 @@
 import {
-  FastBox,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
 import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, StyleSheet } from "react-native";
+import { FlatList, Pressable } from "react-native";
 import { Button, Text } from "react-native-paper";
 
 import PixelInfoCard from "~/components/PixelInfoCard";
@@ -16,10 +15,6 @@ import gs from "~/styles";
 
 function keyExtractor(p: ScannedPixelNotifier) {
   return p.systemId;
-}
-
-function Separator() {
-  return <FastBox height={3} />;
 }
 
 export function ScannedPixelsList({
@@ -41,10 +36,7 @@ export function ScannedPixelsList({
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
-      <Pressable
-        style={styles.container}
-        onPress={() => onSelected(scannedPixel)}
-      >
+      <Pressable onPress={() => onSelected(scannedPixel)}>
         <PixelInfoCard pixelInfo={scannedPixel} />
       </Pressable>
     ),
@@ -53,10 +45,16 @@ export function ScannedPixelsList({
 
   const { t } = useTranslation();
   return (
-    <FastVStack flex={1} alignItems="center">
-      <FastHStack my={5}>
+    <FastVStack gap={10} alignItems="center">
+      <FastHStack>
         {onClose && (
-          <Button mode="outlined" style={styles.mr5} onPress={onClose}>
+          <Button
+            mode="outlined"
+            style={{
+              marginRight: 5,
+            }}
+            onPress={onClose}
+          >
             {t("close")}
           </Button>
         )}
@@ -73,23 +71,14 @@ export function ScannedPixelsList({
         <>
           <Text style={gs.italic}>{t("tapOnItemToSelect")}</Text>
           <FlatList
+            style={gs.fullWidth}
             data={scannedPixels}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
-            ItemSeparatorComponent={Separator}
+            contentContainerStyle={gs.listContentContainer}
           />
         </>
       )}
     </FastVStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    borderColor: "gray",
-    borderWidth: 2,
-  },
-  mr5: {
-    marginRight: 5,
-  },
-});

@@ -13,6 +13,10 @@ const gs = StyleSheet.create({
   containerFooter: {
     alignItems: "center",
   },
+  listContentContainer: {
+    flexGrow: 1,
+    gap: 8,
+  },
   flex: {
     flex: 1,
   },
@@ -23,6 +27,9 @@ const gs = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  mv3: {
+    marginVertical: 3,
   },
   bold: {
     fontWeight: "bold",

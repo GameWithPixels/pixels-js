@@ -19,6 +19,7 @@ import {
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
+import gs from "~/styles";
 
 function toYesNo(value: boolean) {
   return value ? "Yes" : "No";
@@ -53,7 +54,7 @@ function ThemeRadio({
 
 function ThemeCard() {
   return (
-    <Card style={styles.mb10}>
+    <Card>
       <Card.Content>
         <Title>Theme</Title>
         <FastHStack px={5} justifyContent="space-between">
@@ -147,7 +148,7 @@ function EasCard() {
 
   return (
     <>
-      <Card style={styles.mb10}>
+      <Card>
         <Card.Content>
           <Title>EAS Updates</Title>
           <Text style={styles.text}>{`Status: ${updateStatus}`}</Text>
@@ -234,7 +235,7 @@ function AppInfoModal({
 
 function SettingsPage() {
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={gs.listContentContainer}>
       <ThemeCard />
       <EasCard />
     </ScrollView>
@@ -250,9 +251,6 @@ export default function () {
 }
 
 const styles = StyleSheet.create({
-  mb10: {
-    marginBottom: 10,
-  },
   text: {
     margin: 5,
   },

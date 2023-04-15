@@ -65,7 +65,7 @@ function RollPage() {
 
 export default function () {
   return (
-    <AppPage>
+    <AppPage pt={0} px={0}>
       <RollPage />
     </AppPage>
   );

@@ -204,7 +204,7 @@ function PixelCard({
         {pixelDispatcher.canUpdateFirmware && (
           <Text style={styles.topRightCorner}>⬆️</Text>
         )}
-        <FastVStack mt={-1} alignItems="center" width="100%">
+        <FastVStack gap={3} alignItems="center" width="100%">
           {/* Show either DFU progress, profile update progress, connect state or advertising state */}
           {dfuQueued ? (
             // DFU status and progress

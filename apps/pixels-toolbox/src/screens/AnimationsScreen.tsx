@@ -19,7 +19,6 @@ import {
   createDataSetForAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  FastBox,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
@@ -32,7 +31,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { FlatList, StyleSheet } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, Divider, Text } from "react-native-paper";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import { AppPage } from "~/components/AppPage";
@@ -208,10 +207,6 @@ function getPropValueString(
   throw new Error(`Unsupported animation property key: ${propertyKey}`);
 }
 
-function Separator() {
-  return <FastBox h={2} />;
-}
-
 function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
   const forceUpdate = useForceUpdate();
   function update<T>(value: T) {
@@ -285,14 +280,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             <Button
               mode="contained-tonal"
               key={itemInfo.item.name}
-              style={styles.mt3}
+              style={gs.mv3}
               onPress={() => update(itemInfo.item.color)}
             >
               {itemInfo.item.name}
             </Button>
           )}
-          ItemSeparatorComponent={Separator}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={styles.flexGrow}
         />
       );
     }
@@ -305,13 +299,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             <Button
               key={itemInfo.item.name}
               mode="contained-tonal"
-              style={styles.mt3}
+              style={gs.mv3}
               onPress={() => update(itemInfo.item.gradient)}
             >
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={styles.flexGrow}
         />
       );
 
@@ -324,13 +318,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             <Button
               key={itemInfo.item.name}
               mode="contained-tonal"
-              style={styles.mt3}
+              style={gs.mv3}
               onPress={() => update(itemInfo.item)}
             >
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={styles.flexGrow}
         />
       );
 
@@ -371,18 +365,16 @@ function AnimationPage() {
       {!pixel ? (
         <ScannedPixelsList onSelect={onSelect} />
       ) : (
-        <FastVStack>
+        <FastVStack gap={5}>
           <Text>{`Connection status: ${status}`}</Text>
           <Button
             mode="contained-tonal"
-            style={styles.mt3}
             onPress={() => connectDispatch("disconnect")}
           >
             Disconnect
           </Button>
           <Button
             mode="contained-tonal"
-            style={styles.my3}
             onPress={() => {
               if (animList.length) {
                 pixel.playTestAnimation(
@@ -396,9 +388,7 @@ function AnimationPage() {
           {editAnim && widget ? (
             <>
               <Text style={gs.bold}>{`Editing ${widget.displayName}`}</Text>
-              <Button style={styles.my3} onPress={() => setWidget(undefined)}>
-                Back
-              </Button>
+              <Button onPress={() => setWidget(undefined)}>Back</Button>
               <RenderAnimWidget widget={widget} />
             </>
           ) : editAnim ? (
@@ -406,14 +396,12 @@ function AnimationPage() {
               <Text style={gs.bold}>{`Editing ${editAnim.name}`}</Text>
               <Button
                 mode="contained-tonal"
-                style={styles.mt3}
                 onPress={() => setEditAnim(undefined)}
               >
                 Back
               </Button>
               <Button
                 mode="contained-tonal"
-                style={styles.my3}
                 onPress={() => {
                   setEditAnim(undefined);
                   setAnimList((animList) => {
@@ -433,7 +421,7 @@ function AnimationPage() {
                 renderItem={(itemInfo) => (
                   <Button
                     mode="contained-tonal"
-                    style={styles.mt3}
+                    style={gs.mv3}
                     onPress={() => setWidget(itemInfo.item)}
                   >
                     {`${itemInfo.item.displayName}: ${getPropValueString(
@@ -442,18 +430,19 @@ function AnimationPage() {
                     )}`}
                   </Button>
                 )}
-                contentContainerStyle={styles.contentContainer}
+                contentContainerStyle={styles.flexGrow}
               />
             </>
           ) : (
             <>
+              <Divider style={{ marginVertical: 5 }} />
               <Text style={gs.bold}>Effects:</Text>
               <FlatList
                 data={animList}
                 renderItem={(itemInfo) => (
                   <Button
                     mode="contained-tonal"
-                    style={styles.mt3}
+                    style={gs.mv3}
                     onPress={() => {
                       setEditAnim(itemInfo.item);
                     }}
@@ -461,17 +450,18 @@ function AnimationPage() {
                     {`Edit ${itemInfo.item.name}`}
                   </Button>
                 )}
-                contentContainerStyle={styles.contentContainer}
+                contentContainerStyle={styles.flexGrow}
               />
             </>
           )}
-          <Text style={{ ...gs.bold, marginVertical: 2 }}>Add Effect:</Text>
+          <Divider style={{ marginVertical: 5 }} />
+          <Text style={gs.bold}>Add Effect:</Text>
           <FlatList
             data={editAnimationTypes}
             renderItem={(itemInfo) => (
               <Button
                 mode="contained-tonal"
-                style={styles.mt3}
+                style={gs.mv3}
                 onPress={() => {
                   setAnimList((anims) => {
                     const anim = new itemInfo.item();
@@ -483,7 +473,7 @@ function AnimationPage() {
                 {itemInfo.item.name.replace(EditAnimation.name, "")}
               </Button>
             )}
-            contentContainerStyle={styles.contentContainer}
+            contentContainerStyle={styles.flexGrow}
           />
         </FastVStack>
       )}
@@ -500,13 +490,7 @@ export default function () {
 }
 
 const styles = StyleSheet.create({
-  mt3: {
-    marginTop: 3,
-  },
-  my3: {
-    marginVertical: 3,
-  },
-  contentContainer: {
+  flexGrow: {
     flexGrow: 1,
   },
   slider: {
