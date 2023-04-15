@@ -11,6 +11,10 @@ export interface FastBoxProps
       | "flexGrow"
       | "flexShrink"
       | "flexWrap"
+      | "gap"
+      | "rowGap"
+      | "columnGap"
+      | "position"
       | "alignSelf"
       | "alignItems"
       | "alignContent"
@@ -19,6 +23,8 @@ export interface FastBoxProps
       | "right"
       | "width"
       | "maxWidth"
+      | "top"
+      | "bottom"
       | "height"
       | "maxHeight"
       | "padding"
@@ -68,6 +74,10 @@ function createStyle(props: Omit<FastBoxProps, "children" | "dynamicProps">) {
     flexGrow: props.flexGrow,
     flexShrink: props.flexShrink,
     flexWrap: props.flexWrap,
+    gap: props.gap,
+    rowGap: props.rowGap,
+    columnGap: props.columnGap,
+    position: props.position,
     alignSelf: props.alignSelf,
     alignItems: props.alignItems,
     alignContent: props.alignContent,
@@ -76,6 +86,8 @@ function createStyle(props: Omit<FastBoxProps, "children" | "dynamicProps">) {
     right: props.right,
     width: props.width ?? props.w,
     maxWidth: props.maxWidth ?? props.maxW,
+    top: props.top,
+    bottom: props.bottom,
     height: props.height ?? props.h,
     maxHeight: props.maxHeight ?? props.maxH,
     padding: props.padding ?? props.p,
