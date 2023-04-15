@@ -1,5 +1,5 @@
-import { Center, Text, VStack } from "native-base";
 import { PropsWithChildren } from "react";
+import { Card, Text, useTheme } from "react-native-paper";
 
 import TaskContainer from "./TaskContainer";
 
@@ -12,17 +12,21 @@ export interface TaskChainComponentProps extends PropsWithChildren {
 
 export default function ({ title, taskChain }: TaskChainComponentProps) {
   const taskStatus = taskChain.status;
+  const theme = useTheme();
   return (
-    <Center w="100%" py="3">
-      <VStack variant="card" w="95%" p="2">
+    <Card>
+      <Card.Content>
         <TaskContainer title={title} taskStatus={taskStatus}>
           {taskStatus === "faulted" ? (
-            <Text>{`${taskChain.lastError}`}</Text>
+            <Text
+              variant="bodyLarge"
+              style={{ color: theme.colors.error }}
+            >{`${taskChain.lastError}`}</Text>
           ) : (
             taskStatus !== "succeeded" && taskChain.render()
           )}
         </TaskContainer>
-      </VStack>
-    </Center>
+      </Card.Content>
+    </Card>
   );
 }

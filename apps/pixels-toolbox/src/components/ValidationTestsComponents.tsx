@@ -1,3 +1,4 @@
+import { FastHStack } from "@systemic-games/react-native-base-components";
 import {
   Color,
   getPixel,
@@ -6,16 +7,9 @@ import {
   useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
-import { Button, HStack, Text } from "native-base";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { Button, Text } from "react-native-paper";
 
 import ProgressBar from "./ProgressBar";
 import TaskChainComponent from "./TaskChainComponent";
@@ -79,7 +73,7 @@ function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
 
 async function _makeUserCancellable(
   abortSignal: AbortSignal,
-  setUserAbort: Dispatch<SetStateAction<(() => void) | undefined>>,
+  setUserAbort: React.Dispatch<React.SetStateAction<(() => void) | undefined>>,
   task: (abortSignal: AbortSignal) => Promise<void>,
   abortMessage: string
 ): Promise<void> {
@@ -115,14 +109,16 @@ function MessageYesNo({ message, onYes, onNo, hideYesNo }: MessageYesNoProps) {
   const { t } = useTranslation();
   return (
     <>
-      <Text variant="comment">{message}</Text>
+      <Text variant="labelLarge">{message}</Text>
       {!hideYesNo && (
-        <HStack>
-          <Button mr="5%" onPress={onYes}>
+        <FastHStack gap={5}>
+          <Button mode="contained-tonal" onPress={onYes}>
             {t("yes")}
           </Button>
-          <Button onPress={onNo}>{t("no")}</Button>
-        </HStack>
+          <Button mode="contained-tonal" onPress={onNo}>
+            {t("no")}
+          </Button>
+        </FastHStack>
       )}
     </>
   );
@@ -148,14 +144,15 @@ export function UpdateFirmware({
   const { t } = useTranslation();
 
   // BLE Scan
-  const scanFilter = useCallback(
+  const scanFilter = React.useCallback(
     (pixel: ScannedPixel) => pixel.pixelId === pixelId,
     [pixelId]
   );
   const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
-  const [resolveScanPromise, setResolveScanPromise] = useState<() => void>();
-  const scannedPixelRef = useRef<ScannedPixel>();
-  useEffect(() => {
+  const [resolveScanPromise, setResolveScanPromise] =
+    React.useState<() => void>();
+  const scannedPixelRef = React.useRef<ScannedPixel>();
+  React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
       scannedPixelRef.current = scannedPixels[0];
       resolveScanPromise();
@@ -165,11 +162,11 @@ export function UpdateFirmware({
   // Firmware update
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
     useUpdateFirmware();
-  const [resolveRejectDfuPromise, setResolveRejectDfuPromise] = useState<{
+  const [resolveRejectDfuPromise, setResolveRejectDfuPromise] = React.useState<{
     resolve: () => void;
     reject: (error: Error) => void;
   }>();
-  useEffect(() => {
+  React.useEffect(() => {
     if (resolveRejectDfuPromise) {
       const { resolve, reject } = resolveRejectDfuPromise;
       if (dfuLastError) {
@@ -184,7 +181,7 @@ export function UpdateFirmware({
 
   const taskChain = useTaskChain(
     action,
-    useCallback(async () => {
+    React.useCallback(async () => {
       if (!pixelId) {
         throw new TaskFaultedError("Empty Pixel Id");
       }
@@ -211,7 +208,7 @@ export function UpdateFirmware({
     createTaskStatusContainer(t("bluetoothScan"))
   )
     .chainWith(
-      useCallback(async () => {
+      React.useCallback(async () => {
         const scannedPixel = scannedPixelRef.current;
         if (!scannedPixel) {
           throw new TaskFaultedError("No scanned Pixel");
@@ -257,7 +254,7 @@ export function UpdateFirmware({
         children: (
           <>
             {dfuState && (
-              <Text variant="comment">
+              <Text variant="labelSmall">
                 {t("dfuStateWithStatus", {
                   status: t(dfuState),
                 })}
@@ -287,14 +284,15 @@ export function ConnectPixel({
   const { t } = useTranslation();
 
   // BLE Scan
-  const scanFilter = useCallback(
+  const scanFilter = React.useCallback(
     (pixel: ScannedPixel) => pixel.pixelId === pixelId,
     [pixelId]
   );
   const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
-  const [resolveScanPromise, setResolveScanPromise] = useState<() => void>();
-  const scannedPixelRef = useRef<ScannedPixel>();
-  useEffect(() => {
+  const [resolveScanPromise, setResolveScanPromise] =
+    React.useState<() => void>();
+  const scannedPixelRef = React.useRef<ScannedPixel>();
+  React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
       scannedPixelRef.current = scannedPixels[0];
       resolveScanPromise();
@@ -303,8 +301,8 @@ export function ConnectPixel({
   }, [onPixelScanned, resolveScanPromise, scannedPixels]);
 
   // Pixel
-  const [pixel, setPixel] = useState<Pixel>();
-  useEffect(() => {
+  const [pixel, setPixel] = React.useState<Pixel>();
+  React.useEffect(() => {
     if (pixel && pixel.status === "ready") {
       onPixelConnected?.(pixel);
     }
@@ -315,7 +313,7 @@ export function ConnectPixel({
 
   const taskChain = useTaskChain(
     action,
-    useCallback(async () => {
+    React.useCallback(async () => {
       setPixel(undefined);
       if (!pixelId) {
         throw new TaskFaultedError("Empty Pixel Id");
@@ -343,7 +341,7 @@ export function ConnectPixel({
     createTaskStatusContainer(t("bluetoothScan"))
   )
     .chainWith(
-      useCallback(async () => {
+      React.useCallback(async () => {
         if (!scannedPixelRef.current) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
@@ -357,7 +355,7 @@ export function ConnectPixel({
       createTaskStatusContainer(t("checkDieType"))
     )
     .chainWith(
-      useCallback(async () => {
+      React.useCallback(async () => {
         if (!scannedPixelRef.current) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
@@ -393,11 +391,11 @@ export function CheckBoard({
 
   const taskChain = useTaskChain(
     action,
-    useCallback(() => ValidationTests.checkLEDLoopback(pixel), [pixel]),
+    React.useCallback(() => ValidationTests.checkLEDLoopback(pixel), [pixel]),
     createTaskStatusContainer(t("ledLoopback"))
   )
     .chainWith(
-      useCallback(
+      React.useCallback(
         (abortSignal) =>
           ValidationTests.checkAccelerationDownward(pixel, abortSignal),
         [pixel]
@@ -405,13 +403,16 @@ export function CheckBoard({
       createTaskStatusContainer(t("accelerometer"))
     )
     .chainWith(
-      useCallback(() => ValidationTests.checkBatteryVoltage(pixel), [pixel]),
+      React.useCallback(
+        () => ValidationTests.checkBatteryVoltage(pixel),
+        [pixel]
+      ),
       createTaskStatusContainer(t("batteryVoltage"))
     );
   if (settings.formFactor === "die") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
+      React.useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
       createTaskStatusContainer(t("rssi"))
     );
   }
@@ -433,11 +434,11 @@ export function WaitCharging({
 
   // Timeout before showing option to abort
   const [hasElapsed, resetTimeout] = useTimeout(20000);
-  const [userAbort, setUserAbort] = useState<() => void>();
+  const [userAbort, setUserAbort] = React.useState<() => void>();
 
   const taskChain = useTaskChain(
     action,
-    useCallback(
+    React.useCallback(
       async (abortSignal) =>
         _makeUserCancellable(
           abortSignal,
@@ -450,7 +451,7 @@ export function WaitCharging({
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
-        <Text variant="comment">
+        <Text variant="labelSmall">
           {t(
             notCharging
               ? "removeFromChargerWithCoilOrDie"
@@ -491,11 +492,11 @@ export function CheckLEDs({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const [resolvePromise, setResolvePromise] = useState<() => void>();
-  const [userAbort, setUserAbort] = useState<() => void>();
+  const [resolvePromise, setResolvePromise] = React.useState<() => void>();
+  const [userAbort, setUserAbort] = React.useState<() => void>();
   const taskChain = useTaskChain(
     action,
-    useCallback(
+    React.useCallback(
       async (abortSignal) => {
         let userAborted = false;
         const abortController = new AbortController();
@@ -555,11 +556,11 @@ export function TurnOffDevice({
 
   const taskChain = useTaskChain(
     action,
-    useCallback(() => pixel.turnOff(), [pixel]),
+    React.useCallback(() => pixel.turnOff(), [pixel]),
     createTaskStatusContainer(t("turningOff"))
   )
     .chainWith(
-      useCallback(
+      React.useCallback(
         (abortSignal) =>
           ValidationTests.waitDisconnected(
             pixel,
@@ -589,11 +590,11 @@ export function WaitFaceUp({
 
   // Timeout before showing option to abort
   const [hasElapsed, resetTimeout] = useTimeout(5000);
-  const [userAbort, setUserAbort] = useState<() => void>();
+  const [userAbort, setUserAbort] = React.useState<() => void>();
 
   const taskChain = useTaskChain(
     action,
-    useCallback(
+    React.useCallback(
       (abortSignal) =>
         _makeUserCancellable(
           abortSignal,
@@ -611,7 +612,7 @@ export function WaitFaceUp({
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
-        <Text variant="comment">{t("placeBlinkingFaceUp")}</Text>
+        <Text variant="labelSmall">{t("placeBlinkingFaceUp")}</Text>
       ) : (
         <MessageYesNo
           message={t("isBlinkingFaceUp")}
@@ -622,7 +623,7 @@ export function WaitFaceUp({
     })
   )
     .chainWith(
-      useCallback(
+      React.useCallback(
         (abortSignal) =>
           _makeUserCancellable(
             abortSignal,
@@ -640,7 +641,7 @@ export function WaitFaceUp({
       ),
       createTaskStatusContainer({
         children: !hasElapsed ? (
-          <Text variant="comment">{t("placeNewBlinkingFaceUp")}</Text>
+          <Text variant="labelSmall">{t("placeNewBlinkingFaceUp")}</Text>
         ) : (
           <MessageYesNo
             message={t("isBlinkingFaceUp")}
@@ -668,10 +669,10 @@ export function PrepareDie({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const [progress, setProgress] = useState(-1);
+  const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(
     action,
-    useCallback(
+    React.useCallback(
       () =>
         ValidationTests.updateProfile(
           pixel,
@@ -686,7 +687,7 @@ export function PrepareDie({
     })
   )
     .chainWith(
-      useCallback(
+      React.useCallback(
         () => ValidationTests.renameDie(pixel, `Pixel ${settings.dieType}`),
         [pixel, settings.dieType]
       ),
@@ -694,8 +695,8 @@ export function PrepareDie({
     )
     .chainWith(
       // TODO for internal testing only:
-      useCallback(() => pixel.disconnect(), [pixel]),
-      //useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
+      React.useCallback(() => pixel.disconnect(), [pixel]),
+      //React.useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
       createTaskStatusContainer(t("exitValidationMode"))
     )
     .withStatusChanged(_playSoundOnResult)
@@ -713,7 +714,7 @@ export function WaitDieInCase({
 
   const taskChain = useTaskChain(
     action,
-    useCallback(
+    React.useCallback(
       (abortSignal) =>
         ValidationTests.waitDisconnected(
           pixel,
@@ -723,7 +724,9 @@ export function WaitDieInCase({
       [pixel]
     ),
     createTaskStatusContainer({
-      children: <Text variant="comment">{t("placeDieInCaseAndCloseLid")}</Text>,
+      children: (
+        <Text variant="labelSmall">{t("placeDieInCaseAndCloseLid")}</Text>
+      ),
     })
   )
     .withStatusChanged(_playSoundOnResult)

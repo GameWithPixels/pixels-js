@@ -1,13 +1,7 @@
 import { delay } from "@systemic-games/pixels-core-utils";
-import {
-  extendTheme,
-  useColorModeValue,
-  NativeBaseProvider,
-  VStack,
-  Text,
-  Button,
-} from "native-base";
+import { FastVStack } from "@systemic-games/react-native-base-components";
 import React, { useCallback, useRef, useState } from "react";
+import { Button, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
 import useTaskChain from "~/features/tasks/useTaskChain";
@@ -54,13 +48,13 @@ function MyTest1({
     )
     .withStatusChanged(onTaskStatus);
   return (
-    <VStack>
+    <FastVStack>
       <Text>
         Test {something}: {taskChain.status}
       </Text>
       {taskChain.render()}
       <Text>End Test {something}</Text>
-    </VStack>
+    </FastVStack>
   );
 }
 
@@ -96,13 +90,13 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
     )
     .withStatusChanged(onTaskStatus);
   return (
-    <VStack>
+    <FastVStack>
       <Text>
         Test {somethingElse}: {taskChain.status}
       </Text>
       {taskChain.render()}
       <Text>End Test {somethingElse}</Text>
-    </VStack>
+    </FastVStack>
   );
 }
 
@@ -127,7 +121,7 @@ function TestPage() {
       ))
     );
   return (
-    <VStack w="100%" h="100%" bg={useBackgroundColor()} px="3" py="1">
+    <FastVStack w="100%" h="100%" px="3" py="1">
       <Button onPress={() => setCancel(true)}>Cancel</Button>
       {taskChain.render()}
       <Text>The end</Text>
@@ -136,70 +130,14 @@ function TestPage() {
         Change Test2
       </Button>
       <Text>Status: {taskChain.status}</Text>
-    </VStack>
+    </FastVStack>
   );
 }
-
-function useBackgroundColor() {
-  return useColorModeValue("warmGray.100", "coolGray.800");
-}
-
-const theme = extendTheme({
-  components: {
-    Text: {
-      baseStyle: {
-        fontSize: "2xl",
-        fontWeight: "bold",
-        _dark: {
-          color: "warmGray.200",
-        },
-        _light: {
-          color: "coolGray.700",
-        },
-      },
-    },
-    Button: {
-      variants: {
-        solid: {
-          _dark: {
-            bg: "coolGray.600",
-            _pressed: {
-              bg: "coolGray.700",
-            },
-            _text: {
-              color: "warmGray.200",
-            },
-          },
-          _light: {
-            bg: "warmGray.300",
-            _pressed: {
-              bg: "warmGray.200",
-            },
-            _text: {
-              color: "coolGray.700",
-            },
-          },
-        },
-      },
-      defaultProps: {
-        size: "lg",
-        _text: {
-          fontSize: "2xl",
-        },
-      },
-    },
-  },
-  config: {
-    initialColorMode: "dark",
-  },
-});
 
 export default function () {
   return (
     <AppPage>
-      <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
-        <TestPage />
-      </NativeBaseProvider>
+      <TestPage />
     </AppPage>
   );
 }

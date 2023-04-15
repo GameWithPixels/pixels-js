@@ -1,29 +1,23 @@
 import {
+  FastBox,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
+import {
   Pixel,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
-import {
-  extendTheme,
-  useColorModeValue,
-  Button,
-  Center,
-  HStack,
-  NativeBaseProvider,
-  ScrollView,
-  Text,
-  VStack,
-  Box,
-} from "native-base";
 import React from "react";
-import { ErrorBoundary, useErrorHandler } from "react-error-boundary";
+import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
+import { ScrollView, StyleSheet, useWindowDimensions } from "react-native";
+import { Button, ButtonProps, Card, Text } from "react-native-paper";
 import {
   Camera,
   CameraPermissionStatus,
   useCameraDevices,
 } from "react-native-vision-camera";
 
-import ErrorFallback from "~/components/ErrorFallback";
+import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import {
   CheckBoard,
@@ -50,6 +44,7 @@ import {
   getBoardOrDie,
   ValidationFormFactor,
 } from "~/features/validation/ValidationFormFactor";
+import gs from "~/styles";
 
 function getTestingMessage(
   t: TFunction<"translation", undefined>,
@@ -61,24 +56,70 @@ function getTestingMessage(
   });
 }
 
+function BottomButton({
+  children,
+  onPress,
+}: Pick<ButtonProps, "children" | "onPress">) {
+  return (
+    <Button mode="outlined" style={gs.fullWidth} onPress={onPress}>
+      {children}
+    </Button>
+  );
+}
+
+function FormFactorButton({
+  height,
+  fontSize,
+  ...props
+}: ButtonProps & { height: number; fontSize: number }) {
+  return (
+    <Button
+      contentStyle={{ height }}
+      labelStyle={{
+        fontSize,
+        fontWeight: "bold",
+        lineHeight: undefined,
+      }}
+      {...props}
+    />
+  );
+}
+
 function SelectFormFactorPage({
   onSelected,
 }: {
   onSelected: (formFactor: ValidationFormFactor) => void;
 }) {
+  const { height } = useWindowDimensions();
+  const btnHeight = height / 4;
   const { t } = useTranslation();
   return (
-    <VStack w="100%" h="100%" p="5" bg={useBackgroundColor()}>
-      <Button h="20%" my="10%" onPress={() => onSelected("boardNoCoil")}>
+    <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
+      <FormFactorButton
+        mode="contained-tonal"
+        height={btnHeight}
+        fontSize={30}
+        onPress={() => onSelected("boardNoCoil")}
+      >
         {t("validateBoardNoCoil")}
-      </Button>
-      <Button h="20%" my="10%" onPress={() => onSelected("board")}>
+      </FormFactorButton>
+      <FormFactorButton
+        mode="contained-tonal"
+        height={btnHeight}
+        fontSize={30}
+        onPress={() => onSelected("board")}
+      >
         {t("validateFullBoard")}
-      </Button>
-      <Button h="20%" my="10%" onPress={() => onSelected("die")}>
+      </FormFactorButton>
+      <FormFactorButton
+        mode="contained-tonal"
+        height={btnHeight}
+        fontSize={30}
+        onPress={() => onSelected("die")}
+      >
         {t("validateCastDie")}
-      </Button>
-    </VStack>
+      </FormFactorButton>
+    </FastVStack>
   );
 }
 
@@ -91,23 +132,27 @@ function SelectDieTypePage({
   onSelectDieType: (type: DieType) => void;
   onBack?: () => void;
 }) {
+  const { height } = useWindowDimensions();
+  const btnHeight = height / 2 / DieTypes.length;
   const { t } = useTranslation();
   return (
-    <VStack w="100%" h="100%" p="2" bg={useBackgroundColor()}>
-      <Text variant="comment" textAlign="center">
+    <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
+      <Text variant="headlineSmall" style={styles.textCenter}>
         {t("testingFormFactor", { formFactor: t(formFactor) })}
       </Text>
-      <VStack h="85%" p="2" justifyContent="center">
-        {DieTypes.map((dt) => (
-          <Button key={dt} my="2" onPress={() => onSelectDieType(dt)}>
-            {t(dt)}
-          </Button>
-        ))}
-      </VStack>
-      <Button m="2" onPress={onBack}>
-        {t("back")}
-      </Button>
-    </VStack>
+      {DieTypes.map((dt) => (
+        <FormFactorButton
+          key={dt}
+          mode="contained-tonal"
+          height={btnHeight}
+          fontSize={20}
+          onPress={() => onSelectDieType(dt)}
+        >
+          {t(dt)}
+        </FormFactorButton>
+      ))}
+      <BottomButton onPress={onBack}>{t("back")}</BottomButton>
+    </FastVStack>
   );
 }
 
@@ -205,13 +250,12 @@ function DecodePixelIdPage({
   );
   const onClose = React.useCallback(() => setShowScanList(false), []);
 
-  const bg = useBackgroundColor();
   return showScanList ? (
-    <Box w="100%" h="100%" bg={bg}>
+    <FastBox w="100%" h="100%">
       <ScannedPixelsList onSelect={onSelect} onClose={onClose} />
-    </Box>
+    </FastBox>
   ) : (
-    <Center w="100%" h="100%" bg={bg}>
+    <FastVStack w="100%" h="100%" alignItems="center" justifyContent="center">
       {device && cameraStatus === "ready" ? (
         <Camera
           ref={cameraRef}
@@ -230,24 +274,41 @@ function DecodePixelIdPage({
         <Text>{t("startingCamera")}</Text>
       )}
       {!readingColors && (
-        <HStack position="absolute" top="3%" w="94%" left="3%" p="1%" bg={bg}>
-          <Text flex={1} variant="comment">
-            {t("resetUsingMagnet", {
-              formFactor: t(getBoardOrDie(settings.formFactor)),
-            })}
-          </Text>
-          <Button size="sm" ml="5%" onPress={() => setShowScanList(true)}>
-            {t("scan")}
-          </Button>
-        </HStack>
+        // Show message on top
+        <FastBox position="absolute" top={0} w="100%" p={10}>
+          <Card>
+            <Card.Content style={{ flexDirection: "row", gap: 10 }}>
+              <Text variant="labelLarge" style={{ flex: 1, flexWrap: "wrap" }}>
+                {t("resetUsingMagnet", {
+                  formFactor: t(getBoardOrDie(settings.formFactor)),
+                })}
+              </Text>
+              <Button
+                mode="contained-tonal"
+                onPress={() => setShowScanList(true)}
+              >
+                {t("scan")}
+              </Button>
+            </Card.Content>
+          </Card>
+        </FastBox>
       )}
-      <Center position="absolute" bottom="0" w="94%" left="3" p="2" bg={bg}>
-        <Text variant="comment">{getTestingMessage(t, settings)}</Text>
-        <Button w="100%" onPress={onBack}>
-          {t("back")}
-        </Button>
-      </Center>
-    </Center>
+      {/* Show back button on bottom */}
+      <FastBox position="absolute" bottom={0} w="100%" p={10}>
+        <Card>
+          <Card.Content
+            style={{
+              gap: 10,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text variant="labelLarge">{getTestingMessage(t, settings)}</Text>
+            <BottomButton onPress={onBack}>{t("back")}</BottomButton>
+          </Card.Content>
+        </Card>
+      </FastBox>
+    </FastVStack>
   );
 }
 
@@ -385,27 +446,33 @@ function RunTestsPage({
   });
 
   return (
-    <Center w="100%" h="100%" p="2%" bg={useBackgroundColor()}>
-      <Text variant="comment">{getTestingMessage(t, settings)}</Text>
-      <ScrollView w="100%" ref={scrollRef}>
+    <FastVStack
+      w="100%"
+      h="100%"
+      p="2%"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <Text variant="titleLarge">{getTestingMessage(t, settings)}</Text>
+      <ScrollView style={gs.fullWidth} ref={scrollRef}>
         <>{taskChain.render()}</>
         {result && (
-          <Center>
-            <Text fontSize={150} textAlign="center">
+          <FastVStack alignItems="center" justifyContent="center">
+            <Text style={styles.textStatus}>
               {getTaskResultEmoji(taskChain.status)}
             </Text>
-            <Text mb="8%">
+            <Text>
               {t("battery")}
               {t("colonSeparator")}
               {t("percentWithValue", { value: pixel?.batteryLevel ?? 0 })}
             </Text>
-          </Center>
+          </FastVStack>
         )}
       </ScrollView>
-      <Button w="100%" onPress={onOkCancel}>
+      <BottomButton onPress={onOkCancel}>
         {result ? t("ok") : t("cancel")}
-      </Button>
-    </Center>
+      </BottomButton>
+    </FastVStack>
   );
 }
 
@@ -443,121 +510,20 @@ function ValidationPage() {
   );
 }
 
-function useBackgroundColor() {
-  return useColorModeValue("warmGray.100", "coolGray.800");
-}
-
-function containerVariants() {
-  return {
-    background: {
-      _dark: {
-        backgroundColor: "coolGray.800",
-      },
-      _light: {
-        backgroundColor: "warmGray.100",
-      },
-    },
-    card: {
-      rounded: "md",
-      borderWidth: "2",
-      _dark: {
-        borderColor: "warmGray.400",
-        backgroundColor: "coolGray.700",
-      },
-      _light: {
-        borderColor: "coolGray.500",
-        backgroundColor: "warmGray.200",
-      },
-    },
-  };
-}
-
-const theme = extendTheme({
-  components: {
-    Box: {
-      variants: containerVariants(),
-    },
-    Center: {
-      variants: containerVariants(),
-    },
-    VStack: {
-      variants: containerVariants(),
-    },
-    HStack: {
-      variants: containerVariants(),
-    },
-    Text: {
-      baseStyle: {
-        fontSize: "2xl",
-        fontWeight: "bold",
-        _dark: {
-          color: "warmGray.200",
-        },
-        _light: {
-          color: "coolGray.700",
-        },
-      },
-      variants: {
-        comment: {
-          italic: true,
-        },
-      },
-    },
-    Button: {
-      variants: {
-        solid: {
-          rounded: "sm",
-          borderWidth: "1",
-          _dark: {
-            bg: "coolGray.600",
-            borderColor: "coolGray.400",
-            _pressed: {
-              bg: "coolGray.700",
-            },
-            _text: {
-              color: "warmGray.200",
-            },
-          },
-          _light: {
-            bg: "warmGray.300",
-            borderColor: "warmGray.500",
-            _pressed: {
-              bg: "warmGray.200",
-            },
-            _text: {
-              color: "coolGray.700",
-            },
-          },
-        },
-      },
-      defaultProps: {
-        size: "lg",
-        _text: {
-          fontSize: "2xl",
-        },
-      },
-    },
-  },
-  config: {
-    initialColorMode: "dark",
-  },
-});
-
-function AppPage({ children }: React.PropsWithChildren) {
-  return (
-    <VStack flex={1} width="100%" height="100%" variant="background">
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        {children}
-      </ErrorBoundary>
-    </VStack>
-  );
-}
 export default function () {
   return (
     <AppPage>
-      <NativeBaseProvider theme={theme} config={{ strictMode: "error" }}>
-        <ValidationPage />
-      </NativeBaseProvider>
+      <ValidationPage />
     </AppPage>
   );
 }
+
+const styles = StyleSheet.create({
+  textCenter: {
+    textAlign: "center",
+  },
+  textStatus: {
+    fontSize: 150,
+    textAlign: "center",
+  },
+});

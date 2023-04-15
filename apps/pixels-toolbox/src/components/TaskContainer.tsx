@@ -1,4 +1,9 @@
-import { Center, VStack, Text, Spinner, HStack } from "native-base";
+import {
+  FastBox,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
+import { ActivityIndicator, Text } from "react-native-paper";
 
 import { getTaskResultEmoji } from "~/features/tasks/TaskResult";
 import { TaskRendererProps } from "~/features/tasks/useTask";
@@ -17,20 +22,25 @@ export default function ({
   return taskStatus === "pending" ? (
     <></>
   ) : (
-    <VStack ml={isSubTask ? "10%" : undefined}>
+    <FastVStack ml={isSubTask ? "10%" : undefined}>
       {title && (
-        <HStack>
-          <Center w="10%">
+        <FastHStack>
+          <FastBox w="10%" alignItems="center" justifyContent="center">
             {taskStatus === "running" ? (
-              <Spinner />
+              <ActivityIndicator />
             ) : (
               <Text>{getTaskResultEmoji(taskStatus)}</Text>
             )}
-          </Center>
-          <Text fontWeight={isSubTask ? "normal" : undefined}>{title}</Text>
-        </HStack>
+          </FastBox>
+          <Text
+            variant="titleMedium"
+            style={{ fontWeight: isSubTask ? "normal" : "bold" }}
+          >
+            {title}
+          </Text>
+        </FastHStack>
       )}
       {taskStatus !== "succeeded" && children}
-    </VStack>
+    </FastVStack>
   );
 }
