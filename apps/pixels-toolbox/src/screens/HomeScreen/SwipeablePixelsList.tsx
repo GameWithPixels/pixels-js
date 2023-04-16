@@ -7,6 +7,7 @@ import { FlatList, RefreshControl } from "react-native";
 import { Text } from "react-native-paper";
 
 import { EmojiButton } from "~/components/EmojiButton";
+import { PixelInfoModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
 import PixelDispatcher, {
   PixelDispatcherAction,
@@ -17,22 +18,16 @@ import gs from "~/styles";
 function ListItem({
   scannedPixel,
   onDieDetails,
-  moreInfo,
 }: {
   scannedPixel: ScannedPixelNotifier;
   onDieDetails: (pixelId: number) => void;
-  moreInfo: boolean;
 }) {
   const onDetails = React.useCallback(
     () => onDieDetails(scannedPixel.pixelId),
     [onDieDetails, scannedPixel.pixelId]
   );
   return (
-    <PixelSwipeableCard
-      scannedPixel={scannedPixel}
-      moreInfo={moreInfo}
-      onShowDetails={onDetails}
-    />
+    <PixelSwipeableCard scannedPixel={scannedPixel} onShowDetails={onDetails} />
   );
 }
 
@@ -49,7 +44,7 @@ export default React.memo(function ({
 
   // Values for UI
   const { t } = useTranslation();
-  const [showMoreInfo, setShowMoreInfo] = React.useState(false);
+  const [expandedInfo, setExpandedInfo] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
 
   // Actions dispatched to all Pixels
@@ -106,11 +101,10 @@ export default React.memo(function ({
       <ListItem
         key={scannedPixel.pixelId}
         scannedPixel={scannedPixel}
-        moreInfo={showMoreInfo}
         onDieDetails={onDieDetails}
       />
     ),
-    [onDieDetails, showMoreInfo]
+    [onDieDetails]
   );
   const refreshControl = React.useMemo(
     () => (
@@ -137,7 +131,7 @@ export default React.memo(function ({
         alignItems="baseline"
         justifyContent="space-between"
       >
-        <EmojiButton onPress={() => setShowMoreInfo((b) => !b)}>ℹ️</EmojiButton>
+        <EmojiButton onPress={() => setExpandedInfo((b) => !b)}>ℹ️</EmojiButton>
         <Text variant="headlineMedium">
           {t("pixelsWithCount", { count: scannedPixels.length })}
         </Text>
@@ -146,13 +140,17 @@ export default React.memo(function ({
       {lastError ? (
         <Text>{`${lastError}`}</Text>
       ) : scannedPixels.length ? (
-        <FlatList
-          style={gs.fullWidth}
-          data={scannedPixels}
-          renderItem={renderItem}
-          contentContainerStyle={gs.listContentContainer}
-          refreshControl={refreshControl}
-        />
+        <PixelInfoModeContext.Provider
+          value={expandedInfo ? "expanded" : "normal"}
+        >
+          <FlatList
+            style={gs.fullWidth}
+            data={scannedPixels}
+            renderItem={renderItem}
+            contentContainerStyle={gs.listContentContainer}
+            refreshControl={refreshControl}
+          />
+        </PixelInfoModeContext.Provider>
       ) : (
         <Text style={gs.italic}>{t("noPixelsFound")}</Text>
       )}

@@ -13,7 +13,10 @@ export type PixelScannerDispatchAction = "start" | "stop" | "clear";
  * Available options for {@link usePixelScanner}.
  */
 export interface PixelScannerOptions {
-  /** Whether to sort the Pixels list by their names. */
+  /**
+   * Whether to sort the Pixels list by their names.
+   * @default false (no sorting, Pixels are listed in the order they are discovered).
+   */
   sortedByName?: boolean;
 
   /** Optional filter to only keep certain Pixels in the list. */
@@ -22,6 +25,7 @@ export interface PixelScannerOptions {
   /**
    * Minimum interval in milliseconds between two React state updates.
    * A value of 0 will generate a state update on every scan event.
+   * @default 1000 ms (1 second).
    */
   minUpdateInterval?: number;
 

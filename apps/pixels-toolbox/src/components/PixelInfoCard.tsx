@@ -121,15 +121,17 @@ function PixelMoreInfo(props: PixelAndTranslation) {
   );
 }
 
+export const PixelInfoModeContext = React.createContext<"normal" | "expanded">(
+  "normal"
+);
+
 export interface PixelInfoCardProps extends React.PropsWithChildren {
   pixelInfo: PixelInfoNotifier;
-  moreInfo?: boolean;
 }
 
 export default function PixelInfoCard({
   children,
   pixelInfo,
-  moreInfo,
 }: PixelInfoCardProps) {
   const { t } = useTranslation();
   const props = { pixel: pixelInfo, t };
@@ -137,7 +139,9 @@ export default function PixelInfoCard({
     <Card>
       <Card.Content style={{ gap: 5 }}>
         <PixelName pixel={pixelInfo} />
-        {moreInfo && <PixelMoreInfo {...props} />}
+        <PixelInfoModeContext.Consumer>
+          {(mode) => mode === "expanded" && <PixelMoreInfo {...props} />}
+        </PixelInfoModeContext.Consumer>
         <FastHStack w="100%" justifyContent="space-around">
           <PixelRssi {...props} />
           <PixelBattery {...props} />
