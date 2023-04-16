@@ -34,10 +34,6 @@ function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
   );
 }
 
-function keyExtractor(p: ScannedPeripheral) {
-  return p.systemId;
-}
-
 // We want this page to automatically update devices that have a firmware that crashes
 // during init (and thus immediately reboot).
 // The DFU needs to happen right after the bootloader has started.
@@ -154,7 +150,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: sp }: { item: ScannedPeripheral }) => (
-      <Pressable onPress={() => onSelect(sp)}>
+      <Pressable key={sp.systemId} onPress={() => onSelect(sp)}>
         <PeripheralInfo peripheral={sp} />
       </Pressable>
     ),
@@ -214,7 +210,6 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
                 style={gs.fullWidth}
                 data={scannedPeripherals}
                 renderItem={renderItem}
-                keyExtractor={keyExtractor}
                 contentContainerStyle={gs.listContentContainer}
                 refreshControl={refreshControl}
               />

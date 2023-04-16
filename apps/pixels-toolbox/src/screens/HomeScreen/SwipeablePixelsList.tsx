@@ -1,9 +1,6 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { FastBox } from "@systemic-games/react-native-base-components";
-import {
-  ScannedPixel,
-  ScannedPixelNotifier,
-} from "@systemic-games/react-native-pixels-connect";
+import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
@@ -17,8 +14,26 @@ import PixelDispatcher, {
 import useFocusScannedPixelNotifiers from "~/features/pixels/hooks/useFocusScannedPixelNotifiers";
 import gs from "~/styles";
 
-function keyExtractor(p: ScannedPixel) {
-  return p.systemId;
+function ListItem({
+  scannedPixel,
+  onDieDetails,
+  moreInfo,
+}: {
+  scannedPixel: ScannedPixelNotifier;
+  onDieDetails: (pixelId: number) => void;
+  moreInfo: boolean;
+}) {
+  const onDetails = React.useCallback(
+    () => onDieDetails(scannedPixel.pixelId),
+    [onDieDetails, scannedPixel.pixelId]
+  );
+  return (
+    <PixelSwipeableCard
+      scannedPixel={scannedPixel}
+      moreInfo={moreInfo}
+      onShowDetails={onDetails}
+    />
+  );
 }
 
 interface SwipeablePixelsListProps {
@@ -88,10 +103,11 @@ export default React.memo(function ({
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
-      <PixelSwipeableCard
+      <ListItem
+        key={scannedPixel.pixelId}
         scannedPixel={scannedPixel}
         moreInfo={showMoreInfo}
-        onShowDetails={() => onDieDetails(scannedPixel.pixelId)}
+        onDieDetails={onDieDetails}
       />
     ),
     [onDieDetails, showMoreInfo]
@@ -133,7 +149,6 @@ export default React.memo(function ({
         <FlatList
           style={gs.fullWidth}
           data={scannedPixels}
-          keyExtractor={keyExtractor}
           renderItem={renderItem}
           contentContainerStyle={gs.listContentContainer}
           refreshControl={refreshControl}

@@ -18,10 +18,6 @@ import { SelectDfuFilesProps } from "~/navigation";
 import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
-function keyExtractor(files: DfuFileInfo[]) {
-  return files[0].pathname;
-}
-
 function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   const errorHandler = useErrorHandler();
   const [assets, assetsError] = useAssets([dfuFilesZip]);
@@ -81,6 +77,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   const renderItem = React.useCallback(
     ({ item: filesInfo }: { item: DfuFileInfo[] }) => (
       <Pressable
+        key={filesInfo[0].pathname}
         onPress={() => {
           appDispatch(setDfuFiles(filesInfo.map((i) => i.pathname)));
           navigation.goBack();
@@ -120,7 +117,6 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
           <FlatList
             style={gs.fullWidth}
             data={dfuFiles}
-            keyExtractor={keyExtractor}
             renderItem={renderItem}
             contentContainerStyle={gs.listContentContainer}
           />

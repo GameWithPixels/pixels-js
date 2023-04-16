@@ -13,10 +13,6 @@ import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useFocusScannedPixelNotifiers from "~/features/pixels/hooks/useFocusScannedPixelNotifiers";
 import gs from "~/styles";
 
-function keyExtractor(p: ScannedPixelNotifier) {
-  return p.systemId;
-}
-
 export function ScannedPixelsList({
   onSelect: onSelected,
   onClose,
@@ -36,7 +32,10 @@ export function ScannedPixelsList({
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
-      <Pressable onPress={() => onSelected(scannedPixel)}>
+      <Pressable
+        key={scannedPixel.pixelId}
+        onPress={() => onSelected(scannedPixel)}
+      >
         <PixelInfoCard pixelInfo={scannedPixel} />
       </Pressable>
     ),
@@ -74,7 +73,6 @@ export function ScannedPixelsList({
             style={gs.fullWidth}
             data={scannedPixels}
             renderItem={renderItem}
-            keyExtractor={keyExtractor}
             contentContainerStyle={gs.listContentContainer}
           />
         </>
