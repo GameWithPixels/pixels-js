@@ -1,5 +1,5 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import { FC, PropsWithChildren, useCallback, useState } from "react";
+import React from "react";
 
 import {
   TaskOperation,
@@ -11,21 +11,21 @@ import {
 
 export type TaskStatusCallback = (status: TaskStatus) => void;
 
-export type TaskComponentProps = PropsWithChildren<{
+export type TaskComponentProps = React.PropsWithChildren<{
   action: TaskAction;
   onTaskStatus?: TaskStatusCallback;
 }>;
 
-export type TaskComponent = FC<TaskComponentProps>;
+export type TaskComponent = React.FC<TaskComponentProps>;
 
 export default function (
   testName: string,
   cancel: boolean,
   taskComponent: TaskComponent
-): [TaskOperation, FC] {
-  const [onTaskStatus, setOnTaskStatus] = useState<TaskStatusCallback>();
-  const [resetCounter, setResetCounter] = useState(0);
-  const asyncOp = useCallback(() => {
+): [TaskOperation, React.FC] {
+  const [onTaskStatus, setOnTaskStatus] = React.useState<TaskStatusCallback>();
+  const [resetCounter, setResetCounter] = React.useState(0);
+  const asyncOp = React.useCallback(() => {
     let hasCompleted = false;
     return new Promise<void>((resolve, reject) =>
       setOnTaskStatus(() => (s: TaskStatus) => {
@@ -59,8 +59,8 @@ export default function (
   }, [resetCounter, testName]);
   return [
     asyncOp,
-    useCallback(
-      (props: PropsWithChildren) =>
+    React.useCallback(
+      (props: React.PropsWithChildren) =>
         taskComponent({
           ...props,
           action: cancel ? "cancel" : "run",

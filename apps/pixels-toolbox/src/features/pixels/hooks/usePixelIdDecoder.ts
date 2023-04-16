@@ -1,5 +1,5 @@
 import { ImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
-import { useCallback, useState } from "react";
+import React from "react";
 
 import PixelIdDecoder, { RbgColor } from "./../PixelIdDecoder";
 
@@ -19,14 +19,14 @@ export default function (): [
   (action: PixelIdDecoderAction) => void
 ] {
   // Store internal data, we don't want it to trigger updates
-  const [data] = useState(() => ({
+  const [data] = React.useState(() => ({
     pixelIdDecoder: new PixelIdDecoder(),
     lastResultTimestamp: 0,
   }));
   // Store the state that is returned
-  const [state, setState] = useState<PixelIdDecoderState>({ pixelId: 0 });
+  const [state, setState] = React.useState<PixelIdDecoderState>({ pixelId: 0 });
 
-  const processRgbAverages = useCallback(
+  const processRgbAverages = React.useCallback(
     (action: PixelIdDecoderAction) => {
       const decoder = data.pixelIdDecoder;
       let pixelId: number | undefined;

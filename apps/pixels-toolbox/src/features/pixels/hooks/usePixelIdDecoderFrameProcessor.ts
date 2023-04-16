@@ -1,5 +1,5 @@
 import { getImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
-import { useState } from "react";
+import React from "react";
 import { runOnJS } from "react-native-reanimated";
 import { Frame, useFrameProcessor } from "react-native-vision-camera";
 
@@ -9,7 +9,7 @@ import usePixelIdDecoder from "./usePixelIdDecoder";
 export type FrameProcessor = (frame: Frame) => void;
 
 export default function (): [FrameProcessor, number, RbgColor?, Error?] {
-  const [lastError, setLastError] = useState<Error>();
+  const [lastError, setLastError] = React.useState<Error>();
 
   // PixelId decoder
   const [decoderState, decoderDispatch] = usePixelIdDecoder();

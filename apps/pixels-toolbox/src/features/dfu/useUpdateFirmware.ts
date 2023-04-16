@@ -1,5 +1,5 @@
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
-import { useCallback, useState } from "react";
+import React from "react";
 
 import updateFirmware from "./updateFirmware";
 
@@ -19,12 +19,12 @@ export default function (): [
   Error | undefined
 ] {
   // DFU state and progress
-  const [dfuState, setDfuState] = useState<DfuState | "initializing">();
-  const [dfuProgress, setDfuProgress] = useState(-1);
-  const [lastError, setLastError] = useState<Error>();
+  const [dfuState, setDfuState] = React.useState<DfuState | "initializing">();
+  const [dfuProgress, setDfuProgress] = React.useState(-1);
+  const [lastError, setLastError] = React.useState<Error>();
 
   // Start DFU function
-  const updateFirmwareFunc = useCallback(
+  const updateFirmwareFunc = React.useCallback(
     (address: number, bootloaderPath: string, firmwarePath: string): void => {
       setLastError(undefined);
       setDfuState("initializing");

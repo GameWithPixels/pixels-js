@@ -9,7 +9,7 @@ import {
   useScannedPixels,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React from "react";
 
 export interface PixelConnectByIdState {
   status: "disconnected" | "scanning" | "connecting" | "connected";
@@ -34,21 +34,23 @@ export default function (): [
   PixelConnectByIdDispatch,
   Error?
 ] {
-  const [lastError, setLastError] = useState<Error>();
+  const [lastError, setLastError] = React.useState<Error>();
   const [scannedPixels, scannerDispatch, scanLastError] = useScannedPixels();
-  const [pixelId, setPixelId] = useState<number>(0);
-  const [scannedPixel, setScannedPixel] = useState<ScannedPixel>();
-  const [pixel, setPixel] = useState<Pixel>();
-  const [queue] = useState(() => new SequentialPromiseQueue());
+  const [pixelId, setPixelId] = React.useState<number>(0);
+  const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
+  const [pixel, setPixel] = React.useState<Pixel>();
+  const [queue] = React.useState(() => new SequentialPromiseQueue());
   const pixelStatus = usePixelStatus(pixel);
-  const stateRef = useRef<PixelConnectByIdState>({ status: "disconnected" });
-  useEffect(() => {
+  const stateRef = React.useRef<PixelConnectByIdState>({
+    status: "disconnected",
+  });
+  React.useEffect(() => {
     if (scanLastError) {
       setLastError(scanLastError);
     }
   }, [scanLastError]);
 
-  const dispatch = useCallback(
+  const dispatch = React.useCallback(
     (
       action: PixelConnectByIdAction,
       options?: PixelConnectByIdOptions
@@ -74,7 +76,7 @@ export default function (): [
   );
 
   // Scan start/stop
-  useEffect(() => {
+  React.useEffect(() => {
     if (pixelId) {
       scannerDispatch("clear");
       scannerDispatch("start");
@@ -84,7 +86,7 @@ export default function (): [
   }, [pixelId, scannerDispatch]);
 
   // Assign Pixel
-  useEffect(() => {
+  React.useEffect(() => {
     if (pixelId) {
       const i = scannedPixels.findIndex((p) => p.pixelId === pixelId);
       if (i >= 0) {
@@ -96,7 +98,7 @@ export default function (): [
   }, [pixelId, scannedPixels]);
 
   // Clean up
-  useEffect(() => {
+  React.useEffect(() => {
     if (pixel) {
       queue
         .run(async () => {

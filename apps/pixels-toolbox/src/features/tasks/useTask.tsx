@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, useEffect, useState } from "react";
+import React from "react";
 
 export type TaskStatus =
   | "pending"
@@ -9,11 +9,11 @@ export type TaskStatus =
 
 export type TaskAction = "run" | "cancel" | "reset";
 
-export type TaskRendererProps = PropsWithChildren<{
+export type TaskRendererProps = React.PropsWithChildren<{
   taskStatus: TaskStatus;
 }>;
 
-export type TaskRenderer = FC<TaskRendererProps>;
+export type TaskRenderer = React.FC<TaskRendererProps>;
 
 export type TaskOperation = (abortSignal: AbortSignal) => Promise<unknown>;
 
@@ -33,10 +33,10 @@ export default function (
   asyncOp: TaskOperation,
   taskRenderer: TaskRenderer,
   action: TaskAction = "run"
-): [TaskStatus, FC<PropsWithChildren>, Error?] {
-  const [status, setStatus] = useState<TaskStatus>("pending");
-  const [lastError, setLastError] = useState<Error>();
-  useEffect(() => {
+): [TaskStatus, React.FC<React.PropsWithChildren>, Error?] {
+  const [status, setStatus] = React.useState<TaskStatus>("pending");
+  const [lastError, setLastError] = React.useState<Error>();
+  React.useEffect(() => {
     setLastError(undefined);
     if (action === "run") {
       setStatus("running");

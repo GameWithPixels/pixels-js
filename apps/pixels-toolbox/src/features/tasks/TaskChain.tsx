@@ -1,4 +1,4 @@
-import { FC, Fragment, PropsWithChildren, useEffect } from "react";
+import React from "react";
 
 import useTask, {
   TaskOperation,
@@ -9,7 +9,7 @@ import useTask, {
 
 interface TaskChainItem {
   status: TaskStatus;
-  component: FC<PropsWithChildren>;
+  component: React.FC<React.PropsWithChildren>;
   error?: Error;
 }
 
@@ -43,7 +43,7 @@ export default class TaskChain {
     }
   }
 
-  get components(): FC<PropsWithChildren>[] {
+  get components(): React.FC<React.PropsWithChildren>[] {
     return this._tasksItems.map((ti) => ti.component);
   }
 
@@ -64,7 +64,7 @@ export default class TaskChain {
     return this._tasksItems[index].status;
   }
 
-  getComponentAt(index: number): FC<PropsWithChildren> | undefined {
+  getComponentAt(index: number): React.FC<React.PropsWithChildren> | undefined {
     return this._tasksItems[index].component;
   }
 
@@ -72,9 +72,9 @@ export default class TaskChain {
     return (
       <>
         {this._tasksItems.map((ti, key) => (
-          <Fragment key={key}>
+          <React.Fragment key={key}>
             {(showPendingTasks || ti.status !== "pending") && ti.component({})}
-          </Fragment>
+          </React.Fragment>
         ))}
       </>
     );
@@ -95,7 +95,7 @@ export default class TaskChain {
   withStatusChanged(onStatusChanged?: (result: TaskStatus) => void): TaskChain {
     const status = this.status;
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
+    React.useEffect(() => {
       onStatusChanged?.(status);
     }, [onStatusChanged, status]);
     return this;

@@ -1,11 +1,11 @@
-import { PropsWithChildren } from "react";
+import React from "react";
 import { Card, Text, useTheme } from "react-native-paper";
 
 import TaskContainer from "./TaskContainer";
 
 import TaskChain from "~/features/tasks/TaskChain";
 
-export interface TaskChainComponentProps extends PropsWithChildren {
+export interface TaskChainComponentProps extends React.PropsWithChildren {
   title: string;
   taskChain: TaskChain;
 }

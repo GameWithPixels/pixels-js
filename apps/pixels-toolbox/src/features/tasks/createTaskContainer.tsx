@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import React from "react";
 
 import { TaskRenderer } from "./useTask";
 
@@ -9,7 +9,7 @@ export function createTaskStatusContainer(
     | string
     | {
         title?: string;
-        children?: ReactNode;
+        children?: React.ReactNode;
         alwaysShowChildren?: boolean;
       }
 ): TaskRenderer {

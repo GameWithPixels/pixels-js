@@ -1,6 +1,6 @@
 import { delay } from "@systemic-games/pixels-core-utils";
 import { FastVStack } from "@systemic-games/react-native-base-components";
-import React, { useCallback, useRef, useState } from "react";
+import React from "react";
 import { Button, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
@@ -20,13 +20,13 @@ function MyTest1({
   something,
   onSomeValue,
 }: MyTest1Props) {
-  const onSomeValueRef = useRef(onSomeValue);
+  const onSomeValueRef = React.useRef(onSomeValue);
   onSomeValueRef.current = onSomeValue;
-  const [value0, setValue0] = useState(0);
-  const [value1, setValue1] = useState(0);
+  const [value0, setValue0] = React.useState(0);
+  const [value1, setValue1] = React.useState(0);
   const taskChain = useTaskChain(
     action,
-    useCallback(async () => {
+    React.useCallback(async () => {
       for (let i = 1; i <= 3; ++i) {
         setValue0(i);
         await delay(1000);
@@ -36,7 +36,7 @@ function MyTest1({
     (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
   )
     .chainWith(
-      useCallback(async () => {
+      React.useCallback(async () => {
         for (let i = 1; i <= 2; ++i) {
           setValue1(i);
           await delay(1000);
@@ -63,11 +63,11 @@ interface MyTest2Props extends TaskComponentProps {
 }
 
 function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
-  const [value0, setValue0] = useState(0);
-  const [value1, setValue1] = useState(0);
+  const [value0, setValue0] = React.useState(0);
+  const [value1, setValue1] = React.useState(0);
   const taskChain = useTaskChain(
     action,
-    useCallback(async () => {
+    React.useCallback(async () => {
       console.log("Got somethingElse = " + somethingElse);
       for (let i = 1; i <= 3; ++i) {
         setValue0(i);
@@ -78,7 +78,7 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
     (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
   )
     .chainWith(
-      useCallback(async () => {
+      React.useCallback(async () => {
         //console.log("Got somethingElse = " + somethingElse);
         for (let i = 1; i <= 2; ++i) {
           setValue1(i);
@@ -101,9 +101,9 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
 }
 
 function TestPage() {
-  const [something, setSomething] = useState("1");
-  const [somethingElse, setSomethingElse] = useState(2);
-  const [cancel, setCancel] = useState(false);
+  const [something, setSomething] = React.useState("1");
+  const [somethingElse, setSomethingElse] = React.useState(2);
+  const [cancel, setCancel] = React.useState(false);
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
     ...useTestComponent("Test1", cancel, (p) => (
