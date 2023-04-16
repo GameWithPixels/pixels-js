@@ -33,14 +33,19 @@ function ListItem({
 
 interface SwipeablePixelsListProps {
   onDieDetails: (pixelId: number) => void;
+  minUpdateInterval?: number;
 }
 
 export default React.memo(function ({
   onDieDetails,
+  minUpdateInterval = 200,
 }: SwipeablePixelsListProps) {
   // Scanning
   const [scannedPixels, scannerDispatch, lastError] =
-    useFocusScannedPixelNotifiers();
+    useFocusScannedPixelNotifiers({
+      sortedByName: true,
+      minUpdateInterval,
+    });
 
   // Values for UI
   const { t } = useTranslation();

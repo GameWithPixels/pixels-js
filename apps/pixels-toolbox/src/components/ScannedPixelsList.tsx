@@ -16,7 +16,7 @@ import gs from "~/styles";
 export function ScannedPixelsList({
   onSelect: onSelected,
   onClose,
-  minUpdateInterval,
+  minUpdateInterval = 200,
 }: {
   onSelect: (scannedPixel: ScannedPixelNotifier) => void;
   onClose?: () => void;
