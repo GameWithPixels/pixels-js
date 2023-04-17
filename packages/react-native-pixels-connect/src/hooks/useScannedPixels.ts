@@ -1,3 +1,4 @@
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import {
@@ -5,6 +6,7 @@ import {
   PixelScannerOptions,
   PixelScannerDispatchAction,
 } from "./usePixelScanner";
+import { PixelScannerListOp } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
@@ -22,21 +24,34 @@ export function useScannedPixels(
   opt?: PixelScannerOptions
 ): [ScannedPixel[], (action: PixelScannerDispatchAction) => void, Error?] {
   const passthrough = React.useCallback(
-    (
-      items: ScannedPixel[],
-      updates: {
-        scannedPixel: ScannedPixel;
-        index: number;
-        previousIndex?: number;
-      }[]
-    ) => {
+    (items: ScannedPixel[], ops: PixelScannerListOp[]) => {
       // Create new list to trigger a React re-render
-      const returnedItems = [...items];
+      const retItems = [...items];
       // Apply updates
-      updates.forEach(({ scannedPixel, index }) => {
-        returnedItems[index] = scannedPixel;
+      ops.forEach((op) => {
+        const t = op.type;
+        switch (t) {
+          case "clear":
+            retItems.length = 0;
+            break;
+          case "add":
+            retItems.push(op.scannedPixel);
+            break;
+          case "update":
+            retItems[op.index] = op.scannedPixel;
+            break;
+          case "move": {
+            const src = [...retItems];
+            op.moves.forEach(({ from, to }) => {
+              retItems[to] = src[from];
+            });
+            break;
+          }
+          default:
+            assertNever(t);
+        }
       });
-      return returnedItems;
+      return retItems;
     },
     []
   );

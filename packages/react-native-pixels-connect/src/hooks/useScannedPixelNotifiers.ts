@@ -1,3 +1,4 @@
+import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import {
@@ -5,10 +6,10 @@ import {
   PixelScannerOptions,
   PixelScannerDispatchAction,
 } from "./usePixelScanner";
-import { ScannedPixel } from "../ScannedPixel";
+import { PixelScannerListOp } from "../PixelScanner";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
-class UpdatableScannedPixelNotifier extends ScannedPixelNotifier {
+class UpdatableNotifier extends ScannedPixelNotifier {
   update(
     props: Parameters<
       (typeof ScannedPixelNotifier)["prototype"]["_updateProperties"]
@@ -37,35 +38,46 @@ export function useScannedPixelNotifiers(
   Error?
 ] {
   const mapItems = React.useCallback(
-    (
-      items: ScannedPixelNotifier[],
-      updates: {
-        scannedPixel: ScannedPixel;
-        index: number;
-        previousIndex?: number;
-      }[]
-    ) => {
+    (items: ScannedPixelNotifier[], ops: PixelScannerListOp[]) => {
       // We only want to create a React re-render when new items are added
       // or existing items are moved
-      const updateList = !updates.every(
-        ({ index, previousIndex }) => index === previousIndex
-      );
-      items = updateList ? [...items] : items;
+      let retItems = items;
       // Apply updates
-      updates.forEach(({ scannedPixel: sp, index, previousIndex }) => {
-        if (previousIndex === undefined) {
-          // New item
-          items[index] = new UpdatableScannedPixelNotifier(sp);
-        } else {
-          // Get item at is previous index
-          const item = items[previousIndex];
-          // Update it
-          (item as UpdatableScannedPixelNotifier).update(sp);
-          // And possibly move it to a new index
-          items[index] = item;
+      ops.forEach((op) => {
+        const t = op.type;
+        switch (t) {
+          case "clear":
+            retItems = [];
+            break;
+          case "add": {
+            const notifier = new UpdatableNotifier(op.scannedPixel);
+            if (retItems === items) {
+              retItems = [...items, notifier];
+            } else {
+              retItems.push(notifier);
+            }
+            break;
+          }
+          case "update":
+            assert(retItems[op.index]);
+            (retItems[op.index] as UpdatableNotifier).update(op.scannedPixel);
+            break;
+          case "move": {
+            const src = [...retItems];
+            if (retItems === items) {
+              retItems = [...items];
+            }
+            op.moves.forEach(({ from, to }) => {
+              assert(src[from]);
+              retItems[to] = src[from];
+            });
+            break;
+          }
+          default:
+            assertNever(t);
         }
       });
-      return items;
+      return retItems;
     },
     []
   );

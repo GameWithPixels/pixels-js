@@ -1,7 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
-import { PixelScanner } from "../PixelScanner";
+import { PixelScanner, PixelScannerListOp } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
@@ -52,14 +52,7 @@ export interface PixelScannerOptions {
  *          {@link useScannedPixels} or {@link useScannedPixelNotifiers}.
  */
 export function usePixelScanner<T>(
-  updateItems: (
-    items: T[],
-    updates: {
-      scannedPixel: ScannedPixel;
-      index: number;
-      previousIndex?: number;
-    }[]
-  ) => T[],
+  updateItems: (items: T[], ops: PixelScannerListOp[]) => T[],
   opt?: PixelScannerOptions
 ): [T[], (action: PixelScannerDispatchAction) => void, Error?] {
   const [lastError, setLastError] = React.useState<Error>();
@@ -72,24 +65,13 @@ export function usePixelScanner<T>(
 
   // Hook updateItems to scan events
   React.useEffect(() => {
-    scanner.scanListener = (
-      _: PixelScanner,
-      updates: {
-        scannedPixel: ScannedPixel;
-        index: number;
-        previousIndex?: number;
-      }[]
-    ) => {
-      if (updates.length > 0) {
-        // Note: we don't do setItems(items => updateItems(items, ...))
-        // because that would run updateItems() callback while rendering the component
-        // hosting this hook, and thus preventing the callback from modifying other
-        // React states (we would get the "Cannot update a component  while rendering
-        // a different component" warning)
-        itemsRef.current = updateItems(itemsRef.current, updates);
-      } else {
-        itemsRef.current = [];
-      }
+    scanner.scanListener = (_: PixelScanner, ops: PixelScannerListOp[]) => {
+      // Note: we don't do setItems(items => updateItems(items, ...))
+      // because that would run updateItems() callback while rendering the component
+      // hosting this hook, and thus preventing the callback from modifying other
+      // React states (we would get the "Cannot update a component  while rendering
+      // a different component" warning)
+      itemsRef.current = updateItems(itemsRef.current, ops);
       setItems(itemsRef.current);
     };
   }, [scanner, updateItems]);

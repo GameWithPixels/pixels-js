@@ -13,20 +13,21 @@ import MainScanner from "./MainScanner";
 import { ScannedPixel } from "./ScannedPixel";
 
 /**
+ * The different possible operations on a {@link PixelScanner} list.
+ */
+export type PixelScannerListOp =
+  | { type: "add"; scannedPixel: ScannedPixel }
+  | { type: "update"; scannedPixel: ScannedPixel; index: number }
+  | { type: "move"; moves: { from: number; to: number }[] }
+  | { type: "clear" };
+
+/**
  * Type for a callback listening to {@link PixelScanner} scan events.
- * The 'updates' argument contains a list of new or updated scanned Pixels
- * with their new and previous index in the list (undefined for new items).
- * This argument is an empty array when notifying that the list has been cleared.
+ * The 'ops' argument is a list of of operations on the scanner's list
+ * of Pixels.
  */
 export type PixelScannerListener =
-  | ((
-      scanner: PixelScanner,
-      updates: {
-        scannedPixel: ScannedPixel;
-        index: number;
-        previousIndex?: number;
-      }[]
-    ) => void)
+  | ((scanner: PixelScanner, ops: PixelScannerListOp[]) => void)
   | null
   | undefined;
 
@@ -57,11 +58,7 @@ export class PixelScanner {
   private _minNotifyInterval = 0;
   private _notifyTimeout?: ReturnType<typeof setTimeout>;
   private _lastUpdate = new Date();
-  private readonly _pendingUpdates: {
-    scannedPixel: ScannedPixel;
-    index: number;
-    previousIndex?: number;
-  }[] = [];
+  private readonly _pendingUpdates: PixelScannerListOp[] = [];
 
   // Scanning emulation
   private _emulatedCount = 0;
@@ -188,21 +185,27 @@ export class PixelScanner {
               }
             }
             // Remove any older update for the same Pixel
-            // but keep insertions and re-ordering updates
-            const updateIndex = this._pendingUpdates.findIndex(
+            // but keep insertion and re-ordering updates
+            const prevUpdateIndex = this._pendingUpdates.findIndex(
               (e) =>
-                e.scannedPixel.pixelId === sp.pixelId &&
-                e.index === e.previousIndex
+                e.type === "update" && e.scannedPixel.pixelId === sp.pixelId
             );
-            if (updateIndex >= 0) {
-              this._pendingUpdates.splice(updateIndex, 1);
+            if (prevUpdateIndex >= 0) {
+              this._pendingUpdates.splice(prevUpdateIndex, 1);
             }
             // Queue update
-            this._pendingUpdates.push({
-              scannedPixel: sp,
-              index: index >= 0 ? index : this._pixels.length - 1,
-              previousIndex: index >= 0 ? index : undefined,
-            });
+            this._pendingUpdates.push(
+              index < 0
+                ? {
+                    type: "add",
+                    scannedPixel: sp,
+                  }
+                : {
+                    type: "update",
+                    scannedPixel: sp,
+                    index,
+                  }
+            );
             // Reorder if needed
             if (reorder) {
               this._sort();
@@ -275,7 +278,8 @@ export class PixelScanner {
     return this._queue.run(async () => {
       if (this._pixels.length) {
         this._pixels.length = 0;
-        this._userListener?.(this, []);
+        this._pendingUpdates.push({ type: "clear" });
+        this._notify(Date.now());
       }
     });
   }
@@ -299,16 +303,15 @@ export class PixelScanner {
     if (needSorting) {
       const unsorted = [...this._pixels];
       this._pixels.sort((e1, e2) => c.compare(e1.uniqueName, e2.uniqueName));
-      unsorted.forEach((e, i) => {
-        const j = this._pixels.indexOf(e);
-        if (i !== j) {
-          this._pendingUpdates.push({
-            scannedPixel: e.scannedPixel,
-            index: j,
-            previousIndex: i,
-          });
+      const moves: { from: number; to: number }[] = [];
+      unsorted.forEach((e, from) => {
+        const to = this._pixels.indexOf(e);
+        if (from !== to) {
+          moves.push({ from, to });
         }
       });
+      assert(moves.length);
+      this._pendingUpdates.push({ type: "move", moves });
     }
     return !!needSorting;
   }
@@ -318,7 +321,7 @@ export class PixelScanner {
     this._emulatorTimeout = setTimeout(() => {
       this._emulateScan();
       for (let i = 1; i <= this._emulatedCount; ++i) {
-        this._scannerListener?.(PixelScanner._genScannedPixel(i));
+        this._scannerListener?.(PixelScanner._generateScannedPixel(i));
       }
     }, 150 + 100 * Math.random());
   }
@@ -326,11 +329,12 @@ export class PixelScanner {
   private static _maxDesignAndColor = Math.max(
     ...Object.values(PixelDesignAndColorValues)
   );
+
   private static _maxRollState = Math.max(
     ...Object.values(PixelRollStateValues)
   );
 
-  private static _genScannedPixel(index: number): ScannedPixel {
+  private static _generateScannedPixel(index: number): ScannedPixel {
     assert(index > 0);
     return {
       systemId: "system-id-" + index,
