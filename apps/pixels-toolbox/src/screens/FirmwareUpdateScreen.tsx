@@ -12,7 +12,7 @@ import { Button, Card, Text, useTheme } from "react-native-paper";
 import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
-import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
+import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import { FirmwareUpdateProps } from "~/navigation";
 import gs from "~/styles";
@@ -49,50 +49,49 @@ function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
 function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   const errorHandler = useErrorHandler();
 
-  // DFU file
-  const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
+  // DFU files bundles are loaded asynchronously
+  const { selected, available } = useAppSelector((state) => state.dfuBundles);
+  const bundle = React.useMemo(
+    () => DfuFilesBundle.create(available[selected]),
+    [available, selected]
+  );
   const [selectedFwLabel, setSelectedFwLabel] = React.useState<string>();
   React.useEffect(() => {
-    if (dfuFiles?.length) {
+    if (bundle) {
       setSelectedFwLabel(
-        `${dfuFiles
-          .map((p) => getDfuFileInfo(p).type ?? "unknown")
-          .join(", ")}: ${toLocaleDateTimeString(
-          getDfuFileInfo(dfuFiles[0]).date ?? new Date(0)
-        )}`
+        `${bundle.types.join(", ")}: ${toLocaleDateTimeString(bundle.date)}`
       );
     } else {
       setSelectedFwLabel(undefined);
     }
-  }, [dfuFiles]);
+  }, [bundle]);
 
   // DFU
   const [dfuTarget, setDfuTarget] = React.useState<ScannedPeripheral>();
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
     useUpdateFirmware();
-  const onSelect = React.useCallback(
-    (sp: ScannedPeripheral) => {
-      setDfuTarget((dfuTarget) => {
-        if (!dfuTarget) {
-          const filesInfo = dfuFiles.map(getDfuFileInfo);
-          const bootloader = filesInfo.filter(
-            (i) => i.type === "bootloader"
-          )[0];
-          const firmware = filesInfo.filter((i) => i.type === "firmware")[0];
-          if (firmware?.pathname?.length) {
-            dfuTarget = sp;
-            updateFirmware(
-              sp.address,
-              bootloader?.pathname,
-              firmware?.pathname
-            );
-          }
-        }
-        return dfuTarget;
-      });
-    },
-    [dfuFiles, updateFirmware]
-  );
+  const onSelect = React.useCallback((sp: ScannedPeripheral) => {
+    setDfuTarget((dfuTarget) => {
+      if (!dfuTarget) {
+        return { ...sp };
+      }
+      return dfuTarget;
+    });
+  }, []);
+  React.useEffect(() => {
+    if (dfuTarget && bundle) {
+      updateFirmware(
+        dfuTarget.address,
+        bundle.bootloader?.pathname,
+        bundle.firmware?.pathname
+      );
+    }
+  }, [bundle, dfuTarget, updateFirmware]);
+  React.useEffect(() => {
+    if (dfuState === "dfuCompleted" || dfuState === "dfuAborted") {
+      setDfuTarget(undefined);
+    }
+  }, [dfuState]);
 
   // Scan list
   const [scannedPeripherals, setScannedPeripherals] = React.useState<

@@ -13,7 +13,7 @@ import updateFirmware from "./updateFirmware";
  * 4. The last error that occurred (cleared when starting a new DFU)
  */
 export default function (): [
-  (address: number, bootloaderPath: string, firmwarePath: string) => void,
+  (address: number, bootloaderPath?: string, firmwarePath?: string) => void,
   DfuState | "initializing" | undefined,
   number,
   Error | undefined
@@ -25,7 +25,7 @@ export default function (): [
 
   // Start DFU function
   const updateFirmwareFunc = React.useCallback(
-    (address: number, bootloaderPath: string, firmwarePath: string): void => {
+    (address: number, bootloaderPath?: string, firmwarePath?: string): void => {
       setLastError(undefined);
       setDfuState("initializing");
       updateFirmware(

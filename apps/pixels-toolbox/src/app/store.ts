@@ -1,11 +1,11 @@
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 
-import dfuFilesReducer from "~/features/store/dfuFilesSlice";
+import dfuBundlesReducer from "~/features/store/dfuBundlesSlice";
 import displaySettingsReducer from "~/features/store/displaySettingsSlice";
 
 export const store = configureStore({
   reducer: {
-    dfuFiles: dfuFilesReducer,
+    dfuBundles: dfuBundlesReducer,
     displaySettings: displaySettingsReducer,
   },
 });

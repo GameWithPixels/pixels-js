@@ -14,9 +14,12 @@ import { Button, Text } from "react-native-paper";
 import ProgressBar from "./ProgressBar";
 import TaskChainComponent from "./TaskChainComponent";
 
-import dfuFiles from "!/factory-dfu-files.zip";
-import extractDfuFiles from "~/features/dfu/extractDfuFiles";
-import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
+import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
+import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
+import {
+  listUnzippedDfuFiles,
+  unzipDfuFilesFromAssets,
+} from "~/features/dfu/unzip";
 import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
 import useTimeout from "~/features/hooks/useTimeout";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
@@ -214,36 +217,43 @@ export function UpdateFirmware({
           throw new TaskFaultedError("No scanned Pixel");
         }
         // DFU files
-        const [blPath, fwPath] = await extractDfuFiles(dfuFiles);
-        const fwDate = getDfuFileInfo(fwPath).date;
-        if (!fwDate) {
+        await unzipDfuFilesFromAssets([factoryDfuFiles]);
+        // Read the DFU files bundles
+        const dfuFiles = await listUnzippedDfuFiles();
+        const dfuBundle = (await DfuFilesBundle.makeBundles(dfuFiles))[0];
+        if (!dfuBundle) {
+          throw new TaskFaultedError("DFU files not found or problematic");
+        }
+        const bl = dfuBundle.bootloader;
+        if (!bl) {
           throw new TaskFaultedError(
-            "DFU firmware file has no date: " + fwPath
+            "DFU bootloader file not found or problematic"
           );
         }
-        const blDate = getDfuFileInfo(blPath).date;
-        if (!blDate) {
+        const fw = dfuBundle.firmware;
+        if (!fw) {
           throw new TaskFaultedError(
-            "DFU firmware file has no date: " + blPath
+            "DFU firmware file not found or problematic"
           );
         }
         console.log(
-          "DFU files loaded, firmware version is",
-          toLocaleDateTimeString(fwDate),
-          " and bootloader version is",
-          toLocaleDateTimeString(blDate)
+          "DFU files loaded, firmware/bootloader build date is",
+          toLocaleDateTimeString(dfuBundle.date)
         );
         console.log(
           "On device firmware build timestamp is",
           toLocaleDateTimeString(scannedPixel.firmwareDate)
         );
         // Start DFU
-        const mostRecent = Math.max(blDate.getTime(), fwDate.getTime());
-        if (mostRecent > scannedPixel.firmwareDate.getTime()) {
+        if (dfuBundle.date > scannedPixel.firmwareDate) {
           const dfuPromise = new Promise<void>((resolve, reject) => {
             setResolveRejectDfuPromise({ resolve, reject });
           });
-          updateFirmware(scannedPixel.address, blPath, fwPath);
+          updateFirmware(
+            scannedPixel.address,
+            dfuBundle.bootloader.pathname,
+            dfuBundle.firmware.pathname
+          );
           await dfuPromise;
         } else {
           console.log("Skipping firmware update");

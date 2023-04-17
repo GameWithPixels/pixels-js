@@ -6,30 +6,24 @@ import { Button, Text } from "react-native-paper";
 
 import SwipeablePixelsList from "./SwipeablePixelsList";
 
-import { useAppSelector } from "~/app/hooks";
+import useAppDfuFilesBundles from "~/app/useAppDfuFilesBundles";
 import { AppPage } from "~/components/AppPage";
-import getDfuFileInfo from "~/features/dfu/getDfuFileInfo";
 import { HomeProps } from "~/navigation";
 import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function HomePage({ navigation }: HomeProps) {
-  // DFU file
-  const { dfuFiles } = useAppSelector((state) => state.dfuFiles);
-  const [selectedFwLabel, setSelectedFwLabel] = React.useState<string>();
-  React.useEffect(() => {
-    if (dfuFiles?.length) {
-      setSelectedFwLabel(
-        `${dfuFiles
-          .map((p) => getDfuFileInfo(p).type ?? "unknown")
-          .join(", ")}: ${toLocaleDateTimeString(
-          getDfuFileInfo(dfuFiles[0]).date ?? new Date(0)
-        )}`
-      );
-    } else {
-      setSelectedFwLabel(undefined);
+  // DFU files bundles are loaded asynchronously
+  const [selectedDfuBundle, availableDfuBundles, dfuBundlesError] =
+    useAppDfuFilesBundles();
+
+  // Label to display for the selected firmware
+  const selectedFwLabel = React.useMemo(() => {
+    const b = selectedDfuBundle;
+    if (b) {
+      return `${b.types.join(", ")}: ${toLocaleDateTimeString(b.date)}`;
     }
-  }, [dfuFiles]);
+  }, [selectedDfuBundle]);
 
   // Navigation
   const onDieDetails = React.useCallback(
@@ -48,10 +42,19 @@ function HomePage({ navigation }: HomeProps) {
           ↖️ <Text style={gs.italic}>{t("openMenuToGoToValidation")}</Text>
         </Text>
         <Button
-          onPress={() => navigation.navigate("SelectDfuFiles")}
-          labelStyle={gs.underlined}
+          onPress={() =>
+            availableDfuBundles?.length && navigation.navigate("SelectDfuFiles")
+          }
+          contentStyle={gs.fullWidth}
+          labelStyle={availableDfuBundles ? gs.underlined : gs.empty}
         >
-          {selectedFwLabel ?? t("tapToSelectFirmware")}
+          {dfuBundlesError
+            ? "Error loading DFU files!"
+            : !availableDfuBundles
+            ? "Loading DFU files..."
+            : !availableDfuBundles.length
+            ? "Got no DFU files!"
+            : selectedFwLabel ?? t("tapToSelectFirmware")}
         </Button>
         <SwipeablePixelsList onDieDetails={onDieDetails} />
       </FastBox>
