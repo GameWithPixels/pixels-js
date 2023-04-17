@@ -1,4 +1,5 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
+import { useTheme } from "react-native-paper";
 
 export interface ProgressBarProps {
   percent: number;
@@ -6,11 +7,21 @@ export interface ProgressBarProps {
 
 export default function ({ percent }: ProgressBarProps) {
   const clampedPercentage = Math.max(0, Math.min(100, percent));
+  const theme = useTheme();
   return (
-    <View style={styles.progressBarBackground}>
+    <View
+      style={{
+        backgroundColor: theme.colors.onPrimary,
+        borderRadius: 5,
+        height: 20,
+        width: "100%",
+        padding: 2,
+        alignSelf: "center",
+      }}
+    >
       <View
         style={{
-          backgroundColor: "blue",
+          backgroundColor: theme.colors.primary,
           borderRadius: 5,
           width: `${clampedPercentage}%`,
           height: "100%",
@@ -19,14 +30,3 @@ export default function ({ percent }: ProgressBarProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  progressBarBackground: {
-    backgroundColor: "grey",
-    borderRadius: 5,
-    height: 20,
-    width: "100%",
-    padding: 2,
-    alignSelf: "center",
-  },
-});
