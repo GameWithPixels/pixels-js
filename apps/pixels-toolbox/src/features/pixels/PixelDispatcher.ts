@@ -55,6 +55,8 @@ export interface PixelDispatcherEventMap {
   action: PixelDispatcherAction;
   error: Error;
   profileUpdateProgress: number | undefined;
+  status: PixelStatus;
+  durationSinceLastActivity: number;
   isDFUAvailable: boolean;
   isDFUActive: boolean;
   isDFUQueued: boolean;
@@ -70,10 +72,11 @@ const _pendingDFUs: PixelDispatcher[] = [];
  */
 export default class PixelDispatcher extends PixelInfoNotifier {
   private _scannedPixel: ScannedPixelNotifier;
-  private _lastStatusChange: Date;
   private _pixel: Pixel;
   private readonly _evEmitter =
     createTypedEventEmitter<PixelDispatcherEventMap>();
+  private _lastActivityMs = 0;
+  private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
   private _isUpdatingProfile = false;
   private _isDfuAvailable = false;
 
@@ -126,18 +129,21 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     return this._scannedPixel.address;
   }
 
-  get lastBleActivity(): Date {
-    return this._lastStatusChange >= this._scannedPixel.timestamp
-      ? this._lastStatusChange
-      : this._scannedPixel.timestamp;
-  }
-
   get status(): PixelStatus {
     return this._pixel.status;
   }
 
   get isReady(): boolean {
     return this._pixel.status === "ready";
+  }
+
+  // Time in ms, 0 when connected
+  get durationSinceLastActivity(): number {
+    return this._lastActivityMs;
+  }
+
+  get lastScanUpdate(): Date {
+    return this._scannedPixel.timestamp;
   }
 
   get isUpdatingProfile(): boolean {
@@ -174,17 +180,19 @@ export default class PixelDispatcher extends PixelInfoNotifier {
   private constructor(scannedPixel: ScannedPixelNotifier) {
     super();
     this._scannedPixel = scannedPixel;
-    this._lastStatusChange = new Date(0);
     this._pixel = getPixel(scannedPixel);
     _instances.set(this.pixelId, this);
     // TODO remove listeners
     // TODO perform these notification in a generic way
+    scannedPixel.addPropertyListener("timestamp", () => {
+      this._updateLastActivity();
+    });
     scannedPixel.addPropertyListener("name", () =>
       this.emitPropertyEvent("name")
     );
     scannedPixel.addPropertyListener("firmwareDate", () => {
       this.emitPropertyEvent("firmwareDate");
-      this._checkDFUAvailable();
+      this._updateIsDFUAvailable();
     });
     scannedPixel.addPropertyListener("rssi", () =>
       this.emitPropertyEvent("rssi")
@@ -201,11 +209,14 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     scannedPixel.addPropertyListener("currentFace", () =>
       this.emitPropertyEvent("currentFace")
     );
-    this._pixel.addEventListener("status", (_status) => {
-      this._lastStatusChange = new Date();
+    this._pixel.addEventListener("status", (status) => {
+      this._evEmitter.emit("status", status);
+      this._updateLastActivity();
     });
     // Selected firmware
-    store.subscribe(() => this._checkDFUAvailable());
+    store.subscribe(() => this._updateIsDFUAvailable());
+    // Setup checking if around
+    this._updateLastActivity();
   }
 
   addEventListener<K extends keyof PixelDispatcherEventMap>(
@@ -283,6 +294,27 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     return this.status === "disconnected" ? this._scannedPixel : this._pixel;
   }
 
+  private _updateLastActivity(): void {
+    // Cancel timeout
+    clearTimeout(this._updateLastActivityTimeout);
+    this._updateLastActivityTimeout = undefined;
+    // Check if still around
+    const ms =
+      this.status !== "disconnected"
+        ? 0
+        : Date.now() - this._scannedPixel.timestamp.getTime();
+    if (this._lastActivityMs !== ms) {
+      // Notify if changed
+      this._lastActivityMs = ms;
+      this._evEmitter.emit("durationSinceLastActivity", ms);
+    }
+    // Check again in 5 seconds
+    this._updateLastActivityTimeout = setTimeout(
+      () => this._updateLastActivity(),
+      5000
+    );
+  }
+
   private async _reportRssi(): Promise<void> {
     if (this.isReady) {
       await this._pixel.reportRssi(true);
@@ -358,7 +390,7 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     }
   }
 
-  private _checkDFUAvailable() {
+  private _updateIsDFUAvailable() {
     const bundle = this._getSelectedDfuBundle();
     const av =
       !!bundle && !areSameFirmwareDates(bundle.date, this.firmwareDate);

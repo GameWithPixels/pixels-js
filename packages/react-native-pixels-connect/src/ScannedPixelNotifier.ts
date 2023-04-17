@@ -1,6 +1,6 @@
 import {
   PixelDesignAndColor,
-  PixelInfoMutableProperties,
+  PixelInfoMutableProps,
   PixelInfoNotifier,
   PixelRollState,
 } from "@systemic-games/pixels-core-connect";
@@ -9,16 +9,30 @@ import { ScannedPixel } from "./ScannedPixel";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
+/** Type for an object with all the mutable props of {@link ScannedPixelNotifier}. */
+export type ScannedPixelNotifierUpdate = Pick<
+  ScannedPixel,
+  PixelInfoMutableProps | "timestamp"
+>;
+
+/** Event map for {@link ScannedPixelNotifier} class. */
+export type ScannedPixelNotifierEventMap = {
+  [K in keyof ScannedPixelNotifierUpdate]: ScannedPixelNotifier;
+};
+
 /**
  * Wraps a {@link ScannedPixel} to raise events on mutable property changes.
  */
-export class ScannedPixelNotifier
-  extends PixelInfoNotifier
+export abstract class ScannedPixelNotifier
+  extends PixelInfoNotifier<
+    keyof ScannedPixelNotifierUpdate,
+    ScannedPixelNotifier
+  >
   implements ScannedPixel
 {
   private _data: Mutable<ScannedPixel>;
 
-  // PixelInfoNotifier props
+  // PixelInfo props
   get systemId(): string {
     return this._data.systemId;
   }
@@ -53,7 +67,7 @@ export class ScannedPixelNotifier
     return this._data.currentFace;
   }
 
-  // Extra ScannedPixel props
+  // Additional ScannedPixel props
   get address(): number {
     return this._data.address;
   }
@@ -61,6 +75,10 @@ export class ScannedPixelNotifier
     return this._data.timestamp;
   }
 
+  /**
+   * Instantiate a {@type ScannedPixelNotifier} with the properties
+   * of a {@link ScannedPixel} object.
+   */
   constructor(scannedPixel: ScannedPixel) {
     super();
     this._data = { ...scannedPixel };
@@ -71,11 +89,18 @@ export class ScannedPixelNotifier
    * @param props The new values for the properties to update.
    */
   protected _updateProperties(
-    props: Partial<Pick<ScannedPixel, PixelInfoMutableProperties | "timestamp">>
+    props: Partial<ScannedPixelNotifierUpdate>
   ): void {
     if (props.timestamp && this._data.timestamp < props.timestamp) {
-      this._data.timestamp = props.timestamp;
-      // TODO preform this update in a generic way
+      // TODO perform this update in a generic way
+      // Timestamp first
+      if (
+        props.timestamp !== undefined &&
+        this.timestamp.getTime() !== props.timestamp.getTime()
+      ) {
+        this._data.timestamp = props.timestamp;
+        this.emitPropertyEvent("timestamp");
+      }
       if (props.name !== undefined && this.name !== props.name) {
         this._data.name = props.name;
         this.emitPropertyEvent("name");

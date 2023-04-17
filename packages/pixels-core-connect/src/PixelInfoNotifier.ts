@@ -7,21 +7,27 @@ import { PixelRollState, PixelDesignAndColor } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 
 /**
- * The mutable properties of  {@link PixelInfo}.
+ * The mutable properties of {@link PixelInfoNotifier}.
  * @category Pixel
  */
-export type PixelInfoMutableProperties = Exclude<
+export type PixelInfoMutableProps = Exclude<
   keyof PixelInfo,
   "systemId" | "pixelId" | "ledCount" | "designAndColor" | "ledCount"
 >;
 
 /**
- * Event map for {@link PixelInfoNotifier} class.
+ * Event map for {@link PixelInfoNotifier} or descendant class.
  * @category Pixel
  */
-export type PixelInfoEventMap = {
-  [K in PixelInfoMutableProperties]: PixelInfoNotifier;
+export type PixelInfoEventMap<MutableProps extends string, Type> = {
+  [K in MutableProps]: Type;
 };
+
+// Type alias with shorter name
+type EvMap<MutableProps extends string, Type> = PixelInfoEventMap<
+  MutableProps,
+  Type
+>;
 
 /**
  * Abstract implementation of {@link PixelInfo} type with the addition
@@ -30,9 +36,13 @@ export type PixelInfoEventMap = {
  * {@link PixelInfoNotifier.emitPropertyEvent} function when a property is mutated.
  * @category Pixel
  */
-export abstract class PixelInfoNotifier implements PixelInfo {
+export abstract class PixelInfoNotifier<
+  Props extends string = PixelInfoMutableProps,
+  Type extends PixelInfo = PixelInfo
+> implements PixelInfo
+{
   private readonly _infoEvEmitter =
-    createTypedEventEmitter<PixelInfoEventMap>();
+    createTypedEventEmitter<EvMap<Props, Type>>();
 
   abstract get systemId(): string;
   abstract get pixelId(): number;
@@ -54,9 +64,9 @@ export abstract class PixelInfoNotifier implements PixelInfo {
    * @param eventName The name of the event.
    * @param listener The callback function.
    */
-  addPropertyListener<K extends keyof PixelInfoEventMap>(
+  addPropertyListener<K extends keyof EvMap<Props, Type>>(
     eventName: K,
-    listener: EventReceiver<PixelInfoEventMap[K]>
+    listener: EventReceiver<EvMap<Props, Type>[K]>
   ): void {
     this._infoEvEmitter.addListener(eventName, listener);
   }
@@ -69,9 +79,9 @@ export abstract class PixelInfoNotifier implements PixelInfo {
    * @param eventName The name of the event.
    * @param listener The callback function to unregister.
    */
-  removePropertyListener<K extends keyof PixelInfoEventMap>(
+  removePropertyListener<K extends keyof EvMap<Props, Type>>(
     eventName: K,
-    listener: EventReceiver<PixelInfoEventMap[K]>
+    listener: EventReceiver<EvMap<Props, Type>[K]>
   ): void {
     this._infoEvEmitter.removeListener(eventName, listener);
   }
@@ -82,9 +92,10 @@ export abstract class PixelInfoNotifier implements PixelInfo {
    * @param eventName Event name.
    * @param params Event parameters.
    */
-  protected emitPropertyEvent<K extends keyof PixelInfoEventMap>(
+  protected emitPropertyEvent<K extends keyof EvMap<Props, Type>>(
     eventName: K
   ): void {
+    //@ts-ignore 'this' is assignable to the constraint of type 'Type', but 'Type' could be instantiated with a different subtype of constraint 'PixelInfo'.ts(2345)
     this._infoEvEmitter.emit(eventName, this);
   }
 }

@@ -119,6 +119,7 @@ function PixelCard({
   const [lastError, setLastError] = React.useState<Error>();
   const clearError = React.useCallback(() => setLastError(undefined), []);
 
+  const [lastActivitySec, setLastActivitySec] = React.useState(0);
   const [profileUpdate, setProfileUpdate] = React.useState<number>();
   const [dfuQueued, setDfuQueued] = React.useState(false);
   const [dfuState, setDfuState] = React.useState<DfuState>("dfuCompleted");
@@ -137,11 +138,15 @@ function PixelCard({
 
   // Subscribe to events for which we store the resulting state
   React.useEffect(() => {
-    pixelDispatcher.addEventListener("error", setLastError);
-    pixelDispatcher.addEventListener("profileUpdateProgress", setProfileUpdate);
-    pixelDispatcher.addEventListener("isDFUQueued", setDfuQueued);
-    pixelDispatcher.addEventListener("dfuState", setDfuState);
-    pixelDispatcher.addEventListener("dfuProgress", setDfuProgress);
+    const add = pixelDispatcher.addEventListener.bind(pixelDispatcher);
+    add("error", setLastError);
+    const setLastActivity = (ms: number) =>
+      setLastActivitySec(Math.floor(ms / 1000));
+    add("durationSinceLastActivity", setLastActivity);
+    add("profileUpdateProgress", setProfileUpdate);
+    add("isDFUQueued", setDfuQueued);
+    add("dfuState", setDfuState);
+    add("dfuProgress", setDfuProgress);
     const notifyUserListener = ({
       message,
       withCancel,
@@ -159,14 +164,13 @@ function PixelCard({
     };
     pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
     return () => {
-      pixelDispatcher.removeEventListener("error", setLastError);
-      pixelDispatcher.removeEventListener(
-        "profileUpdateProgress",
-        setProfileUpdate
-      );
-      pixelDispatcher.removeEventListener("isDFUQueued", setDfuQueued);
-      pixelDispatcher.removeEventListener("dfuState", setDfuState);
-      pixelDispatcher.removeEventListener("dfuProgress", setDfuProgress);
+      const remove = pixelDispatcher.removeEventListener.bind(pixelDispatcher);
+      remove("error", setLastError);
+      remove("durationSinceLastActivity", setLastActivity);
+      remove("profileUpdateProgress", setProfileUpdate);
+      remove("isDFUQueued", setDfuQueued);
+      remove("dfuState", setDfuState);
+      remove("dfuProgress", setDfuProgress);
       pixelDispatcher.pixel.removeEventListener(
         "userMessage",
         notifyUserListener
@@ -193,11 +197,8 @@ function PixelCard({
   // Values for UI
   const { t } = useTranslation();
   const isDisco = !status || status === "disconnected";
-  const lastSeen = Math.round(
-    (Date.now() - pixelDispatcher.lastBleActivity.getTime()) / 1000
-  ); // TODO use event
   const statusStr = t(
-    !status || (isDisco && lastSeen <= 5) ? "advertising" : status
+    !status || (isDisco && lastActivitySec < 5000) ? "advertising" : status
   );
   const theme = useTheme();
   return (
@@ -237,13 +238,15 @@ function PixelCard({
                 <ProgressBar percent={profileUpdate} />
               </View>
             </FastHStack>
-          ) : isDisco && lastSeen > 5 ? (
+          ) : isDisco && lastActivitySec >= 5 ? (
             // Pixel is disconnected and hasn't been seen for a while (no advertising)
             <Text style={gs.italic}>{`${t("unavailable")} (${
-              lastSeen < 120
-                ? t("secondsWithValue", { value: lastSeen })
+              lastActivitySec < 120e3 // 2 minutes
+                ? t("secondsWithValue", {
+                    value: lastActivitySec,
+                  })
                 : t("minutesWithValue", {
-                    value: Math.floor(lastSeen / 60),
+                    value: Math.floor(lastActivitySec / 60),
                   })
             })`}</Text>
           ) : (
