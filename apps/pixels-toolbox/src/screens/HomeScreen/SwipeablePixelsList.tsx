@@ -7,7 +7,7 @@ import { FlatList, RefreshControl } from "react-native";
 import { Text } from "react-native-paper";
 
 import { EmojiButton } from "~/components/EmojiButton";
-import { PixelInfoModeContext } from "~/components/PixelInfoCard";
+import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
 import PixelDispatcher, {
   PixelDispatcherAction,
@@ -145,7 +145,7 @@ export default React.memo(function ({
       {lastError ? (
         <Text>{`${lastError}`}</Text>
       ) : scannedPixels.length ? (
-        <PixelInfoModeContext.Provider
+        <PixelInfoCardModeContext.Provider
           value={expandedInfo ? "expanded" : "normal"}
         >
           <FlatList
@@ -155,7 +155,7 @@ export default React.memo(function ({
             contentContainerStyle={gs.listContentContainer}
             refreshControl={refreshControl}
           />
-        </PixelInfoModeContext.Provider>
+        </PixelInfoCardModeContext.Provider>
       ) : (
         <Text style={gs.italic}>{t("noPixelsFound")}</Text>
       )}

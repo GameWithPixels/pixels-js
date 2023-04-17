@@ -5,7 +5,7 @@ import {
 import { PixelInfoNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { TFunction, useTranslation } from "react-i18next";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Card, Text } from "react-native-paper";
 
 import useForceUpdate from "~/features/hooks/useForceUpdate";
@@ -121,9 +121,9 @@ function PixelMoreInfo(props: PixelAndTranslation) {
   );
 }
 
-export const PixelInfoModeContext = React.createContext<"normal" | "expanded">(
-  "normal"
-);
+export const PixelInfoCardModeContext = React.createContext<
+  "normal" | "expanded"
+>("normal");
 
 export interface PixelInfoCardProps extends React.PropsWithChildren {
   pixelInfo: PixelInfoNotifier;
@@ -139,9 +139,13 @@ export default function PixelInfoCard({
     <Card>
       <Card.Content style={{ gap: 5 }}>
         <PixelName pixel={pixelInfo} />
-        <PixelInfoModeContext.Consumer>
-          {(mode) => mode === "expanded" && <PixelMoreInfo {...props} />}
-        </PixelInfoModeContext.Consumer>
+        <PixelInfoCardModeContext.Consumer>
+          {(mode) => (
+            <View style={{ height: mode === "expanded" ? undefined : 0 }}>
+              <PixelMoreInfo {...props} />
+            </View>
+          )}
+        </PixelInfoCardModeContext.Consumer>
         <FastHStack w="100%" justifyContent="space-around">
           <PixelRssi {...props} />
           <PixelBattery {...props} />
