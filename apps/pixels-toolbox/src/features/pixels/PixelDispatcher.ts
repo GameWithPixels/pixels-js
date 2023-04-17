@@ -55,9 +55,11 @@ export interface PixelDispatcherEventMap {
   action: PixelDispatcherAction;
   error: Error;
   profileUpdateProgress: number | undefined;
-  firmwareUpdateQueued: boolean;
-  firmwareUpdateState: DfuState;
-  firmwareUpdateProgress: number;
+  isDFUAvailable: boolean;
+  isDFUActive: boolean;
+  isDFUQueued: boolean;
+  dfuState: DfuState;
+  dfuProgress: number;
 }
 
 const _instances = new Map<number, PixelDispatcher>();
@@ -73,6 +75,7 @@ export default class PixelDispatcher extends PixelInfoNotifier {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelDispatcherEventMap>();
   private _isUpdatingProfile = false;
+  private _isDfuAvailable = false;
 
   get systemId(): string {
     return this._getPixelInfo().systemId;
@@ -141,16 +144,15 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     return this._isUpdatingProfile;
   }
 
-  get canUpdateFirmware(): boolean {
-    const bundle = this._getSelectedDfuBundle();
-    return !!bundle && !areSameFirmwareDates(bundle.date, this.firmwareDate);
+  get isDfuAvailable(): boolean {
+    return this._isDfuAvailable;
   }
 
-  get isUpdatingFirmware(): boolean {
+  get isDfuActive(): boolean {
     return _pendingDFUs[0] === this;
   }
 
-  get isFirmwareUpdateQueued(): boolean {
+  get isDfuQueued(): boolean {
     return _pendingDFUs.indexOf(this) > 0;
   }
 
@@ -180,9 +182,10 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     scannedPixel.addPropertyListener("name", () =>
       this.emitPropertyEvent("name")
     );
-    scannedPixel.addPropertyListener("firmwareDate", () =>
-      this.emitPropertyEvent("firmwareDate")
-    );
+    scannedPixel.addPropertyListener("firmwareDate", () => {
+      this.emitPropertyEvent("firmwareDate");
+      this._checkDFUAvailable();
+    });
     scannedPixel.addPropertyListener("rssi", () =>
       this.emitPropertyEvent("rssi")
     );
@@ -201,6 +204,8 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     this._pixel.addEventListener("status", (_status) => {
       this._lastStatusChange = new Date();
     });
+    // Selected firmware
+    store.subscribe(() => this._checkDFUAvailable());
   }
 
   addEventListener<K extends keyof PixelDispatcherEventMap>(
@@ -250,10 +255,10 @@ export default class PixelDispatcher extends PixelInfoNotifier {
         this._guard(this._updateProfile());
         break;
       case "queueFirmwareUpdate":
-        this._queueFirmwareUpdate();
+        this._queueDFU();
         break;
       case "dequeueFirmwareUpdate":
-        this._dequeueFirmwareUpdate();
+        this._dequeueDFU();
         break;
       case "exitValidationMode":
         this._guard(this._exitValidationMode());
@@ -353,6 +358,16 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     }
   }
 
+  private _checkDFUAvailable() {
+    const bundle = this._getSelectedDfuBundle();
+    const av =
+      !!bundle && !areSameFirmwareDates(bundle.date, this.firmwareDate);
+    if (this._isDfuAvailable !== av) {
+      this._isDfuAvailable = av;
+      this._evEmitter.emit("isDFUAvailable", av);
+    }
+  }
+
   private _getSelectedDfuBundle(): DfuFilesBundle | undefined {
     const dfuBundles = store.getState().dfuBundles;
     const bundle = dfuBundles.available[dfuBundles.selected];
@@ -361,45 +376,47 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     }
   }
 
-  private _queueFirmwareUpdate(): void {
-    if (this.canUpdateFirmware && !_pendingDFUs.includes(this)) {
+  private _queueDFU(): void {
+    if (this.isDfuAvailable && !_pendingDFUs.includes(this)) {
       // Queue DFU request
       _pendingDFUs.push(this);
-      this._evEmitter.emit("firmwareUpdateQueued", true);
+      this._evEmitter.emit("isDFUQueued", true);
       // Run update immediately if it's the only pending request
       if (_pendingDFUs.length === 1) {
-        this._guard(this._updateFirmware());
+        this._guard(this._startDFU());
       }
     }
   }
 
-  private _dequeueFirmwareUpdate(force = false): void {
+  private _dequeueDFU(force = false): void {
     const i = _pendingDFUs.indexOf(this);
     if (i > 0 || force) {
       _pendingDFUs.splice(i);
-      this._evEmitter.emit("firmwareUpdateQueued", false);
+      this._evEmitter.emit("isDFUQueued", false);
       // Run next update if any
-      this._guard(_pendingDFUs[0]?._updateFirmware());
+      this._guard(_pendingDFUs[0]?._startDFU());
     } else if (i === 0) {
       // TODO abort ongoing DFU
     }
   }
 
-  private async _updateFirmware(): Promise<void> {
+  private async _startDFU(): Promise<void> {
     const bundle = this._getSelectedDfuBundle();
     if (bundle) {
       const { bootloader, firmware } = bundle;
       try {
+        this._evEmitter.emit("isDFUActive", true);
         await updateFirmware(
           this._scannedPixel.address,
           bootloader?.pathname,
           firmware?.pathname,
-          (state) => this._evEmitter.emit("firmwareUpdateState", state),
-          (p) => this._evEmitter.emit("firmwareUpdateProgress", p)
+          (state) => this._evEmitter.emit("dfuState", state),
+          (p) => this._evEmitter.emit("dfuProgress", p)
         );
       } finally {
         assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
-        this._dequeueFirmwareUpdate(true);
+        this._dequeueDFU(true);
+        this._evEmitter.emit("isDFUActive", false);
       }
     }
   }
