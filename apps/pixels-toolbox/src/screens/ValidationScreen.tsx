@@ -67,19 +67,24 @@ function BottomButton({
   );
 }
 
-function FormFactorButton({
+function HugeButton({
   height,
   fontSize,
+  contentStyle,
+  labelStyle,
   ...props
 }: ButtonProps & { height: number; fontSize: number }) {
   return (
     <Button
-      contentStyle={{ height }}
-      labelStyle={{
-        fontSize,
-        fontWeight: "bold",
-        lineHeight: undefined,
-      }}
+      contentStyle={[{ height }, contentStyle]}
+      labelStyle={[
+        {
+          fontSize,
+          fontWeight: "bold",
+          lineHeight: undefined,
+        },
+        labelStyle,
+      ]}
       {...props}
     />
   );
@@ -91,34 +96,42 @@ function SelectFormFactorPage({
   onSelected: (formFactor: ValidationFormFactor) => void;
 }) {
   const { height } = useWindowDimensions();
-  const btnHeight = height / 4;
+  const btnHeight = (height - 200) / 4;
   const { t } = useTranslation();
   return (
     <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
-      <FormFactorButton
+      <HugeButton
         mode="contained-tonal"
         height={btnHeight}
         fontSize={30}
         onPress={() => onSelected("boardNoCoil")}
       >
         {t("validateBoardNoCoil")}
-      </FormFactorButton>
-      <FormFactorButton
+      </HugeButton>
+      <HugeButton
         mode="contained-tonal"
         height={btnHeight}
         fontSize={30}
         onPress={() => onSelected("board")}
       >
         {t("validateFullBoard")}
-      </FormFactorButton>
-      <FormFactorButton
+      </HugeButton>
+      <HugeButton
         mode="contained-tonal"
         height={btnHeight}
         fontSize={30}
         onPress={() => onSelected("die")}
       >
-        {t("validateCastDie")}
-      </FormFactorButton>
+        {t("validateResinDie")}
+      </HugeButton>
+      <HugeButton
+        mode="contained-tonal"
+        height={btnHeight}
+        fontSize={30}
+        onPress={() => onSelected("dieFinal")}
+      >
+        {t("validateDieFinal")}
+      </HugeButton>
     </FastVStack>
   );
 }
@@ -133,7 +146,7 @@ function SelectDieTypePage({
   onBack?: () => void;
 }) {
   const { height } = useWindowDimensions();
-  const btnHeight = height / 2 / DieTypes.length;
+  const btnHeight = (height - 200) / (DieTypes.length * 1.5);
   const { t } = useTranslation();
   return (
     <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
@@ -141,15 +154,15 @@ function SelectDieTypePage({
         {t("testingFormFactor", { formFactor: t(formFactor) })}
       </Text>
       {DieTypes.map((dt) => (
-        <FormFactorButton
+        <HugeButton
           key={dt}
           mode="contained-tonal"
           height={btnHeight}
-          fontSize={20}
+          fontSize={24}
           onPress={() => onSelectDieType(dt)}
         >
           {t(dt)}
-        </FormFactorButton>
+        </HugeButton>
       ))}
       <BottomButton onPress={onBack}>{t("back")}</BottomButton>
     </FastVStack>
@@ -328,9 +341,7 @@ function RunTestsPage({
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
     ...useTaskComponent("UpdateFirmware", cancel, (p) => (
-      <>
-        <UpdateFirmware {...p} pixelId={pixelId} />
-      </>
+      <UpdateFirmware {...p} pixelId={pixelId} />
     ))
   ).chainWith(
     ...useTaskComponent("ConnectPixel", cancel, (p) => (
@@ -379,7 +390,15 @@ function RunTestsPage({
       <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
     ))
   );
-  if (settings.formFactor !== "die") {
+  if (getBoardOrDie(settings.formFactor) === "die") {
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("WaitFaceUp", cancel, (p) => (
+        <>{pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}</>
+      ))
+    );
+  }
+  if (settings.formFactor !== "dieFinal") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
       ...useTaskComponent("TurnOffDevice", cancel, (p) => (
@@ -390,14 +409,6 @@ function RunTestsPage({
     );
   } else {
     taskChain
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitFaceUp", cancel, (p) => (
-          <>
-            {pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}
-          </>
-        ))
-      )
       .chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
         ...useTaskComponent("PrepareDie", cancel, (p) => (

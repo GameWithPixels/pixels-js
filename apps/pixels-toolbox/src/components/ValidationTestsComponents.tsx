@@ -457,7 +457,7 @@ export function CheckBoard({
       ),
       createTaskStatusContainer(t("batteryVoltage"))
     );
-  if (settings.formFactor === "die") {
+  if (_getCoilOrDie(settings) === "die") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
       React.useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
