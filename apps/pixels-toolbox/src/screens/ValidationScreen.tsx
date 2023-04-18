@@ -341,7 +341,12 @@ function RunTestsPage({
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
     ...useTaskComponent("UpdateFirmware", cancel, (p) => (
-      <UpdateFirmware {...p} pixelId={pixelId} />
+      <UpdateFirmware
+        {...p}
+        pixelId={pixelId}
+        settings={settings}
+        onPixelFound={setPixel}
+      />
     ))
   ).chainWith(
     ...useTaskComponent("ConnectPixel", cancel, (p) => (
@@ -349,7 +354,7 @@ function RunTestsPage({
         {...p}
         pixelId={pixelId}
         settings={settings}
-        onPixelConnected={setPixel}
+        onPixelFound={setPixel}
       />
     ))
   );
@@ -424,7 +429,7 @@ function RunTestsPage({
             {...p}
             pixelId={pixelId}
             settings={settings}
-            onPixelConnected={setPixel}
+            onPixelFound={setPixel}
           />
         ))
       )

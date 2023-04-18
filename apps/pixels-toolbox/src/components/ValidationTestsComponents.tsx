@@ -1,6 +1,7 @@
 import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import { FastHStack } from "@systemic-games/react-native-base-components";
 import {
+  Central,
   Color,
   getPixel,
   Pixel,
@@ -170,18 +171,22 @@ export interface ValidationTestsSettings {
   dieType: DieType;
 }
 
-export interface ConnectPixelProps extends TaskComponentProps {
-  pixelId: number;
+export interface ValidationTestProps extends TaskComponentProps {
+  pixel: Pixel;
   settings: ValidationTestsSettings;
-  onPixelScanned?: (pixel: ScannedPixel) => void;
-  onPixelConnected?: (pixel: Pixel) => void;
+}
+
+interface ValidationTestScanProps extends Omit<ValidationTestProps, "pixel"> {
+  pixelId: number;
+  onPixelFound?: (pixel: Pixel) => void;
 }
 
 export function UpdateFirmware({
   action,
   onTaskStatus,
   pixelId,
-}: UpdateFirmwareProps) {
+  onPixelFound,
+}: ValidationTestScanProps) {
   const { t } = useTranslation();
 
   // BLE Scan
@@ -192,13 +197,26 @@ export function UpdateFirmware({
   const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
   const [resolveScanPromise, setResolveScanPromise] =
     React.useState<() => void>();
-  const scannedPixelRef = React.useRef<ScannedPixel>();
+  const pixelRef = React.useRef<Pixel>();
+  const pixelAddressRef = React.useRef<number>();
   React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
-      scannedPixelRef.current = scannedPixels[0];
+      pixelRef.current = getPixel(scannedPixels[0]);
+      pixelAddressRef.current = scannedPixels[0].address;
+      onPixelFound?.(pixelRef.current);
       resolveScanPromise();
     }
-  }, [resolveScanPromise, scannedPixels]);
+  }, [onPixelFound, resolveScanPromise, scannedPixels]);
+
+  React.useEffect(() => {
+    return () => {
+      if (pixelRef.current) {
+        Central.disconnectPeripheral(pixelRef.current.systemId).catch(
+          console.log
+        );
+      }
+    };
+  }, []);
 
   // Firmware update
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
@@ -229,14 +247,13 @@ export function UpdateFirmware({
       scannerDispatch("start");
       try {
         await new Promise<void>((resolve, reject) => {
-          const onTimeout = () => {
+          const timeoutId = setTimeout(() => {
             reject(
               new TaskFaultedError(
                 `Timeout scanning for Pixel with id ${pixelId}`
               )
             );
-          };
-          const timeoutId = setTimeout(onTimeout, 5000);
+          }, 5000);
           setResolveScanPromise(() => () => {
             clearTimeout(timeoutId);
             resolve();
@@ -250,8 +267,20 @@ export function UpdateFirmware({
   )
     .chainWith(
       React.useCallback(async () => {
-        const scannedPixel = scannedPixelRef.current;
-        if (!scannedPixel) {
+        // Get our Pixel and connect to it
+        const pixel = pixelRef.current;
+        if (!pixel) {
+          throw new TaskFaultedError("Empty scanned Pixel");
+        }
+        await Central.connectPeripheral(pixel.systemId, { timeoutMs: 5000 });
+      }, []),
+      createTaskStatusContainer(t("connect"))
+    )
+    .chainWith(
+      React.useCallback(async () => {
+        const pixel = pixelRef.current;
+        const address = pixelAddressRef.current;
+        if (!pixel || !address) {
           throw new TaskFaultedError("No scanned Pixel");
         }
         // DFU files
@@ -280,21 +309,22 @@ export function UpdateFirmware({
         );
         console.log(
           "On device firmware build timestamp is",
-          toLocaleDateTimeString(scannedPixel.firmwareDate)
+          toLocaleDateTimeString(pixel.firmwareDate)
         );
         // Start DFU
-        if (dfuBundle.date > scannedPixel.firmwareDate) {
+        if (dfuBundle.date > pixel.firmwareDate) {
           const dfuPromise = new Promise<void>((resolve, reject) => {
             setResolveRejectDfuPromise({ resolve, reject });
           });
           updateFirmware(
-            scannedPixel.address,
+            address,
             dfuBundle.bootloader.pathname,
             dfuBundle.firmware.pathname
           );
           await dfuPromise;
         } else {
           console.log("Skipping firmware update");
+          await Central.disconnectPeripheral(pixel.systemId);
         }
       }, [updateFirmware]),
       createTaskStatusContainer({
@@ -326,9 +356,8 @@ export function ConnectPixel({
   onTaskStatus,
   pixelId,
   settings,
-  onPixelScanned,
-  onPixelConnected,
-}: ConnectPixelProps) {
+  onPixelFound,
+}: ValidationTestScanProps) {
   const { t } = useTranslation();
 
   // BLE Scan
@@ -339,44 +368,38 @@ export function ConnectPixel({
   const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
   const [resolveScanPromise, setResolveScanPromise] =
     React.useState<() => void>();
-  const scannedPixelRef = React.useRef<ScannedPixel>();
+  const pixelRef = React.useRef<Pixel>();
   React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
-      scannedPixelRef.current = scannedPixels[0];
+      pixelRef.current = getPixel(scannedPixels[0]);
+      onPixelFound?.(pixelRef.current);
       resolveScanPromise();
-      onPixelScanned?.(scannedPixels[0]);
     }
-  }, [onPixelScanned, resolveScanPromise, scannedPixels]);
+  }, [onPixelFound, resolveScanPromise, scannedPixels]);
 
   // Pixel
-  const [pixel, setPixel] = React.useState<Pixel>();
   React.useEffect(() => {
-    if (pixel && pixel.status === "ready") {
-      onPixelConnected?.(pixel);
-    }
     return () => {
-      pixel?.disconnect().catch(console.log);
+      pixelRef.current?.disconnect().catch(console.log);
     };
-  }, [onPixelConnected, pixel]);
+  }, []);
 
   const taskChain = useTaskChain(
     action,
     React.useCallback(async () => {
-      setPixel(undefined);
       if (!pixelId) {
         throw new TaskFaultedError("Empty Pixel Id");
       }
       scannerDispatch("start");
       try {
         await new Promise<void>((resolve, reject) => {
-          const onTimeout = () => {
+          const timeoutId = setTimeout(() => {
             reject(
               new TaskFaultedError(
                 `Timeout scanning for Pixel with id ${pixelId}`
               )
             );
-          };
-          const timeoutId = setTimeout(onTimeout, 5000);
+          }, 5000);
           setResolveScanPromise(() => () => {
             clearTimeout(timeoutId);
             resolve();
@@ -390,10 +413,10 @@ export function ConnectPixel({
   )
     .chainWith(
       React.useCallback(async () => {
-        if (!scannedPixelRef.current) {
+        if (!pixelRef.current) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
-        const ledCount = scannedPixelRef.current.ledCount;
+        const ledCount = pixelRef.current.ledCount;
         if (ledCount !== getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
             `Incorrect die type, expected ${settings.dieType} but got ${ledCount} LEDs`
@@ -404,15 +427,14 @@ export function ConnectPixel({
     )
     .chainWith(
       React.useCallback(async () => {
-        if (!scannedPixelRef.current) {
+        // Get our Pixel and connect to it
+        const pixel = pixelRef.current;
+        if (!pixel) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
-        // Get our Pixel and connect to it
-        const pixel = getPixel(scannedPixelRef.current);
-        await pixel.connect();
-        // Make sure we don't have any animation that are playing
+        await pixel.connect(5000);
+        // Make sure we don't have any animation playing
         await pixel.stopAllAnimations();
-        setPixel(pixel);
       }, []),
       createTaskStatusContainer(t("connect"))
     )
@@ -422,11 +444,6 @@ export function ConnectPixel({
   return (
     <TaskChainComponent title={t("scanAndConnect")} taskChain={taskChain} />
   );
-}
-
-export interface ValidationTestProps extends TaskComponentProps {
-  pixel: Pixel;
-  settings: ValidationTestsSettings;
 }
 
 export function CheckBoard({
@@ -732,10 +749,6 @@ export function WaitFaceUp({
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("waitFaceUp")} taskChain={taskChain} />;
-}
-
-interface UpdateFirmwareProps extends TaskComponentProps {
-  pixelId: number;
 }
 
 export function PrepareDie({
