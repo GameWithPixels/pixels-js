@@ -284,14 +284,14 @@ function DecodePixelIdPage({
           frameProcessor={frameProcessor}
         />
       ) : (
-        <Text>{t("startingCamera")}</Text>
+        <Text variant="headlineSmall">{t("startingCamera")}</Text>
       )}
       {!readingColors && (
         // Show message on top
         <FastBox position="absolute" top={0} w="100%" p={10}>
           <Card>
             <Card.Content style={{ flexDirection: "row", gap: 10 }}>
-              <Text variant="labelLarge" style={{ flex: 1, flexWrap: "wrap" }}>
+              <Text variant="bodyLarge" style={{ flex: 1, flexWrap: "wrap" }}>
                 {t("resetUsingMagnet", {
                   formFactor: t(getBoardOrDie(settings.formFactor)),
                 })}
@@ -316,7 +316,7 @@ function DecodePixelIdPage({
               justifyContent: "center",
             }}
           >
-            <Text variant="labelLarge">{getTestingMessage(t, settings)}</Text>
+            <Text variant="bodyLarge">{getTestingMessage(t, settings)}</Text>
             <BottomButton onPress={onBack}>{t("back")}</BottomButton>
           </Card.Content>
         </Card>
@@ -478,10 +478,10 @@ function RunTestsPage({
         <>{taskChain.render()}</>
         {result && (
           <FastVStack alignItems="center" justifyContent="center">
-            <Text style={styles.textStatus}>
+            <Text style={{ fontSize: 150 }}>
               {getTaskResultEmoji(taskChain.status)}
             </Text>
-            <Text variant="labelLarge">
+            <Text variant="bodyLarge">
               {t("battery")}
               {t("colonSeparator")}
               {t("percentWithValue", { value: pixel?.batteryLevel ?? 0 })}
@@ -540,10 +540,6 @@ export default function () {
 
 const styles = StyleSheet.create({
   textCenter: {
-    textAlign: "center",
-  },
-  textStatus: {
-    fontSize: 150,
     textAlign: "center",
   },
 });

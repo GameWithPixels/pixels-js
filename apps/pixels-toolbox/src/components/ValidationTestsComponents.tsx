@@ -151,7 +151,7 @@ function MessageYesNo({ message, onYes, onNo, hideYesNo }: MessageYesNoProps) {
   const { t } = useTranslation();
   return (
     <>
-      <Text variant="labelLarge">{message}</Text>
+      <Text variant="bodyLarge">{message}</Text>
       {!hideYesNo && (
         <FastHStack gap={5}>
           <Button mode="contained-tonal" onPress={onYes}>
@@ -332,7 +332,7 @@ export function UpdateFirmware({
         children: (
           <>
             {dfuState && (
-              <Text variant="labelLarge">
+              <Text variant="bodyLarge">
                 {t("dfuStateWithStatus", {
                   status: t(dfuState),
                 })}
@@ -516,7 +516,7 @@ export function WaitCharging({
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
-        <Text variant="labelLarge">
+        <Text variant="bodyLarge">
           {t(
             notCharging
               ? "removeFromChargerWithCoilOrDie"
@@ -677,7 +677,7 @@ export function WaitFaceUp({
     ),
     createTaskStatusContainer({
       children: !hasElapsed ? (
-        <Text variant="labelLarge">{t("placeBlinkingFaceUp")}</Text>
+        <Text variant="bodyLarge">{t("placeBlinkingFaceUp")}</Text>
       ) : (
         <MessageYesNo
           message={t("isBlinkingFaceUp")}
@@ -706,7 +706,7 @@ export function WaitFaceUp({
       ),
       createTaskStatusContainer({
         children: !hasElapsed ? (
-          <Text variant="labelLarge">{t("placeNewBlinkingFaceUp")}</Text>
+          <Text variant="bodyLarge">{t("placeNewBlinkingFaceUp")}</Text>
         ) : (
           <MessageYesNo
             message={t("isBlinkingFaceUp")}
@@ -735,7 +735,7 @@ export function WaitFaceUp({
       ),
       createTaskStatusContainer({
         children: !hasElapsed ? (
-          <Text variant="labelLarge">{t("placeNewBlinkingFaceUp")}</Text>
+          <Text variant="bodyLarge">{t("placeNewBlinkingFaceUp")}</Text>
         ) : (
           <MessageYesNo
             message={t("isBlinkingFaceUp")}
@@ -815,7 +815,7 @@ export function WaitDieInCase({
     ),
     createTaskStatusContainer({
       children: (
-        <Text variant="labelLarge">{t("placeDieInCaseAndCloseLid")}</Text>
+        <Text variant="bodyLarge">{t("placeDieInCaseAndCloseLid")}</Text>
       ),
     })
   )
