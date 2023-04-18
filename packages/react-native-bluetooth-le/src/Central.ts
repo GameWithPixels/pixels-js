@@ -353,16 +353,17 @@ const Central = {
   */
   async connectPeripheral(
     peripheral: PeripheralOrSystemId,
-    connectionStatusCallback?: (ev: PeripheralConnectionEvent) => void,
-    timeoutMs = 0 //TODO unused
+    opt?: {
+      connectionStatusCallback?: (ev: PeripheralConnectionEvent) => void;
+      timeoutMs?: number;
+    }
   ): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     const name = pInf.scannedPeripheral.name;
-    if (
-      !connectionStatusCallback &&
-      pInf.connStatusCallback !== connectionStatusCallback
-    ) {
-      throw new Errors.ConnectError(name, "InUse");
+    const callback = opt?.connectionStatusCallback;
+    const timeoutMs = opt?.timeoutMs ?? 0;
+    if (pInf.connStatusCallback && pInf.connStatusCallback !== callback) {
+      throw new Errors.ConnectError(name, "inUse");
     }
 
     console.log(
@@ -371,16 +372,34 @@ const Central = {
         ` last known state is ${pInf.state}`
     );
 
-    //TODO handle case when another connection request for the same device is already under way
-    //TODO reject if state is not disconnected?
-    const sysId = _getSystemId(peripheral);
-    if (await BluetoothLE.createPeripheral(sysId)) {
-      try {
-        // Store connection status callback if one was given (otherwise keep the existing one)
-        if (connectionStatusCallback) {
-          pInf.connStatusCallback = connectionStatusCallback;
-        }
+    // Timeout
+    let hasTimedOut = false;
+    const timeoutId =
+      timeoutMs > 0 &&
+      setTimeout(() => {
+        // Disconnect on timeout
+        console.log(`[BLE ${name}] Connection timeout after ${timeoutMs}ms`);
+        hasTimedOut = true;
+        Central.disconnectPeripheral(peripheral).catch((e) =>
+          console.warn(
+            `[BLE ${name}] Failed to disconnect on connection timeout: ${e}`
+          )
+        );
+      }, timeoutMs);
 
+    try {
+      //TODO handle case when another connection request for the same device is already under way
+      const sysId = _getSystemId(peripheral);
+      if (!(await BluetoothLE.createPeripheral(sysId))) {
+        throw new Errors.ConnectError(name, "nativeError");
+      }
+
+      // Store connection status callback if one was given (otherwise keep the existing one)
+      if (callback) {
+        pInf.connStatusCallback = callback;
+      }
+
+      try {
         // Connect to peripheral
         await BluetoothLE.connectPeripheral(
           sysId,
@@ -446,18 +465,25 @@ const Central = {
           // And finally set state to "ready"
           pInf.state = "ready";
         } else if (pInf.state !== "ready") {
-          throw new Errors.ConnectError(name, "Disconnected");
+          throw new Errors.ConnectError(name, "disconnected");
         }
       } catch (error) {
-        Central.disconnectPeripheral(peripheral).catch((e) =>
-          console.warn(
-            `[BLE ${name}] Failed to disconnect after failing to connect: ${e}`
-          )
-        );
-        throw error;
+        // Check if error was (likely) caused by the connection timeout
+        if (hasTimedOut) {
+          throw new Errors.ConnectError(name, "timeout");
+        } else {
+          Central.disconnectPeripheral(peripheral).catch((e) =>
+            console.warn(
+              `[BLE ${name}] Failed to disconnect after failing to connect: ${e}`
+            )
+          );
+          throw error;
+        }
       }
-    } else {
-      throw new Errors.ConnectError(name, "NativeError");
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
   },
 

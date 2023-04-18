@@ -38,10 +38,9 @@ export default class BleSession extends PixelSession {
     }
 
     // And connect
-    await Central.connectPeripheral(
-      this.pixelSystemId,
-      this._centralConnStatusCb
-    );
+    await Central.connectPeripheral(this.pixelSystemId, {
+      connectionStatusCallback: this._centralConnStatusCb,
+    });
   }
 
   async disconnect(): Promise<void> {

@@ -20,14 +20,16 @@ export class UnknownPeripheralError extends Error {
 }
 
 export class ConnectError extends Error {
-  readonly type: "NativeError" | "InUse" | "Disconnected";
+  readonly type: "nativeError" | "inUse" | "disconnected" | "timeout";
   constructor(name: string, type: ConnectError["type"]) {
     super(
-      type === "NativeError"
+      type === "nativeError"
         ? `Failed to create native peripheral for ${name}`
-        : type === "InUse"
+        : type === "inUse"
         ? `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`
-        : `Got disconnected while connecting to peripheral ${name}`
+        : type === "disconnected"
+        ? `Got disconnected while connecting to peripheral ${name}`
+        : `Connection timeout for peripheral ${name}`
     );
     this.name = "ConnectError";
     this.type = type;

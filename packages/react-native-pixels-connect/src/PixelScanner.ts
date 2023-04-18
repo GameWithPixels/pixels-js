@@ -56,13 +56,13 @@ export class PixelScanner {
   private _scanFilter: PixelScannerFilter;
   private _collator?: Intl.Collator;
   private _minNotifyInterval = 0;
-  private _notifyTimeout?: ReturnType<typeof setTimeout>;
+  private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdate = new Date();
   private readonly _pendingUpdates: PixelScannerListOp[] = [];
 
   // Scanning emulation
   private _emulatedCount = 0;
-  private _emulatorTimeout?: ReturnType<typeof setTimeout>;
+  private _emulatorTimeoutId?: ReturnType<typeof setTimeout>;
 
   /**
    * An optional listener called on getting scan events.
@@ -119,12 +119,12 @@ export class PixelScanner {
     if (this._minNotifyInterval !== interval) {
       this._minNotifyInterval = interval;
       // Re-schedule user notification if there was any
-      if (this._notifyTimeout) {
-        clearTimeout(this._notifyTimeout);
+      if (this._notifyTimeoutId) {
+        clearTimeout(this._notifyTimeoutId);
         if (this._minNotifyInterval > 0) {
           const nextUpdate =
             this._lastUpdate.getTime() + this._minNotifyInterval;
-          this._notifyTimeout = setTimeout(
+          this._notifyTimeoutId = setTimeout(
             () => this._notify(nextUpdate),
             nextUpdate - Date.now()
           );
@@ -217,12 +217,12 @@ export class PixelScanner {
               this._lastUpdate.getTime() + this._minNotifyInterval;
             if (now >= nextUpdate) {
               // Yes, notify immediately
-              clearTimeout(this._notifyTimeout);
-              this._notifyTimeout = undefined;
+              clearTimeout(this._notifyTimeoutId);
+              this._notifyTimeoutId = undefined;
               this._notify(now);
-            } else if (!this._notifyTimeout) {
+            } else if (!this._notifyTimeoutId) {
               // Otherwise schedule the notification for later
-              this._notifyTimeout = setTimeout(
+              this._notifyTimeoutId = setTimeout(
                 () => this._notify(nextUpdate),
                 nextUpdate - now
               );
@@ -253,14 +253,14 @@ export class PixelScanner {
     return this._queue.run(async () => {
       // Check if a scan was already started
       if (this._scannerListener) {
-        if (this._emulatorTimeout) {
+        if (this._emulatorTimeoutId) {
           // Cancel scanning emulation
-          clearTimeout(this._emulatorTimeout);
-          this._emulatorTimeout = undefined;
+          clearTimeout(this._emulatorTimeoutId);
+          this._emulatorTimeoutId = undefined;
         } else {
           // Cancel any scheduled user notification
-          clearTimeout(this._notifyTimeout);
-          this._notifyTimeout = undefined;
+          clearTimeout(this._notifyTimeoutId);
+          this._notifyTimeoutId = undefined;
           // Stop scanning
           await MainScanner.removeListener(this._scannerListener);
         }
@@ -318,7 +318,7 @@ export class PixelScanner {
 
   private _emulateScan(): void {
     // Around 5 scan events per Pixel per second
-    this._emulatorTimeout = setTimeout(() => {
+    this._emulatorTimeoutId = setTimeout(() => {
       this._emulateScan();
       for (let i = 1; i <= this._emulatedCount; ++i) {
         this._scannerListener?.(PixelScanner._generateScannedPixel(i));

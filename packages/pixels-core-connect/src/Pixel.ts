@@ -151,6 +151,12 @@ export class PixelError extends Error {
 }
 
 /**
+ * Class used by {@link Pixel} to throw errors caused by a timeout.
+ * @category Pixel
+ */
+export class PixelErrorTimeout extends PixelError {}
+
+/**
  * Represents a Pixels die.
  * Most of its methods require the instance to be connected to the Pixel device.
  * Call the {@link connect} method to initiate a connection.
@@ -171,6 +177,9 @@ export class Pixel extends PixelInfoNotifier {
 
   // Pixel data
   private _info: Mutable<PixelInfo>;
+
+  // Clean-up
+  private _disposeFunc: () => void;
 
   /** Toggle logging information about each send and received message. */
   get logMessages(): boolean {
@@ -289,7 +298,11 @@ export class Pixel extends PixelInfoNotifier {
       rollState: info?.rollState ?? "unknown",
       currentFace: info?.currentFace ?? 0,
     };
-    // TODO clean up events on release
+
+    this._session = session;
+    this._status = "disconnected"; //TODO use the getLastConnectionStatus()
+
+    // Listen to session connection status changes
     session.setConnectionEventListener(({ connectionStatus }) => {
       if (connectionStatus !== "connected" && connectionStatus !== "ready") {
         this._updateStatus(
@@ -299,10 +312,9 @@ export class Pixel extends PixelInfoNotifier {
         );
       }
     });
-    this._session = session;
-    this._status = "disconnected"; //TODO use the getLastConnectionStatus()
+
     // Subscribe to roll messages and emit roll event
-    this.addMessageListener("rollState", (msgOrType) => {
+    const rollStateListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as RollState;
       const roll = {
         state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
@@ -323,9 +335,11 @@ export class Pixel extends PixelInfoNotifier {
       if (roll.state === "onFace") {
         this._evEmitter.emit("roll", roll.face);
       }
-    });
+    };
+    this.addMessageListener("rollState", rollStateListener);
+
     // Subscribe to battery messages and emit battery event
-    this.addMessageListener("batteryLevel", (msgOrType) => {
+    const batterLevelListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as BatteryLevel;
       const battery = {
         level: msg.levelPercent,
@@ -344,19 +358,23 @@ export class Pixel extends PixelInfoNotifier {
       if (levelChanged || chargingChanged) {
         this._evEmitter.emit("battery", battery);
       }
-    });
+    };
+    this.addMessageListener("batteryLevel", batterLevelListener);
+
     // Subscribe to rssi messages and emit event
-    this.addMessageListener("rssi", (msgOrType) => {
+    const rssiListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as Rssi;
       if (msg.value !== this._info.rssi) {
         this._info.rssi = msg.value;
         this.emitPropertyEvent("rssi");
         this._evEmitter.emit("rssi", msg.value);
       }
-    });
+    };
+    this.addMessageListener("rssi", rssiListener);
+
     // Subscribe to user message requests
-    this.addMessageListener("notifyUser", (message: MessageOrType) => {
-      const msg = message as NotifyUser;
+    const notifyUserListener = (msgOrType: MessageOrType) => {
+      const msg = msgOrType as NotifyUser;
       this._evEmitter.emit("userMessage", {
         message: msg.message,
         withCancel: msg.cancel,
@@ -368,72 +386,123 @@ export class Pixel extends PixelInfoNotifier {
           );
         },
       });
-    });
+    };
+    this.addMessageListener("notifyUser", notifyUserListener);
+
     // Subscribe to remote action requests
-    this.addMessageListener("remoteAction", (message: MessageOrType) => {
-      const msg = message as RemoteAction;
+    const remoteActionListener = (msgOrType: MessageOrType) => {
+      const msg = msgOrType as RemoteAction;
       this._evEmitter.emit("remoteAction", msg.actionId);
-    });
+    };
+    this.addMessageListener("remoteAction", remoteActionListener);
+
+    // Unmount function
+    this._disposeFunc = () => {
+      session.setConnectionEventListener(undefined);
+      this.addMessageListener("rollState", rollStateListener);
+      this.addMessageListener("batteryLevel", batterLevelListener);
+      this.addMessageListener("rssi", rssiListener);
+      this.addMessageListener("notifyUser", notifyUserListener);
+      this.addMessageListener("remoteAction", remoteActionListener);
+    };
+  }
+
+  /**
+   * /!\ Internal, don't call this function ;)
+   */
+  private _dispose() {
+    // TODO unused at the moment!
+    // Unhook from events
+    this._disposeFunc();
   }
 
   /**
    * Asynchronously tries to connect to the Pixel. Throws on connection error.
+   * @param timeoutMs Delay before giving up (may be ignored when having concurrent
+   *                  calls to connect()). It may take longer than the given timeout
+   *                  for the function to return.
    * @returns A promise resolving to this instance.
    */
-  async connect(): Promise<Pixel> {
-    //TODO implement connection timeout
+  async connect(timeoutMs = 0): Promise<Pixel> {
+    // Timeout
+    let hasTimedOut = false;
+    const timeoutId =
+      timeoutMs > 0 &&
+      setTimeout(() => {
+        // Disconnect on timeout
+        hasTimedOut = true;
+        this._session.disconnect().catch(() => {});
+      }, timeoutMs);
 
-    // First connect to the peripheral
-    await this._session.connect();
+    try {
+      // Connect to the peripheral
+      await this._session.connect();
 
-    // Then prepare our instance for communications with the Pixel
-    if (this.status === "connecting") {
-      // Notify we're connected and proceeding with die identification
-      this._updateStatus("identifying");
+      // And prepare our instance for communications with the Pixels die
+      if (this.status === "connecting") {
+        // Notify we're connected and proceeding with die identification
+        this._updateStatus("identifying");
 
-      try {
-        await this._internalSetup();
-
-        // We're ready!
-        //@ts-expect-error the status could have changed during the above async call
-        if (this.status === "identifying") {
-          this._updateStatus("ready");
-
-          // Notify battery state
-          this._evEmitter.emit("battery", {
-            level: this._info.batteryLevel,
-            isCharging: this._info.isCharging,
-          });
-
-          // We don't raise roll and roll state events as those should occur
-          // only when the die is actually moved
-        }
-      } catch (error) {
-        // Disconnect but ignore any error
         try {
-          await this._session.disconnect();
-        } catch {}
-        throw error;
-      }
-    } else if (this.status === "identifying") {
-      // TODO connection timeout
-      await new Promise<void>((resolve) => {
-        const onStatusChange = (status: PixelStatus) => {
-          if (status !== "identifying") {
-            this.removeEventListener("status", onStatusChange);
-            resolve();
-          }
-        };
-        this.addEventListener("status", onStatusChange);
-      });
-    }
+          await this._internalSetup();
 
-    // Check if a status change occurred during the connection process
-    if (this.status !== "ready") {
-      throw new PixelError(
-        this,
-        `Connection cancelled (current state is ${this.status})`
-      );
+          // We're ready!
+          //@ts-expect-error the status could have changed during the above async call
+          if (this.status === "identifying") {
+            this._updateStatus("ready");
+
+            // Notify battery state
+            this._evEmitter.emit("battery", {
+              level: this._info.batteryLevel,
+              isCharging: this._info.isCharging,
+            });
+
+            // We don't raise roll and roll state events as those should occur
+            // only when the die is actually moved
+          }
+        } catch (error) {
+          // Disconnect but ignore any error
+          try {
+            await this._session.disconnect();
+          } catch {}
+          throw error;
+        }
+      } else if (this.status === "identifying") {
+        // Another call to connect has put us in identifying state,
+        // just wait for status change (in this case we ignore the timeout)
+        // since the connection process is driven from another call to connect)
+        await new Promise<void>((resolve) => {
+          const onStatusChange = (status: PixelStatus) => {
+            if (status !== "identifying") {
+              this.removeEventListener("status", onStatusChange);
+              resolve();
+            }
+          };
+          this.addEventListener("status", onStatusChange);
+        });
+      }
+
+      // Check if a status change occurred during the connection process
+      if (this.status !== "ready") {
+        throw new PixelError(
+          this,
+          `Connection cancelled (current state is ${this.status})`
+        );
+      }
+    } catch (e) {
+      // Check if error was (likely) caused by the connection timeout
+      if (hasTimedOut) {
+        throw new PixelErrorTimeout(
+          this,
+          `Connection timeout after ${timeoutMs} ms`
+        );
+      } else {
+        throw e;
+      }
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
 
     return this;
@@ -917,12 +986,20 @@ export class Pixel extends PixelInfoNotifier {
     this._log("Waiting on identification message");
     const resp = await this.sendAndWaitForResponse("whoAreYou", "iAmADie");
     const iAmADie = resp as IAmADie;
+
+    if (this._info.pixelId !== iAmADie.pixelId) {
+      throw new PixelError(
+        this,
+        `Pixel mismatch from identification: ${iAmADie.pixelId}`
+      );
+    }
+
+    // Update properties
     this._info.ledCount = iAmADie.ledCount;
     this._info.designAndColor =
       getValueKeyName(iAmADie.designAndColor, PixelDesignAndColorValues) ??
       "unknown";
     this._info.pixelId = iAmADie.pixelId;
-    // TODO Check pixelId not changed
     const firmwareDate = new Date(1000 * iAmADie.buildTimestamp);
     if (this._info.firmwareDate.getTime() !== firmwareDate.getTime()) {
       this._info.firmwareDate = firmwareDate;
