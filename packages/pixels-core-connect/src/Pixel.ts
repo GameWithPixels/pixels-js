@@ -200,12 +200,12 @@ export class Pixel extends PixelInfoNotifier {
 
   /** Gets the unique id assigned by the OS to Pixel Bluetooth peripheral. */
   get systemId(): string {
-    return this._session.pixelSystemId;
+    return this._info.systemId;
   }
 
   /** Gets the unique Pixel id for the die, may be 0 until connected to device. */
   get pixelId(): number {
-    return this._info.pixelId ?? 0;
+    return this._info.pixelId;
   }
 
   /** Gets the Pixel name, may be empty until connected to device. */
@@ -215,7 +215,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /** Gets the number of LEDs for this Pixels die, may be 0 until connected to device. */
   get ledCount(): number {
-    return this._info.ledCount ?? 0;
+    return this._info.ledCount;
   }
 
   /** Gets the Pixel design and color. */
@@ -274,23 +274,21 @@ export class Pixel extends PixelInfoNotifier {
    * @param session The session used to communicate with the Pixel.
    * @param info Some optional extra info.
    */
-  constructor(session: PixelSession, info?: PixelInfo) {
+  constructor(session: PixelSession, info?: Partial<PixelInfo>) {
     super();
-    this._info = info
-      ? { ...info }
-      : {
-          systemId: "",
-          pixelId: 0,
-          name: "",
-          ledCount: 0,
-          designAndColor: "unknown",
-          firmwareDate: new Date(),
-          rssi: 0,
-          batteryLevel: 0,
-          isCharging: false,
-          rollState: "unknown",
-          currentFace: 0,
-        };
+    this._info = {
+      systemId: session.pixelSystemId,
+      pixelId: info?.pixelId ?? 0,
+      name: info?.name ?? "",
+      ledCount: info?.ledCount ?? 0,
+      designAndColor: info?.designAndColor ?? "unknown",
+      firmwareDate: info?.firmwareDate ?? new Date(),
+      rssi: info?.rssi ?? 0,
+      batteryLevel: info?.batteryLevel ?? 0,
+      isCharging: info?.isCharging ?? false,
+      rollState: info?.rollState ?? "unknown",
+      currentFace: info?.currentFace ?? 0,
+    };
     // TODO clean up events on release
     session.setConnectionEventListener(({ connectionStatus }) => {
       if (connectionStatus !== "connected" && connectionStatus !== "ready") {

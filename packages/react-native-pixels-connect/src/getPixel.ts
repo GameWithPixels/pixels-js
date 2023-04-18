@@ -20,7 +20,7 @@ const _pixels = new Map<string, Pixel>();
  * @returns A {@link Pixel} instance.
  */
 export function getPixel(
-  pixel: string | number | Pick<ScannedPixel, "systemId">
+  pixel: string | number | Partial<ScannedPixel>
 ): Pixel {
   const systemdId =
     typeof pixel === "string"
@@ -34,7 +34,10 @@ export function getPixel(
   // Keep Pixel instances
   let thePixel = _pixels.get(systemdId);
   if (!thePixel) {
-    thePixel = new Pixel(new BleSession(systemdId));
+    thePixel = new Pixel(
+      new BleSession(systemdId),
+      typeof pixel === "object" ? pixel : undefined
+    );
     _pixels.set(systemdId, thePixel);
   }
   return thePixel;
