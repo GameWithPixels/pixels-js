@@ -19,7 +19,7 @@ export default function ({ title, taskChain }: TaskChainComponentProps) {
         <TaskContainer title={title} taskStatus={taskStatus}>
           {taskStatus === "faulted" ? (
             <Text
-              variant="bodyLarge"
+              variant="titleLarge"
               style={{ color: theme.colors.error }}
             >{`${taskChain.lastError}`}</Text>
           ) : (

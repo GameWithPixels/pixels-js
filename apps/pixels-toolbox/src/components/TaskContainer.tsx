@@ -29,13 +29,13 @@ export default function ({
             {taskStatus === "running" ? (
               <ActivityIndicator />
             ) : (
-              <Text style={{ fontSize: 20 }}>
+              <Text variant="headlineMedium">
                 {getTaskResultEmoji(taskStatus)}
               </Text>
             )}
           </FastBox>
           <Text
-            variant="titleMedium"
+            variant="titleLarge"
             style={{ fontWeight: isSubTask ? "normal" : "bold" }}
           >
             {title}
