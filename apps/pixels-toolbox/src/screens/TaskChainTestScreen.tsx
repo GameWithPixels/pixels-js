@@ -48,7 +48,7 @@ function MyTest1({
     )
     .withStatusChanged(onTaskStatus);
   return (
-    <FastVStack>
+    <FastVStack gap={5}>
       <Text>
         Test {something}: {taskChain.status}
       </Text>
@@ -90,7 +90,7 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
     )
     .withStatusChanged(onTaskStatus);
   return (
-    <FastVStack>
+    <FastVStack gap={5}>
       <Text>
         Test {somethingElse}: {taskChain.status}
       </Text>
@@ -121,12 +121,22 @@ function TestPage() {
       ))
     );
   return (
-    <FastVStack w="100%" h="100%" px="3" py="1">
-      <Button onPress={() => setCancel(true)}>Cancel</Button>
+    <FastVStack gap={20}>
+      <Button mode="contained-tonal" onPress={() => setCancel(true)}>
+        Cancel
+      </Button>
       {taskChain.render()}
       <Text>The end</Text>
-      <Button onPress={() => setSomething((s) => s + "@")}>Change Test1</Button>
-      <Button onPress={() => setSomethingElse((i) => i + 1)}>
+      <Button
+        mode="contained-tonal"
+        onPress={() => setSomething((s) => s + "@")}
+      >
+        Change Test1
+      </Button>
+      <Button
+        mode="contained-tonal"
+        onPress={() => setSomethingElse((i) => i + 1)}
+      >
         Change Test2
       </Button>
       <Text>Status: {taskChain.status}</Text>
