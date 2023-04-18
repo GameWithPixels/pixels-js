@@ -1,3 +1,4 @@
+import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import { FastHStack } from "@systemic-games/react-native-base-components";
 import {
   Color,
@@ -72,6 +73,43 @@ function _playSoundOnResult(result: TaskStatus) {
 function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
   const boardOrDie = getBoardOrDie(settings.formFactor);
   return boardOrDie === "board" ? "coil" : boardOrDie;
+}
+
+function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
+  let faces: number[];
+  switch (pixel.ledCount) {
+    case 20:
+      faces = [5, 10, 20];
+      break;
+    case 12:
+      faces = [3, 6, 12];
+      break;
+    case 10:
+      faces = [2, 5, 10];
+      break;
+    case 8:
+      faces = [2, 4, 8];
+      break;
+    case 6:
+      faces = [2, 3, 6];
+      break;
+    case 4:
+      faces = [2, 3, 4];
+      break;
+    default:
+      throw new Error(`Unsupported LED count ${pixel.ledCount}`);
+  }
+  assert(faces.length === 3);
+  switch (step) {
+    case "1":
+      return faces[0];
+    case "2":
+      return faces[1];
+    case "3":
+      return faces[2];
+    default:
+      assertNever(step);
+  }
 }
 
 async function _makeUserCancellable(
@@ -612,11 +650,11 @@ export function WaitFaceUp({
           (abortSignal) =>
             ValidationTests.waitFaceUp(
               pixel,
-              5, // Fixme, this should be different for each die type
+              _getFaceUp(pixel, "1"),
               Color.magenta,
               abortSignal
             ),
-          `Aborted wait for face 5 up`
+          `Aborted wait for face ${_getFaceUp(pixel, "1")} up`
         ),
       [pixel]
     ),
@@ -641,11 +679,40 @@ export function WaitFaceUp({
             (abortSignal) =>
               ValidationTests.waitFaceUp(
                 pixel,
-                10, // Fixme, this should be different for each die type
+                _getFaceUp(pixel, "2"),
                 Color.yellow,
                 abortSignal
               ),
-            "Aborted wait for face 10 up"
+            `Aborted wait for face ${_getFaceUp(pixel, "2")} up`
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        children: !hasElapsed ? (
+          <Text variant="labelLarge">{t("placeNewBlinkingFaceUp")}</Text>
+        ) : (
+          <MessageYesNo
+            message={t("isBlinkingFaceUp")}
+            onYes={() => userAbort?.()}
+            onNo={() => resetTimeout()}
+          />
+        ),
+      })
+    )
+    .chainWith(
+      React.useCallback(
+        (abortSignal) =>
+          _makeUserCancellable(
+            abortSignal,
+            setUserAbort,
+            (abortSignal) =>
+              ValidationTests.waitFaceUp(
+                pixel,
+                _getFaceUp(pixel, "3"),
+                Color.cyan,
+                abortSignal
+              ),
+            `Aborted wait for face ${_getFaceUp(pixel, "3")} up`
           ),
         [pixel]
       ),
