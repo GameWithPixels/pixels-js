@@ -326,9 +326,9 @@ export function PixelSwipeableCard({
       } else {
         if (isDisco) {
           if (dfuQueued) {
-            pixelDispatcher.dispatch("dequeueFirmwareUpdate");
+            pixelDispatcher.dispatch("dequeueDFU");
           } else {
-            pixelDispatcher.dispatch("queueFirmwareUpdate");
+            pixelDispatcher.dispatch("queueDFU");
           }
         } else {
           pixelDispatcher.dispatch("blink");

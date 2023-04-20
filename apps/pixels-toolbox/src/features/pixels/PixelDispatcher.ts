@@ -34,34 +34,37 @@ import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
 import getDefaultProfile from "~/getDefaultProfile";
 
-export type PixelDispatcherAction =
-  | "connect"
-  | "disconnect"
-  | "reportRssi"
-  | "blink"
-  | "blinkId"
-  | "playRainbow"
-  | "calibrate"
-  | "updateProfile"
-  | "queueFirmwareUpdate"
-  | "dequeueFirmwareUpdate"
-  | "exitValidationMode"
-  | "discharge"
-  | "stopDischarge"
-  | "enableCharging"
-  | "disableCharging";
+namespace PixelDispatcher {
+  export interface ActionMap {
+    connect: undefined;
+    disconnect: undefined;
+    reportRssi: undefined;
+    blink: undefined;
+    blinkId: undefined;
+    playRainbow: undefined;
+    calibrate: undefined;
+    updateProfile: undefined;
+    queueDFU: undefined;
+    dequeueDFU: undefined;
+    exitValidation: undefined;
+    discharge: number;
+    enableCharging: boolean;
+  }
 
-export interface PixelDispatcherEventMap {
-  action: PixelDispatcherAction;
-  error: Error;
-  profileUpdateProgress: number | undefined;
-  status: PixelStatus;
-  durationSinceLastActivity: number;
-  isDFUAvailable: boolean;
-  isDFUActive: boolean;
-  isDFUQueued: boolean;
-  dfuState: DfuState;
-  dfuProgress: number;
+  export type ActionName = keyof ActionMap;
+
+  export interface EventMap {
+    action: ActionName;
+    error: Error;
+    profileUpdateProgress: number | undefined;
+    status: PixelStatus;
+    durationSinceLastActivity: number;
+    isDFUAvailable: boolean;
+    isDFUActive: boolean;
+    isDFUQueued: boolean;
+    dfuState: DfuState;
+    dfuProgress: number;
+  }
 }
 
 const _instances = new Map<number, PixelDispatcher>();
@@ -70,11 +73,11 @@ const _pendingDFUs: PixelDispatcher[] = [];
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
-export default class PixelDispatcher extends PixelInfoNotifier {
+class PixelDispatcher extends PixelInfoNotifier {
   private _scannedPixel: ScannedPixelNotifier;
   private _pixel: Pixel;
   private readonly _evEmitter =
-    createTypedEventEmitter<PixelDispatcherEventMap>();
+    createTypedEventEmitter<PixelDispatcher.EventMap>();
   private _lastActivityMs = 0;
   private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
   private _isUpdatingProfile = false;
@@ -219,21 +222,24 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     this._updateLastActivity();
   }
 
-  addEventListener<K extends keyof PixelDispatcherEventMap>(
+  addEventListener<K extends keyof PixelDispatcher.EventMap>(
     eventName: K,
-    listener: EventReceiver<PixelDispatcherEventMap[K]>
+    listener: EventReceiver<PixelDispatcher.EventMap[K]>
   ): void {
     this._evEmitter.addListener(eventName, listener);
   }
 
-  removeEventListener<K extends keyof PixelDispatcherEventMap>(
+  removeEventListener<K extends keyof PixelDispatcher.EventMap>(
     eventName: K,
-    listener: EventReceiver<PixelDispatcherEventMap[K]>
+    listener: EventReceiver<PixelDispatcher.EventMap[K]>
   ): void {
     this._evEmitter.removeListener(eventName, listener);
   }
 
-  dispatch(action: PixelDispatcherAction) {
+  dispatch<T extends PixelDispatcher.ActionName>(
+    action: T,
+    params?: PixelDispatcher.ActionMap[T]
+  ) {
     switch (action) {
       case "connect":
         this._guard(this._pixel.connect());
@@ -257,28 +263,22 @@ export default class PixelDispatcher extends PixelInfoNotifier {
         this._guard(this._calibrate());
         break;
       case "discharge":
-        this._guard(this._discharge(50));
-        break;
-      case "stopDischarge":
-        this._guard(this._discharge(0));
+        this._guard(this._discharge((params as number) ?? 50));
         break;
       case "updateProfile":
         this._guard(this._updateProfile());
         break;
-      case "queueFirmwareUpdate":
+      case "queueDFU":
         this._queueDFU();
         break;
-      case "dequeueFirmwareUpdate":
+      case "dequeueDFU":
         this._dequeueDFU();
         break;
-      case "exitValidationMode":
+      case "exitValidation":
         this._guard(this._exitValidationMode());
         break;
       case "enableCharging":
-        this._guard(this._forceEnableCharging(true));
-        break;
-      case "disableCharging":
-        this._guard(this._forceEnableCharging(false));
+        this._guard(this._forceEnableCharging((params as boolean) ?? false));
         break;
       default:
         assertNever(action);
@@ -361,9 +361,9 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     }
   }
 
-  private async _discharge(currentMA: number): Promise<void> {
+  private async _discharge(current: number): Promise<void> {
     if (this.isReady) {
-      await pixelDischarge(this._pixel, currentMA);
+      await pixelDischarge(this._pixel, current);
     }
   }
 
@@ -460,3 +460,5 @@ export default class PixelDispatcher extends PixelInfoNotifier {
     }
   }
 }
+
+export default PixelDispatcher;

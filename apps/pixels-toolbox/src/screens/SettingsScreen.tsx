@@ -13,13 +13,12 @@ import {
   RadioButton,
   Text,
   Title,
-  useTheme,
 } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
-import gs from "~/styles";
+import gs, { useModalStyle } from "~/styles";
 
 function toYesNo(value: boolean) {
   return value ? "Yes" : "No";
@@ -195,20 +194,17 @@ function AppInfoModal({
   visible: boolean;
   onDismiss: () => void;
 }) {
-  const theme = useTheme();
-  const containerStyle = {
-    padding: 20,
-    backgroundColor: theme.colors.background,
-  };
+  const modalStyle = useModalStyle();
   return (
     <Portal>
       <Modal
         visible={visible}
         onDismiss={onDismiss}
-        contentContainerStyle={containerStyle}
+        contentContainerStyle={modalStyle}
       >
         <ScrollView>
           <Title>App Info</Title>
+          <Divider style={{ height: 2, marginTop: 10 }} />
           <List.Section>
             <List.Item title={`Channel: ${Updates.channel ?? "Unknown"}`} />
             <List.Item

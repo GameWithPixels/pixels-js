@@ -9,9 +9,7 @@ import { Text } from "react-native-paper";
 import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
-import PixelDispatcher, {
-  PixelDispatcherAction,
-} from "~/features/pixels/PixelDispatcher";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import useFocusScannedPixelNotifiers from "~/features/pixels/hooks/useFocusScannedPixelNotifiers";
 import gs from "~/styles";
 
@@ -54,7 +52,7 @@ export default React.memo(function ({
 
   // Actions dispatched to all Pixels
   const dispatchAll = React.useCallback(
-    (action: PixelDispatcherAction) =>
+    (action: PixelDispatcher.ActionName) =>
       scannedPixels.forEach((sp) =>
         PixelDispatcher.getInstance(sp).dispatch(action)
       ),
@@ -93,7 +91,7 @@ export default React.memo(function ({
             dispatchAll("updateProfile");
             break;
           case 4:
-            dispatchAll("queueFirmwareUpdate");
+            dispatchAll("queueDFU");
             break;
         }
       }

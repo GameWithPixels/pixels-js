@@ -1,4 +1,6 @@
-import { StyleSheet } from "react-native";
+import React from "react";
+import { StyleSheet, ViewStyle } from "react-native";
+import { useTheme } from "react-native-paper";
 
 // Global style
 const gs = StyleSheet.create({
@@ -48,3 +50,18 @@ const gs = StyleSheet.create({
 });
 
 export default gs;
+
+export function useModalStyle(): ViewStyle {
+  const theme = useTheme();
+  return React.useMemo(
+    () => ({
+      margin: 10,
+      padding: 10,
+      borderWidth: 2,
+      borderRadius: theme.roundness,
+      backgroundColor: theme.colors.background,
+      borderColor: theme.colors.onBackground,
+    }),
+    [theme]
+  );
+}

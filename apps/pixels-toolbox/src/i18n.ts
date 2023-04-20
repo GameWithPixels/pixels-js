@@ -71,25 +71,14 @@ i18n
           done: "Done",
           lowTemp: "Low Temperature",
           highTemp: "High Temperature",
-          // Home
-          pixelsScanner: "Pixels Scanner",
-          selectFirmware: "Select Firmware",
-          tapToSelectFirmware: "Tap To Select Firmware",
-          screenWithSize: "Screen: {{width}}x{{height}}",
-          osNameWithVersion: "OS: {{name}} {{version}}",
-          applyToAllRelevantPixels: "Apply To All Relevant Pixels",
-          pixelsWithCount: "{{count}} Pixels",
-          connect: "Connect",
-          disconnect: "Disconnect",
-          blink: "Blink",
-          updateProfile: "Update Profile",
-          updateBootloaderAndFirmware: "Update Bootloader & Firmware",
-          // Select Pixel
+
+          // Pixels Scan List
           noPixelsFound: "No Pixels found so far...",
           scannedPixelsWithCount: "{{count}} Scanned Pixels",
           tapOnItemToSelect: "Tap On Item To Select",
           clearScanList: "Clear Scan List",
-          // Pixel card
+
+          // Pixels Info
           dBWithValue: "{{value}}dB",
           percentWithValue: "{{value}}%",
           voltageWithValue: "{{value}}V",
@@ -130,8 +119,23 @@ i18n
           blinkId: "Blink Id",
           // updatingFirmware: "Updating Firmware",
           updatingProfile: "Updating Profile",
+          dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
 
-          // Validation
+          // Home Screen
+          pixelsScanner: "Pixels Scanner",
+          selectFirmware: "Select Firmware",
+          tapToSelectFirmware: "Tap To Select Firmware",
+          screenWithSize: "Screen: {{width}}x{{height}}",
+          osNameWithVersion: "OS: {{name}} {{version}}",
+          applyToAllRelevantPixels: "Apply To All Relevant Pixels",
+          pixelsWithCount: "{{count}} Pixels",
+          connect: "Connect",
+          disconnect: "Disconnect",
+          blink: "Blink",
+          updateProfile: "Update Profile",
+          updateBootloaderAndFirmware: "Update Bootloader & Firmware",
+
+          // Validation Screen
           factoryValidation: "Factory Validation",
           openMenuToGoToValidation: "Open Menu To Go To Validation",
           validateBoardNoCoil: "Validate FPC Board No Coil",
@@ -185,7 +189,8 @@ i18n
           exitValidationMode: "Exit Validation Mode",
           waitDieInCase: "Wait Die In Case",
           placeDieInCaseAndCloseLid: "Place die in case and close the lid",
-          // Roll Demo
+
+          // Roll Screen
           rollDemo: "Roll Demo",
           animationsEditor: "Animations Editor",
           diceRenderer: "3D Dice Renderer",
@@ -232,25 +237,14 @@ i18n
           done: "充电完成",
           lowTemp: "低温",
           highTemp: "高温",
-          // Home
-          pixelsScanner: "骰子扫描器",
-          selectFirmware: "选择固件",
-          tapToSelectFirmware: "点击选择固件",
-          screenWithSize: "屏幕: {{width}}x{{height}}",
-          osNameWithVersion: "OS: {{name}} {{version}}",
-          applyToAllRelevantPixels: "适用于所有相关的骰子",
-          pixelsWithCount: "{{count}} 个骰子",
-          connect: "连接",
-          disconnect: "断开联系",
-          blink: "闪烁",
-          updateProfile: "更新资料",
-          updateBootloaderAndFirmware: "更新引导装载程序和固件",
-          // Select Pixel
+
+          // Pixels Scan List
           noPixelsFound: "没有发现骰子",
           scannedPixelsWithCount: "{{count}} 扫描后的骰子",
           tapOnItemToSelect: "点击型号进行选择",
           clearScanList: "清空扫描清单",
-          // Pixel card
+
+          // Pixel Info
           dBWithValue: "{{value}}dB",
           percentWithValue: "{{value}}%",
           voltageWithValue: "{{value}}V",
@@ -291,8 +285,23 @@ i18n
           blinkId: "闪烁ID",
           // updatingFirmware: "更新固件中",
           updatingProfile: "Updating Profile",
+          dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
 
-          // Validation
+          // Home Screen
+          pixelsScanner: "骰子扫描器",
+          selectFirmware: "选择固件",
+          tapToSelectFirmware: "点击选择固件",
+          screenWithSize: "屏幕: {{width}}x{{height}}",
+          osNameWithVersion: "OS: {{name}} {{version}}",
+          applyToAllRelevantPixels: "适用于所有相关的骰子",
+          pixelsWithCount: "{{count}} 个骰子",
+          connect: "连接",
+          disconnect: "断开联系",
+          blink: "闪烁",
+          updateProfile: "更新资料",
+          updateBootloaderAndFirmware: "更新引导装载程序和固件",
+
+          // Validation Screen
           factoryValidation: "工厂测试",
           openMenuToGoToValidation: "打开菜单进入测试模式",
           validateBoardNoCoil: "测试FPC光板（不带线圈）",

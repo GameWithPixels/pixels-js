@@ -1,7 +1,9 @@
+import Slider from "@react-native-community/slider";
 import { getValueKeyName } from "@systemic-games/pixels-core-utils";
 import {
   FastHStack,
   FastVStack,
+  useDisclose,
 } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
@@ -21,13 +23,14 @@ import {
   Portal,
   Text,
   useTheme,
+  ModalProps,
 } from "react-native-paper";
 
 import ProgressBar from "~/components/ProgressBar";
 import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { capitalize } from "~/i18n";
-import gs from "~/styles";
+import gs, { useModalStyle } from "~/styles";
 
 interface TextEntryBaseProps extends React.PropsWithChildren {
   title: string;
@@ -149,69 +152,112 @@ function BottomButtons({
 }: {
   pixelDispatcher: PixelDispatcher;
 }) {
+  const { isOpen, onOpen, onClose } = useDisclose();
   const { t } = useTranslation();
   return (
-    <FastHStack>
-      <FastVStack flex={1} mr={2}>
-        <Button onPress={() => pixelDispatcher.dispatch("connect")}>
-          {t("connect")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("discharge")}>
-          {t("discharge")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("enableCharging")}>
-          {t("enableCharging")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-          {t("blink")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
-          {t("blinkId")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
-          {t("calibrate")}
-        </Button>
-      </FastVStack>
-      <FastVStack flex={1} ml={2}>
-        <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
-          {t("disconnect")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("stopDischarge")}>
-          {t("stopDischarge")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("disableCharging")}>
-          {t("disableCharging")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
-          {t("rainbow")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
-          {t("resetProfile")}
-        </Button>
-        <Button onPress={() => pixelDispatcher.dispatch("exitValidationMode")}>
-          {t("exitValidationMode")}
-        </Button>
-      </FastVStack>
-    </FastHStack>
+    <>
+      <FastHStack>
+        <FastVStack flex={1} mr={2}>
+          <Button onPress={() => pixelDispatcher.dispatch("connect")}>
+            {t("connect")}
+          </Button>
+          <Button onPress={onOpen}>{t("discharge")}</Button>
+          <Button onPress={() => pixelDispatcher.dispatch("enableCharging")}>
+            {t("enableCharging")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("blink")}>
+            {t("blink")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
+            {t("blinkId")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
+            {t("calibrate")}
+          </Button>
+        </FastVStack>
+        <FastVStack flex={1} ml={2}>
+          <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
+            {t("disconnect")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("discharge", 0)}>
+            {t("stopDischarge")}
+          </Button>
+          <Button
+            onPress={() => pixelDispatcher.dispatch("enableCharging", false)}
+          >
+            {t("disableCharging")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
+            {t("rainbow")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
+            {t("resetProfile")}
+          </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("exitValidation")}>
+            {t("exitValidationMode")}
+          </Button>
+        </FastVStack>
+      </FastHStack>
+
+      <DischargeModal
+        pixelDispatcher={pixelDispatcher}
+        visible={isOpen}
+        onDismiss={onClose}
+      />
+    </>
+  );
+}
+
+function DischargeModal({
+  pixelDispatcher,
+  ...props
+}: {
+  pixelDispatcher: PixelDispatcher;
+} & Omit<ModalProps, "children">) {
+  // Discharge current in mA
+  const [current, setCurrent] = React.useState(50);
+  React.useEffect(() => {
+    if (props.visible) {
+      pixelDispatcher.dispatch("discharge", props.visible && current);
+    }
+  }, [current, pixelDispatcher, props.visible]);
+  const modalStyle = useModalStyle();
+  const { t } = useTranslation();
+  return (
+    <Portal>
+      <Modal contentContainerStyle={modalStyle} {...props}>
+        <Text style={gs.mv3} variant="bodyLarge">
+          {t("dischargeCurrentWithValue", { current })}
+        </Text>
+        <Slider
+          value={current}
+          minimumValue={10}
+          maximumValue={160}
+          step={10}
+          onValueChange={setCurrent}
+        />
+        <FastHStack pt={20} justifyContent="space-around">
+          <Button
+            onPress={() => {
+              pixelDispatcher.dispatch("discharge", 0);
+              props.onDismiss?.();
+            }}
+          >
+            {t("cancel")}
+          </Button>
+          <Button onPress={props.onDismiss}>{t("ok")}</Button>
+        </FastHStack>
+      </Modal>
+    </Portal>
   );
 }
 
 function FirmwareUpdateModal({ updateProgress }: { updateProgress?: number }) {
-  const theme = useTheme();
+  const modalStyle = useModalStyle();
   const { t } = useTranslation();
   return (
     <Portal>
-      <Modal
-        visible={!!updateProgress}
-        contentContainerStyle={{
-          backgroundColor: theme.colors.background,
-          margin: 10,
-          padding: 20,
-          borderColor: theme.colors.onPrimary,
-          borderWidth: 3,
-          borderRadius: 8,
-        }}
-      >
+      <Modal visible={!!updateProgress} contentContainerStyle={modalStyle}>
         <Text style={gs.mv3} variant="bodyLarge">
           {t("updatingProfile") + t("colonSeparator")}
         </Text>
@@ -301,14 +347,12 @@ export function PixelDetails({
           </View>
           <BaseInfo pixel={pixel} />
           <TelemetryInfo pixel={pixel} />
-        </Card.Content>
-        {lastError ? (
-          <ErrorCard error={lastError} clear={clearError} />
-        ) : (
-          <Card.Actions>
+          {lastError ? (
+            <ErrorCard error={lastError} clear={clearError} />
+          ) : (
             <BottomButtons pixelDispatcher={pixelDispatcher} />
-          </Card.Actions>
-        )}
+          )}
+        </Card.Content>
       </Card>
 
       <FirmwareUpdateModal updateProgress={updateProgress} />
