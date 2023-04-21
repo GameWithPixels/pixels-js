@@ -146,6 +146,7 @@ export class PixelError extends Error {
 
   constructor(pixel: Pixel, message: string) {
     super(`Pixel ${pixel.name}: ${message}`);
+    this.name = "PixelError";
     this._pixel = pixel;
   }
 }

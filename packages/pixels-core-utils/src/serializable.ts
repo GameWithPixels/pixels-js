@@ -79,7 +79,12 @@ export function byteSizeOf<T extends object>(objOrArray: T | T[]): number {
   }
 }
 
-export class SerializationError extends Error {}
+export class SerializationError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "SerializationError";
+  }
+}
 
 function forEachSerializableProp(
   obj: object,

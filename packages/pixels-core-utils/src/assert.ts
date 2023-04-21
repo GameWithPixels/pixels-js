@@ -1,7 +1,12 @@
 /**
  * Base class for throwing assertion errors.
  */
-export class AssertionError extends Error {}
+export class AssertionError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "AssertionError";
+  }
+}
 
 /**
  * A typical assert function with an optional message.

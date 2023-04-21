@@ -20,12 +20,14 @@ export type TaskOperation = (abortSignal: AbortSignal) => Promise<unknown>;
 export class TaskCanceledError extends Error {
   constructor(testName: string) {
     super(`Task ${testName} canceled`);
+    this.name = "TaskCanceledError";
   }
 }
 
 export class TaskFaultedError extends Error {
   constructor(testName: string) {
     super(`Task ${testName} faulted`);
+    this.name = "TaskFaultedError";
   }
 }
 
