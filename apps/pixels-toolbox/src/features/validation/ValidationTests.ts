@@ -16,7 +16,7 @@ import {
   getFaceMask,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { TaskCanceledError, TaskFaultedError } from "../tasks/useTask";
+import { TaskCanceledError, TaskFaultedError } from "~/features/tasks/useTask";
 
 function vectNorm(x: number, y: number, z: number): number {
   return Math.sqrt(x * x + y * y + z * z);

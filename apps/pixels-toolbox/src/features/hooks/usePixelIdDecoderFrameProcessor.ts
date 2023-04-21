@@ -3,8 +3,9 @@ import React from "react";
 import { runOnJS } from "react-native-reanimated";
 import { Frame, useFrameProcessor } from "react-native-vision-camera";
 
-import { RbgColor } from "./../PixelIdDecoder";
 import usePixelIdDecoder from "./usePixelIdDecoder";
+
+import { RbgColor } from "~/features/pixels/PixelIdDecoder";
 
 export type FrameProcessor = (frame: Frame) => void;
 

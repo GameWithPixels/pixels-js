@@ -1,7 +1,7 @@
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import React from "react";
 
-import updateFirmware from "./updateFirmware";
+import updateFirmware from "~/features/dfu/updateFirmware";
 
 /**
  * Hook to upload a bootloader & firmware.

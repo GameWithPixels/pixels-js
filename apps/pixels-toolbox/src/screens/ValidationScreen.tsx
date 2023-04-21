@@ -31,8 +31,8 @@ import {
   WaitFaceUp,
   TurnOffDevice,
 } from "~/components/ValidationTestsComponents";
+import usePixelIdDecoderFrameProcessor from "~/features/hooks/usePixelIdDecoderFrameProcessor";
 import { DieType, DieTypes } from "~/features/pixels/DieType";
-import usePixelIdDecoderFrameProcessor from "~/features/pixels/hooks/usePixelIdDecoderFrameProcessor";
 import {
   getTaskResult,
   getTaskResultEmoji,

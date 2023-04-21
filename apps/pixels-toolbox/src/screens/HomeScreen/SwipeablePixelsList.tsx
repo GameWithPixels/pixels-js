@@ -9,8 +9,8 @@ import { Text } from "react-native-paper";
 import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
+import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import useFocusScannedPixelNotifiers from "~/features/pixels/hooks/useFocusScannedPixelNotifiers";
 import gs from "~/styles";
 
 function ListItem({

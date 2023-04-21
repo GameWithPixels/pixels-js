@@ -13,7 +13,7 @@ import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
+import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
 import { FirmwareUpdateProps } from "~/navigation";
 import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
