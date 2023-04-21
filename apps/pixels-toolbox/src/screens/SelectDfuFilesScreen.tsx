@@ -1,66 +1,131 @@
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   FastBox,
   FastHStack,
 } from "@systemic-games/react-native-base-components";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import React from "react";
-import { FlatList, Pressable } from "react-native";
-import { Card, Switch, Text } from "react-native-paper";
+import { FlatList, Pressable, StyleSheet } from "react-native";
+import { Button, Card, Switch, Text, useTheme } from "react-native-paper";
 
 import { useAppDispatch } from "~/app/hooks";
-import useAppDfuFilesBundles from "~/app/useAppDfuFilesBundles";
+import { store } from "~/app/store";
 import { AppPage } from "~/components/AppPage";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import { setSelectedDfuBundle } from "~/features/store/dfuBundlesSlice";
+import useAppDfuFilesBundles from "~/features/hooks/useAppDfuFilesBundles";
+import {
+  addImportedDfuBundle,
+  setSelectedDfuBundle,
+} from "~/features/store/dfuBundlesSlice";
 import { SelectDfuFilesProps } from "~/navigation";
 import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+
+async function importDfuFile() {
+  const file = await DocumentPicker.getDocumentAsync({
+    type: "application/zip",
+    copyToCacheDirectory: true,
+  });
+  if (file.type === "success") {
+    const pathname = FileSystem.cacheDirectory + file.name;
+    await FileSystem.deleteAsync(pathname, { idempotent: true });
+    await FileSystem.moveAsync({
+      from: file.uri,
+      to: pathname,
+    });
+    store.dispatch(addImportedDfuBundle([pathname]));
+  }
+}
+
+function getDescription(bundle: DfuFilesBundle): string {
+  switch (bundle.kind) {
+    case "factory":
+      return "(*) Used In Validation";
+    case "app":
+      return "";
+    case "imported":
+      return "Imported";
+    default:
+      assertNever(bundle.kind);
+  }
+}
 
 function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   const appDispatch = useAppDispatch();
 
   // DFU files bundles are loaded asynchronously
-  const [_, availableBundles, bundlesError] = useAppDfuFilesBundles();
+  const [selectedBundle, availableBundles, bundlesError] =
+    useAppDfuFilesBundles();
+  const sortedBundles = React.useMemo(() => {
+    const b = [...availableBundles];
+    b.sort((b1, b2) => b2.date.getTime() - b1.date.getTime());
+    return b;
+  }, [availableBundles]);
 
   // Files to show
-  const [showBootloaders, setShowBootloaders] = React.useState(false);
+  const [hideBootloaders, setHideBootloaders] = React.useState(true);
   const bundles = React.useMemo(
-    () => availableBundles.filter((b) => showBootloaders || !!b.firmware),
-    [availableBundles, showBootloaders]
+    () => sortedBundles.filter((b) => !hideBootloaders || !!b.firmware),
+    [sortedBundles, hideBootloaders]
   );
 
   // FlatList item rendering
+  const theme = useTheme();
+  const styles = React.useMemo(
+    () =>
+      StyleSheet.create({
+        selectedCard: {
+          borderColor: theme.colors.primary,
+          borderWidth: 2,
+        },
+      }),
+    [theme.colors.primary]
+  );
   const renderItem = React.useCallback(
-    ({ item: bundle, index }: { item: DfuFilesBundle; index: number }) => (
+    ({ item: bundle }: { item: DfuFilesBundle; index: number }) => (
       <Pressable
         key={bundle?.bootloader?.pathname ?? bundle?.firmware?.pathname}
         onPress={() => {
-          appDispatch(setSelectedDfuBundle(index));
+          appDispatch(setSelectedDfuBundle(availableBundles.indexOf(bundle)));
           navigation.goBack();
         }}
       >
-        <Card>
+        <Card
+          style={bundle === selectedBundle ? styles.selectedCard : undefined}
+        >
           <Card.Title title={`📅 ${toLocaleDateTimeString(bundle.date)}`} />
           <Card.Content>
-            <Text>{`Type: ${bundle.types.join(", ")}`}</Text>
+            <Text>{`Type: ${bundle.fileTypes.join(", ")}`}</Text>
+            <Text>{getDescription(bundle)}</Text>
           </Card.Content>
         </Card>
       </Pressable>
     ),
-    [appDispatch, navigation]
+    [
+      appDispatch,
+      availableBundles,
+      navigation,
+      selectedBundle,
+      styles.selectedCard,
+    ]
   );
 
   return (
     <FastBox gap={8} alignItems="center">
+      <Button mode="contained-tonal" onPress={importDfuFile}>
+        Import A DFU Zip File
+      </Button>
       {bundles.length ? (
         <>
           <FastHStack alignItems="center">
-            <Text>Show Standalone Bootloaders</Text>
+            <Text>Hide Standalone Bootloaders</Text>
             <Switch
-              onValueChange={setShowBootloaders}
-              value={showBootloaders}
+              onValueChange={setHideBootloaders}
+              value={hideBootloaders}
             />
           </FastHStack>
-          <Text style={gs.bold}>Select Firmware:</Text>
+          <Text>Select Firmware:</Text>
           <FlatList
             style={gs.fullWidth}
             data={bundles}

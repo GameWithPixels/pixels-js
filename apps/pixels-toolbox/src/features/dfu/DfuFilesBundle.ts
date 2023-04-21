@@ -1,72 +1,82 @@
-import { assert } from "@systemic-games/pixels-core-utils";
-
 import getDfuFileInfo, { DfuFileInfo } from "./getDfuFileInfo";
+
+export type DfuFilesBundleKind = "app" | "factory" | "imported";
 
 // Firmware and/or bootloader DFU files of the same date
 export default class DfuFilesBundle {
   private readonly _main: DfuFileInfo;
   private readonly _bootloader?: DfuFileInfo;
   private readonly _firmware?: DfuFileInfo;
+  private readonly _kind: DfuFilesBundleKind;
 
   get date(): Date {
-    return this._main.date!;
+    return this._main.date;
   }
+
   get main(): DfuFileInfo {
     return this._main;
   }
+
   get bootloader(): DfuFileInfo | undefined {
     return this._bootloader;
   }
+
   get firmware(): DfuFileInfo | undefined {
     return this._firmware;
   }
+
   get isComplete(): boolean {
     return !!this._bootloader && !!this._firmware;
   }
 
-  get types(): ("bootloader" | "firmware")[] {
+  get kind(): DfuFilesBundleKind {
+    return this._kind;
+  }
+
+  get fileTypes(): ("bootloader" | "firmware")[] {
     return [this._bootloader, this._firmware]
       .filter(Boolean)
       .map((fi) => fi?.type!);
   }
 
-  static create(paths?: {
-    bootloader?: string;
-    firmware?: string;
-  }): DfuFilesBundle | undefined {
-    const f1 = paths?.bootloader ? getDfuFileInfo(paths.bootloader) : undefined;
-    const f2 = paths?.firmware ? getDfuFileInfo(paths.firmware) : undefined;
-    if (f1) {
-      return new DfuFilesBundle(f1, f2);
-    } else if (f2) {
-      return new DfuFilesBundle(f2, f1);
-    }
+  get pathnames(): string[] {
+    return this._bootloader && this._firmware
+      ? [this._bootloader.pathname, this._firmware.pathname]
+      : [this._main.pathname];
   }
 
-  constructor(fileInfo?: DfuFileInfo, otherFileInfo?: DfuFileInfo) {
-    const main = fileInfo ?? otherFileInfo;
-    const other = fileInfo ? otherFileInfo : undefined;
-    assert(main, "DfuFilesBundle: at least one parameter must be defined");
-    assert(
-      main.type,
-      "DfuFilesBundle: fileInfo parameter must have a defined DFU type"
-    );
-    assert(
-      main.type !== other?.type,
-      "DfuFilesBundle: fileInfo and otherFileInfo parameters must be of a different type"
-    );
-    assert(
-      main?.date && main.date.getTime() !== 0,
-      "DfuFilesBundle: fileInfo parameter must have a valid date"
-    );
-    assert(
-      !other || other.type,
-      "DfuFilesBundle: otherFileInfo parameter must have a defined DFU type"
-    );
-    assert(
-      !other?.date || main.date.getTime() === other.date.getTime(),
-      "DfuFilesBundle: fileInfo and otherFileInfo parameter must have the same date"
-    );
+  static create(params: {
+    pathnames: string[];
+    kind?: DfuFilesBundleKind;
+  }): DfuFilesBundle {
+    if (!params.pathnames.length) {
+      throw new Error("DfuFilesBundle.create: Empty pathnames");
+    }
+    const fileInfo = getDfuFileInfo(params.pathnames[0]);
+    const otherFileInfo = params.pathnames[1]
+      ? getDfuFileInfo(params.pathnames[1])
+      : undefined;
+    return new DfuFilesBundle({ fileInfo, otherFileInfo, kind: params.kind });
+  }
+
+  constructor(params: {
+    fileInfo: DfuFileInfo;
+    otherFileInfo?: DfuFileInfo;
+    kind?: DfuFilesBundleKind;
+  }) {
+    this._kind = params.kind ?? "app";
+    const main = params.fileInfo;
+    const other = params.otherFileInfo;
+    if (main.type === other?.type) {
+      throw new Error(
+        "DfuFilesBundle: The `fileInfo` and `otherFileInfo` parameters `type` property must be different"
+      );
+    }
+    if (other && main.date.getTime() !== other.date.getTime()) {
+      throw new Error(
+        "DfuFilesBundle: The `fileInfo` and `otherFileInfo` parameters must have the same date"
+      );
+    }
     this._main = { ...main };
     if (main.type === "bootloader") {
       this._bootloader = this._main;
@@ -81,26 +91,26 @@ export default class DfuFilesBundle {
     }
   }
 
-  static async makeBundles(files: string[]): Promise<DfuFilesBundle[]> {
-    // Sort files by path and get their DFU file info
-    const filesInfo = files.sort().map(getDfuFileInfo);
-
+  static async createMany(
+    filesInfo: DfuFileInfo[],
+    kind: DfuFilesBundleKind = "app"
+  ): Promise<DfuFilesBundle[]> {
     // Group files with same date and in same directory
     const dfuBundles: DfuFilesBundle[] = [];
     const getDirectory = (path?: string) =>
       path?.substring(0, path.lastIndexOf("/"));
 
-    filesInfo.forEach((fi) => {
-      if (fi.date && fi.type) {
-        const ms = fi.date.getTime();
-        const dir = getDirectory(fi.pathname);
+    filesInfo.forEach((fileInfo) => {
+      if (fileInfo.date && fileInfo.type) {
+        const ms = fileInfo.date.getTime();
+        const dir = getDirectory(fileInfo.pathname);
         const index = dfuBundles.findIndex((b) => {
           // We search for a bundle with the same date
           // and that doesn't yet have a DFU file of the same type
           if (
             b.date.getTime() === ms &&
-            (fi.type !== "firmware" || !b.firmware) &&
-            (fi.type !== "bootloader" || !b.bootloader)
+            (fileInfo.type !== "firmware" || !b.firmware) &&
+            (fileInfo.type !== "bootloader" || !b.bootloader)
           ) {
             return getDirectory((b.firmware ?? b.bootloader)?.pathname) === dir;
           }
@@ -109,13 +119,17 @@ export default class DfuFilesBundle {
 
         // Create a new bundle if no matching one was found
         if (index < 0) {
-          dfuBundles.push(new DfuFilesBundle(fi));
+          dfuBundles.push(new DfuFilesBundle({ fileInfo, kind }));
         } else {
-          dfuBundles[index] = new DfuFilesBundle(dfuBundles[index].main, fi);
+          dfuBundles[index] = new DfuFilesBundle({
+            fileInfo,
+            otherFileInfo: dfuBundles[index].main,
+            kind,
+          });
         }
       } else {
         console.warn(
-          `Couldn't read firmware date or type on DFU file: ${fi.pathname}`
+          `Couldn't read firmware date or type on DFU file: ${fileInfo.pathname}`
         );
       }
     });

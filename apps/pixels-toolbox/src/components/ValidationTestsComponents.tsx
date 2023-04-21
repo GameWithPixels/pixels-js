@@ -18,12 +18,9 @@ import TaskChainComponent from "./TaskChainComponent";
 
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import {
-  listUnzippedDfuFiles,
-  unzipDfuFilesFromAssets,
-} from "~/features/dfu/unzip";
-import useUpdateFirmware from "~/features/dfu/useUpdateFirmware";
+import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
 import useTimeout from "~/features/hooks/useTimeout";
+import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
@@ -283,22 +280,16 @@ export function UpdateFirmware({
         if (!pixel || !address) {
           throw new TaskFaultedError("No scanned Pixel");
         }
-        // DFU files
-        await unzipDfuFilesFromAssets([factoryDfuFiles]);
-        // Read the DFU files bundles
-        const dfuFiles = await listUnzippedDfuFiles();
-        const dfuBundle = (await DfuFilesBundle.makeBundles(dfuFiles))[0];
-        if (!dfuBundle) {
-          throw new TaskFaultedError("DFU files not found or problematic");
-        }
-        const bl = dfuBundle.bootloader;
-        if (!bl) {
+        // Get the DFU files bundles from the zip file
+        const dfuBundle = DfuFilesBundle.create({
+          pathnames: await unzipDfuFilesFromAssets(factoryDfuFiles),
+        });
+        if (!dfuBundle.bootloader) {
           throw new TaskFaultedError(
             "DFU bootloader file not found or problematic"
           );
         }
-        const fw = dfuBundle.firmware;
-        if (!fw) {
+        if (!dfuBundle.firmware) {
           throw new TaskFaultedError(
             "DFU firmware file not found or problematic"
           );

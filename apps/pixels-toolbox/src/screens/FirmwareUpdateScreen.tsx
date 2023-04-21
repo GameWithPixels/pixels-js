@@ -52,19 +52,21 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   // DFU files bundles are loaded asynchronously
   const { selected, available } = useAppSelector((state) => state.dfuBundles);
   const bundle = React.useMemo(
-    () => DfuFilesBundle.create(available[selected]),
+    () =>
+      available[selected]
+        ? DfuFilesBundle.create(available[selected])
+        : undefined,
     [available, selected]
   );
-  const [selectedFwLabel, setSelectedFwLabel] = React.useState<string>();
-  React.useEffect(() => {
+
+  // Build UI label for selected bundle
+  const bundleLabel = React.useMemo(() => {
     if (bundle) {
-      setSelectedFwLabel(
-        `${bundle.types.join(", ")}: ${toLocaleDateTimeString(bundle.date)}`
-      );
-    } else {
-      setSelectedFwLabel(undefined);
+      const date = toLocaleDateTimeString(bundle.date);
+      const types = bundle.fileTypes.join(", ");
+      return `${selected === 0 ? "(*) " : ""}${types}: ${date}`;
     }
-  }, [bundle]);
+  }, [bundle, selected]);
 
   // DFU
   const [dfuTarget, setDfuTarget] = React.useState<ScannedPeripheral>();
@@ -197,9 +199,9 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
             labelStyle={{ alignSelf: "center", ...gs.underlined }}
             onPress={() => navigation.navigate("SelectDfuFiles")}
           >
-            {selectedFwLabel ?? t("tapToSelectFirmware")}
+            {bundleLabel ?? t("tapToSelectFirmware")}
           </Button>
-          {selectedFwLabel && (
+          {bundleLabel && (
             <FastBox gap={8}>
               <Text style={gs.italic}>
                 Tap on a peripheral to attempt a Pixel firmware update.

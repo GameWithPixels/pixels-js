@@ -1,16 +1,24 @@
 export interface DfuFileInfo {
   pathname: string;
-  date?: Date;
-  basename?: string;
-  type?: "firmware" | "bootloader";
+  date: Date;
+  basename: string;
+  type: "firmware" | "bootloader";
 }
 
 // Returns parsed date and file basename
-export default function (pathname: string): DfuFileInfo {
-  try {
-    const filename = pathname.replace("\\", "/").split("/").pop();
-    const parts = filename?.split("_");
-    if (parts?.length === 3) {
+export default function (
+  pathname: string,
+  opt?: {
+    filename?: string;
+    defaultType?: DfuFileInfo["type"];
+    defaultDate?: Date;
+  }
+): DfuFileInfo {
+  const filename =
+    opt?.filename ?? pathname.replace("\\", "/").split("/").pop();
+  const parts = filename?.split("_");
+  if (parts?.length === 3) {
+    try {
       const dt = parts[1].split("T");
       const date = dt[0];
       const time = dt[1];
@@ -43,13 +51,16 @@ export default function (pathname: string): DfuFileInfo {
         type:
           typeStr === "firmware" || typeStr === "bootloader"
             ? typeStr
-            : undefined,
+            : opt?.defaultType ?? "firmware",
       };
+    } catch {
+      // We're only checking for a few possible cases so we might get an exception
     }
-  } catch {
-    // We're covering only a few possible cases
   }
   return {
     pathname,
+    date: opt?.defaultDate ?? new Date(),
+    basename: filename ? filename.split(".")[0] : pathname,
+    type: opt?.defaultType ?? "firmware",
   };
 }

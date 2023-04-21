@@ -402,9 +402,9 @@ class PixelDispatcher extends PixelInfoNotifier {
 
   private _getSelectedDfuBundle(): DfuFilesBundle | undefined {
     const dfuBundles = store.getState().dfuBundles;
-    const bundle = dfuBundles.available[dfuBundles.selected];
-    if (bundle) {
-      return DfuFilesBundle.create(bundle);
+    const serializedBundle = dfuBundles.available[dfuBundles.selected];
+    if (serializedBundle) {
+      return DfuFilesBundle.create(serializedBundle);
     }
   }
 
@@ -435,13 +435,12 @@ class PixelDispatcher extends PixelInfoNotifier {
   private async _startDFU(): Promise<void> {
     const bundle = this._getSelectedDfuBundle();
     if (bundle) {
-      const { bootloader, firmware } = bundle;
       try {
         this._evEmitter.emit("isDFUActive", true);
         await updateFirmware(
           this._scannedPixel.address,
-          bootloader?.pathname,
-          firmware?.pathname,
+          bundle.bootloader?.pathname,
+          bundle.firmware?.pathname,
           (state) => this._evEmitter.emit("dfuState", state),
           (p) => this._evEmitter.emit("dfuProgress", p)
         );
