@@ -1,5 +1,6 @@
 /**
  * Bluetooth UUIDs related to Pixels peripherals.
+ * @category Pixel
  */
 const BleUuids = {
   /** Pixel dice service UUID. */

@@ -12,6 +12,7 @@ import { exponentialBackOff } from "./exponentialBackOff";
  *
  * @param pixel The Pixel to connect to.
  * @param retries Number of retries before aborting.
+ * @category Pixel
  */
 export async function repeatConnect(pixel: Pixel, retries = 4): Promise<void> {
   await exponentialBackOff(retries, 1000, pixel.connect.bind(pixel));

@@ -159,7 +159,7 @@ export class PixelErrorTimeout extends PixelError {}
 /**
  * Represents a Pixels die.
  * Most of its methods require the instance to be connected to the Pixel device.
- * Call the {@link connect} method to initiate a connection.
+ * Call the {@link connect()} method to initiate a connection.
  * @category Pixel
  */
 export class Pixel extends PixelInfoNotifier {
@@ -239,7 +239,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Gets the last RSSI value notified by the Pixel.
-   * @remarks Call {@link reportRssi} to automatically update the RSSI value.
+   * @remarks Call {@link reportRssi()} to automatically update the RSSI value.
    */
   get rssi(): number {
     return this._info.rssi;

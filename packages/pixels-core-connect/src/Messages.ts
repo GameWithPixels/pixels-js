@@ -1067,6 +1067,10 @@ export class Temperature implements PixelMessage {
   batteryTemperatureTimes100 = 0;
 }
 
+/**
+ * Message send to a Pixel to make it light up its LEDs to quickly discharge the battery.
+ * @category Message
+ */
 export class Discharge implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -1079,6 +1083,10 @@ export class Discharge implements PixelMessage {
   currentMA = 0;
 }
 
+/**
+ * Message send to a Pixel to make it blink it Pixel Id.
+ * @category Message
+ */
 export class BlinkId implements PixelMessage {
   /** Type of the message. */
   @serializable(1)

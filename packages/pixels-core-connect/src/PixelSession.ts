@@ -1,4 +1,7 @@
-/** List of possible connection statuses for a {@link PixelSession}. */
+/**
+ * List of possible connection statuses for a {@link PixelSession}.
+ * @category PixelSession
+ */
 export type PixelSessionConnectionStatus =
   | "connecting"
   | "connected"
@@ -7,7 +10,10 @@ export type PixelSessionConnectionStatus =
   | "disconnecting"
   | "disconnected";
 
-/** Data for a connection event. */
+/**
+ * Data for a connection event.
+ * @category PixelSession
+ */
 export interface PixelSessionConnectionEvent {
   pixelSystemId: string;
   connectionStatus: PixelSessionConnectionStatus;
@@ -17,6 +23,7 @@ export interface PixelSessionConnectionEvent {
 /**
  * Represents a session with a Pixel die.
  * This class is used to abstract the underlying platform used to connect to Pixels.
+ * @category PixelSession
  */
 export abstract class PixelSession {
   protected readonly _pixelSystemId: string;
