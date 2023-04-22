@@ -8,8 +8,8 @@ const ScannedPixelsRegistry = {
     _pixelIdMap.set(scannedPixel.pixelId, scannedPixel);
   },
 
-  find(pixelId: number): ScannedPixel | null {
-    return _pixelIdMap.get(pixelId) ?? null;
+  find(pixelId: number): ScannedPixel | undefined {
+    return _pixelIdMap.get(pixelId);
   },
 
   getAll(): ScannedPixel[] {

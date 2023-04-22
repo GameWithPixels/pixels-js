@@ -26,12 +26,12 @@ export default class EditProfile extends Editable {
     this.rules = opt?.rules ?? [];
   }
 
-  getRemoteAction(actionId: number): EditActionRunOnDevice | null {
+  getRemoteAction(actionId: number): EditActionRunOnDevice | undefined {
     const ruleId = actionId >> 8;
     const action = this.rules[ruleId]?.actions[actionId & 0xff];
     return action instanceof EditActionRunOnDevice
       ? (action as EditActionRunOnDevice)
-      : null;
+      : undefined;
   }
 
   toProfile(editSet: EditDataSet, set: DataSet): Profile {

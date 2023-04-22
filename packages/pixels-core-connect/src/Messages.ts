@@ -267,7 +267,7 @@ export function serializeMessage(
  */
 export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
   if (!buffer?.byteLength) {
-    throw new SerializationError("Can't deserialize a null or empty buffer");
+    throw new SerializationError("Can't deserialize an empty buffer");
   }
   const dataView = new DataView(buffer);
   const msgTypeValue = dataView.getUint8(0);

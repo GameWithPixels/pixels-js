@@ -29,7 +29,7 @@ export default function (
 ] {
   const [lastError, setLastError] = useState<Error>();
   const [curPixel, setCurPixel] = useState(pixel);
-  const pixelToDisco = useRef<Pixel | null>(null);
+  const pixelToDisco = useRef<Pixel>();
 
   // Create the dispatch function
   const dispatch = useCallback(
@@ -62,7 +62,7 @@ export default function (
         case "disconnect":
           // Disconnect from our stored Pixel
           pixelToDisco.current?.disconnect().catch(setLastError);
-          pixelToDisco.current = null;
+          pixelToDisco.current = undefined;
           break;
         default:
           assertNever(action);
