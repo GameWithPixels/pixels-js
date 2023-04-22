@@ -133,7 +133,7 @@ function EasCard() {
     }
   }, [setUpdateError]);
 
-  // Auto-check for updates once
+  // Immediately check for updates
   useFocusEffect(
     React.useCallback(() => {
       if (!__DEV__) {

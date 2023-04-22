@@ -18,6 +18,7 @@ import TaskChainComponent from "./TaskChainComponent";
 
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
+import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
 import useTimeout from "~/features/hooks/useTimeout";
 import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
@@ -303,7 +304,10 @@ export function UpdateFirmware({
           toLocaleDateTimeString(pixel.firmwareDate)
         );
         // Start DFU
-        if (dfuBundle.date > pixel.firmwareDate) {
+        if (
+          !areSameFirmwareDates(dfuBundle.date, pixel.firmwareDate) &&
+          dfuBundle.date > pixel.firmwareDate
+        ) {
           const dfuPromise = new Promise<void>((resolve, reject) => {
             setResolveRejectDfuPromise({ resolve, reject });
           });

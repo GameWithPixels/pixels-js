@@ -1,5 +1,4 @@
 import {
-  assert,
   assertNever,
   createTypedEventEmitter,
   EventReceiver,
@@ -61,13 +60,14 @@ namespace PixelDispatcher {
     durationSinceLastActivity: number;
     isDFUAvailable: boolean;
     isDFUActive: boolean;
-    isDFUQueued: boolean;
+    hasQueuedDFU: boolean;
     dfuState: DfuState;
     dfuProgress: number;
   }
 }
 
 const _instances = new Map<number, PixelDispatcher>();
+let _activeDFU: PixelDispatcher | undefined;
 const _pendingDFUs: PixelDispatcher[] = [];
 
 /**
@@ -157,12 +157,12 @@ class PixelDispatcher extends PixelInfoNotifier {
     return this._isDfuAvailable;
   }
 
-  get isDfuActive(): boolean {
-    return _pendingDFUs[0] === this;
+  get hasQueuedDFU(): boolean {
+    return _pendingDFUs.indexOf(this) > 0;
   }
 
-  get isDfuQueued(): boolean {
-    return _pendingDFUs.indexOf(this) > 0;
+  get isUpdatingFirmware(): boolean {
+    return this === _activeDFU;
   }
 
   // TODO remove this member
@@ -412,43 +412,45 @@ class PixelDispatcher extends PixelInfoNotifier {
     if (this.isDfuAvailable && !_pendingDFUs.includes(this)) {
       // Queue DFU request
       _pendingDFUs.push(this);
-      this._evEmitter.emit("isDFUQueued", true);
+      this._evEmitter.emit("hasQueuedDFU", true);
       // Run update immediately if it's the only pending request
-      if (_pendingDFUs.length === 1) {
+      if (!_activeDFU) {
         this._guard(this._startDFU());
       }
     }
   }
 
-  private _dequeueDFU(force = false): void {
+  private _dequeueDFU(): void {
     const i = _pendingDFUs.indexOf(this);
-    if (i > 0 || force) {
-      _pendingDFUs.splice(i);
-      this._evEmitter.emit("isDFUQueued", false);
-      // Run next update if any
-      this._guard(_pendingDFUs[0]?._startDFU());
-    } else if (i === 0) {
-      // TODO abort ongoing DFU
+    if (i >= 0) {
+      _pendingDFUs.splice(i, 1);
+      this._evEmitter.emit("hasQueuedDFU", false);
     }
   }
 
   private async _startDFU(): Promise<void> {
     const bundle = this._getSelectedDfuBundle();
-    if (bundle) {
-      try {
-        this._evEmitter.emit("isDFUActive", true);
-        await updateFirmware(
-          this._scannedPixel.address,
-          bundle.bootloader?.pathname,
-          bundle.firmware?.pathname,
-          (state) => this._evEmitter.emit("dfuState", state),
-          (p) => this._evEmitter.emit("dfuProgress", p)
-        );
-      } finally {
-        assert(_pendingDFUs[0] === this, "Unexpected queued Pixel for DFU");
-        this._dequeueDFU(true);
+    try {
+      this._dequeueDFU();
+      if (!bundle) {
+        throw new Error("No DFU Files Selected");
+      }
+      _activeDFU = this;
+      this._evEmitter.emit("isDFUActive", true);
+      await updateFirmware(
+        this._scannedPixel.address,
+        bundle.bootloader?.pathname,
+        bundle.firmware?.pathname,
+        (state) => this._evEmitter.emit("dfuState", state),
+        (p) => this._evEmitter.emit("dfuProgress", p)
+      );
+    } finally {
+      if (_activeDFU === this) {
+        _activeDFU = undefined;
         this._evEmitter.emit("isDFUActive", false);
       }
+      // Run next update if any
+      this._guard(_pendingDFUs[0]?._startDFU());
     }
   }
 

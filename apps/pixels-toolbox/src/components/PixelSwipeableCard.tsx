@@ -7,6 +7,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
+  PixelUserMessage,
   ScannedPixelNotifier,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -144,18 +145,14 @@ function PixelCard({
       setLastActivitySec(Math.floor(ms / 1000));
     add("durationSinceLastActivity", setLastActivity);
     add("profileUpdateProgress", setProfileUpdate);
-    add("isDFUQueued", setDfuQueued);
+    add("hasQueuedDFU", setDfuQueued);
     add("dfuState", setDfuState);
     add("dfuProgress", setDfuProgress);
     const notifyUserListener = ({
       message,
       withCancel,
       response,
-    }: {
-      message: string;
-      withCancel: boolean;
-      response: (okCancel: boolean) => void;
-    }) => {
+    }: PixelUserMessage) => {
       setNotifyUserData({
         message,
         onOk: () => response(true),
@@ -168,7 +165,7 @@ function PixelCard({
       remove("error", setLastError);
       remove("durationSinceLastActivity", setLastActivity);
       remove("profileUpdateProgress", setProfileUpdate);
-      remove("isDFUQueued", setDfuQueued);
+      remove("hasQueuedDFU", setDfuQueued);
       remove("dfuState", setDfuState);
       remove("dfuProgress", setDfuProgress);
       pixelDispatcher.pixel.removeEventListener(
@@ -300,11 +297,11 @@ export function PixelSwipeableCard({
   React.useEffect(() => {
     pixelDispatcher.addEventListener("isDFUAvailable", setDfuAvailable);
     pixelDispatcher.addEventListener("isDFUActive", setDfuActive);
-    pixelDispatcher.addEventListener("isDFUQueued", setDfuQueued);
+    pixelDispatcher.addEventListener("hasQueuedDFU", setDfuQueued);
     return () => {
       pixelDispatcher.removeEventListener("isDFUAvailable", setDfuAvailable);
       pixelDispatcher.removeEventListener("isDFUActive", setDfuActive);
-      pixelDispatcher.removeEventListener("isDFUQueued", setDfuQueued);
+      pixelDispatcher.removeEventListener("hasQueuedDFU", setDfuQueued);
     };
   }, [pixelDispatcher]);
 
