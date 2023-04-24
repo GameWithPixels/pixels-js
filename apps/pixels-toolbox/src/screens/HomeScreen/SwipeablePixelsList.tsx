@@ -88,7 +88,7 @@ export default React.memo(function ({
             dispatchAll("blink");
             break;
           case 3:
-            dispatchAll("updateProfile");
+            dispatchAll("uploadProfile");
             break;
           case 4:
             dispatchAll("queueDFU");

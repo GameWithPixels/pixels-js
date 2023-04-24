@@ -229,9 +229,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
             </FastBox>
           ) : (
             <Text style={gs.italic}>
-              {t("dfuStateWithStatus", {
-                status: dfuState ? t(dfuState) : t("initializing"),
-              })}
+              {t("dfuStateWithStatus", { status: t(dfuState) })}
             </Text>
           )}
         </FastBox>

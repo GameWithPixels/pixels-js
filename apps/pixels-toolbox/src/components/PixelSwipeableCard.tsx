@@ -113,12 +113,21 @@ function PixelCard({
   }, [pixelDispatcher]);
 
   const status = usePixelStatus(pixelDispatcher.pixel);
+
   const [lastError, setLastError] = React.useState<Error>();
   const clearError = React.useCallback(() => setLastError(undefined), []);
 
-  const [lastActivitySec, setLastActivitySec] = React.useState(0);
-  const [profileUpdate, setProfileUpdate] = React.useState<number>();
-  const [dfuQueued, setDfuQueued] = React.useState(false);
+  // Pixel Dispatcher states
+  const [lastActivitySec, setLastActivitySec] = React.useState(
+    Math.floor(pixelDispatcher.durationSinceLastActivity / 1000)
+  );
+  const [profileUpload, setProfileUpload] = React.useState<number>();
+  const [dfuActive, setDfuActive] = React.useState(
+    pixelDispatcher.hasActiveDFU
+  );
+  const [dfuQueued, setDfuQueued] = React.useState(
+    pixelDispatcher.hasQueuedDFU
+  );
   const [dfuState, setDfuState] = React.useState<DfuState>("dfuCompleted");
   const [dfuProgress, setDfuProgress] = React.useState<number>(0);
 
@@ -140,7 +149,8 @@ function PixelCard({
     const setLastActivity = (ms: number) =>
       setLastActivitySec(Math.floor(ms / 1000));
     add("durationSinceLastActivity", setLastActivity);
-    add("profileUpdateProgress", setProfileUpdate);
+    add("profileUploadProgress", setProfileUpload);
+    add("hasActiveDFU", setDfuActive);
     add("hasQueuedDFU", setDfuQueued);
     add("dfuState", setDfuState);
     add("dfuProgress", setDfuProgress);
@@ -160,7 +170,8 @@ function PixelCard({
       const remove = pixelDispatcher.removeEventListener.bind(pixelDispatcher);
       remove("error", setLastError);
       remove("durationSinceLastActivity", setLastActivity);
-      remove("profileUpdateProgress", setProfileUpdate);
+      remove("profileUploadProgress", setProfileUpload);
+      remove("hasActiveDFU", setDfuActive);
       remove("hasQueuedDFU", setDfuQueued);
       remove("dfuState", setDfuState);
       remove("dfuProgress", setDfuProgress);
@@ -200,26 +211,24 @@ function PixelCard({
         <FastVStack gap={3} alignItems="center" width="100%">
           {/* Show either DFU progress, profile update progress, connect state or advertising state */}
           {dfuQueued ? (
-            // DFU status and progress
-            dfuState !== "dfuCompleted" ? (
-              <FastHStack
-                width="100%"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Text>{t("firmwareUpdate")}: </Text>
-                {dfuState === "dfuStarting" && dfuProgress > 0 ? (
-                  <View style={gs.flex}>
-                    <ProgressBar percent={dfuProgress} />
-                  </View>
-                ) : (
-                  <Text style={gs.italic}>{t(dfuState)}</Text>
-                )}
-              </FastHStack>
-            ) : (
-              <Text>{t("waitingOnFirmwareUpdate")}</Text>
-            )
-          ) : profileUpdate ? (
+            <Text>{t("waitingOnFirmwareUpdate")}</Text>
+          ) : // DFU status and progress
+          dfuActive ? (
+            <FastHStack
+              width="100%"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text>{t("firmwareUpdate")}: </Text>
+              {dfuState === "dfuStarting" && dfuProgress > 0 ? (
+                <View style={gs.flex}>
+                  <ProgressBar percent={dfuProgress} />
+                </View>
+              ) : (
+                <Text style={gs.italic}>{t(dfuState)}</Text>
+              )}
+            </FastHStack>
+          ) : profileUpload ? (
             // Profile update progress
             <FastHStack
               width="100%"
@@ -228,13 +237,13 @@ function PixelCard({
             >
               <Text>Profile Update: </Text>
               <View style={gs.flex}>
-                <ProgressBar percent={profileUpdate} />
+                <ProgressBar percent={profileUpload} />
               </View>
             </FastHStack>
           ) : isDisco && lastActivitySec >= 5 ? (
             // Pixel is disconnected and hasn't been seen for a while (no advertising)
             <Text style={gs.italic}>{`${t("unavailable")} (${
-              lastActivitySec < 120e3 // 2 minutes
+              lastActivitySec < 120
                 ? t("secondsWithValue", {
                     value: lastActivitySec,
                   })
@@ -287,16 +296,23 @@ export function PixelSwipeableCard({
   const pixelDispatcher = PixelDispatcher.getInstance(scannedPixel);
   const status = usePixelStatus(pixelDispatcher.pixel);
 
-  const [dfuAvailable, setDfuAvailable] = React.useState(false);
-  const [dfuQueued, setDfuQueued] = React.useState(false);
-  const [dfuActive, setDfuActive] = React.useState(false);
+  // Pixel Dispatcher states
+  const [dfuAvailable, setDfuAvailable] = React.useState(
+    pixelDispatcher.hasAvailableDFU
+  );
+  const [dfuQueued, setDfuQueued] = React.useState(
+    pixelDispatcher.hasQueuedDFU
+  );
+  const [dfuActive, setDfuActive] = React.useState(
+    pixelDispatcher.hasActiveDFU
+  );
   React.useEffect(() => {
-    pixelDispatcher.addEventListener("isDFUAvailable", setDfuAvailable);
-    pixelDispatcher.addEventListener("isDFUActive", setDfuActive);
+    pixelDispatcher.addEventListener("hasAvailableDFU", setDfuAvailable);
+    pixelDispatcher.addEventListener("hasActiveDFU", setDfuActive);
     pixelDispatcher.addEventListener("hasQueuedDFU", setDfuQueued);
     return () => {
-      pixelDispatcher.removeEventListener("isDFUAvailable", setDfuAvailable);
-      pixelDispatcher.removeEventListener("isDFUActive", setDfuActive);
+      pixelDispatcher.removeEventListener("hasAvailableDFU", setDfuAvailable);
+      pixelDispatcher.removeEventListener("hasActiveDFU", setDfuActive);
       pixelDispatcher.removeEventListener("hasQueuedDFU", setDfuQueued);
     };
   }, [pixelDispatcher]);

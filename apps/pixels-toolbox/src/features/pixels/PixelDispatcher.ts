@@ -1,4 +1,5 @@
 import {
+  assert,
   assertNever,
   createTypedEventEmitter,
   EventReceiver,
@@ -42,12 +43,14 @@ namespace PixelDispatcher {
     blinkId: undefined;
     playRainbow: undefined;
     calibrate: undefined;
-    updateProfile: undefined;
+    uploadProfile: undefined;
     queueDFU: undefined;
     dequeueDFU: undefined;
     exitValidation: undefined;
     discharge: number;
     enableCharging: boolean;
+    turnOff: undefined;
+    rename: string;
   }
 
   export type ActionName = keyof ActionMap;
@@ -55,11 +58,11 @@ namespace PixelDispatcher {
   export interface EventMap {
     action: ActionName;
     error: Error;
-    profileUpdateProgress: number | undefined;
+    profileUploadProgress: number | undefined;
     status: PixelStatus;
     durationSinceLastActivity: number;
-    isDFUAvailable: boolean;
-    isDFUActive: boolean;
+    hasAvailableDFU: boolean;
+    hasActiveDFU: boolean;
     hasQueuedDFU: boolean;
     dfuState: DfuState;
     dfuProgress: number;
@@ -153,7 +156,7 @@ class PixelDispatcher extends PixelInfoNotifier {
     return this._isUpdatingProfile;
   }
 
-  get isDfuAvailable(): boolean {
+  get hasAvailableDFU(): boolean {
     return this._isDfuAvailable;
   }
 
@@ -161,7 +164,7 @@ class PixelDispatcher extends PixelInfoNotifier {
     return _pendingDFUs.indexOf(this) > 0;
   }
 
-  get isUpdatingFirmware(): boolean {
+  get hasActiveDFU(): boolean {
     return this === _activeDFU;
   }
 
@@ -217,6 +220,7 @@ class PixelDispatcher extends PixelInfoNotifier {
       this._updateLastActivity();
     });
     // Selected firmware
+    this._updateIsDFUAvailable();
     store.subscribe(() => this._updateIsDFUAvailable());
     // Setup checking if around
     this._updateLastActivity();
@@ -265,8 +269,8 @@ class PixelDispatcher extends PixelInfoNotifier {
       case "discharge":
         this._guard(this._discharge((params as number) ?? 50));
         break;
-      case "updateProfile":
-        this._guard(this._updateProfile());
+      case "uploadProfile":
+        this._guard(this._uploadProfile());
         break;
       case "queueDFU":
         this._queueDFU();
@@ -279,6 +283,12 @@ class PixelDispatcher extends PixelInfoNotifier {
         break;
       case "enableCharging":
         this._guard(this._forceEnableCharging((params as boolean) ?? false));
+        break;
+      case "turnOff":
+        this._guard(this._pixel.turnOff());
+        break;
+      case "rename":
+        this._guard(this._pixel.rename((params as string) ?? ""));
         break;
       default:
         assertNever(action);
@@ -335,7 +345,7 @@ class PixelDispatcher extends PixelInfoNotifier {
 
   private async _playRainbow(): Promise<void> {
     if (this.isReady) {
-      this._evEmitter.emit("profileUpdateProgress", 0);
+      this._evEmitter.emit("profileUploadProgress", 0);
       const editDataSet = new EditDataSet();
       editDataSet.animations.push(
         new EditAnimationRainbow({
@@ -347,10 +357,10 @@ class PixelDispatcher extends PixelInfoNotifier {
       );
       try {
         await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
-          this._evEmitter.emit("profileUpdateProgress", p)
+          this._evEmitter.emit("profileUploadProgress", p)
         );
       } finally {
-        this._evEmitter.emit("profileUpdateProgress", undefined);
+        this._evEmitter.emit("profileUploadProgress", undefined);
       }
     }
   }
@@ -373,10 +383,10 @@ class PixelDispatcher extends PixelInfoNotifier {
     }
   }
 
-  private async _updateProfile(): Promise<void> {
+  private async _uploadProfile(): Promise<void> {
     if (this.isReady) {
       const notifyProgress = (p?: number) => {
-        this._evEmitter.emit("profileUpdateProgress", p);
+        this._evEmitter.emit("profileUploadProgress", p);
       };
       try {
         this._isUpdatingProfile = true;
@@ -396,7 +406,7 @@ class PixelDispatcher extends PixelInfoNotifier {
       !!bundle && !areSameFirmwareDates(bundle.date, this.firmwareDate);
     if (this._isDfuAvailable !== av) {
       this._isDfuAvailable = av;
-      this._evEmitter.emit("isDFUAvailable", av);
+      this._evEmitter.emit("hasAvailableDFU", av);
     }
   }
 
@@ -409,13 +419,15 @@ class PixelDispatcher extends PixelInfoNotifier {
   }
 
   private _queueDFU(): void {
-    if (this.isDfuAvailable && !_pendingDFUs.includes(this)) {
+    if (this.hasAvailableDFU && !_pendingDFUs.includes(this)) {
       // Queue DFU request
       _pendingDFUs.push(this);
       this._evEmitter.emit("hasQueuedDFU", true);
       // Run update immediately if it's the only pending request
       if (!_activeDFU) {
         this._guard(this._startDFU());
+      } else {
+        console.log(`DFU queued for Pixel ${this.name}`);
       }
     }
   }
@@ -436,7 +448,7 @@ class PixelDispatcher extends PixelInfoNotifier {
         throw new Error("No DFU Files Selected");
       }
       _activeDFU = this;
-      this._evEmitter.emit("isDFUActive", true);
+      this._evEmitter.emit("hasActiveDFU", true);
       await updateFirmware(
         this._scannedPixel.address,
         bundle.bootloader?.pathname,
@@ -445,10 +457,9 @@ class PixelDispatcher extends PixelInfoNotifier {
         (p) => this._evEmitter.emit("dfuProgress", p)
       );
     } finally {
-      if (_activeDFU === this) {
-        _activeDFU = undefined;
-        this._evEmitter.emit("isDFUActive", false);
-      }
+      assert(_activeDFU === this);
+      _activeDFU = undefined;
+      this._evEmitter.emit("hasActiveDFU", false);
       // Run next update if any
       this._guard(_pendingDFUs[0]?._startDFU());
     }

@@ -174,6 +174,9 @@ function BottomButtons({
           <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
             {t("calibrate")}
           </Button>
+          <Button onPress={() => pixelDispatcher.dispatch("turnOff")}>
+            {t("turnOff")}
+          </Button>
         </FastVStack>
         <FastVStack flex={1} ml={2}>
           <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
@@ -190,7 +193,7 @@ function BottomButtons({
           <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
             {t("rainbow")}
           </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("updateProfile")}>
+          <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
             {t("resetProfile")}
           </Button>
           <Button onPress={() => pixelDispatcher.dispatch("exitValidation")}>
@@ -310,19 +313,19 @@ export function PixelDetails({
   const [lastError, setLastError] = React.useState<Error>();
   const clearError = React.useCallback(() => setLastError(undefined), []);
 
-  // Firmware update
-  const [updateProgress, setUpdateProgress] = React.useState<number>();
+  // Profile upload
+  const [uploadProgress, setUploadProgress] = React.useState<number>();
   React.useEffect(() => {
     pixelDispatcher.addEventListener("error", setLastError);
     pixelDispatcher.addEventListener(
-      "profileUpdateProgress",
-      setUpdateProgress
+      "profileUploadProgress",
+      setUploadProgress
     );
     return () => {
       pixelDispatcher.removeEventListener("error", setLastError);
       pixelDispatcher.removeEventListener(
-        "profileUpdateProgress",
-        setUpdateProgress
+        "profileUploadProgress",
+        setUploadProgress
       );
     };
   }, [pixelDispatcher]);
@@ -355,7 +358,7 @@ export function PixelDetails({
         </Card.Content>
       </Card>
 
-      <FirmwareUpdateModal updateProgress={updateProgress} />
+      <FirmwareUpdateModal updateProgress={uploadProgress} />
     </>
   );
 }
