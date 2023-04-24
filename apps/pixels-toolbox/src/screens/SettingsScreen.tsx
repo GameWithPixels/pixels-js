@@ -1,8 +1,12 @@
 import { useFocusEffect } from "@react-navigation/core";
-import { FastHStack } from "@systemic-games/react-native-base-components";
+import {
+  FastBox,
+  FastHStack,
+} from "@systemic-games/react-native-base-components";
 import * as Updates from "expo-updates";
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import { Pressable, ScrollView, StyleSheet } from "react-native";
 import {
   Button,
   Card,
@@ -18,6 +22,7 @@ import {
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
+import { getLanguageShortCode } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
 function toYesNo(value: boolean) {
@@ -60,6 +65,45 @@ function ThemeCard() {
           <ThemeRadio label="System" themeMode="system" />
           <ThemeRadio label="Dark" themeMode="dark" />
           <ThemeRadio label="Light" themeMode="light" />
+        </FastHStack>
+      </Card.Content>
+    </Card>
+  );
+}
+
+function LanguageRadio({
+  label,
+  language,
+}: {
+  label: string;
+  language: string;
+}) {
+  const { i18n } = useTranslation();
+  const setMode = React.useCallback(
+    () => i18n.changeLanguage(language),
+    [i18n, language]
+  );
+  const selected = getLanguageShortCode(i18n.language);
+  return (
+    <Pressable onPress={setMode} style={styles.radioPressable}>
+      <RadioButton
+        value={label}
+        status={selected === language ? "checked" : "unchecked"}
+        onPress={setMode}
+      />
+      <Text>{label}</Text>
+    </Pressable>
+  );
+}
+
+function LanguageCard() {
+  return (
+    <Card>
+      <Card.Content>
+        <Title>Language</Title>
+        <FastHStack px={5} justifyContent="space-between">
+          <LanguageRadio label="Chinese" language="zh" />
+          <LanguageRadio label="English" language="en" />
         </FastHStack>
       </Card.Content>
     </Card>
@@ -160,7 +204,7 @@ function EasCard() {
             {`Update Id: ${updateManifest?.id ?? "Unknown"}`}
           </Text> */}
           <Divider bold style={styles.divider} />
-          <View style={styles.easCardButtons}>
+          <FastBox flexDir="row" justifyContent="space-between">
             <Button
               mode="outlined"
               disabled={!updateManifest}
@@ -175,7 +219,7 @@ function EasCard() {
             <Button mode="outlined" onPress={() => setInfoVisible(true)}>
               App Info
             </Button>
-          </View>
+          </FastBox>
         </Card.Content>
       </Card>
 
@@ -233,6 +277,7 @@ function SettingsPage() {
   return (
     <ScrollView contentContainerStyle={gs.listContentContainer}>
       <ThemeCard />
+      <LanguageCard />
       <EasCard />
     </ScrollView>
   );
@@ -261,9 +306,5 @@ const styles = StyleSheet.create({
   radioPressable: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  easCardButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
 });

@@ -14,11 +14,15 @@ export function capitalize(str: string): string {
   }
 };
 
+export function getLanguageShortCode(language: string): string {
+  return language.split("_")[0].split("-")[0];
+}
+
 i18n
   .use({
     type: "languageDetector",
     init: () => {},
-    detect: () => Localization.locale.split("_")[0],
+    detect: () => getLanguageShortCode(Localization.locale),
     cacheUserLanguage: (_lng: string) => {},
   })
   .use(initReactI18next)
