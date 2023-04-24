@@ -19,6 +19,7 @@ import {
   PixelStatus,
   PixelInfoNotifier,
   ScannedPixelNotifier,
+  PixelInfoNotifierMutableProps,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { getDieType } from "./DieType";
@@ -34,53 +35,68 @@ import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
 import getDefaultProfile from "~/getDefaultProfile";
 
-namespace PixelDispatcher {
-  export interface ActionMap {
-    connect: undefined;
-    disconnect: undefined;
-    reportRssi: undefined;
-    blink: undefined;
-    blinkId: undefined;
-    playRainbow: undefined;
-    calibrate: undefined;
-    uploadProfile: undefined;
-    queueDFU: undefined;
-    dequeueDFU: undefined;
-    exitValidation: undefined;
-    discharge: number;
-    enableCharging: boolean;
-    turnOff: undefined;
-    rename: string;
-  }
+export type ProfileType = "default" | "tiny";
 
-  export type ActionName = keyof ActionMap;
+export interface PixelDispatcherActionMap {
+  connect: undefined;
+  disconnect: undefined;
+  reportRssi: undefined;
+  blink: undefined;
+  blinkId: undefined;
+  playRainbow: undefined;
+  calibrate: undefined;
+  uploadProfile: undefined;
+  queueDFU: undefined;
+  dequeueDFU: undefined;
+  exitValidation: undefined;
+  discharge: number;
+  enableCharging: boolean;
+  turnOff: undefined;
+  rename: string;
+}
 
-  export interface EventMap {
-    action: ActionName;
-    error: Error;
-    profileUploadProgress: number | undefined;
-    status: PixelStatus;
-    durationSinceLastActivity: number;
-    hasAvailableDFU: boolean;
-    hasActiveDFU: boolean;
-    hasQueuedDFU: boolean;
-    dfuState: DfuState;
-    dfuProgress: number;
-  }
+export type PixelDispatcherActionName = keyof PixelDispatcherActionMap;
+
+export interface PixelDispatcherEventMap {
+  action: PixelDispatcherActionName;
+  error: Error;
+  profileUploadProgress: number | undefined;
+  status: PixelStatus;
+  durationSinceLastActivity: number;
+  hasAvailableDFU: boolean;
+  hasActiveDFU: boolean;
+  hasQueuedDFU: boolean;
+  dfuState: DfuState;
+  dfuProgress: number;
 }
 
 const _instances = new Map<number, PixelDispatcher>();
 let _activeDFU: PixelDispatcher | undefined;
 const _pendingDFUs: PixelDispatcher[] = [];
 
+export type PixelDispatcherMutableProps =
+  | PixelInfoNotifierMutableProps
+  // TODO implement missing notifications and remove from PixelDispatcherEventMap
+  // | "status"
+  // | "isReady"
+  // | "durationSinceLastActivity"
+  | "lastScanUpdate";
+// | "isUpdatingProfile"
+// | "hasAvailableDFU"
+// | "hasQueuedDFU"
+// | "hasActiveDFU"
+
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
-class PixelDispatcher extends PixelInfoNotifier {
+class PixelDispatcher extends PixelInfoNotifier<
+  PixelDispatcherMutableProps,
+  PixelDispatcher
+> {
   private _scannedPixel: ScannedPixelNotifier;
   private _pixel: Pixel;
   private readonly _evEmitter =
-    createTypedEventEmitter<PixelDispatcher.EventMap>();
+    createTypedEventEmitter<PixelDispatcherEventMap>();
   private _lastActivityMs = 0;
   private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
   private _isUpdatingProfile = false;
@@ -191,6 +207,7 @@ class PixelDispatcher extends PixelInfoNotifier {
     // TODO remove listeners
     // TODO perform these notification in a generic way
     scannedPixel.addPropertyListener("timestamp", () => {
+      this.emitPropertyEvent("lastScanUpdate");
       this._updateLastActivity();
     });
     scannedPixel.addPropertyListener("name", () =>
@@ -226,23 +243,23 @@ class PixelDispatcher extends PixelInfoNotifier {
     this._updateLastActivity();
   }
 
-  addEventListener<K extends keyof PixelDispatcher.EventMap>(
+  addEventListener<K extends keyof PixelDispatcherEventMap>(
     eventName: K,
-    listener: EventReceiver<PixelDispatcher.EventMap[K]>
+    listener: EventReceiver<PixelDispatcherEventMap[K]>
   ): void {
     this._evEmitter.addListener(eventName, listener);
   }
 
-  removeEventListener<K extends keyof PixelDispatcher.EventMap>(
+  removeEventListener<K extends keyof PixelDispatcherEventMap>(
     eventName: K,
-    listener: EventReceiver<PixelDispatcher.EventMap[K]>
+    listener: EventReceiver<PixelDispatcherEventMap[K]>
   ): void {
     this._evEmitter.removeListener(eventName, listener);
   }
 
-  dispatch<T extends PixelDispatcher.ActionName>(
+  dispatch<T extends PixelDispatcherActionName>(
     action: T,
-    params?: PixelDispatcher.ActionMap[T]
+    params?: PixelDispatcherActionMap[T]
   ) {
     switch (action) {
       case "connect":

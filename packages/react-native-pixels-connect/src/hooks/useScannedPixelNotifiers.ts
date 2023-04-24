@@ -37,6 +37,7 @@ export function useScannedPixelNotifiers(
   (action: PixelScannerDispatchAction) => void,
   Error?
 ] {
+  const allNotifiers = React.useRef<UpdatableNotifier[]>([]);
   const mapItems = React.useCallback(
     (items: ScannedPixelNotifier[], ops: PixelScannerListOp[]) => {
       // We only want to create a React re-render when new items are added
@@ -50,7 +51,15 @@ export function useScannedPixelNotifiers(
             retItems = [];
             break;
           case "add": {
-            const notifier = new UpdatableNotifier(op.scannedPixel);
+            // Look for an "old" instance of a notifier as in this case we don't want to
+            // recreate a new one and break the update of the existing instance.
+            const existing = allNotifiers.current.find(
+              (n) => n.pixelId === op.scannedPixel.pixelId
+            );
+            const notifier = existing ?? new UpdatableNotifier(op.scannedPixel);
+            if (!existing) {
+              allNotifiers.current.push(notifier);
+            }
             if (retItems === items) {
               retItems = [...items, notifier];
             } else {
@@ -59,7 +68,7 @@ export function useScannedPixelNotifiers(
             break;
           }
           case "update":
-            assert(retItems[op.index]);
+            assert(retItems[op.index] instanceof UpdatableNotifier);
             (retItems[op.index] as UpdatableNotifier).update(op.scannedPixel);
             break;
           case "move": {

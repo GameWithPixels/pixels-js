@@ -10,7 +10,7 @@ import { PixelInfo } from "./PixelInfo";
  * The mutable properties of {@link PixelInfoNotifier}.
  * @category Pixel
  */
-export type PixelInfoMutableProps = Exclude<
+export type PixelInfoNotifierMutableProps = Exclude<
   keyof PixelInfo,
   "systemId" | "pixelId" | "ledCount" | "designAndColor" | "ledCount"
 >;
@@ -19,12 +19,15 @@ export type PixelInfoMutableProps = Exclude<
  * Event map for {@link PixelInfoNotifier} or descendant class.
  * @category Pixel
  */
-export type PixelInfoEventMap<MutableProps extends string, Type> = {
-  [K in MutableProps]: Type;
+export type PixelInfoNotifierEventMap<
+  PixelInfoNotifierMutableProps extends string,
+  Type
+> = {
+  [K in PixelInfoNotifierMutableProps]: Type;
 };
 
 // Type alias with shorter name
-type EvMap<MutableProps extends string, Type> = PixelInfoEventMap<
+type EvMap<MutableProps extends string, Type> = PixelInfoNotifierEventMap<
   MutableProps,
   Type
 >;
@@ -37,7 +40,7 @@ type EvMap<MutableProps extends string, Type> = PixelInfoEventMap<
  * @category Pixel
  */
 export abstract class PixelInfoNotifier<
-  Props extends string = PixelInfoMutableProps,
+  Props extends string = PixelInfoNotifierMutableProps,
   Type extends PixelInfo = PixelInfo
 > implements PixelInfo
 {

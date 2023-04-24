@@ -10,7 +10,9 @@ import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
 import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
-import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import PixelDispatcher, {
+  PixelDispatcherActionName,
+} from "~/features/pixels/PixelDispatcher";
 import gs from "~/styles";
 
 function ListItem({
@@ -52,7 +54,7 @@ export default React.memo(function ({
 
   // Actions dispatched to all Pixels
   const dispatchAll = React.useCallback(
-    (action: PixelDispatcher.ActionName) =>
+    (action: PixelDispatcherActionName) =>
       scannedPixels.forEach((sp) =>
         PixelDispatcher.getInstance(sp).dispatch(action)
       ),
