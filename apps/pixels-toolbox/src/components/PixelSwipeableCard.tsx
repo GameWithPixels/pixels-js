@@ -13,7 +13,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View, ViewStyle } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import {
   Button,
@@ -86,22 +86,18 @@ function AlertDialog({
   );
 }
 
-function SwipeableItemView({
-  backgroundColor,
+function SwipeableActionView({
   label,
   textStyle,
   ...props
 }: FastBoxProps & {
-  backgroundColor: ViewStyle["backgroundColor"];
   label: string;
   textStyle: TextProps<string>["style"];
 }) {
   return (
-    <View style={{ backgroundColor }}>
-      <FastBox alignItems="center" justifyContent="center" {...props}>
-        <Text style={textStyle}>{label}</Text>
-      </FastBox>
-    </View>
+    <FastBox alignItems="center" justifyContent="center" {...props}>
+      <Text style={textStyle}>{label}</Text>
+    </FastBox>
   );
 }
 
@@ -338,10 +334,10 @@ export function PixelSwipeableCard({
   const renderLeftActions = React.useCallback(
     () =>
       !dfuQueued && (
-        <SwipeableItemView
-          px={1}
+        <SwipeableActionView
+          w={150}
+          backgroundColor={isDisco ? "limegreen" : "tomato"}
           label={t(isDisco ? "connect" : "disconnect")}
-          backgroundColor={isDisco ? "green.500" : "red.500"}
           textStyle={styles.textSwipe}
         />
       ),
@@ -350,8 +346,9 @@ export function PixelSwipeableCard({
   const renderRightActions = React.useCallback(
     () =>
       (!isDisco || (dfuAvailable && !dfuActive)) && (
-        <SwipeableItemView
-          px={1}
+        <SwipeableActionView
+          w={150}
+          backgroundColor={isDisco ? "mediumpurple" : "darkorange"}
           label={
             isDisco
               ? dfuActive
@@ -361,7 +358,6 @@ export function PixelSwipeableCard({
                 : t("updateFirmware").replace(" ", "\n")
               : t("blink")
           }
-          backgroundColor={isDisco ? "purple.500" : "orange.500"}
           textStyle={styles.textSwipe}
         />
       ),
@@ -392,7 +388,7 @@ const styles = StyleSheet.create({
   },
   textSwipe: {
     marginHorizontal: 5,
-    color: "gray",
+    color: "floralwhite",
     fontWeight: "bold",
   },
 });
