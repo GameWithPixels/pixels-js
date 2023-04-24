@@ -152,7 +152,9 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   type ValueType = UsePixelValueNamesMap[T];
   const [lastError, setLastError] = React.useState<Error>();
   const [value, setValue] = React.useState<ValueType>();
-  const [isActive, setIsActive] = React.useState(false);
+  const [isActive, setIsActive] = React.useState(
+    options?.explicitStart ?? true
+  );
   const stateRef = React.useRef<{
     lastPixel?: Pixel;
     lastValueName?: keyof UsePixelValueNamesMap;
@@ -164,7 +166,6 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
 
   // Options default values
   const minInterval = options?.minInterval ?? 5000;
-  const waitOnStart = options?.explicitStart ?? false;
 
   const status = pixel?.status;
   React.useEffect(() => {
@@ -178,12 +179,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
       stateRef.current.lastPixel = pixel;
       setValue(undefined);
     }
-    if (
-      pixel &&
-      valueName &&
-      status === "ready" &&
-      (isActive || !waitOnStart)
-    ) {
+    if (pixel && valueName && status === "ready" && isActive) {
       switch (valueName) {
         case "roll": {
           // We don't immediately set the state value,
@@ -309,10 +305,8 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           return () => {
             // Cleanup
             pixel.removeMessageListener("telemetry", onTelemetry);
-            if (pixel.status === "ready") {
-              // Request for stopping telemetry updates if connected (ignore any error)
-              pixel.sendMessage(new RequestTelemetry()).catch(() => {});
-            }
+            // Request for stopping telemetry updates if connected (ignore any error)
+            pixel.sendMessage(new RequestTelemetry()).catch(() => {});
           };
         }
 
@@ -320,7 +314,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           assertNever(valueName);
       }
     }
-  }, [isActive, pixel, minInterval, status, valueName, waitOnStart]);
+  }, [isActive, pixel, minInterval, status, valueName]);
 
   // Create the dispatch function
   const dispatch = React.useCallback(
