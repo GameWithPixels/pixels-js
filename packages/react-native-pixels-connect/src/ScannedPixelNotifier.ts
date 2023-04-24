@@ -1,7 +1,7 @@
 import {
   PixelDesignAndColor,
-  PixelInfoMutableProps,
   PixelInfoNotifier,
+  PixelInfoNotifierMutableProps,
   PixelRollState,
 } from "@systemic-games/pixels-core-connect";
 
@@ -10,14 +10,14 @@ import { ScannedPixel } from "./ScannedPixel";
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 /** Type for an object with all the mutable props of {@link ScannedPixelNotifier}. */
-export type ScannedPixelNotifierUpdate = Pick<
+export type ScannedPixelNotifierMutableProps = Pick<
   ScannedPixel,
-  PixelInfoMutableProps | "timestamp"
+  PixelInfoNotifierMutableProps | "timestamp"
 >;
 
 /** Event map for {@link ScannedPixelNotifier} class. */
 export type ScannedPixelNotifierEventMap = {
-  [K in keyof ScannedPixelNotifierUpdate]: ScannedPixelNotifier;
+  [K in keyof ScannedPixelNotifierMutableProps]: ScannedPixelNotifier;
 };
 
 /**
@@ -25,7 +25,7 @@ export type ScannedPixelNotifierEventMap = {
  */
 export abstract class ScannedPixelNotifier
   extends PixelInfoNotifier<
-    keyof ScannedPixelNotifierUpdate,
+    keyof ScannedPixelNotifierMutableProps,
     ScannedPixelNotifier
   >
   implements ScannedPixel
@@ -89,7 +89,7 @@ export abstract class ScannedPixelNotifier
    * @param props The new values for the properties to update.
    */
   protected _updateProperties(
-    props: Partial<ScannedPixelNotifierUpdate>
+    props: Partial<ScannedPixelNotifierMutableProps>
   ): void {
     if (props.timestamp && this._data.timestamp < props.timestamp) {
       // TODO perform this update in a generic way
