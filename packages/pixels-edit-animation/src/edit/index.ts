@@ -1,5 +1,7 @@
+import * as decorators from "./decorators";
+export { decorators };
+
 export * from "./ColorMode";
-export * as decorators from "./decorators";
 export { default as Editable } from "./Editable";
 export { default as EditAction } from "./EditAction";
 export { default as EditActionRunOnDevice } from "./EditActionRunOnDevice";
