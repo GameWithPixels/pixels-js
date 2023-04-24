@@ -18,6 +18,7 @@ const NordicNrf5Dfu = NativeModules.NordicNrf5Dfu
     );
 
 export type DfuState =
+  | "initializing"
   | "deviceConnecting"
   | "deviceDisconnecting"
   | "firmwareValidating"
@@ -122,6 +123,22 @@ export interface StartDfuOptions {
   dfuProgressListener?: (ev: DfuProgressEvent) => void;
 }
 
+/** DFU error thrown when Nordic characteristics for the DFU service are not found. */
+export class DfuCharacteristicsNotFoundError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "DfuCharacteristicsNotFoundError";
+  }
+}
+
+/** DFU error thrown when the update fails because of the firmware version was rejected. */
+export class DfuFirmwareVersionFailureError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "DfuCharacteristicsNotFoundError";
+  }
+}
+
 /**
  * Starts the Device Firmware Update (DFU) service for the Bluetooth device
  * at the given address.
@@ -175,6 +192,7 @@ export async function startDfu(
 
   // Start DFU
   try {
+    options?.dfuStateListener?.({ deviceAddress, state: "initializing" });
     if (filePath.startsWith("file://")) {
       filePath = filePath.substring("file://".length);
     }
@@ -201,6 +219,16 @@ export async function startDfu(
       throw new Error("Platform not supported (not Android or iOS)");
     }
     await dfuDoneOrAborted;
+  } catch (error: any) {
+    const msg = error?.message;
+    switch (msg) {
+      case "DFU CHARACTERISTICS NOT FOUND":
+        throw new DfuCharacteristicsNotFoundError(msg);
+      case "FW version failure":
+        throw new DfuFirmwareVersionFailureError(msg);
+      default:
+        throw error;
+    }
   } finally {
     // Always unsubscribe from events
     progressSub?.remove();

@@ -14,12 +14,12 @@ import updateFirmware from "~/features/dfu/updateFirmware";
  */
 export default function (): [
   (address: number, bootloaderPath?: string, firmwarePath?: string) => void,
-  DfuState | "initializing" | undefined,
+  DfuState | undefined,
   number,
   Error | undefined
 ] {
   // DFU state and progress
-  const [dfuState, setDfuState] = React.useState<DfuState | "initializing">();
+  const [dfuState, setDfuState] = React.useState<DfuState>();
   const [dfuProgress, setDfuProgress] = React.useState(-1);
   const [lastError, setLastError] = React.useState<Error>();
 
@@ -27,7 +27,6 @@ export default function (): [
   const updateFirmwareFunc = React.useCallback(
     (address: number, bootloaderPath?: string, firmwarePath?: string): void => {
       setLastError(undefined);
-      setDfuState("initializing");
       updateFirmware(
         address,
         bootloaderPath,
