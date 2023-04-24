@@ -47,6 +47,7 @@ import {
   TelemetryRequestModeValues,
   RemoteAction,
   PixelDesignAndColorValues,
+  MessageTypeValues,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 import { PixelInfoNotifier } from "./PixelInfoNotifier";
@@ -630,9 +631,7 @@ export class Pixel extends PixelInfoNotifier {
   ): Promise<void> {
     if (this._logMessages) {
       const msgName = getMessageType(msgOrTypeOrTypeValue);
-      this._log(
-        `Sending message ${msgName} (${getMessageType(msgOrTypeOrTypeValue)})}`
-      );
+      this._log(`Sending message ${msgName} (${MessageTypeValues[msgName]})`);
     }
     const data = serializeMessage(msgOrTypeOrTypeValue);
     await this._session.writeValue(data, withoutAck);
@@ -1045,9 +1044,9 @@ export class Pixel extends PixelInfoNotifier {
         const msgName = getMessageType(msgOrType);
         if (this._logMessages) {
           this._log(
-            `Received message ${msgName} (${getMessageType(msgOrType)})}`
+            `Received message ${msgName} (${MessageTypeValues[msgName]})`
           );
-          if (typeof msgOrType !== "number") {
+          if (typeof msgOrType === "object") {
             // Log message contents
             this._log(msgOrType);
           }
@@ -1136,7 +1135,6 @@ export class Pixel extends PixelInfoNotifier {
       dataMsg.size = Math.min(remainingSize, Constants.maxMessageSize);
       dataMsg.data = data.slice(offset, offset + dataMsg.size);
 
-      //TODO test disconnecting die in middle of transfer
       await this.sendAndWaitForResponse(dataMsg, "bulkDataAck");
 
       remainingSize -= dataMsg.size;
