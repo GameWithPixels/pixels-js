@@ -30,7 +30,7 @@ import ProgressBar from "./ProgressBar";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import gs from "~/styles";
 
-function AlertDialog({
+function UserMessageDialog({
   title,
   message,
   isOpen,
@@ -272,11 +272,19 @@ function PixelCard({
         </FastVStack>
       </PixelInfoCard>
 
-      <AlertDialog
+      <UserMessageDialog
         title={pixelDispatcher.name}
         message={notifyUserData?.message}
         isOpen={notifyUserDisclose.isOpen}
         onClose={notifyUserDisclose.onClose}
+        onPressOk={
+          notifyUserData?.onOk ? () => notifyUserData.onOk?.() : undefined
+        }
+        onPressCancel={
+          notifyUserData?.onCancel
+            ? () => notifyUserData.onCancel?.()
+            : undefined
+        }
       />
     </>
   );

@@ -116,7 +116,6 @@ i18n
           rollState: "Roll State",
           calibrate: "Calibrate",
           rainbow: "Rainbow",
-          resetProfile: "Reset Profile",
           discharge: "Discharge",
           stopDischarge: "Stop Discharging",
           enableCharging: "Enable Charging",
@@ -125,6 +124,10 @@ i18n
           updatingProfile: "Updating Profile",
           dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
           turnOff: "Turn Off",
+          connected: "connected",
+          setDefaultProfile: "Set Default Profile",
+          setTinyProfile: "Set Tiny Profile",
+          enableTelemetry: "Enable Telemetry",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -283,7 +286,6 @@ i18n
           rollState: "滚动状态",
           calibrate: "校准",
           rainbow: "彩虹动画效果",
-          resetProfile: "重置资料",
           discharge: "放电",
           stopDischarge: "停止放电",
           enableCharging: "开始充电",
@@ -292,6 +294,10 @@ i18n
           updatingProfile: "Updating Profile",
           dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
           turnOff: "Turn Off",
+          connected: "connected",
+          setDefaultProfile: "Set Default Profile",
+          setTinyProfile: "Set Tiny Profile",
+          enableTelemetry: "Enable Telemetry",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",

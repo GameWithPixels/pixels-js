@@ -5,8 +5,13 @@ import {
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 import {
+  createDataSetForProfile,
+  EditActionPlayAnimation,
   EditAnimationRainbow,
+  EditConditionFaceCompare,
   EditDataSet,
+  EditProfile,
+  EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -20,6 +25,8 @@ import {
   PixelInfoNotifier,
   ScannedPixelNotifier,
   PixelInfoNotifierMutableProps,
+  FaceCompareFlagsValues,
+  DataSet,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { getDieType } from "./DieType";
@@ -45,7 +52,7 @@ export interface PixelDispatcherActionMap {
   blinkId: undefined;
   playRainbow: undefined;
   calibrate: undefined;
-  uploadProfile: undefined;
+  uploadProfile: ProfileType;
   queueDFU: undefined;
   dequeueDFU: undefined;
   exitValidation: undefined;
@@ -97,6 +104,7 @@ class PixelDispatcher extends PixelInfoNotifier<
   private _pixel: Pixel;
   private readonly _evEmitter =
     createTypedEventEmitter<PixelDispatcherEventMap>();
+  private _lastDiscoTime = 0;
   private _lastActivityMs = 0;
   private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
   private _isUpdatingProfile = false;
@@ -234,6 +242,9 @@ class PixelDispatcher extends PixelInfoNotifier<
     );
     this._pixel.addEventListener("status", (status) => {
       this._evEmitter.emit("status", status);
+      if (status === "disconnected") {
+        this._lastDiscoTime = Date.now();
+      }
       this._updateLastActivity();
     });
     // Selected firmware
@@ -287,7 +298,7 @@ class PixelDispatcher extends PixelInfoNotifier<
         this._guard(this._discharge((params as number) ?? 50));
         break;
       case "uploadProfile":
-        this._guard(this._uploadProfile());
+        this._guard(this._uploadProfile((params as ProfileType) ?? "default"));
         break;
       case "queueDFU":
         this._queueDFU();
@@ -326,10 +337,11 @@ class PixelDispatcher extends PixelInfoNotifier<
     clearTimeout(this._updateLastActivityTimeout);
     this._updateLastActivityTimeout = undefined;
     // Check if still around
-    const ms =
-      this.status !== "disconnected"
-        ? 0
-        : Date.now() - this._scannedPixel.timestamp.getTime();
+    const last = Math.max(
+      this._lastDiscoTime,
+      this._scannedPixel.timestamp.getTime()
+    );
+    const ms = this.status !== "disconnected" ? 0 : Date.now() - last;
     if (this._lastActivityMs !== ms) {
       // Notify if changed
       this._lastActivityMs = ms;
@@ -400,7 +412,7 @@ class PixelDispatcher extends PixelInfoNotifier<
     }
   }
 
-  private async _uploadProfile(): Promise<void> {
+  private async _uploadProfile(type: ProfileType): Promise<void> {
     if (this.isReady) {
       const notifyProgress = (p?: number) => {
         this._evEmitter.emit("profileUploadProgress", p);
@@ -408,8 +420,40 @@ class PixelDispatcher extends PixelInfoNotifier<
       try {
         this._isUpdatingProfile = true;
         notifyProgress(0);
-        const profile = getDefaultProfile(getDieType(this._pixel.ledCount));
-        await this._pixel.transferDataSet(profile, notifyProgress);
+        let dataSet: DataSet;
+        switch (type) {
+          case "default":
+            dataSet = getDefaultProfile(getDieType(this._pixel.ledCount));
+            break;
+          case "tiny": {
+            const profile = new EditProfile();
+            profile.name = "test";
+            profile.rules.push(
+              new EditRule(
+                new EditConditionFaceCompare({
+                  flags: FaceCompareFlagsValues.less,
+                  face: 21,
+                }),
+                {
+                  actions: [
+                    new EditActionPlayAnimation({
+                      animation: new EditAnimationRainbow({
+                        duration: 1,
+                        faces: 0xffff,
+                        count: 1,
+                      }),
+                    }),
+                  ],
+                }
+              )
+            );
+            dataSet = createDataSetForProfile(profile).toDataSet();
+            break;
+          }
+          default:
+            assertNever(type);
+        }
+        await this._pixel.transferDataSet(dataSet, notifyProgress);
       } finally {
         this._isUpdatingProfile = false;
         notifyProgress(undefined);

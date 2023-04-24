@@ -148,6 +148,11 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   const [errorCleared, setErrorCleared] = React.useState(false);
   React.useEffect(() => dfuLastError && setErrorCleared(false), [dfuLastError]);
 
+  const clearError = React.useCallback(() => {
+    setErrorCleared(true);
+    setDfuTarget(undefined);
+  }, []);
+
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: sp }: { item: ScannedPeripheral }) => (
@@ -188,7 +193,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
           <Button
             mode="contained-tonal"
             style={styles.buttonOk}
-            onPress={() => setErrorCleared(true)}
+            onPress={clearError}
           >
             {t("ok")}
           </Button>

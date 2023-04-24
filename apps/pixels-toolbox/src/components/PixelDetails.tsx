@@ -14,13 +14,15 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import {
   Button as PaperButton,
   ButtonProps,
   Card,
+  Divider,
   Modal,
   Portal,
+  Switch,
   Text,
   useTheme,
   ModalProps,
@@ -43,7 +45,7 @@ function TextEntryBase({
   colonSeparator,
 }: TextEntryBaseProps) {
   return (
-    <Text style={gs.mv3} variant="bodyLarge">
+    <Text variant="bodyLarge">
       <Text style={gs.bold}>
         {capitalize(title)}
         {colonSeparator}
@@ -78,12 +80,24 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
   );
 }
 
-function TelemetryInfo({ pixel }: { pixel: Pixel }) {
-  const [telemetry] = usePixelValue(pixel, "telemetry", { minInterval: 1000 });
+function TelemetryInfo({
+  pixel,
+  telemetryOn,
+}: {
+  pixel: Pixel;
+  telemetryOn: boolean;
+}) {
+  const [telemetry, dispatch] = usePixelValue(pixel, "telemetry", {
+    minInterval: 1000,
+  });
   const x = telemetry?.accX ?? 0;
   const y = telemetry?.accY ?? 0;
   const z = telemetry?.accZ ?? 0;
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
+
+  React.useEffect(() => {
+    dispatch(telemetryOn ? "start" : "stop");
+  }, [dispatch, telemetryOn]);
 
   // Values for UI
   const { t } = useTranslation();
@@ -152,53 +166,73 @@ function BottomButtons({
 }: {
   pixelDispatcher: PixelDispatcher;
 }) {
+  const status = usePixelStatus(pixelDispatcher.pixel);
+  const connectStr = status === "disconnected" ? "connect" : "disconnect";
   const { isOpen, onOpen, onClose } = useDisclose();
   const { t } = useTranslation();
   return (
     <>
       <FastHStack>
         <FastVStack flex={1} mr={2}>
-          <Button onPress={() => pixelDispatcher.dispatch("connect")}>
-            {t("connect")}
+          <Button onPress={() => pixelDispatcher.dispatch(connectStr)}>
+            {t(connectStr)}
           </Button>
-          <Button onPress={onOpen}>{t("discharge")}</Button>
-          <Button onPress={() => pixelDispatcher.dispatch("enableCharging")}>
-            {t("enableCharging")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-            {t("blink")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
-            {t("blinkId")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
-            {t("calibrate")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("turnOff")}>
-            {t("turnOff")}
-          </Button>
+          {status === "ready" && (
+            <>
+              <Button onPress={onOpen}>{t("discharge")}</Button>
+              <Button
+                onPress={() => pixelDispatcher.dispatch("enableCharging")}
+              >
+                {t("enableCharging")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("blink")}>
+                {t("blink")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
+                {t("blinkId")}
+              </Button>
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch("uploadProfile", "tiny")
+                }
+              >
+                {t("setTinyProfile")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
+                {t("calibrate")}
+              </Button>
+            </>
+          )}
         </FastVStack>
         <FastVStack flex={1} ml={2}>
-          <Button onPress={() => pixelDispatcher.dispatch("disconnect")}>
-            {t("disconnect")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("discharge", 0)}>
-            {t("stopDischarge")}
-          </Button>
-          <Button
-            onPress={() => pixelDispatcher.dispatch("enableCharging", false)}
-          >
-            {t("disableCharging")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
-            {t("rainbow")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
-            {t("resetProfile")}
-          </Button>
-          <Button onPress={() => pixelDispatcher.dispatch("exitValidation")}>
-            {t("exitValidationMode")}
-          </Button>
+          {status === "ready" && (
+            <>
+              <Button onPress={() => pixelDispatcher.dispatch("turnOff")}>
+                {t("turnOff")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("discharge", 0)}>
+                {t("stopDischarge")}
+              </Button>
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch("enableCharging", false)
+                }
+              >
+                {t("disableCharging")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
+                {t("rainbow")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
+                {t("setDefaultProfile")}
+              </Button>
+              <Button
+                onPress={() => pixelDispatcher.dispatch("exitValidation")}
+              >
+                {t("exitValidationMode")}
+              </Button>
+            </>
+          )}
         </FastVStack>
       </FastHStack>
 
@@ -260,7 +294,11 @@ function FirmwareUpdateModal({ updateProgress }: { updateProgress?: number }) {
   const { t } = useTranslation();
   return (
     <Portal>
-      <Modal visible={!!updateProgress} contentContainerStyle={modalStyle}>
+      <Modal
+        visible={!!updateProgress}
+        contentContainerStyle={modalStyle}
+        dismissable={false}
+      >
         <Text style={gs.mv3} variant="bodyLarge">
           {t("updatingProfile") + t("colonSeparator")}
         </Text>
@@ -334,7 +372,23 @@ export function PixelDetails({
   const pixel = pixelDispatcher.pixel;
   const status = usePixelStatus(pixel);
 
+  // Telemetry
+  const [telemetryOn, setTelemetryOn] = React.useState(true);
+
   // Values for UI
+  const simpleStatus = React.useMemo(() => {
+    // Returns simplified status
+    switch (status) {
+      case "connecting":
+      case "identifying":
+        return "connecting";
+      case "ready":
+        return "connected";
+      case "disconnecting":
+      default:
+        return "disconnected";
+    }
+  }, [status]);
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
@@ -345,18 +399,37 @@ export function PixelDetails({
           title={pixelDispatcher.name}
         />
         <Card.Content>
-          <View style={gs.mv3}>
-            <TextEntry title={t("status")}>{status ? t(status) : ""}</TextEntry>
-          </View>
-          <BaseInfo pixel={pixel} />
-          <TelemetryInfo pixel={pixel} />
-          {lastError ? (
-            <ErrorCard error={lastError} clear={clearError} />
-          ) : (
-            <BottomButtons pixelDispatcher={pixelDispatcher} />
-          )}
+          <TextEntry title={t("status")}>{t(simpleStatus)}</TextEntry>
         </Card.Content>
       </Card>
+      <View style={gs.mv3} />
+      <Card>
+        <Card.Content>
+          <BaseInfo pixel={pixel} />
+          <TelemetryInfo pixel={pixel} telemetryOn={telemetryOn} />
+        </Card.Content>
+      </Card>
+      <View style={gs.mv3} />
+      <ScrollView>
+        <Card>
+          <Card.Content>
+            {lastError ? (
+              <ErrorCard error={lastError} clear={clearError} />
+            ) : (
+              <>
+                <BottomButtons pixelDispatcher={pixelDispatcher} />
+                <Divider style={{ height: 3, marginVertical: 5 }} />
+                <FastHStack w="100%" alignContent="space-around">
+                  <Text style={[gs.flex, gs.bold]} variant="bodyLarge">
+                    {t("enableTelemetry")}
+                  </Text>
+                  <Switch onValueChange={setTelemetryOn} value={telemetryOn} />
+                </FastHStack>
+              </>
+            )}
+          </Card.Content>
+        </Card>
+      </ScrollView>
 
       <FirmwareUpdateModal updateProgress={uploadProgress} />
     </>

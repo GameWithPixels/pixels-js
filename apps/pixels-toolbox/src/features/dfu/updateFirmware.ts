@@ -40,7 +40,7 @@ export default async function (
     } catch (error: any) {
       if (error instanceof DfuFirmwareVersionFailureError) {
         // Bootloader already up-to-date
-        console.log("Bootloader is same version or more recent");
+        console.log("Device bootloader is same version or more recent");
         if (hasFirmware) {
           // Give DFU library a break, otherwise we risk getting the same FW version failure
           // on the firmware update below
