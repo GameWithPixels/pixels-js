@@ -45,6 +45,7 @@ export interface FastBoxProps
       | "borderStyle"
       | "borderWidth"
       | "opacity"
+      | "backgroundColor"
     > {
   flexDir?: ViewStyle["flexDirection"];
   w?: ViewStyle["width"];
@@ -65,6 +66,7 @@ export interface FastBoxProps
   mb?: ViewStyle["marginBottom"];
   ml?: ViewStyle["marginLeft"];
   mr?: ViewStyle["marginRight"];
+  bg?: ViewStyle["backgroundColor"];
 }
 
 function createStyle(props: Omit<FastBoxProps, "children" | "dynamicProps">) {
@@ -107,6 +109,7 @@ function createStyle(props: Omit<FastBoxProps, "children" | "dynamicProps">) {
     borderStyle: props.borderStyle,
     borderWidth: props.borderWidth,
     opacity: props.opacity,
+    backgroundColor: props.backgroundColor ?? props.bg,
   };
 }
 

@@ -8,7 +8,7 @@ import React from "react";
 import { FaceSelector, FaceSelectorProps } from "../components/FaceSelector";
 
 export interface PlaybackFaceWidgetProps
-  extends Omit<FaceSelectorProps, "disabled"> {
+  extends Omit<FaceSelectorProps, "disabled" | "backgroundColor" | "bg"> {
   defaultFace?: number;
 }
 

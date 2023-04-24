@@ -41,16 +41,18 @@ export type CreateWidgetComponentOptionals = Required<
   Exclude<Parameters<typeof createWidgetComponent>[1], undefined>
 >;
 
+type FastBoxWithBgProps = Omit<FastBoxProps, "backgroundColor" | "bg">;
+
 // This helper wraps the given widget component to automatically re-render on value change
 function makeAutoUpdate<T>(
   update: (value: T) => void,
   widget: (
-    props: FastBoxProps & {
+    props: FastBoxWithBgProps & {
       autoUpdate: (value: T) => void;
     }
   ) => JSX.Element
-): (props: FastBoxProps) => JSX.Element {
-  const WrappedWidget = (props: FastBoxProps) => {
+): (props: FastBoxWithBgProps) => JSX.Element {
+  const WrappedWidget = (props: FastBoxWithBgProps) => {
     const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
     const autoUpdate = React.useCallback((value: T) => {
       update(value);
