@@ -10,7 +10,15 @@ import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
 import { ScrollView, StyleSheet, useWindowDimensions } from "react-native";
-import { Button, ButtonProps, Card, Text } from "react-native-paper";
+import {
+  Button,
+  ButtonProps,
+  Card,
+  Text,
+  TouchableRipple,
+  TouchableRippleProps,
+  useTheme,
+} from "react-native-paper";
 import {
   Camera,
   CameraPermissionStatus,
@@ -67,26 +75,43 @@ function BottomButton({
   );
 }
 
-function HugeButton({
+function LargeTonalButton({
+  children,
   height,
   fontSize,
-  contentStyle,
-  labelStyle,
   ...props
-}: ButtonProps & { height: number; fontSize: number }) {
+}: TouchableRippleProps & {
+  height: number;
+  fontSize: number;
+  children: React.ReactNode;
+}) {
+  const theme = useTheme();
+  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
+  // Paper's button doesn't have multiline text (by design) so we render our own custom button
   return (
-    <Button
-      contentStyle={[{ height }, contentStyle]}
-      labelStyle={[
-        {
+    <TouchableRipple
+      rippleColor={theme.colors.surface}
+      style={{
+        height,
+        backgroundColor: theme.colors.secondaryContainer,
+        borderRadius,
+        alignContent: "center",
+        justifyContent: "center",
+      }}
+      {...props}
+    >
+      <Text
+        style={{
           fontSize,
           fontWeight: "bold",
-          lineHeight: undefined,
-        },
-        labelStyle,
-      ]}
-      {...props}
-    />
+          flexWrap: "wrap",
+          textAlign: "center",
+          color: theme.colors.onSecondaryContainer,
+        }}
+      >
+        {children}
+      </Text>
+    </TouchableRipple>
   );
 }
 
@@ -100,38 +125,34 @@ function SelectFormFactorPage({
   const { t } = useTranslation();
   return (
     <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
-      <HugeButton
-        mode="contained-tonal"
+      <LargeTonalButton
         height={btnHeight}
         fontSize={30}
         onPress={() => onSelected("boardNoCoil")}
       >
         {t("validateBoardNoCoil")}
-      </HugeButton>
-      <HugeButton
-        mode="contained-tonal"
+      </LargeTonalButton>
+      <LargeTonalButton
         height={btnHeight}
         fontSize={30}
         onPress={() => onSelected("board")}
       >
         {t("validateFullBoard")}
-      </HugeButton>
-      <HugeButton
-        mode="contained-tonal"
+      </LargeTonalButton>
+      <LargeTonalButton
         height={btnHeight}
         fontSize={30}
         onPress={() => onSelected("die")}
       >
         {t("validateResinDie")}
-      </HugeButton>
-      <HugeButton
-        mode="contained-tonal"
+      </LargeTonalButton>
+      <LargeTonalButton
         height={btnHeight}
         fontSize={30}
         onPress={() => onSelected("dieFinal")}
       >
         {t("validateDieFinal")}
-      </HugeButton>
+      </LargeTonalButton>
     </FastVStack>
   );
 }
@@ -154,15 +175,14 @@ function SelectDieTypePage({
         {t("testingFormFactor", { formFactor: t(formFactor) })}
       </Text>
       {DieTypes.map((dt) => (
-        <HugeButton
+        <LargeTonalButton
           key={dt}
-          mode="contained-tonal"
           height={btnHeight}
           fontSize={24}
           onPress={() => onSelectDieType(dt)}
         >
           {t(dt)}
-        </HugeButton>
+        </LargeTonalButton>
       ))}
       <BottomButton onPress={onBack}>{t("back")}</BottomButton>
     </FastVStack>

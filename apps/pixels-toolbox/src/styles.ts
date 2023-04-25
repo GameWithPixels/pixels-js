@@ -58,7 +58,7 @@ export function useModalStyle(): ViewStyle {
       margin: 10,
       padding: 10,
       borderWidth: 2,
-      borderRadius: theme.roundness,
+      borderRadius: (theme.isV3 ? 5 : 1) * theme.roundness,
       backgroundColor: theme.colors.background,
       borderColor: theme.colors.onBackground,
     }),
