@@ -29,18 +29,21 @@ function DfuBundleSelection({ navigation }: Pick<HomeProps, "navigation">) {
     [navigation, noDFUFiles, selectedDfuBundle]
   );
 
+  // Values for UI
+  const theme = useTheme();
+  const { t } = useTranslation();
+
   // Label to display for the selected firmware
   const selectedFwLabel = React.useMemo(() => {
     const b = selectedDfuBundle;
     if (b) {
       const index = availableDfuBundles.indexOf(selectedDfuBundle);
       const date = toLocaleDateTimeString(b.date);
-      return `${index === 0 ? "(*) " : ""}${b.fileTypes.join(", ")}: ${date}`;
+      const type = b.items.map((i) => t(i.type)).join(", ");
+      return `${index === 0 ? "(*) " : ""}${type}: ${date}`;
     }
-  }, [availableDfuBundles, selectedDfuBundle]);
+  }, [availableDfuBundles, selectedDfuBundle, t]);
 
-  const { t } = useTranslation();
-  const theme = useTheme();
   return !dfuBundlesError || noDFUFiles ? (
     <Button
       onPress={selectDfuFile}
@@ -66,10 +69,10 @@ function HomePage({ navigation }: HomeProps) {
     (pixelId: number) => navigation.navigate("DieDetails", { pixelId }),
     [navigation]
   );
-
   // Values for UI
   const { t } = useTranslation();
   const window = useWindowDimensions();
+
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}

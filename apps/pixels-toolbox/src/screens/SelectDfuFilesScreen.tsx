@@ -1,7 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
-  FastBox,
   FastHStack,
+  FastVStack,
 } from "@systemic-games/react-native-base-components";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
@@ -38,12 +38,12 @@ async function importDfuFile() {
   }
 }
 
-function getDescription(bundle: DfuFilesBundle): string {
+function getDescription(bundle: DfuFilesBundle): string | undefined {
   switch (bundle.kind) {
     case "factory":
       return "(*) Used In Validation";
     case "app":
-      return "";
+      return undefined;
     case "imported":
       return "Imported";
     default:
@@ -83,25 +83,35 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
     [theme.colors.primary]
   );
   const renderItem = React.useCallback(
-    ({ item: bundle }: { item: DfuFilesBundle; index: number }) => (
-      <Pressable
-        key={bundle?.bootloader?.pathname ?? bundle?.firmware?.pathname}
-        onPress={() => {
-          appDispatch(setSelectedDfuBundle(availableBundles.indexOf(bundle)));
-          navigation.goBack();
-        }}
-      >
-        <Card
-          style={bundle === selectedBundle ? styles.selectedCard : undefined}
+    ({ item: bundle }: { item: DfuFilesBundle; index: number }) => {
+      const comment = bundle.main.comment;
+      const desc = getDescription(bundle);
+      return (
+        <Pressable
+          key={bundle?.bootloader?.pathname ?? bundle?.firmware?.pathname}
+          style={gs.flex}
+          onPress={() => {
+            appDispatch(setSelectedDfuBundle(availableBundles.indexOf(bundle)));
+            navigation.goBack();
+          }}
         >
-          <Card.Title title={`📅 ${toLocaleDateTimeString(bundle.date)}`} />
-          <Card.Content>
-            <Text>{`Type: ${bundle.fileTypes.join(", ")}`}</Text>
-            <Text>{getDescription(bundle)}</Text>
-          </Card.Content>
-        </Card>
-      </Pressable>
-    ),
+          <Card
+            style={bundle === selectedBundle ? styles.selectedCard : undefined}
+          >
+            <Card.Title title={`📅 ${toLocaleDateTimeString(bundle.date)}`} />
+            <Card.Content>
+              <Text style={gs.bold}>{`Type: ${bundle.items
+                .map((i) => i.type)
+                .join(", ")}`}</Text>
+              {desc && <Text>{`Remark: ${desc}`}</Text>}
+              {(comment?.length ?? 0) > 0 && (
+                <Text>{`Comment: ${comment}`}</Text>
+              )}
+            </Card.Content>
+          </Card>
+        </Pressable>
+      );
+    },
     [
       appDispatch,
       availableBundles,
@@ -112,7 +122,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   );
 
   return (
-    <FastBox gap={8} alignItems="center">
+    <FastVStack gap={8} alignItems="center">
       <Button mode="contained-tonal" onPress={importDfuFile}>
         Import A DFU Zip File
       </Button>
@@ -136,7 +146,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
       ) : (
         <Text style={gs.bold}>{`${bundlesError ?? "No DFU files!"}`}</Text>
       )}
-    </FastBox>
+    </FastVStack>
   );
 }
 

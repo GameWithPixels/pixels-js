@@ -1,8 +1,9 @@
 export interface DfuFileInfo {
   pathname: string;
-  date: Date;
   basename: string;
   type: "firmware" | "bootloader";
+  date: Date;
+  comment?: string;
 }
 
 // Returns parsed date and file basename
@@ -16,8 +17,11 @@ export default function (
 ): DfuFileInfo {
   const filename =
     opt?.filename ?? pathname.replace("\\", "/").split("/").pop();
-  const parts = filename?.split("_");
-  if (parts?.length === 3) {
+  const filenameWithoutExt =
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    filename?.substring(0, filename.lastIndexOf(".")) || filename;
+  const parts = filenameWithoutExt?.split("_");
+  if (parts && parts.length >= 2) {
     try {
       const dt = parts[1].split("T");
       const date = dt[0];
@@ -44,14 +48,13 @@ export default function (
         timeWithSemicolon = time;
       }
       const typeStr = parts[0].toLocaleLowerCase();
+      const isFwOrBl = typeStr === "firmware" || typeStr === "bootloader";
       return {
         pathname,
-        date: new Date(date + "T" + timeWithSemicolon),
         basename: parts[0],
-        type:
-          typeStr === "firmware" || typeStr === "bootloader"
-            ? typeStr
-            : opt?.defaultType ?? "firmware",
+        type: isFwOrBl ? typeStr : opt?.defaultType ?? "firmware",
+        date: new Date(date + "T" + timeWithSemicolon),
+        comment: parts.length > 2 ? parts.slice(2).join(", ") : undefined,
       };
     } catch {
       // We're only checking for a few possible cases so we might get an exception

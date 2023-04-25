@@ -41,8 +41,8 @@ export default function (): [
         // Store pathnames
         dispatch(
           resetEmbeddedDfuBundles({
-            app: others.map((b) => b.pathnames),
-            factory: factory[0].pathnames,
+            app: others.map((b) => b.items.map((i) => i.pathname)),
+            factory: factory[0].items.map((i) => i.pathname),
           })
         );
       };

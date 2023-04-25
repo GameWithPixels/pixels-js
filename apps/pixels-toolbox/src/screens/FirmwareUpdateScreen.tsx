@@ -59,15 +59,6 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
     [available, selected]
   );
 
-  // Build UI label for selected bundle
-  const bundleLabel = React.useMemo(() => {
-    if (bundle) {
-      const date = toLocaleDateTimeString(bundle.date);
-      const types = bundle.fileTypes.join(", ");
-      return `${selected === 0 ? "(*) " : ""}${types}: ${date}`;
-    }
-  }, [bundle, selected]);
-
   // DFU
   const [dfuTarget, setDfuTarget] = React.useState<ScannedPeripheral>();
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
@@ -142,16 +133,27 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
     };
   }, [errorHandler, onSelect]);
 
+  // Clear error
+  const clearError = React.useCallback(() => {
+    setErrorCleared(true);
+    setDfuTarget(undefined);
+  }, []);
+
   // Values for UI
+  const theme = useTheme();
   const { t } = useTranslation();
   const [refreshing, setRefreshing] = React.useState(false);
   const [errorCleared, setErrorCleared] = React.useState(false);
   React.useEffect(() => dfuLastError && setErrorCleared(false), [dfuLastError]);
 
-  const clearError = React.useCallback(() => {
-    setErrorCleared(true);
-    setDfuTarget(undefined);
-  }, []);
+  // Build UI label for selected bundle
+  const bundleLabel = React.useMemo(() => {
+    if (bundle) {
+      const date = toLocaleDateTimeString(bundle.date);
+      const types = bundle.items.map((i) => t(i.type)).join(", ");
+      return `${selected === 0 ? "(*) " : ""}${types}: ${date}`;
+    }
+  }, [bundle, selected, t]);
 
   // FlatList item rendering
   const renderItem = React.useCallback(
@@ -178,8 +180,6 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
     ),
     [refreshing]
   );
-
-  const theme = useTheme();
 
   return (
     <FastBox flex={1}>
