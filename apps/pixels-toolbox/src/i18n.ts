@@ -141,6 +141,7 @@ i18n
           connect: "Connect",
           disconnect: "Disconnect",
           blink: "Blink",
+          rainbowAllFaces: "Rainbow All Faces",
           updateProfile: "Update Profile",
           updateBootloaderAndFirmware: "Update Bootloader & Firmware",
 
@@ -313,6 +314,7 @@ i18n
           connect: "连接",
           disconnect: "断开联系",
           blink: "闪烁",
+          rainbowAllFaces: "Rainbow All Faces",
           updateProfile: "更新资料",
           updateBootloaderAndFirmware: "更新引导装载程序和固件",
 

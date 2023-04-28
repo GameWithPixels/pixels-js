@@ -7,6 +7,7 @@ import {
 import {
   createDataSetForProfile,
   EditActionPlayAnimation,
+  EditAnimation,
   EditAnimationRainbow,
   EditConditionFaceCompare,
   EditDataSet,
@@ -30,6 +31,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 import { getDieType } from "./DieType";
+import { PrebuildAnimations } from "./PrebuildAnimations";
 import {
   pixelBlinkId,
   pixelDischarge,
@@ -50,7 +52,7 @@ export interface PixelDispatcherActionMap {
   reportRssi: undefined;
   blink: undefined;
   blinkId: undefined;
-  playRainbow: undefined;
+  playAnimation: EditAnimation;
   calibrate: undefined;
   uploadProfile: ProfileType;
   queueDFU: undefined;
@@ -288,8 +290,11 @@ class PixelDispatcher extends PixelInfoNotifier<
       case "blinkId":
         this._guard(this._blinkId());
         break;
-      case "playRainbow":
-        this._guard(this._playRainbow());
+      case "playAnimation":
+        this._guard(
+          this._playAnimation(params as EditAnimation) ??
+            PrebuildAnimations.rainbow
+        );
         break;
       case "calibrate":
         this._guard(this._calibrate());
@@ -372,18 +377,11 @@ class PixelDispatcher extends PixelInfoNotifier<
     }
   }
 
-  private async _playRainbow(): Promise<void> {
+  private async _playAnimation(anim: EditAnimation): Promise<void> {
     if (this.isReady) {
       this._evEmitter.emit("profileUploadProgress", 0);
       const editDataSet = new EditDataSet();
-      editDataSet.animations.push(
-        new EditAnimationRainbow({
-          duration: 6,
-          count: 3,
-          fade: 0.5,
-          traveling: true,
-        })
-      );
+      editDataSet.animations.push(anim);
       try {
         await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
           this._evEmitter.emit("profileUploadProgress", p)

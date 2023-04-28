@@ -11,8 +11,10 @@ import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
 import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
 import PixelDispatcher, {
+  PixelDispatcherActionMap,
   PixelDispatcherActionName,
 } from "~/features/pixels/PixelDispatcher";
+import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import gs from "~/styles";
 
 function ListItem({
@@ -54,18 +56,23 @@ export default React.memo(function ({
 
   // Actions dispatched to all Pixels
   const dispatchAll = React.useCallback(
-    (action: PixelDispatcherActionName) =>
+    <T extends PixelDispatcherActionName>(
+      action: T,
+      params?: PixelDispatcherActionMap[T]
+    ) =>
       scannedPixels.forEach((sp) =>
-        PixelDispatcher.getInstance(sp).dispatch(action)
+        PixelDispatcher.getInstance(sp).dispatch(action, params)
       ),
     [scannedPixels]
   );
   const { showActionSheetWithOptions } = useActionSheet();
-  const onShowActionSheet = React.useCallback(() => {
+  const showActionSheet = React.useCallback(() => {
     const options = [
       t("connect"),
       t("disconnect"),
       t("blink"),
+      t("rainbow"),
+      t("rainbowAllFaces"),
       t("updateProfile"),
       t("updateBootloaderAndFirmware"),
       t("cancel"),
@@ -90,9 +97,15 @@ export default React.memo(function ({
             dispatchAll("blink");
             break;
           case 3:
-            dispatchAll("uploadProfile");
+            dispatchAll("playAnimation", PrebuildAnimations.rainbow);
             break;
           case 4:
+            dispatchAll("playAnimation", PrebuildAnimations.rainbowAllFaces);
+            break;
+          case 5:
+            dispatchAll("uploadProfile");
+            break;
+          case 6:
             dispatchAll("queueDFU");
             break;
         }
@@ -140,7 +153,7 @@ export default React.memo(function ({
         <Text variant="headlineMedium">
           {t("pixelsWithCount", { count: scannedPixels.length })}
         </Text>
-        <EmojiButton onPress={onShowActionSheet}>⚙️</EmojiButton>
+        <EmojiButton onPress={showActionSheet}>⚙️</EmojiButton>
       </FastBox>
       {lastError ? (
         <Text>{`${lastError}`}</Text>

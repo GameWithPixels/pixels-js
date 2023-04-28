@@ -31,6 +31,7 @@ import {
 import ProgressBar from "~/components/ProgressBar";
 import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
@@ -185,11 +186,15 @@ function BottomButtons({
               >
                 {t("enableCharging")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-                {t("blink")}
-              </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
-                {t("blinkId")}
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch(
+                    "playAnimation",
+                    PrebuildAnimations.rainbow
+                  )
+                }
+              >
+                {t("rainbow")}
               </Button>
               <Button
                 onPress={() =>
@@ -197,6 +202,9 @@ function BottomButtons({
                 }
               >
                 {t("setTinyProfile")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("blink")}>
+                {t("blink")}
               </Button>
               <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
                 {t("calibrate")}
@@ -220,11 +228,21 @@ function BottomButtons({
               >
                 {t("disableCharging")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("playRainbow")}>
-                {t("rainbow")}
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch(
+                    "playAnimation",
+                    PrebuildAnimations.rainbowAllFaces
+                  )
+                }
+              >
+                {t("rainbowAllFaces")}
               </Button>
               <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
                 {t("setDefaultProfile")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
+                {t("blinkId")}
               </Button>
               <Button
                 onPress={() => pixelDispatcher.dispatch("exitValidation")}
