@@ -1,6 +1,6 @@
-// Assume production build when using EAS with non dev profile
+// Assume production build by default
 const prod =
-  process.env.EAS_BUILD && process.env.EAS_BUILD_PROFILE !== "development";
+  !process.env.PX_TB_DEV && process.env.EAS_BUILD_PROFILE !== "development";
 
 const config = {
   expo: {
