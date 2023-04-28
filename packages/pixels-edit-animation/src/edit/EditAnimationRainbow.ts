@@ -48,7 +48,7 @@ export default class EditAnimationRainbow extends EditAnimation {
     this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
     this.count = opt?.count ?? 1;
     this.fade = opt?.fade ?? 0;
-    this.traveling = opt?.traveling ?? true;
+    this.traveling = opt?.traveling ?? false;
   }
 
   toAnimation(_editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
