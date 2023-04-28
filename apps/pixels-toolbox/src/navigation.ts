@@ -6,6 +6,7 @@ export type RootScreensParamList = {
   HomeNavigator: undefined;
   Validation: undefined;
   FirmwareUpdateNavigator: undefined;
+  TransferTest: undefined;
   Roll: undefined;
   Animations: undefined;
   Settings: undefined;

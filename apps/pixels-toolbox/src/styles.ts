@@ -12,6 +12,10 @@ const gs = StyleSheet.create({
   fullWidth: {
     width: "100%",
   },
+  fullSize: {
+    width: "100%",
+    height: "100%",
+  },
   mv3: {
     marginVertical: 3,
   },

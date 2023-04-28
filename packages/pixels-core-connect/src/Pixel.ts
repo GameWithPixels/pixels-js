@@ -775,6 +775,9 @@ export class Pixel extends PixelInfoNotifier {
     dataSet: DataSet,
     progressCallback?: (progress: number) => void
   ): Promise<void> {
+    // Notify that we're starting
+    progressCallback?.(0);
+
     const transferMsg = safeAssign(new TransferAnimationSet(), {
       paletteSize: dataSet.animationBits.getPaletteSize(),
       rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
@@ -818,7 +821,7 @@ export class Pixel extends PixelInfoNotifier {
           `and hash 0x${hashStr}`
       );
 
-      await this._uploadBulkDataWithAck(
+      await this.uploadBulkDataWithAck(
         "transferAnimationSetFinished",
         data,
         progressCallback
@@ -844,6 +847,9 @@ export class Pixel extends PixelInfoNotifier {
     progressCallback?: (progress: number) => void
   ): Promise<void> {
     assert(dataSet.animations.length >= 1, "No animation in DataSet");
+
+    // Notify that we're starting
+    progressCallback?.(0);
 
     // Prepare the Pixel
     const data = dataSet.toSingleAnimationByteArray();
@@ -873,7 +879,7 @@ export class Pixel extends PixelInfoNotifier {
               `byte array should be: ${data.length} bytes ` +
               `and hash 0x${hashStr}`
           );
-          await this._uploadBulkDataWithAck(
+          await this.uploadBulkDataWithAck(
             "transferTestAnimationSetFinished",
             data,
             progressCallback
@@ -904,6 +910,9 @@ export class Pixel extends PixelInfoNotifier {
     progressCallback?: (progress: number) => void
   ): Promise<void> {
     assert(dataSet.animations.length >= 1, "No animation in DataSet");
+
+    // Notify that we're starting
+    progressCallback?.(0);
 
     // Prepare the Pixel
     const data = dataSet.toAnimationsByteArray();
@@ -937,7 +946,7 @@ export class Pixel extends PixelInfoNotifier {
               `byte array should be: ${data.length} bytes ` +
               `and hash 0x${hashStr}`
           );
-          await this._uploadBulkDataWithAck(
+          await this.uploadBulkDataWithAck(
             "transferInstantAnimationSetFinished",
             data,
             progressCallback
@@ -1064,10 +1073,11 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   // Upload the given data to the Pixel
-  private async _uploadBulkDataWithAck(
+  async uploadBulkDataWithAck(
     ackType: MessageType,
     data: ArrayBuffer,
-    progressCallback?: (progress: number) => void
+    progressCallback?: (progress: number) => void,
+    progressMode: "percent" | "bytes" = "percent"
   ): Promise<void> {
     let programmingFinished = false;
     let stopWaiting: (() => void) | undefined;
@@ -1080,7 +1090,7 @@ export class Pixel extends PixelInfoNotifier {
     };
     this.addMessageListener(ackType, onFinished);
     try {
-      await this._uploadBulkData(data, progressCallback);
+      await this._uploadBulkData(data, progressCallback, progressMode);
       this._log(
         "Done sending dataset, waiting for Pixel to finish programming"
       );
@@ -1114,11 +1124,11 @@ export class Pixel extends PixelInfoNotifier {
   // Upload the given data to the Pixel
   private async _uploadBulkData(
     data: ArrayBuffer,
-    progressCallback?: (progress: number) => void
+    progressCallback?: (progress: number) => void,
+    progressMode: "percent" | "bytes" = "percent"
   ): Promise<void> {
     let remainingSize = data.byteLength;
     this._log(`Sending ${remainingSize} bytes of bulk data`);
-    progressCallback?.(0);
 
     // Send setup message
     const setupMsg = new BulkSetup();
@@ -1126,11 +1136,16 @@ export class Pixel extends PixelInfoNotifier {
     await this.sendAndWaitForResponse(setupMsg, "bulkSetupAck");
     this._log("Ready for receiving data");
 
+    //TODO
+    //TODO
+    //TODO
+    progressCallback?.(0);
+
     // Then transfer data
     let lastProgress = 0;
     let offset = 0;
+    const dataMsg = new BulkData();
     while (remainingSize > 0) {
-      const dataMsg = new BulkData();
       dataMsg.offset = offset;
       dataMsg.size = Math.min(remainingSize, Constants.maxMessageSize);
       dataMsg.data = data.slice(offset, offset + dataMsg.size);
@@ -1140,7 +1155,10 @@ export class Pixel extends PixelInfoNotifier {
       remainingSize -= dataMsg.size;
       offset += dataMsg.size;
       if (progressCallback) {
-        const progress = Math.round((100 * offset) / data.byteLength);
+        const progress =
+          progressMode === "percent"
+            ? Math.round((100 * offset) / data.byteLength)
+            : offset;
         if (progress > lastProgress) {
           progressCallback(progress);
           lastProgress = progress;

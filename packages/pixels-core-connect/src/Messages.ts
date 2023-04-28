@@ -85,6 +85,9 @@ export const MessageTypeValues = {
   discharge: enumValue(),
   blinkId: enumValue(),
   blinkIdAck: enumValue(),
+  transferTest: enumValue(),
+  transferTestAck: enumValue(),
+  transferTestFinished: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
@@ -1103,6 +1106,18 @@ export class BlinkId implements PixelMessage {
   loop = false;
 }
 
+export class TransferTest implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.transferTest;
+
+  /**
+   * The amount of data to be send.
+   */
+  @serializable(2, { padding: 1 })
+  size = 0;
+}
+
 // Returns the list of message classes defined in this file.
 function _getMessageClasses(): MessageClass[] {
   return [
@@ -1133,5 +1148,6 @@ function _getMessageClasses(): MessageClass[] {
     Temperature,
     Discharge,
     BlinkId,
+    TransferTest,
   ];
 }

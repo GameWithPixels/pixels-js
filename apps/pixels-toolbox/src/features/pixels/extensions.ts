@@ -3,6 +3,7 @@ import {
   BlinkId,
   Discharge,
   Pixel,
+  TransferTest,
 } from "@systemic-games/react-native-pixels-connect";
 
 /**
@@ -58,4 +59,26 @@ export async function pixelDischarge(
     currentMA,
   });
   await pixel.sendMessage(dischargeMsg);
+}
+
+export async function pixelTransferTest(
+  pixel: Pixel,
+  size: number,
+  sendBytesCallback?: (bytesCount: number) => void
+): Promise<void> {
+  // Notify that we're starting
+  //sendBytesCallback?.(0);
+
+  const transferMsg = safeAssign(new TransferTest(), {
+    size,
+  });
+  await pixel.sendAndWaitForResponse(transferMsg, "transferTestAck");
+
+  const data = Array(size).fill(0);
+  await pixel.uploadBulkDataWithAck(
+    "transferTestFinished",
+    new Uint8Array(data),
+    sendBytesCallback,
+    "bytes"
+  );
 }
