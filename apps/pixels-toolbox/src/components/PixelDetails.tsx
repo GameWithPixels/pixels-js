@@ -307,7 +307,7 @@ function DischargeModal({
   );
 }
 
-function FirmwareUpdateModal({ updateProgress }: { updateProgress?: number }) {
+function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
   return (
@@ -449,7 +449,7 @@ export function PixelDetails({
         </Card>
       </ScrollView>
 
-      <FirmwareUpdateModal updateProgress={uploadProgress} />
+      <ProfileUpdateModal updateProgress={uploadProgress} />
     </>
   );
 }

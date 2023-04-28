@@ -389,18 +389,16 @@ export function PixelSwipeableCard({
   );
 
   return (
-    <>
-      <Swipeable
-        onSwipeableOpen={onSwipeableOpen}
-        renderLeftActions={renderLeftActions}
-        renderRightActions={renderRightActions}
-      >
-        <Pressable onPress={() => onShowDetails()}>
-          <PixelCard pixelDispatcher={pixelDispatcher} {...props} />
-          {dfuAvailable && <Text style={styles.topRightCorner}>⬆️</Text>}
-        </Pressable>
-      </Swipeable>
-    </>
+    <Swipeable
+      onSwipeableOpen={onSwipeableOpen}
+      renderLeftActions={renderLeftActions}
+      renderRightActions={renderRightActions}
+    >
+      <Pressable onPress={() => onShowDetails()}>
+        <PixelCard pixelDispatcher={pixelDispatcher} {...props} />
+        {dfuAvailable && <Text style={styles.topRightCorner}>⬆️</Text>}
+      </Pressable>
+    </Swipeable>
   );
 }
 

@@ -67,7 +67,7 @@ export class DiceSelection extends EventTarget {
   get lastRolls() {
     return this._dice
       .filter((dd) => dd.rolls.length)
-      .map((dd) => dd.rolls[dd.rolls.length - 1]);
+      .map((dd) => dd.rolls.at(-1));
   }
 
   get allDiceRolled() {

@@ -121,8 +121,8 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
                 serviceInitiator.setDeviceName(deviceName);
             }
             serviceInitiator.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
-            serviceInitiator.setPacketsReceiptNotificationsValue(1);
-            serviceInitiator.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
+            serviceInitiator.setPacketsReceiptNotificationsValue(1); // TODO make param
+            serviceInitiator.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true); // TODO make param
             serviceInitiator.setZip(filePath);
             // 400 is the recommended value for the delay, see comments in DfuServiceInitiator.java of the DFU library
             serviceInitiator.setPrepareDataObjectDelay(prepareDataObjectDelay > 0 ? prepareDataObjectDelay : 400);

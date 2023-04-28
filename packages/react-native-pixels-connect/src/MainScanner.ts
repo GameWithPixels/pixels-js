@@ -134,7 +134,11 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
     }
   } else {
     console.error(
-      `Pixel ${ev.peripheral.name}: Received unsupported advertising data`
+      `Pixel ${
+        ev.peripheral.name
+      }: Received unsupported advertising data (manufacturerData: ${
+        manufacturerData?.data.length ?? -1
+      }, serviceData: ${serviceData?.data.length ?? -1})`
     );
   }
 }

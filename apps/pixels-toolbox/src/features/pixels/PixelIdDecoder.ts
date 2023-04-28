@@ -97,7 +97,7 @@ export default class PixelIdDecoder {
         if (lastColorTime === 0) {
           this._lastFrameColor = color;
         }
-        if (color && (!colors.length || colors[colors.length - 1] !== color)) {
+        if (color && (!colors.length || colors.at(-1) !== color)) {
           // Use color if different from last one
           colors.push(color);
           lastColorTime = t;

@@ -18,15 +18,13 @@ function DfuBundleSelection({ navigation }: Pick<HomeProps, "navigation">) {
   // DFU files bundles are loaded asynchronously
   const [selectedDfuBundle, availableDfuBundles, dfuBundlesError] =
     useAppDfuFilesBundles();
-  const noDFUFiles = dfuBundlesError instanceof NoDfuFileLoadedError;
+  const noDFUFilesError = dfuBundlesError instanceof NoDfuFileLoadedError;
+  const dfuFilesLoading = !selectedDfuBundle && !dfuBundlesError;
 
   // Function to open DFU file selection
-  const selectDfuFile = React.useMemo(
-    () =>
-      selectedDfuBundle || noDFUFiles
-        ? () => navigation.navigate("SelectDfuFiles")
-        : undefined,
-    [navigation, noDFUFiles, selectedDfuBundle]
+  const selectDfuFile = React.useCallback(
+    () => navigation.navigate("SelectDfuFiles"),
+    [navigation]
   );
 
   // Values for UI
@@ -44,15 +42,15 @@ function DfuBundleSelection({ navigation }: Pick<HomeProps, "navigation">) {
     }
   }, [availableDfuBundles, selectedDfuBundle, t]);
 
-  return !dfuBundlesError || noDFUFiles ? (
+  return !dfuBundlesError || noDFUFilesError ? (
     <Button
-      onPress={selectDfuFile}
+      onPress={dfuFilesLoading ? undefined : selectDfuFile}
       contentStyle={gs.fullWidth}
-      labelStyle={availableDfuBundles ? gs.underlined : gs.empty}
+      labelStyle={dfuFilesLoading ? gs.empty : gs.underlined}
     >
       {selectedDfuBundle
         ? selectedFwLabel ?? t("tapToSelectFirmware")
-        : noDFUFiles
+        : noDFUFilesError
         ? "No DFU files loaded"
         : "Loading DFU files..."}
     </Button>
@@ -69,10 +67,10 @@ function HomePage({ navigation }: HomeProps) {
     (pixelId: number) => navigation.navigate("DieDetails", { pixelId }),
     [navigation]
   );
+
   // Values for UI
   const { t } = useTranslation();
   const window = useWindowDimensions();
-
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}

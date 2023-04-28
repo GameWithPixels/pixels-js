@@ -5,9 +5,7 @@ import { useTheme } from "react-native-paper";
 // Global style
 const gs = StyleSheet.create({
   // One prop styles
-  empty: {
-    flex: 1,
-  },
+  empty: {},
   flex: {
     flex: 1,
   },
