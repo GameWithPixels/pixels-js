@@ -46,7 +46,7 @@
     "eslint": "^8.25.0",
     "eslint-config-universe": "^11.1.0",
     "eslint-plugin-jest": "^27.1.1",
-    "expo": "~48.0.10",
+    "expo": "~48.0.15",
     "find-yarn-workspace-root": "^2.0.0",
     "prettier": "^2.7.1",
     "typedoc": "^0.23.20",
