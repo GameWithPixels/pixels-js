@@ -12,6 +12,7 @@ import {
   usePixelConnect,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
+import { StorageAccessFramework } from "expo-file-system";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
@@ -20,9 +21,11 @@ import { Button, ProgressBar, Text } from "react-native-paper";
 import { AppPage } from "~/components/AppPage";
 import { LineChart } from "~/components/LineChart";
 import PixelInfoCard from "~/components/PixelInfoCard";
+import requestUserFile from "~/features/files/requestUserFile";
 import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { pixelTransferTest } from "~/features/pixels/extensions";
 import gs from "~/styles";
+import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function PixelListItem({
   pixel,
@@ -139,23 +142,50 @@ class DataRate {
 function SendData({ pixel }: { pixel: Pixel }) {
   const errorHandler = useErrorHandler();
   const status = usePixelStatus(pixel);
+  const [transferring, setTransferring] = React.useState(false);
   const [transferSize, settTransferSize] = React.useState<number>(10000);
-  const [progress, setProgress] = React.useState<number>();
+  const [transferredBytes, setTransferredBytes] = React.useState(0);
   const [points, setPoints] = React.useState<Point[]>([]);
+  const duration = React.useMemo(() => points.at(-1)?.x ?? 0, [points]);
   const dataRate = React.useMemo(() => new DataRate(), []);
+
+  // Send data to Pixel
   const send = React.useCallback(() => {
+    setTransferring(true);
     pixelTransferTest(pixel, transferSize, (bytesCount: number) => {
-      setProgress(bytesCount / transferSize);
       if (!bytesCount) {
         dataRate.reset();
       } else {
         dataRate.push(bytesCount);
       }
       setPoints(dataRate.points);
+      setTransferredBytes(bytesCount);
     })
       .catch(errorHandler)
-      .finally(() => setProgress(1));
+      .finally(() => setTransferring(false));
   }, [dataRate, errorHandler, pixel, transferSize]);
+
+  // Export to CSV file
+  const exportCsv = React.useCallback(() => {
+    const task = async () => {
+      const now = toLocaleDateTimeString(new Date());
+      const basename = `${pixel.name}-transfer-rate-${now}`;
+      const filename = `${basename}.csv`.replace(/[/\\?%*:|"<>]/g, "-");
+      const contents =
+        "timestamp,bytes\n" +
+        dataRate.points.map((p) => `${p.x},${p.y}\n`).join();
+      console.log(
+        `About to write ${contents.length} characters to ${filename}`
+      );
+      const uri = await requestUserFile(filename);
+      await StorageAccessFramework.writeAsStringAsync(uri, contents);
+    };
+    task().catch(errorHandler);
+  }, [dataRate, errorHandler, pixel.name]);
+
+  // UI
+  const progress = transferredBytes / transferSize;
+  const average = duration > 0 ? transferredBytes / duration : 0;
   return (
     <View style={{ width: "100%", gap: 10 }}>
       <Text variant="headlineMedium" style={{ alignSelf: "center" }}>
@@ -171,15 +201,12 @@ function SendData({ pixel }: { pixel: Pixel }) {
             maximumValue={50000}
             step={1000}
             onValueChange={settTransferSize}
+            disabled={transferring}
           />
-          <Button
-            mode="contained-tonal"
-            onPress={send}
-            disabled={progress !== undefined && progress !== 1}
-          >
+          <Button mode="contained-tonal" onPress={send} disabled={transferring}>
             Start
           </Button>
-          <Text>Progress: {Math.floor(100 * (progress ?? 0))}%</Text>
+          <Text>Progress: {Math.floor(100 * progress)}%</Text>
           <ProgressBar progress={progress} />
           <LineChart
             style={{ width: "100%", height: 300 }}
@@ -187,6 +214,15 @@ function SendData({ pixel }: { pixel: Pixel }) {
             fontSize={15}
           />
           <Text>X: seconds, Y: bytes/second</Text>
+          <Text>Duration: {duration.toFixed(3)} seconds</Text>
+          <Text>Average: {Math.round(average)} bytes/second</Text>
+          <Button
+            mode="contained-tonal"
+            disabled={transferring || transferSize === 0}
+            onPress={exportCsv}
+          >
+            Export To CSV
+          </Button>
         </>
       )}
     </View>
