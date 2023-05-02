@@ -129,6 +129,7 @@ i18n
           setDefaultProfile: "Set Default Profile",
           setTinyProfile: "Set Tiny Profile",
           enableTelemetry: "Enable Telemetry",
+          telemetryGraph: "Telemetry Graph",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -302,6 +303,7 @@ i18n
           setDefaultProfile: "Set Default Profile",
           setTinyProfile: "Set Tiny Profile",
           enableTelemetry: "Enable Telemetry",
+          telemetryGraph: "Telemetry Graph",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",

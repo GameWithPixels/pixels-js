@@ -209,8 +209,10 @@ function SendData({ pixel }: { pixel: Pixel }) {
           <Text>Progress: {Math.floor(100 * progress)}%</Text>
           <ProgressBar progress={progress} />
           <LineChart
-            style={{ width: "100%", height: 300 }}
+            style={{ width: "100%", height: 300, backgroundColor: "gray" }}
             points={points}
+            lineColor="blue"
+            textColor="cyan"
             fontSize={15}
           />
           <Text>X: seconds, Y: bytes/second</Text>

@@ -14,7 +14,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, View } from "react-native";
+import { ScrollView, useWindowDimensions, View } from "react-native";
 import {
   Button as PaperButton,
   ButtonProps,
@@ -27,6 +27,12 @@ import {
   useTheme,
   ModalProps,
 } from "react-native-paper";
+
+import {
+  DynamicLinesChart,
+  DynamicLinesChartHandle,
+  DynamicLinesChartProps,
+} from "./DynamicLinesChart";
 
 import ProgressBar from "~/components/ProgressBar";
 import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
@@ -81,91 +87,197 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
   );
 }
 
-function TelemetryInfo({
-  pixel,
-  telemetryOn,
-}: {
-  pixel: Pixel;
-  telemetryOn: boolean;
-}) {
+const TelemetryModal = React.forwardRef(function (
+  {
+    linesInfo,
+    ...props
+  }: Pick<DynamicLinesChartProps, "linesInfo"> & Omit<ModalProps, "children">,
+  ref: React.ForwardedRef<DynamicLinesChartHandle>
+) {
+  // Values for UI
+  const window = useWindowDimensions();
+  const modalStyle = useModalStyle();
+  const { t } = useTranslation();
+  return (
+    <Portal>
+      <Modal contentContainerStyle={modalStyle} {...props}>
+        <Text style={gs.mv3} variant="bodyLarge">
+          {t("telemetryGraph")}
+        </Text>
+        <DynamicLinesChart
+          ref={ref}
+          style={{
+            width: "100%",
+            height: window.width,
+            backgroundColor: "gainsboro",
+          }}
+          linesInfo={linesInfo}
+          textColor="steelblue"
+          fontSize={15}
+          title="Time in seconds"
+          strokeWidth={1.5}
+        />
+      </Modal>
+    </Portal>
+  );
+});
+
+interface TelemetryInfoHandle {
+  showGraph(): void;
+}
+
+const TelemetryInfo = React.forwardRef(function (
+  {
+    pixel,
+  }: {
+    pixel: Pixel;
+  },
+  ref: React.ForwardedRef<TelemetryInfoHandle>
+) {
   const [telemetry, dispatch] = usePixelValue(pixel, "telemetry", {
     minInterval: 1000,
   });
-  const x = telemetry?.accX ?? 0;
-  const y = telemetry?.accY ?? 0;
-  const z = telemetry?.accZ ?? 0;
-  const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
+  const status = usePixelStatus(pixel);
 
+  // Telemetry toggling
+  const [telemetryOn, setTelemetryOn] = React.useState(true);
+  const appState = useAppBackgroundState();
   React.useEffect(() => {
-    dispatch(telemetryOn ? "start" : "stop");
-  }, [dispatch, telemetryOn]);
+    if (status === "ready") {
+      dispatch(telemetryOn && appState === "active" ? "start" : "stop");
+    }
+  }, [appState, dispatch, status, telemetryOn]);
+
+  // Graph
+  const { isOpen, onOpen, onClose } = useDisclose();
+  const graphRef = React.useRef<DynamicLinesChartHandle>(null);
+  const linesInfo = React.useMemo(
+    () => [
+      { title: "RSSI", color: "tomato" },
+      { title: "Battery", color: "teal" },
+      { title: "Voltage", color: "mediumpurple" },
+    ],
+    []
+  );
+  const startTimeRef = React.useRef(0);
+  React.useEffect(() => {
+    startTimeRef.current = 0;
+  }, [isOpen]);
+  React.useEffect(() => {
+    if (telemetry && graphRef.current) {
+      if (startTimeRef.current === 0) {
+        startTimeRef.current = Date.now();
+      }
+      const time = Math.round((Date.now() - startTimeRef.current) / 1000);
+      graphRef.current.push(time, [
+        telemetry.rssi,
+        telemetry.batteryLevelPercent,
+        (telemetry.voltageTimes50 / 50) * 1000,
+      ]);
+    }
+  }, [telemetry]);
+
+  // Imperative handle
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      showGraph(): void {
+        onOpen();
+      },
+    }),
+    [onOpen]
+  );
 
   // Values for UI
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
-  return useAppBackgroundState() === "active" ? (
+  const x = telemetry?.accX ?? 0;
+  const y = telemetry?.accY ?? 0;
+  const z = telemetry?.accZ ?? 0;
+  const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
+  return (
     <>
-      <TextEntry title={t("battery")}>
-        {t("percentWithValue", {
-          value: telemetry?.batteryLevelPercent ?? 0,
-        })}
-        {t("commaSeparator")}
-        {t("voltageWithValue", {
-          value: telemetry ? telemetry.voltageTimes50 / 50 : 0,
-        })}
-      </TextEntry>
-      <TextEntry title={t("coil")}>
-        {t("voltageWithValue", {
-          value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
-        })}
-      </TextEntry>
-      <TextEntry title={t("internalChargerState")}>
-        {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff")}
-      </TextEntry>
-      <TextEntry title={t("internalChargerOverrideState")}>
-        {t(
-          telemetry?.forceDisableChargingState
-            ? "disallowCharging"
-            : "allowCharging"
-        )}
-      </TextEntry>
-      <TextEntry title={t("chargingState")}>
-        {t(
-          getValueKeyName(telemetry?.batteryState, PixelBatteryStateValues) ??
-            "unknown"
-        )}
-      </TextEntry>
-      <TextEntry title={t("rssi")}>
-        {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
-      </TextEntry>
-      <TextEntry title={t("mcuTemperature")}>
-        {t("celsiusWithValue", {
-          value: (telemetry?.mcuTemperatureTimes100 ?? 0) / 100,
-        })}
-      </TextEntry>
-      <TextEntry title={t("batteryTemperature")}>
-        {t("celsiusWithValue", {
-          value: (telemetry?.batteryTemperatureTimes100 ?? 0) / 100,
-        })}
-      </TextEntry>
-      <TextEntry title={t("rollState")}>
-        {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
-        {t(
-          getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
-            "unknown"
-        )}
-      </TextEntry>
-      <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
+      {telemetryOn && (
+        <>
+          <TextEntry title={t("battery")}>
+            {t("percentWithValue", {
+              value: telemetry?.batteryLevelPercent ?? 0,
+            })}
+            {t("commaSeparator")}
+            {t("voltageWithValue", {
+              value: telemetry ? telemetry.voltageTimes50 / 50 : 0,
+            })}
+          </TextEntry>
+          <TextEntry title={t("coil")}>
+            {t("voltageWithValue", {
+              value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
+            })}
+          </TextEntry>
+          <TextEntry title={t("internalChargerState")}>
+            {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff")}
+          </TextEntry>
+          <TextEntry title={t("internalChargerOverrideState")}>
+            {t(
+              telemetry?.forceDisableChargingState
+                ? "disallowCharging"
+                : "allowCharging"
+            )}
+          </TextEntry>
+          <TextEntry title={t("chargingState")}>
+            {t(
+              getValueKeyName(
+                telemetry?.batteryState,
+                PixelBatteryStateValues
+              ) ?? "unknown"
+            )}
+          </TextEntry>
+          <TextEntry title={t("rssi")}>
+            {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
+          </TextEntry>
+          <TextEntry title={t("mcuTemperature")}>
+            {t("celsiusWithValue", {
+              value: (telemetry?.mcuTemperatureTimes100 ?? 0) / 100,
+            })}
+          </TextEntry>
+          <TextEntry title={t("batteryTemperature")}>
+            {t("celsiusWithValue", {
+              value: (telemetry?.batteryTemperatureTimes100 ?? 0) / 100,
+            })}
+          </TextEntry>
+          <TextEntry title={t("rollState")}>
+            {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
+            {t(
+              getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
+                "unknown"
+            )}
+          </TextEntry>
+          <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
+        </>
+      )}
+      <Divider style={{ height: 3, marginVertical: 5 }} />
+      <FastHStack w="100%" alignContent="space-around">
+        <Text style={[gs.flex, gs.bold]} variant="bodyLarge">
+          {t("enableTelemetry")}
+        </Text>
+        <Switch onValueChange={setTelemetryOn} value={telemetryOn} />
+      </FastHStack>
+
+      <TelemetryModal
+        ref={graphRef}
+        linesInfo={linesInfo}
+        visible={isOpen}
+        onDismiss={onClose}
+      />
     </>
-  ) : (
-    <></>
   );
-}
+});
 
 function BottomButtons({
   pixelDispatcher,
+  onShowTelemetry,
 }: {
   pixelDispatcher: PixelDispatcher;
+  onShowTelemetry?: () => void;
 }) {
   const status = usePixelStatus(pixelDispatcher.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
@@ -244,6 +356,7 @@ function BottomButtons({
               <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
                 {t("blinkId")}
               </Button>
+              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
               <Button
                 onPress={() => pixelDispatcher.dispatch("exitValidation")}
               >
@@ -276,6 +389,8 @@ function DischargeModal({
       pixelDispatcher.dispatch("discharge", props.visible && current);
     }
   }, [current, pixelDispatcher, props.visible]);
+
+  // Values for UI
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
   return (
@@ -308,6 +423,7 @@ function DischargeModal({
 }
 
 function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
+  // Values for UI
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
   return (
@@ -327,6 +443,7 @@ function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
 }
 
 function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
+  // Values for UI
   const theme = useTheme();
   const { t } = useTranslation();
   return (
@@ -369,6 +486,10 @@ export function PixelDetails({
   const [lastError, setLastError] = React.useState<Error>();
   const clearError = React.useCallback(() => setLastError(undefined), []);
 
+  // Pixel
+  const pixel = pixelDispatcher.pixel;
+  const status = usePixelStatus(pixel);
+
   // Profile upload
   const [uploadProgress, setUploadProgress] = React.useState<number>();
   React.useEffect(() => {
@@ -386,12 +507,8 @@ export function PixelDetails({
     };
   }, [pixelDispatcher]);
 
-  // Pixel
-  const pixel = pixelDispatcher.pixel;
-  const status = usePixelStatus(pixel);
-
   // Telemetry
-  const [telemetryOn, setTelemetryOn] = React.useState(true);
+  const telemetryRef = React.useRef<TelemetryInfoHandle>(null);
 
   // Values for UI
   const simpleStatus = React.useMemo(() => {
@@ -424,7 +541,7 @@ export function PixelDetails({
       <Card>
         <Card.Content>
           <BaseInfo pixel={pixel} />
-          <TelemetryInfo pixel={pixel} telemetryOn={telemetryOn} />
+          <TelemetryInfo ref={telemetryRef} pixel={pixel} />
         </Card.Content>
       </Card>
       <View style={gs.mv3} />
@@ -434,16 +551,10 @@ export function PixelDetails({
             {lastError ? (
               <ErrorCard error={lastError} clear={clearError} />
             ) : (
-              <>
-                <BottomButtons pixelDispatcher={pixelDispatcher} />
-                <Divider style={{ height: 3, marginVertical: 5 }} />
-                <FastHStack w="100%" alignContent="space-around">
-                  <Text style={[gs.flex, gs.bold]} variant="bodyLarge">
-                    {t("enableTelemetry")}
-                  </Text>
-                  <Switch onValueChange={setTelemetryOn} value={telemetryOn} />
-                </FastHStack>
-              </>
+              <BottomButtons
+                pixelDispatcher={pixelDispatcher}
+                onShowTelemetry={telemetryRef.current?.showGraph}
+              />
             )}
           </Card.Content>
         </Card>
