@@ -9,6 +9,7 @@ import {
   Pixel,
   PixelBatteryStateValues,
   PixelRollStateValues,
+  Telemetry,
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
@@ -35,11 +36,19 @@ import {
 } from "./DynamicLinesChart";
 
 import ProgressBar from "~/components/ProgressBar";
+import exportCsv from "~/features/files/exportCsv";
 import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
+
+type TelemetryData = {
+  timestamp: number;
+  rssi: number;
+  battery: number;
+  voltage: number;
+};
 
 interface TextEntryBaseProps extends React.PropsWithChildren {
   title: string;
@@ -68,7 +77,7 @@ function useTextEntry(colonSeparator: string) {
 }
 
 function Button({ ...props }: Omit<ButtonProps, "style">) {
-  return <PaperButton style={gs.mv3} mode="contained-tonal" {...props} />;
+  return <PaperButton mode="contained-tonal" {...props} />;
 }
 
 function BaseInfo({ pixel }: { pixel: Pixel }) {
@@ -129,8 +138,10 @@ interface TelemetryInfoHandle {
 const TelemetryInfo = React.forwardRef(function (
   {
     pixel,
+    onData,
   }: {
     pixel: Pixel;
+    onData?: (data: Telemetry) => void;
   },
   ref: React.ForwardedRef<TelemetryInfoHandle>
 ) {
@@ -165,17 +176,21 @@ const TelemetryInfo = React.forwardRef(function (
   }, [isOpen]);
   React.useEffect(() => {
     if (telemetry && graphRef.current) {
-      if (startTimeRef.current === 0) {
-        startTimeRef.current = Date.now();
+      const now = Date.now();
+      if (!startTimeRef.current) {
+        startTimeRef.current = now;
       }
-      const time = Math.round((Date.now() - startTimeRef.current) / 1000);
+      const time = Math.round((now - startTimeRef.current) / 1000);
       graphRef.current.push(time, [
         telemetry.rssi,
         telemetry.batteryLevelPercent,
         (telemetry.voltageTimes50 / 50) * 1000,
       ]);
     }
-  }, [telemetry]);
+    if (telemetry && onData) {
+      onData(telemetry);
+    }
+  }, [onData, telemetry]);
 
   // Imperative handle
   React.useImperativeHandle(
@@ -275,9 +290,11 @@ const TelemetryInfo = React.forwardRef(function (
 function BottomButtons({
   pixelDispatcher,
   onShowTelemetry,
+  onExportTelemetry,
 }: {
   pixelDispatcher: PixelDispatcher;
   onShowTelemetry?: () => void;
+  onExportTelemetry?: () => void;
 }) {
   const status = usePixelStatus(pixelDispatcher.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
@@ -285,8 +302,8 @@ function BottomButtons({
   const { t } = useTranslation();
   return (
     <>
-      <FastHStack>
-        <FastVStack flex={1} mr={2}>
+      <FastHStack gap={6}>
+        <FastVStack gap={4}>
           <Button onPress={() => pixelDispatcher.dispatch(connectStr)}>
             {t(connectStr)}
           </Button>
@@ -298,6 +315,9 @@ function BottomButtons({
               >
                 {t("enableCharging")}
               </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("blink")}>
+                {t("blink")}
+              </Button>
               <Button
                 onPress={() =>
                   pixelDispatcher.dispatch(
@@ -308,23 +328,14 @@ function BottomButtons({
               >
                 {t("rainbow")}
               </Button>
-              <Button
-                onPress={() =>
-                  pixelDispatcher.dispatch("uploadProfile", "tiny")
-                }
-              >
-                {t("setTinyProfile")}
-              </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-                {t("blink")}
-              </Button>
+              <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
               <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
                 {t("calibrate")}
               </Button>
             </>
           )}
         </FastVStack>
-        <FastVStack flex={1} ml={2}>
+        <FastVStack gap={4}>
           {status === "ready" && (
             <>
               <Button onPress={() => pixelDispatcher.dispatch("turnOff")}>
@@ -340,6 +351,9 @@ function BottomButtons({
               >
                 {t("disableCharging")}
               </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
+                {t("blinkId")}
+              </Button>
               <Button
                 onPress={() =>
                   pixelDispatcher.dispatch(
@@ -350,13 +364,10 @@ function BottomButtons({
               >
                 {t("rainbowAllFaces")}
               </Button>
+              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
               <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
                 {t("setDefaultProfile")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
-                {t("blinkId")}
-              </Button>
-              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
               <Button
                 onPress={() => pixelDispatcher.dispatch("exitValidation")}
               >
@@ -429,7 +440,7 @@ function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
   return (
     <Portal>
       <Modal
-        visible={!!updateProgress}
+        visible={updateProgress !== undefined}
         contentContainerStyle={modalStyle}
         dismissable={false}
       >
@@ -509,6 +520,27 @@ export function PixelDetails({
 
   // Telemetry
   const telemetryRef = React.useRef<TelemetryInfoHandle>(null);
+  const telemetryStartTime = React.useRef(0);
+  const telemetrySessionRef = React.useRef([] as TelemetryData[]);
+  const onTelemetryData = React.useCallback((data: Telemetry) => {
+    const now = Date.now();
+    if (!telemetryStartTime.current) {
+      telemetryStartTime.current = now;
+    }
+    telemetrySessionRef.current.push({
+      timestamp: now - telemetryStartTime.current,
+      rssi: data.rssi,
+      battery: data.batteryLevelPercent,
+      voltage: data.voltageTimes50 / 50,
+    });
+  }, []);
+  const onExportTelemetry = React.useCallback(
+    () =>
+      exportCsv(`${pixel.name} Telemetry `, telemetrySessionRef.current).catch(
+        setLastError
+      ),
+    [pixel.name]
+  );
 
   // Values for UI
   const simpleStatus = React.useMemo(() => {
@@ -541,7 +573,11 @@ export function PixelDetails({
       <Card>
         <Card.Content>
           <BaseInfo pixel={pixel} />
-          <TelemetryInfo ref={telemetryRef} pixel={pixel} />
+          <TelemetryInfo
+            ref={telemetryRef}
+            pixel={pixel}
+            onData={onTelemetryData}
+          />
         </Card.Content>
       </Card>
       <View style={gs.mv3} />
@@ -554,6 +590,7 @@ export function PixelDetails({
               <BottomButtons
                 pixelDispatcher={pixelDispatcher}
                 onShowTelemetry={telemetryRef.current?.showGraph}
+                onExportTelemetry={onExportTelemetry}
               />
             )}
           </Card.Content>

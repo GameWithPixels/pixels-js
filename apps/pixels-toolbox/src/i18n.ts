@@ -127,8 +127,8 @@ i18n
           turnOff: "Turn Off",
           connected: "connected",
           setDefaultProfile: "Set Default Profile",
-          setTinyProfile: "Set Tiny Profile",
           enableTelemetry: "Enable Telemetry",
+          saveTelemetry: "Save Telemetry",
           telemetryGraph: "Telemetry Graph",
 
           // Home Screen
@@ -301,8 +301,8 @@ i18n
           turnOff: "Turn Off",
           connected: "connected",
           setDefaultProfile: "Set Default Profile",
-          setTinyProfile: "Set Tiny Profile",
           enableTelemetry: "Enable Telemetry",
+          saveTelemetry: "Save Telemetry",
           telemetryGraph: "Telemetry Graph",
 
           // Home Screen
