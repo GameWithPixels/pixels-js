@@ -5,16 +5,22 @@ import {
   EditAnimation,
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
-import { FastVStack } from "@systemic-games/react-native-pixels-components";
+import {
+  BaseStyles,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
-import { FlatList } from "native-base";
 import React from "react";
+import { FlatList } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 
 import ObservableActionEditor from "./ObservableActionEditor";
 import ObservableConditionEditor from "./ObservableConditionEditor";
 
+import AppStyles from "~/AppStyles";
 import { useAppAnimations, useAppUserTexts } from "~/app/hooks";
-import CreateEntityButton from "~/components/CreateEntityButton";
+import IconButton from "~/components/IconButton";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import { makeObservable } from "~/features/makeObservable";
 import DieRenderer from "~/features/render3d/DieRenderer";
@@ -68,10 +74,15 @@ const ObservableActionsList = observer(function ({
     [actionIdsMap]
   );
 
+  const theme = useTheme();
   const renderItem = React.useCallback(
     ({ item: observableAction }: { item: Readonly<EditAction> }) => (
       <ObservableActionEditor
-        my={1}
+        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderWidth={1}
+        borderColor={theme.colors.primary}
+        bg={theme.colors.background}
+        p={10}
         observableAction={observableAction}
         animations={animations}
         dieRenderer={dieRenderer}
@@ -80,22 +91,23 @@ const ObservableActionsList = observer(function ({
         userTextsParams={userTextsParams}
       />
     ),
-    [animations, dieRenderer, replace, userTextsParams]
+    [animations, dieRenderer, replace, userTextsParams, theme]
   );
 
   return (
     <FlatList
-      w="100%"
+      style={BaseStyles.fullWidth}
+      contentContainerStyle={AppStyles.listContentContainer}
       data={observableRule.actions}
-      renderItem={renderItem}
       keyExtractor={getKey}
+      renderItem={renderItem}
     />
   );
 });
 
 // Only children components are observers
 export default function ({ observableRule }: { observableRule: EditRule }) {
-  const add = React.useCallback(
+  const createAction = React.useCallback(
     () =>
       (observableRule.actions = [
         ...observableRule.actions,
@@ -103,11 +115,21 @@ export default function ({ observableRule }: { observableRule: EditRule }) {
       ]),
     [observableRule]
   );
-
+  const theme = useTheme();
   return (
-    <FastVStack w="100%" h="100%">
-      <ObservableConditionEditor observableRule={observableRule} />
-      <CreateEntityButton onPress={add}>ADD ACTION</CreateEntityButton>
+    <FastVStack w="100%" h="100%" gap={10}>
+      <ObservableConditionEditor
+        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderWidth={1}
+        borderColor={theme.colors.primary}
+        bg={theme.colors.background}
+        p={10}
+        observableRule={observableRule}
+      />
+      <FastHStack alignItems="center" justifyContent="space-between">
+        <Text variant="bodyLarge">Actions:</Text>
+        <IconButton icon="add" onPress={createAction} />
+      </FastHStack>
       <ObservableActionsList observableRule={observableRule} />
     </FastVStack>
   );

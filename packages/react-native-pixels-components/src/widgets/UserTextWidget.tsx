@@ -1,18 +1,18 @@
 import {
   ActionsheetList,
-  FastBoxProps,
+  BaseStyles,
   FastButton,
+  FastFlexProps,
   FastHStack,
   FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { ITextProps, Input, Text } from "native-base";
 import React from "react";
+import { Text, TextInput } from "react-native-paper";
 
-export interface UserTextWidgetProps extends FastBoxProps {
-  title?: string; // Text displayed above the input
-  fontSize?: ITextProps["fontSize"];
-  space?: number | string; // Spacing between text and toggle
+export interface UserTextWidgetProps extends FastFlexProps {
+  title: string; // Text displayed above the input
+  space?: number; // Spacing between text and toggle
   value?: string;
   onValueChange: (valueOrUuid: string) => void;
   availableTexts?: string[];
@@ -20,7 +20,6 @@ export interface UserTextWidgetProps extends FastBoxProps {
 
 export function UserTextWidget({
   title,
-  fontSize,
   space = 3,
   value,
   onValueChange: onChange,
@@ -38,16 +37,14 @@ export function UserTextWidget({
   return (
     <>
       <FastVStack {...flexProps}>
-        <Text bold fontSize={fontSize}>
-          {title}
-        </Text>
+        <Text variant="titleMedium">{title}</Text>
         <FastHStack mt={space}>
-          <Input
-            flex={1}
-            bg="pixelColors.highlightGray"
-            variant="filled"
+          <TextInput
+            style={BaseStyles.flex}
+            // bg="pixelColors.highlightGray"
+            // variant="filled"
             placeholder="Type Text"
-            placeholderTextColor="gray.400"
+            // placeholderTextColor="gray"
             value={value}
             onChangeText={onChange}
           />

@@ -1,13 +1,18 @@
-import { Box } from "native-base";
 import React from "react";
+import { View } from "react-native";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
+
+import BaseStyles from "../BaseStyles";
 
 export interface HistogramProps {
   rolls: number[];
-  viewRatio: number;
+  color: string;
 }
 
-export const Histogram = React.memo(function ({ rolls }: HistogramProps) {
+export const Histogram = React.memo(function ({
+  rolls,
+  color,
+}: HistogramProps) {
   const [size, setSize] = React.useState({ w: 100, h: 100 });
   const fontSize = 4;
   const numGradValues = 5;
@@ -16,8 +21,8 @@ export const Histogram = React.memo(function ({ rolls }: HistogramProps) {
   const barWidthRatio = 0.9;
   const barsMaxHeight = size.h - 6;
   return (
-    <Box
-      style={{ width: "100%", height: "100%" }}
+    <View
+      style={BaseStyles.fullSize}
       onLayout={(event) => {
         const l = event.nativeEvent.layout;
         setSize({ w: 100, h: (100 / l.width) * l.height });
@@ -33,7 +38,7 @@ export const Histogram = React.memo(function ({ rolls }: HistogramProps) {
               y={barsMaxHeight - h}
               width={barCellWidth * barWidthRatio}
               height={h}
-              fill="white"
+              fill={color}
             />
           );
         })}
@@ -44,9 +49,8 @@ export const Histogram = React.memo(function ({ rolls }: HistogramProps) {
               (i + 0.5 - (0.3 * fontSize) / barCellWidth) * barCellWidth +
               gradCellWidth
             },${size.h - 3}) rotate(90)`}
-            fill="white"
+            fill={color}
             fontSize={fontSize}
-            fontWeight="bold"
             textAnchor="middle"
           >
             {i + 1}
@@ -60,9 +64,8 @@ export const Histogram = React.memo(function ({ rolls }: HistogramProps) {
               0.8 * fontSize +
               ((barsMaxHeight - 0.5 * fontSize) * i) / (numGradValues - 1)
             }
-            fill="white"
+            fill={color}
             fontSize={fontSize}
-            fontWeight="bold"
             textAnchor="middle"
           >
             {Math.round(
@@ -72,6 +75,6 @@ export const Histogram = React.memo(function ({ rolls }: HistogramProps) {
           </SvgText>
         ))}
       </Svg>
-    </Box>
+    </View>
   );
 });

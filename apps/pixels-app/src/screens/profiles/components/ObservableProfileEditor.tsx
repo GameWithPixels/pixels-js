@@ -6,24 +6,30 @@ import {
   EditProfile,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  ProfileRulesCard,
+  ProfileRuleCard,
   getActionDescription,
   getConditionDescription,
   SwipeableButtons,
   FastVStack,
+  FastBox,
+  FastHStack,
+  FastFlexProps,
+  ProfileRuleCardProps,
+  BaseStyles,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
-import { Box, Input, Pressable, Text } from "native-base";
 import React from "react";
-import { StyleSheet } from "react-native";
+import { View } from "react-native";
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
   DragEndParams,
 } from "react-native-draggable-flatlist";
 import { Swipeable } from "react-native-gesture-handler";
+import { Text, useTheme } from "react-native-paper";
 
-import CreateEntityButton from "~/components/CreateEntityButton";
+import IconButton from "~/components/IconButton";
+import { TextInputClear } from "~/components/TextInputClear";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { ProfileEditScreenProps } from "~/navigation";
@@ -34,11 +40,9 @@ const ObservableInputProfileName = observer(function ({
   observableProfile: EditProfile;
 }) {
   return (
-    <Input
-      bg="pixelColors.highlightGray"
-      variant="filled"
+    <TextInputClear
+      isTitle
       placeholder="Type Name"
-      placeholderTextColor="gray.400"
       value={observableProfile.name}
       onChangeText={(text) => (observableProfile.name = text)}
     />
@@ -51,36 +55,35 @@ const ObservableInputProfileDescription = observer(function ({
   observableProfile: EditProfile;
 }) {
   return (
-    <Input
-      bg="pixelColors.highlightGray"
-      variant="filled"
+    <TextInputClear
+      multiline
       placeholder="Type Description"
-      placeholderTextColor="gray.400"
       value={observableProfile.description}
       onChangeText={(text) => (observableProfile.description = text)}
-      multiline
     />
   );
 });
 
 const ObservableRuleCard = observer(function ({
   observableRule,
+  ...props
 }: {
   observableRule: EditRule;
-}) {
+} & ProfileRuleCardProps) {
   return (
-    <ProfileRulesCard
+    <ProfileRuleCard
       condition={getConditionDescription(observableRule.condition)}
       actions={observableRule.actions.map(getActionDescription)}
+      {...props}
     />
   );
 });
 
-interface DraggableRuleItemProps {
+interface DraggableRuleItemProps extends FastFlexProps {
   navigation: ProfileEditScreenProps["navigation"];
   observableRule: EditRule;
   drag: () => void;
-  isActive: boolean;
+  isDragged: boolean;
   duplicate?: (rule: EditRule) => void;
   remove?: (rule: EditRule) => void;
 }
@@ -89,9 +92,10 @@ const ObservableDraggableRuleItem = observer(function ({
   navigation,
   observableRule,
   drag,
-  isActive,
+  isDragged,
   duplicate,
   remove,
+  ...props
 }: DraggableRuleItemProps) {
   const onPress = React.useCallback(() => {
     navigation.navigate("RuleEdit", {
@@ -103,12 +107,12 @@ const ObservableDraggableRuleItem = observer(function ({
     () => [
       {
         onPress: () => duplicate?.(observableRule),
-        bg: "blue.500",
+        bg: "blue",
         children: <MaterialIcons name="content-copy" size={24} color="white" />,
       },
       {
         onPress: () => remove?.(observableRule),
-        bg: "red.500",
+        bg: "red",
         children: (
           <MaterialIcons name="delete-outline" size={24} color="white" />
         ),
@@ -124,17 +128,22 @@ const ObservableDraggableRuleItem = observer(function ({
 
   return (
     <ScaleDecorator>
-      <Swipeable
-        containerStyle={styles.ruleItemContainer}
-        renderRightActions={renderActions}
-      >
-        <Pressable onPress={onPress} onLongPress={drag} disabled={isActive}>
-          <ObservableRuleCard observableRule={observableRule} />
-        </Pressable>
+      <Swipeable renderRightActions={renderActions}>
+        <ObservableRuleCard
+          onPress={onPress}
+          onLongPress={drag}
+          disabled={isDragged}
+          observableRule={observableRule}
+          {...props}
+        />
       </Swipeable>
     </ScaleDecorator>
   );
 });
+
+function Separator() {
+  return <View style={{ height: 10 }} />;
+}
 
 const ObservableRulesListEditor = observer(function ({
   navigation,
@@ -167,18 +176,24 @@ const ObservableRulesListEditor = observer(function ({
     [observableProfile]
   );
 
+  const theme = useTheme();
   const renderItem = React.useCallback(
     ({ item: observableRule, drag, isActive }: RenderItemParams<EditRule>) => (
       <ObservableDraggableRuleItem
+        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderWidth={1}
+        borderColor={theme.colors.primary}
+        bg={theme.colors.background}
+        p={10}
         navigation={navigation}
         observableRule={observableRule}
         drag={drag}
-        isActive={isActive}
+        isDragged={isActive}
         duplicate={duplicate}
         remove={remove}
       />
     ),
-    [remove, duplicate, navigation]
+    [remove, duplicate, navigation, theme]
   );
 
   const onDragEnd = React.useCallback(
@@ -207,9 +222,22 @@ const ObservableRulesListEditor = observer(function ({
       data={observableProfile.rules}
       renderItem={renderItem}
       keyExtractor={getKey}
-      containerStyle={styles.rulesListContainer}
+      containerStyle={BaseStyles.flex}
       onDragEnd={onDragEnd}
+      ItemSeparatorComponent={Separator}
     />
+  );
+});
+
+const ObservableDieRender = observer(function ({
+  observableProfile,
+}: {
+  observableProfile: EditProfile;
+}) {
+  return (
+    <FastBox w="60%" aspectRatio={1} alignSelf="center">
+      <DieRenderer renderData={getCachedDataSet(observableProfile)} />
+    </FastBox>
   );
 });
 
@@ -221,7 +249,7 @@ export default function ({
   navigation: ProfileEditScreenProps["navigation"];
   observableProfile: EditProfile;
 }) {
-  const add = React.useCallback(
+  const createRule = React.useCallback(
     () =>
       (observableProfile.rules = [
         ...observableProfile.rules,
@@ -232,19 +260,15 @@ export default function ({
 
   return (
     <FastVStack w="100%" h="100%">
-      <Box alignSelf="center" w={100} h={100}>
-        <DieRenderer renderData={getCachedDataSet(observableProfile)} />
-      </Box>
       <ObservableInputProfileName observableProfile={observableProfile} />
+      <ObservableDieRender observableProfile={observableProfile} />
       <ObservableInputProfileDescription
         observableProfile={observableProfile}
       />
-      <CreateEntityButton mt={2} onPress={add}>
-        CREATE NEW RULE
-      </CreateEntityButton>
-      <Text mt={2} mb={4} bold>
-        Rules for this profile:
-      </Text>
+      <FastHStack mb={5} alignItems="center" justifyContent="space-between">
+        <Text variant="bodyLarge">Rules:</Text>
+        <IconButton icon="add" onPress={createRule} />
+      </FastHStack>
       <ObservableRulesListEditor
         navigation={navigation}
         observableProfile={observableProfile}
@@ -252,8 +276,3 @@ export default function ({
     </FastVStack>
   );
 }
-
-const styles = StyleSheet.create({
-  ruleItemContainer: { marginVertical: 4 },
-  rulesListContainer: { flex: 1 },
-});

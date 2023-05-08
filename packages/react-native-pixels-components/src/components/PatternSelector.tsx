@@ -1,35 +1,27 @@
 import { EditPattern } from "@systemic-games/pixels-edit-animation";
 import {
-  FastBoxProps,
-  FastVStack,
+  FastButton,
+  FastFlexProps,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import {
-  Actionsheet,
-  Box,
-  IActionsheetProps,
-  Pressable,
-  ScrollView,
-  Text,
-} from "native-base";
 import React from "react";
+import { FlexStyle, ScrollView } from "react-native";
+import { Card, Modal, ModalProps, Portal } from "react-native-paper";
+import { useModalStyle } from "../theme";
 
 import { PatternCard } from "./PatternCard";
 
 /**
  * Props for PatternSelector component.
  */
-export interface PatternSelectorProps extends FastBoxProps {
-  title: string;
+export interface PatternSelectorProps extends FastFlexProps {
   patterns: Readonly<EditPattern>[];
+  pattern?: Readonly<EditPattern>;
+  onPatternSelect?: (pattern: Readonly<EditPattern>) => void;
   trigger?: React.ReactNode;
-  drawerTitle?: string;
+  modalTitle?: string;
   dieRenderer?: (pattern: Readonly<EditPattern>) => React.ReactNode;
-  onPatternChange?:
-    | ((pattern: Readonly<EditPattern>) => void)
-    | null
-    | undefined;
-  initialPattern?: Readonly<EditPattern>;
+  dieViewSize?: FlexStyle["width"];
 }
 
 /**
@@ -37,110 +29,95 @@ export interface PatternSelectorProps extends FastBoxProps {
  * @param props See {@link PatternSelectorProps} for props parameters.
  */
 export function PatternSelector({
-  title,
   patterns,
+  pattern,
+  onPatternSelect,
   trigger,
-  drawerTitle,
+  modalTitle,
   dieRenderer,
-  onPatternChange: onSelect,
-  initialPattern,
+  dieViewSize,
   ...flexProps
 }: PatternSelectorProps) {
-  const [selectedPattern, setSelectedPattern] = React.useState(initialPattern);
   const { isOpen, onOpen, onClose } = useDisclose();
+  const choosePattern = React.useCallback(
+    (pattern: Readonly<EditPattern>) => {
+      onPatternSelect?.(pattern);
+      onClose();
+    },
+    [onClose, onPatternSelect]
+  );
   return (
     <>
-      <FastVStack {...flexProps}>
-        <Text>{title}</Text>
-        {/* Trigger of the actionsheet drawer */}
-        <Pressable
-          onPress={() => {
-            onOpen();
-          }}
-        >
-          {!trigger ? (
-            <Box
-              w="100%"
-              p={2}
-              bg="primary.700"
-              rounded="lg"
-              alignItems="center"
-            >
-              <Text>{selectedPattern?.name ?? "No LED pattern selected"}</Text>
-            </Box>
-          ) : (
-            trigger
-          )}
-        </Pressable>
-      </FastVStack>
+      <FastButton onPress={onOpen} {...flexProps}>
+        {trigger ?? pattern?.name ?? "No design selected"}
+      </FastButton>
 
-      {/* Actionsheet drawer */}
-      <ActionsheetPatterns
-        isOpen={isOpen}
-        onClose={onClose}
+      <SelectPatternModal
+        visible={isOpen}
+        onDismiss={onClose}
         patterns={patterns}
-        drawerTitle={drawerTitle}
+        pattern={pattern}
+        onPatternSelect={choosePattern}
+        title={modalTitle}
         dieRenderer={dieRenderer}
-        onSelect={(pattern) => {
-          setSelectedPattern(pattern);
-          onSelect?.(pattern);
-          onClose();
-        }}
+        dieViewSize={dieViewSize}
       />
     </>
   );
 }
 
-interface ActionsheetPatternsProps extends IActionsheetProps {
-  patterns: Readonly<EditPattern>[];
-  drawerTitle?: string;
-  dieRenderer?: (pattern: Readonly<EditPattern>) => React.ReactNode;
-  onSelect?: (animation: Readonly<EditPattern>) => void;
+interface SelectPatternModalProps
+  extends Pick<
+      PatternSelectorProps,
+      "patterns" | "pattern" | "onPatternSelect" | "dieRenderer" | "dieViewSize"
+    >,
+    Omit<ModalProps, "children"> {
+  title?: string;
 }
 
-function ActionsheetPatterns({
+function SelectPatternModal({
+  onDismiss,
   patterns,
-  drawerTitle,
+  pattern,
+  onPatternSelect,
+  title,
   dieRenderer,
-  onSelect,
+  dieViewSize,
   ...props
-}: ActionsheetPatternsProps) {
-  const [patternToHighlight, setPatternToHighlight] = React.useState<number>();
+}: SelectPatternModalProps) {
+  const modalStyle = useModalStyle();
   return (
-    <Actionsheet alignContent="center" {...props}>
-      <Actionsheet.Content maxH="100%" h={600}>
-        <Text bold paddingBottom={5}>
-          {drawerTitle ? drawerTitle : "Available LED Patterns"}
-        </Text>
-        <ScrollView
-          contentContainerStyle={{
-            flexWrap: "wrap",
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-          }}
-        >
-          {patterns?.map((pattern, i) => (
-            <PatternCard
-              key={i}
-              my={2}
-              w="105px"
-              h="130px"
-              space={1}
-              imageSize={70}
-              fontSize="sm"
-              selectable
-              patternIndexInList={i}
-              selectedPatternIndex={patternToHighlight}
-              onSelected={() => {
-                setPatternToHighlight(i);
-                onSelect?.(pattern);
+    <Portal>
+      <Modal
+        contentContainerStyle={modalStyle}
+        onDismiss={onDismiss}
+        {...props}
+      >
+        <Card>
+          {title && <Card.Title title={title} />}
+          <Card.Actions>
+            <ScrollView
+              contentContainerStyle={{
+                flexWrap: "wrap",
+                flexDirection: "row",
+                justifyContent: "space-evenly",
               }}
-              patternName={pattern.name}
-              dieRenderer={dieRenderer && (() => dieRenderer(pattern))}
-            />
-          ))}
-        </ScrollView>
-      </Actionsheet.Content>
-    </Actionsheet>
+            >
+              {patterns?.map((p) => (
+                <PatternCard
+                  key={p.uuid}
+                  name={p.name}
+                  smallLabel
+                  dieRenderer={dieRenderer && (() => dieRenderer(p))}
+                  dieViewSize={dieViewSize}
+                  onPress={() => onPatternSelect?.(p)}
+                  highlighted={p === pattern}
+                />
+              ))}
+            </ScrollView>
+          </Card.Actions>
+        </Card>
+      </Modal>
+    </Portal>
   );
 }

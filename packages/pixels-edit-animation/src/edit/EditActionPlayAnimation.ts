@@ -15,7 +15,7 @@ export default class EditActionPlayAnimation extends EditAction {
   readonly type = "playAnimation";
 
   @widget("animation")
-  @name("Lighting Pattern")
+  @name("Animation")
   @observable
   animation?: EditAnimation;
 

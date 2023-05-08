@@ -286,7 +286,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={styles.flexGrow}
+          contentContainerStyle={gs.spacer}
         />
       );
     }
@@ -305,7 +305,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={styles.flexGrow}
+          contentContainerStyle={gs.spacer}
         />
       );
 
@@ -324,7 +324,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={styles.flexGrow}
+          contentContainerStyle={gs.spacer}
         />
       );
 
@@ -430,7 +430,7 @@ function AnimationPage() {
                     )}`}
                   </Button>
                 )}
-                contentContainerStyle={styles.flexGrow}
+                contentContainerStyle={gs.spacer}
               />
             </>
           ) : (
@@ -450,7 +450,7 @@ function AnimationPage() {
                     {`Edit ${itemInfo.item.name}`}
                   </Button>
                 )}
-                contentContainerStyle={styles.flexGrow}
+                contentContainerStyle={gs.spacer}
               />
             </>
           )}
@@ -473,7 +473,7 @@ function AnimationPage() {
                 {itemInfo.item.name.replace(EditAnimation.name, "")}
               </Button>
             )}
-            contentContainerStyle={styles.flexGrow}
+            contentContainerStyle={gs.spacer}
           />
         </FastVStack>
       )}
@@ -490,9 +490,6 @@ export function AnimationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  flexGrow: {
-    flexGrow: 1,
-  },
   slider: {
     width: "80%",
     height: 40,

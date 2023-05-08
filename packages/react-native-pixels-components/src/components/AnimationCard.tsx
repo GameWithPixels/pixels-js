@@ -1,46 +1,55 @@
 import {
-  Card,
-  CardProps,
+  BaseStyles,
+  expandShorthandStyle,
+  FastBoxProps,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Box, IBoxProps, ITextProps } from "native-base";
 import React from "react";
+import { View, FlexStyle } from "react-native";
+import {
+  Text,
+  TouchableRipple,
+  TouchableRippleProps,
+} from "react-native-paper";
 
-export interface AnimationCardProps extends CardProps {
+export interface AnimationCardProps extends FastBoxProps {
   title: string;
   name?: string;
+  onPress?: TouchableRippleProps["onPress"];
   dieRenderer?: () => React.ReactNode;
-  imageSize?: IBoxProps["size"];
-  fontSize?: ITextProps["fontSize"];
-  onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
-  //To be used with the list in which the cards are placed and displayed for selection highlight
+  dieViewSize?: FlexStyle["width"];
+  contentGap?: FlexStyle["gap"];
+  infoGap?: FlexStyle["gap"];
 }
 
 export function AnimationCard({
+  children,
   title,
   name,
-  dieRenderer,
-  imageSize,
-  fontSize = "lg",
   onPress,
+  dieRenderer,
+  dieViewSize = "100%",
+  contentGap = 10,
+  infoGap = 10,
   ...flexProps
 }: AnimationCardProps) {
   return (
-    <Pressable onPress={onPress}>
-      <Card p={1} {...flexProps}>
-        <FastHStack w="100%">
-          {/* Die render */}
-          {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
-          {/* Animation info */}
-          <FastVStack ml={5} justifyContent="space-around" flexGrow={1}>
-            <Text isTruncated fontSize={fontSize} bold>
-              {name}
-            </Text>
-            <Text italic>{title}</Text>
-          </FastVStack>
-        </FastHStack>
-      </Card>
-    </Pressable>
+    <TouchableRipple style={expandShorthandStyle(flexProps)} onPress={onPress}>
+      <FastHStack w="100%" h="100%" gap={contentGap}>
+        {/* Die render */}
+        {dieRenderer && (
+          <View style={{ height: dieViewSize, aspectRatio: 1 }}>
+            {dieRenderer()}
+          </View>
+        )}
+        {/* Animation info */}
+        <FastVStack justifyContent="center" gap={infoGap}>
+          <Text variant="headlineSmall">{name}</Text>
+          <Text style={BaseStyles.italic}>{title}</Text>
+        </FastVStack>
+        {children}
+      </FastHStack>
+    </TouchableRipple>
   );
 }

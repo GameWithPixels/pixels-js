@@ -2,12 +2,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   ActionsheetList,
   ActionsheetListItemData,
-  FastBoxProps,
+  FastFlexProps,
   FastVStack,
+  RoundedBox,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { Text, ChevronRightIcon, Spacer, Pressable, View } from "native-base";
 import React from "react";
+import { Text, TouchableRipple } from "react-native-paper";
 
 interface TriggerProps {
   title: string;
@@ -18,26 +19,17 @@ interface TriggerProps {
  */
 function TriggerElement(props: TriggerProps) {
   return (
-    <View
-      flexDir="row"
-      w="100%"
-      p={2}
-      bg="primary.700"
-      rounded="lg"
-      alignItems="center"
-    >
+    <RoundedBox flexDir="row" w="100%" p={2} fill alignItems="center" gap={3}>
       <MaterialCommunityIcons name="light-flood-up" size={24} color="white" />
-      <Text ml={2}>{props.title}</Text>
-      <Spacer />
-      <ChevronRightIcon tintColor="white" />
-    </View>
+      <Text>{props.title}</Text>
+    </RoundedBox>
   );
 }
 
 /**
  * Props for {@link AnimationTypeSelector} component.
  */
-interface AnimationTypeSelectorProps extends FastBoxProps {
+interface AnimationTypeSelectorProps extends FastFlexProps {
   label: string;
   itemsData: ActionsheetListItemData[];
 }
@@ -54,11 +46,11 @@ export function AnimationTypeSelector({
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack {...flexProps}>
-        <Text bold>Lighting Style</Text>
-        <Pressable mt={1} onPress={onOpen}>
+      <FastVStack gap={5} {...flexProps}>
+        <Text>Lighting Style</Text>
+        <TouchableRipple onPress={onOpen}>
           <TriggerElement title={label} />
-        </Pressable>
+        </TouchableRipple>
       </FastVStack>
 
       <ActionsheetList

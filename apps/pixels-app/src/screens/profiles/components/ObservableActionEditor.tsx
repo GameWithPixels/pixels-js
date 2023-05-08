@@ -8,8 +8,9 @@ import {
   EditActionRunOnDevice,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  FastButton,
+  FastBoxProps,
   FastHStack,
+  FastVStack,
 } from "@systemic-games/react-native-base-components";
 import {
   createWidgetComponent,
@@ -18,10 +19,9 @@ import {
   RuleActionSelector,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
-import { View } from "native-base";
-import { IViewProps } from "native-base/lib/typescript/components/basic/View/types";
 import React from "react";
 
+import IconButton from "~/components/IconButton";
 import { makeObservable } from "~/features/makeObservable";
 
 const ObservableActionSelector = observer(function ({
@@ -58,23 +58,16 @@ const ObservableActionSelector = observer(function ({
     [onReplace]
   );
 
-  return (
-    <RuleActionSelector
-      flex={10}
-      w="100%"
-      title={actionTitle}
-      actions={actions}
-    />
-  );
+  return <RuleActionSelector flex={1} title={actionTitle} actions={actions} />;
 });
 
-export interface ObservableActionEditorProps extends IViewProps {
+export interface ObservableActionEditorProps extends FastBoxProps {
   observableAction: EditAction;
   animations: Readonly<EditAnimation>[];
   userTextsParams: CreateWidgetComponentOptionals["userTextsParams"];
   dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
-  onReplace?: ((newAction: EditAction) => void) | null | undefined;
-  onDelete?: (() => void) | null | undefined;
+  onReplace?: (newAction: EditAction) => void;
+  onDelete?: () => void;
 }
 
 // Only children components are observers
@@ -109,28 +102,15 @@ export default function ({
     [actionWidgets, animationsParams, userTextsParams]
   );
   return (
-    <View
-      p={3}
-      borderWidth={1}
-      borderColor="gray.300"
-      rounded="lg"
-      bg="darkBlue.700"
-      {...flexProps}
-    >
-      <FastHStack w="100%" alignItems="center">
+    <FastVStack {...flexProps}>
+      <FastHStack w="100%" alignItems="center" justifyContent="space-between">
         <ObservableActionSelector
           observableAction={observableAction}
           onReplace={onReplace}
         />
-        <FastButton ml={2} onPress={onDelete} flex={1} _text={textStyle}>
-          X
-        </FastButton>
+        <IconButton icon="delete" onPress={onDelete} />
       </FastHStack>
-      <View mt={2} p={2} bg="gray.700" rounded="md">
-        {widgets}
-      </View>
-    </View>
+      {widgets}
+    </FastVStack>
   );
 }
-
-const textStyle = { fontSize: "xs", bold: true };

@@ -1,46 +1,51 @@
-import { Card, CardProps } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Box, IBoxProps, ITextProps } from "native-base";
+import {
+  FastButton,
+  FrameProps,
+} from "@systemic-games/react-native-base-components";
 import React from "react";
+import { FlexStyle, View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 
-export interface PatternCardProps extends CardProps {
-  patternName: string;
+export interface PatternCardProps extends FrameProps {
+  name: string;
   dieRenderer?: () => React.ReactNode;
-  space?: number; // vertical spacing between elements in the profile card
-  borderWidth?: number;
-  imageSize?: IBoxProps["size"];
-  fontSize?: ITextProps["fontSize"];
-  onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
-  //To be used with the list in which the cards are placed and displayed for selection highlight
-  patternIndexInList?: number; // the card profile index within all the currently available profiles in the list
-  selectedPatternIndex?: number; // the index of the currently selected profile in the list
-  selectable?: boolean; // used to disable the selection highlight (used until actual selection system is done)
-  onSelected?: React.Dispatch<React.SetStateAction<number | undefined>>; // set the currently selected profile with the profile card index
+  dieViewSize?: FlexStyle["width"];
+  smallLabel?: boolean;
+  onPress?: () => void;
+  highlighted?: boolean;
 }
 
 export function PatternCard({
-  patternName,
+  children,
+  name,
   dieRenderer,
-  borderWidth,
-  imageSize,
-  fontSize = "lg",
+  dieViewSize,
+  smallLabel,
   onPress,
-  patternIndexInList,
-  selectedPatternIndex,
-  selectable,
-  onSelected,
+  highlighted,
   ...flexProps
 }: PatternCardProps) {
-  const isSelected = selectable && selectedPatternIndex === patternIndexInList;
-  const onPressMemo = React.useCallback(() => {
-    onSelected?.(patternIndexInList);
-    onPress?.();
-  }, [onPress, onSelected, patternIndexInList]);
+  const theme = useTheme();
   return (
-    <Pressable onPress={onPressMemo}>
-      <Card borderWidth={isSelected ? 3 : borderWidth} {...flexProps}>
-        {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
-        <Text fontSize={fontSize}>{patternName}</Text>
-      </Card>
-    </Pressable>
+    <FastButton
+      onPress={onPress}
+      borderWidth={highlighted ? 2 : undefined}
+      borderColor={theme.colors.primary}
+      bg={undefined}
+      alignItems="center"
+      {...flexProps}
+    >
+      <>
+        {/* Die render */}
+        {dieRenderer && (
+          <View style={{ width: dieViewSize, aspectRatio: 1 }}>
+            {dieRenderer()}
+          </View>
+        )}
+        {/* Name */}
+        <Text variant={smallLabel ? undefined : "headlineSmall"}>{name}</Text>
+        {children}
+      </>
+    </FastButton>
   );
 }

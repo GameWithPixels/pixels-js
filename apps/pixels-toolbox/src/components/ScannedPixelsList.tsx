@@ -68,9 +68,9 @@ export function ScannedPixelsList({
           <Text style={gs.italic}>{t("tapOnItemToSelect")}</Text>
           <FlatList
             style={gs.fullWidth}
+            contentContainerStyle={gs.listContentContainer}
             data={scannedPixels}
             renderItem={renderItem}
-            contentContainerStyle={gs.listContentContainer}
           />
         </>
       )}

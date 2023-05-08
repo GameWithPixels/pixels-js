@@ -1,14 +1,15 @@
-import {
-  FontAwesome5,
-  AntDesign,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   Color,
   EditActionMakeWebRequest,
 } from "@systemic-games/pixels-edit-animation";
 import {
+  BaseStyles,
   BatteryLevel,
+  FastBox,
+  FastButton,
+  FastHStack,
+  FastVStack,
   LoadingPopup,
   PixelAppPage,
   RSSIStrength,
@@ -18,21 +19,9 @@ import {
   usePixel,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import {
-  Box,
-  Center,
-  Text,
-  VStack,
-  HStack,
-  Input,
-  Spacer,
-  Divider,
-  Button,
-  ChevronRightIcon,
-  Pressable,
-  ScrollView,
-} from "native-base";
 import React from "react";
+import { ScrollView, View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 
 import {
   useAppProfiles,
@@ -41,7 +30,8 @@ import {
   useAppUpdatePairedDie,
 } from "~/app/hooks";
 import DieStatistics from "~/components/DieStatistics";
-import { ProfileSelector } from "~/components/ProfileSelector";
+import { ProfileCarousel } from "~/components/ProfileCarousel";
+import { TextInputClear } from "~/components/TextInputClear";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import httpPost from "~/features/httpPost";
 import DieRenderer from "~/features/render3d/DieRenderer";
@@ -66,6 +56,7 @@ export default function PixelDetailScreen({
     return profiles.find((p) => p.uuid === die?.profileUuid);
   }, [pairedDice, profiles, pixelId]);
 
+  // Web request handling
   React.useEffect(() => {
     if (pixel) {
       const onRemoteAction = (actionId: number) => {
@@ -111,6 +102,7 @@ export default function PixelDetailScreen({
     }
   }, [activeProfile, pixel]);
 
+  // Stats
   const [sessionRolls, setSessionRolls] = React.useState<number[]>(() =>
     new Array(20).fill(0)
   );
@@ -135,94 +127,74 @@ export default function PixelDetailScreen({
 
   const [showLoadingPopup, setShowLoadingPopup] = React.useState(false);
   const [transferProgress, setTransferProgress] = React.useState(0);
+  const theme = useTheme();
 
   return (
     <>
       <PixelAppPage>
-        <ScrollView height="100%" width="100%">
-          <VStack space={6} width="100%" maxW="100%">
-            <Center bg="white" rounded="lg" px={2}>
-              <Input
-                InputRightElement={
-                  <FontAwesome5 name="pen" size={20} color="black" />
-                }
-                size="2xl"
-                variant="unstyled"
-                placeholder={pixel.name}
-                color="black"
+        <ScrollView style={BaseStyles.fullSizeFlex}>
+          <TextInputClear isTitle placeholder={pixel.name} />
+          <FastHStack w="100%">
+            <FastBox w="60%" aspectRatio={1}>
+              <DieRenderer
+                renderData={activeProfile && getCachedDataSet(activeProfile)}
               />
-            </Center>
-            <Center w="100%">
-              <HStack space={0} alignItems="center" paddingLeft={5}>
-                <Box w="50%" paddingLeft={0}>
-                  <Box w={200} h={200}>
-                    <DieRenderer
-                      renderData={
-                        activeProfile && getCachedDataSet(activeProfile)
-                      }
-                    />
-                  </Box>
-                </Box>
-                <Spacer />
-                <VStack flex={2} space={11} p={2} rounded="md" w="40%">
-                  <Button onPress={() => pixel.blink(Color.dimOrange)}>
-                    <MaterialCommunityIcons
-                      name="lightbulb-on-outline"
-                      size={24}
-                      color="white"
-                    />
-                  </Button>
-                  <VStack bg="pixelColors.highlightGray" rounded="md" p={2}>
-                    <BatteryLevel
-                      size="xl"
-                      percentage={pixel.batteryLevel}
-                      isCharging={pixel.isCharging}
-                    />
-                    <RSSIStrength percentage={pixel.rssi} size="xl" />
-                  </VStack>
-                  <Box bg="pixelColors.highlightGray" rounded="md" p={2}>
-                    <VStack space={2}>
-                      {lastError ? (
-                        <Text bold color="red.500" fontSize="md">
-                          {`${lastError}`}
-                        </Text>
-                      ) : (
-                        <>
-                          <HStack>
-                            <Text bold>Face Up:</Text>
-                            <Spacer />
-                            <Text bold color="green.500" fontSize="md">
-                              {`${rollState?.face ?? ""}`}
-                              {`\n${rollState?.state ?? ""}`}
-                            </Text>
-                          </HStack>
-                          <HStack>
-                            <Text bold>Status:</Text>
-                            <Spacer />
-                            <Text bold color="green.500" fontSize="md">
-                              {status}
-                            </Text>
-                          </HStack>
-                        </>
-                      )}
-                    </VStack>
-                  </Box>
-                </VStack>
-              </HStack>
-            </Center>
+            </FastBox>
+            <FastVStack
+              flex={1}
+              alignItems="center"
+              justifyContent="space-around"
+              gap={5}
+            >
+              <FastButton onPress={() => pixel.blink(Color.dimOrange)}>
+                <MaterialCommunityIcons
+                  name="lightbulb-on-outline"
+                  size={24}
+                  color={theme.colors.onPrimaryContainer}
+                />
+              </FastButton>
+              <FastHStack
+                w="100%"
+                alignItems="center"
+                justifyContent="space-around"
+              >
+                <BatteryLevel
+                  level={pixel.batteryLevel}
+                  isCharging={pixel.isCharging}
+                  iconSize={24}
+                />
+                <RSSIStrength strength={pixel.rssi} iconSize={24} />
+              </FastHStack>
+              {lastError ? (
+                <Text style={{ color: theme.colors.error }}>
+                  {`${lastError}`}
+                </Text>
+              ) : (
+                <>
+                  {rollState && (
+                      <Text variant="bodyLarge">{`Face: ${rollState.face}\n${rollState.state}`}</Text>
+                  )}
+                    <Text variant="bodyLarge">{status}</Text>
+                </>
+              )}
+            </FastVStack>
+          </FastHStack>
 
+          <FastVStack gap={10} w="100%" marginBottom={10}>
             {/* Profiles horizontal scroll list */}
-            <Box>
-              <HStack alignItems="center" space={2} paddingBottom={2}>
+            <FastVStack>
+              <FastHStack alignItems="center" gap={5}>
                 <AntDesign name="profile" size={24} color="white" />
-                <Text bold>Recent Profiles:</Text>
-              </HStack>
-              <ProfileSelector
+                <Text variant="titleMedium">Recent Profiles:</Text>
+              </FastHStack>
+              <ProfileCarousel
+                height={100}
+                dieViewSize={50}
                 profiles={profiles}
                 dieRenderer={(profile) => (
                   <DieRenderer renderData={getCachedDataSet(profile)} />
                 )}
-                onPress={(profile) => {
+                onProfileSelect={(profile) => {
                   if (pixel.isReady) {
                     setTransferProgress(0);
                     setShowLoadingPopup(true);
@@ -239,7 +211,7 @@ export default function PixelDetailScreen({
                   }
                 }}
               />
-            </Box>
+            </FastVStack>
 
             {/* Die Stats */}
             <DieStatistics
@@ -248,46 +220,32 @@ export default function PixelDetailScreen({
             />
 
             {/* Advanced Settings infos */}
-            <Divider bg="primary.200" width="90%" alignSelf="center" />
-            <Pressable
+            <FastButton
+              // icon="chevron"
               onPress={() => {
                 navigation.navigate("PixelAdvancedSettings", { pixelId });
               }}
             >
-              <HStack
-                alignItems="center"
-                bg="primary.500"
-                p={3}
-                rounded="md"
-                w="100%"
-                alignSelf="center"
-              >
-                <Text bold>Advanced Settings</Text>
-                <Spacer />
-                <ChevronRightIcon />
-              </HStack>
-            </Pressable>
+              Advanced Settings
+            </FastButton>
 
-            <Divider bg="primary.200" width="90%" alignSelf="center" />
-            <Button
-              leftIcon={<AntDesign name="disconnect" size={24} color="white" />}
-              w="100%"
-              alignSelf="center"
+            <FastButton
+              // icon={<AntDesign name="disconnect" size={24} color="white" />}
               onPress={() => {
                 removePairedDie(pixelId);
                 navigation.goBack();
               }}
             >
-              <Text bold>Unpair</Text>
-            </Button>
-          </VStack>
+              Unpair
+            </FastButton>
+          </FastVStack>
         </ScrollView>
       </PixelAppPage>
 
       <LoadingPopup
         title="Uploading profile..."
-        isOpen={showLoadingPopup}
-        progress={transferProgress}
+        visible={showLoadingPopup}
+        progress={transferProgress / 100}
       />
     </>
   );

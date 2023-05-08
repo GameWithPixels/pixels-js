@@ -75,13 +75,23 @@ export type EditWidgetData =
  */
 export default function <T extends object>(
   editObj: T,
-  onUpdate?: (key: keyof T, value: T[keyof T], oldValue: T[keyof T]) => void
+  opt?: {
+    exclude?: string[];
+    onUpdate?: (key: keyof T, value: T[keyof T], oldValue: T[keyof T]) => void;
+  }
 ): EditWidgetData[] {
+  const exclude = opt?.exclude;
+  const onUpdate = opt?.onUpdate;
   const entries = Object.entries(editObj);
-  return decorators.getPropsWithWidget(editObj).map(({ type, propertyKey }) => {
+  const rawWidgetProps = decorators.getPropsWithWidget(editObj);
+  const widgetProps =
+    exclude && exclude.length > 0
+      ? rawWidgetProps.filter((w) => exclude.indexOf(w.propertyKey) < 0)
+      : rawWidgetProps;
+  return widgetProps.map(({ type, propertyKey }) => {
     const key = propertyKey as keyof T;
     const entry = entries.find((e) => e[0] === key);
-    assert(entry);
+    assert(entry, `getEditWidgetsData: missing property ${propertyKey}`);
     const value = entry[1];
 
     const getValue = () => editObj[key] as any;

@@ -543,7 +543,7 @@ function PrintModal({
         <FastVStack gap={10}>
           <Title>{t("labelPrinting")}</Title>
           <Divider style={{ height: 2 }} />
-          <Text style={gs.center} variant="bodyLarge">
+          <Text style={gs.centered} variant="bodyLarge">
             {}
           </Text>
           <Text>

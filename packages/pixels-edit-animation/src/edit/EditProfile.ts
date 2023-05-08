@@ -1,4 +1,8 @@
-import { DataSet, Profile } from "@systemic-games/pixels-core-animation";
+import {
+  DataSet,
+  Profile,
+  RemoteActionType,
+} from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
@@ -14,6 +18,14 @@ export default class EditProfile extends Editable {
 
   @observable
   rules: EditRule[];
+
+  get hasSound(): boolean {
+    return this._hasAnyRemoteActionOfType("playAudioClip");
+  }
+
+  get hasWebRequest(): boolean {
+    return this._hasAnyRemoteActionOfType("makeWebRequest");
+  }
 
   constructor(opt?: {
     uuid?: string;
@@ -64,5 +76,15 @@ export default class EditProfile extends Editable {
       }
     }
     return animations;
+  }
+
+  private _hasAnyRemoteActionOfType(remoteType: RemoteActionType): boolean {
+    return !!this.rules.find(
+      (r) =>
+        !!r.actions.find(
+          (a) =>
+            a instanceof EditActionRunOnDevice && a.remoteType === remoteType
+        )
+    );
   }
 }

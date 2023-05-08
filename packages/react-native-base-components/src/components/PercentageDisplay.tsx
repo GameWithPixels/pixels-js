@@ -1,56 +1,48 @@
-import { Icon, IIconProps } from "native-base";
+import { assert } from "@systemic-games/pixels-core-utils";
 import React from "react";
+import { ColorValue } from "react-native";
 
-export type IconParams = {
-  category: any;
-  iconName: string;
-};
+export interface IconComponentProps {
+  color?: ColorValue;
+  size?: number;
+}
+
+export type IconComponent = React.FC<IconComponentProps>;
 
 /**
  * Props for generic {@link PercentageDisplay} component.
  */
 export interface PercentageDisplayProps {
-  percentage: number; // current percentage value (from 0 to 1)
-  icons: IconParams[]; //icons must be stored as : first icon = empty percentage,[...], last icon = full percentage
-  colors?: IIconProps["color"][]; //colors must be stored as : first color = empty percentage color,[...], last color = full percentage color
-  _icon?: Partial<IIconProps>; // parameter for styling icon size
+  percent: number; // current percentage value (from 0 to 1)
+  icons: IconComponent[]; //icons must be stored as : first icon = empty percentage,[...], last icon = full percentage
+  colors?: ColorValue[]; //colors must be stored as : first color = empty percentage color,[...], last color = full percentage color
+  iconSize?: number;
 }
 
 /**
  * Compute index based on the arraylength and the current percentage value.
- * @param percentage Current percentage value.
- * @param arrayLength length of the icon array.
+ * @param percent Current percentage value.
+ * @param numItems length of the icon array.
  * @returns the index corresponding to the icon or color to display.
  */
-function computeIndex(percentage: number, arrayLength: number): number {
-  const ratio = arrayLength > 0 ? 100 / arrayLength : 1;
-  const tempIndex = Math.round(percentage / ratio);
-  const index =
-    Math.max(0, tempIndex) >= arrayLength
-      ? Math.max(arrayLength - 1, 0)
-      : tempIndex;
-  return index;
+function computeIndex(percent: number, numItems: number): number {
+  const index = Math.round(numItems > 0 ? (percent / 100) * numItems : -1);
+  return Math.min(numItems - 1, Math.max(0, index));
 }
+
 /**
  * Generic component for displaying a percentage value with icons and colors.
  * @param props See {@link PercentageDisplayProps} for props parameters.
  */
 export function PercentageDisplay({
-  colors = ["red.900", "orange.900", "green.900"],
-  percentage,
+  colors = ["red", "orange", "green"],
+  percent,
   icons,
-  _icon,
+  iconSize,
 }: PercentageDisplayProps) {
-  const NbOfIcons = icons.length;
-  const NbOfColors = colors.length;
-  const iconIndex = computeIndex(percentage, NbOfIcons);
-  const colorIndex = computeIndex(percentage, NbOfColors);
-  return (
-    <Icon
-      {..._icon}
-      as={icons[iconIndex].category}
-      name={icons[iconIndex].iconName}
-      color={colors[colorIndex]}
-    />
-  );
+  assert(icons.length > 0);
+  assert(colors.length > 0);
+  const icon = icons[computeIndex(percent, icons.length)];
+  const color = colors[computeIndex(percent, colors.length)];
+  return icon({ size: iconSize, color });
 }

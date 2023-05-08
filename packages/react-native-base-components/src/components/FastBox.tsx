@@ -1,57 +1,58 @@
 import React, { PropsWithChildren } from "react";
 import { View as RnView, ViewStyle } from "react-native";
+import { MD3Theme, useTheme } from "react-native-paper";
 
-// No color in these props so it's compatible with Native Base style props
-export interface FastBoxProps
-  extends PropsWithChildren,
-    Pick<
-      ViewStyle,
-      | "flex"
-      | "flexDirection"
-      | "flexGrow"
-      | "flexShrink"
-      | "flexWrap"
-      | "gap"
-      | "rowGap"
-      | "columnGap"
-      | "position"
-      | "alignSelf"
-      | "alignItems"
-      | "alignContent"
-      | "justifyContent"
-      | "left"
-      | "right"
-      | "width"
-      | "maxWidth"
-      | "top"
-      | "bottom"
-      | "height"
-      | "maxHeight"
-      | "padding"
-      | "paddingHorizontal"
-      | "paddingVertical"
-      | "paddingTop"
-      | "paddingBottom"
-      | "paddingLeft"
-      | "paddingRight"
-      | "margin"
-      | "marginHorizontal"
-      | "marginVertical"
-      | "marginTop"
-      | "marginBottom"
-      | "marginLeft"
-      | "marginRight"
-      | "borderRadius"
-      | "borderStyle"
-      | "borderWidth"
-      | "opacity"
-      | "backgroundColor"
-    > {
+export interface FastFlexProps
+  extends Pick<
+    ViewStyle,
+    | "flex"
+    | "flexDirection"
+    | "flexGrow"
+    | "flexShrink"
+    | "flexWrap"
+    | "gap"
+    | "rowGap"
+    | "columnGap"
+    | "position"
+    | "alignSelf"
+    | "alignItems"
+    | "alignContent"
+    | "justifyContent"
+    | "left"
+    | "right"
+    | "width"
+    | "minWidth"
+    | "maxWidth"
+    | "top"
+    | "bottom"
+    | "height"
+    | "minHeight"
+    | "maxHeight"
+    | "aspectRatio"
+    | "padding"
+    | "paddingHorizontal"
+    | "paddingVertical"
+    | "paddingTop"
+    | "paddingBottom"
+    | "paddingLeft"
+    | "paddingRight"
+    | "margin"
+    | "marginHorizontal"
+    | "marginVertical"
+    | "marginTop"
+    | "marginBottom"
+    | "marginLeft"
+    | "marginRight"
+    | "borderRadius"
+    | "borderStyle"
+    | "borderWidth"
+    | "borderColor"
+    | "opacity"
+    | "backgroundColor"
+  > {
   flexDir?: ViewStyle["flexDirection"];
   w?: ViewStyle["width"];
-  maxW?: ViewStyle["maxWidth"];
   h?: ViewStyle["height"];
-  maxH?: ViewStyle["maxHeight"];
   p?: ViewStyle["padding"];
   px?: ViewStyle["paddingHorizontal"];
   py?: ViewStyle["paddingVertical"];
@@ -69,54 +70,103 @@ export interface FastBoxProps
   bg?: ViewStyle["backgroundColor"];
 }
 
-function createStyle(props: Omit<FastBoxProps, "children" | "dynamicProps">) {
-  return {
-    flex: props.flex,
-    flexDirection: props.flexDirection ?? props.flexDir,
-    flexGrow: props.flexGrow,
-    flexShrink: props.flexShrink,
-    flexWrap: props.flexWrap,
-    gap: props.gap,
-    rowGap: props.rowGap,
-    columnGap: props.columnGap,
-    position: props.position,
-    alignSelf: props.alignSelf,
-    alignItems: props.alignItems,
-    alignContent: props.alignContent,
-    justifyContent: props.justifyContent,
-    left: props.left,
-    right: props.right,
-    width: props.width ?? props.w,
-    maxWidth: props.maxWidth ?? props.maxW,
-    top: props.top,
-    bottom: props.bottom,
-    height: props.height ?? props.h,
-    maxHeight: props.maxHeight ?? props.maxH,
-    padding: props.padding ?? props.p,
-    paddingHorizontal: props.paddingHorizontal ?? props.px,
-    paddingVertical: props.paddingVertical ?? props.py,
-    paddingTop: props.paddingTop ?? props.pt,
-    paddingBottom: props.paddingBottom ?? props.pb,
-    paddingLeft: props.paddingLeft ?? props.pl,
-    paddingRight: props.paddingRight ?? props.pr,
-    margin: props.margin ?? props.m,
-    marginHorizontal: props.marginHorizontal ?? props.mx,
-    marginVertical: props.marginVertical ?? props.my,
-    marginTop: props.marginTop ?? props.mt,
-    marginBottom: props.marginBottom ?? props.mb,
-    marginLeft: props.marginLeft ?? props.ml,
-    marginRight: props.marginRight ?? props.mr,
-    borderStyle: props.borderStyle,
-    borderWidth: props.borderWidth,
-    opacity: props.opacity,
-    backgroundColor: props.backgroundColor ?? props.bg,
-  };
+export function expandShorthandStyle(props: FastFlexProps): ViewStyle {
+  const p = props;
+  if (Object.hasOwn(props, "flexDir")) {
+    p.flexDirection = props.flexDir;
+  }
+  if (Object.hasOwn(props, "w")) {
+    p.width = props.w;
+  }
+  if (Object.hasOwn(props, "h")) {
+    p.height = props.h;
+  }
+  if (Object.hasOwn(props, "p")) {
+    p.padding = props.p;
+  }
+  if (Object.hasOwn(props, "px")) {
+    p.paddingHorizontal = props.px;
+  }
+  if (Object.hasOwn(props, "py")) {
+    p.paddingVertical = props.py;
+  }
+  if (Object.hasOwn(props, "pt")) {
+    p.paddingTop = props.pt;
+  }
+  if (Object.hasOwn(props, "pb")) {
+    p.paddingBottom = props.pb;
+  }
+  if (Object.hasOwn(props, "pl")) {
+    p.paddingLeft = props.pl;
+  }
+  if (Object.hasOwn(props, "pr")) {
+    p.paddingRight = props.pr;
+  }
+  if (Object.hasOwn(props, "m")) {
+    p.margin = props.m;
+  }
+  if (Object.hasOwn(props, "mx")) {
+    p.marginHorizontal = props.mx;
+  }
+  if (Object.hasOwn(props, "my")) {
+    p.marginVertical = props.my;
+  }
+  if (Object.hasOwn(props, "mt")) {
+    p.marginTop = props.mt;
+  }
+  if (Object.hasOwn(props, "mb")) {
+    p.marginBottom = props.mb;
+  }
+  if (Object.hasOwn(props, "ml")) {
+    p.marginLeft = props.ml;
+  }
+  if (Object.hasOwn(props, "mt")) {
+    p.marginRight = props.mr;
+  }
+  if (Object.hasOwn(props, "bg")) {
+    p.backgroundColor = props.bg;
+  }
+  return p;
 }
 
-/**
- * Simpler and (much) faster version or Native Base Box component without theme
- * support and with less props. Most notably it doesn't have a background color.
- */
+export interface FastBoxProps extends PropsWithChildren<FastFlexProps> {}
+
 export function FastBox({ children, ...props }: FastBoxProps) {
-  return <RnView style={createStyle(props)} children={children} />;
+  return <RnView style={expandShorthandStyle(props)} children={children} />;
+}
+
+export interface RoundedFlexProps extends FastFlexProps {
+  fill?: boolean;
+  fillThemeColor?: keyof Omit<MD3Theme["colors"], "elevation">;
+  border?: boolean;
+  borderThemeColor?: keyof Omit<MD3Theme["colors"], "elevation">;
+}
+
+export interface RoundedBoxProps extends PropsWithChildren<RoundedFlexProps> {}
+
+export function useRoundedStyle({
+  fill,
+  fillThemeColor = "primaryContainer",
+  border,
+  borderThemeColor = "primary",
+  ...props
+}: RoundedFlexProps) {
+  const theme = useTheme();
+  const style = expandShorthandStyle(props);
+  if (fill && !Object.hasOwn(style, "backgroundColor")) {
+    style.backgroundColor = theme.colors[fillThemeColor];
+  }
+  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
+  if (!Object.hasOwn(style, "borderColor")) {
+    style.borderColor = theme.colors[borderThemeColor];
+  }
+  style.borderRadius = borderRadius;
+  if (border && !style.borderWidth) {
+    style.borderWidth = 1;
+  }
+  return style;
+}
+
+export function RoundedBox({ children, ...props }: RoundedBoxProps) {
+  return <RnView style={useRoundedStyle(props)} children={children} />;
 }

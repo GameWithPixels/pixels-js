@@ -16,7 +16,7 @@ export default class EditAnimationGradientPattern extends EditAnimation {
   readonly type = "gradientPattern";
 
   @widget("grayscalePattern")
-  @name("LED Pattern")
+  @name("Grayscale Design")
   @observable
   pattern?: EditPattern;
 

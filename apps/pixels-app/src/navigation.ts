@@ -5,9 +5,9 @@ import { EditRule } from "@systemic-games/pixels-edit-animation";
 // Main screens stack
 //
 export type RootStackParamList = {
-  DiceBag: undefined;
-  Profiles: undefined;
-  Patterns: undefined;
+  HomeNav: undefined;
+  ProfilesNav: undefined;
+  AnimationsNav: undefined;
   Settings: undefined;
 };
 

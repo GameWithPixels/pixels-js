@@ -1,12 +1,4 @@
-import {
-  Actionsheet,
-  IActionsheetProps,
-  Text,
-  usePropsResolution,
-  FlatList,
-  IActionsheetItemProps,
-  ScrollView,
-} from "native-base";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import React from "react";
 
 /**
@@ -23,79 +15,47 @@ export interface ActionsheetListItemData {
 /**
  * Props for {@link ActionsheetList} component.
  */
-export interface ActionsheetListProps extends IActionsheetProps {
+export interface ActionsheetListProps {
   itemsData: ActionsheetListItemData[]; // Text to display on each item and action to call
+  isOpen: boolean;
+  onClose: () => void;
   title?: string;
-  sheetBgColor?: IActionsheetItemProps["bg"];
+  // sheetBgColor?: IActionsheetItemProps["bg"];
 }
 
 /**
- * ActionSheet drawer component. Can be triggered by any given component and display default Actionsheet.items or custom children.
+ * ActionSheet drawer component.
  * @param props See {@link ActionsheetListProps} for props parameters.
  */
-export const ActionsheetList = React.memo(function (
-  props: ActionsheetListProps
-) {
-  const { title, sheetBgColor, itemsData, onClose, ...resolvedProps } =
-    usePropsResolution("ActionsheetList", props) as ActionsheetListProps;
-  const renderItem = React.useCallback(
-    ({ item, index }: { item: ActionsheetListItemData; index: number }) => {
-      return (
-        <Actionsheet.Item
-          key={index}
-          onPress={() => {
-            item.onSelect?.(item.label);
-            onClose?.();
-          }}
-          alignItems="center"
-          bg={sheetBgColor}
-        >
-          <Text fontSize="md" textAlign="center">
-            {item.label}
-          </Text>
-        </Actionsheet.Item>
-      );
-    },
-    [onClose, sheetBgColor]
-  );
-  return (
-    <Actionsheet onClose={onClose} {...resolvedProps}>
-      <Actionsheet.Content bg={sheetBgColor}>
-        {title && (
-          <Text bold fontSize="16" px={4}>
-            {title}
-          </Text>
-        )}
-        <FlatList w="100%" data={itemsData} renderItem={renderItem} />
-      </Actionsheet.Content>
-    </Actionsheet>
-  );
-});
-
-export const ActionsheetScrollView = React.memo(function ({
+export function ActionsheetList({
   itemsData,
+  isOpen,
   onClose,
-  ...props
-}: { itemsData: ActionsheetListItemData[] } & IActionsheetProps) {
-  return (
-    <Actionsheet onClose={onClose} {...props}>
-      <Actionsheet.Content>
-        <ScrollView w="100%">
-          {itemsData.map(({ label, onSelect }, key) => (
-            <Actionsheet.Item
-              key={key}
-              alignItems="center"
-              width="100%"
-              onPress={() => {
-                onSelect?.(label);
-                onClose?.();
-              }}
-            >
-              <Text fontSize="md">{label}</Text>
-            </Actionsheet.Item>
-          ))}
-        </ScrollView>
-      </Actionsheet.Content>
-    </Actionsheet>
-  );
-});
+  title,
+}: ActionsheetListProps) {
+  const { showActionSheetWithOptions } = useActionSheet();
+  const showActionSheet = React.useCallback(() => {
+    const options = itemsData.map((i) => i.label);
+    showActionSheetWithOptions(
+      {
+        title,
+        options,
+        cancelButtonIndex: options.length - 1,
+        // bg={ sheetBgColor }
+      },
+      (index?: number) => {
+        const item = itemsData[index ?? -1];
+        if (item) {
+          item.onSelect?.(item.label);
+          onClose?.();
+        }
+      }
+    );
+  }, [itemsData, onClose, showActionSheetWithOptions, title]);
+  React.useEffect(() => {
+    if (isOpen) {
+      showActionSheet();
+    }
+  }, [isOpen, showActionSheet]);
+  return <></>;
+}

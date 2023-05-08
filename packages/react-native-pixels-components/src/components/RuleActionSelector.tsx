@@ -1,14 +1,17 @@
 import {
+  ActionsheetList,
   ActionsheetListItemData,
-  ActionsheetScrollView,
-  FastBoxProps,
+  BaseStyles,
+  FastButton,
+  FastFlexProps,
   FastHStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { Text, ChevronDownIcon, Pressable, View } from "native-base";
 import React from "react";
+import { View } from "react-native";
+import { Text } from "react-native-paper";
 
-export interface RuleActionSelectorProps extends FastBoxProps {
+export interface RuleActionSelectorProps extends FastFlexProps {
   actions: ActionsheetListItemData[];
   title?: string;
 }
@@ -22,32 +25,13 @@ export function RuleActionSelector({
   return (
     <>
       <FastHStack alignItems="center" {...flexProps}>
-        <Text fontSize="2xl" flex={1}>
-          Then
-        </Text>
-        <Pressable flex={2} onPress={onOpen}>
-          <View
-            flexDir="row"
-            p={2}
-            paddingLeft={4}
-            w="100%"
-            alignItems="center"
-            rounded="lg"
-            bg="darkBlue.800"
-          >
-            <Text fontSize="sm" flexGrow={1}>
-              {title}
-            </Text>
-            <ChevronDownIcon />
-          </View>
-        </Pressable>
+        <Text variant="bodyLarge">Then</Text>
+        <View style={BaseStyles.spacer} />
+        <FastButton onPress={onOpen}>{title}</FastButton>
+        <View style={BaseStyles.spacer} />
       </FastHStack>
 
-      <ActionsheetScrollView
-        isOpen={isOpen}
-        onClose={onClose}
-        itemsData={actions}
-      />
+      <ActionsheetList isOpen={isOpen} onClose={onClose} itemsData={actions} />
     </>
   );
 }

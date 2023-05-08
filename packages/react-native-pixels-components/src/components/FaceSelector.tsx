@@ -1,90 +1,115 @@
 import {
-  FastBoxProps,
   FastButton,
-  FastVStack,
+  FastFlexProps,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import { Actionsheet, IActionsheetProps, ScrollView, Text } from "native-base";
 import React from "react";
+import { ScrollView } from "react-native";
+import { Card, Modal, ModalProps, Portal, useTheme } from "react-native-paper";
+import { useModalStyle } from "../theme";
 
-export interface FaceSelectorProps extends FastBoxProps {
-  title?: string;
-  value: number;
-  onFaceChange: (faceIndex: number) => void;
+export interface FaceSelectorProps extends FastFlexProps {
   faceCount: number;
+  face: number;
+  onFaceSelect: (faceIndex: number) => void;
   disabled?: boolean;
 }
 
 export function FaceSelector({
-  title,
-  value,
-  onFaceChange: onChange,
   faceCount,
+  face,
+  onFaceSelect,
   disabled,
   ...flexProps
 }: FaceSelectorProps) {
   const textStyle = React.useMemo(
-    () => ({ color: disabled ? "gray.400" : null }),
+    () => ({ style: { color: disabled ? "gray" : undefined } }),
     [disabled]
   );
   const { isOpen, onOpen, onClose } = useDisclose();
-  const onSelect = React.useCallback(
+  const chooseFace = React.useCallback(
     (face: number) => {
-      onChange?.(face);
+      onFaceSelect?.(face);
       onClose();
     },
-    [onChange, onClose]
+    [onFaceSelect, onClose]
   );
   return (
     <>
-      <FastVStack {...flexProps}>
-        {title && <Text bold>{title}</Text>}
-        <FastButton
-          onPress={onOpen}
-          disabled={disabled}
-          bg={disabled ? "gray.600" : null}
-          _text={textStyle}
-        >
-          {/* When no value render a space character so button doesn't change size */}
-          {value > 0 ? value : " "}
-        </FastButton>
-      </FastVStack>
+      <FastButton
+        onPress={onOpen}
+        disabled={disabled}
+        color={disabled ? "gray" : undefined}
+        _text={textStyle}
+        {...flexProps}
+      >
+        {/* When no value render a space character so button doesn't change size */}
+        {face > 0 ? face : " "}
+      </FastButton>
 
-      <FacesActionsheet
-        isOpen={isOpen}
-        onClose={onClose}
+      <SelectFaceModal
+        visible={isOpen}
+        onDismiss={onClose}
         faceCount={faceCount}
-        onSelect={onSelect}
+        face={face}
+        onFaceSelect={chooseFace}
       />
     </>
   );
 }
 
-function FacesActionsheet({
-  onSelect,
+interface SelectFaceModalProps
+  extends Pick<FaceSelectorProps, "faceCount" | "face" | "onFaceSelect">,
+    Omit<ModalProps, "children"> {
+  title?: string;
+}
+function SelectFaceModal({
+  onDismiss,
   faceCount,
-  ...actionsheetProps
-}: { onSelect: (face: number) => void } & Pick<FaceSelectorProps, "faceCount"> &
-  IActionsheetProps) {
+  face,
+  onFaceSelect,
+  title,
+  ...props
+}: SelectFaceModalProps) {
   const allFaces = React.useMemo(
     () => Array.from({ length: faceCount }, (_, i) => i + 1),
     [faceCount]
   );
+  const modalStyle = useModalStyle();
+  const theme = useTheme();
   return (
-    <Actionsheet {...actionsheetProps}>
-      <Actionsheet.Content maxHeight={400} minHeight={200}>
-        <ScrollView h="100%" w="100%">
-          {allFaces.map((face) => (
-            <Actionsheet.Item
-              onPress={() => onSelect?.(face)}
-              alignItems="center"
-              key={face}
+    <Portal>
+      <Modal
+        contentContainerStyle={modalStyle}
+        onDismiss={onDismiss}
+        {...props}
+      >
+        <Card>
+          {title && <Card.Title title={title} />}
+          <Card.Actions>
+            <ScrollView
+              contentContainerStyle={{
+                flexWrap: "wrap",
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+              }}
             >
-              <Text fontSize="2xl">{face}</Text>
-            </Actionsheet.Item>
-          ))}
-        </ScrollView>
-      </Actionsheet.Content>
-    </Actionsheet>
+              {allFaces.map((f) => (
+                <FastButton
+                  key={f}
+                  onPress={() => onFaceSelect?.(f)}
+                  borderWidth={f === face ? 2 : undefined}
+                  borderColor={theme.colors.primary}
+                  alignItems="center"
+                  m={5}
+                >
+                  {f}
+                </FastButton>
+              ))}
+            </ScrollView>
+          </Card.Actions>
+        </Card>
+      </Modal>
+    </Portal>
   );
 }

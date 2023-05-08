@@ -1,21 +1,22 @@
 import {
   FastHStack,
-  Toggle,
+  FastVStack,
 } from "@systemic-games/react-native-base-components";
-import { Text, View } from "native-base";
 import React from "react";
+import { Switch, Text } from "react-native-paper";
 
 import { FaceSelector, FaceSelectorProps } from "../components/FaceSelector";
 
 export interface PlaybackFaceWidgetProps
   extends Omit<FaceSelectorProps, "disabled" | "backgroundColor" | "bg"> {
+  title: string;
   defaultFace?: number;
 }
 
 export function PlaybackFaceWidget({
   title,
-  value,
-  onFaceChange: onChange,
+  face: value,
+  onFaceSelect: onChange,
   faceCount,
   defaultFace = 1,
   ...flexProps
@@ -25,23 +26,19 @@ export function PlaybackFaceWidget({
     [defaultFace, onChange]
   );
   return (
-    <View {...flexProps}>
-      <Text bold>{title}</Text>
-      <FastHStack alignItems="center">
-        <Toggle
-          value={value > 0}
-          title="Current Face"
-          onValueChange={onToggle}
-        />
+    <FastVStack {...flexProps}>
+      <Text variant="titleMedium">{title}</Text>
+      <FastHStack alignItems="center" gap={5}>
+        <Text>Current Face</Text>
+        <Switch value={value > 0} onValueChange={onToggle} />
         <FaceSelector
-          ml={3}
           flexGrow={1}
-          value={value}
-          onFaceChange={onChange}
           faceCount={faceCount}
+          face={value}
+          onFaceSelect={onChange}
           disabled={value <= 0}
         />
       </FastHStack>
-    </View>
+    </FastVStack>
   );
 }

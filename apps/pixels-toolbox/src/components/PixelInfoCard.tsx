@@ -1,11 +1,12 @@
 import {
+  BaseStyles,
   FastBox,
   FastHStack,
 } from "@systemic-games/react-native-base-components";
 import { PixelInfoNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { TFunction, useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { Card, Text } from "react-native-paper";
 
 import { useForceUpdate } from "~/features/hooks/useForceUpdate";
@@ -28,7 +29,7 @@ function PixelName({ pixel }: Omit<PixelAndTranslation, "t">) {
   }, [pixel, forceUpdate]);
   return (
     <FastBox flexDir="row" justifyContent="center">
-      <Text variant="headlineMedium">{pixel.name}</Text>
+      <Text variant="headlineSmall">{pixel.name}</Text>
     </FastBox>
   );
 }
@@ -95,7 +96,7 @@ function PixelFirmwareDate({ pixel, t }: PixelAndTranslation) {
     };
   }, [pixel, forceUpdate]);
   return (
-    <Text style={styles.textCentered}>
+    <Text style={BaseStyles.textCentered}>
       {t("firmware")}
       {t("colonSeparator")}
       {toLocaleDateTimeString(pixel.firmwareDate)}
@@ -153,9 +154,3 @@ export function PixelInfoCard({ children, pixelInfo }: PixelInfoCardProps) {
     </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  textCentered: {
-    textAlign: "center",
-  },
-});

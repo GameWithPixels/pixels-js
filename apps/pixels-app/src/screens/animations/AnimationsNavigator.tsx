@@ -1,24 +1,24 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
-import { NativeBaseProvider } from "native-base";
+import { PixelThemeProvider } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 
 import AnimationEditScreen from "./AnimationEditScreen";
 import AnimationsListScreen from "./AnimationsListScreen";
 
 import { AnimationsScreenStackParamList } from "~/navigation";
-import { paleBluePixelTheme } from "~/themes";
 
 const Stack = createStackNavigator<AnimationsScreenStackParamList>();
 
 export function PatternsNavigator() {
   return (
-    <NativeBaseProvider theme={paleBluePixelTheme}>
+    <PixelThemeProvider accent="green">
       <Stack.Navigator
         screenOptions={{
-          headerBackImage: () => (
-            <Ionicons name="md-arrow-back-outline" size={24} color="white" />
-          ),
+          headerShown: false,
+          // headerBackImage: () => (
+          //   <Ionicons name="md-arrow-back-outline" size={24} color="white" />
+          // ),
           headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: "black",
@@ -30,17 +30,17 @@ export function PatternsNavigator() {
           name="AnimationsList"
           component={AnimationsListScreen}
           options={{
-            title: "Lighting Patterns",
+            title: "Animations",
           }}
         />
         <Stack.Screen
           name="AnimationEdit"
           component={AnimationEditScreen}
           options={{
-            title: "Lighting Patterns Settings",
+            title: "Animation Settings",
           }}
         />
       </Stack.Navigator>
-    </NativeBaseProvider>
+    </PixelThemeProvider>
   );
 }

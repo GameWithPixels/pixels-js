@@ -1,27 +1,20 @@
-import { AntDesign } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import {
+  BaseStyles,
+  FastButton,
+  FastHStack,
+  FastVStack,
   PixelAppPage,
-  Toggle,
-  PairedPixelInfoComponent,
-  ScannedPixelInfoComponent,
-  SquarePairedPixelInfo,
+  PixelInfoHCard,
+  PixelInfoVCard,
 } from "@systemic-games/react-native-pixels-components";
 import {
   ScannedPixel,
   useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
-import {
-  Box,
-  Center,
-  HStack,
-  ScrollView,
-  Spacer,
-  Text,
-  VStack,
-} from "native-base";
 import React from "react";
-import { RefreshControl } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Card, Text, useTheme } from "react-native-paper";
 
 import {
   useAppPairedDice,
@@ -32,12 +25,12 @@ import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
 import { HomeScreenProps } from "~/navigation";
 
-function PairedPixelList({
+function PairedPixels({
   navigation,
-  pairedPixels,
+  pixels,
 }: {
   navigation: HomeScreenProps["navigation"];
-  pairedPixels: ScannedPixel[];
+  pixels: ScannedPixel[];
 }) {
   const pairedDice = useAppPairedDice();
   const profiles = useAppProfiles();
@@ -47,133 +40,77 @@ function PairedPixelList({
     },
     [navigation]
   );
-  const [pixelsDisplay, switchPixelsDisplay] = React.useState(false);
   return (
-    <Center width="100%">
-      <VStack space={2} w="100%">
-        <HStack alignItems="center">
-          <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
-            <Text bold fontSize="md" letterSpacing="xl">
-              Paired Dice:
-            </Text>
-          </Box>
-          <Spacer />
-          {/* Switch scanned display toggle */}
-          <Toggle
-            space={0}
-            onValueChange={() => {
-              switchPixelsDisplay(!pixelsDisplay);
-            }}
-            isChecked={pixelsDisplay}
-          >
-            <AntDesign name="bars" size={24} color="white" />
-          </Toggle>
-          <AntDesign name="appstore-o" size={22} color="white" />
-        </HStack>
-        <Box rounded="md" p={2} bg="gray.700" width="100%">
-          {!pairedPixels.length ? (
-            <Text>No dice paired yet!</Text>
-          ) : pixelsDisplay === false ? (
-            <VStack w="100%">
-              {pairedPixels.map((pixel) => {
-                const uuid = pairedDice.find(
-                  (d) => d.pixelId === pixel.pixelId
-                )?.profileUuid;
-                const profile = profiles.find((p) => p.uuid === uuid);
-                return (
-                  <PairedPixelInfoComponent
-                    key={pixel.pixelId}
-                    pixel={pixel}
-                    profileName={profile?.name}
-                    onPress={() => onPress(pixel)}
-                    dieRenderer={() => (
-                      <DieRenderer
-                        renderData={
-                          profile ? getCachedDataSet(profile) : undefined
-                        }
-                      />
-                    )}
-                  />
-                );
-              })}
-            </VStack>
-          ) : (
-            <Center>
-              <HStack flexWrap="wrap" justifyContent="flex-start" px={4}>
-                {pairedPixels.map((pixel) => (
-                  <Box p={1} alignSelf="center" key={pixel.pixelId} w="50%">
-                    <SquarePairedPixelInfo
-                      w="100%"
-                      h={200}
-                      pixel={pixel}
-                      onPress={() => onPress(pixel)}
-                      dieRenderer={() => <DieRenderer />}
-                    />
-                  </Box>
-                ))}
-              </HStack>
-            </Center>
-          )}
-        </Box>
-      </VStack>
-    </Center>
+    <FastHStack w="100%" flexWrap="wrap" justifyContent="center">
+      {pixels.map((pixel, i) => {
+        const uuid = pairedDice.find(
+          (d) => d.pixelId === pixel.pixelId
+        )?.profileUuid;
+        const profile = profiles.find((p) => p.uuid === uuid);
+        return (
+          <PixelInfoVCard
+            key={pixel.pixelId}
+            w="50%"
+            mt={i > 2 ? 20 : 0}
+            aspectRatio={1}
+            pixel={pixel}
+            title={profile?.name ?? pixel.name}
+            onPress={() => onPress(pixel)}
+            dieRenderer={() => (
+              <DieRenderer
+                renderData={profile ? getCachedDataSet(profile) : undefined}
+              />
+            )}
+          />
+        );
+      })}
+    </FastHStack>
   );
 }
 
-function NearbyPixelsList({
-  unpairedPixels,
-}: {
-  unpairedPixels: ScannedPixel[];
-}) {
-  const [hideNearbyPixels, setHideNearbyPixels] = React.useState(false);
+function UnpairedPixels({ pixels }: { pixels: ScannedPixel[] }) {
   const updatePairedDie = useAppUpdatePairedDie();
+  const pairAll = React.useCallback(
+    () => pixels.forEach((p) => updatePairedDie({ pixelId: p.pixelId })),
+    [pixels, updatePairedDie]
+  );
+  const theme = useTheme();
+  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
   return (
-    <Center>
-      <VStack space={2} w="100%">
-        <HStack alignItems="center">
-          <Box paddingLeft={2} paddingRight={2} roundedTop="lg">
-            <Text bold fontSize="md" letterSpacing="xl">
-              Nearby Dice:
-            </Text>
-          </Box>
-          <Spacer />
-          {/* Hide nearby Pixels toggle */}
-          <HStack space={1} alignItems="center">
-            <Toggle
-              title="Show"
-              onValueChange={() => {
-                setHideNearbyPixels(!hideNearbyPixels);
-              }}
-              isChecked={hideNearbyPixels}
-              value={hideNearbyPixels}
-            />
-            <Text>Hide</Text>
-          </HStack>
-        </HStack>
-
-        <Box rounded="md" p={2} bg="gray.700" alignItems="center" w="100%">
-          {!hideNearbyPixels && (
-            <VStack w="100%">
-              {unpairedPixels.map((pixel) => (
-                <Box p={1} key={pixel.pixelId} w="100%">
-                  <ScannedPixelInfoComponent
-                    pixel={pixel}
-                    onPress={() => updatePairedDie({ pixelId: pixel.pixelId })}
-                    dieRenderer={() => <DieRenderer />}
-                  />
-                </Box>
-              ))}
-            </VStack>
-          )}
-        </Box>
-      </VStack>
-    </Center>
+    <FastVStack gap={10} w="100%">
+      <FastHStack alignItems="center" justifyContent="space-between">
+        <Text variant="titleMedium">Available Dice To Pair</Text>
+        <FastButton onPress={pairAll}>Pair All</FastButton>
+      </FastHStack>
+      {pixels.map((pixel) => (
+        <PixelInfoHCard
+          key={pixel.pixelId}
+          width="100%"
+          height={90}
+          p={5}
+          borderRadius={borderRadius}
+          borderWidth={1}
+          borderColor={theme.colors.primary}
+          bg={theme.colors.background}
+          pixel={pixel}
+          dieRenderer={() => <DieRenderer />}
+        >
+          <View style={BaseStyles.spacer} />
+          <FastButton
+            height="50%"
+            alignSelf="center"
+            onPress={() => updatePairedDie({ pixelId: pixel.pixelId })}
+          >
+            Pair
+          </FastButton>
+        </PixelInfoHCard>
+      ))}
+    </FastVStack>
   );
 }
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [scannedPixels, scannerDispatch] = useScannedPixels();
-
   useFocusEffect(
     React.useCallback(() => {
       scannerDispatch("start");
@@ -182,6 +119,18 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       };
     }, [scannerDispatch])
   );
+  // TODO work around for scanned Pixels showing up multiple time after fast reload
+  // React.useEffect(() => {
+  //   console.log("FIXME START")
+  //   scannerDispatch("start");
+  //   return () => {
+  //     console.log("FIXME STOP")
+  //     scannerDispatch("clear");
+  //     scannerDispatch("stop");
+  //   };
+  // }, [scannerDispatch]);
+  // if (scannedPixels.length)
+  //   console.log("SCANNED: " + scannedPixels.map((p) => p.name).join(", "));
 
   const pairedDice = useAppPairedDice();
   const unpairedPixels = React.useMemo(
@@ -199,30 +148,34 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     [pairedDice, scannedPixels]
   );
 
-  const [refreshing, setRefreshing] = React.useState(false);
-
-  // Example to use and see the refresh function
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 2000);
-  }, []);
-
+  const showGreetings = !pairedPixels.length && !unpairedPixels.length;
+  const theme = useTheme();
   return (
-    <PixelAppPage>
-      <ScrollView
-        height="100%"
-        width="100%"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <VStack space={4}>
-          <PairedPixelList
-            navigation={navigation}
-            pairedPixels={pairedPixels}
-          />
-          <NearbyPixelsList unpairedPixels={unpairedPixels} />
-        </VStack>
+    <PixelAppPage style={{ backgroundColor: theme.colors.background }}>
+      <ScrollView style={BaseStyles.fullSizeFlex}>
+        {pairedPixels.length > 0 && (
+          <Card>
+            <Card.Content>
+              <PairedPixels navigation={navigation} pixels={pairedPixels} />
+            </Card.Content>
+          </Card>
+        )}
+        <View style={{ height: 10 }} />
+        {unpairedPixels.length > 0 && (
+          <Card>
+            <Card.Content>
+              <UnpairedPixels pixels={unpairedPixels} />
+            </Card.Content>
+          </Card>
+        )}
+        {showGreetings && (
+          <Text
+            variant="headlineMedium"
+            style={{ paddingTop: 100, textAlign: "center" }}
+          >
+            It's time to unbox your dice!
+          </Text>
+        )}
       </ScrollView>
     </PixelAppPage>
   );

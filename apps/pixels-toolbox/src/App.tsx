@@ -10,7 +10,7 @@ import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Appearance, LogBox } from "react-native";
+import { LogBox, useColorScheme } from "react-native";
 import {
   adaptNavigationTheme,
   MD3DarkTheme,
@@ -88,13 +88,14 @@ const Drawer = createDrawerNavigator<RootScreensParamList>();
 
 function AppContent() {
   const themeMode = useAppSelector((state) => state.displaySettings.themeMode);
-  const darkOrLight =
-    themeMode === "system" ? Appearance.getColorScheme() : themeMode;
+  const colorScheme = useColorScheme();
+  const darkOrLight = themeMode === "system" ? colorScheme : themeMode;
   const theme = darkOrLight === "dark" ? DarkTheme : LightTheme;
 
   const { t } = useTranslation();
   return (
     <PaperProvider theme={theme}>
+      <StatusBar style={darkOrLight ? "dark" : "light"} />
       <PersistGate
         loading={
           <FastVStack alignContent="center" justifyContent="center">
@@ -149,7 +150,6 @@ function App() {
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <ReduxProvider store={store}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
         <ActionSheetProvider>
           <AppContent />
         </ActionSheetProvider>

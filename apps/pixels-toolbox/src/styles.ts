@@ -9,6 +9,9 @@ const gs = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  spacer: {
+    flexGrow: 1,
+  },
   fullWidth: {
     width: "100%",
   },

@@ -5,12 +5,12 @@ import {
   GammaUtils,
 } from "@systemic-games/pixels-core-animation";
 import { Die3D } from "@systemic-games/pixels-three";
+import { BaseStyles } from "@systemic-games/react-native-pixels-components";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
-import { Text } from "native-base";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
-import { StyleSheet } from "react-native";
+import { Text } from "react-native-paper";
 
 import { createDie3DAsync } from "./createDie3DAsync";
 
@@ -39,8 +39,8 @@ class SceneRenderer {
       // Camera
       const ratio = gl.drawingBufferWidth / gl.drawingBufferHeight;
       const camera = new THREE.PerspectiveCamera(15, ratio, 0.1, 800);
-      camera.position.set(18, 84, -68);
-      camera.lookAt(new THREE.Vector3(0, 0, 0));
+      camera.position.set(16.4, 76.5, -62);
+      camera.lookAt(new THREE.Vector3(0, 0.6, 0));
 
       // Scene
       const scene = new THREE.Scene();
@@ -227,14 +227,10 @@ export default function ({ renderData }: DieRendererProps) {
   return (
     <>
       {!loaded ? (
-        <Text>Loading...</Text>
+        <Text style={BaseStyles.selfCentered}>Loading...</Text>
       ) : (
-        <GLView onContextCreate={onContextCreate} style={styles.glView} />
+        <GLView onContextCreate={onContextCreate} style={BaseStyles.flex} />
       )}
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  glView: { flex: 1 },
-});

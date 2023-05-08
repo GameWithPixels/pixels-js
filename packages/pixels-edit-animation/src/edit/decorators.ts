@@ -1,5 +1,5 @@
 export interface PropertyData {
-  propertyKey: string;
+  propertyKey: string; // TODO add typing: keyof T & string
 }
 
 function getMetadata<T extends PropertyData>(

@@ -20,6 +20,7 @@ export default class EditConditionBatteryState extends EditCondition {
   flags: number;
 
   @widget("slider")
+  @name("Recheck After")
   @range(5, 60)
   @unit("s")
   @observable

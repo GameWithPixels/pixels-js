@@ -1,11 +1,18 @@
-import { ProgressBar } from "@systemic-games/react-native-base-components";
-import { Center, IModalProps, Modal, Text } from "native-base";
 import React from "react";
+import {
+  Card,
+  Modal,
+  Portal,
+  ModalProps,
+  ProgressBar,
+} from "react-native-paper";
+
+import { useModalStyle } from "../theme";
 
 /**
  * Props for loading popup component
  */
-export interface LoadingPopupProps extends IModalProps {
+export interface LoadingPopupProps extends Omit<ModalProps, "children"> {
   title?: string;
   progress?: number; // current loading progress value
 }
@@ -15,19 +22,17 @@ export interface LoadingPopupProps extends IModalProps {
  * @param props See {@link LoadingPopupProps} for props parameters.
  */
 export function LoadingPopup({ title, progress, ...props }: LoadingPopupProps) {
+  const modalStyle = useModalStyle();
   return (
-    <Modal {...props}>
-      <Modal.Content>
-        <Modal.Header>
-          <Center>
-            <Text>{title}</Text>
-          </Center>
-        </Modal.Header>
-        <Modal.Body minH={1}>
-          <ProgressBar progress={progress} />
-        </Modal.Body>
-        <Modal.Footer />
-      </Modal.Content>
-    </Modal>
+    <Portal>
+      <Modal contentContainerStyle={modalStyle} {...props}>
+        <Card>
+          <Card.Title title={title} />
+          <Card.Content>
+            <ProgressBar progress={progress} />
+          </Card.Content>
+        </Card>
+      </Modal>
+    </Portal>
   );
 }

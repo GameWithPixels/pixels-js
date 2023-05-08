@@ -1,34 +1,37 @@
 import {
-  FastBoxProps,
   FastButton,
+  FastFlexProps,
   FastHStack,
   FastVStack,
+  RoundedBox,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import {
-  Text,
-  Center,
-  Pressable,
-  Modal,
-  Checkbox,
-  usePropsResolution,
-  IModalProps,
-  Button,
-  ICheckboxProps,
-  ITextProps,
-} from "native-base";
 import React from "react";
+import {
+  Card,
+  Checkbox,
+  Modal,
+  ModalProps,
+  Portal,
+  RadioButtonProps,
+  Text,
+  TextProps,
+} from "react-native-paper";
+
+import { useModalStyle } from "../theme";
+
+export interface SelectFaceMaskProps {
+  faces: number[];
+  onFaceMaskChange: (faces: number[]) => void; // Function to be executed when the face selection is changed
+  faceCount: number; // Number of faces on the die
+  _checkBox?: RadioButtonProps;
+}
 
 /**
  * Props for {@link FaceMaskWidget} component.
  */
-interface FaceMaskWidgetProps extends FastBoxProps {
-  faces: number[];
-  onFaceMaskChange: (faces: number[]) => void; // Function to be executed when the face selection is changed
-  faceCount: number; // Number of faces on the die
-  _text?: ITextProps;
-  modalBg?: IModalProps["bg"];
-  _checkBox?: ICheckboxProps;
+interface FaceMaskWidgetProps extends SelectFaceMaskProps, FastFlexProps {
+  _text?: Omit<TextProps<string>, "children">;
 }
 
 /**
@@ -39,12 +42,10 @@ export function FaceMaskWidget({
   faces,
   onFaceMaskChange,
   faceCount,
-  ...props
+  _text,
+  _checkBox,
+  ...flexProps
 }: FaceMaskWidgetProps) {
-  const { modalBg, _text, _checkBox, ...resolvedProps } = usePropsResolution(
-    "FaceMask",
-    props
-  );
   const faceList = React.useMemo(
     () => faces.sort((n1, n2) => n1 - n2).join(" / "),
     [faces]
@@ -52,26 +53,22 @@ export function FaceMaskWidget({
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack {...resolvedProps}>
-        <Text bold> Face mask</Text>
-        <Pressable
-          p="1"
-          rounded="lg"
-          bg="primary.700"
-          alignContent="center"
-          onPress={onOpen}
-        >
-          <Text {..._text}>
-            {faces.length ? faceList : "No faces selected"}
-          </Text>
-        </Pressable>
+      <FastVStack {...flexProps}>
+        <Text variant="titleMedium">Face mask</Text>
+        <FastHStack alignItems="center" gap={5}>
+          <FastButton onPress={onOpen}>Edit</FastButton>
+          <RoundedBox border flex={1} py={10} alignItems="center">
+            <Text {..._text}>
+              {faces.length ? faceList : "No faces selected"}
+            </Text>
+          </RoundedBox>
+        </FastHStack>
       </FastVStack>
 
       <SelectFacesModal
-        bg={modalBg}
         _checkBox={_checkBox}
-        isOpen={isOpen}
-        onClose={onClose}
+        visible={isOpen}
+        onDismiss={onClose}
         faces={faces}
         onFaceMaskChange={onFaceMaskChange}
         faceCount={faceCount}
@@ -80,82 +77,77 @@ export function FaceMaskWidget({
   );
 }
 
-function SelectFacesModal({
-  bg,
-  onClose,
+export interface SelectFacesModalProps
+  extends SelectFaceMaskProps,
+    Omit<ModalProps, "children"> {}
+
+export function SelectFacesModal({
+  onDismiss,
   faces,
   onFaceMaskChange,
   faceCount,
   _checkBox,
   ...props
-}: Pick<
-  FaceMaskWidgetProps,
-  "faces" | "onFaceMaskChange" | "faceCount" | "_checkBox"
-> &
-  IModalProps) {
+}: SelectFacesModalProps) {
   const allFaces = React.useMemo(
     () => Array.from({ length: faceCount }, (_, i) => i + 1),
     [faceCount]
   );
-  const onChangeMemo = React.useCallback(
-    (values: string[]) => onFaceMaskChange(values.map(Number) ?? []),
-    [onFaceMaskChange]
-  );
+  const modalStyle = useModalStyle();
   return (
-    <Modal onClose={onClose} {...props}>
-      <Modal.Content bg={bg}>
-        <Center>
-          <Modal.Header bg={bg} fontSize={20}>
-            Select Faces
-          </Modal.Header>
-        </Center>
-        <Modal.Body bg={bg}>
-          <Center>
-            <Checkbox.Group value={faces.map(String)} onChange={onChangeMemo}>
-              <FastHStack flexWrap="wrap">
-                {allFaces.map((f) => (
-                  <Checkbox
-                    key={f}
-                    ml={f > 1 ? 2 : 0}
-                    w={50}
-                    alignSelf="center"
-                    {..._checkBox}
-                    value={f.toString()}
-                  >
-                    {f}
-                  </Checkbox>
-                ))}
-              </FastHStack>
-            </Checkbox.Group>
-          </Center>
-        </Modal.Body>
-        <Center>
-          <Modal.Footer bg={bg}>
-            <Button.Group space={2}>
+    <Portal>
+      <Modal
+        contentContainerStyle={modalStyle}
+        onDismiss={onDismiss}
+        {...props}
+      >
+        <Card>
+          <Card.Title title="Die Faces" />
+          <Card.Content>
+            <FastHStack flexWrap="wrap" gap={5}>
+              {allFaces.map((f) => (
+                <Checkbox.Item
+                  key={f}
+                  {..._checkBox}
+                  status={faces.includes(f) ? "checked" : "unchecked"}
+                  label={f.toString()}
+                  onPress={() => {
+                    const i = faces.indexOf(f);
+                    if (i >= 0) {
+                      onFaceMaskChange([
+                        ...faces.slice(0, i),
+                        ...faces.slice(i + 1),
+                      ]);
+                    } else {
+                      onFaceMaskChange([...faces, f]);
+                    }
+                  }}
+                />
+              ))}
+            </FastHStack>
+          </Card.Content>
+          <Card.Actions>
+            <FastHStack gap={5}>
               <FastButton
-                h={10}
-                w={60}
                 onPress={() => {
                   onFaceMaskChange(allFaces);
-                  onClose();
+                  onDismiss?.();
                 }}
               >
                 All
               </FastButton>
               <FastButton
-                h={10}
-                w={60}
                 onPress={() => {
                   onFaceMaskChange([]);
-                  onClose();
+                  onDismiss?.();
                 }}
               >
                 None
               </FastButton>
-            </Button.Group>
-          </Modal.Footer>
-        </Center>
-      </Modal.Content>
-    </Modal>
+            </FastHStack>
+          </Card.Actions>
+        </Card>
+      </Modal>
+    </Portal>
   );
 }

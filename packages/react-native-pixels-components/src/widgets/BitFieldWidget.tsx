@@ -1,22 +1,23 @@
 import {
-  FastBox,
-  FastBoxProps,
   FastButton,
-  FastButtonProps,
+  FastFlexProps,
+  FastHStack,
   FastVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import {
-  Button,
-  Text,
-  ChevronDownIcon,
-  Actionsheet,
-  Pressable,
-  ScrollView,
-  IActionsheetProps,
-  View,
-} from "native-base";
 import React from "react";
+import { ScrollView } from "react-native";
+import {
+  Card,
+  Checkbox,
+  CheckboxItemProps,
+  Modal,
+  ModalProps,
+  Portal,
+  Text,
+} from "react-native-paper";
+
+import { useModalStyle } from "../theme";
 
 function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
   const title = selectedButtons.length
@@ -26,168 +27,122 @@ function BatteryConditionTitleFromOptions(selectedButtons: string[]): string {
           return title;
         })
         .join(" or ")
-    : "No actions";
+    : "Empty Selection";
   return title;
 }
 
-interface SelectableButtonProps extends FastButtonProps {
-  title: string;
+interface SelectableButtonProps extends Omit<CheckboxItemProps, "status"> {
   isSelected: boolean;
-  onSelect: (title: string) => void;
+  onToggle?: (title: string) => void;
 }
 
-const SelectableButton = React.memo(function ({
-  title,
+function SelectableButton({
+  label,
   isSelected,
-  onSelect,
+  onToggle,
   ...props
 }: SelectableButtonProps) {
-  const onPress = React.useCallback(() => onSelect(title), [onSelect, title]);
+  const onPress = React.useCallback(() => onToggle?.(label), [onToggle, label]);
   return (
-    <FastButton
-      flex={1}
-      {...props}
+    <Checkbox.Item
+      label={label}
+      status={isSelected ? "checked" : "unchecked"}
       onPress={onPress}
-      bg={isSelected ? "gray.300" : undefined}
-    >
-      {title}
-    </FastButton>
+      {...props}
+    />
   );
-});
+}
 
 export interface ItemData {
   title?: string;
-  onPress?: (() => void) | null | undefined;
+  onPress?: () => void;
 }
 
-export interface BitFieldWidgetProps extends FastBoxProps {
-  title?: string;
+export interface BitFieldWidgetProps extends FastFlexProps {
+  title: string;
+  availableValues: string[];
   values: string[];
-  initialValues: string[];
-  onValuesChange?: (keys: string[]) => void; // widget.update
+  onToggleValue?: (value: string) => void;
 }
 
 export function BitFieldWidget({
   title,
+  availableValues,
   values,
-  initialValues,
-  onValuesChange,
+  onToggleValue,
   ...flexProps
 }: BitFieldWidgetProps) {
-  const [selectedOptions, setSelectedOptions] =
-    React.useState<string[]>(initialValues);
-  const valuesRef = React.useRef(values);
-  React.useEffect(() => {
-    // Clear selected options if the list of values changes
-    if (values !== valuesRef.current) {
-      valuesRef.current = values;
-      setSelectedOptions([]);
-    }
-  }, [values]);
-  const onSelect = React.useCallback(
-    (item: string) =>
-      setSelectedOptions((options) => {
-        const index = options.indexOf(item);
-        if (index < 0) {
-          const newOptions = [...options, item];
-          onValuesChange?.(newOptions);
-          return newOptions;
-        } else {
-          const newOptions = [...options];
-          newOptions.splice(index, 1);
-          onValuesChange?.(newOptions);
-          return newOptions;
-        }
-      }),
-    [onValuesChange]
-  );
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
       <FastVStack {...flexProps}>
-        <Text bold>{title}</Text>
-        <FastBox mt={2} w="100%">
-          {values.length < 4 ? (
-            <Button.Group isAttached>
-              {values.map((item) => (
-                <SelectableButton
-                  key={item}
-                  title={item}
-                  isSelected={selectedOptions.includes(item)}
-                  onSelect={onSelect}
-                />
-              ))}
-            </Button.Group>
+        <Text variant="titleMedium">{title}</Text>
+        <FastHStack justifyContent="space-around">
+          {availableValues.length < 4 ? (
+            availableValues.map((item) => (
+              <SelectableButton
+                key={item}
+                label={item}
+                isSelected={values.includes(item)}
+                onToggle={onToggleValue}
+              />
+            ))
           ) : (
-            <Pressable onPress={onOpen}>
-              <View
-                flexDir="row"
-                p={2}
-                pl={4}
-                w="100%"
-                alignItems="center"
-                rounded="lg"
-                bg="darkBlue.800"
-              >
-                <FastBox flex={2}>
-                  <Text fontSize="sm" flexGrow={1}>
-                    {BatteryConditionTitleFromOptions(selectedOptions)}
-                  </Text>
-                </FastBox>
-                <ChevronDownIcon />
-              </View>
-            </Pressable>
+            <FastButton onPress={onOpen}>
+              {BatteryConditionTitleFromOptions(values)}
+            </FastButton>
           )}
-        </FastBox>
+        </FastHStack>
       </FastVStack>
 
-      <RuleComparisonActionsheet
+      <SelectBitFieldsModal
+        visible={isOpen}
+        onDismiss={onClose}
+        availableValues={availableValues}
         values={values}
-        selectedOptions={selectedOptions}
-        onSelect={onSelect}
-        isOpen={isOpen}
-        onClose={onClose}
+        onToggleValue={onToggleValue}
       />
     </>
   );
 }
 
-function RuleComparisonActionsheet({
+export interface SelectColorModalProps
+  extends Pick<
+      BitFieldWidgetProps,
+      "availableValues" | "values" | "onToggleValue"
+    >,
+    Omit<ModalProps, "children"> {}
+
+function SelectBitFieldsModal({
+  onDismiss,
+  availableValues,
   values,
-  selectedOptions,
-  onSelect,
+  onToggleValue,
   ...props
-}: Pick<BitFieldWidgetProps, "values"> & {
-  selectedOptions: string[];
-  onSelect: (item: string) => void;
-} & IActionsheetProps) {
+}: SelectColorModalProps) {
+  const modalStyle = useModalStyle();
   return (
-    <Actionsheet {...props}>
-      <Actionsheet.Content>
-        <ScrollView w="100%">
-          {/* {props.possibleConditions.map((condition, key) => (
-              <Actionsheet.Item
-                alignItems="center"
-                key={key}
-                width="100%"
-                onPress={() => {
-                  condition.onPress?.();
-                  onClose();
-                }}
-              >
-                <Text fontSize="md">{condition.label}</Text>
-              </Actionsheet.Item>
-            ))} */}
-          {values.map((item) => (
-            <SelectableButton
-              key={item}
-              title={item}
-              isSelected={selectedOptions.includes(item)}
-              onSelect={onSelect}
-            />
-          ))}
-        </ScrollView>
-      </Actionsheet.Content>
-    </Actionsheet>
+    <Portal>
+      <Modal
+        contentContainerStyle={modalStyle}
+        onDismiss={onDismiss}
+        {...props}
+      >
+        <Card>
+          <Card.Actions>
+            <ScrollView>
+              {availableValues.map((item) => (
+                <SelectableButton
+                  key={item}
+                  label={item}
+                  isSelected={values.includes(item)}
+                  onToggle={onToggleValue}
+                />
+              ))}
+            </ScrollView>
+          </Card.Actions>
+        </Card>
+      </Modal>
+    </Portal>
   );
 }

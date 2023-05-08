@@ -1,13 +1,15 @@
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Foundation } from "@expo/vector-icons";
 import {
-  Card,
-  CardProps,
+  BaseStyles,
+  FastButton,
   FastHStack,
   FastVStack,
+  FrameProps,
 } from "@systemic-games/react-native-base-components";
-import { Pressable, Text, Box, ITextProps, IBoxProps } from "native-base";
 import React from "react";
-import { ImageSourcePropType } from "react-native";
+import { FlexStyle, View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
+
 /**
  * Basic profile information for minimal display.
  */
@@ -16,25 +18,22 @@ export interface ProfileInfo {
   profileKey?: number;
   profileWithSound?: boolean;
   category?: string;
-
-  //Temporary for image until 3d render
-  imageRequirePath?: ImageSourcePropType;
 }
+
 /**
  * Props for selectable and pressable profile cards
  */
-export interface ProfileCardProps extends CardProps {
+export interface ProfileCardProps extends FrameProps {
   name: string;
-  dieRenderer?: () => React.ReactNode; // TODO dieRenderer
-  borderWidth?: number;
-  imageSize?: IBoxProps["size"];
-  fontSize?: ITextProps["fontSize"];
-  onPress?: (() => void) | null | undefined; // function to be executed when pressing the card
-  //To be used with the list in which the cards are placed and displayed for selection highlight
-  profileIndexInList?: number; // the card profile index within all the currently available profiles in the list
-  selectedProfileIndex?: number; // the index of the currently selected profile in the list
-  selectable?: boolean; // used to disable the selection highlight (used until actual selection system is done)
-  onSelected?: React.Dispatch<React.SetStateAction<number | undefined>>; // set the currently selected profile with the profile card index
+  description?: string;
+  hasSound?: boolean;
+  hasWebRequest?: boolean;
+  dieRenderer?: () => React.ReactNode;
+  dieViewSize?: FlexStyle["width"];
+  smallLabel?: boolean;
+  infoGap?: FlexStyle["gap"];
+  onPress?: () => void;
+  highlighted?: boolean;
 }
 
 /**
@@ -42,103 +41,55 @@ export interface ProfileCardProps extends CardProps {
  * @param props See {@link ProfileCardProps} for props parameters
  */
 export function ProfileCard({
+  children,
   name,
+  description,
+  hasSound,
+  hasWebRequest,
   dieRenderer,
-  borderWidth,
-  imageSize,
-  fontSize,
+  dieViewSize,
+  smallLabel,
+  infoGap = 10,
   onPress,
-  profileIndexInList,
-  selectedProfileIndex,
-  selectable,
-  onSelected,
+  highlighted,
   ...flexProps
 }: ProfileCardProps) {
-  const isSelected = selectable
-    ? selectedProfileIndex === profileIndexInList
-    : false;
+  const theme = useTheme();
+  const textColor = theme.colors.onBackground;
   return (
-    <Pressable
-      onPress={() => {
-        onSelected?.(profileIndexInList);
-        onPress?.();
-      }}
+    <FastButton
+      onPress={onPress}
+      borderWidth={highlighted ? 2 : undefined}
+      borderColor={theme.colors.primary}
+      bg={undefined}
+      alignItems="center"
+      gap={10}
+      {...flexProps}
     >
-      <Card
-        bg={null}
-        minW="100%"
-        minH="50px"
-        justifyContent="space-between"
-        borderWidth={isSelected ? 2 : borderWidth}
-        {...flexProps}
-      >
-        {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
-        <Text isTruncated bold fontSize={fontSize}>
-          {name}
-        </Text>
-      </Card>
-    </Pressable>
-  );
-}
-
-/**
- * Props for {@link DetailedProfileCard}.
- */
-export interface DetailedProfileCardProps extends ProfileCardProps {
-  hasSound?: boolean;
-  description?: string;
-}
-
-/**
- * More detailed horizontal profile card for displaying profiles information.
- * @param props See {@link DetailedProfileCardProps} for props params.
- */
-export function DetailedProfileCard({
-  name,
-  dieRenderer,
-  borderWidth,
-  imageSize,
-  fontSize = "lg",
-  onPress,
-  profileIndexInList,
-  selectedProfileIndex,
-  selectable,
-  onSelected,
-  hasSound,
-  description,
-  ...flexProps
-}: DetailedProfileCardProps) {
-  const isSelected = selectable
-    ? selectedProfileIndex === profileIndexInList
-    : false;
-
-  return (
-    <Pressable
-      onPress={() => {
-        onSelected?.(profileIndexInList);
-        onPress?.();
-      }}
-    >
-      <Card p={1} borderWidth={isSelected ? 2 : borderWidth} {...flexProps}>
-        <FastHStack w="100%">
-          {/* Die render */}
-          {dieRenderer && <Box size={imageSize}>{dieRenderer()}</Box>}
-          {/* Profile info */}
-          <FastVStack ml={5} justifyContent="space-around" flexGrow={1}>
-            <FastHStack>
-              <Text pr={hasSound ? 2 : 0} isTruncated fontSize={fontSize} bold>
-                {name}
-              </Text>
-              {hasSound && <AntDesign name="sound" size={24} color="white" />}
-            </FastHStack>
-            {description && description.length > 0 && (
-              <Text isTruncated fontSize={fontSize} italic>
-                {description}
-              </Text>
+      <>
+        {/* Die render */}
+        {dieRenderer && (
+          <View style={{ height: dieViewSize, aspectRatio: 1 }}>
+            {dieRenderer()}
+          </View>
+        )}
+        {/* Profile info */}
+        <FastVStack flex={1} gap={infoGap} justifyContent="center">
+          <FastHStack alignItems="center" gap={infoGap}>
+            <Text variant={smallLabel ? undefined : "headlineSmall"}>
+              {name}
+            </Text>
+            {hasSound && <AntDesign name="sound" size={24} color={textColor} />}
+            {hasWebRequest && (
+              <Foundation name="web" size={24} color={textColor} />
             )}
-          </FastVStack>
-        </FastHStack>
-      </Card>
-    </Pressable>
+          </FastHStack>
+          {(description?.length ?? 0) > 0 && (
+            <Text style={BaseStyles.italic}>{description}</Text>
+          )}
+        </FastVStack>
+        {children}
+      </>
+    </FastButton>
   );
 }

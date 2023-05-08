@@ -14,7 +14,7 @@ export default class EditAnimationKeyframed extends EditAnimation {
   readonly type = "keyframed";
 
   @widget("rgbPattern")
-  @name("LED Pattern")
+  @name("Color Design")
   @observable
   pattern?: EditPattern;
 

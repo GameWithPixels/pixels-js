@@ -8,11 +8,12 @@ export interface ProgressBarProps {
 export function ProgressBar({ percent }: ProgressBarProps) {
   const clampedPercentage = Math.max(0, Math.min(100, percent));
   const theme = useTheme();
+  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
   return (
     <View
       style={{
         backgroundColor: theme.colors.onPrimary,
-        borderRadius: 5,
+        borderRadius,
         height: 20,
         width: "100%",
         padding: 2,
@@ -22,7 +23,7 @@ export function ProgressBar({ percent }: ProgressBarProps) {
       <View
         style={{
           backgroundColor: theme.colors.primary,
-          borderRadius: 5,
+          borderRadius,
           width: `${clampedPercentage}%`,
           height: "100%",
         }}

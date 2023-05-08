@@ -138,9 +138,9 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
           <Text>Select Firmware:</Text>
           <FlatList
             style={gs.fullWidth}
+            contentContainerStyle={gs.listContentContainer}
             data={bundles}
             renderItem={renderItem}
-            contentContainerStyle={gs.listContentContainer}
           />
         </>
       ) : (

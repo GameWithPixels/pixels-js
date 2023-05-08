@@ -4,6 +4,8 @@ import {
   EditAnimation,
   createDataSetForProfile,
   createDataSetForAnimation,
+  EditPattern,
+  EditAnimationKeyframed,
 } from "@systemic-games/pixels-edit-animation";
 
 const profilesDataSet: Map<
@@ -11,7 +13,7 @@ const profilesDataSet: Map<
   DataSet
 > = new Map();
 
-export default function (
+export default function getCachedDataSet(
   profileOrAnim: Readonly<EditProfile> | Readonly<EditAnimation>
 ): DataSet {
   let animData = profilesDataSet.get(profileOrAnim);
@@ -35,4 +37,19 @@ export default function (
     profilesDataSet.set(profileOrAnim, animData);
   }
   return animData;
+}
+
+const patternAnims = new Map<Readonly<EditPattern>, EditAnimation>();
+
+export function getPatternRenderData(pattern: Readonly<EditPattern>) {
+  let anim = patternAnims.get(pattern);
+  if (!anim) {
+    anim = new EditAnimationKeyframed({
+      name: pattern.name,
+      duration: pattern.duration,
+      pattern: pattern as EditPattern, // TODO pattern is readonly
+    });
+    patternAnims.set(pattern, anim);
+  }
+  return getCachedDataSet(anim);
 }

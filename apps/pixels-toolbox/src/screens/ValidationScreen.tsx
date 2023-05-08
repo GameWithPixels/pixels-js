@@ -693,9 +693,3 @@ export function ValidationScreen() {
     </AppPage>
   );
 }
-
-const styles = StyleSheet.create({
-  textCenter: {
-    textAlign: "center",
-  },
-});

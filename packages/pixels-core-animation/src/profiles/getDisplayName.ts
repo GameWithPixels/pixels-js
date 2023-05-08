@@ -27,9 +27,9 @@ export function getAnimationTypeDisplayName(
     case "rainbow":
       return { name: "Colorful Rainbow", order: 1 };
     case "keyframed":
-      return { name: "Color LED Pattern", order: 3 };
+      return { name: "Colored Design", order: 3 };
     case "gradientPattern":
-      return { name: "Gradient LED Pattern", order: 4 };
+      return { name: "Mixed Design", order: 4 };
     case "gradient":
       return { name: "Simple Gradient", order: 2 };
     case "noise":

@@ -1,18 +1,13 @@
 import { EditAnimation } from "@systemic-games/pixels-edit-animation";
 import {
   FastBoxProps,
-  FastVStack,
+  FastButton,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
-import {
-  Actionsheet,
-  Box,
-  IActionsheetProps,
-  Pressable,
-  ScrollView,
-  Text,
-} from "native-base";
 import React from "react";
+import { FlexStyle, ScrollView } from "react-native";
+import { Card, Modal, ModalProps, Portal, Text } from "react-native-paper";
+import { useModalStyle } from "../theme";
 
 import { PatternCard } from "./PatternCard";
 
@@ -20,13 +15,13 @@ import { PatternCard } from "./PatternCard";
  * Props for AnimationsSelector component.
  */
 export interface AnimationSelectorProps extends FastBoxProps {
-  title: string;
   animations: Readonly<EditAnimation>[];
+  animation?: Readonly<EditAnimation>;
+  onAnimationSelect?: (editAnimation: Readonly<EditAnimation>) => void;
   trigger?: React.ReactNode;
-  drawerTitle?: string;
+  modalTitle?: string;
   dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
-  onAnimationChange?: (editAnimation: Readonly<EditAnimation>) => void;
-  initialAnimation?: Readonly<EditAnimation>;
+  dieViewSize?: FlexStyle["width"];
 }
 
 /**
@@ -34,101 +29,99 @@ export interface AnimationSelectorProps extends FastBoxProps {
  * @param props See {@link AnimationSelectorProps} for props parameters.
  */
 export function AnimationSelector({
-  title,
   animations,
+  animation,
+  onAnimationSelect,
   trigger,
-  drawerTitle,
+  modalTitle,
   dieRenderer,
-  onAnimationChange: onSelectAnimation,
-  initialAnimation,
+  dieViewSize,
   ...flexProps
 }: AnimationSelectorProps) {
-  const [selectedAnim, setSelectedAnim] = React.useState(initialAnimation);
   const { isOpen, onOpen, onClose } = useDisclose();
+  const chooseAnimation = React.useCallback(
+    (pattern: Readonly<EditAnimation>) => {
+      onAnimationSelect?.(pattern);
+      onClose();
+    },
+    [onAnimationSelect, onClose]
+  );
   return (
     <>
-      <FastVStack {...flexProps}>
-        <Text>{title}</Text>
-        {/* Trigger of the actionsheet drawer */}
-        <Pressable onPress={onOpen}>
-          {!trigger ? (
-            <Box
-              w="100%"
-              p={2}
-              bg="primary.700"
-              rounded="lg"
-              alignItems="center"
-            >
-              <Text>{selectedAnim?.name ?? "No pattern selected"}</Text>
-            </Box>
-          ) : (
-            trigger
-          )}
-        </Pressable>
-      </FastVStack>
+      <FastButton onPress={onOpen} {...flexProps}>
+        {trigger ?? <Text>{animation?.name ?? "No animation selected"}</Text>}
+      </FastButton>
 
-      {/* Actionsheet drawer */}
       <AnimationsActionsheet
-        isOpen={isOpen}
-        onClose={onClose}
+        visible={isOpen}
+        onDismiss={onClose}
         animations={animations}
-        drawerTitle={drawerTitle}
+        animation={animation}
+        onAnimationSelect={chooseAnimation}
+        title={modalTitle}
         dieRenderer={dieRenderer}
-        onSelect={(animation) => {
-          setSelectedAnim(animation);
-          onSelectAnimation?.(animation);
-          onClose();
-        }}
+        dieViewSize={dieViewSize}
       />
     </>
   );
 }
 
-interface AnimationsActionsheetProps extends IActionsheetProps {
-  animations: Readonly<EditAnimation>[];
-  drawerTitle?: string;
-  dieRenderer?: (anim: Readonly<EditAnimation>) => React.ReactNode;
-  onSelect?: (animation: Readonly<EditAnimation>) => void;
+interface AnimationsActionsheetProps
+  extends Pick<
+      AnimationSelectorProps,
+      | "animations"
+      | "animation"
+      | "onAnimationSelect"
+      | "dieRenderer"
+      | "dieViewSize"
+    >,
+    Omit<ModalProps, "children"> {
+  title?: string;
 }
 
 function AnimationsActionsheet({
+  onDismiss,
   animations,
-  drawerTitle,
+  animation,
+  onAnimationSelect,
+  title,
   dieRenderer,
-  onSelect,
+  dieViewSize,
   ...props
 }: AnimationsActionsheetProps) {
+  const modalStyle = useModalStyle();
   return (
-    <Actionsheet alignContent="center" {...props}>
-      <Actionsheet.Content maxH="100%" h={600}>
-        <Text bold pb={5}>
-          {drawerTitle ? drawerTitle : "Available Patterns"}
-        </Text>
-        <ScrollView
-          contentContainerStyle={{
-            flexWrap: "wrap",
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-          }}
-        >
-          {animations?.map((animation, i) => (
-            <PatternCard
-              key={animation.uuid}
-              my={1}
-              w="105px"
-              h="130px"
-              space={1}
-              imageSize={70}
-              fontSize="sm"
-              selectable
-              patternIndexInList={i}
-              onSelected={() => onSelect?.(animation)}
-              patternName={animation.name}
-              dieRenderer={dieRenderer && (() => dieRenderer(animation))}
-            />
-          ))}
-        </ScrollView>
-      </Actionsheet.Content>
-    </Actionsheet>
+    <Portal>
+      <Modal
+        contentContainerStyle={modalStyle}
+        onDismiss={onDismiss}
+        {...props}
+      >
+        <Card>
+          {title && <Card.Title title={title} />}
+          <Card.Actions>
+            <ScrollView
+              contentContainerStyle={{
+                flexWrap: "wrap",
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+              }}
+            >
+              {animations?.map((a) => (
+                <PatternCard
+                  key={a.uuid}
+                  name={a.name}
+                  smallLabel
+                  dieRenderer={dieRenderer && (() => dieRenderer(a))}
+                  dieViewSize={dieViewSize}
+                  onPress={() => onAnimationSelect?.(a)}
+                  highlighted={a === animation}
+                />
+              ))}
+            </ScrollView>
+          </Card.Actions>
+        </Card>
+      </Modal>
+    </Portal>
   );
 }

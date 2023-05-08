@@ -89,7 +89,6 @@ export const SwipeablePixelsList = React.memo(function ({
       t("cancel"),
     ];
 
-    // <Text variant="headlineMedium">{}</Text>
     showActionSheetWithOptions(
       {
         title: t("applyToAllRelevantPixels"),
@@ -177,9 +176,9 @@ export const SwipeablePixelsList = React.memo(function ({
         >
           <FlatList
             style={gs.fullWidth}
+            contentContainerStyle={gs.listContentContainer}
             data={pixels}
             renderItem={renderItem}
-            contentContainerStyle={gs.listContentContainer}
             refreshControl={refreshControl}
           />
         </PixelInfoCardModeContext.Provider>
