@@ -14,7 +14,7 @@ export function Header({ onPress }: { onPress?: () => void }) {
         <Ionicons name="menu" size={40} color={theme.colors.onBackground} />
       </Pressable>
       <Text style={styles.text} variant="headlineMedium">
-        {`Toolbox ${__DEV__ ? " 🚧" : Constants.manifest?.version}`}
+        {`Toolbox ${__DEV__ ? " 🚧" : Constants.expoConfig?.version}`}
       </Text>
     </FastHStack>
   );
