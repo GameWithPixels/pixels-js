@@ -7,13 +7,14 @@ import {
   PixelAppPage,
   PixelInfoHCard,
   PixelInfoVCard,
+  RoundedBox,
 } from "@systemic-games/react-native-pixels-components";
 import {
   ScannedPixel,
   useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { Image, ScrollView, View } from "react-native";
 import { Card, Text, useTheme } from "react-native-paper";
 
 import {
@@ -152,7 +153,22 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const theme = useTheme();
   return (
     <PixelAppPage style={{ backgroundColor: theme.colors.background }}>
-      <ScrollView style={BaseStyles.fullSizeFlex}>
+      <ScrollView
+        style={BaseStyles.fullSizeFlex}
+        contentContainerStyle={{
+          minHeight: "100%", // So we can center items in the page
+        }}
+      >
+        <Image
+          style={{ width: "50%", alignSelf: "center" }}
+          resizeMode="contain"
+          source={require("!/UI_Icons/pixels-logo.png")}
+        />
+        <RoundedBox border px={10} py={15}>
+          <Text variant="titleLarge">Welcome to the new Pixel App!</Text>
+          <Text style={{ marginTop: 5 }}>Expect more to come ;-)</Text>
+        </RoundedBox>
+        <View style={BaseStyles.spacer} />
         {pairedPixels.length > 0 && (
           <Card>
             <Card.Content>
@@ -169,13 +185,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </Card>
         )}
         {showGreetings && (
-          <Text
-            variant="headlineMedium"
-            style={{ paddingTop: 100, textAlign: "center" }}
-          >
+          <Text variant="headlineMedium" style={BaseStyles.textCentered}>
             It's time to unbox your dice!
           </Text>
         )}
+        <View style={BaseStyles.spacer} />
       </ScrollView>
     </PixelAppPage>
   );
