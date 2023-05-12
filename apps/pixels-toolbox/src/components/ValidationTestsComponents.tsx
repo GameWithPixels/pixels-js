@@ -30,8 +30,8 @@ import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import {
   getBoardOrDie,
   isBoard,
-  ValidationFormFactor,
-} from "~/features/validation/ValidationFormFactor";
+  ValidationSequence,
+} from "~/features/validation/ValidationSequences";
 import ValidationTests from "~/features/validation/ValidationTests";
 import getDefaultProfile from "~/getDefaultProfile";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
@@ -70,7 +70,7 @@ function _playSoundOnResult(result: TaskStatus) {
 }
 
 function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
-  const boardOrDie = getBoardOrDie(settings.formFactor);
+  const boardOrDie = getBoardOrDie(settings.sequence);
   return boardOrDie === "board" ? "coil" : boardOrDie;
 }
 
@@ -165,7 +165,7 @@ function MessageYesNo({ message, onYes, onNo, hideYesNo }: MessageYesNoProps) {
 }
 
 export interface ValidationTestsSettings {
-  formFactor: ValidationFormFactor;
+  sequence: ValidationSequence;
   dieType: DieType;
 }
 
@@ -569,7 +569,7 @@ export function CheckLEDs({
         try {
           await ValidationTests.checkLEDsLitUp(
             pixel,
-            isBoard(settings.formFactor)
+            isBoard(settings.sequence)
               ? new Color(0.03, 0.03, 0.03)
               : new Color(0.1, 0.1, 0.1),
             (r) => setResolvePromise(() => r),
@@ -585,7 +585,7 @@ export function CheckLEDs({
           abortSignal.removeEventListener("abort", abort);
         }
       },
-      [pixel, settings.formFactor]
+      [pixel, settings.sequence]
     ),
     createTaskStatusContainer({
       children: (
@@ -624,12 +624,12 @@ export function TurnOffDevice({
         (abortSignal) =>
           ValidationTests.waitDisconnected(
             pixel,
-            isBoard(settings.formFactor)
+            isBoard(settings.sequence)
               ? new Color(0.003, 0.01, 0)
               : new Color(0.03, 0.1, 0),
             abortSignal
           ),
-        [pixel, settings.formFactor]
+        [pixel, settings.sequence]
       ),
       createTaskStatusContainer(t("waitingDeviceDisconnect"))
     )

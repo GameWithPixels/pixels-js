@@ -49,18 +49,19 @@ import {
 import useTaskChain from "~/features/tasks/useTaskChain";
 import useTaskComponent from "~/features/tasks/useTaskComponent";
 import {
-  getBoardOrDie,
-  ValidationFormFactor,
-} from "~/features/validation/ValidationFormFactor";
+  getBoardOrDie as getFormFactor,
+  ValidationSequence,
+  ValidationSequences,
+} from "~/features/validation/ValidationSequences";
 import gs from "~/styles";
 
 function getTestingMessage(
   t: TFunction<"translation", undefined>,
   settings: ValidationTestsSettings
 ): string {
-  return t("testingDieTypeWithFormFactor", {
+  return t("testingDieTypeWithSequence", {
     dieType: t(settings.dieType),
-    formFactor: t(settings.formFactor),
+    sequence: t(settings.sequence),
   });
 }
 
@@ -115,54 +116,40 @@ function LargeTonalButton({
   );
 }
 
-function SelectFormFactorPage({
-  onSelected,
+function SelectSequencePage({
+  onSelectSequence,
 }: {
-  onSelected: (formFactor: ValidationFormFactor) => void;
+  onSelectSequence: (sequence: ValidationSequence) => void;
 }) {
   const { height } = useWindowDimensions();
-  const btnHeight = (height - 200) / 4;
+  const btnHeight = (height - 180) / ValidationSequences.length;
   const { t } = useTranslation();
   return (
     <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
-      <LargeTonalButton
-        height={btnHeight}
-        fontSize={30}
-        onPress={() => onSelected("boardNoCoil")}
-      >
-        {t("validateBoardNoCoil")}
-      </LargeTonalButton>
-      <LargeTonalButton
-        height={btnHeight}
-        fontSize={30}
-        onPress={() => onSelected("board")}
-      >
-        {t("validateFullBoard")}
-      </LargeTonalButton>
-      <LargeTonalButton
-        height={btnHeight}
-        fontSize={30}
-        onPress={() => onSelected("die")}
-      >
-        {t("validateResinDie")}
-      </LargeTonalButton>
-      <LargeTonalButton
-        height={btnHeight}
-        fontSize={30}
-        onPress={() => onSelected("dieFinal")}
-      >
-        {t("validateDieFinal")}
-      </LargeTonalButton>
+      {ValidationSequences.map((sequence) => (
+        <LargeTonalButton
+          key={sequence}
+          height={btnHeight}
+          fontSize={30}
+          onPress={() => onSelectSequence(sequence)}
+        >
+          {t(
+            sequence === "firmwareUpdate"
+              ? sequence
+              : "validate" + sequence[0].toUpperCase() + sequence.substring(1)
+          )}
+        </LargeTonalButton>
+      ))}
     </FastVStack>
   );
 }
 
 function SelectDieTypePage({
-  formFactor,
+  sequence,
   onSelectDieType,
   onBack,
 }: {
-  formFactor: ValidationFormFactor;
+  sequence: ValidationSequence;
   onSelectDieType: (type: DieType) => void;
   onBack?: () => void;
 }) {
@@ -172,7 +159,7 @@ function SelectDieTypePage({
   return (
     <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
       <Text variant="headlineSmall" style={styles.textCenter}>
-        {t("testingFormFactor", { formFactor: t(formFactor) })}
+        {t("testingSequence", { sequence: t(sequence) })}
       </Text>
       {DieTypes.map((dt) => (
         <LargeTonalButton
@@ -312,8 +299,8 @@ function DecodePixelIdPage({
           <Card>
             <Card.Content style={{ flexDirection: "row", gap: 10 }}>
               <Text variant="bodyLarge" style={{ flex: 1, flexWrap: "wrap" }}>
-                {t("resetUsingMagnet", {
-                  formFactor: t(getBoardOrDie(settings.formFactor)),
+                {t("resetUsingMagnetWithFormFactor", {
+                  formFactor: t(getFormFactor(settings.sequence)),
                 })}
               </Text>
               <Button
@@ -368,101 +355,111 @@ function RunTestsPage({
         onPixelFound={setPixel}
       />
     ))
-  ).chainWith(
-    ...useTaskComponent("ConnectPixel", cancel, (p) => (
-      <ConnectPixel
-        {...p}
-        pixelId={pixelId}
-        settings={settings}
-        onPixelFound={setPixel}
-      />
-    ))
   );
-  if (settings.formFactor !== "boardNoCoil") {
+  if (settings.sequence !== "firmwareUpdate") {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      ...useTaskComponent("WaitCharging", cancel, (p) => (
-        <>
-          {pixel && <WaitCharging {...p} pixel={pixel} settings={settings} />}
-        </>
+      ...useTaskComponent("ConnectPixel", cancel, (p) => (
+        <ConnectPixel
+          {...p}
+          pixelId={pixelId}
+          settings={settings}
+          onPixelFound={setPixel}
+        />
       ))
     );
-  }
-  taskChain.chainWith(
-    ...useTaskComponent("CheckBoard", cancel, (p) => (
-      <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
-    ))
-  );
-  if (settings.formFactor !== "boardNoCoil") {
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      ...useTaskComponent("WaitNotCharging", cancel, (p) => (
-        <>
-          {pixel && (
-            <WaitCharging
-              {...p}
-              pixel={pixel}
-              settings={settings}
-              notCharging
-            />
-          )}
-        </>
-      ))
-    );
-  }
-  taskChain.chainWith(
-    ...useTaskComponent("CheckLEDs", cancel, (p) => (
-      <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
-    ))
-  );
-  if (getBoardOrDie(settings.formFactor) === "die") {
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      ...useTaskComponent("WaitFaceUp", cancel, (p) => (
-        <>{pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}</>
-      ))
-    );
-  }
-  if (settings.formFactor !== "dieFinal") {
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      ...useTaskComponent("TurnOffDevice", cancel, (p) => (
-        <>
-          {pixel && <TurnOffDevice {...p} pixel={pixel} settings={settings} />}
-        </>
-      ))
-    );
-  } else {
-    taskChain
-      .chainWith(
+    if (settings.sequence !== "boardNoCoil") {
+      taskChain.chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("PrepareDie", cancel, (p) => (
+        ...useTaskComponent("WaitCharging", cancel, (p) => (
           <>
-            {pixel && <PrepareDie {...p} pixel={pixel} settings={settings} />}
+            {pixel && <WaitCharging {...p} pixel={pixel} settings={settings} />}
           </>
         ))
-      )
-      .chainWith(
+      );
+    }
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("CheckBoard", cancel, (p) => (
+        <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
+      ))
+    );
+    if (settings.sequence !== "boardNoCoil") {
+      taskChain.chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("ConnectPixel", cancel, (p) => (
-          <ConnectPixel
-            {...p}
-            pixelId={pixelId}
-            settings={settings}
-            onPixelFound={setPixel}
-          />
-        ))
-      )
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitDieInCase", cancel, (p) => (
+        ...useTaskComponent("WaitNotCharging", cancel, (p) => (
           <>
             {pixel && (
-              <WaitDieInCase {...p} pixel={pixel} settings={settings} />
+              <WaitCharging
+                {...p}
+                pixel={pixel}
+                settings={settings}
+                notCharging
+              />
             )}
           </>
         ))
       );
+    }
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("CheckLEDs", cancel, (p) => (
+        <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
+      ))
+    );
+    if (getFormFactor(settings.sequence) === "die") {
+      taskChain.chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("WaitFaceUp", cancel, (p) => (
+          <>
+            {pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}
+          </>
+        ))
+      );
+    }
+    if (settings.sequence !== "dieFinal") {
+      taskChain.chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        ...useTaskComponent("TurnOffDevice", cancel, (p) => (
+          <>
+            {pixel && (
+              <TurnOffDevice {...p} pixel={pixel} settings={settings} />
+            )}
+          </>
+        ))
+      );
+    } else {
+      taskChain
+        .chainWith(
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          ...useTaskComponent("PrepareDie", cancel, (p) => (
+            <>
+              {pixel && <PrepareDie {...p} pixel={pixel} settings={settings} />}
+            </>
+          ))
+        )
+        .chainWith(
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          ...useTaskComponent("ConnectPixel", cancel, (p) => (
+            <ConnectPixel
+              {...p}
+              pixelId={pixelId}
+              settings={settings}
+              onPixelFound={setPixel}
+            />
+          ))
+        )
+        .chainWith(
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          ...useTaskComponent("WaitDieInCase", cancel, (p) => (
+            <>
+              {pixel && (
+                <WaitDieInCase {...p} pixel={pixel} settings={settings} />
+              )}
+            </>
+          ))
+        );
+    }
   }
 
   const result = getTaskResult(taskChain.status);
@@ -517,21 +514,21 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
-  const [formFactor, setFormFactor] = React.useState<ValidationFormFactor>();
+  const [sequence, setSequence] = React.useState<ValidationSequence>();
   const [dieType, setDieType] = React.useState<DieType>();
   const [pixelId, setPixelId] = React.useState(0);
 
-  return !formFactor ? (
-    <SelectFormFactorPage onSelected={setFormFactor} />
+  return !sequence ? (
+    <SelectSequencePage onSelectSequence={setSequence} />
   ) : !dieType ? (
     <SelectDieTypePage
-      formFactor={formFactor}
+      sequence={sequence}
       onSelectDieType={setDieType}
-      onBack={() => setFormFactor(undefined)}
+      onBack={() => setSequence(undefined)}
     />
   ) : !pixelId ? (
     <DecodePixelIdPage
-      settings={{ formFactor, dieType }}
+      settings={{ sequence, dieType }}
       onDecodedPixelId={(pixelId) => {
         console.log("Decoded PixelId:", pixelId);
         setPixelId(pixelId);
@@ -540,7 +537,7 @@ function ValidationPage() {
     />
   ) : (
     <RunTestsPage
-      settings={{ formFactor, dieType }}
+      settings={{ sequence, dieType }}
       pixelId={pixelId}
       onResult={(result) => {
         console.log("Validation tests result:", result);
