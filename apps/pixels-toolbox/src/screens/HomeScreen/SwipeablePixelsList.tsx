@@ -44,10 +44,7 @@ export default React.memo(function ({
 }: SwipeablePixelsListProps) {
   // Scanning
   const [scannedPixels, scannerDispatch, lastError] =
-    useFocusScannedPixelNotifiers({
-      sortedByName: true,
-      minUpdateInterval,
-    });
+    useFocusScannedPixelNotifiers({ minUpdateInterval });
 
   // Values for UI
   const { t } = useTranslation();
@@ -124,7 +121,8 @@ export default React.memo(function ({
     ),
     [onDieDetails]
   );
-  const refreshControl = React.useMemo(
+  // TODO disabled pull to refresh because it removes connected Pixels
+  const _refreshControl = React.useMemo(
     () => (
       <RefreshControl
         refreshing={refreshing}
@@ -166,7 +164,7 @@ export default React.memo(function ({
             data={scannedPixels}
             renderItem={renderItem}
             contentContainerStyle={gs.listContentContainer}
-            refreshControl={refreshControl}
+            // refreshControl={refreshControl}
           />
         </PixelInfoCardModeContext.Provider>
       ) : (
