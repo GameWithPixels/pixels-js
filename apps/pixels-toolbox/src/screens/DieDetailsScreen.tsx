@@ -4,9 +4,9 @@ import { useErrorHandler } from "react-error-boundary";
 import { AppPage } from "~/components/AppPage";
 import { PixelDetails } from "~/components/PixelDetails";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import { DieDetailsProps } from "~/navigation";
+import { DieDetailsScreenProps } from "~/navigation";
 
-export default function ({ route }: DieDetailsProps) {
+export default function ({ navigation, route }: DieDetailsScreenProps) {
   const errorHandler = useErrorHandler();
   const { pixelId } = route.params;
   const pixelDispatcher = PixelDispatcher.findInstance(pixelId);
@@ -15,9 +15,12 @@ export default function ({ route }: DieDetailsProps) {
       errorHandler(new Error(`Unknown given Pixel Id: ${pixelId}`));
     }
   }, [errorHandler, pixelDispatcher, pixelId]);
+  const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
   return (
     <AppPage>
-      {pixelDispatcher && <PixelDetails pixelDispatcher={pixelDispatcher} />}
+      {pixelDispatcher && (
+        <PixelDetails pixelDispatcher={pixelDispatcher} goBack={goBack} />
+      )}
     </AppPage>
   );
 }

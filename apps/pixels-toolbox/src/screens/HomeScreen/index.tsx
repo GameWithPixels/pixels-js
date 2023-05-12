@@ -10,11 +10,13 @@ import { AppPage } from "~/components/AppPage";
 import useAppDfuFilesBundles, {
   NoDfuFileLoadedError,
 } from "~/features/hooks/useAppDfuFilesBundles";
-import { HomeProps } from "~/navigation";
+import { HomeScreenProps } from "~/navigation";
 import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
-function DfuBundleSelection({ navigation }: Pick<HomeProps, "navigation">) {
+function DfuBundleSelection({
+  navigation,
+}: Pick<HomeScreenProps, "navigation">) {
   // DFU files bundles are loaded asynchronously
   const [selectedDfuBundle, availableDfuBundles, dfuBundlesError] =
     useAppDfuFilesBundles();
@@ -61,7 +63,7 @@ function DfuBundleSelection({ navigation }: Pick<HomeProps, "navigation">) {
   );
 }
 
-function HomePage({ navigation }: HomeProps) {
+function HomePage({ navigation }: HomeScreenProps) {
   // Navigation
   const onDieDetails = React.useCallback(
     (pixelId: number) => navigation.navigate("DieDetails", { pixelId }),
@@ -99,7 +101,7 @@ function HomePage({ navigation }: HomeProps) {
   );
 }
 
-export default function (props: HomeProps) {
+export default function (props: HomeScreenProps) {
   return (
     <AppPage pt={0}>
       <HomePage {...props} />

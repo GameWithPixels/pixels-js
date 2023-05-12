@@ -18,7 +18,7 @@ import {
   addImportedDfuBundle,
   setSelectedDfuBundle,
 } from "~/features/store/dfuBundlesSlice";
-import { SelectDfuFilesProps } from "~/navigation";
+import { SelectDfuFilesScreenProps } from "~/navigation";
 import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
@@ -51,7 +51,7 @@ function getDescription(bundle: DfuFilesBundle): string | undefined {
   }
 }
 
-function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
+function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
   const appDispatch = useAppDispatch();
 
   // DFU files bundles are loaded asynchronously
@@ -150,7 +150,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesProps) {
   );
 }
 
-export default function (props: SelectDfuFilesProps) {
+export default function (props: SelectDfuFilesScreenProps) {
   return (
     <AppPage>
       <SelectDfuFilePage {...props} />

@@ -24,12 +24,12 @@ export type HomeScreensParamList = {
   SelectDfuFiles: undefined;
 };
 
-export type HomeProps = StackScreenProps<HomeScreensParamList, "Home">;
-export type DieDetailsProps = StackScreenProps<
+export type HomeScreenProps = StackScreenProps<HomeScreensParamList, "Home">;
+export type DieDetailsScreenProps = StackScreenProps<
   HomeScreensParamList,
   "DieDetails"
 >;
-export type SelectDfuFilesProps = StackScreenProps<
+export type SelectDfuFilesScreenProps = StackScreenProps<
   HomeScreensParamList,
   "SelectDfuFiles"
 >;
@@ -40,7 +40,7 @@ export type FirmwareUpdateParamList = {
   SelectDfuFiles: undefined;
 };
 
-export type FirmwareUpdateProps = StackScreenProps<
+export type FirmwareUpdateScreenProps = StackScreenProps<
   FirmwareUpdateParamList,
   "FirmwareUpdate"
 >;

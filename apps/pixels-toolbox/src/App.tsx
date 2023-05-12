@@ -28,7 +28,6 @@ import FirmwareUpdateNavigator from "~/screens/FirmwareUpdateNavigator";
 import HomeNavigator from "~/screens/HomeNavigator";
 import RollScreen from "~/screens/RollScreen";
 import SettingsScreen from "~/screens/SettingsScreen";
-import TransferTestScreen from "~/screens/TransferTestScreen";
 import ValidationScreen from "~/screens/ValidationScreen";
 
 import "~/i18n"; // Import internationalization file so it's initialized
@@ -115,11 +114,6 @@ function App() {
             name="FirmwareUpdateNavigator"
             component={FirmwareUpdateNavigator}
             options={{ title: t("firmwareUpdate") }}
-          />
-          <Drawer.Screen
-            name="TransferTest"
-            component={TransferTestScreen}
-            options={{ title: "Transfer Test" }}
           />
           <Drawer.Screen name="Roll" component={RollScreen} />
           <Drawer.Screen name="Animations" component={AnimationsScreen} />

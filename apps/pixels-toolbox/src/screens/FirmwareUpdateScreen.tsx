@@ -14,7 +14,7 @@ import { AppPage } from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
-import { FirmwareUpdateProps } from "~/navigation";
+import { FirmwareUpdateScreenProps } from "~/navigation";
 import gs from "~/styles";
 import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
@@ -46,7 +46,7 @@ function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
 // 4. Once the user select a device, ask them to turn it of.
 // 5. Wait for advertisement to stop for that device.
 // 6. Ask user to turn device back on, trigger DFU on first received advertisement.
-function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
+function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   const errorHandler = useErrorHandler();
 
   // DFU files bundles are loaded asynchronously
@@ -243,7 +243,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateProps) {
   );
 }
 
-export default function (props: FirmwareUpdateProps) {
+export default function (props: FirmwareUpdateScreenProps) {
   return (
     <AppPage>
       <FirmwareUpdatePage {...props} />

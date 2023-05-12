@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import { getValueKeyName } from "@systemic-games/pixels-core-utils";
 import {
@@ -490,8 +491,10 @@ function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
 
 export function PixelDetails({
   pixelDispatcher,
+  goBack,
 }: {
   pixelDispatcher: PixelDispatcher;
+  goBack: () => void;
 }) {
   // Error handling
   const [lastError, setLastError] = React.useState<Error>();
@@ -558,15 +561,22 @@ export function PixelDetails({
   }, [status]);
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
+  const theme = useTheme();
   return (
     <>
       <Card>
-        <Card.Title
-          titleVariant="headlineMedium"
-          title={pixelDispatcher.name}
-        />
         <Card.Content>
-          <TextEntry title={t("status")}>{t(simpleStatus)}</TextEntry>
+          <FastVStack alignItems="center">
+            <Text variant="headlineMedium">{pixelDispatcher.name}</Text>
+            <TextEntry title={t("status")}>{t(simpleStatus)}</TextEntry>
+          </FastVStack>
+          <PaperButton style={{ position: "absolute" }} onPress={goBack}>
+            <Ionicons
+              name="arrow-back-outline"
+              size={24}
+              color={theme.colors.onBackground}
+            />
+          </PaperButton>
         </Card.Content>
       </Card>
       <View style={gs.mv3} />
