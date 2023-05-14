@@ -641,6 +641,27 @@ export function TurnOffDevice({
   );
 }
 
+function _getAbortMsg(face: number): string {
+  return `Aborted wait for face ${face} up`;
+}
+
+function IsBlinkingFaceUp({
+  userAbort,
+  resetTimeout,
+}: {
+  userAbort?: () => void;
+  resetTimeout?: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <MessageYesNo
+      message={t("isBlinkingFaceUp")}
+      onYes={() => userAbort?.()}
+      onNo={() => resetTimeout?.()}
+    />
+  );
+}
+
 export function WaitFaceUp({
   action,
   onTaskStatus,
@@ -649,94 +670,74 @@ export function WaitFaceUp({
   const { t } = useTranslation();
 
   // Timeout before showing option to abort
-  const [hasElapsed, resetTimeout] = useTimeout(5000);
+  const [hasElapsed, resetTimeout] = useTimeout(8000);
   const [userAbort, setUserAbort] = React.useState<() => void>();
 
   const taskChain = useTaskChain(
     action,
     React.useCallback(
-      (abortSignal) =>
-        _makeUserCancellable(
-          abortSignal,
+      (abortSig) => {
+        const face = _getFaceUp(pixel, "1");
+        return _makeUserCancellable(
+          abortSig,
           setUserAbort,
-          (abortSignal) =>
-            ValidationTests.waitFaceUp(
-              pixel,
-              _getFaceUp(pixel, "1"),
-              Color.magenta,
-              abortSignal
-            ),
-          `Aborted wait for face ${_getFaceUp(pixel, "1")} up`
-        ),
+          (abortSig) =>
+            ValidationTests.waitFaceUp(pixel, face, Color.magenta, abortSig),
+          _getAbortMsg(face)
+        );
+      },
       [pixel]
     ),
     createTaskStatusContainer({
-      children: !hasElapsed ? (
-        <Text variant="bodyLarge">{t("placeBlinkingFaceUp")}</Text>
-      ) : (
-        <MessageYesNo
-          message={t("isBlinkingFaceUp")}
-          onYes={() => userAbort?.()}
-          onNo={() => resetTimeout()}
-        />
+      title: t("placeBlinkingFaceUp"),
+      children: hasElapsed && (
+        <IsBlinkingFaceUp userAbort={userAbort} resetTimeout={resetTimeout} />
       ),
     })
   )
     .chainWith(
       React.useCallback(
-        (abortSignal) =>
-          _makeUserCancellable(
-            abortSignal,
+        (abortSig) => {
+          const face = _getFaceUp(pixel, "2");
+          return _makeUserCancellable(
+            abortSig,
             setUserAbort,
-            (abortSignal) =>
-              ValidationTests.waitFaceUp(
-                pixel,
-                _getFaceUp(pixel, "2"),
-                Color.yellow,
-                abortSignal
-              ),
-            `Aborted wait for face ${_getFaceUp(pixel, "2")} up`
-          ),
+            (abortSig) =>
+              ValidationTests.waitFaceUp(pixel, face, Color.yellow, abortSig),
+            _getAbortMsg(face)
+          );
+        },
         [pixel]
       ),
       createTaskStatusContainer({
+        title: t("placeNewBlinkingFaceUp"),
         children: !hasElapsed ? (
           <Text variant="bodyLarge">{t("placeNewBlinkingFaceUp")}</Text>
         ) : (
-          <MessageYesNo
-            message={t("isBlinkingFaceUp")}
-            onYes={() => userAbort?.()}
-            onNo={() => resetTimeout()}
-          />
+          <IsBlinkingFaceUp userAbort={userAbort} resetTimeout={resetTimeout} />
         ),
       })
     )
     .chainWith(
       React.useCallback(
-        (abortSignal) =>
-          _makeUserCancellable(
-            abortSignal,
+        (abortSig) => {
+          const face = _getFaceUp(pixel, "3");
+          return _makeUserCancellable(
+            abortSig,
             setUserAbort,
-            (abortSignal) =>
-              ValidationTests.waitFaceUp(
-                pixel,
-                _getFaceUp(pixel, "3"),
-                Color.cyan,
-                abortSignal
-              ),
-            `Aborted wait for face ${_getFaceUp(pixel, "3")} up`
-          ),
+            (abortSig) =>
+              ValidationTests.waitFaceUp(pixel, face, Color.cyan, abortSig),
+            _getAbortMsg(face)
+          );
+        },
         [pixel]
       ),
       createTaskStatusContainer({
+        title: t("placeNewBlinkingFaceUp"),
         children: !hasElapsed ? (
           <Text variant="bodyLarge">{t("placeNewBlinkingFaceUp")}</Text>
         ) : (
-          <MessageYesNo
-            message={t("isBlinkingFaceUp")}
-            onYes={() => userAbort?.()}
-            onNo={() => resetTimeout()}
-          />
+          <IsBlinkingFaceUp userAbort={userAbort} resetTimeout={resetTimeout} />
         ),
       })
     )

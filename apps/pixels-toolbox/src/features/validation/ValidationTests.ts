@@ -14,6 +14,7 @@ import {
   PixelBatteryStateValues,
   PixelBatteryData,
   getFaceMask,
+  PixelRollData,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { TaskCanceledError, TaskFaultedError } from "~/features/tasks/useTask";
@@ -225,29 +226,39 @@ const ValidationTests = {
     pixel: Pixel,
     face: number,
     blinkColor: Color,
-    abortSignal: AbortSignal
+    abortSignal: AbortSignal,
+    holdDelay = 2000 // Number of ms to wait before validating the face up
   ): Promise<void> => {
     assert(face > 0);
     await new Promise<void>((resolve, reject) => {
-      const blinkAbortController = new AbortController();
-      const rollListener = (f: number) => {
-        if (f === face) {
-          console.log(`Die rolled on expected face ${face}`);
-          pixel.removeEventListener("roll", rollListener);
+      let holdTimeout: ReturnType<typeof setTimeout> | undefined;
+      function setHoldTimeout() {
+        console.log(`Waiting ${holdDelay}ms before validating`);
+        holdTimeout = setTimeout(() => {
+          console.log(`Validating face up: ${pixel.currentFace}`);
+          pixel.removeEventListener("rollState", rollListener);
           blinkAbortController.abort();
           resolve();
+        }, holdDelay);
+      }
+      const blinkAbortController = new AbortController();
+      const rollListener = ({ state, face: f }: PixelRollData) => {
+        if (state === "onFace" && f === face) {
+          console.log(`Die rolled on expected face ${face}`);
+          setHoldTimeout();
+        } else if (holdTimeout) {
+          console.log(`Die moved before hold timeout expired`);
+          clearTimeout(holdTimeout);
+          holdTimeout = undefined;
         }
       };
       const abort = () => {
-        pixel.removeEventListener("roll", rollListener);
+        pixel.removeEventListener("rollState", rollListener);
         blinkAbortController.abort();
         reject(new TaskCanceledError("waitFaceUp"));
       };
       if (abortSignal.aborted) {
         abort();
-      } else if (pixel.currentFace === face) {
-        console.log(`Die already on face ${face}`);
-        resolve();
       } else {
         abortSignal.addEventListener("abort", abort);
         // Blink face
@@ -257,7 +268,12 @@ const ValidationTests = {
         };
         blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
         // Wait on face
-        pixel.addEventListener("roll", rollListener);
+        pixel.addEventListener("rollState", rollListener);
+        // Check current face
+        if (pixel.rollState === "onFace" && pixel.currentFace === face) {
+          console.log(`Die already on face ${face}`);
+          setHoldTimeout();
+        }
       }
     });
   },
