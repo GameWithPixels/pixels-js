@@ -227,7 +227,7 @@ const ValidationTests = {
     face: number,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    holdDelay = 2000 // Number of ms to wait before validating the face up
+    holdDelay = 1000 // Number of ms to wait before validating the face up
   ): Promise<void> => {
     assert(face > 0);
     await new Promise<void>((resolve, reject) => {

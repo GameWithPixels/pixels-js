@@ -695,6 +695,7 @@ export function WaitFaceUp({
       ),
     })
   )
+    .withStatusChanged(_playSoundOnResult)
     .chainWith(
       React.useCallback(
         (abortSig) => {
@@ -718,6 +719,7 @@ export function WaitFaceUp({
         ),
       })
     )
+    .withStatusChanged(_playSoundOnResult)
     .chainWith(
       React.useCallback(
         (abortSig) => {

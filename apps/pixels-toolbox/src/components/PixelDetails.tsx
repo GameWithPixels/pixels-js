@@ -165,9 +165,9 @@ const TelemetryInfo = React.forwardRef(function (
   const graphRef = React.useRef<DynamicLinesChartHandle>(null);
   const linesInfo = React.useMemo(
     () => [
-      { title: "RSSI", color: "tomato" },
-      { title: "Battery", color: "teal" },
-      { title: "Voltage", color: "mediumpurple" },
+      { title: "RSSI", color: "tomato", min: -100, max: 0 },
+      { title: "Battery", color: "teal", min: 0, max: 100 },
+      { title: "Voltage", color: "mediumpurple", min: 0, max: 5 },
     ],
     []
   );

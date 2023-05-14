@@ -8,6 +8,8 @@ import { LineChartProps } from "./LineChart";
 export interface LineInfo {
   title: string;
   color: string;
+  min: number;
+  max: number;
 }
 
 export interface DynamicLinesChartProps
@@ -63,10 +65,10 @@ export const DynamicLinesChart = React.forwardRef(function (
   React.useEffect(() => {
     const data = dataRef.current;
     data.xValues.length = 0;
-    data.lines = linesInfo.map(() => ({
+    data.lines = linesInfo.map((l) => ({
       yValues: [],
-      min: 0,
-      max: 0,
+      min: l.min,
+      max: l.max,
       scale: 1,
     }));
     setLines(
@@ -75,6 +77,8 @@ export const DynamicLinesChart = React.forwardRef(function (
         color: l.color,
         points: "",
         labels: [],
+        min: l.min,
+        max: l.max,
       }))
     );
   }, [linesInfo]);
@@ -102,13 +106,11 @@ export const DynamicLinesChart = React.forwardRef(function (
         // Y values and scaling
         yValues.forEach((y, i) => {
           const line = data.lines[i];
-          if (!line.yValues.length) {
-            line.min = y;
-            line.max = y;
-          } else {
+          if (line.yValues.length) {
             line.min = Math.min(y, line.min);
             line.max = Math.max(y, line.max);
           }
+          // Else line.min and max have already been initialized
           const sy =
             line.max > line.min ? layout.height / (line.max - line.min) : 1;
           if (!line.yValues.length || line.scale !== sy) {
