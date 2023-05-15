@@ -8,7 +8,6 @@ import {
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   PixelUserMessage,
-  ScannedPixelNotifier,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -207,7 +206,7 @@ function PixelCard({
   const theme = useTheme();
   return (
     <>
-      <PixelInfoCard pixelInfo={pixelDispatcher} {...props}>
+      <PixelInfoCard pixelInfo={pixelDispatcher.toNotifier()} {...props}>
         <FastVStack gap={3} alignItems="center" width="100%">
           {/* Show either DFU progress, profile update progress, connect state or advertising state */}
           {dfuQueued ? (
@@ -292,16 +291,15 @@ function PixelCard({
 
 export interface SwipeablePixelCardProps
   extends Omit<PixelInfoCardProps, "pixelInfo"> {
-  scannedPixel: ScannedPixelNotifier;
+  pixelDispatcher: PixelDispatcher;
   onShowDetails: () => void;
 }
 
 export function PixelSwipeableCard({
-  scannedPixel,
+  pixelDispatcher,
   onShowDetails,
   ...props
 }: SwipeablePixelCardProps) {
-  const pixelDispatcher = PixelDispatcher.getInstance(scannedPixel);
   const status = usePixelStatus(pixelDispatcher.pixel);
 
   // Pixel Dispatcher states

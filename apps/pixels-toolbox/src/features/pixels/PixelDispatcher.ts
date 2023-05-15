@@ -329,6 +329,11 @@ class PixelDispatcher extends ScannedPixelNotifier<
     }
   }
 
+  toNotifier(): PixelInfoNotifier {
+    // TODO see if there is a better to do this type casting
+    return this as unknown as PixelInfoNotifier;
+  }
+
   private _guard(promise: Promise<unknown>): void {
     promise?.catch((error) => this._evEmitter.emit("error", error));
   }

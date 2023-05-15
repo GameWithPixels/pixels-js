@@ -1,6 +1,5 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { FastBox } from "@systemic-games/react-native-base-components";
-import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
@@ -18,18 +17,21 @@ import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import gs from "~/styles";
 
 function ListItem({
-  scannedPixel,
+  pixelDispatcher,
   onDieDetails,
 }: {
-  scannedPixel: ScannedPixelNotifier;
+  pixelDispatcher: PixelDispatcher;
   onDieDetails: (pixelId: number) => void;
 }) {
   const onDetails = React.useCallback(
-    () => onDieDetails(scannedPixel.pixelId),
-    [onDieDetails, scannedPixel.pixelId]
+    () => onDieDetails(pixelDispatcher.pixelId),
+    [onDieDetails, pixelDispatcher.pixelId]
   );
   return (
-    <PixelSwipeableCard scannedPixel={scannedPixel} onShowDetails={onDetails} />
+    <PixelSwipeableCard
+      pixelDispatcher={pixelDispatcher}
+      onShowDetails={onDetails}
+    />
   );
 }
 
@@ -46,6 +48,20 @@ export default React.memo(function ({
   const [scannedPixels, scannerDispatch, lastError] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
 
+  // Build our PixelDispatcher instances
+  const lastPixelsList = React.useRef<PixelDispatcher[]>([]);
+  const pixels = React.useMemo(() => {
+    const scanned = scannedPixels.map((scannedPixel) =>
+      PixelDispatcher.getInstance(scannedPixel)
+    );
+    const pixels = lastPixelsList.current.filter(
+      (p) => p.status !== "disconnected" || scanned.includes(p)
+    );
+    pixels.push(...scanned.filter((p) => !pixels.includes(p)));
+    lastPixelsList.current = pixels;
+    return pixels;
+  }, [scannedPixels]);
+
   // Values for UI
   const { t } = useTranslation();
   const [expandedInfo, setExpandedInfo] = React.useState(false);
@@ -56,11 +72,8 @@ export default React.memo(function ({
     <T extends PixelDispatcherActionName>(
       action: T,
       params?: PixelDispatcherActionMap[T]
-    ) =>
-      scannedPixels.forEach((sp) =>
-        PixelDispatcher.getInstance(sp).dispatch(action, params)
-      ),
-    [scannedPixels]
+    ) => pixels.forEach((p) => p.dispatch(action, params)),
+    [pixels]
   );
   const { showActionSheetWithOptions } = useActionSheet();
   const showActionSheet = React.useCallback(() => {
@@ -112,17 +125,16 @@ export default React.memo(function ({
 
   // FlatList item rendering
   const renderItem = React.useCallback(
-    ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
+    ({ item: pixelDispatcher }: { item: PixelDispatcher }) => (
       <ListItem
-        key={scannedPixel.pixelId}
-        scannedPixel={scannedPixel}
+        key={pixelDispatcher.pixelId}
+        pixelDispatcher={pixelDispatcher}
         onDieDetails={onDieDetails}
       />
     ),
     [onDieDetails]
   );
-  // TODO disabled pull to refresh because it removes connected Pixels
-  const _refreshControl = React.useMemo(
+  const refreshControl = React.useMemo(
     () => (
       <RefreshControl
         refreshing={refreshing}
@@ -149,22 +161,22 @@ export default React.memo(function ({
       >
         <EmojiButton onPress={() => setExpandedInfo((b) => !b)}>ℹ️</EmojiButton>
         <Text variant="headlineMedium">
-          {t("pixelsWithCount", { count: scannedPixels.length })}
+          {t("pixelsWithCount", { count: pixels.length })}
         </Text>
         <EmojiButton onPress={showActionSheet}>⚙️</EmojiButton>
       </FastBox>
       {lastError ? (
         <Text>{`${lastError}`}</Text>
-      ) : scannedPixels.length ? (
+      ) : pixels.length ? (
         <PixelInfoCardModeContext.Provider
           value={expandedInfo ? "expanded" : "normal"}
         >
           <FlatList
             style={gs.fullWidth}
-            data={scannedPixels}
+            data={pixels}
             renderItem={renderItem}
             contentContainerStyle={gs.listContentContainer}
-            // refreshControl={refreshControl}
+            refreshControl={refreshControl}
           />
         </PixelInfoCardModeContext.Provider>
       ) : (
