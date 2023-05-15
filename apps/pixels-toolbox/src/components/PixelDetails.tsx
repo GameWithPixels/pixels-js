@@ -537,7 +537,11 @@ export function PixelDetails({
       voltage: data.voltageTimes50 / 50,
     });
   }, []);
-  const onExportTelemetry = React.useCallback(
+  const showTelemetry = React.useCallback(
+    () => telemetryRef.current?.showGraph(),
+    []
+  );
+  const exportTelemetry = React.useCallback(
     () =>
       exportCsv(`${pixel.name} Telemetry `, telemetrySessionRef.current).catch(
         setLastError
@@ -599,8 +603,8 @@ export function PixelDetails({
             ) : (
               <BottomButtons
                 pixelDispatcher={pixelDispatcher}
-                onShowTelemetry={telemetryRef.current?.showGraph}
-                onExportTelemetry={onExportTelemetry}
+                onShowTelemetry={showTelemetry}
+                onExportTelemetry={exportTelemetry}
               />
             )}
           </Card.Content>
