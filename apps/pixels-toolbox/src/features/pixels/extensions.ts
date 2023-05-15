@@ -9,7 +9,7 @@ import {
 /**
  * Requests Pixel to blink its Pixel id with red, green, blue light patterns
  * and wait for a confirmation.
- * @param opt.brightness Brightness between 0 and 1.
+ * @param opt.brightness Brightness between 0 and 255.
  * @param opt.loop Whether to indefinitely loop the animation.
  */
 export async function pixelBlinkId(
@@ -17,7 +17,7 @@ export async function pixelBlinkId(
   opt?: { brightness?: number; loop?: boolean }
 ) {
   const blinkMsg = safeAssign(new BlinkId(), {
-    brightness: opt?.brightness ? 255 * opt?.brightness : 0x10,
+    brightness: opt?.brightness ? opt?.brightness : 0x10,
     loop: opt?.loop ?? false,
   });
   await pixel.sendAndWaitForResponse(blinkMsg, "blinkIdAck");

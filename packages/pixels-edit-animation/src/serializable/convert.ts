@@ -530,6 +530,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           count: anim.count,
           fade: anim.fade,
           traveling: anim.traveling,
+          intensity: anim.intensity,
         },
       };
     }

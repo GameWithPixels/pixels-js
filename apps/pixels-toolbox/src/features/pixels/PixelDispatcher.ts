@@ -379,7 +379,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
 
   private async _blinkId(): Promise<void> {
     if (this.isReady) {
-      await pixelBlinkId(this._pixel, { brightness: 0x10, loop: true });
+      await pixelBlinkId(this._pixel, { brightness: 0x04, loop: true });
     }
   }
 
