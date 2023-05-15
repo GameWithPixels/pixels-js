@@ -36,20 +36,24 @@
 <p>To get started with the project, run <code>yarn</code> in the root directory to install the required dependencies and build each package:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn</span>
 </code></pre>
-<p>Note: this is equivalent to run <code>yarn install &amp;&amp; yarn pk:all</code>.
+<p><strong>Note:</strong> This is equivalent to running <code>yarn install &amp;&amp; yarn pk:all</code>.
 It&#39;s the later command that builds all the packages.</p>
 
 <a href="#eas-build" id="eas-build" style="color: inherit; text-decoration: none;">
   <h3>EAS Build</h3>
 </a>
-<p>To start a development build on EAS:</p>
+<p>To start building a development build on EAS:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px:eas-android</span><span class="hl-0"> </span><span class="hl-1">--development</span>
 </code></pre>
-<p>Or locally (not supported on Windows):</p>
-<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px:eas-android</span><span class="hl-0"> </span><span class="hl-1">--development</span><span class="hl-0"> </span><span class="hl-1">--local</span>
+<p>For other types of builds, replace <code>development</code> by the desired build type such as <code>preview</code>.</p>
+<p>To publish an update on EAS:</p>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px:eas-update</span><span class="hl-0"> </span><span class="hl-1">&quot;A few words to describe the contents of the update&quot;</span>
 </code></pre>
-<p>For other types of builds, replace &quot;development&quot; by build type such as &quot;preview&quot; (without quotes).</p>
-<p><strong>Note:</strong> for the Toolbox, replace <code>px</code> by <code>tb</code>.</p>
+<p><strong>Note:</strong></p>
+<ul>
+<li>For the Toolbox, replace <code>px</code> by <code>tb</code>.</li>
+<li>Add the <code>--local</code> switch to build locally (not supported on Windows).</li>
+</ul>
 
 <a href="#install-a-build" id="install-a-build" style="color: inherit; text-decoration: none;">
   <h3>Install A Build</h3>
@@ -62,23 +66,44 @@ It&#39;s the later command that builds all the packages.</p>
 <a href="#running-a-dev-build" id="running-a-dev-build" style="color: inherit; text-decoration: none;">
   <h3>Running A Dev Build</h3>
 </a>
-<p>To start a development server that connects to a development version of app already installed:</p>
+<p>Developers have two options when working on the Pixels App or the Toolbox:</p>
+<ul>
+<li>Running the &quot;regular&quot; development build that replaces the production app.</li>
+<li>Running an alternate development build that has a different package name (or bundle identifier on iOS)
+it doesn&#39;t replaces the production build on the device already installed on the device.</li>
+</ul>
+<p>By default the Metro bundler will use the &quot;normal&quot; development build. However when the environment
+variable <code>SYSTEMIC_PX_DEV</code> is set, it will switch to the alternate package name (bundle identifier).
+For the Toolbox the environment variable <code>SYSTEMIC_TB_DEV</code> is used to make that switch.</p>
+<p>To start a development server that connects to the &quot;regular&quot; development build:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px</span><span class="hl-0"> </span><span class="hl-1">start</span>
 </code></pre>
-<p>Or to build locally without EAS and immediately deploy the build and connect to it:</p>
+<p>Or to use the alternate development build:</p>
+<pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">pxd</span><span class="hl-0"> </span><span class="hl-1">start</span>
+</code></pre>
+<p>Also, to build the app locally (without EAS), immediately deploy the build and connect to it:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px</span><span class="hl-0"> </span><span class="hl-1">android</span>
 </code></pre>
-<p>On the next run you can avoid rebuilding the app and directly start the development server.</p>
-<p><strong>Note:</strong> for the Toolbox, replace <code>px</code> by <code>tb</code>.</p>
+<p>On the next run you may skip rebuilding the app and directly start the development server.</p>
+<p><strong>Note:</strong> For the Toolbox, replace <code>px</code> by <code>tb</code>.</p>
 
-<a href="#making-updates" id="making-updates" style="color: inherit; text-decoration: none;">
-  <h3>Making Updates</h3>
+<a href="#toolbox-changing-the-firmware-packages-in-the-toolbox" id="toolbox-changing-the-firmware-packages-in-the-toolbox" style="color: inherit; text-decoration: none;">
+  <h3>Toolbox: Changing The Firmware Packages In The Toolbox</h3>
 </a>
-<p>Code changes made in the &quot;universal&quot; packages (the pixels-* packages) are usually not immediately
-picked up by the Metro packager, so you need to rebuild the modified package and restart the
-development server:</p>
-<pre><code class="language-sh"><span class="hl-2">cd</span><span class="hl-0"> </span><span class="hl-1">packages/pixels-package-name</span><br/><span class="hl-0">yarn </span><span class="hl-1">build</span><br/><span class="hl-2">cd</span><span class="hl-0"> </span><span class="hl-1">../..</span><br/><span class="hl-0">yarn </span><span class="hl-1">px</span><span class="hl-0"> </span><span class="hl-1">start</span>
-</code></pre>
+<p>Here are the steps to update the DFU files that are being used by the validation screen (and which are
+also selected by default in other screens):</p>
+<ol>
+<li>Build a new bootloader + <a href="https://github.com/GameWithPixels/DiceFirmware/">firmware</a> combo using
+the <code>publish</code> command.</li>
+<li>Replace the bootloader and firmware DFU files in <code>apps\pixels-toolbox\assets\dfu\factory-dfu-files.zip</code>.<blockquote>
+<p>/!\ Be sure to only have one file for the bootloader and one for the firmware in this zip file!</p>
+</blockquote>
+</li>
+<li>Update the version number in <code>app.config.ts</code></li>
+<li>Run either <code>tb:eas-update &quot;Description&quot;</code> or <code>tb:eas-android preview</code> command.</li>
+</ol>
+<p><strong>Note</strong>: Other bootloader and firmware DFU files should be placed into
+<code>apps\pixels-toolbox\assets\dfu\other-dfu-files.zip</code>.</p>
 
 <a href="#type-checking-and-linting" id="type-checking-and-linting" style="color: inherit; text-decoration: none;">
   <h2>Type checking and linting</h2>
