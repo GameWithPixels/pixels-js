@@ -98,8 +98,8 @@ export type PixelDispatcherMutableProps =
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
-class PixelDispatcher extends PixelInfoNotifier<
-  PixelDispatcherMutableProps,
+class PixelDispatcher extends ScannedPixelNotifier<
+  keyof PixelDispatcherMutableProps,
   PixelDispatcher
 > {
   private _scannedPixel: ScannedPixelNotifier;
@@ -210,13 +210,14 @@ class PixelDispatcher extends PixelInfoNotifier<
   }
 
   private constructor(scannedPixel: ScannedPixelNotifier) {
-    super();
+    super(scannedPixel);
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
     _instances.set(this.pixelId, this);
     // TODO remove listeners
     // TODO perform these notification in a generic way
     scannedPixel.addPropertyListener("timestamp", () => {
+      this.emitPropertyEvent("timestamp");
       this.emitPropertyEvent("lastScanUpdate");
       this._updateLastActivity();
     });

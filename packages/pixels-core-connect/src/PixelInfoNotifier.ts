@@ -10,26 +10,15 @@ import { PixelInfo } from "./PixelInfo";
  * The mutable properties of {@link PixelInfoNotifier}.
  * @category Pixel
  */
-export type PixelInfoNotifierMutableProps = Exclude<
-  keyof PixelInfo,
-  "systemId" | "pixelId" | "ledCount" | "designAndColor" | "ledCount"
->;
-
-/**
- * Event map for {@link PixelInfoNotifier} or descendant class.
- * @category Pixel
- */
-export type PixelInfoNotifierEventMap<
-  PixelInfoNotifierMutableProps extends string,
-  Type
-> = {
-  [K in PixelInfoNotifierMutableProps]: Type;
-};
-
-// Type alias with shorter name
-type EvMap<MutableProps extends string, Type> = PixelInfoNotifierEventMap<
-  MutableProps,
-  Type
+export type PixelInfoNotifierMutableProps = Pick<
+  PixelInfo,
+  | "name"
+  | "firmwareDate"
+  | "rssi"
+  | "batteryLevel"
+  | "isCharging"
+  | "rollState"
+  | "currentFace"
 >;
 
 /**
@@ -40,12 +29,13 @@ type EvMap<MutableProps extends string, Type> = PixelInfoNotifierEventMap<
  * @category Pixel
  */
 export abstract class PixelInfoNotifier<
-  Props extends string = PixelInfoNotifierMutableProps,
+  MutableProps extends PixelInfoNotifierMutableProps = PixelInfoNotifierMutableProps,
   Type extends PixelInfo = PixelInfo
 > implements PixelInfo
 {
-  private readonly _infoEvEmitter =
-    createTypedEventEmitter<EvMap<Props, Type>>();
+  private readonly _infoEvEmitter = createTypedEventEmitter<{
+    [K in string & keyof MutableProps]: Type;
+  }>();
 
   abstract get systemId(): string;
   abstract get pixelId(): number;
@@ -67,9 +57,9 @@ export abstract class PixelInfoNotifier<
    * @param eventName The name of the event.
    * @param listener The callback function.
    */
-  addPropertyListener<K extends keyof EvMap<Props, Type>>(
+  addPropertyListener<K extends string & keyof MutableProps>(
     eventName: K,
-    listener: EventReceiver<EvMap<Props, Type>[K]>
+    listener: EventReceiver<Type>
   ): void {
     this._infoEvEmitter.addListener(eventName, listener);
   }
@@ -82,9 +72,9 @@ export abstract class PixelInfoNotifier<
    * @param eventName The name of the event.
    * @param listener The callback function to unregister.
    */
-  removePropertyListener<K extends keyof EvMap<Props, Type>>(
+  removePropertyListener<K extends string & keyof MutableProps>(
     eventName: K,
-    listener: EventReceiver<EvMap<Props, Type>[K]>
+    listener: EventReceiver<Type>
   ): void {
     this._infoEvEmitter.removeListener(eventName, listener);
   }
@@ -95,10 +85,13 @@ export abstract class PixelInfoNotifier<
    * @param eventName Event name.
    * @param params Event parameters.
    */
-  protected emitPropertyEvent<K extends keyof EvMap<Props, Type>>(
+  protected emitPropertyEvent<K extends string & keyof MutableProps>(
     eventName: K
   ): void {
-    //@ts-ignore 'this' is assignable to the constraint of type 'Type', but 'Type' could be instantiated with a different subtype of constraint 'PixelInfo'.ts(2345)
-    this._infoEvEmitter.emit(eventName, this);
+    this._infoEvEmitter.emit(
+      eventName,
+      //@ts-ignore 'this' is assignable to the constraint of type 'Type', but 'Type' could be instantiated with a different subtype of constraint 'PixelInfo'.ts(2345)
+      this
+    );
   }
 }

@@ -10,24 +10,17 @@ import { ScannedPixel } from "./ScannedPixel";
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 /** Type for an object with all the mutable props of {@link ScannedPixelNotifier}. */
-export type ScannedPixelNotifierMutableProps = Pick<
-  ScannedPixel,
-  PixelInfoNotifierMutableProps | "timestamp"
->;
-
-/** Event map for {@link ScannedPixelNotifier} class. */
-export type ScannedPixelNotifierEventMap = {
-  [K in keyof ScannedPixelNotifierMutableProps]: ScannedPixelNotifier;
-};
+export type ScannedPixelNotifierMutableProps = PixelInfoNotifierMutableProps &
+  Pick<ScannedPixel, "timestamp">;
 
 /**
  * Wraps a {@link ScannedPixel} to raise events on mutable property changes.
  */
-export abstract class ScannedPixelNotifier
-  extends PixelInfoNotifier<
-    keyof ScannedPixelNotifierMutableProps,
-    ScannedPixelNotifier
+export abstract class ScannedPixelNotifier<
+    MutableProps extends ScannedPixelNotifierMutableProps = ScannedPixelNotifierMutableProps,
+    Type extends ScannedPixel = ScannedPixel
   >
+  extends PixelInfoNotifier<MutableProps, Type>
   implements ScannedPixel
 {
   private _data: Mutable<ScannedPixel>;
