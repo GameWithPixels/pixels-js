@@ -25,6 +25,7 @@ export interface AnimationRainbowData extends AnimationData {
   count: number;
   fade: number;
   traveling: boolean;
+  intensity: number;
 }
 
 export interface AnimationKeyframedData extends AnimationData {

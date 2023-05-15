@@ -24,8 +24,11 @@ export default class AnimationRainbow implements AnimationPreset {
   @serializable(1)
   fade = 0;
 
-  @serializable(1, { padding: 1 })
+  @serializable(1)
   traveling = false;
+
+  @serializable(1)
+  intensity = 128;
 
   createInstance(bits: AnimationBits): AnimationInstanceRainbow {
     return new AnimationInstanceRainbow(this, bits);

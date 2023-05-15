@@ -35,6 +35,12 @@ export default class EditAnimationRainbow extends EditAnimation {
   @observable
   traveling: boolean;
 
+  @widget("slider")
+  @range(0, 1)
+  @name("Intensity")
+  @observable
+  intensity: number;
+
   constructor(opt?: {
     uuid?: string;
     name?: string;
@@ -43,12 +49,14 @@ export default class EditAnimationRainbow extends EditAnimation {
     count?: number;
     fade?: number;
     traveling?: boolean;
+    intensity?: number;
   }) {
     super(opt);
     this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
     this.count = opt?.count ?? 1;
     this.fade = opt?.fade ?? 0;
     this.traveling = opt?.traveling ?? false;
+    this.intensity = opt?.intensity ?? 0.5;
   }
 
   toAnimation(_editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
@@ -58,6 +66,7 @@ export default class EditAnimationRainbow extends EditAnimation {
       fade: this.fade * 255,
       count: this.count,
       traveling: this.traveling,
+      intensity: this.intensity * 255,
     });
   }
 

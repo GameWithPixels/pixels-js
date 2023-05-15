@@ -140,6 +140,7 @@ function toAnimationsAndGradients(
               count: data.count ?? 1,
               fade: data.fade ?? 0,
               traveling: data.traveling ?? false,
+              intensity: 128,
             });
             break;
           case "keyframed":
