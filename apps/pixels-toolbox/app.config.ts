@@ -1,6 +1,7 @@
 // Assume production build by default
 const prod =
-  !process.env.PX_TB_DEV && process.env.EAS_BUILD_PROFILE !== "development";
+  !process.env.SYSTEMIC_TB_DEV &&
+  process.env.EAS_BUILD_PROFILE !== "development";
 
 const config = {
   expo: {

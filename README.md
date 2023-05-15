@@ -28,24 +28,27 @@ To get started with the project, run `yarn` in the root directory to install the
 yarn
 ```
 
-Note: this is equivalent to run `yarn install && yarn pk:all`.
+**Note:** This is equivalent to running `yarn install && yarn pk:all`.
 It's the later command that builds all the packages.
 
 ### EAS Build
 
-To start a development build on EAS:
+To start building a development build on EAS:
 ```sh
 yarn px:eas-android --development
 ```
 
-Or locally (not supported on Windows):
+For other types of builds, replace `development` by the desired build type such as `preview`.
+
+To publish an update on EAS:
+
 ```sh
-yarn px:eas-android --development --local
+yarn px:eas-update "A few words to describe the contents of the update"
 ```
 
-For other types of builds, replace "development" by build type such as "preview" (without quotes).
-
-**Note:** for the Toolbox, replace `px` by `tb`.
+**Note:**
+- For the Toolbox, replace `px` by `tb`.
+- Add the `--local` switch to build locally (not supported on Windows).
 
 ### Install A Build
 
@@ -58,32 +61,47 @@ Use the -d flag to install on a physical device instead.
 
 ### Running A Dev Build
 
-To start a development server that connects to a development version of app already installed:
+Developers have two options when working on the Pixels App or the Toolbox:
+- Running the "regular" development build that replaces the production app.
+- Running an alternate development build that has a different package name (or bundle identifier on iOS)
+it doesn't replaces the production build on the device already installed on the device.
+
+By default the Metro bundler will use the "normal" development build. However when the environment
+variable `SYSTEMIC_PX_DEV` is set, it will switch to the alternate package name (bundle identifier).
+For the Toolbox the environment variable `SYSTEMIC_TB_DEV` is used to make that switch.
+
+To start a development server that connects to the "regular" development build:
 ```sh
 yarn px start
 ```
+Or to use the alternate development build:
+```sh
+yarn pxd start
+```
 
-Or to build locally without EAS and immediately deploy the build and connect to it:
+Also, to build the app locally (without EAS), immediately deploy the build and connect to it:
 ```sh
 yarn px android
 ```
 
-On the next run you can avoid rebuilding the app and directly start the development server.
+On the next run you may skip rebuilding the app and directly start the development server.
 
-**Note:** for the Toolbox, replace `px` by `tb`.
+**Note:** For the Toolbox, replace `px` by `tb`.
 
-### Making Updates
+### Toolbox: Changing The Firmware Packages In The Toolbox
 
-Code changes made in the "universal" packages (the pixels-* packages) are usually not immediately
-picked up by the Metro packager, so you need to rebuild the modified package and restart the
-development server:
+Here are the steps to update the DFU files that are being used by the validation screen (and which are
+also selected by default in other screens):
 
-```sh
-cd packages/pixels-package-name
-yarn build
-cd ../..
-yarn px start
-```
+1. Build a new bootloader + [firmware](https://github.com/GameWithPixels/DiceFirmware/) combo using
+   the `publish` command.
+2. Replace the bootloader and firmware DFU files in `apps\pixels-toolbox\assets\dfu\factory-dfu-files.zip`.
+   > /!\ Be sure to only have one file for the bootloader and one for the firmware in this zip file!
+3. Update the version number in `app.config.ts`
+4. Run either `tb:eas-update "Description"` or `tb:eas-android preview` command.
+
+**Note**: Other bootloader and firmware DFU files should be placed into
+`apps\pixels-toolbox\assets\dfu\other-dfu-files.zip`.
 
 ## Type checking and linting
 
