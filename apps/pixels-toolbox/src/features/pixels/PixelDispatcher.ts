@@ -36,6 +36,7 @@ import {
   pixelBlinkId,
   pixelDischarge,
   pixelForceEnableCharging,
+  pixelReprogramDefaultBehavior,
 } from "./extensions";
 
 import { store } from "~/app/store";
@@ -62,6 +63,7 @@ export interface PixelDispatcherActionMap {
   enableCharging: boolean;
   turnOff: undefined;
   rename: string;
+  reprogramDefaultBehavior: undefined;
 }
 
 export type PixelDispatcherActionName = keyof PixelDispatcherActionMap;
@@ -324,6 +326,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
       case "rename":
         this._guard(this._pixel.rename((params as string) ?? ""));
         break;
+      case "reprogramDefaultBehavior":
+        this._guard(this._reprogramDefaultBehavior());
+        break;
       default:
         assertNever(action);
     }
@@ -534,6 +539,12 @@ class PixelDispatcher extends ScannedPixelNotifier<
     if (this.isReady) {
       // Exit validation mode, don't wait for response as die will restart
       await this._pixel.sendMessage("exitValidation", true);
+    }
+  }
+
+  private async _reprogramDefaultBehavior(): Promise<void> {
+    if (this.isReady) {
+      await pixelReprogramDefaultBehavior(this._pixel);
     }
   }
 }

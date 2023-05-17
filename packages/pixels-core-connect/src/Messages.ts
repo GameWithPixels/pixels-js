@@ -386,7 +386,7 @@ export class IAmADie implements PixelMessage {
 
   /** The charging state of the battery. */
   @serializable(1)
-  batteryState = PixelBatteryStateValues.unknown;
+  batteryState = PixelBatteryStateValues.ok;
 }
 
 /**
@@ -492,7 +492,7 @@ export class Telemetry implements PixelMessage {
 
   /** The charging state of the battery. */
   @serializable(1)
-  batteryState = PixelBatteryStateValues.unknown;
+  batteryState = PixelBatteryStateValues.ok;
 
   /** The measured battery voltage multiplied by 50. */
   @serializable(1)
@@ -802,43 +802,25 @@ export class Blink implements PixelMessage {
  * @category Message
  */
 export const PixelBatteryStateValues = {
-  // The Pixel battery state could not be determined.
-  unknown: enumValue(0),
-
   /** Battery looks fine, nothing is happening. */
-  ok: enumValue(),
+  ok: enumValue(0),
 
   // Battery level is low, notify user they should recharge.
   low: enumValue(),
 
-  // Coil voltage is bad, but we don't know yet if that's because we removed
-  // the die and the coil cap is still discharging, or if indeed the die is
-  // incorrectly positioned.
-  transition: enumValue(),
+  // Battery is currently recharging.
+  charging: enumValue(),
 
-  // Coil voltage is bad, die is probably positioned incorrectly.
-  // Note that currently this state is triggered during transition between
-  // charging and not charging...
+  // Battery is full and finished charging.
+  done: enumValue(),
+
+  // Coil voltage is bad, die is probably positioned incorrectly
+  // Note that currently this state is triggered during transition between charging and not charging...
   badCharging: enumValue(),
 
   // Charge state doesn't make sense (charging but no coil voltage detected
   // for instance).
   error: enumValue(),
-
-  // Battery is currently recharging.
-  charging: enumValue(),
-
-  // Battery is almost full.
-  trickleCharge: enumValue(),
-
-  // Battery is full and finished charging.
-  done: enumValue(),
-
-  // Battery is too cold
-  lowTemp: enumValue(),
-
-  // Battery is too hot
-  highTemp: enumValue(),
 } as const;
 
 /**
@@ -862,7 +844,7 @@ export class BatteryLevel implements PixelMessage {
 
   /** The charging state of the battery. */
   @serializable(1)
-  state = PixelBatteryStateValues.unknown;
+  state = PixelBatteryStateValues.ok;
 }
 
 /**

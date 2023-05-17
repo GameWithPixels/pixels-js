@@ -82,3 +82,14 @@ export async function pixelTransferTest(
     "bytes"
   );
 }
+
+/**
+ * Requests Pixel to re-program its default behavior
+ * and wait for a confirmation.
+ */
+export async function pixelReprogramDefaultBehavior(pixel: Pixel) {
+  await pixel.sendAndWaitForResponse(
+    "programDefaultAnimationSet",
+    "programDefaultAnimationSetFinished"
+  );
+}

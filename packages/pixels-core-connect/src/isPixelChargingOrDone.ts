@@ -9,7 +9,6 @@ import { PixelBatteryStateValues } from "./Messages";
 export function isPixelChargingOrDone(value: number | undefined): boolean {
   switch (value) {
     case PixelBatteryStateValues.charging:
-    case PixelBatteryStateValues.trickleCharge:
     case PixelBatteryStateValues.done:
       return true;
     default:

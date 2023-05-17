@@ -86,7 +86,8 @@ const ValidationTests = {
       `Battery voltage: ${voltage.toFixed(2)} V,` +
         ` level: ${telemetry.batteryLevelPercent} %,` +
         ` charging: ${
-          telemetry.batteryState >= PixelBatteryStateValues.charging
+          telemetry.batteryState === PixelBatteryStateValues.charging ||
+          telemetry.batteryState === PixelBatteryStateValues.done
         }`
     );
     if (voltage < 3 || voltage > 5) {

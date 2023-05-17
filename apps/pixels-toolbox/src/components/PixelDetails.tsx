@@ -333,6 +333,13 @@ function BottomButtons({
               <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
                 {t("calibrate")}
               </Button>
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch("reprogramDefaultBehavior")
+                }
+              >
+                {t("setDefaultProfile")}
+              </Button>
             </>
           )}
         </FastVStack>
@@ -367,7 +374,7 @@ function BottomButtons({
               </Button>
               <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
               <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
-                {t("setDefaultProfile")}
+                {t("setUserProfile")}
               </Button>
               <Button
                 onPress={() => pixelDispatcher.dispatch("exitValidation")}
