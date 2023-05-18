@@ -318,7 +318,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
         this._guard(this._exitValidationMode());
         break;
       case "enableCharging":
-        this._guard(this._forceEnableCharging((params as boolean) ?? false));
+        this._guard(this._forceEnableCharging((params as boolean) ?? true));
         break;
       case "turnOff":
         this._guard(this._pixel.turnOff());
