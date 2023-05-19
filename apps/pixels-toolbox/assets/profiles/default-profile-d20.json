@@ -74126,7 +74126,7 @@
         "defaultPreviewSettings": {
           "design": 5
         },
-        "duration": 1.96610475
+        "duration": 0.9522721
       }
     },
     {
@@ -74136,6 +74136,7 @@
         "count": 5,
         "fade": 0.5323098,
         "traveling": true,
+        "intensity": 0.467736542,
         "name": "Rainbow",
         "defaultPreviewSettings": {
           "design": 5
@@ -74176,20 +74177,11 @@
               }
             },
             {
-              "time": 0.564045846,
+              "time": 0.846004069,
               "color": {
                 "r": 89,
-                "g": 17,
-                "b": 0,
-                "a": 255
-              }
-            },
-            {
-              "time": 0.8071372,
-              "color": {
-                "r": 255,
                 "g": 0,
-                "b": 48,
+                "b": 17,
                 "a": 255
               }
             },
@@ -74208,7 +74200,7 @@
         "defaultPreviewSettings": {
           "design": 5
         },
-        "duration": 1.86555719
+        "duration": 1.02069521
       }
     },
     {
@@ -74224,13 +74216,13 @@
             "a": 255
           }
         },
-        "count": 3,
-        "fade": 1.0,
-        "name": "Three Red Blinks",
+        "count": 6,
+        "fade": 0.101229057,
+        "name": "Five Red Blinks",
         "defaultPreviewSettings": {
           "design": 5
         },
-        "duration": 0.6499172
+        "duration": 1.26241076
       }
     },
     {
@@ -74325,7 +74317,7 @@
         "defaultPreviewSettings": {
           "design": 5
         },
-        "duration": 1.98616564
+        "duration": 3.0
       }
     },
     {
@@ -74384,6 +74376,7 @@
         "count": 3,
         "fade": 0.320800841,
         "traveling": false,
+        "intensity": 0.5,
         "name": "Rainbow All Faces",
         "defaultPreviewSettings": {
           "design": 5
@@ -74392,43 +74385,25 @@
       }
     },
     {
-      "type": 4,
+      "type": 1,
       "data": {
-        "name": "Rolling Anim",
-        "patternIndex": 18,
-        "duration": 0.6466137,
-        "gradient": {
-          "keyframes": [
-            {
-              "time": 0.0,
-              "color": {
-                "r": 0,
-                "g": 0,
-                "b": 0,
-                "a": 255
-              }
-            },
-            {
-              "time": 0.445358962,
-              "color": {
-                "r": 255,
-                "g": 0,
-                "b": 0,
-                "a": 255
-              }
-            },
-            {
-              "time": 1.0,
-              "color": {
-                "r": 0,
-                "g": 0,
-                "b": 0,
-                "a": 255
-              }
-            }
-          ]
+        "faces": 532610,
+        "color": {
+          "type": 1,
+          "rgbColor": {
+            "r": 255,
+            "g": 48,
+            "b": 0,
+            "a": 255
+          }
         },
-        "overrideWithFace": true
+        "count": 1,
+        "fade": 0.5378627,
+        "name": "Rolling Anim",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 0.6466137
       }
     },
     {
@@ -75204,8 +75179,8 @@
           "type": 0,
           "rgbColor": {
             "r": 89,
-            "g": 17,
-            "b": 0,
+            "g": 0,
+            "b": 17,
             "a": 255
           }
         },
@@ -75217,140 +75192,89 @@
         },
         "duration": 3.0
       }
+    },
+    {
+      "type": 1,
+      "data": {
+        "faces": 524288,
+        "color": {
+          "type": 0,
+          "rgbColor": {
+            "r": 89,
+            "g": 17,
+            "b": 0,
+            "a": 255
+          }
+        },
+        "count": 6,
+        "fade": 0.1,
+        "name": "Low batt",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 1.41553688
+      }
+    },
+    {
+      "type": 1,
+      "data": {
+        "faces": 1048575,
+        "color": {
+          "type": 0,
+          "rgbColor": {
+            "r": 255,
+            "g": 48,
+            "b": 0,
+            "a": 255
+          }
+        },
+        "count": 10,
+        "fade": 0.1,
+        "name": "Charge Error",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 2.0906117
+      }
+    },
+    {
+      "type": 1,
+      "data": {
+        "faces": 524288,
+        "color": {
+          "type": 0,
+          "rgbColor": {
+            "r": 28,
+            "g": 89,
+            "b": 0,
+            "a": 255
+          }
+        },
+        "count": 1,
+        "fade": 1.0,
+        "name": "Finished Charge",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 3.0
+      }
     }
   ],
   "behaviors": [
     {
-      "name": "Pixels Default Profile",
-      "description": null,
+      "name": "Rainbow",
+      "description": "This profile lights up a different color for every face.",
       "rules": [
         {
           "condition": {
-            "type": 4,
-            "data": {
-              "flags": 2,
-              "faceIndex": 19
-            }
+            "type": 2,
+            "data": {}
           },
           "actions": [
             {
               "type": 1,
               "data": {
-                "animationIndex": 1,
-                "faceIndex": -1,
-                "loopCount": 1
-              }
-            }
-          ]
-        },
-        {
-          "condition": {
-            "type": 4,
-            "data": {
-              "flags": 2,
-              "faceIndex": 18
-            }
-          },
-          "actions": [
-            {
-              "type": 1,
-              "data": {
-                "animationIndex": 16,
-                "faceIndex": -1,
-                "loopCount": 1
-              }
-            }
-          ]
-        },
-        {
-          "condition": {
-            "type": 4,
-            "data": {
-              "flags": 2,
-              "faceIndex": 17
-            }
-          },
-          "actions": [
-            {
-              "type": 1,
-              "data": {
-                "animationIndex": 17,
-                "faceIndex": -1,
-                "loopCount": 1
-              }
-            }
-          ]
-        },
-        {
-          "condition": {
-            "type": 4,
-            "data": {
-              "flags": 6,
-              "faceIndex": 15
-            }
-          },
-          "actions": [
-            {
-              "type": 1,
-              "data": {
-                "animationIndex": 9,
-                "faceIndex": -1,
-                "loopCount": 1
-              }
-            }
-          ]
-        },
-        {
-          "condition": {
-            "type": 4,
-            "data": {
-              "flags": 6,
-              "faceIndex": 10
-            }
-          },
-          "actions": [
-            {
-              "type": 1,
-              "data": {
-                "animationIndex": 14,
-                "faceIndex": -1,
-                "loopCount": 1
-              }
-            }
-          ]
-        },
-        {
-          "condition": {
-            "type": 4,
-            "data": {
-              "flags": 6,
-              "faceIndex": 5
-            }
-          },
-          "actions": [
-            {
-              "type": 1,
-              "data": {
-                "animationIndex": 8,
-                "faceIndex": -1,
-                "loopCount": 1
-              }
-            }
-          ]
-        },
-        {
-          "condition": {
-            "type": 4,
-            "data": {
-              "flags": 6,
-              "faceIndex": 1
-            }
-          },
-          "actions": [
-            {
-              "type": 1,
-              "data": {
-                "animationIndex": 3,
+                "animationIndex": 10,
                 "faceIndex": -1,
                 "loopCount": 1
               }
@@ -75378,16 +75302,17 @@
         },
         {
           "condition": {
-            "type": 6,
+            "type": 4,
             "data": {
-              "flags": 1
+              "flags": 2,
+              "faceIndex": 19
             }
           },
           "actions": [
             {
               "type": 1,
               "data": {
-                "animationIndex": 19,
+                "animationIndex": 9,
                 "faceIndex": -1,
                 "loopCount": 1
               }
@@ -75396,16 +75321,450 @@
         },
         {
           "condition": {
-            "type": 6,
+            "type": 4,
             "data": {
-              "flags": 2
+              "flags": 1,
+              "faceIndex": 19
             }
           },
           "actions": [
             {
               "type": 1,
               "data": {
-                "animationIndex": 20,
+                "animationIndex": 8,
+                "faceIndex": -1,
+                "loopCount": 1
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 3,
+            "data": {
+              "recheckAfter": 0.5
+            }
+          },
+          "actions": [
+            {
+              "type": 1,
+              "data": {
+                "animationIndex": 10,
+                "faceIndex": -1,
+                "loopCount": 1
+              }
+            }
+          ]
+        }
+      ],
+      "defaultPreviewSettings": {
+        "design": 5
+      }
+    },
+    {
+      "name": "Speak Numbers",
+      "description": "This profile has your phone say the rolled numbers out loud (when the app is open)",
+      "rules": [
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 0
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 0
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 1
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 1
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 2
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 2
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 3
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 3
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 4
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 4
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 5
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 5
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 6
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 6
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 7
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 7
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 8
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 8
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 9
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 9
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 10
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 10
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 11
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 11
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 12
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 12
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 13
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 13
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 14
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 14
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 15
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 15
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 16
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 16
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 17
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 17
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 18
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 18
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 19
+            }
+          },
+          "actions": [
+            {
+              "type": 2,
+              "data": {
+                "audioClipIndex": 19
+              }
+            }
+          ]
+        }
+      ],
+      "defaultPreviewSettings": {
+        "design": 5
+      }
+    },
+    {
+      "name": "Flashy",
+      "description": "Most of the animations in this profile have flashes!",
+      "rules": [
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 19
+            }
+          },
+          "actions": [
+            {
+              "type": 1,
+              "data": {
+                "animationIndex": 24,
+                "faceIndex": -1,
+                "loopCount": 1
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 2,
+              "faceIndex": 0
+            }
+          },
+          "actions": [
+            {
+              "type": 1,
+              "data": {
+                "animationIndex": 6,
+                "faceIndex": -1,
+                "loopCount": 1
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 4,
+            "data": {
+              "flags": 4,
+              "faceIndex": 0
+            }
+          },
+          "actions": [
+            {
+              "type": 1,
+              "data": {
+                "animationIndex": 13,
                 "faceIndex": -1,
                 "loopCount": 1
               }
@@ -75421,7 +75780,25 @@
             {
               "type": 1,
               "data": {
-                "animationIndex": 5,
+                "animationIndex": 22,
+                "faceIndex": -1,
+                "loopCount": 1
+              }
+            }
+          ]
+        },
+        {
+          "condition": {
+            "type": 3,
+            "data": {
+              "recheckAfter": 0.7253171
+            }
+          },
+          "actions": [
+            {
+              "type": 1,
+              "data": {
+                "animationIndex": 22,
                 "faceIndex": -1,
                 "loopCount": 1
               }
@@ -75462,7 +75839,7 @@
           "type": 7,
           "data": {
             "flags": 4,
-            "recheckAfter": 8.83275
+            "recheckAfter": 5.0
           }
         },
         "actions": [
@@ -75470,6 +75847,63 @@
             "type": 1,
             "data": {
               "animationIndex": 26,
+              "faceIndex": -1,
+              "loopCount": 1
+            }
+          }
+        ]
+      },
+      {
+        "condition": {
+          "type": 7,
+          "data": {
+            "flags": 16,
+            "recheckAfter": 0.0
+          }
+        },
+        "actions": [
+          {
+            "type": 1,
+            "data": {
+              "animationIndex": 4,
+              "faceIndex": -1,
+              "loopCount": 1
+            }
+          }
+        ]
+      },
+      {
+        "condition": {
+          "type": 7,
+          "data": {
+            "flags": 2,
+            "recheckAfter": 60.0
+          }
+        },
+        "actions": [
+          {
+            "type": 1,
+            "data": {
+              "animationIndex": 27,
+              "faceIndex": -1,
+              "loopCount": 1
+            }
+          }
+        ]
+      },
+      {
+        "condition": {
+          "type": 7,
+          "data": {
+            "flags": 32,
+            "recheckAfter": 60.0
+          }
+        },
+        "actions": [
+          {
+            "type": 1,
+            "data": {
+              "animationIndex": 28,
               "faceIndex": -1,
               "loopCount": 1
             }

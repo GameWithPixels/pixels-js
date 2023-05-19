@@ -74133,9 +74133,10 @@
       "type": 2,
       "data": {
         "faces": 1048575,
-        "count": 2,
+        "count": 5,
         "fade": 0.5323098,
-        "traveling": false,
+        "traveling": true,
+        "intensity": 0.5,
         "name": "Rainbow",
         "defaultPreviewSettings": {
           "design": 5
@@ -74148,7 +74149,6 @@
       "data": {
         "name": "Rainbow Falls",
         "patternIndex": 4,
-        "hueAdjust": 0.02202946,
         "duration": 2.03453064
       }
     },
@@ -74216,13 +74216,13 @@
             "a": 255
           }
         },
-        "count": 3,
-        "fade": 1.0,
-        "name": "Three Red Blinks",
+        "count": 6,
+        "fade": 0.101229057,
+        "name": "Five Red Blinks",
         "defaultPreviewSettings": {
           "design": 5
         },
-        "duration": 0.6499172
+        "duration": 1.26241076
       }
     },
     {
@@ -74376,6 +74376,7 @@
         "count": 3,
         "fade": 0.320800841,
         "traveling": false,
+        "intensity": 0.5,
         "name": "Rainbow All Faces",
         "defaultPreviewSettings": {
           "design": 5
@@ -74384,43 +74385,25 @@
       }
     },
     {
-      "type": 4,
+      "type": 1,
       "data": {
-        "name": "Rolling Anim",
-        "patternIndex": 18,
-        "duration": 0.6466137,
-        "gradient": {
-          "keyframes": [
-            {
-              "time": 0.0,
-              "color": {
-                "r": 0,
-                "g": 0,
-                "b": 0,
-                "a": 255
-              }
-            },
-            {
-              "time": 0.445358962,
-              "color": {
-                "r": 255,
-                "g": 0,
-                "b": 0,
-                "a": 255
-              }
-            },
-            {
-              "time": 1.0,
-              "color": {
-                "r": 0,
-                "g": 0,
-                "b": 0,
-                "a": 255
-              }
-            }
-          ]
+        "faces": 532610,
+        "color": {
+          "type": 1,
+          "rgbColor": {
+            "r": 255,
+            "g": 48,
+            "b": 0,
+            "a": 255
+          }
         },
-        "overrideWithFace": true
+        "count": 1,
+        "fade": 0.5378627,
+        "name": "Rolling Anim",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 0.6466137
       }
     },
     {
@@ -74531,7 +74514,6 @@
       "data": {
         "name": "Rotating Rings",
         "patternIndex": 6,
-        "hueAdjust": 0.0,
         "duration": 6.763664
       }
     },
@@ -74665,7 +74647,6 @@
       "data": {
         "name": "Red to Green Rotation",
         "patternIndex": 11,
-        "hueAdjust": -0.04506141,
         "duration": 3.44610739
       }
     },
@@ -74674,7 +74655,6 @@
       "data": {
         "name": "Trifold",
         "patternIndex": 12,
-        "hueAdjust": 0.0,
         "duration": 3.03161
       }
     },
@@ -75199,14 +75179,80 @@
           "type": 0,
           "rgbColor": {
             "r": 89,
-            "g": 17,
-            "b": 0,
+            "g": 0,
+            "b": 17,
             "a": 255
           }
         },
         "count": 1,
         "fade": 1.0,
         "name": "Slow Charge Blink",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 3.0
+      }
+    },
+    {
+      "type": 1,
+      "data": {
+        "faces": 524288,
+        "color": {
+          "type": 0,
+          "rgbColor": {
+            "r": 89,
+            "g": 17,
+            "b": 0,
+            "a": 255
+          }
+        },
+        "count": 6,
+        "fade": 0.1,
+        "name": "Low batt",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 1.41553688
+      }
+    },
+    {
+      "type": 1,
+      "data": {
+        "faces": 1048575,
+        "color": {
+          "type": 0,
+          "rgbColor": {
+            "r": 255,
+            "g": 48,
+            "b": 0,
+            "a": 255
+          }
+        },
+        "count": 10,
+        "fade": 0.1,
+        "name": "Charge Error",
+        "defaultPreviewSettings": {
+          "design": 5
+        },
+        "duration": 2.0906117
+      }
+    },
+    {
+      "type": 1,
+      "data": {
+        "faces": 524288,
+        "color": {
+          "type": 0,
+          "rgbColor": {
+            "r": 28,
+            "g": 89,
+            "b": 0,
+            "a": 255
+          }
+        },
+        "count": 1,
+        "fade": 1.0,
+        "name": "Finished Charge",
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -75266,7 +75312,7 @@
             {
               "type": 1,
               "data": {
-                "animationIndex": 1,
+                "animationIndex": 14,
                 "faceIndex": -1,
                 "loopCount": 2
               }
@@ -75767,6 +75813,8 @@
   ],
   "presets": [],
   "defaultBehavior": {
+    "name": null,
+    "description": null,
     "rules": [
       {
         "condition": {
@@ -75791,7 +75839,7 @@
           "type": 7,
           "data": {
             "flags": 4,
-            "recheckAfter": 8.83275
+            "recheckAfter": 5.0
           }
         },
         "actions": [
@@ -75799,6 +75847,63 @@
             "type": 1,
             "data": {
               "animationIndex": 26,
+              "faceIndex": -1,
+              "loopCount": 1
+            }
+          }
+        ]
+      },
+      {
+        "condition": {
+          "type": 7,
+          "data": {
+            "flags": 16,
+            "recheckAfter": 0.0
+          }
+        },
+        "actions": [
+          {
+            "type": 1,
+            "data": {
+              "animationIndex": 4,
+              "faceIndex": -1,
+              "loopCount": 1
+            }
+          }
+        ]
+      },
+      {
+        "condition": {
+          "type": 7,
+          "data": {
+            "flags": 2,
+            "recheckAfter": 60.0
+          }
+        },
+        "actions": [
+          {
+            "type": 1,
+            "data": {
+              "animationIndex": 27,
+              "faceIndex": -1,
+              "loopCount": 1
+            }
+          }
+        ]
+      },
+      {
+        "condition": {
+          "type": 7,
+          "data": {
+            "flags": 32,
+            "recheckAfter": 60.0
+          }
+        },
+        "actions": [
+          {
+            "type": 1,
+            "data": {
+              "animationIndex": 28,
               "faceIndex": -1,
               "loopCount": 1
             }

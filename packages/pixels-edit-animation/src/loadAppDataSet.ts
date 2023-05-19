@@ -102,7 +102,7 @@ function toCondition(condition: Json.Condition): EditCondition {
       case ConditionTypeValues.faceCompare:
         return safeAssign(new EditConditionFaceCompare(), {
           ...data,
-          face: data.faceIndex && data.faceIndex,
+          face: data.faceIndex && data.faceIndex + 1,
         });
       case ConditionTypeValues.crooked:
         return new EditConditionCrooked();
@@ -136,7 +136,9 @@ function toActions(
         case ActionTypeValues.playAnimation:
           return safeAssign(new EditActionPlayAnimation(), {
             animation: animations[data.animationIndex ?? -1],
-            face: data.faceIndex && data.faceIndex + 1,
+            face:
+              data.faceIndex &&
+              (data.faceIndex > 0 ? data.faceIndex + 1 : data.faceIndex),
             loopCount: data.loopCount,
           });
         case ActionTypeValues.runOnDevice:

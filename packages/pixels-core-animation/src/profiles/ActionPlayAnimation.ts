@@ -14,7 +14,7 @@ export default class ActionPlayAnimation implements Action {
   @serializable(1)
   animIndex = 0;
 
-  @serializable(1)
+  @serializable(1, { numberFormat: "signed" })
   faceIndex = 0;
 
   @serializable(1)
