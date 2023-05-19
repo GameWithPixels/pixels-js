@@ -783,9 +783,26 @@ export function PrepareDie({
     )
     .chainWith(
       // TODO for internal testing only:
-      React.useCallback(() => pixel.disconnect(), [pixel]),
-      //React.useCallback(() => ValidationTests.exitValidationMode(pixel), [pixel]),
+      //React.useCallback(() => pixel.disconnect(), [pixel]),
+      React.useCallback(
+        () => ValidationTests.exitValidationMode(pixel),
+        [pixel]
+      ),
       createTaskStatusContainer(t("exitValidationMode"))
+    )
+    .chainWith(
+      React.useCallback(
+        (abortSignal) =>
+          ValidationTests.waitDisconnected(
+            pixel,
+            isBoard(settings.sequence)
+              ? new Color(0.003, 0.01, 0)
+              : new Color(0.03, 0.1, 0),
+            abortSignal
+          ),
+        [pixel, settings.sequence]
+      ),
+      createTaskStatusContainer(t("waitingDeviceDisconnect"))
     )
     .withStatusChanged(_playSoundOnResult)
     .withStatusChanged(onTaskStatus);
