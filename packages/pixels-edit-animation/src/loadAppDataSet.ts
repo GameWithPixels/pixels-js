@@ -176,8 +176,8 @@ export function toProfile(
   audioClips: EditAudioClip[]
 ): EditProfile {
   return new EditProfile({
-    name: profile.name,
-    description: profile.description,
+    name: profile.name ?? undefined,
+    description: profile.description ?? undefined,
     rules: toRules(animations, audioClips, profile.rules),
   });
 }

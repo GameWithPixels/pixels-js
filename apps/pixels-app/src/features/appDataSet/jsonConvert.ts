@@ -325,7 +325,7 @@ function toProfile(
   return {
     uuid: generateUuid(),
     name: profile.name ?? "",
-    description: profile.description,
+    description: profile.description ?? undefined,
     conditions,
     actions,
     rules: filteredRules.map((r) => ({

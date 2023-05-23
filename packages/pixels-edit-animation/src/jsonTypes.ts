@@ -83,8 +83,8 @@ export type Rule = Partial<{
 }>;
 
 export type Profile = Partial<{
-  name: string;
-  description: string;
+  name: string | null;
+  description: string | null;
   rules: Rule[];
   defaultPreviewSettings: PreviewSettings;
 }>;
