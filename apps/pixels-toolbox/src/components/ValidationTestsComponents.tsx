@@ -637,7 +637,7 @@ export function WaitFaceUp({
         ValidationTests.waitFaceUp(
           pixel,
           _getFaceUp(pixel, "1"),
-          Color.magenta,
+          Color.dimMagenta,
           abortSig
         ),
       [pixel]
@@ -653,7 +653,7 @@ export function WaitFaceUp({
           ValidationTests.waitFaceUp(
             pixel,
             _getFaceUp(pixel, "2"),
-            Color.yellow,
+            Color.dimYellow,
             abortSig
           ),
         [pixel]
@@ -669,7 +669,7 @@ export function WaitFaceUp({
           ValidationTests.waitFaceUp(
             pixel,
             _getFaceUp(pixel, "3"),
-            Color.cyan,
+            Color.dimCyan,
             abortSig
           ),
         [pixel]
@@ -756,7 +756,7 @@ export function WaitDieInCase({
     action,
     React.useCallback(
       (abortSignal) =>
-        ValidationTests.waitDisconnected(pixel, Color.orange, abortSignal),
+        ValidationTests.waitDisconnected(pixel, Color.dimOrange, abortSignal),
       [pixel]
     ),
     createTaskStatusContainer({
