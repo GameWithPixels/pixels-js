@@ -42,6 +42,7 @@ i18n
           cancel: "Cancel",
           close: "Close",
           back: "Back",
+          next: "Next",
           yes: "Yes",
           no: "No",
           d4: "D4",
@@ -202,6 +203,8 @@ i18n
           exitValidationMode: "Exit Validation Mode",
           waitDieInCase: "Wait Die In Case",
           placeDieInCaseAndCloseLid: "Place die in case and close the lid",
+          testSuccessful: "Test Successful!",
+          testFailed: "Test Failed!",
 
           // Roll Screen
           rollDemo: "Roll Demo",
@@ -217,6 +220,7 @@ i18n
           cancel: "取消",
           close: "关闭",
           back: "后退",
+          next: "Next",
           yes: "是",
           no: "否",
           d4: "D4",
@@ -377,6 +381,8 @@ i18n
           exitValidationMode: "退出测试模式",
           waitDieInCase: "等待骰子放入盒中",
           placeDieInCaseAndCloseLid: "将骰子放在盒中并关闭盖子",
+          testSuccessful: "Test Successful!",
+          testFailed: "Test Failed!",
         },
       },
     },

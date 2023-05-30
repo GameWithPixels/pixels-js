@@ -494,11 +494,14 @@ function RunTestsPage({
       >
         <>{taskChain.render()}</>
         {result && (
-          <FastVStack alignItems="center" justifyContent="center">
-            <Text style={{ fontSize: 150 }}>
+          <FastVStack alignItems="center" justifyContent="center" gap={10}>
+            <Text style={{ fontSize: 100 }}>
               {getTaskResultEmoji(taskChain.status)}
             </Text>
-            <Text variant="bodyLarge">
+            <Text variant="headlineMedium">
+              {t(result === "succeeded" ? "testSuccessful" : "testFailed")}
+            </Text>
+            <Text variant="titleLarge">
               {t("battery")}
               {t("colonSeparator")}
               {t("percentWithValue", { value: pixel?.batteryLevel ?? 0 })}
@@ -507,7 +510,7 @@ function RunTestsPage({
         )}
       </ScrollView>
       <BottomButton onPress={onOkCancel}>
-        {result ? t("ok") : t("cancel")}
+        {result ? t("next") : t("cancel")}
       </BottomButton>
     </FastVStack>
   );

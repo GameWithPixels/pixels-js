@@ -20,7 +20,6 @@ import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
-import useTimeout from "~/features/hooks/useTimeout";
 import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
@@ -492,25 +491,15 @@ export function WaitCharging({
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
 
-  // Timeout before showing option to abort
-  const [hasElapsed, resetTimeout] = useTimeout(20000);
-  const [userAbort, setUserAbort] = React.useState<() => void>();
-
   const taskChain = useTaskChain(
     action,
     React.useCallback(
       async (abortSignal) =>
-        _makeUserCancellable(
-          abortSignal,
-          setUserAbort,
-          (abortSignal) =>
-            ValidationTests.waitCharging(pixel, !notCharging, abortSignal),
-          "Aborted wait for charging"
-        ),
+        ValidationTests.waitCharging(pixel, !notCharging, abortSignal),
       [notCharging, pixel]
     ),
     createTaskStatusContainer({
-      children: !hasElapsed ? (
+      children: (
         <Text variant="bodyLarge">
           {t(
             notCharging
@@ -519,17 +508,6 @@ export function WaitCharging({
             { coilOrDie: t(_getCoilOrDie(settings)) }
           )}
         </Text>
-      ) : (
-        <MessageYesNo
-          message={t(
-            notCharging
-              ? "isRemovedFromChargerWithCoilOrDie"
-              : "isPlacedOnChargerWithCoilOrDie",
-            { coilOrDie: t(_getCoilOrDie(settings)) }
-          )}
-          onYes={() => userAbort?.()}
-          onNo={() => resetTimeout()}
-        />
       ),
     })
   )
@@ -645,23 +623,6 @@ function _getAbortMsg(face: number): string {
   return `Aborted wait for face ${face} up`;
 }
 
-function IsBlinkingFaceUp({
-  userAbort,
-  resetTimeout,
-}: {
-  userAbort?: () => void;
-  resetTimeout?: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <MessageYesNo
-      message={t("isBlinkingFaceUp")}
-      onYes={() => userAbort?.()}
-      onNo={() => resetTimeout?.()}
-    />
-  );
-}
-
 export function WaitFaceUp({
   action,
   onTaskStatus,
@@ -669,78 +630,52 @@ export function WaitFaceUp({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  // Timeout before showing option to abort
-  const [hasElapsed, resetTimeout] = useTimeout(8000);
-  const [userAbort, setUserAbort] = React.useState<() => void>();
-
   const taskChain = useTaskChain(
     action,
     React.useCallback(
-      (abortSig) => {
-        const face = _getFaceUp(pixel, "1");
-        return _makeUserCancellable(
-          abortSig,
-          setUserAbort,
-          (abortSig) =>
-            ValidationTests.waitFaceUp(pixel, face, Color.magenta, abortSig),
-          _getAbortMsg(face)
-        );
-      },
+      (abortSig) =>
+        ValidationTests.waitFaceUp(
+          pixel,
+          _getFaceUp(pixel, "1"),
+          Color.magenta,
+          abortSig
+        ),
       [pixel]
     ),
     createTaskStatusContainer({
       title: t("placeBlinkingFaceUp"),
-      children: hasElapsed && (
-        <IsBlinkingFaceUp userAbort={userAbort} resetTimeout={resetTimeout} />
-      ),
     })
   )
     .withStatusChanged(_playSoundOnResult)
     .chainWith(
       React.useCallback(
-        (abortSig) => {
-          const face = _getFaceUp(pixel, "2");
-          return _makeUserCancellable(
-            abortSig,
-            setUserAbort,
-            (abortSig) =>
-              ValidationTests.waitFaceUp(pixel, face, Color.yellow, abortSig),
-            _getAbortMsg(face)
-          );
-        },
+        (abortSig) =>
+          ValidationTests.waitFaceUp(
+            pixel,
+            _getFaceUp(pixel, "2"),
+            Color.yellow,
+            abortSig
+          ),
         [pixel]
       ),
       createTaskStatusContainer({
         title: t("placeNewBlinkingFaceUp"),
-        children: !hasElapsed ? (
-          <Text variant="bodyLarge">{t("placeNewBlinkingFaceUp")}</Text>
-        ) : (
-          <IsBlinkingFaceUp userAbort={userAbort} resetTimeout={resetTimeout} />
-        ),
       })
     )
     .withStatusChanged(_playSoundOnResult)
     .chainWith(
       React.useCallback(
-        (abortSig) => {
-          const face = _getFaceUp(pixel, "3");
-          return _makeUserCancellable(
-            abortSig,
-            setUserAbort,
-            (abortSig) =>
-              ValidationTests.waitFaceUp(pixel, face, Color.cyan, abortSig),
-            _getAbortMsg(face)
-          );
-        },
+        (abortSig) =>
+          ValidationTests.waitFaceUp(
+            pixel,
+            _getFaceUp(pixel, "3"),
+            Color.cyan,
+            abortSig
+          ),
         [pixel]
       ),
       createTaskStatusContainer({
         title: t("placeNewBlinkingFaceUp"),
-        children: !hasElapsed ? (
-          <Text variant="bodyLarge">{t("placeNewBlinkingFaceUp")}</Text>
-        ) : (
-          <IsBlinkingFaceUp userAbort={userAbort} resetTimeout={resetTimeout} />
-        ),
       })
     )
     .withStatusChanged(_playSoundOnResult)
@@ -821,11 +756,7 @@ export function WaitDieInCase({
     action,
     React.useCallback(
       (abortSignal) =>
-        ValidationTests.waitDisconnected(
-          pixel,
-          new Color(0, 0.03, 0.1),
-          abortSignal
-        ),
+        ValidationTests.waitDisconnected(pixel, Color.orange, abortSignal),
       [pixel]
     ),
     createTaskStatusContainer({
