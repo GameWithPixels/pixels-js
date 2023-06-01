@@ -39,7 +39,7 @@ import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useForceUpdate from "~/features/hooks/useForceUpdate";
 import gs from "~/styles";
-import range from "~/utils/range";
+import range from "~/features/range";
 
 // function test() {
 //   try {

@@ -1,6 +1,11 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import { StorageAccessFramework } from "expo-file-system";
 
-export default async function (fileName: string): Promise<string> {
+import Pathname from "./Pathname";
+
+export default async function (pathname: string): Promise<string> {
+  assert(pathname.length > 0, "requestUserFile: empty filename");
+  const extension = Pathname.getExtension(pathname) ?? "txt";
   const permissions =
     await StorageAccessFramework.requestDirectoryPermissionsAsync();
   if (!permissions.granted) {
@@ -8,7 +13,7 @@ export default async function (fileName: string): Promise<string> {
   }
   return await StorageAccessFramework.createFileAsync(
     permissions.directoryUri,
-    fileName,
-    "application/csv"
+    pathname,
+    `application/${extension}`
   );
 }

@@ -32,8 +32,8 @@ import {
   ValidationSequence,
 } from "~/features/validation/ValidationSequences";
 import ValidationTests from "~/features/validation/ValidationTests";
-import getDefaultProfile from "~/getDefaultProfile";
-import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+import getDefaultProfile from "~/features/pixels/getDefaultProfile";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 const chimeSound = require("!/sounds/chime.mp3");
 const errorSound = require("!/sounds/error.mp3");

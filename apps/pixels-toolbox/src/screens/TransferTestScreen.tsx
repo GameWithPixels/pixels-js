@@ -21,11 +21,12 @@ import { Button, ProgressBar, Text } from "react-native-paper";
 import { AppPage } from "~/components/AppPage";
 import { LineChart } from "~/components/LineChart";
 import PixelInfoCard from "~/components/PixelInfoCard";
+import Pathname from "~/features/files/Pathname";
 import requestUserFile from "~/features/files/requestUserFile";
 import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { pixelTransferTest } from "~/features/pixels/extensions";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 import gs from "~/styles";
-import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
 
 function PixelListItem({
   pixel,
@@ -170,7 +171,10 @@ function SendData({ pixel }: { pixel: Pixel }) {
     const task = async () => {
       const now = toLocaleDateTimeString(new Date());
       const basename = `${pixel.name}-transfer-rate-${now}`;
-      const filename = `${basename}.csv`.replace(/[/\\?%*:|"<>]/g, "-");
+      const filename = Pathname.replaceInvalidCharacters(
+        `${basename}.csv`,
+        "-"
+      );
       const contents =
         "timestamp,bytes\n" +
         dataRate.points.map((p) => `${p.x},${p.y}\n`).join();

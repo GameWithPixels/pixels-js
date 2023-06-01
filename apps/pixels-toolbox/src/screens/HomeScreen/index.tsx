@@ -12,7 +12,7 @@ import useAppDfuFilesBundles, {
 } from "~/features/hooks/useAppDfuFilesBundles";
 import { HomeScreenProps } from "~/navigation";
 import gs from "~/styles";
-import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 function DfuBundleSelection({
   navigation,

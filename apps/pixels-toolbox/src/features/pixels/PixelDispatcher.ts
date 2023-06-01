@@ -43,7 +43,7 @@ import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
-import getDefaultProfile from "~/getDefaultProfile";
+import getDefaultProfile from "~/features/pixels/getDefaultProfile";
 
 export type ProfileType = "default" | "tiny";
 

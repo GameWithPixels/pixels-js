@@ -16,7 +16,7 @@ import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 import gs from "~/styles";
-import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 function formatAddress(address: number): string {
   return address.toString(16).toUpperCase();

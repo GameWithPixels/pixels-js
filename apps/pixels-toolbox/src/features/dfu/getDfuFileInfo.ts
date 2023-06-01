@@ -1,3 +1,5 @@
+import Pathname from "../files/Pathname";
+
 export interface DfuFileInfo {
   pathname: string;
   basename: string;
@@ -15,11 +17,8 @@ export default function (
     defaultDate?: Date;
   }
 ): DfuFileInfo {
-  const filename =
-    opt?.filename ?? pathname.replace("\\", "/").split("/").pop();
-  const filenameWithoutExt =
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    filename?.substring(0, filename.lastIndexOf(".")) || filename;
+  const filename = opt?.filename ?? Pathname.getFilename(pathname);
+  const filenameWithoutExt = Pathname.removeExtension(filename);
   const parts = filenameWithoutExt?.split("_");
   if (parts && parts.length >= 2) {
     try {
@@ -63,7 +62,7 @@ export default function (
   return {
     pathname,
     date: opt?.defaultDate ?? new Date(),
-    basename: filename ? filename.split(".")[0] : pathname,
+    basename: filename ? Pathname.removeExtension(filename) : pathname,
     type: opt?.defaultType ?? "firmware",
   };
 }

@@ -10,7 +10,7 @@ import { Card, Text } from "react-native-paper";
 
 import useForceUpdate from "~/features/hooks/useForceUpdate";
 import gs from "~/styles";
-import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 interface PixelAndTranslation {
   pixel: PixelInfoNotifier;

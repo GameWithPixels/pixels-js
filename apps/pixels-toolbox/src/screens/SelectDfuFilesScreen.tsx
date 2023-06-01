@@ -20,7 +20,7 @@ import {
 } from "~/features/store/dfuBundlesSlice";
 import { SelectDfuFilesScreenProps } from "~/navigation";
 import gs from "~/styles";
-import toLocaleDateTimeString from "~/utils/toLocaleDateTimeString";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 async function importDfuFile() {
   const file = await DocumentPicker.getDocumentAsync({

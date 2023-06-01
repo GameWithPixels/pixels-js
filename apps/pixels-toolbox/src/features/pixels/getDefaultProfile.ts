@@ -5,7 +5,7 @@ import {
   loadAppDataSet,
 } from "@systemic-games/pixels-edit-animation";
 
-import { DieType } from "./features/pixels/DieType";
+import { DieType } from "./DieType";
 
 function getFirstProfileDataSet(jsonData: Json.DataSet): DataSet {
   const defaultProfileAppDataSet = loadAppDataSet(jsonData);
