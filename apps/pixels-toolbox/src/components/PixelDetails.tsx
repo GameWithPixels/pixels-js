@@ -44,6 +44,7 @@ import PixelDispatcher, {
   TelemetryData,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
+import range from "~/features/range";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
@@ -95,28 +96,51 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
 
 function TelemetryModal({
   pixelDispatcher,
+  startTime,
+  onSetStartTime,
   linesInfo,
   ...props
 }: {
   pixelDispatcher: PixelDispatcher;
+  startTime: number;
+  onSetStartTime?: (timestamp: number) => void;
   linesInfo: DynamicLinesChartProps["linesInfo"];
 } & Omit<ModalProps, "children">) {
   const chartRef = React.useRef<DynamicLinesChartHandle>(null);
+  const getValues = React.useCallback(
+    ({ timestamp, rssi, battery, voltage }: TelemetryData) => ({
+      x: Math.round((timestamp - startTime) / 1000),
+      yValues: [rssi, battery, voltage],
+    }),
+    [startTime]
+  );
+  const [points, setPoints] = React.useState<DynamicLinesChartProps["points"]>(
+    []
+  );
+  React.useEffect(() => {
+    if (props.visible) {
+      const data = pixelDispatcher.telemetryData;
+      const index = data.findIndex((t) => t.timestamp >= startTime);
+      const step = Math.floor((data.length - index) / 400);
+      setPoints(
+        index < 0
+          ? []
+          : range(index, data.length, step).map((i) => getValues(data[i]))
+      );
+    }
+  }, [getValues, pixelDispatcher.telemetryData, props.visible, startTime]);
   useEffect(() => {
-    const telemetryListener = ({
-      timestamp,
-      rssi,
-      battery,
-      voltage,
-    }: Readonly<TelemetryData>) => {
-      const time = Math.round(timestamp / 1000);
-      chartRef.current?.push(time, [rssi, battery, voltage]);
-    };
-    pixelDispatcher.addEventListener("telemetry", telemetryListener);
-    return () => {
-      pixelDispatcher.removeEventListener("telemetry", telemetryListener);
-    };
-  });
+    if (props.visible) {
+      const listener = (data: Readonly<TelemetryData>) => {
+        const values = getValues(data);
+        chartRef.current?.push(values.x, values.yValues);
+      };
+      pixelDispatcher.addEventListener("telemetry", listener);
+      return () => {
+        pixelDispatcher.removeEventListener("telemetry", listener);
+      };
+    }
+  }, [getValues, pixelDispatcher, props.visible]);
 
   // Values for UI
   const window = useWindowDimensions();
@@ -125,7 +149,7 @@ function TelemetryModal({
   return (
     <Portal>
       <Modal contentContainerStyle={modalStyle} {...props}>
-        <Text style={gs.mv3} variant="bodyLarge">
+        <Text style={[gs.mv3, gs.textCentered]} variant="titleLarge">
           {t("telemetryGraph")}
         </Text>
         <DynamicLinesChart
@@ -133,14 +157,32 @@ function TelemetryModal({
           style={{
             width: "100%",
             height: window.width,
+            marginTop: 10,
             backgroundColor: "gainsboro",
           }}
+          points={points}
           linesInfo={linesInfo}
           textColor="steelblue"
           fontSize={12}
           title="Time in seconds"
           strokeWidth={1.5}
         />
+        {onSetStartTime && (
+          <FastHStack w="100%" justifyContent="flex-end" p={10} gap={10}>
+            <PaperButton
+              mode="contained-tonal"
+              onPress={() => onSetStartTime(-1)}
+            >
+              {t("full")}
+            </PaperButton>
+            <PaperButton
+              mode="contained-tonal"
+              onPress={() => onSetStartTime(Date.now())}
+            >
+              {t("reset")}
+            </PaperButton>
+          </FastHStack>
+        )}
       </Modal>
     </Portal>
   );
@@ -160,10 +202,10 @@ const TelemetryLinesInfo = [
     max: 100,
   },
   {
-    title: "Voltage",
+    title: "Voltage (mV)",
     color: "mediumpurple",
     min: 0,
-    max: 5,
+    max: 5000,
   },
 ] as const;
 
@@ -503,6 +545,16 @@ export function PixelDetails({
   }, [pixelDispatcher]);
 
   // Telemetry Graph
+  const [startTime, setStartTime] = React.useState(
+    pixelDispatcher.telemetryData[0]?.timestamp ?? Date.now()
+  );
+  const changeStartTime = React.useCallback(
+    (t: number) =>
+      setStartTime(
+        t >= 0 ? t : pixelDispatcher.telemetryData[0]?.timestamp ?? Date.now()
+      ),
+    [pixelDispatcher]
+  );
   const { isOpen, onOpen, onClose } = useDisclose();
 
   // Values for UI
@@ -582,6 +634,8 @@ export function PixelDetails({
       <TelemetryModal
         pixelDispatcher={pixelDispatcher}
         linesInfo={TelemetryLinesInfo}
+        startTime={startTime}
+        onSetStartTime={changeStartTime}
         visible={isOpen}
         onDismiss={onClose}
       />

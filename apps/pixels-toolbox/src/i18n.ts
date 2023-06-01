@@ -133,6 +133,8 @@ i18n
           saveTelemetry: "Save Telemetry",
           telemetryGraph: "Telemetry Graph",
           exportLog: "Export Log",
+          reset: "Reset",
+          full: "Full",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -312,6 +314,8 @@ i18n
           saveTelemetry: "Save Telemetry",
           telemetryGraph: "Telemetry Graph",
           exportLog: "Export Log",
+          reset: "Reset",
+          full: "Full",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",

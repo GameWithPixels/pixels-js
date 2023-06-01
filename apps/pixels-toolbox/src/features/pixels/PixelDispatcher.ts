@@ -130,7 +130,6 @@ class PixelDispatcher extends ScannedPixelNotifier<
   private _isDfuAvailable = false;
   private _messagesLogFilePath;
   private _telemetryData: TelemetryData[] = [];
-  private _initTimestamp = Date.now();
 
   get systemId(): string {
     return this._getPixelInfo().systemId;
@@ -299,9 +298,8 @@ class PixelDispatcher extends ScannedPixelNotifier<
     // Telemetry
     this._pixel.addMessageListener("telemetry", (msg) => {
       const telemetry = msg as Telemetry;
-      const timestamp = Date.now() - this._initTimestamp;
       const data = {
-        timestamp,
+        timestamp: Date.now(),
         rssi: telemetry.rssi,
         battery: telemetry.batteryLevelPercent,
         voltage: (telemetry.voltageTimes50 / 50) * 1000,
@@ -394,10 +392,6 @@ class PixelDispatcher extends ScannedPixelNotifier<
   asNotifier(): PixelInfoNotifier {
     // TODO see if there is a better to do this type casting
     return this as unknown as PixelInfoNotifier;
-  }
-
-  resetTelemetryData(): void {
-    this._telemetryData.length = 0;
   }
 
   async exportMessages(uri: string): Promise<void> {

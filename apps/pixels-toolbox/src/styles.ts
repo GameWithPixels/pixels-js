@@ -16,6 +16,9 @@ const gs = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+  selfCentered: {
+    alignSelf: "center",
+  },
   mv3: {
     marginVertical: 3,
   },
@@ -27,6 +30,9 @@ const gs = StyleSheet.create({
   },
   underlined: {
     textDecorationLine: "underline",
+  },
+  textCentered: {
+    textAlign: "center",
   },
   // Containers
   container: {

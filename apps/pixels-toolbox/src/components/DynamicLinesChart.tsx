@@ -5,6 +5,8 @@ import Svg, { Polyline, Text as SvgText } from "react-native-svg";
 
 import { LineChartProps } from "./LineChart";
 
+import useForceUpdate from "~/features/hooks/useForceUpdate";
+
 export interface LineInfo {
   title: string;
   color: string;
@@ -12,13 +14,19 @@ export interface LineInfo {
   max?: number;
 }
 
+export interface DynamicLinesChartEntry {
+  x: number;
+  yValues: number[];
+}
+
 export interface DynamicLinesChartProps
   extends Omit<LineChartProps, "points" | "lineColor" | "minY" | "maxY"> {
   linesInfo: readonly LineInfo[];
+  points?: readonly DynamicLinesChartEntry[];
 }
 
 export interface DynamicLinesChartHandle {
-  push(x: number, yValues: readonly number[]): void;
+  push(x: number, yValues: number[]): void;
 }
 
 interface LinePoints extends LineInfo {
@@ -26,15 +34,23 @@ interface LinePoints extends LineInfo {
   labels: number[];
 }
 
-interface LinesData {
-  xValues: number[];
-  scale: number;
-  lines: {
-    yValues: number[];
+interface Data {
+  // Render data
+  render: {
+    xLabels: number[];
+    lines: LinePoints[];
+  };
+  // Source data
+  source: {
+    xValues: number[];
     scale: number;
-    min: number;
-    max: number;
-  }[];
+    lines: {
+      yValues: number[];
+      scale: number;
+      min: number;
+      max: number;
+    }[];
+  };
 }
 
 // Plots multiple lines that share the same x values.
@@ -42,6 +58,7 @@ interface LinesData {
 export const DynamicLinesChart = React.forwardRef(function (
   {
     style,
+    points,
     linesInfo,
     textColor,
     fontSize,
@@ -52,36 +69,122 @@ export const DynamicLinesChart = React.forwardRef(function (
   }: DynamicLinesChartProps,
   ref: React.ForwardedRef<DynamicLinesChartHandle>
 ) {
-  // Internal lines data
-  const [lines, setLines] = React.useState<Readonly<LinePoints>[]>([]);
-  const xLabelsRef = React.useRef<number[]>([]);
-  const dataRef = React.useRef<LinesData>({
-    xValues: [],
-    scale: 1,
-    lines: [],
-  });
+  const forceUpdate = useForceUpdate();
 
-  // Initialization
-  React.useEffect(() => {
-    const data = dataRef.current;
-    data.xValues.length = 0;
-    data.lines = linesInfo.map((l) => ({
-      yValues: [],
-      scale: 1,
-      min: l.min ?? NaN,
-      max: l.max ?? NaN,
-    }));
-    setLines(
-      linesInfo.map((l) => ({
-        points: "",
-        labels: [],
-        ...l,
-      }))
-    );
-  }, [linesInfo]);
+  const getDefaultDataRef = React.useCallback(
+    () => ({
+      render: {
+        xLabels: [],
+        lines: linesInfo.map((l) => ({
+          points: "",
+          labels: [],
+          ...l,
+        })),
+      },
+      source: {
+        xValues: [],
+        scale: 1,
+        lines: linesInfo.map((l) => ({
+          yValues: [],
+          scale: 1,
+          min: l.min ?? NaN,
+          max: l.max ?? NaN,
+        })),
+      },
+    }),
+    [linesInfo]
+  );
+
+  const dataRef = React.useRef<Data>();
+  if (!dataRef.current) {
+    dataRef.current = getDefaultDataRef();
+  }
 
   // View layout
   const [layout, setLayout] = React.useState({ width: 1, height: 1 });
+
+  // Add new points
+  const pushData = React.useCallback(
+    (x: number, yValues: number[]) => {
+      assert(dataRef.current);
+      const rdrData = dataRef.current.render;
+      const srcData = dataRef.current.source;
+      assert(srcData.lines.length === yValues.length, "");
+      const area = { w: layout.width, h: layout.height - 2.5 * fontSize };
+      // X value and scaling
+      srcData.xValues.push(x);
+      const x0 = minX ?? srcData.xValues[0];
+      const x1 = maxX ?? srcData.xValues.at(-1)!;
+      const sx = x1 > x0 ? area.w / (x1 - x0) : 1;
+      const newScales: boolean[] = Array(srcData.lines.length).fill(
+        srcData.scale !== sx
+      );
+      srcData.scale = sx;
+      // Y values and scaling
+      yValues.forEach((y, i) => {
+        const line = srcData.lines[i];
+        if (!line.yValues.length) {
+          if (isNaN(line.min)) {
+            line.min = y;
+          }
+          if (isNaN(line.max)) {
+            line.max = y;
+          }
+        } else {
+          line.min = Math.min(y, line.min);
+          line.max = Math.max(y, line.max);
+        }
+        const sy = line.max > line.min ? area.h / (line.max - line.min) : 1;
+        if (!line.yValues.length || line.scale !== sy) {
+          line.scale = sy;
+          newScales[i] = true;
+        }
+        line.yValues.push(y);
+      });
+      // Update X labels
+      // (assumes x1 value is representative of the space the labels take)
+      const labelWidth = (Math.floor(Math.log10(x1)) + 1) * fontSize;
+      const numLabelsX = Math.min(10, Math.ceil(area.w / labelWidth / 2));
+      rdrData.xLabels = Array(numLabelsX)
+        .fill(0)
+        .map((_, i) =>
+          Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))
+        );
+      // Update state
+      assert(rdrData.lines.length === yValues.length);
+      yValues.forEach((y, i) => {
+        // Coordinates
+        const y0 = srcData.lines[i].min;
+        const y1 = srcData.lines[i].max;
+        const sy = srcData.lines[i].scale;
+        const ptStr = (x: number, y: number) =>
+          `${sx * (x - x0)},${sy * (y1 - y)}`;
+        if (newScales[i]) {
+          const xValues = srcData.xValues;
+          rdrData.lines[i].points = srcData.lines[i].yValues
+            .map((y, j) => ptStr(xValues[j], y))
+            .join(" ");
+        } else {
+          rdrData.lines[i].points += " " + ptStr(x, y);
+        }
+        // Labels
+        const numLabelsY = Math.min(10, Math.ceil(area.h / fontSize / 3));
+        rdrData.lines[i].labels = Array(numLabelsY)
+          .fill(0)
+          .map((_, i) => Math.round(y1 - ((y1 - y0) * i) / numLabelsY));
+      });
+    },
+    [fontSize, layout.height, layout.width, maxX, minX]
+  );
+
+  // Render points
+  React.useEffect(() => {
+    if (points?.length || dataRef.current?.source.xValues.length) {
+      dataRef.current = getDefaultDataRef();
+      points?.forEach((p) => pushData(p.x, p.yValues));
+      forceUpdate();
+    }
+  }, [forceUpdate, getDefaultDataRef, points, pushData]);
 
   // Imperative handle
   React.useImperativeHandle(
@@ -89,87 +192,14 @@ export const DynamicLinesChart = React.forwardRef(function (
     () => ({
       // Add a new value for each line
       push(x: number, yValues: number[]): void {
-        const data = dataRef.current;
-        assert(data.lines.length === yValues.length);
-        // X value and scaling
-        data.xValues.push(x);
-        const x0 = minX ?? data.xValues[0];
-        const x1 = maxX ?? data.xValues.at(-1)!;
-        const sx = x1 > x0 ? layout.width / (x1 - x0) : 1;
-        const newScales: boolean[] = Array(data.lines.length).fill(
-          data.scale !== sx
-        );
-        data.scale = sx;
-        // Y values and scaling
-        yValues.forEach((y, i) => {
-          const line = data.lines[i];
-          if (!line.yValues.length) {
-            if (isNaN(line.min)) {
-              line.min = y;
-            }
-            if (isNaN(line.max)) {
-              line.max = y;
-            }
-          } else {
-            line.min = Math.min(y, line.min);
-            line.max = Math.max(y, line.max);
-          }
-          const sy =
-            line.max > line.min ? layout.height / (line.max - line.min) : 1;
-          if (!line.yValues.length || line.scale !== sy) {
-            line.scale = sy;
-            newScales[i] = true;
-          }
-          line.yValues.push(y);
-        });
-        // Update X labels
-        // (assumes x1 value is representative of the space the labels take)
-        const labelWidth = (Math.floor(Math.log10(x1)) + 1) * fontSize;
-        const numLabelsX = Math.min(
-          10,
-          Math.ceil(layout.width / labelWidth / 2)
-        );
-        xLabelsRef.current = Array(numLabelsX)
-          .fill(0)
-          .map((_, i) =>
-            Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))
-          );
-        // Update state
-        setLines((linesSrc) => {
-          assert(linesSrc.length === yValues.length);
-          // Return a copy to trigger a render
-          const lines = linesSrc.map((l) => ({ ...l, labels: [...l.labels] }));
-          yValues.forEach((y, i) => {
-            // Coordinates
-            const y0 = data.lines[i].min;
-            const y1 = data.lines[i].max;
-            const sy = data.lines[i].scale;
-            const ptStr = (x: number, y: number) =>
-              `${sx * (x - x0)},${sy * (y1 - y)}`;
-            if (newScales[i]) {
-              const xValues = data.xValues;
-              lines[i].points = data.lines[i].yValues
-                .map((y, j) => ptStr(xValues[j], y))
-                .join(" ");
-            } else {
-              lines[i].points += " " + ptStr(x, y);
-            }
-            // Labels
-            const numLabelsY = Math.min(
-              10,
-              Math.ceil(layout.height / fontSize / 3)
-            );
-            lines[i].labels = Array(numLabelsY)
-              .fill(0)
-              .map((_, i) => Math.round(y1 - ((y1 - y0) * i) / numLabelsY));
-          });
-          return lines;
-        });
+        pushData(x, yValues);
+        forceUpdate();
       },
     }),
-    [fontSize, layout.height, layout.width, maxX, minX]
+    [forceUpdate, pushData]
   );
 
+  const rdrData = dataRef.current?.render;
   return (
     <View style={style} onLayout={(ev) => setLayout(ev.nativeEvent.layout)}>
       <Svg
@@ -180,7 +210,7 @@ export const DynamicLinesChart = React.forwardRef(function (
         {title?.length && (
           <SvgText
             x={layout.width / 2}
-            y={fontSize}
+            y={layout.height - 1}
             textAnchor="middle"
             fontWeight="bold"
             fontSize={fontSize}
@@ -190,13 +220,12 @@ export const DynamicLinesChart = React.forwardRef(function (
           </SvgText>
         )}
         <>
-          {xLabelsRef.current.map((x, i) => (
+          {rdrData?.xLabels.map((x, i) => (
             <SvgText
               key={i}
-              x={(layout.width * (i + 0.5)) / (xLabelsRef.current.length - 1)}
-              y={layout.height - 1}
+              x={(layout.width * (i + 0.5)) / (rdrData.xLabels.length - 1)}
+              y={layout.height - 1.25 * fontSize}
               textAnchor="middle"
-              fontWeight="bold"
               fontSize={fontSize}
               fill={textColor}
             >
@@ -204,11 +233,11 @@ export const DynamicLinesChart = React.forwardRef(function (
             </SvgText>
           ))}
         </>
-        {lines.map((l, i) => (
+        {rdrData?.lines.map((l, i) => (
           <React.Fragment key={i}>
             <SvgText
               x={layout.width / 2}
-              y={1.2 * (i + 2) * fontSize}
+              y={(1.2 * i + 1) * fontSize}
               textAnchor="middle"
               fontWeight="bold"
               fontSize={fontSize}
@@ -222,7 +251,6 @@ export const DynamicLinesChart = React.forwardRef(function (
                   key={j}
                   x={1 + 2.5 * i * fontSize}
                   y={fontSize + (layout.height * j) / l.labels.length}
-                  fontWeight="bold"
                   fontSize={fontSize}
                   fill={l.color}
                 >
