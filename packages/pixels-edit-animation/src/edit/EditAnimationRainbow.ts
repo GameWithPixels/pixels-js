@@ -13,11 +13,6 @@ import { widget, range, name, observable } from "./decorators";
 export default class EditAnimationRainbow extends EditAnimation {
   readonly type = "rainbow";
 
-  @widget("faceMask")
-  @name("Face Mask")
-  @observable
-  faces: number;
-
   @widget("count")
   @range(1, 10)
   @name("Repeat Count")
@@ -40,6 +35,11 @@ export default class EditAnimationRainbow extends EditAnimation {
   @name("Intensity")
   @observable
   intensity: number;
+
+  @widget("faceMask")
+  @name("Face Mask")
+  @observable
+  faces: number;
 
   constructor(opt?: {
     uuid?: string;

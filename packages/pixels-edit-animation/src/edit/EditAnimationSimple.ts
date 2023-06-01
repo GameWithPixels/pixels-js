@@ -15,11 +15,6 @@ import { widget, range, name, observable } from "./decorators";
 export default class EditAnimationSimple extends EditAnimation {
   readonly type = "simple";
 
-  @widget("faceMask")
-  @name("Face Mask")
-  @observable
-  faces: number;
-
   @widget("color")
   @name("Color")
   @observable
@@ -36,6 +31,11 @@ export default class EditAnimationSimple extends EditAnimation {
   @name("Fading Sharpness")
   @observable
   fade: number;
+
+  @widget("faceMask")
+  @name("Face Mask")
+  @observable
+  faces: number;
 
   constructor(opt?: {
     uuid?: string;

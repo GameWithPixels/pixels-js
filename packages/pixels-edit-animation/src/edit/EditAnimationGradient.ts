@@ -15,15 +15,15 @@ import { widget, name, observable } from "./decorators";
 export default class EditAnimationGradient extends EditAnimation {
   readonly type = "gradient";
 
-  @widget("faceMask")
-  @name("Face Mask")
-  @observable
-  faces: number;
-
   @widget("gradient")
   @name("Gradient")
   @observable
   gradient?: EditRgbGradient;
+
+  @widget("faceMask")
+  @name("Face Mask")
+  @observable
+  faces: number;
 
   constructor(opt?: {
     uuid?: string;

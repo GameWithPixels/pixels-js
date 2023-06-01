@@ -20,11 +20,6 @@ export default class EditAnimationNoise extends EditAnimation {
   @observable
   gradient?: EditRgbGradient;
 
-  @widget("faceMask")
-  @name("Face Mask")
-  @observable
-  faces: number;
-
   @widget("slider")
   @range(0.001, 0.1)
   @name("Blink Duration Ratio")
@@ -47,6 +42,11 @@ export default class EditAnimationNoise extends EditAnimation {
   @name("Fading Sharpness")
   @observable
   fade: number;
+
+  @widget("faceMask")
+  @name("Face Mask")
+  @observable
+  faces: number;
 
   constructor(opt?: {
     uuid?: string;
