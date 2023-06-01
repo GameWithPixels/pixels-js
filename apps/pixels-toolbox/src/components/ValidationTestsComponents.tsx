@@ -22,18 +22,18 @@ import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
 import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
+import getDefaultProfile from "~/features/pixels/getDefaultProfile";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 import {
   getBoardOrDie,
   isBoard,
   ValidationSequence,
 } from "~/features/validation/ValidationSequences";
 import ValidationTests from "~/features/validation/ValidationTests";
-import getDefaultProfile from "~/features/pixels/getDefaultProfile";
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 const chimeSound = require("!/sounds/chime.mp3");
 const errorSound = require("!/sounds/error.mp3");

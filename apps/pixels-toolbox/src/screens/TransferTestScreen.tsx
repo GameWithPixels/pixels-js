@@ -171,10 +171,7 @@ function SendData({ pixel }: { pixel: Pixel }) {
     const task = async () => {
       const now = toLocaleDateTimeString(new Date());
       const basename = `${pixel.name}-transfer-rate-${now}`;
-      const filename = Pathname.replaceInvalidCharacters(
-        `${basename}.csv`,
-        "-"
-      );
+      const filename = Pathname.replaceInvalidCharacters(`${basename}.csv`);
       const contents =
         "timestamp,bytes\n" +
         dataRate.points.map((p) => `${p.x},${p.y}\n`).join();

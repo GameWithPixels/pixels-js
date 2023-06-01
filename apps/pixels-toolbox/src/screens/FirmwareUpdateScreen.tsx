@@ -14,9 +14,9 @@ import { AppPage } from "~/components/AppPage";
 import ProgressBar from "~/components/ProgressBar";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 import gs from "~/styles";
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 function formatAddress(address: number): string {
   return address.toString(16).toUpperCase();

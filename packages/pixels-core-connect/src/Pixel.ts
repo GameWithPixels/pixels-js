@@ -118,8 +118,10 @@ export interface PixelUserMessage {
 export interface PixelEventMap {
   /** Connection status update. */
   status: PixelStatus;
-  /** Message notification. */
+  /** Message received notification. */
   message: MessageOrType;
+  /** Message send notification. */
+  messageSend: MessageOrType;
   /** Roll state changed notification. */
   rollState: PixelRollData;
   /** Roll result notification. */
@@ -559,12 +561,7 @@ export class Pixel extends PixelInfoNotifier {
     msgType: MessageType,
     listener: (this: Pixel, message: MessageOrType) => void
   ): void {
-    this._msgEvEmitter.addListener(
-      `message${
-        typeof msgType === "string" ? msgType : getMessageType(msgType)
-      }`,
-      listener
-    );
+    this._msgEvEmitter.addListener(`${msgType}Message`, listener);
   }
 
   /**
@@ -576,12 +573,7 @@ export class Pixel extends PixelInfoNotifier {
     msgType: MessageType,
     listener: (this: Pixel, msg: MessageOrType) => void
   ): void {
-    this._msgEvEmitter.removeListener(
-      `message${
-        typeof msgType === "string" ? msgType : getMessageType(msgType)
-      }`,
-      listener
-    );
+    this._msgEvEmitter.removeListener(`${msgType}Message`, listener);
   }
 
   /**
@@ -610,8 +602,7 @@ export class Pixel extends PixelInfoNotifier {
           this.removeMessageListener(expectedMsgType, onMessage);
           reject(
             new Error(
-              `Timeout of ${timeoutMs}ms waiting on message ` +
-                getMessageType(expectedMsgType)
+              `Timeout of ${timeoutMs}ms waiting on message ${expectedMsgType}`
             )
           );
         }
@@ -626,15 +617,16 @@ export class Pixel extends PixelInfoNotifier {
    * @param withoutAck Whether to request a confirmation that the message was received.
    */
   async sendMessage(
-    msgOrTypeOrTypeValue: MessageOrType,
+    msgOrType: MessageOrType,
     withoutAck = false
   ): Promise<void> {
     if (this._logMessages) {
-      const msgName = getMessageType(msgOrTypeOrTypeValue);
+      const msgName = getMessageType(msgOrType);
       this._log(`Sending message ${msgName} (${MessageTypeValues[msgName]})`);
     }
-    const data = serializeMessage(msgOrTypeOrTypeValue);
+    const data = serializeMessage(msgOrType);
     await this._session.writeValue(data, withoutAck);
+    this._evEmitter.emit("messageSend", msgOrType);
   }
 
   /**
@@ -1063,7 +1055,7 @@ export class Pixel extends PixelInfoNotifier {
         // Dispatch generic message event
         this._evEmitter.emit("message", msgOrType);
         // Dispatch specific message event
-        this._msgEvEmitter.emit(`message${msgName}`, msgOrType);
+        this._msgEvEmitter.emit(`${msgName}Message`, msgOrType);
       } else {
         this._log("Received invalid message");
       }

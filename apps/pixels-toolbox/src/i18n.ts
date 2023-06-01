@@ -127,11 +127,12 @@ i18n
           dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
           turnOff: "Turn Off",
           connected: "connected",
-          setDefaultProfile: "Set Minimal Profile",
+          setMinimalProfile: "Set Minimal Profile",
           setUserProfile: "Set User Profile",
           enableTelemetry: "Enable Telemetry",
           saveTelemetry: "Save Telemetry",
           telemetryGraph: "Telemetry Graph",
+          exportLog: "Export Log",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -305,11 +306,12 @@ i18n
           dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
           turnOff: "Turn Off",
           connected: "connected",
-          setDefaultProfile: "Set Minimal Profile",
+          setMinimalProfile: "Set Minimal Profile",
           setUserProfile: "Set User Profile",
           enableTelemetry: "Enable Telemetry",
           saveTelemetry: "Save Telemetry",
           telemetryGraph: "Telemetry Graph",
+          exportLog: "Export Log",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",

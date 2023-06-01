@@ -38,8 +38,8 @@ import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
 import useForceUpdate from "~/features/hooks/useForceUpdate";
-import gs from "~/styles";
 import range from "~/features/range";
+import gs from "~/styles";
 
 // function test() {
 //   try {

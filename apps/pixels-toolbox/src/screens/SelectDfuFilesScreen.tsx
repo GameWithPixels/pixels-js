@@ -18,9 +18,9 @@ import {
   addImportedDfuBundle,
   setSelectedDfuBundle,
 } from "~/features/store/dfuBundlesSlice";
+import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 import { SelectDfuFilesScreenProps } from "~/navigation";
 import gs from "~/styles";
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
 
 async function importDfuFile() {
   const file = await DocumentPicker.getDocumentAsync({

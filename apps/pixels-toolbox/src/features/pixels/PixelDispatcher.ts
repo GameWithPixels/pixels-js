@@ -28,7 +28,13 @@ import {
   PixelInfoNotifierMutableProps,
   FaceCompareFlagsValues,
   DataSet,
+  ScannedPixelNotifierMutableProps,
+  MessageOrType,
+  getMessageType,
+  Telemetry,
+  MessageTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
+import RNFS from "react-native-fs";
 
 import { getDieType } from "./DieType";
 import { PrebuildAnimations } from "./PrebuildAnimations";
@@ -43,6 +49,7 @@ import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import updateFirmware from "~/features/dfu/updateFirmware";
+import getDatedFilename from "~/features/files/getDatedFilename";
 import getDefaultProfile from "~/features/pixels/getDefaultProfile";
 
 export type ProfileType = "default" | "tiny";
@@ -79,11 +86,8 @@ export interface PixelDispatcherEventMap {
   hasQueuedDFU: boolean;
   dfuState: DfuState;
   dfuProgress: number;
+  telemetry: Readonly<TelemetryData>;
 }
-
-const _instances = new Map<number, PixelDispatcher>();
-let _activeDFU: PixelDispatcher | undefined;
-const _pendingDFUs: PixelDispatcher[] = [];
 
 export type PixelDispatcherMutableProps =
   | PixelInfoNotifierMutableProps
@@ -96,6 +100,17 @@ export type PixelDispatcherMutableProps =
 // | "hasAvailableDFU"
 // | "hasQueuedDFU"
 // | "hasActiveDFU"
+
+export type TelemetryData = {
+  timestamp: number;
+  rssi: number;
+  battery: number;
+  voltage: number;
+};
+
+const _instances = new Map<number, PixelDispatcher>();
+let _activeDFU: PixelDispatcher | undefined;
+const _pendingDFUs: PixelDispatcher[] = [];
 
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
@@ -113,6 +128,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
   private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
   private _isUpdatingProfile = false;
   private _isDfuAvailable = false;
+  private _messagesLogFilePath;
+  private _telemetryData: TelemetryData[] = [];
+  private _initTimestamp = Date.now();
 
   get systemId(): string {
     return this._getPixelInfo().systemId;
@@ -196,6 +214,10 @@ class PixelDispatcher extends ScannedPixelNotifier<
     return this === _activeDFU;
   }
 
+  get telemetryData(): readonly TelemetryData[] {
+    return this._telemetryData;
+  }
+
   // TODO remove this member
   get pixel(): Pixel {
     return this._pixel;
@@ -216,41 +238,76 @@ class PixelDispatcher extends ScannedPixelNotifier<
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
     _instances.set(this.pixelId, this);
+    // Log messages in file
+    const filename = getDatedFilename(this.name);
+    this._messagesLogFilePath = `${RNFS.TemporaryDirectoryPath}/${filename}.json`;
+    console.log(
+      `[${this.name}] Logging messages in: ${this._messagesLogFilePath}`
+    );
+    RNFS.appendFile(this._messagesLogFilePath, "[\n").catch((e) =>
+      console.error(e)
+    );
+    const write = (action: "send" | "received", msgOrType: MessageOrType) => {
+      const timestamp = Date.now();
+      const type = getMessageType(msgOrType);
+      const data =
+        typeof msgOrType === "string"
+          ? { type: MessageTypeValues[msgOrType] }
+          : msgOrType;
+      const obj = { timestamp, type, action, data };
+      RNFS.appendFile(
+        this._messagesLogFilePath,
+        `  ${JSON.stringify(obj)},\n`
+      ).catch((e) => console.error(e));
+    };
     // TODO remove listeners
-    // TODO perform these notification in a generic way
+    this._pixel.addEventListener("messageSend", (msgOrType) =>
+      write("send", msgOrType)
+    );
+    this._pixel.addEventListener("message", (msgOrType) =>
+      write("received", msgOrType)
+    );
+    // Forward property events
     scannedPixel.addPropertyListener("timestamp", () => {
       this.emitPropertyEvent("timestamp");
       this.emitPropertyEvent("lastScanUpdate");
       this._updateLastActivity();
     });
-    scannedPixel.addPropertyListener("name", () =>
-      this.emitPropertyEvent("name")
-    );
     scannedPixel.addPropertyListener("firmwareDate", () => {
       this.emitPropertyEvent("firmwareDate");
       this._updateIsDFUAvailable();
     });
-    scannedPixel.addPropertyListener("rssi", () =>
-      this.emitPropertyEvent("rssi")
+    const props = [
+      "name",
+      "rssi",
+      "batteryLevel",
+      "isCharging",
+      "rollState",
+      "currentFace",
+    ] as (keyof ScannedPixelNotifierMutableProps)[];
+    props.forEach((p) =>
+      scannedPixel.addPropertyListener(p, () => this.emitPropertyEvent(p))
     );
-    scannedPixel.addPropertyListener("batteryLevel", () =>
-      this.emitPropertyEvent("batteryLevel")
-    );
-    scannedPixel.addPropertyListener("isCharging", () =>
-      this.emitPropertyEvent("isCharging")
-    );
-    scannedPixel.addPropertyListener("rollState", () =>
-      this.emitPropertyEvent("rollState")
-    );
-    scannedPixel.addPropertyListener("currentFace", () =>
-      this.emitPropertyEvent("currentFace")
-    );
+    // Forward and monitor status
     this._pixel.addEventListener("status", (status) => {
       this._evEmitter.emit("status", status);
       if (status === "disconnected") {
         this._lastDiscoTime = Date.now();
       }
       this._updateLastActivity();
+    });
+    // Telemetry
+    this._pixel.addMessageListener("telemetry", (msg) => {
+      const telemetry = msg as Telemetry;
+      const timestamp = Date.now() - this._initTimestamp;
+      const data = {
+        timestamp,
+        rssi: telemetry.rssi,
+        battery: telemetry.batteryLevelPercent,
+        voltage: (telemetry.voltageTimes50 / 50) * 1000,
+      };
+      this._telemetryData.push(data);
+      this._evEmitter.emit("telemetry", data);
     });
     // Selected firmware
     this._updateIsDFUAvailable();
@@ -334,9 +391,19 @@ class PixelDispatcher extends ScannedPixelNotifier<
     }
   }
 
-  toNotifier(): PixelInfoNotifier {
+  asNotifier(): PixelInfoNotifier {
     // TODO see if there is a better to do this type casting
     return this as unknown as PixelInfoNotifier;
+  }
+
+  resetTelemetryData(): void {
+    this._telemetryData.length = 0;
+  }
+
+  async exportMessages(uri: string): Promise<void> {
+    console.log(`[${this.name}] Saving messages log in: ${uri}`);
+    await RNFS.copyFile(this._messagesLogFilePath, uri);
+    await RNFS.appendFile(uri, "]\n");
   }
 
   private _guard(promise: Promise<unknown>): void {

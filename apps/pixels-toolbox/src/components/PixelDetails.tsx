@@ -10,11 +10,10 @@ import {
   Pixel,
   PixelBatteryStateValues,
   PixelRollStateValues,
-  Telemetry,
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, useWindowDimensions, View } from "react-native";
 import {
@@ -38,18 +37,15 @@ import {
 
 import ProgressBar from "~/components/ProgressBar";
 import exportCsv from "~/features/files/exportCsv";
+import getDatedFilename from "~/features/files/getDatedFilename";
+import requestUserFile from "~/features/files/requestUserFile";
 import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
-import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import PixelDispatcher, {
+  TelemetryData,
+} from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
-
-type TelemetryData = {
-  timestamp: number;
-  rssi: number;
-  battery: number;
-  voltage: number;
-};
 
 interface TextEntryBaseProps extends React.PropsWithChildren {
   title: string;
@@ -97,13 +93,31 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
   );
 }
 
-const TelemetryModal = React.forwardRef(function (
-  {
-    linesInfo,
-    ...props
-  }: Pick<DynamicLinesChartProps, "linesInfo"> & Omit<ModalProps, "children">,
-  ref: React.ForwardedRef<DynamicLinesChartHandle>
-) {
+function TelemetryModal({
+  pixelDispatcher,
+  linesInfo,
+  ...props
+}: {
+  pixelDispatcher: PixelDispatcher;
+  linesInfo: DynamicLinesChartProps["linesInfo"];
+} & Omit<ModalProps, "children">) {
+  const chartRef = React.useRef<DynamicLinesChartHandle>(null);
+  useEffect(() => {
+    const telemetryListener = ({
+      timestamp,
+      rssi,
+      battery,
+      voltage,
+    }: Readonly<TelemetryData>) => {
+      const time = Math.round(timestamp / 1000);
+      chartRef.current?.push(time, [rssi, battery, voltage]);
+    };
+    pixelDispatcher.addEventListener("telemetry", telemetryListener);
+    return () => {
+      pixelDispatcher.removeEventListener("telemetry", telemetryListener);
+    };
+  });
+
   // Values for UI
   const window = useWindowDimensions();
   const modalStyle = useModalStyle();
@@ -115,7 +129,7 @@ const TelemetryModal = React.forwardRef(function (
           {t("telemetryGraph")}
         </Text>
         <DynamicLinesChart
-          ref={ref}
+          ref={chartRef}
           style={{
             width: "100%",
             height: window.width,
@@ -123,17 +137,13 @@ const TelemetryModal = React.forwardRef(function (
           }}
           linesInfo={linesInfo}
           textColor="steelblue"
-          fontSize={15}
+          fontSize={12}
           title="Time in seconds"
           strokeWidth={1.5}
         />
       </Modal>
     </Portal>
   );
-});
-
-interface TelemetryInfoHandle {
-  showGraph(): void;
 }
 
 const TelemetryLinesInfo = [
@@ -157,16 +167,7 @@ const TelemetryLinesInfo = [
   },
 ] as const;
 
-const TelemetryInfo = React.forwardRef(function (
-  {
-    pixel,
-    onData,
-  }: {
-    pixel: Pixel;
-    onData?: (data: Telemetry) => void;
-  },
-  ref: React.ForwardedRef<TelemetryInfoHandle>
-) {
+function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   const [telemetry, dispatch] = usePixelValue(pixel, "telemetry", {
     minInterval: 1000,
   });
@@ -180,42 +181,6 @@ const TelemetryInfo = React.forwardRef(function (
       dispatch(telemetryOn && appState === "active" ? "start" : "stop");
     }
   }, [appState, dispatch, status, telemetryOn]);
-
-  // Graph
-  const { isOpen, onOpen, onClose } = useDisclose();
-  const graphRef = React.useRef<DynamicLinesChartHandle>(null);
-  const startTimeRef = React.useRef(0);
-  React.useEffect(() => {
-    startTimeRef.current = 0;
-  }, [isOpen]);
-  React.useEffect(() => {
-    if (telemetry && graphRef.current) {
-      const now = Date.now();
-      if (!startTimeRef.current) {
-        startTimeRef.current = now;
-      }
-      const time = Math.round((now - startTimeRef.current) / 1000);
-      graphRef.current.push(time, [
-        telemetry.rssi,
-        telemetry.batteryLevelPercent,
-        (telemetry.voltageTimes50 / 50) * 1000,
-      ]);
-    }
-    if (telemetry && onData) {
-      onData(telemetry);
-    }
-  }, [onData, telemetry]);
-
-  // Imperative handle
-  React.useImperativeHandle(
-    ref,
-    () => ({
-      showGraph(): void {
-        onOpen();
-      },
-    }),
-    [onOpen]
-  );
 
   // Values for UI
   const { t } = useTranslation();
@@ -290,25 +255,20 @@ const TelemetryInfo = React.forwardRef(function (
         </Text>
         <Switch onValueChange={setTelemetryOn} value={telemetryOn} />
       </FastHStack>
-
-      <TelemetryModal
-        ref={graphRef}
-        linesInfo={TelemetryLinesInfo}
-        visible={isOpen}
-        onDismiss={onClose}
-      />
     </>
   );
-});
+}
 
 function BottomButtons({
   pixelDispatcher,
   onShowTelemetry,
   onExportTelemetry,
+  onExportMessages,
 }: {
   pixelDispatcher: PixelDispatcher;
   onShowTelemetry?: () => void;
   onExportTelemetry?: () => void;
+  onExportMessages?: () => void;
 }) {
   const status = usePixelStatus(pixelDispatcher.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
@@ -351,7 +311,7 @@ function BottomButtons({
                   pixelDispatcher.dispatch("reprogramDefaultBehavior")
                 }
               >
-                {t("setDefaultProfile")}
+                {t("setMinimalProfile")}
               </Button>
             </>
           )}
@@ -396,6 +356,7 @@ function BottomButtons({
               </Button>
             </>
           )}
+          <Button onPress={onExportMessages}>{t("exportLog")}</Button>
         </FastVStack>
       </FastHStack>
 
@@ -541,33 +502,8 @@ export function PixelDetails({
     };
   }, [pixelDispatcher]);
 
-  // Telemetry
-  const telemetryRef = React.useRef<TelemetryInfoHandle>(null);
-  const telemetryStartTime = React.useRef(0);
-  const telemetrySessionRef = React.useRef([] as TelemetryData[]);
-  const onTelemetryData = React.useCallback((data: Telemetry) => {
-    const now = Date.now();
-    if (!telemetryStartTime.current) {
-      telemetryStartTime.current = now;
-    }
-    telemetrySessionRef.current.push({
-      timestamp: now - telemetryStartTime.current,
-      rssi: data.rssi,
-      battery: data.batteryLevelPercent,
-      voltage: data.voltageTimes50 / 50,
-    });
-  }, []);
-  const showTelemetry = React.useCallback(
-    () => telemetryRef.current?.showGraph(),
-    []
-  );
-  const exportTelemetry = React.useCallback(
-    () =>
-      exportCsv(`${pixel.name} Telemetry `, telemetrySessionRef.current).catch(
-        setLastError
-      ),
-    [pixel.name]
-  );
+  // Telemetry Graph
+  const { isOpen, onOpen, onClose } = useDisclose();
 
   // Values for UI
   const simpleStatus = React.useMemo(() => {
@@ -607,11 +543,7 @@ export function PixelDetails({
       <Card>
         <Card.Content>
           <BaseInfo pixel={pixel} />
-          <TelemetryInfo
-            ref={telemetryRef}
-            pixel={pixel}
-            onData={onTelemetryData}
-          />
+          <TelemetryInfo pixel={pixel} />
         </Card.Content>
       </Card>
       <View style={gs.mv3} />
@@ -623,8 +555,22 @@ export function PixelDetails({
             ) : (
               <BottomButtons
                 pixelDispatcher={pixelDispatcher}
-                onShowTelemetry={showTelemetry}
-                onExportTelemetry={exportTelemetry}
+                onShowTelemetry={onOpen}
+                onExportTelemetry={() => {
+                  const filename = getDatedFilename([pixel.name, "telemetry"]);
+                  exportCsv(
+                    filename + ".csv",
+                    pixelDispatcher.telemetryData
+                  ).catch(setLastError);
+                }}
+                onExportMessages={() => {
+                  const filename = getDatedFilename([pixel.name, "messages"]);
+                  const task = async () => {
+                    const uri = await requestUserFile(filename + ".json");
+                    pixelDispatcher.exportMessages(uri);
+                  };
+                  task().catch(setLastError);
+                }}
               />
             )}
           </Card.Content>
@@ -632,6 +578,13 @@ export function PixelDetails({
       </ScrollView>
 
       <ProfileUpdateModal updateProgress={uploadProgress} />
+
+      <TelemetryModal
+        pixelDispatcher={pixelDispatcher}
+        linesInfo={TelemetryLinesInfo}
+        visible={isOpen}
+        onDismiss={onClose}
+      />
     </>
   );
 }

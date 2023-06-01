@@ -1,20 +1,12 @@
 import { StorageAccessFramework } from "expo-file-system";
 
-import Pathname from "./Pathname";
 import requestUserFile from "./requestUserFile";
 
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
-
 export default async function <T extends Record<string, number>>(
-  basename: string,
-  data: T[]
+  filename: string,
+  data: readonly T[]
 ): Promise<void> {
   if (data.length) {
-    const now = toLocaleDateTimeString(new Date());
-    const filename = Pathname.replaceInvalidCharacters(
-      `${basename}${now}.csv`,
-      "-"
-    );
     const uri = await requestUserFile(filename);
     const keys = Object.keys(data[0]);
     const header = keys.join(",");

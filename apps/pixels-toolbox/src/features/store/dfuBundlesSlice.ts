@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { DfuFilesBundleKind } from "../dfu/DfuFilesBundle";
+import { DfuFilesBundleKind } from "~/features/dfu/DfuFilesBundle";
 
 export interface DfuBundleState {
   selected: number;

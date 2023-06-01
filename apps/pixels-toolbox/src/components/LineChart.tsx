@@ -98,7 +98,6 @@ export function LineChart({
                 x={(layout.width * (i + 0.5)) / (numLabelsX - 1)}
                 y={layout.height - 1}
                 textAnchor="middle"
-                fontWeight="bold"
                 fontSize={fontSize}
                 fill={textColor}
               >
@@ -114,7 +113,6 @@ export function LineChart({
                 key={i}
                 x={1}
                 y={fontSize + (layout.height * i) / numLabelsY}
-                fontWeight="bold"
                 fontSize={fontSize}
                 fill={textColor}
               >

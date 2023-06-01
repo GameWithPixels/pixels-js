@@ -1,4 +1,4 @@
-import Pathname from "../files/Pathname";
+import Pathname from "~/features/files/Pathname";
 
 export interface DfuFileInfo {
   pathname: string;
