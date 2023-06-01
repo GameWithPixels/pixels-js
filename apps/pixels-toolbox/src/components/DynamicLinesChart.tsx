@@ -8,17 +8,17 @@ import { LineChartProps } from "./LineChart";
 export interface LineInfo {
   title: string;
   color: string;
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
 }
 
 export interface DynamicLinesChartProps
   extends Omit<LineChartProps, "points" | "lineColor" | "minY" | "maxY"> {
-  linesInfo: LineInfo[];
+  linesInfo: readonly LineInfo[];
 }
 
 export interface DynamicLinesChartHandle {
-  push(x: number, yValues: number[]): void;
+  push(x: number, yValues: readonly number[]): void;
 }
 
 interface LinePoints extends LineInfo {
@@ -31,9 +31,9 @@ interface LinesData {
   scale: number;
   lines: {
     yValues: number[];
+    scale: number;
     min: number;
     max: number;
-    scale: number;
   }[];
 }
 
@@ -53,7 +53,7 @@ export const DynamicLinesChart = React.forwardRef(function (
   ref: React.ForwardedRef<DynamicLinesChartHandle>
 ) {
   // Internal lines data
-  const [lines, setLines] = React.useState<LinePoints[]>([]);
+  const [lines, setLines] = React.useState<Readonly<LinePoints>[]>([]);
   const xLabelsRef = React.useRef<number[]>([]);
   const dataRef = React.useRef<LinesData>({
     xValues: [],
@@ -67,18 +67,15 @@ export const DynamicLinesChart = React.forwardRef(function (
     data.xValues.length = 0;
     data.lines = linesInfo.map((l) => ({
       yValues: [],
-      min: l.min,
-      max: l.max,
       scale: 1,
+      min: l.min ?? NaN,
+      max: l.max ?? NaN,
     }));
     setLines(
       linesInfo.map((l) => ({
-        title: l.title,
-        color: l.color,
         points: "",
         labels: [],
-        min: l.min,
-        max: l.max,
+        ...l,
       }))
     );
   }, [linesInfo]);
@@ -106,11 +103,17 @@ export const DynamicLinesChart = React.forwardRef(function (
         // Y values and scaling
         yValues.forEach((y, i) => {
           const line = data.lines[i];
-          if (line.yValues.length) {
+          if (!line.yValues.length) {
+            if (isNaN(line.min)) {
+              line.min = y;
+            }
+            if (isNaN(line.max)) {
+              line.max = y;
+            }
+          } else {
             line.min = Math.min(y, line.min);
             line.max = Math.max(y, line.max);
           }
-          // Else line.min and max have already been initialized
           const sy =
             line.max > line.min ? layout.height / (line.max - line.min) : 1;
           if (!line.yValues.length || line.scale !== sy) {
@@ -132,8 +135,10 @@ export const DynamicLinesChart = React.forwardRef(function (
             Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))
           );
         // Update state
-        setLines((lines) => {
-          assert(lines.length === yValues.length);
+        setLines((linesSrc) => {
+          assert(linesSrc.length === yValues.length);
+          // Return a copy to trigger a render
+          const lines = linesSrc.map((l) => ({ ...l, labels: [...l.labels] }));
           yValues.forEach((y, i) => {
             // Coordinates
             const y0 = data.lines[i].min;
@@ -158,7 +163,7 @@ export const DynamicLinesChart = React.forwardRef(function (
               .fill(0)
               .map((_, i) => Math.round(y1 - ((y1 - y0) * i) / numLabelsY));
           });
-          return [...lines]; // Return a copy to trigger a render
+          return lines;
         });
       },
     }),

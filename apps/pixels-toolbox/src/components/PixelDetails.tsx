@@ -136,6 +136,27 @@ interface TelemetryInfoHandle {
   showGraph(): void;
 }
 
+const TelemetryLinesInfo = [
+  {
+    title: "RSSI",
+    color: "tomato",
+    min: -100,
+    max: 0,
+  },
+  {
+    title: "Battery",
+    color: "teal",
+    min: 0,
+    max: 100,
+  },
+  {
+    title: "Voltage",
+    color: "mediumpurple",
+    min: 0,
+    max: 5,
+  },
+] as const;
+
 const TelemetryInfo = React.forwardRef(function (
   {
     pixel,
@@ -163,14 +184,6 @@ const TelemetryInfo = React.forwardRef(function (
   // Graph
   const { isOpen, onOpen, onClose } = useDisclose();
   const graphRef = React.useRef<DynamicLinesChartHandle>(null);
-  const linesInfo = React.useMemo(
-    () => [
-      { title: "RSSI", color: "tomato", min: -100, max: 0 },
-      { title: "Battery", color: "teal", min: 0, max: 100 },
-      { title: "Voltage", color: "mediumpurple", min: 0, max: 5 },
-    ],
-    []
-  );
   const startTimeRef = React.useRef(0);
   React.useEffect(() => {
     startTimeRef.current = 0;
@@ -280,7 +293,7 @@ const TelemetryInfo = React.forwardRef(function (
 
       <TelemetryModal
         ref={graphRef}
-        linesInfo={linesInfo}
+        linesInfo={TelemetryLinesInfo}
         visible={isOpen}
         onDismiss={onClose}
       />
