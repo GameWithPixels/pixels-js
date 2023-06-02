@@ -38,17 +38,21 @@ interface Data {
   // Render data
   render: {
     xLabels: number[];
+    origin: number;
+    scale: number;
     lines: LinePoints[];
   };
   // Source data
   source: {
     xValues: number[];
+    min: number;
+    max: number;
     scale: number;
     lines: {
       yValues: number[];
-      scale: number;
       min: number;
       max: number;
+      scale: number;
     }[];
   };
 }
@@ -75,18 +79,23 @@ export const DynamicLinesChart = React.forwardRef(function (
     () => ({
       render: {
         xLabels: [],
+        origin: 0,
+        scale: 0,
         lines: linesInfo.map((l) => ({
           points: "",
           labels: [],
+          origin: 0,
           ...l,
         })),
       },
       source: {
         xValues: [],
-        scale: 1,
+        min: 0,
+        max: 0,
+        scale: 0,
         lines: linesInfo.map((l) => ({
           yValues: [],
-          scale: 1,
+          scale: 0,
           min: l.min ?? NaN,
           max: l.max ?? NaN,
         })),
@@ -102,23 +111,21 @@ export const DynamicLinesChart = React.forwardRef(function (
 
   // View layout
   const [layout, setLayout] = React.useState({ width: 1, height: 1 });
+  const area = { w: layout.width, h: layout.height - 2.5 * fontSize };
 
   // Add new points
   const pushData = React.useCallback(
     (x: number, yValues: number[]) => {
       assert(dataRef.current);
-      const rdrData = dataRef.current.render;
       const srcData = dataRef.current.source;
       assert(srcData.lines.length === yValues.length, "");
-      const area = { w: layout.width, h: layout.height - 2.5 * fontSize };
       // X value and scaling
       srcData.xValues.push(x);
       const x0 = minX ?? srcData.xValues[0];
       const x1 = maxX ?? srcData.xValues.at(-1)!;
       const sx = x1 > x0 ? area.w / (x1 - x0) : 1;
-      const newScales: boolean[] = Array(srcData.lines.length).fill(
-        srcData.scale !== sx
-      );
+      srcData.min = x0;
+      srcData.max = x1;
       srcData.scale = sx;
       // Y values and scaling
       yValues.forEach((y, i) => {
@@ -134,57 +141,58 @@ export const DynamicLinesChart = React.forwardRef(function (
           line.min = Math.min(y, line.min);
           line.max = Math.max(y, line.max);
         }
-        const sy = line.max > line.min ? area.h / (line.max - line.min) : 1;
-        if (!line.yValues.length || line.scale !== sy) {
-          line.scale = sy;
-          newScales[i] = true;
-        }
+        line.scale = line.max > line.min ? area.h / (line.max - line.min) : 1;
         line.yValues.push(y);
       });
-      // Update X labels
-      // (assumes x1 value is representative of the space the labels take)
-      const labelWidth = (Math.floor(Math.log10(x1)) + 1) * fontSize;
-      const numLabelsX = Math.min(10, Math.ceil(area.w / labelWidth / 2));
-      rdrData.xLabels = Array(numLabelsX)
-        .fill(0)
-        .map((_, i) =>
-          Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))
-        );
-      // Update state
-      assert(rdrData.lines.length === yValues.length);
-      yValues.forEach((y, i) => {
-        // Coordinates
-        const y0 = srcData.lines[i].min;
-        const y1 = srcData.lines[i].max;
-        const sy = srcData.lines[i].scale;
-        const ptStr = (x: number, y: number) =>
-          `${sx * (x - x0)},${sy * (y1 - y)}`;
-        if (newScales[i]) {
-          const xValues = srcData.xValues;
-          rdrData.lines[i].points = srcData.lines[i].yValues
-            .map((y, j) => ptStr(xValues[j], y))
-            .join(" ");
-        } else {
-          rdrData.lines[i].points += " " + ptStr(x, y);
-        }
-        // Labels
-        const numLabelsY = Math.min(10, Math.ceil(area.h / fontSize / 3));
-        rdrData.lines[i].labels = Array(numLabelsY)
-          .fill(0)
-          .map((_, i) => Math.round(y1 - ((y1 - y0) * i) / numLabelsY));
-      });
     },
-    [fontSize, layout.height, layout.width, maxX, minX]
+    [area.h, area.w, maxX, minX]
   );
+  const update = React.useCallback(() => {
+    assert(dataRef.current);
+    const srcData = dataRef.current.source;
+    const rdrData = dataRef.current.render;
+    const { min: x0, max: x1, scale: sx } = srcData;
+    // Update X labels
+    // (assumes x1 value is representative of the space the labels take)
+    const labelWidth = (Math.floor(Math.log10(x1)) + 1) * fontSize;
+    const numLabelsX = Math.min(10, Math.ceil(area.w / labelWidth / 2));
+    rdrData.xLabels = Array(numLabelsX)
+      .fill(0)
+      .map((_, i) =>
+        Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))
+      );
+    // Update state
+    assert(srcData.lines.length === rdrData.lines.length);
+    rdrData.origin = x0;
+    rdrData.scale = sx;
+    srcData.lines.forEach((srcLine, i) => {
+      // Coordinates
+      const { min: y0, max: y1, scale: sy } = srcLine;
+      const scale = sy / sx;
+      const ptStr = (x: number, y: number) => `${x},${scale * (y1 - y)}`;
+      // Regenerate coordinates
+      const xValues = srcData.xValues;
+      const line = rdrData.lines[i];
+      line.points = srcLine.yValues
+        .map((y, j) => ptStr(xValues[j], y))
+        .join(" ");
+      // Labels
+      const numLabelsY = Math.min(10, Math.ceil(area.h / fontSize / 3));
+      line.labels = Array(numLabelsY)
+        .fill(0)
+        .map((_, i) => Math.round(y1 - ((y1 - y0) * i) / numLabelsY));
+    });
+    forceUpdate();
+  }, [area.h, area.w, fontSize, forceUpdate]);
 
   // Render points
   React.useEffect(() => {
     if (points?.length || dataRef.current?.source.xValues.length) {
       dataRef.current = getDefaultDataRef();
       points?.forEach((p) => pushData(p.x, p.yValues));
-      forceUpdate();
+      update();
     }
-  }, [forceUpdate, getDefaultDataRef, points, pushData]);
+  }, [getDefaultDataRef, points, pushData, update]);
 
   // Imperative handle
   React.useImperativeHandle(
@@ -193,10 +201,10 @@ export const DynamicLinesChart = React.forwardRef(function (
       // Add a new value for each line
       push(x: number, yValues: number[]): void {
         pushData(x, yValues);
-        forceUpdate();
+        update();
       },
     }),
-    [forceUpdate, pushData]
+    [pushData, update]
   );
 
   const rdrData = dataRef.current?.render;
@@ -260,9 +268,11 @@ export const DynamicLinesChart = React.forwardRef(function (
             </>
             <Polyline
               points={l.points}
-              strokeWidth={strokeWidth}
+              strokeWidth={strokeWidth && strokeWidth / rdrData.scale}
               fill="none"
               stroke={l.color}
+              originX={rdrData.origin}
+              scale={rdrData.scale}
             />
           </React.Fragment>
         ))}
