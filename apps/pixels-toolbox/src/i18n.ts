@@ -150,10 +150,11 @@ i18n
           rainbowAllFaces: "Rainbow All Faces",
           updateProfile: "Update Profile",
           updateBootloaderAndFirmware: "Update Bootloader & Firmware",
+          updateAvailableOpenSettings: "Update available, open app settings to install.",
 
           // Validation Screen
           factoryValidation: "Factory Validation",
-          openMenuToGoToValidation: "Open Menu To Go To Validation",
+          openMenuToGoToValidation: "Open menu to go to Validation",
           validateBoardNoCoil: "Validate FPC Board No Coil",
           validateBoard: "Validate FPC Board",
           validateDie: "Validate Resin Die",
@@ -331,6 +332,7 @@ i18n
           rainbowAllFaces: "Rainbow All Faces",
           updateProfile: "更新资料",
           updateBootloaderAndFirmware: "更新引导装载程序和固件",
+          updateAvailableOpenSettings: "Update available, open app settings to install.",
 
           // Validation Screen
           factoryValidation: "工厂测试",

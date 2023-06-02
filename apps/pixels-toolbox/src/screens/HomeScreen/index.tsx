@@ -1,4 +1,6 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { FastBox } from "@systemic-games/react-native-base-components";
+import * as Updates from "expo-updates";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, StyleSheet, useWindowDimensions } from "react-native";
@@ -70,6 +72,26 @@ function HomePage({ navigation }: HomeScreenProps) {
     [navigation]
   );
 
+  // EAS updates
+  const [hasEasUpdate, setHasEasUpdate] = React.useState(false);
+  useFocusEffect(
+    React.useCallback(() => {
+      // Checking for updates every minute
+      const check = () => {
+        Updates.checkForUpdateAsync()
+          .then(({ manifest }) => {
+            setHasEasUpdate(!!manifest);
+          })
+          .catch(() => {});
+      };
+      check();
+      const id = setInterval(check, 60_000);
+      return () => {
+        clearInterval(id);
+      };
+    }, [])
+  );
+
   // Values for UI
   const { t } = useTranslation();
   const window = useWindowDimensions();
@@ -80,6 +102,11 @@ function HomePage({ navigation }: HomeScreenProps) {
         <Text style={styles.textValidation}>
           ↖️ <Text style={gs.italic}>{t("openMenuToGoToValidation")}</Text>
         </Text>
+        {hasEasUpdate && (
+          <Text style={{ marginTop: 5 }}>
+            ⚠️ {t("updateAvailableOpenSettings")}
+          </Text>
+        )}
         <DfuBundleSelection navigation={navigation} />
         <SwipeablePixelsList onDieDetails={onDieDetails} />
       </FastBox>
