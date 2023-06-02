@@ -81,11 +81,11 @@ export default class PixelIdDecoder {
         const b = this._blueValues[i] / blueAvg;
         const t = this._timeValues[i];
         // Get dominance for each channel
-        const rd = r - Math.max(g, b);
-        const gd = g - Math.max(r, b);
-        const bd = b - Math.max(r, g);
+        const rd = r / Math.max(g, b);
+        const gd = g / Math.max(r, b);
+        const bd = b / Math.max(r, g);
         // Get dominant channel (if any)
-        const threshold = 0.1;
+        const threshold = 0.03; // 3%
         const color =
           rd - gd > threshold && rd - bd > threshold
             ? "red"
@@ -94,7 +94,7 @@ export default class PixelIdDecoder {
             : bd - rd > threshold && bd - gd > threshold
             ? "blue"
             : undefined;
-        if (lastColorTime === 0) {
+        if (!lastColorTime) {
           this._lastFrameColor = color;
         }
         if (color && (!colors.length || colors.at(-1) !== color)) {
@@ -118,7 +118,7 @@ export default class PixelIdDecoder {
             }
           }
         } else if (lastColorTime - t > 2 * bitDuration) {
-          // Reset if the color doesn't change for a while
+          // Reset if the color didn't change for a while
           colors.length = 0;
         }
       }
