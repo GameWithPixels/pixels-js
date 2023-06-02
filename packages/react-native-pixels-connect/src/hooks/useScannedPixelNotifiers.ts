@@ -9,16 +9,6 @@ import {
 import { PixelScannerListOp } from "../PixelScanner";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
-class UpdatableNotifier extends ScannedPixelNotifier {
-  update(
-    props: Parameters<
-      (typeof ScannedPixelNotifier)["prototype"]["_updateProperties"]
-    >[0]
-  ) {
-    this._updateProperties(props);
-  }
-}
-
 /**
  * React hook that creates {@link PixelScanner} to scan for Pixels using Bluetooth.
  * Use this hook if you don't want the hosting React component to re-render every time
@@ -37,7 +27,7 @@ export function useScannedPixelNotifiers(
   (action: PixelScannerDispatchAction) => void,
   Error?
 ] {
-  const allNotifiers = React.useRef<UpdatableNotifier[]>([]);
+  const allNotifiers = React.useRef<ScannedPixelNotifier[]>([]);
   const mapItems = React.useCallback(
     (items: ScannedPixelNotifier[], ops: PixelScannerListOp[]) => {
       // We only want to create a React re-render when new items are added
@@ -56,7 +46,8 @@ export function useScannedPixelNotifiers(
             const existing = allNotifiers.current.find(
               (n) => n.pixelId === op.scannedPixel.pixelId
             );
-            const notifier = existing ?? new UpdatableNotifier(op.scannedPixel);
+            const notifier =
+              existing ?? new ScannedPixelNotifier(op.scannedPixel);
             if (!existing) {
               allNotifiers.current.push(notifier);
             }
@@ -68,8 +59,7 @@ export function useScannedPixelNotifiers(
             break;
           }
           case "update":
-            assert(retItems[op.index] instanceof UpdatableNotifier);
-            (retItems[op.index] as UpdatableNotifier).update(op.scannedPixel);
+            retItems[op.index].updateProperties(op.scannedPixel);
             break;
           case "move": {
             const src = [...retItems];

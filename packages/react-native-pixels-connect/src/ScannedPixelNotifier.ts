@@ -16,7 +16,7 @@ export type ScannedPixelNotifierMutableProps = PixelInfoNotifierMutableProps &
 /**
  * Wraps a {@link ScannedPixel} to raise events on mutable property changes.
  */
-export abstract class ScannedPixelNotifier<
+export class ScannedPixelNotifier<
     MutableProps extends ScannedPixelNotifierMutableProps = ScannedPixelNotifierMutableProps,
     Type extends ScannedPixel = ScannedPixel
   >
@@ -81,9 +81,7 @@ export abstract class ScannedPixelNotifier<
    * Update the mutable properties and raise the corresponding events.
    * @param props The new values for the properties to update.
    */
-  protected _updateProperties(
-    props: Partial<ScannedPixelNotifierMutableProps>
-  ): void {
+  updateProperties(props: Partial<ScannedPixelNotifierMutableProps>): void {
     if (props.timestamp && this._data.timestamp < props.timestamp) {
       // TODO perform this update in a generic way
       // Timestamp first
