@@ -6,6 +6,7 @@ import {
   getPixel,
   Pixel,
   ScannedPixel,
+  ScannedPixelNotifier,
   useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
@@ -22,6 +23,7 @@ import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
 import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import getDefaultProfile from "~/features/pixels/getDefaultProfile";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
@@ -365,7 +367,9 @@ export function ConnectPixel({
   const pixelRef = React.useRef<Pixel>();
   React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
-      pixelRef.current = getPixel(scannedPixels[0]);
+      const notifier = new ScannedPixelNotifier(scannedPixels[0]);
+      // Make sure that we have a PixelDispatcher instance so messages are logged
+      pixelRef.current = PixelDispatcher.getInstance(notifier).pixel;
       onPixelFound?.(pixelRef.current);
       resolveScanPromise();
     }
