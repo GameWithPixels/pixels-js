@@ -78,7 +78,9 @@ class PixelBleHelper {
   private static readonly _writeUuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
   constructor() {
-    this._ble.bleInitialize().catch((e) => console.error(e));
+    this._ble
+      .bleInitialize()
+      .catch((e) => console.error(`BLE init error: ${e.message}`));
 
     this._scanResultSub = this._evEmitter.addListener(
       BleEvent.scanResult,

@@ -25,8 +25,8 @@ export default function (
         { method: "POST" }
       );
       return resp.status;
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error(`HTTP Post error: ${e.message}`);
       return -1;
     }
   }

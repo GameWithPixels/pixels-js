@@ -244,7 +244,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
       `[${this.name}] Logging messages in: ${this._messagesLogFilePath}`
     );
     RNFS.appendFile(this._messagesLogFilePath, "[\n").catch((e) =>
-      console.error(e)
+      console.error(`PixelDispatcher file write error: ${e.message}`)
     );
     const write = (action: "send" | "received", msgOrType: MessageOrType) => {
       const timestamp = Date.now();
@@ -257,7 +257,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
       RNFS.appendFile(
         this._messagesLogFilePath,
         `  ${JSON.stringify(obj)},\n`
-      ).catch((e) => console.error(e));
+      ).catch((e) =>
+        console.error(`PixelDispatcher file write error: ${e.message}`)
+      );
     };
     // TODO remove listeners
     this._pixel.addEventListener("messageSend", (msgOrType) =>
