@@ -19,7 +19,7 @@ export default async function (
   const hasBootloader = !!bootloaderPath?.length;
 
   // Prepare DFU options
-  const dfuCount = (hasBootloader ? 1 : 0) + (hasFirmware ? 1 : 0);
+  let dfuCount = (hasBootloader ? 1 : 0) + (hasFirmware ? 1 : 0);
   let pendingDfuCount = dfuCount;
   const dfuOptions = {
     retries: 3,
@@ -51,6 +51,8 @@ export default async function (
         // Bootloader already up-to-date
         console.log("Device bootloader is same version or more recent");
         if (hasFirmware) {
+          // The BL DFU was skipped after all
+          --dfuCount;
           // Give DFU library a break, otherwise we risk getting the same FW version failure
           // on the firmware update below
           await delay(100);
@@ -69,7 +71,8 @@ export default async function (
         `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
       );
       pendingDfuCount -= 1;
-      const addr = pixelAddress + (hasBootloader ? 1 : 0);
+      const isBootloaderAddr = (pixelAddress & 1) === 1;
+      const addr = pixelAddress + (hasBootloader && !isBootloaderAddr ? 1 : 0);
       await startDfu(addr, firmwarePath, dfuOptions);
     } catch (error) {
       console.log(`DFU firmware error: ${error}`);
