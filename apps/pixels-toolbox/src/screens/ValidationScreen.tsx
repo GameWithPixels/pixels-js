@@ -6,6 +6,7 @@ import {
   Pixel,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
+import { useKeepAwake } from "expo-keep-awake";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
@@ -341,6 +342,9 @@ function RunTestsPage({
   settings: ValidationTestsSettings;
   onResult?: (result: TaskResult) => void;
 }) {
+  // Keep screen on
+  useKeepAwake();
+
   const { t } = useTranslation();
   const [pixel, setPixel] = React.useState<Pixel>();
   const [cancel, setCancel] = React.useState(false);
