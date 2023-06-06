@@ -33,7 +33,7 @@ export default class EditAnimationGradient extends EditAnimation {
     gradient?: EditRgbGradient;
   }) {
     super(opt);
-    this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
+    this.faces = opt?.faces ?? Constants.faceMaskAll;
     this.gradient = opt?.gradient;
   }
 

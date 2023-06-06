@@ -125,7 +125,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
-              faces: data.faces ?? Constants.faceMaskAllLEDs,
+              faces: data.faces ?? Constants.faceMaskAll,
               color: toColor(data.color),
               count: data.count ?? 1,
               fade: data.fade ?? 0,
@@ -136,7 +136,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
-              faces: data.faces ?? Constants.faceMaskAllLEDs,
+              faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
               fade: data.fade ?? 0,
               traveling: data.traveling ?? false,
@@ -167,7 +167,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
-              faces: data.faces ?? Constants.faceMaskAllLEDs,
+              faces: data.faces ?? Constants.faceMaskAll,
               gradientUuid: register(data.gradient?.keyframes),
             });
             break;

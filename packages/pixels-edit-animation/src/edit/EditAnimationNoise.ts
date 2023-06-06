@@ -61,7 +61,7 @@ export default class EditAnimationNoise extends EditAnimation {
   }) {
     super(opt);
     this.gradient = opt?.gradient;
-    this.faces = opt?.faces ?? Constants.faceMaskAllLEDs;
+    this.faces = opt?.faces ?? Constants.faceMaskAll;
     this.blinkDuration = opt?.blinkDuration ?? 0.1;
     this.blinkGradient = opt?.blinkGradient;
     this.blinkCount = opt?.blinkCount ?? 10;

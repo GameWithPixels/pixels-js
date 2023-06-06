@@ -250,7 +250,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       const facesGroups = [
         range(1, 8),
         range(8, 15),
-        [...range(15, 20), Constants.faceMaskAllLEDs],
+        [...range(15, 20), Constants.faceMaskAll],
       ];
       return (
         <>

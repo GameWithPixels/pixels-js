@@ -12,7 +12,7 @@ const Constants = {
   paletteColorFromRandom: 126,
 
   /** Mask value for turning all LEDs on. */
-  faceMaskAllLEDs: 0xffffffff,
+  faceMaskAll: 0xffffffff,
 
   /** Time resolution of 1 animation keyframe. */
   keyframeTimeResolutionMs: 2,

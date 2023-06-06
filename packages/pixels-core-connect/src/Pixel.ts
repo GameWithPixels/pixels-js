@@ -742,7 +742,7 @@ export class Pixel extends PixelInfoNotifier {
       count: opt?.count ?? 1,
       duration: opt?.duration ?? 1000,
       fade: 255 * (opt?.fade ?? 0),
-      faceMask: opt?.faceMask ?? AnimConstants.faceMaskAllLEDs,
+      faceMask: opt?.faceMask ?? AnimConstants.faceMaskAll,
       loop: opt?.loop ?? false,
     });
     await this.sendAndWaitForResponse(blinkMsg, "blinkAck");

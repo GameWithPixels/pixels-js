@@ -68,14 +68,10 @@ i18n
           crooked: "crooked",
           // Battery statuses
           low: "Low",
-          transition: "Transition",
+          charging: "Charging",
+          done: "Done",
           badCharging: "Bad Charging",
           error: "Error",
-          charging: "Charging",
-          trickleCharge: "Trickle Charge",
-          done: "Done",
-          lowTemp: "Low Temperature",
-          highTemp: "High Temperature",
 
           // Pixels Scan List
           noPixelsFound: "No Pixels found so far...",
@@ -250,14 +246,10 @@ i18n
           crooked: "骰子位置不平",
           // Battery statuses
           low: "电池电量低",
-          transition: "过渡中",
+          charging: "充电中",
+          done: "充电完成",
           badCharging: "充电不成功",
           error: "充电错误",
-          charging: "充电中",
-          trickleCharge: "缓慢充电",
-          done: "充电完成",
-          lowTemp: "低温",
-          highTemp: "高温",
 
           // Pixels Scan List
           noPixelsFound: "没有发现骰子",
