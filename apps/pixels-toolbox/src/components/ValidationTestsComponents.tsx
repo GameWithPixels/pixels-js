@@ -499,7 +499,12 @@ export function WaitCharging({
     action,
     React.useCallback(
       async (abortSignal) =>
-        ValidationTests.waitCharging(pixel, !notCharging, abortSignal),
+        ValidationTests.waitCharging(
+          pixel,
+          !notCharging,
+          Color.dimOrange,
+          abortSignal
+        ),
       [notCharging, pixel]
     ),
     createTaskStatusContainer({

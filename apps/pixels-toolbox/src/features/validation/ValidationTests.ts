@@ -33,30 +33,49 @@ async function blinkForever(
   abortSignal: AbortSignal,
   options?: {
     faceMask?: number;
-    duration?: number;
-    waitDuration?: number;
+    blinkDuration?: number;
   }
 ) {
-  let started = false;
+  if (!abortSignal.aborted) {
+    await pixel.stopAllAnimations();
+  }
+  if (!abortSignal.aborted) {
+    const duration = options?.blinkDuration ?? 1000;
+    await pixel.blink(blinkColor, {
+      count: 1,
+      duration,
+      faceMask: options?.faceMask,
+      loop: true,
+    });
+    const abort = () => {
+      pixel.stopAllAnimations().catch(() => {});
+    };
+    abortSignal.addEventListener("abort", abort);
+  }
+}
+
+async function litUpForever(
+  pixel: Pixel,
+  color: Color,
+  abortSignal: AbortSignal,
+  options?: {
+    faceMask?: number;
+  }
+) {
+  if (!abortSignal.aborted) {
+    await pixel.stopAllAnimations();
+  }
   try {
-    if (!abortSignal.aborted) {
-      await pixel.stopAllAnimations();
-    }
-    const duration = options?.duration ?? 1000;
-    const delayDuration = options?.waitDuration ?? duration;
+    const duration = 0xffff;
     while (!abortSignal.aborted) {
-      started = true;
-      await pixel.blink(blinkColor, {
-        count: 1,
+      await pixel.blink(color, {
         duration,
         faceMask: options?.faceMask,
       });
-      await delay(delayDuration, abortSignal);
+      await delay(duration / 2, abortSignal);
     }
   } finally {
-    if (started) {
-      await pixel.stopAllAnimations();
-    }
+    pixel.stopAllAnimations().catch(() => {});
   }
 }
 
@@ -112,17 +131,24 @@ const ValidationTests = {
   waitCharging: async (
     pixel: Pixel,
     shouldBeCharging: boolean,
+    blinkColor: Color,
     abortSignal: AbortSignal
   ): Promise<void> => {
     await new Promise<void>((resolve, reject) => {
-      const batteryHandler = ({ isCharging }: PixelBatteryData) => {
+      // Abort controller used to control the blinking
+      const blinkAbortController = new AbortController();
+      // Process battery events
+      const batteryListener = ({ isCharging }: PixelBatteryData) => {
         if (isCharging === shouldBeCharging) {
-          pixel.removeEventListener("battery", batteryHandler);
+          pixel.removeEventListener("battery", batteryListener);
+          blinkAbortController.abort();
           resolve();
         }
       };
+      // Abort function
       const abort = () => {
-        pixel.removeEventListener("battery", batteryHandler);
+        pixel.removeEventListener("battery", batteryListener);
+        blinkAbortController.abort();
         reject(new TaskCanceledError("waitCharging"));
       };
       if (abortSignal.aborted) {
@@ -130,8 +156,16 @@ const ValidationTests = {
       } else if (pixel.isCharging === shouldBeCharging) {
         resolve();
       } else {
+        // Listen to abort event
         abortSignal.addEventListener("abort", abort);
-        pixel.addEventListener("battery", batteryHandler);
+        // Blink face
+        const blinkAS = blinkAbortController.signal;
+        const options = {
+          faceMask: getFaceMask(pixel.ledCount),
+        };
+        blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
+        // Listen to battery events
+        pixel.addEventListener("battery", batteryListener);
       }
     });
   },
@@ -147,7 +181,7 @@ const ValidationTests = {
         requestMode: TelemetryRequestModeValues.automatic,
       })
     );
-    let onTelemetry: ((msg: MessageOrType) => void) | undefined;
+    let telemetryListener: ((msg: MessageOrType) => void) | undefined;
     try {
       await new Promise<void>((resolve, reject) => {
         const abort = () => reject(new TaskCanceledError("checkAccelerometer"));
@@ -155,7 +189,7 @@ const ValidationTests = {
           abort();
         } else {
           abortSignal.addEventListener("abort", abort);
-          onTelemetry = (msg) => {
+          telemetryListener = (msg) => {
             const { accX, accY, accZ } = msg as Telemetry;
             const n = vectNorm(accX, accY, accZ);
             console.log(
@@ -171,12 +205,12 @@ const ValidationTests = {
               reject(error);
             }
           };
-          pixel.addMessageListener("telemetry", onTelemetry);
+          pixel.addMessageListener("telemetry", telemetryListener);
         }
       });
     } finally {
-      if (onTelemetry) {
-        pixel.removeMessageListener("telemetry", onTelemetry);
+      if (telemetryListener) {
+        pixel.removeMessageListener("telemetry", telemetryListener);
       }
       // Turn off telemetry
       await pixel.sendMessage(
@@ -232,6 +266,10 @@ const ValidationTests = {
   ): Promise<void> => {
     assert(face > 0);
     await new Promise<void>((resolve, reject) => {
+      // Abort controller used to control the blinking
+      const blinkAbortController = new AbortController();
+      // Timeout that's setup once the die face up is the required one
+      // The promise will resolve successfully once the timeout expires
       let holdTimeout: ReturnType<typeof setTimeout> | undefined;
       function setHoldTimeout() {
         console.log(`Waiting ${holdDelay}ms before validating`);
@@ -242,36 +280,42 @@ const ValidationTests = {
           resolve();
         }, holdDelay);
       }
-      const blinkAbortController = new AbortController();
+      // Roll listener that checks if the required face is up
       const rollListener = ({ state, face: f }: PixelRollData) => {
         if (state === "onFace" && f === face) {
-          console.log(`Die rolled on expected face ${face}`);
+          // Required face is up, start hold timer
+          console.log(`Die rolled on required face ${face}`);
           setHoldTimeout();
         } else if (holdTimeout) {
+          // Die moved, cancel hold timer
           console.log(`Die moved before hold timeout expired`);
           clearTimeout(holdTimeout);
           holdTimeout = undefined;
         }
       };
+      // Abort function
       const abort = () => {
         pixel.removeEventListener("rollState", rollListener);
         blinkAbortController.abort();
         reject(new TaskCanceledError("waitFaceUp"));
       };
       if (abortSignal.aborted) {
+        // Abort right away
         abort();
       } else {
+        // Listen to abort event
         abortSignal.addEventListener("abort", abort);
-        // Blink face
+        // Blink face that we want to be up
         const blinkAS = blinkAbortController.signal;
         const options = {
           faceMask: getFaceMask(face),
         };
         blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
-        // Wait on face
+        // Listen to roll events to detect when required face is up
         pixel.addEventListener("rollState", rollListener);
         // Check current face
         if (pixel.rollState === "onFace" && pixel.currentFace === face) {
+          // Required face is already up, start hold timer
           console.log(`Die already on face ${face}`);
           setHoldTimeout();
         }
@@ -296,14 +340,8 @@ const ValidationTests = {
       } else {
         abortSignal.addEventListener("abort", abort);
         // Show solid color
-        const blinkSA = blinkAbortController.signal;
-        const duration = 40000;
-        const options = {
-          duration,
-          waitDuration: duration / 2,
-        };
-        // TODO use SetAllLEDsToColor message
-        blinkForever(pixel, color, blinkSA, options).catch(() => {});
+        const blinkAS = blinkAbortController.signal;
+        litUpForever(pixel, color, blinkAS).catch(() => {});
         // Wait on promised being resolved
         setResolve(() => {
           abortSignal.removeEventListener("abort", abort); // TODO finally
