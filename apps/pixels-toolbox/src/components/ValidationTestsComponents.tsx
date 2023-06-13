@@ -18,6 +18,8 @@ import ProgressBar from "./ProgressBar";
 import TaskChainComponent from "./TaskChainComponent";
 
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
+import chimeSound from "!/sounds/chime.mp3";
+import errorSound from "!/sounds/error.mp3";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
@@ -36,9 +38,6 @@ import {
   ValidationSequence,
 } from "~/features/validation/ValidationSequences";
 import ValidationTests from "~/features/validation/ValidationTests";
-
-const chimeSound = require("!/sounds/chime.mp3");
-const errorSound = require("!/sounds/error.mp3");
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 
