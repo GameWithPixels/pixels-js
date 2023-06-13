@@ -466,6 +466,7 @@ function RunTestsPage({
     }
   }
 
+  // Get result
   const result = getTaskResult(taskChain.status);
   const onOkCancel = () => {
     if (result) {
@@ -475,6 +476,19 @@ function RunTestsPage({
       onResult?.("canceled");
     }
   };
+
+  // Disconnect when test is done
+  React.useEffect(() => {
+    if (pixel && result) {
+      pixel
+        .disconnect()
+        .catch((err) =>
+          console.log(`Error disconnecting at end of validation test: ${err}`)
+        );
+    }
+  }, [pixel, result]);
+
+  // Make sure the view is always scrolled to the bottom
   const scrollRef = React.useRef<any>();
   React.useEffect(() => {
     if (scrollRef.current) {

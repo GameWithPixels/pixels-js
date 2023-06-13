@@ -430,7 +430,13 @@ export function ConnectPixel({
         if (!pixel) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
-        await pixel.connect(5000);
+        try {
+          // Try connecting
+          await pixel.connect(5000);
+        } catch {
+          // Try a second time
+          await pixel.connect(5000);
+        }
         // Make sure we don't have any animation playing
         await pixel.stopAllAnimations();
       }, []),
