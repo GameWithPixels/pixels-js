@@ -336,10 +336,10 @@ class PixelDispatcher extends ScannedPixelNotifier<
   ) {
     switch (action) {
       case "connect":
-        this._guard(this._pixel.connect());
+        this._guard(this._connect());
         break;
       case "disconnect":
-        this._guard(this._pixel.disconnect());
+        this._guard(this._disconnect());
         break;
       case "reportRssi":
         this._guard(this._reportRssi());
@@ -431,6 +431,22 @@ class PixelDispatcher extends ScannedPixelNotifier<
       () => this._updateLastActivity(),
       5000
     );
+  }
+
+  private async _connect(): Promise<void> {
+    // Connect
+    await this._pixel.connect();
+    // Blink to show we're connected (but don't wait for the blink ack)
+    this._pixel.blink(Color.dimBlue, { count: 2 }).catch(() => {});
+  }
+
+  private async _disconnect(): Promise<void> {
+    // Blink to show we're disconnecting
+    try {
+      await this._pixel.blink(Color.dimCyan, { count: 3 });
+    } catch {}
+    // Disconnect
+    await this._pixel.disconnect();
   }
 
   private async _reportRssi(): Promise<void> {
