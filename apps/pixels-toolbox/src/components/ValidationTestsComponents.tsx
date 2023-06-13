@@ -502,7 +502,7 @@ export function WaitCharging({
         ValidationTests.waitCharging(
           pixel,
           !notCharging,
-          Color.dimOrange,
+          notCharging ? Color.dimBlue : Color.dimGreen,
           abortSignal
         ),
       [notCharging, pixel]
