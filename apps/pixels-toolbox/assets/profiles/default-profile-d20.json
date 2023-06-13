@@ -1,6 +1,28 @@
 {
   "jsonVersion": 1,
-  "dice": [],
+  "dice": [
+    {
+      "name": "Pixel5593cdbc",
+      "systemId": "247596042311069",
+      "ledCount": 20,
+      "designAndColor": 1,
+      "currentBehaviorIndex": 0
+    },
+    {
+      "name": "Pixel180a00e0",
+      "systemId": "214693750870462",
+      "ledCount": 20,
+      "designAndColor": 1,
+      "currentBehaviorIndex": -1
+    },
+    {
+      "name": "Pixel29febcc6",
+      "systemId": "227168885735079",
+      "ledCount": 20,
+      "designAndColor": 1,
+      "currentBehaviorIndex": 0
+    }
+  ],
   "audioClips": [
     {
       "name": "01",
@@ -91680,7 +91702,7 @@
             "type": 1,
             "data": {
               "animationIndex": 26,
-              "faceIndex": -1,
+              "faceIndex": 19,
               "loopCount": 1
             }
           }
@@ -91699,7 +91721,7 @@
             "type": 1,
             "data": {
               "animationIndex": 4,
-              "faceIndex": -1,
+              "faceIndex": 19,
               "loopCount": 1
             }
           }
@@ -91718,7 +91740,7 @@
             "type": 1,
             "data": {
               "animationIndex": 27,
-              "faceIndex": -1,
+              "faceIndex": 19,
               "loopCount": 1
             }
           }
@@ -91737,7 +91759,7 @@
             "type": 1,
             "data": {
               "animationIndex": 28,
-              "faceIndex": -1,
+              "faceIndex": 19,
               "loopCount": 1
             }
           }

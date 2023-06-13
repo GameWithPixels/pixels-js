@@ -9,7 +9,7 @@ const config = {
     slug: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
     owner: "gamewithpixels",
     runtimeVersion: "48.4",
-    version: "1.9.5",
+    version: "1.9.7",
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
