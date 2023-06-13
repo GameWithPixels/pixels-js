@@ -155,10 +155,26 @@ export class PixelError extends Error {
 }
 
 /**
- * Class used by {@link Pixel} to throw errors caused by a timeout.
+ * Class used by {@link Pixel} to throw errors caused by a connection timeout.
  * @category Pixel
  */
-export class PixelErrorTimeout extends PixelError {}
+export class PixelConnectTimeoutError extends PixelError {
+  constructor(pixel: Pixel, message: string) {
+    super(pixel, message);
+    this.name = "PixelConnectTimeoutError";
+  }
+}
+
+/**
+ * Class used by {@link Pixel} to throw errors caused by a timeout waiting for a message.
+ * @category Pixel
+ */
+export class PixelMessageTimeoutError extends PixelError {
+  constructor(pixel: Pixel, message: string) {
+    super(pixel, message);
+    this.name = "PixelMessageTimeoutError";
+  }
+}
 
 /**
  * Represents a Pixels die.
@@ -496,7 +512,7 @@ export class Pixel extends PixelInfoNotifier {
     } catch (e) {
       // Check if error was (likely) caused by the connection timeout
       if (hasTimedOut) {
-        throw new PixelErrorTimeout(
+        throw new PixelConnectTimeoutError(
           this,
           `Connection timeout after ${timeoutMs} ms`
         );
@@ -601,7 +617,8 @@ export class Pixel extends PixelInfoNotifier {
           timeoutId = undefined;
           this.removeMessageListener(expectedMsgType, onMessage);
           reject(
-            new Error(
+            new PixelMessageTimeoutError(
+              this,
               `Timeout of ${timeoutMs}ms waiting on message ${expectedMsgType}`
             )
           );
@@ -985,9 +1002,19 @@ export class Pixel extends PixelInfoNotifier {
 
     // Identify Pixel
     this._log("Waiting on identification message");
-    const resp = await this.sendAndWaitForResponse("whoAreYou", "iAmADie");
-    const iAmADie = resp as IAmADie;
-
+    let iAmADie: IAmADie | undefined = undefined;
+    try {
+      const msg = await this.sendAndWaitForResponse("whoAreYou", "iAmADie");
+      iAmADie = msg as IAmADie;
+    } catch (error) {
+      if (error instanceof PixelMessageTimeoutError) {
+        // Try a second time as we've seen instances on Android when the message is never received
+        this._log("Resending request for identification message");
+        const msg = await this.sendAndWaitForResponse("whoAreYou", "iAmADie");
+        iAmADie = msg as IAmADie;
+      }
+    }
+    assert(iAmADie);
     if (this._info.pixelId !== iAmADie.pixelId) {
       throw new PixelError(
         this,
