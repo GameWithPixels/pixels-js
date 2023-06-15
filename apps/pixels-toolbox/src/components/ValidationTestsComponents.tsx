@@ -508,7 +508,7 @@ export function WaitCharging({
         ValidationTests.waitCharging(
           pixel,
           !notCharging,
-          notCharging ? Color.dimBlue : Color.dimGreen,
+          notCharging ? Color.dimGreen : Color.dimOrange,
           abortSignal
         ),
       [notCharging, pixel]
@@ -634,10 +634,6 @@ export function TurnOffDevice({
   );
 }
 
-function _getAbortMsg(face: number): string {
-  return `Aborted wait for face ${face} up`;
-}
-
 export function WaitFaceUp({
   action,
   onTaskStatus,
@@ -745,9 +741,7 @@ export function PrepareDie({
         (abortSignal) =>
           ValidationTests.waitDisconnected(
             pixel,
-            isBoard(settings.sequence)
-              ? new Color(0.003, 0.01, 0)
-              : new Color(0.03, 0.1, 0),
+            isBoard(settings.sequence) ? new Color(0, 0.01, 0) : Color.dimGreen,
             abortSignal
           ),
         [pixel, settings.sequence]
@@ -771,7 +765,7 @@ export function WaitDieInCase({
     action,
     React.useCallback(
       (abortSignal) =>
-        ValidationTests.waitDisconnected(pixel, Color.dimOrange, abortSignal),
+        ValidationTests.waitDisconnected(pixel, Color.dimGreen, abortSignal),
       [pixel]
     ),
     createTaskStatusContainer({
