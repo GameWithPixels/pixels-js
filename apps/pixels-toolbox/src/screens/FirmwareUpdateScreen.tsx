@@ -1,4 +1,8 @@
-import { FastBox } from "@systemic-games/react-native-base-components";
+import {
+  FastBox,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
 import {
   BleScanner,
   ScannedPeripheral,
@@ -59,24 +63,20 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
     [available, selected]
   );
 
+  // Selection
+  const [selection, setSelection] = React.useState<ScannedPeripheral>();
+
   // DFU
   const [dfuTarget, setDfuTarget] = React.useState<ScannedPeripheral>();
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
     useUpdateFirmware();
-  const onSelect = React.useCallback((sp: ScannedPeripheral) => {
-    setDfuTarget((dfuTarget) => {
-      if (!dfuTarget) {
-        return { ...sp };
-      }
-      return dfuTarget;
-    });
-  }, []);
   React.useEffect(() => {
     if (dfuTarget && bundle) {
       updateFirmware(
         dfuTarget.address,
         bundle.bootloader?.pathname,
-        bundle.firmware?.pathname
+        bundle.firmware?.pathname,
+        dfuTarget.name.startsWith("PXL") // Running bootloader?
       );
     }
   }, [bundle, dfuTarget, updateFirmware]);
@@ -112,8 +112,10 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
       () =>
         setScannedPeripherals((arr) => {
           if (pendingScans.current.length) {
+            const scans = pendingScans.current;
+            pendingScans.current = [];
             arr = [...arr];
-            pendingScans.current.forEach((sp) => {
+            scans.forEach((sp) => {
               const index = arr.findIndex(
                 (item) => item.systemId === sp.systemId
               );
@@ -131,7 +133,12 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
     return () => {
       clearInterval(id);
     };
-  }, [errorHandler, onSelect]);
+  }, [errorHandler]);
+  React.useEffect(() => {
+    if (!dfuTarget) {
+      setScannedPeripherals([]);
+    }
+  }, [dfuTarget]);
 
   // Clear error
   const clearError = React.useCallback(() => {
@@ -158,11 +165,11 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: sp }: { item: ScannedPeripheral }) => (
-      <Pressable key={sp.systemId} onPress={() => onSelect(sp)}>
+      <Pressable key={sp.systemId} onPress={() => setSelection(sp)}>
         <PeripheralInfo peripheral={sp} />
       </Pressable>
     ),
-    [onSelect]
+    []
   );
   const refreshControl = React.useMemo(
     () => (
@@ -182,10 +189,10 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   );
 
   return (
-    <FastBox flex={1}>
+    <FastVStack flex={1}>
       {dfuLastError && !errorCleared ? (
-        // Got an error
-        <FastBox alignItems="center" justifyContent="center">
+        // Got an error, display it until cleared
+        <FastVStack alignItems="center" justifyContent="center" gap={10}>
           <Text
             variant="bodyLarge"
             style={{ color: theme.colors.error }}
@@ -197,37 +204,35 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
           >
             {t("ok")}
           </Button>
-        </FastBox>
-      ) : !dfuState ? (
-        <>
-          <Button
-            labelStyle={{ alignSelf: "center", ...gs.underlined }}
-            onPress={() => navigation.navigate("SelectDfuFiles")}
-          >
-            {bundleLabel ?? t("tapToSelectFirmware")}
-          </Button>
-          {bundleLabel && (
-            <FastBox gap={8}>
-              <Text style={gs.italic}>
-                Tap on a peripheral to attempt a Pixel firmware update.
-              </Text>
-              <Text style={gs.bold}>Bluetooth Scanned Peripherals:</Text>
-              <FlatList
-                style={gs.fullWidth}
-                data={scannedPeripherals}
-                renderItem={renderItem}
-                contentContainerStyle={gs.listContentContainer}
-                refreshControl={refreshControl}
-              />
-            </FastBox>
-          )}
-        </>
-      ) : (
-        // Updating Firmware
-        <FastBox gap={8} alignItems="center" justifyContent="center">
-          <Text style={gs.bold}>Selected Peripheral:</Text>
+        </FastVStack>
+      ) : selection ? (
+        // Confirm selection
+        <FastVStack gap={10}>
+          <Text>{`Proceed with firmware update on ${selection.name}?`}</Text>
+          <FastHStack alignSelf="center" gap={10}>
+            <Button
+              mode="contained-tonal"
+              onPress={() => {
+                setSelection(undefined);
+                setDfuTarget({ ...selection });
+              }}
+            >
+              {t("ok")}
+            </Button>
+            <Button
+              mode="contained-tonal"
+              onPress={() => setSelection(undefined)}
+            >
+              {t("cancel")}
+            </Button>
+          </FastHStack>
+        </FastVStack>
+      ) : dfuState ? (
+        // DFU
+        <FastVStack gap={10} alignItems="center" justifyContent="center">
+          <Text variant="bodyLarge">Selected Peripheral:</Text>
           {dfuTarget && <PeripheralInfo peripheral={dfuTarget} />}
-          <Text style={gs.bold}>Performing Firmware Update:</Text>
+          <Text variant="bodyLarge">Performing Firmware Update:</Text>
           {dfuState === "dfuStarting" && dfuProgress > 0 ? (
             <FastBox w="100%" p={2}>
               <ProgressBar percent={dfuProgress} />
@@ -237,9 +242,34 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
               {t("dfuStateWithStatus", { status: t(dfuState) })}
             </Text>
           )}
-        </FastBox>
+        </FastVStack>
+      ) : (
+        // Scan list
+        <>
+          <Button
+            labelStyle={{ alignSelf: "center", ...gs.underlined }}
+            onPress={() => navigation.navigate("SelectDfuFiles")}
+          >
+            {bundleLabel ?? t("tapToSelectFirmware")}
+          </Button>
+          {bundleLabel && (
+            <FastVStack gap={10}>
+              <Text style={gs.italic}>
+                Tap on a peripheral to attempt a Pixel firmware update.
+              </Text>
+              <Text variant="bodyLarge">Bluetooth Scanned Peripherals:</Text>
+              <FlatList
+                style={gs.fullWidth}
+                data={scannedPeripherals}
+                renderItem={renderItem}
+                contentContainerStyle={gs.listContentContainer}
+                refreshControl={refreshControl}
+              />
+            </FastVStack>
+          )}
+        </>
       )}
-    </FastBox>
+    </FastVStack>
   );
 }
 

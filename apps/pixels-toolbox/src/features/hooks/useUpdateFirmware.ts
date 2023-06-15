@@ -13,7 +13,12 @@ import updateFirmware from "~/features/dfu/updateFirmware";
  * 4. The last error that occurred (cleared when starting a new DFU)
  */
 export default function (): [
-  (address: number, bootloaderPath?: string, firmwarePath?: string) => void,
+  (
+    address: number,
+    bootloaderPath?: string,
+    firmwarePath?: string,
+    isBootloaderMacAddress?: boolean
+  ) => void,
   DfuState | undefined,
   number,
   Error | undefined
@@ -25,14 +30,20 @@ export default function (): [
 
   // Start DFU function
   const updateFirmwareFunc = React.useCallback(
-    (address: number, bootloaderPath?: string, firmwarePath?: string): void => {
+    (
+      address: number,
+      bootloaderPath?: string,
+      firmwarePath?: string,
+      isBootloaderMacAddress?: boolean
+    ): void => {
       setLastError(undefined);
       updateFirmware(
         address,
         bootloaderPath,
         firmwarePath,
         setDfuState,
-        setDfuProgress
+        setDfuProgress,
+        isBootloaderMacAddress
       )
         .catch((error) => {
           setLastError(error);

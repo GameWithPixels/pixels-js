@@ -12,9 +12,9 @@ export default async function (
   bootloaderPath?: string,
   firmwarePath?: string,
   setDfuState?: (state: DfuState) => void,
-  setDfuProgress?: (progress: number) => void
+  setDfuProgress?: (progress: number) => void,
+  isBootloaderMacAddress?: boolean
 ): Promise<void> {
-  const addrStr = pixelAddress.toString(16);
   const hasFirmware = !!firmwarePath?.length;
   const hasBootloader = !!bootloaderPath?.length;
   let bootloaderSkipped = false;
@@ -42,6 +42,7 @@ export default async function (
   // Update bootloader
   if (hasBootloader) {
     try {
+      const addrStr = pixelAddress.toString(16);
       console.log(
         `Starting DFU for device ${addrStr} with bootloader ${bootloaderPath}`
       );
@@ -68,12 +69,15 @@ export default async function (
   // Update firmware
   if (hasFirmware) {
     try {
+      // Firmware address always an even number
+      // Bootloader address = firmware address + 1
+      const addr =
+        pixelAddress + (hasBootloader && !isBootloaderMacAddress ? 1 : 0);
+      const addrStr = addr.toString(16);
       console.log(
         `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
       );
       pendingDfuCount -= 1;
-      const isBootloaderAddr = (pixelAddress & 1) === 0;
-      const addr = pixelAddress + (hasBootloader && !isBootloaderAddr ? 1 : 0);
       await startDfu(addr, firmwarePath, dfuOptions);
     } catch (error) {
       console.log(`DFU firmware error: ${error}`);
