@@ -2,27 +2,51 @@
 
 Monorepo for Pixels Typescript/JavaScript libraries and apps.
 
+If this is your first visit to the Pixels software documentation
+you may want to head first to our documentation entry point [here](
+    https://github.com/GameWithPixels
+).
 
-See the different modules' export documentation [here](
+## Introduction
+
+This repository regroups all the TypeScript/JavaScript source code
+for our web and React Native packages.
+
+The packages documentation is generated from the source code with
+[TypeDoc](https://typedoc.org/).
+The latest version of the packages modules documentation is published [here](
     https://gamewithpixels.github.io/pixels-js/index.html
 ).
 
-Documentation is generated with [TypeDoc](https://typedoc.org/).
-
-## Apps
-
-* `pixels-app` created with Expo 44 `expo init --template @native-base/expo-template-typescript`
-* `pixels-toolbox` created with Expo 45 `expo init -t expo-template-blank-typescript`
-* `react-native-pixels-components` created with [`create-react-native-library`](
-    https://github.com/callstack/react-native-builder-bob
+In particular the following packages are available:
+- Pixels in a browser: *@systemic-games/pixels-web-connect* - [NPM link](
+    https://www.npmjs.com/package/@systemic-games/pixels-web-connect
+) - [doc link](
+    https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_web_connect.html
 )
-* `react-native-base-components` created with [`create-react-native-library`](
-    https://github.com/callstack/react-native-builder-bob
+- React hooks for Pixels: *@systemic-games/pixels-react* - [NPM link](
+    https://www.npmjs.com/package/@systemic-games/pixels-react
+) - [doc link](
+    https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_react.html
 )
+- Pixels Animations & Profiles manipulation: *@systemic-games/pixels-edit-animation* - [NPM link](
+    https://www.npmjs.com/package/@systemic-games/pixels-edit-animation
+) - [doc link](
+    https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_edit_animation.html
+)
+- Pixels on React Native package: *@systemic-games/react-native-pixels-connect* - [NPM link](
+    https://www.npmjs.com/package/@systemic-games/react-native-pixels-connect
+) - [doc link](
+    https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_react_native_pixels_connect.html
+)
+
+The rest of this readme will get you started on how to build the Pixels packages and apps.
+You probably don't need to read this unless your intention is to work on those packages or apps.
 
 ## Development workflow
 
-To get started with the project, run `yarn` in the root directory to install the required dependencies and build each package:
+To get started with the project, run `yarn` in the root directory to install the required
+dependencies and build each package:
 
 ```sh
 yarn
@@ -127,10 +151,3 @@ We follow the [conventional commits specification](https://www.conventionalcommi
 - `chore`: tooling changes, e.g. change CI config.
 
 Our pre-commit hooks verify that your commit message matches this format when committing.
-
-### Publish
-
-Build the Toolbox on EAS:
-```sh
-yarn tb:eas-android preview
-```

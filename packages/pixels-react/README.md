@@ -1,4 +1,23 @@
-# Pixels React (Typescript)
+# Pixels React
+
+React hooks for Pixels.
+
+Find the latest published version on [NPM](
+  https://www.npmjs.com/package/@systemic-games/pixels-react
+).
+
+## Foreword
+
+If this is your first visit to the Pixels software documentation
+you may want to head first to our documentation entry point [here](
+    https://github.com/GameWithPixels
+).
+
+This packages works with [pixels-web-connect](
+    https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-web-connect
+) and [react-native-pixels-connect](
+    https://github.com/GameWithPixels/pixels-js/tree/main/packages/react-native-pixels-connect
+).
 
 ## Example
 
@@ -48,7 +67,7 @@ See the module's export documentation [here](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_react.html
 ).
 
-Documentation is generated with [TypeDoc](https://typedoc.org/).
+Documentation generated with [TypeDoc](https://typedoc.org/).
 
 ## License
 

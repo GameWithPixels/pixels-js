@@ -4,12 +4,23 @@ This is the Pixels package for front end web developers.
 It enables communications between Pixels dice and a web browser
 using Bluetooth Low Energy.
 
+Find the latest published version on [NPM](
+  https://www.npmjs.com/package/@systemic-games/pixels-web-connect
+).
+
+## Foreword
+
+If this is your first visit to the Pixels software documentation
+you may want to head first to our documentation entry point [here](
+    https://github.com/GameWithPixels
+).
+
 To learn more about Pixels dice please checkout our Kickstarter [page](
     https://www.kickstarter.com/projects/pixels-dice/pixels-the-electronic-dice
 ).
 
 Please open a [ticket](
-    https://github.com/GameWithPixels/PixelsWebPackage/issues
+    https://github.com/GameWithPixels/pixels-js/issues
 ) in GitHub if you're having any issue.
 
 ## Browser Support
@@ -77,7 +88,7 @@ pixel.addEventListener("roll", (face) => {
 });
 ```
 
-### Playing Light Animations
+### Playing Animations
 
 Animation edit classes are available in a separate package:
 [@systemic-games/pixels-edit-animation](
@@ -104,6 +115,12 @@ editDataSet.animations.push(
 await pixel.playTestAnimation(editDataSet.toDataSet());
 ```
 
+## React Hooks
+
+See this [package](
+    https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-react
+).
+
 ## Module documentation
 
 To get more in depth information about this package see the module's export
@@ -111,7 +128,7 @@ documentation [here](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_web_connect.html
 ).
 
-Documentation is generated with [TypeDoc](https://typedoc.org/).
+Documentation generated with [TypeDoc](https://typedoc.org/).
 
 ## License
 

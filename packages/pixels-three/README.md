@@ -1,6 +1,13 @@
-# Pixels Three (Typescript)
+# Pixels Three
 
 Mesh and material to render a Pixels die with Three.js.
+
+## Foreword
+
+If this is your first visit to the Pixels software documentation
+you may want to head first to our documentation entry point [here](
+    https://github.com/GameWithPixels
+).
 
 ## Example
 
@@ -14,7 +21,7 @@ See the module's export documentation [here](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_three.html
 ).
 
-Documentation is generated with [TypeDoc](https://typedoc.org/).
+Documentation generated with [TypeDoc](https://typedoc.org/).
 
 ## License
 
