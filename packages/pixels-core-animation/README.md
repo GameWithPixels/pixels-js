@@ -26,9 +26,9 @@ Documentation generated with [TypeDoc](https://typedoc.org/).
 
 ## Editing Animation Data
 
-The [pixels-edit-animation](
-    https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-edit-animation
-) is better suited for manipulating animation data.
+The [*@systemic-games/pixels-edit-animation*](
+    ../pixels-edit-animation
+) package is better suited for manipulating animation data.
 
 ## License
 

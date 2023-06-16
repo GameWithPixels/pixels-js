@@ -19,22 +19,30 @@ The latest version of the packages modules documentation is published [here](
 ).
 
 In particular the following packages are available:
-- Pixels in a browser: *@systemic-games/pixels-web-connect* - [NPM link](
+- Pixels in a browser: [*@systemic-games/pixels-web-connect*](
+    packages/pixels-web-connect
+) - [NPM link](
     https://www.npmjs.com/package/@systemic-games/pixels-web-connect
 ) - [doc link](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_web_connect.html
 )
-- React hooks for Pixels: *@systemic-games/pixels-react* - [NPM link](
+- React hooks for Pixels: [*@systemic-games/pixels-react*](
+    packages/pixels-react
+) - [NPM link](
     https://www.npmjs.com/package/@systemic-games/pixels-react
 ) - [doc link](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_react.html
 )
-- Pixels Animations & Profiles manipulation: *@systemic-games/pixels-edit-animation* - [NPM link](
+- Pixels Animations & Profiles manipulation: [*@systemic-games/pixels-edit-animation*](
+    packages/pixels-edit-animation
+) - [NPM link](
     https://www.npmjs.com/package/@systemic-games/pixels-edit-animation
 ) - [doc link](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_edit_animation.html
 )
-- Pixels on React Native package: *@systemic-games/react-native-pixels-connect* - [NPM link](
+- Pixels on React Native package: [*@systemic-games/react-native-pixels-connect*](
+    packages/react-native-pixels-connect
+) - [NPM link](
     https://www.npmjs.com/package/@systemic-games/react-native-pixels-connect
 ) - [doc link](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_react_native_pixels_connect.html

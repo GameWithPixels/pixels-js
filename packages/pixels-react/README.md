@@ -13,10 +13,10 @@ you may want to head first to our documentation entry point [here](
     https://github.com/GameWithPixels
 ).
 
-This packages works with [pixels-web-connect](
-    https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-web-connect
-) and [react-native-pixels-connect](
-    https://github.com/GameWithPixels/pixels-js/tree/main/packages/react-native-pixels-connect
+This packages works with [*@systemic-games/pixels-web-connect*](
+    ../pixels-web-connect
+) and [*@systemic-games/react-native-pixels-connect*](
+    ../react-native-pixels-connect
 ).
 
 ## Example

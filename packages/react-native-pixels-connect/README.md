@@ -40,9 +40,7 @@ import { PixelScanner, Pixel } from "react-native-pixels-connect";
 
 ## React Hooks
 
-See this [package](
-    https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-react
-).
+See the [*@systemic-games/pixels-react*](../pixels-react) package.
 
 ## License
 

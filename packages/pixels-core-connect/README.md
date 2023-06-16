@@ -14,10 +14,10 @@ you may want to head first to our documentation entry point [here](
 ).
 
 This package doesn't provide Bluetooth access.
-For web support see this [package](
-    https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-web-connect
-) and for React Native this [one](
-    https://github.com/GameWithPixels/pixels-js/tree/main/packages/react-native-pixels-connect
+For web support see [*@systemic-games/pixels-web-connect](
+    ../pixels-web-connect
+) and for React Native see [*@systemic-games/react-native-pixels-connect](
+    ../react-native-pixels-connect
 ).
 
 This package is using decorators (`experimentalDecorators` enabled in `tsconfig`)

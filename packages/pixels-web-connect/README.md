@@ -91,7 +91,7 @@ pixel.addEventListener("roll", (face) => {
 ### Playing Animations
 
 Animation edit classes are available in a separate package:
-[@systemic-games/pixels-edit-animation](
+[*@systemic-games/pixels-edit-animation*](
     https://www.npmjs.com/package/@systemic-games/pixels-edit-animation
 ).
 
@@ -117,9 +117,7 @@ await pixel.playTestAnimation(editDataSet.toDataSet());
 
 ## React Hooks
 
-See this [package](
-    https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-react
-).
+See the [*@systemic-games/pixels-react*](../pixels-react) package.
 
 ## Module documentation
 
