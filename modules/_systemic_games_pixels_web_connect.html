@@ -16,9 +16,83 @@
 <li><a href="_systemic_games_pixels_web_connect.html">@systemic-games/pixels-web-connect</a></li></ul>
 <h1>Module @systemic-games/pixels-web-connect</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/c878bc1/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/3f0c33d/packages/pixels-web-connect/src/index.ts#L1">packages/pixels-web-connect/src/index.ts:1</a></li></ul></aside>
 <section class="tsd-panel-group">
-<section class="tsd-panel tsd-typography"></section></section>
+<section class="tsd-panel tsd-typography">
+<a href="#pixels-web-connect" id="pixels-web-connect" style="color: inherit; text-decoration: none;">
+  <h1>Pixels Web Connect</h1>
+</a>
+<p>This is the Pixels package for front end web developers.
+It enables communications between Pixels dice and a web browser
+using Bluetooth Low Energy.</p>
+<p>Find the latest published version on <a href="https://www.npmjs.com/package/@systemic-games/pixels-web-connect">NPM</a>.</p>
+
+<a href="#foreword" id="foreword" style="color: inherit; text-decoration: none;">
+  <h2>Foreword</h2>
+</a>
+<p>If this is your first visit to the Pixels software documentation
+you may want to head first to our documentation entry point <a href="https://github.com/GameWithPixels">here</a>.</p>
+<p>To learn more about Pixels dice please checkout our Kickstarter <a href="https://www.kickstarter.com/projects/pixels-dice/pixels-the-electronic-dice">page</a>.</p>
+<p>Please open a <a href="https://github.com/GameWithPixels/pixels-js/issues">ticket</a> in GitHub if you&#39;re having any issue.</p>
+
+<a href="#browser-support" id="browser-support" style="color: inherit; text-decoration: none;">
+  <h2>Browser Support</h2>
+</a>
+<p>This package relies on the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API"><em>Web Bluetooth API</em></a> for accessing Bluetooth from the browser.
+At the time of writing only Chromium based browsers such as Chrome, Edge
+and Opera have support for these APIs.</p>
+<p>On Linux, you need to enable Web Bluetooth support with this flag:
+<code>chrome://flags/#enable-web-bluetooth</code>.</p>
+<p><em>Note:</em>
+Currently all our testing is being done with Chrome on Windows.</p>
+
+<a href="#getting-started" id="getting-started" style="color: inherit; text-decoration: none;">
+  <h2>Getting Started</h2>
+</a>
+<p>To install the package:</p>
+<pre><code class="language-sh"><span class="hl-0">npm </span><span class="hl-1">i</span><span class="hl-0"> </span><span class="hl-1">@systemic-games/pixels-web-connect</span>
+</code></pre>
+<p>Start by calling the <code>requestPixel</code> function to request the user to select
+a Pixel die to connect to.</p>
+<p>This function returns a <code>Pixel</code> object.
+Call the <code>connect</code> asynchronous method to initiate a Bluetooth connection with
+the die.</p>
+<p>The <code>Pixel</code> class has a number of methods to retrieve information about the
+die state. It also let you add a listener for any Pixel message.</p>
+
+<a href="#communicating-with-pixels" id="communicating-with-pixels" style="color: inherit; text-decoration: none;">
+  <h3>Communicating With Pixels</h3>
+</a>
+<pre><code class="language-JavaScript"><span class="hl-2">import</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-3">requestPixel</span><span class="hl-0">,</span><br/><span class="hl-0">    </span><span class="hl-3">Color</span><span class="hl-0">,</span><br/><span class="hl-0">} </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&quot;@systemic-games/pixels-web-connect&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-8">// Ask user to select a Pixel</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">pixel</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-5">requestPixel</span><span class="hl-0">();</span><br/><br/><span class="hl-8">// Connect to die</span><br/><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-5">log</span><span class="hl-0">(</span><span class="hl-1">&quot;Connecting...&quot;</span><span class="hl-0">);</span><br/><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">pixel</span><span class="hl-0">.</span><span class="hl-5">connect</span><span class="hl-0">();</span><br/><br/><span class="hl-8">// Get last roll state</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">rollState</span><span class="hl-0"> = </span><span class="hl-3">pixel</span><span class="hl-0">.</span><span class="hl-3">rollState</span><span class="hl-0">;</span><br/><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-5">log</span><span class="hl-0">(</span><span class="hl-1">`=&gt; roll state: </span><span class="hl-4">${</span><span class="hl-3">rollState</span><span class="hl-9">.</span><span class="hl-3">state</span><span class="hl-4">}</span><span class="hl-1">, face up: </span><span class="hl-4">${</span><span class="hl-3">rollState</span><span class="hl-9">.</span><span class="hl-3">face</span><span class="hl-4">}</span><span class="hl-1">`</span><span class="hl-0">);</span><br/><br/><span class="hl-8">// Get some more info</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">battery</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">pixel</span><span class="hl-0">.</span><span class="hl-5">queryBatteryState</span><span class="hl-0">();</span><br/><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-5">log</span><span class="hl-0">(</span><span class="hl-1">`=&gt; battery: </span><span class="hl-4">${</span><span class="hl-3">battery</span><span class="hl-9">.</span><span class="hl-3">level</span><span class="hl-4">}</span><span class="hl-1">%`</span><span class="hl-0">);</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">rssi</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">pixel</span><span class="hl-0">.</span><span class="hl-5">queryRssi</span><span class="hl-0">();</span><br/><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-5">log</span><span class="hl-0">(</span><span class="hl-1">`=&gt; rssi: </span><span class="hl-4">${</span><span class="hl-3">rssi</span><span class="hl-4">}</span><span class="hl-1">`</span><span class="hl-0">);</span><br/><br/><span class="hl-8">// Make LEDs flash a color</span><br/><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">pixel</span><span class="hl-0">.</span><span class="hl-5">blink</span><span class="hl-0">(</span><span class="hl-3">Color</span><span class="hl-0">.</span><span class="hl-3">red</span><span class="hl-0">);</span><br/><br/><span class="hl-8">// Add listener to get notified on rolls</span><br/><span class="hl-3">pixel</span><span class="hl-0">.</span><span class="hl-5">addEventListener</span><span class="hl-0">(</span><span class="hl-1">&quot;roll&quot;</span><span class="hl-0">, (</span><span class="hl-3">face</span><span class="hl-0">) </span><span class="hl-4">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-3">console</span><span class="hl-0">.</span><span class="hl-5">log</span><span class="hl-0">(</span><span class="hl-1">`=&gt; rolled face: </span><span class="hl-4">${</span><span class="hl-3">face</span><span class="hl-4">}</span><span class="hl-1">`</span><span class="hl-0">);</span><br/><span class="hl-0">});</span>
+</code></pre>
+
+<a href="#playing-animations" id="playing-animations" style="color: inherit; text-decoration: none;">
+  <h3>Playing Animations</h3>
+</a>
+<p>Classes to manipulate animation data are available in a separate package:
+<a href="https://www.npmjs.com/package/@systemic-games/pixels-edit-animation"><em>@systemic-games/pixels-edit-animation</em></a>.</p>
+<pre><code class="language-JavaScript"><span class="hl-2">import</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-3">EditDataSet</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-3">EditAnimationRainbow</span><span class="hl-0">,</span><br/><span class="hl-0">} </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&quot;@systemic-games/pixels-edit-animation&quot;</span><span class="hl-0">;</span><br/><br/><span class="hl-8">// Create a simple rainbow animation</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">editDataSet</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-5">EditDataSet</span><span class="hl-0">();</span><br/><span class="hl-3">editDataSet</span><span class="hl-0">.</span><span class="hl-3">animations</span><span class="hl-0">.</span><span class="hl-5">push</span><span class="hl-0">(</span><br/><span class="hl-0">    </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-5">EditAnimationRainbow</span><span class="hl-0">({</span><br/><span class="hl-0">        </span><span class="hl-3">duration:</span><span class="hl-0"> </span><span class="hl-10">3</span><span class="hl-0">,</span><br/><span class="hl-0">        </span><span class="hl-3">count:</span><span class="hl-0"> </span><span class="hl-10">2</span><span class="hl-0">,</span><br/><span class="hl-0">        </span><span class="hl-3">fade:</span><span class="hl-0"> </span><span class="hl-10">0.5</span><span class="hl-0">,</span><br/><span class="hl-0">    })</span><br/><span class="hl-0">);</span><br/><br/><span class="hl-8">// And play it on the Pixel die</span><br/><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">pixel</span><span class="hl-0">.</span><span class="hl-5">playTestAnimation</span><span class="hl-0">(</span><span class="hl-3">editDataSet</span><span class="hl-0">.</span><span class="hl-5">toDataSet</span><span class="hl-0">());</span>
+</code></pre>
+
+<a href="#react-hooks" id="react-hooks" style="color: inherit; text-decoration: none;">
+  <h2>React Hooks</h2>
+</a>
+<p>See the <a href="../pixels-react"><em>@systemic-games/pixels-react</em></a> package.</p>
+
+<a href="#module-documentation" id="module-documentation" style="color: inherit; text-decoration: none;">
+  <h2>Module documentation</h2>
+</a>
+<p>To get more in depth information about this package see the module&#39;s export
+documentation <a href="https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_web_connect.html">here</a>.</p>
+<p>Documentation generated with <a href="https://typedoc.org/">TypeDoc</a>.</p>
+
+<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+  <h2>License</h2>
+</a>
+<p>MIT</p>
+<hr>
+<p>Made with <a href="https://github.com/tomchen/example-typescript-package">Example TypeScript Package</a>.</p>
+</section></section>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <h3 class="tsd-index-heading uppercase">Index</h3>
