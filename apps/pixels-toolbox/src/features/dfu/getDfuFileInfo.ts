@@ -53,7 +53,7 @@ export default function (
         basename: parts[0],
         type: isFwOrBl ? typeStr : opt?.defaultType ?? "firmware",
         date: new Date(date + "T" + timeWithSemicolon),
-        comment: parts.length > 2 ? parts.slice(2).join(", ") : undefined,
+        comment: parts.length > 2 ? parts.slice(2).join(" ") : undefined,
       };
     } catch {
       // We're only checking for a few possible cases so we might get an exception
