@@ -610,7 +610,10 @@ class PixelDispatcher extends ScannedPixelNotifier<
       _activeDFU = undefined;
       this._evEmitter.emit("hasActiveDFU", false);
       // Run next update if any
-      this._guard(_pendingDFUs[0]?._startDFU());
+      const pixel = _pendingDFUs[0];
+      if (pixel) {
+        pixel._guard(pixel._startDFU());
+      }
     }
   }
 

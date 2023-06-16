@@ -57,7 +57,7 @@ export default async function (
           bootloaderSkipped = true;
           // Give DFU library a break, otherwise we risk getting the same FW version failure
           // on the firmware update below
-          await delay(100);
+          await delay(200); // Got the error once more with 100ms, increasing to 200ms
         }
       } else {
         console.log(`DFU bootloader error: ${error}`);
@@ -68,20 +68,36 @@ export default async function (
 
   // Update firmware
   if (hasFirmware) {
-    try {
-      // Firmware address always an even number
-      // Bootloader address = firmware address + 1
-      const addr =
-        pixelAddress + (hasBootloader && !isBootloaderMacAddress ? 1 : 0);
-      const addrStr = addr.toString(16);
-      console.log(
-        `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
-      );
-      pendingDfuCount -= 1;
-      await startDfu(addr, firmwarePath, dfuOptions);
-    } catch (error) {
-      console.log(`DFU firmware error: ${error}`);
-      throw error;
-    }
+    const update = async (allowRetry = true) => {
+      try {
+        // After attempting to update the bootloader, device stays in bootloader mode
+        // Bootloader address = firmware address + 1
+        const addr =
+          pixelAddress + (hasBootloader && !isBootloaderMacAddress ? 1 : 0);
+        const addrStr = addr.toString(16);
+        console.log(
+          `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
+        );
+        pendingDfuCount -= 1;
+        await startDfu(addr, firmwarePath, dfuOptions);
+      } catch (error) {
+        if (
+          allowRetry &&
+          bootloaderSkipped &&
+          error instanceof DfuFirmwareVersionFailureError
+        ) {
+          // We sometime get this error, it looks like "left over" from the
+          // bootloader update attempt that was performed just before
+          console.warn(`DFU firmware version error, trying a second time`);
+          pendingDfuCount += 1;
+          await delay(500); // Experimental
+          await update(false);
+        } else {
+          console.log(`DFU firmware error: ${error}`);
+          throw error;
+        }
+      }
+    };
+    await update();
   }
 }
