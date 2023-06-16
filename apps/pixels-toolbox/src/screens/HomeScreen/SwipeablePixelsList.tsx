@@ -55,7 +55,7 @@ export default React.memo(function ({
       PixelDispatcher.getInstance(scannedPixel)
     );
     const pixels = lastPixelsList.current.filter(
-      (p) => p.status !== "disconnected" || scanned.includes(p)
+      (p) => p.isInUse || scanned.includes(p)
     );
     pixels.push(...scanned.filter((p) => !pixels.includes(p)));
     lastPixelsList.current = pixels;

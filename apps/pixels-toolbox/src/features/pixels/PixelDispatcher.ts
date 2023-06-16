@@ -206,7 +206,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   get hasQueuedDFU(): boolean {
-    return _pendingDFUs.indexOf(this) > 0;
+    return _pendingDFUs.indexOf(this) >= 0;
   }
 
   get hasActiveDFU(): boolean {
@@ -215,6 +215,12 @@ class PixelDispatcher extends ScannedPixelNotifier<
 
   get telemetryData(): readonly TelemetryData[] {
     return this._telemetryData;
+  }
+
+  get isInUse(): boolean {
+    return (
+      this.status !== "disconnected" || this.hasQueuedDFU || this.hasActiveDFU
+    );
   }
 
   // TODO remove this member
