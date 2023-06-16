@@ -90,7 +90,7 @@ pixel.addEventListener("roll", (face) => {
 
 ### Playing Animations
 
-Animation edit classes are available in a separate package:
+Classes to manipulate animation data are available in a separate package:
 [*@systemic-games/pixels-edit-animation*](
     https://www.npmjs.com/package/@systemic-games/pixels-edit-animation
 ).
