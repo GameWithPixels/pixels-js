@@ -49,6 +49,13 @@ import {
   PixelDesignAndColorValues,
   MessageTypeValues,
 } from "./Messages";
+import {
+  PixelConnectCancelledError,
+  PixelConnectTimeoutError,
+  PixelError,
+  PixelIdMismatchError,
+  PixelMessageTimeoutError,
+} from "./PixelErrors";
 import { PixelInfo } from "./PixelInfo";
 import { PixelInfoNotifier } from "./PixelInfoNotifier";
 import { PixelSession } from "./PixelSession";
@@ -134,46 +141,6 @@ export interface PixelEventMap {
   userMessage: PixelUserMessage;
   /** Remote action request. */
   remoteAction: number; // Remote action id
-}
-
-/**
- * Class used by {@link Pixel} to throw errors.
- * @category Pixel
- */
-export class PixelError extends Error {
-  private _pixel: Pixel;
-
-  get pixel(): Pixel {
-    return this._pixel;
-  }
-
-  constructor(pixel: Pixel, message: string) {
-    super(`Pixel ${pixel.name}: ${message}`);
-    this.name = "PixelError";
-    this._pixel = pixel;
-  }
-}
-
-/**
- * Class used by {@link Pixel} to throw errors caused by a connection timeout.
- * @category Pixel
- */
-export class PixelConnectTimeoutError extends PixelError {
-  constructor(pixel: Pixel, message: string) {
-    super(pixel, message);
-    this.name = "PixelConnectTimeoutError";
-  }
-}
-
-/**
- * Class used by {@link Pixel} to throw errors caused by a timeout waiting for a message.
- * @category Pixel
- */
-export class PixelMessageTimeoutError extends PixelError {
-  constructor(pixel: Pixel, message: string) {
-    super(pixel, message);
-    this.name = "PixelMessageTimeoutError";
-  }
 }
 
 /**
@@ -504,10 +471,7 @@ export class Pixel extends PixelInfoNotifier {
 
       // Check if a status change occurred during the connection process
       if (this.status !== "ready") {
-        throw new PixelError(
-          this,
-          `Connection cancelled (current state is ${this.status})`
-        );
+        throw new PixelConnectCancelledError(this);
       }
     } catch (e) {
       // Check if error was (likely) caused by the connection timeout
@@ -1027,14 +991,13 @@ export class Pixel extends PixelInfoNotifier {
         this._log("Resending request for identification message");
         const msg = await this.sendAndWaitForResponse("whoAreYou", "iAmADie");
         iAmADie = msg as IAmADie;
+      } else {
+        throw error;
       }
     }
     assert(iAmADie);
-    if (this._info.pixelId !== iAmADie.pixelId) {
-      throw new PixelError(
-        this,
-        `Pixel mismatch from identification: ${iAmADie.pixelId}`
-      );
+    if (this._info.pixelId && this._info.pixelId !== iAmADie.pixelId) {
+      throw new PixelIdMismatchError(this, iAmADie.pixelId);
     }
 
     // Update properties
