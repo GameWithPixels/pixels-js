@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/vision-camera-rgb-averages",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Vision Camera Frame Processor computing RGB averages.",
   "main": "dist/commonjs/index",
   "module": "dist/module/index",

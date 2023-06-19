@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/pixels-three",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/cjs/index",
   "module": "dist/esm/index",
@@ -49,8 +49,7 @@
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^29.1.2",
     "@types/three": "0.146.0",

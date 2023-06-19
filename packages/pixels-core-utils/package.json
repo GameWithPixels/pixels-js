@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/pixels-core-utils",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/cjs/index",
   "module": "dist/esm/index",
