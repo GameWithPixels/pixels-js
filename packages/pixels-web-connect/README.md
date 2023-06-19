@@ -73,11 +73,11 @@ await pixel.connect();
 const rollState = pixel.rollState;
 console.log(`=> roll state: ${rollState.state}, face up: ${rollState.face}`);
 
-// Get some more info
-const battery = await pixel.queryBatteryState();
-console.log(`=> battery: ${battery.level}%`);
+// Read RSSI (signal strength)
 const rssi = await pixel.queryRssi();
 console.log(`=> rssi: ${rssi}`);
+// And battery level
+console.log(`=> Battery: ${pixel.batteryLevel}%`);
 
 // Make LEDs flash a color
 await pixel.blink(Color.red);
@@ -118,6 +118,12 @@ await pixel.playTestAnimation(editDataSet.toDataSet());
 ## React Hooks
 
 See the [*@systemic-games/pixels-react*](../pixels-react) package.
+
+## Example
+
+We've made a mini dice game "Odd Or Even", checkout the source code [here](
+    https://github.com/GameWithPixels/PixelsWebDemo
+).
 
 ## Module documentation
 
