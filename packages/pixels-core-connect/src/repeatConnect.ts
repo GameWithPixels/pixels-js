@@ -11,9 +11,21 @@ import { exponentialBackOff } from "./exponentialBackOff";
  * https://googlechrome.github.io/samples/web-bluetooth/automatic-reconnect-async-await.html
  *
  * @param pixel The Pixel to connect to.
- * @param retries Number of retries before aborting.
+ * @param opt.retries Number of retries before aborting.
+ * @param opt.onWillRetry Called before scheduling a retry.
  * @category Pixel
  */
-export async function repeatConnect(pixel: Pixel, retries = 4): Promise<void> {
-  await exponentialBackOff(retries, 1000, pixel.connect.bind(pixel));
+export async function repeatConnect(
+  pixel: Pixel,
+  opt?: {
+    retries?: number;
+    onWillRetry?: (delay: number, retriesLeft: number, error: unknown) => void;
+  }
+): Promise<void> {
+  await exponentialBackOff(
+    opt?.retries ?? 3,
+    1000,
+    pixel.connect.bind(pixel),
+    opt
+  );
 }

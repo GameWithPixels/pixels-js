@@ -725,6 +725,21 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
+   * Asynchronously gets the battery state.
+   * @returns A promise revolving to an object with the batter level in
+   *          percentage and flag indicating whether it is charging or not.
+   */
+  async queryRssi(): Promise<number> {
+    const rssi = (await this.sendAndWaitForResponse(
+      safeAssign(new RequestRssi(), {
+        requestMode: TelemetryRequestModeValues.once,
+      }),
+      "rssi"
+    )) as Rssi;
+    return rssi.value;
+  }
+
+  /**
    * Requests Pixel to turn itself off.
    */
   async turnOff(): Promise<void> {

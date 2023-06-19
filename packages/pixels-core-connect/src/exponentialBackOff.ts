@@ -10,34 +10,30 @@ import { delay } from "@systemic-games/pixels-core-utils";
  * @param delayMs Delay in milliseconds between getting an exception and attempting a retry.
  * @param executor The function to run. It should return a promise and raise an exception
  *                 if there unsuccessful.
- * @param onResolved Called with the value returned by the resolved promise.
- * @param onRejected Called when all retries have failed.
- * @param onWillRetry Called before scheduling a retry.
+ * @param opt.onResolved Called with the value returned by the resolved promise.
+ * @param opt.onRejected Called when all retries have failed.
+ * @param opt.onWillRetry Called before scheduling a retry.
  */
 export async function exponentialBackOff(
   retries: number,
   delayMs: number,
   executor: () => Promise<unknown>,
-  onResolved?: (result: unknown) => void,
-  onRejected?: (error: unknown) => void,
-  onWillRetry?: (delay: number, retriesLeft: number) => void
+  opt?: {
+    onResolved?: (result: unknown) => void;
+    onRejected?: (error: unknown) => void;
+    onWillRetry?: (delay: number, retriesLeft: number, error: unknown) => void;
+  }
 ): Promise<void> {
   try {
     const result = await executor();
-    onResolved?.(result);
+    opt?.onResolved?.(result);
   } catch (error) {
     if (retries !== 0) {
-      onWillRetry?.(delayMs, retries);
+      opt?.onWillRetry?.(delayMs, retries, error);
       await delay(delayMs);
-      await exponentialBackOff(
-        retries - 1,
-        delayMs * 2,
-        executor,
-        onResolved,
-        onRejected
-      );
+      await exponentialBackOff(retries - 1, delayMs * 2, executor, opt);
     } else {
-      onRejected?.(error);
+      opt?.onRejected?.(error);
       throw error;
     }
   }
