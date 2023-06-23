@@ -30,6 +30,10 @@ const config = {
       supportsTablet: true,
       infoPlist: {
         NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
+        NSBluetoothPeripheralUsageDescription:
+          "Allow $(PRODUCT_NAME) to use Bluetooth",
+        NSBluetoothAlwaysUsageDescription:
+          "Allow $(PRODUCT_NAME) to use Bluetooth",
       },
       bundleIdentifier: prod
         ? "com.systemic.pixelstoolbox"
