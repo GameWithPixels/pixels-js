@@ -3423,18 +3423,6 @@
   dependencies:
     tslib "^2.4.0"
 
-"@systemic-games/react-native-bluetooth-le@*":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@systemic-games/react-native-bluetooth-le/-/react-native-bluetooth-le-1.1.0.tgz#d2c0778d1f0166bf4927aa524dce0c06b62c4419"
-  integrity sha512-jhdGRMVoBbAdaz2TsmQ07rJPiLorsyy2DfgJ+oWA8YWN9XcXHHcCBxUVREYnKQhYLPo/N0H2ZltWckwsK6nB3w==
-  dependencies:
-    "@systemic-games/pixels-core-utils" "1.1.0"
-
-"@systemic-games/react-native-nordic-nrf5-dfu@*":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@systemic-games/react-native-nordic-nrf5-dfu/-/react-native-nordic-nrf5-dfu-1.1.0.tgz#780c1a9162efec2e58a4a1819428390c1bca3407"
-  integrity sha512-BH0kJLpe7zlfu7fYgl472SBg0ETnMyC+wEeU9U9OAj2pyzltIDFfv1/Cb8Nvl3g76VB1XPsMDDgILLMGM4FO4Q==
-
 "@szmarczak/http-timer@^5.0.1":
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-5.0.1.tgz#c7c1bf1141cdd4751b0399c8fc7b8b664cd5be3a"
