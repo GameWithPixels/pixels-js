@@ -201,7 +201,7 @@ const ValidationTests = {
                 resolve();
               }
             } catch (error) {
-              abortSignal.removeEventListener("abort", abort); // TODO finally
+              abortSignal.removeEventListener("abort", abort);
               reject(error);
             }
           };
@@ -224,14 +224,51 @@ const ValidationTests = {
   checkAccelerationDownward: (
     pixel: Pixel,
     abortSignal: AbortSignal,
-    maxNormDeviation = 0.2
+    maxWait = 3000, // Maximum number of ms to read a downward acceleration
+    maxDeviation = 0.2 // 20%
+  ): Promise<void> => {
+    const timeout = Date.now() + maxWait;
+    return ValidationTests.checkAccelerometer(
+      pixel,
+      (x, y, z) => {
+        // 1. Check norm
+        const n = vectNorm(x, y, z);
+        if (n > 1 + maxDeviation || n < 1 - maxDeviation) {
+          if (Date.now() >= timeout) {
+            throw new Error(
+              "Out of range accelerometer value: " + vectToString(x, y, z)
+            );
+          }
+        }
+        // 2. Check angle with -Z
+        else if (-y > 1 + maxDeviation || -y < 1 - maxDeviation) {
+          if (Date.now() >= timeout) {
+            throw new Error(
+              "Tilted accelerometer value: " + vectToString(x, y, z)
+            );
+          }
+        } else {
+          return true;
+        }
+        return false;
+      },
+      abortSignal
+    );
+  },
+
+  checkAccelerationValid: (
+    pixel: Pixel,
+    abortSignal: AbortSignal,
+    maxDeviationFactor = 10 // 10x
   ): Promise<void> => {
     return ValidationTests.checkAccelerometer(
       pixel,
       (x, y, z) => {
-        if (Math.abs(1 - vectNorm(x, y, z)) > maxNormDeviation) {
+        // Check norm
+        const n = vectNorm(x, y, z);
+        if (n > maxDeviationFactor || n < 1 / maxDeviationFactor) {
           throw new Error(
-            "Out of range accelerometer value: " + vectToString(x, y, z)
+            "Invalid accelerometer value: " + vectToString(x, y, z)
           );
         }
         return true;

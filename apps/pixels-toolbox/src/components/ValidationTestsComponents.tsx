@@ -465,8 +465,10 @@ export function CheckBoard({
     .chainWith(
       React.useCallback(
         (abortSignal) =>
-          ValidationTests.checkAccelerationDownward(pixel, abortSignal),
-        [pixel]
+          isBoard(settings.sequence)
+            ? ValidationTests.checkAccelerationValid(pixel, abortSignal)
+            : ValidationTests.checkAccelerationDownward(pixel, abortSignal),
+        [pixel, settings.sequence]
       ),
       createTaskStatusContainer(t("accelerometer"))
     )
