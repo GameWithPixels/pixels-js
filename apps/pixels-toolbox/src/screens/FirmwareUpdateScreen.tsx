@@ -76,7 +76,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         dfuTarget.address,
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
-        dfuTarget.name.startsWith("PXL") // Running bootloader?
+        dfuTarget.name.startsWith("PXL") || dfuTarget.name.startsWith("Dfu") // Running bootloader?
       );
     }
   }, [bundle, dfuTarget, updateFirmware]);
