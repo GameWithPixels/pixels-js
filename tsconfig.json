@@ -54,21 +54,6 @@
     },
     {
       "path": "./packages/react-native-pixels-components"
-    },
-    {
-      "path": "./apps/test-react-native-bluetooth-le"
-    },
-    {
-      "path": "./apps/test-react-native-nordic-nrf5-dfu"
-    },
-    {
-      "path": "./apps/test-vision-camera-rgb-averages"
-    },
-    {
-      "path": "./apps/pixels-app"
-    },
-    {
-      "path": "./apps/pixels-toolbox"
     }
   ]
 }
