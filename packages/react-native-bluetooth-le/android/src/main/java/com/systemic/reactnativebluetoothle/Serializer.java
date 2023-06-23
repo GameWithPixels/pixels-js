@@ -17,14 +17,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import no.nordicsemi.android.ble.annotation.DisconnectionReason;
 import no.nordicsemi.android.ble.data.Data;
+import no.nordicsemi.android.ble.observer.ConnectionObserver;
 import no.nordicsemi.android.support.v18.scanner.ScanRecord;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
 
 public final class Serializer {
     @NonNull
     public static String toErrorCode(int status) {
-        return "BLE_ERROR_" + status; //TODO return better error code
+        return "BLE_ERROR_" + status; // TODO return better error code
+    }
+
+    @NonNull
+    public static WritableMap systemIdToJS(String deviceSystemId) {
+        WritableMap map = Arguments.createMap();
+        if (deviceSystemId != null) {
+            map.putString("systemId", deviceSystemId);
+        }
+        return map;
     }
 
     @NonNull
@@ -100,11 +111,36 @@ public final class Serializer {
 
     @NonNull
     public static WritableMap toJS(@Nullable Peripheral peripheral,
-                                   @NonNull BleConnectionEvent connEv) {
+                                   @NonNull BleConnectionEvent connEv,
+                                   @DisconnectionReason int reason) {
         WritableMap map = Arguments.createMap();
         map.putMap("device", toJS(peripheral));
         map.putString("connectionStatus", connEv.getName());
+        map.putString("reason", toJS(reason));
         return map;
+    }
+
+    @NonNull
+    public static String toJS(@DisconnectionReason int reason) {
+        // TODO which reason do we get when Bluetooth is turned off?
+        switch (reason) {
+            case ConnectionObserver.REASON_SUCCESS:
+                return "success";
+            case ConnectionObserver.REASON_TERMINATE_LOCAL_HOST:
+                return "host";
+            case ConnectionObserver.REASON_TERMINATE_PEER_USER:
+                return "peripheral";
+            case ConnectionObserver.REASON_LINK_LOSS:
+                return "linkLoss";
+            case ConnectionObserver.REASON_NOT_SUPPORTED:
+                return "notSupported";
+            case ConnectionObserver.REASON_CANCELLED:
+                return "canceled";
+            case ConnectionObserver.REASON_TIMEOUT:
+                return "timeout";
+            default:
+                return "unknown";
+        }
     }
 
     @NonNull
@@ -157,11 +193,11 @@ public final class Serializer {
     }
 
     @NonNull
-    public static  WritableMap toJS(@Nullable Peripheral peripheral,
-                                    @Nullable UUID service,
-                                    @Nullable UUID characteristic,
-                                    int instanceIndex,
-                                    @Nullable Data data) {
+    public static WritableMap toJS(@Nullable Peripheral peripheral,
+                                   @Nullable UUID service,
+                                   @Nullable UUID characteristic,
+                                   int instanceIndex,
+                                   @Nullable Data data) {
         WritableMap map = Arguments.createMap();
         if (peripheral != null) {
             map.putMap("device", Serializer.toJS(peripheral));
@@ -170,7 +206,7 @@ public final class Serializer {
         if (data != null) {
             map.putArray("data", Serializer.toJS(data));
         }
-        return  map;
+        return map;
     }
 
     @Nullable
@@ -210,8 +246,7 @@ public final class Serializer {
     private static long addressToNumber(String address) {
         try {
             return Long.parseLong(address.replace(":", ""), 16);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return 0;
         }
     }

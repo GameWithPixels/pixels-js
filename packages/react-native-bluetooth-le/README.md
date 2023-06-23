@@ -1,6 +1,6 @@
 # react-native-bluetooth-le
 
-React Native module with support for Bluetooth LE.
+React Native package adding support for Bluetooth LE.
 
 Find the latest published version on [NPM](
     https://www.npmjs.com/package/@systemic-games/react-native-bluetooth-le

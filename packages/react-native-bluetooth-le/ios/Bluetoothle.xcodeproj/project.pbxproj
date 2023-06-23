@@ -7,9 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-
-		5E555C0D2413F4C50049A1A2 /* Bluetoothle.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* Bluetoothle.m */; };
-
+		09EFB8602A4205C20043BDBB /* BluetoothLe.mm in Sources */ = {isa = PBXBuildFile; fileRef = 09EFB85F2A4205C20043BDBB /* BluetoothLe.mm */; };
+		09EFB86D2A4205CD0043BDBB /* SGBlePeripheralQueue.mm in Sources */ = {isa = PBXBuildFile; fileRef = 09EFB8612A4205CD0043BDBB /* SGBlePeripheralQueue.mm */; };
+		09EFB86E2A4205CD0043BDBB /* SGBleCentralManagerDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 09EFB8622A4205CD0043BDBB /* SGBleCentralManagerDelegate.mm */; };
+		09EFB86F2A4205CD0043BDBB /* SGBleUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 09EFB8632A4205CD0043BDBB /* SGBleUtils.mm */; };
+		09EFB8702A4205CD0043BDBB /* SGBleErrors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 09EFB86A2A4205CD0043BDBB /* SGBleErrors.mm */; };
+		09EFB8712A4205CD0043BDBB /* SGBleRequest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 09EFB86B2A4205CD0043BDBB /* SGBleRequest.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,11 +28,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		134814201AA4EA6300B7C361 /* libBluetoothle.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libBluetoothle.a; sourceTree = BUILT_PRODUCTS_DIR; };
-
-		B3E7B5881CC2AC0600A0062D /* Bluetoothle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bluetoothle.h; sourceTree = "<group>"; };
-		B3E7B5891CC2AC0600A0062D /* Bluetoothle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Bluetoothle.m; sourceTree = "<group>"; };
-
+		09EFB85F2A4205C20043BDBB /* BluetoothLe.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BluetoothLe.mm; sourceTree = "<group>"; };
+		09EFB8612A4205CD0043BDBB /* SGBlePeripheralQueue.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SGBlePeripheralQueue.mm; sourceTree = "<group>"; };
+		09EFB8622A4205CD0043BDBB /* SGBleCentralManagerDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SGBleCentralManagerDelegate.mm; sourceTree = "<group>"; };
+		09EFB8632A4205CD0043BDBB /* SGBleUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SGBleUtils.mm; sourceTree = "<group>"; };
+		09EFB8642A4205CD0043BDBB /* SGBleErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGBleErrors.h; sourceTree = "<group>"; };
+		09EFB8652A4205CD0043BDBB /* SGBlePeripheralQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGBlePeripheralQueue.h; sourceTree = "<group>"; };
+		09EFB8662A4205CD0043BDBB /* SGBleRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGBleRequest.h; sourceTree = "<group>"; };
+		09EFB8672A4205CD0043BDBB /* SGBleTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGBleTypes.h; sourceTree = "<group>"; };
+		09EFB8682A4205CD0043BDBB /* SGBleUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGBleUtils.h; sourceTree = "<group>"; };
+		09EFB8692A4205CD0043BDBB /* SGBleCentralManagerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SGBleCentralManagerDelegate.h; sourceTree = "<group>"; };
+		09EFB86A2A4205CD0043BDBB /* SGBleErrors.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SGBleErrors.mm; sourceTree = "<group>"; };
+		09EFB86B2A4205CD0043BDBB /* SGBleRequest.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SGBleRequest.mm; sourceTree = "<group>"; };
+		09EFB86C2A4205CD0043BDBB /* BridgeUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BridgeUtils.h; sourceTree = "<group>"; };
+		134814201AA4EA6300B7C361 /* libBluetoothLe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libBluetoothLe.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		B3E7B5881CC2AC0600A0062D /* BluetoothLe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BluetoothLe.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,7 +59,7 @@
 		134814211AA4EA7D00B7C361 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				134814201AA4EA6300B7C361 /* libBluetoothle.a */,
+				134814201AA4EA6300B7C361 /* libBluetoothLe.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -54,10 +67,20 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-
-				B3E7B5881CC2AC0600A0062D /* Bluetoothle.h */,
-				B3E7B5891CC2AC0600A0062D /* Bluetoothle.m */,
-
+				B3E7B5881CC2AC0600A0062D /* BluetoothLe.h */,
+				09EFB85F2A4205C20043BDBB /* BluetoothLe.mm */,
+				09EFB86C2A4205CD0043BDBB /* BridgeUtils.h */,
+				09EFB8692A4205CD0043BDBB /* SGBleCentralManagerDelegate.h */,
+				09EFB8622A4205CD0043BDBB /* SGBleCentralManagerDelegate.mm */,
+				09EFB8642A4205CD0043BDBB /* SGBleErrors.h */,
+				09EFB86A2A4205CD0043BDBB /* SGBleErrors.mm */,
+				09EFB8652A4205CD0043BDBB /* SGBlePeripheralQueue.h */,
+				09EFB8612A4205CD0043BDBB /* SGBlePeripheralQueue.mm */,
+				09EFB8662A4205CD0043BDBB /* SGBleRequest.h */,
+				09EFB86B2A4205CD0043BDBB /* SGBleRequest.mm */,
+				09EFB8672A4205CD0043BDBB /* SGBleTypes.h */,
+				09EFB8682A4205CD0043BDBB /* SGBleUtils.h */,
+				09EFB8632A4205CD0043BDBB /* SGBleUtils.mm */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -65,9 +88,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		58B511DA1A9E6C8500147676 /* Bluetoothle */ = {
+		58B511DA1A9E6C8500147676 /* BluetoothLe */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "Bluetoothle" */;
+			buildConfigurationList = 58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "BluetoothLe" */;
 			buildPhases = (
 				58B511D71A9E6C8500147676 /* Sources */,
 				58B511D81A9E6C8500147676 /* Frameworks */,
@@ -77,9 +100,9 @@
 			);
 			dependencies = (
 			);
-			name = Bluetoothle;
+			name = BluetoothLe;
 			productName = RCTDataManager;
-			productReference = 134814201AA4EA6300B7C361 /* libBluetoothle.a */;
+			productReference = 134814201AA4EA6300B7C361 /* libBluetoothLe.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -96,7 +119,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "Bluetoothle" */;
+			buildConfigurationList = 58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "BluetoothLe" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -109,7 +132,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				58B511DA1A9E6C8500147676 /* Bluetoothle */,
+				58B511DA1A9E6C8500147676 /* BluetoothLe */,
 			);
 		};
 /* End PBXProject section */
@@ -119,9 +142,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-
-				B3E7B58A1CC2AC0600A0062D /* Bluetoothle.m in Sources */,
-
+				09EFB8602A4205C20043BDBB /* BluetoothLe.mm in Sources */,
+				09EFB86D2A4205CD0043BDBB /* SGBlePeripheralQueue.mm in Sources */,
+				09EFB86E2A4205CD0043BDBB /* SGBleCentralManagerDelegate.mm in Sources */,
+				09EFB8712A4205CD0043BDBB /* SGBleRequest.mm in Sources */,
+				09EFB8702A4205CD0043BDBB /* SGBleErrors.mm in Sources */,
+				09EFB86F2A4205CD0043BDBB /* SGBleUtils.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -156,6 +182,7 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				"EXCLUDED_ARCHS[sdk=*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -206,6 +233,7 @@
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				"EXCLUDED_ARCHS[sdk=*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -232,9 +260,8 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = Bluetoothle;
+				PRODUCT_NAME = BluetoothLe;
 				SKIP_INSTALL = YES;
-
 			};
 			name = Debug;
 		};
@@ -249,16 +276,15 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = Bluetoothle;
+				PRODUCT_NAME = BluetoothLe;
 				SKIP_INSTALL = YES;
-
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "Bluetoothle" */ = {
+		58B511D61A9E6C8500147676 /* Build configuration list for PBXProject "BluetoothLe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58B511ED1A9E6C8500147676 /* Debug */,
@@ -267,7 +293,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "Bluetoothle" */ = {
+		58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "BluetoothLe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58B511F01A9E6C8500147676 /* Debug */,

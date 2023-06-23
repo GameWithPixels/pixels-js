@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/react-native-bluetooth-le",
-  "version": "1.1.0",
+  "version": "1.2.0-beta.2",
   "description": "React Native package adding support for Bluetooth LE.",
   "main": "dist/commonjs/index",
   "module": "dist/module/index",
@@ -13,17 +13,25 @@
     "android",
     "ios",
     "cpp",
-    "react-native-bluetooth-le.podspec",
-    "!android/build",
+    "*.podspec",
+    "!dist/typescript/example",
     "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
     "!**/__tests__",
     "!**/__fixtures__",
-    "!**/__mocks__"
+    "!**/__mocks__",
+    "!**/.*"
   ],
   "scripts": {
     "test": "jest",
     "prepare": "bob build",
-    "publish": "release-it"
+    "publish": "release-it",
+    "example": "yarn --cwd example",
+    "bootstrap": "yarn example && yarn install && yarn example pods"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -31,6 +39,7 @@
   },
   "keywords": [
     "react-native",
+    "ios",
     "android",
     "bluetooth",
     "Bluetooth Low Energy",
@@ -55,10 +64,11 @@
     "@types/jest": "^29.1.2",
     "@types/react": "~18.0.25",
     "jest": "^29.1.2",
+    "pod-install": "^0.1.0",
     "react": "18.2.0",
     "react-native": "0.71.8",
-    "react-native-builder-bob": "^0.20.3",
-    "release-it": "^15.6.0"
+    "react-native-builder-bob": "^0.20.4",
+    "release-it": "^15.11.0"
   },
   "peerDependencies": {
     "react": "*",
@@ -67,6 +77,7 @@
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
+      "<rootDir>/example/node_modules",
       "<rootDir>/dist/"
     ]
   },

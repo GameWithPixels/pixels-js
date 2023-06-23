@@ -6,8 +6,8 @@ const LINKING_ERROR =
   "- You rebuilt the app after installing the package\n" +
   "- You are not using Expo managed workflow\n";
 
-export const BluetoothLE: NativeBluetoothLE = NativeModules.BluetoothLE
-  ? NativeModules.BluetoothLE
+export const BluetoothLE: NativeBluetoothLE = NativeModules.BluetoothLe
+  ? NativeModules.BluetoothLe
   : new Proxy(
       {},
       {
@@ -17,17 +17,12 @@ export const BluetoothLE: NativeBluetoothLE = NativeModules.BluetoothLE
       }
     );
 
-export const BleEvent = {
-  scanResult: "scanResult",
-  connectionEvent: "connectionEvent",
-  characteristicValueChanged: "characteristicValueChanged",
-};
-
 // 48 bits Bluetooth MAC address fits into the 52 bits mantissa
 // of a number(64 bits floating point)
+// TODO rename to Peripheral?
 export interface Device {
   readonly systemId: string;
-  readonly address: number;
+  readonly address: number; // Not available on iOS
   readonly name: string;
 }
 
@@ -54,10 +49,7 @@ export interface AdvertisementData {
 export interface ScanResult {
   readonly device: Device;
   readonly advertisementData: AdvertisementData;
-  //TODO timestamp
 }
-
-export type BleScanResultEvent = ScanResult | string;
 
 export interface Characteristic {
   readonly serviceUuid: string;
@@ -77,16 +69,23 @@ export type ConnectionEventReason =
   | "unknown"
   | "success"
   | "canceled"
-  | "notSupported"
+  | "notSupported" // The device does not have the required services.
   | "timeout"
   | "linkLoss"
-  | "adapterOff"
-  | "peripheral";
+  | "bluetoothOff"
+  | "host" // The local device initiated disconnection.
+  | "peripheral"; // The remote device initiated graceful disconnection.
+
+export interface BleBluetoothStateEvent {
+  state: "unknown" | "off" | "resetting" | "unauthorized" | "ready";
+}
+
+export type BleScanResultEvent = ScanResult | string;
 
 export interface BleConnectionEvent {
   readonly device: Device;
   readonly connectionStatus: ConnectionStatus;
-  readonly reason: ConnectionEventReason; //TODO missing!
+  readonly reason: ConnectionEventReason;
 }
 
 export interface BleCharacteristicValueChangedEvent {
@@ -95,13 +94,22 @@ export interface BleCharacteristicValueChangedEvent {
   readonly data: number[];
 }
 
+export interface BleEventMap {
+  bluetoothState: BleBluetoothStateEvent;
+  scanResult: BleScanResultEvent;
+  connectionEvent: BleConnectionEvent;
+  characteristicValueChanged: BleCharacteristicValueChangedEvent;
+}
+
+export type BleEvents = keyof BleEventMap;
+
 export interface NativeBluetoothLE extends NativeModule {
   bleInitialize(): Promise<void>;
   bleShutdown(): Promise<void>;
   startScan(requiredServicesUuids?: string): Promise<void>;
   stopScan(): Promise<void>;
-  getDeviceFromAddress(bluetoothAddress: number): Promise<Device>;
-  createPeripheral(deviceSystemId: string): Promise<boolean>;
+  getDeviceFromAddress(bluetoothAddress: number): Promise<Device>; // getPeripheralFromAddress??
+  createPeripheral(deviceSystemId: string): Promise<Device>;
   releasePeripheral(deviceSystemId: string): Promise<void>;
   connectPeripheral(
     deviceSystemId: string,
@@ -109,8 +117,9 @@ export interface NativeBluetoothLE extends NativeModule {
     autoReconnect: boolean
   ): Promise<void>;
   disconnectPeripheral(deviceSystemId: string): Promise<void>;
-  isPeripheralConnected(deviceSystemId: string): Promise<boolean>;
-  isPeripheralReady(deviceSystemId: string): Promise<boolean>;
+  getPeripheralConnectionStatus(
+    deviceSystemId: string
+  ): Promise<ConnectionStatus>;
   // Getting name also works on non-connected devices
   getPeripheralName(deviceSystemId: string): Promise<string>;
   getPeripheralMtu(deviceSystemId: string): Promise<number>;

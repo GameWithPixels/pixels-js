@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-
-		5E555C0D2413F4C50049A1A2 /* NordicNrf5Dfu.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* NordicNrf5Dfu.m */; };
-
+		09AB57762A45967900CDDEB0 /* NordicNrf5Dfu.mm in Sources */ = {isa = PBXBuildFile; fileRef = 09AB57752A45967900CDDEB0 /* NordicNrf5Dfu.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,11 +23,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		09AB57752A45967900CDDEB0 /* NordicNrf5Dfu.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NordicNrf5Dfu.mm; sourceTree = "<group>"; };
 		134814201AA4EA6300B7C361 /* libNordicNrf5Dfu.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNordicNrf5Dfu.a; sourceTree = BUILT_PRODUCTS_DIR; };
-
 		B3E7B5881CC2AC0600A0062D /* NordicNrf5Dfu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NordicNrf5Dfu.h; sourceTree = "<group>"; };
-		B3E7B5891CC2AC0600A0062D /* NordicNrf5Dfu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NordicNrf5Dfu.m; sourceTree = "<group>"; };
-
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,10 +50,8 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-
 				B3E7B5881CC2AC0600A0062D /* NordicNrf5Dfu.h */,
-				B3E7B5891CC2AC0600A0062D /* NordicNrf5Dfu.m */,
-
+				09AB57752A45967900CDDEB0 /* NordicNrf5Dfu.mm */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -119,9 +113,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-
-				B3E7B58A1CC2AC0600A0062D /* NordicNrf5Dfu.m in Sources */,
-
+				09AB57762A45967900CDDEB0 /* NordicNrf5Dfu.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -156,6 +148,7 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				"EXCLUDED_ARCHS[sdk=*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -206,6 +199,7 @@
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				"EXCLUDED_ARCHS[sdk=*]" = arm64;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -231,10 +225,13 @@
 					"$(SRCROOT)/../../react-native/React/**",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fcxx-modules",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = NordicNrf5Dfu;
 				SKIP_INSTALL = YES;
-
 			};
 			name = Debug;
 		};
@@ -248,10 +245,13 @@
 					"$(SRCROOT)/../../react-native/React/**",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fcxx-modules",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = NordicNrf5Dfu;
 				SKIP_INSTALL = YES;
-
 			};
 			name = Release;
 		};

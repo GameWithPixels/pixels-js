@@ -1,63 +1,81 @@
 buildscript {
-    if (project == rootProject) {
-        repositories {
-            google()
-            mavenCentral()
-            jcenter()
-        }
+  repositories {
+    google()
+    mavenCentral()
+  }
 
-        dependencies {
-            classpath 'com.android.tools.build:gradle:4.1.2'
-        }
-    }
+  dependencies {
+    classpath "com.android.tools.build:gradle:7.2.1"
+  }
 }
 
-apply plugin: 'com.android.library'
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+}
 
-def safeExtGet(prop, fallback) {
-    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+apply plugin: "com.android.library"
+
+
+def appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
+
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+}
+
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["BluetoothLe_" + name]
+}
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["BluetoothLe_" + name]).toInteger()
 }
 
 android {
-    compileSdkVersion safeExtGet('Bluetoothle_compileSdkVersion', 29)
-    defaultConfig {
-        minSdkVersion safeExtGet('Bluetoothle_minSdkVersion', 18)
-        targetSdkVersion safeExtGet('Bluetoothle_targetSdkVersion', 29)
-        versionCode 1
-        versionName "1.0"
+  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
+    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
     }
+  }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
-    }
-    lintOptions {
-        disable 'GradleCompatible'
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+  lintOptions {
+    disable "GradleCompatible"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
 }
 
 repositories {
-    mavenLocal()
-    maven {
-        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-        url("$rootDir/../node_modules/react-native/android")
-    }
-    google()
-    mavenCentral()
-    jcenter()
+  mavenCentral()
+  google()
 }
 
-dependencies {
-    //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
 
-    implementation 'no.nordicsemi.android:ble:2.5.1'
-    implementation 'no.nordicsemi.android.support.v18:scanner:1.6.0'
-    implementation 'com.android.support:support-annotations:28.0.0'
+dependencies {
+  // For < 0.71, this will be from the local maven repo
+  // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
+  //noinspection GradleDynamicVersion
+  implementation "com.facebook.react:react-native:+"
+
+  implementation 'no.nordicsemi.android:ble:2.5.1'
+  implementation 'no.nordicsemi.android.support.v18:scanner:1.6.0'
+  implementation 'com.android.support:support-annotations:28.0.0'
+}
+
+if (isNewArchitectureEnabled()) {
+  react {
+    jsRootDir = file("../src/")
+    libraryName = "BluetoothLe"
+    codegenJavaPackageName = "com.systemic.reactnativebluetoothle"
+  }
 }

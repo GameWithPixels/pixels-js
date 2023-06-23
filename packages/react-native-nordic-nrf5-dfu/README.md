@@ -1,6 +1,10 @@
 # react-native-nordic-nrf5-dfu
 
-React Native package for running DFUs on Nordic Semiconductor nRF5 devices
+React Native package for running DFUs on Nordic Semiconductor nRF5 devices.
+
+Inspired by Pilloxa [react-native-nordic-dfu](
+    https://github.com/Pilloxa/react-native-nordic-dfu
+) package.
 
 Find the latest published version on [NPM](
   https://www.npmjs.com/package/@systemic-games/react-native-nordic-nrf5-dfu

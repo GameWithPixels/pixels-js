@@ -73,11 +73,15 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             final String deviceName,
             final String filePath,
             final int numberOfRetries,
+            final boolean disableButtonlessServiceInSecureDfu,
+            final boolean forceDfu,
+            final boolean forceScanningForNewAddressInLegacyDfu,
             final int prepareDataObjectDelay,
             final int rebootTime,
             final int bootloaderScanTimeout,
-            final boolean forceScanningForNewAddress,
+            final boolean disallowForeground,
             final boolean keepBond,
+            final boolean restoreBond,
             final Promise promise) {
         if (address == 0) {
             promise.reject(INVALID_ARGUMENT, "address must be different than zero");
@@ -120,18 +124,19 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             if (deviceName != null && deviceName.length() > 0) {
                 serviceInitiator.setDeviceName(deviceName);
             }
-            serviceInitiator.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
-            serviceInitiator.setPacketsReceiptNotificationsValue(1); // TODO make param
-            serviceInitiator.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true); // TODO make param
             serviceInitiator.setZip(filePath);
-            // 400 is the recommended value for the delay, see comments in DfuServiceInitiator.java of the DFU library
-            serviceInitiator.setPrepareDataObjectDelay(prepareDataObjectDelay > 0 ? prepareDataObjectDelay : 400);
-            serviceInitiator.setRebootTime(rebootTime);  //  Default is 0
+            serviceInitiator.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(!disableButtonlessServiceInSecureDfu);
+            serviceInitiator.setForceDfu(forceDfu);
+            serviceInitiator.setForceScanningForNewAddressInLegacyDfu(forceScanningForNewAddressInLegacyDfu);
+            serviceInitiator.setPrepareDataObjectDelay(prepareDataObjectDelay);
+            serviceInitiator.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
+            serviceInitiator.setRebootTime(rebootTime); //  Default is 0
             if (bootloaderScanTimeout > 0) {
                 serviceInitiator.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
             }
-            serviceInitiator.setForceScanningForNewAddressInLegacyDfu(forceScanningForNewAddress);
+            serviceInitiator.setForeground(!disallowForeground);
             serviceInitiator.setKeepBond(keepBond);
+            serviceInitiator.setRestoreBond(restoreBond);
 
             _dfuController = serviceInitiator.start(_reactContext, DfuService.class);
             _startDfuPromise = promise;
@@ -148,6 +153,11 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
         }
     }
 
+    static private void putTargetIdentifier(@NonNull final WritableMap map, @NonNull final String deviceAddress)
+    {
+        map.putDouble("targetIdentifier", Long.parseLong(deviceAddress.replaceAll(":", ""),16));
+    }
+
     private void sendEvent(final String eventName, @Nullable final WritableMap params) {
         getReactApplicationContext()
                 .getJSModule(RCTNativeAppEventEmitter.class)
@@ -156,7 +166,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
 
     private void sendStateUpdate(final String state, final String deviceAddress) {
         WritableMap map = new WritableNativeMap();
-        map.putDouble("deviceAddress", Long.parseLong(deviceAddress.replaceAll(":", ""),16));
+        putTargetIdentifier(map, deviceAddress);
         map.putString("state", state);
         sendEvent("state", map);
     }
@@ -240,7 +250,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
         @Override
         public void onProgressChanged(@NonNull final String deviceAddress, final int percent, final float speed, final float avgSpeed, final int currentPart, final int partsTotal) {
             WritableMap map = new WritableNativeMap();
-            map.putDouble("deviceAddress", Long.parseLong(deviceAddress.replaceAll(":", ""),16));
+            putTargetIdentifier(map, deviceAddress);
             map.putInt("percent", percent);
             map.putDouble("speed", speed);
             map.putDouble("averageSpeed", avgSpeed);

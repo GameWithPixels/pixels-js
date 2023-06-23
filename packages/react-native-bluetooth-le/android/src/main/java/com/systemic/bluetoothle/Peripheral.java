@@ -390,7 +390,7 @@ public final class Peripheral
         }
         else if (requestCallback != null)
         {
-            //TODO this will happen if device was connecting, we should return a success once disconnected!
+            // TODO this will happen if device was connecting, we should return a success once disconnected!
             // Immediately Notify invalid request
             requestCallback.onInvalidRequest();
         }

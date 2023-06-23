@@ -1,13 +1,24 @@
 package com.systemic.reactnativebluetoothle;
 
 public enum BleEvent {
-    /** Raised for each BLE scan result, may be raised for the same device multiple times. */
+    /**
+     * Raised after initializing the module.
+     */
+    BluetoothState("bluetoothState"),
+
+    /**
+     * Raised for each BLE scan result, may be raised for the same device multiple times.
+     */
     ScanResult("scanResult"),
 
-    /** Raised for each Peripheral connection event. */
+    /**
+     * Raised for each Peripheral connection event.
+     */
     ConnectionEvent("connectionEvent"),
 
-    /** Raised when a subscribed characteristic value changes. */
+    /**
+     * Raised when a subscribed characteristic value changes.
+     */
     CharacteristicValueChanged("characteristicValueChanged");
 
     private String _name;

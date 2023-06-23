@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.systemic.reactnativenordicnrf5dfu">
     <application>
+        <!-- Required to run the Nordic DFU service -->
         <service android:name=".DfuService"/>
     </application>
 </manifest>

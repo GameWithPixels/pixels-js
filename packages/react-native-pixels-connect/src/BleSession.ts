@@ -54,8 +54,8 @@ export default class BleSession extends PixelSession {
     const internalListener = (
       ev: PeripheralCharacteristicValueChangedEvent
     ) => {
-      if (ev.value?.buffer?.byteLength) {
-        listener(ev.value);
+      if (ev.value?.length) {
+        listener(new DataView(new Uint8Array(ev.value).buffer));
       }
     };
 

@@ -11,10 +11,10 @@ const BleScanner = {
       onScannedPeripheral(ev.peripheral);
 
     // Scan
-    await Central.scanForPeripheralsWithServices(services);
+    await Central.startScanning(services);
 
     // Subscribe to scan events
-    Central.addScannedPeripheralEventListener(listener);
+    Central.addListener("scannedPeripheral", listener);
     _listener = listener;
   },
 
@@ -22,7 +22,7 @@ const BleScanner = {
     if (_listener) {
       const listener = _listener;
       _listener = undefined;
-      Central.removeScannedPeripheralEventListener(listener);
+      Central.removeListener("scannedPeripheral", listener);
 
       // Stop listening to stop scan events
       await Central.stopScanning();

@@ -170,17 +170,17 @@ const MainScanner = {
       _scanEvEmitter.addListener("scannedPixel", listener);
       if (!_scanCount) {
         // Subscribe to scan events
-        Central.addScannedPeripheralEventListener(_onScannedPeripheral);
+        Central.addListener("scannedPeripheral", _onScannedPeripheral);
       }
       _scanCount += 1;
       // Scan for Pixels
       try {
-        await Central.scanForPeripheralsWithServices(PixelBleUuids.service);
+        await Central.startScanning(PixelBleUuids.service);
       } catch (e) {
         if (_scanCount) {
           _scanCount -= 1;
           if (!_scanCount) {
-            Central.removeScannedPeripheralEventListener(_onScannedPeripheral);
+            Central.removeListener("scannedPeripheral", _onScannedPeripheral);
           }
         }
         throw e;
@@ -203,7 +203,7 @@ const MainScanner = {
         _scanCount -= 1;
         if (!_scanCount) {
           // Stop listening to scan events
-          Central.removeScannedPeripheralEventListener(_onScannedPeripheral);
+          Central.removeListener("scannedPeripheral", _onScannedPeripheral);
           // And stop the scan
           await Central.stopScanning();
         }
