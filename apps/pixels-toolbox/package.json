@@ -45,7 +45,7 @@
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
     "@systemic-games/react-native-pixels-connect": "*",
     "@systemic-games/vision-camera-rgb-averages": "*",
-    "expo": "~48.0.15",
+    "expo": "~48.0.18",
     "expo-application": "~5.1.1",
     "expo-asset": "~8.9.1",
     "expo-av": "~13.2.1",
