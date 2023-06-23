@@ -610,7 +610,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
       _activeDFU = this;
       this._evEmitter.emit("hasActiveDFU", true);
       await updateFirmware(
-        this._scannedPixel.address,
+        this._scannedPixel.systemId,
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
         (state) => this._evEmitter.emit("dfuState", state),

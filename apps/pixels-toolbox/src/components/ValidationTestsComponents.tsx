@@ -196,11 +196,11 @@ export function UpdateFirmware({
   const [resolveScanPromise, setResolveScanPromise] =
     React.useState<() => void>();
   const pixelRef = React.useRef<Pixel>();
-  const pixelAddressRef = React.useRef<number>();
+  const pixelAddressRef = React.useRef<string>();
   React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
       pixelRef.current = getPixel(scannedPixels[0]);
-      pixelAddressRef.current = scannedPixels[0].address;
+      pixelAddressRef.current = scannedPixels[0].systemId;
       onPixelFound?.(pixelRef.current);
       resolveScanPromise();
     }

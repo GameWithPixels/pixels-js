@@ -8,7 +8,7 @@ import {
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 
 export default async function (
-  pixelAddress: number,
+  systemId: string,
   bootloaderPath?: string,
   firmwarePath?: string,
   setDfuState?: (state: DfuState) => void,
@@ -42,12 +42,12 @@ export default async function (
   // Update bootloader
   if (hasBootloader) {
     try {
-      const addrStr = pixelAddress.toString(16);
+      const addrStr = systemId;
       console.log(
         `Starting DFU for device ${addrStr} with bootloader ${bootloaderPath}`
       );
       pendingDfuCount -= 1;
-      await startDfu(pixelAddress, bootloaderPath, dfuOptions);
+      await startDfu(systemId, bootloaderPath, dfuOptions);
     } catch (error: any) {
       if (error instanceof DfuFirmwareVersionFailureError) {
         // Bootloader already up-to-date
@@ -72,9 +72,8 @@ export default async function (
       try {
         // After attempting to update the bootloader, device stays in bootloader mode
         // Bootloader address = firmware address + 1
-        const addr =
-          pixelAddress + (hasBootloader && !isBootloaderMacAddress ? 1 : 0);
-        const addrStr = addr.toString(16);
+        const addr = systemId;
+        const addrStr = systemId;
         console.log(
           `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
         );

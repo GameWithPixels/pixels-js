@@ -73,7 +73,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   React.useEffect(() => {
     if (dfuTarget && bundle) {
       updateFirmware(
-        dfuTarget.address,
+        dfuTarget.systemId,
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
         dfuTarget.name.startsWith("PXL") || dfuTarget.name.startsWith("Dfu") // Running bootloader?

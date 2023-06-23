@@ -222,6 +222,9 @@ export async function startDfu(
         dfuSuccess();
       } else if (ev.state === "dfuAborted") {
         dfuAborted();
+        //@ts-expect-error
+      } else if (ev.state === "dfuUploading") {
+        ev.state = "dfuStarting";
       }
       options?.dfuStateListener?.(ev);
     }
@@ -304,6 +307,7 @@ export async function startDfu(
       case "DFU CHARACTERISTICS NOT FOUND":
         throw new DfuCharacteristicsNotFoundError(msg);
       case "FW version failure":
+      case "FW version check failed":
         throw new DfuFirmwareVersionFailureError(msg);
       default:
         throw error;
