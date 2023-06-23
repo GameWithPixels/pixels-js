@@ -153,7 +153,7 @@ inline NSDictionary *advertisementToDict(NSDictionary<NSString *,id> *advertisem
             NSData *dataSrc = [serviceData objectForKey:uuid];
             [servDataDict addObject:@{
                 @"service": toString(uuid),
-                @"data": bytesToArr(dataSrc.bytes, 0, manufacturerData.length),
+                @"data": bytesToArr(dataSrc.bytes, 0, dataSrc.length),
             }];
         }
     }
