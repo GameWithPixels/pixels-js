@@ -16,9 +16,11 @@ Find the latest published version on [NPM](
 npm install @systemic-games/react-native-nordic-nrf5-dfu
 ```
 
-Note: this package is using Nordic DFU libraries for
-[Android](https://github.com/NordicSemiconductor/Android-DFU-Library)
-and [iOS](https://github.com/NordicSemiconductor/IOS-DFU-Library).
+Note: this package is using Nordic DFU libraries for [Android](
+  https://github.com/NordicSemiconductor/Android-DFU-Library
+) and [iOS](
+  https://github.com/NordicSemiconductor/IOS-DFU-Library
+).
 
 ## Usage
 

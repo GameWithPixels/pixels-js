@@ -41,7 +41,9 @@ export async function unzipDfuFiles(
   // Unzip all assets in a temp folder so we can list the files
   const tempDir = cacheDirectory + "Temp";
   await FileSystem.deleteAsync(tempDir, { idempotent: true });
-  await unzip(asset.localUri, tempDir);
+  const toPath = (uri: string) =>
+    uri.startsWith("file:///") ? uri.substring("file://".length) : uri;
+  await unzip(toPath(asset.localUri), toPath(tempDir));
 
   // Get files pathnames and move them to final directory
   const files = await FileSystem.readDirectoryAsync(tempDir);
@@ -65,7 +67,7 @@ export async function unzipDfuFilesFromAssets(
   const assets = await Asset.loadAsync(moduleId);
   if (!assets.length) {
     console.warn(
-      `extractDfuFiles: No asset loaded from module id ${moduleId} `
+      `unzipDfuFilesFromAssets: No asset loaded from module id ${moduleId} `
     );
   }
 
