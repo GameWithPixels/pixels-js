@@ -35,16 +35,14 @@ The latest version of the packages modules documentation is published <a href="h
 <li>Pixels Animations &amp; Profiles manipulation: <a href="packages/pixels-edit-animation"><em>@systemic-games/pixels-edit-animation</em></a> - <a href="https://www.npmjs.com/package/@systemic-games/pixels-edit-animation">NPM link</a> - <a href="https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_pixels_edit_animation.html">doc link</a></li>
 <li>Pixels on React Native package: <a href="packages/react-native-pixels-connect"><em>@systemic-games/react-native-pixels-connect</em></a> - <a href="https://www.npmjs.com/package/@systemic-games/react-native-pixels-connect">NPM link</a> - <a href="https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_react_native_pixels_connect.html">doc link</a></li>
 </ul>
-<p>The rest of this readme will get you started on how to build the Pixels
-packages and apps.
-You probably don&#39;t need to read this unless your intention is to work on
-those packages or apps.</p>
+<p>The rest of this readme will get you started on how to build the Pixels packages and apps.
+You probably don&#39;t need to read this unless your intention is to work on those packages or apps.</p>
 
 <a href="#development-workflow" id="development-workflow" style="color: inherit; text-decoration: none;">
   <h2>Development workflow</h2>
 </a>
-<p>To get started with the project, run <code>yarn</code> in the root directory to install
-the required dependencies and build each package:</p>
+<p>To get started with the project, run <code>yarn</code> in the root directory to install the required
+dependencies and build each package:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn</span>
 </code></pre>
 <p><em>Note:</em> This is equivalent to running <code>yarn install &amp;&amp; yarn pk:all</code>.
@@ -68,8 +66,7 @@ It&#39;s the later command that builds all the packages.</p>
 </code></pre>
 <p><em>Notes:</em></p>
 <ul>
-<li>For other build profiles, replace <code>development</code> by the required profile
-name such as <code>preview</code>.</li>
+<li>For other build profiles, replace <code>development</code> by the required profile name such as <code>preview</code>.</li>
 <li>For the Toolbox, replace <code>px</code> by <code>tb</code>.</li>
 </ul>
 
@@ -82,8 +79,7 @@ name such as <code>preview</code>.</li>
 <a href="#full-builds" id="full-builds" style="color: inherit; text-decoration: none;">
   <h5>Full Builds</h5>
 </a>
-<p>It there was any change made to the native code then a full update must be
-published.</p>
+<p>It there was any change made to the native code then a full update must be published.</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px:eas-all</span><span class="hl-0"> </span><span class="hl-1">--preview</span>
 </code></pre>
 <p><em>Notes:</em></p>
@@ -94,11 +90,10 @@ published.</p>
 <a href="#content-updates" id="content-updates" style="color: inherit; text-decoration: none;">
   <h5>Content Updates</h5>
 </a>
-<p>EAS comes with a great update system that allow publishing incremental
-updates to the application scripts and assets:</p>
+<p>EAS comes with a great update system that allow publishing incremental updates to
+the application scripts and assets:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px:eas-update</span><span class="hl-0"> </span><span class="hl-1">&quot;A few words to describe the contents of the update&quot;</span>
 </code></pre>
-<p>The update will be available for both iOS and Android preview builds.</p>
 
 <a href="#install-a-build" id="install-a-build" style="color: inherit; text-decoration: none;">
   <h3>Install A Build</h3>
@@ -106,13 +101,13 @@ updates to the application scripts and assets:</p>
 <p>To install a build on an Android emulator:</p>
 <pre><code class="language-sh"><span class="hl-0">adb </span><span class="hl-1">-e</span><span class="hl-0"> </span><span class="hl-1">install</span><span class="hl-0"> </span><span class="hl-1">app.apk</span>
 </code></pre>
-<p>Use the <code>-d</code> flag to install on a physical device instead.</p>
-<p>See the Expo <a href="https://docs.expo.dev/build-reference/simulators/">documentation</a> to learn how to configure and install a build for iOS simulators using EAS.</p>
+<p>Use the -d flag to install on a physical device instead.</p>
+<p>See the Expo <a href="https://docs.expo.dev/build-reference/simulators/">documentation</a> to learn how to configure and install build for iOS simulators using EAS.</p>
 
 <a href="#running-a-dev-build" id="running-a-dev-build" style="color: inherit; text-decoration: none;">
   <h3>Running A Dev Build</h3>
 </a>
-<p>Developers have two options when working on the Pixels app or the Toolbox:</p>
+<p>Developers have two options when working on the Pixels App or the Toolbox:</p>
 <ul>
 <li>Build and install a development version of the &quot;public&quot; production app.</li>
 <li>Build and install a development version of the &quot;alternate&quot; app  which has
@@ -120,49 +115,47 @@ a different package name (or bundle identifier on iOS) so that it can be
 installed alongside a build of the &quot;public&quot; app.</li>
 </ul>
 <p>By default the Metro bundler will target the &quot;public&quot; app.
-It will switch to the alternate package name (or bundle identifier) when the
-environment variable <code>SYSTEMIC_PX_DEV</code> is set to 1</p>
-<p>For the Toolbox the environment variable <code>SYSTEMIC_TB_DEV</code> is used.</p>
-<p>To start a development server that connects to a development build of the
-&quot;public&quot; app:</p>
+However when the environment variable <code>SYSTEMIC_PX_DEV</code> is set to 1, it will switch
+to the alternate package name (or bundle identifier).
+For the Toolbox the environment variable <code>SYSTEMIC_TB_DEV</code> is used.</p>
+<p>To start a development server that connects to a development build of &quot;public&quot; app:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px</span><span class="hl-0"> </span><span class="hl-1">start</span>
 </code></pre>
-<p>And to connect to a development build of the &quot;alternate&quot; app:</p>
+<p>And to use a development build of the &quot;alternate&quot; app:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">pxd</span><span class="hl-0"> </span><span class="hl-1">start</span>
 </code></pre>
 
 <a href="#building-locally" id="building-locally" style="color: inherit; text-decoration: none;">
   <h4>Building Locally</h4>
 </a>
-<p>This command builds the Android &quot;public&quot; app locally (without EAS), deploys it and
-then connects to it:</p>
+<p>For Android, run this command too build the &quot;public&quot; app locally (without EAS), deploy it and
+connect to it:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px</span><span class="hl-0"> </span><span class="hl-1">android</span>
 </code></pre>
 <p>And for the &quot;alternate&quot; app:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px</span><span class="hl-0"> </span><span class="hl-1">android</span>
 </code></pre>
-<p>On iOS you need to first generate the project files for XCode:</p>
+<p>On iOS you need generate the project files and run the app from XCode.</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px</span><span class="hl-0"> </span><span class="hl-1">prebuild</span>
 </code></pre>
 <p>And for the &quot;alternate&quot; app:</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">pxd</span><span class="hl-0"> </span><span class="hl-1">prebuild</span>
 </code></pre>
-<p>And then build and run the project from XCode.</p>
-<p>For the &quot;alternate&quot; app, be sure to run XCode with the dev environment variable set:</p>
+<p>For the later, be sure to run XCode with the dev environment variable set.</p>
 <pre><code class="language-sh"><span class="hl-0">yarn </span><span class="hl-1">px:setdev</span>
 </code></pre>
 <p>On the next run you may skip rebuilding the app and directly start the development server
 using the &quot;start&quot; command described previously.</p>
 <p><em>Note:</em> For the Toolbox, replace <code>px</code> by <code>tb</code>.</p>
 
-<a href="#toolbox-updating-the-firmware-packages" id="toolbox-updating-the-firmware-packages" style="color: inherit; text-decoration: none;">
-  <h3>Toolbox: Updating The Firmware Packages</h3>
+<a href="#toolbox-changing-the-firmware-packages-in-the-toolbox" id="toolbox-changing-the-firmware-packages-in-the-toolbox" style="color: inherit; text-decoration: none;">
+  <h3>Toolbox: Changing The Firmware Packages In The Toolbox</h3>
 </a>
-<p>Here are the steps to update the DFU files that are being used by the validation screen 
-and which are also selected by default in other screens):</p>
+<p>Here are the steps to update the DFU files that are being used by the validation screen (and which are
+also selected by default in other screens):</p>
 <ol>
-<li>Build a new Bootloader + <a href="https://github.com/GameWithPixels/DiceFirmware/">Firmware</a>
-combo using the <code>publish</code> command.</li>
+<li>Build a new Bootloader + <a href="https://github.com/GameWithPixels/DiceFirmware/">Firmware</a> combo using
+the <code>publish</code> command.</li>
 <li>Replace the Bootloader and Firmware DFU files in <code>apps\pixels-toolbox\assets\dfu\factory-dfu-files.zip</code>.<blockquote>
 <p>/!\ Be sure to only have one file for the Bootloader and one for the Firmware in this zip file!</p>
 </blockquote>
