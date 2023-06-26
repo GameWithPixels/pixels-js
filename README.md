@@ -48,91 +48,158 @@ In particular the following packages are available:
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_react_native_pixels_connect.html
 )
 
-The rest of this readme will get you started on how to build the Pixels packages and apps.
-You probably don't need to read this unless your intention is to work on those packages or apps.
+The rest of this readme will get you started on how to build the Pixels
+packages and apps.
+You probably don't need to read this unless your intention is to work on
+those packages or apps.
 
 ## Development workflow
 
-To get started with the project, run `yarn` in the root directory to install the required
-dependencies and build each package:
+To get started with the project, run `yarn` in the root directory to install
+the required dependencies and build each package:
 
 ```sh
 yarn
 ```
 
-**Note:** This is equivalent to running `yarn install && yarn pk:all`.
+*Note:* This is equivalent to running `yarn install && yarn pk:all`.
 It's the later command that builds all the packages.
 
-### EAS Build
+### EAS Builds
 
-To start building a development build on EAS:
+#### Development Builds
+
+To make a development build using Expo [EAS](
+    https://docs.expo.dev/eas/
+) for iOS:
+```sh
+yarn px:eas-ios --development
+```
+Or for Android:
 ```sh
 yarn px:eas-android --development
 ```
+Or both at once:
+```sh
+yarn px:eas-all --development
+```
 
-For other types of builds, replace `development` by the desired build type such as `preview`.
+*Notes:*
+- For other build profiles, replace `development` by the required profile
+  name such as `preview`.
+- For the Toolbox, replace `px` by `tb`.
 
-To publish an update on EAS:
+#### Preview Builds
 
+At the moment "preview" builds are also referred as "production" builds.
+
+There are two options to publish a production update:
+
+##### Full Builds
+
+It there was any change made to the native code then a full update must be
+published.
+```sh
+yarn px:eas-all --preview
+```
+
+*Notes:*
+- Add the `--local` switch to build locally (not supported on Windows).
+
+##### Content Updates
+
+EAS comes with a great update system that allow publishing incremental
+updates to the application scripts and assets:
 ```sh
 yarn px:eas-update "A few words to describe the contents of the update"
 ```
 
-**Note:**
-- For the Toolbox, replace `px` by `tb`.
-- Add the `--local` switch to build locally (not supported on Windows).
+The update will be available for both iOS and Android preview builds.
 
 ### Install A Build
 
-To install a build on the emulator:
+To install a build on an Android emulator:
 ```sh
 adb -e install app.apk
 ```
 
-Use the -d flag to install on a physical device instead.
+Use the `-d` flag to install on a physical device instead.
+
+See the Expo [documentation](
+    https://docs.expo.dev/build-reference/simulators/
+) to learn how to configure and install a build for iOS simulators using EAS.
 
 ### Running A Dev Build
 
-Developers have two options when working on the Pixels App or the Toolbox:
-- Running the "regular" development build that replaces the production app.
-- Running an alternate development build that has a different package name (or bundle identifier on iOS)
-it doesn't replaces the production build on the device already installed on the device.
+Developers have two options when working on the Pixels app or the Toolbox:
+- Build and install a development version of the "public" production app.
+- Build and install a development version of the "alternate" app  which has
+a different package name (or bundle identifier on iOS) so that it can be
+installed alongside a build of the "public" app.
 
-By default the Metro bundler will use the "normal" development build. However when the environment
-variable `SYSTEMIC_PX_DEV` is set, it will switch to the alternate package name (bundle identifier).
-For the Toolbox the environment variable `SYSTEMIC_TB_DEV` is used to make that switch.
+By default the Metro bundler will target the "public" app.
+It will switch to the alternate package name (or bundle identifier) when the
+environment variable `SYSTEMIC_PX_DEV` is set to 1
 
-To start a development server that connects to the "regular" development build:
+For the Toolbox the environment variable `SYSTEMIC_TB_DEV` is used.
+
+To start a development server that connects to a development build of the
+"public" app:
 ```sh
 yarn px start
 ```
-Or to use the alternate development build:
+
+And to connect to a development build of the "alternate" app:
 ```sh
 yarn pxd start
 ```
 
-Also, to build the app locally (without EAS), immediately deploy the build and connect to it:
+#### Building Locally
+
+This command builds the Android "public" app locally (without EAS), deploys it and
+then connects to it:
+```sh
+yarn px android
+```
+And for the "alternate" app:
 ```sh
 yarn px android
 ```
 
-On the next run you may skip rebuilding the app and directly start the development server.
+On iOS you need to first generate the project files for XCode:
+```sh
+yarn px prebuild
+```
+And for the "alternate" app:
+```sh
+yarn pxd prebuild
+```
 
-**Note:** For the Toolbox, replace `px` by `tb`.
+And then build and run the project from XCode.
 
-### Toolbox: Changing The Firmware Packages In The Toolbox
+For the "alternate" app, be sure to run XCode with the dev environment variable set:
+```sh
+yarn px:setdev
+```
 
-Here are the steps to update the DFU files that are being used by the validation screen (and which are
-also selected by default in other screens):
+On the next run you may skip rebuilding the app and directly start the development server
+using the "start" command described previously.
 
-1. Build a new bootloader + [firmware](https://github.com/GameWithPixels/DiceFirmware/) combo using
-   the `publish` command.
-2. Replace the bootloader and firmware DFU files in `apps\pixels-toolbox\assets\dfu\factory-dfu-files.zip`.
-   > /!\ Be sure to only have one file for the bootloader and one for the firmware in this zip file!
+*Note:* For the Toolbox, replace `px` by `tb`.
+
+### Toolbox: Updating The Firmware Packages
+
+Here are the steps to update the DFU files that are being used by the validation screen 
+and which are also selected by default in other screens):
+
+1. Build a new Bootloader + [Firmware](https://github.com/GameWithPixels/DiceFirmware/)
+   combo using the `publish` command.
+2. Replace the Bootloader and Firmware DFU files in `apps\pixels-toolbox\assets\dfu\factory-dfu-files.zip`.
+   > /!\ Be sure to only have one file for the Bootloader and one for the Firmware in this zip file!
 3. Update the version number in `app.config.ts`
 4. Run either `tb:eas-update "Description"` or `tb:eas-android preview` command.
 
-**Note**: Other bootloader and firmware DFU files should be placed into
+**Note**: Bootloader and Firmware DFU files not meant for production should be placed into
 `apps\pixels-toolbox\assets\dfu\other-dfu-files.zip`.
 
 ## Type checking and linting
