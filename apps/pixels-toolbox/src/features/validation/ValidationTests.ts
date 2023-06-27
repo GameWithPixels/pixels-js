@@ -221,11 +221,12 @@ const ValidationTests = {
     }
   },
 
+  // Check that acceleration is about 1G pointing downwards
   checkAccelerationDownward: (
     pixel: Pixel,
     abortSignal: AbortSignal,
     maxWait = 3000, // Maximum number of ms to read a downward acceleration
-    maxDeviation = 0.2 // 20%
+    maxDeviation = 0.1 // 10%
   ): Promise<void> => {
     const timeout = Date.now() + maxWait;
     return ValidationTests.checkAccelerometer(
@@ -256,6 +257,7 @@ const ValidationTests = {
     );
   },
 
+  // Check that acceleration value is reasonable
   checkAccelerationValid: (
     pixel: Pixel,
     abortSignal: AbortSignal,
