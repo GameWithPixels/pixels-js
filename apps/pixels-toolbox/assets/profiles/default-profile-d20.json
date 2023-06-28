@@ -89700,7 +89700,7 @@
     {
       "type": 2,
       "data": {
-        "faces": 1048575,
+        "faces": -1,
         "count": 5,
         "fade": 0.5323098,
         "traveling": true,
