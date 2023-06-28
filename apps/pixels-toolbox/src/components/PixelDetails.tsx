@@ -349,6 +349,11 @@ function BottomButtons({
                 {t("calibrate")}
               </Button>
               <Button
+                onPress={() => pixelDispatcher.dispatch("resetAllSettings")}
+              >
+                {t("resetAllSettings")}
+              </Button>
+              <Button
                 onPress={() =>
                   pixelDispatcher.dispatch("reprogramDefaultBehavior")
                 }

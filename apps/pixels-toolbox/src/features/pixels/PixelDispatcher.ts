@@ -43,6 +43,7 @@ import {
   pixelDischarge,
   pixelForceEnableCharging,
   pixelReprogramDefaultBehavior,
+  pixelResetAllSettings,
 } from "./extensions";
 
 import { store } from "~/app/store";
@@ -71,6 +72,7 @@ export interface PixelDispatcherActionMap {
   turnOff: undefined;
   rename: string;
   reprogramDefaultBehavior: undefined;
+  resetAllSettings: undefined;
 }
 
 export type PixelDispatcherActionName = keyof PixelDispatcherActionMap;
@@ -392,6 +394,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
       case "reprogramDefaultBehavior":
         this._guard(this._reprogramDefaultBehavior());
         break;
+      case "resetAllSettings":
+        this._guard(this._resetAllSettings());
+        break;
       default:
         assertNever(action);
     }
@@ -633,6 +638,12 @@ class PixelDispatcher extends ScannedPixelNotifier<
   private async _reprogramDefaultBehavior(): Promise<void> {
     if (this.isReady) {
       await pixelReprogramDefaultBehavior(this._pixel);
+    }
+  }
+
+  private async _resetAllSettings(): Promise<void> {
+    if (this.isReady) {
+      await pixelResetAllSettings(this._pixel);
     }
   }
 }

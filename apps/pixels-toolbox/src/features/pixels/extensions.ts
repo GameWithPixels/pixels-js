@@ -93,3 +93,14 @@ export async function pixelReprogramDefaultBehavior(pixel: Pixel) {
     "programDefaultAnimationSetFinished"
   );
 }
+
+/**
+ * Requests Pixel to re-program its normals and settings
+ * and wait for a confirmation.
+ */
+export async function pixelResetAllSettings(pixel: Pixel) {
+  await pixel.sendAndWaitForResponse(
+    "programDefaultParameters",
+    "programDefaultParametersFinished"
+  );
+}
