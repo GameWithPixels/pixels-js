@@ -51,24 +51,20 @@ export default class BleSession extends PixelSession {
     });
 
     const server = this._device.gatt;
-    if (server) {
-      if (!server.connected) {
-        // Attempt to connect.
-        this._notifyConnectionEvent("connecting");
-        await server.connect();
-        this._notifyConnectionEvent("connected");
+    if (server && !server.connected) {
+      // Attempt to connect
+      this._notifyConnectionEvent("connecting");
+      await server.connect();
+      this._notifyConnectionEvent("connected");
 
-        // Create session
-        const service = await server.getPrimaryService(PixelBleUuids.service);
-        this._notify = await service.getCharacteristic(
-          PixelBleUuids.notifyCharacteristic
-        );
-        this._write = await service.getCharacteristic(
-          PixelBleUuids.writeCharacteristic
-        );
-
-        this._notifyConnectionEvent("ready");
-      }
+      const service = await server.getPrimaryService(PixelBleUuids.service);
+      this._notify = await service.getCharacteristic(
+        PixelBleUuids.notifyCharacteristic
+      );
+      this._write = await service.getCharacteristic(
+        PixelBleUuids.writeCharacteristic
+      );
+      this._notifyConnectionEvent("ready");
     }
   }
 
