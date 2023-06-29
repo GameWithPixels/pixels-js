@@ -121,6 +121,8 @@ export interface PixelUserMessage {
 
 /**
  * Event map for {@link Pixel} class.
+ * This is the list of supported events where the property name
+ * is the event name and the property type the event data type.
  * @category Pixel
  */
 export interface PixelEventMap {
@@ -144,10 +146,24 @@ export interface PixelEventMap {
   remoteAction: number; // Remote action id
 }
 
+/** The different types of dice. */
+export type DieType =
+  | "d20"
+  | "d12"
+  | "d10"
+  | "d8"
+  | "d6"
+  | "d6pipped"
+  | "d6fudge"
+  | "d4";
+
 /**
  * Represents a Pixels die.
  * Most of its methods require the instance to be connected to the Pixel device.
  * Call the {@link connect()} method to initiate a connection.
+ *
+ * See {@link addEventListener} to get notified for rolls or (dis)connection event.
+ *
  * @category Pixel
  */
 export class Pixel extends PixelInfoNotifier {
@@ -195,7 +211,7 @@ export class Pixel extends PixelInfoNotifier {
     return this.status === "ready";
   }
 
-  /** Gets the unique id assigned by the OS to Pixel Bluetooth peripheral. */
+  /** Gets the unique id assigned by the system to Pixel Bluetooth peripheral. */
   get systemId(): string {
     return this._info.systemId;
   }
@@ -215,9 +231,19 @@ export class Pixel extends PixelInfoNotifier {
     return this._info.ledCount;
   }
 
-  /** Gets the Pixel design and color. */
+  /** Gets the design and color of this Pixel. */
   get designAndColor(): PixelDesignAndColor {
     return this._info.designAndColor;
+  }
+
+  /** Gets the die type of this Pixel. */
+  get dieType(): DieType {
+    return Pixel.getDieType(this.ledCount);
+  }
+
+  /** Gets the number of faces for this Pixel. */
+  get dieFaceCount(): number {
+    return Pixel.getFaceCount(this.dieType);
   }
 
   /** Gets the Pixel firmware build date. */
@@ -1177,5 +1203,41 @@ export class Pixel extends PixelInfoNotifier {
     }
 
     this._log("Finished sending bulk data");
+  }
+
+  private static getDieType(ledCount: number): DieType {
+    // For now we infer the die type from the number of LEDs, but eventually
+    // that value will be part of identification data.
+    switch (ledCount) {
+      case 4:
+        return "d4";
+      case 6:
+        return "d6";
+      case 8:
+        return "d8";
+      case 10:
+        return "d10";
+      case 12:
+        return "d12";
+      case 0: // Defaults unknown die to D20
+      case 20:
+        return "d20";
+      case 21:
+        return "d6pipped";
+      default:
+        // Fudge has 6 LEDs actually, but let's use it as our default for now
+        return "d6fudge";
+    }
+  }
+
+  private static getFaceCount(dieType: DieType): number {
+    // DieType must start by a letter followed by the number of faces
+    let i = 2;
+    while (i < dieType.length) {
+      const c = dieType.charAt(i);
+      if (c < "0" || c > "9") break;
+      ++i;
+    }
+    return Number(dieType.substring(1, i));
   }
 }
