@@ -44,6 +44,16 @@ export type PixelScannerFilter =
  * The list is kept sorted if {@link PixelScanner.sortByName} is true.
  * Set a callback to {@link PixelScanner.scanListener} to get notified
  * when the list is updated.
+ *
+ * When powered on but not yet connected, a Pixels die will periodically
+ * emit information which is picked up by the scanner.
+ * Typically the information is send a few times per second.
+ *
+ * @remarks Even though the roll state and roll face are included in a
+ *          {@link ScannedPixel} instance, this data is not emitted in
+ *          a reliable way.
+ *          To get reliably notified for rolls, first connect to the die
+ *          and listen for roll events.
  */
 export class PixelScanner {
   private readonly _queue = new SequentialPromiseQueue();
