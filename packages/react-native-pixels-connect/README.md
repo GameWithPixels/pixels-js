@@ -11,18 +11,17 @@ Find the latest published version on [NPM](
 
 ## Foreword
 
-If this is your first visit to the Pixels software documentation
-you may want to head first to our documentation entry point [here](
-    https://github.com/GameWithPixels
-).
-
 To learn more about Pixels dice please checkout our Kickstarter [page](
     https://www.kickstarter.com/projects/pixels-dice/pixels-the-electronic-dice
 ).
 
+> **Warning**
+> Before jumping into programming please make sure to read our Pixels developer's
+> [guide](https://github.com/GameWithPixels/.github/blob/main/doc/DevelopersGuide.md).
+
 Please open a [ticket](
     https://github.com/GameWithPixels/pixels-js/issues
-) in GitHub if you're having any issue.
+) on GitHub if you're having any issue.
 
 ## Installation
 

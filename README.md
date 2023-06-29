@@ -2,13 +2,6 @@
 
 Monorepo for Pixels Typescript/JavaScript libraries and apps.
 
-If this is your first visit to the Pixels software documentation
-you may want to head first to our documentation entry point [here](
-    https://github.com/GameWithPixels
-).
-
-## Introduction
-
 This repository regroups all the TypeScript/JavaScript source code
 for our web and React Native packages.
 
@@ -18,7 +11,15 @@ The latest version of the packages modules documentation is published [here](
     https://gamewithpixels.github.io/pixels-js/index.html
 ).
 
-In particular the following packages are available:
+> **Warning**
+> Before jumping into programming please make sure to read our Pixels developer's
+> [guide](https://github.com/GameWithPixels/.github/blob/main/doc/DevelopersGuide.md).
+
+## Packages
+
+Here is a short list of the packages that we think will be the most useful for a developer
+looking to develop a software that connects to Pixels dice:
+
 - Pixels in a browser: [*@systemic-games/pixels-web-connect*](
     packages/pixels-web-connect
 ) - [NPM link](
@@ -47,6 +48,8 @@ In particular the following packages are available:
 ) - [doc link](
     https://gamewithpixels.github.io/pixels-js/modules/_systemic_games_react_native_pixels_connect.html
 )
+
+For a complete list of available packages, head to the [packages](packages/) folder.
 
 The rest of this readme will get you started on how to build the Pixels
 packages and apps.
