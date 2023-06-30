@@ -18,7 +18,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.io.IOException;
 import java.util.zip.ZipFile;
@@ -160,8 +160,8 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
 
     private void sendEvent(final String eventName, @Nullable final WritableMap params) {
         getReactApplicationContext()
-                .getJSModule(RCTNativeAppEventEmitter.class)
-                .emit(eventName, params);
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(eventName, params);
     }
 
     private void sendStateUpdate(final String state, final String deviceAddress) {
