@@ -38,19 +38,27 @@ export function getPixelFromDevice(device: BluetoothDevice): Pixel {
 }
 
 /**
- * Returns the {@link Pixel} instance for the Bluetooth device with the given
- * system id (see {@link Pixel.systemId}).
+ * Returns the {@link Pixel} instance corresponding to the given system id.
+ * The latter is assigned by the system to Bluetooth devices,
+ * see {@link Pixel.systemId}.
  *
- * By default it can only returns Pixels that have been authorized by the user
- * in the current browser session.
+ * This function doesn't check the actual availability nor the connection state
+ * of the die. The later might be turned off, available or already connected.
  *
- * If the "Use the new permissions backend for Web Bluetooth" flag is enabled in
- * Chrome * the function will also be able to return Pixels that were authorized
- * by the user in previous browser sessions.
+ * As of Chrome 114, only Pixels dice authorized by the user during the current
+ * browser session may be returned.
+ *
+ * With the "Use the new permissions backend for Web Bluetooth" flag enabled in
+ * Chrome, Pixels dice authorized by the user in previous browser sessions (and
+ * not revoked since) may also be returned.
+ *
+ * The returned promise will resolve to undefined when there is no authorized
+ * Pixels die with the given system id.
  *
  * @param systemId A string assigned by the system that uniquely identifies
- *                 a Bluetooth device.
- * @returns A promise that resolves to a {@link Pixel} instance.
+ *                 a Pixel die.
+ * @returns A promise that resolves to a {@link Pixel} instance if the Bluetooth
+ *          device was previously authorized, or undefined.
  * @category Pixel
  */
 export async function getPixel(systemId: string): Promise<Pixel | undefined> {
