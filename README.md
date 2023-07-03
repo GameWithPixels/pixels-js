@@ -229,3 +229,23 @@ We follow the [conventional commits specification](https://www.conventionalcommi
 - `chore`: tooling changes, e.g. change CI config.
 
 Our pre-commit hooks verify that your commit message matches this format when committing.
+
+## Acknowledgements
+
+Documentation generated with [TypeDoc](https://typedoc.org/).
+
+Applications icon files generated with [EasyAppIcons](
+    https://easyappicon.com/
+).
+
+TypeScript packages generated with [example-typescript-package](
+    https://github.com/tomchen/example-typescript-package
+).
+
+React Native packages generated with [create-react-native-library](
+    https://github.com/callstack/react-native-builder-bob
+).
+
+## License
+
+MIT
