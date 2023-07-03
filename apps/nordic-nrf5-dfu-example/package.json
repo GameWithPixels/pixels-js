@@ -2,6 +2,11 @@
   "name": "@systemic-games/nordic-nrf5-dfu-example",
   "description": "Example app for @systemic-games/react-native-nordic-nrf5-dfu.",
   "version": "0.0.1",
+  "workspaces": {
+    "nohoist": [
+      "**/*"
+    ]
+  },
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
