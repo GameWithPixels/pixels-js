@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>BLE Example</string>
+	<string>BluetoothLeExample</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -35,10 +35,6 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>To connect to Pixels dice.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>To connect to Pixels dice.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UILaunchStoryboardName</key>
@@ -55,5 +51,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>$(PRODUCT_NAME) needs access to your Camera.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>$(PRODUCT_NAME) needs access to your Camera.</string>
 </dict>
 </plist>

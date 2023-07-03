@@ -1,22 +1,12 @@
 {
   "name": "@systemic-games/rgb-averages-example",
-  "description": "Example app for vision-camera-rgb-averages package.",
+  "description": "Example app for @systemic-games/vision-camera-rgb-averages.",
   "version": "0.0.1",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:GameWithPixels/pixels-js.git"
-  },
-  "author": "Systemic Games (https://gamewithpixels.com)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/GameWithPixels/pixels-js/issues"
-  },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
   "dependencies": {
     "@systemic-games/vision-camera-rgb-averages": "*",
     "react": "18.2.0",

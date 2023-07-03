@@ -1,12 +1,11 @@
 {
   "name": "@systemic-games/bluetooth-le-example",
-  "description": "Example app for react-native-bluetooth-le package.",
+  "description": "Example app for @systemic-games/react-native-bluetooth-le.",
   "version": "0.0.1",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "start": "react-native start",
-    "pods": "pod-install --quiet"
+    "start": "react-native start"
   },
   "repository": {
     "type": "git",

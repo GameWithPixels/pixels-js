@@ -1,4 +1,4 @@
-package com.systemic.nordicnrf5dfuexample;
+package com.nordicnrf5dfuexample;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;

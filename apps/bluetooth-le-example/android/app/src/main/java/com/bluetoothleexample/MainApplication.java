@@ -1,4 +1,4 @@
-package com.systemic.reactnativebluetoothleexample;
+package com.bluetoothleexample;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

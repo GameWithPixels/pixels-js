@@ -93,9 +93,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.systemic.nordicnrf5dfuexample"
+    namespace "com.nordicnrf5dfuexample"
     defaultConfig {
-        applicationId "com.systemic.nordicnrf5dfuexample"
+        applicationId "com.nordicnrf5dfuexample"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

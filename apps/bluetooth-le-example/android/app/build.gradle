@@ -93,9 +93,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.systemic.reactnativebluetoothleexample"
+    namespace "com.bluetoothleexample"
     defaultConfig {
-        applicationId "com.systemic.reactnativebluetoothleexample"
+        applicationId "com.bluetoothleexample"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

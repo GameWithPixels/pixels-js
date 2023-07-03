@@ -1,4 +1,4 @@
-package com.systemic.nordicnrf5dfuexample;
+package com.nordicnrf5dfuexample;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

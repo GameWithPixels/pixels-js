@@ -1,12 +1,11 @@
 {
   "name": "@systemic-games/nordic-nrf5-dfu-example",
-  "description": "Example app for react-native-nordic-nrf5-dfu package.",
+  "description": "Example app for @systemic-games/react-native-nordic-nrf5-dfu.",
   "version": "0.0.1",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "start": "react-native start",
-    "pods": "pod-install --quiet"
+    "start": "react-native start"
   },
   "repository": {
     "type": "git",
