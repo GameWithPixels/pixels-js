@@ -92,8 +92,8 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
         final long startTime = System.nanoTime();
 
         // 1280 x 720
-        final int imageWidth = image.getWidth();
-        final int imageHeight = image.getHeight();
+        final int width = image.getWidth();
+        final int height = image.getHeight();
 
         // Base on code sample from:
         // https://blog.minhazav.dev/how-to-convert-yuv-420-sp-android.media.Image-to-Bitmap-or-jpeg/#pure-java-approach
@@ -116,10 +116,10 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
         final int uvPixelStride = planes[1].getPixelStride() * subSamplingX / 2;
 
         // U/V Values are sub-sampled i.e. each pixel in U/V channel in a
-        // YUV_420 image act as chroma value for 4 neighbouring pixels
+        // YUV_420 image act as chroma value for 4 neighboring pixels
         int uvIndex = 0, uvIndexRowStart = 0;
 
-        final int pixelsCount = (imageWidth / subSamplingX) * (imageHeight / subSamplingY);
+        final int pixelsCount = (width / subSamplingX) * (height / subSamplingY);
         final byte[] argb = writeRgbImage ? getArgbBuffer(pixelsCount * 4) : null;
         int argbIndex = 0;
 
@@ -128,8 +128,8 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
 
         final boolean isSubSamplingX = subSamplingX > 1;
         final boolean isSubSamplingY = subSamplingY > 1;
-        for (int y = 0; y < imageHeight; y += subSamplingY) {
-            for (int x = 0; x < imageWidth; x += subSamplingX) {
+        for (int y = 0; y < height; y += subSamplingY) {
+            for (int x = 0; x < width; x += subSamplingX) {
                 final int yValue = yBuffer.get(yIndex) & 0xFF;
 
                 // U/V values ideally fall under [-0.5, 0.5] range. To fit them into
@@ -159,11 +159,14 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
                     argb[argbIndex++] = (byte) 255;
                 }
 
+                // Next pixel, taking sub-sampling into account
                 yIndex += yPixelStride;
                 if (isSubSamplingX || (x & 1) != 0) {
                     uvIndex += uvPixelStride;
                 }
             }
+
+            // Next line, taking sub-sampling into account
             yIndexRowStart += yRowStride;
             yIndex = yIndexRowStart;
             if (isSubSamplingY || (y & 1) != 0) {
@@ -174,21 +177,21 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
 
         if (writeRgbImage && !writeImage(
                 _picturesPath + "/cameraFiltered-" + _imageFileCounter + ".jpg",
-                imageWidth / subSamplingX,
-                imageHeight / subSamplingY,
+                width / subSamplingX,
+                height / subSamplingY,
                 argb)) {
             Log.e(TAG, "Failed to save RGB image to file");
         }
 
         if (writeYuvPlanes) {
             String pathname = _picturesPath + "/camera%s-" + _imageFileCounter + ".jpg";
-            if (!writePlane(String.format(pathname, "Y"), planes[0], imageWidth, imageHeight)) {
+            if (!writePlane(String.format(pathname, "Y"), planes[0], width, height)) {
                 Log.e(TAG, "Failed to save Y plane to file");
             }
-            if (!writePlane(String.format(pathname, "U"), planes[1], imageWidth / 2, imageHeight / 2)) {
+            if (!writePlane(String.format(pathname, "U"), planes[1], width / 2, height / 2)) {
                 Log.e(TAG, "Failed to save U plane to file");
             }
-            if (!writePlane(String.format(pathname, "V"), planes[2], imageWidth / 2, imageHeight / 2)) {
+            if (!writePlane(String.format(pathname, "V"), planes[2], width / 2, height / 2)) {
                 Log.e(TAG, "Failed to save V plane to file");
             }
         }
@@ -201,8 +204,8 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
         WritableNativeMap map = new WritableNativeMap();
         map.putDouble("timestamp", System.currentTimeMillis());
         map.putDouble("duration", (System.nanoTime() - startTime) / 1000.0);
-        map.putInt("width", imageWidth);
-        map.putInt("height", imageHeight);
+        map.putInt("width", width);
+        map.putInt("height", height);
 //        map.putInt("yRowStride", yRowStride);
 //        map.putInt("yPixelStride", yPixelStride);
 //        map.putInt("uvRowStride", uvRowStride);
@@ -225,18 +228,18 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
         return buffer;
     }
 
-    private boolean writePlane(final String imagePathname, @NonNull final Image.Plane plane, final int imageWidth, final int imageHeight) {
+    private boolean writePlane(final String imagePathname, @NonNull final Image.Plane plane, final int width, final int height) {
         final ByteBuffer buffer = plane.getBuffer();
         buffer.position(0);
         final int rowStride = plane.getRowStride();
         final int pixelStride = plane.getPixelStride();
 
-        final int pixelsCount = imageWidth * imageHeight;
+        final int pixelsCount = width * height;
         final byte[] argb = getArgbBuffer(pixelsCount * 4);
         int index = 0, indexRowStart = 0;
         int argbIndex = 0;
-        for (int y = 0; y < imageHeight; ++y) {
-            for (int x = 0; x < imageWidth; ++x) {
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
                 final byte val = buffer.get(index);
                 argb[argbIndex++] = val;
                 argb[argbIndex++] = val;
@@ -248,7 +251,7 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
             index = indexRowStart;
         }
 
-        return writeImage(imagePathname, imageWidth, imageHeight, argb);
+        return writeImage(imagePathname, width, height, argb);
     }
 
     private static boolean writeImage(String pathname, int width, int height, byte[] argbData) {
