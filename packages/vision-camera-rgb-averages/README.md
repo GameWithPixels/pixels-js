@@ -12,6 +12,19 @@ Find the latest published version on [NPM](
 npm install vision-camera-rgb-averages
 ```
 
+Add this to the project babel config file:
+```js
+  plugins: [
+    [
+      // Reanimated plugin has to be listed last.
+      "react-native-reanimated/plugin",
+      {
+        globals: ["__getImageRgbAverages"],
+      },
+    ],
+  ],
+```
+
 Note: this package has a dependency on [`react-native-vision-camera`](
   https://github.com/mrousavy/react-native-vision-camera
 ).
