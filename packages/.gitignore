@@ -1,3 +1,4 @@
-# Packages node modules should stay empty except for binaries
+# We want to hoist all packages in the project's root
+# so we should have an empty node_module directory
 !/*/node_modules/
 /*/node_modules/.bin/
