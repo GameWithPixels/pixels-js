@@ -42,7 +42,7 @@
     "@systemic-games/pixels-edit-animation": "*",
     "@systemic-games/react-native-base-components": "*",
     "@systemic-games/react-native-bluetooth-le": "1.2.0-beta.4",
-    "@systemic-games/react-native-nordic-nrf5-dfu": "1.2.0-beta.1",
+    "@systemic-games/react-native-nordic-nrf5-dfu": "1.2.0-beta.3",
     "@systemic-games/react-native-pixels-connect": "*",
     "@systemic-games/vision-camera-rgb-averages": "*",
     "expo": "~48.0.18",
