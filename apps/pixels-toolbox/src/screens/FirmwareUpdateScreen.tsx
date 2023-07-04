@@ -81,7 +81,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
     }
   }, [bundle, dfuTarget, updateFirmware]);
   React.useEffect(() => {
-    if (dfuState === "dfuCompleted" || dfuState === "dfuAborted") {
+    if (dfuState === "completed" || dfuState === "aborted") {
       setDfuTarget(undefined);
     }
   }, [dfuState]);
@@ -233,7 +233,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
           <Text variant="bodyLarge">Selected Peripheral:</Text>
           {dfuTarget && <PeripheralInfo peripheral={dfuTarget} />}
           <Text variant="bodyLarge">Performing Firmware Update:</Text>
-          {dfuState === "dfuStarting" && dfuProgress > 0 ? (
+          {dfuState === "starting" && dfuProgress > 0 ? (
             <FastBox w="100%" p={2}>
               <ProgressBar percent={dfuProgress} />
             </FastBox>

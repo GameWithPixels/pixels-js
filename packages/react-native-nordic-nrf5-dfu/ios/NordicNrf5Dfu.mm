@@ -113,7 +113,7 @@ RCT_EXPORT_MODULE()
     // TODO
 }
 
-RCT_EXPORT_METHOD(startDfu:(NSString *)targetIdentifier
+RCT_EXPORT_METHOD(startDfu:(NSString *)targetId
                   firmwarePath:(NSString *)firmwarePath
                   disableButtonlessServiceInSecureDfu:(BOOL)disableButtonlessServiceInSecureDfu
                   forceDfu:(BOOL)forceDfu
@@ -163,20 +163,20 @@ RCT_EXPORT_METHOD(startDfu:(NSString *)targetIdentifier
         {
             if (!_info.identifier)
             {
-                identifier = [[NSUUID alloc] initWithUUIDString:targetIdentifier];
+                identifier = [[NSUUID alloc] initWithUUIDString:targetId];
                 if (identifier)
                 {
-                    [_info setInfo:targetIdentifier resolver:resolve rejecter:reject];
+                    [_info setInfo:targetId resolver:resolve rejecter:reject];
                 }
                 else
                 {
-                    errorCode = @"DFU_INVALID_IDENTIFIER";
-                    errorMessage = @"The given peripheral identifier is not a valid UUID";
+                    errorCode = @"E_INVALID_ARGUMENT";
+                    errorMessage = @"The target identifier is not a valid UUID";
                 }
             }
             else
             {
-                errorCode = @"DFU_BUSY";
+                errorCode = @"E_DFU_BUSY";
                 errorMessage = @"There is already an on-going DFU";
             }
         }
@@ -192,7 +192,7 @@ RCT_EXPORT_METHOD(startDfu:(NSString *)targetIdentifier
                 {
                     [_info clear];
                 }
-                errorCode = @"DFU_START_FAILED";
+                errorCode = @"E_INTERNAL";
                 errorMessage = @"Failed to start DFU for an unknown reason";
             }
         }
@@ -204,7 +204,7 @@ RCT_EXPORT_METHOD(startDfu:(NSString *)targetIdentifier
     }
     else
     {
-        reject(@"DFU_INVALID_URI", error.localizedDescription, error);
+        reject(@"DFUErrorFileInvalid", error.description, error);
     }
 }
 
@@ -231,7 +231,7 @@ RCT_EXPORT_METHOD(abortDfu)
         if (_hasListeners)
         {
             [self sendEventWithName:stateEventName body:@{
-                @"targetIdentifier": identifier,
+                @"targetId": identifier,
                 @"state": [self stateToString:state],
             }];
         }
@@ -241,7 +241,7 @@ RCT_EXPORT_METHOD(abortDfu)
         }
         if (state == DFUStateAborted && reject)
         {
-            reject(@"DFU_ABORTED", @"DFU aborted", nil);
+            reject(@"E_DFU_ABORTED", @"DFU aborted", nil);
         }
     }
 }
@@ -261,11 +261,11 @@ RCT_EXPORT_METHOD(abortDfu)
         if (_hasListeners)
         {
             [self sendEventWithName:stateEventName body:@{
-                @"targetIdentifier": identifier,
+                @"targetId": identifier,
                 @"state": [self stateToString:DFUStateAborted],
             }];
         }
-        reject([self errorToString:error], message, nil);
+        reject([self errorCodeToString:error], message, nil);
     }
 }
 
@@ -275,120 +275,156 @@ RCT_EXPORT_METHOD(abortDfu)
     if (_hasListeners && identifier)
     {
         [self sendEventWithName:progressEventName body:@{
-            @"targetIdentifier": identifier,
-            @"progress": @(progress),
+            @"targetId": identifier,
+            @"percent": @(progress),
+            @"part": @(part),
+            @"partsTotal": @(totalParts),
+            @"speed": @(currentSpeedBytesPerSecond),
+            @"averageSpeed": @(avgSpeedBytesPerSecond),
         }];
     }
 }
 
 - (NSString *)stateToString:(DFUState)state
 {
-  switch (state)
-  {
-    case DFUStateAborted:
-      return @"dfuAborted";
-    case DFUStateStarting:
-      return @"dfuStarting";
-    case DFUStateCompleted:
-      return @"dfuCompleted";
-    case DFUStateUploading:
-      return @"dfuUploading";
-    case DFUStateConnecting:
-      return @"deviceConnecting";
-    case DFUStateValidating:
-      return @"firmwareValidating";
-    case DFUStateDisconnecting:
-      return @"deviceDisconnecting";
-    case DFUStateEnablingDfuMode:
-      return @"enablingDfuMode";
-    default:
-      return @"unknown";
-  }
+    switch (state)
+    {
+        case DFUStateConnecting:
+            return @"connecting";
+        case DFUStateStarting:
+            return @"starting";
+        case DFUStateEnablingDfuMode:
+            return @"enablingDfuMode";
+        case DFUStateUploading:
+            return @"uploading";
+        case DFUStateValidating:
+            return @"firmwareValidating";
+        case DFUStateDisconnecting:
+            return @"disconnecting";
+        case DFUStateCompleted:
+            return @"completed";
+        case DFUStateAborted:
+            return @"aborted";
+        default:
+            return @"unknown";
+    }
 }
 
-- (NSString *)errorToString:(DFUError)error
+- (NSString *)errorCodeToString:(DFUError)error
 {
-  switch(error)
-  {
-    case DFUErrorCrcError:
-      return @"DFUErrorCrcError";
-    case DFUErrorBytesLost:
-      return @"DFUErrorBytesLost";
-    case DFUErrorFileInvalid:
-      return @"DFUErrorFileInvalid";
-    case DFUErrorFailedToConnect:
-      return @"DFUErrorFailedToConnect";
-    case DFUErrorFileNotSpecified:
-      return @"DFUErrorFileNotSpecified";
-    case DFUErrorBluetoothDisabled:
-      return @"DFUErrorBluetoothDisabled";
-    case DFUErrorDeviceDisconnected:
-      return @"DFUErrorDeviceDisconnected";
-    case DFUErrorDeviceNotSupported:
-      return @"DFUErrorDeviceNotSupported";
-    case DFUErrorInitPacketRequired:
-      return @"DFUErrorInitPacketRequired";
-    case DFUErrorUnsupportedResponse:
-      return @"DFUErrorUnsupportedResponse";
-    case DFUErrorReadingVersionFailed:
-      return @"DFUErrorReadingVersionFailed";
-    case DFUErrorRemoteLegacyDFUSuccess:
-      return @"DFUErrorRemoteLegacyDFUSuccess";
-    case DFUErrorRemoteSecureDFUSuccess:
-      return @"DFUErrorRemoteSecureDFUSuccess";
-    case DFUErrorServiceDiscoveryFailed:
-      return @"DFUErrorServiceDiscoveryFailed";
-    case DFUErrorRemoteLegacyDFUCrcError:
-      return @"DFUErrorRemoteLegacyDFUCrcError";
-    case DFUErrorEnablingControlPointFailed:
-      return @"DFUErrorEnablingControlPointFailed";
-    case DFUErrorExtendedInitPacketRequired:
-      return @"DFUErrorExtendedInitPacketRequired";
-    case DFUErrorReceivingNotificationFailed:
-      return @"DFUErrorReceivingNotificationFailed";
-    case DFUErrorRemoteButtonlessDFUSuccess:
-      return @"DFUErrorRemoteButtonlessDFUSuccess";
-    case DFUErrorRemoteLegacyDFUInvalidState:
-      return @"DFUErrorRemoteLegacyDFUInvalidState";
-    case DFUErrorRemoteLegacyDFUNotSupported:
-      return @"DFUErrorRemoteLegacyDFUNotSupported";
-    case DFUErrorWritingCharacteristicFailed:
-      return @"DFUErrorWritingCharacteristicFailed";
-    case DFUErrorRemoteSecureDFUExtendedError:
-      return @"DFUErrorRemoteSecureDFUExtendedError";
-    case DFUErrorRemoteSecureDFUInvalidObject:
-      return @"DFUErrorRemoteSecureDFUInvalidObject";
-    case DFUErrorRemoteLegacyDFUOperationFailed:
-      return @"DFUErrorRemoteLegacyDFUOperationFailed";
-    case DFUErrorRemoteSecureDFUOperationFailed:
-      return @"DFUErrorRemoteSecureDFUOperationFailed";
-    case DFUErrorRemoteSecureDFUUnsupportedType:
-      return @"DFUErrorRemoteSecureDFUUnsupportedType";
-    case DFUErrorRemoteLegacyDFUDataExceedsLimit:
-      return @"DFUErrorRemoteLegacyDFUDataExceedsLimit";
-    case DFUErrorRemoteSecureDFUInvalidParameter:
-      return @"DFUErrorRemoteSecureDFUInvalidParameter";
-    case DFUErrorRemoteSecureDFUSignatureMismatch:
-      return @"DFUErrorRemoteSecureDFUSignatureMismatch";
-    case DFUErrorRemoteSecureDFUOpCodeNotSupported:
-      return @"DFUErrorRemoteSecureDFUOpCodeNotSupported";
-    case DFUErrorRemoteButtonlessDFUOperationFailed:
-      return @"DFUErrorRemoteButtonlessDFUOperationFailed";
-    case DFUErrorRemoteSecureDFUInsufficientResources:
-      return @"DFUErrorRemoteSecureDFUInsufficientResources";
-    case DFUErrorRemoteSecureDFUOperationNotPermitted:
-      return @"DFUErrorRemoteSecureDFUOperationNotPermitted";
-    case DFUErrorRemoteButtonlessDFUOpCodeNotSupported:
-      return @"DFUErrorRemoteButtonlessDFUOpCodeNotSupported";
-    case DFUErrorRemoteExperimentalButtonlessDFUSuccess:
-      return @"DFUErrorRemoteExperimentalButtonlessDFUSuccess";
-    case DFUErrorRemoteExperimentalButtonlessDFUOperationFailed:
-      return @"DFUErrorRemoteExperimentalButtonlessDFUOperationFailed";
-    case DFUErrorRemoteExperimentalButtonlessDFUOpCodeNotSupported:
-      return @"DFUErrorRemoteExperimentalButtonlessDFUOpCodeNotSupported";
-    default:
-      return @"DFU_UNKNOWN_ERROR";
-  }
+    switch(error)
+    {
+        case DFUErrorRemoteLegacyDFUSuccess:
+            return @"DFUErrorRemoteLegacyDFUSuccess";
+        case DFUErrorRemoteLegacyDFUInvalidState:
+            return @"DFUErrorRemoteLegacyDFUInvalidState";
+        case DFUErrorRemoteLegacyDFUNotSupported:
+            return @"DFUErrorRemoteLegacyDFUNotSupported";
+        case DFUErrorRemoteLegacyDFUDataExceedsLimit:
+            return @"DFUErrorRemoteLegacyDFUDataExceedsLimit";
+        case DFUErrorRemoteLegacyDFUCrcError:
+            return @"DFUErrorRemoteLegacyDFUCrcError";
+        case DFUErrorRemoteLegacyDFUOperationFailed:
+            return @"DFUErrorRemoteLegacyDFUOperationFailed";
+        case DFUErrorRemoteSecureDFUSuccess:
+            return @"DFUErrorRemoteSecureDFUSuccess";
+        case DFUErrorRemoteSecureDFUOpCodeNotSupported:
+            return @"DFUErrorRemoteSecureDFUOpCodeNotSupported";
+        case DFUErrorRemoteSecureDFUInvalidParameter:
+            return @"DFUErrorRemoteSecureDFUInvalidParameter";
+        case DFUErrorRemoteSecureDFUInsufficientResources:
+            return @"DFUErrorRemoteSecureDFUInsufficientResources";
+        case DFUErrorRemoteSecureDFUInvalidObject:
+            return @"DFUErrorRemoteSecureDFUInvalidObject";
+        case DFUErrorRemoteSecureDFUSignatureMismatch:
+            return @"DFUErrorRemoteSecureDFUSignatureMismatch";
+        case DFUErrorRemoteSecureDFUUnsupportedType:
+            return @"DFUErrorRemoteSecureDFUUnsupportedType";
+        case DFUErrorRemoteSecureDFUOperationNotPermitted:
+            return @"DFUErrorRemoteSecureDFUOperationNotPermitted";
+        case DFUErrorRemoteSecureDFUOperationFailed:
+            return @"DFUErrorRemoteSecureDFUOperationFailed";
+        case DFUErrorRemoteSecureDFUExtendedError:
+            return @"DFUErrorRemoteSecureDFUExtendedError";
+        case DFUErrorRemoteExtendedErrorWrongCommandFormat:
+            return @"DFUErrorRemoteExtendedErrorWrongCommandFormat";
+        case DFUErrorRemoteExtendedErrorUnknownCommand:
+            return @"DFUErrorRemoteExtendedErrorUnknownCommand";
+        case DFUErrorRemoteExtendedErrorInitCommandInvalid:
+            return @"DFUErrorRemoteExtendedErrorInitCommandInvalid";
+        case DFUErrorRemoteExtendedErrorFwVersionFailure:
+            return @"DFUErrorRemoteExtendedErrorFwVersionFailure";
+        case DFUErrorRemoteExtendedErrorHwVersionFailure:
+            return @"DFUErrorRemoteExtendedErrorHwVersionFailure";
+        case DFUErrorRemoteExtendedErrorSdVersionFailure:
+            return @"DFUErrorRemoteExtendedErrorSdVersionFailure";
+        case DFUErrorRemoteExtendedErrorSignatureMissing:
+            return @"DFUErrorRemoteExtendedErrorSignatureMissing";
+        case DFUErrorRemoteExtendedErrorWrongHashType:
+            return @"DFUErrorRemoteExtendedErrorWrongHashType";
+        case DFUErrorRemoteExtendedErrorHashFailed:
+            return @"DFUErrorRemoteExtendedErrorHashFailed";
+        case DFUErrorRemoteExtendedErrorWrongSignatureType:
+            return @"DFUErrorRemoteExtendedErrorWrongSignatureType";
+        case DFUErrorRemoteExtendedErrorVerificationFailed:
+            return @"DFUErrorRemoteExtendedErrorVerificationFailed";
+        case DFUErrorRemoteExtendedErrorInsufficientSpace:
+            return @"DFUErrorRemoteExtendedErrorInsufficientSpace";
+        case DFUErrorRemoteExperimentalButtonlessDFUSuccess:
+            return @"DFUErrorRemoteExperimentalButtonlessDFUSuccess";
+        case DFUErrorRemoteExperimentalButtonlessDFUOpCodeNotSupported:
+            return @"DFUErrorRemoteExperimentalButtonlessDFUOpCodeNotSupported";
+        case DFUErrorRemoteExperimentalButtonlessDFUOperationFailed:
+            return @"DFUErrorRemoteExperimentalButtonlessDFUOperationFailed";
+        case DFUErrorRemoteButtonlessDFUSuccess:
+            return @"DFUErrorRemoteButtonlessDFUSuccess";
+        case DFUErrorRemoteButtonlessDFUOpCodeNotSupported:
+            return @"DFUErrorRemoteButtonlessDFUOpCodeNotSupported";
+        case DFUErrorRemoteButtonlessDFUOperationFailed:
+            return @"DFUErrorRemoteButtonlessDFUOperationFailed";
+        case DFUErrorRemoteButtonlessDFUInvalidAdvertisementName:
+            return @"DFUErrorRemoteButtonlessDFUInvalidAdvertisementName";
+        case DFUErrorRemoteButtonlessDFUBusy:
+            return @"DFUErrorRemoteButtonlessDFUBusy";
+        case DFUErrorRemoteButtonlessDFUNotBonded:
+            return @"DFUErrorRemoteButtonlessDFUNotBonded";
+        case DFUErrorFileNotSpecified:
+            return @"DFUErrorFileNotSpecified";
+        case DFUErrorFileInvalid:
+            return @"DFUErrorFileInvalid";
+        case DFUErrorExtendedInitPacketRequired:
+            return @"DFUErrorExtendedInitPacketRequired";
+        case DFUErrorInitPacketRequired:
+            return @"DFUErrorInitPacketRequired";
+        case DFUErrorFailedToConnect:
+            return @"DFUErrorFailedToConnect";
+        case DFUErrorDeviceDisconnected:
+            return @"DFUErrorDeviceDisconnected";
+        case DFUErrorBluetoothDisabled:
+            return @"DFUErrorBluetoothDisabled";
+        case DFUErrorServiceDiscoveryFailed:
+            return @"DFUErrorServiceDiscoveryFailed";
+        case DFUErrorDeviceNotSupported:
+            return @"DFUErrorDeviceNotSupported";
+        case DFUErrorReadingVersionFailed:
+            return @"DFUErrorReadingVersionFailed";
+        case DFUErrorEnablingControlPointFailed:
+            return @"DFUErrorEnablingControlPointFailed";
+        case DFUErrorWritingCharacteristicFailed:
+            return @"DFUErrorWritingCharacteristicFailed";
+        case DFUErrorReceivingNotificationFailed:
+            return @"DFUErrorReceivingNotificationFailed";
+        case DFUErrorUnsupportedResponse:
+            return @"DFUErrorUnsupportedResponse";
+        case DFUErrorBytesLost:
+            return @"DFUErrorBytesLost";
+        case DFUErrorCrcError:
+            return @"DFUErrorCrcError";
+        case DFUErrorInvalidInternalState:
+            return @"DFUErrorInvalidInternalState";
+        default:
+            return @"E_DFU_ERROR";
+    }
 }
 
 @end

@@ -127,16 +127,16 @@ function PixelCard({
   const [dfuQueued, setDfuQueued] = React.useState(
     pixelDispatcher.hasQueuedDFU
   );
-  const [dfuState, setDfuState] = React.useState<DfuState>("dfuCompleted");
+  const [dfuState, setDfuState] = React.useState<DfuState>("completed");
   const [dfuProgress, setDfuProgress] = React.useState<number>(0);
 
   // Reset DFU state and progress when aborted or completed
   React.useEffect(() => {
-    if (dfuState === "dfuAborted") {
-      setDfuState("dfuCompleted");
+    if (dfuState === "aborted") {
+      setDfuState("completed");
       setDfuProgress(0);
       setLastError(new Error("DFU Aborted"));
-    } else if (dfuState === "dfuCompleted") {
+    } else if (dfuState === "completed") {
       setDfuProgress(0);
     }
   }, [dfuState]);
@@ -219,7 +219,7 @@ function PixelCard({
               justifyContent="center"
             >
               <Text>{t("firmwareUpdate")}: </Text>
-              {dfuState === "dfuStarting" && dfuProgress > 0 ? (
+              {dfuState === "starting" && dfuProgress > 0 ? (
                 <View style={gs.flex}>
                   <ProgressBar percent={dfuProgress} />
                 </View>

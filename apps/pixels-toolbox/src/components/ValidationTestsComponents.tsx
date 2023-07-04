@@ -228,9 +228,9 @@ export function UpdateFirmware({
       const { resolve, reject } = resolveRejectDfuPromise;
       if (dfuLastError) {
         reject(dfuLastError);
-      } else if (dfuState === "dfuAborted") {
+      } else if (dfuState === "aborted") {
         reject(new Error("Firmware update aborted"));
-      } else if (dfuState === "dfuCompleted") {
+      } else if (dfuState === "completed") {
         resolve();
       }
     }

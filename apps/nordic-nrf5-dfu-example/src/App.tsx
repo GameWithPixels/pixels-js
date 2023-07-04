@@ -5,9 +5,12 @@ import {
   ScannedPeripheralEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import {
+  DfuError,
   DfuProgressEvent,
   DfuState,
   DfuStateEvent,
+  DfuTargetId,
+  abortDfu,
   startDfu,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import * as React from "react";
@@ -28,6 +31,12 @@ import DocumentPicker, { types } from "react-native-document-picker";
 
 function getFilename(uri: string): string {
   return uri.split("/").pop() ?? uri;
+}
+
+function idToString(targetId: DfuTargetId): string {
+  return typeof targetId === "number"
+    ? targetId.toString(16).match(/.{2}/g)?.join(":") ?? ""
+    : `{${targetId}}`;
 }
 
 const pixelServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -139,25 +148,28 @@ export default function App() {
       const p = queuedDFUs[0];
       if (p) {
         setCurrentDFU(p.systemId);
-        const idStr = p.address ? p.address.toString(16) : p.systemId;
-        console.log(`Starting DFU for ${idStr} with ${dfuFile.uri}`);
-        startDfu(p.address ? p.address : p.systemId, dfuFile.uri, {
+        const id = p.address ? p.address : p.systemId;
+        console.log(`Starting DFU for ${idToString(id)} with ${dfuFile.uri}`);
+        startDfu(id, dfuFile.uri, {
           dfuStateListener: (ev: DfuStateEvent) => {
-            const idStr2 =
-              typeof ev.targetIdentifier === "number"
-                ? ev.targetIdentifier.toString(16)
-                : ev.targetIdentifier;
-            console.log(`DFU state: ${idStr2} => ${ev.state}`);
+            console.log(`DFU state: ${idToString(ev.targetId)} => ${ev.state}`);
             setState(ev.state);
-            if (ev.state === "dfuAborted" || ev.state === "dfuCompleted") {
+            if (ev.state === "aborted" || ev.state === "completed") {
               setProgress(0);
               setQueuedDFUs((q) => q.filter((_, i) => i > 0));
               setCurrentDFU(undefined);
             }
           },
-          dfuProgressListener: (ev: DfuProgressEvent) =>
-            setProgress(ev.percent),
-        }).catch(setLastError);
+          dfuProgressListener: (ev: DfuProgressEvent) => {
+            if (ev.percent % 10 === 0) {
+              console.log(`DFU upload: ${ev.percent}%`);
+            }
+            setProgress(ev.percent);
+          },
+        }).catch((error: DfuError) => {
+          console.log(`DFU error: ${error}`);
+          setLastError(error);
+        });
       }
     }
   }, [currentDFU, dfuFile, queuedDFUs]);
@@ -226,8 +238,8 @@ export default function App() {
             const dfuStatus = !isDfuQueued
               ? "none"
               : currentDFU !== p.systemId
-              ? "pending"
-              : `${state} ${state === "dfuStarting" ? `${progress}%` : ""}`;
+              ? `pending${dfuFile ? "" : " (no file selected)"}`
+              : `${state} ${state === "uploading" ? `${progress}%` : ""}`;
             return (
               <View key={p.systemId} style={styles.frame}>
                 <Text style={styles.textHeader}>
@@ -244,7 +256,16 @@ export default function App() {
                         const i = q.findIndex(
                           (p2) => p.systemId === p2.systemId
                         );
-                        return i >= 0 ? q.filter((_, j) => i !== j) : [...q, p];
+                        switch (i) {
+                          case -1:
+                            return [...q, p];
+                          case 0:
+                            console.log("Aborting DFU!");
+                            abortDfu().catch(setLastError);
+                          // eslint-disable-next-line no-fallthrough
+                          default:
+                            return q.filter((_, j) => i !== j);
+                        }
                       });
                     }}
                   >

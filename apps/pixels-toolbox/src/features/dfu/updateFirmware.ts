@@ -27,7 +27,7 @@ export default async function (
     dfuStateListener: ({ state }: DfuStateEvent) => {
       const index = dfuCount - pendingDfuCount;
       console.log(`DFU state changed: ${state} (${index} of ${dfuCount})`);
-      if (state !== "dfuCompleted" || pendingDfuCount <= 0) {
+      if (state !== "completed" || pendingDfuCount <= 0) {
         setDfuState?.(state);
       }
     },

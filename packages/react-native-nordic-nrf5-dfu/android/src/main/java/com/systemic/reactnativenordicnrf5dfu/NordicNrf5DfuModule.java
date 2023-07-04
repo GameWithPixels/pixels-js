@@ -29,19 +29,28 @@ import no.nordicsemi.android.dfu.*;
 public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     public static final String NAME = "NordicNrf5Dfu";
     private static final String TAG = "SystemicGames";
-    private final static String INTERNAL_ERROR = "INTERNAL_ERROR";
-    private final static String INVALID_CALL = "INVALID_CALL";
-    private final static String INVALID_ARGUMENT = "INVALID_ARGUMENT";
+
+    // Error codes
+    private final static String E_INTERNAL = "E_INTERNAL";
+    private final static String E_INVALID_ARGUMENT = "E_INVALID_ARGUMENT";
+    private final static String E_DFU_BUSY = "E_DFU_BUSY";
+    private final static String E_DFU_ERROR = "E_DFU_ERROR";
+    private final static String E_DFU_ABORTED ="E_DFU_ABORTED";
+    private final static String E_CONNECTION = "E_CONNECTION";
+    private final static String E_COMMUNICATION = "E_COMMUNICATION";
+    private final static String E_DFU_REMOTE = "E_DFU_REMOTE";
+
     private final ReactApplicationContext _reactContext;
     private Promise _startDfuPromise = null;
     private DfuServiceController _dfuController = null;
+    private int _listenerCount = 0;
 
     public NordicNrf5DfuModule(final ReactApplicationContext reactContext) {
         super(reactContext);
         _reactContext = reactContext;
         _reactContext.addLifecycleEventListener(this);
         DfuServiceListenerHelper.registerLogListener(_reactContext, (deviceAddress, level, message)
-                -> Log.d(TAG, "Dfu event for " + deviceAddress + " -> " + message));
+            -> Log.d(TAG, message + ", device address: " + deviceAddress));
         // Need at least SDK 26 for notifications
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             DfuServiceInitiator.createDfuNotificationChannel(_reactContext);
@@ -56,16 +65,15 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
 
     @ReactMethod
     public void addListener(final String eventName) {
-        // Required by React Native event emitter
-        // Set up any upstream listeners or background tasks as necessary
+        ++_listenerCount;
     }
 
     @ReactMethod
     public void removeListeners(final Integer count) {
-        // Required by React Native event emitter
-        // Remove upstream listeners, stop unnecessary background tasks
+        --_listenerCount;
     }
 
+    // File may be zipped DFU package, hex or bin
     // 48 bits Bluetooth MAC address fits into the 52 bits mantissa of a double
     @ReactMethod
     public void startDfu(
@@ -84,27 +92,27 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             final boolean restoreBond,
             final Promise promise) {
         if (address == 0) {
-            promise.reject(INVALID_ARGUMENT, "address must be different than zero");
+            promise.reject(E_INVALID_ARGUMENT, "address must be different than zero");
             return;
         }
         if (numberOfRetries < 0) {
-            promise.reject(INVALID_ARGUMENT, "numberOfRetries must be 0 or greater");
+            promise.reject(E_INVALID_ARGUMENT, "numberOfRetries must be 0 or greater");
             return;
         }
         if (prepareDataObjectDelay < 0) {
-            promise.reject(INVALID_ARGUMENT, "prepareDataObjectDelay must be 0 or greater");
+            promise.reject(E_INVALID_ARGUMENT, "prepareDataObjectDelay must be 0 or greater");
             return;
         }
         if (rebootTime < 0) {
-            promise.reject(INVALID_ARGUMENT, "rebootTime must be 0 or greater");
+            promise.reject(E_INVALID_ARGUMENT, "rebootTime must be 0 or greater");
             return;
         }
         if (bootloaderScanTimeout < 0) {
-            promise.reject(INVALID_ARGUMENT, "bootloaderScanTimeout must be 0 or greater");
+            promise.reject(E_INVALID_ARGUMENT, "bootloaderScanTimeout must be 0 or greater");
             return;
         }
         if (_dfuController != null) {
-            promise.reject(INVALID_CALL, "DFU already in progress");
+            promise.reject(E_DFU_BUSY, "DFU already in progress");
             return;
         }
         try {
@@ -118,31 +126,35 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             }
 
             String macAddressStr = str.toString();
-            Log.v(TAG, "Starting DFU for " + macAddressStr + ", retries=" + numberOfRetries);
+            Log.v(TAG, "DFU: starting for " + macAddressStr + ", retries=" + numberOfRetries);
 
-            DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(macAddressStr);
+            DfuServiceInitiator init = new DfuServiceInitiator(macAddressStr);
             if (deviceName != null && deviceName.length() > 0) {
-                serviceInitiator.setDeviceName(deviceName);
+                init.setDeviceName(deviceName);
             }
-            serviceInitiator.setZip(filePath);
-            serviceInitiator.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(!disableButtonlessServiceInSecureDfu);
-            serviceInitiator.setForceDfu(forceDfu);
-            serviceInitiator.setForceScanningForNewAddressInLegacyDfu(forceScanningForNewAddressInLegacyDfu);
-            serviceInitiator.setPrepareDataObjectDelay(prepareDataObjectDelay);
-            serviceInitiator.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
-            serviceInitiator.setRebootTime(rebootTime); //  Default is 0
+            if (filePath.endsWith(".bin") || filePath.endsWith(".hex")) {
+                init.setBinOrHex(DfuBaseService.TYPE_APPLICATION, filePath).setInitFile(null, null);
+            } else {
+                init.setZip(filePath);
+            }
+            init.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(!disableButtonlessServiceInSecureDfu);
+            init.setForceDfu(forceDfu);
+            init.setForceScanningForNewAddressInLegacyDfu(forceScanningForNewAddressInLegacyDfu);
+            init.setPrepareDataObjectDelay(prepareDataObjectDelay);
+            init.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
+            init.setRebootTime(rebootTime); //  Default is 0
             if (bootloaderScanTimeout > 0) {
-                serviceInitiator.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
+                init.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
             }
-            serviceInitiator.setForeground(!disallowForeground);
-            serviceInitiator.setKeepBond(keepBond);
-            serviceInitiator.setRestoreBond(restoreBond);
+            init.setForeground(!disallowForeground);
+            init.setKeepBond(keepBond);
+            init.setRestoreBond(restoreBond);
 
-            _dfuController = serviceInitiator.start(_reactContext, DfuService.class);
+            _dfuController = init.start(_reactContext, DfuService.class);
             _startDfuPromise = promise;
         }
         catch (Exception ex) {
-            promise.reject(INTERNAL_ERROR, ex.getMessage());
+            promise.reject(E_INTERNAL, ex.getMessage());
         }
     }
 
@@ -153,37 +165,56 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
         }
     }
 
+    @ReactMethod
+    public void pauseDfu() {
+        if (_dfuController != null) {
+            _dfuController.pause();
+        }
+    }
+
+    @ReactMethod
+    public void resumeDfu() {
+        if (_dfuController != null) {
+            _dfuController.resume();
+        }
+    }
+
     static private void putTargetIdentifier(@NonNull final WritableMap map, @NonNull final String deviceAddress)
     {
-        map.putDouble("targetIdentifier", Long.parseLong(deviceAddress.replaceAll(":", ""),16));
+        map.putDouble("targetId", Long.parseLong(deviceAddress.replaceAll(":", ""),16));
     }
 
     private void sendEvent(final String eventName, @Nullable final WritableMap params) {
-        getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(eventName, params);
+        if (_listenerCount > 0) {
+            getReactApplicationContext()
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
+        }
     }
 
     private void sendStateUpdate(final String state, final String deviceAddress) {
-        WritableMap map = new WritableNativeMap();
-        putTargetIdentifier(map, deviceAddress);
-        map.putString("state", state);
-        sendEvent("state", map);
+        if (_listenerCount > 0) {
+            WritableMap map = new WritableNativeMap();
+            putTargetIdentifier(map, deviceAddress);
+            map.putString("state", state);
+            sendEvent("state", map);
+        }
     }
 
     @Override
     public void onHostResume() {
-        Log.d(TAG, "onHostResume");
+        Log.d(TAG, "DFU: onHostResume");
         DfuServiceListenerHelper.registerProgressListener(_reactContext, _dfuProgressListener);
     }
 
     @Override
     public void onHostPause() {
+        Log.d(TAG, "DFU: onHostPause");
     }
 
     @Override
     public void onHostDestroy() {
-        Log.d(TAG, "onHostDestroy");
+        Log.d(TAG, "DFU: onHostDestroy");
         DfuServiceListenerHelper.unregisterProgressListener(_reactContext, _dfuProgressListener);
     }
 
@@ -198,12 +229,17 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
     private final DfuProgressListener _dfuProgressListener = new DfuProgressListenerAdapter() {
         @Override
         public void onDeviceConnecting(@NonNull final String deviceAddress) {
-            sendStateUpdate("deviceConnecting", deviceAddress);
+            sendStateUpdate("connecting", deviceAddress);
+        }
+
+        @Override
+        public void onDeviceConnected(@NonNull final String deviceAddress) {
+            sendStateUpdate("connected", deviceAddress);
         }
 
         @Override
         public void onDfuProcessStarting(@NonNull final String deviceAddress) {
-            sendStateUpdate("dfuStarting", deviceAddress);
+            sendStateUpdate("starting", deviceAddress);
         }
 
         @Override
@@ -212,19 +248,29 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
         }
 
         @Override
+        public void onDfuProcessStarted(@NonNull final String deviceAddress) {
+            sendStateUpdate("uploading", deviceAddress);
+        }
+
+        @Override
         public void onFirmwareValidating(@NonNull final String deviceAddress) {
-            sendStateUpdate("firmwareValidating", deviceAddress);
+            sendStateUpdate("validatingFirmware", deviceAddress);
         }
 
         @Override
         public void onDeviceDisconnecting(@NonNull final String deviceAddress) {
-            sendStateUpdate("deviceDisconnecting", deviceAddress);
+            sendStateUpdate("disconnecting", deviceAddress);
+        }
+
+        @Override
+        public void onDeviceDisconnected(@NonNull final String deviceAddress) {
+            sendStateUpdate("disconnected", deviceAddress);
         }
 
         @Override
         public void onDfuCompleted(@NonNull final String deviceAddress) {
             Promise promise = getPromiseAndSetDone();
-            sendStateUpdate("dfuCompleted", deviceAddress);
+            sendStateUpdate("completed", deviceAddress);
             if (promise != null) {
                 promise.resolve(null);
             }
@@ -233,17 +279,32 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
         @Override
         public void onDfuAborted(@NonNull final String deviceAddress) {
             Promise promise = getPromiseAndSetDone();
-            sendStateUpdate("dfuAborted", deviceAddress);
+            sendStateUpdate("aborted", deviceAddress);
             if (promise != null) {
-                promise.reject("2", "DFU ABORTED");
+                promise.reject(E_DFU_ABORTED, "DFU ABORTED");
             }
         }
 
         @Override
         public void onError(@NonNull final String deviceAddress, final int error, final int errorType, final String message) {
+            String errorCode = E_DFU_ERROR;
+            switch (errorType) {
+                case DfuBaseService.ERROR_TYPE_COMMUNICATION_STATE:
+                    errorCode = E_CONNECTION;
+                    break;
+                case DfuBaseService.ERROR_TYPE_COMMUNICATION:
+                    errorCode = E_COMMUNICATION;
+                    break;
+                case DfuBaseService.ERROR_TYPE_DFU_REMOTE:
+                    errorCode = E_DFU_REMOTE;
+                    break;
+                default:
+                    break;
+            }
             Promise promise = getPromiseAndSetDone();
+            sendStateUpdate("aborted", deviceAddress);
             if (promise != null) {
-                promise.reject(Integer.toString(error), message);
+                promise.reject(errorCode, message);
             }
         }
 
@@ -252,10 +313,10 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             WritableMap map = new WritableNativeMap();
             putTargetIdentifier(map, deviceAddress);
             map.putInt("percent", percent);
-            map.putDouble("speed", speed);
-            map.putDouble("averageSpeed", avgSpeed);
             map.putInt("currentPart", currentPart);
             map.putInt("partsTotal", partsTotal);
+            map.putDouble("speed", speed);
+            map.putDouble("averageSpeed", avgSpeed);
             sendEvent("progress", map);
         }
 
@@ -271,7 +332,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
                 }, 200);
             }
             catch (Exception e) {
-                Log.e(TAG, "Error cancelling DFU notification: " + e.toString());
+                Log.e(TAG, "DFU: Error cancelling notifications: " + e.toString());
             }
             return promise;
         }
