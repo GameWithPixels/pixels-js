@@ -3,18 +3,20 @@ import { NativeEventEmitter, EmitterSubscription } from "react-native";
 
 import {
   AdvertisementData,
-  BleBluetoothStateEvent,
-  BleCharacteristicValueChangedEvent,
-  BleConnectionEvent,
-  BleEventMap,
-  BleScanResultEvent,
   BluetoothLE,
   ConnectionStatus,
   Device,
 } from "./BluetoothLE";
 import Constants from "./Constants";
-import * as Errors from "./Errors";
-import requestPermissions from "./requestPermissions";
+import * as Errors from "./errors";
+import {
+  BleBluetoothStateEvent,
+  BleCharacteristicValueChangedEvent,
+  BleConnectionEvent,
+  BleEventMap,
+  BleScanResultEvent,
+} from "./events";
+import { requestPermissions } from "./requestPermissions";
 
 function _toArray(strList?: string): string[] {
   return strList?.split(",") ?? [];
@@ -52,6 +54,12 @@ export interface PeripheralCharacteristicValueChangedEvent {
 
 export type PeripheralOrSystemId = ScannedPeripheral | string;
 
+/**
+ * Event map for {@link Central} class.
+ * This is the list of supported events where the property name
+ * is the event name and the property type the event data type.
+ * @category Pixel
+ */
 export interface CentralEventMap {
   scanStatus: ScanStatusEvent;
   scannedPeripheral: ScannedPeripheralEvent;
@@ -93,7 +101,9 @@ function _notifyScanStatus(scanStatus: boolean) {
   try {
     _scanEvEmitter.emit("scanStatus", { scanning: scanStatus });
   } catch (error) {
-    console.error(`[BLE] Exception in Scan Status event listener: ${error}`);
+    console.error(
+      `[BLE] Uncaught error in Scan Status event listener: ${error}`
+    );
   }
 }
 
@@ -116,7 +126,7 @@ function _addListener<T extends keyof BleEventMap>(
   return _nativeEmitter?.addListener(name, listener);
 }
 
-const Central = {
+export const Central = {
   // May be called multiple times
   initialize(): void {
     if (!_connStatusSubs) {
@@ -167,7 +177,7 @@ const Central = {
             }
           } catch (error) {
             console.error(
-              `[BLE ${ev.device.name}] Exception in Connection Status event listener: ${error}`
+              `[BLE ${ev.device.name}] Uncaught error in Connection Status event listener: ${error}`
             );
           }
         }
@@ -202,7 +212,7 @@ const Central = {
             }
           } catch (error) {
             console.error(
-              `[BLE ${ev.device.name}] Exception in Characteristic Value Changed event listener: ${error}`
+              `[BLE ${ev.device.name}] Uncaught error in Characteristic Value Changed event listener: ${error}`
             );
           }
         }
@@ -297,7 +307,7 @@ const Central = {
         "scanResult",
         (ev: BleScanResultEvent) => {
           if (typeof ev === "string") {
-            console.error(`[BLE] Scan error: ${ev}`);
+            console.warn(`[BLE] Scan error: ${ev}`);
             _notifyScanStatus(false);
           } else {
             try {
@@ -323,7 +333,7 @@ const Central = {
               _scanEvEmitter.emit("scannedPeripheral", { peripheral });
             } catch (error) {
               console.error(
-                `[BLE] Exception in Scan Result event listener: ${error}`
+                `[BLE] Uncaught error in Scan Result event listener: ${error}`
               );
             }
           }
@@ -647,5 +657,3 @@ const Central = {
     pInf.valueChangedCallbacks.delete(key);
   },
 } as const;
-
-export default Central;

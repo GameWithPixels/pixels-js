@@ -49,6 +49,9 @@ import {
   PixelDesignAndColorValues,
   MessageTypeValues,
 } from "./Messages";
+import { PixelInfo } from "./PixelInfo";
+import { PixelInfoNotifier } from "./PixelInfoNotifier";
+import { PixelSession } from "./PixelSession";
 import {
   PixelConnectCancelledError,
   PixelConnectError,
@@ -56,10 +59,7 @@ import {
   PixelConnectTimeoutError,
   PixelError,
   PixelMessageTimeoutError,
-} from "./PixelErrors";
-import { PixelInfo } from "./PixelInfo";
-import { PixelInfoNotifier } from "./PixelInfoNotifier";
-import { PixelSession } from "./PixelSession";
+} from "./errors";
 import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
@@ -92,28 +92,31 @@ export type PixelStatus =
   | "disconnecting";
 
 /**
- * Data for the "rollState" event.
+ * Data structure for {@link Pixel} roll state events,
+ * see {@link PixelEventMap}.
  * @category Pixel
  */
-export interface PixelRollData {
+export interface RollEvent {
   state: PixelRollState;
   face: number;
 }
 
 /**
- * Data for the "rollState" event.
+ * Data structure for {@link Pixel} battery events,
+ * see {@link PixelEventMap}.
  * @category Pixel
  */
-export interface PixelBatteryData {
+export interface BatteryEvent {
   level: number; // Percentage
   isCharging: boolean;
 }
 
 /**
- * Data for the "userMessage" event.
+ * Data structure for {@link Pixel} user message events,
+ * see {@link PixelEventMap}.
  * @category Pixel
  */
-export interface PixelUserMessage {
+export interface UserMessageEvent {
   message: string;
   withCancel: boolean;
   response: (okCancel: boolean) => Promise<void>;
@@ -123,6 +126,7 @@ export interface PixelUserMessage {
  * Event map for {@link Pixel} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
+ * Call {@link Pixel.addEventListener} to subscribe to an event.
  * @category Pixel
  */
 export interface PixelEventMap {
@@ -133,15 +137,15 @@ export interface PixelEventMap {
   /** Message send notification. */
   messageSend: MessageOrType;
   /** Roll state changed notification. */
-  rollState: PixelRollData;
+  rollState: RollEvent;
   /** Roll result notification. */
   roll: number;
   /** Battery state changed notification. */
-  battery: PixelBatteryData;
+  battery: BatteryEvent;
   /** RSSI change notification. */
   rssi: number;
   /** User message request. */
-  userMessage: PixelUserMessage;
+  userMessage: UserMessageEvent;
   /** Remote action request. */
   remoteAction: number; // Remote action id
 }
@@ -162,7 +166,10 @@ export type DieType =
  * Most of its methods require the instance to be connected to the Pixel device.
  * Call the {@link connect()} method to initiate a connection.
  *
- * See {@link addEventListener} to get notified for rolls or (dis)connection event.
+ * Call {@link addEventListener} to get notified for rolls, connection and
+ * disconnection events and more.
+ *
+ * Call {@link addPropertyListener} to get notified on property changes.
  *
  * @category Pixel
  */
@@ -353,7 +360,7 @@ export class Pixel extends PixelInfoNotifier {
     this.addMessageListener("rollState", rollStateListener);
 
     // Subscribe to battery messages and emit battery event
-    const batterLevelListener = (msgOrType: MessageOrType) => {
+    const batteryLevelListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as BatteryLevel;
       const battery = {
         level: msg.levelPercent,
@@ -373,7 +380,7 @@ export class Pixel extends PixelInfoNotifier {
         this._evEmitter.emit("battery", battery);
       }
     };
-    this.addMessageListener("batteryLevel", batterLevelListener);
+    this.addMessageListener("batteryLevel", batteryLevelListener);
 
     // Subscribe to rssi messages and emit event
     const rssiListener = (msgOrType: MessageOrType) => {
@@ -414,7 +421,7 @@ export class Pixel extends PixelInfoNotifier {
     this._disposeFunc = () => {
       session.setConnectionEventListener(undefined);
       this.addMessageListener("rollState", rollStateListener);
-      this.addMessageListener("batteryLevel", batterLevelListener);
+      this.addMessageListener("batteryLevel", batteryLevelListener);
       this.addMessageListener("rssi", rssiListener);
       this.addMessageListener("notifyUser", notifyUserListener);
       this.addMessageListener("remoteAction", remoteActionListener);
@@ -536,8 +543,8 @@ export class Pixel extends PixelInfoNotifier {
   /**
    * Adds the given listener function to the end of the listeners array
    * for the event with the given name.
-   * See {@link PixelEventMap} for the list of events and their associated
-   * data.
+   * See {@link PixelEventMap} for the list of events and their
+   * associated data.
    * @param eventName The name of the event.
    * @param listener The callback function.
    */
@@ -551,8 +558,8 @@ export class Pixel extends PixelInfoNotifier {
   /**
    * Removes the specified listener function from the listener array
    * for the event with the given name.
-   * See {@link PixelEventMap} for the list of events and their associated
-   * data.
+   * See {@link PixelEventMap} for the list of events and their
+   * associated data.
    * @param eventName The name of the event.
    * @param listener The callback function to unregister.
    */

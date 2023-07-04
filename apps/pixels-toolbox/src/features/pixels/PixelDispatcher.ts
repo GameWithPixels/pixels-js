@@ -77,6 +77,12 @@ export interface PixelDispatcherActionMap {
 
 export type PixelDispatcherActionName = keyof PixelDispatcherActionMap;
 
+/**
+ * Event map for {@link PixelDispatcher} class.
+ * This is the list of supported events where the property name
+ * is the event name and the property type the event data type.
+ * @category Pixel
+ */
 export interface PixelDispatcherEventMap {
   action: PixelDispatcherActionName;
   error: Error;

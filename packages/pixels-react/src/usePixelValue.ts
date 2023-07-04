@@ -5,8 +5,8 @@ import {
   RequestTelemetry,
   PixelStatus,
   Temperature,
-  PixelRollData,
-  PixelBatteryData,
+  RollEvent,
+  BatteryEvent,
   MessageType,
   PixelEventMap,
   TelemetryRequestModeValues,
@@ -93,15 +93,15 @@ export interface UsePixelValueNamesMap {
    *  - The value is an object with the face number rather than just a number
    *    so rolling the same face will trigger a state change nonetheless.
    *  - No value is returned until a roll is made. */
-  roll: Pick<PixelRollData, "face">;
+  roll: Pick<RollEvent, "face">;
   /** Updates with the roll state and face on any roll event but not more often
    *  than specified by the refresh interval argument, except when there is a
    *  roll result (i.e. `state === 'onFace'`) in which case it updates
    *  immediately.
    *  @remarks No value is returned until a roll event occurs. */
-  rollState: PixelRollData;
+  rollState: RollEvent;
   /** Updates with the battery level and charging status. */
-  battery: PixelBatteryData;
+  battery: BatteryEvent;
   /** Updates with the RSSI value. */
   rssi: number;
   /** Updates with the temperature in Celsius. */
@@ -199,7 +199,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             state: pixel.rollState,
           } as ValueType);
           // Create roll event listener
-          const onRollState = (rollState: PixelRollData) =>
+          const onRollState = (rollState: RollEvent) =>
             setValue((prevValue) => {
               const now = Date.now();
               // Time left before the value can be updated
@@ -245,7 +245,7 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
             isCharging: pixel.isCharging,
           } as ValueType);
           // Create battery event listener
-          const onBattery = (batteryData: PixelBatteryData) =>
+          const onBattery = (batteryData: BatteryEvent) =>
             setValue(batteryData as ValueType);
           // Listen to battery events
           pixel.addEventListener("battery", onBattery);

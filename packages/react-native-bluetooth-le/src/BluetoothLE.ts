@@ -46,11 +46,6 @@ export interface AdvertisementData {
   readonly servicesData?: ServiceData[];
 }
 
-export interface ScanResult {
-  readonly device: Device;
-  readonly advertisementData: AdvertisementData;
-}
-
 export interface Characteristic {
   readonly serviceUuid: string;
   readonly uuid: string;
@@ -64,44 +59,6 @@ export type ConnectionStatus =
   | "ready"
   | "disconnecting"
   | "disconnected";
-
-export type ConnectionEventReason =
-  | "unknown"
-  | "success"
-  | "canceled"
-  | "notSupported" // The device does not have the required services.
-  | "timeout"
-  | "linkLoss"
-  | "bluetoothOff"
-  | "host" // The local device initiated disconnection.
-  | "peripheral"; // The remote device initiated graceful disconnection.
-
-export interface BleBluetoothStateEvent {
-  state: "unknown" | "off" | "resetting" | "unauthorized" | "ready";
-}
-
-export type BleScanResultEvent = ScanResult | string;
-
-export interface BleConnectionEvent {
-  readonly device: Device;
-  readonly connectionStatus: ConnectionStatus;
-  readonly reason: ConnectionEventReason;
-}
-
-export interface BleCharacteristicValueChangedEvent {
-  readonly device: Device;
-  readonly characteristic: Characteristic;
-  readonly data: number[];
-}
-
-export interface BleEventMap {
-  bluetoothState: BleBluetoothStateEvent;
-  scanResult: BleScanResultEvent;
-  connectionEvent: BleConnectionEvent;
-  characteristicValueChanged: BleCharacteristicValueChangedEvent;
-}
-
-export type BleEvents = keyof BleEventMap;
 
 export interface NativeBluetoothLE extends NativeModule {
   bleInitialize(): Promise<void>;

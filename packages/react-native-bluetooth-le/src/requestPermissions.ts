@@ -1,6 +1,6 @@
 import { Platform, PermissionsAndroid } from "react-native";
 
-export default async function (): Promise<boolean> {
+export async function requestPermissions(): Promise<boolean> {
   let granted = false;
   // Ask for permissions on Android
   if (Platform.OS === "android") {

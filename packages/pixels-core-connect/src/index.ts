@@ -6,5 +6,5 @@ export * from "./PixelInfo";
 export * from "./PixelInfoNotifier";
 export * from "./PixelSession";
 export * from "./Pixel";
-export * from "./PixelErrors";
+export * from "./errors";
 export * from "./Messages";

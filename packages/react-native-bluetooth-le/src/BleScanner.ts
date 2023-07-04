@@ -1,8 +1,8 @@
-import Central, { ScannedPeripheral, ScannedPeripheralEvent } from "./Central";
+import { Central, ScannedPeripheral, ScannedPeripheralEvent } from "./Central";
 
 let _listener: ((p: ScannedPeripheralEvent) => void) | undefined;
 
-const BleScanner = {
+export const BleScanner = {
   async start(
     services: string | string[],
     onScannedPeripheral: (p: ScannedPeripheral) => void
@@ -29,5 +29,3 @@ const BleScanner = {
     }
   },
 };
-
-export default BleScanner;

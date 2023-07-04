@@ -7,7 +7,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
-  PixelUserMessage,
+  UserMessageEvent,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -157,7 +157,7 @@ function PixelCard({
       message,
       withCancel,
       response,
-    }: PixelUserMessage) => {
+    }: UserMessageEvent) => {
       setNotifyUserData({
         message,
         onOk: () => response(true),

@@ -12,9 +12,9 @@ import {
   RequestRssi,
   Rssi,
   PixelBatteryStateValues,
-  PixelBatteryData,
+  BatteryEvent,
   getFaceMask,
-  PixelRollData,
+  RollEvent,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { TaskCanceledError, TaskFaultedError } from "~/features/tasks/useTask";
@@ -138,7 +138,7 @@ const ValidationTests = {
       // Abort controller used to control the blinking
       const blinkAbortController = new AbortController();
       // Process battery events
-      const batteryListener = ({ isCharging }: PixelBatteryData) => {
+      const batteryListener = ({ isCharging }: BatteryEvent) => {
         if (isCharging === shouldBeCharging) {
           pixel.removeEventListener("battery", batteryListener);
           blinkAbortController.abort();
@@ -320,7 +320,7 @@ const ValidationTests = {
         }, holdDelay);
       }
       // Roll listener that checks if the required face is up
-      const rollListener = ({ state, face: f }: PixelRollData) => {
+      const rollListener = ({ state, face: f }: RollEvent) => {
         if (state === "onFace" && f === face) {
           // Required face is up, start hold timer
           console.log(`Die rolled on required face ${face}`);

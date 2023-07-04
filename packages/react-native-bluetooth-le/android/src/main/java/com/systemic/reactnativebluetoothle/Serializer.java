@@ -45,7 +45,8 @@ public final class Serializer {
             map.putString("systemId", String.valueOf(Utils.getDeviceSystemId(device)));
             // 48 bits Bluetooth MAC address fits into the 52 bits mantissa of a double
             map.putDouble("address", addressToNumber(device.getAddress()));
-            map.putString("name", device.getName());
+            String name = device.getName();
+            map.putString("name", name != null ? name : "");
         }
         return map;
     }
@@ -56,7 +57,8 @@ public final class Serializer {
         if (peripheral != null) {
             map.putString("systemId", String.valueOf(peripheral.getSystemId()));
             map.putDouble("address", addressToNumber(peripheral.getAddress()));
-            map.putString("name", peripheral.getName());
+            String name = peripheral.getName();
+            map.putString("name", name != null ? name : "");
         }
         return map;
     }
