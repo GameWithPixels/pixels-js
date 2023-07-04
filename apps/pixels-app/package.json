@@ -37,7 +37,7 @@
     "@reduxjs/toolkit": "~1.9.3",
     "@systemic-games/pixels-edit-animation": "*",
     "@systemic-games/pixels-three": "*",
-    "@systemic-games/react-native-bluetooth-le": "1.2.0-beta.4",
+    "@systemic-games/react-native-bluetooth-le": "1.2.0",
     "@systemic-games/react-native-pixels-components": "*",
     "@systemic-games/react-native-pixels-connect": "*",
     "base64-js": "^1.5.1",

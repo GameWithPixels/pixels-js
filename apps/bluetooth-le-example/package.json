@@ -17,7 +17,7 @@
     "url": "git@github.com:GameWithPixels/pixels-js.git"
   },
   "dependencies": {
-    "@systemic-games/react-native-bluetooth-le": "^1.2.0-beta.4",
+    "@systemic-games/react-native-bluetooth-le": "*",
     "react": "18.2.0",
     "react-native": "0.71.8"
   },
