@@ -1,7 +1,7 @@
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import React from "react";
 
-import updateFirmware from "~/features/dfu/updateFirmware";
+import updateFirmware, { DfuTarget } from "~/features/dfu/updateFirmware";
 
 /**
  * Hook to upload a bootloader & firmware.
@@ -14,7 +14,7 @@ import updateFirmware from "~/features/dfu/updateFirmware";
  */
 export default function (): [
   (
-    systemId: string,
+    target: DfuTarget,
     bootloaderPath?: string,
     firmwarePath?: string,
     isBootloaderMacAddress?: boolean
@@ -31,14 +31,14 @@ export default function (): [
   // Start DFU function
   const updateFirmwareFunc = React.useCallback(
     (
-      systemId: string,
+      target: DfuTarget,
       bootloaderPath?: string,
       firmwarePath?: string,
       isBootloaderMacAddress?: boolean
     ): void => {
       setLastError(undefined);
       updateFirmware(
-        systemId,
+        target,
         bootloaderPath,
         firmwarePath,
         setDfuState,

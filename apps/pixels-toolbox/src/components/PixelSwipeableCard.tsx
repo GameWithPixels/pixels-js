@@ -134,8 +134,6 @@ function PixelCard({
   React.useEffect(() => {
     if (dfuState === "aborted") {
       setDfuState("completed");
-      setDfuProgress(0);
-      setLastError(new Error("DFU Aborted"));
     } else if (dfuState === "completed") {
       setDfuProgress(0);
     }
@@ -219,7 +217,7 @@ function PixelCard({
               justifyContent="center"
             >
               <Text>{t("firmwareUpdate")}: </Text>
-              {dfuState === "starting" && dfuProgress > 0 ? (
+              {dfuState === "uploading" ? (
                 <View style={gs.flex}>
                   <ProgressBar percent={dfuProgress} />
                 </View>

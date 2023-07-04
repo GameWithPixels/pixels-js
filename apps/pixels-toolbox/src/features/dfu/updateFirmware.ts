@@ -4,11 +4,24 @@ import {
   DfuProgressEvent,
   DfuState,
   DfuStateEvent,
+  DfuTargetId,
+  getDfuTarget,
   startDfu,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
+
+function idToString(targetId: DfuTargetId): string {
+  return typeof targetId === "number"
+    ? targetId.toString(16).match(/.{2}/g)?.join(":") ?? ""
+    : `{${targetId}}`;
+}
+
+export type DfuTarget =
+  | DfuTargetId
+  | Pick<ScannedPixel, "systemId" | "address">;
 
 export default async function (
-  systemId: string,
+  target: DfuTarget,
   bootloaderPath?: string,
   firmwarePath?: string,
   setDfuState?: (state: DfuState) => void,
@@ -19,6 +32,12 @@ export default async function (
   const hasBootloader = !!bootloaderPath?.length;
   let bootloaderSkipped = false;
 
+  // Get target id
+  const targetId =
+    typeof target === "object"
+      ? getDfuTarget(target.systemId, target.address)
+      : target;
+
   // Prepare DFU options
   const dfuCount = (hasBootloader ? 1 : 0) + (hasFirmware ? 1 : 0);
   let pendingDfuCount = dfuCount;
@@ -27,7 +46,10 @@ export default async function (
     dfuStateListener: ({ state }: DfuStateEvent) => {
       const index = dfuCount - pendingDfuCount;
       console.log(`DFU state changed: ${state} (${index} of ${dfuCount})`);
-      if (state !== "completed" || pendingDfuCount <= 0) {
+      if (
+        (state !== "completed" && state !== "aborted") ||
+        pendingDfuCount <= 0
+      ) {
         setDfuState?.(state);
       }
     },
@@ -42,12 +64,13 @@ export default async function (
   // Update bootloader
   if (hasBootloader) {
     try {
-      const addrStr = systemId;
       console.log(
-        `Starting DFU for device ${addrStr} with bootloader ${bootloaderPath}`
+        `Starting DFU for device ${idToString(
+          targetId
+        )} with bootloader ${bootloaderPath}`
       );
       pendingDfuCount -= 1;
-      await startDfu(systemId, bootloaderPath, dfuOptions);
+      await startDfu(targetId, bootloaderPath, dfuOptions);
     } catch (error: any) {
       if (error instanceof DfuFirmwareVersionFailureError) {
         // Bootloader already up-to-date
@@ -72,13 +95,17 @@ export default async function (
       try {
         // After attempting to update the bootloader, device stays in bootloader mode
         // Bootloader address = firmware address + 1
-        const addr = systemId;
-        const addrStr = systemId;
+        const fwTargetId =
+          typeof targetId === "number"
+            ? targetId + (hasBootloader && !isBootloaderMacAddress ? 1 : 0)
+            : targetId;
         console.log(
-          `Starting DFU for device ${addrStr} with firmware ${firmwarePath}`
+          `Starting DFU for device ${idToString(
+            fwTargetId
+          )} with firmware ${firmwarePath}`
         );
         pendingDfuCount -= 1;
-        await startDfu(addr, firmwarePath, dfuOptions);
+        await startDfu(fwTargetId, firmwarePath, dfuOptions);
       } catch (error) {
         if (
           allowRetry &&
@@ -89,7 +116,7 @@ export default async function (
           // bootloader update attempt that was performed just before
           console.warn(`DFU firmware version error, trying a second time`);
           pendingDfuCount += 1;
-          await delay(500); // Experimental
+          await delay(500); // Experimental, hopefully is delay is enough to not get the same error again
           await update(false);
         } else {
           console.log(`DFU firmware error: ${error}`);

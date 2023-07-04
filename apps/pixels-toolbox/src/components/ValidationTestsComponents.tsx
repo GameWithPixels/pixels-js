@@ -196,11 +196,11 @@ export function UpdateFirmware({
   const [resolveScanPromise, setResolveScanPromise] =
     React.useState<() => void>();
   const pixelRef = React.useRef<Pixel>();
-  const pixelAddressRef = React.useRef<string>();
+  const scannedPixelRef = React.useRef<ScannedPixel>();
   React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
       pixelRef.current = getPixel(scannedPixels[0]);
-      pixelAddressRef.current = scannedPixels[0].systemId;
+      scannedPixelRef.current = scannedPixels[0];
       onPixelFound?.(pixelRef.current);
       resolveScanPromise();
     }
@@ -277,8 +277,8 @@ export function UpdateFirmware({
     .chainWith(
       React.useCallback(async () => {
         const pixel = pixelRef.current;
-        const address = pixelAddressRef.current;
-        if (!pixel || !address) {
+        const dfuTarget = scannedPixelRef.current;
+        if (!pixel || !dfuTarget) {
           throw new TaskFaultedError("No scanned Pixel");
         }
         // Get the DFU files bundles from the zip file
@@ -312,7 +312,7 @@ export function UpdateFirmware({
             setResolveRejectDfuPromise({ resolve, reject });
           });
           updateFirmware(
-            address,
+            dfuTarget,
             dfuBundle.bootloader.pathname,
             dfuBundle.firmware.pathname
           );

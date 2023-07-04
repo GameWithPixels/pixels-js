@@ -73,7 +73,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   React.useEffect(() => {
     if (dfuTarget && bundle) {
       updateFirmware(
-        dfuTarget.systemId,
+        dfuTarget,
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
         dfuTarget.name.startsWith("PXL") || dfuTarget.name.startsWith("Dfu") // Running bootloader?
@@ -233,7 +233,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
           <Text variant="bodyLarge">Selected Peripheral:</Text>
           {dfuTarget && <PeripheralInfo peripheral={dfuTarget} />}
           <Text variant="bodyLarge">Performing Firmware Update:</Text>
-          {dfuState === "starting" && dfuProgress > 0 ? (
+          {dfuState === "uploading" ? (
             <FastBox w="100%" p={2}>
               <ProgressBar percent={dfuProgress} />
             </FastBox>

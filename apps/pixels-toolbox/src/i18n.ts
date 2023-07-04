@@ -155,6 +155,7 @@ i18n
           validatingFirmware: "validating firmware",
           enablingDfuMode: "enabling",
           starting: "starting",
+          uploading: "uploading",
           completed: "completed",
           aborted: "aborted",
 
@@ -333,7 +334,7 @@ i18n
           initializing: "正在初始化",
           validatingFirmware: "测试中",
           enablingDfuMode: "启动中",
-          dfuStarting: "开始",
+          starting: "开始",
           uploading: "上传中",
           completed: "完成",
           aborted: "中断",
