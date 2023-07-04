@@ -29,6 +29,8 @@ import {
 import { Colors } from "react-native/Libraries/NewAppScreen";
 import DocumentPicker, { types } from "react-native-document-picker";
 
+const pixelServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+
 function getFilename(uri: string): string {
   return uri.split("/").pop() ?? uri;
 }
@@ -38,8 +40,6 @@ function idToString(targetId: DfuTargetId): string {
     ? targetId.toString(16).match(/.{2}/g)?.join(":") ?? ""
     : `{${targetId}}`;
 }
-
-const pixelServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 
 export default function App() {
   // Dark mode support
@@ -117,6 +117,7 @@ export default function App() {
   // Start/stop scanning
   React.useEffect(() => {
     if (onlyPixels) {
+      // Keep only Pixels
       setScannedPeripherals((peripherals) =>
         peripherals.filter((p) =>
           p.advertisementData.services?.includes(pixelServiceUuid)
@@ -128,7 +129,10 @@ export default function App() {
       setLastError(undefined);
       // Start scanning
       const services = onlyPixels ? [pixelServiceUuid] : [];
-      Central.startScanning(services).catch(setLastError);
+      Central.startScanning(services).catch((error) => {
+        setIsScanning(false);
+        setLastError(error);
+      });
     } else {
       Central.stopScanning();
     }

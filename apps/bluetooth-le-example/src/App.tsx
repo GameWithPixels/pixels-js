@@ -143,7 +143,8 @@ export default function App() {
 
   // Register/un-register listeners
   React.useEffect(() => {
-    const statusListener = (ev: ScanStatusEvent) => setIsScanning(ev.scanning);
+    const scanStatusListener = (ev: ScanStatusEvent) =>
+      setIsScanning(ev.scanning);
     const peripheralListener = (ev: ScannedPeripheralEvent) => {
       // Only show connectable peripherals with a name
       if (
@@ -162,11 +163,11 @@ export default function App() {
         );
       }
     };
-    Central.addListener("scanStatus", statusListener);
+    Central.addListener("scanStatus", scanStatusListener);
     Central.addListener("scannedPeripheral", peripheralListener);
     return () => {
       // Unregister listeners
-      Central.removeListener("scanStatus", statusListener);
+      Central.removeListener("scanStatus", scanStatusListener);
       Central.removeListener("scannedPeripheral", peripheralListener);
     };
   }, [updatePeripherals]);
@@ -174,6 +175,7 @@ export default function App() {
   // Start/stop scanning
   React.useEffect(() => {
     if (onlyPixels) {
+      // Keep only Pixels
       setScannedPeripherals((peripherals) =>
         peripherals.filter((p) =>
           p.advertisementData.services?.includes(pixelServiceUuid)
