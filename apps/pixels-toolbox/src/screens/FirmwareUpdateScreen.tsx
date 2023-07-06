@@ -178,6 +178,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         onRefresh={() => {
           setRefreshing(true);
           setScannedPeripherals([]);
+          pendingScans.current.length = 0;
           setTimeout(() => {
             // Wait of 1 second before stopping the refresh animation
             setRefreshing(false);
