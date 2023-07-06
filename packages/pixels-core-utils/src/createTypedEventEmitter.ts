@@ -60,7 +60,7 @@ export interface TypedEventEmitter<T extends EventMap> {
  * @see https://rjzaworski.com/2019/10/event-emitters-in-typescript
  * @returns A typed event emitter.
  */
-export default function createTypedEventEmitter<
+export function createTypedEventEmitter<
   T extends EventMap
 >(): TypedEventEmitter<T> {
   return new EventEmitter();

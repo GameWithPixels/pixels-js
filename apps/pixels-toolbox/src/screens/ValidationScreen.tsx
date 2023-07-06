@@ -41,7 +41,7 @@ import {
   WaitFaceUp,
   TurnOffDevice,
 } from "~/components/ValidationTestsComponents";
-import usePixelIdDecoderFrameProcessor from "~/features/hooks/usePixelIdDecoderFrameProcessor";
+import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
 import { DieType, DieTypes } from "~/features/pixels/DieType";
 import {
   getTaskResult,
@@ -590,7 +590,7 @@ function ValidationPage() {
   );
 }
 
-export default function () {
+export function ValidationScreen() {
   return (
     <AppPage>
       <ValidationPage />

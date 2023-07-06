@@ -36,15 +36,15 @@ import {
 } from "./DynamicLinesChart";
 
 import ProgressBar from "~/components/ProgressBar";
-import exportCsv from "~/features/files/exportCsv";
-import getDatedFilename from "~/features/files/getDatedFilename";
-import requestUserFile from "~/features/files/requestUserFile";
-import useAppBackgroundState from "~/features/hooks/useAppBackgroundState";
+import { exportCsv } from "~/features/files/exportCsv";
+import { getDatedFilename } from "~/features/files/getDatedFilename";
+import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
+import { useAppBackgroundState } from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher, {
   TelemetryData,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
-import range from "~/features/range";
+import { range } from "~/features/range";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
@@ -623,7 +623,7 @@ export function PixelDetails({
                 onExportMessages={() => {
                   const filename = getDatedFilename([pixel.name, "messages"]);
                   const task = async () => {
-                    const uri = await requestUserFile(filename + ".json");
+                    const uri = await requestUserFileAsync(filename + ".json");
                     pixelDispatcher.exportMessages(uri);
                   };
                   task().catch(setLastError);

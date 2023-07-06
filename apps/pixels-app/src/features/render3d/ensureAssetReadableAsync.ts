@@ -16,7 +16,7 @@ import { Platform } from "react-native";
  *                      to copy the contents of the module.
  * @returns An asset always readable by ExpoTHREE.loadAsync()
  */
-export default async function (
+export async function ensureAssetReadableAsync(
   virtualAssetModule: string | number,
   assetFilename: string
 ): Promise<Asset> {

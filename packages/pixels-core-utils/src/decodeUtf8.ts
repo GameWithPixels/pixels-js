@@ -4,7 +4,7 @@
  * @param bytes Byte array with UTF8 string data.
  * @returns The decoded string.
  */
-export default function (bytes: Uint8Array): string {
+export function decodeUtf8(bytes: Uint8Array): string {
   let i = 0,
     s = "";
   while (i < bytes.length) {

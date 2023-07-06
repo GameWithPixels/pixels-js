@@ -1,13 +1,13 @@
 import { StorageAccessFramework } from "expo-file-system";
 
-import requestUserFile from "./requestUserFile";
+import { requestUserFileAsync } from "./requestUserFileAsync";
 
-export default async function <T extends Record<string, number>>(
+export async function exportCsv<T extends Record<string, number>>(
   filename: string,
   data: readonly T[]
 ): Promise<void> {
   if (data.length) {
-    const uri = await requestUserFile(filename);
+    const uri = await requestUserFileAsync(filename);
     const keys = Object.keys(data[0]);
     const header = keys.join(",");
     const lines = data.map((d) => keys.map((k) => d[k].toString()).join(","));

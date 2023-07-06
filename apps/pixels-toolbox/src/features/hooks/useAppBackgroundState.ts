@@ -1,7 +1,7 @@
 import React from "react";
 import { AppState, AppStateStatus } from "react-native";
 
-export default function (): AppStateStatus {
+export function useAppBackgroundState(): AppStateStatus {
   const [appState, setAppState] = React.useState(AppState.currentState);
   React.useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {

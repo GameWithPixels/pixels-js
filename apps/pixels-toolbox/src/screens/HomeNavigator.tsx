@@ -11,7 +11,7 @@ import SelectDfuFilesScreen from "~/screens/SelectDfuFilesScreen";
 
 const Stack = createStackNavigator<HomeScreensParamList>();
 
-export default function ({ navigation }: HomeNavigatorProps) {
+export function HomeNavigator({ navigation }: HomeNavigatorProps) {
   // Setup page options
   React.useEffect(() => {
     navigation.setOptions({

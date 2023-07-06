@@ -1,4 +1,4 @@
-import assert from "./assert";
+import { assert } from "./assert";
 
 /**
  * Returns the indices of the "on" bits of the given value.

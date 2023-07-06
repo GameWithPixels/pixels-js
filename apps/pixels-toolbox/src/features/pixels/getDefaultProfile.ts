@@ -15,7 +15,7 @@ function getFirstProfileDataSet(jsonData: Json.DataSet): DataSet {
   ).toDataSet();
 }
 
-export default function (dieType: DieType): DataSet {
+export function getDefaultProfile(dieType: DieType): DataSet {
   // Update the project tsconfig.json after adding a new profile JSON file to the build
   switch (dieType) {
     case "d20":

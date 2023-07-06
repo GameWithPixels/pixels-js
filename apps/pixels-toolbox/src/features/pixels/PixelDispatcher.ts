@@ -48,10 +48,10 @@ import {
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
-import updateFirmware from "~/features/dfu/updateFirmware";
-import getDatedFilename from "~/features/files/getDatedFilename";
-import getDefaultProfile from "~/features/pixels/getDefaultProfile";
+import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
+import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { getDatedFilename } from "~/features/files/getDatedFilename";
+import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 
 export type ProfileType = "default" | "tiny";
 

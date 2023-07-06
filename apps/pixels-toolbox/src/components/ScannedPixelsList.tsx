@@ -8,8 +8,8 @@ import { useTranslation } from "react-i18next";
 import { FlatList, Pressable } from "react-native";
 import { Button, Text } from "react-native-paper";
 
-import PixelInfoCard from "~/components/PixelInfoCard";
-import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import { PixelInfoCard } from "~/components/PixelInfoCard";
+import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
 import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
 import gs from "~/styles";
 

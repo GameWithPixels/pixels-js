@@ -1,7 +1,7 @@
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import React from "react";
 
-import updateFirmware, { DfuTarget } from "~/features/dfu/updateFirmware";
+import { DfuTarget, updateFirmware } from "~/features/dfu/updateFirmware";
 
 /**
  * Hook to upload a bootloader & firmware.
@@ -12,7 +12,7 @@ import updateFirmware, { DfuTarget } from "~/features/dfu/updateFirmware";
  * 3. The current DFU upload progress (from 0 to 100) or -1.
  * 4. The last error that occurred (cleared when starting a new DFU)
  */
-export default function (): [
+export function useUpdateFirmware(): [
   (
     target: DfuTarget,
     bootloaderPath?: string,

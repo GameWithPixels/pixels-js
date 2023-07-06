@@ -144,7 +144,7 @@ function TestPage() {
   );
 }
 
-export default function () {
+export function TaskChainTestScreen() {
   return (
     <AppPage>
       <TestPage />

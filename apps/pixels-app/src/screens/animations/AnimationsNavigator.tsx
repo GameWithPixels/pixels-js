@@ -11,7 +11,7 @@ import { paleBluePixelTheme } from "~/themes";
 
 const Stack = createStackNavigator<AnimationsScreenStackParamList>();
 
-export default function PatternsNavigator() {
+export function PatternsNavigator() {
   return (
     <NativeBaseProvider theme={paleBluePixelTheme}>
       <Stack.Navigator

@@ -9,10 +9,11 @@ import { Button, Text, useTheme } from "react-native-paper";
 import SwipeablePixelsList from "./SwipeablePixelsList";
 
 import { AppPage } from "~/components/AppPage";
-import useAppDfuFilesBundles, {
+import {
+  useAppDfuFilesBundles,
   NoDfuFileLoadedError,
 } from "~/features/hooks/useAppDfuFilesBundles";
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
+import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { HomeScreenProps } from "~/navigation";
 import gs from "~/styles";
 

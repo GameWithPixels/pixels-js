@@ -1,4 +1,4 @@
-import assert from "./assert";
+import { assert } from "./assert";
 
 /**
  * Use this function to raise an error when running a branch of code
@@ -8,6 +8,6 @@ import assert from "./assert";
  * @param x A value of type never.
  * @param message The error message if this function is called.
  */
-export default function (x: never, message?: string): never {
+export function assertNever(x: never, message?: string): never {
   assert(false, message ?? "assertNever error");
 }

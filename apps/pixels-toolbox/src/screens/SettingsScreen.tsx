@@ -283,7 +283,7 @@ function SettingsPage() {
   );
 }
 
-export default function () {
+export function SettingsScreen() {
   return (
     <AppPage>
       <SettingsPage />

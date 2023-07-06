@@ -10,6 +10,6 @@ function prune<T>(obj: Partial<T>): Partial<T> {
  * Initializes the members of a object with a set of values, in a type safe way.
  * Properties that are undefined in "values" are skipped.
  */
-export default function <T extends object>(obj: T, values: Partial<T>): T {
+export function safeAssign<T extends object>(obj: T, values: Partial<T>): T {
   return Object.assign(obj, prune(values));
 }

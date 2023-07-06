@@ -21,17 +21,17 @@ import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import areSameFirmwareDates from "~/features/dfu/areSameFirmwareDates";
+import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
-import useUpdateFirmware from "~/features/hooks/useUpdateFirmware";
+import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import getDefaultProfile from "~/features/pixels/getDefaultProfile";
+import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
 import useTaskChain from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
+import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
   getBoardOrDie,
   isBoard,

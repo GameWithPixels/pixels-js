@@ -13,7 +13,7 @@ export class NoDfuFileLoadedError extends Error {
   }
 }
 
-export default function (): [
+export function useAppDfuFilesBundles(): [
   DfuFilesBundle | undefined, // undefined until DFU bundles are loaded
   DfuFilesBundle[],
   Error?

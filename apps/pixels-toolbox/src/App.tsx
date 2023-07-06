@@ -23,12 +23,12 @@ import { Provider as ReduxProvider } from "react-redux";
 import { useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
 import { type RootScreensParamList } from "~/navigation";
-import AnimationsScreen from "~/screens/AnimationsScreen";
-import FirmwareUpdateNavigator from "~/screens/FirmwareUpdateNavigator";
-import HomeNavigator from "~/screens/HomeNavigator";
-import RollScreen from "~/screens/RollScreen";
-import SettingsScreen from "~/screens/SettingsScreen";
-import ValidationScreen from "~/screens/ValidationScreen";
+import { AnimationsScreen } from "~/screens/AnimationsScreen";
+import { FirmwareUpdateNavigator } from "~/screens/FirmwareUpdateNavigator";
+import { HomeNavigator } from "~/screens/HomeNavigator";
+import { RollScreen } from "~/screens/RollScreen";
+import { SettingsScreen } from "~/screens/SettingsScreen";
+import { ValidationScreen } from "~/screens/ValidationScreen";
 
 import "~/i18n"; // Import internationalization file so it's initialized
 
@@ -80,7 +80,7 @@ const DarkTheme = {
 
 const Drawer = createDrawerNavigator<RootScreensParamList>();
 
-function App() {
+function AppContent() {
   const themeMode = useAppSelector((state) => state.displaySettings.themeMode);
   const darkOrLight =
     themeMode === "system" ? Appearance.getColorScheme() : themeMode;
@@ -124,14 +124,14 @@ function App() {
   );
 }
 
-export default function () {
+export default function App() {
   return (
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <ReduxProvider store={store}>
       <SafeAreaProvider>
         <StatusBar style="light" />
         <ActionSheetProvider>
-          <App />
+          <AppContent />
         </ActionSheetProvider>
       </SafeAreaProvider>
     </ReduxProvider>

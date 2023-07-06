@@ -11,7 +11,7 @@ import { paleBluePixelTheme } from "~/themes";
 
 const Stack = createStackNavigator<HomeScreenStackParamList>();
 
-export default function HomeNavigator() {
+export function HomeNavigator() {
   return (
     <NativeBaseProvider theme={paleBluePixelTheme}>
       <Stack.Navigator

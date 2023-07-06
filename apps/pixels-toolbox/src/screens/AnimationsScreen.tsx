@@ -36,9 +36,9 @@ import { Button, Divider, Text } from "react-native-paper";
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
-import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
-import useForceUpdate from "~/features/hooks/useForceUpdate";
-import range from "~/features/range";
+import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
+import { useForceUpdate } from "~/features/hooks/useForceUpdate";
+import { range } from "~/features/range";
 import gs from "~/styles";
 
 // function test() {
@@ -481,7 +481,7 @@ function AnimationPage() {
   );
 }
 
-export default function () {
+export function AnimationsScreen() {
   return (
     <AppPage>
       <AnimationPage />

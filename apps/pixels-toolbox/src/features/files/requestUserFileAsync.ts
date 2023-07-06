@@ -3,7 +3,7 @@ import { StorageAccessFramework } from "expo-file-system";
 
 import Pathname from "./Pathname";
 
-export default async function (pathname: string): Promise<string> {
+export async function requestUserFileAsync(pathname: string): Promise<string> {
   assert(pathname.length > 0, "requestUserFile: empty filename");
   const extension = Pathname.getExtension(pathname) ?? "txt";
   const permissions =

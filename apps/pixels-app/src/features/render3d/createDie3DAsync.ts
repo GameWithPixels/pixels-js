@@ -8,7 +8,7 @@ import { Asset } from "expo-asset";
 import { loadAsync, THREE } from "expo-three";
 
 import "./readAsArrayBuffer";
-import ensureAssetReadable from "./ensureAssetReadable";
+import { ensureAssetReadableAsync } from "./ensureAssetReadableAsync";
 
 function extractMeshesGeometry(
   gltf: { scene: THREE.Group },
@@ -56,7 +56,7 @@ doneEvent.setMaxListeners(0);
 async function loadAssets(): Promise<void> {
   // Load textures
   if (!normalTex) {
-    const asset = await ensureAssetReadable(
+    const asset = await ensureAssetReadableAsync(
       require("!/textures/plastic-normal.png"),
       "textures/plastic-normal.png"
     );
@@ -67,7 +67,7 @@ async function loadAssets(): Promise<void> {
   }
 
   if (!faceTex) {
-    const asset = await ensureAssetReadable(
+    const asset = await ensureAssetReadableAsync(
       require("!/textures/d20-face-map.png"),
       "textures/d20-face-map.png"
     );
@@ -102,7 +102,7 @@ const instantiate = () => new Die3D(faceMeshes!, normalTex!, faceTex!);
 const error = () =>
   new Error("Failed to load some Die3D asset, see previous errors");
 
-export default async function (): Promise<Die3D> {
+export async function createDie3DAsync(): Promise<Die3D> {
   switch (status) {
     case undefined:
       status = "loading";

@@ -1,7 +1,7 @@
 /**
  * Simple queue of promises, which are run one after the other.
  */
-export default class SequentialPromiseQueue {
+export class SequentialPromiseQueue {
   private readonly _queue: (() => Promise<void>)[] = [];
 
   /**

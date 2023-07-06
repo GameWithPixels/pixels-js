@@ -11,7 +11,7 @@ import { Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
-import useErrorWithHandler from "~/features/hooks/useErrorWithHandler";
+import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
 
 function RollPage() {
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
@@ -63,7 +63,7 @@ function RollPage() {
   );
 }
 
-export default function () {
+export function RollScreen() {
   return (
     <AppPage pt={0} px={0}>
       <RollPage />

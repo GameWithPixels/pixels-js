@@ -12,7 +12,7 @@ import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { StyleSheet } from "react-native";
 
-import createDie3DAsync from "./createDie3DAsync";
+import { createDie3DAsync } from "./createDie3DAsync";
 
 class SceneRenderer {
   private readonly _die3d: Die3D;

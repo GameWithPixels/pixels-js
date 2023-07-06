@@ -9,13 +9,12 @@ import { LogBox } from "react-native";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
-import { persistor, store } from "./app/store";
-import { TabBarNavigator } from "./components/TabBarNavigator";
-import AppSettings from "./screens/AppSettings";
-import PatternsNavigator from "./screens/animations/AnimationsNavigator";
-import ProfilesNavigator from "./screens/profiles/ProfilesNavigator";
-
-import HomeNavigator from "~/screens/home/HomeNavigator";
+import { persistor, store } from "~/app/store";
+import { TabBarNavigator } from "~/components/TabBarNavigator";
+import { AppSettings } from "~/screens/AppSettings";
+import { PatternsNavigator } from "~/screens/animations/AnimationsNavigator";
+import { HomeNavigator } from "~/screens/home/HomeNavigator";
+import { ProfilesNavigator } from "~/screens/profiles/ProfilesNavigator";
 
 configure({
   enforceActions: "never",

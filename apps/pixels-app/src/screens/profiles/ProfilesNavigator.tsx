@@ -11,7 +11,7 @@ import { paleBluePixelTheme } from "~/themes";
 
 const Stack = createStackNavigator<ProfilesScreenStackParamList>();
 
-export default function ProfilesNavigator() {
+export function ProfilesNavigator() {
   return (
     <NativeBaseProvider theme={paleBluePixelTheme}>
       <Stack.Navigator

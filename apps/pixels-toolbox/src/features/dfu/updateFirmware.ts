@@ -20,7 +20,7 @@ export type DfuTarget =
   | DfuTargetId
   | Pick<ScannedPixel, "systemId" | "address">;
 
-export default async function (
+export async function updateFirmware(
   target: DfuTarget,
   bootloaderPath?: string,
   firmwarePath?: string,

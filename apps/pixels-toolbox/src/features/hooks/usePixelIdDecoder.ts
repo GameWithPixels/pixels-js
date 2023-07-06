@@ -14,7 +14,7 @@ export interface PixelIdDecoderAction {
 }
 
 // Returned dispatch function is stable
-export default function (): [
+export function usePixelIdDecoder(): [
   PixelIdDecoderState,
   (action: PixelIdDecoderAction) => void
 ] {

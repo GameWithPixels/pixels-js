@@ -29,7 +29,7 @@ export type PixelConnectByIdDispatch = (
 ) => void;
 
 // Returned dispatch function is stable
-export default function (): [
+export function usePixelConnectById(): [
   PixelConnectByIdState,
   PixelConnectByIdDispatch,
   Error?

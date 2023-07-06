@@ -1,6 +1,6 @@
 // Similar to Python range (but limited to numbers)
 // https://www.w3schools.com/python/ref_func_range.asp
-export default function (
+export function range(
   startOrStop: number,
   stop?: number,
   step?: number

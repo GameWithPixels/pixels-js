@@ -8,7 +8,7 @@ import SelectDfuFilesScreen from "~/screens/SelectDfuFilesScreen";
 
 const Stack = createStackNavigator<FirmwareUpdateParamList>();
 
-export default function () {
+export function FirmwareUpdateNavigator() {
   const { t } = useTranslation();
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

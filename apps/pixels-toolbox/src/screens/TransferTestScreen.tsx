@@ -20,12 +20,12 @@ import { Button, ProgressBar, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
 import { LineChart } from "~/components/LineChart";
-import PixelInfoCard from "~/components/PixelInfoCard";
+import { PixelInfoCard } from "~/components/PixelInfoCard";
 import Pathname from "~/features/files/Pathname";
-import requestUserFile from "~/features/files/requestUserFile";
+import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { pixelTransferTest } from "~/features/pixels/extensions";
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
+import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import gs from "~/styles";
 
 function PixelListItem({
@@ -178,7 +178,7 @@ function SendData({ pixel }: { pixel: Pixel }) {
       console.log(
         `About to write ${contents.length} characters to ${filename}`
       );
-      const uri = await requestUserFile(filename);
+      const uri = await requestUserFileAsync(filename);
       await StorageAccessFramework.writeAsStringAsync(uri, contents);
     };
     task().catch(errorHandler);
@@ -251,7 +251,7 @@ function TransferTestPage() {
   );
 }
 
-export default function () {
+export function TransferTestScreen() {
   return (
     <AppPage>
       <TransferTestPage />

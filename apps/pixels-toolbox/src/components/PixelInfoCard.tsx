@@ -8,8 +8,8 @@ import { TFunction, useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import { Card, Text } from "react-native-paper";
 
-import useForceUpdate from "~/features/hooks/useForceUpdate";
-import toLocaleDateTimeString from "~/features/toLocaleDateTimeString";
+import { useForceUpdate } from "~/features/hooks/useForceUpdate";
+import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import gs from "~/styles";
 
 interface PixelAndTranslation {
@@ -129,10 +129,7 @@ export interface PixelInfoCardProps extends React.PropsWithChildren {
   pixelInfo: PixelInfoNotifier;
 }
 
-export default function PixelInfoCard({
-  children,
-  pixelInfo,
-}: PixelInfoCardProps) {
+export function PixelInfoCard({ children, pixelInfo }: PixelInfoCardProps) {
   const { t } = useTranslation();
   const props = { pixel: pixelInfo, t };
   return (

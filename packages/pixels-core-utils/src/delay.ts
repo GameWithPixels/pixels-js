@@ -4,7 +4,7 @@
  * @param abortSignal Optional AbortSignal to interrupt the wait.
  * @returns A promise.
  */
-export default async function (
+export async function delay(
   ms: number,
   abortSignal?: AbortSignal
 ): Promise<void> {

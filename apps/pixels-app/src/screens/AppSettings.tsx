@@ -7,7 +7,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { resetProfilesToDefault } from "~/features/appDataSet/profilesSetSlice";
 import { removeAllPairedDice } from "~/features/pairedDiceSlice";
 
-export default function () {
+export function AppSettings() {
   const dispatch = useAppDispatch();
   const resetSettings = () => {
     console.log("Resetting settings");
