@@ -38,32 +38,44 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
     @Override
     public Object callback(@NotNull ImageProxy image, @NotNull Object[] params) {
         // Read parameters (must match processImage() parameters)
-        int subSamplingX = 1;
-        int subSamplingY = 1;
+        double maxPixelsToProcess = 0;
         boolean writeRbgImage = false;
         boolean writeYuvPlanes = false;
 
         int paramCounter = 0;
         for (Object param : params) {
-            if ((paramCounter < 2) && (param instanceof Double)) {
-                double d = (Double) param;
-                if (paramCounter == 0) {
-                    subSamplingX = (int) d;
-                } else if (paramCounter == 1) {
-                    subSamplingY = (int) d;
-                }
-            } else if ((paramCounter >= 2) && (param instanceof Boolean)) {
-                if (paramCounter == 2) {
+            if ((paramCounter == 0) && (param instanceof Double)) {
+                maxPixelsToProcess = (Double) param;
+            } else if ((paramCounter <= 2) && (param instanceof Boolean)) {
+                if (paramCounter == 1) {
                     writeRbgImage = (Boolean) param;
-                } else { //if (paramCounter == 3) {
+                } else { //if (paramCounter == 2) {
                     writeYuvPlanes = (Boolean) param;
                 }
             }
             ++paramCounter;
         }
-//        for (Object param : params) {
-//            Log.d(TAG, "  -> " + (param == null ? "(null)" : param.toString() + " (" + param.getClass().getName() + ")"));
-//        }
+
+        // Compute sub-sampling based on maximum number of pixels to process
+        int subSamplingX = 1;
+        int subSamplingY = 1;
+        if (maxPixelsToProcess > 0) {
+            // Get image size
+            final int width = image.getWidth();
+            final int height = image.getHeight();
+            while ((width / subSamplingX * height / subSamplingY) > maxPixelsToProcess) {
+                if (subSamplingX > subSamplingY) {
+                    subSamplingY <<= 1;
+                } else if (subSamplingY > subSamplingX) {
+                    subSamplingX <<= 1;
+                } else if (width > height) {
+                    subSamplingX <<= 1;
+                } else {
+                    subSamplingY <<= 1;
+                }
+            }
+        }
+
         @SuppressLint("UnsafeOptInUsageError")
         Image img = image.getImage();
 
@@ -71,7 +83,12 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
             throw new IllegalArgumentException("Failed to get image contents");
         }
 
-        return processImage(img, subSamplingX, subSamplingY, writeRbgImage, writeYuvPlanes);
+        try {
+            return processImage(img, subSamplingX, subSamplingY, writeRbgImage, writeYuvPlanes);
+        } catch (Exception e) {
+            Log.e(TAG, "Exception computing RGB averages: " + e.getMessage());
+            return e.getMessage();
+        }
     }
 
     // Be careful with sub sampling, it must be > 2 and work with the given resolution
@@ -90,10 +107,15 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
 
         // Track how long it takes to process the image
         final long startTime = System.nanoTime();
+        final long timestamp = System.currentTimeMillis();
 
-        // 1280 x 720
+        // Get image size
         final int width = image.getWidth();
         final int height = image.getHeight();
+
+        // Do we have sub-sampling?
+        final boolean isSubSamplingX = subSamplingX > 1;
+        final boolean isSubSamplingY = subSamplingY > 1;
 
         // Base on code sample from:
         // https://blog.minhazav.dev/how-to-convert-yuv-420-sp-android.media.Image-to-Bitmap-or-jpeg/#pure-java-approach
@@ -112,22 +134,21 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
         // The U/V planes are guaranteed to have the same row stride and pixel stride
         final int yRowStride = planes[0].getRowStride() * subSamplingY;
         final int yPixelStride = planes[0].getPixelStride() * subSamplingX;
-        final int uvRowStride = planes[1].getRowStride() * subSamplingY / 2;
-        final int uvPixelStride = planes[1].getPixelStride() * subSamplingX / 2;
+        final int uvRowStride = planes[1].getRowStride() * (isSubSamplingY ? subSamplingY / 2 : 1);
+        final int uvPixelStride = planes[1].getPixelStride() * (isSubSamplingX ? subSamplingX / 2 : 1);
+
+        final int pixelsCount = (width / subSamplingX) * (height / subSamplingY);
 
         // U/V Values are sub-sampled i.e. each pixel in U/V channel in a
         // YUV_420 image act as chroma value for 4 neighboring pixels
         int uvIndex = 0, uvIndexRowStart = 0;
 
-        final int pixelsCount = (width / subSamplingX) * (height / subSamplingY);
         final byte[] argb = writeRgbImage ? getArgbBuffer(pixelsCount * 4) : null;
         int argbIndex = 0;
 
-        double rSum = 0, gSum = 0, bSum = 0;
+        long rSum = 0, gSum = 0, bSum = 0;
         int yIndex = 0, yIndexRowStart = 0;
 
-        final boolean isSubSamplingX = subSamplingX > 1;
-        final boolean isSubSamplingY = subSamplingY > 1;
         for (int y = 0; y < height; y += subSamplingY) {
             for (int x = 0; x < width; x += subSamplingX) {
                 final int yValue = yBuffer.get(yIndex) & 0xFF;
@@ -140,12 +161,12 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
 
                 // https://en.wikipedia.org/wiki/YUV#Y%E2%80%B2UV420sp_(NV21)_to_RGB_conversion_(Android)
                 // Fast integer computing with a small approximation
-                int r = yValue + ((351 * vValue) >> 8);
-                int g = yValue - ((179 * vValue + 86 * uValue) >> 8);
-                int b = yValue + ((443 * uValue) >> 8);
-//                int r = (int)(0.5f + yValue + 1.370705f * vValue);
-//                int g = (int)(0.5f + yValue - 0.698001f * vValue - 0.337633f * uValue);
-//                int b = (int)(0.5f + yValue + 1.732446f * uValue);
+                final int r = yValue + ((351 * vValue) >> 8);
+                final int g = yValue - ((179 * vValue + 86 * uValue) >> 8);
+                final int b = yValue + ((443 * uValue) >> 8);
+//                final int r = (int) (yValue + 1.370705f * vValue);
+//                final int g = (int) (yValue - (0.698001f * vValue) - (0.337633f * uValue));
+//                final int b = (int) (yValue + 1.732446f * uValue);
 
                 // Use raw values (not clamped to [0, 255])
                 rSum += r;
@@ -175,44 +196,47 @@ public class VisionCameraRgbAveragesFrameProcessor extends FrameProcessorPlugin 
             uvIndex = uvIndexRowStart;
         }
 
-        if (writeRgbImage && !writeImage(
+        // Write the first 10 images
+        if (_imageFileCounter < 10 && (writeRgbImage || writeYuvPlanes)) {
+            if (writeRgbImage && !writeImage(
                 _picturesPath + "/cameraFiltered-" + _imageFileCounter + ".jpg",
                 width / subSamplingX,
                 height / subSamplingY,
                 argb)) {
-            Log.e(TAG, "Failed to save RGB image to file");
-        }
+                Log.e(TAG, "Failed to save RGB image to file");
+            }
 
-        if (writeYuvPlanes) {
-            String pathname = _picturesPath + "/camera%s-" + _imageFileCounter + ".jpg";
-            if (!writePlane(String.format(pathname, "Y"), planes[0], width, height)) {
-                Log.e(TAG, "Failed to save Y plane to file");
+            if (writeYuvPlanes) {
+                String pathname = _picturesPath + "/camera%s-" + _imageFileCounter + ".jpg";
+                if (!writePlane(String.format(pathname, "Y"), planes[0], width, height)) {
+                    Log.e(TAG, "Failed to save Y plane to file");
+                }
+                if (!writePlane(String.format(pathname, "U"), planes[1], width / 2, height / 2)) {
+                    Log.e(TAG, "Failed to save U plane to file");
+                }
+                if (!writePlane(String.format(pathname, "V"), planes[2], width / 2, height / 2)) {
+                    Log.e(TAG, "Failed to save V plane to file");
+                }
             }
-            if (!writePlane(String.format(pathname, "U"), planes[1], width / 2, height / 2)) {
-                Log.e(TAG, "Failed to save U plane to file");
-            }
-            if (!writePlane(String.format(pathname, "V"), planes[2], width / 2, height / 2)) {
-                Log.e(TAG, "Failed to save V plane to file");
-            }
-        }
 
-        if (writeRgbImage || writeYuvPlanes) {
             _imageFileCounter += 1;
         }
 
         // Put time as double as we can't do long
         WritableNativeMap map = new WritableNativeMap();
-        map.putDouble("timestamp", System.currentTimeMillis());
-        map.putDouble("duration", (System.nanoTime() - startTime) / 1000.0);
-        map.putInt("width", width);
-        map.putInt("height", height);
-//        map.putInt("yRowStride", yRowStride);
-//        map.putInt("yPixelStride", yPixelStride);
-//        map.putInt("uvRowStride", uvRowStride);
-//        map.putInt("uvPixelStride", uvPixelStride);
-        map.putDouble("redAverage", rSum / pixelsCount);
-        map.putDouble("greenAverage", gSum / pixelsCount);
-        map.putDouble("blueAverage", bSum / pixelsCount);
+        map.putDouble("timestamp", timestamp);
+        map.putDouble("duration", (System.nanoTime() - startTime) / 1e6);
+        map.putDouble("redAverage", Math.round(rSum / pixelsCount));
+        map.putDouble("greenAverage", Math.round(gSum / pixelsCount));
+        map.putDouble("blueAverage", Math.round(bSum / pixelsCount));
+        map.putInt("widthSubSampling", subSamplingX);
+        map.putInt("heightSubSampling", subSamplingY);
+        map.putInt("imageWidth", width);
+        map.putInt("imageHeight", height);
+        // map.putInt("yRowStride", yRowStride);
+        // map.putInt("yPixelStride", yPixelStride);
+        // map.putInt("uvRowStride", uvRowStride);
+        // map.putInt("uvPixelStride", uvPixelStride);
         return map;
     }
 

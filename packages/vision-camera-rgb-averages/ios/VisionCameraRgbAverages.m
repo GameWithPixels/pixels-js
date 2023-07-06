@@ -12,7 +12,7 @@ static id processImage(void *baseAddress, CVImageBufferRef imageBuffer, int subS
 {
     NSUInteger planeCount = CVPixelBufferGetPlaneCount(imageBuffer);
     OSType type = CVPixelBufferGetPixelFormatType(imageBuffer);
-
+    
     // Check image type = 420v
     if (type != *((OSType*)"v024"))
     {
@@ -31,20 +31,39 @@ static id processImage(void *baseAddress, CVImageBufferRef imageBuffer, int subS
     {
         return @"Invalid parameter, subSamplingY must be 1 or greater";
     }
-
+    
     // Track how long it takes to process the image
     NSDate *startTime = [NSDate date];
-
+    
+    // FPS check
+    //    static NSDate *lastTime = NULL;
+    //    if (lastTime)
+    //    {
+    //        NSLog(@"Time between calls: %f", [startTime timeIntervalSinceDate:lastTime]);
+    //    }
+    //    lastTime = startTime;
+    
     // Get image size
     const NSUInteger width = CVPixelBufferGetWidth(imageBuffer);
     const NSUInteger height = CVPixelBufferGetHeight(imageBuffer);
-
-    double rSum = 0, gSum = 0, bSum = 0;
-
+    
+    int64_t rSum = 0, gSum = 0, bSum = 0;
+    
     if (useVectorProc)
     {
         // Convert to RGB buffer
+        
+        // Buffer
         static uint32_t *rgbBuffer = NULL;
+        static uint64_t bufferSize = 0;
+        const size_t requiredBufferSize = width * height * 4;
+        if (rgbBuffer && bufferSize < requiredBufferSize)
+        {
+            free(rgbBuffer);
+            rgbBuffer = NULL;
+        }
+        
+        // Image convertion parameters
         static vImage_YpCbCrPixelRange pixelRange;
         static vImage_YpCbCrToARGB info;
         vImage_Error convError = kvImageNoError;
@@ -61,12 +80,16 @@ static id processImage(void *baseAddress, CVImageBufferRef imageBuffer, int subS
             pixelRange.CbCrMax = 240;
             pixelRange.CbCrMin = 16;
             
-            convError = vImageConvert_YpCbCrToARGB_GenerateConversion(kvImage_YpCbCrToARGBMatrix_ITU_R_601_4, &pixelRange,
-                                                                      &info, kvImage422CbYpCrYp8, kvImageARGB8888, kvImageNoFlags);
+            convError = vImageConvert_YpCbCrToARGB_GenerateConversion(kvImage_YpCbCrToARGBMatrix_ITU_R_601_4,
+                                                                      &pixelRange,
+                                                                      &info,
+                                                                      kvImage422CbYpCrYp8,
+                                                                      kvImageARGB8888,
+                                                                      kvImageNoFlags);
             
             if (convError == kvImageNoError)
             {
-                rgbBuffer = malloc(width * height * 4);
+                rgbBuffer = malloc(requiredBufferSize);
             }
         }
         
@@ -121,50 +144,49 @@ static id processImage(void *baseAddress, CVImageBufferRef imageBuffer, int subS
     }
     else
     {
+        const bool isSubSamplingX = subSamplingX > 1;
+        const bool isSubSamplingY = subSamplingY > 1;
+        
         // Get image info
-        NSUInteger plane0BytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
-        NSUInteger plane1BytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
+        NSUInteger yBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
+        NSUInteger uvBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
+        const NSUInteger yRowStride = yBytesPerRow * subSamplingY;
+        const NSUInteger yPixelStride = subSamplingX;
+        const NSUInteger uvRowStride = uvBytesPerRow * (isSubSamplingY ? subSamplingY / 2 : 1);
+        const NSUInteger uvPixelStride = 2 * (isSubSamplingX ? subSamplingX / 2 : 1);
         
         const uint8_t *yBuffer = CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);
         const uint8_t *uBuffer = CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
         const uint8_t *vBuffer = uBuffer + 1;
-        
-        const NSUInteger yRowStride = plane0BytesPerRow * subSamplingY;
-        const NSUInteger yPixelStride = subSamplingX;
-        const NSUInteger uvRowStride = plane1BytesPerRow * subSamplingY / 2;
-        const NSUInteger uvPixelStride = subSamplingX / 2;
         
         // U/V Values are sub-sampled i.e. each pixel in U/V channel in a
         // YUV_420 image act as chroma value for 4 neighboring pixels
         NSUInteger uvIndex = 0, uvIndexRowStart = 0;
         NSUInteger yIndex = 0, yIndexRowStart = 0;
         
-        const bool isSubSamplingX = subSamplingX > 1;
-        const bool isSubSamplingY = subSamplingY > 1;
-
         for (NSUInteger y = 0; y < height; y += subSamplingY)
         {
             for (NSUInteger x = 0; x < width; x += subSamplingX)
             {
                 int yValue = yBuffer[yIndex] & 0xFF;
-
+                
                 // U/V values ideally fall under [-0.5, 0.5] range. To fit them into
                 // [0, 255] range they are scaled up and centered to 128.
                 // Operation below brings U/V values to [-128, 127].
                 const int uValue = (uBuffer[uvIndex] & 0xFF) - 128;
                 const int vValue = (vBuffer[uvIndex] & 0xFF) - 128;
-
+                
                 // https://en.wikipedia.org/wiki/YUV#Y%E2%80%B2UV420sp_(NV21)_to_RGB_conversion_(Android)
                 // Fast integer computing with a small approximation
                 const int r = yValue + ((351 * vValue) >> 8);
                 const int g = yValue - ((179 * vValue + 86 * uValue) >> 8);
                 const int b = yValue + ((443 * uValue) >> 8);
-
+                
                 // Use raw values (not clamped to [0, 255])
                 rSum += r;
                 gSum += g;
                 bSum += b;
-
+                
                 // Next pixel, taking sub-sampling into account
                 yIndex += yPixelStride;
                 if (isSubSamplingX || (x & 1) != 0)
@@ -172,7 +194,7 @@ static id processImage(void *baseAddress, CVImageBufferRef imageBuffer, int subS
                     uvIndex += uvPixelStride;
                 }
             }
-
+            
             // Next line, taking sub-sampling into account
             yIndexRowStart += yRowStride;
             yIndex = yIndexRowStart;
@@ -183,58 +205,47 @@ static id processImage(void *baseAddress, CVImageBufferRef imageBuffer, int subS
             uvIndex = uvIndexRowStart;
         }
     }
-
-    const NSUInteger pixelsCount = (width / subSamplingX) * (height / subSamplingY);
+    
+    const int64_t pixelsCount = (width / subSamplingX) * (height / subSamplingY);
     const NSTimeInterval timestamp = [startTime timeIntervalSince1970];
     const NSTimeInterval duration = [[NSDate date] timeIntervalSinceDate:startTime];
     return @{
         @"timestamp": [NSNumber numberWithDouble:1000 * timestamp],
         @"duration": [NSNumber numberWithDouble:1000 * duration],
-        @"width": [NSNumber numberWithUnsignedInteger:width],
-        @"height": [NSNumber numberWithUnsignedInteger:height],
-//        @"yRowStride", yRowStride);
-//        @"yPixelStride", yPixelStride);
-//        @"uvRowStride", uvRowStride);
-//        @"uvPixelStride", uvPixelStride);
-        @"redAverage": [NSNumber numberWithDouble:round(rSum / pixelsCount)],
-        @"greenAverage": [NSNumber numberWithDouble:round(gSum / pixelsCount)],
-        @"blueAverage": [NSNumber numberWithDouble:round(bSum / pixelsCount)],
+        @"redAverage": [NSNumber numberWithInteger:rSum / pixelsCount],
+        @"greenAverage": [NSNumber numberWithInteger:gSum / pixelsCount],
+        @"blueAverage": [NSNumber numberWithInteger:bSum / pixelsCount],
+        @"widthSubSampling": [NSNumber numberWithUnsignedInteger:subSamplingX],
+        @"heightSubSampling": [NSNumber numberWithUnsignedInteger:subSamplingY],
+        @"imageWidth": [NSNumber numberWithUnsignedInteger:width],
+        @"imageHeight": [NSNumber numberWithUnsignedInteger:height],
     };
 }
 
 static inline id getImageRgbAverages(Frame* frame, NSArray* args)
 {
     // Read parameters (must match processImage() parameters)
-    int subSamplingX = 1;
-    int subSamplingY = 1;
+    int maxPixelsToProcess = 0;
     bool useVectorProc = false;
-
+    
     int paramCounter = 0;
     for (NSObject *param in args)
     {
         if ([param isKindOfClass:[NSNumber class]])
         {
             NSNumber *num = (NSNumber *)param;
-            if (paramCounter < 2)
+            if (paramCounter == 0)
             {
-                if (paramCounter == 0)
-                {
-                    subSamplingX = num.intValue;
-                }
-                else if (paramCounter == 1)
-                {
-                    subSamplingY = num.intValue;
-                }
+                maxPixelsToProcess = num.intValue;
             }
-            else if (paramCounter == 2)
+            else if (paramCounter == 1)
             {
                 useVectorProc = num.boolValue;
             }
         }
         ++paramCounter;
     }
-
-
+    
     CMSampleBufferRef buffer = frame.buffer;
     // UIImageOrientation orientation = frame.orientation;
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(buffer);
@@ -247,25 +258,53 @@ static inline id getImageRgbAverages(Frame* frame, NSArray* args)
         void *baseAddress = CVPixelBufferGetBaseAddress(imageBuffer);
         if (baseAddress)
         {
-            const bool invXY = CVPixelBufferGetWidth(imageBuffer) < CVPixelBufferGetHeight(imageBuffer);
+            // Compute sub-sampling based on maximum number of pixels to process
+            int subSamplingX = 1;
+            int subSamplingY = 1;
+            if (maxPixelsToProcess > 0)
+            {
+                // Get image size
+                const NSUInteger width = CVPixelBufferGetWidth(imageBuffer);
+                const NSUInteger height = CVPixelBufferGetHeight(imageBuffer);
+                while ((width / subSamplingX * height / subSamplingY) > maxPixelsToProcess)
+                {
+                    if (subSamplingX > subSamplingY)
+                    {
+                        subSamplingY <<= 1;
+                    }
+                    else if (subSamplingY > subSamplingX)
+                    {
+                        subSamplingX <<= 1;
+                    }
+                    else if (width > height)
+                    {
+                        subSamplingX <<= 1;
+                    }
+                    else
+                    {
+                        subSamplingY <<= 1;
+                    }
+                }
+            }
+            
             result = processImage(baseAddress,
                                   imageBuffer,
-                                  invXY ? subSamplingY : subSamplingX,
-                                  invXY ? subSamplingX : subSamplingY,
+                                  subSamplingX,
+                                  subSamplingY,
                                   useVectorProc);
         }
         else
         {
             result = @"Error getting image base address";
         }
-
+        
         CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
     }
     else
     {
         result = @"Error getting image buffer";
     }
-
+    
     return result;
 }
 

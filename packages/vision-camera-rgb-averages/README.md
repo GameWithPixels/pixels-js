@@ -53,24 +53,22 @@ function App() {
   const cameraRef = useRef<Camera>(null);
 
   // Simply log the R, G, B values
-  const processRgbAverages = useCallback((rgbAverages: ImageRgbAverages) => {
-    console.log(rgbAverages);
+  const processRgbAverages = useCallback((avg: ImageRgbAverages) => {
+    console.log(
+      `R=${s(avg.redAverage)} G=${s(avg.greenAverage)} B=${s(avg.blueAverage)}`
+    );
   }, []);
 
   // Get the average R, G and B for each image captured by the camera
   const frameProcessor = useFrameProcessor(
     (frame) => {
-      "worklet";
-      try {
-        const result = getImageRgbAverages(frame, {
-          subSamplingX: 4,
-          subSamplingY: 2,
-        });
-        runOnJS(processRgbAverages)(result);
-      } catch (error) {
+      const result = getImageRgbAverages(frame);
+      if (typeof result === "string") {
         console.error(
-          `Exception in frame processor "getImageRgbAverages": ${error}`
+          `Error in frame processor "getImageRgbAverages": ${result}`
         );
+      } else {
+        runOnJS(processRgbAverages)(result);
       }
     },
     [processRgbAverages]

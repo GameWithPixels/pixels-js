@@ -19,20 +19,13 @@ export default function (): [FrameProcessor, number, RbgColor?, Error?] {
   const frameProcessor = useFrameProcessor(
     (frame) => {
       "worklet";
-      try {
-        const result = getImageRgbAverages(frame, {
-          subSamplingX: 4,
-          subSamplingY: 2,
-          // writeImage: false,
-          // writePlanes: false,
-        });
+      const result = getImageRgbAverages(frame, {
+        maxPixelsToProcess: 480 * 320, // Limit number of processed pixels for performance reason
+      });
+      if (typeof result === "string") {
+        setLastError(new Error(result));
+      } else {
         runOnJS(decoderDispatch)({ rgbAverages: result });
-      } catch (error) {
-        runOnJS(setLastError)(
-          new Error(
-            `Exception in frame processor "getImageRgbAverages": ${error}`
-          )
-        );
       }
     },
     [decoderDispatch]

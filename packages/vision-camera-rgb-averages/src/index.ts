@@ -7,13 +7,18 @@ declare let _WORKLET: true | undefined;
  * Optional parameters for {@link getImageRgbAverages}.
  */
 export interface ImageRgbAveragesOptions {
-  /** Sub-sampling along the long dimension for computing average. */
-  subSamplingX?: number;
-  /** Sub-sampling along the short dimension for computing average. */
-  subSamplingY?: number;
-  /** Use vector processor to convert image to RGB. */
-  useVectorProc?: boolean; // iOS only
-  /** Output image to file. Android only. */
+  /**
+   * Maximum number of pixels to process, it that's more than
+   * contained in the image then sub-sampling is applied.
+   */
+  maxPixelsToProcess?: number;
+  /** Disable using vector processor on iOS to convert image to RGB. iOS only. */
+  noHardwareAcceleration?: boolean;
+  /**
+   * Output image to file. Android only.
+   * Images are usually stored in
+   * `Android\data\{applicationId}\files\Pictures`.
+   */
   writeImage?: boolean;
   /** Output YUV planes to files. Android only. */
   writePlanes?: boolean;
@@ -27,16 +32,20 @@ export interface ImageRgbAverages {
   timestamp: number;
   /** Time im ms it took the frame processor to process the frame. */
   duration: number;
-  /** Width of processed frame. */
-  width: number;
-  /** Height of processed frame. */
-  height: number;
   /** Average amount of red in the frame. */
   redAverage: number;
   /** Average amount of green in the frame. */
   greenAverage: number;
   /** Average amount of blue in the frame. */
   blueAverage: number;
+  /** Sub-sampling factor applied on frame width. */
+  widthSubSampling: number;
+  /** Sub-sampling factor applied on frame height. */
+  heightSubSampling: number;
+  /** Width of processed frame. */
+  imageWidth: number;
+  /** Height of processed frame. */
+  imageHeight: number;
 }
 
 /**
@@ -45,40 +54,33 @@ export interface ImageRgbAverages {
  * @param frame The frame to use.
  * @param opt Optional parameters, see {@link ImageRgbAveragesOptions}.
  * @returns An object with red, green and blue averages,
- *          see {@link ImageRgbAveragesOptions}.
- * @throws Throws an exception when given invalid parameters.
+ *          see {@link ImageRgbAveragesOptions},
+ *          or a string with an error message.
+ * @throws Throws an exception when not called inside a worklet.
  */
 export function getImageRgbAverages(
   frame: Frame,
   opt?: ImageRgbAveragesOptions
-): ImageRgbAverages {
+): ImageRgbAverages | string {
   "worklet";
   if (!_WORKLET)
-    throw new Error(
-      "getImageRgbAverages() must be called from a frame processor!"
-    );
+    throw new Error("getImageRgbAverages() must be called from a worklet");
 
   const result =
     Platform.OS === "android"
       ? // @ts-expect-error because this function is dynamically injected by VisionCamera
         __getImageRgbAverages(
           frame,
-          opt?.subSamplingX ?? 1,
-          opt?.subSamplingY ?? 1,
+          opt?.maxPixelsToProcess ?? 0,
           opt?.writeImage ?? false,
           opt?.writePlanes ?? false
         )
       : // @ts-expect-error because this function is dynamically injected by VisionCamera
         __getImageRgbAverages(
           frame,
-          opt?.subSamplingX ?? 1,
-          opt?.subSamplingY ?? 1,
-          opt?.useVectorProc ?? false
+          opt?.maxPixelsToProcess ?? 0,
+          !(opt?.noHardwareAcceleration ?? false)
         );
 
-  if (typeof result === "string") {
-    throw new Error(result);
-  } else {
-    return result as ImageRgbAverages;
-  }
+  return result as ImageRgbAverages | string;
 }
