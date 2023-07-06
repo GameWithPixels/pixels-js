@@ -23,6 +23,7 @@ import {
 import {
   Camera,
   CameraPermissionStatus,
+  FrameProcessorPerformanceSuggestion,
   useCameraDevices,
 } from "react-native-vision-camera";
 
@@ -192,6 +193,7 @@ function DecodePixelIdPage({
   settings: ValidationTestsSettings;
   onBack?: () => void;
 }) {
+  const theme = useTheme();
   const { t } = useTranslation();
   const errorHandler = useErrorHandler();
 
@@ -229,9 +231,17 @@ function DecodePixelIdPage({
   }, [cameraPermission, device, errorHandler, t]);
 
   // Frame processor for decoding PixelId
-  const [frameProcessor, pixelId, lastColor] =
+  const [frameProcessor, pixelId, lastColor, lastError] =
     usePixelIdDecoderFrameProcessor();
 
+  // Log FPS suggestions for frame processor
+  const onSuggestion = React.useCallback(
+    (suggestion: FrameProcessorPerformanceSuggestion) =>
+      console.log(
+        `Got FPS suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
+      ),
+    []
+  );
   // Notify when pixel id has been decoded
   React.useEffect(() => {
     if (pixelId) {
@@ -290,20 +300,32 @@ function DecodePixelIdPage({
           lowLightBoost={false}
           videoStabilizationMode="off"
           frameProcessor={frameProcessor}
+          fps={30}
+          frameProcessorFps={30}
+          onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
         />
       ) : (
         <Text variant="headlineSmall">{t("startingCamera")}</Text>
       )}
-      {!readingColors && (
+      {(!readingColors || lastError) && (
         // Show message on top
         <FastBox position="absolute" top={0} w="100%" p={10}>
           <Card>
             <Card.Content style={{ flexDirection: "row", gap: 10 }}>
-              <Text variant="bodyLarge" style={{ flex: 1, flexWrap: "wrap" }}>
-                {t("resetUsingMagnetWithFormFactor", {
-                  formFactor: t(getFormFactor(settings.sequence)),
-                })}
-              </Text>
+              {lastError ? (
+                <Card.Content style={{ flex: 1 }}>
+                  <Text
+                    variant="bodyLarge"
+                    style={{ flex: 1, color: theme.colors.error }}
+                  >{`${lastError}`}</Text>
+                </Card.Content>
+              ) : (
+                <Text variant="bodyLarge" style={{ flex: 1 }}>
+                  {t("resetUsingMagnetWithFormFactor", {
+                    formFactor: t(getFormFactor(settings.sequence)),
+                  })}
+                </Text>
+              )}
               <Button
                 mode="contained-tonal"
                 onPress={() => setShowScanList(true)}
