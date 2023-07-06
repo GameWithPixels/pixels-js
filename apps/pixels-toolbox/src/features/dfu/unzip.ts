@@ -38,12 +38,21 @@ export async function unzipDfuFiles(
     await FileSystem.makeDirectoryAsync(cacheDirectory);
   }
 
-  // Unzip all assets in a temp folder so we can list the files
+  // Copy zip in a temp directory so we don't have any issue unzipping it
+  // (we're getting an access error on iOS when trying to unzip the original file)
   const tempDir = cacheDirectory + "Temp";
   await FileSystem.deleteAsync(tempDir, { idempotent: true });
-  const toPath = (uri: string) =>
-    uri.startsWith("file:///") ? uri.substring("file://".length) : uri;
-  await unzip(toPath(asset.localUri), toPath(tempDir));
+  const tempZip = cacheDirectory + "dfu.zip";
+  await FileSystem.copyAsync({ from: asset.localUri, to: tempZip });
+
+  // Unzip all assets in a temp folder so we can list the files
+  try {
+    const toPath = (uri: string) =>
+      uri.startsWith("file:///") ? uri.substring("file://".length) : uri;
+    await unzip(toPath(tempZip), toPath(tempDir));
+  } finally {
+    await FileSystem.deleteAsync(tempZip, { idempotent: true });
+  }
 
   // Get files pathnames and move them to final directory
   const files = await FileSystem.readDirectoryAsync(tempDir);
