@@ -131,7 +131,8 @@ export interface StartDfuOptions {
  * changes of the DFU process.
  *
  * @param targetId The target identifier of the device to update.
- * @param filePath The path of the DFU files to send to the device.
+ * @param filePath The path of the DFU files to send to the device
+ *                 (can be a zip, hex or bin file).
  * @param options Optional parameters, see {@link StartDfuOptions}.
  * @throw An object of type descendant from {@link DfuError}.
  *
