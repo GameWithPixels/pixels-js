@@ -11,8 +11,9 @@ export type FrameProcessor = (frame: Frame) => void;
 
 export function usePixelIdDecoderFrameProcessor(): [
   FrameProcessor,
-  number,
-  RbgColor?,
+  number, // Pixel id
+  RbgColor?, // Color
+  string?, // Some info about the frame processor performance
   Error?
 ] {
   const [lastError, setLastError] = React.useState<Error>();
@@ -25,7 +26,7 @@ export function usePixelIdDecoderFrameProcessor(): [
     (frame) => {
       "worklet";
       const result = getImageRgbAverages(frame, {
-        maxPixelsToProcess: 480 * 320, // Limit number of processed pixels for performance reason
+        maxPixelsToProcess: 320 * 240, // Limit number of processed pixels for performance reason
       });
       if (typeof result === "string") {
         setLastError(new Error(result));
@@ -40,6 +41,7 @@ export function usePixelIdDecoderFrameProcessor(): [
     frameProcessor,
     decoderState.pixelId,
     decoderState.scanColor,
+    decoderState.info,
     lastError,
   ];
 }

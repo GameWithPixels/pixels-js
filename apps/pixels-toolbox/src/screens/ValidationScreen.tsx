@@ -231,14 +231,14 @@ function DecodePixelIdPage({
   }, [cameraPermission, device, errorHandler, t]);
 
   // Frame processor for decoding PixelId
-  const [frameProcessor, pixelId, lastColor, lastError] =
+  const [frameProcessor, pixelId, lastColor, info, lastError] =
     usePixelIdDecoderFrameProcessor();
 
   // Log FPS suggestions for frame processor
   const onSuggestion = React.useCallback(
     (suggestion: FrameProcessorPerformanceSuggestion) =>
       console.log(
-        `Got FPS suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
+        `Frame processor suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
       ),
     []
   );
@@ -336,7 +336,7 @@ function DecodePixelIdPage({
           </Card>
         </FastBox>
       )}
-      {/* Show back button on bottom */}
+      {/* Show info and back button on bottom */}
       <FastBox position="absolute" bottom={0} w="100%" p={10}>
         <Card>
           <Card.Content
@@ -349,6 +349,7 @@ function DecodePixelIdPage({
             <Text variant="bodyLarge">{getTestingMessage(t, settings)}</Text>
             <BottomButton onPress={onBack}>{t("back")}</BottomButton>
           </Card.Content>
+          <Text style={{ alignSelf: "center", marginVertical: 2 }}>{info}</Text>
         </Card>
       </FastBox>
     </FastVStack>

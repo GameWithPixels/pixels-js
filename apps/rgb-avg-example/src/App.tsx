@@ -39,40 +39,41 @@ function CameraScreen() {
   }, []);
 
   const [stats, setStats] = React.useState<
-    ImageRgbAverages & { durationAverage: number; fps: number }
+    ImageRgbAverages & { cpu: number; fps: number }
   >();
   const trackingDataRef = React.useRef<{
-    startTime: number;
-    totalDuration: number;
-    numFrames: number;
     lastUpdate: number;
+    frames: { timestamp: number; duration: number }[];
   }>();
 
   const processRgbAverages = React.useCallback(
     (rgbAverages: ImageRgbAverages) => {
       // Store tracking data in React Ref value
       if (!trackingDataRef.current) {
-        trackingDataRef.current = {
-          startTime: Date.now(),
-          totalDuration: 0,
-          numFrames: 0,
-          lastUpdate: 0,
-        };
+        trackingDataRef.current = { lastUpdate: 0, frames: [] };
       }
       // Update tracking
       const data = trackingDataRef.current;
-      data.totalDuration += rgbAverages.duration;
-      data.numFrames += 1;
+      const frames = data.frames;
+      if (frames.length > 10) {
+        frames.splice(0, 1);
+      }
+      frames.push({
+        timestamp: rgbAverages.timestamp,
+        duration: rgbAverages.duration,
+      });
       // Update stats every second
       if (data.lastUpdate + 1000 < Date.now()) {
         data.lastUpdate = Date.now();
-        setStats({
-          ...rgbAverages,
-          durationAverage: data.totalDuration / data.numFrames,
-          fps: Math.round(
-            (1000 * data.numFrames) / (Date.now() - data.startTime)
-          ),
-        });
+        const fps =
+          frames.length > 1
+            ? (frames.at(-1)?.timestamp! - frames[0].timestamp) /
+              (frames.length - 1)
+            : 0;
+        const cpu =
+          frames.reduce((prev, next) => prev + next.duration, 0) /
+          frames.length; // Length can't be 0
+        setStats({ ...rgbAverages, cpu, fps });
       }
     },
     []
@@ -178,10 +179,8 @@ function CameraScreen() {
             <Text style={styles.text}>{`Red: ${stats.redAverage}`}</Text>
             <Text style={styles.text}>{`Green: ${stats.greenAverage}`}</Text>
             <Text style={styles.text}>{`Blue: ${stats.blueAverage}`}</Text>
-            <Text
-              style={styles.text}
-            >{`Duration: ${stats.durationAverage.toFixed(3)} ms`}</Text>
-            <Text style={styles.text}>{`FPS: ${stats.fps}`}</Text>
+            <Text style={styles.text}>{`CPU: ${stats.cpu.toFixed(3)} ms`}</Text>
+            <Text style={styles.text}>{`FPS: ${Math.round(stats.fps)}`}</Text>
             <Text
               style={styles.text}
             >{`Image: ${stats.imageWidth}x${stats.imageHeight}`}</Text>

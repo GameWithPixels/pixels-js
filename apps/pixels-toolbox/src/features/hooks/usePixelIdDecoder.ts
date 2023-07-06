@@ -6,6 +6,7 @@ import PixelIdDecoder, { RbgColor } from "~/features/pixels/PixelIdDecoder";
 export interface PixelIdDecoderState {
   pixelId: number;
   scanColor?: RbgColor;
+  info?: string;
 }
 
 export interface PixelIdDecoderAction {
@@ -19,23 +20,36 @@ export function usePixelIdDecoder(): [
   (action: PixelIdDecoderAction) => void
 ] {
   // Store internal data, we don't want it to trigger updates
-  const [data] = React.useState(() => ({
+  const dataRef = React.useRef({
     pixelIdDecoder: new PixelIdDecoder(),
     lastResultTimestamp: 0,
-  }));
+    frames: [] as { timestamp: number; duration: number }[],
+  });
   // Store the state that is returned
   const [state, setState] = React.useState<PixelIdDecoderState>({ pixelId: 0 });
 
   const processRgbAverages = React.useCallback(
     (action: PixelIdDecoderAction) => {
+      const data = dataRef.current;
+      // Prepare to decode Pixel id
       const decoder = data.pixelIdDecoder;
       let pixelId: number | undefined;
       let scanColor: RbgColor | undefined;
+      // Reset?
       if (action.reset) {
         pixelId = 0;
         decoder.resetFrameResults();
       }
       if (action.rgbAverages) {
+        // Keep some perf stats
+        if (data.frames.length > 10) {
+          data.frames.splice(0, 1);
+        }
+        data.frames.push({
+          timestamp: action.rgbAverages.timestamp,
+          duration: action.rgbAverages.duration,
+        });
+        // Try to decode id
         const time = action.rgbAverages.timestamp;
         const decodedValue = decoder.processFrameResult(
           action.rgbAverages.redAverage,
@@ -65,13 +79,31 @@ export function usePixelIdDecoder(): [
           pixelId = state.pixelId;
         }
         if (pixelId !== state.pixelId || scanColor !== state.scanColor) {
-          return { pixelId, scanColor };
+          // Compute stats
+          const frames = data.frames;
+          const fps =
+            frames.length > 1
+              ? Math.round(
+                  (frames.at(-1)?.timestamp! - frames[0].timestamp) /
+                    (frames.length - 1)
+                )
+              : 0;
+          const cpu = Math.round(
+            frames.reduce((prev, next) => prev + next.duration, 0) /
+              frames.length // Length can't be 0
+          );
+          const avg = action.rgbAverages;
+          // Note: we only update this info when the pixel id or the decoded color changes
+          const info =
+            avg &&
+            `res:${avg.imageWidth}x${avg?.imageHeight} ss:${avg.widthSubSampling}x${avg.heightSubSampling} fps:${fps} cpu:${cpu}ms`;
+          return { pixelId, scanColor, info };
         } else {
           return state;
         }
       });
     },
-    [data] // Never changes
+    []
   );
 
   return [state, processRgbAverages];
