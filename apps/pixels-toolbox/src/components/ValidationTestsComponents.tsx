@@ -333,7 +333,7 @@ export function UpdateFirmware({
                 })}
               </Text>
             )}
-            {dfuProgress >= 0 && <ProgressBar percent={dfuProgress} />}
+            {dfuState === "uploading" && <ProgressBar percent={dfuProgress} />}
           </>
         ),
       })

@@ -241,6 +241,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   static getInstance(scannedPixel: ScannedPixelNotifier): PixelDispatcher {
+    // TODO update Pixel instance with latest notifier values
     return (
       _instances.get(scannedPixel.pixelId) ?? new PixelDispatcher(scannedPixel)
     );

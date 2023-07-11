@@ -25,7 +25,7 @@ export function useUpdateFirmware(): [
 ] {
   // DFU state and progress
   const [dfuState, setDfuState] = React.useState<DfuState>();
-  const [dfuProgress, setDfuProgress] = React.useState(-1);
+  const [dfuProgress, setDfuProgress] = React.useState(0);
   const [lastError, setLastError] = React.useState<Error>();
 
   // Start DFU function
@@ -50,7 +50,7 @@ export function useUpdateFirmware(): [
         })
         .finally(() => {
           setDfuState(undefined);
-          setDfuProgress(-1);
+          setDfuProgress(0);
         });
     },
     []
