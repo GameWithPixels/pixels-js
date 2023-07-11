@@ -2,6 +2,8 @@ import React, { PropsWithChildren } from "react";
 import { View as RnView, ViewStyle } from "react-native";
 import { MD3Theme, useTheme } from "react-native-paper";
 
+import { getBorderRadius } from "../getBorderRadius";
+
 export interface FastFlexProps
   extends Pick<
     ViewStyle,
@@ -156,11 +158,10 @@ export function useRoundedStyle({
   if (fill && !Object.hasOwn(style, "backgroundColor")) {
     style.backgroundColor = theme.colors[fillThemeColor];
   }
-  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
   if (!Object.hasOwn(style, "borderColor")) {
     style.borderColor = theme.colors[borderThemeColor];
   }
-  style.borderRadius = borderRadius;
+  style.borderRadius = getBorderRadius(theme);
   if (border && !style.borderWidth) {
     style.borderWidth = 1;
   }

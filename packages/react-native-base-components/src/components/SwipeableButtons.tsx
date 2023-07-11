@@ -3,6 +3,7 @@ import { Pressable, PressableProps } from "react-native";
 import { useTheme } from "react-native-paper";
 
 import { FastHStack } from "./FastHStack";
+import { getBorderRadius } from "../getBorderRadius";
 
 export interface SwipeableButtonsProps {
   width: number;
@@ -13,7 +14,7 @@ export const SwipeableButtons = React.memo(function (
   props: SwipeableButtonsProps
 ) {
   const theme = useTheme();
-  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
+  const borderRadius = getBorderRadius(theme);
   const w = props.width / props.buttons.length;
   return (
     <FastHStack>

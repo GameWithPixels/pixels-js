@@ -1,6 +1,7 @@
 export * from "./colorWheelUtils";
 export * from "./useDisclose";
 export { default as BaseStyles } from "./BaseStyles";
+export * from "./getBorderRadius";
 
 export * from "./components/Frame";
 export * from "./components/PercentageDisplay";

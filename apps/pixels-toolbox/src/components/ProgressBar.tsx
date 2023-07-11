@@ -1,3 +1,4 @@
+import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { View } from "react-native";
 import { useTheme } from "react-native-paper";
 
@@ -8,7 +9,7 @@ export interface ProgressBarProps {
 export function ProgressBar({ percent }: ProgressBarProps) {
   const clampedPercentage = Math.max(0, Math.min(100, percent));
   const theme = useTheme();
-  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
+  const borderRadius = getBorderRadius(theme);
   return (
     <View
       style={{

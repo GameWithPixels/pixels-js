@@ -9,6 +9,7 @@ import {
 } from "react-native-paper";
 
 import { FastBoxProps, expandShorthandStyle } from "./FastBox";
+import { getBorderRadius } from "../getBorderRadius";
 
 export interface FastButtonProps
   extends Omit<FastBoxProps, "bg" | "backgroundColor">,
@@ -28,7 +29,7 @@ export function FastButton({
   ...props
 }: FastButtonProps) {
   const theme = useTheme();
-  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
+  const borderRadius = getBorderRadius(theme);
   const childrenNode = React.useMemo(
     () =>
       typeof children === "string" || typeof children === "number" ? (

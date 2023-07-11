@@ -8,6 +8,7 @@ import {
   PixelInfoHCard,
   PixelInfoVCard,
   RoundedBox,
+  getBorderRadius,
 } from "@systemic-games/react-native-pixels-components";
 import {
   ScannedPixel,
@@ -76,7 +77,6 @@ function UnpairedPixels({ pixels }: { pixels: ScannedPixel[] }) {
     [pixels, updatePairedDie]
   );
   const theme = useTheme();
-  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
   return (
     <FastVStack gap={10} w="100%">
       <FastHStack alignItems="center" justifyContent="space-between">
@@ -89,7 +89,7 @@ function UnpairedPixels({ pixels }: { pixels: ScannedPixel[] }) {
           width="100%"
           height={90}
           p={5}
-          borderRadius={borderRadius}
+          borderRadius={getBorderRadius(theme)}
           borderWidth={1}
           borderColor={theme.colors.primary}
           bg={theme.colors.background}

@@ -2,6 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import {
   FastBox,
   FastVStack,
+  getBorderRadius,
 } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
@@ -116,7 +117,7 @@ function LargeTonalButton({
   children: React.ReactNode;
 }) {
   const theme = useTheme();
-  const borderRadius = (theme.isV3 ? 5 : 1) * theme.roundness;
+  const borderRadius = getBorderRadius(theme);
   // Paper's button doesn't have multiline text (by design) so we render our own custom button
   return (
     <TouchableRipple
