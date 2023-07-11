@@ -1,6 +1,5 @@
 import { EventEmitter } from "events";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventMap = Record<string, any>;
 export type EventKey<T extends EventMap> = string & keyof T;
 export type EventReceiver<T> = (params: T) => void;
