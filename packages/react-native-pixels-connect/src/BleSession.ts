@@ -72,7 +72,7 @@ export default class BleSession extends PixelSession {
         PixelBleUuids.service,
         PixelBleUuids.notifyCharacteristic
       ).catch(() => {});
-      //TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
+      // TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
     };
   }
 

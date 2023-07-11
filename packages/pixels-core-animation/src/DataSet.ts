@@ -61,7 +61,7 @@ export default class DataSet {
   }
 
   computeDataSetByteSize(): number {
-    //TODO what if some array of size 0?
+    // TODO what if some array of size 0?
     return (
       this._animationBits.computeDataSize() +
       align32bits(this._animations.length * 2) + // offsets are 16 bits
@@ -151,9 +151,9 @@ export default class DataSet {
 
     // Copy animations, offsets first
     let animOffset = 0;
-    //TODO what if there are 0 animations?
+    // TODO what if there are 0 animations?
     this._animations.forEach((anim, i) => {
-      //TODO first index is always 0!
+      // TODO first index is always 0!
       dataView.setUint16(byteOffset + 2 * i, animOffset, true);
       animOffset += byteSizeOf(anim);
     });
@@ -174,7 +174,7 @@ export default class DataSet {
       condOffset += byteSizeOf(cond);
     });
 
-    //TODO Alignment is not needed (and no alignment is done
+    // TODO Alignment is not needed (and no alignment is done
     // in toSingleAnimationByteArray())
     // Round up to nearest multiple of 4
     byteOffset += align32bits(this._conditions.length * 2);
@@ -203,7 +203,7 @@ export default class DataSet {
 
     // Profile
     if (this._profile) {
-      //TODO what if no profile?
+      // TODO what if no profile?
       [dataView, byteOffset] = serialize(this._profile, {
         dataView,
         byteOffset,

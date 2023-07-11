@@ -155,7 +155,7 @@ function internalSerialize<T extends object>(
       } else {
         const isFloat = prop.options?.numberFormat === "float";
         const isSigned = prop.options?.numberFormat === "signed";
-        //TODO check value < max
+        // TODO check value < max
         switch (prop.size) {
           case 1:
             if (isSigned) {
@@ -230,7 +230,7 @@ function internalDeserialize<T extends object>(
   }
   forEachSerializableProp(obj, (prop, value) => {
     if (typeof value === "string") {
-      //TODO this code assumes that the string is the last property to read!
+      // TODO this code assumes that the string is the last property to read!
       const msgArr = dataView.buffer.slice(dataView.byteOffset + byteOffset);
       setProp(obj, prop, decodeUtf8(new Uint8Array(msgArr)), value);
     } else {

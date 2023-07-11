@@ -10,14 +10,14 @@ export type Keyframe = Partial<{
 }>;
 
 export type Gradient = Partial<{
-  //TODO empty, duration, firstTime, lastTime not needed
+  // TODO empty, duration, firstTime, lastTime not needed
   keyframes: Keyframe[];
 }>;
 
 export type Pattern = Partial<{
   name: string;
   gradients: Gradient[];
-  //TODO not needed duration?: number;
+  // TODO not needed duration?: number;
 }>;
 
 export type AudioClip = Partial<{

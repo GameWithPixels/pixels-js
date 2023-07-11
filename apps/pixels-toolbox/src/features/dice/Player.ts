@@ -140,7 +140,7 @@ export class Player extends EventTarget {
           this.dispatchPropertyChange("ready");
         }
       }
-      await pixel.connect(true); //TODO auto reconnect!
+      await pixel.connect(true); // TODO auto reconnect!
       await pixel.getRollState();
       return pixel;
     }
@@ -149,7 +149,7 @@ export class Player extends EventTarget {
   removePixel(pixel: Pixel) {
     const wasReady = this.ready;
     const success = this._dicePool.removePixel(pixel);
-    //TODO disconnect if not used by other players
+    // TODO disconnect if not used by other players
     if (success) {
       // Notify
       this.dispatchDiceListEvent("remove", pixel);

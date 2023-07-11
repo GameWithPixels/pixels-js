@@ -321,7 +321,7 @@ export class Pixel extends PixelInfoNotifier {
     };
 
     this._session = session;
-    this._status = "disconnected"; //TODO use the getLastConnectionStatus()
+    this._status = "disconnected"; // TODO use the getLastConnectionStatus()
 
     // Listen to session connection status changes
     session.setConnectionEventListener(({ connectionStatus }) => {
@@ -1084,7 +1084,7 @@ export class Pixel extends PixelInfoNotifier {
     if (this._status !== status) {
       this._status = status;
       this._log(`Status changed to ${status}`);
-      this._evEmitter.emit("status", status); //TODO pass this as first argument to listener
+      this._evEmitter.emit("status", status); // TODO pass this as first argument to listener
     }
   }
 
@@ -1179,9 +1179,9 @@ export class Pixel extends PixelInfoNotifier {
     await this.sendAndWaitForResponse(setupMsg, "bulkSetupAck");
     this._log("Ready for receiving data");
 
-    //TODO
-    //TODO
-    //TODO
+    // TODO
+    // TODO
+    // TODO
     progressCallback?.(0);
 
     // Then transfer data

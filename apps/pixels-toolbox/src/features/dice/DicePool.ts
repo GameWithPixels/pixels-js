@@ -148,6 +148,6 @@ export class DicePool extends EventTarget {
   private static _generateLabelCounter = 0;
   private static generateLabel(_pixel: Pixel) {
     const i = ++DicePool._generateLabelCounter;
-    return `Dice${i}`; //TODO ${pixel.type ? `-${pixel.type}` : ""}`;
+    return `Dice${i}`; // TODO ${pixel.type ? `-${pixel.type}` : ""}`;
   }
 }

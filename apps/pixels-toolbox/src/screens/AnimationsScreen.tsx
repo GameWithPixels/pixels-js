@@ -198,7 +198,7 @@ function getPropValueString(
     } else if (entry[1] instanceof EditPattern) {
       return entry[1].name;
     } else {
-      //TODO check type or undefined
+      // TODO check type or undefined
       return `${entry[1]}`;
     }
   } else if (propertyKey === "duration") {

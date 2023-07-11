@@ -90,8 +90,8 @@ function toAudioClips(audioClips?: Json.AudioClip[]): EditAudioClip[] {
 function toCondition(condition: Json.Condition): EditCondition {
   if (condition.data) {
     const data = condition.data;
-    //TODO make those creations and assignments in a more generic way
-    //TODO check flags value
+    // TODO make those creations and assignments in a more generic way
+    // TODO check flags value
     switch (condition.type) {
       case ConditionTypeValues.helloGoodbye:
         return safeAssign(new EditConditionHelloGoodbye(), data);
@@ -131,7 +131,7 @@ function toActions(
   return (
     validActions?.map((act) => {
       const data = act.data;
-      //TODO make those creations and assignments in a more generic way
+      // TODO make those creations and assignments in a more generic way
       switch (act.type) {
         case ActionTypeValues.playAnimation:
           return safeAssign(new EditActionPlayAnimation(), {
@@ -188,7 +188,7 @@ export function toAnimation(
 ): EditAnimation {
   const data = anim.data;
   switch (anim.type) {
-    //TODO make those creations and assignments in a more generic way
+    // TODO make those creations and assignments in a more generic way
     case AnimationTypeValues.simple:
       return new EditAnimationSimple({
         name: data.name,

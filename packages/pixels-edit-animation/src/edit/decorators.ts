@@ -31,7 +31,7 @@ function createDecorator<T extends PropertyData>(
     const metadata = {
       propertyKey,
       ...data,
-    } as T; //TODO error without cast
+    } as T; // TODO error without cast
     addMetadata(metadataKey, target, metadata);
   };
 }

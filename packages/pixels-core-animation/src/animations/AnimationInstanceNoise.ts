@@ -14,12 +14,12 @@ export default class AnimationInstanceNoise extends AnimationInstance {
     _retIndices: number[],
     _retColors32: number[]
   ): number {
-    //TODO not implemented
+    // TODO not implemented
     return 0;
   }
 
   stop(_retIndices: number[]): number {
-    //TODO not implemented
+    // TODO not implemented
     return 0;
   }
 }

@@ -42,7 +42,7 @@ export default class RgbKeyframe {
    * @param colorIndex The color index, from to 0 to 128 excluded.
    */
   setTimeAndColorIndex(time: number, colorIndex: number): void {
-    //TODO check colorIndex < 128
+    // TODO check colorIndex < 128
     const timeMs = Math.round(Math.max(0, time) * 1000);
     const scaledTime = (timeMs / 2) & 0b111111111;
     this.timeAndColor = (scaledTime << 7) | (colorIndex & 0b1111111);
