@@ -282,15 +282,12 @@ export const Central = {
       await new Promise<void>((resolve, reject) => {
         _addListener("bluetoothState", ({ state }: BleBluetoothStateEvent) => {
           if (state === "ready") {
-            // TODO add timeout
             resolve();
           } else {
             reject(new Errors.BluetoothPermissionsDeniedError()); // TODO it could be that Bluetooth is off
           }
         });
-        BluetoothLE.bleInitialize()
-          .catch(reject)
-          .then(() => resolve());
+        BluetoothLE.bleInitialize().catch(reject);
       });
       console.log("[BLE] Bluetooth is ready");
       _bleInit = true;

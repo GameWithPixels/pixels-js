@@ -204,6 +204,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void bleInitialize(Promise promise) {
+        //TODO request permissions
         sendEvent(BleEvent.BluetoothState, "state", "ready");
         promise.resolve(null);
     }
