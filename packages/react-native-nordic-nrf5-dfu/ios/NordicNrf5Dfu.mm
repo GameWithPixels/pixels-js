@@ -130,6 +130,9 @@ RCT_EXPORT_METHOD(startDfu:(NSString *)targetId
     DFUFirmware *fw = [[DFUFirmware alloc] initWithUrlToZipFile:url error:&error];
     if (!error)
     {
+        NSString *errorCode = nil;
+        NSString *errorMessage = nil;
+
         dispatch_queue_t queue = dispatch_get_main_queue();
         DFUServiceInitiator *initiator = [[DFUServiceInitiator alloc] initWithQueue:queue
                                                                       delegateQueue:queue
@@ -145,9 +148,20 @@ RCT_EXPORT_METHOD(startDfu:(NSString *)targetId
         {
             initiator.connectionTimeout = connectionTimeout;
         }
-        if (prepareDataObjectDelay > 0)
+        else if (connectionTimeout < 0)
         {
-            initiator.dataObjectPreparationDelay = prepareDataObjectDelay;
+            errorCode = @"E_INVALID_ARGUMENT";
+            errorMessage = @"connectionTimeout must be 0 or greater";
+        }
+        if (prepareDataObjectDelay >= 0)
+        {
+            // Default is 0 but a good value is 0.4
+            initiator.dataObjectPreparationDelay = prepareDataObjectDelay == 0 ? 0.4 : prepareDataObjectDelay / 1000.0;
+        }
+        else
+        {
+            errorCode = @"E_INVALID_ARGUMENT";
+            errorMessage = @"prepareDataObjectDelay must be 0 or greater";
         }
         if (alternativeAdvertisingName.length > 0)
         {
@@ -157,27 +171,28 @@ RCT_EXPORT_METHOD(startDfu:(NSString *)targetId
         initiator.disableResume = disableResume;
         
         NSUUID *identifier = nil;
-        NSString *errorCode = nil;
-        NSString *errorMessage = nil;
-        @synchronized (_info)
+        if (!errorCode)
         {
-            if (!_info.identifier)
+            @synchronized (_info)
             {
-                identifier = [[NSUUID alloc] initWithUUIDString:targetId];
-                if (identifier)
+                if (!_info.identifier)
                 {
-                    [_info setInfo:targetId resolver:resolve rejecter:reject];
+                    identifier = [[NSUUID alloc] initWithUUIDString:targetId];
+                    if (identifier)
+                    {
+                        [_info setInfo:targetId resolver:resolve rejecter:reject];
+                    }
+                    else
+                    {
+                        errorCode = @"E_INVALID_ARGUMENT";
+                        errorMessage = @"The target identifier is not a valid UUID";
+                    }
                 }
                 else
                 {
-                    errorCode = @"E_INVALID_ARGUMENT";
-                    errorMessage = @"The target identifier is not a valid UUID";
+                    errorCode = @"E_DFU_BUSY";
+                    errorMessage = @"There is already an on-going DFU";
                 }
-            }
-            else
-            {
-                errorCode = @"E_DFU_BUSY";
-                errorMessage = @"There is already an on-going DFU";
             }
         }
         if (!errorCode)

@@ -140,7 +140,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             init.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(!disableButtonlessServiceInSecureDfu);
             init.setForceDfu(forceDfu);
             init.setForceScanningForNewAddressInLegacyDfu(forceScanningForNewAddressInLegacyDfu);
-            init.setPrepareDataObjectDelay(prepareDataObjectDelay);
+            init.setPrepareDataObjectDelay(prepareDataObjectDelay == 0 ? 400 : prepareDataObjectDelay); // Default is 0 but a good value is 400
             init.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
             init.setRebootTime(rebootTime); //  Default is 0
             if (bootloaderScanTimeout > 0) {
