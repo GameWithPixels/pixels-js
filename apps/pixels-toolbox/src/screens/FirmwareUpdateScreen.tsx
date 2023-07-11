@@ -94,12 +94,14 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   // Queue scan events and process them in batch
   React.useEffect(() => {
     BleScanner.start("", (sp: ScannedPeripheral) => {
-      const arr = pendingScans.current;
-      const i = arr.findIndex((item) => item.systemId === sp.systemId);
-      if (i < 0) {
-        arr.push(sp);
-      } else {
-        arr[i] = sp;
+      if (sp.name.length) {
+        const arr = pendingScans.current;
+        const i = arr.findIndex((item) => item.systemId === sp.systemId);
+        if (i < 0) {
+          arr.push(sp);
+        } else {
+          arr[i] = sp;
+        }
       }
     }).catch(errorHandler);
     return () => {
