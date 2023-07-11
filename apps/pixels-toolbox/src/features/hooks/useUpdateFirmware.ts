@@ -9,7 +9,7 @@ import { DfuTarget, updateFirmware } from "~/features/dfu/updateFirmware";
  * 1. A stable function that triggers a DFU and takes the device
  *    Bluetooth address, the bootloader and firmware files paths.
  * 2. The current DFU state
- * 3. The current DFU upload progress (from 0 to 100) or -1.
+ * 3. The current DFU upload progress (from 0 to 100).
  * 4. The last error that occurred (cleared when starting a new DFU)
  */
 export function useUpdateFirmware(): [
