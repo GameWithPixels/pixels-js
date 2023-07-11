@@ -12,7 +12,6 @@ import {
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseStyles,
   FastBox,
   FastFlexProps,
 } from "@systemic-games/react-native-base-components";
@@ -110,7 +109,7 @@ const ObservableCondition = observer(function ({
   );
   return (
     <FlatList
-      style={BaseStyles.fullWidth}
+      style={AppStyles.fullWidth}
       contentContainerStyle={AppStyles.listContentContainer}
       data={conditionWidgets}
       renderItem={renderItem}

@@ -6,7 +6,6 @@ import {
   useDisclose,
   FastButton,
   FastHStack,
-  BaseStyles,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -102,7 +101,7 @@ export function AnimationsList({
         windowSize={11}
       /> */}
       <ScrollView
-        style={BaseStyles.fullSizeFlex}
+        style={AppStyles.fullSizeFlex}
         contentContainerStyle={AppStyles.listContentContainer}
         stickyHeaderIndices={[0]}
       >

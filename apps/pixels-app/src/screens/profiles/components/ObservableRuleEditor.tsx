@@ -6,7 +6,6 @@ import {
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseStyles,
   FastHStack,
   FastVStack,
 } from "@systemic-games/react-native-pixels-components";
@@ -96,7 +95,7 @@ const ObservableActionsList = observer(function ({
 
   return (
     <FlatList
-      style={BaseStyles.fullWidth}
+      style={AppStyles.fullWidth}
       contentContainerStyle={AppStyles.listContentContainer}
       data={observableRule.actions}
       keyExtractor={getKey}

@@ -15,7 +15,6 @@ import {
   FastHStack,
   FastFlexProps,
   ProfileRuleCardProps,
-  BaseStyles,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -28,6 +27,7 @@ import DraggableFlatList, {
 import { Swipeable } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
 
+import AppStyles from "~/AppStyles";
 import IconButton from "~/components/IconButton";
 import { TextInputClear } from "~/components/TextInputClear";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
@@ -222,7 +222,7 @@ const ObservableRulesListEditor = observer(function ({
       data={observableProfile.rules}
       renderItem={renderItem}
       keyExtractor={getKey}
-      containerStyle={BaseStyles.flex}
+      containerStyle={AppStyles.flex}
       onDragEnd={onDragEnd}
       ItemSeparatorComponent={Separator}
     />

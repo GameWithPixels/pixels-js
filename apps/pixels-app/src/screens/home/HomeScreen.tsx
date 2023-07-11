@@ -1,6 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
 import {
-  BaseStyles,
   FastButton,
   FastHStack,
   FastVStack,
@@ -18,6 +17,7 @@ import React from "react";
 import { Image, ScrollView, View } from "react-native";
 import { Card, Text, useTheme } from "react-native-paper";
 
+import AppStyles from "~/AppStyles";
 import {
   useAppPairedDice,
   useAppProfiles,
@@ -96,7 +96,7 @@ function UnpairedPixels({ pixels }: { pixels: ScannedPixel[] }) {
           pixel={pixel}
           dieRenderer={() => <DieRenderer />}
         >
-          <View style={BaseStyles.spacer} />
+          <View style={AppStyles.spacer} />
           <FastButton
             height="50%"
             alignSelf="center"
@@ -154,7 +154,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   return (
     <PixelAppPage style={{ backgroundColor: theme.colors.background }}>
       <ScrollView
-        style={BaseStyles.fullSizeFlex}
+        style={AppStyles.fullSizeFlex}
         contentContainerStyle={{
           minHeight: "100%", // So we can center items in the page
         }}
@@ -168,7 +168,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <Text variant="titleLarge">Welcome to the new Pixel App!</Text>
           <Text style={{ marginTop: 5 }}>Expect more to come ;-)</Text>
         </RoundedBox>
-        <View style={BaseStyles.spacer} />
+        <View style={AppStyles.spacer} />
         {pairedPixels.length > 0 && (
           <Card>
             <Card.Content>
@@ -185,11 +185,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </Card>
         )}
         {showGreetings && (
-          <Text variant="headlineMedium" style={BaseStyles.textCentered}>
+          <Text variant="headlineMedium" style={AppStyles.textCentered}>
             It's time to unbox your dice!
           </Text>
         )}
-        <View style={BaseStyles.spacer} />
+        <View style={AppStyles.spacer} />
       </ScrollView>
     </PixelAppPage>
   );

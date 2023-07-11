@@ -3,7 +3,6 @@ import {
   useDisclose,
   FastHStack,
   FastButton,
-  BaseStyles,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -52,7 +51,7 @@ export function ProfilesList({
   );
 
   // List of favorite profiles
-  const [favoriteProfilesList, _setFavoritesProfileList] = React.useState<
+  const [_favoriteProfilesList, _setFavoritesProfileList] = React.useState<
     EditProfile[]
   >([]);
 
@@ -84,7 +83,7 @@ export function ProfilesList({
     []
   );
 
-  const removeFromFavorites = React.useCallback(
+  const _removeFromFavorites = React.useCallback(
     (_profileToRemove: Readonly<EditProfile>) => {
       // const profileToDeleteKey = EditableStore.getKey(profileToRemove);
       // const profiles = [...favoriteProfilesList];
@@ -130,7 +129,7 @@ export function ProfilesList({
   return (
     <>
       <ScrollView
-        style={BaseStyles.fullSizeFlex}
+        style={AppStyles.fullSizeFlex}
         contentContainerStyle={AppStyles.listContentContainer}
         stickyHeaderIndices={[0]}
       >

@@ -271,9 +271,9 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
               <Text variant="bodyLarge">Bluetooth Scanned Peripherals:</Text>
               <FlatList
                 style={gs.fullWidth}
+                contentContainerStyle={gs.listContentContainer}
                 data={scannedPeripherals}
                 renderItem={renderItem}
-                contentContainerStyle={gs.listContentContainer}
                 refreshControl={refreshControl}
               />
             </FastVStack>

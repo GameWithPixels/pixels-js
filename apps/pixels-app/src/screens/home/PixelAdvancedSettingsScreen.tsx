@@ -1,5 +1,4 @@
 import {
-  BaseStyles,
   FastHStack,
   FastVStack,
   PixelAppPage,
@@ -10,6 +9,7 @@ import React from "react";
 import { ScrollView } from "react-native";
 import { Button, Text } from "react-native-paper";
 
+import AppStyles from "~/AppStyles";
 import { PixelAdvancedSettingsScreenProps } from "~/navigation";
 
 export default function PixelAdvancedSettingsScreen(
@@ -19,7 +19,7 @@ export default function PixelAdvancedSettingsScreen(
   const pixel = getPixel(pixelId);
   return (
     <PixelAppPage>
-      <ScrollView style={BaseStyles.fullSizeFlex}>
+      <ScrollView style={AppStyles.fullSizeFlex}>
         <FastVStack gap={10}>
           {/* Firmware */}
           <RoundedBox border p={10} gap={5}>

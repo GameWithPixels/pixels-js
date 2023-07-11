@@ -6,10 +6,7 @@ import {
   DefaultTheme as NavDefaultTheme,
   NavigationContainer,
 } from "@react-navigation/native";
-import {
-  BaseStyles,
-  PixelColors,
-} from "@systemic-games/react-native-pixels-components";
+import { PixelColors } from "@systemic-games/react-native-pixels-components";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import { configure } from "mobx";
@@ -28,6 +25,8 @@ import {
 } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+
+import AppStyles from "./AppStyles";
 
 import { persistor, store } from "~/app/store";
 import { RootStackParamList } from "~/navigation";
@@ -175,7 +174,7 @@ export default function () {
       <ReduxProvider store={store}>
         <PersistGate
           loading={
-            <View style={BaseStyles.centeredFlex}>
+            <View style={AppStyles.centeredFlex}>
               <Text>Loading...</Text>
             </View>
           }

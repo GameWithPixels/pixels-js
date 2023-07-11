@@ -1,62 +1,19 @@
+import { BaseStyles } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { StyleSheet, ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
 
 // Global style
 const gs = StyleSheet.create({
+  ...BaseStyles,
   // One prop styles
-  empty: {},
-  flex: {
-    flex: 1,
-  },
-  spacer: {
-    flexGrow: 1,
-  },
-  fullWidth: {
-    width: "100%",
-  },
-  fullSize: {
-    width: "100%",
-    height: "100%",
-  },
-  selfCentered: {
-    alignSelf: "center",
-  },
   mv3: {
     marginVertical: 3,
   },
-  bold: {
-    fontWeight: "bold",
-  },
-  italic: {
-    fontStyle: "italic",
-  },
-  underlined: {
-    textDecorationLine: "underline",
-  },
-  textCentered: {
-    textAlign: "center",
-  },
   // Containers
-  container: {
-    flex: 1,
-    alignItems: "center",
-  },
-  containerHorizontal: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  containerFooter: {
-    alignItems: "center",
-  },
   listContentContainer: {
     flexGrow: 1,
     gap: 8,
-  },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });
 

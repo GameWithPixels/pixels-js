@@ -95,9 +95,9 @@ function SelectPixel({
       {lastError && <Text style={gs.bold}>{`${lastError}`}</Text>}
       <FlatList
         style={gs.fullWidth}
+        contentContainerStyle={gs.listContentContainer}
         data={scannedPixels}
         renderItem={renderItem}
-        contentContainerStyle={gs.listContentContainer}
         refreshControl={refreshControl}
       />
     </>

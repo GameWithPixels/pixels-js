@@ -1,5 +1,4 @@
 import {
-  BaseStyles,
   FastBox,
   FastHStack,
 } from "@systemic-games/react-native-base-components";
@@ -29,7 +28,7 @@ function PixelName({ pixel }: Omit<PixelAndTranslation, "t">) {
   }, [pixel, forceUpdate]);
   return (
     <FastBox flexDir="row" justifyContent="center">
-      <Text variant="headlineSmall">{pixel.name}</Text>
+      <Text variant="headlineMedium">{pixel.name}</Text>
     </FastBox>
   );
 }
@@ -96,7 +95,7 @@ function PixelFirmwareDate({ pixel, t }: PixelAndTranslation) {
     };
   }, [pixel, forceUpdate]);
   return (
-    <Text style={BaseStyles.textCentered}>
+    <Text style={gs.textCentered}>
       {t("firmware")}
       {t("colonSeparator")}
       {toLocaleDateTimeString(pixel.firmwareDate)}

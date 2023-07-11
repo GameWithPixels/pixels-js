@@ -1,5 +1,6 @@
-import { BaseStyles } from "@systemic-games/react-native-pixels-components";
 import { TextInput, TextInputProps, useTheme } from "react-native-paper";
+
+import AppStyles from "~/AppStyles";
 
 const Icon = <TextInput.Icon icon="pen" />;
 
@@ -23,7 +24,7 @@ export function TextInputClear({
         borderWidth: undefined,
         backgroundColor: undefined,
       }}
-      contentStyle={BaseStyles.textCentered}
+      contentStyle={AppStyles.textCentered}
       {...props}
     />
   );

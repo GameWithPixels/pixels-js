@@ -6,7 +6,6 @@ import {
   EditWidgetData,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseStyles,
   createWidgetComponent,
   FastBox,
   FastVStack,
@@ -79,7 +78,7 @@ function AnimationEditor({
 
   return (
     <FlatList
-      style={BaseStyles.fullWidth}
+      style={AppStyles.fullWidth}
       contentContainerStyle={AppStyles.listContentContainer}
       data={animWidgets}
       renderItem={renderItem}

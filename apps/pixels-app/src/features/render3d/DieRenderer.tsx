@@ -5,7 +5,6 @@ import {
   GammaUtils,
 } from "@systemic-games/pixels-core-animation";
 import { Die3D } from "@systemic-games/pixels-three";
-import { BaseStyles } from "@systemic-games/react-native-pixels-components";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 import React from "react";
@@ -13,6 +12,8 @@ import { useErrorHandler } from "react-error-boundary";
 import { Text } from "react-native-paper";
 
 import { createDie3DAsync } from "./createDie3DAsync";
+
+import AppStyles from "~/AppStyles";
 
 class SceneRenderer {
   private readonly _die3d: Die3D;
@@ -227,9 +228,9 @@ export default function ({ renderData }: DieRendererProps) {
   return (
     <>
       {!loaded ? (
-        <Text style={BaseStyles.selfCentered}>Loading...</Text>
+        <Text style={AppStyles.selfCentered}>Loading...</Text>
       ) : (
-        <GLView onContextCreate={onContextCreate} style={BaseStyles.flex} />
+        <GLView onContextCreate={onContextCreate} style={AppStyles.flex} />
       )}
     </>
   );

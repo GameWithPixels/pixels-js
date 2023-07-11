@@ -4,7 +4,6 @@ import {
   EditActionMakeWebRequest,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseStyles,
   BatteryLevel,
   FastBox,
   FastButton,
@@ -20,9 +19,10 @@ import {
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
+import AppStyles from "~/AppStyles";
 import {
   useAppProfiles,
   useAppPairedDice,
@@ -132,7 +132,7 @@ export default function PixelDetailScreen({
   return (
     <>
       <PixelAppPage>
-        <ScrollView style={BaseStyles.fullSizeFlex}>
+        <ScrollView style={AppStyles.fullSizeFlex}>
           <TextInputClear isTitle placeholder={pixel.name} />
           <FastHStack w="100%">
             <FastBox w="60%" aspectRatio={1}>
@@ -172,9 +172,9 @@ export default function PixelDetailScreen({
               ) : (
                 <>
                   {rollState && (
-                      <Text variant="bodyLarge">{`Face: ${rollState.face}\n${rollState.state}`}</Text>
+                    <Text variant="bodyLarge">{`Face: ${rollState.face}\n${rollState.state}`}</Text>
                   )}
-                    <Text variant="bodyLarge">{status}</Text>
+                  <Text variant="bodyLarge">{status}</Text>
                 </>
               )}
             </FastVStack>

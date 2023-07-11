@@ -5,7 +5,6 @@ import {
   Octicons,
 } from "@expo/vector-icons";
 import {
-  BaseStyles,
   FastBox,
   FastHStack,
   Histogram,
@@ -14,6 +13,8 @@ import {
 import React from "react";
 import { View } from "react-native";
 import { Divider, Switch, Text, useTheme } from "react-native-paper";
+
+import AppStyles from "~/AppStyles";
 
 export default function DieStatistics({
   sessionRolls,
@@ -38,7 +39,7 @@ export default function DieStatistics({
       <FastHStack w="100%" alignItems="center" gap={5}>
         <Octicons name="graph" size={24} color="white" />
         <Text variant="titleMedium">Die Stats</Text>
-        <View style={BaseStyles.spacer} />
+        <View style={AppStyles.spacer} />
         <Text>Lifetime</Text>
         <Switch
           onValueChange={() => setShowSessionStats((b) => !b)}
@@ -57,7 +58,7 @@ export default function DieStatistics({
           <Text variant="titleMedium">Rolls</Text>
         </FastHStack>
         <Text>{showSessionStats ? sessionRollsCount : lifetimeRollsCount}</Text>
-        <Divider style={BaseStyles.fullWidth} />
+        <Divider style={AppStyles.fullWidth} />
         {/* DiceUseTime */}
         <FastHStack alignItems="baseline" gap={10}>
           <MaterialCommunityIcons
@@ -68,7 +69,7 @@ export default function DieStatistics({
           <Text variant="titleMedium">Use Time</Text>
         </FastHStack>
         <Text>{showSessionStats ? "52 minutes" : "12.5 hours"}</Text>
-        <Divider style={BaseStyles.fullWidth} />
+        <Divider style={AppStyles.fullWidth} />
         <FastHStack alignItems="baseline" gap={10}>
           <Ionicons
             name="stats-chart"

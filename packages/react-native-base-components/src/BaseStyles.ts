@@ -1,6 +1,8 @@
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
+  // One prop styles
+  empty: {},
   flex: {
     flex: 1,
   },
@@ -10,6 +12,10 @@ export default StyleSheet.create({
   fullWidth: {
     width: "100%",
   },
+  selfCentered: {
+    alignSelf: "center",
+  },
+  // Containers
   fullSize: {
     width: "100%",
     height: "100%",
@@ -18,9 +24,6 @@ export default StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
-  },
-  selfCentered: {
-    alignSelf: "center",
   },
   centered: {
     alignItems: "center",
@@ -31,6 +34,7 @@ export default StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  // Text
   textCentered: {
     textAlign: "center",
   },
@@ -39,5 +43,8 @@ export default StyleSheet.create({
   },
   italic: {
     fontStyle: "italic",
+  },
+  underlined: {
+    textDecorationLine: "underline",
   },
 });
