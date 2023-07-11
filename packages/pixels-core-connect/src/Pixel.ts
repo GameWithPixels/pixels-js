@@ -1179,10 +1179,7 @@ export class Pixel extends PixelInfoNotifier {
     await this.sendAndWaitForResponse(setupMsg, "bulkSetupAck");
     this._log("Ready for receiving data");
 
-    // TODO
-    // TODO
-    // TODO
-    progressCallback?.(0);
+    // TODO update upload state => progressCallback?.("starting");
 
     // Then transfer data
     let lastProgress = 0;
