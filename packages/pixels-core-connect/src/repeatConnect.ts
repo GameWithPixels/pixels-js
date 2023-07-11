@@ -6,6 +6,9 @@ import { exponentialBackOff } from "./exponentialBackOff";
  * strategy. It stops trying to connect once it has reached the given number
  * of retries.
  *
+ * We recommend using this function to connect to a Pixel rather than calling
+ * directly the {@link Pixel.connect} function.
+ *
  * @see
  * Auto-reconnect code provided by Google:
  * https://googlechrome.github.io/samples/web-bluetooth/automatic-reconnect-async-await.html

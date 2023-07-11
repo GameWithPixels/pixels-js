@@ -57,6 +57,7 @@ die state. It also let you add a listener for any Pixel message.
 
 ```JavaScript
 import {
+    repeatConnect,
 	requestPixel,
 	Color,
 } from "@systemic-games/pixels-web-connect";
@@ -66,7 +67,7 @@ const pixel = await requestPixel();
 
 // Connect to die
 console.log("Connecting...");
-await pixel.connect();
+await repeatConnect(pixel);
 
 // Get last roll state
 const rollState = pixel.rollState;
@@ -132,6 +133,17 @@ documentation [here](
 ).
 
 Documentation generated with [TypeDoc](https://typedoc.org/).
+
+## Known Issues
+
+On Windows 10, the OS notifies of a Bluetooth peripheral being disconnected a few
+seconds (around 4) before the peripheral actually gets the disconnection event.
+This will make a re-connection attempt to fail if made before that delay as the
+peripheral will still disconnect after this 4 seconds delay.
+Using [`repeatConnect()`](
+    https://gamewithpixels.github.io/pixels-js/functions/_systemic_games_pixels_web_connect.repeatConnect.html
+) function is a good workaround as it will attempt to connect a few times before
+failing.
 
 ## License
 
