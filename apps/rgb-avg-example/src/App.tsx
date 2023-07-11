@@ -113,6 +113,7 @@ function CameraScreen() {
   const desiredFPS = 60;
   const desiredWidth = 1280;
   const desiredHeight = 720;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const format = React.useMemo(() => {
     if (device) {
       const colorSpace = Platform.OS === "android" ? "yuv" : "srgb";
@@ -167,7 +168,7 @@ function CameraScreen() {
           ref={cameraRef}
           style={styles.camera}
           device={device}
-          format={format}
+          // format={format} Stick to default format so frame processor FPS works
           fps={desiredFPS}
           frameProcessorFps={desiredFPS}
           isActive
