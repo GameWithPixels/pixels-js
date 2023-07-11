@@ -18,18 +18,31 @@
 <h1>Function getImageRgbAverages</h1></div>
 <section class="tsd-panel">
 <ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-<li class="tsd-signature tsd-anchor-link" id="getImageRgbAverages">get<wbr/>Image<wbr/>Rgb<wbr/>Averages<span class="tsd-signature-symbol">(</span>frame<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Frame</span>, opt<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAveragesOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAveragesOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAverages.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAverages</a><a href="#getImageRgbAverages" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="getImageRgbAverages">get<wbr/>Image<wbr/>Rgb<wbr/>Averages<span class="tsd-signature-symbol">(</span>frame<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Frame</span>, opt<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAveragesOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAveragesOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAverages.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAverages</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><a href="#getImageRgbAverages" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Frame Processor that the image red, green and blue average for the
+entire given frame.</p>
+
+<h3>Returns</h3><p>An object with red, green and blue averages,
+         see <a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAveragesOptions.html">ImageRgbAveragesOptions</a>,
+         or a string with an error message.</p>
+
+<h3>Throws</h3><p>Throws an exception when not called inside a worklet.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>frame: <span class="tsd-signature-type">Frame</span></h5></li>
+<h5>frame: <span class="tsd-signature-type">Frame</span></h5>
+<div class="tsd-comment tsd-typography"><p>The frame to use.</p>
+</div></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> opt: <a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAveragesOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAveragesOptions</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAverages.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAverages</a></h4><aside class="tsd-sources">
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> opt: <a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAveragesOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAveragesOptions</a></h5>
+<div class="tsd-comment tsd-typography"><p>Optional parameters, see <a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAveragesOptions.html">ImageRgbAveragesOptions</a>.</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../interfaces/_systemic_games_vision_camera_rgb_averages.ImageRgbAverages.html" class="tsd-signature-type" data-tsd-kind="Interface">ImageRgbAverages</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/1e94d91/packages/vision-camera-rgb-averages/src/index.ts#L24">packages/vision-camera-rgb-averages/src/index.ts:24</a></li></ul></aside></li></ul></section></div>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/b690b91/packages/vision-camera-rgb-averages/src/index.ts#L61">packages/vision-camera-rgb-averages/src/index.ts:61</a></li></ul></aside></li></ul></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">

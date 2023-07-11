@@ -20,7 +20,9 @@
 <div class="tsd-comment tsd-typography"><p>Represents a Pixels die.
 Most of its methods require the instance to be connected to the Pixel device.
 Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> method to initiate a connection.</p>
-<p>See <a href="_systemic_games_pixels_web_connect.Pixel.html#addEventListener">addEventListener</a> to get notified for rolls or (dis)connection event.</p>
+<p>Call <a href="_systemic_games_pixels_web_connect.Pixel.html#addEventListener">addEventListener</a> to get notified for rolls, connection and
+disconnection events and more.</p>
+<p>Call <a href="_systemic_games_pixels_web_connect.Pixel.html#addPropertyListener">addPropertyListener</a> to get notified on property changes.</p>
 </div></section>
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
@@ -29,7 +31,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <ul class="tsd-hierarchy">
 <li><span class="target">Pixel</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:74</li></ul></aside>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:81</li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -129,7 +131,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <h4 class="tsd-returns-title">Returns <a href="_systemic_games_pixels_web_connect.Pixel.html" class="tsd-signature-type" data-tsd-kind="Class">Pixel</a></h4><aside class="tsd-sources">
 <p>Overrides <a href="_systemic_games_pixels_web_connect.PixelInfoNotifier.html">PixelInfoNotifier</a>.<a href="_systemic_games_pixels_web_connect.PixelInfoNotifier.html#constructor">constructor</a></p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:140</li></ul></aside></li></ul></section></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:147</li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_dispose" class="tsd-anchor"></a>
@@ -138,72 +140,72 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <div class="tsd-comment tsd-typography"><p>/!\ Internal, don&#39;t call this function ;)</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:144</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:151</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_disposeFunc" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_dispose<wbr/>Func</span><a href="#_disposeFunc" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_dispose<wbr/>Func<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:82</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:89</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_evEmitter" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>_ev<wbr/>Emitter</span><a href="#_evEmitter" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_ev<wbr/>Emitter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:75</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:82</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_info" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_info</span><a href="#_info" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:81</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:88</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_internalSetup" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_internal<wbr/>Setup</span><a href="#_internalSetup" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_internal<wbr/>Setup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:301</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:308</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_log" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_log</span><a href="#_log" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_log<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:300</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:307</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_logFunc" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_log<wbr/>Func</span><a href="#_logFunc" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_log<wbr/>Func<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:77</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:84</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_logMessages" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_log<wbr/>Messages</span><a href="#_logMessages" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_log<wbr/>Messages<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:78</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:85</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_msgEvEmitter" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>_msg<wbr/>Ev<wbr/>Emitter</span><a href="#_msgEvEmitter" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_msg<wbr/>Ev<wbr/>Emitter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:76</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:83</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_onValueChanged" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_on<wbr/>Value<wbr/>Changed</span><a href="#_onValueChanged" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_on<wbr/>Value<wbr/>Changed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:303</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:310</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_session" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>_session</span><a href="#_session" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_session<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:79</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:86</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_status" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_status</span><a href="#_status" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_status<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:80</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:87</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_updateStatus" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_update<wbr/>Status</span><a href="#_updateStatus" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_update<wbr/>Status<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:302</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:309</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_uploadBulkData" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_upload<wbr/>Bulk<wbr/>Data</span><a href="#_uploadBulkData" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_upload<wbr/>Bulk<wbr/>Data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:305</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:312</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="waitForMessage" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>wait<wbr/>For<wbr/>Message</span><a href="#waitForMessage" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">wait<wbr/>For<wbr/>Message<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
@@ -216,17 +218,17 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <h3>Returns</h3><p>A promise with the received message of the expected type.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:194</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:201</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="getDieType" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <code class="tsd-tag ts-flagPrivate">Private</code> <span>get<wbr/>Die<wbr/>Type</span><a href="#getDieType" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">get<wbr/>Die<wbr/>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:306</li></ul></aside></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:313</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="getFaceCount" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <code class="tsd-tag ts-flagPrivate">Private</code> <span>get<wbr/>Face<wbr/>Count</span><a href="#getFaceCount" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">get<wbr/>Face<wbr/>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:307</li></ul></aside></section></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:314</li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="batteryLevel" class="tsd-anchor"></a>
@@ -241,7 +243,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.batteryLevel</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:118</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:125</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="currentFace" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>current<wbr/>Face</span><a href="#currentFace" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -254,7 +256,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.currentFace</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:134</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:141</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="designAndColor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>design<wbr/>And<wbr/>Color</span><a href="#designAndColor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -265,7 +267,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;generic&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;v3Orange&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;v4BlackClear&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;v4WhiteClear&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;v5Grey&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;v5White&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;v5Black&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;v5Gold&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;onyxBlack&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;hematiteGrey&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;midnightGalaxy&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;auroraSky&quot;</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.designAndColor</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:102</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:109</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="dieFaceCount" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>die<wbr/>Face<wbr/>Count</span><a href="#dieFaceCount" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -275,7 +277,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:106</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:113</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="dieType" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>die<wbr/>Type</span><a href="#dieType" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -285,7 +287,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 </div>
 <h4 class="tsd-returns-title">Returns <a href="../types/_systemic_games_pixels_web_connect.DieType.html" class="tsd-signature-type" data-tsd-kind="Type alias">DieType</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:104</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:111</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="firmwareDate" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>firmware<wbr/>Date</span><a href="#firmwareDate" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -296,7 +298,7 @@ Call the <a href="_systemic_games_pixels_web_connect.Pixel.html#connect">()</a> 
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Date</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.firmwareDate</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:108</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:115</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="isCharging" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Charging</span><a href="#isCharging" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -310,7 +312,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.isCharging</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:124</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:131</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="isReady" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Ready</span><a href="#isReady" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -320,7 +322,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:92</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:99</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="ledCount" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>led<wbr/>Count</span><a href="#ledCount" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -331,7 +333,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.ledCount</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:100</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:107</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="logMessages" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log<wbr/>Messages</span><a href="#logMessages" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -341,7 +343,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:84</li></ul></aside></li>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:91</li></ul></aside></li>
 <li class="tsd-signature" id="logMessages.logMessages-2"><span class="tsd-signature-symbol">set</span> logMessages<span class="tsd-signature-symbol">(</span>enabled<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
@@ -351,7 +353,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h5>enabled: <span class="tsd-signature-type">boolean</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:85</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:92</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="logger" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>logger</span><a href="#logger" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -374,7 +376,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h5>msg: <span class="tsd-signature-type">unknown</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:87</li></ul></aside></li>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:94</li></ul></aside></li>
 <li class="tsd-signature" id="logger.logger-2"><span class="tsd-signature-symbol">set</span> logger<span class="tsd-signature-symbol">(</span>logger<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
@@ -395,7 +397,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:88</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:95</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="name" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>name</span><a href="#name" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -406,7 +408,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.name</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:98</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:105</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="pixelId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>pixel<wbr/>Id</span><a href="#pixelId" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -417,7 +419,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.pixelId</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:96</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:103</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="rollState" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>roll<wbr/>State</span><a href="#rollState" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -430,7 +432,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;onFace&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;handling&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;rolling&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;crooked&quot;</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.rollState</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:129</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:136</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="rssi" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>rssi</span><a href="#rssi" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -443,7 +445,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.rssi</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:113</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:120</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="status" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>status</span><a href="#status" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -453,7 +455,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="../types/_systemic_games_pixels_web_connect.PixelStatus.html" class="tsd-signature-type" data-tsd-kind="Type alias">PixelStatus</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:90</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:97</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="systemId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>system<wbr/>Id</span><a href="#systemId" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -464,7 +466,7 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <p>Overrides PixelInfoNotifier.systemId</p>
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:94</li></ul></aside></li></ul></section></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:101</li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="addEventListener" class="tsd-anchor"></a>
@@ -474,8 +476,8 @@ Also &#39;true&#39; if fully charged but still on charger.</p>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Adds the given listener function to the end of the listeners array
 for the event with the given name.
-See <a href="../interfaces/_systemic_games_pixels_web_connect.PixelEventMap.html">PixelEventMap</a> for the list of events and their associated
-data.</p>
+See <a href="../interfaces/_systemic_games_pixels_web_connect.PixelEventMap.html">PixelEventMap</a> for the list of events and their
+associated data.</p>
 </div>
 <section class="tsd-panel tsd-type-parameters">
 <h4>Type Parameters</h4>
@@ -495,7 +497,7 @@ data.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:166</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:173</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="addMessageListener" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>add<wbr/>Message<wbr/>Listener</span><a href="#addMessageListener" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -529,7 +531,7 @@ data.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:181</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:188</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a id="addPropertyListener" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>add<wbr/>Property<wbr/>Listener</span><a href="#addPropertyListener" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
@@ -601,7 +603,7 @@ data.</p>
 </div></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:256</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:263</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="connect" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>connect</span><a href="#connect" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -624,7 +626,7 @@ data.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_systemic_games_pixels_web_connect.Pixel.html" class="tsd-signature-type" data-tsd-kind="Class">Pixel</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:153</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:160</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="disconnect" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>disconnect</span><a href="#disconnect" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -634,7 +636,7 @@ data.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_systemic_games_pixels_web_connect.Pixel.html" class="tsd-signature-type" data-tsd-kind="Class">Pixel</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:157</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:164</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected tsd-is-inherited"><a id="emitPropertyEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>emit<wbr/>Property<wbr/>Event</span><a href="#emitPropertyEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected tsd-is-inherited">
@@ -680,7 +682,7 @@ See</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:299</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:306</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="playTestAnimation" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>play<wbr/>Test<wbr/>Animation</span><a href="#playTestAnimation" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -715,7 +717,7 @@ See</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:283</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:290</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="queryRssi" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>query<wbr/>Rssi</span><a href="#queryRssi" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -728,7 +730,7 @@ See</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:241</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:248</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="removeEventListener" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>remove<wbr/>Event<wbr/>Listener</span><a href="#removeEventListener" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -736,8 +738,8 @@ See</p>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Removes the specified listener function from the listener array
 for the event with the given name.
-See <a href="../interfaces/_systemic_games_pixels_web_connect.PixelEventMap.html">PixelEventMap</a> for the list of events and their associated
-data.</p>
+See <a href="../interfaces/_systemic_games_pixels_web_connect.PixelEventMap.html">PixelEventMap</a> for the list of events and their
+associated data.</p>
 </div>
 <section class="tsd-panel tsd-type-parameters">
 <h4>Type Parameters</h4>
@@ -757,7 +759,7 @@ data.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:175</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:182</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="removeMessageListener" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>remove<wbr/>Message<wbr/>Listener</span><a href="#removeMessageListener" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -791,7 +793,7 @@ data.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:187</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:194</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a id="removePropertyListener" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>remove<wbr/>Property<wbr/>Listener</span><a href="#removePropertyListener" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
@@ -838,7 +840,7 @@ data.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:224</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:231</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="reportRssi" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>report<wbr/>Rssi</span><a href="#reportRssi" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -860,7 +862,7 @@ data.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:235</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:242</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="sendAndWaitForResponse" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>send<wbr/>And<wbr/>Wait<wbr/>For<wbr/>Response</span><a href="#sendAndWaitForResponse" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -887,7 +889,7 @@ data.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/_systemic_games_pixels_web_connect.MessageOrType.html" class="tsd-signature-type" data-tsd-kind="Type alias">MessageOrType</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:208</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:215</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="sendAndWaitForTypedResponse" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>send<wbr/>And<wbr/>Wait<wbr/>For<wbr/>Typed<wbr/>Response</span><a href="#sendAndWaitForTypedResponse" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -924,7 +926,7 @@ which is returned casted to the expected type.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> timeoutMs: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:217</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:224</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="sendMessage" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>send<wbr/>Message</span><a href="#sendMessage" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -945,7 +947,7 @@ which is returned casted to the expected type.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:200</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:207</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="startCalibration" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>start<wbr/>Calibration</span><a href="#startCalibration" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -955,7 +957,7 @@ which is returned casted to the expected type.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:228</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:235</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="stopAllAnimations" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>stop<wbr/>All<wbr/>Animations</span><a href="#stopAllAnimations" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -967,7 +969,7 @@ which is returned casted to the expected type.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:267</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:274</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="transferDataSet" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>transfer<wbr/>Data<wbr/>Set</span><a href="#transferDataSet" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -1002,7 +1004,7 @@ which is returned casted to the expected type.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:275</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:282</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="transferInstantAnimations" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>transfer<wbr/>Instant<wbr/>Animations</span><a href="#transferInstantAnimations" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -1038,7 +1040,7 @@ Those animations are lost when the Pixel goes to sleep, is turned off or is rest
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:292</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:299</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="turnOff" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>turn<wbr/>Off</span><a href="#turnOff" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -1048,7 +1050,7 @@ Those animations are lost when the Pixel goes to sleep, is turned off or is rest
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:245</li></ul></aside></li></ul></section>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:252</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="uploadBulkDataWithAck" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>upload<wbr/>Bulk<wbr/>Data<wbr/>With<wbr/>Ack</span><a href="#uploadBulkDataWithAck" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -1078,7 +1080,7 @@ Those animations are lost when the Pixel goes to sleep, is turned off or is rest
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> progressMode: <span class="tsd-signature-type">&quot;bytes&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;percent&quot;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:304</li></ul></aside></li></ul></section></section></div>
+<li>Defined in packages/pixels-core-connect/dist/src/Pixel.d.ts:311</li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
