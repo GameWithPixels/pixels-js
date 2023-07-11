@@ -5,15 +5,30 @@ Monorepo for Pixels Typescript/JavaScript libraries and apps.
 This repository regroups all the TypeScript/JavaScript source code
 for our web and React Native packages.
 
+## Foreword
+
+Pixels are full of LEDs, smarts and no larger than regular dice, they can be
+customized to light up when and how you desire.
+Check our [website](https://gamewithpixels.com/) for more information.
+
+> **Warning**
+> Before jumping into programming please make sure to read our Pixels developer's
+> [guide](https://github.com/GameWithPixels/.github/blob/main/doc/DevelopersGuide.md).
+
+Please open a [ticket](
+    https://github.com/GameWithPixels/pixels-js/issues
+) on GitHub if you're having any issue.
+
+## Documentation
+
 The packages documentation is generated from the source code with
 [TypeDoc](https://typedoc.org/).
 The latest version of the packages modules documentation is published [here](
     https://gamewithpixels.github.io/pixels-js/index.html
 ).
 
-> **Warning**
-> Before jumping into programming please make sure to read our Pixels developer's
-> [guide](https://github.com/GameWithPixels/.github/blob/main/doc/DevelopersGuide.md).
+Each package is documented as a separate module, see the list below to get the links
+to the main package's documentation.
 
 ## Packages
 

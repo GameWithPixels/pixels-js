@@ -11,9 +11,9 @@ Find the latest published version on [NPM](
 
 ## Foreword
 
-To learn more about Pixels dice please checkout our Kickstarter [page](
-    https://www.kickstarter.com/projects/pixels-dice/pixels-the-electronic-dice
-).
+Pixels are full of LEDs, smarts and no larger than regular dice, they can be
+customized to light up when and how you desire.
+Check our [website](https://gamewithpixels.com/) for more information.
 
 > **Warning**
 > Before jumping into programming please make sure to read our Pixels developer's
