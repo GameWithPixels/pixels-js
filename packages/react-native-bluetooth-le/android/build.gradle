@@ -31,6 +31,8 @@ def getExtOrIntegerDefault(name) {
 }
 
 android {
+  namespace = "com.systemic.reactnativebluetoothle"
+
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {

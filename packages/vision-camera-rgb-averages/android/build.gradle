@@ -19,6 +19,8 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
+    namespace = "com.systemic.visioncamerargbaverages"
+
     compileSdkVersion safeExtGet('VisionCameraRgbAverages_compileSdkVersion', 31)
     defaultConfig {
         minSdkVersion safeExtGet('VisionCameraRgbAverages_minSdkVersion', 21)
