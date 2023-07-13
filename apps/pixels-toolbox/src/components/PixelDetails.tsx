@@ -614,14 +614,20 @@ export function PixelDetails({
                 pixelDispatcher={pixelDispatcher}
                 onShowTelemetry={onOpen}
                 onExportTelemetry={() => {
-                  const filename = getDatedFilename([pixel.name, "telemetry"]);
+                  const filename = getDatedFilename([
+                    pixelDispatcher.name,
+                    "telemetry",
+                  ]);
                   exportCsv(
                     filename + ".csv",
                     pixelDispatcher.telemetryData
                   ).catch(setLastError);
                 }}
                 onExportMessages={() => {
-                  const filename = getDatedFilename([pixel.name, "messages"]);
+                  const filename = getDatedFilename([
+                    pixelDispatcher.name,
+                    "messages",
+                  ]);
                   const task = async () => {
                     const uri = await requestUserFileAsync(filename + ".json");
                     pixelDispatcher.exportMessages(uri);
