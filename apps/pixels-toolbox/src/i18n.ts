@@ -132,6 +132,7 @@ i18n
           exportLog: "Export Log",
           reset: "Reset",
           full: "Full",
+          printSticker: "Print Sticker",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -312,6 +313,7 @@ i18n
           exportLog: "Export Log",
           reset: "Reset",
           full: "Full",
+          printSticker: "Print Sticker",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",

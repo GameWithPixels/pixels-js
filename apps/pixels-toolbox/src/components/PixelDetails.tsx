@@ -44,6 +44,7 @@ import PixelDispatcher, {
   TelemetryData,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
+import { printStickerAsync } from "~/features/printStickerAsync";
 import { range } from "~/features/range";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
@@ -362,6 +363,15 @@ function BottomButtons({
               </Button>
             </>
           )}
+          <Button
+            onPress={() =>
+              printStickerAsync({ pdf: true }).catch((e) =>
+                console.error(`Print error: ${e}`)
+              )
+            }
+          >
+            {t("printSticker")}
+          </Button>
         </FastVStack>
         <FastVStack gap={4}>
           {status === "ready" && (
