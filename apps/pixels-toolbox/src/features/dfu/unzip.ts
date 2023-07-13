@@ -1,9 +1,10 @@
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
-import { unzip } from "react-native-zip-archive";
 
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import otherDfuFiles from "!/dfu/other-dfu-files.zip";
+import Pathname from "~/features/files/Pathname";
+import { unzipAssetAsync } from "~/features/files/unzipAssetAsync";
 
 export const cacheDirectory = FileSystem.cacheDirectory + "unzippedDfuFiles/";
 
@@ -11,21 +12,6 @@ export async function unzipDfuFiles(
   asset: Asset,
   opt?: { clearCache?: boolean }
 ): Promise<string[]> {
-  if (!asset.localUri?.length) {
-    throw new Error(
-      `unzipDfuFiles: Can't unzip non local asset named ${asset.name}`
-    );
-  }
-  const info = await FileSystem.getInfoAsync(asset.localUri);
-  if (!info.exists) {
-    throw new Error(
-      `unzipDfuFiles: Asset ${asset.name} doesn't exist in file system`
-    );
-  }
-  if (info.isDirectory) {
-    throw new Error(`unzipDfuFiles: Asset ${asset.name} is a directory`);
-  }
-
   // Delete cache directory
   if (opt?.clearCache) {
     await FileSystem.deleteAsync(cacheDirectory, { idempotent: true });
@@ -38,34 +24,26 @@ export async function unzipDfuFiles(
     await FileSystem.makeDirectoryAsync(cacheDirectory);
   }
 
-  // Copy zip in a temp directory so we don't have any issue unzipping it
-  // (we're getting an access error on iOS when trying to unzip the original file)
-  const tempDir = cacheDirectory + "Temp";
-  await FileSystem.deleteAsync(tempDir, { idempotent: true });
-  const tempZip = cacheDirectory + "dfu.zip";
-  await FileSystem.copyAsync({ from: asset.localUri, to: tempZip });
-
-  // Unzip all assets in a temp folder so we can list the files
+  // Unzip in temp folder so we can list the unzipped files
+  const tempDir = await Pathname.generateTempPathnameAsync("/");
   try {
-    const toPath = (uri: string) =>
-      uri.startsWith("file:///") ? uri.substring("file://".length) : uri;
-    await unzip(toPath(tempZip), toPath(tempDir));
-  } finally {
-    await FileSystem.deleteAsync(tempZip, { idempotent: true });
-  }
+    await unzipAssetAsync(asset, tempDir);
 
-  // Get files pathnames and move them to final directory
-  const files = await FileSystem.readDirectoryAsync(tempDir);
-  const dstFiles: string[] = [];
-  for (const filename of files) {
-    if (filename.endsWith(".zip")) {
-      const from = tempDir + "/" + filename;
-      const to = cacheDirectory + "/" + filename;
-      await FileSystem.moveAsync({ from, to });
-      dstFiles.push(to);
+    // Get files pathnames and move them to final directory
+    const files = await FileSystem.readDirectoryAsync(tempDir);
+    const dstFiles: string[] = [];
+    for (const filename of files) {
+      if (filename.endsWith(".zip")) {
+        const from = tempDir + filename;
+        const to = cacheDirectory + filename;
+        await FileSystem.moveAsync({ from, to });
+        dstFiles.push(to);
+      }
     }
+    return dstFiles;
+  } finally {
+    await FileSystem.deleteAsync(tempDir);
   }
-  return dstFiles;
 }
 
 export async function unzipDfuFilesFromAssets(
