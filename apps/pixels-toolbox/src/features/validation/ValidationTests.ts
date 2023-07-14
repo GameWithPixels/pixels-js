@@ -132,14 +132,17 @@ const ValidationTests = {
     pixel: Pixel,
     shouldBeCharging: boolean,
     blinkColor: Color,
-    abortSignal: AbortSignal
+    abortSignal: AbortSignal,
+    timeout = 3000
   ): Promise<void> => {
     await new Promise<void>((resolve, reject) => {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
       // Abort controller used to control the blinking
       const blinkAbortController = new AbortController();
       // Process battery events
       const batteryListener = ({ isCharging }: BatteryEvent) => {
         if (isCharging === shouldBeCharging) {
+          clearTimeout(timeoutId);
           pixel.removeEventListener("battery", batteryListener);
           blinkAbortController.abort();
           resolve();
@@ -147,6 +150,8 @@ const ValidationTests = {
       };
       // Abort function
       const abort = () => {
+        clearTimeout(timeoutId);
+        abortSignal.removeEventListener("abort", abort);
         pixel.removeEventListener("battery", batteryListener);
         blinkAbortController.abort();
         reject(new TaskCanceledError("waitCharging"));
@@ -166,15 +171,28 @@ const ValidationTests = {
         blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
         // Listen to battery events
         pixel.addEventListener("battery", batteryListener);
+        // Stop trying after a while
+        timeoutId = setTimeout(() => {
+          abortSignal.removeEventListener("abort", abort);
+          pixel.removeEventListener("battery", batteryListener);
+          blinkAbortController.abort();
+          reject(new Error("Timeout waiting for charging state"));
+        }, timeout);
       }
     });
   },
 
   checkAccelerometer: async (
     pixel: Pixel,
-    checkAcc: (x: number, y: number, z: number) => boolean,
-    abortSignal: AbortSignal
+    checkAcc: (x: number, y: number, z: number) => string | undefined, // String with error if invalid
+    abortSignal: AbortSignal,
+    opt?: {
+      timeout?: number; // Delay before aborting, default = 3000
+      once?: boolean; // Whether to check acceleration just once
+    }
   ): Promise<void> => {
+    const timeout = opt?.timeout ?? 3000;
+    const once = opt?.once ?? false;
     // Turn on telemetry and wait for data
     await pixel.sendMessage(
       safeAssign(new RequestTelemetry(), {
@@ -182,6 +200,7 @@ const ValidationTests = {
       })
     );
     let telemetryListener: ((msg: MessageOrType) => void) | undefined;
+    let globalError: Error | undefined;
     try {
       await new Promise<void>((resolve, reject) => {
         const abort = () => reject(new TaskCanceledError("checkAccelerometer"));
@@ -189,35 +208,67 @@ const ValidationTests = {
           abort();
         } else {
           abortSignal.addEventListener("abort", abort);
+          let lastErrorMsg: string | undefined;
+          // Stop trying after a while
+          const timeoutId = setTimeout(() => {
+            abortSignal.removeEventListener("abort", abort);
+            reject(
+              new Error(
+                lastErrorMsg ?? "Timeout waiting for accelerometer data"
+              )
+            );
+          }, timeout);
+          // Process telemetry events
           telemetryListener = (msg) => {
             const { accX, accY, accZ } = msg as Telemetry;
             const n = vectNorm(accX, accY, accZ);
             console.log(
               `Acceleration: ${vectToString(accX, accY, accZ)}, norm=${n}`
             );
+            let error: Error | undefined;
             try {
-              if (checkAcc(accX, accY, accZ)) {
+              lastErrorMsg = checkAcc(accX, accY, accZ);
+              if (!lastErrorMsg) {
                 abortSignal.removeEventListener("abort", abort);
+                clearTimeout(timeoutId);
                 resolve();
+              } else if (once) {
+                error = new Error(lastErrorMsg);
               }
-            } catch (error) {
+            } catch (e) {
+              error = e as Error;
+            }
+            if (error) {
               abortSignal.removeEventListener("abort", abort);
+              clearTimeout(timeoutId);
               reject(error);
             }
           };
           pixel.addMessageListener("telemetry", telemetryListener);
         }
       });
-    } finally {
-      if (telemetryListener) {
-        pixel.removeMessageListener("telemetry", telemetryListener);
-      }
-      // Turn off telemetry
+    } catch (error) {
+      globalError = error as Error;
+    }
+    if (telemetryListener) {
+      pixel.removeMessageListener("telemetry", telemetryListener);
+    }
+    // Turn off telemetry
+    try {
       await pixel.sendMessage(
         safeAssign(new RequestTelemetry(), {
           requestMode: TelemetryRequestModeValues.off,
         })
       );
+    } catch (error) {
+      if (globalError) {
+        console.log(`Error while trying to stop telemetry: ${error}`);
+      } else {
+        globalError = error as Error;
+      }
+    }
+    if (globalError) {
+      throw globalError;
     }
   },
 
@@ -225,35 +276,24 @@ const ValidationTests = {
   checkAccelerationDownward: (
     pixel: Pixel,
     abortSignal: AbortSignal,
-    maxWait = 3000, // Maximum number of ms to read a downward acceleration
+    timeout = 3000, // Number of ms to get a downward acceleration
     maxDeviation = 0.1 // 10%
   ): Promise<void> => {
-    const timeout = Date.now() + maxWait;
     return ValidationTests.checkAccelerometer(
       pixel,
       (x, y, z) => {
         // 1. Check norm
         const n = vectNorm(x, y, z);
         if (n > 1 + maxDeviation || n < 1 - maxDeviation) {
-          if (Date.now() >= timeout) {
-            throw new Error(
-              "Out of range accelerometer value: " + vectToString(x, y, z)
-            );
-          }
+          return "Out of range accelerometer value: " + vectToString(x, y, z);
         }
         // 2. Check angle with -Z
         else if (-y > 1 + maxDeviation || -y < 1 - maxDeviation) {
-          if (Date.now() >= timeout) {
-            throw new Error(
-              "Tilted accelerometer value: " + vectToString(x, y, z)
-            );
-          }
-        } else {
-          return true;
+          return "Tilted accelerometer value: " + vectToString(x, y, z);
         }
-        return false;
       },
-      abortSignal
+      abortSignal,
+      { timeout }
     );
   },
 
@@ -269,13 +309,11 @@ const ValidationTests = {
         // Check norm
         const n = vectNorm(x, y, z);
         if (n > maxDeviationFactor || n < 1 / maxDeviationFactor) {
-          throw new Error(
-            "Invalid accelerometer value: " + vectToString(x, y, z)
-          );
+          return "Invalid accelerometer value: " + vectToString(x, y, z);
         }
-        return true;
       },
-      abortSignal
+      abortSignal,
+      { once: true }
     );
   },
 
