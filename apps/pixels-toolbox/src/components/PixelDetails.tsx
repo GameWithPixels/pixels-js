@@ -638,7 +638,8 @@ export function PixelDetails({
                     getDatedFilename([pixelDispatcher.name, "messages"]) +
                     ".json";
                   const task = async () => {
-                    const isAndroid = Platform.OS === "android";
+                    // The boolean below is always false to test file sharing on Android
+                    const isAndroid = false && Platform.OS === "android";
                     const uri = isAndroid
                       ? await requestUserFileAsync(filename)
                       : FileSystem.cacheDirectory + filename;
