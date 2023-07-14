@@ -12,10 +12,16 @@ import {
   usePixelConnect,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
-import { StorageAccessFramework } from "expo-file-system";
+import FileSystem, { StorageAccessFramework } from "expo-file-system";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
-import { FlatList, Pressable, RefreshControl, View } from "react-native";
+import {
+  FlatList,
+  Platform,
+  Pressable,
+  RefreshControl,
+  View,
+} from "react-native";
 import { Button, ProgressBar, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
@@ -25,6 +31,7 @@ import Pathname from "~/features/files/Pathname";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { pixelTransferTest } from "~/features/pixels/extensions";
+import { shareFileAsync } from "~/features/shareFileAsync";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import gs from "~/styles";
 
@@ -178,8 +185,18 @@ function SendData({ pixel }: { pixel: Pixel }) {
       console.log(
         `About to write ${contents.length} characters to ${filename}`
       );
-      const uri = await requestUserFileAsync(filename);
-      await StorageAccessFramework.writeAsStringAsync(uri, contents);
+      if (Platform.OS === "android") {
+        const uri = await requestUserFileAsync(filename);
+        await StorageAccessFramework.writeAsStringAsync(uri, contents);
+      } else {
+        const uri = await Pathname.generateTempPathnameAsync(".csv");
+        try {
+          await FileSystem.writeAsStringAsync(uri, contents);
+          await shareFileAsync(uri);
+        } finally {
+          await FileSystem.deleteAsync(uri, { idempotent: true });
+        }
+      }
     };
     task().catch(errorHandler);
   }, [dataRate, errorHandler, pixel.name]);

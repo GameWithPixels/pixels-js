@@ -13,9 +13,10 @@ import {
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
+import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
 import {
   Button as PaperButton,
   ButtonProps,
@@ -46,6 +47,7 @@ import PixelDispatcher, {
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { printStickerAsync } from "~/features/printStickerAsync";
 import { range } from "~/features/range";
+import { shareFileAsync } from "~/features/shareFileAsync";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
@@ -624,23 +626,32 @@ export function PixelDetails({
                 pixelDispatcher={pixelDispatcher}
                 onShowTelemetry={onOpen}
                 onExportTelemetry={() => {
-                  const filename = getDatedFilename([
-                    pixelDispatcher.name,
-                    "telemetry",
-                  ]);
-                  exportCsv(
-                    filename + ".csv",
-                    pixelDispatcher.telemetryData
-                  ).catch(setLastError);
+                  const filename =
+                    getDatedFilename([pixelDispatcher.name, "telemetry"]) +
+                    ".csv";
+                  exportCsv(filename, pixelDispatcher.telemetryData).catch(
+                    setLastError
+                  );
                 }}
                 onExportMessages={() => {
-                  const filename = getDatedFilename([
-                    pixelDispatcher.name,
-                    "messages",
-                  ]);
+                  const filename =
+                    getDatedFilename([pixelDispatcher.name, "messages"]) +
+                    ".json";
                   const task = async () => {
-                    const uri = await requestUserFileAsync(filename + ".json");
-                    pixelDispatcher.exportMessages(uri);
+                    const isAndroid = Platform.OS === "android";
+                    const uri = isAndroid
+                      ? await requestUserFileAsync(filename)
+                      : FileSystem.cacheDirectory + filename;
+                    try {
+                      await pixelDispatcher.exportMessages(uri);
+                      if (!isAndroid) {
+                        await shareFileAsync(uri);
+                      }
+                    } finally {
+                      if (!isAndroid) {
+                        await FileSystem.deleteAsync(uri, { idempotent: true });
+                      }
+                    }
                   };
                   task().catch(setLastError);
                 }}

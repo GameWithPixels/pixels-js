@@ -1,6 +1,7 @@
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import * as Print from "expo-print";
+import { Platform } from "react-native";
 import RNFS from "react-native-fs";
 
 // By default the sticker HTML is loaded from the same zip file that contain's the page
@@ -14,6 +15,7 @@ import stickerZip from "!/stickers/single-die-sticker.zip";
 import Pathname from "~/features/files/Pathname";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import { unzipAssetAsync } from "~/features/files/unzipAssetAsync";
+import { shareFileAsync } from "~/features/shareFileAsync";
 
 /**
  * Print label with actual printer or to PDF file.
@@ -102,7 +104,7 @@ export async function printStickerAsync(opt?: {
     await embedFiles("url(", "font/ttf");
   } finally {
     // Clean up temp folder
-    await FileSystem.deleteAsync(tempDir);
+    await FileSystem.deleteAsync(tempDir, { idempotent: true });
   }
 
   // Print
@@ -112,7 +114,16 @@ export async function printStickerAsync(opt?: {
 
   // Export file if printed to pdf
   if (result?.uri) {
-    const uri = await requestUserFileAsync("sticker.pdf");
-    await RNFS.copyFile(result.uri, uri);
+    try {
+      if (Platform.OS === "android") {
+        const uri = await requestUserFileAsync("sticker.pdf");
+        await RNFS.copyFile(result.uri, uri);
+      } else {
+        await shareFileAsync(result.uri);
+      }
+    } finally {
+      // Delete generated file
+      await FileSystem.deleteAsync(result.uri, { idempotent: true });
+    }
   }
 }

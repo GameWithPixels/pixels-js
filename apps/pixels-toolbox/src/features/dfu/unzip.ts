@@ -42,7 +42,7 @@ export async function unzipDfuFiles(
     }
     return dstFiles;
   } finally {
-    await FileSystem.deleteAsync(tempDir);
+    await FileSystem.deleteAsync(tempDir, { idempotent: true });
   }
 }
 

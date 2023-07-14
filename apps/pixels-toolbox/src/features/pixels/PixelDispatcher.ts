@@ -253,7 +253,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
     this._pixel = getPixel(scannedPixel);
     _instances.set(this.pixelId, this);
     // Log messages in file
-    const filename = getDatedFilename(this.name);
+    const filename = `${getDatedFilename(this.name)}~${Math.round(
+      1e9 * Math.random()
+    )}`;
     this._messagesLogFilePath = `${RNFS.TemporaryDirectoryPath}/${filename}.json`;
     console.log(
       `[${this.name}] Logging messages in: ${this._messagesLogFilePath}`

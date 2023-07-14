@@ -26,15 +26,15 @@ export async function unzipAssetAsync(
   // Copy zip in a temp directory so we don't have any issue unzipping it
   // (we're getting an access error on iOS when trying to unzip the original file)
   const tempZip = await Pathname.generateTempPathnameAsync(".zip");
-  await FileSystem.copyAsync({ from: asset.localUri, to: tempZip });
-
-  // Unzip all assets in output folder
   try {
+    await FileSystem.copyAsync({ from: asset.localUri, to: tempZip });
+
+    // Unzip all assets in output folder
     const toPath = (uri: string) =>
       uri.startsWith("file:///") ? uri.substring("file://".length) : uri;
     await unzip(toPath(tempZip), toPath(outDirectory));
   } finally {
     // Delete temporary file
-    await FileSystem.deleteAsync(tempZip);
+    await FileSystem.deleteAsync(tempZip, { idempotent: true });
   }
 }
