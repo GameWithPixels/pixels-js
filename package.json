@@ -11,6 +11,7 @@
     "px": "yarn workspace @systemic-games/pixels-app",
     "px:eas-ios": "cd apps && cd pixels-app && eas build -p ios --profile",
     "px:eas-android": "cd apps && cd pixels-app && eas build -p android --profile",
+    "px:eas-all": "cd apps && cd pixels-app && eas build -p all --profile",
     "px:eas": "cd apps && cd pixels-app && eas build -p all --profile",
     "px:prebuild": "cd apps && cd pixels-app && yarn expo prebuild",
     "pxd": "set SYSTEMIC_PX_DEV=1 && yarn px",
