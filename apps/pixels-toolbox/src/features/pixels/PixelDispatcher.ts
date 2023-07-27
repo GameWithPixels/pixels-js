@@ -3,6 +3,7 @@ import {
   assertNever,
   createTypedEventEmitter,
   EventReceiver,
+  getValueKeyName,
 } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForProfile,
@@ -33,6 +34,11 @@ import {
   getMessageType,
   Telemetry,
   MessageTypeValues,
+  BatteryState,
+  PixelRollStateValues,
+  PixelBatteryStateValues,
+  PixelBatteryControllerStateValues,
+  BatteryControllerState,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -110,10 +116,25 @@ export type PixelDispatcherMutableProps =
 // | "hasActiveDFU"
 
 export type TelemetryData = {
+  accX: number;
+  accY: number;
+  accZ: number;
+  faceConfidence: number;
   timestamp: number;
-  rssi: number;
+  rollState: PixelRollState;
+  faceIndex: number;
   battery: number;
+  batteryState: BatteryState;
+  batteryControllerState: BatteryControllerState;
   voltage: number;
+  voltageCoil: number;
+  rssi: number;
+  rssiChannelIndex: number;
+  mcuTemperature: number;
+  batteryTemperature: number;
+  internalChargeState: boolean;
+  forceDisableChargingState: boolean;
+  ledCurrent: number;
 };
 
 const _instances = new Map<number, PixelDispatcher>();
@@ -318,10 +339,33 @@ class PixelDispatcher extends ScannedPixelNotifier<
     this._pixel.addMessageListener("telemetry", (msg) => {
       const telemetry = msg as Telemetry;
       const data = {
-        timestamp: Date.now(),
-        rssi: telemetry.rssi,
+        accX: telemetry.accX,
+        accY: telemetry.accY,
+        accZ: telemetry.accZ,
+        faceConfidence: telemetry.faceConfidence,
+        timestamp: telemetry.time,
+        rollState:
+          getValueKeyName(telemetry.rollState, PixelRollStateValues) ??
+          "unknown",
+        faceIndex: telemetry.faceIndex,
         battery: telemetry.batteryLevelPercent,
-        voltage: (telemetry.voltageTimes50 / 50) * 1000,
+        batteryState:
+          getValueKeyName(telemetry.batteryState, PixelBatteryStateValues) ??
+          "error",
+        batteryControllerState:
+          getValueKeyName(
+            telemetry.batteryControllerState,
+            PixelBatteryControllerStateValues
+          ) ?? "unknown",
+        voltage: telemetry.voltageTimes50 / 50,
+        voltageCoil: telemetry.vCoilTimes50 / 50,
+        rssi: telemetry.rssi,
+        rssiChannelIndex: telemetry.channelIndex,
+        mcuTemperature: telemetry.mcuTemperatureTimes100 / 100,
+        batteryTemperature: telemetry.batteryTemperatureTimes100 / 100,
+        internalChargeState: telemetry.internalChargeState,
+        forceDisableChargingState: telemetry.forceDisableChargingState,
+        ledCurrent: telemetry.ledCurrent,
       };
       this._telemetryData.push(data);
       this._evEmitter.emit("telemetry", data);

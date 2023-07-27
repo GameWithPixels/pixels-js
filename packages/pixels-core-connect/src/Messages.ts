@@ -454,23 +454,6 @@ export class Telemetry implements PixelMessage {
   accZ = 0;
 
   @serializable(4, { numberFormat: "float" })
-  jerkX = 0;
-  @serializable(4, { numberFormat: "float" })
-  jerkY = 0;
-  @serializable(4, { numberFormat: "float" })
-  jerkZ = 0;
-
-  @serializable(4, { numberFormat: "float" })
-  smoothAccX = 0;
-  @serializable(4, { numberFormat: "float" })
-  smoothAccY = 0;
-  @serializable(4, { numberFormat: "float" })
-  smoothAccZ = 0;
-
-  @serializable(4, { numberFormat: "float" })
-  sigma = 0;
-
-  @serializable(4, { numberFormat: "float" })
   faceConfidence = 0;
 
   @serializable(4)
@@ -493,6 +476,10 @@ export class Telemetry implements PixelMessage {
   /** The charging state of the battery. */
   @serializable(1)
   batteryState = PixelBatteryStateValues.ok;
+
+  /** The internal state of the battery controller itself. */
+  @serializable(1)
+  batteryControllerState = PixelBatteryControllerStateValues.ok;
 
   /** The measured battery voltage multiplied by 50. */
   @serializable(1)
@@ -534,6 +521,10 @@ export class Telemetry implements PixelMessage {
   /** Internal disabling of charging (because of temperature for instance) */
   @serializable(1)
   forceDisableChargingState = false;
+
+  /** led power draw in mA */
+  @serializable(1)
+  ledCurrent = 0;
 }
 
 /**
@@ -824,6 +815,53 @@ export const PixelBatteryStateValues = {
  * @category Message
  */
 export type BatteryState = keyof typeof PixelBatteryStateValues;
+
+/**
+ * The different possible battery charging states.
+ * @enum
+ * @category Message
+ */
+export const PixelBatteryControllerStateValues = {
+  unknown: enumValue(0),
+  // Battery looks fine, nothing is happening
+  ok: enumValue(),
+  // Battery voltage is so low the die might turn off at any time
+  empty: enumValue(),
+  // Battery level is low, notify user they should recharge
+  low: enumValue(),
+  // Coil voltage is bad, but we don't know yet if that's because we just put the die
+  // on the coil, or if indeed the die is incorrectly positioned
+  transitionOn: enumValue(),
+  // Coil voltage is bad, but we don't know yet if that's because we removed the die and
+  // the coil cap is still discharging, or if indeed the die is incorrectly positioned
+  transitionOff: enumValue(),
+  // Coil voltage is bad, die is probably positioned incorrectly
+  // Note that currently this state is triggered during transition between charging and not charging...
+  badCharging: enumValue(),
+  // Charge state doesn't make sense (charging but no coil voltage detected for instance)
+  error: enumValue(),
+  // Battery is currently recharging, but still really low
+  chargingLow: enumValue(),
+  // Battery is currently recharging
+  charging: enumValue(),
+  // Battery is currently cooling down
+  cooldown: enumValue(),
+  // Battery is currently recharging, but at 99%
+  chargingTrickle: enumValue(),
+  // Battery is full and finished charging
+  done: enumValue(),
+  // Battery is too cold
+  lowTemp: enumValue(),
+  // Battery is too hot
+  highTemp: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link PixelBatteryControllerStateValues}.
+ * @category Message
+ */
+export type BatteryControllerState =
+  keyof typeof PixelBatteryControllerStateValues;
 
 /**
  * Message send by a Pixel to notify of its battery level and state.
