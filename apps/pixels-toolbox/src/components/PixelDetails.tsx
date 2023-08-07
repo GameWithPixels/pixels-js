@@ -367,8 +367,8 @@ function BottomButtons({
           )}
           <Button
             onPress={() =>
-              printStickerAsync({ pdf: true }).catch((e) =>
-                console.error(`Print error: ${e}`)
+              printStickerAsync({ pdf: true, width: 227, height: 99 }).catch(
+                (e) => console.error(`Print error: ${e}`)
               )
             }
           >
