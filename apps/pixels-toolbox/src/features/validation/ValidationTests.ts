@@ -133,7 +133,7 @@ const ValidationTests = {
     shouldBeCharging: boolean,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    timeout = 3000
+    timeout = 30000 // 30s
   ): Promise<void> => {
     await new Promise<void>((resolve, reject) => {
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -176,7 +176,13 @@ const ValidationTests = {
           abortSignal.removeEventListener("abort", abort);
           pixel.removeEventListener("battery", batteryListener);
           blinkAbortController.abort();
-          reject(new Error("Timeout waiting for charging state"));
+          reject(
+            new Error(
+              `Timeout waiting for '${
+                shouldBeCharging ? "" : "not "
+              }charging' state`
+            )
+          );
         }, timeout);
       }
     });
