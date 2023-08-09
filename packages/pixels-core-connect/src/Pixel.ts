@@ -58,7 +58,8 @@ import {
   PixelConnectIdMismatchError,
   PixelConnectTimeoutError,
   PixelError,
-  PixelMessageTimeoutError,
+  PixelWaitForMessageDisconnectError,
+  PixelWaitForMessageTimeoutError,
 } from "./errors";
 import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
 
@@ -512,10 +513,7 @@ export class Pixel extends PixelInfoNotifier {
     } catch (error) {
       // Check if the error was caused by the connection timeout
       if (hasTimedOut) {
-        throw new PixelConnectTimeoutError(
-          this,
-          `Connection timeout after ${timeoutMs} ms`
-        );
+        throw new PixelConnectTimeoutError(this, timeoutMs);
       } else if (error instanceof PixelConnectError) {
         // Forward other connection errors
         throw error;
@@ -605,28 +603,41 @@ export class Pixel extends PixelInfoNotifier {
     timeoutMs: number = Constants.ackMessageTimeout
   ): Promise<MessageOrType> {
     return new Promise((resolve, reject) => {
-      let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      const onMessage = (msg: MessageOrType) => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = undefined;
-          this.removeMessageListener(expectedMsgType, onMessage);
-          resolve(msg);
+      let cleanup: () => void;
+      // 1. Hook message listener
+      const messageListener = (msg: MessageOrType) => {
+        cleanup();
+        resolve(msg);
+      };
+      this.addMessageListener(expectedMsgType, messageListener);
+      // 2. Hook connection status listener
+      // Note: We don't check for the initial status so this method
+      // may be called before completing the connection sequence.
+      const statusListener = (status: PixelStatus) => {
+        if (status === "disconnecting" || status === "disconnected") {
+          // We got disconnected, stop waiting for message
+          cleanup();
+          reject(new PixelWaitForMessageDisconnectError(this, expectedMsgType));
         }
       };
-      timeoutId = setTimeout(() => {
-        if (timeoutId) {
-          timeoutId = undefined;
-          this.removeMessageListener(expectedMsgType, onMessage);
-          reject(
-            new PixelMessageTimeoutError(
-              this,
-              `Timeout of ${timeoutMs}ms waiting on message ${expectedMsgType}`
-            )
-          );
-        }
+      this.addEventListener("status", statusListener);
+      // 3. Setup timeout
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(
+          new PixelWaitForMessageTimeoutError(this, timeoutMs, expectedMsgType)
+        );
       }, timeoutMs);
-      this.addMessageListener(expectedMsgType, onMessage);
+      cleanup = () => {
+        // Cancel timeout and unhook listeners
+        clearTimeout(timeoutId);
+        if (messageListener) {
+          this.removeMessageListener(expectedMsgType, messageListener);
+        }
+        if (statusListener) {
+          this.removeEventListener("status", statusListener);
+        }
+      };
     });
   }
 
@@ -1031,7 +1042,7 @@ export class Pixel extends PixelInfoNotifier {
         iAmADie = msg as IAmADie;
         break;
       } catch (error) {
-        if (i && error instanceof PixelMessageTimeoutError) {
+        if (i && error instanceof PixelWaitForMessageTimeoutError) {
           // Try again as we've seen instances on Android where the message is not received
           this._log("Resending request for identification message");
         } else {

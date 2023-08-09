@@ -1,12 +1,14 @@
+import { MessageType } from "./Messages";
 import { Pixel } from "./Pixel";
 
 /**
- * Base class for all errors thrown by the {@link Pixel} class.
+ * Base class for errors thrown by the {@link Pixel} class.
  * @category Pixel
  */
 export class PixelError extends Error {
-  private _pixel: Pixel;
-  private _cause?: Error;
+  protected readonly _pixel: Pixel;
+  protected readonly _cause?: Error;
+  protected readonly _description: string;
 
   /** The Pixels die for which the error occurred. */
   get pixel(): Pixel {
@@ -18,49 +20,55 @@ export class PixelError extends Error {
     return this._cause;
   }
 
+  get description(): string {
+    return this._description;
+  }
+
   constructor(pixel: Pixel, message: string, cause?: Error) {
     super(`Pixel ${pixel.name}: ${message}`);
     this.name = "PixelError";
     this._pixel = pixel;
+    this._description = message;
     this._cause = cause;
   }
 }
 
 /**
- * Base class for all errors thrown by the {@link Pixel.connect}
- * instance method.
+ * Base class for errors thrown by the {@link Pixel.connect} instance method.
  * @category Pixel
  */
 export class PixelConnectError extends PixelError {
   constructor(pixel: Pixel, msgOrError: string | Error | unknown) {
     const isError = msgOrError instanceof Error;
+    const isPixelError = isError && msgOrError instanceof PixelError;
     const msg =
       typeof msgOrError === "string"
         ? msgOrError
+        : isPixelError
+        ? `Connection error, ${(msgOrError as PixelError).description}`
         : isError
-        ? `Connection error. ${msgOrError.message}`
+        ? `Connection error, ${msgOrError.message}`
         : `Unsupported connection error, data is ${JSON.stringify(msgOrError)}`;
     const cause = isError ? msgOrError : undefined;
-    super(pixel, `Pixel ${pixel.name}: ${msg}`, cause);
+    super(pixel, msg, cause);
     this.name = "PixelConnectError";
   }
 }
 
 /**
- * Class used by {@link Pixel} to throw errors caused by a connection timeout.
+ * Thrown by {@link Pixel.connect} on connection timeout.
  * @category Pixel
  */
 export class PixelConnectTimeoutError extends PixelConnectError {
-  constructor(pixel: Pixel, message: string) {
-    super(pixel, message);
+  constructor(pixel: Pixel, timeoutMs: number) {
+    super(pixel, `Connection timeout after ${timeoutMs} ms`);
     this.name = "PixelConnectTimeoutError";
   }
 }
 
 /**
- * Class used by {@link Pixel} to throw errors caused by a connection error
- * to do to cancellation (such as a call to {@link Pixel.disconnect} during
- * the connection process).
+ * Thrown by {@link Pixel.connect} on connection error caused by a cancellation
+ * (such as a call to {@link Pixel.disconnect} during the connection sequence).
  * @category Pixel
  */
 export class PixelConnectCancelledError extends PixelConnectError {
@@ -71,16 +79,16 @@ export class PixelConnectCancelledError extends PixelConnectError {
 }
 
 /**
- * Class used by {@link Pixel} to throw errors caused by a Pixel id mismatch
- * between the one given to the instance's constructor and the one received
- * during identification.
+ * Thrown by {@link Pixel.connect} on connection error caused by a Pixel id
+ * mismatch between the one given to the instance's constructor and the one
+ * received during identification.
  * @category Pixel
  */
 export class PixelConnectIdMismatchError extends PixelError {
   constructor(pixel: Pixel, pixelId: number) {
     super(
       pixel,
-      `Pixel identification mismatch: expecting ${pixel.pixelId.toString(
+      `Identification mismatch, expecting ${pixel.pixelId.toString(
         16
       )} but got ${pixelId.toString(16)}`
     );
@@ -89,12 +97,28 @@ export class PixelConnectIdMismatchError extends PixelError {
 }
 
 /**
- * Class used by {@link Pixel} to throw errors caused by a timeout waiting for a message.
+ * Thrown by methods of the {@link Pixel} class on errors caused by a timeout
+ * while waiting for a message from the die.
  * @category Pixel
  */
-export class PixelMessageTimeoutError extends PixelError {
-  constructor(pixel: Pixel, message: string) {
-    super(pixel, message);
+export class PixelWaitForMessageTimeoutError extends PixelError {
+  constructor(pixel: Pixel, timeoutMs: number, messageType: MessageType) {
+    super(
+      pixel,
+      `Timeout of ${timeoutMs}ms waiting for message ${messageType}`
+    );
     this.name = "PixelMessageTimeoutError";
+  }
+}
+
+/**
+ * Thrown by methods of the {@link Pixel} class on errors caused by a disconnection
+ * while waiting for a message from the die.
+ * @category Pixel
+ */
+export class PixelWaitForMessageDisconnectError extends PixelError {
+  constructor(pixel: Pixel, messageType: MessageType) {
+    super(pixel, `Disconnected while waiting for message ${messageType}`);
+    this.name = "PixelMessageConnectStatusError";
   }
 }
