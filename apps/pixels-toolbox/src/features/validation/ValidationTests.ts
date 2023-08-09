@@ -135,29 +135,52 @@ const ValidationTests = {
     abortSignal: AbortSignal,
     timeout = 30000 // 30s
   ): Promise<void> => {
-    await new Promise<void>((resolve, reject) => {
-      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    await new Promise<void>((rawResolve, rawReject) => {
       // Abort controller used to control the blinking
       const blinkAbortController = new AbortController();
-      // Process battery events
-      const batteryListener = ({ isCharging }: BatteryEvent) => {
-        if (isCharging === shouldBeCharging) {
-          clearTimeout(timeoutId);
+      // Listeners
+      let batteryListener: (({ isCharging }: BatteryEvent) => void) | undefined;
+      let statusListener: ((status: PixelStatus) => void) | undefined;
+      let abort: (() => void) | undefined;
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const cleanup = () => {
+        // Stop blinking
+        blinkAbortController.abort();
+        // Cancel timeout and unhook listeners
+        clearTimeout(timeoutId);
+        if (abort) {
+          abortSignal.removeEventListener("abort", abort);
+        }
+        if (batteryListener) {
           pixel.removeEventListener("battery", batteryListener);
-          blinkAbortController.abort();
-          resolve();
+        }
+        if (statusListener) {
+          pixel.removeEventListener("status", statusListener);
         }
       };
-      // Abort function
-      const abort = () => {
-        clearTimeout(timeoutId);
-        abortSignal.removeEventListener("abort", abort);
-        pixel.removeEventListener("battery", batteryListener);
-        blinkAbortController.abort();
-        reject(new TaskCanceledError("waitCharging"));
+      // Create reject and resolve function that call cleanup()
+      const reject = (reason?: any) => {
+        cleanup();
+        rawReject(reason);
       };
+      const resolve = () => {
+        cleanup();
+        rawResolve();
+      };
+      // Abort function
+      abort = () => reject(new TaskCanceledError("waitCharging"));
+      // Error helper
+      const createError = (desc: string) =>
+        new Error(
+          `${desc} while waiting for '${
+            shouldBeCharging ? "" : "not "
+          }charging' state`
+        );
+      // Check state
       if (abortSignal.aborted) {
         abort();
+      } else if (!pixel.isReady) {
+        reject(createError("Disconnected"));
       } else if (pixel.isCharging === shouldBeCharging) {
         resolve();
       } else {
@@ -169,21 +192,22 @@ const ValidationTests = {
           faceMask: getFaceMask(pixel.ledCount),
         };
         blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
-        // Listen to battery events
+        // Process battery events
+        batteryListener = ({ isCharging }: BatteryEvent) => {
+          if (isCharging === shouldBeCharging) {
+            resolve();
+          }
+        };
         pixel.addEventListener("battery", batteryListener);
-        // Stop trying after a while
-        timeoutId = setTimeout(() => {
-          abortSignal.removeEventListener("abort", abort);
-          pixel.removeEventListener("battery", batteryListener);
-          blinkAbortController.abort();
-          reject(
-            new Error(
-              `Timeout waiting for '${
-                shouldBeCharging ? "" : "not "
-              }charging' state`
-            )
-          );
-        }, timeout);
+        // Listen for disconnection event
+        statusListener = (status: PixelStatus) => {
+          if (status === "disconnecting" || status === "disconnected") {
+            reject(createError("Disconnected"));
+          }
+        };
+        pixel.addEventListener("status", statusListener);
+        // Reject promise on timeout
+        timeoutId = setTimeout(() => reject(createError("Timeout")), timeout);
       }
     });
   },
@@ -215,7 +239,7 @@ const ValidationTests = {
         } else {
           abortSignal.addEventListener("abort", abort);
           let lastErrorMsg: string | undefined;
-          // Stop trying after a while
+          // Reject promise on timeout
           const timeoutId = setTimeout(() => {
             abortSignal.removeEventListener("abort", abort);
             reject(
