@@ -137,10 +137,6 @@ export type TelemetryData = {
   ledCurrent: number;
 };
 
-const _instances = new Map<number, PixelDispatcher>();
-let _activeDFU: PixelDispatcher | undefined;
-const _pendingDFUs: PixelDispatcher[] = [];
-
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
@@ -159,6 +155,10 @@ class PixelDispatcher extends ScannedPixelNotifier<
   private _isDfuAvailable = false;
   private _messagesLogFilePath;
   private _telemetryData: TelemetryData[] = [];
+
+  private static readonly _instances = new Map<number, PixelDispatcher>();
+  private static _activeDFU: PixelDispatcher | undefined;
+  private static readonly _pendingDFUs: PixelDispatcher[] = [];
 
   get systemId(): string {
     return this._getPixelInfo().systemId;
@@ -235,11 +235,11 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   get hasQueuedDFU(): boolean {
-    return _pendingDFUs.indexOf(this) >= 0;
+    return PixelDispatcher._pendingDFUs.indexOf(this) >= 0;
   }
 
   get hasActiveDFU(): boolean {
-    return this === _activeDFU;
+    return this === PixelDispatcher._activeDFU;
   }
 
   get telemetryData(): readonly TelemetryData[] {
@@ -258,13 +258,14 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   static findInstance(pixelId: number) {
-    return _instances.get(pixelId);
+    return PixelDispatcher._instances.get(pixelId);
   }
 
   static getInstance(scannedPixel: ScannedPixelNotifier): PixelDispatcher {
     // TODO update Pixel instance with latest notifier values
     return (
-      _instances.get(scannedPixel.pixelId) ?? new PixelDispatcher(scannedPixel)
+      PixelDispatcher._instances.get(scannedPixel.pixelId) ??
+      new PixelDispatcher(scannedPixel)
     );
   }
 
@@ -272,7 +273,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     super(scannedPixel);
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
-    _instances.set(this.pixelId, this);
+    PixelDispatcher._instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
       1e9 * Math.random()
@@ -632,12 +633,12 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   private _queueDFU(): void {
-    if (this.hasAvailableDFU && !_pendingDFUs.includes(this)) {
+    if (this.hasAvailableDFU && !PixelDispatcher._pendingDFUs.includes(this)) {
       // Queue DFU request
-      _pendingDFUs.push(this);
+      PixelDispatcher._pendingDFUs.push(this);
       this._evEmitter.emit("hasQueuedDFU", true);
       // Run update immediately if it's the only pending request
-      if (!_activeDFU) {
+      if (!PixelDispatcher._activeDFU) {
         this._guard(this._startDFU());
       } else {
         console.log(`DFU queued for Pixel ${this.name}`);
@@ -646,9 +647,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   private _dequeueDFU(): void {
-    const i = _pendingDFUs.indexOf(this);
+    const i = PixelDispatcher._pendingDFUs.indexOf(this);
     if (i >= 0) {
-      _pendingDFUs.splice(i, 1);
+      PixelDispatcher._pendingDFUs.splice(i, 1);
       this._evEmitter.emit("hasQueuedDFU", false);
     }
   }
@@ -660,7 +661,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
       if (!bundle) {
         throw new Error("No DFU Files Selected");
       }
-      _activeDFU = this;
+      PixelDispatcher._activeDFU = this;
       this._evEmitter.emit("hasActiveDFU", true);
       await updateFirmware(
         this._scannedPixel,
@@ -670,11 +671,11 @@ class PixelDispatcher extends ScannedPixelNotifier<
         (p) => this._evEmitter.emit("dfuProgress", p)
       );
     } finally {
-      assert(_activeDFU === this);
-      _activeDFU = undefined;
+      assert(PixelDispatcher._activeDFU === this);
+      PixelDispatcher._activeDFU = undefined;
       this._evEmitter.emit("hasActiveDFU", false);
       // Run next update if any
-      const pixel = _pendingDFUs[0];
+      const pixel = PixelDispatcher._pendingDFUs[0];
       if (pixel) {
         pixel._guard(pixel._startDFU());
       }

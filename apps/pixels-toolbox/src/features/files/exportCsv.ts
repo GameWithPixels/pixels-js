@@ -6,10 +6,9 @@ import { requestUserFileAsync } from "./requestUserFileAsync";
 
 import { shareFileAsync } from "~/features/shareFileAsync";
 
-export async function exportCsv<T extends Record<string, number>>(
-  filename: string,
-  data: readonly T[]
-): Promise<void> {
+export async function exportCsv<
+  T extends Record<string, number | boolean | string>
+>(filename: string, data: readonly T[]): Promise<void> {
   if (data.length) {
     const keys = Object.keys(data[0]);
     const header = keys.join(",");
