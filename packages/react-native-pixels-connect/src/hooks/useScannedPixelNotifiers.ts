@@ -30,8 +30,8 @@ export function useScannedPixelNotifiers(
   const allNotifiers = React.useRef<ScannedPixelNotifier[]>([]);
   const mapItems = React.useCallback(
     (items: ScannedPixelNotifier[], ops: PixelScannerListOp[]) => {
-      // We only want to create a React re-render when new items are added
-      // or existing items are moved
+      // We only want to create a React re-render when items are added
+      // or removed but not when they are modified
       let retItems = items;
       // Apply updates
       ops.forEach((op) => {
@@ -59,19 +59,9 @@ export function useScannedPixelNotifiers(
             break;
           }
           case "update":
+            assert(retItems[op.index]);
             retItems[op.index].updateProperties(op.scannedPixel);
             break;
-          case "move": {
-            const src = [...retItems];
-            if (retItems === items) {
-              retItems = [...items];
-            }
-            op.moves.forEach(({ from, to }) => {
-              assert(src[from]);
-              retItems[to] = src[from];
-            });
-            break;
-          }
           default:
             assertNever(t);
         }

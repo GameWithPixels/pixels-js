@@ -13,19 +13,13 @@ export type PixelScannerDispatchAction = "start" | "stop" | "clear";
  * Available options for {@link usePixelScanner}.
  */
 export interface PixelScannerOptions {
-  /**
-   * Whether to sort the Pixels list by their names.
-   * @default false (no sorting, Pixels are listed in the order they are discovered).
-   */
-  sortedByName?: boolean;
-
   /** Optional filter to only keep certain Pixels in the list. */
   scanFilter?: (scannedPixel: ScannedPixel) => boolean;
 
   /**
    * Minimum interval in milliseconds between two React state updates.
    * A value of 0 will generate a state update on every scan event.
-   * @default 1000 ms (1 second).
+   * @default 200 ms.
    */
   minUpdateInterval?: number;
 
@@ -77,16 +71,14 @@ export function usePixelScanner<T>(
   }, [scanner, updateItems]);
 
   // Options default values
-  const sortByName = opt?.sortedByName ?? false;
-  const minNotifyInterval = opt?.minUpdateInterval ?? 1000;
+  const minNotifyInterval = opt?.minUpdateInterval ?? 200;
   const scanFilter = opt?.scanFilter;
   const emulatedCount = opt?.__dev__emulatedPixelsCount ?? 0;
   React.useEffect(() => {
-    scanner.sortByName = sortByName;
     scanner.minNotifyInterval = minNotifyInterval;
     scanner.scanFilter = scanFilter;
     scanner.__dev__emulatedPixelsCount = emulatedCount;
-  }, [emulatedCount, minNotifyInterval, scanFilter, scanner, sortByName]);
+  }, [emulatedCount, minNotifyInterval, scanFilter, scanner]);
 
   // The returned dispatcher (stable)
   const dispatch = React.useCallback(

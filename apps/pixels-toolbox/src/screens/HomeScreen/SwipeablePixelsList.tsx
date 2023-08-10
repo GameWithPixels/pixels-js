@@ -42,7 +42,7 @@ interface SwipeablePixelsListProps {
 
 export default React.memo(function ({
   onDieDetails,
-  minUpdateInterval = 200,
+  minUpdateInterval,
 }: SwipeablePixelsListProps) {
   // Scanning
   const [scannedPixels, scannerDispatch, lastError] =

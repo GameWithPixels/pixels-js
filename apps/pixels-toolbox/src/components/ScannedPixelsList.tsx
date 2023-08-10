@@ -16,17 +16,14 @@ import gs from "~/styles";
 export function ScannedPixelsList({
   onSelect: onSelected,
   onClose,
-  minUpdateInterval = 200,
+  minUpdateInterval,
 }: {
   onSelect: (scannedPixel: ScannedPixelNotifier) => void;
   onClose?: () => void;
   minUpdateInterval?: number;
 }) {
   const [scannedPixels, scannerDispatch, lastError] =
-    useFocusScannedPixelNotifiers({
-      sortedByName: true,
-      minUpdateInterval,
-    });
+    useFocusScannedPixelNotifiers({ minUpdateInterval });
   useErrorWithHandler(lastError);
 
   // FlatList item rendering

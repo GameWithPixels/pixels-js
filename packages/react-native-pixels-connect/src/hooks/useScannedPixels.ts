@@ -40,13 +40,6 @@ export function useScannedPixels(
           case "update":
             retItems[op.index] = op.scannedPixel;
             break;
-          case "move": {
-            const src = [...retItems];
-            op.moves.forEach(({ from, to }) => {
-              retItems[to] = src[from];
-            });
-            break;
-          }
           default:
             assertNever(t);
         }

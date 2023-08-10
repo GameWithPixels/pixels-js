@@ -1,5 +1,4 @@
 import {
-  getPixelUniqueName,
   PixelDesignAndColorValues,
   PixelRollStateValues,
 } from "@systemic-games/pixels-core-connect";
@@ -18,7 +17,6 @@ import { ScannedPixel } from "./ScannedPixel";
 export type PixelScannerListOp =
   | { type: "add"; scannedPixel: ScannedPixel }
   | { type: "update"; scannedPixel: ScannedPixel; index: number }
-  | { type: "move"; moves: { from: number; to: number }[] }
   | { type: "clear" };
 
 /**
@@ -41,7 +39,6 @@ export type PixelScannerFilter =
 
 /**
  * Represents a list of scanned Pixels that is updated when scanning.
- * The list is kept sorted if {@link PixelScanner.sortByName} is true.
  * Set a callback to {@link PixelScanner.scanListener} to get notified
  * when the list is updated.
  *
@@ -57,14 +54,10 @@ export type PixelScannerFilter =
  */
 export class PixelScanner {
   private readonly _queue = new SequentialPromiseQueue();
-  private readonly _pixels: {
-    scannedPixel: ScannedPixel;
-    uniqueName: string;
-  }[] = [];
+  private readonly _pixels: ScannedPixel[] = [];
   private _scannerListener?: (pixel: ScannedPixel) => void;
   private _userListener: PixelScannerListener;
   private _scanFilter: PixelScannerFilter;
-  private _collator?: Intl.Collator;
   private _minNotifyInterval = 0;
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdate = new Date();
@@ -95,26 +88,6 @@ export class PixelScanner {
   }
   set scanFilter(scanFilter: PixelScannerFilter) {
     this._scanFilter = scanFilter;
-  }
-
-  /**
-   * Whether to sort the Pixels list by their names.
-   * Enabling sorting will immediately re-order the current list of scanned Pixels.
-   */
-  get sortByName(): boolean {
-    return !!this._collator;
-  }
-  set sortByName(sort: boolean) {
-    if (this.sortByName !== sort) {
-      if (sort) {
-        this._collator = new Intl.Collator();
-        if (this._sort() && this._minNotifyInterval <= 0) {
-          this._notify(Date.now());
-        }
-      } else {
-        this._collator = undefined;
-      }
-    }
   }
 
   /**
@@ -156,7 +129,7 @@ export class PixelScanner {
    * the last call to {@link PixelScanner.clear}.
    */
   get scannedPixels(): ScannedPixel[] {
-    return this._pixels.map((e) => e.scannedPixel);
+    return [...this._pixels];
   }
 
   /**
@@ -173,26 +146,16 @@ export class PixelScanner {
         // Listener for scanned Pixels events
         const listener = (sp: ScannedPixel) => {
           if (!this._scanFilter || this._scanFilter(sp)) {
-            // Do we already have an entry for this scanned Pixel?
+            // Do we already have seen this Pixel?
             const index = this._pixels.findIndex(
-              (p) => p.scannedPixel.pixelId === sp.pixelId
+              (p) => p.pixelId === sp.pixelId
             );
-            let reorder = false;
             if (index < 0) {
               // New entry
-              reorder = true;
-              this._pixels.push({
-                scannedPixel: sp,
-                uniqueName: getPixelUniqueName(sp),
-              });
+              this._pixels.push(sp);
             } else {
               // Replace previous entry
-              const entry = this._pixels[index];
-              reorder = entry.scannedPixel.name !== sp.name;
-              entry.scannedPixel = sp;
-              if (reorder) {
-                entry.uniqueName = getPixelUniqueName(sp);
-              }
+              this._pixels[index] = sp;
             }
             // Remove any older update for the same Pixel
             // but keep insertion and re-ordering updates
@@ -216,10 +179,6 @@ export class PixelScanner {
                     index,
                   }
             );
-            // Reorder if needed
-            if (reorder) {
-              this._sort();
-            }
             // Prepare for user notification
             const now = Date.now();
             // Are we're past the given interval since the last notification?
@@ -299,31 +258,6 @@ export class PixelScanner {
     const updates = [...this._pendingUpdates];
     this._pendingUpdates.length = 0;
     this._userListener?.(this, updates);
-  }
-
-  private _sort(): boolean {
-    // Check if a re-order is needed
-    const c = this._collator;
-    const needSorting =
-      c &&
-      this._pixels.length > 1 &&
-      !this._pixels.every((e, i, l) =>
-        i === 0 ? true : c.compare(l[i - 1].uniqueName, e.uniqueName) <= 0
-      );
-    if (needSorting) {
-      const unsorted = [...this._pixels];
-      this._pixels.sort((e1, e2) => c.compare(e1.uniqueName, e2.uniqueName));
-      const moves: { from: number; to: number }[] = [];
-      unsorted.forEach((e, from) => {
-        const to = this._pixels.indexOf(e);
-        if (from !== to) {
-          moves.push({ from, to });
-        }
-      });
-      assert(moves.length);
-      this._pendingUpdates.push({ type: "move", moves });
-    }
-    return !!needSorting;
   }
 
   private _emulateScan(): void {

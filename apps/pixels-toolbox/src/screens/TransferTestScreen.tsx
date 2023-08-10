@@ -57,10 +57,7 @@ function SelectPixel({
 }) {
   // Scanning
   const [scannedPixels, scannerDispatch, lastError] =
-    useFocusScannedPixelNotifiers({
-      sortedByName: true,
-      minUpdateInterval: 200,
-    });
+    useFocusScannedPixelNotifiers();
 
   const [refreshing, setRefreshing] = React.useState(false);
 
