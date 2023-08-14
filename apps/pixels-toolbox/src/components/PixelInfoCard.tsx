@@ -42,7 +42,7 @@ function PixelRssi({ pixel, t }: PixelAndTranslation) {
       pixel.removePropertyListener("rssi", listener);
     };
   }, [pixel, forceUpdate]);
-  return <Text>{`📶 ${t("dBWithValue", { value: pixel.rssi })}`}</Text>;
+  return <Text>{`📶 ${t("dBmWithValue", { value: pixel.rssi })}`}</Text>;
 }
 
 function PixelBattery({ pixel, t }: PixelAndTranslation) {

@@ -7,11 +7,8 @@ import { PixelBatteryStateValues } from "./Messages";
  * @returns Whether the Pixel is charging.
  */
 export function isPixelChargingOrDone(value: number | undefined): boolean {
-  switch (value) {
-    case PixelBatteryStateValues.charging:
-    case PixelBatteryStateValues.done:
-      return true;
-    default:
-      return false;
-  }
+  return (
+    value === PixelBatteryStateValues.charging ||
+    value === PixelBatteryStateValues.done
+  );
 }

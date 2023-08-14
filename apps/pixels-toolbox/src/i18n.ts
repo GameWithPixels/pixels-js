@@ -81,7 +81,6 @@ i18n
           clearScanList: "Clear Scan List",
 
           // Pixels Info
-          dBWithValue: "{{value}}dB",
           percentWithValue: "{{value}}%",
           voltageWithValue: "{{value}}V",
           dBmWithValue: "{{value}}dBm",
@@ -260,7 +259,6 @@ i18n
           clearScanList: "清空扫描清单",
 
           // Pixel Info
-          dBWithValue: "{{value}}dB",
           percentWithValue: "{{value}}%",
           voltageWithValue: "{{value}}V",
           dBmWithValue: "{{value}}dBm",
