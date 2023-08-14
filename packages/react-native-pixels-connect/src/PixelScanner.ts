@@ -121,7 +121,9 @@ export class PixelScanner {
     return this._emulatedCount;
   }
   set __dev__emulatedPixelsCount(count: number) {
-    this._emulatedCount = count;
+    if (__DEV__) {
+      this._emulatedCount = count;
+    }
   }
 
   /**
@@ -245,11 +247,12 @@ export class PixelScanner {
    */
   async clear(): Promise<void> {
     return this._queue.run(async () => {
-      if (this._pixels.length) {
-        this._pixels.length = 0;
-        this._pendingUpdates.push({ type: "clear" });
-        this._notify(Date.now());
-      }
+      // Always notify a "clear" even if the list is already empty as
+      // some consumer logic might depend on getting the notification
+      // even in the case of an empty list
+      this._pixels.length = 0;
+      this._pendingUpdates.push({ type: "clear" });
+      this._notify(Date.now());
     });
   }
 
