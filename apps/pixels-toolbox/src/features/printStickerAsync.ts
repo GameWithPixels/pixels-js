@@ -95,6 +95,7 @@ export async function printStickerAsync(opt?: {
           pos += imageData.length + end - start;
         } else {
           console.warn(filename + " not found");
+          pos = end;
         }
       }
     };
