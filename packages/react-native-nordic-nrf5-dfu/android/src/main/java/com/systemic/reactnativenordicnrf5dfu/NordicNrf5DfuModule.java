@@ -179,7 +179,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
         }
     }
 
-    static private void putTargetIdentifier(@NonNull final WritableMap map, @NonNull final String deviceAddress)
+    private static void putTargetIdentifier(@NonNull final WritableMap map, @NonNull final String deviceAddress)
     {
         map.putDouble("targetId", Long.parseLong(deviceAddress.replaceAll(":", ""),16));
     }
