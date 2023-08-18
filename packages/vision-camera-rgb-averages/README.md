@@ -9,7 +9,7 @@ Find the latest published version on [NPM](
 ## Installation
 
 ```sh
-npm install vision-camera-rgb-averages
+npm install @systemic-games/vision-camera-rgb-averages
 ```
 
 Add this to the project babel config file:

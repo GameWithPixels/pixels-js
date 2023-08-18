@@ -26,13 +26,13 @@ Please open a [ticket](
 ## Installation
 
 ```sh
-npm install react-native-pixels-connect
+npm install @systemic-games/react-native-pixels-connect
 ```
 
 ## Usage
 
 ```js
-import { PixelScanner, Pixel } from "react-native-pixels-connect";
+import { PixelScanner, Pixel } from "@systemic-games/react-native-pixels-connect";
 
 // ...
 ```

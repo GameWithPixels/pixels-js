@@ -21,7 +21,7 @@ This packages works with [*@systemic-games/pixels-web-connect*](
 
 ## Example
 
-```Typescript
+```ts
 import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
 import { Pixel } from "@systemic-games/pixels-web-connect";
 

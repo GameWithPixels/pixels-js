@@ -43,7 +43,7 @@
   "bugs": {
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/react-native-pixels-components",
   "dependencies": {
     "@systemic-games/react-native-base-components": "~1.0.0",
     "@systemic-games/pixels-core-utils": "~1.1.0",

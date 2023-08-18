@@ -5,17 +5,7 @@ Generic UI components using React Native + Native Base.
 ## Installation
 
 ```sh
-npm install react-native-base-components
-```
-
-## Usage
-
-```js
-import { multiply } from "react-native-base-components";
-
-// ...
-
-const result = await multiply(3, 7);
+npm install @systemic-games/react-native-base-components
 ```
 
 ## License

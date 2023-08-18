@@ -5,17 +5,7 @@ UI components with Pixels theming and specific features, using Expo + Native Bas
 ## Installation
 
 ```sh
-npm install react-native-pixels-components
-```
-
-## Usage
-
-```js
-import { multiply } from "react-native-pixels-components";
-
-// ...
-
-const result = await multiply(3, 7);
+npm install @systemic-games/react-native-pixels-components
 ```
 
 ## License

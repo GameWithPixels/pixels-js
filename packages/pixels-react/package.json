@@ -46,7 +46,7 @@
   "bugs": {
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-react",
   "dependencies": {},
   "devDependencies": {
     "@systemic-games/pixels-core-connect": "1.1.1",

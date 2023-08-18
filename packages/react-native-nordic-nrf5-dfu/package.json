@@ -30,7 +30,6 @@
     "test": "jest",
     "prepare": "bob build",
     "publish": "release-it",
-    "example": "yarn --cwd example",
     "bootstrap": "yarn example && yarn install && yarn example pods"
   },
   "publishConfig": {
@@ -59,7 +58,7 @@
   "bugs": {
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/react-native-nordic-nrf5-dfu",
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.1.2",

@@ -49,7 +49,7 @@
   "bugs": {
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-edit-animation",
   "dependencies": {
     "@systemic-games/pixels-core-animation": "~1.1.0",
     "@systemic-games/pixels-core-utils": "~1.1.0",

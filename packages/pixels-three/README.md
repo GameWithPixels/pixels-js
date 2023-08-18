@@ -11,8 +11,10 @@ you may want to head first to our documentation entry point [here](
 
 ## Example
 
-```Typescript
+```ts
 import * from "@systemic-games/pixels-three";
+
+// ...
 ```
 
 ## Module documentation

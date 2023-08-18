@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/apps/pixels-toolbox",
   "dependencies": {
     "@expo/react-native-action-sheet": "^4.0.1",
     "@react-native-community/slider": "4.4.2",

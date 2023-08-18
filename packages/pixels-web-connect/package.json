@@ -48,7 +48,7 @@
   "bugs": {
     "url": "https://github.com/GameWithPixels/pixels-js/issues"
   },
-  "homepage": "https://github.com/GameWithPixels/pixels-js#readme",
+  "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-web-connect",
   "devDependencies": {
     "@types/jest": "^29.1.2",
     "@types/web-bluetooth": "^0.0.17",
