@@ -6,7 +6,7 @@ const _devices = new Map<string, BluetoothDevice>();
 const PixelsDevices = {
   /**
    * Request the user to select a Bluetooth device among a list of
-   * scanned Pixels die.
+   * scanned Pixels dice.
    * @returns A promise resolving to a BluetoothDevice for a Pixel.
    */
   requestDevice: async (): Promise<BluetoothDevice> => {

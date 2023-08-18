@@ -34,7 +34,7 @@ import {
   getMessageType,
   Telemetry,
   MessageTypeValues,
-  BatteryState,
+  PixelBatteryState,
   PixelRollStateValues,
   PixelBatteryStateValues,
   PixelBatteryControllerStateValues,
@@ -87,7 +87,7 @@ export type PixelDispatcherActionName = keyof PixelDispatcherActionMap;
  * Event map for {@link PixelDispatcher} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
- * @category Pixel
+ * @category Pixels
  */
 export interface PixelDispatcherEventMap {
   action: PixelDispatcherActionName;
@@ -124,7 +124,7 @@ export type TelemetryData = {
   rollState: PixelRollState;
   faceIndex: number;
   battery: number;
-  batteryState: BatteryState;
+  batteryState: PixelBatteryState;
   batteryControllerState: BatteryControllerState;
   voltage: number;
   voltageCoil: number;

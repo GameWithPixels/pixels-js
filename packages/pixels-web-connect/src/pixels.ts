@@ -31,7 +31,7 @@ function getOrCreatePixel(device: BluetoothDevice): Pixel {
  * - See {@link getPixel} to directly get the instance of a Pixels die
  *   previously authorized the user.
  *
- * @category Pixel
+ * @category Pixels
  */
 export async function requestPixel(): Promise<Pixel> {
   const device = await PixelsDevices.requestDevice();
@@ -54,7 +54,7 @@ export async function requestPixel(): Promise<Pixel> {
  * not revoked since) may also be returned.
  *
  * The returned promise will resolve to undefined when there is no authorized
- * Pixels die with the given system id.
+ * Pixel with the given system id.
  *
  * @param systemId A string assigned by the system that uniquely identifies
  *                 a Pixel die.
@@ -67,7 +67,7 @@ export async function requestPixel(): Promise<Pixel> {
  * - See {@link requestPixel} to request the user to give access to a new Pixels
  *   die.
  *
- * @category Pixel
+ * @category Pixels
  */
 export async function getPixel(systemId: string): Promise<Pixel | undefined> {
   const pixel = _pixels.get(systemId);

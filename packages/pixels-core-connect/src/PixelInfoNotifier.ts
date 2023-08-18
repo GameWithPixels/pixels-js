@@ -8,7 +8,7 @@ import { PixelInfo } from "./PixelInfo";
 
 /**
  * The mutable properties of {@link PixelInfoNotifier}.
- * @category Pixel
+ * @category Pixels
  */
 export type PixelInfoNotifierMutableProps = Pick<
   PixelInfo,
@@ -26,7 +26,7 @@ export type PixelInfoNotifierMutableProps = Pick<
  * of events that are emitted when mutable properties change.
  * The concrete implementation is responsible of calling the
  * {@link PixelInfoNotifier.emitPropertyEvent} function when a property is mutated.
- * @category Pixel
+ * @category Pixels
  */
 export abstract class PixelInfoNotifier<
   MutableProps extends PixelInfoNotifierMutableProps = PixelInfoNotifierMutableProps,

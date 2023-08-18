@@ -82,8 +82,8 @@ function _getTime(): string {
 }
 
 /**
- * List of possible Pixel statuses.
- * @category Pixel
+ * The different possible connection statuses of a Pixel.
+ * @category Pixels
  */
 export type PixelStatus =
   | "disconnected"
@@ -95,7 +95,7 @@ export type PixelStatus =
 /**
  * Data structure for {@link Pixel} roll state events,
  * see {@link PixelEventMap}.
- * @category Pixel
+ * @category Pixels
  */
 export interface RollEvent {
   state: PixelRollState;
@@ -105,7 +105,7 @@ export interface RollEvent {
 /**
  * Data structure for {@link Pixel} battery events,
  * see {@link PixelEventMap}.
- * @category Pixel
+ * @category Pixels
  */
 export interface BatteryEvent {
   level: number; // Percentage
@@ -115,7 +115,7 @@ export interface BatteryEvent {
 /**
  * Data structure for {@link Pixel} user message events,
  * see {@link PixelEventMap}.
- * @category Pixel
+ * @category Pixels
  */
 export interface UserMessageEvent {
   message: string;
@@ -128,7 +128,7 @@ export interface UserMessageEvent {
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  * Call {@link Pixel.addEventListener} to subscribe to an event.
- * @category Pixel
+ * @category Pixels
  */
 export interface PixelEventMap {
   /** Connection status update. */
@@ -172,7 +172,7 @@ export type DieType =
  *
  * Call {@link addPropertyListener} to get notified on property changes.
  *
- * @category Pixel
+ * @category Pixels
  */
 export class Pixel extends PixelInfoNotifier {
   // Our events emitter
@@ -209,7 +209,7 @@ export class Pixel extends PixelInfoNotifier {
     this._logFunc = logger;
   }
 
-  /** Gets the Pixel last known connection status. */
+  /** Get the Pixel last known connection status. */
   get status(): PixelStatus {
     return this._status;
   }
@@ -219,42 +219,42 @@ export class Pixel extends PixelInfoNotifier {
     return this.status === "ready";
   }
 
-  /** Gets the unique id assigned by the system to Pixel Bluetooth peripheral. */
+  /** Gets the unique id assigned by the system to the Pixel Bluetooth peripheral. */
   get systemId(): string {
     return this._info.systemId;
   }
 
-  /** Gets the unique Pixel id for the die, may be 0 until connected to device. */
+  /** Gets the unique Pixel id of the device, may be 0 until connected. */
   get pixelId(): number {
     return this._info.pixelId;
   }
 
-  /** Gets the Pixel name, may be empty until connected to device. */
+  /** Get the Pixel name, may be empty until connected to device. */
   get name(): string {
     return this._session.pixelName;
   }
 
-  /** Gets the number of LEDs for this Pixels die, may be 0 until connected to device. */
+  /** Gets the number of LEDs for the Pixel, may be 0 until connected to device. */
   get ledCount(): number {
     return this._info.ledCount;
   }
 
-  /** Gets the design and color of this Pixel. */
+  /** Gets the design and color of the Pixel. */
   get designAndColor(): PixelDesignAndColor {
     return this._info.designAndColor;
   }
 
-  /** Gets the die type of this Pixel. */
+  /** Gets the die type of the Pixel. */
   get dieType(): DieType {
-    return Pixel.getDieType(this.ledCount);
+    return Pixel._getDieType(this.ledCount);
   }
 
-  /** Gets the number of faces for this Pixel. */
+  /** Gets the number of faces of the Pixel. */
   get dieFaceCount(): number {
     return Pixel.getFaceCount(this.dieType);
   }
 
-  /** Gets the Pixel firmware build date. */
+  /** Get the Pixel firmware build date. */
   get firmwareDate(): Date {
     return this._info.firmwareDate;
   }
@@ -268,7 +268,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Gets the Pixel battery level (percentage).
+   * Get the Pixel battery level (percentage).
    * @remarks The battery level is automatically updated when connected.
    */
   get batteryLevel(): number {
@@ -277,7 +277,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Gets whether the Pixel battery is charging or not.
-   * Also 'true' if fully charged but still on charger.
+   * Returns 'true' if fully charged but still on charger.
    * @remarks The charging state is automatically updated when connected.
    */
   get isCharging(): boolean {
@@ -285,7 +285,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Gets the Pixel roll state.
+   * Get the Pixel roll state.
    * @remarks The roll state is automatically updated when connected.
    */
   get rollState(): PixelRollState {
@@ -293,7 +293,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Gets the Pixel face value that is currently up.
+   * Get the Pixel face value that is currently facing up.
    * @remarks The current face is automatically updated when connected.
    */
   get currentFace(): number {
@@ -439,7 +439,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Asynchronously tries to connect to the Pixel. Throws on connection error.
+   * Asynchronously tries to connect to the die. Throws on connection error.
    * @param timeoutMs Delay before giving up (may be ignored when having concurrent
    *                  calls to connect()). It may take longer than the given timeout
    *                  for the function to return.
@@ -461,7 +461,7 @@ export class Pixel extends PixelInfoNotifier {
       // Connect to the peripheral
       await this._session.connect();
 
-      // And prepare our instance for communications with the Pixels die
+      // And prepare our instance for communications with the Pixels dies die
       if (this.status === "connecting") {
         // Notify we're connected and proceeding with die identification
         this._updateStatus("identifying");
@@ -531,7 +531,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Immediately disconnects the Pixel.
+   * Immediately disconnects from the die.
    **/
   async disconnect(): Promise<Pixel> {
     await this._session.disconnect();
@@ -701,7 +701,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Requests Pixel to change its name.
+   * Requests the Pixel to change its name.
    * @param name New name to assign to the Pixel.
    */
   async rename(name: string): Promise<void> {
@@ -714,14 +714,14 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Requests Pixel to start faces calibration sequence.
+   * Requests the Pixel to start faces calibration sequence.
    */
   async startCalibration(): Promise<void> {
     await this.sendMessage("calibrate");
   }
 
   /**
-   * Requests Pixel to regularly send its measured RSSI value.
+   * Requests the Pixel to regularly send its measured RSSI value.
    * @param activate Whether to turn or turn off this feature.
    * @param minInterval The minimum time interval in milliseconds
    *                    between two RSSI updates.
@@ -753,7 +753,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Requests Pixel to turn itself off.
+   * Requests the Pixel to turn itself off.
    */
   async turnOff(): Promise<void> {
     await this.sendMessage(
@@ -763,7 +763,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Requests Pixel to blink and wait for a confirmation.
+   * Requests the Pixel to blink and wait for a confirmation.
    * @param color Blink color.
    * @param opt.count Number of blinks.
    * @param opt.duration Total duration of the animation in milliseconds.
@@ -1220,7 +1220,7 @@ export class Pixel extends PixelInfoNotifier {
     this._log("Finished sending bulk data");
   }
 
-  private static getDieType(ledCount: number): DieType {
+  private static _getDieType(ledCount: number): DieType {
     // For now we infer the die type from the number of LEDs, but eventually
     // that value will be part of identification data.
     switch (ledCount) {

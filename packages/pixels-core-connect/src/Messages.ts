@@ -364,7 +364,7 @@ export class IAmADie implements PixelMessage {
   @serializable(2)
   availableFlashSize = 0;
 
-  /** Unix timestamp for the date of the firmware. */
+  /** UNIX timestamp in seconds for the date of the firmware. */
   @serializable(4)
   buildTimestamp = 0;
 
@@ -395,19 +395,19 @@ export class IAmADie implements PixelMessage {
  * @category Message
  */
 export const PixelRollStateValues = {
-  // The Pixel roll state could not be determined.
+  /** The Pixel roll state could not be determined. */
   unknown: enumValue(0),
 
-  // The Pixel is resting in a position with a face up.
+  /** The Pixel is resting in a position with a face up. */
   onFace: enumValue(),
 
-  // The Pixel is being handled.
+  /** The Pixel is being handled. */
   handling: enumValue(),
 
-  // The Pixel is rolling.
+  /** The Pixel is rolling. */
   rolling: enumValue(),
 
-  // The Pixel is resting in a crooked position.
+  /** The Pixel is resting in a crooked position. */
   crooked: enumValue(),
 } as const;
 
@@ -814,7 +814,7 @@ export const PixelBatteryStateValues = {
  * The names for the "enum" type {@link PixelBatteryStateValues}.
  * @category Message
  */
-export type BatteryState = keyof typeof PixelBatteryStateValues;
+export type PixelBatteryState = keyof typeof PixelBatteryStateValues;
 
 /**
  * The different possible battery charging states.

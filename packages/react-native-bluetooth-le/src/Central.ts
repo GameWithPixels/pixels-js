@@ -58,7 +58,7 @@ export type PeripheralOrSystemId = ScannedPeripheral | string;
  * Event map for {@link Central} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
- * @category Pixel
+ * @category Pixels
  */
 export interface CentralEventMap {
   scanStatus: ScanStatusEvent;

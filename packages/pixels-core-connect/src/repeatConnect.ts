@@ -19,7 +19,7 @@ import { exponentialBackOff } from "./exponentialBackOff";
  *
  * @remarks By default it will attempt to connect up to 3 times.
  *
- * @category Pixel
+ * @category Pixels
  */
 export async function repeatConnect(
   pixel: Pixel,

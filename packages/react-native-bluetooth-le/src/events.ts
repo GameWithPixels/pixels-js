@@ -43,7 +43,7 @@ export interface BleCharacteristicValueChangedEvent {
  * Event map for {@link Pixel} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
- * @category Pixel
+ * @category Pixels
  */
 export interface BleEventMap {
   bluetoothState: BleBluetoothStateEvent;
