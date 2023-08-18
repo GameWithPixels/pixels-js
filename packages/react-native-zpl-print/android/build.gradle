@@ -31,6 +31,8 @@ def getExtOrIntegerDefault(name) {
 }
 
 android {
+  namespace = "com.systemic.zplprint"
+
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {
@@ -66,12 +68,14 @@ dependencies {
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
+
+  implementation "com.izettle:html2bitmap:1.10"
 }
 
 if (isNewArchitectureEnabled()) {
   react {
     jsRootDir = file("../src/")
     libraryName = "ZplPrint"
-    codegenJavaPackageName = "com.zplprint"
+    codegenJavaPackageName = "com.systemic.zplprint"
   }
 }

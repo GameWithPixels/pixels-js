@@ -1,5 +1,9 @@
-
 {
-  "extends": "./tsconfig",
-  "exclude": ["example"]
+  "extends": "./../../tsconfig.expo.build",
+  "compilerOptions": {
+    "noEmit": false
+  },
+  "include": [
+    "src/**/*"
+  ]
 }

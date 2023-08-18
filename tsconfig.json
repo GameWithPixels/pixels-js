@@ -54,6 +54,9 @@
     },
     {
       "path": "./packages/react-native-pixels-components"
+    },
+    {
+      "path": "./packages/react-native-zpl-print"
     }
   ]
 }
