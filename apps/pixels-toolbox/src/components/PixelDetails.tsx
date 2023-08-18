@@ -13,6 +13,7 @@ import {
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
+import { printHtmlToZpl } from "@systemic-games/react-native-zpl-print";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -45,8 +46,8 @@ import PixelDispatcher, {
   TelemetryData,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
-import { printStickerAsync } from "~/features/printStickerAsync";
 import { range } from "~/features/range";
+import { readStickerHtmlAsync } from "~/features/readStickerHtmlAsync";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
@@ -366,11 +367,16 @@ function BottomButtons({
             </>
           )}
           <Button
-            onPress={() =>
-              printStickerAsync({ pdf: true, width: 227, height: 99 }).catch(
-                (e) => console.error(`Print error: ${e}`)
-              )
-            }
+            onPress={() => {
+              const task = async () => {
+                const html = await readStickerHtmlAsync();
+                const result = await printHtmlToZpl("XP-", html);
+                if (result !== "success") {
+                  console.log("Printing failed: " + result);
+                }
+              };
+              task().catch((e) => console.error(`Print error: ${e}`));
+            }}
           >
             {t("printSticker")}
           </Button>
