@@ -182,6 +182,7 @@ export class Pixel extends PixelInfoNotifier {
   // Log function
   private _logFunc: (msg: unknown) => void = console.log;
   private _logMessages = false;
+  private _logData = false;
 
   // Connection data
   private readonly _session: PixelSession;
@@ -199,6 +200,14 @@ export class Pixel extends PixelInfoNotifier {
   }
   set logMessages(enabled: boolean) {
     this._logMessages = enabled;
+  }
+
+  /** Toggle logging the serialized (binary) data for each send and received message. */
+  get logMessagesSerializedData(): boolean {
+    return this._logData;
+  }
+  set logMessagesSerializedData(enabled: boolean) {
+    this._logData = enabled;
   }
 
   /** Set logger to use by this instance. */
@@ -655,6 +664,9 @@ export class Pixel extends PixelInfoNotifier {
       this._log(`Sending message ${msgName} (${MessageTypeValues[msgName]})`);
     }
     const data = serializeMessage(msgOrType);
+    if (this._logData) {
+      this._logArray(data);
+    }
     await this._session.writeValue(data, withoutAck);
     this._evEmitter.emit("messageSend", msgOrType);
   }
@@ -1017,10 +1029,22 @@ export class Pixel extends PixelInfoNotifier {
   private _log(msg: unknown): void {
     if (this._logFunc) {
       if ((msg as PixelMessage)?.type) {
-        this._logFunc(msg);
+        this._logFunc(
+          `[${_getTime()} - Pixel ${this.name}] ${JSON.stringify(msg)}`
+        );
       } else {
         this._logFunc(`[${_getTime()} - Pixel ${this.name}] ${msg}`);
       }
+    }
+  }
+
+  private _logArray(arr: ArrayBuffer) {
+    if (this._logFunc) {
+      this._logFunc(
+        `[${_getTime()} - Pixel ${this.name}] ${[...new Uint8Array(arr)]
+          .map((b) => (b <= 0xf ? "0" + b.toString(16) : b.toString(16)))
+          .join(":")}`
+      );
     }
   }
 
@@ -1109,6 +1133,9 @@ export class Pixel extends PixelInfoNotifier {
           this._log(
             `Received message ${msgName} (${MessageTypeValues[msgName]})`
           );
+          if (this._logData) {
+            this._logArray(dataView.buffer);
+          }
           if (typeof msgOrType === "object") {
             // Log message contents
             this._log(msgOrType);
