@@ -86,7 +86,7 @@
     "@babel/core": "^7.20.2",
     "@expo/config-plugins": "~6.0.0",
     "@redux-devtools/core": "^3.13.1",
-    "@types/react": "~18.2.14",
+    "@types/react": "~18.0.27",
     "@types/three": "0.146.0",
     "babel-plugin-root-import": "^6.6.0",
     "babel-plugin-transform-remove-console": "^6.9.4"

@@ -74,7 +74,7 @@
     "@babel/core": "^7.20.2",
     "@babel/preset-env": "^7.20.2",
     "@redux-devtools/core": "^3.13.1",
-    "@types/react": "~18.2.14",
+    "@types/react": "~18.0.27",
     "@types/three": "^0.146.0",
     "babel-plugin-root-import": "^6.6.0"
   },
