@@ -370,7 +370,7 @@ function BottomButtons({
             onPress={() => {
               const task = async () => {
                 const html = await readStickerHtmlAsync();
-                const result = await printHtmlToZpl("XP-", html);
+                const result = await printHtmlToZpl("XP-", html, 940);
                 if (result !== "success") {
                   console.log("Printing failed: " + result);
                 }
