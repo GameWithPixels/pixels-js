@@ -37,10 +37,10 @@ export default class EditAnimationKeyframed extends EditAnimation {
 
   toAnimation(editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
     return safeAssign(new AnimationKeyframed(), {
+      traveling: this.traveling ? 1 : 0,
       duration: this.duration * 1000, // stored in milliseconds
       tracksOffset: editSet.getPatternRGBTrackOffset(this.pattern),
       trackCount: this.pattern?.gradients.length ?? 0,
-      flowOrder: this.traveling ? 1 : 0,
     });
   }
 

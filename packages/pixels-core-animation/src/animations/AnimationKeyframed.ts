@@ -9,8 +9,11 @@ import { AnimationTypeValues } from "./AnimationType";
  * @category Animation
  */
 export default class AnimationKeyframed implements AnimationPreset {
-  @serializable(1, { padding: 1 })
+  @serializable(1)
   readonly type: number = AnimationTypeValues.keyframed;
+
+  @serializable(1)
+  traveling = 0; // If 1 indices are led indices, not face indices
 
   @serializable(2)
   duration = 0; // In milliseconds
@@ -20,9 +23,6 @@ export default class AnimationKeyframed implements AnimationPreset {
 
   @serializable(2)
   trackCount = 0;
-
-  @serializable(1, { padding: 1 })
-  flowOrder = 0; // boolean, if true the indices are led indices, not face indices
 
   createInstance(bits: AnimationBits): AnimationInstanceKeyframed {
     return new AnimationInstanceKeyframed(this, bits);

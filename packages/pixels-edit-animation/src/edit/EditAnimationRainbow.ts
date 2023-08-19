@@ -65,7 +65,7 @@ export default class EditAnimationRainbow extends EditAnimation {
       faceMask: this.faces,
       fade: this.fade * 255,
       count: this.count,
-      traveling: this.traveling,
+      traveling: this.traveling ? 1 : 0,
       intensity: this.intensity * 255,
     });
   }

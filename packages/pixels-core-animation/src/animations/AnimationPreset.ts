@@ -7,6 +7,7 @@ import AnimationInstance from "./AnimationInstance";
 export default interface AnimationPreset {
   /** See {@link AnimationTypeValues} for possible values. */
   readonly type: number;
+  traveling: number;
   duration: number; // In milliseconds
 
   createInstance(bits: AnimationBits): AnimationInstance;
