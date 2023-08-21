@@ -19,7 +19,7 @@ const config = {
         ? "./assets/images/splash.png"
         : "./assets/images/splash-dev.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff",
+      backgroundColor: "#222222",
     },
     updates: {
       fallbackToCacheTimeout: 0,
@@ -36,8 +36,8 @@ const config = {
           "Allow $(PRODUCT_NAME) to use Bluetooth",
       },
       bundleIdentifier: prod
-        ? "com.systemic.pixelstoolbox"
-        : "com.systemic.pixelstoolboxdev",
+        ? "com.systemicgames.pixelstoolbox"
+        : "com.systemicgames.pixelstoolboxdev",
     },
     android: {
       adaptiveIcon: {
@@ -47,8 +47,8 @@ const config = {
         backgroundColor: "#222222",
       },
       package: prod
-        ? "com.systemic.pixelstoolbox"
-        : "com.systemic.pixelstoolboxdev",
+        ? "com.systemicgames.pixelstoolbox"
+        : "com.systemicgames.pixelstoolboxdev",
       permissions: ["android.permission.CAMERA"],
     },
     plugins: [
