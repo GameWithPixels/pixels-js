@@ -26,6 +26,7 @@ import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import { DieType, getLEDCount } from "~/features/pixels/DieType";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { pixelStopAllAnimations } from "~/features/pixels/extensions";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
@@ -437,7 +438,7 @@ export function ConnectPixel({
           await pixel.connect(5000);
         }
         // Make sure we don't have any animation playing
-        await pixel.stopAllAnimations();
+        await pixelStopAllAnimations(pixel);
       }, []),
       createTaskStatusContainer(t("connect"))
     )

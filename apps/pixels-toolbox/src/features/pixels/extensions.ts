@@ -9,13 +9,14 @@ import {
 /**
  * Requests Pixel to blink its Pixel id with red, green, blue light patterns
  * and wait for a confirmation.
+ * @param pixel The Pixel instance to use.
  * @param opt.brightness Brightness between 0 and 255.
  * @param opt.loop Whether to indefinitely loop the animation.
  */
 export async function pixelBlinkId(
   pixel: Pixel,
   opt?: { brightness?: number; loop?: boolean }
-) {
+): Promise<void> {
   const blinkMsg = safeAssign(new BlinkId(), {
     brightness: opt?.brightness ? opt?.brightness : 0x10,
     loop: opt?.loop ?? false,
@@ -25,6 +26,7 @@ export async function pixelBlinkId(
 
 /**
  * Requests Pixel to turn on/off charging.
+ * @param pixel The Pixel instance to use.
  * @param enable Whether to enable charging feature.
  */
 export async function pixelForceEnableCharging(
@@ -46,7 +48,9 @@ export async function pixelForceEnableCharging(
 
 /**
  * Discharges the pixel as fast as possible by lighting up all LEDs.
+ * @param pixel The Pixel instance to use.
  * @param currentMA The (approximate) desired discharge current, or false to stop discharging.
+ * @returns A promise that resolves once the message has been sent.
  */
 export async function pixelDischarge(
   pixel: Pixel,
@@ -86,8 +90,12 @@ export async function pixelTransferTest(
 /**
  * Requests Pixel to re-program its default behavior
  * and wait for a confirmation.
+ * @param pixel The Pixel instance to use.
+ * @returns A promise that resolves once the die has finished re-programming.
  */
-export async function pixelReprogramDefaultBehavior(pixel: Pixel) {
+export async function pixelReprogramDefaultBehavior(
+  pixel: Pixel
+): Promise<void> {
   await pixel.sendAndWaitForResponse(
     "programDefaultAnimationSet",
     "programDefaultAnimationSetFinished"
@@ -97,10 +105,21 @@ export async function pixelReprogramDefaultBehavior(pixel: Pixel) {
 /**
  * Requests Pixel to re-program its normals and settings
  * and wait for a confirmation.
+ * @param pixel The Pixel instance to use.
+ * @returns A promise that resolves once the die has finished re-programming.
  */
-export async function pixelResetAllSettings(pixel: Pixel) {
+export async function pixelResetAllSettings(pixel: Pixel): Promise<void> {
   await pixel.sendAndWaitForResponse(
     "programDefaultParameters",
     "programDefaultParametersFinished"
   );
+}
+
+/**
+ * Requests the Pixel to stop all animations currently playing.
+ * @param pixel The Pixel instance to use.
+ * @returns A promise that resolves once the message has been sent.
+ */
+export async function pixelStopAllAnimations(pixel: Pixel): Promise<void> {
+  await pixel.sendMessage("stopAllAnimations");
 }

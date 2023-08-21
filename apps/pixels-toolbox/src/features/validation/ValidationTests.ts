@@ -17,6 +17,8 @@ import {
   RollEvent,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { pixelStopAllAnimations } from "../pixels/extensions";
+
 import { TaskCanceledError, TaskFaultedError } from "~/features/tasks/useTask";
 
 function vectNorm(x: number, y: number, z: number): number {
@@ -37,7 +39,7 @@ async function blinkForever(
   }
 ) {
   if (!abortSignal.aborted) {
-    await pixel.stopAllAnimations();
+    await pixelStopAllAnimations(pixel);
   }
   if (!abortSignal.aborted) {
     const duration = options?.blinkDuration ?? 1000;
@@ -48,7 +50,7 @@ async function blinkForever(
       loop: true,
     });
     const abort = () => {
-      pixel.stopAllAnimations().catch(() => {});
+      pixelStopAllAnimations(pixel).catch(() => {});
     };
     abortSignal.addEventListener("abort", abort);
   }
@@ -63,7 +65,7 @@ async function litUpForever(
   }
 ) {
   if (!abortSignal.aborted) {
-    await pixel.stopAllAnimations();
+    await pixelStopAllAnimations(pixel);
   }
   try {
     const duration = 0xffff;
@@ -75,7 +77,7 @@ async function litUpForever(
       await delay(duration / 2, abortSignal);
     }
   } finally {
-    pixel.stopAllAnimations().catch(() => {});
+    pixelStopAllAnimations(pixel).catch(() => {});
   }
 }
 
