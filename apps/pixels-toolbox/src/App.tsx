@@ -18,7 +18,7 @@ import {
 } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
-// import * as Sentry from "sentry-expo";
+import * as Sentry from "sentry-expo";
 
 import { useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
@@ -43,14 +43,14 @@ LogBox.ignoreLogs([
 ]);
 
 // Use Sentry for crash reporting
-// Sentry.init({
-//   dsn: "https://cc730e3207d64053b222cede5599338d@o1258420.ingest.sentry.io/6512529",
-//   // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-//   // We recommend adjusting this value in production.
-//   tracesSampleRate: 1.0,
-//   enableInExpoDevelopment: true,
-//   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
-// });
+Sentry.init({
+  dsn: "https://cc730e3207d64053b222cede5599338d@o1258420.ingest.sentry.io/6512529",
+  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+  // We recommend adjusting this value in production.
+  tracesSampleRate: 1.0,
+  enableInExpoDevelopment: __DEV__,
+  // debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+});
 
 // Initialize Bluetooth globally
 initBluetooth();
@@ -124,7 +124,7 @@ function AppContent() {
   );
 }
 
-export default function App() {
+function App() {
   return (
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <ReduxProvider store={store}>
@@ -139,4 +139,4 @@ export default function App() {
   );
 }
 
-// export default Sentry.Native.wrap(App);
+export default Sentry.Native.wrap(App);

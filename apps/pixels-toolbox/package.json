@@ -39,12 +39,13 @@
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
     "@reduxjs/toolkit": "~1.9.5",
+    "@sentry/react-native": "4.15.2",
     "@systemic-games/pixels-edit-animation": "*",
     "@systemic-games/react-native-base-components": "*",
     "@systemic-games/react-native-bluetooth-le": "*",
-    "@systemic-games/react-native-zpl-print": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
     "@systemic-games/react-native-pixels-connect": "*",
+    "@systemic-games/react-native-zpl-print": "*",
     "@systemic-games/vision-camera-rgb-averages": "*",
     "expo": "~48.0.18",
     "expo-application": "~5.1.1",
@@ -81,7 +82,8 @@
     "react-native-zip-archive": "^6.0.9",
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "sentry-expo": "~6.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
