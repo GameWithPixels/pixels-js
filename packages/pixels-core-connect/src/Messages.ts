@@ -446,15 +446,15 @@ export class Telemetry implements PixelMessage {
 
   // Accelerometer
 
-  @serializable(4, { numberFormat: "float" })
-  accX = 0;
-  @serializable(4, { numberFormat: "float" })
-  accY = 0;
-  @serializable(4, { numberFormat: "float" })
-  accZ = 0;
+  @serializable(2, { numberFormat: "signed" })
+  accXTimes1000 = 0;
+  @serializable(2, { numberFormat: "signed" })
+  accYTimes1000 = 0;
+  @serializable(2, { numberFormat: "signed" })
+  accZTimes1000 = 0;
 
-  @serializable(4, { numberFormat: "float" })
-  faceConfidence = 0;
+  @serializable(4, { numberFormat: "signed" })
+  faceConfidenceTimes1000 = 0;
 
   @serializable(4)
   time = 0;

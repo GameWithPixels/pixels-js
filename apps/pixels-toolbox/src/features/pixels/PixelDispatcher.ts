@@ -340,10 +340,10 @@ class PixelDispatcher extends ScannedPixelNotifier<
     this._pixel.addMessageListener("telemetry", (msg) => {
       const telemetry = msg as Telemetry;
       const data = {
-        accX: telemetry.accX,
-        accY: telemetry.accY,
-        accZ: telemetry.accZ,
-        faceConfidence: telemetry.faceConfidence,
+        accX: telemetry.accXTimes1000 / 1000,
+        accY: telemetry.accYTimes1000 / 1000,
+        accZ: telemetry.accZTimes1000 / 1000,
+        faceConfidence: telemetry.faceConfidenceTimes1000 / 1000,
         timestamp: telemetry.time,
         rollState:
           getValueKeyName(telemetry.rollState, PixelRollStateValues) ??

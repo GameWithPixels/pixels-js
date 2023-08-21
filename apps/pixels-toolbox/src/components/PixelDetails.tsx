@@ -230,9 +230,9 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   // Values for UI
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
-  const x = telemetry?.accX ?? 0;
-  const y = telemetry?.accY ?? 0;
-  const z = telemetry?.accZ ?? 0;
+  const x = telemetry?.accXTimes1000 / 1000 ?? 0;
+  const y = telemetry?.accYTimes1000 / 1000 ?? 0;
+  const z = telemetry?.accZTimes1000 / 1000 ?? 0;
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
   return (
     <>
