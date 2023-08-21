@@ -42,15 +42,17 @@ LogBox.ignoreLogs([
   "Warning: Using UNSAFE_componentWillReceiveProps in strict mode is not recommended",
 ]);
 
-// Use Sentry for crash reporting
-Sentry.init({
-  dsn: "https://cc730e3207d64053b222cede5599338d@o1258420.ingest.sentry.io/6512529",
-  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-  // We recommend adjusting this value in production.
-  tracesSampleRate: 1.0,
-  enableInExpoDevelopment: __DEV__,
-  // debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
-});
+if (!__DEV__) {
+  // Use Sentry for crash reporting
+  Sentry.init({
+    dsn: "https://86c162a0a3ba5bcec55c0ba4f23439c2@o1258420.ingest.sentry.io/6512529",
+    // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+    // We recommend adjusting this value in production.
+    tracesSampleRate: 1.0,
+    enableInExpoDevelopment: true,
+    // Getting a lot of spam messages in the console... debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+  });
+}
 
 // Initialize Bluetooth globally
 initBluetooth();

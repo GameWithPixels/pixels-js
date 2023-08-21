@@ -73,8 +73,6 @@ const config = {
           config: {
             organization: "systemic-games",
             project: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
-            authToken:
-              "8b0ed4f628dd4e6c9f8095bd698df89ae4ccf6fc0b8045e9add36b9ef4ab6df7",
           },
         },
       ],
