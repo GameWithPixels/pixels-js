@@ -452,7 +452,8 @@ export class Pixel extends PixelInfoNotifier {
    * @param timeoutMs Delay before giving up (may be ignored when having concurrent
    *                  calls to connect()). It may take longer than the given timeout
    *                  for the function to return.
-   * @returns A promise resolving to this instance.
+   * @returns A promise that resoles to this instance once the connection process
+   *          has completed (whether successfully or not).
    * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
    */
   async connect(timeoutMs = 0): Promise<Pixel> {
@@ -541,6 +542,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Immediately disconnects from the die.
+   * @returns A promise that resolves once the disconnect request has been processed.
    **/
   async disconnect(): Promise<Pixel> {
     await this._session.disconnect();
@@ -654,6 +656,7 @@ export class Pixel extends PixelInfoNotifier {
    * Sends a message to the Pixel.
    * @param msgOrType Message with the data to send or just a message type.
    * @param withoutAck Whether to request a confirmation that the message was received.
+   * @returns A promise that resolves once the message has been send.
    */
   async sendMessage(
     msgOrType: MessageOrType,
@@ -676,7 +679,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param msgOrTypeToSend Message with the data to send or just a message type.
    * @param responseType Expected response type.
    * @param timeoutMs Timeout in mill-seconds before aborting waiting for the response.
-   * @returns A promise resolving to a message type or a message object.
+   * @returns A promise resolving to the response in the form of a message type or a message object.
    */
   async sendAndWaitForResponse(
     msgOrTypeToSend: MessageOrType,
@@ -715,6 +718,7 @@ export class Pixel extends PixelInfoNotifier {
   /**
    * Requests the Pixel to change its name.
    * @param name New name to assign to the Pixel.
+   * @returns A promise that resolves once the die has confirmed being renamed.
    */
   async rename(name: string): Promise<void> {
     if (name.length) {
@@ -727,6 +731,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Requests the Pixel to start faces calibration sequence.
+   * @returns A promise that resolves once the message has been send.
    */
   async startCalibration(): Promise<void> {
     await this.sendMessage("calibrate");
@@ -737,6 +742,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param activate Whether to turn or turn off this feature.
    * @param minInterval The minimum time interval in milliseconds
    *                    between two RSSI updates.
+   * @returns A promise that resolves once the message has been send.
    */
   async reportRssi(activate: boolean, minInterval = 5000): Promise<void> {
     await this.sendMessage(
@@ -766,6 +772,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Requests the Pixel to turn itself off.
+   * @returns A promise that resolves once the message has been send.
    */
   async turnOff(): Promise<void> {
     await this.sendMessage(
@@ -782,7 +789,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param opt.fade Amount of in and out fading, 0: sharp transition, 1: maximum fading.
    * @param opt.faceMask Select which faces to light up.
    * @param opt.loop Whether to indefinitely loop the animation.
-   * @returns A promise.
+   * @returns A promise that resolves once the die has confirmed receiving the message.
    */
   async blink(
     color: Color,
@@ -810,7 +817,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param dataSet The data set to upload.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..
-   * @returns A promise.
+   * @returns A promise that resolves once the transfer has completed.
    */
   async transferDataSet(
     dataSet: DataSet,
@@ -881,7 +888,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param dataSet The data set containing just one animation to play.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..
-   * @returns A promise.
+   * @returns A promise that resolves once the transfer has completed.
    */
   async playTestAnimation(
     dataSet: DataSet,
@@ -944,7 +951,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param dataSet The data set to upload.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..
-   * @returns A promise.
+   * @returns A promise that resolves once the transfer has completed.
    */
   async transferInstantAnimations(
     dataSet: DataSet,
@@ -1009,7 +1016,7 @@ export class Pixel extends PixelInfoNotifier {
    * Plays the instant animation at the given index.
    * See @see transferInstantAnimations().
    * @param animIndex The index of the instant animation to play.
-   * @returns A promise.
+   * @returns A promise that resolves once the message has been send.
    */
   async playInstantAnimation(animIndex: number): Promise<void> {
     await this.sendMessage(
@@ -1145,7 +1152,15 @@ export class Pixel extends PixelInfoNotifier {
     }
   }
 
-  // Upload the given data to the Pixel
+  /**
+   * Upload the given data to the Pixel.
+   * @param ackType The expected confirmation message type.
+   * @param data The data to send.
+   * @param progressCallback An optional callback that is called as the operation progresses
+   *                         with the progress in percent..
+   * @param progressMode Whether to notify progress in percent or bytes.
+   * @returns A promise that resolves once the transfer has completed.
+   */
   async uploadBulkDataWithAck(
     ackType: MessageType,
     data: ArrayBuffer,

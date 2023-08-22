@@ -1122,6 +1122,10 @@ export class BlinkId implements PixelMessage {
   loop = false;
 }
 
+/**
+ * Message send to a Pixel to test transfer rates.
+ * @category Message
+ */
 export class TransferTest implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
@@ -1132,6 +1136,28 @@ export class TransferTest implements PixelMessage {
    */
   @serializable(2, { padding: 1 })
   size = 0;
+}
+
+/**
+ * Message send to a Pixel to play an animation from the stored profile.
+ * @category Message
+ */
+export class PlayProfileAnimation implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.playAnimation;
+
+  /** Index of the animation in the profile's animation list. */
+  @serializable(1)
+  animationIndex = 0;
+
+  /** Face on which to play the animation (the animations are designed as if the higher face value is up). */
+  @serializable(1)
+  remapToFace = 0;
+
+  /** Whether to indefinitely loop the animation. */
+  @serializable(1)
+  loop = false;
 }
 
 // Returns the list of message classes defined in this file.
