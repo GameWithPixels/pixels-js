@@ -6,9 +6,9 @@ interface TelemetryFrame {
 }
 
 function getAccMagnitude(telemetry: Telemetry) {
-  const x = telemetry.accX;
-  const y = telemetry.accZ;
-  const z = telemetry.accY;
+  const x = telemetry.accXTimes1000 / 1000;
+  const y = telemetry.accYTimes1000 / 1000;
+  const z = telemetry.accZTimes1000 / 1000;
   return Math.sqrt(x * x + y * y + z * z);
 }
 

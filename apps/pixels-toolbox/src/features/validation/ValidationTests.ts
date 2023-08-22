@@ -252,7 +252,10 @@ const ValidationTests = {
           }, timeout);
           // Process telemetry events
           telemetryListener = (msg) => {
-            const { accX, accY, accZ } = msg as Telemetry;
+            const telemetry = msg as Telemetry;
+            const accX = telemetry.accXTimes1000 / 1000;
+            const accY = telemetry.accYTimes1000 / 1000;
+            const accZ = telemetry.accZTimes1000 / 1000;
             const n = vectNorm(accX, accY, accZ);
             console.log(
               `Acceleration: ${vectToString(accX, accY, accZ)}, norm=${n}`
