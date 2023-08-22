@@ -12,9 +12,9 @@ import {
   RequestRssi,
   Rssi,
   PixelBatteryStateValues,
-  BatteryEvent,
   getFaceMask,
   RollEvent,
+  PixelBatteryControllerStateValues,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { pixelStopAllAnimations } from "../pixels/extensions";
@@ -137,81 +137,118 @@ const ValidationTests = {
     abortSignal: AbortSignal,
     timeout = 30000 // 30s
   ): Promise<void> => {
-    await new Promise<void>((rawResolve, rawReject) => {
-      // Abort controller used to control the blinking
-      const blinkAbortController = new AbortController();
-      // Listeners
-      let batteryListener: (({ isCharging }: BatteryEvent) => void) | undefined;
-      let statusListener: ((status: PixelStatus) => void) | undefined;
-      let abort: (() => void) | undefined;
-      let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      const cleanup = () => {
-        // Stop blinking
-        blinkAbortController.abort();
-        // Cancel timeout and unhook listeners
-        clearTimeout(timeoutId);
-        if (abort) {
-          abortSignal.removeEventListener("abort", abort);
+    // Start telemetry
+    await pixel.sendMessage(
+      safeAssign(new RequestTelemetry(), {
+        requestMode: TelemetryRequestModeValues.automatic,
+        minInterval: 100,
+      })
+    );
+    let firstError: Error | undefined;
+    try {
+      await new Promise<void>((rawResolve, rawReject) => {
+        // Abort controller used to control the blinking
+        const blinkAbortController = new AbortController();
+        // Listeners
+        let telemetryListener: ((msg: MessageOrType) => void) | undefined;
+        let statusListener: ((status: PixelStatus) => void) | undefined;
+        let abort: (() => void) | undefined;
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const cleanup = () => {
+          // Stop blinking
+          blinkAbortController.abort();
+          // Cancel timeout and unhook listeners
+          clearTimeout(timeoutId);
+          if (abort) {
+            abortSignal.removeEventListener("abort", abort);
+          }
+          if (telemetryListener) {
+            pixel.removeMessageListener("telemetry", telemetryListener);
+          }
+          if (statusListener) {
+            pixel.removeEventListener("status", statusListener);
+          }
+        };
+        // Create reject and resolve function that call cleanup()
+        const reject = (reason?: any) => {
+          cleanup();
+          rawReject(reason);
+        };
+        const resolve = () => {
+          cleanup();
+          rawResolve();
+        };
+        // Abort function
+        abort = () => reject(new TaskCanceledError("waitCharging"));
+        // Error helper
+        const createError = (desc: string) =>
+          new Error(
+            `${desc} while waiting for '${
+              shouldBeCharging ? "" : "not "
+            }charging' state`
+          );
+        // Check state
+        if (abortSignal.aborted) {
+          abort();
+        } else if (!pixel.isReady) {
+          reject(createError("Disconnected"));
+        } else if (pixel.isCharging === shouldBeCharging) {
+          resolve();
+        } else {
+          // Listen to abort event
+          abortSignal.addEventListener("abort", abort);
+          // Blink face
+          const blinkAS = blinkAbortController.signal;
+          const options = {
+            faceMask: getFaceMask(pixel.ledCount),
+          };
+          blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
+          // Process battery events
+          telemetryListener = (msg: MessageOrType) => {
+            const state = (msg as Telemetry).batteryControllerState;
+            const v = PixelBatteryControllerStateValues;
+            const charging =
+              state === v.chargingLow ||
+              state === v.charging ||
+              state === v.cooldown ||
+              state === v.chargingTrickle ||
+              state === v.done;
+            if (charging === shouldBeCharging) {
+              resolve();
+            }
+          };
+          pixel.addMessageListener("telemetry", telemetryListener);
+          // Listen for disconnection event
+          statusListener = (status: PixelStatus) => {
+            if (status === "disconnecting" || status === "disconnected") {
+              reject(createError("Disconnected"));
+            }
+          };
+          pixel.addEventListener("status", statusListener);
+          // Reject promise on timeout
+          timeoutId = setTimeout(() => reject(createError("Timeout")), timeout);
         }
-        if (batteryListener) {
-          pixel.removeEventListener("battery", batteryListener);
-        }
-        if (statusListener) {
-          pixel.removeEventListener("status", statusListener);
-        }
-      };
-      // Create reject and resolve function that call cleanup()
-      const reject = (reason?: any) => {
-        cleanup();
-        rawReject(reason);
-      };
-      const resolve = () => {
-        cleanup();
-        rawResolve();
-      };
-      // Abort function
-      abort = () => reject(new TaskCanceledError("waitCharging"));
-      // Error helper
-      const createError = (desc: string) =>
-        new Error(
-          `${desc} while waiting for '${
-            shouldBeCharging ? "" : "not "
-          }charging' state`
-        );
-      // Check state
-      if (abortSignal.aborted) {
-        abort();
-      } else if (!pixel.isReady) {
-        reject(createError("Disconnected"));
-      } else if (pixel.isCharging === shouldBeCharging) {
-        resolve();
+      });
+    } catch (error) {
+      firstError = error as Error;
+    }
+    // Turn off telemetry
+    try {
+      await pixel.sendMessage(
+        safeAssign(new RequestTelemetry(), {
+          requestMode: TelemetryRequestModeValues.off,
+        })
+      );
+    } catch (error) {
+      if (firstError) {
+        console.log(`Error while trying to stop telemetry: ${error}`);
       } else {
-        // Listen to abort event
-        abortSignal.addEventListener("abort", abort);
-        // Blink face
-        const blinkAS = blinkAbortController.signal;
-        const options = {
-          faceMask: getFaceMask(pixel.ledCount),
-        };
-        blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
-        // Process battery events
-        batteryListener = ({ isCharging }: BatteryEvent) => {
-          if (isCharging === shouldBeCharging) {
-            resolve();
-          }
-        };
-        pixel.addEventListener("battery", batteryListener);
-        // Listen for disconnection event
-        statusListener = (status: PixelStatus) => {
-          if (status === "disconnecting" || status === "disconnected") {
-            reject(createError("Disconnected"));
-          }
-        };
-        pixel.addEventListener("status", statusListener);
-        // Reject promise on timeout
-        timeoutId = setTimeout(() => reject(createError("Timeout")), timeout);
+        firstError = error as Error;
       }
-    });
+    }
+    if (firstError) {
+      throw firstError;
+    }
   },
 
   checkAccelerometer: async (
@@ -229,10 +266,11 @@ const ValidationTests = {
     await pixel.sendMessage(
       safeAssign(new RequestTelemetry(), {
         requestMode: TelemetryRequestModeValues.automatic,
+        minInterval: 100,
       })
     );
     let telemetryListener: ((msg: MessageOrType) => void) | undefined;
-    let globalError: Error | undefined;
+    let firstError: Error | undefined;
     try {
       await new Promise<void>((resolve, reject) => {
         const abort = () => reject(new TaskCanceledError("checkAccelerometer"));
@@ -283,7 +321,7 @@ const ValidationTests = {
         }
       });
     } catch (error) {
-      globalError = error as Error;
+      firstError = error as Error;
     }
     if (telemetryListener) {
       pixel.removeMessageListener("telemetry", telemetryListener);
@@ -296,14 +334,14 @@ const ValidationTests = {
         })
       );
     } catch (error) {
-      if (globalError) {
+      if (firstError) {
         console.log(`Error while trying to stop telemetry: ${error}`);
       } else {
-        globalError = error as Error;
+        firstError = error as Error;
       }
     }
-    if (globalError) {
-      throw globalError;
+    if (firstError) {
+      throw firstError;
     }
   },
 
