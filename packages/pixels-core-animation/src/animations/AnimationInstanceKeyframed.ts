@@ -35,7 +35,7 @@ export default class AnimationInstanceKeyframed extends AnimationInstance {
         colors32
       );
       for (let j = 0; j < count; ++j) {
-        if (preset.traveling !== 0) {
+        if (preset.animFlags !== 0) {
           // Use reverse lookup so that the indices are actually led Indices, not face indices
           retIndices[totalCount + j] = getFaceIndex(indices[j]);
         } else {

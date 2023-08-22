@@ -129,7 +129,7 @@ export async function pixelStopAllAnimations(pixel: Pixel): Promise<void> {
  *
  * @param pixel The Pixel instance to use.
  * @param animationIndex Index of the animation in the profile's animation list.
- * @param remapToFace Face on which to play the animation (the animations are designed as if the higher face value is up).
+ * @param remapToFace Face on which to play the animation (the animations are designed assuming that the higher face value is up).
  * @param loop Whether to indefinitely loop the animation.
  */
 export async function pixelPlayProfileAnimation(

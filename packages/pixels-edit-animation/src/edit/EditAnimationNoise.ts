@@ -52,6 +52,7 @@ export default class EditAnimationNoise extends EditAnimation {
     uuid?: string;
     name?: string;
     duration?: number;
+    animFlags?: number;
     gradient?: EditRgbGradient;
     faces?: number;
     blinkDuration?: number;

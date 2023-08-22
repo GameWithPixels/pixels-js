@@ -41,6 +41,7 @@ export default class EditAnimationSimple extends EditAnimation {
     uuid?: string;
     name?: string;
     duration?: number;
+    animFlags?: number;
     faces?: number;
     color?: EditColor | Color;
     count?: number;

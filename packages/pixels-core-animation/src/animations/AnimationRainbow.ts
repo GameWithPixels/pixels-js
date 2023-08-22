@@ -13,7 +13,7 @@ export default class AnimationRainbow implements AnimationPreset {
   readonly type: number = AnimationTypeValues.rainbow;
 
   @serializable(1)
-  traveling = 0; // If 1 indices are led indices, not face indices
+  animFlags = 0; // If 1 indices are led indices, not face indices
 
   @serializable(2)
   duration = 0; // In milliseconds

@@ -18,26 +18,20 @@ export default class EditAnimationKeyframed extends EditAnimation {
   @observable
   pattern?: EditPattern;
 
-  @widget("toggle")
-  @name("Traveling Order")
-  @observable
-  traveling: boolean;
-
   constructor(opt?: {
     uuid?: string;
     name?: string;
     duration?: number;
+    animFlags?: number;
     pattern?: EditPattern;
-    traveling?: boolean;
   }) {
     super(opt);
     this.pattern = opt?.pattern;
-    this.traveling = opt?.traveling ?? false;
   }
 
   toAnimation(editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
     return safeAssign(new AnimationKeyframed(), {
-      traveling: this.traveling ? 1 : 0,
+      animFlags: this.animFlags ? 1 : 0,
       duration: this.duration * 1000, // stored in milliseconds
       tracksOffset: editSet.getPatternRGBTrackOffset(this.pattern),
       trackCount: this.pattern?.gradients.length ?? 0,

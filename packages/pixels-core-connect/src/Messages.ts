@@ -1151,7 +1151,7 @@ export class PlayProfileAnimation implements PixelMessage {
   @serializable(1)
   animationIndex = 0;
 
-  /** Face on which to play the animation (the animations are designed as if the higher face value is up). */
+  /** Face on which to play the animation (the animations are designed assuming that the higher face value is up). */
   @serializable(1)
   remapToFace = 0;
 

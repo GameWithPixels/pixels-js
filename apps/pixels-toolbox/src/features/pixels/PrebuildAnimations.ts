@@ -1,11 +1,14 @@
-import { EditAnimationRainbow } from "@systemic-games/pixels-edit-animation";
+import {
+  AnimationFlagsValues,
+  EditAnimationRainbow,
+} from "@systemic-games/pixels-edit-animation";
 
 export const PrebuildAnimations = {
   rainbow: new EditAnimationRainbow({
     duration: 10,
+    animFlags: AnimationFlagsValues.traveling,
     count: 4,
     fade: 0.5,
-    traveling: true,
   }),
   rainbowAllFaces: new EditAnimationRainbow({
     duration: 10,

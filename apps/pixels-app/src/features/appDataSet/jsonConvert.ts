@@ -6,6 +6,7 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import {
   ActionTypeValues,
+  AnimationFlagsValues,
   AnimationTypeValues,
   BatteryStateFlagsValues,
   Color32Utils,
@@ -136,10 +137,10 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
+              animFlags: data.traveling ? AnimationFlagsValues.traveling : 0,
               faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
               fade: data.fade ?? 0,
-              traveling: data.traveling ?? false,
               intensity: 128,
             });
             break;
@@ -148,8 +149,8 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
+              animFlags: data.traveling ? AnimationFlagsValues.traveling : 0,
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
-              traveling: data.traveling ?? false,
             });
             break;
           case "gradientPattern":

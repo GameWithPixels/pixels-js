@@ -29,6 +29,7 @@ export default class EditAnimationGradient extends EditAnimation {
     uuid?: string;
     name?: string;
     duration?: number;
+    animFlags?: number;
     faces?: number;
     gradient?: EditRgbGradient;
   }) {

@@ -24,13 +24,13 @@ export interface AnimationRainbowData extends AnimationData {
   faces: number;
   count: number;
   fade: number;
-  traveling: boolean;
+  animFlags: number;
   intensity: number;
 }
 
 export interface AnimationKeyframedData extends AnimationData {
   patternUuid?: string;
-  traveling: boolean;
+  animFlags: number;
 }
 
 export interface AnimationGradientPatternData extends AnimationData {

@@ -1,5 +1,6 @@
 // Animations
 export * from "./AnimationType";
+export * from "./AnimationFlags";
 export { default as AnimationBits } from "./AnimationBits";
 export { default as AnimationGradient } from "./AnimationGradient";
 export { default as AnimationGradientPattern } from "./AnimationGradientPattern";

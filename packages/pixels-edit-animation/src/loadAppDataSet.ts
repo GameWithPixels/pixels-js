@@ -3,6 +3,7 @@ import {
   ActionTypeValues,
   ConditionTypeValues,
   Color,
+  AnimationFlagsValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -202,17 +203,16 @@ export function toAnimation(
       return new EditAnimationRainbow({
         name: data.name,
         duration: data.duration,
+        animFlags: data.traveling ? AnimationFlagsValues.traveling : 0,
         faces: data.faces,
         count: data.count,
         fade: data.fade,
-        traveling: data.traveling,
       }) as EditAnimation;
     case AnimationTypeValues.keyframed:
       return new EditAnimationKeyframed({
         name: data.name,
         duration: data.duration,
         pattern: patterns[data.patternIndex ?? -1],
-        traveling: data.traveling,
       }) as EditAnimation;
     case AnimationTypeValues.gradientPattern:
       return new EditAnimationGradientPattern({

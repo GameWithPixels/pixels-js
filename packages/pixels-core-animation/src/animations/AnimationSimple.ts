@@ -13,7 +13,7 @@ export default class AnimationSimple implements AnimationPreset {
   readonly type: number = AnimationTypeValues.simple;
 
   @serializable(1)
-  traveling = 0; // If 1 indices are led indices, not face indices
+  animFlags = 0; // If 1 indices are led indices, not face indices
 
   @serializable(2)
   duration = 0; // In milliseconds

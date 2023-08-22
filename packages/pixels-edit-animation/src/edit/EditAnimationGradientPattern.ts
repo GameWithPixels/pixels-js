@@ -34,6 +34,7 @@ export default class EditAnimationGradientPattern extends EditAnimation {
     uuid?: string;
     name?: string;
     duration?: number;
+    animFlags?: number;
     pattern?: EditPattern;
     gradient?: EditRgbGradient;
     overrideWithFace?: boolean;
