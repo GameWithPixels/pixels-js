@@ -8,13 +8,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 function getVersion(): string {
   const version = Constants.expoConfig?.version;
   if (version?.length) {
-    if (version.endsWith(".0")) {
-      return version.substring(0, version.length - 2);
-    } else {
+    // We want at least a major.minor version number,
+    // and we remove any extra 0 sub versions.
+    const parts = version.split(".");
+    try {
+      while (parts.length > 2 && Number(parts[parts.length - 1]) === 0) {
+        parts.pop();
+      }
+      if (parts.length <= 1) {
+        parts.push("0");
+      }
+      return parts.join(".");
+    } catch {
       return version;
     }
   } else {
-    return "1.0";
+    return "0.1";
   }
 }
 
