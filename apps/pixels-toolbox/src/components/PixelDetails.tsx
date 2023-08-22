@@ -353,16 +353,16 @@ function BottomButtons({
                 {t("calibrate")}
               </Button>
               <Button
-                onPress={() => pixelDispatcher.dispatch("resetAllSettings")}
-              >
-                {t("resetAllSettings")}
-              </Button>
-              <Button
                 onPress={() =>
                   pixelDispatcher.dispatch("reprogramDefaultBehavior")
                 }
               >
                 {t("setMinimalProfile")}
+              </Button>
+              <Button
+                onPress={() => pixelDispatcher.dispatch("resetAllSettings")}
+              >
+                {t("resetAllSettings")}
               </Button>
             </>
           )}
@@ -411,13 +411,20 @@ function BottomButtons({
                 {t("rainbowAllFaces")}
               </Button>
               <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
-              <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
-                {t("setUserProfile")}
-              </Button>
               <Button
                 onPress={() => pixelDispatcher.dispatch("exitValidation")}
               >
                 {t("exitValidationMode")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
+                {t("setUserProfile")}
+              </Button>
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch("playProfileAnimation", 0)
+                }
+              >
+                {t("playProfileAnim")}
               </Button>
             </>
           )}

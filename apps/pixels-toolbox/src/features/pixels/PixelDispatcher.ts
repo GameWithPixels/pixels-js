@@ -48,6 +48,7 @@ import {
   pixelBlinkId,
   pixelDischarge,
   pixelForceEnableCharging,
+  pixelPlayProfileAnimation,
   pixelReprogramDefaultBehavior,
   pixelResetAllSettings,
 } from "./extensions";
@@ -68,17 +69,18 @@ export interface PixelDispatcherActionMap {
   blink: undefined;
   blinkId: undefined;
   playAnimation: EditAnimation;
+  playProfileAnimation: number;
   calibrate: undefined;
-  uploadProfile: ProfileType;
-  queueDFU: undefined;
-  dequeueDFU: undefined;
   exitValidation: undefined;
+  turnOff: undefined;
   discharge: number;
   enableCharging: boolean;
-  turnOff: undefined;
   rename: string;
+  uploadProfile: ProfileType;
   reprogramDefaultBehavior: undefined;
   resetAllSettings: undefined;
+  queueDFU: undefined;
+  dequeueDFU: undefined;
 }
 
 export type PixelDispatcherActionName = keyof PixelDispatcherActionMap;
@@ -273,6 +275,8 @@ class PixelDispatcher extends ScannedPixelNotifier<
     super(scannedPixel);
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
+    // this._pixel.logMessages = true;
+    // this._pixel.logger = (msg) => console.log(JSON.stringify(msg));
     PixelDispatcher._instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
@@ -418,38 +422,41 @@ class PixelDispatcher extends ScannedPixelNotifier<
             PrebuildAnimations.rainbow
         );
         break;
+      case "playProfileAnimation":
+        this._guard(this._playProfileAnimation(params as number) ?? 0);
+        break;
       case "calibrate":
         this._guard(this._calibrate());
-        break;
-      case "discharge":
-        this._guard(this._discharge((params as number) ?? 50));
-        break;
-      case "uploadProfile":
-        this._guard(this._uploadProfile((params as ProfileType) ?? "default"));
-        break;
-      case "queueDFU":
-        this._queueDFU();
-        break;
-      case "dequeueDFU":
-        this._dequeueDFU();
         break;
       case "exitValidation":
         this._guard(this._exitValidationMode());
         break;
-      case "enableCharging":
-        this._guard(this._forceEnableCharging((params as boolean) ?? true));
-        break;
       case "turnOff":
         this._guard(this._pixel.turnOff());
         break;
+      case "discharge":
+        this._guard(this._discharge((params as number) ?? 50));
+        break;
+      case "enableCharging":
+        this._guard(this._forceEnableCharging((params as boolean) ?? true));
+        break;
       case "rename":
         this._guard(this._pixel.rename((params as string) ?? ""));
+        break;
+      case "uploadProfile":
+        this._guard(this._uploadProfile((params as ProfileType) ?? "default"));
         break;
       case "reprogramDefaultBehavior":
         this._guard(this._reprogramDefaultBehavior());
         break;
       case "resetAllSettings":
         this._guard(this._resetAllSettings());
+        break;
+      case "queueDFU":
+        this._queueDFU();
+        break;
+      case "dequeueDFU":
+        this._dequeueDFU();
         break;
       default:
         assertNever(action);
@@ -544,6 +551,12 @@ class PixelDispatcher extends ScannedPixelNotifier<
       } finally {
         this._evEmitter.emit("profileUploadProgress", undefined);
       }
+    }
+  }
+
+  private async _playProfileAnimation(animIndex: number): Promise<void> {
+    if (this.isReady) {
+      await pixelPlayProfileAnimation(this.pixel, animIndex);
     }
   }
 

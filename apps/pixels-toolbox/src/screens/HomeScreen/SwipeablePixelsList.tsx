@@ -83,6 +83,7 @@ export default React.memo(function ({
       t("blink"),
       t("rainbow"),
       t("rainbowAllFaces"),
+      t("playProfileAnimation"),
       t("updateProfile"),
       t("updateBootloaderAndFirmware"),
       t("cancel"),
@@ -113,9 +114,12 @@ export default React.memo(function ({
             dispatchAll("playAnimation", PrebuildAnimations.rainbowAllFaces);
             break;
           case 5:
-            dispatchAll("uploadProfile");
+            dispatchAll("playProfileAnimation", 0);
             break;
           case 6:
+            dispatchAll("uploadProfile");
+            break;
+          case 7:
             dispatchAll("queueDFU");
             break;
         }
