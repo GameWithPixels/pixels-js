@@ -52,7 +52,7 @@ export const SwipeablePixelsList = React.memo(function ({
   const lastPixelsList = React.useRef<PixelDispatcher[]>([]);
   const pixels = React.useMemo(() => {
     const scanned = scannedPixels.map((scannedPixel) =>
-      PixelDispatcher.getInstance(scannedPixel)
+      PixelDispatcher.getDispatcher(scannedPixel)
     );
     const pixels = lastPixelsList.current.filter(
       (p) => p.isInUse || scanned.includes(p)

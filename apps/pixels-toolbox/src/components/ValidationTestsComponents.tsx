@@ -6,7 +6,6 @@ import {
   getPixel,
   Pixel,
   ScannedPixel,
-  ScannedPixelNotifier,
   useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
@@ -366,9 +365,8 @@ export function ConnectPixel({
   const pixelRef = React.useRef<Pixel>();
   React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
-      const notifier = new ScannedPixelNotifier(scannedPixels[0]);
       // Make sure that we have a PixelDispatcher instance so messages are logged
-      pixelRef.current = PixelDispatcher.getInstance(notifier).pixel;
+      pixelRef.current = PixelDispatcher.getDispatcher(scannedPixels[0]).pixel;
       onPixelFound?.(pixelRef.current);
       resolveScanPromise();
     }

@@ -38,6 +38,7 @@ import {
   PixelBatteryStateValues,
   PixelBatteryControllerStateValues,
   BatteryControllerState,
+  ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -164,6 +165,7 @@ export class PixelDispatcherError extends Error {
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
 class PixelDispatcher extends ScannedPixelNotifier<
+  // TODO bad inheritance!
   keyof PixelDispatcherMutableProps,
   PixelDispatcher
 > {
@@ -179,7 +181,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
   private _messagesLogFilePath;
   private _telemetryData: TelemetryData[] = [];
 
-  private static readonly _instances = new Map<number, PixelDispatcher>();
+  private static readonly _pxInstances = new Map<number, PixelDispatcher>();
   private static _activeDFU: PixelDispatcher | undefined;
   private static readonly _pendingDFUs: PixelDispatcher[] = [];
 
@@ -280,15 +282,20 @@ class PixelDispatcher extends ScannedPixelNotifier<
     return this._pixel;
   }
 
-  static findInstance(pixelId: number) {
-    return PixelDispatcher._instances.get(pixelId);
+  static findDispatcher(pixelId: number) {
+    return PixelDispatcher._pxInstances.get(pixelId);
   }
 
-  static getInstance(scannedPixel: ScannedPixelNotifier): PixelDispatcher {
-    // TODO update Pixel instance with latest notifier values
+  static getDispatcher(
+    scannedPixel: ScannedPixelNotifier | ScannedPixel
+  ): PixelDispatcher {
     return (
-      PixelDispatcher._instances.get(scannedPixel.pixelId) ??
-      new PixelDispatcher(scannedPixel)
+      PixelDispatcher._pxInstances.get(scannedPixel.pixelId) ??
+      new PixelDispatcher(
+        scannedPixel instanceof ScannedPixelNotifier
+          ? scannedPixel
+          : ScannedPixelNotifier.getInstance(scannedPixel)
+      )
     );
   }
 
@@ -296,7 +303,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     super(scannedPixel);
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
-    PixelDispatcher._instances.set(this.pixelId, this);
+    PixelDispatcher._pxInstances.set(this.pixelId, this);
     // Log messages
     // this._pixel.logMessages = true;
     // this._pixel.logger = (msg) => console.log(JSON.stringify(msg));

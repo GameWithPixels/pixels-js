@@ -23,6 +23,8 @@ export class ScannedPixelNotifier<
   extends PixelInfoNotifier<MutableProps, Type>
   implements ScannedPixel
 {
+  private static readonly _instances = new Map<number, ScannedPixelNotifier>();
+
   private _data: Mutable<ScannedPixel>;
 
   // PixelInfo props
@@ -68,11 +70,22 @@ export class ScannedPixelNotifier<
     return this._data.timestamp;
   }
 
+  static findInstance(pixelId: number): ScannedPixelNotifier | undefined {
+    return ScannedPixelNotifier._instances.get(pixelId);
+  }
+
+  static getInstance(scannedPixel: ScannedPixel): ScannedPixelNotifier {
+    return (
+      ScannedPixelNotifier._instances.get(scannedPixel.pixelId) ??
+      new ScannedPixelNotifier(scannedPixel)
+    );
+  }
+
   /**
    * Instantiate a {@type ScannedPixelNotifier} with the properties
    * of a {@link ScannedPixel} object.
    */
-  constructor(scannedPixel: ScannedPixel) {
+  protected constructor(scannedPixel: ScannedPixel) {
     super();
     this._data = { ...scannedPixel };
   }

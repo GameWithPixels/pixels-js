@@ -19,6 +19,8 @@ import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
  *   existing items are updated.
  * - A stable reducer like function to dispatch actions to the scanner.
  * - The last encountered error.
+ * @remarks {@link ScannedPixelNotifier} instances are kept globally, for a given Pixel
+ *          the same instance is returned and updated by all scanners.
  */
 export function useScannedPixelNotifiers(
   opt?: PixelScannerOptions
@@ -27,7 +29,6 @@ export function useScannedPixelNotifiers(
   (action: PixelScannerDispatchAction) => void,
   Error?
 ] {
-  const allNotifiers = React.useRef<ScannedPixelNotifier[]>([]);
   const mapItems = React.useCallback(
     (items: ScannedPixelNotifier[], ops: PixelScannerListOp[]) => {
       // We only want to create a React re-render when items are added
@@ -41,16 +42,8 @@ export function useScannedPixelNotifiers(
             retItems = [];
             break;
           case "add": {
-            // Look for an "old" instance of a notifier as in this case we don't want to
-            // recreate a new one and break the update of the existing instance.
-            const existing = allNotifiers.current.find(
-              (n) => n.pixelId === op.scannedPixel.pixelId
-            );
-            const notifier =
-              existing ?? new ScannedPixelNotifier(op.scannedPixel);
-            if (!existing) {
-              allNotifiers.current.push(notifier);
-            }
+            // The same instance will always be returned for a given Pixel id
+            const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
             if (retItems === items) {
               retItems = [...items, notifier];
             } else {
