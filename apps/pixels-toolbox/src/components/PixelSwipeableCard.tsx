@@ -107,14 +107,18 @@ function PixelCard({
 }: Omit<SwipeablePixelCardProps, "scannedPixel" | "onShowDetails"> & {
   pixelDispatcher: PixelDispatcher;
 }) {
-  React.useEffect(() => {
-    pixelDispatcher.dispatch("reportRssi");
-  }, [pixelDispatcher]);
-
-  const status = usePixelStatus(pixelDispatcher.pixel);
-
   const [lastError, setLastError] = React.useState<Error>();
   const clearError = React.useCallback(() => setLastError(undefined), []);
+
+  // Pixel status
+  const status = usePixelStatus(pixelDispatcher.pixel);
+
+  // Monitor RSSI once connected
+  React.useEffect(() => {
+    if (pixelDispatcher && status === "ready") {
+      pixelDispatcher.dispatch("reportRssi");
+    }
+  }, [pixelDispatcher, status]);
 
   // Pixel Dispatcher states
   const [lastActivitySec, setLastActivitySec] = React.useState(

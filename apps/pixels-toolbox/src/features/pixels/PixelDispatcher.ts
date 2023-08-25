@@ -29,7 +29,6 @@ import {
   PixelInfoNotifierMutableProps,
   FaceCompareFlagsValues,
   DataSet,
-  ScannedPixelNotifierMutableProps,
   MessageOrType,
   getMessageType,
   Telemetry,
@@ -138,6 +137,28 @@ export type TelemetryData = {
   forceDisableChargingState: boolean;
   ledCurrent: number;
 };
+
+export class PixelDispatcherError extends Error {
+  protected readonly _pixel: PixelDispatcher;
+  protected readonly _cause?: Error;
+
+  /** The Pixel for which the error occurred. */
+  get pixel(): PixelDispatcher {
+    return this._pixel;
+  }
+
+  /** The original error that caused this error to be thrown. */
+  get cause(): Error | undefined {
+    return this._cause;
+  }
+
+  constructor(pixel: PixelDispatcher, message: string, cause?: Error) {
+    super(`PixelDispatcher ${pixel.name}: ${message}`); //, { cause });
+    this.name = "PixelDispatcherError";
+    this._pixel = pixel;
+    this._cause = cause;
+  }
+}
 
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
@@ -275,9 +296,10 @@ class PixelDispatcher extends ScannedPixelNotifier<
     super(scannedPixel);
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
+    PixelDispatcher._instances.set(this.pixelId, this);
+    // Log messages
     // this._pixel.logMessages = true;
     // this._pixel.logger = (msg) => console.log(JSON.stringify(msg));
-    PixelDispatcher._instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
       1e9 * Math.random()
@@ -322,15 +344,19 @@ class PixelDispatcher extends ScannedPixelNotifier<
       this._updateIsDFUAvailable();
     });
     const props = [
+      // TODO build this list from type
       "name",
       "rssi",
       "batteryLevel",
       "isCharging",
       "rollState",
       "currentFace",
-    ] as (keyof ScannedPixelNotifierMutableProps)[];
+    ] as (keyof PixelInfoNotifierMutableProps)[];
     props.forEach((p) =>
       scannedPixel.addPropertyListener(p, () => this.emitPropertyEvent(p))
+    );
+    props.forEach((p) =>
+      this._pixel.addPropertyListener(p, () => this.emitPropertyEvent(p))
     );
     // Forward and monitor status
     this._pixel.addEventListener("status", (status) => {
@@ -402,55 +428,62 @@ class PixelDispatcher extends ScannedPixelNotifier<
   ) {
     switch (action) {
       case "connect":
-        this._guard(this._connect());
+        this._guard(this._connect(), action);
         break;
       case "disconnect":
-        this._guard(this._disconnect());
+        this._guard(this._disconnect(), action);
         break;
       case "reportRssi":
-        this._guard(this._reportRssi());
+        this._guard(this._reportRssi(), action);
         break;
       case "blink":
-        this._guard(this._blink());
+        this._guard(this._blink(), action);
         break;
       case "blinkId":
-        this._guard(this._blinkId());
+        this._guard(this._blinkId(), action);
         break;
       case "playAnimation":
         this._guard(
           this._playAnimation(params as EditAnimation) ??
-            PrebuildAnimations.rainbow
+            PrebuildAnimations.rainbow,
+          action
         );
         break;
       case "playProfileAnimation":
-        this._guard(this._playProfileAnimation(params as number) ?? 0);
+        this._guard(this._playProfileAnimation(params as number) ?? 0, action);
         break;
       case "calibrate":
-        this._guard(this._calibrate());
+        this._guard(this._calibrate(), action);
         break;
       case "exitValidation":
-        this._guard(this._exitValidationMode());
+        this._guard(this._exitValidationMode(), action);
         break;
       case "turnOff":
-        this._guard(this._pixel.turnOff());
+        this._guard(this._pixel.turnOff(), action);
         break;
       case "discharge":
-        this._guard(this._discharge((params as number) ?? 50));
+        this._guard(this._discharge((params as number) ?? 50), action);
         break;
       case "enableCharging":
-        this._guard(this._forceEnableCharging((params as boolean) ?? true));
+        this._guard(
+          this._forceEnableCharging((params as boolean) ?? true),
+          action
+        );
         break;
       case "rename":
-        this._guard(this._pixel.rename((params as string) ?? ""));
+        this._guard(this._pixel.rename((params as string) ?? ""), action);
         break;
       case "uploadProfile":
-        this._guard(this._uploadProfile((params as ProfileType) ?? "default"));
+        this._guard(
+          this._uploadProfile((params as ProfileType) ?? "default"),
+          action
+        );
         break;
       case "reprogramDefaultBehavior":
-        this._guard(this._reprogramDefaultBehavior());
+        this._guard(this._reprogramDefaultBehavior(), action);
         break;
       case "resetAllSettings":
-        this._guard(this._resetAllSettings());
+        this._guard(this._resetAllSettings(), action);
         break;
       case "queueDFU":
         this._queueDFU();
@@ -474,8 +507,13 @@ class PixelDispatcher extends ScannedPixelNotifier<
     await RNFS.appendFile(uri, "]\n");
   }
 
-  private _guard(promise: Promise<unknown>): void {
-    promise?.catch((error) => this._evEmitter.emit("error", error));
+  private _guard(promise: Promise<unknown>, action: string): void {
+    promise?.catch((error) =>
+      this._evEmitter.emit(
+        "error",
+        new PixelDispatcherError(this, `Action ${action} failed`, error)
+      )
+    );
   }
 
   private _getPixelInfo(): PixelInfo {
@@ -522,108 +560,90 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   private async _reportRssi(): Promise<void> {
-    if (this.isReady) {
-      await this._pixel.reportRssi(true);
-    }
+    await this._pixel.reportRssi(true);
   }
 
   private async _blink(): Promise<void> {
-    if (this.isReady) {
-      await this._pixel.blink(Color.dimOrange);
-    }
+    await this._pixel.blink(Color.dimOrange);
   }
 
   private async _blinkId(): Promise<void> {
-    if (this.isReady) {
-      await pixelBlinkId(this._pixel, { brightness: 0x04, loop: true });
-    }
+    await pixelBlinkId(this._pixel, { brightness: 0x04, loop: true });
   }
 
   private async _playAnimation(anim: EditAnimation): Promise<void> {
-    if (this.isReady) {
-      this._evEmitter.emit("profileUploadProgress", 0);
-      const editDataSet = new EditDataSet();
-      editDataSet.animations.push(anim);
-      try {
-        await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
-          this._evEmitter.emit("profileUploadProgress", p)
-        );
-      } finally {
-        this._evEmitter.emit("profileUploadProgress", undefined);
-      }
+    this._evEmitter.emit("profileUploadProgress", 0);
+    const editDataSet = new EditDataSet();
+    editDataSet.animations.push(anim);
+    try {
+      await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
+        this._evEmitter.emit("profileUploadProgress", p)
+      );
+    } finally {
+      this._evEmitter.emit("profileUploadProgress", undefined);
     }
   }
 
   private async _playProfileAnimation(animIndex: number): Promise<void> {
-    if (this.isReady) {
-      await pixelPlayProfileAnimation(this.pixel, animIndex);
-    }
+    await pixelPlayProfileAnimation(this.pixel, animIndex);
   }
 
   private async _calibrate(): Promise<void> {
-    if (this.isReady) {
-      await this._pixel.startCalibration();
-    }
+    await this._pixel.startCalibration();
   }
 
   private async _discharge(current: number): Promise<void> {
-    if (this.isReady) {
-      await pixelDischarge(this._pixel, current);
-    }
+    await pixelDischarge(this._pixel, current);
   }
 
   private async _forceEnableCharging(enable: boolean): Promise<void> {
-    if (this.isReady) {
-      await pixelForceEnableCharging(this._pixel, enable);
-    }
+    await pixelForceEnableCharging(this._pixel, enable);
   }
 
   private async _uploadProfile(type: ProfileType): Promise<void> {
-    if (this.isReady) {
-      const notifyProgress = (p?: number) => {
-        this._evEmitter.emit("profileUploadProgress", p);
-      };
-      try {
-        this._isUpdatingProfile = true;
-        notifyProgress(0);
-        let dataSet: DataSet;
-        switch (type) {
-          case "default":
-            dataSet = getDefaultProfile(getDieType(this._pixel.ledCount));
-            break;
-          case "tiny": {
-            const profile = new EditProfile();
-            profile.name = "test";
-            profile.rules.push(
-              new EditRule(
-                new EditConditionFaceCompare({
-                  flags: FaceCompareFlagsValues.less,
-                  face: 21,
-                }),
-                {
-                  actions: [
-                    new EditActionPlayAnimation({
-                      animation: new EditAnimationRainbow({
-                        duration: 1,
-                        faces: 0xffff,
-                        count: 1,
-                      }),
+    const notifyProgress = (p?: number) => {
+      this._evEmitter.emit("profileUploadProgress", p);
+    };
+    try {
+      this._isUpdatingProfile = true;
+      notifyProgress(0);
+      let dataSet: DataSet;
+      switch (type) {
+        case "default":
+          dataSet = getDefaultProfile(getDieType(this._pixel.ledCount));
+          break;
+        case "tiny": {
+          const profile = new EditProfile();
+          profile.name = "test";
+          profile.rules.push(
+            new EditRule(
+              new EditConditionFaceCompare({
+                flags: FaceCompareFlagsValues.less,
+                face: 21,
+              }),
+              {
+                actions: [
+                  new EditActionPlayAnimation({
+                    animation: new EditAnimationRainbow({
+                      duration: 1,
+                      faces: 0xffff,
+                      count: 1,
                     }),
-                  ],
-                }
-              )
-            );
-            dataSet = createDataSetForProfile(profile).toDataSet();
-            break;
-          }
-          default:
-            assertNever(type);
+                  }),
+                ],
+              }
+            )
+          );
+          dataSet = createDataSetForProfile(profile).toDataSet();
+          break;
         }
-        await this._pixel.transferDataSet(dataSet, notifyProgress);
-      } finally {
-        this._isUpdatingProfile = false;
-        notifyProgress(undefined);
+        default:
+          assertNever(type);
       }
+      await this._pixel.transferDataSet(dataSet, notifyProgress);
+    } finally {
+      this._isUpdatingProfile = false;
+      notifyProgress(undefined);
     }
   }
 
@@ -645,6 +665,23 @@ class PixelDispatcher extends ScannedPixelNotifier<
     }
   }
 
+  private async _exitValidationMode(): Promise<void> {
+    // Exit validation mode, don't wait for response as die will restart
+    await this._pixel.sendMessage("exitValidation", true);
+  }
+
+  private async _reprogramDefaultBehavior(): Promise<void> {
+    await pixelReprogramDefaultBehavior(this._pixel);
+  }
+
+  private async _resetAllSettings(): Promise<void> {
+    await pixelResetAllSettings(this._pixel);
+  }
+
+  //
+  // DFU
+  //
+
   private _queueDFU(): void {
     if (this.hasAvailableDFU && !PixelDispatcher._pendingDFUs.includes(this)) {
       // Queue DFU request
@@ -652,7 +689,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
       this._evEmitter.emit("hasQueuedDFU", true);
       // Run update immediately if it's the only pending request
       if (!PixelDispatcher._activeDFU) {
-        this._guard(this._startDFU());
+        this._guard(this._startDFU(), "startDfu");
       } else {
         console.log(`DFU queued for Pixel ${this.name}`);
       }
@@ -690,27 +727,8 @@ class PixelDispatcher extends ScannedPixelNotifier<
       // Run next update if any
       const pixel = PixelDispatcher._pendingDFUs[0];
       if (pixel) {
-        pixel._guard(pixel._startDFU());
+        pixel._guard(pixel._startDFU(), "startDfu");
       }
-    }
-  }
-
-  private async _exitValidationMode(): Promise<void> {
-    if (this.isReady) {
-      // Exit validation mode, don't wait for response as die will restart
-      await this._pixel.sendMessage("exitValidation", true);
-    }
-  }
-
-  private async _reprogramDefaultBehavior(): Promise<void> {
-    if (this.isReady) {
-      await pixelReprogramDefaultBehavior(this._pixel);
-    }
-  }
-
-  private async _resetAllSettings(): Promise<void> {
-    if (this.isReady) {
-      await pixelResetAllSettings(this._pixel);
     }
   }
 }
