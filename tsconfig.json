@@ -57,6 +57,22 @@
     },
     {
       "path": "./packages/react-native-zpl-print"
+    },
+    // Apps
+    {
+      "path": "./apps/pixels-app"
+    },
+    {
+      "path": "./apps/pixels-toolbox"
+    },
+    {
+      "path": "./apps/bluetooth-le-example"
+    },
+    {
+      "path": "./apps/nordic-nrf5-dfu-example"
+    },
+    {
+      "path": "./apps/rgb-avg-example"
     }
   ]
 }
