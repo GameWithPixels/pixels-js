@@ -8,6 +8,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
+  PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
   PixelRollStateValues,
   usePixelStatus,
@@ -87,8 +88,10 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
     <>
-      <TextEntry title={t("pixelId")}>{pixel.pixelId}</TextEntry>
-      <TextEntry title={t("leds")}>
+      <TextEntry title={t("pixelId")}>
+        {pixel.pixelId}
+        {t("commaSeparator")}
+        {t("leds") + t("colonSeparator")}
         {pixel.ledCount}, {pixel.designAndColor}
       </TextEntry>
       <TextEntry title={t("firmware")}>
@@ -215,7 +218,7 @@ const TelemetryLinesInfo = [
 
 function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   const [telemetry, dispatch] = usePixelValue(pixel, "telemetry", {
-    minInterval: 1000,
+    minInterval: 100, // Fast updates
   });
   const status = usePixelStatus(pixel);
 
@@ -231,9 +234,9 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   // Values for UI
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
-  const x = telemetry?.accXTimes1000 / 1000 ?? 0;
-  const y = telemetry?.accYTimes1000 / 1000 ?? 0;
-  const z = telemetry?.accZTimes1000 / 1000 ?? 0;
+  const x = (telemetry?.accXTimes1000 ?? 0) / 1000;
+  const y = (telemetry?.accYTimes1000 ?? 0) / 1000;
+  const z = (telemetry?.accZTimes1000 ?? 0) / 1000;
   const acc = `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
   return (
     <>
@@ -247,11 +250,27 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             {t("voltageWithValue", {
               value: telemetry ? telemetry.voltageTimes50 / 50 : 0,
             })}
-          </TextEntry>
-          <TextEntry title={t("coil")}>
+            {t("commaSeparator")}
+            {t("coil") + t("colonSeparator")}
             {t("voltageWithValue", {
               value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
             })}
+          </TextEntry>
+          <TextEntry title={t("batteryControllerState")}>
+            {t(
+              getValueKeyName(
+                telemetry?.batteryControllerState,
+                PixelBatteryControllerStateValues
+              ) ?? "unknown"
+            )}
+          </TextEntry>
+          <TextEntry title={t("chargingState")}>
+            {t(
+              getValueKeyName(
+                telemetry?.batteryState,
+                PixelBatteryStateValues
+              ) ?? "unknown"
+            )}
           </TextEntry>
           <TextEntry title={t("internalChargerState")}>
             {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff")}
@@ -263,17 +282,6 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
                 : "allowCharging"
             )}
           </TextEntry>
-          <TextEntry title={t("chargingState")}>
-            {t(
-              getValueKeyName(
-                telemetry?.batteryState,
-                PixelBatteryStateValues
-              ) ?? "unknown"
-            )}
-          </TextEntry>
-          <TextEntry title={t("rssi")}>
-            {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
-          </TextEntry>
           <TextEntry title={t("mcuTemperature")}>
             {t("celsiusWithValue", {
               value: (telemetry?.mcuTemperatureTimes100 ?? 0) / 100,
@@ -283,6 +291,9 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             {t("celsiusWithValue", {
               value: (telemetry?.batteryTemperatureTimes100 ?? 0) / 100,
             })}
+          </TextEntry>
+          <TextEntry title={t("rssi")}>
+            {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
           </TextEntry>
           <TextEntry title={t("rollState")}>
             {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
