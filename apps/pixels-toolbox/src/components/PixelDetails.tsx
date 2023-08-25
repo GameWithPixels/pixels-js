@@ -568,6 +568,14 @@ export function PixelDetails({
   const pixel = pixelDispatcher.pixel;
   const status = usePixelStatus(pixel);
 
+  // Connect on mount
+  React.useEffect(() => {
+    // TODO it shouldn't be necessary to do this check
+    if (pixelDispatcher.pixel.status === "disconnected") {
+      pixelDispatcher.pixel.connect().catch(setLastError);
+    }
+  }, [pixelDispatcher]);
+
   // Profile upload
   const [uploadProgress, setUploadProgress] = React.useState<number>();
   React.useEffect(() => {
