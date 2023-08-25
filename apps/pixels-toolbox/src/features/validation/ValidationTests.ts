@@ -1,4 +1,9 @@
-import { assert, delay, safeAssign } from "@systemic-games/pixels-core-utils";
+import {
+  assert,
+  delay,
+  getValueKeyName,
+  safeAssign,
+} from "@systemic-games/pixels-core-utils";
 import {
   Color,
   Pixel,
@@ -135,6 +140,7 @@ export const ValidationTests = {
     shouldBeCharging: boolean,
     blinkColor: Color,
     abortSignal: AbortSignal,
+    notifyState: ({ state, vCoil }?: { state?: string; vCoil: number }) => void,
     timeout = 30000 // 30s
   ): Promise<void> => {
     // Start telemetry
@@ -225,6 +231,13 @@ export const ValidationTests = {
                 );
               }
             }
+            notifyState({
+              state: getValueKeyName(
+                lastMsg.batteryControllerState,
+                PixelBatteryControllerStateValues
+              ),
+              vCoil: lastMsg.vCoilTimes50 / 50,
+            });
           };
           pixel.addMessageListener("telemetry", telemetryListener);
           // Listen for disconnection event

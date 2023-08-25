@@ -497,6 +497,10 @@ export function WaitCharging({
   notCharging,
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
+  const [lastState, setLastState] = React.useState<{
+    state?: string;
+    vCoil: number;
+  }>();
 
   const taskChain = useTaskChain(
     action,
@@ -506,20 +510,36 @@ export function WaitCharging({
           pixel,
           !notCharging,
           notCharging ? Color.dimGreen : Color.dimOrange,
-          abortSignal
+          abortSignal,
+          setLastState
         ),
       [notCharging, pixel]
     ),
     createTaskStatusContainer({
       children: (
-        <Text variant="bodyLarge">
-          {t(
-            notCharging
-              ? "removeFromChargerWithCoilOrDie"
-              : "placeOnChargerWithCoilOrDie",
-            { coilOrDie: t(_getCoilOrDie(settings)) }
+        <>
+          <Text variant="bodyLarge">
+            {t(
+              notCharging
+                ? "removeFromChargerWithCoilOrDie"
+                : "placeOnChargerWithCoilOrDie",
+              { coilOrDie: t(_getCoilOrDie(settings)) }
+            )}
+          </Text>
+          {lastState && (
+            <Text variant="bodyLarge">
+              {t("chargingState")}
+              {t("colonSeparator")}
+              {lastState.state ?? ""}
+              {t("commaSeparator")}
+              {t("coil")}
+              {t("colonSeparator")}
+              {t("voltageWithValue", {
+                value: lastState.vCoil ?? 0,
+              })}
+            </Text>
           )}
-        </Text>
+        </>
       ),
     })
   )
