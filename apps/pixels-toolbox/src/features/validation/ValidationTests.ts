@@ -357,11 +357,11 @@ export const ValidationTests = {
       (x, y, z) => {
         // 1. Check norm
         const n = vectNorm(x, y, z);
-        if (n > 1 + maxDeviation || n < 1 - maxDeviation) {
+        if (Math.abs(n - 1) > maxDeviation) {
           return "Out of range accelerometer value: " + vectToString(x, y, z);
         }
-        // 2. Check angle with -Z
-        else if (-y > 1 + maxDeviation || -y < 1 - maxDeviation) {
+        // 2. Check angle with -Z (we want y ~= -1)
+        else if (Math.abs(y + 1) > maxDeviation) {
           return "Tilted accelerometer value: " + vectToString(x, y, z);
         }
       },
