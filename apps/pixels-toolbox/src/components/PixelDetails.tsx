@@ -30,6 +30,7 @@ import {
   Text,
   useTheme,
   ModalProps,
+  Title,
 } from "react-native-paper";
 
 import {
@@ -329,6 +330,13 @@ function BottomButtons({
 }) {
   const status = usePixelStatus(pixelDispatcher.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
+  const [printStatus, setPrintStatus] = React.useState("");
+  const {
+    isOpen: isPrinting,
+    onOpen: onOpenPrint,
+    onClose: onClosePrint,
+  } = useDisclose();
+  // Discharge modal
   const { isOpen, onOpen, onClose } = useDisclose();
   const { t } = useTranslation();
   return (
@@ -380,12 +388,17 @@ function BottomButtons({
           <Button
             onPress={() => {
               const task = async () => {
+                setPrintStatus("Reading HTML file...");
                 const html = await readStickerHtmlAsync();
+                setPrintStatus("Sending to printer...");
                 const result = await printHtmlToZpl("XP-", html, 940);
                 if (result !== "success") {
                   console.log("Printing failed: " + result);
                 }
+                setPrintStatus(result);
               };
+              setPrintStatus("");
+              onOpenPrint();
               task().catch((e) => console.error(`Print error: ${e}`));
             }}
           >
@@ -448,6 +461,12 @@ function BottomButtons({
         visible={isOpen}
         onDismiss={onClose}
       />
+
+      <PrintModal
+        status={printStatus}
+        visible={isPrinting}
+        onDismiss={onClosePrint}
+      />
     </>
   );
 }
@@ -493,6 +512,31 @@ function DischargeModal({
           </Button>
           <Button onPress={props.onDismiss}>{t("ok")}</Button>
         </FastHStack>
+      </Modal>
+    </Portal>
+  );
+}
+
+function PrintModal({
+  status,
+  ...props
+}: { status: string } & Omit<ModalProps, "children">) {
+  const showClose = status.length > 0 && !status.endsWith("...");
+  // Values for UI
+  const modalStyle = useModalStyle();
+  const { t } = useTranslation();
+  return (
+    <Portal>
+      <Modal contentContainerStyle={modalStyle} dismissable={false} {...props}>
+        <FastVStack gap={10}>
+          <Title>{t("printingSticker")}</Title>
+          <Divider style={{ height: 2 }} />
+          <Text style={gs.center} variant="bodyLarge">
+            {}
+          </Text>
+          <Text>{`Status: ${status}`}</Text>
+          {showClose && <Button onPress={props.onDismiss}>{t("close")}</Button>}
+        </FastVStack>
       </Modal>
     </Portal>
   );

@@ -33,7 +33,7 @@ export async function printHtmlAsync(
   if (result?.uri) {
     try {
       if (Platform.OS === "android") {
-        const uri = await requestUserFileAsync("sticker.pdf");
+        const uri = await requestUserFileAsync("fromHtml.pdf");
         await RNFS.copyFile(result.uri, uri);
       } else {
         await shareFileAsync(result.uri);

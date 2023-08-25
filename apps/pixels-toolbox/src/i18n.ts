@@ -133,6 +133,7 @@ i18n
           reset: "Reset",
           full: "Full",
           printSticker: "Print Sticker",
+          printingSticker: "Printing Sticker",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -314,6 +315,7 @@ i18n
           reset: "Reset",
           full: "Full",
           printSticker: "Print Sticker",
+          printingSticker: "Printing Sticker",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
