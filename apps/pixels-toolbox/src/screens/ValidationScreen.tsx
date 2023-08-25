@@ -48,8 +48,8 @@ import {
   getTaskResultEmoji,
   TaskResult,
 } from "~/features/tasks/TaskResult";
-import useTaskChain from "~/features/tasks/useTaskChain";
-import useTaskComponent from "~/features/tasks/useTaskComponent";
+import { useTaskChain } from "~/features/tasks/useTaskChain";
+import { useTaskComponent } from "~/features/tasks/useTaskComponent";
 import {
   getBoardOrDie as getFormFactor,
   ValidationSequence,

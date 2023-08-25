@@ -81,7 +81,7 @@ async function litUpForever(
   }
 }
 
-const ValidationTests = {
+export const ValidationTests = {
   checkLEDLoopback: async (pixel: Pixel): Promise<void> => {
     const msg = await pixel.sendAndWaitForResponse(
       "testLEDLoopback",
@@ -557,5 +557,3 @@ const ValidationTests = {
     }
   },
 } as const;
-
-export default ValidationTests;

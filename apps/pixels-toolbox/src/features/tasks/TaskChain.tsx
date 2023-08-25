@@ -1,10 +1,11 @@
 import React from "react";
 
-import useTask, {
+import {
   TaskOperation,
   TaskAction,
   TaskRenderer,
   TaskStatus,
+  useTask,
 } from "./useTask";
 
 interface TaskChainItem {

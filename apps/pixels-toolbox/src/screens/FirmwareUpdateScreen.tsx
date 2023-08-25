@@ -15,7 +15,7 @@ import { Button, Card, Text, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
-import ProgressBar from "~/components/ProgressBar";
+import { ProgressBar } from "~/components/ProgressBar";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
@@ -276,7 +276,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   );
 }
 
-export default function (props: FirmwareUpdateScreenProps) {
+export function FirmwareUpdateScreen(props: FirmwareUpdateScreenProps) {
   return (
     <AppPage>
       <FirmwareUpdatePage {...props} />

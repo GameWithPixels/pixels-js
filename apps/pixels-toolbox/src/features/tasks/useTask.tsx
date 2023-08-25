@@ -31,7 +31,7 @@ export class TaskFaultedError extends Error {
   }
 }
 
-export default function (
+export function useTask(
   asyncOp: TaskOperation,
   taskRenderer: TaskRenderer,
   action: TaskAction = "run"

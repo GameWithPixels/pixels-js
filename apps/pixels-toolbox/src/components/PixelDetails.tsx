@@ -38,7 +38,7 @@ import {
   DynamicLinesChartProps,
 } from "./DynamicLinesChart";
 
-import ProgressBar from "~/components/ProgressBar";
+import { ProgressBar } from "~/components/ProgressBar";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";

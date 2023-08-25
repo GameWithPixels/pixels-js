@@ -6,7 +6,7 @@ import { PixelDetails } from "~/components/PixelDetails";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { DieDetailsScreenProps } from "~/navigation";
 
-export default function ({ navigation, route }: DieDetailsScreenProps) {
+export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {
   const errorHandler = useErrorHandler();
   const { pixelId } = route.params;
   const pixelDispatcher = PixelDispatcher.findInstance(pixelId);

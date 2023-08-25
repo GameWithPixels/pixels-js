@@ -5,7 +5,7 @@ export interface ProgressBarProps {
   percent: number;
 }
 
-export default function ({ percent }: ProgressBarProps) {
+export function ProgressBar({ percent }: ProgressBarProps) {
   const clampedPercentage = Math.max(0, Math.min(100, percent));
   const theme = useTheme();
   return (

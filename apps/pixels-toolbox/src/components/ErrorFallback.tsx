@@ -2,7 +2,7 @@ import { FallbackProps } from "react-error-boundary";
 import { View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 
-export default function ({ error, resetErrorBoundary }: FallbackProps) {
+export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   const theme = useTheme();
   return (
     <View

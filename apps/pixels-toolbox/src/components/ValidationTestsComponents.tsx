@@ -14,12 +14,11 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Text } from "react-native-paper";
 
-import ProgressBar from "./ProgressBar";
-import TaskChainComponent from "./TaskChainComponent";
-
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
+import { ProgressBar } from "~/components/ProgressBar";
+import { TaskChainComponent } from "~/components/TaskChainComponent";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
@@ -30,7 +29,7 @@ import { pixelStopAllAnimations } from "~/features/pixels/extensions";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
-import useTaskChain from "~/features/tasks/useTaskChain";
+import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
@@ -38,7 +37,7 @@ import {
   isBoard,
   ValidationSequence,
 } from "~/features/validation/ValidationSequences";
-import ValidationTests from "~/features/validation/ValidationTests";
+import { ValidationTests } from "~/features/validation/ValidationTests";
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 

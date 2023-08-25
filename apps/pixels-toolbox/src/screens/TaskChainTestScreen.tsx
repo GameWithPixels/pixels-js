@@ -4,9 +4,10 @@ import React from "react";
 import { Button, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
-import useTaskChain from "~/features/tasks/useTaskChain";
-import useTestComponent, {
+import { useTaskChain } from "~/features/tasks/useTaskChain";
+import {
   TaskComponentProps,
+  useTaskComponent,
 } from "~/features/tasks/useTaskComponent";
 
 interface MyTest1Props extends TaskComponentProps {
@@ -106,17 +107,17 @@ function TestPage() {
   const [cancel, setCancel] = React.useState(false);
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
-    ...useTestComponent("Test1", cancel, (p) => (
+    ...useTaskComponent("Test1", cancel, (p) => (
       <MyTest1 {...p} something={something} onSomeValue={setSomethingElse} />
     ))
   )
     .chainWith(
-      ...useTestComponent("Test2", cancel, (p) => (
+      ...useTaskComponent("Test2", cancel, (p) => (
         <MyTest2 {...p} somethingElse={somethingElse} />
       ))
     )
     .chainWith(
-      ...useTestComponent("Test3", cancel, (p) => (
+      ...useTaskComponent("Test3", cancel, (p) => (
         <MyTest1 {...p} something={something} onSomeValue={setSomethingElse} />
       ))
     );

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Platform, StyleSheet, useWindowDimensions } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 
-import SwipeablePixelsList from "./SwipeablePixelsList";
+import { SwipeablePixelsList } from "./SwipeablePixelsList";
 
 import { AppPage } from "~/components/AppPage";
 import {
@@ -129,7 +129,7 @@ function HomePage({ navigation }: HomeScreenProps) {
   );
 }
 
-export default function (props: HomeScreenProps) {
+export function HomeScreen(props: HomeScreenProps) {
   return (
     <AppPage pt={0}>
       <HomePage {...props} />

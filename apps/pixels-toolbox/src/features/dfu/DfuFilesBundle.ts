@@ -1,6 +1,6 @@
 import { assert } from "@systemic-games/pixels-core-utils";
 
-import getDfuFileInfo, { DfuFileInfo } from "./getDfuFileInfo";
+import { DfuFileInfo, getDfuFileInfo } from "./getDfuFileInfo";
 
 export type DfuFilesBundleKind = "app" | "factory" | "imported";
 

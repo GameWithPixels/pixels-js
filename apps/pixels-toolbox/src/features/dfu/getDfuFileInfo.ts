@@ -9,7 +9,7 @@ export interface DfuFileInfo {
 }
 
 // Returns parsed date and file basename
-export default function (
+export function getDfuFileInfo(
   pathname: string,
   opt?: {
     filename?: string;

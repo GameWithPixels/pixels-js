@@ -10,7 +10,7 @@ import { Button, Text } from "react-native-paper";
 
 import { PixelInfoCard } from "~/components/PixelInfoCard";
 import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
-import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
+import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import gs from "~/styles";
 
 export function ScannedPixelsList({

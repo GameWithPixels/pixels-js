@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next";
 import { Header } from "./HomeScreen/Header";
 
 import { HomeNavigatorProps, type HomeScreensParamList } from "~/navigation";
-import DieDetailsScreen from "~/screens/DieDetailsScreen";
-import HomeScreen from "~/screens/HomeScreen";
-import SelectDfuFilesScreen from "~/screens/SelectDfuFilesScreen";
+import { DieDetailsScreen } from "~/screens/DieDetailsScreen";
+import { HomeScreen } from "~/screens/HomeScreen";
+import { SelectDfuFilesScreen } from "~/screens/SelectDfuFilesScreen";
 
 const Stack = createStackNavigator<HomeScreensParamList>();
 

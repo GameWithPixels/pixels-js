@@ -150,7 +150,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
   );
 }
 
-export default function (props: SelectDfuFilesScreenProps) {
+export function SelectDfuFilesScreen(props: SelectDfuFilesScreenProps) {
   return (
     <AppPage>
       <SelectDfuFilePage {...props} />

@@ -18,7 +18,7 @@ export type TaskComponentProps = React.PropsWithChildren<{
 
 export type TaskComponent = React.FC<TaskComponentProps>;
 
-export default function (
+export function useTaskComponent(
   testName: string,
   cancel: boolean,
   taskComponent: TaskComponent

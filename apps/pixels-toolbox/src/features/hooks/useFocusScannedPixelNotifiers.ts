@@ -8,7 +8,7 @@ import {
 import React from "react";
 
 // Returned dispatch function is stable
-export default function (
+export function useFocusScannedPixelNotifiers(
   opt?: PixelScannerOptions
 ): [
   ScannedPixelNotifier[],

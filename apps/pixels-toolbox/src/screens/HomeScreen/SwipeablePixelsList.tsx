@@ -8,7 +8,7 @@ import { Text } from "react-native-paper";
 import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
-import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
+import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import PixelDispatcher, {
   PixelDispatcherActionMap,
   PixelDispatcherActionName,
@@ -40,7 +40,7 @@ interface SwipeablePixelsListProps {
   minUpdateInterval?: number;
 }
 
-export default React.memo(function ({
+export const SwipeablePixelsList = React.memo(function ({
   onDieDetails,
   minUpdateInterval,
 }: SwipeablePixelsListProps) {

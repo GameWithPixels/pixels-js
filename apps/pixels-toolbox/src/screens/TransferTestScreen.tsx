@@ -29,7 +29,7 @@ import { LineChart } from "~/components/LineChart";
 import { PixelInfoCard } from "~/components/PixelInfoCard";
 import Pathname from "~/features/files/Pathname";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
-import useFocusScannedPixelNotifiers from "~/features/hooks/useFocusScannedPixelNotifiers";
+import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { pixelTransferTest } from "~/features/pixels/extensions";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";

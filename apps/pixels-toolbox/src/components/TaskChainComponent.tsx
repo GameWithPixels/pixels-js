@@ -10,7 +10,10 @@ export interface TaskChainComponentProps extends React.PropsWithChildren {
   taskChain: TaskChain;
 }
 
-export default function ({ title, taskChain }: TaskChainComponentProps) {
+export function TaskChainComponent({
+  title,
+  taskChain,
+}: TaskChainComponentProps) {
   const taskStatus = taskChain.status;
   const theme = useTheme();
   return (

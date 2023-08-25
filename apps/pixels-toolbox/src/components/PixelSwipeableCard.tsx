@@ -24,7 +24,7 @@ import {
 } from "react-native-paper";
 
 import { PixelInfoCard, PixelInfoCardProps } from "./PixelInfoCard";
-import ProgressBar from "./ProgressBar";
+import { ProgressBar } from "./ProgressBar";
 
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import gs from "~/styles";
