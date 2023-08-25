@@ -847,7 +847,7 @@ export const PixelBatteryControllerStateValues = {
   // Battery is currently cooling down
   cooldown: enumValue(),
   // Battery is currently recharging, but at 99%
-  chargingTrickle: enumValue(),
+  trickle: enumValue(),
   // Battery is full and finished charging
   done: enumValue(),
   // Battery is too cold

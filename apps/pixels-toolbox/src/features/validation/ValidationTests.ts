@@ -181,11 +181,11 @@ export const ValidationTests = {
         // Abort function
         abort = () => reject(new TaskCanceledError("waitCharging"));
         // Error helper
-        const createError = (desc: string) =>
+        const createError = (state: string, comment?: string) =>
           new Error(
-            `${desc} while waiting for '${
+            `${state} while waiting for '${
               shouldBeCharging ? "" : "not "
-            }charging' state`
+            }charging' state` + (comment ? `, ${comment}` : "")
           );
         // Check state
         if (abortSignal.aborted) {
@@ -204,17 +204,26 @@ export const ValidationTests = {
           };
           blinkForever(pixel, blinkColor, blinkAS, options).catch(() => {});
           // Process battery events
+          let lastMsg: Telemetry;
           telemetryListener = (msg: MessageOrType) => {
-            const state = (msg as Telemetry).batteryControllerState;
+            lastMsg = msg as Telemetry;
+            const state = lastMsg.batteryControllerState;
             const v = PixelBatteryControllerStateValues;
             const charging =
               state === v.chargingLow ||
               state === v.charging ||
               state === v.cooldown ||
-              state === v.chargingTrickle ||
+              state === v.trickle ||
               state === v.done;
             if (charging === shouldBeCharging) {
-              resolve();
+              const vCoil = lastMsg.vCoilTimes50 / 50;
+              if (!charging || vCoil > 4.3) {
+                resolve();
+              } else {
+                console.log(
+                  `Charging state is ${state} but VCoil too low: ${vCoil}`
+                );
+              }
             }
           };
           pixel.addMessageListener("telemetry", telemetryListener);
@@ -226,7 +235,21 @@ export const ValidationTests = {
           };
           pixel.addEventListener("status", statusListener);
           // Reject promise on timeout
-          timeoutId = setTimeout(() => reject(createError("Timeout")), timeout);
+          timeoutId = setTimeout(() => {
+            const getStr = () => {
+              const state = getValueKeyName(
+                lastMsg.batteryControllerState,
+                PixelBatteryControllerStateValues
+              );
+              const vCoil = lastMsg.vCoilTimes50 / 50;
+              if (lastMsg) {
+                return `controller state was ${
+                  state ?? "?"
+                } and coil was ${vCoil}v`;
+              }
+            };
+            reject(createError("Timeout", getStr()));
+          }, timeout);
         }
       });
     } catch (error) {
@@ -360,7 +383,7 @@ export const ValidationTests = {
         if (Math.abs(n - 1) > maxDeviation) {
           return "Out of range accelerometer value: " + vectToString(x, y, z);
         }
-        // 2. Check angle with -Z (we want y ~= -1)
+        // 2. Check angle with vertical axis (we want y ~= -1)
         else if (Math.abs(y + 1) > maxDeviation) {
           return "Tilted accelerometer value: " + vectToString(x, y, z);
         }
