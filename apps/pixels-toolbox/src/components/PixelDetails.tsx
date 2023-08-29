@@ -387,7 +387,7 @@ function BottomButtons({
           )}
           <Button
             onPress={() => {
-              const task = async () => {
+              const print = async () => {
                 setPrintStatus("Reading HTML file...");
                 const html = await readStickerHtmlAsync();
                 setPrintStatus("Sending to printer...");
@@ -399,7 +399,7 @@ function BottomButtons({
               };
               setPrintStatus("");
               onOpenPrint();
-              task().catch((e) => console.error(`Print error: ${e}`));
+              print().catch((e) => console.error(`Print error: ${e}`));
             }}
           >
             {t("printSticker")}
@@ -713,7 +713,7 @@ export function PixelDetails({
                   const filename =
                     getDatedFilename([pixelDispatcher.name, "messages"]) +
                     ".json";
-                  const task = async () => {
+                  const saveFile = async () => {
                     // The boolean below is always false to test file sharing on Android
                     const isAndroid = false && Platform.OS === "android";
                     const uri = isAndroid
@@ -730,7 +730,7 @@ export function PixelDetails({
                       }
                     }
                   };
-                  task().catch(setLastError);
+                  saveFile().catch(setLastError);
                 }}
               />
             )}

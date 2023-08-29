@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Text, useTheme } from "react-native-paper";
 
-import TaskContainer from "./TaskContainer";
+import { TaskContainer } from "./TaskContainer";
 
 import TaskChain from "~/features/tasks/TaskChain";
 

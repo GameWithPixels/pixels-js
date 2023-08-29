@@ -205,7 +205,7 @@ export default function App() {
       <Button
         style={styles.button}
         onPress={() => {
-          const task = async () => {
+          const selectDFUFile = async () => {
             const response = await DocumentPicker.pickSingle({
               presentationStyle: "fullScreen",
               type: [types.zip],
@@ -218,7 +218,7 @@ export default function App() {
               });
             }
           };
-          task().catch(() => {});
+          selectDFUFile().catch(() => {});
         }}
       >
         {!dfuFile ? "Select DFU File" : dfuFile.name}

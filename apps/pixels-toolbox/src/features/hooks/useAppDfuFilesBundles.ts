@@ -24,7 +24,7 @@ export function useAppDfuFilesBundles(): [
   React.useEffect(() => {
     // Check if we already have some embedded bundles in our list
     if (available.every((item) => item.kind === "imported")) {
-      const task = async () => {
+      const unzipAll = async () => {
         // Unzip app DFU files
         const files = await unzipAppDfuFiles();
         // Group them in DFU bundles
@@ -46,7 +46,7 @@ export function useAppDfuFilesBundles(): [
         );
       };
       setError(undefined);
-      task().catch(setError);
+      unzipAll().catch(setError);
     }
   }, [available, dispatch]);
   const availableDfuBundles = React.useMemo(

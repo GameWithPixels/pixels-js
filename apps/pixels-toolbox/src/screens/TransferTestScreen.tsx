@@ -172,7 +172,7 @@ function SendData({ pixel }: { pixel: Pixel }) {
 
   // Export to CSV file
   const exportCsv = React.useCallback(() => {
-    const task = async () => {
+    const promise = async () => {
       const now = toLocaleDateTimeString(new Date());
       const basename = `${pixel.name}-transfer-rate-${now}`;
       const filename = Pathname.replaceInvalidCharacters(`${basename}.csv`);
@@ -195,7 +195,7 @@ function SendData({ pixel }: { pixel: Pixel }) {
         }
       }
     };
-    task().catch(errorHandler);
+    promise().catch(errorHandler);
   }, [dataRate, errorHandler, pixel.name]);
 
   // UI

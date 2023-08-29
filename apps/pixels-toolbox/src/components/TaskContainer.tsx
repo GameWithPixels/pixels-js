@@ -13,7 +13,7 @@ export interface TaskContainerProps extends TaskRendererProps {
   isSubTask?: boolean;
 }
 
-export default function ({
+export function TaskContainer({
   children,
   title,
   taskStatus,

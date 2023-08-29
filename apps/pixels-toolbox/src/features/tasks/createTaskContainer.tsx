@@ -2,7 +2,7 @@ import React from "react";
 
 import { TaskRenderer } from "./useTask";
 
-import TaskContainer from "~/components/TaskContainer";
+import { TaskContainer } from "~/components/TaskContainer";
 
 export function createTaskStatusContainer(
   args:

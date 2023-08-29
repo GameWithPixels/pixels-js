@@ -12,7 +12,9 @@ export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {
   const pixelDispatcher = PixelDispatcher.findDispatcher(pixelId);
   React.useEffect(() => {
     if (!pixelDispatcher) {
-      errorHandler(new Error(`Unknown given Pixel Id: ${pixelId}`));
+      errorHandler(
+        new Error(`Unknown given Pixel Id: ${pixelId.toString(16)}`)
+      );
     }
   }, [errorHandler, pixelDispatcher, pixelId]);
   const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
