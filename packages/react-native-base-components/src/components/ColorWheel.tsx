@@ -33,11 +33,7 @@ export function toStringColor(color: ColorUtils.IColor): string {
   return "#" + toHex(color.r) + toHex(color.g) + toHex(color.b);
 }
 
-export const enum ColorWheelColorType {
-  dim,
-  normal,
-  bright,
-}
+export type ColorWheelColorType = "dim" | "normal" | "bright";
 
 /**
  * Props for customizing the colorWheel and its behavior
@@ -69,9 +65,7 @@ export interface WheelParams {
  */
 export function ColorWheel(props: ColorWheelProps) {
   const [selectedColor, setSelectedColor] = React.useState<ColorUtils.IColor>();
-  const [wheelColorType, setWheelColorType] = React.useState(
-    ColorWheelColorType.normal
-  );
+  const [wheelColorType, setWheelColorType] = React.useState("normal");
   const [colorBrightness, setColorBrightness] = React.useState(1);
   const buttonHighlightColor = "pixelColors.highlightGray";
   const wheelParams = props.wheelParams
@@ -108,7 +102,7 @@ export function ColorWheel(props: ColorWheelProps) {
                 <Stop
                   offset="0%"
                   stopColor={
-                    wheelColorType === ColorWheelColorType.bright
+                    wheelColorType === "bright"
                       ? toStringColor(s.color)
                       : toStringColor({
                           r: s.color.r * 2,
@@ -121,7 +115,7 @@ export function ColorWheel(props: ColorWheelProps) {
                 <Stop
                   offset="100%"
                   stopColor={
-                    wheelColorType === ColorWheelColorType.bright
+                    wheelColorType === "bright"
                       ? toStringColor({
                           r: s.color.r / 2,
                           g: s.color.g / 2,
@@ -136,7 +130,7 @@ export function ColorWheel(props: ColorWheelProps) {
             <Polygon
               points={toStringPath(s.points)}
               fill={
-                wheelColorType === ColorWheelColorType.normal
+                wheelColorType === "normal"
                   ? toStringColor(s.color)
                   : `url(#${toStringColor(s.color)})`
               }
@@ -172,12 +166,10 @@ export function ColorWheel(props: ColorWheelProps) {
         <FastButton
           flex={1}
           bgColor={
-            wheelColorType === ColorWheelColorType.dim
-              ? buttonHighlightColor
-              : "primary.500"
+            wheelColorType === "dim" ? buttonHighlightColor : "primary.500"
           }
           onPress={() => {
-            setWheelColorType(ColorWheelColorType.dim);
+            setWheelColorType("dim");
             setColorBrightness(0.5);
           }}
         >
@@ -186,12 +178,10 @@ export function ColorWheel(props: ColorWheelProps) {
         <FastButton
           flex={1}
           bgColor={
-            wheelColorType === ColorWheelColorType.normal
-              ? buttonHighlightColor
-              : "primary.500"
+            wheelColorType === "normal" ? buttonHighlightColor : "primary.500"
           }
           onPress={() => {
-            setWheelColorType(ColorWheelColorType.normal);
+            setWheelColorType("normal");
             setColorBrightness(1);
           }}
         >
@@ -200,12 +190,10 @@ export function ColorWheel(props: ColorWheelProps) {
         <FastButton
           flex={1}
           bgColor={
-            wheelColorType === ColorWheelColorType.bright
-              ? buttonHighlightColor
-              : "primary.500"
+            wheelColorType === "bright" ? buttonHighlightColor : "primary.500"
           }
           onPress={() => {
-            setWheelColorType(ColorWheelColorType.bright);
+            setWheelColorType("bright");
             setColorBrightness(2);
           }}
         >

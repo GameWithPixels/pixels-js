@@ -530,7 +530,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
 
   private _updateLastActivity(): void {
     // Cancel timeout
-    clearTimeout(this._updateLastActivityTimeout);
+    if (this._updateLastActivityTimeout) {
+      clearTimeout(this._updateLastActivityTimeout);
+    }
     this._updateLastActivityTimeout = undefined;
     // Check if still around
     const last = Math.max(

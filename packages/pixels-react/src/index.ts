@@ -3,5 +3,5 @@ export { default as usePixelConnect } from "./usePixelConnect";
 export { default as usePixelStatus } from "./usePixelStatus";
 export {
   default as usePixelValue,
-  UsePixelValueNamesMap,
+  type UsePixelValueNamesMap,
 } from "./usePixelValue";

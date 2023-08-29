@@ -6,7 +6,7 @@ export { default as AnimationGradient } from "./AnimationGradient";
 export { default as AnimationGradientPattern } from "./AnimationGradientPattern";
 export { default as AnimationKeyframed } from "./AnimationKeyframed";
 export { default as AnimationNoise } from "./AnimationNoise";
-export { default as AnimationPreset } from "./AnimationPreset";
+export type { default as AnimationPreset } from "./AnimationPreset";
 export { default as AnimationRainbow } from "./AnimationRainbow";
 export { default as AnimationSimple } from "./AnimationSimple";
 export { default as RgbKeyframe } from "./RgbKeyframe";

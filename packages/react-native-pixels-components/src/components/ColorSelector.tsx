@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { EditRgbKeyframe } from "@systemic-games/pixels-edit-animation";
 import {
   ColorWheel,
-  ColorWheelColorType,
   FastBoxProps,
   FastButton,
   FastButtonProps,
@@ -435,7 +434,7 @@ function GradientColorSelectorActionsheet({
               <ColorWheel
                 initialColor={selectedColor}
                 onSelectColor={setSelectedColor}
-                colorType={ColorWheelColorType.bright}
+                colorType="bright"
                 wheelParams={{
                   x: 40,
                   y: 40,

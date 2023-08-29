@@ -188,7 +188,9 @@ export class PixelScanner {
               this._lastUpdate.getTime() + this._minNotifyInterval;
             if (now >= nextUpdate) {
               // Yes, notify immediately
-              clearTimeout(this._notifyTimeoutId);
+              if (this._notifyTimeoutId) {
+                clearTimeout(this._notifyTimeoutId);
+              }
               this._notifyTimeoutId = undefined;
               this._notify(now);
             } else if (!this._notifyTimeoutId) {
@@ -230,7 +232,9 @@ export class PixelScanner {
           this._emulatorTimeoutId = undefined;
         } else {
           // Cancel any scheduled user notification
-          clearTimeout(this._notifyTimeoutId);
+          if (this._notifyTimeoutId) {
+            clearTimeout(this._notifyTimeoutId);
+          }
           this._notifyTimeoutId = undefined;
           // Stop scanning
           await MainScanner.removeListener(this._scannerListener);

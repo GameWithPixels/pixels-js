@@ -8,6 +8,7 @@
     "incremental": true,
     "noEmit": false,
     "emitDeclarationOnly": true,
+    "isolatedModules": true, // From @tsconfig/react-native
     "paths": {
       "@systemic-games/*": [
         "./packages/*/src"
