@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import {
   FastBox,
   FastVStack,
@@ -204,14 +205,17 @@ function DecodePixelIdPage({
   const cameraRef = React.useRef<Camera>(null);
 
   // Camera permissions
-  React.useEffect(() => {
-    console.log("Requesting camera permission");
-    Camera.requestCameraPermission().then((perm) => {
-      console.log(`Camera permission: ${perm}`);
-      setCameraPermission(perm);
-      return perm;
-    });
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      setCameraPermission(undefined); // Reset permission when re-showing screen
+      console.log("Requesting camera permission");
+      Camera.requestCameraPermission().then((perm) => {
+        console.log(`Camera permission: ${perm}`);
+        setCameraPermission(perm);
+        return perm;
+      });
+    }, [])
+  );
 
   // We use the back camera
   const device = devices.back;
@@ -222,7 +226,9 @@ function DecodePixelIdPage({
 
   // Update camera status
   React.useEffect(() => {
-    if (cameraPermission === "denied") {
+    if (!cameraPermission) {
+      setCameraStatus("initializing");
+    } else if (cameraPermission === "denied") {
       setCameraStatus("needPermission");
       errorHandler(new Error(t("needCameraPermission")));
     } else if (cameraPermission === "authorized" && device) {
