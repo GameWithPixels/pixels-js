@@ -18,15 +18,15 @@ export type TaskRenderer = React.FC<TaskRendererProps>;
 export type TaskOperation = (abortSignal: AbortSignal) => Promise<unknown>;
 
 export class TaskCanceledError extends Error {
-  constructor(testName: string) {
-    super(`Task ${testName} canceled`);
+  constructor(message?: string) {
+    super(message);
     this.name = "TaskCanceledError";
   }
 }
 
 export class TaskFaultedError extends Error {
-  constructor(testName: string) {
-    super(`Task ${testName} faulted`);
+  constructor(message?: string) {
+    super(message);
     this.name = "TaskFaultedError";
   }
 }
@@ -49,8 +49,7 @@ export function useTask(
         .then(() => !abortCtrl.signal.aborted && updateStatus("succeeded"))
         .catch((error) => {
           console.log(
-            `Task error (with aborted: ${abortCtrl.signal.aborted})`,
-            error
+            `Task error (with aborted: ${abortCtrl.signal.aborted}): ${error}`
           );
           setLastError(error);
           if (error instanceof TaskCanceledError) {

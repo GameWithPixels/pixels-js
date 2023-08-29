@@ -1,13 +1,15 @@
 import { TaskStatus } from "./useTask";
 
-export type TaskResult = "succeeded" | "faulted" | "canceled";
+export type TaskResult = "succeeded" | "failed" | "canceled";
 
 export function getTaskResult(taskStatus: TaskStatus): TaskResult | undefined {
   switch (taskStatus) {
     case "succeeded":
-    case "faulted":
     case "canceled":
       return taskStatus;
+    case "faulted":
+      return "failed";
+    // Otherwise return undefined
   }
 }
 

@@ -19,7 +19,7 @@ export type TaskComponentProps = React.PropsWithChildren<{
 export type TaskComponent = React.FC<TaskComponentProps>;
 
 export function useTaskComponent(
-  testName: string,
+  taskName: string,
   cancel: boolean,
   taskComponent: TaskComponent
 ): [TaskOperation, React.FC] {
@@ -46,8 +46,8 @@ export function useTaskComponent(
             } else {
               reject(
                 s === "canceled"
-                  ? new TaskCanceledError(testName)
-                  : new TaskFaultedError(testName)
+                  ? new TaskCanceledError(`Task ${taskName} canceled`)
+                  : new TaskFaultedError(`Task ${taskName} faulted`)
               );
             }
             break;
@@ -56,7 +56,7 @@ export function useTaskComponent(
         }
       })
     );
-  }, [resetCounter, testName]);
+  }, [resetCounter, taskName]);
   return [
     asyncOp,
     React.useCallback(

@@ -52,10 +52,12 @@ import {
 import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { useTaskComponent } from "~/features/tasks/useTaskComponent";
 import {
-  getBoardOrDie as getFormFactor,
+  getBoardOrDie,
+  isBoard,
   ValidationSequence,
   ValidationSequences,
 } from "~/features/validation/ValidationSequences";
+import { capitalize } from "~/i18n";
 import gs from "~/styles";
 
 function getTestingMessage(
@@ -328,7 +330,7 @@ function DecodePixelIdPage({
               ) : (
                 <Text variant="bodyLarge" style={{ flex: 1 }}>
                   {t("resetUsingMagnetWithFormFactor", {
-                    formFactor: t(getFormFactor(settings.sequence)),
+                    formFactor: t(getBoardOrDie(settings.sequence)),
                   })}
                 </Text>
               )}
@@ -440,7 +442,7 @@ function RunTestsPage({
         <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
       ))
     );
-    if (getFormFactor(settings.sequence) === "die") {
+    if (!isBoard(settings.sequence)) {
       taskChain.chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks
         ...useTaskComponent("WaitFaceUp", cancel, (p) => (
@@ -502,18 +504,24 @@ function RunTestsPage({
       onResult?.(result);
     } else {
       setCancel(true);
-      onResult?.("canceled");
     }
   };
 
   // Disconnect when test is done
   React.useEffect(() => {
     if (pixel && result) {
-      pixel
-        .disconnect()
-        .catch((err) =>
-          console.log(`Error disconnecting at end of validation test: ${err}`)
-        );
+      // Wait just a bit so pending messages can be send
+      setTimeout(
+        () =>
+          pixel
+            .disconnect()
+            .catch((err) =>
+              console.log(
+                `Error disconnecting at end of validation test: ${err}`
+              )
+            ),
+        1000
+      );
     }
   }, [pixel, result]);
 
@@ -546,7 +554,7 @@ function RunTestsPage({
               {getTaskResultEmoji(taskChain.status)}
             </Text>
             <Text variant="headlineMedium">
-              {t(result === "succeeded" ? "testSuccessful" : "testFailed")}
+              {t(`test${capitalize(result)}`)}
             </Text>
             <Text variant="titleLarge">
               {t("battery")}

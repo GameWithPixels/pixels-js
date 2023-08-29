@@ -5,6 +5,7 @@ import {
   Color,
   getPixel,
   Pixel,
+  PixelScannerDispatchAction,
   ScannedPixel,
   useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
@@ -150,17 +151,54 @@ function MessageYesNo({ message, onYes, onNo, hideYesNo }: MessageYesNoProps) {
     <>
       <Text variant="bodyLarge">{message}</Text>
       {!hideYesNo && (
-        <FastHStack gap={5}>
-          <Button mode="contained-tonal" onPress={onYes}>
+        <FastHStack gap={10}>
+          <Button
+            mode="contained-tonal"
+            onPress={onYes}
+            style={{ minWidth: 100 }}
+          >
             {t("yes")}
           </Button>
-          <Button mode="contained-tonal" onPress={onNo}>
+          <Button
+            mode="contained-tonal"
+            onPress={onNo}
+            style={{ minWidth: 100 }}
+          >
             {t("no")}
           </Button>
         </FastHStack>
       )}
     </>
   );
+}
+
+async function scanForPixelWithTimeout(
+  pixelId: number,
+  scannerDispatch: (action: PixelScannerDispatchAction) => void,
+  setResolveScanPromise: (setter: () => void) => void,
+  timeout = 10000 // 10s
+): Promise<void> {
+  if (!pixelId) {
+    throw new TaskFaultedError("Empty Pixel Id");
+  }
+  scannerDispatch("start");
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(
+          new TaskFaultedError(
+            `Timeout scanning for Pixel with id ${pixelId.toString(16)}`
+          )
+        );
+      }, timeout);
+      setResolveScanPromise(() => () => {
+        clearTimeout(timeoutId);
+        resolve();
+      });
+    });
+  } finally {
+    scannerDispatch("stop");
+  }
 }
 
 export interface ValidationTestsSettings {
@@ -208,8 +246,8 @@ export function UpdateFirmware({
   React.useEffect(() => {
     return () => {
       if (pixelRef.current) {
-        Central.disconnectPeripheral(pixelRef.current.systemId).catch(
-          console.log
+        Central.disconnectPeripheral(pixelRef.current.systemId).catch((error) =>
+          console.log(`Error disconnecting: ${error}`)
         );
       }
     };
@@ -237,29 +275,15 @@ export function UpdateFirmware({
 
   const taskChain = useTaskChain(
     action,
-    React.useCallback(async () => {
-      if (!pixelId) {
-        throw new TaskFaultedError("Empty Pixel Id");
-      }
-      scannerDispatch("start");
-      try {
-        await new Promise<void>((resolve, reject) => {
-          const timeoutId = setTimeout(() => {
-            reject(
-              new TaskFaultedError(
-                `Timeout scanning for Pixel with id ${pixelId}`
-              )
-            );
-          }, 5000);
-          setResolveScanPromise(() => () => {
-            clearTimeout(timeoutId);
-            resolve();
-          });
-        });
-      } finally {
-        scannerDispatch("stop");
-      }
-    }, [pixelId, scannerDispatch]),
+    React.useCallback(
+      async () =>
+        await scanForPixelWithTimeout(
+          pixelId,
+          scannerDispatch,
+          setResolveScanPromise
+        ),
+      [pixelId, scannerDispatch]
+    ),
     createTaskStatusContainer(t("bluetoothScan"))
   )
     .chainWith(
@@ -372,38 +396,24 @@ export function ConnectPixel({
     }
   }, [onPixelFound, resolveScanPromise, scannedPixels]);
 
-  // Pixel
-  React.useEffect(() => {
-    return () => {
-      pixelRef.current?.disconnect().catch(console.log);
-    };
-  }, []);
+  // Pixel is disconnected by parent component
+  // React.useEffect(() => {
+  //   return () => {
+  //     pixelRef.current?.disconnect().catch(console.log);
+  //   };
+  // }, []);
 
   const taskChain = useTaskChain(
     action,
-    React.useCallback(async () => {
-      if (!pixelId) {
-        throw new TaskFaultedError("Empty Pixel Id");
-      }
-      scannerDispatch("start");
-      try {
-        await new Promise<void>((resolve, reject) => {
-          const timeoutId = setTimeout(() => {
-            reject(
-              new TaskFaultedError(
-                `Timeout scanning for Pixel with id ${pixelId}`
-              )
-            );
-          }, 5000);
-          setResolveScanPromise(() => () => {
-            clearTimeout(timeoutId);
-            resolve();
-          });
-        });
-      } finally {
-        scannerDispatch("stop");
-      }
-    }, [pixelId, scannerDispatch]),
+    React.useCallback(
+      async () =>
+        await scanForPixelWithTimeout(
+          pixelId,
+          scannerDispatch,
+          setResolveScanPromise
+        ),
+      [pixelId, scannerDispatch]
+    ),
     createTaskStatusContainer(t("bluetoothScan"))
   )
     .chainWith(
@@ -462,8 +472,7 @@ export function CheckBoard({
   )
     .chainWith(
       React.useCallback(
-        (abortSignal) =>
-          ValidationTests.checkAccelerationValid(pixel, abortSignal),
+        () => ValidationTests.checkAccelerationValid(pixel),
         [pixel]
       ),
       createTaskStatusContainer(t("accelerometer"))
@@ -475,7 +484,7 @@ export function CheckBoard({
       ),
       createTaskStatusContainer(t("batteryVoltage"))
     );
-  if (_getCoilOrDie(settings) === "die") {
+  if (!isBoard(settings.sequence)) {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
       React.useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
@@ -587,7 +596,7 @@ export function CheckLEDs({
           );
         } catch (error: any) {
           if (userAborted) {
-            throw new Error("LEDs not bright enough");
+            throw new Error("Some LEDs are not white");
           } else {
             throw error;
           }
@@ -637,7 +646,8 @@ export function TurnOffDevice({
             isBoard(settings.sequence)
               ? new Color(0.003, 0.01, 0)
               : new Color(0.03, 0.1, 0),
-            abortSignal
+            abortSignal,
+            10000 // 10s timeout
           ),
         [pixel, settings.sequence]
       ),
@@ -745,8 +755,6 @@ export function PrepareDie({
       createTaskStatusContainer(t("setDieName"))
     )
     .chainWith(
-      // TODO for internal testing only:
-      //React.useCallback(() => pixel.disconnect(), [pixel]),
       React.useCallback(
         () => ValidationTests.exitValidationMode(pixel),
         [pixel]
@@ -759,7 +767,8 @@ export function PrepareDie({
           ValidationTests.waitDisconnected(
             pixel,
             isBoard(settings.sequence) ? new Color(0, 0.01, 0) : Color.dimGreen,
-            abortSignal
+            abortSignal,
+            10000 // 10s timeout
           ),
         [pixel, settings.sequence]
       ),

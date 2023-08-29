@@ -209,6 +209,7 @@ i18n
           placeDieInCaseAndCloseLid: "Place die in case and close the lid",
           testSuccessful: "Test Successful!",
           testFailed: "Test Failed!",
+          testCanceled: "Test Canceled!",
 
           // Roll Screen
           rollDemo: "Roll Demo",
@@ -391,6 +392,7 @@ i18n
           placeDieInCaseAndCloseLid: "将骰子放在盒中并关闭盖子",
           testSuccessful: "测试成功！",
           testFailed: "测试失败！",
+          testCanceled: "取消测试！",
         },
       },
     },
