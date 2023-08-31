@@ -58,8 +58,8 @@ import {
   PixelConnectIdMismatchError,
   PixelConnectTimeoutError,
   PixelError,
-  PixelWaitForMessageDisconnectError,
-  PixelWaitForMessageTimeoutError,
+  PixelWaitForMessageDisconnectError as WaitMsgDiscoErr,
+  PixelWaitForMessageTimeoutError as WaitMsgTimeoutErr,
 } from "./errors";
 import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
 
@@ -628,26 +628,20 @@ export class Pixel extends PixelInfoNotifier {
         if (status === "disconnecting" || status === "disconnected") {
           // We got disconnected, stop waiting for message
           cleanup();
-          reject(new PixelWaitForMessageDisconnectError(this, expectedMsgType));
+          reject(new WaitMsgDiscoErr(this, expectedMsgType));
         }
       };
       this.addEventListener("status", statusListener);
       // 3. Setup timeout
       const timeoutId = setTimeout(() => {
         cleanup();
-        reject(
-          new PixelWaitForMessageTimeoutError(this, timeoutMs, expectedMsgType)
-        );
+        reject(new WaitMsgTimeoutErr(this, timeoutMs, expectedMsgType));
       }, timeoutMs);
       cleanup = () => {
         // Cancel timeout and unhook listeners
         clearTimeout(timeoutId);
-        if (messageListener) {
-          this.removeMessageListener(expectedMsgType, messageListener);
-        }
-        if (statusListener) {
-          this.removeEventListener("status", statusListener);
-        }
+        this.removeMessageListener(expectedMsgType, messageListener);
+        this.removeEventListener("status", statusListener);
       };
     });
   }
@@ -1065,7 +1059,7 @@ export class Pixel extends PixelInfoNotifier {
         iAmADie = msg as IAmADie;
         break;
       } catch (error) {
-        if (i && error instanceof PixelWaitForMessageTimeoutError) {
+        if (i && error instanceof WaitMsgTimeoutErr) {
           // Try again as we've seen instances on Android where the message is not received
           this._log("Resending request for identification message");
         } else {

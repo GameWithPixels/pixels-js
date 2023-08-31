@@ -25,6 +25,12 @@ export class PixelError extends Error {
   }
 
   constructor(pixel: Pixel, message: string, cause?: Error) {
+    // We get a code from native errors
+    const code = cause && (cause as any).code;
+    if (code) {
+      message += ` (${code})`;
+    }
+    // Initialize instance
     super(`Pixel ${pixel.name}: ${message}`);
     this.name = "PixelError";
     this._pixel = pixel;
@@ -48,7 +54,7 @@ export class PixelConnectError extends PixelError {
         ? `Connection error, ${(msgOrError as PixelError).description}`
         : isError
         ? `Connection error, ${msgOrError.message}`
-        : `Unsupported connection error, data is ${JSON.stringify(msgOrError)}`;
+        : `Unknown connection error, ${JSON.stringify(msgOrError)}`;
     const cause = isError ? msgOrError : undefined;
     super(pixel, msg, cause);
     this.name = "PixelConnectError";
