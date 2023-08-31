@@ -29,7 +29,7 @@ import { pixelStopAllAnimations } from "../pixels/extensions";
 import { range } from "~/features/range";
 import { TaskCanceledError } from "~/features/tasks/useTask";
 
-// Temp until FM update
+// TODO Temp until FM update
 function getFaceMaskPd6(faceValue: number): number {
   let start = 0;
   for (let i = 1; i < faceValue; ++i) {
@@ -508,6 +508,7 @@ export const ValidationTests = {
     face: number,
     blinkColor: Color,
     abortSignal: AbortSignal,
+    notifyFaceUp: (face: number) => void,
     holdDelay = 1000, // Number of ms to wait before validating the face up
     timeout = 30000 // 30s
   ): Promise<void> {
@@ -531,6 +532,7 @@ export const ValidationTests = {
           async () => {
             let onAbort: (() => void) | undefined;
             let rollListener: ((ev: RollEvent) => void) | undefined;
+            let lastFace = -1;
             try {
               await new Promise<void>((resolve, reject) => {
                 // Timeout that's setup once the die face up is the required one
@@ -544,8 +546,8 @@ export const ValidationTests = {
                   }, holdDelay);
                 }
                 // Roll listener that checks if the required face is up
-                rollListener = ({ state, face: f }: RollEvent) => {
-                  if (state === "onFace" && f === face) {
+                rollListener = ({ state, face: currentFace }: RollEvent) => {
+                  if (state === "onFace" && currentFace === face) {
                     // Required face is up, start hold timer
                     console.log(`Die rolled on required face ${face}`);
                     setHoldTimeout();
@@ -555,6 +557,11 @@ export const ValidationTests = {
                     clearTimeout(holdTimeout);
                     holdTimeout = undefined;
                   }
+                  lastFace = currentFace;
+                  if (pixel.dieType === "d10") {
+                    lastFace -= 1;
+                  }
+                  notifyFaceUp(currentFace);
                 };
                 // Abort function
                 onAbort = () => {
@@ -579,6 +586,18 @@ export const ValidationTests = {
                   }
                 }
               });
+            } catch (error) {
+              // TODO temporary
+              if (
+                lastFace >= 0 &&
+                error instanceof ValidationTestsTimeoutError
+              ) {
+                throw new Error(
+                  `Timeout while waiting for face '${face}, face up was ${lastFace}`
+                );
+              } else {
+                throw error;
+              }
             } finally {
               if (onAbort) {
                 signal.removeEventListener("abort", onAbort);

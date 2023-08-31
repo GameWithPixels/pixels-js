@@ -675,53 +675,71 @@ export function WaitFaceUp({
   pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
+  const [lastFaceUp, setLastFaceUp] = React.useState(-1);
+  const FaceUpText = () => (
+    <>
+      {lastFaceUp >= 0 && (
+        <Text variant="bodyLarge">
+          {t("onFace")}
+          {t("colonSeparator")}
+          {lastFaceUp}
+        </Text>
+      )}
+    </>
+  );
 
   const taskChain = useTaskChain(
     action,
     React.useCallback(
-      (abortSig) =>
+      (abortSignal) =>
         ValidationTests.waitFaceUp(
           pixel,
           _getFaceUp(pixel, "1"),
           Color.dimMagenta,
-          abortSig
+          abortSignal,
+          setLastFaceUp
         ),
       [pixel]
     ),
     createTaskStatusContainer({
       title: t("placeBlinkingFaceUp"),
+      children: <FaceUpText />,
     })
   )
     .withStatusChanged(_playSoundOnResult)
     .chainWith(
       React.useCallback(
-        (abortSig) =>
+        (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
             _getFaceUp(pixel, "2"),
             Color.dimYellow,
-            abortSig
+            abortSignal,
+            setLastFaceUp
           ),
         [pixel]
       ),
       createTaskStatusContainer({
         title: t("placeNewBlinkingFaceUp"),
+        children: <FaceUpText />,
       })
     )
     .withStatusChanged(_playSoundOnResult)
     .chainWith(
       React.useCallback(
-        (abortSig) =>
+        (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
             _getFaceUp(pixel, "3"),
             Color.dimCyan,
-            abortSig
+            abortSignal,
+            setLastFaceUp
           ),
         [pixel]
       ),
       createTaskStatusContainer({
         title: t("placeNewBlinkingFaceUp"),
+        children: <FaceUpText />,
       })
     )
     .withStatusChanged(_playSoundOnResult)
