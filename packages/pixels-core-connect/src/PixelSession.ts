@@ -45,8 +45,11 @@ export abstract class PixelSession {
     return this._pixelSystemId;
   }
 
-  /** Gets the Pixel name. */
-  abstract get pixelName(): string;
+  /**
+   * Gets the Pixel name.
+   * @remarks It may be undefined until connected.
+   */
+  abstract get pixelName(): string | undefined;
 
   /** Gets the last known connection status. */
   get lastConnectionStatus(): PixelSessionConnectionStatus {

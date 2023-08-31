@@ -13,12 +13,12 @@ import {
  * using Web Bluetooth.
  */
 export default class BleSession extends PixelSession {
-  private _name = "";
+  private _name: string | undefined;
   private readonly _centralConnStatusCb: (
     ev: PeripheralConnectionEvent
   ) => void;
 
-  get pixelName(): string {
+  get pixelName(): string | undefined {
     return this._name;
   }
 
@@ -33,8 +33,8 @@ export default class BleSession extends PixelSession {
     try {
       // Update name
       this._name = await Central.getPeripheralName(this.pixelSystemId);
-    } catch {
-      this._name = "";
+    } catch (error) {
+      console.log(`Error getting Pixel name: ${error}`);
     }
 
     // And connect

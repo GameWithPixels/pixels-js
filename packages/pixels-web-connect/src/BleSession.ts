@@ -44,7 +44,7 @@ export class BleSessionError extends Error {
  * using Web Bluetooth.
  */
 export default class BleSession extends PixelSession {
-  private _name;
+  private _name: string | undefined;
   private _device: BluetoothDevice;
   private _notify?: BluetoothRemoteGATTCharacteristic;
   private _write?: BluetoothRemoteGATTCharacteristic;
@@ -58,16 +58,16 @@ export default class BleSession extends PixelSession {
       );
     }
     this._device = device;
-    this._name = this._device.name ?? "";
+    this._name = this._device.name;
   }
 
-  get pixelName(): string {
+  get pixelName(): string | undefined {
     return this._name;
   }
 
   async connect(): Promise<void> {
     // Update name
-    this._name = this._device.name ?? "";
+    this._name = this._device.name;
 
     // Subscribe to disconnect event
     // eslint-disable-next-line @typescript-eslint/no-this-alias

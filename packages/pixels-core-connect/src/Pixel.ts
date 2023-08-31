@@ -240,7 +240,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /** Get the Pixel name, may be empty until connected to device. */
   get name(): string {
-    return this._session.pixelName;
+    return this._session.pixelName ?? this._info.name;
   }
 
   /** Gets the number of LEDs for the Pixel, may be 0 until connected to device. */
