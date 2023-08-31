@@ -1,5 +1,7 @@
 import {
   assert,
+  bitIndexToFlag,
+  combineFlags,
   delay,
   getValueKeyName,
   safeAssign,
@@ -24,7 +26,18 @@ import {
 
 import { pixelStopAllAnimations } from "../pixels/extensions";
 
+import { range } from "~/features/range";
 import { TaskCanceledError } from "~/features/tasks/useTask";
+
+// Temp until FM update
+function getFaceMaskPd6(faceValue: number): number {
+  let start = 0;
+  for (let i = 1; i < faceValue; ++i) {
+    start += i;
+  }
+  const ledIndices = range(start, start + faceValue);
+  return combineFlags(ledIndices.map(bitIndexToFlag));
+}
 
 function getSignalReason(signal: AbortSignal, testName?: string): any {
   // No error when using DOM types -- @ts-expect-error reason not implemented in React Native)
@@ -505,7 +518,12 @@ export const ValidationTests = {
       timeout,
       async (signal) => {
         // Blink face
-        const options = { faceMask: getFaceMask(face) };
+        const options = {
+          faceMask:
+            pixel.dieType === "d6pipped"
+              ? getFaceMaskPd6(face)
+              : getFaceMask(face),
+        };
         await withBlink(
           pixel,
           blinkColor,

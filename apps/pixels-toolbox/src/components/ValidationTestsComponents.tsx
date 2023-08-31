@@ -76,27 +76,30 @@ function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
 
 function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
   let faces: number[];
-  switch (pixel.ledCount) {
-    case 20:
+  switch (pixel.dieType) {
+    case "d20":
       faces = [5, 10, 20];
       break;
-    case 12:
+    case "d12":
       faces = [3, 6, 12];
       break;
-    case 10:
+    case "d10":
       faces = [2, 5, 10];
       break;
-    case 8:
+    case "d8":
       faces = [2, 4, 8];
       break;
-    case 6:
+    case "d6pipped":
+    case "d6":
       faces = [2, 3, 6];
       break;
-    case 4:
+    case "d4":
       faces = [2, 3, 4];
       break;
     default:
-      throw new Error(`Unsupported LED count ${pixel.ledCount}`);
+      throw new Error(
+        `Unsupported die type ${pixel.dieType} (${pixel.ledCount} LEDs)`
+      );
   }
   assert(faces.length === 3);
   switch (step) {
