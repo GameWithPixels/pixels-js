@@ -180,7 +180,7 @@ export class Pixel extends PixelInfoNotifier {
   private readonly _msgEvEmitter = new EventEmitter();
 
   // Log function
-  private _logFunc: (msg: unknown) => void = console.log;
+  private _logFunc: (msg: string) => void = console.log;
   private _logMessages = false;
   private _logData = false;
 
@@ -211,10 +211,10 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /** Set logger to use by this instance. */
-  get logger(): (msg: unknown) => void {
+  get logger(): (msg: string) => void {
     return this._logFunc;
   }
-  set logger(logger: (msg: unknown) => void) {
+  set logger(logger: (msg: string) => void) {
     this._logFunc = logger;
   }
 

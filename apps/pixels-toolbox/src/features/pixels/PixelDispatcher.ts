@@ -154,7 +154,7 @@ export class PixelDispatcherError extends Error {
   }
 
   constructor(pixel: PixelDispatcher, message: string, cause?: Error) {
-    super(`PixelDispatcher ${pixel.name}: ${message}`); //, { cause });
+    super(`Pixel ${pixel.name}: ${message}${cause ? ` => ${cause}` : ""}`);
     this.name = "PixelDispatcherError";
     this._pixel = pixel;
     this._cause = cause;
@@ -304,9 +304,6 @@ class PixelDispatcher extends ScannedPixelNotifier<
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
     PixelDispatcher._pxInstances.set(this.pixelId, this);
-    // Log messages
-    // this._pixel.logMessages = true;
-    // this._pixel.logger = (msg) => console.log(JSON.stringify(msg));
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
       1e9 * Math.random()
@@ -512,6 +509,15 @@ class PixelDispatcher extends ScannedPixelNotifier<
     console.log(`[${this.name}] Saving messages log in: ${uri}`);
     await RNFS.copyFile(this._messagesLogFilePath, uri);
     await RNFS.appendFile(uri, "]\n");
+  }
+
+  logMessages(enable = true): void {
+    if (enable) {
+      this._pixel.logMessages = true;
+      this._pixel.logger = console.log;
+    } else {
+      this._pixel.logMessages = false;
+    }
   }
 
   private _guard(promise: Promise<unknown>, action: string): void {
