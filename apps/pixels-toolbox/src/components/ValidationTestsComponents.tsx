@@ -5,6 +5,7 @@ import {
   Color,
   getPixel,
   Pixel,
+  PixelConnectError,
   PixelScannerDispatchAction,
   ScannedPixel,
   useScannedPixels,
@@ -296,7 +297,11 @@ export function UpdateFirmware({
         if (!pixel) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
-        await Central.connectPeripheral(pixel.systemId, { timeoutMs: 5000 });
+        try {
+          await Central.connectPeripheral(pixel.systemId, { timeoutMs: 5000 });
+        } catch (error) {
+          throw new PixelConnectError(pixel, error);
+        }
       }, []),
       createTaskStatusContainer(t("connect"))
     )
