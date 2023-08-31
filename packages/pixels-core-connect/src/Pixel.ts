@@ -495,10 +495,12 @@ export class Pixel extends PixelInfoNotifier {
             // only when the die is actually moved
           }
         } catch (error) {
-          // Disconnect but ignore any error
+          // Note: the error may be cause by a call to disconnect
           try {
             await this._session.disconnect();
           } catch {}
+          // Ignore any disconnection error and throw the error
+          // that got us there in the first place
           throw error;
         }
       } else if (this.status === "identifying") {
@@ -516,7 +518,7 @@ export class Pixel extends PixelInfoNotifier {
         });
       }
 
-      // Check if a status change occurred during the connection process
+      // Check if a status changed occurred during the connection process
       if (this.status !== "ready") {
         throw new PixelConnectCancelledError(this);
       }
@@ -1047,29 +1049,12 @@ export class Pixel extends PixelInfoNotifier {
 
     // Identify Pixel
     this._log("Waiting on identification message");
-    let iAmADie: IAmADie | undefined = undefined;
-    // Try twice
-    for (let i = 1; i >= 0; --i) {
-      try {
-        const msg = await this.sendAndWaitForResponse(
-          "whoAreYou",
-          "iAmADie",
-          2000
-        );
-        iAmADie = msg as IAmADie;
-        break;
-      } catch (error) {
-        if (i && error instanceof WaitMsgTimeoutErr) {
-          // Try again as we've seen instances on Android where the message is not received
-          this._log("Resending request for identification message");
-        } else {
-          throw error;
-        }
-      }
-    }
+    const iAmADie = (await this.sendAndWaitForResponse(
+      "whoAreYou",
+      "iAmADie"
+    )) as IAmADie;
 
     // We should have got the response
-    assert(iAmADie);
     if (this._info.pixelId && this._info.pixelId !== iAmADie.pixelId) {
       throw new PixelConnectIdMismatchError(this, iAmADie.pixelId);
     }
