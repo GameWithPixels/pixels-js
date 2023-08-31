@@ -1,4 +1,7 @@
-import { createTypedEventEmitter } from "@systemic-games/pixels-core-utils";
+import {
+  createTypedEventEmitter,
+  delay,
+} from "@systemic-games/pixels-core-utils";
 import { NativeEventEmitter, EmitterSubscription } from "react-native";
 
 import {
@@ -412,6 +415,11 @@ export const Central = {
       }
 
       try {
+        // TODO Temp fix: connecting immediately after a disconnect causes issues
+        // on Android: the device is never actually disconnected, but the MTU
+        // is reset to 23 as far as the native code is concerned.
+        await delay(300);
+
         // Connect to peripheral
         await BluetoothLE.connectPeripheral(
           sysId,
@@ -420,11 +428,26 @@ export const Central = {
         );
 
         // Set MTU
-        console.log(`[BLE ${name}] Connected, updating MTU...`);
-        const mtu = await BluetoothLE.requestPeripheralMtu(
-          sysId,
-          Constants.maxMtu
-        );
+        console.log(`[BLE ${name}] Connected, updating MTU`);
+        let mtu = 0;
+        try {
+          mtu = await BluetoothLE.requestPeripheralMtu(sysId, Constants.maxMtu);
+        } catch (error: any) {
+          if (
+            error.code === "BLE_ERROR_4" || // TODO remove me, value replaced by the one below
+            error.code === "ERROR_GATT_INVALID_PDU"
+          ) {
+            // MTU has already been set in this session
+            try {
+              mtu = await BluetoothLE.getPeripheralMtu(sysId);
+            } catch {}
+          } else {
+            console.log(
+              `[BLE ${name}] Updating MTU failed (current value is ${mtu})`
+            );
+            throw error;
+          }
+        }
         console.log(`[BLE ${name}] MTU set to ${mtu}`);
 
         // Continue if there wasn't any state change since we got connected
@@ -481,11 +504,13 @@ export const Central = {
         if (hasTimedOut) {
           throw new Errors.ConnectError(name, "timeout");
         } else {
-          Central.disconnectPeripheral(peripheral).catch((e) =>
+          try {
+            await Central.disconnectPeripheral(peripheral);
+          } catch (error) {
             console.warn(
-              `[BLE ${name}] Error trying to disconnect after failing to connect: ${e}`
-            )
-          );
+              `[BLE ${name}] Error trying to disconnect after failing to connect: ${error}`
+            );
+          }
           throw error;
         }
       }
