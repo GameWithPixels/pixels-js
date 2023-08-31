@@ -48,6 +48,8 @@ import {
   RemoteAction,
   PixelDesignAndColorValues,
   MessageTypeValues,
+  PowerOperation,
+  PixelPowerOperationValues,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 import { PixelInfoNotifier } from "./PixelInfoNotifier";
@@ -767,12 +769,14 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Requests the Pixel to turn itself off.
+   * Requests the Pixel to completely turn off.
    * @returns A promise that resolves once the message has been send.
    */
   async turnOff(): Promise<void> {
     await this.sendMessage(
-      "sleep",
+      safeAssign(new PowerOperation(), {
+        operation: PixelPowerOperationValues.turnOff,
+      }),
       true // withoutAck
     );
   }

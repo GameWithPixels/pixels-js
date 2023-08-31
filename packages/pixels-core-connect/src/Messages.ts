@@ -71,7 +71,7 @@ export const MessageTypeValues = {
   setCurrentBehaviorAck: enumValue(),
   setName: enumValue(),
   setNameAck: enumValue(),
-  sleep: enumValue(),
+  powerOperation: enumValue(),
   exitValidation: enumValue(),
   transferInstantAnimationSet: enumValue(),
   transferInstantAnimationSetAck: enumValue(),
@@ -1000,6 +1000,34 @@ export class SetName implements PixelMessage {
 }
 
 /**
+ * The different power operations available on a Pixel.
+ * @enum
+ * @category Message
+ */
+export const PixelPowerOperationValues = {
+  // Turn off all systems.
+  turnOff: enumValue(0),
+  // Reset die chip.
+  reset: enumValue(),
+  // Put die in low power mode, will be "awaken" when moved.
+  sleep: enumValue(),
+} as const;
+
+/**
+ * Message send to a Pixel to modify it's power state.
+ * @category Message
+ */
+export class PowerOperation implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.powerOperation;
+
+  /** The name to set. */
+  @serializable(1)
+  operation = PixelPowerOperationValues.sleep;
+}
+
+/**
  * Message send to a Pixel to request a transfer of a set of
  * instant animations (stored in RAM memory)
  * @category Message
@@ -1184,6 +1212,7 @@ function _getMessageClasses(): MessageClass[] {
     LEDLoopback,
     SetDesignAndColor,
     SetName,
+    PowerOperation,
     TransferInstantAnimationSet,
     TransferInstantAnimationSetAck,
     PlayInstantAnimation,
