@@ -433,10 +433,7 @@ export const Central = {
         try {
           mtu = await BluetoothLE.requestPeripheralMtu(sysId, Constants.maxMtu);
         } catch (error: any) {
-          if (
-            error.code === "BLE_ERROR_4" || // TODO remove me, value replaced by the one below
-            error.code === "ERROR_GATT_INVALID_PDU"
-          ) {
+          if (error.code === "ERROR_GATT_INVALID_PDU") {
             // MTU has already been set in this session
             try {
               mtu = await BluetoothLE.getPeripheralMtu(sysId);
@@ -514,6 +511,10 @@ export const Central = {
           throw error;
         }
       }
+    } catch (error) {
+      // Log error
+      console.log(`[BLE ${name}] Error connecting to peripheral ${error}`);
+      throw error;
     } finally {
       if (timeoutId) {
         clearTimeout(timeoutId);

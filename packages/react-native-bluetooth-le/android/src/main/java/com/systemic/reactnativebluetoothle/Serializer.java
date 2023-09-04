@@ -1,6 +1,7 @@
 package com.systemic.reactnativebluetoothle;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.os.ParcelUuid;
 import android.util.SparseArray;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.annotation.DisconnectionReason;
+import no.nordicsemi.android.ble.callback.FailCallback;
 import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.ble.observer.ConnectionObserver;
 import no.nordicsemi.android.support.v18.scanner.ScanRecord;
@@ -26,7 +28,63 @@ import no.nordicsemi.android.support.v18.scanner.ScanResult;
 public final class Serializer {
     @NonNull
     public static String toErrorCode(int status) {
-        return "BLE_ERROR_" + status; // TODO return better error code
+        // Many error constants are missing in Java, see C++ errors here:
+        // https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/adc9f28ad418356cb81640059b59eee4d862e6b4/stack/include/gatt_api.h#54
+        switch (status) {
+            case FailCallback.REASON_DEVICE_DISCONNECTED:
+                return "ERROR_DEVICE_DISCONNECTED";
+            case FailCallback.REASON_DEVICE_NOT_SUPPORTED:
+                return "ERROR_DEVICE_NOT_SUPPORTED";
+            case FailCallback.REASON_NULL_ATTRIBUTE:
+                return "ERROR_NULL_ATTRIBUTE";
+            case FailCallback.REASON_REQUEST_FAILED:
+                return "ERROR_REQUEST_FAILED";
+            case FailCallback.REASON_TIMEOUT:
+                return "ERROR_TIMEOUT";
+            case FailCallback.REASON_VALIDATION:
+                return "ERROR_VALIDATION";
+            case FailCallback.REASON_CANCELLED:
+                return "ERROR_CANCELLED";
+            case FailCallback.REASON_BLUETOOTH_DISABLED:
+                return "ERROR_BLUETOOTH_DISABLED";
+            case 1:
+                return "ERROR_GATT_INVALID_HANDLE";
+            case BluetoothGatt.GATT_READ_NOT_PERMITTED: // 2
+                return "ERROR_GATT_READ_NOT_PERMITTED";
+            case BluetoothGatt.GATT_WRITE_NOT_PERMITTED: // 3
+                return "ERROR_GATT_WRITE_NOT_PERMITTED";
+            case 4:
+                return "ERROR_GATT_INVALID_PDU";
+            case BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION: // 5
+                return "ERROR_GATT_INSUFFICIENT_AUTHENTICATION";
+            case BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED: // 6
+                return "ERROR_GATT_REQUEST_NOT_SUPPORTED";
+            case BluetoothGatt.GATT_INVALID_OFFSET: // 7
+                return "ERROR_GATT_INVALID_OFFSET";
+            case BluetoothGatt.GATT_INSUFFICIENT_AUTHORIZATION: // 8
+                return "ERROR_GATT_INSUFFICIENT_AUTHORIZATION";
+            case BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH: // 13
+                return "ERROR_GATT_INVALID_ATTRIBUTE_LENGTH";
+            case BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION: // 15
+                return "ERROR_GATT_INSUFFICIENT_ENCRYPTION";
+            case 128:
+                return "ERROR_GATT_NO_RESOURCES";
+            case 129:
+                return "ERROR_GATT_INTERNAL_ERROR";
+            case 130:
+                return "ERROR_GATT_WRONG_STATE";
+            case 131:
+                return "ERROR_GATT_DB_FULL";
+            case 132:
+                return "ERROR_GATT_BUSY";
+            case 133:
+                return "ERROR_GATT_ERROR";
+            case BluetoothGatt.GATT_CONNECTION_CONGESTED: // 143
+                return "ERROR_GATT_CONNECTION_CONGESTED";
+            case BluetoothGatt.GATT_FAILURE: // 257
+                return "ERROR_GATT_FAILURE";
+        }
+        return "ERROR_" + status;
     }
 
     @NonNull
