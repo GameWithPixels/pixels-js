@@ -8,23 +8,30 @@ import * as FileSystem from "expo-file-system";
 // Uncomment the line and the piece of code using it.
 // import htmlModule from "!/stickers/sticker.html";
 
+import { ProductIds } from "./loadCertificationIds";
+
 import stickerZip from "!/stickers/single-die-sticker.zip";
 import Pathname from "~/features/files/Pathname";
 import { unzipAssetAsync } from "~/features/files/unzipAssetAsync";
 
 /**
  * Read HTML from sticker file and embed resources.
+ * Using https://lindell.me/JsBarcode/ for generating the barcode.
  */
-export async function readStickerHtmlAsync(): Promise<string> {
+export async function readStickerHtmlAsync(
+  product: ProductIds & { deviceId: string; deviceName: string }
+): Promise<string> {
   if (!FileSystem.cacheDirectory) {
-    throw new Error(`printLabelAsync: FileSystem.cacheDirectory is null`);
+    throw new Error("readStickerHtmlAsync: FileSystem.cacheDirectory is null");
   }
 
   // Load zip file and unzip
   console.log("Unzipping sticker asset");
   const assets = await Asset.loadAsync(stickerZip);
   if (!assets[0]) {
-    throw new Error("printLabelAsync: no asset loaded for sticker zip file");
+    throw new Error(
+      "readStickerHtmlAsync: No asset loaded for sticker zip file"
+    );
   }
 
   // HTML contents
@@ -41,7 +48,7 @@ export async function readStickerHtmlAsync(): Promise<string> {
     // Get HTML file
     const htmlFile = files.find((f) => f.endsWith(".html"));
     if (!htmlFile) {
-      throw new Error("printLabelAsync: HTML file not found");
+      throw new Error("readStickerHtmlAsync: HTML file not found");
     }
 
     // And load it
@@ -51,9 +58,56 @@ export async function readStickerHtmlAsync(): Promise<string> {
     // const htmlAssets = await Asset.loadAsync(htmlModule);
     // const uri = htmlAssets[0].localUri;
     // if (!uri) {
-    //   throw new Error("printLabelAsync: no asset loaded for HTML file");
+    //   throw new Error("readStickerHtmlAsync: no asset loaded for HTML file");
     // }
     // html = await FileSystem.readAsStringAsync(uri);
+
+    // Replace product ids
+    Object.entries({
+      "PIPPED D6 - MIDNIGHT GALAXY": product.name,
+      "PXL-DP6A-MG-040-4023": product.model,
+      "2BB52-PXLDP6A": product.fccId,
+      "2BB52-PXLDP6B": product.icId,
+      "PXL20-12345678": product.deviceId,
+      "GROK STONEBREAKER": product.deviceName,
+    }).forEach(([k, v]) => {
+      html = html.replace(k, v.toLocaleUpperCase());
+      console.log(`Replacing ${k} by ${v}`);
+    });
+    // Load barcode script
+    const jsBarcode = await FileSystem.readAsStringAsync(
+      tempDir + "JsBarcode.ean-upc.min.js"
+    );
+    // And embed it HTML
+    console.log("Inserting barcode");
+    const parts = html.split("</body>");
+    if (parts.length !== 2) {
+      throw new Error("readStickerHtmlAsync: end body tag not found");
+    }
+    html =
+      parts[0] +
+      `<script>\n${jsBarcode}\n</script>\n` +
+      `<script>
+        JsBarcode("#barcode", "${product.upcCode}", {
+          format: "upc", font: "Roboto Condensed"
+        })
+      </script>\n` +
+      parts[1];
+
+    // Insert barcode
+    const barcodeIndex = html.indexOf('"barcode-00850055703353.gif"');
+    if (barcodeIndex < 0) {
+      throw new Error("readStickerHtmlAsync: barcode image not found");
+    }
+    const barcodeStart = html.lastIndexOf("<img", barcodeIndex);
+    const barcodeEnd = html.indexOf(">", barcodeIndex) + 1;
+    if (barcodeStart < 0 || barcodeEnd <= 0) {
+      throw new Error("readStickerHtmlAsync: barcode image tag not found");
+    }
+    html =
+      html.substring(0, barcodeStart) +
+      '<svg id="barcode" class="gwd-img-sq5f gwd-img-u4dl"></svg>' +
+      html.substring(barcodeEnd);
 
     // Embed external files in HTML as base61 string
     const embedFiles = async (prefix: string, dataType: string) => {

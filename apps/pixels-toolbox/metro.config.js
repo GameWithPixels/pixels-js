@@ -9,8 +9,9 @@ const workspaceRoot = findWorkspaceRoot(__dirname);
 
 const config = getDefaultConfig(projectRoot);
 
-// Let Metro know we have assets that are zip files
+// Let Metro know we have assets with the following extensions
 config.resolver.assetExts.push("zip");
+config.resolver.assetExts.push("csv");
 
 // 1. Watch all files within the monorepo
 config.watchFolders = [workspaceRoot];

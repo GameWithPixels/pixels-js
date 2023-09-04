@@ -1,6 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
-import { getValueKeyName } from "@systemic-games/pixels-core-utils";
+import {
+  assertNever,
+  getValueKeyName,
+} from "@systemic-games/pixels-core-utils";
 import {
   FastHStack,
   FastVStack,
@@ -14,7 +17,6 @@ import {
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import { printHtmlToZpl } from "@systemic-games/react-native-zpl-print";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,8 +51,8 @@ import PixelDispatcher, {
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { range } from "~/features/range";
-import { readStickerHtmlAsync } from "~/features/readStickerHtmlAsync";
 import { shareFileAsync } from "~/features/shareFileAsync";
+import { printStickerAsync } from "~/features/stickers/printStickerAsync";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
@@ -339,6 +341,7 @@ function BottomButtons({
   // Discharge modal
   const { isOpen, onOpen, onClose } = useDisclose();
   const { t } = useTranslation();
+
   return (
     <>
       <FastHStack gap={6}>
@@ -387,19 +390,27 @@ function BottomButtons({
           )}
           <Button
             onPress={() => {
-              const print = async () => {
-                setPrintStatus("Reading HTML file...");
-                const html = await readStickerHtmlAsync();
-                setPrintStatus("Sending to printer...");
-                const result = await printHtmlToZpl("XP-", html, 940);
-                if (result !== "success") {
-                  console.log("Printing failed: " + result);
-                }
-                setPrintStatus(result);
-              };
               setPrintStatus("");
               onOpenPrint();
-              print().catch((e) => console.error(`Print error: ${e}`));
+              printStickerAsync(pixelDispatcher.pixel, (status) => {
+                switch (status) {
+                  case "preparing":
+                    setPrintStatus("Preparing sticker...");
+                    break;
+                  case "sending":
+                    setPrintStatus("Sending sticker to printer...");
+                    break;
+                  case "done":
+                    setPrintStatus("Printing successful!");
+                    break;
+                  default:
+                    assertNever(status, "Unsupported print status");
+                }
+              }).catch((error) => {
+                const msg = `Print error: ${error.message ?? error}`;
+                console.warn(msg);
+                setPrintStatus(msg);
+              });
             }}
           >
             {t("printSticker")}
@@ -529,7 +540,7 @@ function PrintModal({
     <Portal>
       <Modal contentContainerStyle={modalStyle} dismissable={false} {...props}>
         <FastVStack gap={10}>
-          <Title>{t("printingSticker")}</Title>
+          <Title>Sticker Printing</Title>
           <Divider style={{ height: 2 }} />
           <Text style={gs.center} variant="bodyLarge">
             {}
