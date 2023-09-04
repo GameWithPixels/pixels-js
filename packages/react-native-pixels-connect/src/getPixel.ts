@@ -22,23 +22,23 @@ const _pixels = new Map<string, Pixel>();
 export function getPixel(
   pixel: string | number | Partial<ScannedPixel>
 ): Pixel {
-  const systemdId =
+  const systemId =
     typeof pixel === "string"
       ? pixel
       : (typeof pixel === "number" ? ScannedPixelsRegistry.find(pixel) : pixel)
           ?.systemId;
   assert(
-    systemdId && systemdId.length > 0,
-    `getPixel(): Invalid argument: ${(pixel as any).systemId ?? pixel}`
+    systemId && systemId.length > 0,
+    `getPixel(): Invalid argument: ${JSON.stringify(pixel)}`
   );
   // Keep Pixel instances
-  let thePixel = _pixels.get(systemdId);
+  let thePixel = _pixels.get(systemId);
   if (!thePixel) {
     thePixel = new Pixel(
-      new BleSession(systemdId),
+      new BleSession(systemId),
       typeof pixel === "object" ? pixel : undefined
     );
-    _pixels.set(systemdId, thePixel);
+    _pixels.set(systemId, thePixel);
   }
   return thePixel;
 }

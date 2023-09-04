@@ -27,6 +27,10 @@ export class ScannedPixelNotifier<
 
   private _data: Mutable<ScannedPixel>;
 
+  // Use flag to identify instances of ScannedPixelNotifier
+  // as instanceof doesn't work after a fast refresh (RN 71)
+  readonly isScannedPixelNotifier = true;
+
   // PixelInfo props
   get systemId(): string {
     return this._data.systemId;

@@ -289,11 +289,14 @@ class PixelDispatcher extends ScannedPixelNotifier<
   static getDispatcher(
     scannedPixel: ScannedPixelNotifier | ScannedPixel
   ): PixelDispatcher {
+    // Assume we have a notifier and check flag
+    // We don't use 'instanceof' as it doesn't work after a fast refresh (RN 71)
+    const notifier = scannedPixel as ScannedPixelNotifier;
     return (
       PixelDispatcher._pxInstances.get(scannedPixel.pixelId) ??
       new PixelDispatcher(
-        scannedPixel instanceof ScannedPixelNotifier
-          ? scannedPixel
+        notifier.isScannedPixelNotifier
+          ? notifier
           : ScannedPixelNotifier.getInstance(scannedPixel)
       )
     );
