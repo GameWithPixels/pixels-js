@@ -17,16 +17,34 @@ const ZplPrint = NativeModules.ZplPrint
       }
     );
 
+/** Options for {@link printHtmlToZpl} */
+interface PrintHtmlToZplOptions {
+  /** Generated image width in pixels. */
+  imageWidth?: number;
+  /** Whether to run the HTML's embedded JavaScript code */
+  enableJs?: boolean;
+  /** Blackness threshold value, between 0 and 1. */
+  blacknessThreshold?: number;
+}
+
+/**
+ * Print the given HTML to a paired Bluetooth printer.
+ * @param printerName Prefix for the paired Bluetooth printer's name
+ *                    (print will fail if more than one printer has that prefix).
+ * @param html The HTML content to print.
+ * @param opt See {@link PrintHtmlToZplOptions}.
+ * @returns The operation result as a string.
+ */
 export function printHtmlToZpl(
   printerName: string,
   html: string,
-  imageWidth?: number, // In pixels
-  blacknessThreshold?: number // 0 to 1
+  opt?: PrintHtmlToZplOptions
 ): Promise<string> {
   return ZplPrint.printHtml(
     printerName,
     html,
-    imageWidth ?? 0,
-    blacknessThreshold ?? 0.3
+    opt?.imageWidth ?? 0,
+    opt?.enableJs ?? false,
+    opt?.blacknessThreshold ?? 0.3
   );
 }

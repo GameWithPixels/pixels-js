@@ -9,6 +9,7 @@ RCT_REMAP_METHOD(printHtml,
                  printerName:(NSString *)printerName
                  html:(NSString *)html
                  imageWidth:(double)imageWidth
+                 enableJs:(BOOL)enableJs
                  blacknessThreshold:(double)blacknessThreshold
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)

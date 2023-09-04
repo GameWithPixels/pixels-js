@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.util.Pair;
+import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -16,6 +17,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 
 import com.izettle.html2bitmap.Html2Bitmap;
+import com.izettle.html2bitmap.Html2BitmapConfigurator;
 import com.izettle.html2bitmap.content.WebViewContent;
 
 import java.io.IOException;
@@ -41,7 +43,7 @@ public class ZplPrintModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void printHtml(String printerName, String html, int imageWidth, double blacknessThreshold, Promise promise) {
+    public void printHtml(String printerName, String html, int imageWidth, boolean enableJs, double blacknessThreshold, Promise promise) {
         if (ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -65,6 +67,14 @@ public class ZplPrintModule extends ReactContextBaseJavaModule {
                         getCurrentActivity().getBaseContext(), content);
                     if (imageWidth > 0) {
                         builder.setBitmapWidth(imageWidth);
+                    }
+                    if (enableJs) {
+                        builder.setConfigurator(new Html2BitmapConfigurator() {
+                            @Override
+                            public void configureWebView(WebView webview) {
+                                webview.getSettings().setJavaScriptEnabled(true);
+                            }
+                        });
                     }
                     final Bitmap bitmap = builder.build().getBitmap();
 
