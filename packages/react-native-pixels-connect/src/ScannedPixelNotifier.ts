@@ -82,10 +82,15 @@ export class ScannedPixelNotifier<
   }
 
   static getInstance(scannedPixel: ScannedPixel): ScannedPixelNotifier {
-    return (
-      instancesMap.get(scannedPixel.pixelId) ??
-      new ScannedPixelNotifier(scannedPixel)
-    );
+    const notifier = instancesMap.get(scannedPixel.pixelId);
+    if (notifier) {
+      notifier.updateProperties(scannedPixel);
+      return notifier;
+    } else {
+      const newNotifier = new ScannedPixelNotifier(scannedPixel);
+      instancesMap.set(scannedPixel.pixelId, newNotifier);
+      return newNotifier;
+    }
   }
 
   /**
