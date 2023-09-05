@@ -148,7 +148,7 @@ export function createWidgetComponent(
 
     case "faceMask":
       return makeAutoUpdate(
-        (faces: number[]) => widgetData.update(getFaceMask(faces)),
+        (faces: number[]) => widgetData.update(getFaceMask(faces, "d20")),
         ({ autoUpdate, ...props }) => (
           <FaceMaskWidget
             {...props}

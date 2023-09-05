@@ -45,7 +45,7 @@ export function combineFlags(flags: number[]): number {
   return flags.reduce((mask, f) => {
     assert(
       f < 0x80000000,
-      "combineFlags: Flag value greater or equal to 2^31, can't combine using OR operator"
+      `combineFlags: Flag value greater or equal to 2^31, can't combine using OR operator, got ${f}`
     );
     return mask | f;
   }, 0);
@@ -62,7 +62,7 @@ export function combineFlags(flags: number[]): number {
 export function bitIndexToFlag(bitIndex: number) {
   assert(
     bitIndex < 53,
-    "bitIndexToFlag: Bit index greater than maximum precision of 64 bits floating-point numbers (52 bits mantissa)"
+    `bitIndexToFlag: Bit index greater than maximum precision of 64 bits floating-point numbers (52 bits mantissa), got ${bitIndex}`
   );
   return Math.pow(2, bitIndex);
 }

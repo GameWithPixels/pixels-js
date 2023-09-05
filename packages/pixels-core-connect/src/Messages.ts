@@ -336,6 +336,30 @@ export const PixelDesignAndColorValues = {
 export type PixelDesignAndColor = keyof typeof PixelDesignAndColorValues;
 
 /**
+ * The different types of dice.
+ * @enum
+ * @category Message
+ */
+export const PixelDieTypeValues = {
+  unknown: enumValue(0),
+  d4: enumValue(),
+  d6: enumValue(),
+  d8: enumValue(),
+  d10: enumValue(),
+  d00: enumValue(),
+  d12: enumValue(),
+  d20: enumValue(),
+  d6pipped: enumValue(),
+  d6fudge: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link PixelDieTypeValues}.
+ * @category Message
+ */
+export type PixelDieType = keyof typeof PixelDieTypeValues;
+
+/**
  * Message send by a Pixel after receiving a "WhoAmI" message.
  * @category Message
  */
@@ -349,8 +373,12 @@ export class IAmADie implements PixelMessage {
   ledCount = 0;
 
   /** Die look. */
-  @serializable(1, { padding: 1 })
+  @serializable(1)
   designAndColor = PixelDesignAndColorValues.generic;
+
+  /** Type of die. */
+  @serializable(1)
+  dieType = PixelDieTypeValues.unknown;
 
   /** Hash of the uploaded profile. */
   @serializable(4)

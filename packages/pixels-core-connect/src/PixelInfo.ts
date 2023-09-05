@@ -1,4 +1,4 @@
-import { PixelDesignAndColor, PixelRollState } from "./Messages";
+import { PixelDesignAndColor, PixelDieType, PixelRollState } from "./Messages";
 
 /**
  * Common accessible values for all Pixel implementations.
@@ -19,6 +19,9 @@ export interface PixelInfo {
 
   /** The Pixel design and color. */
   readonly designAndColor: PixelDesignAndColor;
+
+  /** The type of die. */
+  readonly dieType: PixelDieType;
 
   /** The firmware build date of the Pixel. */
   readonly firmwareDate: Date;

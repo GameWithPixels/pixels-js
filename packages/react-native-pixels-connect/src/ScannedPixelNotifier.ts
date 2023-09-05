@@ -1,5 +1,6 @@
 import {
   PixelDesignAndColor,
+  PixelDieType,
   PixelInfoNotifier,
   PixelInfoNotifierMutableProps,
   PixelRollState,
@@ -45,6 +46,9 @@ export class ScannedPixelNotifier<
   }
   get designAndColor(): PixelDesignAndColor {
     return this._data.designAndColor;
+  }
+  get dieType(): PixelDieType {
+    return this._data.dieType;
   }
   get firmwareDate(): Date {
     return this._data.firmwareDate;

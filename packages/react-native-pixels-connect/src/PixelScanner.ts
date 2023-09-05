@@ -297,6 +297,7 @@ export class PixelScanner {
           1 + (index % PixelScanner._maxDesignAndColor),
           PixelDesignAndColorValues
         ) ?? "unknown",
+      dieType: "d20",
       firmwareDate: new Date(),
       rssi: Math.round(Math.random() * -50) - 20,
       batteryLevel: Math.round(Math.random() * 100),

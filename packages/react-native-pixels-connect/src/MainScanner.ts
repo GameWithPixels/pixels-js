@@ -2,6 +2,7 @@ import {
   PixelDesignAndColorValues,
   PixelRollStateValues,
   PixelBleUuids,
+  PixelDieType,
 } from "@systemic-games/pixels-core-connect";
 import {
   assert,
@@ -17,6 +18,34 @@ import {
 import { ScannedPixel } from "./ScannedPixel";
 import ScannedPixelsRegistry from "./ScannedPixelsRegistry";
 import SequentialDataReader from "./SequentialDataReader";
+
+// Try to get die type from number of LEDs
+function _getDieType(ledCount: number): PixelDieType {
+  // For now we infer the die type from the number of LEDs, but eventually
+  // that value will be part of identification data.
+  switch (ledCount) {
+    case 4:
+      return "d4";
+    case 6:
+      return "d6";
+    case 8:
+      return "d8";
+    case 10:
+      return "d10";
+    case 12:
+      return "d12";
+    case 20:
+      return "d20";
+    case 21:
+      return "d6pipped";
+    default:
+      return "unknown";
+  }
+}
+
+function _getFace(faceIndex: number, ledCount: number): number {
+  return faceIndex + (ledCount === 10 ? 0 : 1);
+}
 
 // Execution queue
 const _queue = new SequentialPromiseQueue();
@@ -80,7 +109,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       ledCount = manufReader.readU8();
       designAndColorValue = manufReader.readU8();
       rollStateValue = manufReader.readU8();
-      currentFace = manufReader.readU8() + 1;
+      currentFace = _getFace(manufReader.readU8(), ledCount);
       const battery = manufReader.readU8();
       // MSB is battery charging
       batteryLevel = battery & 0x7f;
@@ -97,7 +126,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
 
       pixelId = manufReader.readU32();
       rollStateValue = manufReader.readU8();
-      currentFace = manufReader.readU8() + 1;
+      currentFace = _getFace(manufReader.readU8(), ledCount);
       batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
 
       firmwareDate = new Date();
@@ -117,6 +146,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
         name: ev.peripheral.name,
         ledCount,
         designAndColor,
+        dieType: _getDieType(ledCount),
         firmwareDate,
         rssi: advData.rssi,
         batteryLevel,

@@ -50,6 +50,7 @@ import {
   MessageTypeValues,
   PowerOperation,
   PixelPowerOperationValues,
+  PixelDieType,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 import { PixelInfoNotifier } from "./PixelInfoNotifier";
@@ -153,17 +154,6 @@ export interface PixelEventMap {
   remoteAction: number; // Remote action id
 }
 
-/** The different types of dice. */
-export type DieType =
-  | "d20"
-  | "d12"
-  | "d10"
-  | "d8"
-  | "d6"
-  | "d6pipped"
-  | "d6fudge"
-  | "d4";
-
 /**
  * Represents a Pixels die.
  * Most of its methods require the instance to be connected to the Pixel device.
@@ -191,7 +181,7 @@ export class Pixel extends PixelInfoNotifier {
   private _status: PixelStatus;
 
   // Pixel data
-  private _info: Mutable<PixelInfo>;
+  private readonly _info: Mutable<PixelInfo>;
 
   // Clean-up
   private _disposeFunc: () => void;
@@ -256,8 +246,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /** Gets the die type of the Pixel. */
-  get dieType(): DieType {
-    return Pixel._getDieType(this.ledCount);
+  get dieType(): PixelDieType {
+    return this._info.dieType;
   }
 
   /** Gets the number of faces of the Pixel. */
@@ -324,6 +314,7 @@ export class Pixel extends PixelInfoNotifier {
       name: info?.name ?? "",
       ledCount: info?.ledCount ?? 0,
       designAndColor: info?.designAndColor ?? "unknown",
+      dieType: info?.dieType ?? "unknown",
       firmwareDate: info?.firmwareDate ?? new Date(),
       rssi: info?.rssi ?? 0,
       batteryLevel: info?.batteryLevel ?? 0,
@@ -367,7 +358,7 @@ export class Pixel extends PixelInfoNotifier {
       const msg = msgOrType as RollState;
       this._updateRollInfo({
         state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
-        face: msg.faceIndex + 1,
+        face: msg.faceIndex + (this.ledCount === 10 ? 0 : 1),
       });
     };
     this.addMessageListener("rollState", rollStateListener);
@@ -445,6 +436,20 @@ export class Pixel extends PixelInfoNotifier {
         state: info.rollState,
         face: info.currentFace,
       });
+    }
+  }
+
+  /**
+   * /!\ Internal, don't call this function ;)
+   */
+  _changeType(dieType: PixelDieType): void {
+    // Allow manually setting type until the firmware correctly
+    // identifies all dice types
+    if (dieType !== this.dieType) {
+      this._info.dieType = dieType;
+      console.log(
+        `[Pixel ${this.name}] !!! Changing die type to ${dieType} !!!`
+      );
     }
   }
 
@@ -1077,7 +1082,7 @@ export class Pixel extends PixelInfoNotifier {
     this._updateRollInfo({
       state:
         getValueKeyName(iAmADie.rollState, PixelRollStateValues) ?? "unknown",
-      face: iAmADie.currentFaceIndex + 1,
+      face: iAmADie.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
     });
   }
 
@@ -1138,6 +1143,15 @@ export class Pixel extends PixelInfoNotifier {
   private _updateRollInfo(
     info: Partial<{ state: PixelRollState; face: number }>
   ) {
+    if (info.face !== undefined) {
+      info.face = this._fixDieFace(info.face);
+      if (info.face === undefined) {
+        console.log(
+          `[Pixel ${this.name}] !!! Dropping ${this.dieType} roll event for face ${info.face} !!!`
+        );
+        return;
+      }
+    }
     const stateChanged =
       info.state !== undefined && this._info.rollState !== info.state;
     const faceChanged =
@@ -1157,6 +1171,20 @@ export class Pixel extends PixelInfoNotifier {
         this._evEmitter.emit("roll", info.face);
       }
     }
+  }
+
+  // TODO Temporary - Fix face value for d4 and d00
+  _fixDieFace(face: number): number | undefined {
+    switch (this.dieType) {
+      case "d4":
+        if (face === 1) return 1;
+        if (face === 3 || face === 4) return face - 1;
+        if (face === 6) return 4;
+        return undefined;
+      case "d00":
+        return face * 10;
+    }
+    return face;
   }
 
   // Callback on notify characteristic value change
@@ -1291,32 +1319,7 @@ export class Pixel extends PixelInfoNotifier {
     this._log("Finished sending bulk data");
   }
 
-  private static _getDieType(ledCount: number): DieType {
-    // For now we infer the die type from the number of LEDs, but eventually
-    // that value will be part of identification data.
-    switch (ledCount) {
-      case 4:
-        return "d4";
-      case 6:
-        return "d6";
-      case 8:
-        return "d8";
-      case 10:
-        return "d10";
-      case 12:
-        return "d12";
-      case 0: // Defaults unknown die to D20
-      case 20:
-        return "d20";
-      case 21:
-        return "d6pipped";
-      default:
-        // Fudge has 6 LEDs actually, but let's use it as our default for now
-        return "d6fudge";
-    }
-  }
-
-  private static getFaceCount(dieType: DieType): number {
+  private static getFaceCount(dieType: PixelDieType): number {
     // DieType must start by a letter followed by the number of faces
     let i = 2;
     while (i < dieType.length) {
