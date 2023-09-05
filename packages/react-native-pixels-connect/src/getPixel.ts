@@ -31,7 +31,12 @@ export function getPixel(id: string | number | Partial<ScannedPixel>): Pixel {
   );
   // Check for an existing Pixel object for the given system id
   let pixel = PixelsMap.get(systemId);
-  if (!pixel) {
+  if (pixel) {
+    if (typeof id === "object") {
+      // Update Pixel with scan data
+      pixel.updateInfo(id);
+    }
+  } else {
     // Create a new Pixel instance
     pixel = new Pixel(
       new BleSession(systemId),
