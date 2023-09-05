@@ -13,7 +13,7 @@ export default class AnimationGradient implements AnimationPreset {
   readonly type: number = AnimationTypeValues.gradient;
 
   @serializable(1)
-  animFlags = 0; // If 1 indices are led indices, not face indices
+  animFlags = 0;
 
   @serializable(2)
   duration = 0; // In milliseconds

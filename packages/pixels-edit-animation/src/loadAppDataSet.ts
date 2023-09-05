@@ -203,7 +203,9 @@ export function toAnimation(
       return new EditAnimationRainbow({
         name: data.name,
         duration: data.duration,
-        animFlags: data.traveling ? AnimationFlagsValues.traveling : 0,
+        animFlags: data.traveling
+          ? AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices
+          : 0,
         faces: data.faces,
         count: data.count,
         fade: data.fade,

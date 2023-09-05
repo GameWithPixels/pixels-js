@@ -137,7 +137,10 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
-              animFlags: data.traveling ? AnimationFlagsValues.traveling : 0,
+              animFlags: data.traveling
+                ? AnimationFlagsValues.traveling |
+                  AnimationFlagsValues.useLedIndices
+                : 0,
               faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
               fade: data.fade ?? 0,
@@ -149,7 +152,10 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
-              animFlags: data.traveling ? AnimationFlagsValues.traveling : 0,
+              animFlags: data.traveling
+                ? AnimationFlagsValues.traveling |
+                  AnimationFlagsValues.useLedIndices
+                : 0,
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
             });
             break;

@@ -6,7 +6,8 @@ import {
 export const PrebuildAnimations = {
   rainbow: new EditAnimationRainbow({
     duration: 10,
-    animFlags: AnimationFlagsValues.traveling,
+    animFlags:
+      AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     count: 4,
     fade: 0.5,
   }),

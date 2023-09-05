@@ -8,8 +8,10 @@ import AnimationInstance from "./AnimationInstance";
 export default interface AnimationPreset {
   /** See {@link AnimationTypeValues} for possible values. */
   readonly type: number;
+
   /** See {@link AnimationFlagsValues} for possible values. */
   animFlags: number;
+
   /** Animation duration in milliseconds. */
   duration: number;
 

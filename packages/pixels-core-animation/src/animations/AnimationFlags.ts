@@ -5,8 +5,8 @@ import { enumFlag } from "@systemic-games/pixels-core-utils";
  * @enum
  */
 export const AnimationFlagsValues = {
-  none: enumFlag(0),
-  traveling: enumFlag(),
+  none: 0,
+  traveling: enumFlag(0),
   useLedIndices: enumFlag(),
 } as const;
 
