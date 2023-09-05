@@ -39,10 +39,10 @@ import {
   PixelBatteryControllerStateValues,
   BatteryControllerState,
   ScannedPixel,
+  PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
-import { getDieType } from "./DieType";
 import { PixelDispatcherStatic as Static } from "./PixelDispatcherStatic";
 import { PrebuildAnimations } from "./PrebuildAnimations";
 import {
@@ -201,6 +201,10 @@ class PixelDispatcher extends ScannedPixelNotifier<
 
   get designAndColor(): PixelDesignAndColor {
     return this._getPixelInfo().designAndColor;
+  }
+
+  get dieType(): PixelDieType {
+    return this._getPixelInfo().dieType;
   }
 
   get firmwareDate(): Date {
@@ -625,7 +629,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
       let dataSet: DataSet;
       switch (type) {
         case "default":
-          dataSet = getDefaultProfile(getDieType(this._pixel.ledCount));
+          dataSet = getDefaultProfile(this._pixel.dieType);
           break;
         case "tiny": {
           const profile = new EditProfile();

@@ -1,7 +1,5 @@
 import {
   assert,
-  bitIndexToFlag,
-  combineFlags,
   delay,
   getValueKeyName,
   safeAssign,
@@ -26,18 +24,7 @@ import {
 
 import { pixelStopAllAnimations } from "../pixels/extensions";
 
-import { range } from "~/features/range";
 import { TaskCanceledError } from "~/features/tasks/useTask";
-
-// TODO Temp until FM update
-function getFaceMaskPd6(faceValue: number): number {
-  let start = 0;
-  for (let i = 1; i < faceValue; ++i) {
-    start += i;
-  }
-  const ledIndices = range(start, start + faceValue);
-  return combineFlags(ledIndices.map(bitIndexToFlag));
-}
 
 function getSignalReason(signal: AbortSignal, testName?: string): any {
   // No error when using DOM types -- @ts-expect-error reason not implemented in React Native)
@@ -436,7 +423,9 @@ export const ValidationTests = {
       timeout,
       async (signal) => {
         // Blink face
-        const options = { faceMask: getFaceMask(pixel.ledCount) };
+        const options = {
+          faceMask: getFaceMask(pixel.ledCount, pixel.dieType),
+        };
         await withBlink(
           pixel,
           blinkColor,
@@ -508,11 +497,12 @@ export const ValidationTests = {
     face: number,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    notifyFaceUp: (face: number) => void,
+    notifyFaceUp: (roll: RollEvent) => void,
     holdDelay = 1000, // Number of ms to wait before validating the face up
     timeout = 30000 // 30s
   ): Promise<void> {
     assert(face > 0);
+    console.log(`Waiting on face up: ${face}`);
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,
@@ -520,10 +510,7 @@ export const ValidationTests = {
       async (signal) => {
         // Blink face
         const options = {
-          faceMask:
-            pixel.dieType === "d6pipped"
-              ? getFaceMaskPd6(face)
-              : getFaceMask(face),
+          faceMask: getFaceMask(face, pixel.dieType),
         };
         await withBlink(
           pixel,
@@ -532,7 +519,7 @@ export const ValidationTests = {
           async () => {
             let onAbort: (() => void) | undefined;
             let rollListener: ((ev: RollEvent) => void) | undefined;
-            let lastFace = -1;
+            let lastRoll: RollEvent | undefined;
             try {
               await new Promise<void>((resolve, reject) => {
                 // Timeout that's setup once the die face up is the required one
@@ -557,11 +544,8 @@ export const ValidationTests = {
                     clearTimeout(holdTimeout);
                     holdTimeout = undefined;
                   }
-                  lastFace = currentFace;
-                  if (pixel.dieType === "d10") {
-                    lastFace -= 1;
-                  }
-                  notifyFaceUp(currentFace);
+                  lastRoll = { state, face: currentFace };
+                  notifyFaceUp(lastRoll);
                 };
                 // Abort function
                 onAbort = () => {
@@ -588,12 +572,9 @@ export const ValidationTests = {
               });
             } catch (error) {
               // TODO temporary
-              if (
-                lastFace >= 0 &&
-                error instanceof ValidationTestsTimeoutError
-              ) {
+              if (lastRoll && error instanceof ValidationTestsTimeoutError) {
                 throw new Error(
-                  `Timeout while waiting for face '${face}, face up was ${lastFace}`
+                  `Timeout waiting for face ${face}, face up was ${lastRoll.face} and state ${lastRoll.state}`
                 );
               } else {
                 throw error;
@@ -679,6 +660,13 @@ export const ValidationTests = {
   async exitValidationMode(pixel: Pixel): Promise<void> {
     // Exit validation mode, don't wait for response as die will restart
     await pixel.sendMessage("exitValidation", true);
+    // Replace above line by this code for testing
+    // await pixel.sendMessage(
+    //   safeAssign(new PowerOperation(), {
+    //     operation: PixelPowerOperationValues.reset,
+    //   }),
+    //   true
+    // );
   },
 
   async waitDisconnected(

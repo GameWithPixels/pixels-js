@@ -3,10 +3,11 @@ import { FastHStack } from "@systemic-games/react-native-base-components";
 import {
   Central,
   Color,
-  getPixel,
   Pixel,
   PixelConnectError,
+  PixelDieType,
   PixelScannerDispatchAction,
+  RollEvent,
   ScannedPixel,
   useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
@@ -24,7 +25,6 @@ import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
-import { DieType, getLEDCount } from "~/features/pixels/DieType";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { pixelStopAllAnimations } from "~/features/pixels/extensions";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
@@ -78,24 +78,28 @@ function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
 function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
   let faces: number[];
   switch (pixel.dieType) {
-    case "d20":
-      faces = [5, 10, 20];
+    case "d4":
+      faces = [2, 3, 4];
       break;
-    case "d12":
-      faces = [3, 6, 12];
-      break;
-    case "d10":
-      faces = [2, 5, 10];
+    case "d6":
+    case "d6pipped":
+    case "d6fudge":
+      faces = [2, 3, 6];
       break;
     case "d8":
       faces = [2, 4, 8];
       break;
-    case "d6pipped":
-    case "d6":
-      faces = [2, 3, 6];
+    case "d10":
+      faces = [1, 4, 9];
       break;
-    case "d4":
-      faces = [2, 3, 4];
+    case "d00":
+      faces = [10, 40, 90];
+      break;
+    case "d12":
+      faces = [3, 6, 12];
+      break;
+    case "d20":
+      faces = [5, 10, 20];
       break;
     default:
       throw new Error(
@@ -112,6 +116,44 @@ function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
       return faces[2];
     default:
       assertNever(step);
+  }
+}
+
+function _getLEDCount(dieType: PixelDieType): number {
+  switch (dieType) {
+    case "unknown":
+      return 0;
+    case "d4":
+    case "d6":
+    case "d6fudge":
+      return 6;
+    case "d6pipped":
+      return 21;
+    case "d8":
+      return 8;
+    case "d10":
+    case "d00":
+      return 10;
+    case "d12":
+      return 12;
+    case "d20":
+      return 20;
+    default:
+      assertNever(dieType);
+  }
+}
+
+function _getFudgeFaceDesc(face: number): string {
+  switch (face) {
+    case 1:
+      return " = ➕ (bottom)";
+    case 2:
+    case 5:
+      return " = ➖";
+    case 6:
+      return " = ➕ (top)";
+    default:
+      return "";
   }
 }
 
@@ -207,7 +249,7 @@ async function scanForPixelWithTimeout(
 
 export interface ValidationTestsSettings {
   sequence: ValidationSequence;
-  dieType: DieType;
+  dieType: PixelDieType;
 }
 
 export interface ValidationTestProps extends TaskComponentProps {
@@ -240,7 +282,8 @@ export function UpdateFirmware({
   const scannedPixelRef = React.useRef<ScannedPixel>();
   React.useEffect(() => {
     if (scannedPixels[0] && resolveScanPromise) {
-      pixelRef.current = getPixel(scannedPixels[0]);
+      // Make sure that we have a PixelDispatcher instance so messages are logged
+      pixelRef.current = PixelDispatcher.getDispatcher(scannedPixels[0]).pixel;
       scannedPixelRef.current = scannedPixels[0];
       onPixelFound?.(pixelRef.current);
       resolveScanPromise();
@@ -430,11 +473,12 @@ export function ConnectPixel({
           throw new TaskFaultedError("Empty scanned Pixel");
         }
         const ledCount = pixelRef.current.ledCount;
-        if (ledCount !== getLEDCount(settings.dieType)) {
+        if (ledCount !== _getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
             `Incorrect die type, expected ${settings.dieType} but got ${ledCount} LEDs`
           );
         }
+        pixelRef.current._changeType(settings.dieType);
       }, [settings.dieType]),
       createTaskStatusContainer(t("checkDieType"))
     )
@@ -618,7 +662,7 @@ export function CheckLEDs({
       children: (
         <MessageYesNo
           message={t("areAllLEDsWhiteWithCount", {
-            count: getLEDCount(settings.dieType),
+            count: _getLEDCount(settings.dieType),
           })}
           hideYesNo={!resolvePromise}
           onYes={() => resolvePromise?.()}
@@ -675,14 +719,15 @@ export function WaitFaceUp({
   pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
-  const [lastFaceUp, setLastFaceUp] = React.useState(-1);
+  const [lastRoll, setRoll] = React.useState<RollEvent>();
   const FaceUpText = () => (
     <>
-      {lastFaceUp >= 0 && (
+      {!!lastRoll && (
         <Text variant="bodyLarge">
-          {t("onFace")}
+          {t(lastRoll.state)}
           {t("colonSeparator")}
-          {lastFaceUp}
+          {lastRoll.face}
+          {pixel.dieType === "d6fudge" ? _getFudgeFaceDesc(lastRoll.face) : ""}
         </Text>
       )}
     </>
@@ -697,7 +742,7 @@ export function WaitFaceUp({
           _getFaceUp(pixel, "1"),
           Color.dimMagenta,
           abortSignal,
-          setLastFaceUp
+          setRoll
         ),
       [pixel]
     ),
@@ -715,7 +760,7 @@ export function WaitFaceUp({
             _getFaceUp(pixel, "2"),
             Color.dimYellow,
             abortSignal,
-            setLastFaceUp
+            setRoll
           ),
         [pixel]
       ),
@@ -733,7 +778,7 @@ export function WaitFaceUp({
             _getFaceUp(pixel, "3"),
             Color.dimCyan,
             abortSignal,
-            setLastFaceUp
+            setRoll
           ),
         [pixel]
       ),

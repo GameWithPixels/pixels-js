@@ -5,6 +5,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
+  PixelDieType,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useKeepAwake } from "expo-keep-awake";
@@ -43,7 +44,6 @@ import {
   TurnOffDevice,
 } from "~/components/ValidationTestsComponents";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
-import { DieType, DieTypes } from "~/features/pixels/DieType";
 import {
   getTaskResult,
   getTaskResultEmoji,
@@ -59,6 +59,19 @@ import {
 } from "~/features/validation/ValidationSequences";
 import { capitalize } from "~/i18n";
 import gs from "~/styles";
+
+// Die types used for validation
+const DieTypes: readonly PixelDieType[] = [
+  "d4",
+  "d6",
+  "d6pipped",
+  "d6fudge",
+  "d8",
+  "d10",
+  "d00",
+  "d12",
+  "d20",
+];
 
 function getTestingMessage(
   t: TFunction<"translation", undefined>,
@@ -155,7 +168,7 @@ function SelectDieTypePage({
   onBack,
 }: {
   sequence: ValidationSequence;
-  onSelectDieType: (type: DieType) => void;
+  onSelectDieType: (type: PixelDieType) => void;
   onBack?: () => void;
 }) {
   const { height } = useWindowDimensions();
@@ -573,7 +586,7 @@ function RunTestsPage({
 
 function ValidationPage() {
   const [sequence, setSequence] = React.useState<ValidationSequence>();
-  const [dieType, setDieType] = React.useState<DieType>();
+  const [dieType, setDieType] = React.useState<PixelDieType>();
   const [pixelId, setPixelId] = React.useState(0);
 
   return !sequence ? (

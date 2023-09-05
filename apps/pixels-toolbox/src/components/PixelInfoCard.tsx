@@ -79,7 +79,7 @@ function PixelRollState({ pixel, t }: PixelAndTranslation) {
   }, [pixel, forceUpdate]);
   return (
     <Text>
-      <Text>{`🎲 ${pixel.currentFace} `}</Text>
+      <Text>{`${t(pixel.dieType)} 🎲 ${pixel.currentFace} `}</Text>
       <Text style={gs.italic}>{`(${t(pixel.rollState)})`}</Text>
     </Text>
   );
