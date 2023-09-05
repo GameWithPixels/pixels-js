@@ -10,6 +10,11 @@ import {
   ConnectionStatus,
   Device,
 } from "./BluetoothLE";
+import {
+  PeripheralInfo,
+  CentralPeripheralsMap as peripheralsMap,
+  PeripheralState,
+} from "./CentralPeripheralsMap";
 import Constants from "./Constants";
 import * as Errors from "./errors";
 import {
@@ -68,23 +73,6 @@ export interface CentralEventMap {
   scannedPeripheral: ScannedPeripheralEvent;
 }
 
-type PeripheralState =
-  | "disconnected"
-  | "connecting"
-  | "ready"
-  | "disconnecting";
-
-interface PeripheralInfo {
-  scannedPeripheral: ScannedPeripheral;
-  state: PeripheralState;
-  requiredServices: string;
-  connStatusCallbacks: ((ev: PeripheralConnectionEvent) => void)[];
-  valueChangedCallbacks: Map<
-    string,
-    (ev: PeripheralCharacteristicValueChangedEvent) => void
-  >;
-}
-
 // Our native event emitter and subscriptions
 let _nativeEmitter: NativeEventEmitter | undefined;
 let _scanResultSubs: EmitterSubscription | undefined;
@@ -93,9 +81,6 @@ let _valueChangedSubs: EmitterSubscription | undefined;
 
 // Our scan event emitter
 const _scanEvEmitter = createTypedEventEmitter<CentralEventMap>();
-
-// List of known peripherals
-const _peripherals: Map<string, PeripheralInfo> = new Map();
 
 //
 let _bleInit = false;
@@ -115,7 +100,7 @@ function _getSystemId(peripheral: PeripheralOrSystemId): string {
 }
 
 function _getPeripheralInfo(peripheral: PeripheralOrSystemId): PeripheralInfo {
-  const pInf = _peripherals.get(_getSystemId(peripheral));
+  const pInf = peripheralsMap.get(_getSystemId(peripheral));
   if (!pInf) {
     throw new Errors.UnknownPeripheralError(_getSystemId(peripheral));
   }
@@ -143,7 +128,7 @@ export const Central = {
         (ev: BleConnectionEvent) => {
           try {
             // Forward event
-            const pInf = _peripherals.get(ev.device.systemId);
+            const pInf = peripheralsMap.get(ev.device.systemId);
             if (pInf) {
               let newState: PeripheralState;
               switch (ev.connectionStatus) {
@@ -192,7 +177,7 @@ export const Central = {
         (ev: BleCharacteristicValueChangedEvent) => {
           try {
             // Forward event
-            const pInf = _peripherals.get(ev.device.systemId);
+            const pInf = peripheralsMap.get(ev.device.systemId);
             if (pInf) {
               const onValueChanged = pInf.valueChangedCallbacks.get(
                 _toString(
@@ -232,7 +217,7 @@ export const Central = {
     _connStatusSubs = undefined;
     _valueChangedSubs?.remove();
     _valueChangedSubs = undefined;
-    _peripherals.clear();
+    peripheralsMap.clear();
     console.log("[BLE] Central has shutdown");
   },
 
@@ -245,11 +230,11 @@ export const Central = {
   },
 
   getScannedPeripherals(): ScannedPeripheral[] {
-    return [..._peripherals.values()].map((pInf) => pInf.scannedPeripheral);
+    return [...peripheralsMap.values()].map((pInf) => pInf.scannedPeripheral);
   },
 
   getConnectedPeripherals(): ScannedPeripheral[] {
-    return [..._peripherals.values()]
+    return [...peripheralsMap.values()]
       .filter((pInf) => pInf.state === "ready")
       .map((pInf) => pInf.scannedPeripheral);
   },
@@ -316,13 +301,13 @@ export const Central = {
                 ...ev.device,
                 advertisementData: ev.advertisementData,
               };
-              const pInf = _peripherals.get(ev.device.systemId);
+              const pInf = peripheralsMap.get(ev.device.systemId);
               if (pInf) {
                 pInf.scannedPeripheral = peripheral;
                 pInf.requiredServices = requiredServices;
                 // Note: don't change state as the peripheral might be in the process of being connected
               } else {
-                _peripherals.set(ev.device.systemId, {
+                peripheralsMap.set(ev.device.systemId, {
                   scannedPeripheral: peripheral,
                   state: "disconnected",
                   requiredServices,

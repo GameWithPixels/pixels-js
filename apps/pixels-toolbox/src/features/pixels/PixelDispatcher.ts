@@ -43,6 +43,7 @@ import {
 import RNFS from "react-native-fs";
 
 import { getDieType } from "./DieType";
+import { PixelDispatcherStatic as Static } from "./PixelDispatcherStatic";
 import { PrebuildAnimations } from "./PrebuildAnimations";
 import {
   pixelBlinkId,
@@ -181,10 +182,6 @@ class PixelDispatcher extends ScannedPixelNotifier<
   private _messagesLogFilePath;
   private _telemetryData: TelemetryData[] = [];
 
-  private static readonly _pxInstances = new Map<number, PixelDispatcher>();
-  private static _activeDFU: PixelDispatcher | undefined;
-  private static readonly _pendingDFUs: PixelDispatcher[] = [];
-
   get systemId(): string {
     return this._getPixelInfo().systemId;
   }
@@ -260,11 +257,11 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   get hasQueuedDFU(): boolean {
-    return PixelDispatcher._pendingDFUs.indexOf(this) >= 0;
+    return Static.dfuQueue.pending.indexOf(this) >= 0;
   }
 
   get hasActiveDFU(): boolean {
-    return this === PixelDispatcher._activeDFU;
+    return this === Static.dfuQueue.active;
   }
 
   get telemetryData(): readonly TelemetryData[] {
@@ -283,7 +280,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   static findDispatcher(pixelId: number) {
-    return PixelDispatcher._pxInstances.get(pixelId);
+    return Static.instances.get(pixelId);
   }
 
   static getDispatcher(
@@ -293,7 +290,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     // We don't use 'instanceof' as it doesn't work after a fast refresh (RN 71)
     const notifier = scannedPixel as ScannedPixelNotifier;
     return (
-      PixelDispatcher._pxInstances.get(scannedPixel.pixelId) ??
+      Static.instances.get(scannedPixel.pixelId) ??
       new PixelDispatcher(
         notifier.isScannedPixelNotifier
           ? notifier
@@ -306,7 +303,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     super(scannedPixel);
     this._scannedPixel = scannedPixel;
     this._pixel = getPixel(scannedPixel);
-    PixelDispatcher._pxInstances.set(this.pixelId, this);
+    Static.instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
       1e9 * Math.random()
@@ -701,12 +698,12 @@ class PixelDispatcher extends ScannedPixelNotifier<
   //
 
   private _queueDFU(): void {
-    if (this.hasAvailableDFU && !PixelDispatcher._pendingDFUs.includes(this)) {
+    if (this.hasAvailableDFU && !Static.dfuQueue.pending.includes(this)) {
       // Queue DFU request
-      PixelDispatcher._pendingDFUs.push(this);
+      Static.dfuQueue.pending.push(this);
       this._evEmitter.emit("hasQueuedDFU", true);
       // Run update immediately if it's the only pending request
-      if (!PixelDispatcher._activeDFU) {
+      if (!Static.dfuQueue.active) {
         this._guard(this._startDFU(), "startDfu");
       } else {
         console.log(`DFU queued for Pixel ${this.name}`);
@@ -715,9 +712,9 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   private _dequeueDFU(): void {
-    const i = PixelDispatcher._pendingDFUs.indexOf(this);
+    const i = Static.dfuQueue.pending.indexOf(this);
     if (i >= 0) {
-      PixelDispatcher._pendingDFUs.splice(i, 1);
+      Static.dfuQueue.pending.splice(i, 1);
       this._evEmitter.emit("hasQueuedDFU", false);
     }
   }
@@ -729,7 +726,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
       if (!bundle) {
         throw new Error("No DFU Files Selected");
       }
-      PixelDispatcher._activeDFU = this;
+      Static.dfuQueue.active = this;
       this._evEmitter.emit("hasActiveDFU", true);
       await updateFirmware(
         this._scannedPixel,
@@ -739,11 +736,11 @@ class PixelDispatcher extends ScannedPixelNotifier<
         (p) => this._evEmitter.emit("dfuProgress", p)
       );
     } finally {
-      assert(PixelDispatcher._activeDFU === this);
-      PixelDispatcher._activeDFU = undefined;
+      assert(Static.dfuQueue.active === this);
+      Static.dfuQueue.active = undefined;
       this._evEmitter.emit("hasActiveDFU", false);
       // Run next update if any
-      const pixel = PixelDispatcher._pendingDFUs[0];
+      const pixel = Static.dfuQueue.pending[0];
       if (pixel) {
         pixel._guard(pixel._startDFU(), "startDfu");
       }

@@ -6,6 +6,7 @@ import {
 } from "@systemic-games/pixels-core-connect";
 
 import { ScannedPixel } from "./ScannedPixel";
+import { ScannedPixelNotifiersMap as instancesMap } from "./ScannedPixelNotifiersMap";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -23,8 +24,6 @@ export class ScannedPixelNotifier<
   extends PixelInfoNotifier<MutableProps, Type>
   implements ScannedPixel
 {
-  private static readonly _instances = new Map<number, ScannedPixelNotifier>();
-
   private _data: Mutable<ScannedPixel>;
 
   // Use flag to identify instances of ScannedPixelNotifier
@@ -75,12 +74,12 @@ export class ScannedPixelNotifier<
   }
 
   static findInstance(pixelId: number): ScannedPixelNotifier | undefined {
-    return ScannedPixelNotifier._instances.get(pixelId);
+    return instancesMap.get(pixelId);
   }
 
   static getInstance(scannedPixel: ScannedPixel): ScannedPixelNotifier {
     return (
-      ScannedPixelNotifier._instances.get(scannedPixel.pixelId) ??
+      instancesMap.get(scannedPixel.pixelId) ??
       new ScannedPixelNotifier(scannedPixel)
     );
   }
