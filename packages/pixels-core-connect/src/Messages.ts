@@ -88,6 +88,8 @@ export const MessageTypeValues = {
   transferTest: enumValue(),
   transferTestAck: enumValue(),
   transferTestFinished: enumValue(),
+  clearSettings: enumValue(),
+  clearSettingsAck: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),

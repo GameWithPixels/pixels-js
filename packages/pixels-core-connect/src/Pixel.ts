@@ -733,6 +733,14 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
+   * Requests the Pixel to clear internal settings
+   * @returns A promise that resolves once the clear has been confirmed
+   */
+  async clearSettings(): Promise<void> {
+    await this.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
+  }
+
+  /**
    * Requests the Pixel to start faces calibration sequence.
    * @returns A promise that resolves once the message has been send.
    */

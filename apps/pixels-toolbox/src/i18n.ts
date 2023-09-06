@@ -211,6 +211,8 @@ i18n
           testSucceeded: "Test Successful!",
           testFailed: "Test Failed!",
           testCanceled: "Test Canceled!",
+          clearingSettings: "Clearing Settings",
+          clearSettings: "Clear Settings",
 
           // Roll Screen
           rollDemo: "Roll Demo",

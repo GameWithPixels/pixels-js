@@ -543,6 +543,10 @@ export function CheckBoard({
       createTaskStatusContainer(t("rssi"))
     );
   }
+  taskChain.chainWith(
+    React.useCallback(() => pixel.clearSettings(), [pixel]),
+    createTaskStatusContainer(t("clearSettings"))
+  );
   taskChain
     .withStatusChanged(_playSoundOnResult)
     .withStatusChanged(onTaskStatus);

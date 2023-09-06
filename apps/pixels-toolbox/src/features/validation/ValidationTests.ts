@@ -59,6 +59,21 @@ function isBatteryCharging(state: number): boolean {
   );
 }
 
+/**
+ * Convert a die face value or a list of face values to a face mask
+ * for use with the animation classes.
+ * @param dieType The type of die
+ * @returns A face (bit) mask.
+ * @category Face Utils
+ */
+function getTopFaceMask(pixel: Pixel): number {
+  if (pixel.dieType === "d00" || pixel.dieType === "d10") {
+    return getFaceMask(0, pixel.dieType);
+  } else {
+    return getFaceMask(pixel.dieFaceCount, pixel.dieType);
+  }
+}
+
 export class ValidationTestsTimeoutError extends Error {
   constructor(ms: number) {
     super(`Timed-out after waiting ${Math.round(ms / 1000)}s`);
@@ -424,7 +439,7 @@ export const ValidationTests = {
       async (signal) => {
         // Blink face
         const options = {
-          faceMask: getFaceMask(pixel.ledCount, pixel.dieType),
+          faceMask: getTopFaceMask(pixel),
         };
         await withBlink(
           pixel,
