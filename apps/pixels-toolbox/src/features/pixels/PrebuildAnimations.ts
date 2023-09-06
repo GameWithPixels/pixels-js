@@ -16,4 +16,11 @@ export const PrebuildAnimations = {
     count: 3,
     fade: 0.5,
   }),
+  fixedRainbow: new EditAnimationRainbow({
+    duration: 10,
+    animFlags:
+      AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
+    count: 0,
+    fade: 0.05,
+  }),
 } as const;

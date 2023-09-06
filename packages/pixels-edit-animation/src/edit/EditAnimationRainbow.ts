@@ -14,7 +14,7 @@ export default class EditAnimationRainbow extends EditAnimation {
   readonly type = "rainbow";
 
   @widget("count")
-  @range(1, 10)
+  @range(0, 10)
   @name("Repeat Count")
   @observable
   count: number;

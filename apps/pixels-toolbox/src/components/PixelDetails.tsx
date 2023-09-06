@@ -370,6 +370,16 @@ function BottomButtons({
               >
                 {t("rainbow")}
               </Button>
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch(
+                    "playAnimation",
+                    PrebuildAnimations.fixedRainbow
+                  )
+                }
+              >
+                {t("fixedRainbow")}
+              </Button>
               <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
               <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
                 {t("calibrate")}
@@ -453,6 +463,13 @@ function BottomButtons({
               </Button>
               <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
                 {t("setUserProfile")}
+              </Button>
+              <Button
+                onPress={() =>
+                  pixelDispatcher.dispatch("uploadProfile", "fixedRainbow")
+                }
+              >
+                {t("setFixedRainbowProfile")}
               </Button>
               <Button
                 onPress={() =>

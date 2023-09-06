@@ -11,6 +11,7 @@ import {
   EditAnimation,
   EditAnimationRainbow,
   EditConditionFaceCompare,
+  EditConditionHelloGoodbye,
   EditDataSet,
   EditProfile,
   EditRule,
@@ -40,6 +41,7 @@ import {
   BatteryControllerState,
   ScannedPixel,
   PixelDieType,
+  HelloGoodbyeFlagsValues,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -61,7 +63,7 @@ import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 
-export type ProfileType = "default" | "tiny";
+export type ProfileType = "default" | "tiny" | "fixedRainbow";
 
 export interface PixelDispatcherActionMap {
   connect: undefined;
@@ -631,6 +633,26 @@ class PixelDispatcher extends ScannedPixelNotifier<
         case "default":
           dataSet = getDefaultProfile(this._pixel.dieType);
           break;
+        case "fixedRainbow": {
+          const profile = new EditProfile();
+          profile.name = "fixedRainbow";
+          profile.rules.push(
+            new EditRule(
+              new EditConditionHelloGoodbye({
+                flags: HelloGoodbyeFlagsValues.hello,
+              }),
+              {
+                actions: [
+                  new EditActionPlayAnimation({
+                    animation: PrebuildAnimations.fixedRainbow,
+                  }),
+                ],
+              }
+            )
+          );
+          dataSet = createDataSetForProfile(profile).toDataSet();
+          break;
+        }
         case "tiny": {
           const profile = new EditProfile();
           profile.name = "test";

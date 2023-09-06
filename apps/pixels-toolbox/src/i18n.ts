@@ -117,6 +117,7 @@ i18n
           rollState: "Roll State",
           calibrate: "Calibrate",
           rainbow: "Rainbow",
+          fixedRainbow: "Static Rainbow",
           discharge: "Discharge",
           stopDischarge: "Stop Discharging",
           enableCharging: "Enable Charging",
@@ -135,6 +136,7 @@ i18n
           printSticker: "Print Sticker",
           reset: "Reset",
           full: "Full",
+          setFixedRainbowProfile: "Upload Static Hello",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -302,6 +304,7 @@ i18n
           rollState: "滚动状态",
           calibrate: "校准",
           rainbow: "彩虹动画效果",
+          fixedRainbow: "Static Rainbow",
           discharge: "放电",
           stopDischarge: "停止放电",
           enableCharging: "开始充电",
@@ -320,6 +323,7 @@ i18n
           printSticker: "Print Sticker",
           reset: "Reset",
           full: "Full",
+          setFixedRainbowProfile: "Updload Static Hello",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
