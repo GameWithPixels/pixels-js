@@ -259,19 +259,19 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
               value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
             })}
           </TextEntry>
-          <TextEntry title={t("batteryControllerState")}>
-            {t(
-              getValueKeyName(
-                telemetry?.batteryControllerState,
-                PixelBatteryControllerStateValues
-              ) ?? "unknown"
-            )}
-          </TextEntry>
           <TextEntry title={t("chargingState")}>
             {t(
               getValueKeyName(
                 telemetry?.batteryState,
                 PixelBatteryStateValues
+              ) ?? "unknown"
+            )}
+          </TextEntry>
+          <TextEntry title={t("batteryControllerState")}>
+            {t(
+              getValueKeyName(
+                telemetry?.batteryControllerState,
+                PixelBatteryControllerStateValues
               ) ?? "unknown"
             )}
           </TextEntry>
@@ -395,6 +395,9 @@ function BottomButtons({
                 onPress={() => pixelDispatcher.dispatch("resetAllSettings")}
               >
                 {t("resetAllSettings")}
+              </Button>
+              <Button onPress={() => pixelDispatcher.dispatch("rename")}>
+                {t("rename")}
               </Button>
             </>
           )}
@@ -639,6 +642,7 @@ export function PixelDetails({
   // Pixel
   const pixel = pixelDispatcher.pixel;
   const status = usePixelStatus(pixel);
+  const [name] = usePixelValue(pixel, "name");
 
   // Connect on mount
   React.useEffect(() => {
@@ -700,7 +704,7 @@ export function PixelDetails({
       <Card>
         <Card.Content>
           <FastVStack alignItems="center">
-            <Text variant="headlineMedium">{pixelDispatcher.name}</Text>
+            <Text variant="headlineMedium">{name ?? pixelDispatcher.name}</Text>
             <TextEntry title={t("status")}>{t(simpleStatus)}</TextEntry>
           </FastVStack>
           <PaperButton style={{ position: "absolute" }} onPress={goBack}>

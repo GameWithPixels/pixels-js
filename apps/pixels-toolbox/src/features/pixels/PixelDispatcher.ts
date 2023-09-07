@@ -193,8 +193,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   get name(): string {
-    // TODO use Pixel instance name when connected, update code for other props too
-    return this._scannedPixel.name;
+    return this._getPixelInfo().name;
   }
 
   get ledCount(): number {
@@ -481,7 +480,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
         );
         break;
       case "rename":
-        this._guard(this._pixel.rename((params as string) ?? ""), action);
+        this._guard(this._pixel.rename((params as string) ?? "Pixel"), action);
         break;
       case "uploadProfile":
         this._guard(
