@@ -54,15 +54,15 @@ export default class EditProfile extends Editable {
 
   collectAnimations(): EditAnimation[] {
     const animations: EditAnimation[] = [];
-    this.rules.forEach((r) => {
-      r.actions.forEach((action) => {
-        action.collectAnimations().forEach((anim) => {
+    for (const r of this.rules) {
+      for (const action of r.actions) {
+        for (const anim of action.collectAnimations()) {
           if (!animations.includes(anim)) {
             animations.push(anim);
           }
-        });
-      });
-    });
+        }
+      }
+    }
     return animations;
   }
 }

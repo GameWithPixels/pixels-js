@@ -150,12 +150,12 @@ export const Central = {
               }
               if (ev.connectionStatus !== "ready") {
                 // The ready status is notified once the MTU has been changed
-                pInf.connStatusCallbacks.forEach((cb) =>
+                for (const cb of pInf.connStatusCallbacks) {
                   cb({
                     peripheral: pInf.scannedPeripheral,
                     connectionStatus: ev.connectionStatus,
-                  })
-                );
+                  });
+                }
               }
             } else {
               console.warn(
@@ -472,12 +472,12 @@ export const Central = {
 
           // And finally set state to "ready"
           pInf.state = "ready";
-          pInf.connStatusCallbacks.forEach((cb) =>
+          for (const cb of pInf.connStatusCallbacks) {
             cb({
               connectionStatus: "ready",
               peripheral: pInf.scannedPeripheral,
-            })
-          );
+            });
+          }
         } else if (pInf.state !== "ready") {
           throw new Errors.ConnectError(name, "disconnected");
         }

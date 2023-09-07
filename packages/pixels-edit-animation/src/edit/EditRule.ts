@@ -29,11 +29,11 @@ export default class EditRule {
     // Create our action
     const actionOffset = set.actions.length;
     let actionId = ruleId << 8;
-    this.actions.forEach((editAction) => {
+    for (const editAction of this.actions) {
       const act = editAction.toAction(editSet, set, actionId);
       ++actionId;
       set.actions.push(act);
-    });
+    }
 
     return safeAssign(new Rule(), {
       condition: conditionIndex,
@@ -52,9 +52,9 @@ export default class EditRule {
     oldAnimation: EditAnimation,
     newAnimation: EditAnimation
   ): void {
-    this.actions.forEach((action) => {
+    for (const action of this.actions) {
       action.replaceAnimation(oldAnimation, newAnimation);
-    });
+    }
   }
 
   requiresAnimation(animation: EditAnimation): boolean {

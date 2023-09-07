@@ -22,7 +22,7 @@ export default class Die3D extends THREE.Object3D {
     }
   ) {
     super();
-    facesGeometry.forEach((geometry) => {
+    for (const geometry of facesGeometry) {
       const mat = new DieStandardMaterial(
         normalMap,
         faceMap,
@@ -49,7 +49,7 @@ export default class Die3D extends THREE.Object3D {
 
         this._lights.push(light);
       }
-    });
+    }
   }
 
   dispose(): void {

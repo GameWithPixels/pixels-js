@@ -33,9 +33,9 @@ export default class EditRgbTrack {
   toTrack(editSet: EditDataSet, bits: AnimationBits): RgbTrack {
     // Add the keyframes
     const keyframesOffset = bits.rgbKeyframes.length;
-    this.gradient.keyframes.forEach((editKeyframe) =>
-      bits.rgbKeyframes.push(editKeyframe.toRgbKeyframe(editSet, bits))
-    );
+    for (const editKeyframe of this.gradient.keyframes) {
+      bits.rgbKeyframes.push(editKeyframe.toRgbKeyframe(editSet, bits));
+    }
     return safeAssign(new RgbTrack(), {
       keyframesOffset,
       keyFrameCount: this.gradient.keyframes.length,

@@ -117,7 +117,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
             const scans = pendingScans.current;
             pendingScans.current = [];
             arr = [...arr];
-            scans.forEach((sp) => {
+            for (const sp of scans) {
               const index = arr.findIndex(
                 (item) => item.systemId === sp.systemId
               );
@@ -126,7 +126,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
               } else {
                 arr[index] = sp;
               }
-            });
+            }
           }
           return arr;
         }),

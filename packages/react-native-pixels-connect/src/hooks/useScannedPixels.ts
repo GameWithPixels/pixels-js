@@ -28,7 +28,7 @@ export function useScannedPixels(
       // Create new list to trigger a React re-render
       const retItems = [...items];
       // Apply updates
-      ops.forEach((op) => {
+      for (const op of ops) {
         const t = op.type;
         switch (t) {
           case "clear":
@@ -43,7 +43,7 @@ export function useScannedPixels(
           default:
             assertNever(t);
         }
-      });
+      }
       return retItems;
     },
     []

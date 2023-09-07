@@ -95,7 +95,7 @@ function forEachSerializableProp(
   if (!props?.length) {
     throw new SerializationError("Object has no serializable property");
   }
-  props.forEach((prop) => {
+  for (const prop of props) {
     const value = (obj as any)[prop.propertyKey];
     const isBuffer =
       value instanceof ArrayBuffer ||
@@ -116,7 +116,7 @@ function forEachSerializableProp(
       );
     }
     callback(prop, value);
-  });
+  }
 }
 
 function getNumber(
@@ -226,11 +226,11 @@ function internalSerialize<T extends object>(
   if (Array.isArray(objOrArray)) {
     const options = { dataView, byteOffset };
     // Serialize array
-    objOrArray.forEach((obj) => {
+    for (const obj of objOrArray) {
       const [dataView, byteOffset] = serialize(obj, options);
       options.dataView = dataView;
       options.byteOffset = byteOffset;
-    });
+    }
     return [options.dataView, options.byteOffset];
   } else {
     // Serialize object

@@ -64,11 +64,11 @@ export async function unzipDfuFilesFromAssets(
   for (const asset of assets) {
     const files = await unzipDfuFiles(asset, { clearCache });
     // Update files list
-    files.forEach((f) => {
+    for (const f of files) {
       if (pathnames.indexOf(f) < 0) {
         pathnames.push(f);
       }
-    });
+    }
   }
   return pathnames;
 }

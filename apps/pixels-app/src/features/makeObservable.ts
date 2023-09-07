@@ -22,7 +22,7 @@ export function makeObservable<T extends object>(obj: T): T {
     const propsData = decorators.getPropsWithObservable(obj);
     if (propsData.length) {
       const annotations: Partial<Record<keyof T, AnnotationMapEntry>> = {};
-      propsData.forEach((data) => {
+      for (const data of propsData) {
         annotations[data.propertyKey as keyof T] = observable;
         const prop = obj[data.propertyKey as keyof T];
         if (prop) {
@@ -32,7 +32,7 @@ export function makeObservable<T extends object>(obj: T): T {
             makeObservable(prop);
           }
         }
-      });
+      }
       mobxObservable(obj, annotations);
     }
   }

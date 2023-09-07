@@ -107,12 +107,12 @@ export class DiceSelection extends EventTarget {
 
   clear(disconnect?: boolean) {
     if (this._dice.length) {
-      this._dice.forEach((dd) => {
+      for (const dd of this._dice) {
         dd.unregister();
         if (disconnect) {
           dd.pixel.disconnect();
         }
-      });
+      }
       this._dice.length = 0;
       this.dispatchEvent(new Event("clear"));
     }

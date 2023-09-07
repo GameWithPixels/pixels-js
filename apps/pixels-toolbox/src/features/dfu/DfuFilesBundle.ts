@@ -103,7 +103,7 @@ export default class DfuFilesBundle {
     const getDirectory = (path?: string) =>
       path?.substring(0, path.lastIndexOf("/"));
 
-    filesInfo.forEach((fileInfo) => {
+    for (const fileInfo of filesInfo) {
       if (fileInfo.date && fileInfo.type) {
         const ms = fileInfo.date.getTime();
         const dir = getDirectory(fileInfo.pathname);
@@ -135,7 +135,7 @@ export default class DfuFilesBundle {
           `Couldn't read firmware date or type on DFU file: ${fileInfo.pathname}`
         );
       }
-    });
+    }
 
     return dfuBundles;
   }

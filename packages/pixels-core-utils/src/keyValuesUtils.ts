@@ -37,7 +37,9 @@ export function valuesToKeys<V, T extends { [key: string]: V }>(
   onMissingKey?: (value: V) => string
 ): (keyof T)[] {
   const valueToKey = new Map<V, string>();
-  Object.entries(keyValues).forEach((e) => valueToKey.set(e[1], e[0]));
+  for (const e of Object.entries(keyValues)) {
+    valueToKey.set(e[1], e[0]);
+  }
   return values.map((value) => {
     const k = valueToKey.get(value);
     if (k !== undefined) {

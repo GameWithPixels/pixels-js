@@ -52,27 +52,27 @@ export default class EditDataSet {
     const set = new DataSet();
 
     // Add patterns
-    this.patterns.forEach((editPattern) => {
+    for (const editPattern of this.patterns) {
       if (editPattern) {
         const tracks = editPattern.toTracks(this, set.animationBits);
         set.animationBits.tracks.push(...tracks);
       }
-    });
+    }
 
-    this.rgbPatterns.forEach((editPattern) => {
+    for (const editPattern of this.rgbPatterns) {
       if (editPattern) {
         const tracks = editPattern.toRgbTracks(this, set.animationBits);
         set.animationBits.rgbTracks.push(...tracks);
       }
-    });
+    }
 
     // Add animations
-    this.animations.forEach((editAnim) => {
+    for (const editAnim of this.animations) {
       if (editAnim) {
         const anim = editAnim.toAnimation(this, set.animationBits);
         set.animations.push(anim);
       }
-    });
+    }
 
     // Now convert
     set.profile = this.profile.toProfile(this, set);

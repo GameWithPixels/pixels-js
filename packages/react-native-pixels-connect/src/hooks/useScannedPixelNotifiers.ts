@@ -35,7 +35,7 @@ export function useScannedPixelNotifiers(
       // or removed but not when they are modified
       let retItems = items;
       // Apply updates
-      ops.forEach((op) => {
+      for (const op of ops) {
         const t = op.type;
         switch (t) {
           case "clear":
@@ -58,7 +58,7 @@ export function useScannedPixelNotifiers(
           default:
             assertNever(t);
         }
-      });
+      }
       return retItems;
     },
     []

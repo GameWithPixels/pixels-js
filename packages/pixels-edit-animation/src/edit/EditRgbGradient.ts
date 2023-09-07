@@ -35,9 +35,9 @@ export default class EditRgbGradient extends Editable {
 
   duplicate(uuid?: string): EditRgbGradient {
     const track = new EditRgbGradient({ uuid });
-    this.keyframes.forEach((keyframe) => {
+    for (const keyframe of this.keyframes) {
       track.keyframes.push(keyframe.duplicate());
-    });
+    }
     return track;
   }
 
