@@ -50,8 +50,8 @@ export default class TelemetryStats {
 
   push(telemetry: Telemetry): void {
     // Remove old frames
-    const tMin = telemetry.time - this._framesTimeSpan;
-    while (this._frames.length && this._frames[0].telemetry.time < tMin) {
+    const tMin = telemetry.timeMs - this._framesTimeSpan;
+    while (this._frames.length && this._frames[0].telemetry.timeMs < tMin) {
       this._frames.shift();
     }
     // Push new frame

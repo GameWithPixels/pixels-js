@@ -60,7 +60,7 @@ export function LineChart({
 
   // Some UI values
   // (assumes x1 value is representative of the space the labels take)
-  const labelWidth = (Math.floor(Math.log10(x1)) + 1) * fontSize;
+  const labelWidth = (Math.floor(Math.log10(Math.abs(x1))) + 1) * fontSize;
   const numLabelsX = Math.min(10, Math.ceil(layout.width / labelWidth / 2));
   const numLabelsY = Math.min(10, Math.ceil(layout.height / fontSize / 3));
 

@@ -46,10 +46,9 @@ import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import { useAppBackgroundState } from "~/features/hooks/useAppBackgroundState";
-import PixelDispatcher, {
-  TelemetryData,
-} from "~/features/pixels/PixelDispatcher";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
+import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { range } from "~/features/range";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { printStickerAsync } from "~/features/stickers/printStickerAsync";
@@ -105,7 +104,7 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
 }
 
 function TelemetryModal({
-  pixelDispatcher,
+  pixelDispatcher: pd,
   startTime,
   onSetStartTime,
   linesInfo,
@@ -118,8 +117,8 @@ function TelemetryModal({
 } & Omit<ModalProps, "children">) {
   const chartRef = React.useRef<DynamicLinesChartHandle>(null);
   const getValues = React.useCallback(
-    ({ timestamp, rssi, battery, voltage }: TelemetryData) => ({
-      x: Math.round((timestamp - startTime) / 1000),
+    ({ appTimestamp, rssi, battery, voltage }: TelemetryData) => ({
+      x: Math.round((appTimestamp - startTime) / 1000),
       yValues: [rssi, battery, voltage],
     }),
     [startTime]
@@ -129,8 +128,9 @@ function TelemetryModal({
   );
   React.useEffect(() => {
     if (props.visible) {
-      const data = pixelDispatcher.telemetryData;
-      const index = data.findIndex((t) => t.timestamp >= startTime);
+      // Reset points
+      const data = pd.telemetryData;
+      const index = data.findIndex((t) => t.appTimestamp >= startTime);
       const step = Math.floor((data.length - index) / 400);
       setPoints(
         index < 0
@@ -138,19 +138,20 @@ function TelemetryModal({
           : range(index, data.length, step).map((i) => getValues(data[i]))
       );
     }
-  }, [getValues, pixelDispatcher.telemetryData, props.visible, startTime]);
+  }, [getValues, pd.telemetryData, props.visible, startTime]);
   useEffect(() => {
     if (props.visible) {
       const listener = (data: Readonly<TelemetryData>) => {
+        // Add new point
         const values = getValues(data);
         chartRef.current?.push(values.x, values.yValues);
       };
-      pixelDispatcher.addEventListener("telemetry", listener);
+      pd.addEventListener("telemetry", listener);
       return () => {
-        pixelDispatcher.removeEventListener("telemetry", listener);
+        pd.removeEventListener("telemetry", listener);
       };
     }
-  }, [getValues, pixelDispatcher, props.visible]);
+  }, [getValues, pd, props.visible]);
 
   // Values for UI
   const window = useWindowDimensions();
@@ -221,7 +222,7 @@ const TelemetryLinesInfo = [
 
 function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   const [telemetry, dispatch] = usePixelValue(pixel, "telemetry", {
-    minInterval: 100, // Fast updates
+    minInterval: 200, // Fast updates
   });
   const status = usePixelStatus(pixel);
 
@@ -320,7 +321,7 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
 }
 
 function BottomButtons({
-  pixelDispatcher,
+  pixelDispatcher: pd,
   onShowTelemetry,
   onExportTelemetry,
   onExportMessages,
@@ -330,7 +331,7 @@ function BottomButtons({
   onExportTelemetry?: () => void;
   onExportMessages?: () => void;
 }) {
-  const status = usePixelStatus(pixelDispatcher.pixel);
+  const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
   const [printStatus, setPrintStatus] = React.useState("");
   const {
@@ -346,57 +347,41 @@ function BottomButtons({
     <>
       <FastHStack gap={6}>
         <FastVStack gap={4}>
-          <Button onPress={() => pixelDispatcher.dispatch(connectStr)}>
+          <Button onPress={() => pd.dispatch(connectStr)}>
             {t(connectStr)}
           </Button>
           {status === "ready" && (
             <>
               <Button onPress={onOpen}>{t("discharge")}</Button>
-              <Button
-                onPress={() => pixelDispatcher.dispatch("enableCharging")}
-              >
+              <Button onPress={() => pd.dispatch("enableCharging")}>
                 {t("enableCharging")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("blink")}>
-                {t("blink")}
-              </Button>
+              <Button onPress={() => pd.dispatch("blink")}>{t("blink")}</Button>
               <Button
                 onPress={() =>
-                  pixelDispatcher.dispatch(
-                    "playAnimation",
-                    PrebuildAnimations.rainbow
-                  )
+                  pd.dispatch("playAnimation", PrebuildAnimations.rainbow)
                 }
               >
                 {t("rainbow")}
               </Button>
               <Button
                 onPress={() =>
-                  pixelDispatcher.dispatch(
-                    "playAnimation",
-                    PrebuildAnimations.fixedRainbow
-                  )
+                  pd.dispatch("playAnimation", PrebuildAnimations.fixedRainbow)
                 }
               >
                 {t("fixedRainbow")}
               </Button>
               <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
-              <Button onPress={() => pixelDispatcher.dispatch("calibrate")}>
+              <Button onPress={() => pd.dispatch("calibrate")}>
                 {t("calibrate")}
               </Button>
-              <Button
-                onPress={() =>
-                  pixelDispatcher.dispatch("reprogramDefaultBehavior")
-                }
-              >
+              <Button onPress={() => pd.dispatch("reprogramDefaultBehavior")}>
                 {t("setMinimalProfile")}
               </Button>
-              <Button
-                onPress={() => pixelDispatcher.dispatch("resetAllSettings")}
-              >
+              <Button onPress={() => pd.dispatch("resetAllSettings")}>
                 {t("resetAllSettings")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("rename")}>
+              <Button onPress={() => pd.dispatch("rename")}>
                 {t("rename")}
               </Button>
             </>
@@ -405,7 +390,7 @@ function BottomButtons({
             onPress={() => {
               setPrintStatus("");
               onOpenPrint();
-              printStickerAsync(pixelDispatcher.pixel, (status) => {
+              printStickerAsync(pd.pixel, (status) => {
                 switch (status) {
                   case "preparing":
                     setPrintStatus("Preparing sticker...");
@@ -432,25 +417,21 @@ function BottomButtons({
         <FastVStack gap={4}>
           {status === "ready" && (
             <>
-              <Button onPress={() => pixelDispatcher.dispatch("turnOff")}>
+              <Button onPress={() => pd.dispatch("turnOff")}>
                 {t("turnOff")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("discharge", 0)}>
+              <Button onPress={() => pd.dispatch("discharge", 0)}>
                 {t("stopDischarge")}
               </Button>
-              <Button
-                onPress={() =>
-                  pixelDispatcher.dispatch("enableCharging", false)
-                }
-              >
+              <Button onPress={() => pd.dispatch("enableCharging", false)}>
                 {t("disableCharging")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("blinkId")}>
+              <Button onPress={() => pd.dispatch("blinkId")}>
                 {t("blinkId")}
               </Button>
               <Button
                 onPress={() =>
-                  pixelDispatcher.dispatch(
+                  pd.dispatch(
                     "playAnimation",
                     PrebuildAnimations.rainbowAllFaces
                   )
@@ -459,26 +440,18 @@ function BottomButtons({
                 {t("rainbowAllFaces")}
               </Button>
               <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
-              <Button
-                onPress={() => pixelDispatcher.dispatch("exitValidation")}
-              >
+              <Button onPress={() => pd.dispatch("exitValidation")}>
                 {t("exitValidationMode")}
               </Button>
-              <Button onPress={() => pixelDispatcher.dispatch("uploadProfile")}>
+              <Button onPress={() => pd.dispatch("uploadProfile")}>
                 {t("setUserProfile")}
               </Button>
               <Button
-                onPress={() =>
-                  pixelDispatcher.dispatch("uploadProfile", "fixedRainbow")
-                }
+                onPress={() => pd.dispatch("uploadProfile", "fixedRainbow")}
               >
                 {t("setFixedRainbowProfile")}
               </Button>
-              <Button
-                onPress={() =>
-                  pixelDispatcher.dispatch("playProfileAnimation", 0)
-                }
-              >
+              <Button onPress={() => pd.dispatch("playProfileAnimation", 0)}>
                 {t("playProfileAnim")}
               </Button>
             </>
@@ -488,7 +461,7 @@ function BottomButtons({
       </FastHStack>
 
       <DischargeModal
-        pixelDispatcher={pixelDispatcher}
+        pixelDispatcher={pd}
         visible={isOpen}
         onDismiss={onClose}
       />
@@ -503,7 +476,7 @@ function BottomButtons({
 }
 
 function DischargeModal({
-  pixelDispatcher,
+  pixelDispatcher: pd,
   ...props
 }: {
   pixelDispatcher: PixelDispatcher;
@@ -512,9 +485,9 @@ function DischargeModal({
   const [current, setCurrent] = React.useState(50);
   React.useEffect(() => {
     if (props.visible) {
-      pixelDispatcher.dispatch("discharge", props.visible && current);
+      pd.dispatch("discharge", props.visible && current);
     }
-  }, [current, pixelDispatcher, props.visible]);
+  }, [current, pd, props.visible]);
 
   // Values for UI
   const modalStyle = useModalStyle();
@@ -535,7 +508,7 @@ function DischargeModal({
         <FastHStack pt={20} justifyContent="space-around">
           <Button
             onPress={() => {
-              pixelDispatcher.dispatch("discharge", 0);
+              pd.dispatch("discharge", 0);
               props.onDismiss?.();
             }}
           >
@@ -629,7 +602,7 @@ function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
 }
 
 export function PixelDetails({
-  pixelDispatcher,
+  pixelDispatcher: pd,
   goBack,
 }: {
   pixelDispatcher: PixelDispatcher;
@@ -640,45 +613,39 @@ export function PixelDetails({
   const clearError = React.useCallback(() => setLastError(undefined), []);
 
   // Pixel
-  const pixel = pixelDispatcher.pixel;
+  const pixel = pd.pixel;
   const status = usePixelStatus(pixel);
   const [name] = usePixelValue(pixel, "name");
 
   // Connect on mount
   React.useEffect(() => {
     // TODO it shouldn't be necessary to do this check
-    if (pixelDispatcher.pixel.status === "disconnected") {
-      pixelDispatcher.pixel.connect().catch(setLastError);
+    if (pd.pixel.status === "disconnected") {
+      pd.pixel.connect().catch(setLastError);
     }
-  }, [pixelDispatcher]);
+  }, [pd]);
 
   // Profile upload
   const [uploadProgress, setUploadProgress] = React.useState<number>();
   React.useEffect(() => {
-    pixelDispatcher.addEventListener("error", setLastError);
-    pixelDispatcher.addEventListener(
-      "profileUploadProgress",
-      setUploadProgress
-    );
+    pd.addEventListener("error", setLastError);
+    pd.addEventListener("profileUploadProgress", setUploadProgress);
     return () => {
-      pixelDispatcher.removeEventListener("error", setLastError);
-      pixelDispatcher.removeEventListener(
-        "profileUploadProgress",
-        setUploadProgress
-      );
+      pd.removeEventListener("error", setLastError);
+      pd.removeEventListener("profileUploadProgress", setUploadProgress);
     };
-  }, [pixelDispatcher]);
+  }, [pd]);
 
   // Telemetry Graph
   const [startTime, setStartTime] = React.useState(
-    pixelDispatcher.telemetryData[0]?.timestamp ?? Date.now()
+    pd.telemetryData[0]?.appTimestamp ?? Date.now()
   );
   const changeStartTime = React.useCallback(
     (t: number) =>
       setStartTime(
-        t >= 0 ? t : pixelDispatcher.telemetryData[0]?.timestamp ?? Date.now()
+        t >= 0 ? t : pd.telemetryData[0]?.appTimestamp ?? Date.now()
       ),
-    [pixelDispatcher]
+    [pd]
   );
   const { isOpen, onOpen, onClose } = useDisclose();
 
@@ -704,7 +671,7 @@ export function PixelDetails({
       <Card>
         <Card.Content>
           <FastVStack alignItems="center">
-            <Text variant="headlineMedium">{name ?? pixelDispatcher.name}</Text>
+            <Text variant="headlineMedium">{name ?? pd.name}</Text>
             <TextEntry title={t("status")}>{t(simpleStatus)}</TextEntry>
           </FastVStack>
           <PaperButton style={{ position: "absolute" }} onPress={goBack}>
@@ -731,20 +698,16 @@ export function PixelDetails({
               <ErrorCard error={lastError} clear={clearError} />
             ) : (
               <BottomButtons
-                pixelDispatcher={pixelDispatcher}
+                pixelDispatcher={pd}
                 onShowTelemetry={onOpen}
                 onExportTelemetry={() => {
                   const filename =
-                    getDatedFilename([pixelDispatcher.name, "telemetry"]) +
-                    ".csv";
-                  exportCsv(filename, pixelDispatcher.telemetryData).catch(
-                    setLastError
-                  );
+                    getDatedFilename([pd.name, "telemetry"]) + ".csv";
+                  exportCsv(filename, pd.telemetryData).catch(setLastError);
                 }}
                 onExportMessages={() => {
                   const filename =
-                    getDatedFilename([pixelDispatcher.name, "messages"]) +
-                    ".json";
+                    getDatedFilename([pd.name, "messages"]) + ".json";
                   const saveFile = async () => {
                     // The boolean below is always false to test file sharing on Android
                     const isAndroid = false && Platform.OS === "android";
@@ -752,7 +715,7 @@ export function PixelDetails({
                       ? await requestUserFileAsync(filename)
                       : FileSystem.cacheDirectory + filename;
                     try {
-                      await pixelDispatcher.exportMessages(uri);
+                      await pd.exportMessages(uri);
                       if (!isAndroid) {
                         await shareFileAsync(uri);
                       }
@@ -773,7 +736,7 @@ export function PixelDetails({
       <ProfileUpdateModal updateProgress={uploadProgress} />
 
       <TelemetryModal
-        pixelDispatcher={pixelDispatcher}
+        pixelDispatcher={pd}
         linesInfo={TelemetryLinesInfo}
         startTime={startTime}
         onSetStartTime={changeStartTime}

@@ -3,7 +3,6 @@ import {
   assertNever,
   createTypedEventEmitter,
   EventReceiver,
-  getValueKeyName,
 } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForProfile,
@@ -34,11 +33,6 @@ import {
   getMessageType,
   Telemetry,
   MessageTypeValues,
-  PixelBatteryState,
-  PixelRollStateValues,
-  PixelBatteryStateValues,
-  PixelBatteryControllerStateValues,
-  BatteryControllerState,
   ScannedPixel,
   PixelDieType,
   HelloGoodbyeFlagsValues,
@@ -47,6 +41,7 @@ import RNFS from "react-native-fs";
 
 import { PixelDispatcherStatic as Static } from "./PixelDispatcherStatic";
 import { PrebuildAnimations } from "./PrebuildAnimations";
+import { TelemetryData, toTelemetryData } from "./TelemetryData";
 import {
   pixelBlinkId,
   pixelDischarge,
@@ -55,13 +50,13 @@ import {
   pixelReprogramDefaultBehavior,
   pixelResetAllSettings,
 } from "./extensions";
+import { getDefaultProfile } from "./getDefaultProfile";
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
-import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 
 export type ProfileType = "default" | "tiny" | "fixedRainbow";
 
@@ -119,28 +114,6 @@ export type PixelDispatcherMutableProps =
 // | "hasAvailableDFU"
 // | "hasQueuedDFU"
 // | "hasActiveDFU"
-
-export type TelemetryData = {
-  accX: number;
-  accY: number;
-  accZ: number;
-  faceConfidence: number;
-  timestamp: number;
-  rollState: PixelRollState;
-  faceIndex: number;
-  battery: number;
-  batteryState: PixelBatteryState;
-  batteryControllerState: BatteryControllerState;
-  voltage: number;
-  voltageCoil: number;
-  rssi: number;
-  rssiChannelIndex: number;
-  mcuTemperature: number;
-  batteryTemperature: number;
-  internalChargeState: boolean;
-  forceDisableChargingState: boolean;
-  ledCurrent: number;
-};
 
 export class PixelDispatcherError extends Error {
   protected readonly _pixel: PixelDispatcher;
@@ -377,36 +350,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     });
     // Telemetry
     this._pixel.addMessageListener("telemetry", (msg) => {
-      const telemetry = msg as Telemetry;
-      const data = {
-        accX: telemetry.accXTimes1000 / 1000,
-        accY: telemetry.accYTimes1000 / 1000,
-        accZ: telemetry.accZTimes1000 / 1000,
-        faceConfidence: telemetry.faceConfidenceTimes1000 / 1000,
-        timestamp: telemetry.time,
-        rollState:
-          getValueKeyName(telemetry.rollState, PixelRollStateValues) ??
-          "unknown",
-        faceIndex: telemetry.faceIndex,
-        battery: telemetry.batteryLevelPercent,
-        batteryState:
-          getValueKeyName(telemetry.batteryState, PixelBatteryStateValues) ??
-          "error",
-        batteryControllerState:
-          getValueKeyName(
-            telemetry.batteryControllerState,
-            PixelBatteryControllerStateValues
-          ) ?? "unknown",
-        voltage: telemetry.voltageTimes50 / 50,
-        voltageCoil: telemetry.vCoilTimes50 / 50,
-        rssi: telemetry.rssi,
-        rssiChannelIndex: telemetry.channelIndex,
-        mcuTemperature: telemetry.mcuTemperatureTimes100 / 100,
-        batteryTemperature: telemetry.batteryTemperatureTimes100 / 100,
-        internalChargeState: telemetry.internalChargeState,
-        forceDisableChargingState: telemetry.forceDisableChargingState,
-        ledCurrent: telemetry.ledCurrent,
-      };
+      const data = toTelemetryData(msg as Telemetry);
       this._telemetryData.push(data);
       this._evEmitter.emit("telemetry", data);
     });

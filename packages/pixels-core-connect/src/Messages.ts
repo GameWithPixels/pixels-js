@@ -486,8 +486,9 @@ export class Telemetry implements PixelMessage {
   @serializable(4, { numberFormat: "signed" })
   faceConfidenceTimes1000 = 0;
 
+  /** Firmware time in ms for when the data was gathered. */
   @serializable(4)
-  time = 0;
+  timeMs = 0;
 
   /** Current roll state. */
   @serializable(1)

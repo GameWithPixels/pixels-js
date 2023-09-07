@@ -154,7 +154,7 @@ export const DynamicLinesChart = React.forwardRef(function (
     const { min: x0, max: x1, scale: sx } = srcData;
     // Update X labels
     // (assumes x1 value is representative of the space the labels take)
-    const labelWidth = (Math.floor(Math.log10(x1)) + 1) * fontSize;
+    const labelWidth = Math.floor(Math.log10(Math.abs(x1)) + 1) * fontSize;
     const numLabelsX = Math.min(10, Math.ceil(area.w / labelWidth / 2));
     rdrData.xLabels = Array(numLabelsX)
       .fill(0)

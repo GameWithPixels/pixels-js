@@ -137,7 +137,7 @@ i18n
           reset: "Reset",
           full: "Full",
           setFixedRainbowProfile: "Upload Static Hello",
-          rename: "重命名",
+          rename: "Rename",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -325,7 +325,7 @@ i18n
           reset: "Reset",
           full: "Full",
           setFixedRainbowProfile: "Updload Static Hello",
-          rename: "Rename",
+          rename: "重命名",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
