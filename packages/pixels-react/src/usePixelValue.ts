@@ -88,6 +88,8 @@ function _requestProp<T extends keyof PixelEventMap>(
  * Maps the value name with the corresponding data type.
  */
 export interface UsePixelValueNamesMap {
+  /** Updated when the die is renamed. */
+  name: string;
   /** Updates with the result of a roll.
    *  @remarks
    *  - The value is an object with the face number rather than just a number
@@ -181,6 +183,18 @@ export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
     }
     if (pixel && valueName && status === "ready" && isActive) {
       switch (valueName) {
+        case "name": {
+          // Set the state value with the current name
+          setValue(pixel.name as ValueType);
+          // Create name property listener
+          const onName = () => setValue(pixel.name as ValueType);
+          // Listen to name changes
+          pixel.addPropertyListener("name", onName);
+          return () => {
+            pixel.removePropertyListener("name", onName);
+          };
+        }
+
         case "roll": {
           // We don't immediately set the state value,
           // rather we wait on the next roll to update it
