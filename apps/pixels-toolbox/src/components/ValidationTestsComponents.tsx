@@ -373,14 +373,15 @@ export function UpdateFirmware({
           "DFU files loaded, firmware/bootloader build date is",
           toLocaleDateTimeString(dfuBundle.date)
         );
+        // Use firmware date from scanned data as it is the most up-to-date
         console.log(
           "On device firmware build timestamp is",
-          toLocaleDateTimeString(pixel.firmwareDate)
+          toLocaleDateTimeString(dfuTarget.firmwareDate)
         );
         // Start DFU
         if (
-          !areSameFirmwareDates(dfuBundle.date, pixel.firmwareDate) &&
-          dfuBundle.date > pixel.firmwareDate
+          !areSameFirmwareDates(dfuBundle.date, dfuTarget.firmwareDate) &&
+          dfuBundle.date > dfuTarget.firmwareDate
         ) {
           const dfuPromise = new Promise<void>((resolve, reject) => {
             setResolveRejectDfuPromise({ resolve, reject });
