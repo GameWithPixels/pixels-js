@@ -26,7 +26,10 @@ import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import { pixelStopAllAnimations } from "~/features/pixels/extensions";
+import {
+  pixelClearSettings,
+  pixelStopAllAnimations,
+} from "~/features/pixels/extensions";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
@@ -260,6 +263,7 @@ export interface ValidationTestProps extends TaskComponentProps {
 interface ValidationTestScanProps extends Omit<ValidationTestProps, "pixel"> {
   pixelId: number;
   onPixelFound?: (pixel: Pixel) => void;
+  onFirmwareUpdated?: () => void;
 }
 
 export function UpdateFirmware({
@@ -267,6 +271,7 @@ export function UpdateFirmware({
   onTaskStatus,
   pixelId,
   onPixelFound,
+  onFirmwareUpdated,
 }: ValidationTestScanProps) {
   const { t } = useTranslation();
 
@@ -315,10 +320,11 @@ export function UpdateFirmware({
       } else if (dfuState === "aborted") {
         reject(new Error("Firmware update aborted"));
       } else if (dfuState === "completed") {
+        onFirmwareUpdated?.();
         resolve();
       }
     }
-  }, [dfuLastError, dfuState, resolveRejectDfuPromise]);
+  }, [dfuLastError, dfuState, onFirmwareUpdated, resolveRejectDfuPromise]);
 
   const taskChain = useTaskChain(
     action,
@@ -510,12 +516,17 @@ export function ConnectPixel({
   );
 }
 
+interface ValidationTestCheckBoardProps extends ValidationTestProps {
+  firmwareUpdated: boolean;
+}
+
 export function CheckBoard({
   action,
   onTaskStatus,
   pixel,
   settings,
-}: ValidationTestProps) {
+  firmwareUpdated,
+}: ValidationTestCheckBoardProps) {
   const { t } = useTranslation();
 
   const taskChain = useTaskChain(
@@ -545,7 +556,11 @@ export function CheckBoard({
     );
   }
   taskChain.chainWith(
-    React.useCallback(() => pixel.clearSettings(), [pixel]),
+    React.useCallback(async () => {
+      if (firmwareUpdated) {
+        await pixelClearSettings(pixel);
+      }
+    }, [pixel, firmwareUpdated]),
     createTaskStatusContainer(t("clearSettings"))
   );
   taskChain

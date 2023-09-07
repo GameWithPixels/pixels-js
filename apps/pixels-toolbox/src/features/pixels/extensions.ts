@@ -7,6 +7,10 @@ import {
   TransferTest,
 } from "@systemic-games/react-native-pixels-connect";
 
+function log(pixel: Pixel, message: string): void {
+  console.log(`[Pixel ${pixel.name}] ${message}`);
+}
+
 /**
  * Requests Pixel to blink its Pixel id with red, green, blue light patterns
  * and wait for a confirmation.
@@ -34,17 +38,11 @@ export async function pixelForceEnableCharging(
   pixel: Pixel,
   enable: boolean
 ): Promise<void> {
-  if (enable) {
-    await pixel.sendMessage(
-      "enableCharging",
-      true // withoutAck
-    );
-  } else {
-    await pixel.sendMessage(
-      "disableCharging",
-      true // withoutAck
-    );
-  }
+  log(pixel, `${enable ? "Enabling" : "Disabling"} charging`);
+  await pixel.sendMessage(
+    enable ? "enableCharging" : "disableCharging",
+    true // withoutAck
+  );
 }
 
 /**
@@ -110,6 +108,7 @@ export async function pixelReprogramDefaultBehavior(
  * @returns A promise that resolves once the die has finished re-programming.
  */
 export async function pixelResetAllSettings(pixel: Pixel): Promise<void> {
+  log(pixel, "Resetting all settings");
   await pixel.sendAndWaitForResponse(
     "programDefaultParameters",
     "programDefaultParametersFinished"
@@ -144,4 +143,14 @@ export async function pixelPlayProfileAnimation(
     loop,
   });
   await pixel.sendMessage(playAnim);
+}
+
+/**
+ * Requests the Pixel to clear internal settings
+ * @param pixel The Pixel instance to use.
+ * @returns A promise that resolves once the clear has been confirmed
+ */
+export async function pixelClearSettings(pixel: Pixel): Promise<void> {
+  log(pixel, "Clearing settings");
+  await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
 }

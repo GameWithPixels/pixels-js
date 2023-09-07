@@ -392,6 +392,11 @@ function RunTestsPage({
   const { t } = useTranslation();
   const [pixel, setPixel] = React.useState<Pixel>();
   const [cancel, setCancel] = React.useState(false);
+  const [firmwareUpdated, setFirmwareUpdated] = React.useState(false);
+  const onFirmwareUpdated = React.useCallback(
+    () => setFirmwareUpdated(true),
+    []
+  );
 
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
@@ -401,6 +406,7 @@ function RunTestsPage({
         pixelId={pixelId}
         settings={settings}
         onPixelFound={setPixel}
+        onFirmwareUpdated={onFirmwareUpdated}
       />
     ))
   );
@@ -429,7 +435,16 @@ function RunTestsPage({
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks
       ...useTaskComponent("CheckBoard", cancel, (p) => (
-        <>{pixel && <CheckBoard {...p} pixel={pixel} settings={settings} />}</>
+        <>
+          {pixel && (
+            <CheckBoard
+              {...p}
+              pixel={pixel}
+              settings={settings}
+              firmwareUpdated={firmwareUpdated}
+            />
+          )}
+        </>
       ))
     );
     if (settings.sequence !== "boardNoCoil") {
