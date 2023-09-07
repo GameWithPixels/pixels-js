@@ -18,8 +18,7 @@ export const PrebuildAnimations = {
   }),
   fixedRainbow: new EditAnimationRainbow({
     duration: 10,
-    animFlags:
-      AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
+    animFlags: AnimationFlagsValues.traveling,
     count: 0,
     fade: 0.05,
   }),
