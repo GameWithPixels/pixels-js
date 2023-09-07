@@ -3,6 +3,7 @@ export * from "./assertNever";
 export * from "./bernsteinHash";
 export * from "./createTypedEventEmitter";
 export * from "./decodeUtf8";
+export * from "./encodeUtf8";
 export * from "./delay";
 export * from "./enum";
 export * from "./safeAssign";

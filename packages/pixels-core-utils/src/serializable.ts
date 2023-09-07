@@ -3,6 +3,7 @@ import "reflect-metadata";
 
 import { assert } from "./assert";
 import { decodeUtf8 } from "./decodeUtf8";
+import { encodeUtf8 } from "./encodeUtf8";
 
 const serializableKey = Symbol("pixelAnimationSerializable");
 
@@ -95,8 +96,7 @@ function forEachSerializableProp(
     throw new SerializationError("Object has no serializable property");
   }
   props.forEach((prop) => {
-    //@ts-expect-error Accessing property on unknown type
-    const value = obj[prop.propertyKey];
+    const value = (obj as any)[prop.propertyKey];
     const isBuffer =
       value instanceof ArrayBuffer ||
       (value.buffer && value.buffer instanceof ArrayBuffer);
@@ -105,17 +105,117 @@ function forEachSerializableProp(
       typeof value !== "bigint" &&
       typeof value !== "boolean" &&
       typeof value !== "string" &&
-      // !Array.isArray(value) &&
       !isBuffer
     ) {
       throw new SerializationError(
-        `Invalid property type, got ${typeof value} for ${
-          prop.propertyKey
-        } but expects number or bigint`
+        Array.isArray(value)
+          ? "Invalid property type, got an array, use an 'ArrayBufferLike' instead"
+          : `Invalid property type, got ${typeof value} for ${
+              prop.propertyKey
+            } but expected number or bigint`
       );
     }
     callback(prop, value);
   });
+}
+
+function getNumber(
+  value: any,
+  type:
+    | "int8"
+    | "uint8"
+    | "int16"
+    | "uint16"
+    | "int32"
+    | "uint32"
+    | "float32"
+    | "float64"
+): number {
+  const n = Number(value);
+  let min, max;
+  switch (type) {
+    case "int8":
+      min = -128;
+      max = 127;
+      break;
+    case "uint8":
+      min = 0;
+      max = 255;
+      break;
+    case "int16":
+      min = -32768;
+      max = 32767;
+      break;
+    case "uint16":
+      min = 0;
+      max = 65535;
+      break;
+    case "int32":
+      min = -2147483648;
+      max = 2147483647;
+      break;
+    case "uint32":
+      min = 0;
+      max = 4294967295;
+      break;
+    case "float32":
+      break;
+    case "float64":
+      break;
+  }
+  if (min && max) {
+    if (n < min) {
+      throw new SerializationError(`Value ${n} too small to fit in a ${type}`);
+    }
+    if (n > max) {
+      throw new SerializationError(`Value ${n} too big to fit in a ${type}`);
+    }
+  }
+  return n;
+}
+
+function writeNumber(
+  dataView: DataView,
+  byteOffset: number,
+  value: any,
+  size: number,
+  isSigned: boolean,
+  isFloat: boolean
+) {
+  switch (size) {
+    case 1:
+      if (isSigned) {
+        dataView.setInt8(byteOffset, getNumber(value, "int8"));
+      } else {
+        dataView.setUint8(byteOffset, getNumber(value, "uint8"));
+      }
+      break;
+    case 2:
+      if (isSigned) {
+        dataView.setInt16(byteOffset, getNumber(value, "int16"), true);
+      } else {
+        dataView.setUint16(byteOffset, getNumber(value, "uint16"), true);
+      }
+      break;
+    case 4:
+      if (isFloat) {
+        dataView.setFloat32(byteOffset, getNumber(value, "float32"), true);
+      } else if (isSigned) {
+        dataView.setInt32(byteOffset, getNumber(value, "int32"), true);
+      } else {
+        dataView.setInt32(byteOffset, getNumber(value, "uint32"), true);
+      }
+      break;
+    case 8:
+      if (isFloat) {
+        dataView.setFloat64(byteOffset, getNumber(value, "float64"), true);
+      } else throw new SerializationError("BigInt not supported");
+      break;
+    default:
+      throw new SerializationError(
+        `Invalid property size, got ${size} but expected 1, 2, 4, or 8`
+      );
+  }
 }
 
 function internalSerialize<T extends object>(
@@ -136,7 +236,12 @@ function internalSerialize<T extends object>(
     // Serialize object
     forEachSerializableProp(objOrArray, (prop, value) => {
       let buffer: ArrayBuffer | undefined;
-      if (value instanceof ArrayBuffer) {
+      // Check if our value is a string
+      if (typeof value === "string") {
+        buffer = encodeUtf8(value).buffer;
+      }
+      // Or a buffer
+      else if (value instanceof ArrayBuffer) {
         buffer = value;
       } else if (value.buffer && value.buffer instanceof ArrayBuffer) {
         buffer = value.buffer;
@@ -153,48 +258,10 @@ function internalSerialize<T extends object>(
           ++byteOffset;
         }
       } else {
+        // Value must be a numeric type then
         const isFloat = prop.options?.numberFormat === "float";
         const isSigned = prop.options?.numberFormat === "signed";
-        // TODO check value < max
-        switch (prop.size) {
-          case 1:
-            if (isSigned) {
-              dataView.setInt8(byteOffset, Number(value));
-            } else {
-              dataView.setUint8(byteOffset, Number(value));
-            }
-            break;
-          case 2:
-            if (isSigned) {
-              dataView.setInt16(byteOffset, Number(value), true);
-            } else {
-              dataView.setUint16(byteOffset, Number(value), true);
-            }
-            break;
-          case 4:
-            if (isFloat) {
-              dataView.setFloat32(byteOffset, Number(value), true);
-            } else if (isSigned) {
-              dataView.setInt32(byteOffset, Number(value), true);
-            } else {
-              dataView.setInt32(byteOffset, Number(value), true);
-            }
-            break;
-          case 8:
-            if (isFloat) {
-              dataView.setFloat64(byteOffset, Number(value), true);
-            } else throw new SerializationError("BigInt not supported");
-            // if (isSigned) {
-            //   dataView.setBigInt64(byteOffset, BigInt(value), true);
-            // } else {
-            //   dataView.setBigUint64(byteOffset, BigInt(value), true);
-            // }
-            break;
-          default:
-            throw new SerializationError(
-              `Invalid property size, got ${prop.size} but expects 1, 2, 4, or 8`
-            );
-        }
+        writeNumber(dataView, byteOffset, value, prop.size, isSigned, isFloat);
         byteOffset += prop.size + (prop.options?.padding ?? 0);
       }
     });
@@ -202,8 +269,44 @@ function internalSerialize<T extends object>(
   }
 }
 
+function readNumber(
+  dataView: DataView,
+  byteOffset: number,
+  size: number,
+  isSigned: boolean,
+  isFloat: boolean
+): number {
+  switch (size) {
+    case 1:
+      return isSigned
+        ? dataView.getInt8(byteOffset)
+        : dataView.getUint8(byteOffset);
+    case 2:
+      return isSigned
+        ? dataView.getInt16(byteOffset, true)
+        : dataView.getUint16(byteOffset, true);
+    case 4:
+      return isFloat
+        ? dataView.getFloat32(byteOffset, true)
+        : isSigned
+        ? dataView.getInt32(byteOffset, true)
+        : dataView.getUint32(byteOffset, true);
+    case 8:
+      if (isFloat) {
+        return dataView.getFloat64(byteOffset, true);
+      } else throw new SerializationError("BigInt not supported");
+    // : isSigned
+    // ? dataView.getBigInt64(byteOffset, true)
+    // : dataView.getBigUint64(byteOffset, true);
+    default:
+      throw new SerializationError(
+        `Invalid property size, got ${size} but expected 1, 2, 4, or 8`
+      );
+  }
+}
+
 function internalDeserialize<T extends object>(
-  obj: T | T[],
+  objOrArray: T | T[],
   dataView: DataView,
   byteOffset = 0
 ): [DataView, number] {
@@ -222,53 +325,38 @@ function internalDeserialize<T extends object>(
     } else {
       assert(
         typeof value === typeof prevValue,
-        `Incorrect value type, got ${typeof value} but was expecting ${typeof prevValue}`
+        `Incorrect value type, got ${typeof value} but but expected ${typeof prevValue}`
       );
     }
-    //@ts-expect-error Accessing property on unknown type
-    obj[prop.propertyKey] = value;
+    (obj as any)[prop.propertyKey] = value;
   }
-  forEachSerializableProp(obj, (prop, value) => {
-    if (typeof value === "string") {
-      // TODO this code assumes that the string is the last property to read!
-      const msgArr = dataView.buffer.slice(dataView.byteOffset + byteOffset);
-      setProp(obj, prop, decodeUtf8(new Uint8Array(msgArr)), value);
+  forEachSerializableProp(objOrArray, (prop, value) => {
+    if (Array.isArray(objOrArray)) {
+      throw new SerializationError(
+        "Array type not (yet) supported for serialization"
+      );
+    } else if (typeof value === "string") {
+      const begin = dataView.byteOffset + byteOffset;
+      if (begin + prop.size > dataView.buffer.byteLength) {
+        throw new SerializationError(
+          `Unexpected property size, got ${prop.size} but there are only ${
+            dataView.buffer.byteLength - begin
+          } left`
+        );
+      }
+      const msgArr = dataView.buffer.slice(begin, begin + prop.size);
+      setProp(objOrArray, prop, decodeUtf8(new Uint8Array(msgArr)), value);
     } else {
       const isFloat = prop.options?.numberFormat === "float";
       const isSigned = prop.options?.numberFormat === "signed";
-      let newVal: number | bigint;
-      switch (prop.size) {
-        case 1:
-          newVal = isSigned
-            ? dataView.getInt8(byteOffset)
-            : dataView.getUint8(byteOffset);
-          break;
-        case 2:
-          newVal = isSigned
-            ? dataView.getInt16(byteOffset, true)
-            : dataView.getUint16(byteOffset, true);
-          break;
-        case 4:
-          newVal = isFloat
-            ? dataView.getFloat32(byteOffset, true)
-            : isSigned
-            ? dataView.getInt32(byteOffset, true)
-            : dataView.getUint32(byteOffset, true);
-          break;
-        case 8:
-          if (isFloat) {
-            newVal = dataView.getFloat64(byteOffset, true);
-          } else throw new SerializationError("BigInt not supported");
-          // : isSigned
-          // ? dataView.getBigInt64(byteOffset, true)
-          // : dataView.getBigUint64(byteOffset, true);
-          break;
-        default:
-          throw new SerializationError(
-            `Invalid property size, got ${prop.size} but expects 1, 2, 4, or 8`
-          );
-      }
-      setProp(obj, prop, newVal, value);
+      const newValue = readNumber(
+        dataView,
+        byteOffset,
+        prop.size,
+        isSigned,
+        isFloat
+      );
+      setProp(objOrArray, prop, newValue, value);
     }
     byteOffset += prop.size + (prop.options?.padding ?? 0);
   });
@@ -292,7 +380,7 @@ export function serialize<T extends object>(
     );
     assert(
       byteOffset === dataView.buffer.byteLength,
-      `Incorrect offset after serialization, got ${byteOffset} but was expecting ${dataView.buffer.byteLength}`
+      `Incorrect offset after serialization, got ${byteOffset} but expected ${dataView.buffer.byteLength}`
     );
     return [dataView, byteOffset];
   } else {
