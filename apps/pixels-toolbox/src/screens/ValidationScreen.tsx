@@ -12,7 +12,14 @@ import { useKeepAwake } from "expo-keep-awake";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
-import { ScrollView, StyleSheet, useWindowDimensions } from "react-native";
+import {
+  FlexStyle,
+  ScrollView,
+  StyleSheet,
+  TextStyle,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import {
   Button,
   ButtonProps,
@@ -60,6 +67,9 @@ import {
 import { capitalize } from "~/i18n";
 import gs from "~/styles";
 
+// Board types used for validation
+const BoardTypes: readonly PixelDieType[] = ["d6", "d8", "d10", "d12", "d20"];
+
 // Die types used for validation
 const DieTypes: readonly PixelDieType[] = [
   "d4",
@@ -97,11 +107,13 @@ function BottomButton({
 function LargeTonalButton({
   children,
   height,
+  width,
   fontSize,
   ...props
 }: TouchableRippleProps & {
-  height: number;
-  fontSize: number;
+  height?: FlexStyle["height"];
+  width?: FlexStyle["width"];
+  fontSize: TextStyle["fontSize"];
   children: React.ReactNode;
 }) {
   const theme = useTheme();
@@ -112,8 +124,10 @@ function LargeTonalButton({
       rippleColor={theme.colors.surface}
       style={{
         height,
+        width,
         backgroundColor: theme.colors.secondaryContainer,
         borderRadius,
+        margin: 10,
         alignContent: "center",
         justifyContent: "center",
       }}
@@ -143,7 +157,7 @@ function SelectSequencePage({
   const btnHeight = (height - 180) / ValidationSequences.length;
   const { t } = useTranslation();
   return (
-    <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
+    <FastVStack w="100%" h="100%" px={5} py={10} justifyContent="space-around">
       {ValidationSequences.map((sequence) => (
         <LargeTonalButton
           key={sequence}
@@ -171,24 +185,43 @@ function SelectDieTypePage({
   onSelectDieType: (type: PixelDieType) => void;
   onBack?: () => void;
 }) {
-  const { height } = useWindowDimensions();
-  const btnHeight = (height - 200) / (DieTypes.length * 1.5);
+  const types = isBoard(sequence) ? BoardTypes : DieTypes;
+  const { width, height } = useWindowDimensions();
+  const btnHeight = (height - 200) / (types.length * 1.5);
+  const columns = types.length > 6;
   const { t } = useTranslation();
   return (
     <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
       <Text variant="headlineSmall" style={styles.textCenter}>
         {t("testingSequence", { sequence: t(sequence) })}
       </Text>
-      {DieTypes.map((dt) => (
-        <LargeTonalButton
-          key={dt}
-          height={btnHeight}
-          fontSize={24}
-          onPress={() => onSelectDieType(dt)}
-        >
-          {t(dt)}
-        </LargeTonalButton>
-      ))}
+      <View
+        style={
+          columns
+            ? {
+                flexGrow: 1,
+                flexDirection: "row",
+                flexWrap: "wrap",
+                alignContent: "space-around",
+              }
+            : {
+                flexGrow: 1,
+                justifyContent: "space-around",
+              }
+        }
+      >
+        {types.map((dt) => (
+          <LargeTonalButton
+            key={dt}
+            height={columns ? 2 * btnHeight : btnHeight}
+            width={columns ? width / 2 - 30 : undefined}
+            fontSize={24}
+            onPress={() => onSelectDieType(dt)}
+          >
+            {t(dt)}
+          </LargeTonalButton>
+        ))}
+      </View>
       <BottomButton onPress={onBack}>{t("back")}</BottomButton>
     </FastVStack>
   );
