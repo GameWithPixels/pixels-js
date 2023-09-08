@@ -91,7 +91,7 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
   return (
     <>
       <TextEntry title={t("pixelId")}>
-        {pixel.pixelId}
+        {pixel.pixelId.toString(16)}
         {t("commaSeparator")}
         {t("leds") + t("colonSeparator")}
         {pixel.ledCount}, {pixel.designAndColor}
