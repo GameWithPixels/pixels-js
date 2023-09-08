@@ -8,6 +8,7 @@ import {
   assert,
   byteSizeOf,
   createTypedEventEmitter,
+  deserialize,
   EventReceiver,
   getValueKeyName,
   Mutable,
@@ -1054,26 +1055,31 @@ export class Pixel extends PixelInfoNotifier {
     )) as IAmADie;
 
     // We should have got the response
-    if (this._info.pixelId && this._info.pixelId !== iAmADie.pixelId) {
-      throw new PixelConnectIdMismatchError(this, iAmADie.pixelId);
+    if (this._info.pixelId && this._info.pixelId !== iAmADie.dieInfo.pixelId) {
+      throw new PixelConnectIdMismatchError(this, iAmADie.dieInfo.pixelId);
     }
 
     // Update properties
-    this._info.ledCount = iAmADie.ledCount;
+    this._info.ledCount = iAmADie.dieInfo.ledCount;
     this._info.colorway =
-      getValueKeyName(iAmADie.colorway, PixelColorwayValues) ?? "unknown";
+      getValueKeyName(iAmADie.dieInfo.colorway, PixelColorwayValues) ??
+      "unknown";
     this._info.dieType =
-      getValueKeyName(iAmADie.dieType, PixelDieTypeValues) ?? "unknown";
-    this._info.pixelId = iAmADie.pixelId;
-    this._updateFirmwareDate(new Date(1000 * iAmADie.buildTimestamp));
+      getValueKeyName(iAmADie.dieInfo.dieType, PixelDieTypeValues) ?? "unknown";
+    this._info.pixelId = iAmADie.dieInfo.pixelId;
+    this._updateFirmwareDate(
+      new Date(1000 * iAmADie.firmwareInfo.buildTimestamp)
+    );
     this._updateBatteryInfo({
-      level: iAmADie.batteryLevelPercent,
-      isCharging: isPixelChargingOrDone(iAmADie.batteryState),
+      level: iAmADie.statusInfo.batteryLevelPercent,
+      isCharging: isPixelChargingOrDone(iAmADie.statusInfo.batteryState),
     });
     this._updateRollInfo({
       state:
-        getValueKeyName(iAmADie.rollState, PixelRollStateValues) ?? "unknown",
-      face: iAmADie.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
+        getValueKeyName(iAmADie.statusInfo.rollState, PixelRollStateValues) ??
+        "unknown",
+      face:
+        iAmADie.statusInfo.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
     });
   }
 
@@ -1190,16 +1196,20 @@ export class Pixel extends PixelInfoNotifier {
   // Callback on notify characteristic value change
   private _onValueChanged(dataView: DataView) {
     try {
-      const msgOrType = deserializeMessage(dataView.buffer);
+      if (this._logData) {
+        this._logArray(dataView.buffer);
+      }
+      const msgOrType =
+        dataView.byteLength &&
+        dataView.getUint8(0) === MessageTypeValues.iAmADie
+          ? this._deserializeImADie(dataView)
+          : deserializeMessage(dataView);
       if (msgOrType) {
         const msgName = getMessageType(msgOrType);
         if (this._logMessages) {
           this._log(
             `Received message ${msgName} (${MessageTypeValues[msgName]})`
           );
-          if (this._logData) {
-            this._logArray(dataView.buffer);
-          }
           if (typeof msgOrType === "object") {
             // Log message contents
             this._log(msgOrType);
@@ -1213,8 +1223,43 @@ export class Pixel extends PixelInfoNotifier {
         this._log("Received invalid message");
       }
     } catch (error) {
-      this._log("CharacteristicValueChanged error: " + error);
+      this._log(`Message deserialization error: ${error}`);
     }
+  }
+
+  private _deserializeImADie(dataView: DataView): IAmADie {
+    assert(dataView.getUint8(0) === MessageTypeValues.iAmADie);
+    const msg = new IAmADie();
+    let offset = 1;
+    let typeSize = 1;
+    for (const [key, value] of Object.entries(msg)) {
+      if (key !== ("type" as keyof IAmADie)) {
+        assert(typeof value === "object" && "chunkSize" in value);
+        typeSize += value.chunkSize;
+        const dataSize = dataView.getUint8(offset);
+        if (dataSize !== value.chunkSize) {
+          console.log(
+            `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
+          );
+        }
+        deserialize(
+          value,
+          new DataView(
+            dataView.buffer,
+            dataView.byteOffset + offset,
+            Math.min(dataSize, value.chunkSize)
+          ),
+          { allowSkipLastProps: true }
+        );
+        offset += dataSize;
+      }
+    }
+    if (typeSize !== dataView.byteLength) {
+      console.log(
+        `Received IAmADie of size ${dataView.byteLength} but expected ${typeSize} bytes`
+      );
+    }
+    return msg;
   }
 
   /**

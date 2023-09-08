@@ -6,6 +6,7 @@ import {
   serializable,
   SerializationError,
   serialize,
+  byteSizeOf,
 } from "@systemic-games/pixels-core-utils";
 
 import { Constants } from "./Constants";
@@ -266,25 +267,24 @@ export function serializeMessage(
 
 /**
  * Attempts to deserialize the data of the given buffer into a Pixel message.
- * @param buffer The data to deserialize the message from.
+ * @param dataView The data to deserialize the message from.
  * @returns The deserialized message or just its type value (for messages with no class).
  * @category Message
  */
-export function deserializeMessage(buffer: ArrayBufferLike): MessageOrType {
-  if (!buffer?.byteLength) {
+export function deserializeMessage(dataView: DataView): MessageOrType {
+  if (!dataView.byteLength) {
     throw new SerializationError("Can't deserialize an empty buffer");
   }
-  const dataView = new DataView(buffer);
   const msgTypeValue = dataView.getUint8(0);
-  if (buffer.byteLength === 1) {
+  if (dataView.byteLength === 1) {
     return getMessageType(msgTypeValue);
   } else {
     const msg = instantiateMessage(getMessageType(msgTypeValue));
-    const [_, byteRead] = deserialize(msg, dataView);
-    if (byteRead !== buffer.byteLength) {
-      console.log(
+    const bytesRead = deserialize(msg, dataView);
+    if (bytesRead !== dataView.byteLength) {
+      console.warn(
         `The last ${
-          buffer.byteLength - byteRead
+          dataView.byteLength - bytesRead
         } bytes were not read while deserializing message of type ${msg.type}`
       );
     }
@@ -309,6 +309,22 @@ export class GenericPixelMessage implements PixelMessage {
     this.type = type;
   }
 }
+
+/**
+ * The possible chip models used for Pixels dice.
+ * @enum
+ * @category Message
+ */
+export const PixelChipModelValues = {
+  unknown: enumValue(0),
+  nRF52810: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link PixelChipModelValues}.
+ * @category Message
+ */
+export type PixelChipModel = keyof typeof PixelChipModelValues;
 
 /**
  * Available combinations of Pixel designs and colors.
@@ -356,13 +372,74 @@ export const PixelDieTypeValues = {
 export type PixelDieType = keyof typeof PixelDieTypeValues;
 
 /**
- * Message send by a Pixel after receiving a "WhoAmI" message.
+ * Available combinations of Pixels dice designs and colors.
+ * @enum
  * @category Message
  */
-export class IAmADie implements PixelMessage {
-  /** Type of the message. */
+export const PixelDesignAndColorValues = {
+  unknown: enumValue(0),
+  generic: enumValue(),
+  onyxBlack: enumValue(),
+  hematiteGrey: enumValue(),
+  midnightGalaxy: enumValue(),
+  auroraSky: enumValue(),
+  auroraClear: enumValue(),
+  custom: 0xff,
+} as const;
+
+/**
+ * The names for the "enum" type {@link PixelDesignAndColorValues}.
+ * @category Message
+ */
+export type PixelDesignAndColor = keyof typeof PixelDesignAndColorValues;
+
+export interface MessageChunk {
+  // On initialization: size of serializable object
+  // After deserialization: number of bytes read from buffer
+  chunkSize: number;
+}
+
+export class VersionInfo implements MessageChunk {
+  /** Size in bytes of the version info data chunk. */
   @serializable(1)
-  readonly type = MessageTypeValues.iAmADie;
+  chunkSize = byteSizeOf(this);
+
+  @serializable(4)
+  apiVersion = 0;
+
+  @serializable(4)
+  profileVersion = 0;
+
+  @serializable(2)
+  tier1 = 0;
+
+  @serializable(2)
+  tier2 = 0;
+
+  @serializable(2)
+  tier3 = 0;
+
+  @serializable(2)
+  tier4 = 0;
+
+  @serializable(2)
+  tier5 = 0;
+}
+
+export class DieInfo implements MessageChunk {
+  /** Size in bytes of the die info data chunk. */
+  @serializable(1)
+  chunkSize = byteSizeOf(this);
+
+  /** The Pixel id. */
+  @serializable(4)
+  pixelId = 0;
+
+  @serializable(1)
+  chipModel = PixelChipModelValues.unknown;
+
+  @serializable(1)
+  dieType = PixelDieTypeValues.unknown;
 
   /** Number of LEDs. */
   @serializable(1)
@@ -372,37 +449,56 @@ export class IAmADie implements PixelMessage {
   @serializable(1)
   colorway = PixelColorwayValues.unknown;
 
-  /** Type of die. */
-  @serializable(1)
-  dieType = PixelDieTypeValues.unknown;
+  @serializable(32)
+  customDesignAndColorName = ""; // Set only when designAndColor is custom
 
-  /** Hash of the uploaded profile. */
-  @serializable(4)
-  dataSetHash = 0;
+  @serializable(32)
+  name = "";
 
-  /** The Pixel id. */
-  @serializable(4)
-  pixelId = 0;
-
-  /** Amount of available flash. */
   @serializable(2)
-  availableFlashSize = 0;
+  plop = 0;
+}
+
+export class FirmwareInfo implements MessageChunk {
+  /** Size in bytes of the die info data chunk. */
+  @serializable(1)
+  chunkSize = byteSizeOf(this);
 
   /** UNIX timestamp in seconds for the date of the firmware. */
   @serializable(4)
   buildTimestamp = 0;
 
-  // Roll state
+  // @serializable(4)
+  // firmwareVersion = 0;
+}
 
-  /** Current roll state. */
+export class SettingsInfo implements MessageChunk {
+  /** Size in bytes of the settings info data chunk. */
   @serializable(1)
-  rollState = PixelRollStateValues.unknown;
+  chunkSize = byteSizeOf(this);
 
-  /** Face index, starts at 0. */
+  @serializable(4)
+  settingsTimeStamp = 0;
+
+  /** Hash of the uploaded profile. */
+  @serializable(4)
+  profileDataHash = 0;
+
+  /** Amount of available flash to store data. */
+  @serializable(4)
+  availableFlash = 0;
+
+  /** Total amount of flash that can be used to store data */
+  @serializable(4)
+  totalUsableFlash = 0;
+}
+
+export class StatusInfo implements MessageChunk {
+  /** Size in bytes of the battery info data chunk. */
   @serializable(1)
-  currentFaceIndex = 0;
+  chunkSize = byteSizeOf(this);
 
-  // Battery level
+  // Battery
 
   /** The battery charge level in percent. */
   @serializable(1)
@@ -411,6 +507,31 @@ export class IAmADie implements PixelMessage {
   /** The charging state of the battery. */
   @serializable(1)
   batteryState = PixelBatteryStateValues.ok;
+
+  // Rolls
+
+  /** Current roll state. */
+  @serializable(1)
+  rollState = PixelRollStateValues.unknown;
+
+  /** Face index, starts at 0. */
+  @serializable(1)
+  currentFaceIndex = 0;
+}
+
+/**
+ * Message send by a Pixel after receiving a "WhoAmI" message.
+ * @category Message
+ */
+export class IAmADie implements PixelMessage {
+  @serializable(1)
+  readonly type = MessageTypeValues.iAmADie;
+
+  versionInfo = new VersionInfo();
+  dieInfo = new DieInfo();
+  firmwareInfo = new FirmwareInfo();
+  settingsInfo = new SettingsInfo();
+  statusInfo = new StatusInfo();
 }
 
 /**
