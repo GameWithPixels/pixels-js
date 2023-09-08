@@ -392,16 +392,3 @@ export function serialize<T extends object>(
     );
   }
 }
-
-export function deserialize<T extends object>(
-  source: T,
-  dataView: DataView,
-  byteOffset = 0
-): [DataView, number] {
-  return internalDeserialize(source, dataView, byteOffset);
-}
-
-export function align32bits(size: number): number {
-  const extra = size % 4;
-  return size + (extra ? 4 - extra : 0);
-}

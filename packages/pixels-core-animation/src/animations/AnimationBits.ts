@@ -1,14 +1,11 @@
-import {
-  align32bits,
-  byteSizeOf,
-  serialize,
-} from "@systemic-games/pixels-core-utils";
+import { byteSizeOf, serialize } from "@systemic-games/pixels-core-utils";
 
 import { Constants } from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 import RgbTrack from "./RgbTrack";
 import SimpleKeyframe from "./SimpleKeyframe";
 import Track from "./Track";
+import { align32bits } from "../align32bits";
 import Color from "../color/Color";
 import * as Color32Utils from "../color/color32Utils";
 

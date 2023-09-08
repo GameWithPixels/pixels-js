@@ -1,11 +1,11 @@
 import {
   assert,
-  align32bits,
   byteSizeOf,
   bernsteinHash,
   serialize,
 } from "@systemic-games/pixels-core-utils";
 
+import { align32bits } from "./align32bits";
 import AnimationBits from "./animations/AnimationBits";
 import AnimationPreset from "./animations/AnimationPreset";
 import Action from "./profiles/Action";
