@@ -20,6 +20,12 @@ export default class EditAnimationRainbow extends EditAnimation {
   count: number;
 
   @widget("slider")
+  @range(1, 10)
+  @name("Cycle Count")
+  @observable
+  cycles: number;
+
+  @widget("slider")
   @range(0, 1)
   @name("Fading Sharpness")
   @observable
@@ -45,12 +51,14 @@ export default class EditAnimationRainbow extends EditAnimation {
     count?: number;
     fade?: number;
     intensity?: number;
+    cycles?: number;
   }) {
     super(opt);
     this.faces = opt?.faces ?? Constants.faceMaskAll;
     this.count = opt?.count ?? 1;
     this.fade = opt?.fade ?? 0;
     this.intensity = opt?.intensity ?? 0.5;
+    this.cycles = opt?.cycles ?? 1;
   }
 
   toAnimation(_editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
@@ -61,6 +69,7 @@ export default class EditAnimationRainbow extends EditAnimation {
       fade: this.fade * 255,
       count: this.count,
       intensity: this.intensity * 255,
+      cyclesTimes10: this.cycles * 10,
     });
   }
 

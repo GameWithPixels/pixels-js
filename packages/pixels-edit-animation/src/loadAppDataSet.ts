@@ -209,6 +209,7 @@ export function toAnimation(
         faces: data.faces,
         count: data.count,
         fade: data.fade,
+        cycles: 1,
       }) as EditAnimation;
     case AnimationTypeValues.keyframed:
       return new EditAnimationKeyframed({

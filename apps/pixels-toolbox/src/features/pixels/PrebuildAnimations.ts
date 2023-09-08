@@ -10,6 +10,7 @@ export const PrebuildAnimations = {
       AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     count: 4,
     fade: 0.5,
+    cycles: 1,
   }),
   rainbowAllFaces: new EditAnimationRainbow({
     duration: 10,
@@ -18,8 +19,10 @@ export const PrebuildAnimations = {
   }),
   fixedRainbow: new EditAnimationRainbow({
     duration: 10,
-    animFlags: AnimationFlagsValues.traveling,
+    animFlags:
+      AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     count: 0,
     fade: 0.05,
+    cycles: 3.67,
   }),
 } as const;

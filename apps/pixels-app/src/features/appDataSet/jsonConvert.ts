@@ -145,6 +145,7 @@ function toAnimationsAndGradients(
               count: data.count ?? 1,
               fade: data.fade ?? 0,
               intensity: 128,
+              cycles: 1,
             });
             break;
           case "keyframed":
