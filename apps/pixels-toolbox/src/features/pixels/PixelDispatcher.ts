@@ -3,6 +3,7 @@ import {
   assertNever,
   createTypedEventEmitter,
   EventReceiver,
+  Mutable,
 } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForProfile,
@@ -19,14 +20,12 @@ import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
   getPixel,
-  PixelInfo,
   Pixel,
   PixelColorway,
   PixelRollState,
   PixelStatus,
   PixelInfoNotifier,
   ScannedPixelNotifier,
-  PixelInfoNotifierMutableProps,
   FaceCompareFlagsValues,
   DataSet,
   MessageOrType,
@@ -36,6 +35,7 @@ import {
   ScannedPixel,
   PixelDieType,
   HelloGoodbyeFlagsValues,
+  ScannedPixelNotifierMutableProps,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -64,6 +64,11 @@ export type ProfileType =
   | "fixedRainbow"
   | "fixedRainbowD4";
 
+/**
+ * Action map for {@link PixelDispatcher} class.
+ * This is the list of supported actions where the property name
+ * is the action name and the property type the action data type.
+ */
 export interface PixelDispatcherActionMap {
   connect: undefined;
   disconnect: undefined;
@@ -85,16 +90,13 @@ export interface PixelDispatcherActionMap {
   dequeueDFU: undefined;
 }
 
-export type PixelDispatcherActionName = keyof PixelDispatcherActionMap;
-
 /**
  * Event map for {@link PixelDispatcher} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
- * @category Pixels
  */
 export interface PixelDispatcherEventMap {
-  action: PixelDispatcherActionName;
+  action: keyof PixelDispatcherActionMap;
   error: Error;
   profileUploadProgress: number | undefined;
   status: PixelStatus;
@@ -107,18 +109,16 @@ export interface PixelDispatcherEventMap {
   telemetry: Readonly<TelemetryData>;
 }
 
-export type PixelDispatcherMutableProps =
-  | PixelInfoNotifierMutableProps
-  // TODO implement missing notifications and remove from PixelDispatcherEventMap
-  // | "status"
-  // | "isReady"
-  // | "durationSinceLastActivity"
-  | "lastScanUpdate";
-// | "isUpdatingProfile"
-// | "hasAvailableDFU"
-// | "hasQueuedDFU"
-// | "hasActiveDFU"
+/**
+ * The mutable properties of {@link PixelDispatcher}.
+ */
+export type PixelDispatcherMutableProps = ScannedPixelNotifierMutableProps &
+  Pick<
+    IPixelDispatcher,
+    (typeof PixelDispatcher.DispatcherMutablePropsList)[number]
+  >;
 
+/** Error type thrown by {@link PixelDispatcher}. */
 export class PixelDispatcherError extends Error {
   protected readonly _pixel: PixelDispatcher;
   protected readonly _cause?: Error;
@@ -142,17 +142,47 @@ export class PixelDispatcherError extends Error {
 }
 
 /**
+ * Interface with the props of {@link PixelDispatcher}.
+ */
+interface IPixelDispatcher extends ScannedPixel {
+  status: PixelStatus;
+  isReady: boolean;
+  durationSinceLastActivity: number;
+  lastScanUpdate: Date;
+  isUpdatingProfile: boolean;
+  hasAvailableDFU: boolean;
+  hasQueuedDFU: boolean;
+  hasActiveDFU: boolean;
+  telemetryData: readonly TelemetryData[];
+  isInUse: boolean;
+}
+
+/**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
-class PixelDispatcher extends ScannedPixelNotifier<
-  // TODO bad inheritance!
-  keyof PixelDispatcherMutableProps,
-  PixelDispatcher
-> {
-  private _scannedPixel: ScannedPixelNotifier;
-  private _pixel: Pixel;
-  private readonly _evEmitter =
-    createTypedEventEmitter<PixelDispatcherEventMap>();
+class PixelDispatcher
+  extends ScannedPixelNotifier<PixelDispatcherMutableProps, PixelDispatcher>
+  implements IPixelDispatcher
+{
+  // TODO implement missing notifications and remove from PixelDispatcherEventMap
+  static DispatcherMutablePropsList: readonly (keyof IPixelDispatcher)[] = [
+    ...ScannedPixelNotifier.ExtendedMutablePropsList,
+    // "status",
+    // "isReady",
+    // "durationSinceLastActivity",
+    "lastScanUpdate",
+    // "isUpdatingProfile",
+    // "hasAvailableDFU",
+    // "hasQueuedDFU",
+    // "hasActiveDFU",
+    // "isInUse",
+  ];
+
+  // The Pixel
+  private readonly _pixel: Pixel;
+  // Latest prop values coming both from scan data and Pixel instance
+  private readonly _info: Mutable<ScannedPixel>;
+  // More props
   private _lastDiscoTime = 0;
   private _lastActivityMs = 0;
   private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
@@ -160,61 +190,60 @@ class PixelDispatcher extends ScannedPixelNotifier<
   private _isDfuAvailable = false;
   private _messagesLogFilePath;
   private _telemetryData: TelemetryData[] = [];
+  // Our own event emitter
+  private readonly _evEmitter =
+    createTypedEventEmitter<PixelDispatcherEventMap>();
 
   get systemId(): string {
-    return this._getPixelInfo().systemId;
+    return this._info.systemId;
   }
 
   get pixelId(): number {
-    return this._scannedPixel.pixelId;
+    return this._info.pixelId;
   }
 
   get name(): string {
-    return this._getPixelInfo().name;
+    return this._info.name;
   }
 
   get ledCount(): number {
-    return this._getPixelInfo().ledCount;
+    return this._info.ledCount;
   }
 
   get colorway(): PixelColorway {
-    return this._scannedPixel.colorway !== "unknown"
-      ? this._scannedPixel.colorway
-      : this._pixel.colorway;
+    return this._info.colorway;
   }
 
   get dieType(): PixelDieType {
-    return this._scannedPixel.dieType !== "unknown"
-      ? this._scannedPixel.dieType
-      : this._pixel.dieType;
+    return this._info.dieType;
   }
 
   get firmwareDate(): Date {
-    return this._getPixelInfo().firmwareDate;
+    return this._info.firmwareDate;
   }
 
   get rssi(): number {
-    return this._getPixelInfo().rssi;
+    return this._info.rssi;
   }
 
   get batteryLevel(): number {
-    return this._getPixelInfo().batteryLevel;
+    return this._info.batteryLevel;
   }
 
   get isCharging(): boolean {
-    return this._getPixelInfo().isCharging;
+    return this._info.isCharging;
   }
 
   get rollState(): PixelRollState {
-    return this._getPixelInfo().rollState;
+    return this._info.rollState;
   }
 
   get currentFace(): number {
-    return this._getPixelInfo().currentFace;
+    return this._info.currentFace;
   }
 
   get address(): number {
-    return this._scannedPixel.address;
+    return this._info.address;
   }
 
   get status(): PixelStatus {
@@ -231,7 +260,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
   }
 
   get lastScanUpdate(): Date {
-    return this._scannedPixel.timestamp;
+    return this._info.timestamp;
   }
 
   get isUpdatingProfile(): boolean {
@@ -287,8 +316,23 @@ class PixelDispatcher extends ScannedPixelNotifier<
 
   private constructor(scannedPixel: ScannedPixelNotifier) {
     super(scannedPixel);
-    this._scannedPixel = scannedPixel;
-    this._pixel = getPixel(scannedPixel);
+    this._info = {
+      systemId: scannedPixel.systemId,
+      pixelId: scannedPixel.pixelId,
+      name: scannedPixel.name,
+      ledCount: scannedPixel.ledCount,
+      colorway: scannedPixel.colorway,
+      dieType: scannedPixel.dieType,
+      firmwareDate: scannedPixel.firmwareDate,
+      rssi: scannedPixel.rssi,
+      batteryLevel: scannedPixel.batteryLevel,
+      isCharging: scannedPixel.isCharging,
+      rollState: scannedPixel.rollState,
+      currentFace: scannedPixel.currentFace,
+      address: scannedPixel.address,
+      timestamp: scannedPixel.timestamp,
+    };
+    this._pixel = getPixel(scannedPixel.systemId);
     Static.instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
@@ -323,31 +367,27 @@ class PixelDispatcher extends ScannedPixelNotifier<
     this._pixel.addEventListener("message", (msgOrType) =>
       write("received", msgOrType)
     );
-    // Forward property events
-    scannedPixel.addPropertyListener("timestamp", () => {
-      this.emitPropertyEvent("timestamp");
-      this.emitPropertyEvent("lastScanUpdate");
-      this._updateLastActivity();
-    });
-    scannedPixel.addPropertyListener("firmwareDate", () => {
-      this.emitPropertyEvent("firmwareDate");
-      this._updateIsDFUAvailable();
-    });
-    const props = [
-      // TODO build this list from type
-      "name",
-      "rssi",
-      "batteryLevel",
-      "isCharging",
-      "rollState",
-      "currentFace",
-    ] as (keyof PixelInfoNotifierMutableProps)[];
-    props.forEach((p) =>
-      scannedPixel.addPropertyListener(p, () => this.emitPropertyEvent(p))
-    );
-    props.forEach((p) =>
-      this._pixel.addPropertyListener(p, () => this.emitPropertyEvent(p))
-    );
+    // Forward scanned pixel property events
+    for (const prop of ScannedPixelNotifier.ExtendedMutablePropsList) {
+      scannedPixel.addPropertyListener(prop, () => {
+        // @ts-ignore TypeScript doesn't recognize that the prop is same on both side
+        this._info[prop] = scannedPixel[prop];
+        this.emitPropertyEvent(prop);
+        if (prop === "timestamp") {
+          this.emitPropertyEvent("lastScanUpdate");
+          this._updateLastActivity();
+        } else if (prop === "firmwareDate") {
+          this._updateIsDFUAvailable();
+        }
+      });
+    }
+    // Forward pixel instance property events
+    for (const prop of PixelInfoNotifier.MutablePropsList) {
+      this._pixel.addPropertyListener(prop, () => {
+        // @ts-ignore TypeScript doesn't recognize that the prop on both side is the same
+        this._info[prop] = scannedPixel[prop];
+      });
+    }
     // Forward and monitor status
     this._pixel.addEventListener("status", (status) => {
       this._evEmitter.emit("status", status);
@@ -383,7 +423,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     this._evEmitter.removeListener(eventName, listener);
   }
 
-  dispatch<T extends PixelDispatcherActionName>(
+  dispatch<T extends keyof PixelDispatcherActionMap>(
     action: T,
     params?: PixelDispatcherActionMap[T]
   ) {
@@ -486,11 +526,6 @@ class PixelDispatcher extends ScannedPixelNotifier<
     );
   }
 
-  private _getPixelInfo(): PixelInfo {
-    // TODO once disconnected, should return _pixel until _scannedPixel is updated
-    return this.status === "disconnected" ? this._scannedPixel : this._pixel;
-  }
-
   private _updateLastActivity(): void {
     // Cancel timeout
     if (this._updateLastActivityTimeout) {
@@ -498,10 +533,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     }
     this._updateLastActivityTimeout = undefined;
     // Check if still around
-    const last = Math.max(
-      this._lastDiscoTime,
-      this._scannedPixel.timestamp.getTime()
-    );
+    const last = Math.max(this._lastDiscoTime, this.lastScanUpdate.getTime());
     const ms = this.status !== "disconnected" ? 0 : Date.now() - last;
     if (this._lastActivityMs !== ms) {
       // Notify if changed
@@ -726,7 +758,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
       Static.dfuQueue.active = this;
       this._evEmitter.emit("hasActiveDFU", true);
       await updateFirmware(
-        this._scannedPixel,
+        { systemId: this.systemId, address: this.address },
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
         (state) => this._evEmitter.emit("dfuState", state),

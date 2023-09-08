@@ -12,7 +12,6 @@ import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import PixelDispatcher, {
   PixelDispatcherActionMap,
-  PixelDispatcherActionName,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 
@@ -69,7 +68,7 @@ export const SwipeablePixelsList = React.memo(function ({
 
   // Actions dispatched to all Pixels
   const dispatchAll = React.useCallback(
-    <T extends PixelDispatcherActionName>(
+    <T extends keyof PixelDispatcherActionMap>(
       action: T,
       params?: PixelDispatcherActionMap[T]
     ) => pixels.forEach((p) => p.dispatch(action, params)),

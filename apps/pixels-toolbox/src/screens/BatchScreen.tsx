@@ -21,7 +21,7 @@ async function forAllPixels(
   abortSignal: AbortSignal,
   onUsingPixel?: (pixel: Pixel) => void
 ): Promise<void> {
-  const pixels = scannedPixels.map(getPixel);
+  const pixels = scannedPixels.map((sp) => getPixel(sp.systemId));
   for (const pixel of pixels) {
     if (abortSignal.aborted) {
       break;

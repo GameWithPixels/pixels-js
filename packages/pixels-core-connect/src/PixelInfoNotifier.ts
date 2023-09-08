@@ -12,13 +12,7 @@ import { PixelInfo } from "./PixelInfo";
  */
 export type PixelInfoNotifierMutableProps = Pick<
   PixelInfo,
-  | "name"
-  | "firmwareDate"
-  | "rssi"
-  | "batteryLevel"
-  | "isCharging"
-  | "rollState"
-  | "currentFace"
+  (typeof PixelInfoNotifier.MutablePropsList)[number]
 >;
 
 /**
@@ -33,6 +27,17 @@ export abstract class PixelInfoNotifier<
   Type extends PixelInfo = PixelInfo
 > implements PixelInfo
 {
+  static MutablePropsList: readonly (keyof PixelInfo)[] = [
+    "name",
+    "firmwareDate",
+    "colorway",
+    "rssi",
+    "batteryLevel",
+    "isCharging",
+    "rollState",
+    "currentFace",
+  ];
+
   private readonly _infoEvEmitter = createTypedEventEmitter<{
     [K in string & keyof MutableProps]: Type;
   }>();

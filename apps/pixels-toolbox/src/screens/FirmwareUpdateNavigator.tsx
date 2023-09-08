@@ -1,7 +1,7 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import { useTranslation } from "react-i18next";
 
-import { type FirmwareUpdateParamList } from "~/navigation";
+import { FirmwareUpdateParamList } from "~/navigation";
 import { FirmwareUpdateScreen } from "~/screens/FirmwareUpdateScreen";
 import { SelectDfuFilesScreen } from "~/screens/SelectDfuFilesScreen";
 

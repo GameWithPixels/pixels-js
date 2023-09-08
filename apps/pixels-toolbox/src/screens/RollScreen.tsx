@@ -19,7 +19,7 @@ function RollPage() {
   useErrorWithHandler(lastError);
 
   const onSelect = React.useCallback(
-    (sp: ScannedPixel) => connectDispatch("connect", getPixel(sp)),
+    (sp: ScannedPixel) => connectDispatch("connect", getPixel(sp.systemId)),
     [connectDispatch]
   );
 

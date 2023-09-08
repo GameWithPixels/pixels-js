@@ -106,7 +106,7 @@ function SelectPixel({
 
 function RunTest({ pixelInfo }: { pixelInfo: PixelInfoNotifier }) {
   const [_status, pixel, _dispatch, lastError] = usePixelConnect(
-    getPixel(pixelInfo)
+    getPixel(pixelInfo.systemId)
   );
   return (
     <>

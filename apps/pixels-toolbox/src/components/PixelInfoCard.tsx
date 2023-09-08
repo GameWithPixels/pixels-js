@@ -109,6 +109,14 @@ function PixelMoreInfo(props: PixelAndTranslation) {
     .toString(16)
     .padStart(8, "0")
     .toLocaleUpperCase();
+  const forceUpdate = useForceUpdate();
+  React.useEffect(() => {
+    const listener = () => forceUpdate();
+    pixel.addPropertyListener("colorway", listener);
+    return () => {
+      pixel.removePropertyListener("colorway", listener);
+    };
+  }, [pixel, forceUpdate]);
   return (
     <>
       <PixelFirmwareDate {...props} />

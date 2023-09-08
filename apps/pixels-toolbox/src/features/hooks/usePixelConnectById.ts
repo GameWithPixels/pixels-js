@@ -90,7 +90,7 @@ export function usePixelConnectById(): [
     if (pixelId) {
       const i = scannedPixels.findIndex((p) => p.pixelId === pixelId);
       if (i >= 0) {
-        setPixel(getPixel(scannedPixels[i]));
+        setPixel(getPixel(scannedPixels[i].systemId));
         setPixelId(0);
         setScannedPixel(scannedPixels[i]);
       }

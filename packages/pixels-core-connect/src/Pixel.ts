@@ -10,6 +10,7 @@ import {
   createTypedEventEmitter,
   EventReceiver,
   getValueKeyName,
+  Mutable,
   safeAssign,
 } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
@@ -52,6 +53,7 @@ import {
   PowerOperation,
   PixelPowerOperationValues,
   PixelDieType,
+  PixelDieTypeValues,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 import { PixelInfoNotifier } from "./PixelInfoNotifier";
@@ -66,8 +68,6 @@ import {
   PixelWaitForMessageTimeoutError as WaitMsgTimeoutErr,
 } from "./errors";
 import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
-
-type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 // Returns a string with the current time with a millisecond precision
 function _getTime(): string {
@@ -233,9 +233,10 @@ export class Pixel extends PixelInfoNotifier {
 
   /** Get the Pixel name, may be empty until connected to device. */
   get name(): string {
-    // Name from session might be outdated, use it only
-    // if we don't have a named store internally
-    return this._info.name ?? this._session.pixelName ?? "";
+    // The name from the session may be outdated
+    return this._info.name.length
+      ? this._info.name
+      : this._session.pixelName ?? "";
   }
 
   /** Gets the number of LEDs for the Pixel, may be 0 until connected to device. */
@@ -307,27 +308,25 @@ export class Pixel extends PixelInfoNotifier {
   /**
    * Instantiates a Pixel.
    * @param session The session used to communicate with the Pixel.
-   * @param info Some optional extra info.
    */
-  constructor(session: PixelSession, info?: Partial<PixelInfo>) {
+  constructor(session: PixelSession) {
     super();
-    this._info = {
-      systemId: session.pixelSystemId,
-      pixelId: info?.pixelId ?? 0,
-      name: info?.name ?? "",
-      ledCount: info?.ledCount ?? 0,
-      colorway: info?.colorway ?? "unknown",
-      dieType: info?.dieType ?? "unknown",
-      firmwareDate: info?.firmwareDate ?? new Date(),
-      rssi: info?.rssi ?? 0,
-      batteryLevel: info?.batteryLevel ?? 0,
-      isCharging: info?.isCharging ?? false,
-      rollState: info?.rollState ?? "unknown",
-      currentFace: info?.currentFace ?? 0,
-    };
-
     this._session = session;
     this._status = "disconnected"; // TODO use the getLastConnectionStatus()
+    this._info = {
+      systemId: session.pixelSystemId,
+      pixelId: 0,
+      name: "",
+      ledCount: 0,
+      colorway: "unknown",
+      dieType: "unknown",
+      firmwareDate: new Date(),
+      rssi: 0,
+      batteryLevel: 0,
+      isCharging: false,
+      rollState: "unknown",
+      currentFace: 0,
+    };
 
     // Listen to session connection status changes
     session.setConnectionEventListener(({ connectionStatus }) => {
@@ -420,6 +419,10 @@ export class Pixel extends PixelInfoNotifier {
       // Name
       if (info.name) {
         this._updateName(info.name);
+      }
+      // Colorway
+      if (info.colorway) {
+        this._updateColorway(info.colorway);
       }
       // Firmware data
       if (info.firmwareDate) {
@@ -1059,6 +1062,8 @@ export class Pixel extends PixelInfoNotifier {
     this._info.ledCount = iAmADie.ledCount;
     this._info.colorway =
       getValueKeyName(iAmADie.colorway, PixelColorwayValues) ?? "unknown";
+    this._info.dieType =
+      getValueKeyName(iAmADie.dieType, PixelDieTypeValues) ?? "unknown";
     this._info.pixelId = iAmADie.pixelId;
     this._updateFirmwareDate(new Date(1000 * iAmADie.buildTimestamp));
     this._updateBatteryInfo({
@@ -1084,6 +1089,13 @@ export class Pixel extends PixelInfoNotifier {
     if (this._info.name !== name) {
       this._info.name = name;
       this.emitPropertyEvent("name");
+    }
+  }
+
+  private _updateColorway(colorway: PixelColorway) {
+    if (this._info.colorway !== colorway) {
+      this._info.colorway = colorway;
+      this.emitPropertyEvent("colorway");
     }
   }
 

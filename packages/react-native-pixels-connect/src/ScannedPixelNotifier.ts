@@ -5,15 +5,17 @@ import {
   PixelInfoNotifierMutableProps,
   PixelRollState,
 } from "@systemic-games/pixels-core-connect";
+import { Mutable } from "@systemic-games/pixels-core-utils";
 
 import { ScannedPixel } from "./ScannedPixel";
 import { ScannedPixelNotifiersMap as instancesMap } from "./ScannedPixelNotifiersMap";
 
-type Mutable<T> = { -readonly [P in keyof T]: T[P] };
-
 /** Type for an object with all the mutable props of {@link ScannedPixelNotifier}. */
 export type ScannedPixelNotifierMutableProps = PixelInfoNotifierMutableProps &
-  Pick<ScannedPixel, "timestamp">;
+  Pick<
+    ScannedPixel,
+    (typeof ScannedPixelNotifier.ExtendedMutablePropsList)[number]
+  >;
 
 /**
  * Wraps a {@link ScannedPixel} to raise events on mutable property changes.
@@ -25,6 +27,11 @@ export class ScannedPixelNotifier<
   extends PixelInfoNotifier<MutableProps, Type>
   implements ScannedPixel
 {
+  static ExtendedMutablePropsList: readonly (keyof ScannedPixel)[] = [
+    "timestamp", // We want to update timestamp first
+    ...PixelInfoNotifier.MutablePropsList,
+  ];
+
   private _data: Mutable<ScannedPixel>;
 
   // Use flag to identify instances of ScannedPixelNotifier
@@ -108,7 +115,6 @@ export class ScannedPixelNotifier<
    */
   updateProperties(props: Partial<ScannedPixelNotifierMutableProps>): void {
     if (props.timestamp && this._data.timestamp < props.timestamp) {
-      // TODO perform this update in a generic way
       // Timestamp first
       if (
         props.timestamp !== undefined &&
@@ -117,45 +123,21 @@ export class ScannedPixelNotifier<
         this._data.timestamp = props.timestamp;
         this.emitPropertyEvent("timestamp");
       }
-      if (props.name !== undefined && this.name !== props.name) {
-        this._data.name = props.name;
-        this.emitPropertyEvent("name");
-      }
-      if (
-        props.firmwareDate &&
-        this.firmwareDate.getTime() !== props.firmwareDate.getTime()
-      ) {
-        this._data.firmwareDate = props.firmwareDate;
-        this.emitPropertyEvent("firmwareDate");
-      }
-      if (props.rssi !== undefined && this.rssi !== props.rssi) {
-        this._data.rssi = props.rssi;
-        this.emitPropertyEvent("rssi");
-      }
-      if (
-        props.batteryLevel !== undefined &&
-        this.batteryLevel !== props.batteryLevel
-      ) {
-        this._data.batteryLevel = props.batteryLevel;
-        this.emitPropertyEvent("batteryLevel");
-      }
-      if (
-        props.isCharging !== undefined &&
-        this.isCharging !== props.isCharging
-      ) {
-        this._data.isCharging = props.isCharging;
-        this.emitPropertyEvent("isCharging");
-      }
-      if (props.rollState !== undefined && this.rollState !== props.rollState) {
-        this._data.rollState = props.rollState;
-        this.emitPropertyEvent("rollState");
-      }
-      if (
-        props.currentFace !== undefined &&
-        this.currentFace !== props.currentFace
-      ) {
-        this._data.currentFace = props.currentFace;
-        this.emitPropertyEvent("currentFace");
+      for (const prop of ScannedPixelNotifier.ExtendedMutablePropsList) {
+        if (
+          prop === "firmwareDate" &&
+          props.firmwareDate &&
+          this.firmwareDate.getTime() !== props.firmwareDate.getTime()
+        ) {
+          this._data.firmwareDate = props.firmwareDate;
+          this.emitPropertyEvent("firmwareDate");
+        } else {
+          const value = props[prop];
+          if (value !== undefined)
+            // @ts-ignore TypeScript doesn't recognize that the prop is same on both side
+            this._data[prop] = value;
+          this.emitPropertyEvent(prop);
+        }
       }
     }
   }
