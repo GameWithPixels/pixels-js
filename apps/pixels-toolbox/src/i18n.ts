@@ -138,6 +138,7 @@ i18n
           full: "Full",
           setFixedRainbowProfile: "Upload Static Hello",
           rename: "Rename",
+          setFixedRainbowProfileD4: "Upload Static D4",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -324,8 +325,9 @@ i18n
           printSticker: "Print Sticker",
           reset: "Reset",
           full: "Full",
-          setFixedRainbowProfile: "Updload Static Hello",
+          setFixedRainbowProfile: "Upload Static Hello",
           rename: "重命名",
+          setFixedRainbowProfileD4: "Upload Static D4",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",

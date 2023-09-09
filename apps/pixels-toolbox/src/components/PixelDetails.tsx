@@ -451,6 +451,11 @@ function BottomButtons({
               >
                 {t("setFixedRainbowProfile")}
               </Button>
+              <Button
+                onPress={() => pd.dispatch("uploadProfile", "fixedRainbowD4")}
+              >
+                {t("setFixedRainbowProfileD4")}
+              </Button>
               <Button onPress={() => pd.dispatch("playProfileAnimation", 0)}>
                 {t("playProfileAnim")}
               </Button>

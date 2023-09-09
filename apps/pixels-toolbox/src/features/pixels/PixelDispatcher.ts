@@ -58,7 +58,11 @@ import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 
-export type ProfileType = "default" | "tiny" | "fixedRainbow";
+export type ProfileType =
+  | "default"
+  | "tiny"
+  | "fixedRainbow"
+  | "fixedRainbowD4";
 
 export interface PixelDispatcherActionMap {
   connect: undefined;
@@ -588,6 +592,26 @@ class PixelDispatcher extends ScannedPixelNotifier<
                 actions: [
                   new EditActionPlayAnimation({
                     animation: PrebuildAnimations.fixedRainbow,
+                  }),
+                ],
+              }
+            )
+          );
+          dataSet = createDataSetForProfile(profile).toDataSet();
+          break;
+        }
+        case "fixedRainbowD4": {
+          const profile = new EditProfile();
+          profile.name = "fixedRainbowD4";
+          profile.rules.push(
+            new EditRule(
+              new EditConditionHelloGoodbye({
+                flags: HelloGoodbyeFlagsValues.hello,
+              }),
+              {
+                actions: [
+                  new EditActionPlayAnimation({
+                    animation: PrebuildAnimations.fixedRainbowD4,
                   }),
                 ],
               }
