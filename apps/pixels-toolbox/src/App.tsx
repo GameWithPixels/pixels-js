@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { LogBox, useColorScheme } from "react-native";
 import {
   adaptNavigationTheme,
+  configureFonts,
   MD3DarkTheme,
   MD3LightTheme,
   Provider as PaperProvider,
@@ -67,9 +68,20 @@ const navThemes = adaptNavigationTheme({
   reactNavigationDark: NavDarkTheme,
 });
 
+const fontConfig = {
+  emojiButton: {
+    fontFamily: "Font",
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 30,
+    fontSize: 26,
+  },
+} as const;
+
 const LightTheme = {
   ...MD3LightTheme,
   ...navThemes.LightTheme,
+  fonts: configureFonts({ config: fontConfig }),
   colors: {
     ...MD3LightTheme.colors,
     ...navThemes.LightTheme.colors,
@@ -78,6 +90,7 @@ const LightTheme = {
 const DarkTheme = {
   ...MD3DarkTheme,
   ...navThemes.DarkTheme,
+  fonts: configureFonts({ config: fontConfig }),
   colors: {
     ...MD3DarkTheme.colors,
     ...navThemes.DarkTheme.colors,
