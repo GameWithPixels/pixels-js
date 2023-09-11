@@ -1,9 +1,9 @@
 import {
+  DiceUtils,
   PixelDieTypeValues,
   PixelColorwayValues,
   PixelRollStateValues,
   PixelBleUuids,
-  PixelDieType,
 } from "@systemic-games/pixels-core-connect";
 import {
   assert,
@@ -19,34 +19,6 @@ import {
 import { ScannedPixel } from "./ScannedPixel";
 import ScannedPixelsRegistry from "./ScannedPixelsRegistry";
 import SequentialDataReader from "./SequentialDataReader";
-
-// Try to get die type from number of LEDs
-function estimateDieType(ledCount: number): PixelDieType {
-  // For now we infer the die type from the number of LEDs, but eventually
-  // that value will be part of identification data.
-  switch (ledCount) {
-    case 4:
-      return "d4";
-    case 6:
-      return "d6";
-    case 8:
-      return "d8";
-    case 10:
-      return "d10";
-    case 12:
-      return "d12";
-    case 20:
-      return "d20";
-    case 21:
-      return "d6pipped";
-    default:
-      return "unknown";
-  }
-}
-
-function getFace(faceIndex: number, ledCount: number): number {
-  return faceIndex + (ledCount === 10 ? 0 : 1);
-}
 
 // Execution queue
 const _queue = new SequentialPromiseQueue();
@@ -113,7 +85,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       colorwayValue = designAndColor & 0xf;
       dieTypeValue = (designAndColor >> 4) & 0xf;
       rollStateValue = manufReader.readU8();
-      currentFace = getFace(manufReader.readU8(), ledCount);
+      currentFace = DiceUtils.faceFromIndex(manufReader.readU8(), ledCount);
       const battery = manufReader.readU8();
       // MSB is battery charging
       batteryLevel = battery & 0x7f;
@@ -130,7 +102,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
 
       pixelId = manufReader.readU32();
       rollStateValue = manufReader.readU8();
-      currentFace = getFace(manufReader.readU8(), ledCount);
+      currentFace = DiceUtils.faceFromIndex(manufReader.readU8(), ledCount);
       batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
 
       firmwareDate = new Date();
@@ -142,7 +114,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
         getValueKeyName(colorwayValue, PixelColorwayValues) ?? "unknown";
       const dieType = dieTypeValue
         ? getValueKeyName(dieTypeValue, PixelDieTypeValues) ?? "unknown"
-        : estimateDieType(ledCount);
+        : DiceUtils.estimateDieType(ledCount);
       const rollState =
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
       const scannedPixel = {

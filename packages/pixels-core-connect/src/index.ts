@@ -8,3 +8,4 @@ export * from "./PixelSession";
 export * from "./Pixel";
 export * from "./errors";
 export * from "./Messages";
+export * from "./DiceUtils";

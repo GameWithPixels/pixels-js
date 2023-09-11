@@ -13,6 +13,7 @@ import {
   getFaceMask,
   RollEvent,
   PixelBatteryControllerStateValues,
+  DiceUtils,
 } from "@systemic-games/react-native-pixels-connect";
 
 import {
@@ -43,21 +44,6 @@ function isBatteryCharging(state: number): boolean {
     state === v.trickle ||
     state === v.done
   );
-}
-
-/**
- * Convert a die face value or a list of face values to a face mask
- * for use with the animation classes.
- * @param dieType The type of die
- * @returns A face (bit) mask.
- * @category Face Utils
- */
-function getTopFaceMask(pixel: Pixel): number {
-  if (pixel.dieType === "d00" || pixel.dieType === "d10") {
-    return getFaceMask(0, pixel.dieType);
-  } else {
-    return getFaceMask(pixel.dieFaceCount, pixel.dieType);
-  }
 }
 
 export const disconnectTimeout = 30000; // 30s;
@@ -143,7 +129,10 @@ export const ValidationTests = {
       async (abortSignal) => {
         // Blink face
         const options = {
-          faceMask: getTopFaceMask(pixel),
+          faceMask: getFaceMask(
+            DiceUtils.getTopFace(pixel.dieType),
+            pixel.dieType
+          ),
         };
         await withBlink(
           abortSignal,

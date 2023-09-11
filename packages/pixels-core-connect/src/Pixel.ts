@@ -15,6 +15,7 @@ import {
 import { EventEmitter } from "events";
 
 import Constants from "./Constants";
+import { DiceUtils } from "./DiceUtils";
 import {
   MessageType,
   MessageOrType,
@@ -254,7 +255,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /** Gets the number of faces of the Pixel. */
   get dieFaceCount(): number {
-    return Pixel.getFaceCount(this.dieType);
+    return DiceUtils.getFaceCount(this.dieType);
   }
 
   /** Get the Pixel firmware build date. */
@@ -1304,16 +1305,5 @@ export class Pixel extends PixelInfoNotifier {
     }
 
     this._log("Finished sending bulk data");
-  }
-
-  private static getFaceCount(dieType: PixelDieType): number {
-    // DieType must start by a letter followed by the number of faces
-    let i = 2;
-    while (i < dieType.length) {
-      const c = dieType.charAt(i);
-      if (c < "0" || c > "9") break;
-      ++i;
-    }
-    return Number(dieType.substring(1, i));
   }
 }
