@@ -78,6 +78,7 @@ function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
   return boardOrDie === "board" ? "coil" : boardOrDie;
 }
 
+// List of faces to test, last face is the one with the copper counter weight
 function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
   let faces: number[];
   switch (pixel.dieType) {
@@ -93,10 +94,10 @@ function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
       faces = [2, 4, 8];
       break;
     case "d10":
-      faces = [1, 4, 9];
+      faces = [1, 4, 0];
       break;
     case "d00":
-      faces = [10, 40, 90];
+      faces = [10, 40, 0];
       break;
     case "d12":
       faces = [3, 6, 12];
