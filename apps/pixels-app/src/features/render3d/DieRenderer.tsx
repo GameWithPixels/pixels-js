@@ -5,6 +5,7 @@ import {
   GammaUtils,
 } from "@systemic-games/pixels-core-animation";
 import { Die3D } from "@systemic-games/pixels-three";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 import React from "react";
@@ -170,6 +171,7 @@ class SceneRenderer {
 export interface DieRenderData {
   animations: AnimationPreset | AnimationPreset[];
   animationBits: AnimationBits;
+  dieType?: PixelDieType;
 }
 
 /**
@@ -191,7 +193,7 @@ export default function ({ renderData }: DieRendererProps) {
 
   // Load die 3d object
   React.useEffect(() => {
-    createDie3DAsync()
+    createDie3DAsync(renderData?.dieType ?? "d20")
       .then((die3d) => {
         setLoaded(true);
         rendererRef.current = new SceneRenderer(
@@ -203,7 +205,7 @@ export default function ({ renderData }: DieRendererProps) {
     return () => {
       rendererRef.current?.shutdown();
     };
-  }, [errorHandler]);
+  }, [errorHandler, renderData?.dieType]);
 
   // Create an instance to play the animation
   const animInstanceRef = React.useRef<AnimationInstance[]>([]);

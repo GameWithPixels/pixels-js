@@ -3,7 +3,7 @@ import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
 
 /**
- * This function returns on asset for the given virtual asset module.
+ * This function returns an asset for the given virtual asset module.
  * For Android standalone, it will copy the contents of the asset to the cache
  * directory so ExpoTHREE.loadAsync() may read it successfully.
  *

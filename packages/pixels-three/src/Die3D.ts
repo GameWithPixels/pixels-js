@@ -2,9 +2,6 @@ import * as THREE from "three";
 
 import DieStandardMaterial from "./DieStandardMaterial";
 
-const meshScale = 1000;
-const lightIntensity = 7;
-
 export default class Die3D extends THREE.Object3D {
   private readonly _materials: DieStandardMaterial[] = [];
   private readonly _lights: THREE.PointLight[] = [];
@@ -17,11 +14,17 @@ export default class Die3D extends THREE.Object3D {
     facesGeometry: THREE.BufferGeometry[],
     normalMap: THREE.Texture,
     faceMap: THREE.Texture,
-    options?: {
+    opt?: {
+      scale?: number;
       createLights?: boolean;
+      lightIntensity?: number;
     }
   ) {
     super();
+
+    const lightIntensity = opt?.lightIntensity ?? 7;
+    const scale = opt?.scale ?? 1;
+
     for (const geometry of facesGeometry) {
       const mat = new DieStandardMaterial(
         normalMap,
@@ -31,10 +34,10 @@ export default class Die3D extends THREE.Object3D {
       this._materials.push(mat);
 
       const meshCopy = new THREE.Mesh(geometry, mat);
-      meshCopy.scale.setScalar(meshScale);
+      meshCopy.scale.setScalar(scale);
       this.add(meshCopy);
 
-      if (options?.createLights) {
+      if (opt?.createLights) {
         if (!geometry.boundingSphere) {
           geometry.computeBoundingSphere();
         }
@@ -44,7 +47,7 @@ export default class Die3D extends THREE.Object3D {
           throw new Error("Couldn't compute face geometry bounding sphere");
         }
         light.position.copy(bounds.center);
-        light.position.multiplyScalar(meshScale);
+        light.position.multiplyScalar(scale);
         this.add(light);
 
         this._lights.push(light);
