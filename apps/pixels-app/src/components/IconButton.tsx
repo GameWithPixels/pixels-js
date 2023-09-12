@@ -11,7 +11,7 @@ interface IconButtonProps extends BaseBoxProps {
   onPress?: TouchableRippleProps["onPress"];
 }
 
-export default function ({ icon, onPress, ...flexProps }: IconButtonProps) {
+export function IconButton({ icon, onPress, ...flexProps }: IconButtonProps) {
   const theme = useTheme();
   return (
     <BaseButton onPress={onPress} paddingVertical={3} {...flexProps}>

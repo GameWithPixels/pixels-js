@@ -18,7 +18,7 @@ import AppStyles from "~/AppStyles";
 import { useAppPatterns } from "~/app/hooks";
 import { TextInputClear } from "~/components/TextInputClear";
 import { getPatternRenderData } from "~/features/appDataSet/getCachedDataSet";
-import DieRenderer from "~/features/render3d/DieRenderer";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ObservableInputAnimName = observer(function ({
@@ -101,7 +101,7 @@ const ObservableDieRender = observer(function ({
 });
 
 // Only children components are observers
-export default function ({
+export function ObservableAnimationEditor({
   observableAnim,
 }: {
   observableAnim: EditAnimation;

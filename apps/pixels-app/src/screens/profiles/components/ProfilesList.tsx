@@ -17,7 +17,7 @@ import {
   useAppRemoveProfile,
 } from "~/app/hooks";
 import { ExportEntityActionsheet } from "~/components/ExportEntityActionsheet";
-import IconButton from "~/components/IconButton";
+import { IconButton } from "~/components/IconButton";
 import generateUuid from "~/features/generateUuid";
 import { ProfilesListScreenProps } from "~/navigation";
 

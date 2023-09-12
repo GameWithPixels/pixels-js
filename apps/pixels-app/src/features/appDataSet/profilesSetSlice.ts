@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { assert } from "@systemic-games/pixels-core-utils";
 import { Serializable } from "@systemic-games/pixels-edit-animation";
 
-import jsonConvert from "./jsonConvert";
+import { jsonConvert } from "./jsonConvert";
 
 import StandardProfilesJson from "!/profiles/standard-profiles.json";
 

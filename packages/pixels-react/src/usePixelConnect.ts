@@ -2,7 +2,7 @@ import { Pixel, PixelStatus } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import usePixelStatus from "./usePixelStatus";
+import { usePixelStatus } from "./usePixelStatus";
 
 /**
  * React Hook that returns a dispatch function to connect to and disconnect from
@@ -19,7 +19,7 @@ import usePixelStatus from "./usePixelStatus";
  *          dispatch function. Connecting to another Pixel using the same dispatch
  *          will first disconnect from the previous Pixel.
  */
-export default function (
+export function usePixelConnect(
   pixel?: Pixel
 ): [
   PixelStatus | undefined,

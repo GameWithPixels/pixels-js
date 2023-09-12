@@ -348,7 +348,9 @@ function toProfile(
   };
 }
 
-export default function (dataSet: Json.DataSet): Serializable.ProfilesSetData {
+export function jsonConvert(
+  dataSet: Json.DataSet
+): Serializable.ProfilesSetData {
   const patterns = dataSet.patterns?.map(toPattern) ?? [];
   const { animations, animationUuidsMap, gradients } = toAnimationsAndGradients(
     dataSet.animations,

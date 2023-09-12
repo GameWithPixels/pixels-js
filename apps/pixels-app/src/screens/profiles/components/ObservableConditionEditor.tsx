@@ -118,7 +118,7 @@ const ObservableCondition = observer(function ({
 });
 
 // Only children components are observers
-export default function ({
+export function ObservableConditionEditor({
   observableRule,
   ...flexProps
 }: {

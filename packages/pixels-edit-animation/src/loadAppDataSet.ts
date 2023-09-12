@@ -241,7 +241,7 @@ export function toAnimation(
   }
 }
 
-export default function (jsonData: Json.DataSet): AppDataSet {
+export function loadAppDataSet(jsonData: Json.DataSet): AppDataSet {
   const patterns = toPatterns(jsonData.patterns);
   const validAnimations = jsonData?.animations?.filter(
     (anim): anim is Required<Json.Animation> => !!anim.type && !!anim.data

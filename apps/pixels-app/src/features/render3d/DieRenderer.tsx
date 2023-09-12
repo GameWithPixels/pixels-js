@@ -185,7 +185,7 @@ export interface DieRendererProps {
  * Component that renders a D20 in 3D.
  * See {@link DieRendererProps} for the supported props.
  */
-export default function ({ renderData }: DieRendererProps) {
+export function DieRenderer({ renderData }: DieRendererProps) {
   const errorHandler = useErrorHandler();
 
   const [loaded, setLoaded] = React.useState(false);

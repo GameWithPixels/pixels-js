@@ -6,7 +6,7 @@ import React from "react";
  * @param pixel The Pixel for which to watch the status.
  * @returns The status of the given Pixel.
  */
-export default function (pixel?: Pixel): PixelStatus | undefined {
+export function usePixelStatus(pixel?: Pixel): PixelStatus | undefined {
   const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
   // Subscribe to status event to trigger a React update on status change

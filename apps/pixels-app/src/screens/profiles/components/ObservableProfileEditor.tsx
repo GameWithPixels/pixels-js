@@ -28,10 +28,10 @@ import { Swipeable } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
 
 import AppStyles from "~/AppStyles";
-import IconButton from "~/components/IconButton";
+import { IconButton } from "~/components/IconButton";
 import { TextInputClear } from "~/components/TextInputClear";
-import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
-import DieRenderer from "~/features/render3d/DieRenderer";
+import { getCachedDataSet } from "~/features/appDataSet/getCachedDataSet";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { ProfileEditScreenProps } from "~/navigation";
 
 const ObservableInputProfileName = observer(function ({
@@ -242,7 +242,7 @@ const ObservableDieRender = observer(function ({
 });
 
 // Only children components are observers
-export default function ({
+export function ObservableProfileEditor({
   navigation,
   observableProfile,
 }: {

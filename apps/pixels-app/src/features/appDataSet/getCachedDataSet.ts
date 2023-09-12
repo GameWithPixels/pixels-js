@@ -13,7 +13,7 @@ const profilesDataSet: Map<
   DataSet
 > = new Map();
 
-export default function getCachedDataSet(
+export function getCachedDataSet(
   profileOrAnim: Readonly<EditProfile> | Readonly<EditAnimation>
 ): DataSet {
   let animData = profilesDataSet.get(profileOrAnim);

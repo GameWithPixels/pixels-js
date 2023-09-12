@@ -131,7 +131,7 @@ export interface UsePixelValueNamesMap {
  *   See the function arguments to change that behavior.
  * - The returned value is kept even after a disconnection event.
  */
-export default function usePixelValue<T extends keyof UsePixelValueNamesMap>(
+export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
   pixel?: Pixel,
   valueName?: T,
   options?: {

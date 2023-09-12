@@ -21,7 +21,7 @@ import {
 import { observer } from "mobx-react-lite";
 import React from "react";
 
-import IconButton from "~/components/IconButton";
+import { IconButton } from "~/components/IconButton";
 import { makeObservable } from "~/features/makeObservable";
 
 const ObservableActionSelector = observer(function ({
@@ -71,7 +71,7 @@ export interface ObservableActionEditorProps extends BaseBoxProps {
 }
 
 // Only children components are observers
-export default function ({
+export function ObservableActionEditor({
   observableAction,
   animations,
   userTextsParams,

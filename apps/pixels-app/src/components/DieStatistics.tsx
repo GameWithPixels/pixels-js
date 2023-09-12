@@ -16,7 +16,7 @@ import { Divider, Switch, Text, useTheme } from "react-native-paper";
 
 import AppStyles from "~/AppStyles";
 
-export default function DieStatistics({
+export function DieStatistics({
   sessionRolls,
   lifetimeRolls,
 }: {

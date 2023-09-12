@@ -14,15 +14,15 @@ import React from "react";
 import { FlatList } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
-import ObservableActionEditor from "./ObservableActionEditor";
-import ObservableConditionEditor from "./ObservableConditionEditor";
+import { ObservableActionEditor } from "./ObservableActionEditor";
+import { ObservableConditionEditor } from "./ObservableConditionEditor";
 
 import AppStyles from "~/AppStyles";
 import { useAppAnimations, useAppUserTexts } from "~/app/hooks";
-import IconButton from "~/components/IconButton";
-import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
+import { IconButton } from "~/components/IconButton";
+import { getCachedDataSet } from "~/features/appDataSet/getCachedDataSet";
 import { makeObservable } from "~/features/makeObservable";
-import DieRenderer from "~/features/render3d/DieRenderer";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 
 const ObservableActionsList = observer(function ({
   observableRule,
@@ -105,7 +105,11 @@ const ObservableActionsList = observer(function ({
 });
 
 // Only children components are observers
-export default function ({ observableRule }: { observableRule: EditRule }) {
+export function ObservableRuleEditor({
+  observableRule,
+}: {
+  observableRule: EditRule;
+}) {
   const createAction = React.useCallback(
     () =>
       (observableRule.actions = [

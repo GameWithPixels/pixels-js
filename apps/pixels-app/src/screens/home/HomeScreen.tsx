@@ -23,8 +23,8 @@ import {
   useAppProfiles,
   useAppUpdatePairedDie,
 } from "~/app/hooks";
-import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
-import DieRenderer from "~/features/render3d/DieRenderer";
+import { getCachedDataSet } from "~/features/appDataSet/getCachedDataSet";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { HomeScreenProps } from "~/navigation";
 
 function PairedPixels({
@@ -110,7 +110,7 @@ function UnpairedPixels({ pixels }: { pixels: ScannedPixel[] }) {
   );
 }
 
-export default function HomeScreen({ navigation }: HomeScreenProps) {
+export function HomeScreen({ navigation }: HomeScreenProps) {
   const [scannedPixels, scannerDispatch] = useScannedPixels();
   useFocusEffect(
     React.useCallback(() => {

@@ -9,8 +9,8 @@ import {
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
 
-import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
-import DieRenderer from "~/features/render3d/DieRenderer";
+import { getCachedDataSet } from "~/features/appDataSet/getCachedDataSet";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 
 export interface AnimationSwipeableCardProps extends BaseBoxProps {
   animation: Readonly<EditAnimation>;

@@ -1,14 +1,14 @@
 import { PixelAppPage } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 
-import ObservableProfileEditor from "./components/ObservableProfileEditor";
+import { ObservableProfileEditor } from "./components/ObservableProfileEditor";
 
 import { useAppUpdateProfile } from "~/app/hooks";
 import FromStore from "~/features/FromStore";
 import { makeObservable } from "~/features/makeObservable";
 import { ProfileEditScreenProps } from "~/navigation";
 
-export default function ProfileEditScreen({
+export function ProfileEditScreen({
   navigation,
   route,
 }: ProfileEditScreenProps) {

@@ -29,15 +29,15 @@ import {
   useAppRemovePairedDie,
   useAppUpdatePairedDie,
 } from "~/app/hooks";
-import DieStatistics from "~/components/DieStatistics";
+import { DieStatistics } from "~/components/DieStatistics";
 import { ProfileCarousel } from "~/components/ProfileCarousel";
 import { TextInputClear } from "~/components/TextInputClear";
-import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
-import httpPost from "~/features/httpPost";
-import DieRenderer from "~/features/render3d/DieRenderer";
+import { getCachedDataSet } from "~/features/appDataSet/getCachedDataSet";
+import { httpPost } from "~/features/httpPost";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { PixelDetailScreenProps } from "~/navigation";
 
-export default function PixelDetailScreen({
+export function PixelDetailScreen({
   navigation,
   route,
 }: PixelDetailScreenProps) {

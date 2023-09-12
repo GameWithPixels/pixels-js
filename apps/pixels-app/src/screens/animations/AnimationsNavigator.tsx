@@ -1,10 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
+// import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { PixelThemeProvider } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 
-import AnimationEditScreen from "./AnimationEditScreen";
-import AnimationsListScreen from "./AnimationsListScreen";
+import { AnimationEditScreen } from "./AnimationEditScreen";
+import { AnimationsListScreen } from "./AnimationsListScreen";
 
 import { AnimationsScreenStackParamList } from "~/navigation";
 

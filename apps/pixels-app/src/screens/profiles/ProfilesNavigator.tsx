@@ -1,10 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
+// import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import { PixelThemeProvider } from "@systemic-games/react-native-pixels-components";
 
-import ProfileEditScreen from "./ProfileEditScreen";
+import { ProfileEditScreen } from "./ProfileEditScreen";
 import { ProfilesListScreen } from "./ProfilesListScreen";
-import RuleEditScreen from "./RuleEditScreen";
+import { RuleEditScreen } from "./RuleEditScreen";
 
 import { ProfilesScreenStackParamList } from "~/navigation";
 

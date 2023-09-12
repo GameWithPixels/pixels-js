@@ -7,7 +7,7 @@
  * @param value3 Optional argument.
  * @returns HTTP status.
  */
-export default function (
+export function httpPost(
   url: string,
   value1?: string,
   value2?: string,

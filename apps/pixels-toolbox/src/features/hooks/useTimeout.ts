@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function (ms: number): [boolean, () => void] {
+export function useTimeout(ms: number): [boolean, () => void] {
   const [hasElapsed, setHasElapsed] = React.useState(false);
   React.useEffect(() => {
     if (!hasElapsed) {

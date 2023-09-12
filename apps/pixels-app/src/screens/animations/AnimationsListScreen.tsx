@@ -5,7 +5,7 @@ import { AnimationsList } from "./components/AnimationsList";
 
 import { AnimationsListScreenProps } from "~/navigation";
 
-export default function AnimationsListScreen({
+export function AnimationsListScreen({
   navigation,
 }: AnimationsListScreenProps) {
   return (

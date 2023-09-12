@@ -101,7 +101,7 @@ function createTabScreenOptions(opt: {
   };
 }
 
-function App() {
+function AppContent() {
   const darkOrLight = "dark"; // TODO add option to select theme
   const insets = useSafeAreaInsets();
   const theme = darkOrLight === "dark" ? DarkTheme : LightTheme;
@@ -167,7 +167,7 @@ function App() {
   );
 }
 
-export default function () {
+export default function App() {
   return (
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <SafeAreaProvider>
@@ -181,7 +181,7 @@ export default function () {
           persistor={persistor}
         >
           <ActionSheetProvider>
-            <App />
+            <AppContent />
           </ActionSheetProvider>
         </PersistGate>
       </ReduxProvider>

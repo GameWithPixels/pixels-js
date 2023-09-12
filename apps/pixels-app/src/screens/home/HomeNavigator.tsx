@@ -1,12 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
+// import { Ionicons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
+import { PixelThemeProvider } from "@systemic-games/react-native-pixels-components";
 
-import HomeScreen from "./HomeScreen";
-import PixelAdvancedSettingsScreen from "./PixelAdvancedSettingsScreen";
-import PixelDetailScreen from "./PixelDetailScreen";
+import { HomeScreen } from "./HomeScreen";
+import { PixelAdvancedSettingsScreen } from "./PixelAdvancedSettingsScreen";
+import { PixelDetailScreen } from "./PixelDetailScreen";
 
 import { HomeScreenStackParamList } from "~/navigation";
-import { PixelThemeProvider } from "@systemic-games/react-native-pixels-components";
 
 const Stack = createStackNavigator<HomeScreenStackParamList>();
 

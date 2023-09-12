@@ -12,7 +12,7 @@ import { Button, Text } from "react-native-paper";
 import AppStyles from "~/AppStyles";
 import { PixelAdvancedSettingsScreenProps } from "~/navigation";
 
-export default function PixelAdvancedSettingsScreen(
+export function PixelAdvancedSettingsScreen(
   props: PixelAdvancedSettingsScreenProps
 ) {
   const { pixelId } = props.route.params;

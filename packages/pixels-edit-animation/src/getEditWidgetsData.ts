@@ -73,7 +73,7 @@ export type EditWidgetData =
  * @param editObj The edit animation object for which to get the widgets data.
  * @returns An array of {@link EditWidgetData}.
  */
-export default function <T extends object>(
+export function getEditWidgetsData<T extends object>(
   editObj: T,
   opt?: {
     exclude?: string[];
