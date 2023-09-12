@@ -1,8 +1,8 @@
 import {
-  FastButton,
-  FastFlexProps,
-  FastHStack,
-  FastVStack,
+  BaseButton,
+  BaseFlexProps,
+  BaseHStack,
+  BaseVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
@@ -58,7 +58,7 @@ export interface ItemData {
   onPress?: () => void;
 }
 
-export interface BitFieldWidgetProps extends FastFlexProps {
+export interface BitFieldWidgetProps extends BaseFlexProps {
   title: string;
   availableValues: string[];
   values: string[];
@@ -75,9 +75,9 @@ export function BitFieldWidget({
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack {...flexProps}>
+      <BaseVStack {...flexProps}>
         <Text variant="titleMedium">{title}</Text>
-        <FastHStack justifyContent="space-around">
+        <BaseHStack justifyContent="space-around">
           {availableValues.length < 4 ? (
             availableValues.map((item) => (
               <SelectableButton
@@ -88,12 +88,12 @@ export function BitFieldWidget({
               />
             ))
           ) : (
-            <FastButton onPress={onOpen}>
+            <BaseButton onPress={onOpen}>
               {BatteryConditionTitleFromOptions(values)}
-            </FastButton>
+            </BaseButton>
           )}
-        </FastHStack>
-      </FastVStack>
+        </BaseHStack>
+      </BaseVStack>
 
       <SelectBitFieldsModal
         visible={isOpen}

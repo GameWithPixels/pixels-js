@@ -2,7 +2,7 @@ import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   SwipeableButtons,
-  FastBoxProps,
+  BaseBoxProps,
   ProfileCard,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
@@ -11,7 +11,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
 
-export interface ProfileSwipeableCardProps extends FastBoxProps {
+export interface ProfileSwipeableCardProps extends BaseBoxProps {
   profile: Readonly<EditProfile>;
   onPress: (profile: Readonly<EditProfile>) => void;
   onFavoriteAddOrRemove: (profile: Readonly<EditProfile>) => void;

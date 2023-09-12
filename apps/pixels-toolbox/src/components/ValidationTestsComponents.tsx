@@ -1,8 +1,8 @@
 import { assert, assertNever, delay } from "@systemic-games/pixels-core-utils";
 import {
-  FastBoxProps,
-  FastHStack,
-  FastVStack,
+  BaseBoxProps,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import {
   DfuCommunicationError,
@@ -297,7 +297,7 @@ async function scanForPixelWithTimeout(
   }
 }
 
-interface MessageYesNoProps extends FastBoxProps {
+interface MessageYesNoProps extends BaseBoxProps {
   message: string;
   onYes?: () => void;
   onNo?: () => void;
@@ -313,10 +313,10 @@ function MessageYesNo({
 }: MessageYesNoProps) {
   const { t } = useTranslation();
   return (
-    <FastVStack gap={10} {...props}>
+    <BaseVStack gap={10} {...props}>
       <Text variant="bodyLarge">{message}</Text>
       {!hideYesNo && (
-        <FastHStack gap={10}>
+        <BaseHStack gap={10}>
           <Button
             mode="contained-tonal"
             onPress={onYes}
@@ -331,9 +331,9 @@ function MessageYesNo({
           >
             {t("no")}
           </Button>
-        </FastHStack>
+        </BaseHStack>
       )}
-    </FastVStack>
+    </BaseVStack>
   );
 }
 
@@ -820,7 +820,7 @@ export function RequestColorway({
         contentContainerStyle={modalStyle}
         dismissable={false}
       >
-        <FastVStack paddingVertical={10} gap={20}>
+        <BaseVStack paddingVertical={10} gap={20}>
           <Text style={{ alignSelf: "center" }} variant="headlineMedium">
             {t("selectColorway")}
           </Text>
@@ -841,7 +841,7 @@ export function RequestColorway({
               </TouchableRipple>
             )}
           />
-        </FastVStack>
+        </BaseVStack>
       </Modal>
     </Portal>
   );
@@ -1015,7 +1015,7 @@ export function StoreSettings({
       createTaskStatusContainer({
         title: t("storeColorway"),
         children: (
-          <FastHStack gap={20}>
+          <BaseHStack gap={20}>
             {resolveConfirmPromise && (
               <>
                 <ColorwayImage name={pixel.colorway} />
@@ -1032,7 +1032,7 @@ export function StoreSettings({
               visible={!!resolveColorwayPromise}
               onSelect={(c) => resolveColorwayPromise?.(c)}
             />
-          </FastHStack>
+          </BaseHStack>
         ),
       }),
       { skip: onlyTimestamp }

@@ -2,6 +2,8 @@ export * from "./colorWheelUtils";
 export * from "./useDisclose";
 export { default as BaseStyles } from "./BaseStyles";
 export * from "./getBorderRadius";
+export * from "./expandShorthandStyle";
+export * from "./useRoundedStyle";
 
 export * from "./components/Frame";
 export * from "./components/PercentageDisplay";
@@ -11,7 +13,8 @@ export * from "./components/ColorWheel";
 export * from "./components/SwipeableButtons";
 export * from "./components/Histogram";
 
-export * from "./components/FastVStack";
-export * from "./components/FastHStack";
-export * from "./components/FastButton";
-export * from "./components/FastBox";
+export * from "./components/BaseVStack";
+export * from "./components/BaseHStack";
+export * from "./components/BaseButton";
+export * from "./components/BaseBox";
+export * from "./components/RoundedBox";

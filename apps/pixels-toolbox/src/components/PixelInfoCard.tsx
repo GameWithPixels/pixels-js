@@ -1,6 +1,6 @@
 import {
-  FastBox,
-  FastHStack,
+  BaseBox,
+  BaseHStack,
 } from "@systemic-games/react-native-base-components";
 import { PixelInfoNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -27,9 +27,9 @@ function PixelName({ pixel }: Omit<PixelAndTranslation, "t">) {
     };
   }, [pixel, forceUpdate]);
   return (
-    <FastBox flexDir="row" justifyContent="center">
+    <BaseBox flexDir="row" justifyContent="center">
       <Text variant="headlineMedium">{pixel.name}</Text>
-    </FastBox>
+    </BaseBox>
   );
 }
 
@@ -112,11 +112,11 @@ function PixelMoreInfo(props: PixelAndTranslation) {
   return (
     <>
       <PixelFirmwareDate {...props} />
-      <FastHStack mt={5} w="100%" justifyContent="space-around">
+      <BaseHStack mt={5} w="100%" justifyContent="space-around">
         <Text>{`🆔 ${pixIdHex}`}</Text>
         <Text>{`${pixel.ledCount}🚦`}</Text>
         <Text>{pixel.colorway !== "unknown" ? t(pixel.colorway) : ""}</Text>
-      </FastHStack>
+      </BaseHStack>
     </>
   );
 }
@@ -143,11 +143,11 @@ export function PixelInfoCard({ children, pixelInfo }: PixelInfoCardProps) {
             </View>
           )}
         </PixelInfoCardModeContext.Consumer>
-        <FastHStack w="100%" justifyContent="space-around">
+        <BaseHStack w="100%" justifyContent="space-around">
           <PixelRssi {...props} />
           <PixelBattery {...props} />
           <PixelRollState {...props} />
-        </FastHStack>
+        </BaseHStack>
         {children}
       </Card.Content>
     </Card>

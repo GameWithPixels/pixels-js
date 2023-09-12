@@ -1,7 +1,7 @@
 import {
-  FastBox,
-  FastHStack,
-  FastVStack,
+  BaseBox,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import { ActivityIndicator, Text } from "react-native-paper";
 
@@ -22,10 +22,10 @@ export function TaskContainer({
   return taskStatus === "pending" ? (
     <></>
   ) : (
-    <FastVStack gap={8} ml={isSubTask ? "10%" : undefined}>
+    <BaseVStack gap={8} ml={isSubTask ? "10%" : undefined}>
       {title && (
-        <FastHStack gap={8} alignItems="center">
-          <FastBox w="10%" alignItems="center" justifyContent="center">
+        <BaseHStack gap={8} alignItems="center">
+          <BaseBox w="10%" alignItems="center" justifyContent="center">
             {taskStatus === "running" ? (
               <ActivityIndicator />
             ) : (
@@ -33,16 +33,16 @@ export function TaskContainer({
                 {getTaskResultEmoji(taskStatus)}
               </Text>
             )}
-          </FastBox>
+          </BaseBox>
           <Text
             variant="titleLarge"
             style={{ fontWeight: isSubTask ? "normal" : "bold" }}
           >
             {title}
           </Text>
-        </FastHStack>
+        </BaseHStack>
       )}
       {taskStatus !== "succeeded" && children}
-    </FastVStack>
+    </BaseVStack>
   );
 }

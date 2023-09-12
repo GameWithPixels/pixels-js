@@ -1,8 +1,8 @@
 import {
   expandShorthandStyle,
-  FastFlexProps,
-  FastHStack,
-  FastVStack,
+  BaseFlexProps,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import { FlexStyle } from "react-native";
 import {
@@ -11,7 +11,7 @@ import {
   TouchableRippleProps,
 } from "react-native-paper";
 
-export interface ProfileRuleCardProps extends FastFlexProps {
+export interface ProfileRuleCardProps extends BaseFlexProps {
   condition?: string;
   actions?: string[];
   onPress?: TouchableRippleProps["onPress"];
@@ -36,18 +36,18 @@ export function ProfileRuleCard({
       onLongPress={onLongPress}
       disabled={disabled}
     >
-      <FastVStack w="100%" gap={contentGap}>
-        <FastHStack alignItems="center">
+      <BaseVStack w="100%" gap={contentGap}>
+        <BaseHStack alignItems="center">
           <Text variant="bodyLarge">When: </Text>
           <Text>{condition}</Text>
-        </FastHStack>
+        </BaseHStack>
         {actions?.map((action, i) => (
-          <FastHStack key={i} alignItems="center">
+          <BaseHStack key={i} alignItems="center">
             <Text variant="bodyLarge">Then: </Text>
             <Text>{action}</Text>
-          </FastHStack>
+          </BaseHStack>
         ))}
-      </FastVStack>
+      </BaseVStack>
     </TouchableRipple>
   );
 }

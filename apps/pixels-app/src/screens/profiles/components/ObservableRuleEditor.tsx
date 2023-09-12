@@ -6,8 +6,8 @@ import {
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  FastHStack,
-  FastVStack,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -116,7 +116,7 @@ export default function ({ observableRule }: { observableRule: EditRule }) {
   );
   const theme = useTheme();
   return (
-    <FastVStack w="100%" h="100%" gap={10}>
+    <BaseVStack w="100%" h="100%" gap={10}>
       <ObservableConditionEditor
         borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
         borderWidth={1}
@@ -125,11 +125,11 @@ export default function ({ observableRule }: { observableRule: EditRule }) {
         p={10}
         observableRule={observableRule}
       />
-      <FastHStack alignItems="center" justifyContent="space-between">
+      <BaseHStack alignItems="center" justifyContent="space-between">
         <Text variant="bodyLarge">Actions:</Text>
         <IconButton icon="add" onPress={createAction} />
-      </FastHStack>
+      </BaseHStack>
       <ObservableActionsList observableRule={observableRule} />
-    </FastVStack>
+    </BaseVStack>
   );
 }

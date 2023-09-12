@@ -12,8 +12,8 @@ import {
   getEditWidgetsData,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  FastBox,
-  FastFlexProps,
+  BaseBox,
+  BaseFlexProps,
 } from "@systemic-games/react-native-base-components";
 import {
   RuleConditionSelector,
@@ -123,11 +123,11 @@ export default function ({
   ...flexProps
 }: {
   observableRule: EditRule;
-} & FastFlexProps) {
+} & BaseFlexProps) {
   return (
-    <FastBox {...flexProps}>
+    <BaseBox {...flexProps}>
       <ObservableConditionSelection observableRule={observableRule} />
       <ObservableCondition observableRule={observableRule} />
-    </FastBox>
+    </BaseBox>
   );
 }

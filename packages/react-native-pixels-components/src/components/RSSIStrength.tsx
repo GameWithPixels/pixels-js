@@ -1,17 +1,17 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   PercentageDisplay,
-  FastHStack,
+  BaseHStack,
   IconComponent,
   IconComponentProps,
-  FastFlexProps,
+  BaseFlexProps,
 } from "@systemic-games/react-native-base-components";
 import { Text, TextProps } from "react-native-paper";
 
 /**
  * Props for {@link RSSIStrength} component.
  */
-interface RSSIStrengthProps extends FastFlexProps {
+interface RSSIStrengthProps extends BaseFlexProps {
   strength: number;
   iconSize?: number;
   showText?: boolean;
@@ -50,7 +50,7 @@ export function RSSIStrength({
 }: RSSIStrengthProps) {
   const percent = 100 + strength;
   return showText ? (
-    <FastHStack
+    <BaseHStack
       alignItems="center"
       justifyContent="center"
       gap={3}
@@ -58,7 +58,7 @@ export function RSSIStrength({
     >
       <PercentageDisplay percent={percent} icons={icons} iconSize={iconSize} />
       <Text {..._text}>{percent + "%"}</Text>
-    </FastHStack>
+    </BaseHStack>
   ) : (
     <PercentageDisplay percent={percent} icons={icons} iconSize={iconSize} />
   );

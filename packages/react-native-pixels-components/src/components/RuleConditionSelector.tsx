@@ -2,16 +2,16 @@ import {
   ActionsheetList,
   ActionsheetListItemData,
   BaseStyles,
-  FastButton,
-  FastFlexProps,
-  FastHStack,
+  BaseButton,
+  BaseFlexProps,
+  BaseHStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 
-export interface RuleConditionSelectorProps extends FastFlexProps {
+export interface RuleConditionSelectorProps extends BaseFlexProps {
   label: string;
   conditions: ActionsheetListItemData[];
 }
@@ -24,12 +24,12 @@ export function RuleConditionSelector({
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastHStack alignItems="center" {...flexProps}>
+      <BaseHStack alignItems="center" {...flexProps}>
         <Text variant="titleMedium">When</Text>
         <View style={BaseStyles.spacer} />
-        <FastButton onPress={onOpen}>{label}</FastButton>
+        <BaseButton onPress={onOpen}>{label}</BaseButton>
         <View style={BaseStyles.spacer} />
-      </FastHStack>
+      </BaseHStack>
 
       <ActionsheetList
         isOpen={isOpen}

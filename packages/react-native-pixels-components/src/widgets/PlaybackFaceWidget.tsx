@@ -1,6 +1,6 @@
 import {
-  FastHStack,
-  FastVStack,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Switch, Text } from "react-native-paper";
@@ -26,9 +26,9 @@ export function PlaybackFaceWidget({
     [defaultFace, onChange]
   );
   return (
-    <FastVStack {...flexProps}>
+    <BaseVStack {...flexProps}>
       <Text variant="titleMedium">{title}</Text>
-      <FastHStack alignItems="center" gap={5}>
+      <BaseHStack alignItems="center" gap={5}>
         <Text>Current Face</Text>
         <Switch value={value > 0} onValueChange={onToggle} />
         <FaceSelector
@@ -38,7 +38,7 @@ export function PlaybackFaceWidget({
           onFaceSelect={onChange}
           disabled={value <= 0}
         />
-      </FastHStack>
-    </FastVStack>
+      </BaseHStack>
+    </BaseVStack>
   );
 }

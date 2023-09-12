@@ -1,9 +1,9 @@
 import Slider, { SliderProps } from "@react-native-community/slider";
 import {
   BaseStyles,
-  FastFlexProps,
-  FastHStack,
-  FastVStack,
+  BaseFlexProps,
+  BaseHStack,
+  BaseVStack,
   RoundedBox,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
@@ -11,7 +11,7 @@ import { Text, useTheme } from "react-native-paper";
 
 export interface SliderWidgetProps
   extends Pick<SliderProps, "minimumValue" | "maximumValue" | "step">,
-    FastFlexProps {
+    BaseFlexProps {
   title: string;
   value: number;
   unitType?: string;
@@ -31,9 +31,9 @@ export function SliderWidget({
   const valueStr = step && step < 1 ? value.toFixed(3) : value.toString();
   const theme = useTheme();
   return (
-    <FastVStack {...flexProps}>
+    <BaseVStack {...flexProps}>
       <Text variant="titleMedium">{title}</Text>
-      <FastHStack alignItems="center">
+      <BaseHStack alignItems="center">
         <Slider
           style={BaseStyles.spacer}
           thumbTintColor={theme.colors.primary}
@@ -48,7 +48,7 @@ export function SliderWidget({
         <RoundedBox border p={10} minWidth={100} alignItems="center">
           <Text>{unitType ? valueStr + unitType : valueStr}</Text>
         </RoundedBox>
-      </FastHStack>
-    </FastVStack>
+      </BaseHStack>
+    </BaseVStack>
   );
 }

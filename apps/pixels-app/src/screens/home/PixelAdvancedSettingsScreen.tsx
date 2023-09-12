@@ -1,6 +1,6 @@
 import {
-  FastHStack,
-  FastVStack,
+  BaseHStack,
+  BaseVStack,
   PixelAppPage,
   RoundedBox,
 } from "@systemic-games/react-native-pixels-components";
@@ -20,7 +20,7 @@ export default function PixelAdvancedSettingsScreen(
   return (
     <PixelAppPage>
       <ScrollView style={AppStyles.fullSizeFlex}>
-        <FastVStack gap={10}>
+        <BaseVStack gap={10}>
           {/* Firmware */}
           <RoundedBox border p={10} gap={5}>
             <Text variant="titleLarge">Firmware</Text>
@@ -32,26 +32,26 @@ export default function PixelAdvancedSettingsScreen(
           {/* Storage Info */}
           <RoundedBox border p={10} gap={5}>
             <Text variant="titleLarge">Die Storage</Text>
-            <FastHStack alignItems="baseline">
+            <BaseHStack alignItems="baseline">
               <Text variant="bodyLarge">Available: </Text>
               <Text>2045 bytes</Text>
-            </FastHStack>
-            <FastHStack alignItems="baseline">
+            </BaseHStack>
+            <BaseHStack alignItems="baseline">
               <Text variant="bodyLarge">Total storage: </Text>
               <Text>6349 bytes</Text>
-            </FastHStack>
-            <FastHStack alignItems="baseline">
+            </BaseHStack>
+            <BaseHStack alignItems="baseline">
               <Text variant="bodyLarge">Animations: </Text>
               <Text>2834 bytes</Text>
-            </FastHStack>
-            <FastHStack alignItems="baseline">
+            </BaseHStack>
+            <BaseHStack alignItems="baseline">
               <Text variant="bodyLarge">Designs: </Text>
               <Text>3123 bytes</Text>
-            </FastHStack>
-            <FastHStack alignItems="baseline">
+            </BaseHStack>
+            <BaseHStack alignItems="baseline">
               <Text variant="bodyLarge">Rules: </Text>
               <Text>392 bytes</Text>
-            </FastHStack>
+            </BaseHStack>
           </RoundedBox>
           {/* Advanced Options */}
           <Button mode="contained-tonal" icon="target">
@@ -64,7 +64,7 @@ export default function PixelAdvancedSettingsScreen(
           >
             Reboot
           </Button>
-        </FastVStack>
+        </BaseVStack>
       </ScrollView>
     </PixelAppPage>
   );

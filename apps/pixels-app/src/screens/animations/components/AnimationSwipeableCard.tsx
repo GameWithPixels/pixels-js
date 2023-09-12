@@ -4,7 +4,7 @@ import {
   getAnimationTitle,
   AnimationCard,
   SwipeableButtons,
-  FastBoxProps,
+  BaseBoxProps,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 import { Swipeable } from "react-native-gesture-handler";
@@ -12,7 +12,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import getCachedDataSet from "~/features/appDataSet/getCachedDataSet";
 import DieRenderer from "~/features/render3d/DieRenderer";
 
-export interface AnimationSwipeableCardProps extends FastBoxProps {
+export interface AnimationSwipeableCardProps extends BaseBoxProps {
   animation: Readonly<EditAnimation>;
   onPress: (anim: Readonly<EditAnimation>) => void;
   onRemove: (anim: Readonly<EditAnimation>) => void;

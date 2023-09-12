@@ -1,8 +1,8 @@
 import {
   expandShorthandStyle,
-  FastBoxProps,
-  FastHStack,
-  FastVStack,
+  BaseBoxProps,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { FlexStyle, View } from "react-native";
@@ -28,7 +28,7 @@ export interface PixelInfo {
 /**
  * Props for components displaying dice information.
  */
-export interface PixelInfoCardProps extends FastBoxProps {
+export interface PixelInfoCardProps extends BaseBoxProps {
   pixel: PixelInfo;
   title?: string;
   onPress?: TouchableRippleProps["onPress"];
@@ -57,7 +57,7 @@ export function PixelInfoVCard({
 }: PixelInfoCardProps) {
   return (
     <TouchableRipple style={expandShorthandStyle(flexProps)} onPress={onPress}>
-      <FastVStack
+      <BaseVStack
         w="100%"
         h="100%"
         alignItems="center"
@@ -65,7 +65,7 @@ export function PixelInfoVCard({
         gap={contentGap}
       >
         {/* Die status info */}
-        <FastHStack w="100%" gap={infoGap} justifyContent="center">
+        <BaseHStack w="100%" gap={infoGap} justifyContent="center">
           <BatteryLevel
             level={pixel.batteryLevel}
             isCharging={pixel.isCharging}
@@ -73,7 +73,7 @@ export function PixelInfoVCard({
           />
           <Text>{pixel.currentFace}</Text>
           <RSSIStrength strength={pixel.rssi} iconSize={iconSize} />
-        </FastHStack>
+        </BaseHStack>
         {/* Die render */}
         {dieRenderer ? (
           <View style={{ width: dieViewSize, aspectRatio: 1 }}>
@@ -85,7 +85,7 @@ export function PixelInfoVCard({
         {/* Profile */}
         {title && <Text variant="headlineSmall">{title}</Text>}
         {children}
-      </FastVStack>
+      </BaseVStack>
     </TouchableRipple>
   );
 }
@@ -107,7 +107,7 @@ export function PixelInfoHCard({
 }: PixelInfoCardProps) {
   return (
     <TouchableRipple style={expandShorthandStyle(flexProps)} onPress={onPress}>
-      <FastHStack w="100%" h="100%" gap={contentGap}>
+      <BaseHStack w="100%" h="100%" gap={contentGap}>
         {/* Die render */}
         {dieRenderer && (
           <View style={{ height: dieViewSize, aspectRatio: 1 }}>
@@ -115,9 +115,9 @@ export function PixelInfoHCard({
           </View>
         )}
         {/* Die status info */}
-        <FastVStack justifyContent="space-evenly" height="100%">
+        <BaseVStack justifyContent="space-evenly" height="100%">
           <Text variant="headlineSmall">{pixel.name}</Text>
-          <FastHStack gap={infoGap} justifyContent="flex-start">
+          <BaseHStack gap={infoGap} justifyContent="flex-start">
             <BatteryLevel
               level={pixel.batteryLevel}
               isCharging={pixel.isCharging}
@@ -125,10 +125,10 @@ export function PixelInfoHCard({
             />
             <Text>{pixel.currentFace}</Text>
             <RSSIStrength strength={pixel.rssi} iconSize={iconSize} />
-          </FastHStack>
-        </FastVStack>
+          </BaseHStack>
+        </BaseVStack>
         {children}
-      </FastHStack>
+      </BaseHStack>
     </TouchableRipple>
   );
 }

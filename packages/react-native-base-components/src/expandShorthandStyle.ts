@@ -1,10 +1,6 @@
-import React, { PropsWithChildren } from "react";
-import { View as RnView, ViewStyle } from "react-native";
-import { MD3Theme, useTheme } from "react-native-paper";
+import { ViewStyle } from "react-native";
 
-import { getBorderRadius } from "../getBorderRadius";
-
-export interface FastFlexProps
+export interface BaseFlexProps
   extends Pick<
     ViewStyle,
     | "flex"
@@ -72,7 +68,7 @@ export interface FastFlexProps
   bg?: ViewStyle["backgroundColor"];
 }
 
-export function expandShorthandStyle(props: FastFlexProps): ViewStyle {
+export function expandShorthandStyle(props: BaseFlexProps): ViewStyle {
   const p = props;
   if (Object.hasOwn(props, "flexDir")) {
     p.flexDirection = props.flexDir;
@@ -129,45 +125,4 @@ export function expandShorthandStyle(props: FastFlexProps): ViewStyle {
     p.backgroundColor = props.bg;
   }
   return p;
-}
-
-export interface FastBoxProps extends PropsWithChildren<FastFlexProps> {}
-
-export function FastBox({ children, ...props }: FastBoxProps) {
-  return <RnView style={expandShorthandStyle(props)} children={children} />;
-}
-
-export interface RoundedFlexProps extends FastFlexProps {
-  fill?: boolean;
-  fillThemeColor?: keyof Omit<MD3Theme["colors"], "elevation">;
-  border?: boolean;
-  borderThemeColor?: keyof Omit<MD3Theme["colors"], "elevation">;
-}
-
-export interface RoundedBoxProps extends PropsWithChildren<RoundedFlexProps> {}
-
-export function useRoundedStyle({
-  fill,
-  fillThemeColor = "primaryContainer",
-  border,
-  borderThemeColor = "primary",
-  ...props
-}: RoundedFlexProps) {
-  const theme = useTheme();
-  const style = expandShorthandStyle(props);
-  if (fill && !Object.hasOwn(style, "backgroundColor")) {
-    style.backgroundColor = theme.colors[fillThemeColor];
-  }
-  if (!Object.hasOwn(style, "borderColor")) {
-    style.borderColor = theme.colors[borderThemeColor];
-  }
-  style.borderRadius = getBorderRadius(theme);
-  if (border && !style.borderWidth) {
-    style.borderWidth = 1;
-  }
-  return style;
-}
-
-export function RoundedBox({ children, ...props }: RoundedBoxProps) {
-  return <RnView style={useRoundedStyle(props)} children={children} />;
 }

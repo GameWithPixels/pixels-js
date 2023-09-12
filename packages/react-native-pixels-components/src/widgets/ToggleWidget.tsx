@@ -1,7 +1,7 @@
 import {
   BaseStyles,
-  FastFlexProps,
-  FastHStack,
+  BaseFlexProps,
+  BaseHStack,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { View } from "react-native";
@@ -12,7 +12,7 @@ import { Switch, SwitchProps, Text } from "react-native-paper";
  */
 export interface ToggleProps
   extends Pick<SwitchProps, "value" | "onValueChange">,
-    FastFlexProps {
+    BaseFlexProps {
   title?: string; // Text displayed on the left of the toggle
 }
 
@@ -28,10 +28,10 @@ export function ToggleWidget({
   ...flexProps
 }: ToggleProps) {
   return (
-    <FastHStack {...flexProps}>
+    <BaseHStack {...flexProps}>
       <Text variant="titleMedium">{title}</Text>
       <View style={BaseStyles.spacer} />
       <Switch value={value} onValueChange={onValueChange} />
-    </FastHStack>
+    </BaseHStack>
   );
 }

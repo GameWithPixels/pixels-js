@@ -1,9 +1,9 @@
 import {
   BaseStyles,
   expandShorthandStyle,
-  FastBoxProps,
-  FastHStack,
-  FastVStack,
+  BaseBoxProps,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { View, FlexStyle } from "react-native";
@@ -13,7 +13,7 @@ import {
   TouchableRippleProps,
 } from "react-native-paper";
 
-export interface AnimationCardProps extends FastBoxProps {
+export interface AnimationCardProps extends BaseBoxProps {
   title: string;
   name?: string;
   onPress?: TouchableRippleProps["onPress"];
@@ -36,7 +36,7 @@ export function AnimationCard({
 }: AnimationCardProps) {
   return (
     <TouchableRipple style={expandShorthandStyle(flexProps)} onPress={onPress}>
-      <FastHStack w="100%" h="100%" gap={contentGap}>
+      <BaseHStack w="100%" h="100%" gap={contentGap}>
         {/* Die render */}
         {dieRenderer && (
           <View style={{ height: dieViewSize, aspectRatio: 1 }}>
@@ -44,12 +44,12 @@ export function AnimationCard({
           </View>
         )}
         {/* Animation info */}
-        <FastVStack justifyContent="center" gap={infoGap}>
+        <BaseVStack justifyContent="center" gap={infoGap}>
           <Text variant="headlineSmall">{name}</Text>
           <Text style={BaseStyles.italic}>{title}</Text>
-        </FastVStack>
+        </BaseVStack>
         {children}
-      </FastHStack>
+      </BaseHStack>
     </TouchableRipple>
   );
 }

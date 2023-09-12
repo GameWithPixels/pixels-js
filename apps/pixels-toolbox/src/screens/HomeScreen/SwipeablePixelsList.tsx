@@ -1,5 +1,5 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { FastBox } from "@systemic-games/react-native-base-components";
+import { BaseBox } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
@@ -156,7 +156,7 @@ export const SwipeablePixelsList = React.memo(function ({
 
   return (
     <>
-      <FastBox
+      <BaseBox
         width="100%"
         flexDir="row"
         alignItems="baseline"
@@ -167,7 +167,7 @@ export const SwipeablePixelsList = React.memo(function ({
           {t("pixelsWithCount", { count: pixels.length })}
         </Text>
         <EmojiButton onPress={showActionSheet}>⚙️</EmojiButton>
-      </FastBox>
+      </BaseBox>
       {lastError ? (
         <Text>{`${lastError}`}</Text>
       ) : pixels.length ? (

@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/core";
 import {
-  FastBox,
-  FastHStack,
+  BaseBox,
+  BaseHStack,
 } from "@systemic-games/react-native-base-components";
 import * as Updates from "expo-updates";
 import React from "react";
@@ -63,11 +63,11 @@ function ThemeCard() {
     <Card>
       <Card.Content>
         <Title>Theme</Title>
-        <FastHStack px={5} justifyContent="space-between">
+        <BaseHStack px={5} justifyContent="space-between">
           <ThemeRadio label="System" themeMode="system" />
           <ThemeRadio label="Dark" themeMode="dark" />
           <ThemeRadio label="Light" themeMode="light" />
-        </FastHStack>
+        </BaseHStack>
       </Card.Content>
     </Card>
   );
@@ -103,10 +103,10 @@ function LanguageCard() {
     <Card>
       <Card.Content>
         <Title>Language</Title>
-        <FastHStack px={5} justifyContent="space-between">
+        <BaseHStack px={5} justifyContent="space-between">
           <LanguageRadio label="Chinese" language="zh" />
           <LanguageRadio label="English" language="en" />
-        </FastHStack>
+        </BaseHStack>
       </Card.Content>
     </Card>
   );
@@ -128,10 +128,10 @@ function ValidationCard() {
     <Card>
       <Card.Content>
         <Title>Validation</Title>
-        <FastHStack px={5} justifyContent="space-between">
+        <BaseHStack px={5} justifyContent="space-between">
           <Text>Open On Start</Text>
           <Switch value={openOnStart} onValueChange={updateOpenOnStart} />
-        </FastHStack>
+        </BaseHStack>
       </Card.Content>
     </Card>
   );
@@ -231,7 +231,7 @@ function EasCard() {
             {`Update Id: ${updateManifest?.id ?? "Unknown"}`}
           </Text> */}
           <Divider bold style={styles.divider} />
-          <FastBox flexDir="row" justifyContent="space-between">
+          <BaseBox flexDir="row" justifyContent="space-between">
             <Button
               mode="outlined"
               disabled={!updateManifest}
@@ -246,7 +246,7 @@ function EasCard() {
             <Button mode="outlined" onPress={() => setInfoVisible(true)}>
               App Info
             </Button>
-          </FastBox>
+          </BaseBox>
         </Card.Content>
       </Card>
 

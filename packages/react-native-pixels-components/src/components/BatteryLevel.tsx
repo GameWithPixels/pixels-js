@@ -1,10 +1,10 @@
 import { Fontisto } from "@expo/vector-icons";
 import {
   PercentageDisplay,
-  FastHStack,
+  BaseHStack,
   IconComponent,
   IconComponentProps,
-  FastFlexProps,
+  BaseFlexProps,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Text, TextProps } from "react-native-paper";
@@ -12,7 +12,7 @@ import { Text, TextProps } from "react-native-paper";
 /**
  * Props for {@link BatteryLevel} component.
  */
-interface BatteryLevelProps extends FastFlexProps {
+interface BatteryLevelProps extends BaseFlexProps {
   level: number; // current battery percentage value (between 0 and 1)
   isCharging?: boolean;
   iconSize?: number;
@@ -42,7 +42,7 @@ export function BatteryLevel({
   ...flexProps
 }: BatteryLevelProps) {
   return (
-    <FastHStack
+    <BaseHStack
       alignItems="center"
       justifyContent="center"
       gap={3}
@@ -51,6 +51,6 @@ export function BatteryLevel({
       <PercentageDisplay percent={level} icons={icons} iconSize={iconSize} />
       <Text {..._text}>{isCharging ? "⚡" : ""}</Text>
       {showText && <Text {..._text}>{level + "%"}</Text>}
-    </FastHStack>
+    </BaseHStack>
   );
 }

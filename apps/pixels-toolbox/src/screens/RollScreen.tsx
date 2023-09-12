@@ -1,4 +1,4 @@
-import { FastVStack } from "@systemic-games/react-native-base-components";
+import { BaseVStack } from "@systemic-games/react-native-base-components";
 import {
   ScannedPixel,
   getPixel,
@@ -41,7 +41,7 @@ function RollPage() {
           style={{ backgroundColor }}
           onPress={() => connectDispatch("disconnect")}
         >
-          <FastVStack
+          <BaseVStack
             width="100%"
             height="100%"
             alignItems="center"
@@ -56,7 +56,7 @@ function RollPage() {
                 <Text style={styles.text}>{rollState.face}</Text>
               )
             )}
-          </FastVStack>
+          </BaseVStack>
         </Pressable>
       )}
     </>

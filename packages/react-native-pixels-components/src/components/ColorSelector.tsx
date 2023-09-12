@@ -6,12 +6,12 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   ColorWheel,
-  FastBoxProps,
-  FastButton,
-  FastButtonProps,
-  FastFlexProps,
-  FastHStack,
-  FastVStack,
+  BaseBoxProps,
+  BaseButton,
+  BaseButtonProps,
+  BaseFlexProps,
+  BaseHStack,
+  BaseVStack,
   RoundedBox,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -25,14 +25,14 @@ import { useModalStyle } from "../theme";
 /**
  * Simple button for selecting basic color shade
  */
-function ColorButton(props: FastButtonProps) {
-  return <FastButton w={20} width={20} aspectRatio={1} {...props} />;
+function ColorButton(props: BaseButtonProps) {
+  return <BaseButton w={20} width={20} aspectRatio={1} {...props} />;
 }
 
 /**
  * Props for customizing elements and behavior of a ColorSelection or GradientColorSelection component.
  */
-interface ColorSelectorProps extends FastFlexProps {
+interface ColorSelectorProps extends BaseFlexProps {
   color: ColorUtils.IColor;
   onColorSelect?: (value: string) => void;
 }
@@ -50,13 +50,13 @@ export function ColorSelector({
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastButton
+      <BaseButton
         onPress={onOpen}
         color={ColorUtils.colorToString(color)}
         {...flexProps}
       >
         <Ionicons name="color-palette-outline" size={24} color="white" />
-      </FastButton>
+      </BaseButton>
 
       <SelectColorModal
         visible={isOpen}
@@ -88,7 +88,7 @@ export function SelectColorModal({
       >
         <Card>
           <Card.Content>
-            <FastVStack w="100%" alignItems="center">
+            <BaseVStack w="100%" alignItems="center">
               <RoundedBox
                 w="60%"
                 aspectRatio={1}
@@ -104,10 +104,10 @@ export function SelectColorModal({
                 initialColor={color}
                 onSelectColor={onColorSelect}
               />
-            </FastVStack>
+            </BaseVStack>
           </Card.Content>
           <Card.Actions>
-            <FastHStack w="100%" justifyContent="space-between">
+            <BaseHStack w="100%" justifyContent="space-between">
               <ColorButton
                 color="black"
                 onPress={() => {
@@ -143,7 +143,7 @@ export function SelectColorModal({
                   onDismiss?.();
                 }}
               />
-            </FastHStack>
+            </BaseHStack>
           </Card.Actions>
         </Card>
       </Modal>
@@ -154,7 +154,7 @@ export function SelectColorModal({
 /**
  * Props for customizing elements and behavior of a ColorSelection or GradientColorSelection component.
  */
-interface GradientColorSelectorProps extends FastFlexProps {
+interface GradientColorSelectorProps extends BaseFlexProps {
   initialColor?: string;
   initialKeyFrames?: EditRgbKeyframe[];
   onSelect?: (keyframes: EditRgbKeyframe[]) => void;
@@ -173,9 +173,9 @@ export function GradientColorSelector({
   const [_rgbKeyFrames, _setRgbKeyFrames] = React.useState(initialKeyFrames);
   return (
     <>
-      <FastButton onPress={onOpen} color={selectedColor} {...flexProps}>
+      <BaseButton onPress={onOpen} color={selectedColor} {...flexProps}>
         <Ionicons name="color-palette-outline" size={24} color="white" />
-      </FastButton>
+      </BaseButton>
 
       <GradientColorSelectorActionsheet
         isOpen={isOpen}
@@ -215,7 +215,7 @@ function GradientColorSelectorActionsheet({
     // <Actionsheet maxHeight="95%" onClose={onClose} {...props}>
     //   <Actionsheet.Content maxHeight="95%" minHeight="95%">
     //     <ScrollView>
-    //       <FastVStack p={2} alignItems="center" w="100%">
+    //       <BaseVStack p={2} alignItems="center" w="100%">
     //         <Box width="100%" alignItems="center">
     //           <Svg height="200" width="100%">
     //             <Defs>
@@ -265,7 +265,7 @@ function GradientColorSelectorActionsheet({
     //           </Svg>
     //         </Box>
     //         <Box mt={2} w="100%" h={110} bg="pixelColors.highlightGray" p={2}>
-    //           <FastHStack w="100%" h="100%">
+    //           <BaseHStack w="100%" h="100%">
     //             <Box flex={1}>
     //               <Pressable
     //                 onPress={() => {
@@ -408,7 +408,7 @@ function GradientColorSelectorActionsheet({
     //                   </Svg>
     //                 </Box>
     //               </Pressable> */}
-    //           </FastHStack>
+    //           </BaseHStack>
     //         </Box>
     //         <Box mt={2} p={2} width="100%" alignItems="center">
     //           <ColorWheel
@@ -428,7 +428,7 @@ function GradientColorSelectorActionsheet({
     //             }}
     //           />
     //         </Box>
-    //         <FastHStack mt={2}>
+    //         <BaseHStack mt={2}>
     //           <ColorButton
     //             color="black"
     //             onPress={() => {
@@ -468,8 +468,8 @@ function GradientColorSelectorActionsheet({
     //               onClose?.();
     //             }}
     //           />
-    //         </FastHStack>
-    //       </FastVStack>
+    //         </BaseHStack>
+    //       </BaseVStack>
     //     </ScrollView>
     //   </Actionsheet.Content>
     // </Actionsheet>

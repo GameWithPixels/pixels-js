@@ -18,9 +18,9 @@ import {
   getFaceMask,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  FastBox,
-  FastFlexProps,
-  FastVStack,
+  BaseBox,
+  BaseFlexProps,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Text } from "react-native-paper";
@@ -43,18 +43,18 @@ export type CreateWidgetComponentOptionals = Required<
   Exclude<Parameters<typeof createWidgetComponent>[1], undefined>
 >;
 
-type FastBoxWithBgProps = Omit<FastFlexProps, "backgroundColor" | "bg">;
+type BaseBoxWithBgProps = Omit<BaseFlexProps, "backgroundColor" | "bg">;
 
 // This helper wraps the given widget component to automatically re-render on value change
 function makeAutoUpdate<T>(
   update: (value: T) => void,
   widget: (
-    props: FastBoxWithBgProps & {
+    props: BaseBoxWithBgProps & {
       autoUpdate: (value: T) => void;
     }
   ) => JSX.Element
-): (props: FastBoxWithBgProps) => JSX.Element {
-  const WrappedWidget = (props: FastBoxWithBgProps) => {
+): (props: BaseBoxWithBgProps) => JSX.Element {
+  const WrappedWidget = (props: BaseBoxWithBgProps) => {
     const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
     const autoUpdate = React.useCallback((value: T) => {
       update(value);
@@ -85,7 +85,7 @@ export function createWidgetComponent(
       availableTexts: string[];
     };
   }
-): (props: FastFlexProps) => JSX.Element {
+): (props: BaseFlexProps) => JSX.Element {
   const type = widgetData.type;
   switch (type) {
     case "toggle":
@@ -140,13 +140,13 @@ export function createWidgetComponent(
       return makeAutoUpdate(
         (color: string) => widgetData.update(new EditColor(new Color(color))),
         ({ autoUpdate, ...props }) => (
-          <FastVStack {...props}>
+          <BaseVStack {...props}>
             <Text variant="titleMedium">{widgetData.displayName}</Text>
             <ColorSelector
               color={widgetData.getValue().color}
               onColorSelect={autoUpdate}
             />
-          </FastVStack>
+          </BaseVStack>
         )
       );
 
@@ -168,10 +168,10 @@ export function createWidgetComponent(
         (keyframes: EditRgbKeyframe[]) =>
           widgetData.update(new EditRgbGradient({ keyframes })),
         ({ autoUpdate, ...props }) => (
-          <FastVStack {...props}>
+          <BaseVStack {...props}>
             <Text variant="titleMedium">{widgetData.displayName}</Text>
             <GradientColorSelector onSelect={autoUpdate} />
-          </FastVStack>
+          </BaseVStack>
         )
       );
 
@@ -185,7 +185,7 @@ export function createWidgetComponent(
       return makeAutoUpdate(
         (pattern) => widgetData.update(pattern as EditPattern),
         ({ autoUpdate, ...props }) => (
-          <FastVStack {...props}>
+          <BaseVStack {...props}>
             <Text variant="titleMedium">{widgetData.displayName}</Text>
             <PatternSelector
               pattern={widgetData.getValue()}
@@ -194,7 +194,7 @@ export function createWidgetComponent(
               dieRenderer={patternsParams.dieRenderer}
               dieViewSize="30%"
             />
-          </FastVStack>
+          </BaseVStack>
         )
       );
     }
@@ -209,7 +209,7 @@ export function createWidgetComponent(
       return makeAutoUpdate(
         (pattern) => widgetData.update(pattern as EditPattern),
         ({ autoUpdate, ...props }) => (
-          <FastVStack {...props}>
+          <BaseVStack {...props}>
             <Text variant="titleMedium">{widgetData.displayName}</Text>
             <PatternSelector
               pattern={widgetData.getValue()}
@@ -218,7 +218,7 @@ export function createWidgetComponent(
               dieRenderer={patternsParams.dieRenderer}
               dieViewSize="30%"
             />
-          </FastVStack>
+          </BaseVStack>
         )
       );
     }
@@ -273,14 +273,14 @@ export function createWidgetComponent(
 
     case "face":
       return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
-        <FastVStack {...props}>
+        <BaseVStack {...props}>
           <Text variant="titleMedium">{widgetData.displayName}</Text>
           <FaceSelector
             faceCount={20}
             face={widgetData.getValue()}
             onFaceSelect={autoUpdate}
           />
-        </FastVStack>
+        </BaseVStack>
       ));
 
     case "playbackFace":
@@ -304,7 +304,7 @@ export function createWidgetComponent(
       return makeAutoUpdate(
         (anim) => widgetData.update(anim as EditAnimation),
         ({ autoUpdate, ...props }) => (
-          <FastVStack {...props}>
+          <BaseVStack {...props}>
             <Text variant="titleMedium">{widgetData.displayName}</Text>
             <AnimationSelector
               {...props}
@@ -314,7 +314,7 @@ export function createWidgetComponent(
               dieRenderer={animationsParams.dieRenderer}
               dieViewSize="30%"
             />
-          </FastVStack>
+          </BaseVStack>
         )
       );
     }
@@ -322,9 +322,9 @@ export function createWidgetComponent(
     case "audioClip":
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       return makeAutoUpdate(widgetData.update, ({ autoUpdate, ...props }) => (
-        <FastBox {...props}>
+        <BaseBox {...props}>
           <Text>Audio Clip Selector Placeholder</Text>
-        </FastBox>
+        </BaseBox>
       ));
 
     case "userText": {

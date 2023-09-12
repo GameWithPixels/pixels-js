@@ -1,5 +1,5 @@
 import {
-  FastButton,
+  BaseButton,
   PixelAppPage,
   PixelThemeProvider,
 } from "@systemic-games/react-native-pixels-components";
@@ -18,7 +18,7 @@ export function AppSettings() {
   return (
     <PixelThemeProvider accent="yellow">
       <PixelAppPage>
-        <FastButton onPress={resetSettings}>Reset Settings</FastButton>
+        <BaseButton onPress={resetSettings}>Reset Settings</BaseButton>
       </PixelAppPage>
     </PixelThemeProvider>
   );

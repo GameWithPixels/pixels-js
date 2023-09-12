@@ -5,10 +5,10 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   BatteryLevel,
-  FastBox,
-  FastButton,
-  FastHStack,
-  FastVStack,
+  BaseBox,
+  BaseButton,
+  BaseHStack,
+  BaseVStack,
   LoadingPopup,
   PixelAppPage,
   RSSIStrength,
@@ -134,26 +134,26 @@ export default function PixelDetailScreen({
       <PixelAppPage>
         <ScrollView style={AppStyles.fullSizeFlex}>
           <TextInputClear isTitle placeholder={pixel.name} />
-          <FastHStack w="100%">
-            <FastBox w="60%" aspectRatio={1}>
+          <BaseHStack w="100%">
+            <BaseBox w="60%" aspectRatio={1}>
               <DieRenderer
                 renderData={activeProfile && getCachedDataSet(activeProfile)}
               />
-            </FastBox>
-            <FastVStack
+            </BaseBox>
+            <BaseVStack
               flex={1}
               alignItems="center"
               justifyContent="space-around"
               gap={5}
             >
-              <FastButton onPress={() => pixel.blink(Color.dimOrange)}>
+              <BaseButton onPress={() => pixel.blink(Color.dimOrange)}>
                 <MaterialCommunityIcons
                   name="lightbulb-on-outline"
                   size={24}
                   color={theme.colors.onPrimaryContainer}
                 />
-              </FastButton>
-              <FastHStack
+              </BaseButton>
+              <BaseHStack
                 w="100%"
                 alignItems="center"
                 justifyContent="space-around"
@@ -164,7 +164,7 @@ export default function PixelDetailScreen({
                   iconSize={24}
                 />
                 <RSSIStrength strength={pixel.rssi} iconSize={24} />
-              </FastHStack>
+              </BaseHStack>
               {lastError ? (
                 <Text style={{ color: theme.colors.error }}>
                   {`${lastError}`}
@@ -177,16 +177,16 @@ export default function PixelDetailScreen({
                   <Text variant="bodyLarge">{status}</Text>
                 </>
               )}
-            </FastVStack>
-          </FastHStack>
+            </BaseVStack>
+          </BaseHStack>
 
-          <FastVStack gap={10} w="100%" marginBottom={10}>
+          <BaseVStack gap={10} w="100%" marginBottom={10}>
             {/* Profiles horizontal scroll list */}
-            <FastVStack>
-              <FastHStack alignItems="center" gap={5}>
+            <BaseVStack>
+              <BaseHStack alignItems="center" gap={5}>
                 <AntDesign name="profile" size={24} color="white" />
                 <Text variant="titleMedium">Recent Profiles:</Text>
-              </FastHStack>
+              </BaseHStack>
               <ProfileCarousel
                 height={100}
                 dieViewSize={50}
@@ -211,7 +211,7 @@ export default function PixelDetailScreen({
                   }
                 }}
               />
-            </FastVStack>
+            </BaseVStack>
 
             {/* Die Stats */}
             <DieStatistics
@@ -220,16 +220,16 @@ export default function PixelDetailScreen({
             />
 
             {/* Advanced Settings infos */}
-            <FastButton
+            <BaseButton
               // icon="chevron"
               onPress={() => {
                 navigation.navigate("PixelAdvancedSettings", { pixelId });
               }}
             >
               Advanced Settings
-            </FastButton>
+            </BaseButton>
 
-            <FastButton
+            <BaseButton
               // icon={<AntDesign name="disconnect" size={24} color="white" />}
               onPress={() => {
                 removePairedDie(pixelId);
@@ -237,8 +237,8 @@ export default function PixelDetailScreen({
               }}
             >
               Unpair
-            </FastButton>
-          </FastVStack>
+            </BaseButton>
+          </BaseVStack>
         </ScrollView>
       </PixelAppPage>
 

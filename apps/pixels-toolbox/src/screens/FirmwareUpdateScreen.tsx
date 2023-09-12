@@ -1,8 +1,8 @@
 import { useFocusEffect } from "@react-navigation/native";
 import {
-  FastBox,
-  FastHStack,
-  FastVStack,
+  BaseBox,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import {
   BleScanner,
@@ -200,10 +200,10 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   );
 
   return (
-    <FastVStack flex={1}>
+    <BaseVStack flex={1}>
       {dfuLastError && !errorCleared ? (
         // Got an error, display it until cleared
-        <FastVStack alignItems="center" justifyContent="center" gap={10}>
+        <BaseVStack alignItems="center" justifyContent="center" gap={10}>
           <Text
             variant="bodyLarge"
             style={{ color: theme.colors.error }}
@@ -215,12 +215,12 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
           >
             {t("ok")}
           </Button>
-        </FastVStack>
+        </BaseVStack>
       ) : selection ? (
         // Confirm selection
-        <FastVStack gap={10}>
+        <BaseVStack gap={10}>
           <Text>{`Proceed with firmware update on ${selection.name}?`}</Text>
-          <FastHStack alignSelf="center" gap={10}>
+          <BaseHStack alignSelf="center" gap={10}>
             <Button
               mode="contained-tonal"
               onPress={() => {
@@ -236,24 +236,24 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
             >
               {t("cancel")}
             </Button>
-          </FastHStack>
-        </FastVStack>
+          </BaseHStack>
+        </BaseVStack>
       ) : dfuState && !isDfuDone(dfuState) ? (
         // DFU
-        <FastVStack gap={10} alignItems="center" justifyContent="center">
+        <BaseVStack gap={10} alignItems="center" justifyContent="center">
           <Text variant="bodyLarge">Selected Peripheral:</Text>
           {dfuTarget && <PeripheralInfo peripheral={dfuTarget} />}
           <Text variant="bodyLarge">Performing Firmware Update:</Text>
           {dfuState === "uploading" ? (
-            <FastBox w="100%" p={2}>
+            <BaseBox w="100%" p={2}>
               <ProgressBar percent={dfuProgress} />
-            </FastBox>
+            </BaseBox>
           ) : (
             <Text style={gs.italic}>
               {t("dfuStateWithStatus", { status: t(dfuState) })}
             </Text>
           )}
-        </FastVStack>
+        </BaseVStack>
       ) : (
         // Scan list
         <>
@@ -264,7 +264,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
             {bundleLabel ?? t("tapToSelectFirmware")}
           </Button>
           {bundleLabel && (
-            <FastVStack gap={10}>
+            <BaseVStack gap={10}>
               <Text style={gs.italic}>
                 Tap on a peripheral to attempt a Pixel firmware update.
               </Text>
@@ -276,11 +276,11 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
                 renderItem={renderItem}
                 refreshControl={refreshControl}
               />
-            </FastVStack>
+            </BaseVStack>
           )}
         </>
       )}
-    </FastVStack>
+    </BaseVStack>
   );
 }
 

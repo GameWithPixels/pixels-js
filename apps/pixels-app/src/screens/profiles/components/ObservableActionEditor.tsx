@@ -8,9 +8,9 @@ import {
   EditActionRunOnDevice,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  FastBoxProps,
-  FastHStack,
-  FastVStack,
+  BaseBoxProps,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import {
   createWidgetComponent,
@@ -61,7 +61,7 @@ const ObservableActionSelector = observer(function ({
   return <RuleActionSelector flex={1} title={actionTitle} actions={actions} />;
 });
 
-export interface ObservableActionEditorProps extends FastBoxProps {
+export interface ObservableActionEditorProps extends BaseBoxProps {
   observableAction: EditAction;
   animations: Readonly<EditAnimation>[];
   userTextsParams: CreateWidgetComponentOptionals["userTextsParams"];
@@ -102,15 +102,15 @@ export default function ({
     [actionWidgets, animationsParams, userTextsParams]
   );
   return (
-    <FastVStack {...flexProps}>
-      <FastHStack w="100%" alignItems="center" justifyContent="space-between">
+    <BaseVStack {...flexProps}>
+      <BaseHStack w="100%" alignItems="center" justifyContent="space-between">
         <ObservableActionSelector
           observableAction={observableAction}
           onReplace={onReplace}
         />
         <IconButton icon="delete" onPress={onDelete} />
-      </FastHStack>
+      </BaseHStack>
       {widgets}
-    </FastVStack>
+    </BaseVStack>
   );
 }

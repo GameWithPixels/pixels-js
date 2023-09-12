@@ -1,8 +1,8 @@
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   useDisclose,
-  FastHStack,
-  FastButton,
+  BaseHStack,
+  BaseButton,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -133,10 +133,10 @@ export function ProfilesList({
         contentContainerStyle={AppStyles.listContentContainer}
         stickyHeaderIndices={[0]}
       >
-        {/* <FastHStack my={1} p={2} alignItems="center" gap={5}>
+        {/* <BaseHStack my={1} p={2} alignItems="center" gap={5}>
           <AntDesign name="staro" size={24} color="white" />
           <Text variant="headlineLarge">Favorites:</Text>
-        </FastHStack>
+        </BaseHStack>
 
         <RoundedBox p={1} mt={2} bg="gray">
           {favoriteProfilesList.map((profile) => (
@@ -153,15 +153,15 @@ export function ProfilesList({
           ))}
         </RoundedBox>
 
-        <FastHStack my={1} mt={5} alignItems="center" gap={5}>
+        <BaseHStack my={1} mt={5} alignItems="center" gap={5}>
           <AntDesign name="profile" size={24} color="white" />
           <Text variant="headlineLarge">Profiles list:</Text>
-        </FastHStack> */}
+        </BaseHStack> */}
 
-        <FastHStack alignItems="center" justifyContent="space-between">
-          <FastButton>Sort</FastButton>
+        <BaseHStack alignItems="center" justifyContent="space-between">
+          <BaseButton>Sort</BaseButton>
           <IconButton icon="add" onPress={createProfile} />
-        </FastHStack>
+        </BaseHStack>
         {profiles.map((profile) => renderItem({ item: profile }))}
       </ScrollView>
 

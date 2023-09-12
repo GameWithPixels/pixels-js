@@ -1,8 +1,8 @@
 import {
-  FastBox,
-  FastBoxProps,
-  FastHStack,
-  FastVStack,
+  BaseBox,
+  BaseBoxProps,
+  BaseHStack,
+  BaseVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
@@ -90,14 +90,14 @@ function SwipeableActionView({
   label,
   textStyle,
   ...props
-}: FastBoxProps & {
+}: BaseBoxProps & {
   label: string;
   textStyle: TextProps<string>["style"];
 }) {
   return (
-    <FastBox alignItems="center" justifyContent="center" {...props}>
+    <BaseBox alignItems="center" justifyContent="center" {...props}>
       <Text style={textStyle}>{label}</Text>
-    </FastBox>
+    </BaseBox>
   );
 }
 
@@ -209,13 +209,13 @@ function PixelCard({
   return (
     <>
       <PixelInfoCard pixelInfo={pixelDispatcher.asNotifier()} {...props}>
-        <FastVStack gap={3} alignItems="center" width="100%">
+        <BaseVStack gap={3} alignItems="center" width="100%">
           {/* Show either DFU progress, profile update progress, connect state or advertising state */}
           {dfuQueued ? (
             <Text>{t("waitingOnFirmwareUpdate")}</Text>
           ) : // DFU status and progress
           dfuActive ? (
-            <FastHStack
+            <BaseHStack
               width="100%"
               alignItems="center"
               justifyContent="center"
@@ -228,10 +228,10 @@ function PixelCard({
               ) : (
                 dfuState && <Text style={gs.italic}>{t(dfuState)}</Text>
               )}
-            </FastHStack>
+            </BaseHStack>
           ) : profileUpload ? (
             // Profile update progress
-            <FastHStack
+            <BaseHStack
               width="100%"
               alignItems="center"
               justifyContent="center"
@@ -240,7 +240,7 @@ function PixelCard({
               <View style={gs.flex}>
                 <ProgressBar percent={profileUpload} />
               </View>
-            </FastHStack>
+            </BaseHStack>
           ) : isDisco && lastActivitySec >= 5 ? (
             // Pixel is disconnected and hasn't been seen for a while (no advertising)
             <Text style={gs.italic}>{`${t("unavailable")} (${
@@ -270,7 +270,7 @@ function PixelCard({
               </Button>
             </>
           )}
-        </FastVStack>
+        </BaseVStack>
       </PixelInfoCard>
 
       <UserMessageDialog

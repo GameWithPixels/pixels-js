@@ -1,6 +1,6 @@
 import {
-  FastHStack,
-  FastVStack,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -41,8 +41,8 @@ export function ScannedPixelsList({
 
   const { t } = useTranslation();
   return (
-    <FastVStack gap={10} alignItems="center">
-      <FastHStack>
+    <BaseVStack gap={10} alignItems="center">
+      <BaseHStack>
         {onClose && (
           <Button
             mode="outlined"
@@ -57,7 +57,7 @@ export function ScannedPixelsList({
         <Button mode="outlined" onPress={() => scannerDispatch("clear")}>
           {t("clearScanList")}
         </Button>
-      </FastHStack>
+      </BaseHStack>
       <Text style={gs.bold}>
         {scannedPixels.length
           ? t("scannedPixelsWithCount", { count: scannedPixels.length })
@@ -74,6 +74,6 @@ export function ScannedPixelsList({
           />
         </>
       )}
-    </FastVStack>
+    </BaseVStack>
   );
 }

@@ -5,14 +5,14 @@ import { View } from "react-native";
 import { RadioButton } from "react-native-paper";
 import Svg, { Defs, G, Polygon, RadialGradient, Stop } from "react-native-svg";
 
-import { FastFlexProps } from "./FastBox";
-import { FastHStack } from "./FastHStack";
-import { FastVStack } from "./FastVStack";
+import { BaseHStack } from "./BaseHStack";
+import { BaseVStack } from "./BaseVStack";
 import {
   findColorWheelSlice,
   generateColorWheel,
   Point,
 } from "../colorWheelUtils";
+import { BaseFlexProps } from "../expandShorthandStyle";
 
 /**
  * Transform coordinate points into a single string for svg path.
@@ -40,7 +40,7 @@ export type ColorWheelBrightness = "dim" | "normal" | "bright";
 /**
  * Props for customizing the colorWheel and its behavior
  */
-export interface ColorWheelProps extends FastFlexProps {
+export interface ColorWheelProps extends BaseFlexProps {
   initialColor?: ColorUtils.IColor;
   onSelectColor?: (color: string) => void; // action to initiate after selecting a color on the wheel
   initialBrightness?: ColorWheelBrightness;
@@ -183,17 +183,17 @@ export function ColorWheel({
     []
   );
   return (
-    <FastVStack w="100%" alignItems="center" {...flexProps}>
+    <BaseVStack w="100%" alignItems="center" {...flexProps}>
       {/* Dimness selection */}
       <RadioButton.Group
         onValueChange={changeBrightness}
         value={colorBrightness}
       >
-        <FastHStack w="100%" justifyContent="center">
+        <BaseHStack w="100%" justifyContent="center">
           <RadioButton.Item value="dim" label="Dim" />
           <RadioButton.Item value="normal" label="Normal" />
           <RadioButton.Item value="bright" label="Bright" />
-        </FastHStack>
+        </BaseHStack>
       </RadioButton.Group>
       {/* Color wheel */}
       <View style={{ width: "100%", aspectRatio: 1 }}>
@@ -202,6 +202,6 @@ export function ColorWheel({
           {selector()}
         </Svg>
       </View>
-    </FastVStack>
+    </BaseVStack>
   );
 }

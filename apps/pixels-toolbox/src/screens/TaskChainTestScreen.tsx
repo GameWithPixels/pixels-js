@@ -1,5 +1,5 @@
 import { delay } from "@systemic-games/pixels-core-utils";
-import { FastVStack } from "@systemic-games/react-native-base-components";
+import { BaseVStack } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Button, Text } from "react-native-paper";
 
@@ -49,13 +49,13 @@ function MyTest1({
     )
     .withStatusChanged(onTaskStatus);
   return (
-    <FastVStack gap={5}>
+    <BaseVStack gap={5}>
       <Text>
         Test {something}: {taskChain.status}
       </Text>
       {taskChain.render()}
       <Text>End Test {something}</Text>
-    </FastVStack>
+    </BaseVStack>
   );
 }
 
@@ -91,13 +91,13 @@ function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
     )
     .withStatusChanged(onTaskStatus);
   return (
-    <FastVStack gap={5}>
+    <BaseVStack gap={5}>
       <Text>
         Test {somethingElse}: {taskChain.status}
       </Text>
       {taskChain.render()}
       <Text>End Test {somethingElse}</Text>
-    </FastVStack>
+    </BaseVStack>
   );
 }
 
@@ -122,7 +122,7 @@ function TestPage() {
       ))
     );
   return (
-    <FastVStack gap={20}>
+    <BaseVStack gap={20}>
       <Button mode="contained-tonal" onPress={() => setCancel(true)}>
         Cancel
       </Button>
@@ -141,7 +141,7 @@ function TestPage() {
         Change Test2
       </Button>
       <Text>Status: {taskChain.status}</Text>
-    </FastVStack>
+    </BaseVStack>
   );
 }
 

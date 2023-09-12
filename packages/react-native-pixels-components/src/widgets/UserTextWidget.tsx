@@ -1,16 +1,16 @@
 import {
   ActionsheetList,
   BaseStyles,
-  FastButton,
-  FastFlexProps,
-  FastHStack,
-  FastVStack,
+  BaseButton,
+  BaseFlexProps,
+  BaseHStack,
+  BaseVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Text, TextInput } from "react-native-paper";
 
-export interface UserTextWidgetProps extends FastFlexProps {
+export interface UserTextWidgetProps extends BaseFlexProps {
   title: string; // Text displayed above the input
   space?: number; // Spacing between text and toggle
   value?: string;
@@ -36,9 +36,9 @@ export function UserTextWidget({
   );
   return (
     <>
-      <FastVStack {...flexProps}>
+      <BaseVStack {...flexProps}>
         <Text variant="titleMedium">{title}</Text>
-        <FastHStack mt={space}>
+        <BaseHStack mt={space}>
           <TextInput
             style={BaseStyles.flex}
             // bg="pixelColors.highlightGray"
@@ -49,12 +49,12 @@ export function UserTextWidget({
             onChangeText={onChange}
           />
           {!!data.length && (
-            <FastButton ml={3} onPress={onOpen}>
+            <BaseButton ml={3} onPress={onOpen}>
               ...
-            </FastButton>
+            </BaseButton>
           )}
-        </FastHStack>
-      </FastVStack>
+        </BaseHStack>
+      </BaseVStack>
 
       {/* Actionsheet drawer */}
       <ActionsheetList

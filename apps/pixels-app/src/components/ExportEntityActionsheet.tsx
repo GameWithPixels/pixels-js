@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { FastHStack } from "@systemic-games/react-native-pixels-components";
+import { BaseHStack } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 
 export interface ExportEntityActionsheetProps {
@@ -19,12 +19,12 @@ export function ExportEntityActionsheet(props: ExportEntityActionsheetProps) {
     //       rounded="md"
     //       alignItems="center"
     //     >
-    //       <FastHStack>
+    //       <BaseHStack>
     //         <Text>
     //           Copy
     //         </Text>
     //         <MaterialIcons name="content-copy" size={24} color="white" />
-    //       </FastHStack>
+    //       </BaseHStack>
     //     </Actionsheet.Item>
     //     <Actionsheet.Item
     //       w="100%"
@@ -32,12 +32,12 @@ export function ExportEntityActionsheet(props: ExportEntityActionsheetProps) {
     //       rounded="md"
     //       alignItems="center"
     //     >
-    //       <FastHStack>
+    //       <BaseHStack>
     //         <Text>
     //           Save as JSON
     //         </Text>
     //         <MaterialCommunityIcons name="code-json" size={24} color="white" />
-    //       </FastHStack>
+    //       </BaseHStack>
     //     </Actionsheet.Item>
     //   </Actionsheet.Content>
     // </Actionsheet>

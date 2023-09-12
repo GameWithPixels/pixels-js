@@ -10,10 +10,10 @@ import {
   getActionDescription,
   getConditionDescription,
   SwipeableButtons,
-  FastVStack,
-  FastBox,
-  FastHStack,
-  FastFlexProps,
+  BaseVStack,
+  BaseBox,
+  BaseHStack,
+  BaseFlexProps,
   ProfileRuleCardProps,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
@@ -79,7 +79,7 @@ const ObservableRuleCard = observer(function ({
   );
 });
 
-interface DraggableRuleItemProps extends FastFlexProps {
+interface DraggableRuleItemProps extends BaseFlexProps {
   navigation: ProfileEditScreenProps["navigation"];
   observableRule: EditRule;
   drag: () => void;
@@ -235,9 +235,9 @@ const ObservableDieRender = observer(function ({
   observableProfile: EditProfile;
 }) {
   return (
-    <FastBox w="60%" aspectRatio={1} alignSelf="center">
+    <BaseBox w="60%" aspectRatio={1} alignSelf="center">
       <DieRenderer renderData={getCachedDataSet(observableProfile)} />
-    </FastBox>
+    </BaseBox>
   );
 });
 
@@ -259,20 +259,20 @@ export default function ({
   );
 
   return (
-    <FastVStack w="100%" h="100%">
+    <BaseVStack w="100%" h="100%">
       <ObservableInputProfileName observableProfile={observableProfile} />
       <ObservableDieRender observableProfile={observableProfile} />
       <ObservableInputProfileDescription
         observableProfile={observableProfile}
       />
-      <FastHStack mb={5} alignItems="center" justifyContent="space-between">
+      <BaseHStack mb={5} alignItems="center" justifyContent="space-between">
         <Text variant="bodyLarge">Rules:</Text>
         <IconButton icon="add" onPress={createRule} />
-      </FastHStack>
+      </BaseHStack>
       <ObservableRulesListEditor
         navigation={navigation}
         observableProfile={observableProfile}
       />
-    </FastVStack>
+    </BaseVStack>
   );
 }

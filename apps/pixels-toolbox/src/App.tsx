@@ -5,7 +5,7 @@ import {
   DefaultTheme as NavDefaultTheme,
   NavigationContainer,
 } from "@react-navigation/native";
-import { FastVStack } from "@systemic-games/react-native-base-components";
+import { BaseVStack } from "@systemic-games/react-native-base-components";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
@@ -111,9 +111,9 @@ function AppContent() {
       <StatusBar style={darkOrLight ? "dark" : "light"} />
       <PersistGate
         loading={
-          <FastVStack alignContent="center" justifyContent="center">
+          <BaseVStack alignContent="center" justifyContent="center">
             <Text>Loading...</Text>
-          </FastVStack>
+          </BaseVStack>
         }
         persistor={persistor}
       >

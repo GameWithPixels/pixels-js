@@ -1,7 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
-  FastHStack,
-  FastVStack,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
@@ -122,19 +122,19 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
   );
 
   return (
-    <FastVStack gap={8} alignItems="center">
+    <BaseVStack gap={8} alignItems="center">
       <Button mode="contained-tonal" onPress={importDfuFile}>
         Import A DFU Zip File
       </Button>
       {bundles.length ? (
         <>
-          <FastHStack alignItems="center">
+          <BaseHStack alignItems="center">
             <Text>Hide Standalone Bootloaders</Text>
             <Switch
               onValueChange={setHideBootloaders}
               value={hideBootloaders}
             />
-          </FastHStack>
+          </BaseHStack>
           <Text>Select Firmware:</Text>
           <FlatList
             style={gs.fullWidth}
@@ -146,7 +146,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
       ) : (
         <Text style={gs.bold}>{`${bundlesError ?? "No DFU files!"}`}</Text>
       )}
-    </FastVStack>
+    </BaseVStack>
   );
 }
 

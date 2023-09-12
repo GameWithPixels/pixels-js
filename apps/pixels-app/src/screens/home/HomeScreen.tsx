@@ -1,8 +1,8 @@
 import { useFocusEffect } from "@react-navigation/native";
 import {
-  FastButton,
-  FastHStack,
-  FastVStack,
+  BaseButton,
+  BaseHStack,
+  BaseVStack,
   PixelAppPage,
   PixelInfoHCard,
   PixelInfoVCard,
@@ -43,7 +43,7 @@ function PairedPixels({
     [navigation]
   );
   return (
-    <FastHStack w="100%" flexWrap="wrap" justifyContent="center">
+    <BaseHStack w="100%" flexWrap="wrap" justifyContent="center">
       {pixels.map((pixel, i) => {
         const uuid = pairedDice.find(
           (d) => d.pixelId === pixel.pixelId
@@ -66,7 +66,7 @@ function PairedPixels({
           />
         );
       })}
-    </FastHStack>
+    </BaseHStack>
   );
 }
 
@@ -78,11 +78,11 @@ function UnpairedPixels({ pixels }: { pixels: ScannedPixel[] }) {
   );
   const theme = useTheme();
   return (
-    <FastVStack gap={10} w="100%">
-      <FastHStack alignItems="center" justifyContent="space-between">
+    <BaseVStack gap={10} w="100%">
+      <BaseHStack alignItems="center" justifyContent="space-between">
         <Text variant="titleMedium">Available Dice To Pair</Text>
-        <FastButton onPress={pairAll}>Pair All</FastButton>
-      </FastHStack>
+        <BaseButton onPress={pairAll}>Pair All</BaseButton>
+      </BaseHStack>
       {pixels.map((pixel) => (
         <PixelInfoHCard
           key={pixel.pixelId}
@@ -97,16 +97,16 @@ function UnpairedPixels({ pixels }: { pixels: ScannedPixel[] }) {
           dieRenderer={() => <DieRenderer />}
         >
           <View style={AppStyles.spacer} />
-          <FastButton
+          <BaseButton
             height="50%"
             alignSelf="center"
             onPress={() => updatePairedDie({ pixelId: pixel.pixelId })}
           >
             Pair
-          </FastButton>
+          </BaseButton>
         </PixelInfoHCard>
       ))}
-    </FastVStack>
+    </BaseVStack>
   );
 }
 

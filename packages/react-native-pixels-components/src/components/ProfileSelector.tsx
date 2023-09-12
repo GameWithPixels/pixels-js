@@ -1,6 +1,6 @@
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
-  FastButton,
+  BaseButton,
   FrameProps,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -48,9 +48,9 @@ export function ProfileSelector({
   );
   return (
     <>
-      <FastButton onPress={onOpen} {...flexProps}>
+      <BaseButton onPress={onOpen} {...flexProps}>
         {trigger ?? profile?.name ?? "No profile selected"}
-      </FastButton>
+      </BaseButton>
 
       <SelectProfileModal
         visible={isOpen}

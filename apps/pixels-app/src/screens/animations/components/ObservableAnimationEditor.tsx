@@ -7,8 +7,8 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   createWidgetComponent,
-  FastBox,
-  FastVStack,
+  BaseBox,
+  BaseVStack,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -92,11 +92,11 @@ const ObservableDieRender = observer(function ({
   observableAnim: EditAnimation;
 }) {
   return (
-    <FastBox w="60%" aspectRatio={1} alignSelf="center">
+    <BaseBox w="60%" aspectRatio={1} alignSelf="center">
       <DieRenderer
         renderData={createDataSetForAnimation(observableAnim).toDataSet()}
       />
-    </FastBox>
+    </BaseBox>
   );
 });
 
@@ -107,10 +107,10 @@ export default function ({
   observableAnim: EditAnimation;
 }) {
   return (
-    <FastVStack w="100%" h="100%">
+    <BaseVStack w="100%" h="100%">
       <ObservableInputAnimName observableAnim={observableAnim} />
       <ObservableDieRender observableAnim={observableAnim} />
       <AnimationEditor observableAnim={observableAnim} />
-    </FastVStack>
+    </BaseVStack>
   );
 }

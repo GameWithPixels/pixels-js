@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, PressableProps } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { FastHStack } from "./FastHStack";
+import { BaseHStack } from "./BaseHStack";
 import { getBorderRadius } from "../getBorderRadius";
 
 export interface SwipeableButtonsProps {
@@ -17,7 +17,7 @@ export const SwipeableButtons = React.memo(function (
   const borderRadius = getBorderRadius(theme);
   const w = props.width / props.buttons.length;
   return (
-    <FastHStack>
+    <BaseHStack>
       {props.buttons.map((buttonProps, index) => (
         <Pressable
           key={index}
@@ -38,6 +38,6 @@ export const SwipeableButtons = React.memo(function (
           {...buttonProps}
         />
       ))}
-    </FastHStack>
+    </BaseHStack>
   );
 });

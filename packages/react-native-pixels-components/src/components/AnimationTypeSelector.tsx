@@ -2,8 +2,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   ActionsheetList,
   ActionsheetListItemData,
-  FastFlexProps,
-  FastVStack,
+  BaseFlexProps,
+  BaseVStack,
   RoundedBox,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -29,7 +29,7 @@ function TriggerElement(props: TriggerProps) {
 /**
  * Props for {@link AnimationTypeSelector} component.
  */
-interface AnimationTypeSelectorProps extends FastFlexProps {
+interface AnimationTypeSelectorProps extends BaseFlexProps {
   label: string;
   itemsData: ActionsheetListItemData[];
 }
@@ -46,12 +46,12 @@ export function AnimationTypeSelector({
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack gap={5} {...flexProps}>
+      <BaseVStack gap={5} {...flexProps}>
         <Text>Lighting Style</Text>
         <TouchableRipple onPress={onOpen}>
           <TriggerElement title={label} />
         </TouchableRipple>
-      </FastVStack>
+      </BaseVStack>
 
       <ActionsheetList
         isOpen={isOpen}

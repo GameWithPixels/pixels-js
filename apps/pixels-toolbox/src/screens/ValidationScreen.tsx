@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import {
-  FastBox,
-  FastVStack,
+  BaseBox,
+  BaseVStack,
   getBorderRadius,
 } from "@systemic-games/react-native-base-components";
 import {
@@ -13,7 +13,7 @@ import { useKeepAwake } from "expo-keep-awake";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
-import { ScrollView, StyleSheet, TextStyle, View } from "react-native";
+import { ScrollView, TextStyle, View } from "react-native";
 import {
   Button,
   ButtonProps,
@@ -154,7 +154,7 @@ function SelectSequencePage({
 }) {
   const { t } = useTranslation();
   return (
-    <FastVStack
+    <BaseVStack
       w="100%"
       h="100%"
       px={5}
@@ -167,7 +167,7 @@ function SelectSequencePage({
           {t(s === "firmwareUpdate" ? s : "validate" + capitalize(s))}
         </LargeTonalButton>
       ))}
-    </FastVStack>
+    </BaseVStack>
   );
 }
 
@@ -187,7 +187,7 @@ function SelectDieTypePage({
       : types.map((t) => [t]);
   const { t } = useTranslation();
   return (
-    <FastVStack
+    <BaseVStack
       w="100%"
       h="100%"
       px={5}
@@ -195,7 +195,7 @@ function SelectDieTypePage({
       gap={20}
       justifyContent="space-around"
     >
-      <Text variant="headlineSmall" style={styles.textCenter}>
+      <Text variant="headlineSmall" style={gs.textCentered}>
         {t("testingSequence", { sequence: t(sequence) })}
       </Text>
       {items.map((items, i) => (
@@ -213,7 +213,7 @@ function SelectDieTypePage({
         </View>
       ))}
       <BottomButton onPress={onBack}>{t("back")}</BottomButton>
-    </FastVStack>
+    </BaseVStack>
   );
 }
 
@@ -326,11 +326,11 @@ function DecodePixelIdPage({
   const onClose = React.useCallback(() => setShowScanList(false), []);
 
   return showScanList ? (
-    <FastBox w="100%" h="100%">
+    <BaseBox w="100%" h="100%">
       <ScannedPixelsList onSelect={onSelect} onClose={onClose} />
-    </FastBox>
+    </BaseBox>
   ) : (
-    <FastVStack w="100%" h="100%" alignItems="center" justifyContent="center">
+    <BaseVStack w="100%" h="100%" alignItems="center" justifyContent="center">
       {device && cameraStatus === "ready" ? (
         <Camera
           ref={cameraRef}
@@ -352,7 +352,7 @@ function DecodePixelIdPage({
         <Text variant="headlineSmall">{t("startingCamera")}</Text>
       )}
       {/* Show message on top */}
-      <FastBox position="absolute" top={0} w="100%" p={10}>
+      <BaseBox position="absolute" top={0} w="100%" p={10}>
         <Card>
           <Card.Content style={{ flexDirection: "row", gap: 10 }}>
             {!readingColors || lastError ? (
@@ -383,9 +383,9 @@ function DecodePixelIdPage({
             )}
           </Card.Content>
         </Card>
-      </FastBox>
+      </BaseBox>
       {/* Bottom button */}
-      <FastBox position="absolute" bottom={0} w="100%" p={10}>
+      <BaseBox position="absolute" bottom={0} w="100%" p={10}>
         <Card>
           <Card.Content
             style={{
@@ -401,8 +401,8 @@ function DecodePixelIdPage({
             {decoderState.info}
           </Text>
         </Card>
-      </FastBox>
-    </FastVStack>
+      </BaseBox>
+    </BaseVStack>
   );
 }
 
@@ -613,7 +613,7 @@ function RunTestsPage({
   });
 
   return (
-    <FastVStack
+    <BaseVStack
       w="100%"
       h="100%"
       gap={8}
@@ -628,7 +628,7 @@ function RunTestsPage({
       >
         <>{taskChain.render()}</>
         {result && (
-          <FastVStack alignItems="center" justifyContent="center" gap={10}>
+          <BaseVStack alignItems="center" justifyContent="center" gap={10}>
             <Text style={{ fontSize: 100 }}>
               {getTaskResultEmoji(taskChain.status)}
             </Text>
@@ -640,7 +640,7 @@ function RunTestsPage({
               {t("colonSeparator")}
               {t("percentWithValue", { value: pixel?.batteryLevel ?? 0 })}
             </Text>
-          </FastVStack>
+          </BaseVStack>
         )}
       </ScrollView>
       <BottomButton
@@ -649,7 +649,7 @@ function RunTestsPage({
       >
         {result ? t("next") : t("cancel")}
       </BottomButton>
-    </FastVStack>
+    </BaseVStack>
   );
 }
 

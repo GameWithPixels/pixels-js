@@ -19,8 +19,8 @@ import {
   createDataSetForAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  FastHStack,
-  FastVStack,
+  BaseHStack,
+  BaseVStack,
 } from "@systemic-games/react-native-base-components";
 import {
   Color,
@@ -256,7 +256,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
         <>
           <Text style={gs.bold}>{widget.displayName}</Text>
           {facesGroups.map((faces, i) => (
-            <FastHStack key={i}>
+            <BaseHStack key={i}>
               {faces.map((face) => (
                 <Button
                   key={face}
@@ -266,7 +266,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
                   {face.toString()}
                 </Button>
               ))}
-            </FastHStack>
+            </BaseHStack>
           ))}
         </>
       );
@@ -365,7 +365,7 @@ function AnimationPage() {
       {!pixel ? (
         <ScannedPixelsList onSelect={onSelect} />
       ) : (
-        <FastVStack gap={5}>
+        <BaseVStack gap={5}>
           <Text>{`Connection status: ${status}`}</Text>
           <Button
             mode="contained-tonal"
@@ -475,7 +475,7 @@ function AnimationPage() {
             )}
             contentContainerStyle={gs.spacer}
           />
-        </FastVStack>
+        </BaseVStack>
       )}
     </>
   );

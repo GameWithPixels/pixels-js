@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Pixel } from "@systemic-games/pixels-core-connect";
 import { delay } from "@systemic-games/pixels-core-utils";
-import { FastVStack } from "@systemic-games/react-native-base-components";
+import { BaseVStack } from "@systemic-games/react-native-base-components";
 import {
   Color,
   getPixel,
@@ -93,7 +93,7 @@ function BatchPage() {
   }, [batchOp, scannedPixels]);
 
   return (
-    <FastVStack flex={1} w="100%" gap={20} alignItems="center">
+    <BaseVStack flex={1} w="100%" gap={20} alignItems="center">
       {scanError && <Text>{`Scan error! ${scanError}`}</Text>}
       <Text>Found {scannedPixels.length} Pixels dice</Text>
       {!batchOp ? (
@@ -129,7 +129,7 @@ function BatchPage() {
           )}
         </>
       )}
-    </FastVStack>
+    </BaseVStack>
   );
 }
 

@@ -5,8 +5,8 @@ import {
   getValueKeyName,
 } from "@systemic-games/pixels-core-utils";
 import {
-  FastHStack,
-  FastVStack,
+  BaseHStack,
+  BaseVStack,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import {
@@ -184,7 +184,7 @@ function TelemetryModal({
           strokeWidth={1.5}
         />
         {onSetStartTime && (
-          <FastHStack w="100%" justifyContent="flex-end" p={10} gap={10}>
+          <BaseHStack w="100%" justifyContent="flex-end" p={10} gap={10}>
             <PaperButton
               mode="contained-tonal"
               onPress={() => onSetStartTime(-1)}
@@ -197,7 +197,7 @@ function TelemetryModal({
             >
               {t("reset")}
             </PaperButton>
-          </FastHStack>
+          </BaseHStack>
         )}
       </Modal>
     </Portal>
@@ -313,12 +313,12 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
         </>
       )}
       <Divider style={{ height: 3, marginVertical: 5 }} />
-      <FastHStack w="100%" alignContent="space-around">
+      <BaseHStack w="100%" alignContent="space-around">
         <Text style={[gs.flex, gs.bold]} variant="bodyLarge">
           {t("enableTelemetry")}
         </Text>
         <Switch onValueChange={setTelemetryOn} value={telemetryOn} />
-      </FastHStack>
+      </BaseHStack>
     </>
   );
 }
@@ -348,8 +348,8 @@ function BottomButtons({
 
   return (
     <>
-      <FastHStack gap={6}>
-        <FastVStack gap={4}>
+      <BaseHStack gap={6}>
+        <BaseVStack gap={4}>
           <Button onPress={() => pd.dispatch(connectStr)}>
             {t(connectStr)}
           </Button>
@@ -416,8 +416,8 @@ function BottomButtons({
           >
             {t("printLabel")}
           </Button>
-        </FastVStack>
-        <FastVStack gap={4}>
+        </BaseVStack>
+        <BaseVStack gap={4}>
           {status === "ready" && (
             <>
               <Button onPress={() => pd.dispatch("turnOff")}>
@@ -465,8 +465,8 @@ function BottomButtons({
             </>
           )}
           <Button onPress={onExportMessages}>{t("exportLog")}</Button>
-        </FastVStack>
-      </FastHStack>
+        </BaseVStack>
+      </BaseHStack>
 
       <DischargeModal
         pixelDispatcher={pd}
@@ -513,7 +513,7 @@ function DischargeModal({
           step={10}
           onValueChange={setCurrent}
         />
-        <FastHStack pt={20} justifyContent="space-around">
+        <BaseHStack pt={20} justifyContent="space-around">
           <Button
             onPress={() => {
               pd.dispatch("discharge", 0);
@@ -523,7 +523,7 @@ function DischargeModal({
             {t("cancel")}
           </Button>
           <Button onPress={props.onDismiss}>{t("ok")}</Button>
-        </FastHStack>
+        </BaseHStack>
       </Modal>
     </Portal>
   );
@@ -540,7 +540,7 @@ function PrintModal({
   return (
     <Portal>
       <Modal contentContainerStyle={modalStyle} dismissable={false} {...props}>
-        <FastVStack gap={10}>
+        <BaseVStack gap={10}>
           <Title>{t("labelPrinting")}</Title>
           <Divider style={{ height: 2 }} />
           <Text style={gs.centered} variant="bodyLarge">
@@ -552,7 +552,7 @@ function PrintModal({
             {status}
           </Text>
           {showClose && <Button onPress={props.onDismiss}>{t("close")}</Button>}
-        </FastVStack>
+        </BaseVStack>
       </Modal>
     </Portal>
   );
@@ -682,10 +682,10 @@ export function PixelDetails({
     <>
       <Card>
         <Card.Content>
-          <FastVStack alignItems="center">
+          <BaseVStack alignItems="center">
             <Text variant="headlineMedium">{name ?? pd.name}</Text>
             <TextEntry title={t("status")}>{t(simpleStatus)}</TextEntry>
-          </FastVStack>
+          </BaseVStack>
           <PaperButton style={{ position: "absolute" }} onPress={goBack}>
             <Ionicons
               name="arrow-back-outline"

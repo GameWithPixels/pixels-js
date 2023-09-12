@@ -1,8 +1,8 @@
 import {
-  FastButton,
-  FastFlexProps,
-  FastHStack,
-  FastVStack,
+  BaseButton,
+  BaseFlexProps,
+  BaseHStack,
+  BaseVStack,
   RoundedBox,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
@@ -30,7 +30,7 @@ export interface SelectFaceMaskProps {
 /**
  * Props for {@link FaceMaskWidget} component.
  */
-interface FaceMaskWidgetProps extends SelectFaceMaskProps, FastFlexProps {
+interface FaceMaskWidgetProps extends SelectFaceMaskProps, BaseFlexProps {
   _text?: Omit<TextProps<string>, "children">;
 }
 
@@ -53,17 +53,17 @@ export function FaceMaskWidget({
   const { isOpen, onOpen, onClose } = useDisclose();
   return (
     <>
-      <FastVStack {...flexProps}>
+      <BaseVStack {...flexProps}>
         <Text variant="titleMedium">Face mask</Text>
-        <FastHStack alignItems="center" gap={5}>
-          <FastButton onPress={onOpen}>Edit</FastButton>
+        <BaseHStack alignItems="center" gap={5}>
+          <BaseButton onPress={onOpen}>Edit</BaseButton>
           <RoundedBox border flex={1} py={10} alignItems="center">
             <Text {..._text}>
               {faces.length ? faceList : "No faces selected"}
             </Text>
           </RoundedBox>
-        </FastHStack>
-      </FastVStack>
+        </BaseHStack>
+      </BaseVStack>
 
       <SelectFacesModal
         _checkBox={_checkBox}
@@ -104,7 +104,7 @@ export function SelectFacesModal({
         <Card>
           <Card.Title title="Die Faces" />
           <Card.Content>
-            <FastHStack flexWrap="wrap" gap={5}>
+            <BaseHStack flexWrap="wrap" gap={5}>
               {allFaces.map((f) => (
                 <Checkbox.Item
                   key={f}
@@ -124,27 +124,27 @@ export function SelectFacesModal({
                   }}
                 />
               ))}
-            </FastHStack>
+            </BaseHStack>
           </Card.Content>
           <Card.Actions>
-            <FastHStack gap={5}>
-              <FastButton
+            <BaseHStack gap={5}>
+              <BaseButton
                 onPress={() => {
                   onFaceMaskChange(allFaces);
                   onDismiss?.();
                 }}
               >
                 All
-              </FastButton>
-              <FastButton
+              </BaseButton>
+              <BaseButton
                 onPress={() => {
                   onFaceMaskChange([]);
                   onDismiss?.();
                 }}
               >
                 None
-              </FastButton>
-            </FastHStack>
+              </BaseButton>
+            </BaseHStack>
           </Card.Actions>
         </Card>
       </Modal>

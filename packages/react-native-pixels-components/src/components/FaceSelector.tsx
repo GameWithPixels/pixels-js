@@ -1,14 +1,15 @@
 import {
-  FastButton,
-  FastFlexProps,
+  BaseButton,
+  BaseFlexProps,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { ScrollView } from "react-native";
 import { Card, Modal, ModalProps, Portal, useTheme } from "react-native-paper";
+
 import { useModalStyle } from "../theme";
 
-export interface FaceSelectorProps extends FastFlexProps {
+export interface FaceSelectorProps extends BaseFlexProps {
   faceCount: number;
   face: number;
   onFaceSelect: (faceIndex: number) => void;
@@ -36,7 +37,7 @@ export function FaceSelector({
   );
   return (
     <>
-      <FastButton
+      <BaseButton
         onPress={onOpen}
         disabled={disabled}
         color={disabled ? "gray" : undefined}
@@ -45,7 +46,7 @@ export function FaceSelector({
       >
         {/* When no value render a space character so button doesn't change size */}
         {face > 0 ? face : " "}
-      </FastButton>
+      </BaseButton>
 
       <SelectFaceModal
         visible={isOpen}
@@ -95,7 +96,7 @@ function SelectFaceModal({
               }}
             >
               {allFaces.map((f) => (
-                <FastButton
+                <BaseButton
                   key={f}
                   onPress={() => onFaceSelect?.(f)}
                   borderWidth={f === face ? 2 : undefined}
@@ -104,7 +105,7 @@ function SelectFaceModal({
                   m={5}
                 >
                   {f}
-                </FastButton>
+                </BaseButton>
               ))}
             </ScrollView>
           </Card.Actions>

@@ -4,8 +4,8 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import {
   useDisclose,
-  FastButton,
-  FastHStack,
+  BaseButton,
+  BaseHStack,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -105,10 +105,10 @@ export function AnimationsList({
         contentContainerStyle={AppStyles.listContentContainer}
         stickyHeaderIndices={[0]}
       >
-        <FastHStack alignItems="center" justifyContent="space-between">
-          <FastButton>Sort</FastButton>
+        <BaseHStack alignItems="center" justifyContent="space-between">
+          <BaseButton>Sort</BaseButton>
           <IconButton icon="add" onPress={createAnimation} />
-        </FastHStack>
+        </BaseHStack>
         {animations.map((anim) => renderItem({ item: anim }))}
       </ScrollView>
 

@@ -1,9 +1,9 @@
 import { AntDesign, Foundation } from "@expo/vector-icons";
 import {
   BaseStyles,
-  FastButton,
-  FastHStack,
-  FastVStack,
+  BaseButton,
+  BaseHStack,
+  BaseVStack,
   FrameProps,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
@@ -57,7 +57,7 @@ export function ProfileCard({
   const theme = useTheme();
   const textColor = theme.colors.onBackground;
   return (
-    <FastButton
+    <BaseButton
       onPress={onPress}
       borderWidth={highlighted ? 2 : undefined}
       borderColor={theme.colors.primary}
@@ -74,8 +74,8 @@ export function ProfileCard({
           </View>
         )}
         {/* Profile info */}
-        <FastVStack flex={1} gap={infoGap} justifyContent="center">
-          <FastHStack alignItems="center" gap={infoGap}>
+        <BaseVStack flex={1} gap={infoGap} justifyContent="center">
+          <BaseHStack alignItems="center" gap={infoGap}>
             <Text variant={smallLabel ? undefined : "headlineSmall"}>
               {name}
             </Text>
@@ -83,13 +83,13 @@ export function ProfileCard({
             {hasWebRequest && (
               <Foundation name="web" size={24} color={textColor} />
             )}
-          </FastHStack>
+          </BaseHStack>
           {(description?.length ?? 0) > 0 && (
             <Text style={BaseStyles.italic}>{description}</Text>
           )}
-        </FastVStack>
+        </BaseVStack>
         {children}
       </>
-    </FastButton>
+    </BaseButton>
   );
 }

@@ -1,7 +1,7 @@
 import Slider from "@react-native-community/slider";
 import { useFocusEffect } from "@react-navigation/native";
 import {
-  FastVStack,
+  BaseVStack,
   Point,
 } from "@systemic-games/react-native-base-components";
 import {
@@ -255,13 +255,13 @@ function TransferTestPage() {
     }, [])
   );
   return (
-    <FastVStack flex={1} w="100%">
+    <BaseVStack flex={1} w="100%">
       {!pixelInfo ? (
         <SelectPixel onSelect={setPixelInfo} />
       ) : (
         <RunTest pixelInfo={pixelInfo} />
       )}
-    </FastVStack>
+    </BaseVStack>
   );
 }
 

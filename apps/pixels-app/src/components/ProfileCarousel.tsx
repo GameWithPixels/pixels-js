@@ -1,7 +1,7 @@
 import {
   expandShorthandStyle,
-  FastFlexProps,
-  FastHStack,
+  BaseFlexProps,
+  BaseHStack,
 } from "@systemic-games/react-native-base-components";
 import {
   ProfileCard,
@@ -26,7 +26,7 @@ export interface ProfileCarouselProps
       | "dieRenderer"
       | "dieViewSize"
     >,
-    FastFlexProps {}
+    BaseFlexProps {}
 
 /**
  * A horizontal scroll list of profiles to be selected
@@ -49,7 +49,7 @@ export function ProfileCarousel({
       fadingEdgeLength={20}
       style={expandShorthandStyle(flexProps)}
     >
-      <FastHStack>
+      <BaseHStack>
         {profiles.slice(0, 8).map((p) => (
           <ProfileCard
             key={p.uuid}
@@ -69,7 +69,7 @@ export function ProfileCarousel({
           dieRenderer={dieRenderer}
           dieViewSize={dieViewSize}
         />
-      </FastHStack>
+      </BaseHStack>
     </ScrollView>
   );
 }

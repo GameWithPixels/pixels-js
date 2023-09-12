@@ -8,11 +8,12 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import { FastBoxProps, expandShorthandStyle } from "./FastBox";
+import { BaseBoxProps } from "./BaseBox";
+import { expandShorthandStyle } from "../expandShorthandStyle";
 import { getBorderRadius } from "../getBorderRadius";
 
-export interface FastButtonProps
-  extends Omit<FastBoxProps, "bg" | "backgroundColor">,
+export interface BaseButtonProps
+  extends Omit<BaseBoxProps, "bg" | "backgroundColor">,
     Omit<TouchableRippleProps, "children"> {
   color?: ColorValue;
   _text?: Omit<TextProps<string>, "children">;
@@ -22,12 +23,12 @@ export interface FastButtonProps
  * Simple "contained tonal" button using Paper theme.
  * Wrap in a flex:1 view when rendered in a ScrollView.
  */
-export function FastButton({
+export function BaseButton({
   children,
   color,
   _text,
   ...props
-}: FastButtonProps) {
+}: BaseButtonProps) {
   const theme = useTheme();
   const borderRadius = getBorderRadius(theme);
   const childrenNode = React.useMemo(

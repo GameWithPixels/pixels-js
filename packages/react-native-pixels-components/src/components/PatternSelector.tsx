@@ -1,20 +1,20 @@
 import { EditPattern } from "@systemic-games/pixels-edit-animation";
 import {
-  FastButton,
-  FastFlexProps,
+  BaseButton,
+  BaseFlexProps,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { FlexStyle, ScrollView } from "react-native";
 import { Card, Modal, ModalProps, Portal } from "react-native-paper";
-import { useModalStyle } from "../theme";
 
 import { PatternCard } from "./PatternCard";
+import { useModalStyle } from "../theme";
 
 /**
  * Props for PatternSelector component.
  */
-export interface PatternSelectorProps extends FastFlexProps {
+export interface PatternSelectorProps extends BaseFlexProps {
   patterns: Readonly<EditPattern>[];
   pattern?: Readonly<EditPattern>;
   onPatternSelect?: (pattern: Readonly<EditPattern>) => void;
@@ -48,9 +48,9 @@ export function PatternSelector({
   );
   return (
     <>
-      <FastButton onPress={onOpen} {...flexProps}>
+      <BaseButton onPress={onOpen} {...flexProps}>
         {trigger ?? pattern?.name ?? "No design selected"}
-      </FastButton>
+      </BaseButton>
 
       <SelectPatternModal
         visible={isOpen}

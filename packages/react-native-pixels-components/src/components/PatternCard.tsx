@@ -1,5 +1,5 @@
 import {
-  FastButton,
+  BaseButton,
   FrameProps,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
@@ -27,7 +27,7 @@ export function PatternCard({
 }: PatternCardProps) {
   const theme = useTheme();
   return (
-    <FastButton
+    <BaseButton
       onPress={onPress}
       borderWidth={highlighted ? 2 : undefined}
       borderColor={theme.colors.primary}
@@ -46,6 +46,6 @@ export function PatternCard({
         <Text variant={smallLabel ? undefined : "headlineSmall"}>{name}</Text>
         {children}
       </>
-    </FastButton>
+    </BaseButton>
   );
 }

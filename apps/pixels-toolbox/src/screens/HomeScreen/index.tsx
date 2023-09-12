@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { FastBox } from "@systemic-games/react-native-base-components";
+import { BaseBox } from "@systemic-games/react-native-base-components";
 import * as Updates from "expo-updates";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -99,7 +99,7 @@ function HomePage({ navigation }: HomeScreenProps) {
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
-      <FastBox flex={1} gap={5} alignItems="center">
+      <BaseBox flex={1} gap={5} alignItems="center">
         <Text style={styles.textValidation}>
           ↖️ <Text style={gs.italic}>{t("openMenuToGoToValidation")}</Text>
         </Text>
@@ -110,9 +110,9 @@ function HomePage({ navigation }: HomeScreenProps) {
         )}
         <DfuBundleSelection navigation={navigation} />
         <SwipeablePixelsList onDieDetails={onDieDetails} />
-      </FastBox>
+      </BaseBox>
       {/* Footer showing app and system info */}
-      <FastBox mt={8} alignSelf="center">
+      <BaseBox mt={8} alignSelf="center">
         <Text variant="labelSmall">
           {t("screenWithSize", {
             width: Math.round(window.width),
@@ -124,7 +124,7 @@ function HomePage({ navigation }: HomeScreenProps) {
               version: Platform.Version,
             })}
         </Text>
-      </FastBox>
+      </BaseBox>
     </>
   );
 }

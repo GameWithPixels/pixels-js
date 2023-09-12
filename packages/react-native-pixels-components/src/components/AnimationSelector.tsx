@@ -1,20 +1,20 @@
 import { EditAnimation } from "@systemic-games/pixels-edit-animation";
 import {
-  FastBoxProps,
-  FastButton,
+  BaseBoxProps,
+  BaseButton,
   useDisclose,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { FlexStyle, ScrollView } from "react-native";
 import { Card, Modal, ModalProps, Portal, Text } from "react-native-paper";
-import { useModalStyle } from "../theme";
 
 import { PatternCard } from "./PatternCard";
+import { useModalStyle } from "../theme";
 
 /**
  * Props for AnimationsSelector component.
  */
-export interface AnimationSelectorProps extends FastBoxProps {
+export interface AnimationSelectorProps extends BaseBoxProps {
   animations: Readonly<EditAnimation>[];
   animation?: Readonly<EditAnimation>;
   onAnimationSelect?: (editAnimation: Readonly<EditAnimation>) => void;
@@ -48,9 +48,9 @@ export function AnimationSelector({
   );
   return (
     <>
-      <FastButton onPress={onOpen} {...flexProps}>
+      <BaseButton onPress={onOpen} {...flexProps}>
         {trigger ?? <Text>{animation?.name ?? "No animation selected"}</Text>}
-      </FastButton>
+      </BaseButton>
 
       <AnimationsActionsheet
         visible={isOpen}
