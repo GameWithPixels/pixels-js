@@ -6,6 +6,7 @@ import { jsonConvert } from "./jsonConvert";
 
 import StandardProfilesJson from "!/profiles/standard-profiles.json";
 
+// eslint-disable-next-line import/namespace
 export interface ProfileSetState extends Serializable.ProfilesSetData {}
 
 function initialState(): ProfileSetState {
