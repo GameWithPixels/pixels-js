@@ -22,14 +22,15 @@ export async function printStickerAsync(
     _getProductIds = await loadCertificationIds();
   }
   // Get product ids
-  const showProductName = "d10 aurora sky";
-  // `${pixel.dieType} ${pixel.designAndColor.split(/(?=[A-Z])/).join(" ")}`
+  const showProductName = pixel.dieType + "-midnightgalaxy";
+  //  `${pixel.dieType} ${pixel.designAndColor.split(/(?=[A-Z])/).join(" ")}`
   const product = _getProductIds(showProductName);
   if (product) {
     const html = await readStickerHtmlAsync({
       ...product,
       deviceId: getDeviceId(pixel),
       deviceName: pixel.name,
+      dieTypeImageFilename: "label-icon-" + pixel.dieType + ".png",
     });
     // And send to printer
     statusCallback("sending");

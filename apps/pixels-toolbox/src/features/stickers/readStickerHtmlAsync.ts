@@ -19,7 +19,11 @@ import { unzipAssetAsync } from "~/features/files/unzipAssetAsync";
  * Using https://lindell.me/JsBarcode/ for generating the barcode.
  */
 export async function readStickerHtmlAsync(
-  product: ProductIds & { deviceId: string; deviceName: string }
+  product: ProductIds & {
+    deviceId: string;
+    deviceName: string;
+    dieTypeImageFilename: string;
+  }
 ): Promise<string> {
   if (!FileSystem.cacheDirectory) {
     throw new Error("readStickerHtmlAsync: FileSystem.cacheDirectory is null");
@@ -64,14 +68,18 @@ export async function readStickerHtmlAsync(
 
     // Replace product ids
     Object.entries({
-      "PIPPED D6 - MIDNIGHT GALAXY": product.name,
-      "PXL-DP6A-MG-040-4023": product.model,
-      "2BB52-PXLDP6A": product.fccId,
-      "2BB52-PXLDP6B": product.icId,
-      "PXL20-12345678": product.deviceId,
-      "GROK STONEBREAKER": product.deviceName,
+      "PIPPED D6 - MIDNIGHT GALAXY": product.name.toLocaleUpperCase(),
+      "PXL-DP6A (MG)": product.model,
+      "label-icon-d6pipped.png": product.dieTypeImageFilename,
+      "-MG-": product.colorInitials,
+      "2BB52-PXLDIEA": product.fccId1,
+      "2BB52-CHG001A": product.fccId2,
+      "31060-PXLDIEA": product.icId1,
+      "31060-CHG001A": product.icId2,
+      "PXL20-12345678": product.deviceId.toLocaleUpperCase(),
+      "GROK STONEBREAKER": product.deviceName.toLocaleUpperCase(),
     }).forEach(([k, v]) => {
-      html = html.replace(k, v.toLocaleUpperCase());
+      html = html.replace(k, v);
       console.log(`Replacing ${k} by ${v}`);
     });
     // Load barcode script
@@ -109,7 +117,7 @@ export async function readStickerHtmlAsync(
       '<svg id="barcode" class="gwd-img-sq5f gwd-img-u4dl"></svg>' +
       html.substring(barcodeEnd);
 
-    // Embed external files in HTML as base61 string
+    // Embed external files in HTML as base64 string
     const embedFiles = async (prefix: string, dataType: string) => {
       let pos = 0;
       while (true) {
