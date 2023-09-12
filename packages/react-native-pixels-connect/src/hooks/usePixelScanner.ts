@@ -57,6 +57,14 @@ export function usePixelScanner<T>(
     return scanner;
   }, []);
 
+  // Clean-up on umount so the list if not kept after a Fast Refresh
+  React.useEffect(() => {
+    return () => {
+      itemsRef.current = [];
+      setItems(itemsRef.current);
+    };
+  }, []);
+
   // Hook updateItems to scan events
   React.useEffect(() => {
     scanner.scanListener = (_: PixelScanner, ops: PixelScannerListOp[]) => {
