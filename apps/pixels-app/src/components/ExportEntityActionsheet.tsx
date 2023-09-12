@@ -4,7 +4,7 @@ import { BaseHStack } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 
 export interface ExportEntityActionsheetProps {
-  isOpen: boolean;
+  visible: boolean;
   onClose: () => void;
 }
 

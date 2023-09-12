@@ -2,7 +2,7 @@ import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
   BaseButton,
   FrameProps,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { FlexStyle, ScrollView } from "react-native";
@@ -38,23 +38,23 @@ export function ProfileSelector({
   dieViewSize,
   ...flexProps
 }: ProfileSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   const chooseProfile = React.useCallback(
     (pattern: Readonly<EditProfile>) => {
       onProfileSelect?.(pattern);
-      onClose();
+      hide();
     },
-    [onClose, onProfileSelect]
+    [hide, onProfileSelect]
   );
   return (
     <>
-      <BaseButton onPress={onOpen} {...flexProps}>
+      <BaseButton onPress={show} {...flexProps}>
         {trigger ?? profile?.name ?? "No profile selected"}
       </BaseButton>
 
       <SelectProfileModal
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={visible}
+        onDismiss={hide}
         profiles={profiles}
         profile={profile}
         onProfileSelect={chooseProfile}

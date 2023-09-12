@@ -5,7 +5,7 @@ import {
   BaseFlexProps,
   BaseVStack,
   RoundedBox,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Text, TouchableRipple } from "react-native-paper";
@@ -43,21 +43,17 @@ export function AnimationTypeSelector({
   itemsData,
   ...flexProps
 }: AnimationTypeSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   return (
     <>
       <BaseVStack gap={5} {...flexProps}>
         <Text>Lighting Style</Text>
-        <TouchableRipple onPress={onOpen}>
+        <TouchableRipple onPress={show}>
           <TriggerElement title={label} />
         </TouchableRipple>
       </BaseVStack>
 
-      <ActionsheetList
-        isOpen={isOpen}
-        onClose={onClose}
-        itemsData={itemsData}
-      />
+      <ActionsheetList visible={visible} onClose={hide} itemsData={itemsData} />
     </>
   );
 }

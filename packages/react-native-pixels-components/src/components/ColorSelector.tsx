@@ -13,7 +13,7 @@ import {
   BaseHStack,
   BaseVStack,
   RoundedBox,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { ScrollView, ViewProps } from "react-native";
@@ -47,11 +47,11 @@ export function ColorSelector({
   onColorSelect,
   ...flexProps
 }: ColorSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   return (
     <>
       <BaseButton
-        onPress={onOpen}
+        onPress={show}
         color={ColorUtils.colorToString(color)}
         {...flexProps}
       >
@@ -59,8 +59,8 @@ export function ColorSelector({
       </BaseButton>
 
       <SelectColorModal
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={visible}
+        onDismiss={hide}
         color={color}
         onColorSelect={onColorSelect}
       />
@@ -166,20 +166,20 @@ export function GradientColorSelector({
   onSelect,
   ...flexProps
 }: GradientColorSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   const [selectedColor, setSelectedColor] = React.useState(
     initialColor ?? "red"
   );
   const [_rgbKeyFrames, _setRgbKeyFrames] = React.useState(initialKeyFrames);
   return (
     <>
-      <BaseButton onPress={onOpen} color={selectedColor} {...flexProps}>
+      <BaseButton onPress={show} color={selectedColor} {...flexProps}>
         <Ionicons name="color-palette-outline" size={24} color="white" />
       </BaseButton>
 
       <GradientColorSelectorActionsheet
-        isOpen={isOpen}
-        onClose={onClose}
+        visible={visible}
+        onClose={hide}
         selectedColor={selectedColor}
         setSelectedColor={setSelectedColor}
       />
@@ -190,13 +190,13 @@ export function GradientColorSelector({
 function GradientColorSelectorActionsheet({
   selectedColor,
   setSelectedColor,
-  isOpen,
+  visible,
   onClose,
   ...props
 }: {
   selectedColor: string;
   setSelectedColor: (color: string) => void;
-  isOpen: boolean;
+  visible: boolean;
   onClose?: () => void;
 } & ViewProps) {
   const [selectedGradientKey, setSelectedGradientKey] = React.useState(0);

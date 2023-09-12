@@ -17,7 +17,7 @@ export interface ActionsheetListItemData {
  */
 export interface ActionsheetListProps {
   itemsData: ActionsheetListItemData[]; // Text to display on each item and action to call
-  isOpen: boolean;
+  visible: boolean;
   onClose: () => void;
   title?: string;
   // sheetBgColor?: IActionsheetItemProps["bg"];
@@ -29,7 +29,7 @@ export interface ActionsheetListProps {
  */
 export function ActionsheetList({
   itemsData,
-  isOpen,
+  visible,
   onClose,
   title,
 }: ActionsheetListProps) {
@@ -53,9 +53,9 @@ export function ActionsheetList({
     );
   }, [itemsData, onClose, showActionSheetWithOptions, title]);
   React.useEffect(() => {
-    if (isOpen) {
+    if (visible) {
       showActionSheet();
     }
-  }, [isOpen, showActionSheet]);
+  }, [visible, showActionSheet]);
   return <></>;
 }

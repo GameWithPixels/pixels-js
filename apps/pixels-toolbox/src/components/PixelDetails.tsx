@@ -7,7 +7,7 @@ import {
 import {
   BaseHStack,
   BaseVStack,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
@@ -337,13 +337,18 @@ function BottomButtons({
   const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
   const [printStatus, setPrintStatus] = React.useState("");
+  // Print modal
   const {
-    isOpen: isPrinting,
-    onOpen: onOpenPrint,
-    onClose: onClosePrint,
-  } = useDisclose();
+    visible: printVisible,
+    show: showPrint,
+    hide: hidePrint,
+  } = useVisibility();
   // Discharge modal
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const {
+    visible: dischargeVisible,
+    show: showDischarge,
+    hide: hideDischarge,
+  } = useVisibility();
   const { t } = useTranslation();
 
   return (
@@ -355,7 +360,7 @@ function BottomButtons({
           </Button>
           {status === "ready" && (
             <>
-              <Button onPress={onOpen}>{t("discharge")}</Button>
+              <Button onPress={showDischarge}>{t("discharge")}</Button>
               <Button onPress={() => pd.dispatch("enableCharging")}>
                 {t("enableCharging")}
               </Button>
@@ -392,7 +397,7 @@ function BottomButtons({
           <Button
             onPress={() => {
               setPrintStatus("");
-              onOpenPrint();
+              showPrint();
               printLabelAsync(pd.pixel, (status) => {
                 switch (status) {
                   case "preparing":
@@ -470,14 +475,14 @@ function BottomButtons({
 
       <DischargeModal
         pixelDispatcher={pd}
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={dischargeVisible}
+        onDismiss={hideDischarge}
       />
 
       <PrintModal
         status={printStatus}
-        visible={isPrinting}
-        onDismiss={onClosePrint}
+        visible={printVisible}
+        onDismiss={hidePrint}
       />
     </>
   );
@@ -659,7 +664,11 @@ export function PixelDetails({
       ),
     [pd]
   );
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const {
+    visible: telemetryVisible,
+    show: showTelemetry,
+    hide: hideTelemetry,
+  } = useVisibility();
 
   // Values for UI
   const simpleStatus = React.useMemo(() => {
@@ -711,7 +720,7 @@ export function PixelDetails({
             ) : (
               <BottomButtons
                 pixelDispatcher={pd}
-                onShowTelemetry={onOpen}
+                onShowTelemetry={showTelemetry}
                 onExportTelemetry={() => {
                   const filename =
                     getDatedFilename([pd.name, "telemetry"]) + ".csv";
@@ -752,8 +761,8 @@ export function PixelDetails({
         linesInfo={TelemetryLinesInfo}
         startTime={startTime}
         onSetStartTime={changeStartTime}
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={telemetryVisible}
+        onDismiss={hideTelemetry}
       />
     </>
   );

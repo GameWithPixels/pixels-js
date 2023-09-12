@@ -1,6 +1,6 @@
 import { EditProfile } from "@systemic-games/pixels-edit-animation";
 import {
-  useDisclose,
+  useVisibility,
   BaseHStack,
   BaseButton,
 } from "@systemic-games/react-native-pixels-components";
@@ -100,7 +100,7 @@ export function ProfilesList({
   );
 
   // Export action sheet
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
 
   // Profile card
   const theme = useTheme();
@@ -120,10 +120,10 @@ export function ProfilesList({
         favoriteAction="add"
         onDuplicate={duplicate}
         onRemove={remove}
-        onExport={onOpen}
+        onExport={show}
       />
     ),
-    [addToFavorites, duplicate, edit, onOpen, remove, theme]
+    [addToFavorites, duplicate, edit, show, remove, theme]
   );
 
   return (
@@ -166,7 +166,7 @@ export function ProfilesList({
       </ScrollView>
 
       {/* Action sheet for exporting a profile */}
-      <ExportEntityActionsheet isOpen={isOpen} onClose={onClose} />
+      <ExportEntityActionsheet visible={visible} onClose={hide} />
     </>
   );
 }

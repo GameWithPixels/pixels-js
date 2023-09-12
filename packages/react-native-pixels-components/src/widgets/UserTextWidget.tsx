@@ -5,7 +5,7 @@ import {
   BaseFlexProps,
   BaseHStack,
   BaseVStack,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Text, TextInput } from "react-native-paper";
@@ -26,7 +26,7 @@ export function UserTextWidget({
   availableTexts,
   ...flexProps
 }: UserTextWidgetProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   const data = React.useMemo(
     () =>
       [...new Set(availableTexts)]
@@ -49,7 +49,7 @@ export function UserTextWidget({
             onChangeText={onChange}
           />
           {!!data.length && (
-            <BaseButton ml={3} onPress={onOpen}>
+            <BaseButton ml={3} onPress={show}>
               ...
             </BaseButton>
           )}
@@ -60,8 +60,8 @@ export function UserTextWidget({
       <ActionsheetList
         title="Select A Text"
         itemsData={data}
-        isOpen={isOpen}
-        onClose={onClose}
+        visible={visible}
+        onClose={hide}
       />
     </>
   );

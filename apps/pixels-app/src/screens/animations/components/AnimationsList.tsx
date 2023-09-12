@@ -3,7 +3,7 @@ import {
   EditAnimationSimple,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  useDisclose,
+  useVisibility,
   BaseButton,
   BaseHStack,
 } from "@systemic-games/react-native-pixels-components";
@@ -63,7 +63,7 @@ export function AnimationsList({
   );
 
   // Export action sheet
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
 
   // Animation card
   const theme = useTheme();
@@ -81,10 +81,10 @@ export function AnimationsList({
         onPress={edit}
         onDuplicate={duplicate}
         onRemove={remove}
-        onExport={onOpen}
+        onExport={show}
       />
     ),
-    [duplicate, edit, onOpen, remove, theme]
+    [duplicate, edit, show, remove, theme]
   );
 
   return (
@@ -113,7 +113,7 @@ export function AnimationsList({
       </ScrollView>
 
       {/* Action sheet for exporting an animation */}
-      <ExportEntityActionsheet isOpen={isOpen} onClose={onClose} />
+      <ExportEntityActionsheet visible={visible} onClose={hide} />
     </>
   );
 }

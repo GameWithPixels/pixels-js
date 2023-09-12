@@ -2,7 +2,7 @@ import { EditPattern } from "@systemic-games/pixels-edit-animation";
 import {
   BaseButton,
   BaseFlexProps,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { FlexStyle, ScrollView } from "react-native";
@@ -38,23 +38,23 @@ export function PatternSelector({
   dieViewSize,
   ...flexProps
 }: PatternSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   const choosePattern = React.useCallback(
     (pattern: Readonly<EditPattern>) => {
       onPatternSelect?.(pattern);
-      onClose();
+      hide();
     },
-    [onClose, onPatternSelect]
+    [hide, onPatternSelect]
   );
   return (
     <>
-      <BaseButton onPress={onOpen} {...flexProps}>
+      <BaseButton onPress={show} {...flexProps}>
         {trigger ?? pattern?.name ?? "No design selected"}
       </BaseButton>
 
       <SelectPatternModal
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={visible}
+        onDismiss={hide}
         patterns={patterns}
         pattern={pattern}
         onPatternSelect={choosePattern}

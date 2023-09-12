@@ -2,7 +2,7 @@ import { EditAnimation } from "@systemic-games/pixels-edit-animation";
 import {
   BaseBoxProps,
   BaseButton,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { FlexStyle, ScrollView } from "react-native";
@@ -38,23 +38,23 @@ export function AnimationSelector({
   dieViewSize,
   ...flexProps
 }: AnimationSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   const chooseAnimation = React.useCallback(
     (pattern: Readonly<EditAnimation>) => {
       onAnimationSelect?.(pattern);
-      onClose();
+      hide();
     },
-    [onAnimationSelect, onClose]
+    [onAnimationSelect, hide]
   );
   return (
     <>
-      <BaseButton onPress={onOpen} {...flexProps}>
+      <BaseButton onPress={show} {...flexProps}>
         {trigger ?? <Text>{animation?.name ?? "No animation selected"}</Text>}
       </BaseButton>
 
       <AnimationsActionsheet
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={visible}
+        onDismiss={hide}
         animations={animations}
         animation={animation}
         onAnimationSelect={chooseAnimation}

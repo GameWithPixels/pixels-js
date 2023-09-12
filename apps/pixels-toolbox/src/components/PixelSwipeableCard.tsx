@@ -3,7 +3,7 @@ import {
   BaseBoxProps,
   BaseHStack,
   BaseVStack,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -33,14 +33,14 @@ import gs from "~/styles";
 function UserMessageDialog({
   title,
   message,
-  isOpen,
+  visible,
   onClose,
   onPressOk: onOk,
   onPressCancel: onCancel,
 }: {
   title: string;
   message?: string;
-  isOpen: boolean;
+  visible: boolean;
   onClose: () => void;
   onPressOk?: () => void;
   onPressCancel?: () => void;
@@ -49,7 +49,7 @@ function UserMessageDialog({
   return (
     <Portal>
       <Dialog
-        visible={isOpen}
+        visible={visible}
         onDismiss={onClose}
         dismissable={!onOk && !onCancel}
       >
@@ -190,14 +190,17 @@ function PixelCard({
     onCancel?: () => void;
     handled?: boolean;
   }>();
-  const notifyUserDisclose = useDisclose();
-  const open = notifyUserDisclose.onOpen;
+  const {
+    visible: notifyVisible,
+    show: showNotify,
+    hide: hideNotify,
+  } = useVisibility();
   React.useEffect(() => {
     if (notifyUserData && !notifyUserData.handled) {
       setNotifyUserData({ ...notifyUserData, handled: true });
-      open();
+      showNotify();
     }
-  }, [notifyUserData, open]);
+  }, [notifyUserData, showNotify]);
 
   // Values for UI
   const { t } = useTranslation();
@@ -276,8 +279,8 @@ function PixelCard({
       <UserMessageDialog
         title={pixelDispatcher.name}
         message={notifyUserData?.message}
-        isOpen={notifyUserDisclose.isOpen}
-        onClose={notifyUserDisclose.onClose}
+        visible={notifyVisible}
+        onClose={hideNotify}
         onPressOk={
           notifyUserData?.onOk ? () => notifyUserData.onOk?.() : undefined
         }

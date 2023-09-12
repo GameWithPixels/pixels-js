@@ -1,5 +1,5 @@
 export * from "./colorWheelUtils";
-export * from "./useDisclose";
+export * from "./useVisibility";
 export { default as BaseStyles } from "./BaseStyles";
 export * from "./getBorderRadius";
 export * from "./expandShorthandStyle";

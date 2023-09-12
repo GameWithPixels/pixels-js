@@ -1,7 +1,7 @@
 import {
   BaseButton,
   BaseFlexProps,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -27,18 +27,18 @@ export function FaceSelector({
     () => ({ style: { color: disabled ? "gray" : undefined } }),
     [disabled]
   );
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   const chooseFace = React.useCallback(
     (face: number) => {
       onFaceSelect?.(face);
-      onClose();
+      hide();
     },
-    [onFaceSelect, onClose]
+    [onFaceSelect, hide]
   );
   return (
     <>
       <BaseButton
-        onPress={onOpen}
+        onPress={show}
         disabled={disabled}
         color={disabled ? "gray" : undefined}
         _text={textStyle}
@@ -49,8 +49,8 @@ export function FaceSelector({
       </BaseButton>
 
       <SelectFaceModal
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={visible}
+        onDismiss={hide}
         faceCount={faceCount}
         face={face}
         onFaceSelect={chooseFace}

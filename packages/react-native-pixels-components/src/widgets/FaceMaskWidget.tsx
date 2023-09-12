@@ -4,7 +4,7 @@ import {
   BaseHStack,
   BaseVStack,
   RoundedBox,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import {
@@ -50,13 +50,13 @@ export function FaceMaskWidget({
     () => faces.sort((n1, n2) => n1 - n2).join(" / "),
     [faces]
   );
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   return (
     <>
       <BaseVStack {...flexProps}>
         <Text variant="titleMedium">Face mask</Text>
         <BaseHStack alignItems="center" gap={5}>
-          <BaseButton onPress={onOpen}>Edit</BaseButton>
+          <BaseButton onPress={show}>Edit</BaseButton>
           <RoundedBox border flex={1} py={10} alignItems="center">
             <Text {..._text}>
               {faces.length ? faceList : "No faces selected"}
@@ -67,8 +67,8 @@ export function FaceMaskWidget({
 
       <SelectFacesModal
         _checkBox={_checkBox}
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={visible}
+        onDismiss={hide}
         faces={faces}
         onFaceMaskChange={onFaceMaskChange}
         faceCount={faceCount}

@@ -5,7 +5,7 @@ import {
   BaseButton,
   BaseFlexProps,
   BaseHStack,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { View } from "react-native";
@@ -21,19 +21,19 @@ export function RuleConditionSelector({
   conditions,
   ...flexProps
 }: RuleConditionSelectorProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   return (
     <>
       <BaseHStack alignItems="center" {...flexProps}>
         <Text variant="titleMedium">When</Text>
         <View style={BaseStyles.spacer} />
-        <BaseButton onPress={onOpen}>{label}</BaseButton>
+        <BaseButton onPress={show}>{label}</BaseButton>
         <View style={BaseStyles.spacer} />
       </BaseHStack>
 
       <ActionsheetList
-        isOpen={isOpen}
-        onClose={onClose}
+        visible={visible}
+        onClose={hide}
         itemsData={conditions}
       />
     </>

@@ -3,7 +3,7 @@ import {
   BaseFlexProps,
   BaseHStack,
   BaseVStack,
-  useDisclose,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -72,7 +72,7 @@ export function BitFieldWidget({
   onToggleValue,
   ...flexProps
 }: BitFieldWidgetProps) {
-  const { isOpen, onOpen, onClose } = useDisclose();
+  const { visible, show, hide } = useVisibility();
   return (
     <>
       <BaseVStack {...flexProps}>
@@ -88,7 +88,7 @@ export function BitFieldWidget({
               />
             ))
           ) : (
-            <BaseButton onPress={onOpen}>
+            <BaseButton onPress={show}>
               {BatteryConditionTitleFromOptions(values)}
             </BaseButton>
           )}
@@ -96,8 +96,8 @@ export function BitFieldWidget({
       </BaseVStack>
 
       <SelectBitFieldsModal
-        visible={isOpen}
-        onDismiss={onClose}
+        visible={visible}
+        onDismiss={hide}
         availableValues={availableValues}
         values={values}
         onToggleValue={onToggleValue}
