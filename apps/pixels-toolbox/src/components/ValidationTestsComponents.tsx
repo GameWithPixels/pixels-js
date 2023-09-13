@@ -532,23 +532,18 @@ export function CheckBoard({
 
   const taskChain = useTaskChain(
     action,
-    React.useCallback(() => ValidationTests.checkLEDLoopback(pixel), [pixel]),
-    createTaskStatusContainer(t("ledLoopback"))
-  )
-    .chainWith(
-      React.useCallback(
-        () => ValidationTests.checkAccelerationValid(pixel),
-        [pixel]
-      ),
-      createTaskStatusContainer(t("accelerometer"))
-    )
-    .chainWith(
-      React.useCallback(
-        () => ValidationTests.checkBatteryVoltage(pixel),
-        [pixel]
-      ),
-      createTaskStatusContainer(t("batteryVoltage"))
-    );
+    React.useCallback(
+      () => ValidationTests.checkAccelerationValid(pixel),
+      [pixel]
+    ),
+    createTaskStatusContainer(t("accelerometer"))
+  ).chainWith(
+    React.useCallback(
+      () => ValidationTests.checkBatteryVoltage(pixel),
+      [pixel]
+    ),
+    createTaskStatusContainer(t("batteryVoltage"))
+  );
   if (!isBoard(settings.sequence)) {
     taskChain.chainWith(
       // eslint-disable-next-line react-hooks/rules-of-hooks

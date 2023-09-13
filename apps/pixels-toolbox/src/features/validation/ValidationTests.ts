@@ -7,7 +7,6 @@ import {
   Color,
   Pixel,
   PixelStatus,
-  LEDLoopback,
   RequestTelemetry,
   Telemetry,
   DataSet,
@@ -339,22 +338,6 @@ async function withTelemetry(
 }
 
 export const ValidationTests = {
-  async checkLEDLoopback(
-    pixel: Pixel,
-    timeout = 3000 // 3s
-  ): Promise<void> {
-    const msg = (await pixel.sendAndWaitForResponse(
-      "testLEDLoopback",
-      "ledLoopback",
-      timeout
-    )) as LEDLoopback;
-    // Check received LED loopback
-    console.log(`LED loopback value: ${msg.value}`);
-    if (!msg.value) {
-      throw new Error(`Unexpected LED loopback value: ${msg.value}`);
-    }
-  },
-
   // Check that acceleration value is reasonable
   async checkAccelerationValid(
     pixel: Pixel,

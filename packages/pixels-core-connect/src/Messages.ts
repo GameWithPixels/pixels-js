@@ -60,8 +60,8 @@ export const MessageTypeValues = {
   notifyUser: enumValue(),
   notifyUserAck: enumValue(),
   testHardware: enumValue(),
-  testLEDLoopback: enumValue(),
-  ledLoopback: enumValue(),
+  _unused1: enumValue(),
+  _unused2: enumValue(),
   setTopLevelState: enumValue(),
   programDefaultParameters: enumValue(),
   programDefaultParametersFinished: enumValue(),
@@ -989,20 +989,6 @@ export class NotifyUserAck implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel to notify of its measured LED loopback value.
- * @category Message
- */
-export class LEDLoopback implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.ledLoopback;
-
-  /** Some value. */
-  @serializable(1)
-  value = 0;
-}
-
-/**
  * Message send to a Pixel to configure the die design and color.
  * @category Message
  */
@@ -1240,7 +1226,6 @@ function _getMessageClasses(): MessageClass[] {
     Rssi,
     NotifyUser,
     NotifyUserAck,
-    LEDLoopback,
     SetDesignAndColor,
     SetName,
     PowerOperation,
