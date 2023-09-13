@@ -118,7 +118,7 @@ export const DynamicLinesChart = React.forwardRef(function (
     (x: number, yValues: number[]) => {
       assert(dataRef.current);
       const srcData = dataRef.current.source;
-      assert(srcData.lines.length === yValues.length, "");
+      assert(srcData.lines.length === yValues.length);
       // X value and scaling
       srcData.xValues.push(x);
       const x0 = minX ?? srcData.xValues[0];

@@ -1,5 +1,4 @@
 import {
-  assert,
   delay,
   getValueKeyName,
   safeAssign,
@@ -516,7 +515,6 @@ export const ValidationTests = {
     holdDelay = 1000, // Number of ms to wait before validating the face up
     timeout = 30000 // 30s
   ): Promise<void> {
-    assert(face > 0);
     console.log(`Waiting on face up: ${face}`);
     await withTimeoutAndDisconnect(
       abortSignal,

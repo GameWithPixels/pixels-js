@@ -110,7 +110,7 @@ function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
         `Unsupported die type ${pixel.dieType} (${pixel.ledCount} LEDs)`
       );
   }
-  assert(faces.length === 3);
+  assert(faces.length === 3, "getFaceUp: Need 3 faces");
   switch (step) {
     case "1":
       return faces[0];
