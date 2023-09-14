@@ -89,11 +89,15 @@ function AppContent() {
   const theme = darkOrLight === "dark" ? DarkTheme : LightTheme;
 
   const { t } = useTranslation();
-
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer theme={theme}>
         <Drawer.Navigator
+          initialRouteName={
+            store.getState().validationSettings.openOnStart
+              ? "Validation"
+              : undefined
+          }
           screenOptions={{
             headerTitleStyle: {
               fontWeight: "bold",

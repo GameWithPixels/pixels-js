@@ -15,6 +15,7 @@ import {
   Modal,
   Portal,
   RadioButton,
+  Switch,
   Text,
   Title,
 } from "react-native-paper";
@@ -22,6 +23,7 @@ import {
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
+import { setOpenOnStart } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
@@ -104,6 +106,31 @@ function LanguageCard() {
         <FastHStack px={5} justifyContent="space-between">
           <LanguageRadio label="Chinese" language="zh" />
           <LanguageRadio label="English" language="en" />
+        </FastHStack>
+      </Card.Content>
+    </Card>
+  );
+}
+
+function ValidationCard() {
+  const openOnStart = useAppSelector(
+    (state) => state.validationSettings.openOnStart
+  );
+  const appDispatch = useAppDispatch();
+  const updateOpenOnStart = React.useCallback(
+    (openOnStart: boolean) => {
+      appDispatch(setOpenOnStart(openOnStart));
+    },
+    [appDispatch]
+  );
+
+  return (
+    <Card>
+      <Card.Content>
+        <Title>Validation</Title>
+        <FastHStack px={5} justifyContent="space-between">
+          <Text>Open On Start</Text>
+          <Switch value={openOnStart} onValueChange={updateOpenOnStart} />
         </FastHStack>
       </Card.Content>
     </Card>
@@ -278,6 +305,7 @@ function SettingsPage() {
     <ScrollView contentContainerStyle={gs.listContentContainer}>
       <ThemeCard />
       <LanguageCard />
+      <ValidationCard />
       <EasCard />
     </ScrollView>
   );
