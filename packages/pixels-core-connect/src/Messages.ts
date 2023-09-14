@@ -60,8 +60,8 @@ export const MessageTypeValues = {
   notifyUser: enumValue(),
   notifyUserAck: enumValue(),
   testHardware: enumValue(),
-  _unused1: enumValue(),
-  _unused2: enumValue(),
+  storeValue: enumValue(),
+  storeValueAck: enumValue(),
   setTopLevelState: enumValue(),
   programDefaultParameters: enumValue(),
   programDefaultParametersFinished: enumValue(),
@@ -989,6 +989,66 @@ export class NotifyUserAck implements PixelMessage {
 }
 
 /**
+ * Message send to a Pixel to store a 32 bits value.
+ * @category Message
+ */
+export class StoreValue implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.storeValue;
+
+  /** Value to write. */
+  @serializable(4)
+  value = 0;
+}
+
+/**
+ * The different possible result of requesting to store a value.
+ * @enum
+ * @category Message
+ */
+export const StoreValueResultValues = {
+  /** Value stored successfully. */
+  success: enumValue(0),
+  /** Some error occurred. */
+  unknownError: enumValue(),
+  /** Store is full, value wasn't saved. */
+  storeFull: enumValue(),
+  /**
+   * Store request was discarded because the value is outside of the
+   * valid range (value can't be 0).
+   */
+  invalidRange: enumValue(),
+  /* Operation not permitted in the current die state. */
+  notPermitted: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link StoreValueResultValues}.
+ * @category Message
+ */
+export type StoreValueResult = keyof typeof StoreValueResultValues;
+
+/**
+ * Message send by a Pixel is response to receiving a
+ * {@link StoreValue} message.
+ * @category Message
+ */
+export class StoreValueAck implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.storeValueAck;
+
+  /** Store operation result. */
+  @serializable(1)
+  result = 0;
+
+  /** Index at which the value was written. */
+  @serializable(1)
+  index = StoreValueResultValues.success;
+}
+
+/**
  * Message send to a Pixel to configure the die design and color.
  * @category Message
  */
@@ -1226,6 +1286,8 @@ function _getMessageClasses(): MessageClass[] {
     Rssi,
     NotifyUser,
     NotifyUserAck,
+    StoreValue,
+    StoreValueAck,
     SetDesignAndColor,
     SetName,
     PowerOperation,
