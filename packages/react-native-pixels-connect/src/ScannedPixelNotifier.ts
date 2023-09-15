@@ -1,5 +1,5 @@
 import {
-  PixelDesignAndColor,
+  PixelColorway,
   PixelDieType,
   PixelInfoNotifier,
   PixelInfoNotifierMutableProps,
@@ -44,7 +44,7 @@ export class ScannedPixelNotifier<
   get ledCount(): number {
     return this._data.ledCount;
   }
-  get designAndColor(): PixelDesignAndColor {
+  get designAndColor(): PixelColorway {
     return this._data.designAndColor;
   }
   get dieType(): PixelDieType {

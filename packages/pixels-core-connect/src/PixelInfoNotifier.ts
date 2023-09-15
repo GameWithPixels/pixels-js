@@ -3,7 +3,7 @@ import {
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 
-import { PixelRollState, PixelDesignAndColor, PixelDieType } from "./Messages";
+import { PixelRollState, PixelColorway, PixelDieType } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 
 /**
@@ -41,7 +41,7 @@ export abstract class PixelInfoNotifier<
   abstract get pixelId(): number;
   abstract get name(): string;
   abstract get ledCount(): number;
-  abstract get designAndColor(): PixelDesignAndColor;
+  abstract get designAndColor(): PixelColorway;
   abstract get dieType(): PixelDieType;
   abstract get firmwareDate(): Date;
   abstract get rssi(): number;

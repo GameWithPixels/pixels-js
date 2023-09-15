@@ -1,5 +1,5 @@
 import {
-  PixelDesignAndColorValues,
+  PixelColorwayValues,
   PixelRollStateValues,
 } from "@systemic-games/pixels-core-connect";
 import {
@@ -278,7 +278,7 @@ export class PixelScanner {
   }
 
   private static _maxDesignAndColor = Math.max(
-    ...Object.values(PixelDesignAndColorValues)
+    ...Object.values(PixelColorwayValues)
   );
 
   private static _maxRollState = Math.max(
@@ -295,7 +295,7 @@ export class PixelScanner {
       designAndColor:
         getValueKeyName(
           1 + (index % PixelScanner._maxDesignAndColor),
-          PixelDesignAndColorValues
+          PixelColorwayValues
         ) ?? "unknown",
       dieType: "d20",
       firmwareDate: new Date(),

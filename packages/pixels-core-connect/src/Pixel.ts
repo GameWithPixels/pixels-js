@@ -42,11 +42,11 @@ import {
   SetName,
   PixelRollStateValues,
   PixelRollState,
-  PixelDesignAndColor,
+  PixelColorway,
   RequestRssi,
   TelemetryRequestModeValues,
   RemoteAction,
-  PixelDesignAndColorValues,
+  PixelColorwayValues,
   MessageTypeValues,
   PowerOperation,
   PixelPowerOperationValues,
@@ -243,7 +243,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /** Gets the design and color of the Pixel. */
-  get designAndColor(): PixelDesignAndColor {
+  get designAndColor(): PixelColorway {
     return this._info.designAndColor;
   }
 
@@ -1073,8 +1073,7 @@ export class Pixel extends PixelInfoNotifier {
     // Update properties
     this._info.ledCount = iAmADie.ledCount;
     this._info.designAndColor =
-      getValueKeyName(iAmADie.designAndColor, PixelDesignAndColorValues) ??
-      "unknown";
+      getValueKeyName(iAmADie.designAndColor, PixelColorwayValues) ?? "unknown";
     this._info.pixelId = iAmADie.pixelId;
     this._updateFirmwareDate(new Date(1000 * iAmADie.buildTimestamp));
     this._updateBatteryInfo({

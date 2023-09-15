@@ -1,4 +1,4 @@
-import { PixelDesignAndColor, PixelDieType, PixelRollState } from "./Messages";
+import { PixelColorway, PixelDieType, PixelRollState } from "./Messages";
 
 /**
  * Common accessible values for all Pixel implementations.
@@ -18,7 +18,7 @@ export interface PixelInfo {
   readonly ledCount: number;
 
   /** The Pixel design and color. */
-  readonly designAndColor: PixelDesignAndColor;
+  readonly designAndColor: PixelColorway;
 
   /** The type of die. */
   readonly dieType: PixelDieType;

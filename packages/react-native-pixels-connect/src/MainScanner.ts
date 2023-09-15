@@ -1,5 +1,5 @@
 import {
-  PixelDesignAndColorValues,
+  PixelColorwayValues,
   PixelRollStateValues,
   PixelBleUuids,
   PixelDieType,
@@ -135,8 +135,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
     if (pixelId) {
       const systemId = ev.peripheral.systemId;
       const designAndColor =
-        getValueKeyName(designAndColorValue, PixelDesignAndColorValues) ??
-        "unknown";
+        getValueKeyName(designAndColorValue, PixelColorwayValues) ?? "unknown";
       const rollState =
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
       const scannedPixel = {

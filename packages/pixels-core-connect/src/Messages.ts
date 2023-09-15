@@ -315,27 +315,21 @@ export class GenericPixelMessage implements PixelMessage {
  * @enum
  * @category Message
  */
-export const PixelDesignAndColorValues = {
+export const PixelColorwayValues = {
   unknown: enumValue(0),
-  generic: enumValue(),
-  v3Orange: enumValue(),
-  v4BlackClear: enumValue(),
-  v4WhiteClear: enumValue(),
-  v5Grey: enumValue(),
-  v5White: enumValue(),
-  v5Black: enumValue(),
-  v5Gold: enumValue(),
   onyxBlack: enumValue(),
   hematiteGrey: enumValue(),
   midnightGalaxy: enumValue(),
   auroraSky: enumValue(),
+  auroraClear: enumValue(),
+  custom: 0xff,
 } as const;
 
 /**
- * The names for the "enum" type {@link PixelDesignAndColorValues}.
+ * The names for the "enum" type {@link PixelColorwayValues}.
  * @category Message
  */
-export type PixelDesignAndColor = keyof typeof PixelDesignAndColorValues;
+export type PixelColorway = keyof typeof PixelColorwayValues;
 
 /**
  * The different types of dice.
@@ -376,7 +370,7 @@ export class IAmADie implements PixelMessage {
 
   /** Die look. */
   @serializable(1)
-  designAndColor = PixelDesignAndColorValues.generic;
+  designAndColor = PixelColorwayValues.unknown;
 
   /** Type of die. */
   @serializable(1)
@@ -1057,7 +1051,7 @@ export class SetDesignAndColor implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.setDesignAndColor;
 
-  /** A value from the {@link PixelDesignAndColorValues} enumeration.*/
+  /** A value from the {@link PixelColorwayValues} enumeration.*/
   @serializable(1)
   designAndColor: number = 0;
 }

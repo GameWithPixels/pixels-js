@@ -21,7 +21,7 @@ import {
   getPixel,
   PixelInfo,
   Pixel,
-  PixelDesignAndColor,
+  PixelColorway,
   PixelRollState,
   PixelStatus,
   PixelInfoNotifier,
@@ -177,7 +177,7 @@ class PixelDispatcher extends ScannedPixelNotifier<
     return this._getPixelInfo().ledCount;
   }
 
-  get designAndColor(): PixelDesignAndColor {
+  get designAndColor(): PixelColorway {
     return this._getPixelInfo().designAndColor;
   }
 
