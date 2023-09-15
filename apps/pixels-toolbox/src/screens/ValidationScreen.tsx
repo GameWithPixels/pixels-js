@@ -68,7 +68,14 @@ import { capitalize } from "~/i18n";
 import gs from "~/styles";
 
 // Board types used for validation
-const BoardTypes: readonly PixelDieType[] = ["d6", "d8", "d10", "d12", "d20"];
+const BoardTypes: readonly PixelDieType[] = [
+  "d6",
+  "d6pipped",
+  "d8",
+  "d10",
+  "d12",
+  "d20",
+];
 
 // Die types used for validation
 const DieTypes: readonly PixelDieType[] = [
