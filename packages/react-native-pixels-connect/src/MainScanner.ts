@@ -161,7 +161,8 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
         `Pixel ${ev.peripheral.name}: Received invalid advertising data`
       );
     }
-  } else {
+  } else if (!hasServiceData) {
+    // After a reboot we may receive a onetime advertisement payload without the manufacturer data
     console.error(
       `Pixel ${
         ev.peripheral.name
