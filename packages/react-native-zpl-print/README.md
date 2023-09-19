@@ -23,7 +23,7 @@ const result = await printHtml("XP-", html);
 if (result === "success") {
   console.log("Printing done!");
 } else {
-  console.log("Printing failed: " + result);
+  console.log("Print error: " + result);
 }
 ```
 

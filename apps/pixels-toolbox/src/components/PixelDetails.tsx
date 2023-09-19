@@ -269,12 +269,10 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             )}
           </TextEntry>
           <TextEntry title={t("batteryControllerState")}>
-            {t(
-              getValueKeyName(
-                telemetry?.batteryControllerState,
-                PixelBatteryControllerStateValues
-              ) ?? "unknown"
-            )}
+            {getValueKeyName(
+              telemetry?.batteryControllerState,
+              PixelBatteryControllerStateValues
+            ) ?? "unknown"}
           </TextEntry>
           <TextEntry title={t("internalChargerState")}>
             {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff")}
@@ -405,7 +403,7 @@ function BottomButtons({
                     assertNever(status, "Unsupported print status");
                 }
               }).catch((error) => {
-                const msg = `Print error: ${error.message ?? error}`;
+                const msg = error.message ?? error;
                 console.warn(msg);
                 setPrintStatus(msg);
               });
