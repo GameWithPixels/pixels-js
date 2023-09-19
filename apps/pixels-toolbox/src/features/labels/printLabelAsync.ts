@@ -11,6 +11,8 @@ import { readLabelHtmlAsync } from "~/features/labels/readLabelHtmlAsync";
 
 let _getProductIds: ((name: string) => ProductIds | undefined) | undefined;
 
+export type PrintStatus = "preparing" | "sending" | "done";
+
 /**
  * Print customized label for a given Pixels die.
  *
@@ -25,7 +27,7 @@ let _getProductIds: ((name: string) => ProductIds | undefined) | undefined;
  */
 export async function printLabelAsync(
   pixel: Pixel,
-  statusCallback?: (status: "preparing" | "sending" | "done") => void
+  statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
   // Read HTML file
   statusCallback?.("preparing");

@@ -226,6 +226,9 @@ i18n
           keepColorway: "Keep colorway?",
           selectColorway: "Select Colorway",
           writeTimestamp: "Write Timestamp",
+          labelPrinting: "Label Printing",
+          waitingOnPrint: "Waiting On Print",
+          isLabelPrinted: "Is label correctly printed?",
 
           // Roll Screen
           rollDemo: "Roll Demo",
@@ -424,6 +427,9 @@ i18n
           keepColorway: "Keep colorway?",
           selectColorway: "Select Colorway",
           writeTimestamp: "Write Timestamp",
+          labelPrinting: "Label Printing",
+          waitingOnPrint: "Waiting On Print",
+          isLabelPrinted: "Is label correctly printed?",
         },
       },
     },

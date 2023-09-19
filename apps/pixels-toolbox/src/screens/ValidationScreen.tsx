@@ -43,8 +43,10 @@ import {
   WaitFaceUp,
   TurnOffDevice,
   StoreSettings,
+  LabelPrinting,
 } from "~/components/ValidationTestsComponents";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
+import { PrintStatus } from "~/features/labels/printLabelAsync";
 import { range } from "~/features/range";
 import {
   getTaskResult,
@@ -418,6 +420,7 @@ function RunTestsPage({
     () => setFirmwareUpdated(true),
     []
   );
+  const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
   const taskChain = useTaskChain(
     cancel ? "cancel" : "run",
@@ -526,7 +529,14 @@ function RunTestsPage({
           // eslint-disable-next-line react-hooks/rules-of-hooks
           ...useTaskComponent("PrepareDie", cancel, (p) => (
             <>
-              {pixel && <PrepareDie {...p} pixel={pixel} settings={settings} />}
+              {pixel && (
+                <PrepareDie
+                  {...p}
+                  pixel={pixel}
+                  settings={settings}
+                  onPrintStatus={setPrintStatus}
+                />
+              )}
             </>
           ))
         )
@@ -547,6 +557,22 @@ function RunTestsPage({
             <>
               {pixel && (
                 <WaitDieInCase {...p} pixel={pixel} settings={settings} />
+              )}
+            </>
+          ))
+        )
+        .chainWith(
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          ...useTaskComponent("CheckLabel", cancel, (p) => (
+            <>
+              {pixel && (
+                <LabelPrinting
+                  {...p}
+                  pixel={pixel}
+                  settings={settings}
+                  printResult={printStatus}
+                  onPrintStatus={setPrintStatus}
+                />
               )}
             </>
           ))

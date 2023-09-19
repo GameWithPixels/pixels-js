@@ -37,6 +37,10 @@ import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { unzipFactoryDfuFilesAsync } from "~/features/dfu/unzip";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
+import {
+  PrintStatus,
+  printLabelAsync,
+} from "~/features/labels/printLabelAsync";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   pixelClearSettings,
@@ -69,6 +73,22 @@ import {
 import gs, { useModalStyle } from "~/styles";
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
+
+function printLabel(
+  pixel: Pixel,
+  statusCallback: (status: PrintStatus | Error) => void
+): void {
+  printLabelAsync(pixel, statusCallback).catch(statusCallback);
+  // async function testPrintLabelAsync(
+  //   pixel: Pixel,
+  //   statusCallback?: (status: PrintStatus) => void
+  // ) {
+  //   console.log("TEST PRINTING");
+  //   statusCallback?.("preparing");
+  //   setTimeout(() => statusCallback?.("sending"), 1000);
+  //   setTimeout(() => statusCallback?.("done"), 2000);
+  // }
+}
 
 async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
   let loadedSound = soundMap.get(source);
@@ -809,6 +829,86 @@ export function RequestColorway({
   );
 }
 
+export function WaitFaceUp({
+  action,
+  onTaskStatus,
+  pixel,
+}: ValidationTestProps) {
+  const { t } = useTranslation();
+  const [lastRoll, setRoll] = React.useState<RollEvent>();
+  const FaceUpText = () => (
+    <>
+      {!!lastRoll && (
+        <Text variant="bodyLarge">
+          {t(lastRoll.state)}
+          {t("colonSeparator")}
+          {lastRoll.face}
+          {pixel.dieType === "d6fudge" ? getFudgeFaceDesc(lastRoll.face) : ""}
+        </Text>
+      )}
+    </>
+  );
+
+  const taskChain = useTaskChain(
+    action,
+    React.useCallback(
+      (abortSignal) =>
+        ValidationTests.waitFaceUp(
+          pixel,
+          getFaceUp(pixel, "1"),
+          Color.dimMagenta,
+          abortSignal,
+          setRoll
+        ),
+      [pixel]
+    ),
+    createTaskStatusContainer({
+      title: t("placeBlinkingFaceUp"),
+      children: <FaceUpText />,
+    })
+  )
+    .withStatusChanged(playSoundOnResult)
+    .chainWith(
+      React.useCallback(
+        (abortSignal) =>
+          ValidationTests.waitFaceUp(
+            pixel,
+            getFaceUp(pixel, "2"),
+            Color.dimYellow,
+            abortSignal,
+            setRoll
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        title: t("placeNewBlinkingFaceUp"),
+        children: <FaceUpText />,
+      })
+    )
+    .withStatusChanged(playSoundOnResult)
+    .chainWith(
+      React.useCallback(
+        (abortSignal) =>
+          ValidationTests.waitFaceUp(
+            pixel,
+            getFaceUp(pixel, "3"),
+            Color.dimCyan,
+            abortSignal,
+            setRoll
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        title: t("placeNewBlinkingFaceUp"),
+        children: <FaceUpText />,
+      })
+    )
+    .withStatusChanged(playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
+
+  return <TaskChainComponent title={t("waitFaceUp")} taskChain={taskChain} />;
+}
+
 export function StoreSettings({
   action,
   onTaskStatus,
@@ -900,120 +1000,8 @@ export function StoreSettings({
   );
 }
 
-export function TurnOffDevice({
-  action,
-  onTaskStatus,
-  pixel,
-  settings,
-}: ValidationTestProps) {
-  const { t } = useTranslation();
-
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(() => pixel.turnOff(), [pixel]),
-    createTaskStatusContainer(t("turningOff"))
-  )
-    .chainWith(
-      React.useCallback(
-        (abortSignal) =>
-          ValidationTests.waitDisconnected(
-            pixel,
-            isBoard(settings.sequence)
-              ? new Color(0.003, 0.01, 0)
-              : new Color(0.03, 0.1, 0),
-            abortSignal,
-            10000 // 10s timeout
-          ),
-        [pixel, settings.sequence]
-      ),
-      createTaskStatusContainer(t("waitingDeviceDisconnect"))
-    )
-    .withStatusChanged(playSoundOnResult)
-    .withStatusChanged(onTaskStatus);
-
-  return (
-    <TaskChainComponent title={t("waitForShutdown")} taskChain={taskChain} />
-  );
-}
-
-export function WaitFaceUp({
-  action,
-  onTaskStatus,
-  pixel,
-}: ValidationTestProps) {
-  const { t } = useTranslation();
-  const [lastRoll, setRoll] = React.useState<RollEvent>();
-  const FaceUpText = () => (
-    <>
-      {!!lastRoll && (
-        <Text variant="bodyLarge">
-          {t(lastRoll.state)}
-          {t("colonSeparator")}
-          {lastRoll.face}
-          {pixel.dieType === "d6fudge" ? getFudgeFaceDesc(lastRoll.face) : ""}
-        </Text>
-      )}
-    </>
-  );
-
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      (abortSignal) =>
-        ValidationTests.waitFaceUp(
-          pixel,
-          getFaceUp(pixel, "1"),
-          Color.dimMagenta,
-          abortSignal,
-          setRoll
-        ),
-      [pixel]
-    ),
-    createTaskStatusContainer({
-      title: t("placeBlinkingFaceUp"),
-      children: <FaceUpText />,
-    })
-  )
-    .withStatusChanged(playSoundOnResult)
-    .chainWith(
-      React.useCallback(
-        (abortSignal) =>
-          ValidationTests.waitFaceUp(
-            pixel,
-            getFaceUp(pixel, "2"),
-            Color.dimYellow,
-            abortSignal,
-            setRoll
-          ),
-        [pixel]
-      ),
-      createTaskStatusContainer({
-        title: t("placeNewBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
-    )
-    .withStatusChanged(playSoundOnResult)
-    .chainWith(
-      React.useCallback(
-        (abortSignal) =>
-          ValidationTests.waitFaceUp(
-            pixel,
-            getFaceUp(pixel, "3"),
-            Color.dimCyan,
-            abortSignal,
-            setRoll
-          ),
-        [pixel]
-      ),
-      createTaskStatusContainer({
-        title: t("placeNewBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
-    )
-    .withStatusChanged(playSoundOnResult)
-    .withStatusChanged(onTaskStatus);
-
-  return <TaskChainComponent title={t("waitFaceUp")} taskChain={taskChain} />;
+export interface PrintStatusProp {
+  onPrintStatus: (status: PrintStatus | Error | undefined) => void;
 }
 
 export function PrepareDie({
@@ -1021,19 +1009,23 @@ export function PrepareDie({
   onTaskStatus,
   pixel,
   settings,
-}: ValidationTestProps) {
+  onPrintStatus,
+}: ValidationTestProps & PrintStatusProp) {
   const { t } = useTranslation();
 
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(
     action,
     React.useCallback(async () => {
+      // Update profile
       await ValidationTests.updateProfile(
         pixel,
         getDefaultProfile(settings.dieType),
         setProgress
       );
-    }, [pixel, settings.dieType]),
+      // Start printing ahead of time
+      printLabel(pixel, onPrintStatus);
+    }, [onPrintStatus, pixel, settings.dieType]),
     createTaskStatusContainer({
       title: t("updateProfile"),
       children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
@@ -1097,5 +1089,127 @@ export function WaitDieInCase({
 
   return (
     <TaskChainComponent title={t("waitDieInCase")} taskChain={taskChain} />
+  );
+}
+
+export interface CheckLabelProps extends ValidationTestProps, PrintStatusProp {
+  printResult: PrintStatus | Error | undefined;
+}
+
+export function LabelPrinting({
+  action,
+  onTaskStatus,
+  pixel,
+  printResult,
+  onPrintStatus,
+}: CheckLabelProps) {
+  const { t } = useTranslation();
+
+  // Print result
+  const [resolveRejectResultPromise, setResolveRejectResultPromise] =
+    React.useState<{ resolve: () => void; reject: (error: Error) => void }>();
+  React.useEffect(() => {
+    console.log(`Print result: ${printResult}`);
+    if (resolveRejectResultPromise) {
+      if (printResult === "done") {
+        resolveRejectResultPromise.resolve();
+      } else if (printResult instanceof Error) {
+        resolveRejectResultPromise.reject(printResult);
+      }
+    }
+  }, [printResult, resolveRejectResultPromise]);
+
+  // Print check
+  const [resolvePrintOkPromise, setResolvePrintOkPromise] =
+    React.useState<(ok: boolean) => void>();
+
+  // Reset task chain
+  const [reset, setReset] = React.useState(false);
+  React.useEffect(() => setReset(false), [reset]);
+
+  const taskChain = useTaskChain(
+    reset ? "reset" : action,
+    React.useCallback(
+      (abortSignal) =>
+        withPromise<void>(
+          abortSignal,
+          "labelPrinting",
+          (resolve, reject) =>
+            setResolveRejectResultPromise({ resolve, reject }),
+          () => setResolveRejectResultPromise(undefined)
+        ),
+      []
+    ),
+    createTaskStatusContainer(t("waitingOnPrint"))
+  )
+    .chainWith(
+      React.useCallback(
+        async (abortSignal) => {
+          const printOk = await withPromise<boolean>(
+            abortSignal,
+            "labelPrinting",
+            (resolve) => setResolvePrintOkPromise(() => resolve),
+            () => setResolvePrintOkPromise(undefined)
+          );
+          if (!printOk) {
+            console.log("Reprinting label");
+            onPrintStatus(undefined);
+            setReset(true);
+            printLabel(pixel, onPrintStatus);
+          }
+        },
+        [onPrintStatus, pixel]
+      ),
+      createTaskStatusContainer({
+        children: (
+          <MessageYesNo
+            message={t("isLabelPrinted")}
+            onYes={() => resolvePrintOkPromise?.(true)}
+            onNo={() => resolvePrintOkPromise?.(false)}
+          />
+        ),
+      })
+    )
+    .withStatusChanged(playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskChainComponent title={t("labelPrinting")} taskChain={taskChain} />
+  );
+}
+
+export function TurnOffDevice({
+  action,
+  onTaskStatus,
+  pixel,
+  settings,
+}: ValidationTestProps) {
+  const { t } = useTranslation();
+
+  const taskChain = useTaskChain(
+    action,
+    React.useCallback(() => pixel.turnOff(), [pixel]),
+    createTaskStatusContainer(t("turningOff"))
+  )
+    .chainWith(
+      React.useCallback(
+        (abortSignal) =>
+          ValidationTests.waitDisconnected(
+            pixel,
+            isBoard(settings.sequence)
+              ? new Color(0.003, 0.01, 0)
+              : new Color(0.03, 0.1, 0),
+            abortSignal,
+            10000 // 10s timeout
+          ),
+        [pixel, settings.sequence]
+      ),
+      createTaskStatusContainer(t("waitingDeviceDisconnect"))
+    )
+    .withStatusChanged(playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskChainComponent title={t("waitForShutdown")} taskChain={taskChain} />
   );
 }
