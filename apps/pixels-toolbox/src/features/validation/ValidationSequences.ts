@@ -15,3 +15,7 @@ export function getBoardOrDie(sequence: ValidationSequence): "board" | "die" {
 export function isBoard(sequence: ValidationSequence): boolean {
   return getBoardOrDie(sequence) === "board";
 }
+
+export function getSequenceIndex(sequence: ValidationSequence): number {
+  return ValidationSequences.indexOf(sequence);
+}

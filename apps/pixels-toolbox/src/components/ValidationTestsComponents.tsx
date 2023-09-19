@@ -1,9 +1,15 @@
-import { assert, assertNever } from "@systemic-games/pixels-core-utils";
-import { FastHStack } from "@systemic-games/react-native-base-components";
+import { assert, assertNever, delay } from "@systemic-games/pixels-core-utils";
+import {
+  FastBoxProps,
+  FastHStack,
+  FastVStack,
+} from "@systemic-games/react-native-base-components";
 import {
   Central,
   Color,
   Pixel,
+  PixelColorway,
+  PixelColorwayValues,
   PixelConnectError,
   PixelDieType,
   PixelScannerDispatchAction,
@@ -14,7 +20,14 @@ import {
 import { Audio, AVPlaybackSource } from "expo-av";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Text } from "react-native-paper";
+import { FlatList, Image } from "react-native";
+import {
+  Button,
+  Modal,
+  Portal,
+  Text,
+  TouchableRipple,
+} from "react-native-paper";
 
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import chimeSound from "!/sounds/chime.mp3";
@@ -29,6 +42,8 @@ import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   pixelClearSettings,
   pixelStopAllAnimations,
+  pixelStoreValue,
+  PixelValueStoreType,
 } from "~/features/pixels/extensions";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
@@ -38,14 +53,25 @@ import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
   getBoardOrDie,
+  getSequenceIndex,
   isBoard,
   ValidationSequence,
 } from "~/features/validation/ValidationSequences";
-import { ValidationTests } from "~/features/validation/ValidationTests";
+import {
+  disconnectTimeout,
+  ValidationTests,
+} from "~/features/validation/ValidationTests";
+import {
+  withPromise,
+  AbortControllerWithReason,
+  getSignalReason,
+  withTimeoutAndDisconnect,
+} from "~/features/validation/signalHelpers";
+import gs, { useModalStyle } from "~/styles";
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 
-async function _getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
+async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
   let loadedSound = soundMap.get(source);
   if (!loadedSound) {
     const { sound } = await Audio.Sound.createAsync(source);
@@ -55,9 +81,9 @@ async function _getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
   return loadedSound;
 }
 
-async function _playSoundAsync(source: AVPlaybackSource) {
+async function playSoundAsync(source: AVPlaybackSource) {
   try {
-    const sound = await _getSound(source);
+    const sound = await getSound(source);
     await sound.setPositionAsync(0);
     return await sound.playAsync();
   } catch (e) {
@@ -65,21 +91,27 @@ async function _playSoundAsync(source: AVPlaybackSource) {
   }
 }
 
-function _playSoundOnResult(result: TaskStatus) {
+function playSoundOnResult(result: TaskStatus) {
   if (result === "succeeded") {
-    _playSoundAsync(chimeSound);
+    playSoundAsync(chimeSound);
   } else if (result === "canceled" || result === "faulted") {
-    _playSoundAsync(errorSound);
+    playSoundAsync(errorSound);
   }
 }
 
-function _getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
+function getCoilOrDie(settings: ValidationTestsSettings): "coil" | "die" {
   const boardOrDie = getBoardOrDie(settings.sequence);
   return boardOrDie === "board" ? "coil" : boardOrDie;
 }
 
+function get24BitsTimestamp(): number {
+  // Use the KickStarter date as our epoch
+  const ksDate = new Date("Tue, 09 Mar 2021 17:00:00 GMT");
+  return Math.floor((Date.now() - ksDate.getTime()) / 60000);
+}
+
 // List of faces to test, last face is the one with the copper counter weight
-function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
+function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
   let faces: number[];
   switch (pixel.dieType) {
     case "d4":
@@ -123,7 +155,7 @@ function _getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
   }
 }
 
-function _getLEDCount(dieType: PixelDieType): number {
+function getLEDCount(dieType: PixelDieType): number {
   switch (dieType) {
     case "unknown":
       return 0;
@@ -147,7 +179,7 @@ function _getLEDCount(dieType: PixelDieType): number {
   }
 }
 
-function _getFudgeFaceDesc(face: number): string {
+function getFudgeFaceDesc(face: number): string {
   switch (face) {
     case 1:
       return " = ➕ (bottom)";
@@ -161,64 +193,83 @@ function _getFudgeFaceDesc(face: number): string {
   }
 }
 
-async function _makeUserCancellable(
-  abortSignal: AbortSignal,
-  setUserAbort: React.Dispatch<React.SetStateAction<(() => void) | undefined>>,
-  task: (abortSignal: AbortSignal) => Promise<void>,
-  abortMessage: string
-): Promise<void> {
-  let userAborted = false;
-  const abortController = new AbortController();
-  setUserAbort(() => () => {
-    userAborted = true;
-    abortController.abort();
-  });
-  const abort = () => abortController.abort();
-  abortSignal.addEventListener("abort", abort);
+const connectTimeout = 5000; // Ms
+
+async function repeatConnect(
+  pixel: Pixel,
+  connect: () => Promise<void | Pixel>,
+  disconnect: () => Promise<void | Pixel>,
+  abortSignal: AbortSignal
+) {
+  const onAbort = () => {
+    disconnect().catch((error) =>
+      console.log(`Error while disconnecting on abort: ${error}`)
+    );
+  };
+  abortSignal.addEventListener("abort", onAbort);
   try {
-    await task(abortController.signal);
-  } catch (error: any) {
-    if (userAborted) {
-      throw new Error(abortMessage);
-    } else {
-      throw error;
-    }
+    let retries = 2;
+
+    while (!abortSignal.aborted)
+      try {
+        await connect();
+        break;
+      } catch (error) {
+        if (retries === 0) {
+          if (pixel) {
+            throw new PixelConnectError(pixel, error);
+          } else {
+            throw error;
+          }
+        }
+        --retries;
+        if (!abortSignal.aborted) {
+          await delay(1000);
+          console.log("Try connecting again...");
+        }
+      }
   } finally {
-    abortSignal.removeEventListener("abort", abort);
+    abortSignal.removeEventListener("abort", onAbort);
   }
 }
 
-interface MessageYesNoProps {
+interface MessageYesNoProps extends FastBoxProps {
   message: string;
   onYes?: () => void;
   onNo?: () => void;
   hideYesNo?: boolean;
 }
 
-function MessageYesNo({ message, onYes, onNo, hideYesNo }: MessageYesNoProps) {
+function MessageYesNo({
+  message,
+  onYes,
+  onNo,
+  hideYesNo,
+  ...props
+}: MessageYesNoProps) {
   const { t } = useTranslation();
   return (
-    <>
+    <FastVStack gap={10} {...props}>
       <Text variant="bodyLarge">{message}</Text>
       {!hideYesNo && (
         <FastHStack gap={10}>
           <Button
             mode="contained-tonal"
             onPress={onYes}
-            style={{ minWidth: 100 }}
+            style={{ minWidth: 80 }}
           >
             {t("yes")}
           </Button>
           <Button
             mode="contained-tonal"
             onPress={onNo}
-            style={{ minWidth: 100 }}
+            style={{ minWidth: 80 }}
           >
             {t("no")}
           </Button>
         </FastHStack>
       )}
-    </>
+    </FastVStack>
   );
 }
 
@@ -226,6 +277,7 @@ async function scanForPixelWithTimeout(
   pixelId: number,
   scannerDispatch: (action: PixelScannerDispatchAction) => void,
   setResolveScanPromise: (setter: () => void) => void,
+  abortSignal: AbortSignal,
   timeout = 10000 // 10s
 ): Promise<void> {
   if (!pixelId) {
@@ -233,7 +285,7 @@ async function scanForPixelWithTimeout(
   }
   scannerDispatch("start");
   try {
-    await new Promise<void>((resolve, reject) => {
+    await withPromise<void>(abortSignal, "scan", (resolve, reject) => {
       const timeoutId = setTimeout(() => {
         reject(
           new TaskFaultedError(
@@ -330,28 +382,34 @@ export function UpdateFirmware({
   const taskChain = useTaskChain(
     action,
     React.useCallback(
-      async () =>
+      async (abortSignal) =>
         await scanForPixelWithTimeout(
           pixelId,
           scannerDispatch,
-          setResolveScanPromise
+          setResolveScanPromise,
+          abortSignal
         ),
       [pixelId, scannerDispatch]
     ),
     createTaskStatusContainer(t("bluetoothScan"))
   )
     .chainWith(
-      React.useCallback(async () => {
+      React.useCallback(async (abortSignal) => {
         // Get our Pixel and connect to it
         const pixel = pixelRef.current;
         if (!pixel) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
-        try {
-          await Central.connectPeripheral(pixel.systemId, { timeoutMs: 5000 });
-        } catch (error) {
-          throw new PixelConnectError(pixel, error);
-        }
+        // Try to connect up to 3 times
+        await repeatConnect(
+          pixel,
+          () =>
+            Central.connectPeripheral(pixel.systemId, {
+              timeoutMs: connectTimeout,
+            }),
+          () => Central.disconnectPeripheral(pixel.systemId),
+          abortSignal
+        );
       }, []),
       createTaskStatusContainer(t("connect"))
     )
@@ -420,7 +478,7 @@ export function UpdateFirmware({
         ),
       })
     )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (
@@ -465,11 +523,12 @@ export function ConnectPixel({
   const taskChain = useTaskChain(
     action,
     React.useCallback(
-      async () =>
+      async (abortSignal) =>
         await scanForPixelWithTimeout(
           pixelId,
           scannerDispatch,
-          setResolveScanPromise
+          setResolveScanPromise,
+          abortSignal
         ),
       [pixelId, scannerDispatch]
     ),
@@ -481,7 +540,7 @@ export function ConnectPixel({
           throw new TaskFaultedError("Empty scanned Pixel");
         }
         const ledCount = pixelRef.current.ledCount;
-        if (ledCount !== _getLEDCount(settings.dieType)) {
+        if (ledCount !== getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
             `Incorrect die type, expected ${settings.dieType} but got ${ledCount} LEDs`
           );
@@ -491,25 +550,24 @@ export function ConnectPixel({
       createTaskStatusContainer(t("checkDieType"))
     )
     .chainWith(
-      React.useCallback(async () => {
+      React.useCallback(async (abortSignal) => {
         // Get our Pixel and connect to it
         const pixel = pixelRef.current;
         if (!pixel) {
           throw new TaskFaultedError("Empty scanned Pixel");
         }
-        try {
-          // Try connecting
-          await pixel.connect(5000);
-        } catch {
-          // Try a second time
-          await pixel.connect(5000);
-        }
+        await repeatConnect(
+          pixel,
+          () => pixel.connect(connectTimeout),
+          () => pixel.disconnect(),
+          abortSignal
+        );
         // Make sure we don't have any animation playing
         await pixelStopAllAnimations(pixel);
       }, []),
       createTaskStatusContainer(t("connect"))
     )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (
@@ -560,7 +618,7 @@ export function CheckBoard({
     createTaskStatusContainer(t("clearSettings"))
   );
   taskChain
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("checkBoard")} taskChain={taskChain} />;
@@ -600,7 +658,7 @@ export function WaitCharging({
               notCharging
                 ? "removeFromChargerWithCoilOrDie"
                 : "placeOnChargerWithCoilOrDie",
-              { coilOrDie: t(_getCoilOrDie(settings)) }
+              { coilOrDie: t(getCoilOrDie(settings)) }
             )}
           </Text>
           {lastState && (
@@ -620,7 +678,7 @@ export function WaitCharging({
       ),
     })
   )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (
@@ -645,31 +703,25 @@ export function CheckLEDs({
     action,
     React.useCallback(
       async (abortSignal) => {
-        let userAborted = false;
-        const abortController = new AbortController();
+        const abortController = new AbortControllerWithReason();
         setUserAbort(() => () => {
-          userAborted = true;
-          abortController.abort();
+          abortController.abortWithReason(new Error("Some LEDs are not white"));
         });
-        const abort = () => abortController.abort();
-        abortSignal.addEventListener("abort", abort);
+        const onAbort = () => {
+          abortController.abortWithReason(getSignalReason(abortSignal));
+        };
+        abortSignal.addEventListener("abort", onAbort);
         try {
           await ValidationTests.checkLEDsLitUp(
             pixel,
             isBoard(settings.sequence)
               ? new Color(0.03, 0.03, 0.03)
               : new Color(0.1, 0.1, 0.1),
-            (r) => setResolvePromise(() => r),
+            (resolve) => setResolvePromise(() => resolve),
             abortController.signal
           );
-        } catch (error: any) {
-          if (userAborted) {
-            throw new Error("Some LEDs are not white");
-          } else {
-            throw error;
-          }
         } finally {
-          abortSignal.removeEventListener("abort", abort);
+          abortSignal.removeEventListener("abort", onAbort);
         }
       },
       [pixel, settings.sequence]
@@ -678,7 +730,7 @@ export function CheckLEDs({
       children: (
         <MessageYesNo
           message={t("areAllLEDsWhiteWithCount", {
-            count: _getLEDCount(settings.dieType),
+            count: getLEDCount(settings.dieType),
           })}
           hideYesNo={!resolvePromise}
           onYes={() => resolvePromise?.()}
@@ -687,10 +739,166 @@ export function CheckLEDs({
       ),
     })
   )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("checkLEDs")} taskChain={taskChain} />;
+}
+
+function ColorwayImage({ name }: { name: PixelColorway }) {
+  switch (name) {
+    default:
+      return <Image source={require("!images/colorways/unknown.png")} />;
+    case "onyxBlack":
+      return <Image source={require("!images/colorways/onyxBlack.png")} />;
+    case "hematiteGrey":
+      return <Image source={require("!images/colorways/hematiteGrey.png")} />;
+    case "midnightGalaxy":
+      return <Image source={require("!images/colorways/midnightGalaxy.png")} />;
+    case "auroraSky":
+      return <Image source={require("!images/colorways/auroraSky.png")} />;
+    case "auroraClear":
+      return <Image source={require("!images/colorways/auroraClear.png")} />;
+  }
+}
+
+export function RequestColorway({
+  visible,
+  onSelect,
+}: {
+  visible: boolean;
+  onSelect?: (colorway: PixelColorway) => void;
+}) {
+  // Values for UI
+  const modalStyle = useModalStyle();
+  const { t } = useTranslation();
+  const colors = (Object.keys(PixelColorwayValues) as [PixelColorway]).filter(
+    (c) => c !== "unknown" && c !== "custom"
+  );
+  colors.push("unknown");
+  return (
+    <Portal>
+      <Modal
+        visible={visible}
+        contentContainerStyle={modalStyle}
+        dismissable={false}
+      >
+        <FastVStack paddingVertical={10} gap={20}>
+          <Text style={{ alignSelf: "center" }} variant="headlineMedium">
+            {t("selectColorway")}
+          </Text>
+          <FlatList
+            style={gs.fullWidth}
+            contentContainerStyle={{
+              ...gs.listContentContainer,
+              gap: 20,
+            }}
+            columnWrapperStyle={{
+              justifyContent: "space-around",
+            }}
+            numColumns={2}
+            data={colors}
+            renderItem={({ item: c }) => (
+              <TouchableRipple onPress={() => onSelect?.(c)}>
+                <ColorwayImage name={c} />
+              </TouchableRipple>
+            )}
+          />
+        </FastVStack>
+      </Modal>
+    </Portal>
+  );
+}
+
+export function StoreSettings({
+  action,
+  onTaskStatus,
+  pixel,
+  settings,
+}: ValidationTestProps) {
+  const { t } = useTranslation();
+
+  const [resolveConfirmPromise, setResolveConfirmPromise] =
+    React.useState<(keepSettings: boolean) => void>();
+  const [resolveColorwayPromise, setResolveColorwayPromise] =
+    React.useState<(colorway: PixelColorway) => void>();
+  const taskChain = useTaskChain(
+    action,
+    React.useCallback(
+      (abortSignal) =>
+        withTimeoutAndDisconnect(
+          abortSignal,
+          pixel,
+          async (abortSignal) => {
+            let keepSettings = false;
+            let colorway = pixel.designAndColor;
+            console.log(`Initial colorway: ${colorway}`);
+            if (colorway && colorway !== "unknown") {
+              keepSettings = await withPromise(
+                abortSignal,
+                "storeColorway",
+                (resolve) => setResolveConfirmPromise(() => resolve),
+                () => setResolveConfirmPromise(undefined)
+              );
+            }
+            if (!keepSettings) {
+              colorway = await withPromise(
+                abortSignal,
+                "storeColorway",
+                (resolve) => setResolveColorwayPromise(() => resolve),
+                () => setResolveColorwayPromise(undefined)
+              );
+              console.log(`Selected colorway: ${colorway}`);
+            }
+            if (colorway !== "unknown") {
+              console.log(`Storing colorway: ${colorway}`);
+              const value = PixelColorwayValues[colorway];
+              assert(value);
+              await pixelStoreValue(pixel, PixelValueStoreType.Colorway, value);
+            }
+          },
+          disconnectTimeout
+        ),
+      [pixel]
+    ),
+    createTaskStatusContainer({
+      children: (
+        <FastHStack gap={20}>
+          <ColorwayImage name={pixel.designAndColor} />
+          <MessageYesNo
+            justifyContent="center"
+            message={t("keepColorway")}
+            hideYesNo={!resolveConfirmPromise}
+            onYes={() => resolveConfirmPromise?.(true)}
+            onNo={() => resolveConfirmPromise?.(false)}
+          />
+          <RequestColorway
+            visible={!!resolveColorwayPromise}
+            onSelect={(c) => resolveColorwayPromise?.(c)}
+          />
+        </FastHStack>
+      ),
+    })
+  )
+    .chainWith(
+      React.useCallback(
+        () =>
+          pixelStoreValue(
+            pixel,
+            PixelValueStoreType.ValidationTimestampStart +
+              getSequenceIndex(settings.sequence),
+            get24BitsTimestamp()
+          ),
+        [pixel, settings.sequence]
+      ),
+      createTaskStatusContainer(t("writeTimestamp"))
+    )
+    .withStatusChanged(playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskChainComponent title={t("storeSettings")} taskChain={taskChain} />
+  );
 }
 
 export function TurnOffDevice({
@@ -721,7 +929,7 @@ export function TurnOffDevice({
       ),
       createTaskStatusContainer(t("waitingDeviceDisconnect"))
     )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (
@@ -743,7 +951,7 @@ export function WaitFaceUp({
           {t(lastRoll.state)}
           {t("colonSeparator")}
           {lastRoll.face}
-          {pixel.dieType === "d6fudge" ? _getFudgeFaceDesc(lastRoll.face) : ""}
+          {pixel.dieType === "d6fudge" ? getFudgeFaceDesc(lastRoll.face) : ""}
         </Text>
       )}
     </>
@@ -755,7 +963,7 @@ export function WaitFaceUp({
       (abortSignal) =>
         ValidationTests.waitFaceUp(
           pixel,
-          _getFaceUp(pixel, "1"),
+          getFaceUp(pixel, "1"),
           Color.dimMagenta,
           abortSignal,
           setRoll
@@ -767,13 +975,13 @@ export function WaitFaceUp({
       children: <FaceUpText />,
     })
   )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .chainWith(
       React.useCallback(
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            _getFaceUp(pixel, "2"),
+            getFaceUp(pixel, "2"),
             Color.dimYellow,
             abortSignal,
             setRoll
@@ -785,13 +993,13 @@ export function WaitFaceUp({
         children: <FaceUpText />,
       })
     )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .chainWith(
       React.useCallback(
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            _getFaceUp(pixel, "3"),
+            getFaceUp(pixel, "3"),
             Color.dimCyan,
             abortSignal,
             setRoll
@@ -803,7 +1011,7 @@ export function WaitFaceUp({
         children: <FaceUpText />,
       })
     )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("waitFaceUp")} taskChain={taskChain} />;
@@ -820,15 +1028,13 @@ export function PrepareDie({
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(
     action,
-    React.useCallback(
-      () =>
-        ValidationTests.updateProfile(
-          pixel,
-          getDefaultProfile(settings.dieType),
-          setProgress
-        ),
-      [pixel, settings.dieType]
-    ),
+    React.useCallback(async () => {
+      await ValidationTests.updateProfile(
+        pixel,
+        getDefaultProfile(settings.dieType),
+        setProgress
+      );
+    }, [pixel, settings.dieType]),
     createTaskStatusContainer({
       title: t("updateProfile"),
       children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
@@ -861,7 +1067,7 @@ export function PrepareDie({
       ),
       createTaskStatusContainer(t("waitingDeviceDisconnect"))
     )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("prepareDie")} taskChain={taskChain} />;
@@ -887,7 +1093,7 @@ export function WaitDieInCase({
       ),
     })
   )
-    .withStatusChanged(_playSoundOnResult)
+    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (

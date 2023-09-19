@@ -75,6 +75,13 @@ i18n
           done: "Done",
           badCharging: "Bad Charging",
           error: "Error",
+          // Colorways
+          onyxBlack: "Onyx Black",
+          hematiteGrey: "Hematite Grey",
+          midnightGalaxy: "Midnight Galaxy",
+          auroraSky: "Aurora Sky",
+          auroraClear: "Aurora Clear",
+          custom: "Custom",
 
           // Pixels Scan List
           noPixelsFound: "No Pixels found so far...",
@@ -214,8 +221,11 @@ i18n
           testSucceeded: "Test Successful!",
           testFailed: "Test Failed!",
           testCanceled: "Test Canceled!",
-          clearingSettings: "Clearing Settings",
           clearSettings: "Clear Settings",
+          storeSettings: "Store Settings",
+          keepColorway: "Keep colorway?",
+          selectColorway: "Select Colorway",
+          writeTimestamp: "Write Timestamp",
 
           // Roll Screen
           rollDemo: "Roll Demo",
@@ -263,6 +273,13 @@ i18n
           done: "充电完成",
           badCharging: "充电不成功",
           error: "充电错误",
+          // Colorways
+          onyxBlack: "Onyx Black",
+          hematiteGrey: "Hematite Grey",
+          midnightGalaxy: "Midnight Galaxy",
+          auroraSky: "Aurora Sky",
+          auroraClear: "Aurora Clear",
+          custom: "Custom",
 
           // Pixels Scan List
           noPixelsFound: "没有发现骰子",
@@ -402,6 +419,11 @@ i18n
           testSucceeded: "测试成功！",
           testFailed: "测试失败！",
           testCanceled: "取消测试！",
+          clearSettings: "Clear Settings",
+          storeSettings: "Store Settings",
+          keepColorway: "Keep colorway?",
+          selectColorway: "Select Colorway",
+          writeTimestamp: "Write Timestamp",
         },
       },
     },

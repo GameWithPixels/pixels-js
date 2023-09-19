@@ -1,8 +1,4 @@
-import {
-  delay,
-  getValueKeyName,
-  safeAssign,
-} from "@systemic-games/pixels-core-utils";
+import { getValueKeyName, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
   Color,
   Pixel,
@@ -10,7 +6,6 @@ import {
   RequestTelemetry,
   Telemetry,
   DataSet,
-  MessageOrType,
   TelemetryRequestModeValues,
   RequestRssi,
   Rssi,
@@ -20,23 +15,15 @@ import {
   PixelBatteryControllerStateValues,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { pixelStopAllAnimations } from "../pixels/extensions";
-
-import { TaskCanceledError } from "~/features/tasks/useTask";
-
-function getSignalReason(signal: AbortSignal, testName?: string): any {
-  // No error when using DOM types -- @ts-expect-error reason not implemented in React Native)
-  const reason = signal.reason;
-  return reason ?? (testName ? new TaskCanceledError(testName) : undefined);
-}
-
-class AbortControllerWithReason extends AbortController {
-  abortWithReason(reason: any): void {
-    // @ts-expect-error reason not implemented in React Native
-    this.signal.reason = reason;
-    this.abort();
-  }
-}
+import {
+  withTimeoutAndDisconnect,
+  withBlink,
+  withTelemetry,
+  withPromise,
+  withSolidColor,
+  withTimeout,
+  ValidationTestsTimeoutError,
+} from "./signalHelpers";
 
 function vectNorm(x: number, y: number, z: number): number {
   return Math.sqrt(x * x + y * y + z * z);
@@ -72,277 +59,15 @@ function getTopFaceMask(pixel: Pixel): number {
   }
 }
 
-export class ValidationTestsTimeoutError extends Error {
-  constructor(ms: number) {
-    super(`Timed-out after waiting ${Math.round(ms / 1000)}s`);
-    this.name = "ValidationTestsTimeoutError";
-  }
-}
-
-export class ValidationTestsDisconnectedError extends Error {
-  constructor() {
-    super(`Disconnected from Pixel`);
-    this.name = "ValidationTestsDisconnectedError";
-  }
-}
-
-function timeout(ms: number): [AbortSignal, () => void] {
-  const controller = new AbortControllerWithReason();
-  const id = setTimeout(() => {
-    controller.abortWithReason(new ValidationTestsTimeoutError(ms));
-  }, ms);
-  return [controller.signal, () => clearTimeout(id)];
-}
-
-function checkConnected(pixel: Pixel): [AbortSignal, (() => void) | undefined] {
-  const controller = new AbortControllerWithReason();
-  if (!pixel.isReady) {
-    controller.abortWithReason(new ValidationTestsDisconnectedError());
-    return [controller.signal, undefined];
-  } else {
-    const listener = (status: PixelStatus) => {
-      if (status === "disconnecting" || status === "disconnected") {
-        controller.abortWithReason(new ValidationTestsDisconnectedError());
-      }
-    };
-    pixel.addEventListener("status", listener);
-    return [
-      controller.signal,
-      () => pixel.removeEventListener("status", listener),
-    ];
-  }
-}
-
-function anySignal(signals: Iterable<AbortSignal>): [AbortSignal, () => void] {
-  const controller = new AbortControllerWithReason();
-  const unsubscribeList: (() => void)[] = [];
-  const unsubscribeAll = () => {
-    // Unsubscribe
-    for (const fn of unsubscribeList) {
-      fn();
-    }
-    unsubscribeList.length = 0;
-  };
-  const onAbort = (signal: AbortSignal) => {
-    unsubscribeAll();
-    // Forward abort
-    controller.abortWithReason(getSignalReason(signal));
-  };
-  // Listen to signals
-  for (const signal of signals) {
-    if (signal.aborted) {
-      onAbort(signal);
-      break;
-    }
-    const listener = () => onAbort(signal);
-    unsubscribeList.push(() => signal.removeEventListener("abort", listener));
-    signal.addEventListener("abort", listener);
-  }
-  return [controller.signal, unsubscribeAll];
-}
-
-async function withTimeout(
-  signal: AbortSignal,
-  timeoutMs: number,
-  promise: (signal: AbortSignal) => Promise<void>
-): Promise<void> {
-  const [tSignal, tCleanup] = timeout(timeoutMs);
-  const [combinedSignal, csCleanup] = anySignal([signal, tSignal]);
-  let cleanupAllCalled = false;
-  const cleanupAll = () => {
-    if (!cleanupAllCalled) {
-      cleanupAllCalled = true;
-      csCleanup();
-      tCleanup();
-    }
-  };
-  combinedSignal.addEventListener("abort", cleanupAll);
-  try {
-    await promise(combinedSignal);
-  } finally {
-    cleanupAll();
-  }
-}
-
-async function withTimeoutAndDisconnect(
-  signal: AbortSignal,
-  pixel: Pixel,
-  timeoutMs: number,
-  promise: (signal: AbortSignal) => Promise<void>
-): Promise<void> {
-  const [tSignal, tCleanup] = timeout(timeoutMs);
-  const [ccSignal, ccCleanup] = checkConnected(pixel);
-  const [combinedSignal, csCleanup] = anySignal([signal, tSignal, ccSignal]);
-  let cleanupAllCalled = false;
-  const cleanupAll = () => {
-    if (!cleanupAllCalled) {
-      cleanupAllCalled = true;
-      csCleanup();
-      tCleanup();
-      ccCleanup?.();
-    }
-  };
-  combinedSignal.addEventListener("abort", cleanupAll);
-  try {
-    await promise(combinedSignal);
-  } finally {
-    cleanupAll();
-  }
-}
-
-async function withBlink(
-  pixel: Pixel,
-  blinkColor: Color,
-  abortSignal: AbortSignal,
-  promise: () => Promise<void>,
-  options?: {
-    faceMask?: number;
-    blinkDuration?: number;
-  }
-): Promise<void> {
-  let status: "init" | "blink" | "cancel" = "init";
-  const blink = async () => {
-    if (!abortSignal.aborted) {
-      await pixelStopAllAnimations(pixel);
-    }
-    if (!abortSignal.aborted && status !== "cancel") {
-      status = "blink";
-      const duration = options?.blinkDuration ?? 1000;
-      await pixel.blink(blinkColor, {
-        count: 1,
-        duration,
-        faceMask: options?.faceMask,
-        loop: true,
-      });
-    }
-  };
-  try {
-    blink().catch(() => {});
-    await promise();
-  } finally {
-    // @ts-ignore status may have been changed in async task
-    if (status === "blink") {
-      pixelStopAllAnimations(pixel).catch(() => {});
-    }
-    status = "cancel";
-  }
-}
-
-async function withSolidColor(
-  pixel: Pixel,
-  color: Color,
-  abortSignal: AbortSignal,
-  promise: () => Promise<void>,
-  options?: {
-    faceMask?: number;
-  }
-): Promise<void> {
-  let status: "init" | "blink" | "cancel" = "init";
-  const lightUp = async () => {
-    if (!abortSignal.aborted) {
-      await pixelStopAllAnimations(pixel);
-    }
-    const duration = 0xffff;
-    while (!abortSignal.aborted && status !== "cancel") {
-      status = "blink";
-      await pixel.blink(color, {
-        duration,
-        faceMask: options?.faceMask,
-      });
-      await delay(duration / 2, abortSignal);
-    }
-  };
-  try {
-    lightUp().catch(() => {});
-    await promise();
-  } finally {
-    // @ts-ignore status may have been changed in async task
-    if (status === "blink") {
-      pixelStopAllAnimations(pixel).catch(() => {});
-    }
-    status = "cancel";
-  }
-}
-
-async function withTelemetry(
-  pixel: Pixel,
-  listener: (msg: Telemetry) => boolean, // Return true to stop telemetry
-  abortSignal: AbortSignal,
-  testName: string
-): Promise<void> {
-  if (abortSignal.aborted) {
-    throw getSignalReason(abortSignal, testName);
-  } else {
-    // Start telemetry
-    await pixel.sendMessage(
-      safeAssign(new RequestTelemetry(), {
-        requestMode: TelemetryRequestModeValues.automatic,
-        minInterval: 100,
-      })
-    );
-
-    let firstError: any | undefined;
-    let onAbort: (() => void) | undefined;
-    let telemetryListener: ((msg: MessageOrType) => void) | undefined;
-    // Process telemetry messages
-    try {
-      await new Promise<void>((resolve, reject) => {
-        onAbort = () => {
-          reject(getSignalReason(abortSignal, testName));
-        };
-        if (abortSignal.aborted) {
-          onAbort();
-        } else {
-          abortSignal.addEventListener("abort", onAbort);
-          telemetryListener = (msg: MessageOrType) => {
-            try {
-              if (listener(msg as Telemetry)) {
-                resolve();
-              }
-            } catch (error) {
-              reject(error);
-            }
-          };
-          pixel.addMessageListener("telemetry", telemetryListener);
-        }
-      });
-    } catch (error) {
-      firstError = error;
-    } finally {
-      if (onAbort) {
-        abortSignal.removeEventListener("abort", onAbort);
-      }
-      if (telemetryListener) {
-        pixel.removeMessageListener("telemetry", telemetryListener);
-      }
-      // Turn off telemetry
-      try {
-        await pixel.sendMessage(
-          safeAssign(new RequestTelemetry(), {
-            requestMode: TelemetryRequestModeValues.off,
-          })
-        );
-      } catch (error) {
-        if (firstError) {
-          // We already got an error, just log this one and forget it
-          console.log(`Error while trying to stop telemetry: ${error}`);
-        } else {
-          firstError = error;
-        }
-      }
-      if (firstError) {
-        throw firstError;
-      }
-    }
-  }
-}
+export const disconnectTimeout = 30000; // 30s;
+export const shortTimeout = 3000; // 3s;
 
 export const ValidationTests = {
   // Check that acceleration value is reasonable
   async checkAccelerationValid(
     pixel: Pixel,
     maxDeviationFactor = 10, // 10x,
-    timeout = 3000 // 3s
+    timeout = shortTimeout
   ): Promise<void> {
     const msg = (await pixel.sendAndWaitForResponse(
       safeAssign(new RequestTelemetry(), {
@@ -364,7 +89,7 @@ export const ValidationTests = {
 
   async checkBatteryVoltage(
     pixel: Pixel,
-    timeout = 3000 // 3s
+    timeout = shortTimeout
   ): Promise<void> {
     const msg = (await pixel.sendAndWaitForResponse(
       safeAssign(new RequestTelemetry(), {
@@ -388,10 +113,7 @@ export const ValidationTests = {
     }
   },
 
-  async checkRssi(
-    pixel: Pixel,
-    timeout = 3000 // 3s
-  ): Promise<void> {
+  async checkRssi(pixel: Pixel, timeout = shortTimeout): Promise<void> {
     const rssi = (await pixel.sendAndWaitForResponse(
       safeAssign(new RequestRssi(), {
         requestMode: TelemetryRequestModeValues.once,
@@ -412,13 +134,12 @@ export const ValidationTests = {
     blinkColor: Color,
     abortSignal: AbortSignal,
     notifyState: (info: { state?: string; vCoil: number }) => void,
-    timeout = 30000 // 30s
+    timeout = disconnectTimeout
   ): Promise<void> => {
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,
-      timeout,
-      async (signal) => {
+      async (abortSignal) => {
         // Blink face
         const options = {
           faceMask: getTopFaceMask(pixel),
@@ -426,7 +147,7 @@ export const ValidationTests = {
         await withBlink(
           pixel,
           blinkColor,
-          signal,
+          abortSignal,
           async () => {
             // And wait for battery (not)charging
             let lastMsg: Telemetry | undefined;
@@ -461,7 +182,7 @@ export const ValidationTests = {
                   });
                   return false;
                 },
-                signal,
+                abortSignal,
                 shouldBeCharging ? "waitCharging" : "waitNotCharging"
               );
             } catch (error: any) {
@@ -485,7 +206,8 @@ export const ValidationTests = {
           },
           options
         );
-      }
+      },
+      timeout
     );
   },
 
@@ -496,14 +218,13 @@ export const ValidationTests = {
     abortSignal: AbortSignal,
     notifyFaceUp: (roll: RollEvent) => void,
     holdDelay = 1000, // Number of ms to wait before validating the face up
-    timeout = 30000 // 30s
+    timeout = disconnectTimeout
   ): Promise<void> {
     console.log(`Waiting on face up: ${face}`);
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,
-      timeout,
-      async (signal) => {
+      async (abortSignal) => {
         // Blink face
         const options = {
           faceMask: getFaceMask(face, pixel.dieType),
@@ -513,46 +234,38 @@ export const ValidationTests = {
           blinkColor,
           abortSignal,
           async () => {
-            let onAbort: (() => void) | undefined;
             let rollListener: ((ev: RollEvent) => void) | undefined;
             let lastRoll: RollEvent | undefined;
             try {
-              await new Promise<void>((resolve, reject) => {
-                // Timeout that's setup once the die face up is the required one
-                // The promise will resolve successfully once the timeout expires
-                let holdTimeout: ReturnType<typeof setTimeout> | undefined;
-                function setHoldTimeout() {
-                  console.log(`Waiting ${holdDelay}ms before validating`);
-                  holdTimeout = setTimeout(() => {
-                    console.log(`Validating face up: ${pixel.currentFace}`);
-                    resolve();
-                  }, holdDelay);
-                }
-                // Roll listener that checks if the required face is up
-                rollListener = ({ state, face: currentFace }: RollEvent) => {
-                  if (state === "onFace" && currentFace === face) {
-                    // Required face is up, start hold timer
-                    console.log(`Die rolled on required face ${face}`);
-                    setHoldTimeout();
-                  } else if (holdTimeout) {
-                    // Die moved, cancel hold timer
-                    console.log(`Die moved before hold timeout expired`);
-                    clearTimeout(holdTimeout);
-                    holdTimeout = undefined;
+              await withPromise<void>(
+                abortSignal,
+                "waitFaceUp",
+                (resolve) => {
+                  // Timeout that's setup once the die face up is the required one
+                  // The promise will resolve successfully once the timeout expires
+                  let holdTimeout: ReturnType<typeof setTimeout> | undefined;
+                  function setHoldTimeout() {
+                    console.log(`Waiting ${holdDelay}ms before validating`);
+                    holdTimeout = setTimeout(() => {
+                      console.log(`Validating face up: ${pixel.currentFace}`);
+                      resolve();
+                    }, holdDelay);
                   }
-                  lastRoll = { state, face: currentFace };
-                  notifyFaceUp(lastRoll);
-                };
-                // Abort function
-                onAbort = () => {
-                  reject(getSignalReason(signal, "waitFaceUp"));
-                };
-                if (signal.aborted) {
-                  // Abort right away
-                  onAbort();
-                } else {
-                  // Listen to abort event
-                  signal.addEventListener("abort", onAbort);
+                  // Roll listener that checks if the required face is up
+                  rollListener = ({ state, face: currentFace }: RollEvent) => {
+                    if (state === "onFace" && currentFace === face) {
+                      // Required face is up, start hold timer
+                      console.log(`Die rolled on required face ${face}`);
+                      setHoldTimeout();
+                    } else if (holdTimeout) {
+                      // Die moved, cancel hold timer
+                      console.log(`Die moved before hold timeout expired`);
+                      clearTimeout(holdTimeout);
+                      holdTimeout = undefined;
+                    }
+                    lastRoll = { state, face: currentFace };
+                    notifyFaceUp(lastRoll);
+                  };
                   // Listen to roll events to detect when required face is up
                   pixel.addEventListener("rollState", rollListener);
                   // Check current face
@@ -564,8 +277,13 @@ export const ValidationTests = {
                     console.log(`Die already on face ${face}`);
                     setHoldTimeout();
                   }
+                },
+                () => {
+                  if (rollListener) {
+                    pixel.removeEventListener("rollState", rollListener);
+                  }
                 }
-              });
+              );
             } catch (error) {
               // TODO temporary
               if (lastRoll && error instanceof ValidationTestsTimeoutError) {
@@ -575,18 +293,12 @@ export const ValidationTests = {
               } else {
                 throw error;
               }
-            } finally {
-              if (onAbort) {
-                signal.removeEventListener("abort", onAbort);
-              }
-              if (rollListener) {
-                pixel.removeEventListener("rollState", rollListener);
-              }
             }
           },
           options
         );
-      }
+      },
+      timeout
     );
   },
 
@@ -595,40 +307,24 @@ export const ValidationTests = {
     color: Color,
     setResolve: (resolve: () => void) => void,
     abortSignal: AbortSignal,
-    timeout = 30000 // 30s
+    timeout = disconnectTimeout
   ) {
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,
-      timeout,
-      async (signal) => {
+      (abortSignal) =>
         // Show solid color
-        await withSolidColor(pixel, color, abortSignal, async () => {
-          let onAbort: (() => void) | undefined;
-          try {
-            await new Promise<void>((resolve, reject) => {
-              onAbort = () => {
-                reject(getSignalReason(signal, "checkLEDsLitUp"));
-              };
-              if (signal.aborted) {
-                onAbort();
-              } else {
-                signal.addEventListener("abort", onAbort);
-                // Wait on promised being resolved
-                setResolve(() => {
-                  if (!signal.aborted) {
-                    resolve();
-                  }
-                });
+        withSolidColor(pixel, color, abortSignal, () =>
+          withPromise<void>(abortSignal, "checkLEDsLitUp", (resolve) => {
+            // Wait on promised being resolved
+            setResolve(() => {
+              if (!abortSignal.aborted) {
+                resolve();
               }
             });
-          } finally {
-            if (onAbort) {
-              signal.removeEventListener("abort", onAbort);
-            }
-          }
-        });
-      }
+          })
+        ),
+      timeout
     );
   },
 
@@ -654,7 +350,7 @@ export const ValidationTests = {
   },
 
   async exitValidationMode(pixel: Pixel): Promise<void> {
-    // Exit validation mode, don't wait for response as die will restart
+    // Exit validation mode, don't wait for response as die will immediately reboot
     await pixel.sendMessage("exitValidation", true);
     // Replace above line by this code for testing
     // await pixel.sendMessage(
@@ -669,24 +365,19 @@ export const ValidationTests = {
     pixel: Pixel,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    timeout = 30000 // 30s
+    timeout = disconnectTimeout
   ) {
-    await withTimeout(abortSignal, timeout, async (signal) => {
+    await withTimeout(abortSignal, timeout, async (abortSignal) => {
       let statusListener: ((status: PixelStatus) => void) | undefined;
       // Blink all faces
-      await withBlink(pixel, blinkColor, signal, async () => {
-        let onAbort: (() => void) | undefined;
-        try {
-          await new Promise<void>((resolve, reject) => {
-            onAbort = () => {
-              reject(getSignalReason(signal, "waitDisconnected"));
-            };
-            if (signal.aborted) {
-              onAbort();
-            } else if (pixel.status === "disconnected") {
+      await withBlink(pixel, blinkColor, abortSignal, async () =>
+        withPromise(
+          abortSignal,
+          "waitDisconnected",
+          (resolve) => {
+            if (pixel.status === "disconnected") {
               resolve();
             } else {
-              signal.addEventListener("abort", onAbort);
               // Wait on connection status change
               statusListener = (status: PixelStatus) => {
                 if (status === "disconnected") {
@@ -695,16 +386,14 @@ export const ValidationTests = {
               };
               pixel.addEventListener("status", statusListener);
             }
-          });
-        } finally {
-          if (onAbort) {
-            signal.removeEventListener("abort", onAbort);
+          },
+          () => {
+            if (statusListener) {
+              pixel.removeEventListener("status", statusListener);
+            }
           }
-          if (statusListener) {
-            pixel.removeEventListener("status", statusListener);
-          }
-        }
-      });
+        )
+      );
     });
   },
 } as const;

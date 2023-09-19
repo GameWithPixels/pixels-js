@@ -12,14 +12,7 @@ import { useKeepAwake } from "expo-keep-awake";
 import React from "react";
 import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
-import {
-  FlexStyle,
-  ScrollView,
-  StyleSheet,
-  TextStyle,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, TextStyle, View } from "react-native";
 import {
   Button,
   ButtonProps,
@@ -49,8 +42,10 @@ import {
   WaitDieInCase,
   WaitFaceUp,
   TurnOffDevice,
+  StoreSettings,
 } from "~/components/ValidationTestsComponents";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
+import { range } from "~/features/range";
 import {
   getTaskResult,
   getTaskResultEmoji,
@@ -113,14 +108,10 @@ function BottomButton({
 
 function LargeTonalButton({
   children,
-  height,
-  width,
-  fontSize,
+  fontSize = 24,
   ...props
 }: TouchableRippleProps & {
-  height?: FlexStyle["height"];
-  width?: FlexStyle["width"];
-  fontSize: TextStyle["fontSize"];
+  fontSize?: TextStyle["fontSize"];
   children: React.ReactNode;
 }) {
   const theme = useTheme();
@@ -130,11 +121,10 @@ function LargeTonalButton({
     <TouchableRipple
       rippleColor={theme.colors.surface}
       style={{
-        height,
-        width,
+        flex: 1,
         backgroundColor: theme.colors.secondaryContainer,
+        padding: 10,
         borderRadius,
-        margin: 10,
         alignContent: "center",
         justifyContent: "center",
       }}
@@ -160,23 +150,19 @@ function SelectSequencePage({
 }: {
   onSelectSequence: (sequence: ValidationSequence) => void;
 }) {
-  const { height } = useWindowDimensions();
-  const btnHeight = (height - 180) / ValidationSequences.length;
   const { t } = useTranslation();
   return (
-    <FastVStack w="100%" h="100%" px={5} py={10} justifyContent="space-around">
-      {ValidationSequences.map((sequence) => (
-        <LargeTonalButton
-          key={sequence}
-          height={btnHeight}
-          fontSize={30}
-          onPress={() => onSelectSequence(sequence)}
-        >
-          {t(
-            sequence === "firmwareUpdate"
-              ? sequence
-              : "validate" + sequence[0].toUpperCase() + sequence.substring(1)
-          )}
+    <FastVStack
+      w="100%"
+      h="100%"
+      px={5}
+      py={20}
+      gap={30}
+      justifyContent="space-around"
+    >
+      {ValidationSequences.map((s) => (
+        <LargeTonalButton key={s} onPress={() => onSelectSequence(s)}>
+          {t(s === "firmwareUpdate" ? s : "validate" + capitalize(s))}
         </LargeTonalButton>
       ))}
     </FastVStack>
@@ -193,42 +179,37 @@ function SelectDieTypePage({
   onBack?: () => void;
 }) {
   const types = isBoard(sequence) ? BoardTypes : DieTypes;
-  const { width, height } = useWindowDimensions();
-  const btnHeight = (height - 200) / (types.length * 1.5);
-  const columns = types.length > 6;
+  const items =
+    types.length > 6
+      ? range(types.length / 2).map((i) => [types[2 * i], types[2 * i + 1]]) // Breaks in 2 columns
+      : types.map((t) => [t]);
   const { t } = useTranslation();
   return (
-    <FastVStack w="100%" h="100%" p={5} justifyContent="space-around">
+    <FastVStack
+      w="100%"
+      h="100%"
+      px={5}
+      py={20}
+      gap={20}
+      justifyContent="space-around"
+    >
       <Text variant="headlineSmall" style={styles.textCenter}>
         {t("testingSequence", { sequence: t(sequence) })}
       </Text>
-      <View
-        style={
-          columns
-            ? {
-                flexGrow: 1,
-                flexDirection: "row",
-                flexWrap: "wrap",
-                alignContent: "space-around",
-              }
-            : {
-                flexGrow: 1,
-                justifyContent: "space-around",
-              }
-        }
-      >
-        {types.map((dt) => (
-          <LargeTonalButton
-            key={dt}
-            height={columns ? 2 * btnHeight : btnHeight}
-            width={columns ? width / 2 - 30 : undefined}
-            fontSize={24}
-            onPress={() => onSelectDieType(dt)}
-          >
-            {t(dt)}
-          </LargeTonalButton>
-        ))}
-      </View>
+      {items.map((items, i) => (
+        <View key={i} style={{ flex: 1, flexDirection: "row", gap: 20 }}>
+          {items.map((dt) =>
+            dt ? (
+              <LargeTonalButton key={dt} onPress={() => onSelectDieType(dt)}>
+                {t(dt)}
+              </LargeTonalButton>
+            ) : (
+              // Empty item
+              <View key="empty" style={{ flex: 1 }} />
+            )
+          )}
+        </View>
+      ))}
       <BottomButton onPress={onBack}>{t("back")}</BottomButton>
     </FastVStack>
   );
@@ -520,6 +501,14 @@ function RunTestsPage({
         ))
       );
     }
+    taskChain.chainWith(
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ...useTaskComponent("StoreSettings", cancel, (p) => (
+        <>
+          {pixel && <StoreSettings {...p} pixel={pixel} settings={settings} />}
+        </>
+      ))
+    );
     if (settings.sequence !== "dieFinal") {
       taskChain.chainWith(
         // eslint-disable-next-line react-hooks/rules-of-hooks

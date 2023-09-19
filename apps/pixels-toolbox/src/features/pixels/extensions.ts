@@ -1,9 +1,17 @@
-import { safeAssign } from "@systemic-games/pixels-core-utils";
+import {
+  assert,
+  getValueKeyName,
+  safeAssign,
+} from "@systemic-games/pixels-core-utils";
 import {
   BlinkId,
   Discharge,
   Pixel,
   PlayProfileAnimation,
+  StoreValue,
+  StoreValueAck,
+  StoreValueResult,
+  StoreValueResultValues,
   TransferTest,
 } from "@systemic-games/react-native-pixels-connect";
 
@@ -130,6 +138,7 @@ export async function pixelStopAllAnimations(pixel: Pixel): Promise<void> {
  * @param animationIndex Index of the animation in the profile's animation list.
  * @param remapToFace Face on which to play the animation (the animations are designed assuming that the higher face value is up).
  * @param loop Whether to indefinitely loop the animation.
+ * @returns A promise that resolves once the message has been sent.
  */
 export async function pixelPlayProfileAnimation(
   pixel: Pixel,
@@ -146,11 +155,50 @@ export async function pixelPlayProfileAnimation(
 }
 
 /**
- * Requests the Pixel to clear internal settings
+ * Requests the Pixel to clear internal settings.
  * @param pixel The Pixel instance to use.
- * @returns A promise that resolves once the clear has been confirmed
+ * @returns A promise that resolves once the clear has been confirmed.
  */
 export async function pixelClearSettings(pixel: Pixel): Promise<void> {
   log(pixel, "Clearing settings");
   await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
+}
+
+/* List of codes for the store values' types. */
+export const PixelValueStoreType = {
+  Colorway: 1,
+  ValidationTimestampStart: 0xa0,
+} as const;
+
+/**
+ * Requests the Pixel to to store the given value.
+ * @param pixel The Pixel instance to use.
+ * @param valueType The type of the value to write (8 bits).
+ * @param value The value to write (24 bits)
+ * @returns A promise that resolves to the result of the store operation.
+ */
+export async function pixelStoreValue(
+  pixel: Pixel,
+  valueType: number,
+  value: number
+): Promise<StoreValueResult> {
+  // Check boundaries
+  assert(valueType > 0 && valueType <= 0xff);
+  assert(value >= 0 && value <= 0xffffff);
+  // Build value to send
+  value = ((valueType << 24) | value) >>> 0;
+  // And send it to die
+  const ack = (await pixel.sendAndWaitForResponse(
+    safeAssign(new StoreValue(), { value }),
+    "storeValueAck"
+  )) as StoreValueAck;
+  // Check result
+  const result =
+    getValueKeyName(ack.result, StoreValueResultValues) ?? "unknownError";
+  const valHex = "0x" + value.toString(16);
+  log(
+    pixel,
+    `Store value ${valHex} result: ${result} (${ack.result}), index: ${ack.index}`
+  );
+  return result;
 }
