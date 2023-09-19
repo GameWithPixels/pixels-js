@@ -16,6 +16,7 @@ import androidx.annotation.RequiresPermission;
 import androidx.core.app.ActivityCompat;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -36,15 +37,26 @@ public class BluetoothPrinter {
             if (boundedDevices.isEmpty()) {
                 result = "No paired Bluetooth device";
             } else {
+                final ArrayList<BluetoothDevice> matching = new ArrayList();
                 for (final BluetoothDevice device : boundedDevices) {
-                    if (printer != null) {
-                        result = "More than one ZTL printer";
-                        printer = null;
-                        break;
-                    }
                     if (printerName == null || device.getName().startsWith(printerName)) {
-                        // bluetoothAdapter.cancelDiscovery();
-                        printer = device;
+                        matching.add(device);
+                    }
+                }
+                // bluetoothAdapter.cancelDiscovery();
+                if (matching.size() == 0) {
+                    result = "No matching printer";
+                } else if (matching.size() == 1) {
+                    printer = matching.get(0);
+                } else {
+                    result = "Several matching printer: ";
+                    boolean first = true;
+                    for (final BluetoothDevice device : matching) {
+                        if (!first) {
+                            result += ", ";
+                        }
+                        result += device.getName();
+                        first = false;
                     }
                 }
             }

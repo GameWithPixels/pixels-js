@@ -76,6 +76,7 @@ public class ZplPrint {
         final int bytesPerRow = (width + 7) / 8;
         final int sizeInBytes = bytesPerRow * height;
         return toBytes(new String[]{"^XA",
+            "^PW" + width,
             "^FO" + x + "," + y + "^GFA," + sizeInBytes + "," + sizeInBytes + "," + bytesPerRow + "," + data + "^FS",
             "^XZ"});
     }
