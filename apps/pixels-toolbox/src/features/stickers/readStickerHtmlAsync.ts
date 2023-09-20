@@ -77,7 +77,7 @@ export async function readStickerHtmlAsync(
       "31060-PXLDIEA": product.icId1,
       "31060-CHG001A": product.icId2,
       "PXL20-12345678": product.deviceId.toLocaleUpperCase(),
-      "GROK STONEBREAKER": product.deviceName.toLocaleUpperCase(),
+      "GROK STONEBREAKER!": product.deviceName.toLocaleUpperCase(),
     }).forEach(([k, v]) => {
       html = html.replace(k, v);
       console.log(`Replacing ${k} by ${v}`);
