@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import {
   FastBox,
   FastHStack,
@@ -17,6 +18,7 @@ import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
+import { isDfuDone } from "~/features/dfu/updateFirmware";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { FirmwareUpdateScreenProps } from "~/navigation";
@@ -76,12 +78,12 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         dfuTarget,
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
-        dfuTarget.name.startsWith("PXL") || dfuTarget.name.startsWith("Dfu") // Running bootloader?
+        dfuTarget.name.startsWith("PXL") || dfuTarget.name.startsWith("Dfu")
       );
     }
   }, [bundle, dfuTarget, updateFirmware]);
   React.useEffect(() => {
-    if (dfuState === "completed" || dfuState === "aborted") {
+    if (dfuState && isDfuDone(dfuState)) {
       setDfuTarget(undefined);
     }
   }, [dfuState]);
@@ -92,22 +94,28 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   >([]);
   const pendingScans = React.useRef<ScannedPeripheral[]>([]);
   // Queue scan events and process them in batch
-  React.useEffect(() => {
-    BleScanner.start("", (sp: ScannedPeripheral) => {
-      if (sp.name.length) {
-        const arr = pendingScans.current;
-        const i = arr.findIndex((item) => item.systemId === sp.systemId);
-        if (i < 0) {
-          arr.push(sp);
-        } else {
-          arr[i] = sp;
-        }
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!dfuTarget) {
+        console.log("### START SCAN");
+        BleScanner.start("", (sp: ScannedPeripheral) => {
+          if (sp.name.length) {
+            const arr = pendingScans.current;
+            const i = arr.findIndex((item) => item.systemId === sp.systemId);
+            if (i < 0) {
+              arr.push(sp);
+            } else {
+              arr[i] = sp;
+            }
+          }
+        }).catch(errorHandler);
+        return () => {
+          console.log("### STOP SCAN");
+          BleScanner.stop().catch(errorHandler);
+        };
       }
-    }).catch(errorHandler);
-    return () => {
-      BleScanner.stop().catch(errorHandler);
-    };
-  }, [errorHandler]);
+    }, [errorHandler, dfuTarget])
+  );
   // Process scan events in batches
   React.useEffect(() => {
     const id = setInterval(
@@ -230,7 +238,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
             </Button>
           </FastHStack>
         </FastVStack>
-      ) : dfuState ? (
+      ) : dfuState && !isDfuDone(dfuState) ? (
         // DFU
         <FastVStack gap={10} alignItems="center" justifyContent="center">
           <Text variant="bodyLarge">Selected Peripheral:</Text>

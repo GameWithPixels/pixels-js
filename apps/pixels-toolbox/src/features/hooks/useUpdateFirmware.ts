@@ -37,6 +37,7 @@ export function useUpdateFirmware(): [
       isBootloaderMacAddress?: boolean
     ): void => {
       setLastError(undefined);
+      setDfuProgress(0);
       updateFirmware(
         target,
         bootloaderPath,
@@ -44,12 +45,7 @@ export function useUpdateFirmware(): [
         setDfuState,
         setDfuProgress,
         isBootloaderMacAddress
-      )
-        .catch(setLastError)
-        .finally(() => {
-          setDfuState(undefined);
-          setDfuProgress(0);
-        });
+      ).catch(setLastError);
     },
     []
   );

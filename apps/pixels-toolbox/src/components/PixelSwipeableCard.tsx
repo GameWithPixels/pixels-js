@@ -26,6 +26,7 @@ import {
 import { PixelInfoCard, PixelInfoCardProps } from "./PixelInfoCard";
 import { ProgressBar } from "./ProgressBar";
 
+import { isDfuDone } from "~/features/dfu/updateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import gs from "~/styles";
 
@@ -131,14 +132,13 @@ function PixelCard({
   const [dfuQueued, setDfuQueued] = React.useState(
     pixelDispatcher.hasQueuedDFU
   );
-  const [dfuState, setDfuState] = React.useState<DfuState>("completed");
+  const [dfuState, setDfuState] = React.useState<DfuState>();
   const [dfuProgress, setDfuProgress] = React.useState<number>(0);
 
   // Reset DFU state and progress when aborted or completed
   React.useEffect(() => {
-    if (dfuState === "aborted") {
-      setDfuState("completed");
-    } else if (dfuState === "completed") {
+    if (dfuState && isDfuDone(dfuState)) {
+      setDfuState(undefined);
       setDfuProgress(0);
     }
   }, [dfuState]);
@@ -226,7 +226,7 @@ function PixelCard({
                   <ProgressBar percent={dfuProgress} />
                 </View>
               ) : (
-                <Text style={gs.italic}>{t(dfuState)}</Text>
+                dfuState && <Text style={gs.italic}>{t(dfuState)}</Text>
               )}
             </FastHStack>
           ) : profileUpload ? (

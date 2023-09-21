@@ -174,6 +174,7 @@ i18n
           uploading: "uploading",
           completed: "completed",
           aborted: "aborted",
+          errored: "errored",
 
           // Validation Screen
           factoryValidation: "Factory Validation",
@@ -374,6 +375,7 @@ i18n
           uploading: "上传中",
           completed: "完成",
           aborted: "中断",
+          errored: "errored",
 
           // Validation Screen
           factoryValidation: "工厂测试",

@@ -16,6 +16,12 @@ function idToString(targetId: DfuTargetId): string {
     : `{${targetId}}`;
 }
 
+export function isDfuDone(dfuState: DfuState): boolean {
+  return (
+    dfuState === "completed" || dfuState === "aborted" || dfuState === "errored"
+  );
+}
+
 export type DfuTarget =
   | DfuTargetId
   | Pick<ScannedPixel, "systemId" | "address">;
@@ -41,14 +47,17 @@ export async function updateFirmware(
   // Prepare DFU options
   const dfuCount = (hasBootloader ? 1 : 0) + (hasFirmware ? 1 : 0);
   let pendingDfuCount = dfuCount;
+  let abort = false;
   const dfuOptions = {
-    retries: 3,
     dfuStateListener: ({ state }: DfuStateEvent) => {
       const index = dfuCount - pendingDfuCount;
       console.log(`DFU state changed: ${state} (${index} of ${dfuCount})`);
+      if (state === "aborted") {
+        abort = true;
+      }
       if (
-        (state !== "completed" && state !== "aborted") ||
-        pendingDfuCount <= 0
+        state !== "errored" && // Error state is set on catching the actual error
+        (state !== "completed" || pendingDfuCount <= 0)
       ) {
         setDfuState?.(state);
       }
@@ -84,13 +93,14 @@ export async function updateFirmware(
         }
       } else {
         console.log(`DFU bootloader error: ${error}`);
+        setDfuState?.("errored");
         throw error;
       }
     }
   }
 
   // Update firmware
-  if (hasFirmware) {
+  if (hasFirmware && !abort) {
     const update = async (allowRetry = true) => {
       try {
         // After attempting to update the bootloader, device stays in bootloader mode
@@ -120,6 +130,7 @@ export async function updateFirmware(
           await update(false);
         } else {
           console.log(`DFU firmware error: ${error}`);
+          setDfuState?.("errored");
           throw error;
         }
       }
