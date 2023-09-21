@@ -11,6 +11,7 @@ export interface TaskChainComponentProps extends React.PropsWithChildren {
 }
 
 export function TaskChainComponent({
+  children,
   title,
   taskChain,
 }: TaskChainComponentProps) {
@@ -29,6 +30,7 @@ export function TaskChainComponent({
             taskStatus !== "succeeded" && taskChain.render()
           )}
         </TaskContainer>
+        {children}
       </Card.Content>
     </Card>
   );
