@@ -370,7 +370,7 @@ export class IAmADie implements PixelMessage {
 
   /** Die look. */
   @serializable(1)
-  designAndColor = PixelColorwayValues.unknown;
+  colorway = PixelColorwayValues.unknown;
 
   /** Type of die. */
   @serializable(1)
@@ -1051,9 +1051,13 @@ export class SetDesignAndColor implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.setDesignAndColor;
 
+  /** A value from the {@link PixelDieType} enumeration.*/
+  @serializable(1)
+  dieType: number = 0;
+
   /** A value from the {@link PixelColorwayValues} enumeration.*/
   @serializable(1)
-  designAndColor: number = 0;
+  colorway: number = 0;
 }
 
 /**

@@ -243,8 +243,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /** Gets the design and color of the Pixel. */
-  get designAndColor(): PixelColorway {
-    return this._info.designAndColor;
+  get colorway(): PixelColorway {
+    return this._info.colorway;
   }
 
   /** Gets the die type of the Pixel. */
@@ -315,7 +315,7 @@ export class Pixel extends PixelInfoNotifier {
       pixelId: info?.pixelId ?? 0,
       name: info?.name ?? "",
       ledCount: info?.ledCount ?? 0,
-      designAndColor: info?.designAndColor ?? "unknown",
+      colorway: info?.colorway ?? "unknown",
       dieType: info?.dieType ?? "unknown",
       firmwareDate: info?.firmwareDate ?? new Date(),
       rssi: info?.rssi ?? 0,
@@ -1070,8 +1070,8 @@ export class Pixel extends PixelInfoNotifier {
 
     // Update properties
     this._info.ledCount = iAmADie.ledCount;
-    this._info.designAndColor =
-      getValueKeyName(iAmADie.designAndColor, PixelColorwayValues) ?? "unknown";
+    this._info.colorway =
+      getValueKeyName(iAmADie.colorway, PixelColorwayValues) ?? "unknown";
     this._info.pixelId = iAmADie.pixelId;
     this._updateFirmwareDate(new Date(1000 * iAmADie.buildTimestamp));
     this._updateBatteryInfo({

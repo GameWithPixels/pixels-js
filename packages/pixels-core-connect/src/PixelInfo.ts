@@ -17,8 +17,8 @@ export interface PixelInfo {
   /** The number of LEDs of the Pixel. */
   readonly ledCount: number;
 
-  /** The Pixel design and color. */
-  readonly designAndColor: PixelColorway;
+  /** The die color. */
+  readonly colorway: PixelColorway;
 
   /** The type of die. */
   readonly dieType: PixelDieType;

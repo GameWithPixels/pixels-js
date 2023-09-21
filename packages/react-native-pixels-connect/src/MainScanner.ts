@@ -1,4 +1,5 @@
 import {
+  PixelDieTypeValues,
   PixelColorwayValues,
   PixelRollStateValues,
   PixelBleUuids,
@@ -20,7 +21,7 @@ import ScannedPixelsRegistry from "./ScannedPixelsRegistry";
 import SequentialDataReader from "./SequentialDataReader";
 
 // Try to get die type from number of LEDs
-function _getDieType(ledCount: number): PixelDieType {
+function estimateDieType(ledCount: number): PixelDieType {
   // For now we infer the die type from the number of LEDs, but eventually
   // that value will be part of identification data.
   switch (ledCount) {
@@ -43,7 +44,7 @@ function _getDieType(ledCount: number): PixelDieType {
   }
 }
 
-function _getFace(faceIndex: number, ledCount: number): number {
+function getFace(faceIndex: number, ledCount: number): number {
   return faceIndex + (ledCount === 10 ? 0 : 1);
 }
 
@@ -81,7 +82,8 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
     // The values we want to read
     let pixelId: number;
     let ledCount: number;
-    let designAndColorValue: number;
+    let colorwayValue: number;
+    let dieTypeValue: number;
     let firmwareDate: Date;
     let batteryLevel: number;
     let isCharging = false;
@@ -107,9 +109,11 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       firmwareDate = new Date(1000 * serviceReader.readU32());
 
       ledCount = manufReader.readU8();
-      designAndColorValue = manufReader.readU8();
+      const designAndColor = manufReader.readU8();
+      colorwayValue = designAndColor & 0xf;
+      dieTypeValue = (designAndColor >> 4) & 0xf;
       rollStateValue = manufReader.readU8();
-      currentFace = _getFace(manufReader.readU8(), ledCount);
+      currentFace = getFace(manufReader.readU8(), ledCount);
       const battery = manufReader.readU8();
       // MSB is battery charging
       batteryLevel = battery & 0x7f;
@@ -119,14 +123,14 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       // Update the Scanned Pixel with values from manufacturers data
       // as advertised from before July 2022
       const companyId = manufacturerData.companyId ?? 0;
-      // eslint-disable-next-line no-bitwise
       ledCount = (companyId >> 8) & 0xff;
-      // eslint-disable-next-line no-bitwise
-      designAndColorValue = companyId & 0xff;
+      const _designAndColor = companyId & 0xff; // Not compatible anymore
+      colorwayValue = 0;
+      dieTypeValue = PixelDieTypeValues.unknown;
 
       pixelId = manufReader.readU32();
       rollStateValue = manufReader.readU8();
-      currentFace = _getFace(manufReader.readU8(), ledCount);
+      currentFace = getFace(manufReader.readU8(), ledCount);
       batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
 
       firmwareDate = new Date();
@@ -134,8 +138,11 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
 
     if (pixelId) {
       const systemId = ev.peripheral.systemId;
-      const designAndColor =
-        getValueKeyName(designAndColorValue, PixelColorwayValues) ?? "unknown";
+      const colorway =
+        getValueKeyName(colorwayValue, PixelColorwayValues) ?? "unknown";
+      const dieType = dieTypeValue
+        ? getValueKeyName(dieTypeValue, PixelDieTypeValues) ?? "unknown"
+        : estimateDieType(ledCount);
       const rollState =
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
       const scannedPixel = {
@@ -144,8 +151,8 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
         address: ev.peripheral.address,
         name: ev.peripheral.name,
         ledCount,
-        designAndColor,
-        dieType: _getDieType(ledCount),
+        colorway,
+        dieType,
         firmwareDate,
         rssi: advData.rssi,
         batteryLevel,

@@ -41,7 +41,7 @@ export abstract class PixelInfoNotifier<
   abstract get pixelId(): number;
   abstract get name(): string;
   abstract get ledCount(): number;
-  abstract get designAndColor(): PixelColorway;
+  abstract get colorway(): PixelColorway;
   abstract get dieType(): PixelDieType;
   abstract get firmwareDate(): Date;
   abstract get rssi(): number;

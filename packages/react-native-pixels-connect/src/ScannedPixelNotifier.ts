@@ -44,8 +44,8 @@ export class ScannedPixelNotifier<
   get ledCount(): number {
     return this._data.ledCount;
   }
-  get designAndColor(): PixelColorway {
-    return this._data.designAndColor;
+  get colorway(): PixelColorway {
+    return this._data.colorway;
   }
   get dieType(): PixelDieType {
     return this._data.dieType;

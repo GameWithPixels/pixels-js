@@ -292,7 +292,7 @@ export class PixelScanner {
       pixelId: index,
       name: "Pixel" + index,
       ledCount: 20,
-      designAndColor:
+      colorway:
         getValueKeyName(
           1 + (index % PixelScanner._maxDesignAndColor),
           PixelColorwayValues
