@@ -6,13 +6,13 @@ import { getDeviceId } from "../pixels/getDeviceId";
 import {
   ProductIds,
   loadCertificationIds,
-} from "~/features/stickers/loadCertificationIds";
-import { readStickerHtmlAsync } from "~/features/stickers/readStickerHtmlAsync";
+} from "~/features/labels/loadCertificationIds";
+import { readLabelHtmlAsync } from "~/features/labels/readLabelHtmlAsync";
 
 let _getProductIds: ((name: string) => ProductIds | undefined) | undefined;
 
 /**
- * Print customized sticker for a given Pixels die.
+ * Print customized label for a given Pixels die.
  *
  * Print configuration:
  * Using "Diagnostic Tools" click on "Factory Default" and then "Calibrate Sensor".
@@ -23,7 +23,7 @@ let _getProductIds: ((name: string) => ProductIds | undefined) | undefined;
  * @param statusCallback An optional callback called with the printing status.
  * @returns A promise resolving when the data has been send to the printer.
  */
-export async function printStickerAsync(
+export async function printLabelAsync(
   pixel: Pixel,
   statusCallback?: (status: "preparing" | "sending" | "done") => void
 ): Promise<void> {
@@ -38,7 +38,7 @@ export async function printStickerAsync(
   //  `${pixel.dieType} ${pixel.designAndColor.split(/(?=[A-Z])/).join(" ")}`
   const product = _getProductIds(showProductName);
   if (product) {
-    const html = await readStickerHtmlAsync({
+    const html = await readLabelHtmlAsync({
       ...product,
       deviceId: getDeviceId(pixel),
       deviceName: pixel.name,

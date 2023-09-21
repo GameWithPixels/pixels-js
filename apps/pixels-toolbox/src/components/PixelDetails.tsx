@@ -46,12 +46,12 @@ import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import { useAppBackgroundState } from "~/features/hooks/useAppBackgroundState";
+import { printLabelAsync } from "~/features/labels/printLabelAsync";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { range } from "~/features/range";
 import { shareFileAsync } from "~/features/shareFileAsync";
-import { printStickerAsync } from "~/features/stickers/printStickerAsync";
 import { capitalize } from "~/i18n";
 import gs, { useModalStyle } from "~/styles";
 
@@ -388,13 +388,13 @@ function BottomButtons({
             onPress={() => {
               setPrintStatus("");
               onOpenPrint();
-              printStickerAsync(pd.pixel, (status) => {
+              printLabelAsync(pd.pixel, (status) => {
                 switch (status) {
                   case "preparing":
-                    setPrintStatus("Preparing sticker...");
+                    setPrintStatus("Preparing label...");
                     break;
                   case "sending":
-                    setPrintStatus("Sending sticker to printer...");
+                    setPrintStatus("Sending label to printer...");
                     break;
                   case "done":
                     setPrintStatus("Printing successful!");
@@ -409,7 +409,7 @@ function BottomButtons({
               });
             }}
           >
-            {t("printSticker")}
+            {t("printLabel")}
           </Button>
         </FastVStack>
         <FastVStack gap={4}>
@@ -536,12 +536,16 @@ function PrintModal({
     <Portal>
       <Modal contentContainerStyle={modalStyle} dismissable={false} {...props}>
         <FastVStack gap={10}>
-          <Title>Sticker Printing</Title>
+          <Title>{t("labelPrinting")}</Title>
           <Divider style={{ height: 2 }} />
           <Text style={gs.center} variant="bodyLarge">
             {}
           </Text>
-          <Text>{`Status: ${status}`}</Text>
+          <Text>
+            {t("status")}
+            {t("colonSeparator")}
+            {status}
+          </Text>
           {showClose && <Button onPress={props.onDismiss}>{t("close")}</Button>}
         </FastVStack>
       </Modal>

@@ -1,24 +1,24 @@
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 
-// By default the sticker HTML is loaded from the same zip file that contain's the page
-// other resources.
+// By default the HTML for the label is loaded from the same zip file that contain's
+// the page other resources.
 // However to speed up testing, when running the app in dev with Metro, it is possible
 // to work on the HTML file directly by specifying it's path in the import just below.
 // Uncomment the line and the piece of code using it.
-// import htmlModule from "!/stickers/sticker.html";
+// import htmlModule from "!/labels/index.html";
 
 import { ProductIds } from "./loadCertificationIds";
 
-import stickerZip from "!/stickers/single-die-sticker.zip";
+import labelHtmlZip from "!/labels/single-die-label.zip";
 import Pathname from "~/features/files/Pathname";
 import { unzipAssetAsync } from "~/features/files/unzipAssetAsync";
 
 /**
- * Read HTML from sticker file and embed resources.
+ * Read HTML from label ZIP file and embed resources into it.
  * Using https://lindell.me/JsBarcode/ for generating the barcode.
  */
-export async function readStickerHtmlAsync(
+export async function readLabelHtmlAsync(
   product: ProductIds & {
     deviceId: string;
     deviceName: string;
@@ -26,16 +26,14 @@ export async function readStickerHtmlAsync(
   }
 ): Promise<string> {
   if (!FileSystem.cacheDirectory) {
-    throw new Error("readStickerHtmlAsync: FileSystem.cacheDirectory is null");
+    throw new Error("readLabelHtmlAsync: FileSystem.cacheDirectory is null");
   }
 
   // Load zip file and unzip
-  console.log("Unzipping sticker asset");
-  const assets = await Asset.loadAsync(stickerZip);
+  console.log("Unzipping label files");
+  const assets = await Asset.loadAsync(labelHtmlZip);
   if (!assets[0]) {
-    throw new Error(
-      "readStickerHtmlAsync: No asset loaded for sticker zip file"
-    );
+    throw new Error("readLabelHtmlAsync: No asset loaded for label zip file");
   }
 
   // HTML contents
@@ -52,7 +50,7 @@ export async function readStickerHtmlAsync(
     // Get HTML file
     const htmlFile = files.find((f) => f.endsWith(".html"));
     if (!htmlFile) {
-      throw new Error("readStickerHtmlAsync: HTML file not found");
+      throw new Error("readLabelHtmlAsync: HTML file not found");
     }
 
     // And load it
@@ -62,7 +60,7 @@ export async function readStickerHtmlAsync(
     // const htmlAssets = await Asset.loadAsync(htmlModule);
     // const uri = htmlAssets[0].localUri;
     // if (!uri) {
-    //   throw new Error("readStickerHtmlAsync: no asset loaded for HTML file");
+    //   throw new Error("readLabelHtmlAsync: no asset loaded for HTML file");
     // }
     // html = await FileSystem.readAsStringAsync(uri);
 
@@ -90,7 +88,7 @@ export async function readStickerHtmlAsync(
     console.log("Inserting barcode");
     const parts = html.split("</body>");
     if (parts.length !== 2) {
-      throw new Error("readStickerHtmlAsync: end body tag not found");
+      throw new Error("readLabelHtmlAsync: end body tag not found");
     }
     html =
       parts[0] +
@@ -105,12 +103,12 @@ export async function readStickerHtmlAsync(
     // Insert barcode
     const barcodeIndex = html.indexOf('"barcode-00850055703353.gif"');
     if (barcodeIndex < 0) {
-      throw new Error("readStickerHtmlAsync: barcode image not found");
+      throw new Error("readLabelHtmlAsync: barcode image not found");
     }
     const barcodeStart = html.lastIndexOf("<img", barcodeIndex);
     const barcodeEnd = html.indexOf(">", barcodeIndex) + 1;
     if (barcodeStart < 0 || barcodeEnd <= 0) {
-      throw new Error("readStickerHtmlAsync: barcode image tag not found");
+      throw new Error("readLabelHtmlAsync: barcode image tag not found");
     }
     html =
       html.substring(0, barcodeStart) +

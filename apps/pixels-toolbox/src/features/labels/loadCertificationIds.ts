@@ -1,7 +1,7 @@
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 
-import stickerZip from "!/stickers/certification-ids.csv";
+import idsCsv from "!/labels/certification-ids.csv";
 
 export interface ProductIds {
   name: string;
@@ -17,7 +17,7 @@ export interface ProductIds {
 export async function loadCertificationIds(): Promise<
   (name: string) => ProductIds | undefined
 > {
-  const assets = await Asset.loadAsync(stickerZip);
+  const assets = await Asset.loadAsync(idsCsv);
   if (!assets[0]) {
     throw new Error("readCertificationIds: no asset loaded for CSV file");
   }
