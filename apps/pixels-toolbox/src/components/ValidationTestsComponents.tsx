@@ -15,6 +15,7 @@ import {
   PixelColorway,
   PixelColorwayValues,
   PixelDieType,
+  PixelDieTypeValues,
   PixelScanner,
   RollEvent,
   ScannedPixel,
@@ -566,7 +567,6 @@ export function ConnectPixel({
             `Incorrect die type, expected ${settings.dieType} but got ${pixel.ledCount} LEDs`
           );
         }
-        pixel._changeType(settings.dieType);
       }, [pixel, settings.dieType]),
       createTaskStatusContainer(t("checkDieType"))
     )
@@ -922,77 +922,104 @@ export function StoreSettings({
     React.useState<(keepSettings: boolean) => void>();
   const [resolveColorwayPromise, setResolveColorwayPromise] =
     React.useState<(colorway: PixelColorway) => void>();
+
+  const storeTimestamp = React.useCallback(
+    () =>
+      pixelStoreValue(
+        pixel,
+        PixelValueStoreType.ValidationTimestampStart +
+          getSequenceIndex(settings.sequence),
+        get24BitsTimestamp()
+      ),
+    [pixel, settings.sequence]
+  );
+  const storeDieType = React.useCallback(async () => {
+    if (pixel.dieType !== settings.dieType) {
+      const value = PixelDieTypeValues[settings.dieType];
+      assert(value);
+      await pixelStoreValue(pixel, PixelValueStoreType.DieType, value);
+    }
+  }, [pixel, settings.dieType]);
+
+  const onlyTimestamp = isBoard(settings.sequence);
   const taskChain = useTaskChain(
     action,
-    React.useCallback(
-      (abortSignal) =>
-        withTimeoutAndDisconnect(
-          abortSignal,
-          pixel,
-          async (abortSignal) => {
-            let keepSettings = false;
-            let colorway = pixel.designAndColor;
-            console.log(`Initial colorway: ${colorway}`);
-            if (colorway && colorway !== "unknown") {
-              keepSettings = await withPromise(
-                abortSignal,
-                "storeColorway",
-                (resolve) => setResolveConfirmPromise(() => resolve),
-                () => setResolveConfirmPromise(undefined)
-              );
-            }
-            if (!keepSettings) {
-              colorway = await withPromise(
-                abortSignal,
-                "storeColorway",
-                (resolve) => setResolveColorwayPromise(() => resolve),
-                () => setResolveColorwayPromise(undefined)
-              );
-              console.log(`Selected colorway: ${colorway}`);
-            }
-            if (colorway !== "unknown") {
-              console.log(`Storing colorway: ${colorway}`);
-              const value = PixelColorwayValues[colorway];
-              assert(value);
-              await pixelStoreValue(pixel, PixelValueStoreType.Colorway, value);
-            }
-          },
-          disconnectTimeout
-        ),
-      [pixel]
-    ),
-    createTaskStatusContainer({
-      children: (
-        <FastHStack gap={20}>
-          <ColorwayImage name={pixel.designAndColor} />
-          <MessageYesNo
-            justifyContent="center"
-            message={t("keepColorway")}
-            hideYesNo={!resolveConfirmPromise}
-            onYes={() => resolveConfirmPromise?.(true)}
-            onNo={() => resolveConfirmPromise?.(false)}
-          />
-          <RequestColorway
-            visible={!!resolveColorwayPromise}
-            onSelect={(c) => resolveColorwayPromise?.(c)}
-          />
-        </FastHStack>
-      ),
-    })
-  )
-    .chainWith(
-      React.useCallback(
-        () =>
-          pixelStoreValue(
-            pixel,
-            PixelValueStoreType.ValidationTimestampStart +
-              getSequenceIndex(settings.sequence),
-            get24BitsTimestamp()
-          ),
-        [pixel, settings.sequence]
-      ),
-      createTaskStatusContainer(t("writeTimestamp"))
+    onlyTimestamp ? storeTimestamp : storeDieType,
+    createTaskStatusContainer(
+      t(onlyTimestamp ? "storeTimestamp" : "storeDieType")
     )
+  );
+  if (!onlyTimestamp) {
+    taskChain
+      .chainWith(
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        React.useCallback(
+          (abortSignal) =>
+            withTimeoutAndDisconnect(
+              abortSignal,
+              pixel,
+              async (abortSignal) => {
+                let keepSettings = false;
+                let colorway = pixel.colorway;
+                console.log(`Initial colorway: ${colorway}`);
+                if (colorway && colorway !== "unknown") {
+                  keepSettings = await withPromise(
+                    abortSignal,
+                    "storeColorway",
+                    (resolve) => setResolveConfirmPromise(() => resolve),
+                    () => setResolveConfirmPromise(undefined)
+                  );
+                }
+                if (!keepSettings) {
+                  colorway = await withPromise(
+                    abortSignal,
+                    "storeColorway",
+                    (resolve) => setResolveColorwayPromise(() => resolve),
+                    () => setResolveColorwayPromise(undefined)
+                  );
+                  console.log(`Selected colorway: ${colorway}`);
+                }
+                if (colorway !== "unknown" && colorway !== pixel.colorway) {
+                  console.log(`Storing colorway: ${colorway}`);
+                  const value = PixelColorwayValues[colorway];
+                  assert(value);
+                  await pixelStoreValue(
+                    pixel,
+                    PixelValueStoreType.Colorway,
+                    value
+                  );
+                }
+              },
+              disconnectTimeout
+            ),
+          [pixel]
+        ),
+        createTaskStatusContainer({
+          title: t("storeColorway"),
+          children: (
+            <FastHStack gap={20}>
+              <ColorwayImage name={pixel.colorway} />
+              <MessageYesNo
+                justifyContent="center"
+                message={t("keepColorway")}
+                hideYesNo={!resolveConfirmPromise}
+                onYes={() => resolveConfirmPromise?.(true)}
+                onNo={() => resolveConfirmPromise?.(false)}
+              />
+              <RequestColorway
+                visible={!!resolveColorwayPromise}
+                onSelect={(c) => resolveColorwayPromise?.(c)}
+              />
+            </FastHStack>
+          ),
+        })
+      )
+      .chainWith(
+        storeTimestamp,
+        createTaskStatusContainer(t("storeTimestamp"))
+      );
+  }
+  taskChain
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 

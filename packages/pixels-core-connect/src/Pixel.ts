@@ -442,20 +442,6 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * /!\ Internal, don't call this function ;)
-   */
-  _changeType(dieType: PixelDieType): void {
-    // Allow manually setting type until the firmware correctly
-    // identifies all dice types
-    if (dieType !== this.dieType) {
-      this._info.dieType = dieType;
-      console.log(
-        `[${_getTime()} - ${this.name}] /!\\ Changing die type to ${dieType}`
-      );
-    }
-  }
-
-  /**
    * Asynchronously tries to connect to the die. Throws on connection error.
    * @param timeoutMs Delay before giving up (may be ignored when having concurrent
    *                  calls to connect()). It may take longer than the given timeout

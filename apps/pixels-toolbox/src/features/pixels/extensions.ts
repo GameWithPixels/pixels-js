@@ -166,7 +166,8 @@ export async function pixelClearSettings(pixel: Pixel): Promise<void> {
 
 /* List of codes for the store values' types. */
 export const PixelValueStoreType = {
-  Colorway: 1,
+  DieType: 1,
+  Colorway: 2,
   ValidationTimestampStart: 0xa0,
 } as const;
 
@@ -198,7 +199,7 @@ export async function pixelStoreValue(
   const valHex = "0x" + value.toString(16);
   log(
     pixel,
-    `Store value ${valHex} result: ${result} (${ack.result}), index: ${ack.index}`
+    `Store value ${valHex} of type ${valueType} => ${result} (${ack.result}), index: ${ack.index}`
   );
   return result;
 }
