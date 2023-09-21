@@ -127,8 +127,8 @@ export class PixelScanner {
   }
 
   /**
-   * A copy of the optionally ordered list of scanned Pixels since
-   * the last call to {@link PixelScanner.clear}.
+   * A copy of the list of scanned Pixels since the last call to {@link PixelScanner.clear}.
+   * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
    */
   get scannedPixels(): ScannedPixel[] {
     return [...this._pixels];

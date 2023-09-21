@@ -450,7 +450,7 @@ export class Pixel extends PixelInfoNotifier {
     if (dieType !== this.dieType) {
       this._info.dieType = dieType;
       console.log(
-        `[Pixel ${this.name}] !!! Changing die type to ${dieType} !!!`
+        `[${_getTime()} - ${this.name}] /!\\ Changing die type to ${dieType}`
       );
     }
   }
@@ -1035,11 +1035,9 @@ export class Pixel extends PixelInfoNotifier {
   private _log(msg: unknown): void {
     if (this._logFunc) {
       if ((msg as PixelMessage)?.type) {
-        this._logFunc(
-          `[${_getTime()} - Pixel ${this.name}] ${JSON.stringify(msg)}`
-        );
+        this._logFunc(`[${_getTime()} - ${this.name}] ${JSON.stringify(msg)}`);
       } else {
-        this._logFunc(`[${_getTime()} - Pixel ${this.name}] ${msg}`);
+        this._logFunc(`[${_getTime()} - ${this.name}] ${msg}`);
       }
     }
   }
@@ -1047,7 +1045,7 @@ export class Pixel extends PixelInfoNotifier {
   private _logArray(arr: ArrayBuffer) {
     if (this._logFunc) {
       this._logFunc(
-        `[${_getTime()} - Pixel ${this.name}] ${[...new Uint8Array(arr)]
+        `[${_getTime()} - ${this.name}] ${[...new Uint8Array(arr)]
           .map((b) => (b <= 0xf ? "0" + b.toString(16) : b.toString(16)))
           .join(":")}`
       );
@@ -1148,7 +1146,9 @@ export class Pixel extends PixelInfoNotifier {
       info.face = this._fixDieFace(info.face);
       if (info.face === undefined) {
         console.log(
-          `[Pixel ${this.name}] !!! Dropping ${this.dieType} roll event for face ${info.face} !!!`
+          `[${_getTime()} - ${this.name}] /!\\ Dropping ${
+            this.dieType
+          } roll event for face ${info.face}`
         );
         return;
       }
