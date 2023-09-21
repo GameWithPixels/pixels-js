@@ -11,6 +11,13 @@ import { readLabelHtmlAsync } from "~/features/labels/readLabelHtmlAsync";
 
 let _getProductIds: ((name: string) => ProductIds | undefined) | undefined;
 
+export class PrintError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PrintError";
+  }
+}
+
 export type PrintStatus = "preparing" | "sending" | "done";
 
 /**
@@ -53,10 +60,10 @@ export async function printLabelAsync(
       imageWidth: 940,
     });
     if (result !== "success") {
-      throw new Error("Print error: " + result);
+      throw new PrintError(result);
     }
     statusCallback?.("done");
   } else {
-    throw new Error(`Unknown product '${showProductName}'`);
+    throw new PrintError(`Unknown product '${showProductName}'`);
   }
 }

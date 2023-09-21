@@ -86,9 +86,9 @@ public class ZplPrintModule extends ReactContextBaseJavaModule {
                             try {
                                 BluetoothPrinter.print(printer, zplBytes);
                             } catch (IOException e) {
-                                result = "Print error";
+                                result = e.getMessage();
                             } catch (SecurityException e) {
-                                result = "Access error";
+                                result = e.getMessage();
                             }
                         } else {
                             result = "ZPL conversion failed";
