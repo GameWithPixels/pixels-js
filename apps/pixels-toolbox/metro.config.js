@@ -12,6 +12,7 @@ const config = getDefaultConfig(projectRoot);
 // Let Metro know we have assets with the following extensions
 config.resolver.assetExts.push("zip");
 config.resolver.assetExts.push("csv");
+config.resolver.assetExts.push("txt");
 
 // 1. Watch all files within the monorepo
 config.watchFolders = [workspaceRoot];

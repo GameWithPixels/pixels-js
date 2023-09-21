@@ -1032,10 +1032,7 @@ export function PrepareDie({
     })
   )
     .chainWith(
-      React.useCallback(
-        () => ValidationTests.renameDie(pixel, `Pixel ${settings.dieType}`),
-        [pixel, settings.dieType]
-      ),
+      React.useCallback(() => ValidationTests.renameDie(pixel), [pixel]),
       createTaskStatusContainer(t("setDieName"))
     )
     .chainWith(

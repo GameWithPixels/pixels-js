@@ -24,6 +24,7 @@ import {
   withTimeout,
   ValidationTestsTimeoutError,
 } from "./signalHelpers";
+import { getRandomDieNameAsync } from "../getRandomDieNameAsync";
 
 function vectNorm(x: number, y: number, z: number): number {
   return Math.sqrt(x * x + y * y + z * z);
@@ -345,8 +346,10 @@ export const ValidationTests = {
     }
   },
 
-  async renameDie(_pixel: Pixel, _name = "Pixel"): Promise<void> {
-    // TODO await pixel.rename(name);
+  async renameDie(pixel: Pixel, name?: string): Promise<void> {
+    const newName = name ?? (await getRandomDieNameAsync());
+    console.log("Setting die name to " + newName);
+    await pixel.rename(newName);
   },
 
   async exitValidationMode(pixel: Pixel): Promise<void> {
