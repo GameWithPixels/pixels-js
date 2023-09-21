@@ -29,14 +29,13 @@ import {
   TouchableRipple,
 } from "react-native-paper";
 
-import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
 import { ProgressBar } from "~/components/ProgressBar";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
-import { unzipDfuFilesFromAssets } from "~/features/dfu/unzip";
+import { unzipFactoryDfuFilesAsync } from "~/features/dfu/unzip";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
@@ -422,7 +421,7 @@ export function UpdateFirmware({
         }
         // Get the DFU files bundles from the zip file
         const dfuBundle = DfuFilesBundle.create({
-          pathnames: await unzipDfuFilesFromAssets(factoryDfuFiles),
+          pathnames: await unzipFactoryDfuFilesAsync(),
         });
         if (!dfuBundle.bootloader) {
           throw new TaskFaultedError(

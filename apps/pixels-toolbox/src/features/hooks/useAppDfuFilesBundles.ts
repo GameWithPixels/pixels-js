@@ -3,7 +3,7 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
-import { unzipEmbeddedDfuFiles as unzipAppDfuFiles } from "~/features/dfu/unzip";
+import { unzipEmbeddedDfuFilesAsync as unzipAppDfuFiles } from "~/features/dfu/unzip";
 import { resetEmbeddedDfuBundles } from "~/features/store/dfuBundlesSlice";
 
 export class NoDfuFileLoadedError extends Error {

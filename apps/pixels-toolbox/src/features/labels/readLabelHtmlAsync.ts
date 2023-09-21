@@ -1,4 +1,3 @@
-import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 
 // By default the HTML for the label is loaded from the same zip file that contain's
@@ -12,7 +11,8 @@ import { ProductIds } from "./loadCertificationIds";
 
 import labelHtmlZip from "!/labels/single-die-label.zip";
 import Pathname from "~/features/files/Pathname";
-import { unzipAssetAsync } from "~/features/files/unzipAssetAsync";
+import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
+import { unzipFileAsync } from "~/features/files/unzipFileAsync";
 
 /**
  * Read HTML from label ZIP file and embed resources into it.
@@ -29,12 +29,13 @@ export async function readLabelHtmlAsync(
     throw new Error("readLabelHtmlAsync: FileSystem.cacheDirectory is null");
   }
 
-  // Load zip file and unzip
   console.log("Unzipping label files");
-  const assets = await Asset.loadAsync(labelHtmlZip);
-  if (!assets[0]) {
-    throw new Error("readLabelHtmlAsync: No asset loaded for label zip file");
-  }
+
+  // Get file from asset
+  const info = await loadFileFromModuleAsync(
+    labelHtmlZip,
+    "readLabelHtmlAsync"
+  );
 
   // HTML contents
   let html = "";
@@ -42,7 +43,8 @@ export async function readLabelHtmlAsync(
   // Temporary directory for unzipping files
   const tempDir = await Pathname.generateTempPathnameAsync("/");
   try {
-    await unzipAssetAsync(assets[0], tempDir);
+    // Unzip
+    await unzipFileAsync(info.uri, tempDir);
 
     // Get list of files
     const files = await FileSystem.readDirectoryAsync(tempDir);

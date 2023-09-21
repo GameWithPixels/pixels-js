@@ -1,15 +1,16 @@
-import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
+
+import { loadFileFromModuleAsync } from "../files/loadFileFromModuleAsync";
 
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import otherDfuFiles from "!/dfu/other-dfu-files.zip";
 import Pathname from "~/features/files/Pathname";
-import { unzipAssetAsync } from "~/features/files/unzipAssetAsync";
+import { unzipFileAsync } from "~/features/files/unzipFileAsync";
 
 export const cacheDirectory = FileSystem.cacheDirectory + "unzippedDfuFiles/";
 
-export async function unzipDfuFiles(
-  asset: Asset,
+export async function unzipDfuFilesAsync(
+  localUri: string,
   opt?: { clearCache?: boolean }
 ): Promise<string[]> {
   // Delete cache directory
@@ -27,7 +28,7 @@ export async function unzipDfuFiles(
   // Unzip in temp folder so we can list the unzipped files
   const tempDir = await Pathname.generateTempPathnameAsync("/");
   try {
-    await unzipAssetAsync(asset, tempDir);
+    await unzipFileAsync(localUri, tempDir);
 
     // Get files pathnames and move them to final directory
     const files = await FileSystem.readDirectoryAsync(tempDir);
@@ -46,41 +47,34 @@ export async function unzipDfuFiles(
   }
 }
 
-export async function unzipDfuFilesFromAssets(
+async function unzipDfuFilesFromAssetsAsync(
   moduleId: string,
   opt?: { clearCache?: boolean }
 ): Promise<string[]> {
-  // Load assets for our zip files
-  const assets = await Asset.loadAsync(moduleId);
-  if (!assets.length) {
-    console.warn(
-      `unzipDfuFilesFromAssets: No asset loaded from module id ${moduleId} `
-    );
-  }
+  // Get file from module
+  const info = await loadFileFromModuleAsync(
+    moduleId,
+    "unzipDfuFilesFromAssets"
+  );
 
   // Unzip DFU files
-  const pathnames: string[] = [];
-  const clearCache = opt?.clearCache;
-  for (const asset of assets) {
-    const files = await unzipDfuFiles(asset, { clearCache });
-    // Update files list
-    for (const f of files) {
-      if (pathnames.indexOf(f) < 0) {
-        pathnames.push(f);
-      }
-    }
-  }
-  return pathnames;
+  return await unzipDfuFilesAsync(info.uri, { clearCache: opt?.clearCache });
 }
 
-export async function unzipEmbeddedDfuFiles(): Promise<{
+export async function unzipEmbeddedDfuFilesAsync(): Promise<{
   factory: string[];
   others: string[];
 }> {
-  // Factory files last so we're sure that its content isn't overwritten
-  const others = await unzipDfuFilesFromAssets(otherDfuFiles, {
+  const others = await unzipDfuFilesFromAssetsAsync(otherDfuFiles, {
     clearCache: true,
   });
-  const factory = await unzipDfuFilesFromAssets(factoryDfuFiles);
+  // Factory files last so we're sure that its content isn't overwritten
+  const factory = await unzipDfuFilesFromAssetsAsync(factoryDfuFiles);
   return { factory, others };
+}
+
+export async function unzipFactoryDfuFilesAsync(): Promise<string[]> {
+  return await unzipDfuFilesFromAssetsAsync(factoryDfuFiles, {
+    clearCache: true,
+  });
 }
