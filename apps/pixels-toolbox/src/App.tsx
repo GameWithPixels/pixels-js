@@ -5,6 +5,7 @@ import {
   DefaultTheme as NavDefaultTheme,
   NavigationContainer,
 } from "@react-navigation/native";
+import { FastVStack } from "@systemic-games/react-native-base-components";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
@@ -15,13 +16,15 @@ import {
   MD3DarkTheme,
   MD3LightTheme,
   Provider as PaperProvider,
+  Text,
 } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 import * as Sentry from "sentry-expo";
 
 import { useAppSelector } from "~/app/hooks";
-import { store } from "~/app/store";
+import { persistor, store } from "~/app/store";
 import { type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";
 import { FirmwareUpdateNavigator } from "~/screens/FirmwareUpdateNavigator";
@@ -91,41 +94,50 @@ function AppContent() {
   const { t } = useTranslation();
   return (
     <PaperProvider theme={theme}>
-      <NavigationContainer theme={theme}>
-        <Drawer.Navigator
-          initialRouteName={
-            store.getState().validationSettings.openOnStart
-              ? "Validation"
-              : undefined
-          }
-          screenOptions={{
-            headerTitleStyle: {
-              fontWeight: "bold",
-              fontSize: 26,
-            },
-            headerTitleAlign: "center",
-          }}
-        >
-          <Drawer.Screen
-            name="HomeNavigator"
-            component={HomeNavigator}
-            options={{ title: t("pixelsScanner") }}
-          />
-          <Drawer.Screen
-            name="Validation"
-            component={ValidationScreen}
-            options={{ title: t("factoryValidation") }}
-          />
-          <Drawer.Screen
-            name="FirmwareUpdateNavigator"
-            component={FirmwareUpdateNavigator}
-            options={{ title: t("firmwareUpdate") }}
-          />
-          <Drawer.Screen name="Roll" component={RollScreen} />
-          <Drawer.Screen name="Animations" component={AnimationsScreen} />
-          <Drawer.Screen name="Settings" component={SettingsScreen} />
-        </Drawer.Navigator>
-      </NavigationContainer>
+      <PersistGate
+        loading={
+          <FastVStack alignContent="center" justifyContent="center">
+            <Text>Loading...</Text>
+          </FastVStack>
+        }
+        persistor={persistor}
+      >
+        <NavigationContainer theme={theme}>
+          <Drawer.Navigator
+            initialRouteName={
+              store.getState().validationSettings.openOnStart
+                ? "Validation"
+                : undefined
+            }
+            screenOptions={{
+              headerTitleStyle: {
+                fontWeight: "bold",
+                fontSize: 26,
+              },
+              headerTitleAlign: "center",
+            }}
+          >
+            <Drawer.Screen
+              name="HomeNavigator"
+              component={HomeNavigator}
+              options={{ title: t("pixelsScanner") }}
+            />
+            <Drawer.Screen
+              name="Validation"
+              component={ValidationScreen}
+              options={{ title: t("factoryValidation") }}
+            />
+            <Drawer.Screen
+              name="FirmwareUpdateNavigator"
+              component={FirmwareUpdateNavigator}
+              options={{ title: t("firmwareUpdate") }}
+            />
+            <Drawer.Screen name="Roll" component={RollScreen} />
+            <Drawer.Screen name="Animations" component={AnimationsScreen} />
+            <Drawer.Screen name="Settings" component={SettingsScreen} />
+          </Drawer.Navigator>
+        </NavigationContainer>
+      </PersistGate>
     </PaperProvider>
   );
 }

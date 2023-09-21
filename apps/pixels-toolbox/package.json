@@ -34,6 +34,7 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/apps/pixels-toolbox",
   "dependencies": {
     "@expo/react-native-action-sheet": "^4.0.1",
+    "@react-native-async-storage/async-storage": "~1.19.3",
     "@react-native-community/slider": "4.4.2",
     "@react-navigation/drawer": "^6.6.3",
     "@react-navigation/native": "^6.1.7",
@@ -82,6 +83,7 @@
     "react-native-zip-archive": "^6.0.9",
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
+    "redux-persist": "^6.0.0",
     "reflect-metadata": "^0.1.13",
     "sentry-expo": "~6.2.0"
   },
