@@ -5,18 +5,19 @@ import {
   FastVStack,
 } from "@systemic-games/react-native-base-components";
 import {
+  DfuCommunicationError,
+  DfuState,
+} from "@systemic-games/react-native-nordic-nrf5-dfu";
+import {
   Central,
   Color,
   Pixel,
   PixelColorway,
   PixelColorwayValues,
-  PixelConnectError,
   PixelDieType,
   PixelScanner,
-  PixelScannerDispatchAction,
   RollEvent,
   ScannedPixel,
-  useScannedPixels,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
 import React from "react";
@@ -37,7 +38,7 @@ import { TaskChainComponent } from "~/components/TaskChainComponent";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { unzipFactoryDfuFilesAsync } from "~/features/dfu/unzip";
-import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
+import { updateFirmware } from "~/features/dfu/updateFirmware";
 import {
   PrintStatus,
   printLabelAsync,
@@ -331,7 +332,6 @@ async function scanForPixelWithTimeout(
     );
     return scannedPixel;
   } finally {
-    console.log("STOPPING SCAN");
     scanner.stop();
   }
 }
@@ -363,31 +363,11 @@ export function UpdateFirmware({
   const { t } = useTranslation();
 
   // Our Pixel
-  const [data, setData] = React.useState<{
-    pixel: Pixel;
-    scannedPixel: ScannedPixel;
-  }>();
+  const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
 
-  // Firmware update
-  const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
-    useUpdateFirmware();
-  const [resolveRejectDfuPromise, setResolveRejectDfuPromise] = React.useState<{
-    resolve: () => void;
-    reject: (error: Error) => void;
-  }>();
-  React.useEffect(() => {
-    if (resolveRejectDfuPromise) {
-      const { resolve, reject } = resolveRejectDfuPromise;
-      if (dfuLastError) {
-        reject(dfuLastError);
-      } else if (dfuState === "aborted") {
-        reject(new Error("Firmware update aborted"));
-      } else if (dfuState === "completed") {
-        onFirmwareUpdated?.();
-        resolve();
-      }
-    }
-  }, [dfuLastError, dfuState, onFirmwareUpdated, resolveRejectDfuPromise]);
+  // Firmware update state and progress
+  const [dfuState, setDfuState] = React.useState<DfuState>();
+  const [dfuProgress, setDfuProgress] = React.useState(0);
 
   const taskChain = useTaskChain(
     action,
@@ -398,11 +378,12 @@ export function UpdateFirmware({
           pixelId,
           abortSignal
         );
-        // We use a PixelDispatcher to get our Pixel instance so to enable message logging
-        const pixel = PixelDispatcher.getDispatcher(scannedPixel).pixel;
-        setData({ scannedPixel, pixel });
+        setScannedPixel(scannedPixel);
         // Notify parent
-        onPixelFound?.(pixel);
+        if (onPixelFound) {
+          // We use a PixelDispatcher to get our Pixel instance so to enable message logging
+          onPixelFound(PixelDispatcher.getDispatcher(scannedPixel).pixel);
+        }
       },
       [onPixelFound, pixelId]
     ),
@@ -411,11 +392,11 @@ export function UpdateFirmware({
     .chainWith(
       React.useCallback(
         async (abortSignal) => {
-          if (!data) {
+          if (!scannedPixel) {
             throw new TaskFaultedError("No scanned Pixel");
           }
           // Try to connect up to 3 times
-          const sysId = data.pixel.systemId;
+          const sysId = scannedPixel.systemId;
           await repeatConnect(
             () =>
               Central.connectPeripheral(sysId, {
@@ -425,17 +406,17 @@ export function UpdateFirmware({
             abortSignal
           );
         },
-        [data]
+        [scannedPixel]
       ),
       createTaskStatusContainer(t("connect"))
     )
     .chainWith(
       React.useCallback(async () => {
         // Get our Pixel and prepare for DFU
-        if (!data) {
+        if (!scannedPixel) {
           throw new TaskFaultedError("No scanned Pixel");
         }
-        const { pixel, scannedPixel: dfuTarget } = data;
+        const dfuTarget = scannedPixel;
         try {
           // Get the DFU files bundles from the zip file
           const dfuBundle = DfuFilesBundle.create({
@@ -465,23 +446,50 @@ export function UpdateFirmware({
             !areSameFirmwareDates(dfuBundle.date, dfuTarget.firmwareDate) &&
             dfuBundle.date > dfuTarget.firmwareDate
           ) {
-            const dfuPromise = new Promise<void>((resolve, reject) => {
-              setResolveRejectDfuPromise({ resolve, reject });
-            });
-            updateFirmware(
-              dfuTarget,
-              dfuBundle.bootloader.pathname,
-              dfuBundle.firmware.pathname
-            );
-            await dfuPromise;
+            // Prepare for updating firmware
+            const blPath = dfuBundle.bootloader.pathname;
+            const fwPath = dfuBundle.firmware.pathname;
+            const updateFW = async (blAddr?: number) => {
+              let dfuState: DfuState | undefined;
+              await updateFirmware(
+                blAddr ?? dfuTarget,
+                blPath,
+                fwPath,
+                (s) => {
+                  dfuState = s;
+                  setDfuState(s);
+                },
+                setDfuProgress,
+                !!blAddr
+              );
+              if (dfuState === "aborted") {
+                throw new Error("Firmware update aborted");
+              } else if (dfuState === "completed") {
+                onFirmwareUpdated?.();
+              }
+            };
+            // Update firmware
+            try {
+              await updateFW();
+            } catch (error) {
+              if (dfuTarget.address && error instanceof DfuCommunicationError) {
+                console.log("Error updating firmware, trying again...");
+                setDfuState(undefined);
+                setDfuProgress(0);
+                // Switch to bootloader address (only available on Android)
+                await updateFW(dfuTarget.address + 1);
+              } else {
+                throw error;
+              }
+            }
           } else {
             console.log("Skipping firmware update");
           }
         } finally {
           // Pixel is already disconnected if DFU has proceeded
-          await Central.disconnectPeripheral(pixel.systemId);
+          await Central.disconnectPeripheral(dfuTarget.systemId);
         }
-      }, [data, updateFirmware]),
+      }, [scannedPixel, onFirmwareUpdated]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
         children: (
