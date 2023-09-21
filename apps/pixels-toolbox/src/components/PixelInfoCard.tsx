@@ -114,8 +114,8 @@ function PixelMoreInfo(props: PixelAndTranslation) {
       <PixelFirmwareDate {...props} />
       <FastHStack mt={5} w="100%" justifyContent="space-around">
         <Text>{`🆔 ${pixIdHex}`}</Text>
-        <Text>{pixel.colorway !== "unknown" ? t(pixel.colorway) : ""}</Text>
         <Text>{`${pixel.ledCount}🚦`}</Text>
+        <Text>{pixel.colorway !== "unknown" ? t(pixel.colorway) : ""}</Text>
       </FastHStack>
     </>
   );

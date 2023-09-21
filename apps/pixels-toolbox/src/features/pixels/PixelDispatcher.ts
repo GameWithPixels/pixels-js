@@ -177,12 +177,16 @@ class PixelDispatcher extends ScannedPixelNotifier<
     return this._getPixelInfo().ledCount;
   }
 
-  get designAndColor(): PixelColorway {
-    return this._getPixelInfo().designAndColor;
+  get colorway(): PixelColorway {
+    return this._scannedPixel.colorway !== "unknown"
+      ? this._scannedPixel.colorway
+      : this._pixel.colorway;
   }
 
   get dieType(): PixelDieType {
-    return this._getPixelInfo().dieType;
+    return this._scannedPixel.dieType !== "unknown"
+      ? this._scannedPixel.dieType
+      : this._pixel.dieType;
   }
 
   get firmwareDate(): Date {

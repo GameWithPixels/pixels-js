@@ -93,8 +93,13 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
       <TextEntry title={t("pixelId")}>
         {pixel.pixelId.toString(16)}
         {t("commaSeparator")}
-        {t("leds") + t("colonSeparator")}
-        {pixel.ledCount}, {pixel.designAndColor}
+        {pixel.ledCount} {t("leds")}
+      </TextEntry>
+      <TextEntry title={t("characteristics")}>
+        {pixel.dieType === "unknown" ? t("unknownDieType") : t(pixel.dieType)}
+        {pixel.colorway === "unknown"
+          ? ""
+          : t("commaSeparator") + t(pixel.colorway)}
       </TextEntry>
       <TextEntry title={t("firmware")}>
         {pixel.firmwareDate.toString()}

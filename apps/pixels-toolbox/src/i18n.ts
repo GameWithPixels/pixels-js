@@ -143,9 +143,10 @@ i18n
           printLabel: "Print Label",
           reset: "Reset",
           full: "Full",
-          setFixedRainbowProfile: "Upload Static Hello",
           rename: "Rename",
+          setFixedRainbowProfile: "Upload Static Hello",
           setFixedRainbowProfileD4: "Upload Static D4",
+          unknownDieType: "Unknown Die Type",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -344,9 +345,10 @@ i18n
           printLabel: "Print Label",
           reset: "Reset",
           full: "Full",
-          setFixedRainbowProfile: "Upload Static Hello",
           rename: "重命名",
+          setFixedRainbowProfile: "Upload Static Hello",
           setFixedRainbowProfileD4: "Upload Static D4",
+          unknownDieType: "Unknown Die Type",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
