@@ -59,7 +59,9 @@ export type DfuState =
   /** The DFU process succeeded. */
   | "completed"
   /** The DFU process has been aborted by calling {@link abortDfu}. */
-  | "aborted";
+  | "aborted"
+  /** The DFU process encountered an error. */
+  | "errored";
 
 /**
  * Data structure for DFU state events,

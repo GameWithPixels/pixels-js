@@ -147,6 +147,22 @@ export async function startDfu(
   filePath: string,
   options?: StartDfuOptions
 ): Promise<void> {
+  // Wrappers for our listeners that catch errors
+  const notifyState = (ev: DfuStateEvent) => {
+    try {
+      options?.dfuStateListener?.(ev);
+    } catch (error) {
+      console.warn(`Got an error while notifying DFU state: ${error}`);
+    }
+  };
+  const notifyProgress = (ev: DfuProgressEvent) => {
+    try {
+      options?.dfuProgressListener?.(ev);
+    } catch (error) {
+      console.warn(`Got an error while notifying DFU state: ${error}`);
+    }
+  };
+
   // Subscribe to the DFU state event
   const stateSub = addDfuEventListener("state", (ev: DfuStateEvent) => {
     const identifier = ev.targetId;
@@ -155,7 +171,7 @@ export async function startDfu(
       // The Bluetooth address of the device when in DFU mode is the normal address + 1
       (typeof targetId === "number" && identifier === targetId + 1)
     ) {
-      options?.dfuStateListener?.(ev);
+      notifyState(ev);
     }
   });
 
@@ -169,13 +185,13 @@ export async function startDfu(
         // The Bluetooth address of the device when in DFU mode is the normal address + 1
         (typeof targetId === "number" && identifier === targetId + 1)
       ) {
-        options?.dfuProgressListener?.(ev);
+        notifyProgress(ev);
       }
     });
 
   // Start DFU
   try {
-    options?.dfuStateListener?.({
+    notifyState({
       targetId,
       state: "initializing",
     });
@@ -228,6 +244,10 @@ export async function startDfu(
       throw new Error("Platform not supported (not Android or iOS)");
     }
   } catch (error: any) {
+    notifyState({
+      targetId,
+      state: "errored",
+    });
     const msg = error.message;
     switch (msg) {
       case "DFU FILE NOT FOUND":

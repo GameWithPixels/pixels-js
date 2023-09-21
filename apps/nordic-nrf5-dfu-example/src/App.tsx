@@ -158,7 +158,11 @@ export default function App() {
           dfuStateListener: (ev: DfuStateEvent) => {
             console.log(`DFU state: ${idToString(ev.targetId)} => ${ev.state}`);
             setState(ev.state);
-            if (ev.state === "aborted" || ev.state === "completed") {
+            if (
+              ev.state === "completed" ||
+              ev.state === "aborted" ||
+              ev.state === "errored"
+            ) {
               setProgress(0);
               setQueuedDFUs((q) => q.filter((_, i) => i > 0));
               setCurrentDFU(undefined);
