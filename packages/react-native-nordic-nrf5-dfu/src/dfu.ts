@@ -1,7 +1,6 @@
 import { Platform } from "react-native";
 
 import {
-  DfuAbortedError,
   DfuDeviceNotSupportedError,
   DfuBusyError,
   DfuCommunicationError,
@@ -137,7 +136,9 @@ export interface StartDfuOptions {
  * @throw An object of type descendant from {@link DfuError}.
  *
  * @remarks
- * - The Bluetooth address of the device when in DFU mode is the normal address + 1
+ * - The function returns without error if DFU was aborted by calling {@link abortDfu}
+ *   and the state is updated to "aborted".
+ * - The Bluetooth address of the device when in DFU mode is the normal address + 1.
  * - The device address is passed as "number" as a 48 bits Bluetooth MAC address fits
  *   into the 52 bits mantissa of a JavaScript number (64 bits floating point).
  */
@@ -212,7 +213,7 @@ export async function startDfu(
         targetId,
         options?.deviceName,
         filePath,
-        options?.retries ?? 0,
+        options?.retries !== undefined ? options.retries : 2,
         options?.disableButtonlessServiceInSecureDfu ?? false,
         options?.forceDfu ?? false,
         options?.forceScanningForNewAddressInLegacyDfu ?? false,
@@ -251,8 +252,6 @@ export async function startDfu(
             throw new DfuInvalidArgumentError(targetId, msg);
           case "E_DFU_BUSY":
             throw new DfuBusyError(targetId, msg);
-          case "E_DFU_ABORTED":
-            throw new DfuAbortedError(targetId, msg);
           case "E_CONNECTION":
             throw new DfuConnectionError(targetId, msg);
           case "E_COMMUNICATION":

@@ -58,7 +58,7 @@ export type DfuState =
   | "disconnected"
   /** The DFU process succeeded. */
   | "completed"
-  /** The DFU process has been aborted. */
+  /** The DFU process has been aborted by calling {@link abortDfu}. */
   | "aborted";
 
 /**

@@ -250,13 +250,9 @@ RCT_EXPORT_METHOD(abortDfu)
                 @"state": [self stateToString:state],
             }];
         }
-        if (state == DFUStateCompleted && resolve)
+        if ((state == DFUStateCompleted || state == DFUStateAborted) && resolve)
         {
            resolve(nil);
-        }
-        if (state == DFUStateAborted && reject)
-        {
-            reject(@"E_DFU_ABORTED", @"DFU aborted", nil);
         }
     }
 }

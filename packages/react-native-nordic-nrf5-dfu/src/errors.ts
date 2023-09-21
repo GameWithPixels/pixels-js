@@ -41,14 +41,6 @@ export class DfuBusyError extends DfuError {
   }
 }
 
-/** DFU error thrown after when a DFU is aborted. */
-export class DfuAbortedError extends DfuError {
-  constructor(target: DfuTargetId, message?: string) {
-    super(target, message);
-    this.name = "DfuAbortedError";
-  }
-}
-
 /** Bluetooth connection error. */
 export class DfuConnectionError extends DfuError {
   constructor(target: DfuTargetId, message?: string) {

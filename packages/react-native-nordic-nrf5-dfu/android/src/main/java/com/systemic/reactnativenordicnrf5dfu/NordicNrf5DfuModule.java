@@ -35,7 +35,6 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
     private final static String E_INVALID_ARGUMENT = "E_INVALID_ARGUMENT";
     private final static String E_DFU_BUSY = "E_DFU_BUSY";
     private final static String E_DFU_ERROR = "E_DFU_ERROR";
-    private final static String E_DFU_ABORTED ="E_DFU_ABORTED";
     private final static String E_CONNECTION = "E_CONNECTION";
     private final static String E_COMMUNICATION = "E_COMMUNICATION";
     private final static String E_DFU_REMOTE = "E_DFU_REMOTE";
@@ -140,8 +139,9 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             init.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(!disableButtonlessServiceInSecureDfu);
             init.setForceDfu(forceDfu);
             init.setForceScanningForNewAddressInLegacyDfu(forceScanningForNewAddressInLegacyDfu);
-            init.setPrepareDataObjectDelay(prepareDataObjectDelay == 0 ? 400 : prepareDataObjectDelay); // Default is 0 but a good value is 400
-            init.setNumberOfRetries(numberOfRetries > 0 ? numberOfRetries : 2);
+            // Default is 0 but a good value is 400 according to Nordic docs
+            init.setPrepareDataObjectDelay(prepareDataObjectDelay == 0 ? 400 : prepareDataObjectDelay);
+            init.setNumberOfRetries(numberOfRetries);
             init.setRebootTime(rebootTime); //  Default is 0
             if (bootloaderScanTimeout > 0) {
                 init.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
@@ -281,7 +281,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             Promise promise = getPromiseAndSetDone();
             sendStateUpdate("aborted", deviceAddress);
             if (promise != null) {
-                promise.reject(E_DFU_ABORTED, "DFU ABORTED");
+                promise.resolve(null);
             }
         }
 
@@ -302,7 +302,6 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
                     break;
             }
             Promise promise = getPromiseAndSetDone();
-            sendStateUpdate("aborted", deviceAddress);
             if (promise != null) {
                 promise.reject(errorCode, message);
             }
