@@ -12,6 +12,7 @@ import {
   PixelColorwayValues,
   PixelConnectError,
   PixelDieType,
+  PixelScanner,
   PixelScannerDispatchAction,
   RollEvent,
   ScannedPixel,
@@ -215,7 +216,6 @@ function getFudgeFaceDesc(face: number): string {
 const connectTimeout = 5000; // Ms
 
 async function repeatConnect(
-  pixel: Pixel,
   connect: () => Promise<void | Pixel>,
   disconnect: () => Promise<void | Pixel>,
   abortSignal: AbortSignal
@@ -235,11 +235,9 @@ async function repeatConnect(
         break;
       } catch (error) {
         if (retries === 0) {
-          if (pixel) {
-            throw new PixelConnectError(pixel, error);
-          } else {
-            throw error;
-          }
+          throw new TaskFaultedError(
+            `Connection error, reset device and try again. ${error}`
+          );
         }
         --retries;
         if (!abortSignal.aborted) {
@@ -294,31 +292,47 @@ function MessageYesNo({
 
 async function scanForPixelWithTimeout(
   pixelId: number,
-  scannerDispatch: (action: PixelScannerDispatchAction) => void,
-  setResolveScanPromise: (setter: () => void) => void,
   abortSignal: AbortSignal,
   timeout = 10000 // 10s
-): Promise<void> {
+): Promise<ScannedPixel> {
   if (!pixelId) {
     throw new TaskFaultedError("Empty Pixel Id");
   }
-  scannerDispatch("start");
+
+  // Setup scanner
+  const scanner = new PixelScanner();
+  scanner.scanFilter = (pixel: ScannedPixel) => pixel.pixelId === pixelId;
+
+  // Wait until we find our Pixel or timeout
   try {
-    await withPromise<void>(abortSignal, "scan", (resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        reject(
-          new TaskFaultedError(
-            `Timeout scanning for Pixel with id ${pixelId.toString(16)}`
-          )
-        );
-      }, timeout);
-      setResolveScanPromise(() => () => {
-        clearTimeout(timeoutId);
-        resolve();
-      });
-    });
+    const scannedPixel = await withPromise<ScannedPixel>(
+      abortSignal,
+      "scan",
+      (resolve, reject) => {
+        // Setup timeout
+        const timeoutId = setTimeout(() => {
+          reject(
+            new TaskFaultedError(
+              `Timeout scanning for Pixel with id ${pixelId.toString(16)}`
+            )
+          );
+        }, timeout);
+        // Setup our scan listener
+        scanner.scanListener = () => {
+          const scannedPixel = scanner.scannedPixels[0];
+          if (scannedPixel) {
+            clearTimeout(timeoutId);
+            resolve(scannedPixel);
+          }
+        };
+        // Start scanning
+        scanner.start();
+      }
+    );
+    return scannedPixel;
   } finally {
-    scannerDispatch("stop");
+    console.log("STOPPING SCAN");
+    scanner.stop();
   }
 }
 
@@ -332,50 +346,27 @@ export interface ValidationTestProps extends TaskComponentProps {
   settings: ValidationTestsSettings;
 }
 
-interface ValidationTestScanProps extends Omit<ValidationTestProps, "pixel"> {
+interface UpdateFirmwareProps extends Omit<ValidationTestProps, "pixel"> {
   pixelId: number;
   onPixelFound?: (pixel: Pixel) => void;
   onFirmwareUpdated?: () => void;
 }
 
+// Note: Pixel should be disconnected by parent component
 export function UpdateFirmware({
   action,
   onTaskStatus,
   pixelId,
   onPixelFound,
   onFirmwareUpdated,
-}: ValidationTestScanProps) {
+}: UpdateFirmwareProps) {
   const { t } = useTranslation();
 
-  // BLE Scan
-  const scanFilter = React.useCallback(
-    (pixel: ScannedPixel) => pixel.pixelId === pixelId,
-    [pixelId]
-  );
-  const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
-  const [resolveScanPromise, setResolveScanPromise] =
-    React.useState<() => void>();
-  const pixelRef = React.useRef<Pixel>();
-  const scannedPixelRef = React.useRef<ScannedPixel>();
-  React.useEffect(() => {
-    if (scannedPixels[0] && resolveScanPromise) {
-      // Make sure that we have a PixelDispatcher instance so messages are logged
-      pixelRef.current = PixelDispatcher.getDispatcher(scannedPixels[0]).pixel;
-      scannedPixelRef.current = scannedPixels[0];
-      onPixelFound?.(pixelRef.current);
-      resolveScanPromise();
-    }
-  }, [onPixelFound, resolveScanPromise, scannedPixels]);
-
-  React.useEffect(() => {
-    return () => {
-      if (pixelRef.current) {
-        Central.disconnectPeripheral(pixelRef.current.systemId).catch((error) =>
-          console.log(`Error disconnecting: ${error}`)
-        );
-      }
-    };
-  }, []);
+  // Our Pixel
+  const [data, setData] = React.useState<{
+    pixel: Pixel;
+    scannedPixel: ScannedPixel;
+  }>();
 
   // Firmware update
   const [updateFirmware, dfuState, dfuProgress, dfuLastError] =
@@ -401,86 +392,96 @@ export function UpdateFirmware({
   const taskChain = useTaskChain(
     action,
     React.useCallback(
-      async (abortSignal) =>
-        await scanForPixelWithTimeout(
+      async (abortSignal) => {
+        // Start scanning for our Pixel
+        const scannedPixel = await scanForPixelWithTimeout(
           pixelId,
-          scannerDispatch,
-          setResolveScanPromise,
           abortSignal
-        ),
-      [pixelId, scannerDispatch]
+        );
+        // We use a PixelDispatcher to get our Pixel instance so to enable message logging
+        const pixel = PixelDispatcher.getDispatcher(scannedPixel).pixel;
+        setData({ scannedPixel, pixel });
+        // Notify parent
+        onPixelFound?.(pixel);
+      },
+      [onPixelFound, pixelId]
     ),
     createTaskStatusContainer(t("bluetoothScan"))
   )
     .chainWith(
-      React.useCallback(async (abortSignal) => {
-        // Get our Pixel and connect to it
-        const pixel = pixelRef.current;
-        if (!pixel) {
-          throw new TaskFaultedError("Empty scanned Pixel");
-        }
-        // Try to connect up to 3 times
-        await repeatConnect(
-          pixel,
-          () =>
-            Central.connectPeripheral(pixel.systemId, {
-              timeoutMs: connectTimeout,
-            }),
-          () => Central.disconnectPeripheral(pixel.systemId),
-          abortSignal
-        );
-      }, []),
+      React.useCallback(
+        async (abortSignal) => {
+          if (!data) {
+            throw new TaskFaultedError("No scanned Pixel");
+          }
+          // Try to connect up to 3 times
+          const sysId = data.pixel.systemId;
+          await repeatConnect(
+            () =>
+              Central.connectPeripheral(sysId, {
+                timeoutMs: connectTimeout,
+              }),
+            () => Central.disconnectPeripheral(sysId),
+            abortSignal
+          );
+        },
+        [data]
+      ),
       createTaskStatusContainer(t("connect"))
     )
     .chainWith(
       React.useCallback(async () => {
-        const pixel = pixelRef.current;
-        const dfuTarget = scannedPixelRef.current;
-        if (!pixel || !dfuTarget) {
+        // Get our Pixel and prepare for DFU
+        if (!data) {
           throw new TaskFaultedError("No scanned Pixel");
         }
-        // Get the DFU files bundles from the zip file
-        const dfuBundle = DfuFilesBundle.create({
-          pathnames: await unzipFactoryDfuFilesAsync(),
-        });
-        if (!dfuBundle.bootloader) {
-          throw new TaskFaultedError(
-            "DFU bootloader file not found or problematic"
-          );
-        }
-        if (!dfuBundle.firmware) {
-          throw new TaskFaultedError(
-            "DFU firmware file not found or problematic"
-          );
-        }
-        console.log(
-          "DFU files loaded, firmware/bootloader build date is",
-          toLocaleDateTimeString(dfuBundle.date)
-        );
-        // Use firmware date from scanned data as it is the most up-to-date
-        console.log(
-          "On device firmware build timestamp is",
-          toLocaleDateTimeString(dfuTarget.firmwareDate)
-        );
-        // Start DFU
-        if (
-          !areSameFirmwareDates(dfuBundle.date, dfuTarget.firmwareDate) &&
-          dfuBundle.date > dfuTarget.firmwareDate
-        ) {
-          const dfuPromise = new Promise<void>((resolve, reject) => {
-            setResolveRejectDfuPromise({ resolve, reject });
+        const { pixel, scannedPixel: dfuTarget } = data;
+        try {
+          // Get the DFU files bundles from the zip file
+          const dfuBundle = DfuFilesBundle.create({
+            pathnames: await unzipFactoryDfuFilesAsync(),
           });
-          updateFirmware(
-            dfuTarget,
-            dfuBundle.bootloader.pathname,
-            dfuBundle.firmware.pathname
+          if (!dfuBundle.bootloader) {
+            throw new TaskFaultedError(
+              "DFU bootloader file not found or problematic"
+            );
+          }
+          if (!dfuBundle.firmware) {
+            throw new TaskFaultedError(
+              "DFU firmware file not found or problematic"
+            );
+          }
+          console.log(
+            "DFU files loaded, firmware/bootloader build date is",
+            toLocaleDateTimeString(dfuBundle.date)
           );
-          await dfuPromise;
-        } else {
-          console.log("Skipping firmware update");
+          // Use firmware date from scanned data as it is the most up-to-date
+          console.log(
+            "On device firmware build timestamp is",
+            toLocaleDateTimeString(dfuTarget.firmwareDate)
+          );
+          // Start DFU
+          if (
+            !areSameFirmwareDates(dfuBundle.date, dfuTarget.firmwareDate) &&
+            dfuBundle.date > dfuTarget.firmwareDate
+          ) {
+            const dfuPromise = new Promise<void>((resolve, reject) => {
+              setResolveRejectDfuPromise({ resolve, reject });
+            });
+            updateFirmware(
+              dfuTarget,
+              dfuBundle.bootloader.pathname,
+              dfuBundle.firmware.pathname
+            );
+            await dfuPromise;
+          } else {
+            console.log("Skipping firmware update");
+          }
+        } finally {
+          // Pixel is already disconnected if DFU has proceeded
           await Central.disconnectPeripheral(pixel.systemId);
         }
-      }, [updateFirmware]),
+      }, [data, updateFirmware]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
         children: (
@@ -505,93 +506,85 @@ export function UpdateFirmware({
   );
 }
 
+interface ConnectPixelProps extends Omit<ValidationTestProps, "pixel"> {
+  pixelId: number;
+  onPixelFound?: (pixel: Pixel) => void;
+  pixel?: Pixel;
+}
+
+// Note: Pixel should be disconnected by parent component
 export function ConnectPixel({
   action,
   onTaskStatus,
+  pixel: givenPixel,
   pixelId,
   settings,
   onPixelFound,
-}: ValidationTestScanProps) {
+}: ConnectPixelProps) {
   const { t } = useTranslation();
 
-  // BLE Scan
-  const scanFilter = React.useCallback(
-    (pixel: ScannedPixel) => pixel.pixelId === pixelId,
-    [pixelId]
-  );
-  const [scannedPixels, scannerDispatch] = useScannedPixels({ scanFilter });
-  const [resolveScanPromise, setResolveScanPromise] =
-    React.useState<() => void>();
-  const pixelRef = React.useRef<Pixel>();
-  React.useEffect(() => {
-    if (scannedPixels[0] && resolveScanPromise) {
-      // Make sure that we have a PixelDispatcher instance so messages are logged
-      pixelRef.current = PixelDispatcher.getDispatcher(scannedPixels[0]).pixel;
-      onPixelFound?.(pixelRef.current);
-      resolveScanPromise();
-    }
-  }, [onPixelFound, resolveScanPromise, scannedPixels]);
-
-  // Pixel is disconnected by parent component
-  // React.useEffect(() => {
-  //   return () => {
-  //     pixelRef.current?.disconnect().catch(console.log);
-  //   };
-  // }, []);
+  // Our Pixel
+  const [pixel, setPixel] = React.useState(givenPixel);
 
   const taskChain = useTaskChain(
     action,
     React.useCallback(
-      async (abortSignal) =>
-        await scanForPixelWithTimeout(
-          pixelId,
-          scannerDispatch,
-          setResolveScanPromise,
-          abortSignal
-        ),
-      [pixelId, scannerDispatch]
+      async (abortSignal) => {
+        if (!pixel) {
+          // Start scanning for our Pixel
+          const scannedPixel = await scanForPixelWithTimeout(
+            pixelId,
+            abortSignal
+          );
+          // We use a PixelDispatcher to get our Pixel instance so to enable message logging
+          const pixel = PixelDispatcher.getDispatcher(scannedPixel).pixel;
+          setPixel(pixel); // TODO setting the Pixel changes the dependency list and restarts the task
+          // Notify parent
+          onPixelFound?.(pixel);
+        }
+      },
+      [onPixelFound, pixel, pixelId]
     ),
     createTaskStatusContainer(t("bluetoothScan"))
   )
     .chainWith(
       React.useCallback(async () => {
-        if (!pixelRef.current) {
-          throw new TaskFaultedError("Empty scanned Pixel");
+        // Get our Pixel and check LED count
+        if (!pixel) {
+          throw new TaskFaultedError("No scanned Pixel");
         }
-        const ledCount = pixelRef.current.ledCount;
-        if (ledCount !== getLEDCount(settings.dieType)) {
+        if (pixel.ledCount !== getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
-            `Incorrect die type, expected ${settings.dieType} but got ${ledCount} LEDs`
+            `Incorrect die type, expected ${settings.dieType} but got ${pixel.ledCount} LEDs`
           );
         }
-        pixelRef.current._changeType(settings.dieType);
-      }, [settings.dieType]),
+        pixel._changeType(settings.dieType);
+      }, [pixel, settings.dieType]),
       createTaskStatusContainer(t("checkDieType"))
     )
     .chainWith(
-      React.useCallback(async (abortSignal) => {
-        // Get our Pixel and connect to it
-        const pixel = pixelRef.current;
-        if (!pixel) {
-          throw new TaskFaultedError("Empty scanned Pixel");
-        }
-        await repeatConnect(
-          pixel,
-          () => pixel.connect(connectTimeout),
-          () => pixel.disconnect(),
-          abortSignal
-        );
-        // Make sure we don't have any animation playing
-        await pixelStopAllAnimations(pixel);
-      }, []),
+      React.useCallback(
+        async (abortSignal) => {
+          // Get our Pixel and connect to it
+          if (!pixel) {
+            throw new TaskFaultedError("No scanned Pixel");
+          }
+          await repeatConnect(
+            () => pixel.connect(connectTimeout),
+            () => pixel.disconnect(),
+            abortSignal
+          );
+          // Make sure we don't have any animation playing
+          await pixelStopAllAnimations(pixel);
+        },
+        [pixel]
+      ),
       createTaskStatusContainer(t("connect"))
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
-  return (
-    <TaskChainComponent title={t("scanAndConnect")} taskChain={taskChain} />
-  );
+  return <TaskChainComponent title={t("connect")} taskChain={taskChain} />;
 }
 
 interface ValidationTestCheckBoardProps extends ValidationTestProps {

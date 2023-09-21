@@ -440,6 +440,7 @@ function RunTestsPage({
       ...useTaskComponent("ConnectPixel", cancel, (p) => (
         <ConnectPixel
           {...p}
+          pixel={pixel}
           pixelId={pixelId}
           settings={settings}
           onPixelFound={setPixel}

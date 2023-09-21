@@ -45,9 +45,7 @@ export function useUpdateFirmware(): [
         setDfuProgress,
         isBootloaderMacAddress
       )
-        .catch((error) => {
-          setLastError(error);
-        })
+        .catch(setLastError)
         .finally(() => {
           setDfuState(undefined);
           setDfuProgress(0);
