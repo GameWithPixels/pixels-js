@@ -358,13 +358,13 @@ export const Central = {
     peripheral: PeripheralOrSystemId,
     opt?: {
       connectionStatusCallback?: (ev: PeripheralConnectionEvent) => void;
-      timeoutMs?: number;
+      timeout?: number; // In ms
     }
   ): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     const name = pInf.scannedPeripheral.name;
     const callback = opt?.connectionStatusCallback;
-    const timeoutMs = opt?.timeoutMs ?? 0;
+    const timeoutMs = opt?.timeout ?? 0;
 
     console.log(
       `[BLE ${name}] Connecting with ` +

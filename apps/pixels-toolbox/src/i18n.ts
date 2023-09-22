@@ -37,7 +37,6 @@ i18n
       en: {
         translation: {
           // General
-          internalError: "Internal error",
           ok: "Ok",
           cancel: "Cancel",
           close: "Close",
@@ -232,6 +231,8 @@ i18n
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
           isLabelPrinted: "Is label correctly printed?",
+          scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
+          connectionErrorTryAgain: "Connection error, reset device and try again.",
 
           // Roll Screen
           rollDemo: "Roll Demo",
@@ -242,7 +243,6 @@ i18n
       zh: {
         translation: {
           // General
-          internalError: "内部错误",
           ok: "正确",
           cancel: "取消",
           close: "关闭",
@@ -436,6 +436,8 @@ i18n
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
           isLabelPrinted: "Is label correctly printed?",
+          scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
+          connectionErrorTryAgain: "Connection error, reset device and try again.",
         },
       },
     },

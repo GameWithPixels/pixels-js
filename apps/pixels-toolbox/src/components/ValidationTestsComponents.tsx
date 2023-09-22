@@ -22,7 +22,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
 import React from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, TFunction } from "react-i18next";
 import { FlatList, Image } from "react-native";
 import {
   Button,
@@ -215,12 +215,11 @@ function getFudgeFaceDesc(face: number): string {
   }
 }
 
-const connectTimeout = 5000; // Ms
-
 async function repeatConnect(
-  connect: () => Promise<void | Pixel>,
-  disconnect: () => Promise<void | Pixel>,
-  abortSignal: AbortSignal
+  abortSignal: AbortSignal,
+  t: TFunction,
+  connect: (timeout: number) => Promise<void | Pixel>,
+  disconnect: () => Promise<void | Pixel>
 ) {
   const onAbort = () => {
     disconnect().catch((error) =>
@@ -229,16 +228,15 @@ async function repeatConnect(
   };
   abortSignal.addEventListener("abort", onAbort);
   try {
-    let retries = 2;
-
+    let retries = 1;
     while (!abortSignal.aborted)
       try {
-        await connect();
+        await connect(5000);
         break;
       } catch (error) {
         if (retries === 0) {
           throw new TaskFaultedError(
-            `Connection error, reset device and try again. ${error}`
+            t("connectionErrorTryAgain") + " " + String(error)
           );
         }
         --retries;
@@ -249,6 +247,50 @@ async function repeatConnect(
       }
   } finally {
     abortSignal.removeEventListener("abort", onAbort);
+  }
+}
+
+async function scanForPixelWithTimeout(
+  abortSignal: AbortSignal,
+  t: TFunction,
+  pixelId: number,
+  timeout = 10000 // 10s
+): Promise<ScannedPixel> {
+  if (!pixelId) {
+    throw new TaskFaultedError("Empty Pixel Id");
+  }
+
+  // Setup scanner
+  const scanner = new PixelScanner();
+  scanner.scanFilter = (pixel: ScannedPixel) => pixel.pixelId === pixelId;
+
+  // Wait until we find our Pixel or timeout
+  try {
+    const scannedPixel = await withPromise<ScannedPixel>(
+      abortSignal,
+      "scan",
+      (resolve, reject) => {
+        // Setup timeout
+        const timeoutId = setTimeout(
+          () => reject(new TaskFaultedError(t("scanTimeoutTryAgain"))),
+          timeout
+        );
+        // Setup our scan listener
+        scanner.scanListener = () => {
+          const scannedPixel = scanner.scannedPixels[0];
+          if (scannedPixel) {
+            clearTimeout(timeoutId);
+            resolve(scannedPixel);
+          }
+        };
+        // Start scanning
+        console.log(`Scanning for Pixel with id ${pixelId.toString(16)}`);
+        scanner.start();
+      }
+    );
+    return scannedPixel;
+  } finally {
+    scanner.stop();
   }
 }
 
@@ -292,51 +334,6 @@ function MessageYesNo({
   );
 }
 
-async function scanForPixelWithTimeout(
-  pixelId: number,
-  abortSignal: AbortSignal,
-  timeout = 10000 // 10s
-): Promise<ScannedPixel> {
-  if (!pixelId) {
-    throw new TaskFaultedError("Empty Pixel Id");
-  }
-
-  // Setup scanner
-  const scanner = new PixelScanner();
-  scanner.scanFilter = (pixel: ScannedPixel) => pixel.pixelId === pixelId;
-
-  // Wait until we find our Pixel or timeout
-  try {
-    const scannedPixel = await withPromise<ScannedPixel>(
-      abortSignal,
-      "scan",
-      (resolve, reject) => {
-        // Setup timeout
-        const timeoutId = setTimeout(() => {
-          reject(
-            new TaskFaultedError(
-              `Timeout scanning for Pixel with id ${pixelId.toString(16)}`
-            )
-          );
-        }, timeout);
-        // Setup our scan listener
-        scanner.scanListener = () => {
-          const scannedPixel = scanner.scannedPixels[0];
-          if (scannedPixel) {
-            clearTimeout(timeoutId);
-            resolve(scannedPixel);
-          }
-        };
-        // Start scanning
-        scanner.start();
-      }
-    );
-    return scannedPixel;
-  } finally {
-    scanner.stop();
-  }
-}
-
 export interface ValidationTestsSettings {
   sequence: ValidationSequence;
   dieType: PixelDieType;
@@ -376,8 +373,9 @@ export function UpdateFirmware({
       async (abortSignal) => {
         // Start scanning for our Pixel
         const scannedPixel = await scanForPixelWithTimeout(
-          pixelId,
-          abortSignal
+          abortSignal,
+          t,
+          pixelId
         );
         setScannedPixel(scannedPixel);
         // Notify parent
@@ -386,7 +384,7 @@ export function UpdateFirmware({
           onPixelFound(PixelDispatcher.getDispatcher(scannedPixel).pixel);
         }
       },
-      [onPixelFound, pixelId]
+      [onPixelFound, pixelId, t]
     ),
     createTaskStatusContainer(t("bluetoothScan"))
   )
@@ -399,15 +397,16 @@ export function UpdateFirmware({
           // Try to connect up to 3 times
           const sysId = scannedPixel.systemId;
           await repeatConnect(
-            () =>
+            abortSignal,
+            t,
+            (timeout) =>
               Central.connectPeripheral(sysId, {
-                timeoutMs: connectTimeout,
+                timeout,
               }),
-            () => Central.disconnectPeripheral(sysId),
-            abortSignal
+            () => Central.disconnectPeripheral(sysId)
           );
         },
-        [scannedPixel]
+        [scannedPixel, t]
       ),
       createTaskStatusContainer(t("connect"))
     )
@@ -542,8 +541,9 @@ export function ConnectPixel({
         if (!pixel) {
           // Start scanning for our Pixel
           const scannedPixel = await scanForPixelWithTimeout(
-            pixelId,
-            abortSignal
+            abortSignal,
+            t,
+            pixelId
           );
           // We use a PixelDispatcher to get our Pixel instance so to enable message logging
           const pixel = PixelDispatcher.getDispatcher(scannedPixel).pixel;
@@ -552,7 +552,7 @@ export function ConnectPixel({
           onPixelFound?.(pixel);
         }
       },
-      [onPixelFound, pixel, pixelId]
+      [onPixelFound, pixel, pixelId, t]
     ),
     createTaskStatusContainer(t("bluetoothScan"))
   )
@@ -578,14 +578,15 @@ export function ConnectPixel({
             throw new TaskFaultedError("No scanned Pixel");
           }
           await repeatConnect(
-            () => pixel.connect(connectTimeout),
-            () => pixel.disconnect(),
-            abortSignal
+            abortSignal,
+            t,
+            (timeout) => pixel.connect(timeout),
+            () => pixel.disconnect()
           );
           // Make sure we don't have any animation playing
           await pixelStopAllAnimations(pixel);
         },
-        [pixel]
+        [pixel, t]
       ),
       createTaskStatusContainer(t("connect"))
     )
