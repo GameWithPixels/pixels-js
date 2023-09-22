@@ -27,6 +27,7 @@ import { useAppSelector } from "~/app/hooks";
 import { persistor, store } from "~/app/store";
 import { type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";
+import { BatchScreen } from "~/screens/BatchScreen";
 import { FirmwareUpdateNavigator } from "~/screens/FirmwareUpdateNavigator";
 import { HomeNavigator } from "~/screens/HomeNavigator";
 import { RollScreen } from "~/screens/RollScreen";
@@ -134,6 +135,7 @@ function AppContent() {
             />
             <Drawer.Screen name="Roll" component={RollScreen} />
             <Drawer.Screen name="Animations" component={AnimationsScreen} />
+            <Drawer.Screen name="Batch" component={BatchScreen} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
           </Drawer.Navigator>
         </NavigationContainer>

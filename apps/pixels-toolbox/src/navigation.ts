@@ -9,6 +9,7 @@ export type RootScreensParamList = {
   TransferTest: undefined;
   Roll: undefined;
   Animations: undefined;
+  Batch: undefined;
   Settings: undefined;
 };
 

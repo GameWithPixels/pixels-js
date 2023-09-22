@@ -1161,7 +1161,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   // TODO Temporary - Fix face value for d4 and d00
-  _fixDieFace(face: number): number | undefined {
+  private _fixDieFace(face: number): number | undefined {
     switch (this.dieType) {
       case "d4":
         if (face === 1) return 1;
