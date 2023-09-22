@@ -367,28 +367,28 @@ export function UpdateFirmware({
   const [dfuState, setDfuState] = React.useState<DfuState>();
   const [dfuProgress, setDfuProgress] = React.useState(0);
 
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      async (abortSignal) => {
-        // Start scanning for our Pixel
-        const scannedPixel = await scanForPixelWithTimeout(
-          abortSignal,
-          t,
-          pixelId
-        );
-        setScannedPixel(scannedPixel);
-        // Notify parent
-        if (onPixelFound) {
-          // We use a PixelDispatcher to get our Pixel instance so to enable message logging
-          onPixelFound(PixelDispatcher.getDispatcher(scannedPixel).pixel);
-        }
-      },
-      [onPixelFound, pixelId, t]
-    ),
-    createTaskStatusContainer(t("bluetoothScan"))
-  )
-    .chainWith(
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          // Start scanning for our Pixel
+          const scannedPixel = await scanForPixelWithTimeout(
+            abortSignal,
+            t,
+            pixelId
+          );
+          setScannedPixel(scannedPixel);
+          // Notify parent
+          if (onPixelFound) {
+            // We use a PixelDispatcher to get our Pixel instance so to enable message logging
+            onPixelFound(PixelDispatcher.getDispatcher(scannedPixel).pixel);
+          }
+        },
+        [onPixelFound, pixelId, t]
+      ),
+      createTaskStatusContainer(t("bluetoothScan"))
+    )
+    .withTask(
       React.useCallback(
         async (abortSignal) => {
           if (!scannedPixel) {
@@ -410,7 +410,7 @@ export function UpdateFirmware({
       ),
       createTaskStatusContainer(t("connect"))
     )
-    .chainWith(
+    .withTask(
       React.useCallback(async () => {
         // Get our Pixel and prepare for DFU
         if (!scannedPixel) {
@@ -534,29 +534,29 @@ export function ConnectPixel({
   // Our Pixel
   const [pixel, setPixel] = React.useState(givenPixel);
 
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      async (abortSignal) => {
-        if (!pixel) {
-          // Start scanning for our Pixel
-          const scannedPixel = await scanForPixelWithTimeout(
-            abortSignal,
-            t,
-            pixelId
-          );
-          // We use a PixelDispatcher to get our Pixel instance so to enable message logging
-          const pixel = PixelDispatcher.getDispatcher(scannedPixel).pixel;
-          setPixel(pixel); // TODO setting the Pixel changes the dependency list and restarts the task
-          // Notify parent
-          onPixelFound?.(pixel);
-        }
-      },
-      [onPixelFound, pixel, pixelId, t]
-    ),
-    createTaskStatusContainer(t("bluetoothScan"))
-  )
-    .chainWith(
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          if (!pixel) {
+            // Start scanning for our Pixel
+            const scannedPixel = await scanForPixelWithTimeout(
+              abortSignal,
+              t,
+              pixelId
+            );
+            // We use a PixelDispatcher to get our Pixel instance so to enable message logging
+            const pixel = PixelDispatcher.getDispatcher(scannedPixel).pixel;
+            setPixel(pixel); // TODO setting the Pixel changes the dependency list and restarts the task
+            // Notify parent
+            onPixelFound?.(pixel);
+          }
+        },
+        [onPixelFound, pixel, pixelId, t]
+      ),
+      createTaskStatusContainer(t("bluetoothScan"))
+    )
+    .withTask(
       React.useCallback(async () => {
         // Get our Pixel and check LED count
         if (!pixel) {
@@ -570,7 +570,7 @@ export function ConnectPixel({
       }, [pixel, settings.dieType]),
       createTaskStatusContainer(t("checkDieType"))
     )
-    .chainWith(
+    .withTask(
       React.useCallback(
         async (abortSignal) => {
           // Get our Pixel and connect to it
@@ -609,36 +609,34 @@ export function CheckBoard({
 }: ValidationTestCheckBoardProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      () => ValidationTests.checkAccelerationValid(pixel),
-      [pixel]
-    ),
-    createTaskStatusContainer(t("accelerometer"))
-  ).chainWith(
-    React.useCallback(
-      () => ValidationTests.checkBatteryVoltage(pixel),
-      [pixel]
-    ),
-    createTaskStatusContainer(t("batteryVoltage"))
-  );
-  if (!isBoard(settings.sequence)) {
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        () => ValidationTests.checkAccelerationValid(pixel),
+        [pixel]
+      ),
+      createTaskStatusContainer(t("accelerometer"))
+    )
+    .withTask(
+      React.useCallback(
+        () => ValidationTests.checkBatteryVoltage(pixel),
+        [pixel]
+      ),
+      createTaskStatusContainer(t("batteryVoltage"))
+    )
+    .withTask(
       React.useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
-      createTaskStatusContainer(t("rssi"))
-    );
-  }
-  taskChain.chainWith(
-    React.useCallback(async () => {
-      if (firmwareUpdated) {
-        await pixelClearSettings(pixel);
-      }
-    }, [pixel, firmwareUpdated]),
-    createTaskStatusContainer(t("clearSettings"))
-  );
-  taskChain
+      createTaskStatusContainer(t("rssi")),
+      { skip: isBoard(settings.sequence) }
+    )
+    .withTask(
+      React.useCallback(async () => {
+        if (firmwareUpdated) {
+          await pixelClearSettings(pixel);
+        }
+      }, [pixel, firmwareUpdated]),
+      createTaskStatusContainer(t("clearSettings"))
+    )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
@@ -658,47 +656,47 @@ export function WaitCharging({
     vCoil: number;
   }>();
 
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      async (abortSignal) =>
-        ValidationTests.waitCharging(
-          pixel,
-          !notCharging,
-          notCharging ? Color.dimGreen : Color.dimOrange,
-          abortSignal,
-          setLastState
-        ),
-      [notCharging, pixel]
-    ),
-    createTaskStatusContainer({
-      children: (
-        <>
-          <Text variant="bodyLarge">
-            {t(
-              notCharging
-                ? "removeFromChargerWithCoilOrDie"
-                : "placeOnChargerWithCoilOrDie",
-              { coilOrDie: t(getCoilOrDie(settings)) }
-            )}
-          </Text>
-          {lastState && (
-            <Text variant="bodyLarge">
-              {t("chargingState")}
-              {t("colonSeparator")}
-              {lastState.state ?? ""}
-              {t("commaSeparator")}
-              {t("coil")}
-              {t("colonSeparator")}
-              {t("voltageWithValue", {
-                value: lastState.vCoil ?? 0,
-              })}
-            </Text>
-          )}
-        </>
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        async (abortSignal) =>
+          ValidationTests.waitCharging(
+            pixel,
+            !notCharging,
+            notCharging ? Color.dimGreen : Color.dimOrange,
+            abortSignal,
+            setLastState
+          ),
+        [notCharging, pixel]
       ),
-    })
-  )
+      createTaskStatusContainer({
+        children: (
+          <>
+            <Text variant="bodyLarge">
+              {t(
+                notCharging
+                  ? "removeFromChargerWithCoilOrDie"
+                  : "placeOnChargerWithCoilOrDie",
+                { coilOrDie: t(getCoilOrDie(settings)) }
+              )}
+            </Text>
+            {lastState && (
+              <Text variant="bodyLarge">
+                {t("chargingState")}
+                {t("colonSeparator")}
+                {lastState.state ?? ""}
+                {t("commaSeparator")}
+                {t("coil")}
+                {t("colonSeparator")}
+                {t("voltageWithValue", {
+                  value: lastState.vCoil ?? 0,
+                })}
+              </Text>
+            )}
+          </>
+        ),
+      })
+    )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
@@ -720,47 +718,50 @@ export function CheckLEDs({
 
   const [resolvePromise, setResolvePromise] = React.useState<() => void>();
   const [userAbort, setUserAbort] = React.useState<() => void>();
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      async (abortSignal) => {
-        const abortController = new AbortControllerWithReason();
-        setUserAbort(() => () => {
-          abortController.abortWithReason(new Error("Some LEDs are not white"));
-        });
-        const onAbort = () => {
-          abortController.abortWithReason(getSignalReason(abortSignal));
-        };
-        abortSignal.addEventListener("abort", onAbort);
-        try {
-          await ValidationTests.checkLEDsLitUp(
-            pixel,
-            isBoard(settings.sequence)
-              ? new Color(0.03, 0.03, 0.03)
-              : new Color(0.1, 0.1, 0.1),
-            (resolve) => setResolvePromise(() => resolve),
-            abortController.signal
-          );
-        } finally {
-          abortSignal.removeEventListener("abort", onAbort);
-        }
-      },
-      [pixel, settings.sequence]
-    ),
-    createTaskStatusContainer({
-      children: (
-        <MessageYesNo
-          message={t("areAllLEDsWhiteWithCount", {
-            count: getLEDCount(settings.dieType),
-          })}
-          hideYesNo={!resolvePromise}
-          onYes={() => resolvePromise?.()}
-          onNo={() => userAbort?.()}
-        />
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          const abortController = new AbortControllerWithReason();
+          setUserAbort(() => () => {
+            abortController.abortWithReason(
+              new Error("Some LEDs are not white")
+            );
+          });
+          const onAbort = () => {
+            abortController.abortWithReason(getSignalReason(abortSignal));
+          };
+          abortSignal.addEventListener("abort", onAbort);
+          try {
+            await ValidationTests.checkLEDsLitUp(
+              pixel,
+              isBoard(settings.sequence)
+                ? new Color(0.03, 0.03, 0.03)
+                : new Color(0.1, 0.1, 0.1),
+              (resolve) => setResolvePromise(() => resolve),
+              abortController.signal
+            );
+            playSoundOnResult("succeeded");
+          } finally {
+            abortSignal.removeEventListener("abort", onAbort);
+          }
+        },
+        [pixel, settings.sequence]
       ),
-    })
-  )
-    .withStatusChanged(playSoundOnResult)
+      createTaskStatusContainer({
+        children: (
+          <MessageYesNo
+            message={t("areAllLEDsWhiteWithCount", {
+              count: getLEDCount(settings.dieType),
+            })}
+            hideYesNo={!resolvePromise}
+            onYes={() => resolvePromise?.()}
+            onNo={() => userAbort?.()}
+          />
+        ),
+      })
+    )
+    .withStatusChanged()
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("checkLEDs")} taskChain={taskChain} />;
@@ -851,26 +852,26 @@ export function WaitFaceUp({
     </>
   );
 
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      (abortSignal) =>
-        ValidationTests.waitFaceUp(
-          pixel,
-          getFaceUp(pixel, "1"),
-          Color.dimMagenta,
-          abortSignal,
-          setRoll
-        ),
-      [pixel]
-    ),
-    createTaskStatusContainer({
-      title: t("placeBlinkingFaceUp"),
-      children: <FaceUpText />,
-    })
-  )
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          ValidationTests.waitFaceUp(
+            pixel,
+            getFaceUp(pixel, "1"),
+            Color.dimMagenta,
+            abortSignal,
+            setRoll
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        title: t("placeBlinkingFaceUp"),
+        children: <FaceUpText />,
+      })
+    )
     .withStatusChanged(playSoundOnResult)
-    .chainWith(
+    .withTask(
       React.useCallback(
         (abortSignal) =>
           ValidationTests.waitFaceUp(
@@ -888,7 +889,7 @@ export function WaitFaceUp({
       })
     )
     .withStatusChanged(playSoundOnResult)
-    .chainWith(
+    .withTask(
       React.useCallback(
         (abortSignal) =>
           ValidationTests.waitFaceUp(
@@ -943,84 +944,80 @@ export function StoreSettings({
   }, [pixel, settings.dieType]);
 
   const onlyTimestamp = isBoard(settings.sequence);
-  const taskChain = useTaskChain(
-    action,
-    onlyTimestamp ? storeTimestamp : storeDieType,
-    createTaskStatusContainer(
-      t(onlyTimestamp ? "storeTimestamp" : "storeDieType")
-    )
-  );
-  if (!onlyTimestamp) {
-    taskChain
-      .chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        React.useCallback(
-          (abortSignal) =>
-            withTimeoutAndDisconnect(
-              abortSignal,
-              pixel,
-              async (abortSignal) => {
-                let keepSettings = false;
-                let colorway = pixel.colorway;
-                console.log(`Initial colorway: ${colorway}`);
-                if (colorway && colorway !== "unknown") {
-                  keepSettings = await withPromise(
-                    abortSignal,
-                    "storeColorway",
-                    (resolve) => setResolveConfirmPromise(() => resolve),
-                    () => setResolveConfirmPromise(undefined)
-                  );
-                }
-                if (!keepSettings) {
-                  colorway = await withPromise(
-                    abortSignal,
-                    "storeColorway",
-                    (resolve) => setResolveColorwayPromise(() => resolve),
-                    () => setResolveColorwayPromise(undefined)
-                  );
-                  console.log(`Selected colorway: ${colorway}`);
-                }
-                if (colorway !== "unknown" && colorway !== pixel.colorway) {
-                  console.log(`Storing colorway: ${colorway}`);
-                  const value = PixelColorwayValues[colorway];
-                  assert(value);
-                  await pixelStoreValue(
-                    pixel,
-                    PixelValueStoreType.Colorway,
-                    value
-                  );
-                }
-              },
-              disconnectTimeout
-            ),
-          [pixel]
-        ),
-        createTaskStatusContainer({
-          title: t("storeColorway"),
-          children: (
-            <FastHStack gap={20}>
-              <ColorwayImage name={pixel.colorway} />
-              <MessageYesNo
-                justifyContent="center"
-                message={t("keepColorway")}
-                hideYesNo={!resolveConfirmPromise}
-                onYes={() => resolveConfirmPromise?.(true)}
-                onNo={() => resolveConfirmPromise?.(false)}
-              />
-              <RequestColorway
-                visible={!!resolveColorwayPromise}
-                onSelect={(c) => resolveColorwayPromise?.(c)}
-              />
-            </FastHStack>
-          ),
-        })
+  const taskChain = useTaskChain(action)
+    .withTask(
+      onlyTimestamp ? storeTimestamp : storeDieType,
+      createTaskStatusContainer(
+        t(onlyTimestamp ? "storeTimestamp" : "storeDieType")
       )
-      .chainWith(
-        storeTimestamp,
-        createTaskStatusContainer(t("storeTimestamp"))
-      );
-  }
-  taskChain
+    )
+    .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          withTimeoutAndDisconnect(
+            abortSignal,
+            pixel,
+            async (abortSignal) => {
+              let keepSettings = false;
+              let colorway = pixel.colorway;
+              console.log(`Initial colorway: ${colorway}`);
+              if (colorway && colorway !== "unknown") {
+                keepSettings = await withPromise(
+                  abortSignal,
+                  "storeColorway",
+                  (resolve) => setResolveConfirmPromise(() => resolve),
+                  () => setResolveConfirmPromise(undefined)
+                );
+              }
+              if (!keepSettings) {
+                console.log("Requesting colorway...");
+                colorway = await withPromise(
+                  abortSignal,
+                  "storeColorway",
+                  (resolve) => setResolveColorwayPromise(() => resolve),
+                  () => setResolveColorwayPromise(undefined)
+                );
+                console.log(`Selected colorway: ${colorway}`);
+              }
+              if (colorway !== "unknown" && colorway !== pixel.colorway) {
+                console.log(`Storing colorway: ${colorway}`);
+                const value = PixelColorwayValues[colorway];
+                assert(value);
+                await pixelStoreValue(
+                  pixel,
+                  PixelValueStoreType.Colorway,
+                  value
+                );
+              }
+            },
+            disconnectTimeout
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        title: t("storeColorway"),
+        children: (
+          <FastHStack gap={20}>
+            <ColorwayImage name={pixel.colorway} />
+            <MessageYesNo
+              justifyContent="center"
+              message={t("keepColorway")}
+              hideYesNo={!resolveConfirmPromise}
+              onYes={() => resolveConfirmPromise?.(true)}
+              onNo={() => resolveConfirmPromise?.(false)}
+            />
+            <RequestColorway
+              visible={!!resolveColorwayPromise}
+              onSelect={(c) => resolveColorwayPromise?.(c)}
+            />
+          </FastHStack>
+        ),
+      }),
+      { skip: onlyTimestamp }
+    )
+    .withTask(storeTimestamp, createTaskStatusContainer(t("storeTimestamp")), {
+      skip: onlyTimestamp,
+    })
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
@@ -1043,35 +1040,35 @@ export function PrepareDie({
   const { t } = useTranslation();
 
   const [progress, setProgress] = React.useState(-1);
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(async () => {
-      // Update profile
-      await ValidationTests.updateProfile(
-        pixel,
-        getDefaultProfile(settings.dieType),
-        setProgress
-      );
-      // Start printing ahead of time
-      printLabel(pixel, onPrintStatus);
-    }, [onPrintStatus, pixel, settings.dieType]),
-    createTaskStatusContainer({
-      title: t("updateProfile"),
-      children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
-    })
-  )
-    .chainWith(
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(async () => {
+        // Update profile
+        await ValidationTests.updateProfile(
+          pixel,
+          getDefaultProfile(settings.dieType),
+          setProgress
+        );
+        // Start printing ahead of time
+        printLabel(pixel, onPrintStatus);
+      }, [onPrintStatus, pixel, settings.dieType]),
+      createTaskStatusContainer({
+        title: t("updateProfile"),
+        children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
+      })
+    )
+    .withTask(
       React.useCallback(() => ValidationTests.renameDie(pixel), [pixel]),
       createTaskStatusContainer(t("setDieName"))
     )
-    .chainWith(
+    .withTask(
       React.useCallback(
         () => ValidationTests.exitValidationMode(pixel),
         [pixel]
       ),
       createTaskStatusContainer(t("exitValidationMode"))
     )
-    .chainWith(
+    .withTask(
       React.useCallback(
         (abortSignal) =>
           ValidationTests.waitDisconnected(
@@ -1097,19 +1094,19 @@ export function WaitDieInCase({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(
-      (abortSignal) =>
-        ValidationTests.waitDisconnected(pixel, Color.dimGreen, abortSignal),
-      [pixel]
-    ),
-    createTaskStatusContainer({
-      children: (
-        <Text variant="bodyLarge">{t("placeDieInCaseAndCloseLid")}</Text>
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          ValidationTests.waitDisconnected(pixel, Color.dimGreen, abortSignal),
+        [pixel]
       ),
-    })
-  )
+      createTaskStatusContainer({
+        children: (
+          <Text variant="bodyLarge">{t("placeDieInCaseAndCloseLid")}</Text>
+        ),
+      })
+    )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
@@ -1153,22 +1150,23 @@ export function LabelPrinting({
   const [reset, setReset] = React.useState(false);
   React.useEffect(() => setReset(false), [reset]);
 
-  const taskChain = useTaskChain(
-    reset ? "reset" : action,
-    React.useCallback(
-      (abortSignal) =>
-        withPromise<void>(
-          abortSignal,
-          "labelPrinting",
-          (resolve, reject) =>
-            setResolveRejectResultPromise({ resolve, reject }),
-          () => setResolveRejectResultPromise(undefined)
-        ),
-      []
-    ),
-    createTaskStatusContainer(t("waitingOnPrint"))
-  )
-    .chainWith(
+  const taskChain = useTaskChain(reset ? "reset" : action)
+    .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          withPromise<void>(
+            abortSignal,
+            "labelPrinting",
+            (resolve, reject) =>
+              setResolveRejectResultPromise({ resolve, reject }),
+            () => setResolveRejectResultPromise(undefined)
+          ),
+        []
+      ),
+      createTaskStatusContainer(t("waitingOnPrint"))
+    )
+    .withStatusChanged(playSoundOnResult)
+    .withTask(
       React.useCallback(
         async (abortSignal) => {
           const printOk = await withPromise<boolean>(
@@ -1212,12 +1210,12 @@ export function TurnOffDevice({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(() => pixel.turnOff(), [pixel]),
-    createTaskStatusContainer(t("turningOff"))
-  )
-    .chainWith(
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(() => pixel.turnOff(), [pixel]),
+      createTaskStatusContainer(t("turningOff"))
+    )
+    .withTask(
       React.useCallback(
         (abortSignal) =>
           ValidationTests.waitDisconnected(

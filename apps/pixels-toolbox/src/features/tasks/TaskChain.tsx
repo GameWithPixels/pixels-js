@@ -52,13 +52,8 @@ export default class TaskChain {
     return this._tasksItems.find((ti) => !!ti.error)?.error;
   }
 
-  constructor(
-    action: TaskAction,
-    asyncOp: TaskOperation,
-    taskRenderer: TaskRenderer
-  ) {
+  constructor(action: TaskAction) {
     this._action = action;
-    this.chainWith(asyncOp, taskRenderer);
   }
 
   getStatusAt(index: number): TaskStatus | undefined {
@@ -81,7 +76,11 @@ export default class TaskChain {
     );
   }
 
-  chainWith(asyncOp: TaskOperation, taskRenderer: TaskRenderer): TaskChain {
+  withTask(
+    asyncOp: TaskOperation,
+    taskRenderer: TaskRenderer,
+    opt?: { skip?: boolean }
+  ): TaskChain {
     const numTasks = this._tasksItems.length;
     const prevTaskSucceeded = numTasks
       ? this._tasksItems[numTasks - 1]?.status === "succeeded"
@@ -89,7 +88,9 @@ export default class TaskChain {
     const action = !prevTaskSucceeded ? "reset" : this._action;
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [status, component, error] = useTask(asyncOp, taskRenderer, action);
-    this._tasksItems.push({ status, component, error });
+    if (!opt?.skip) {
+      this._tasksItems.push({ status, component, error });
+    }
     return this;
   }
 

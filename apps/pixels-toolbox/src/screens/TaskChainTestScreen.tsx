@@ -25,18 +25,18 @@ function MyTest1({
   onSomeValueRef.current = onSomeValue;
   const [value0, setValue0] = React.useState(0);
   const [value1, setValue1] = React.useState(0);
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(async () => {
-      for (let i = 1; i <= 3; ++i) {
-        setValue0(i);
-        await delay(1000);
-      }
-      //throw new Error("Fail0");
-    }, []),
-    (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
-  )
-    .chainWith(
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(async () => {
+        for (let i = 1; i <= 3; ++i) {
+          setValue0(i);
+          await delay(1000);
+        }
+        //throw new Error("Fail0");
+      }, []),
+      (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
+    )
+    .withTask(
       React.useCallback(async () => {
         for (let i = 1; i <= 2; ++i) {
           setValue1(i);
@@ -66,19 +66,19 @@ interface MyTest2Props extends TaskComponentProps {
 function MyTest2({ action, onTaskStatus, somethingElse }: MyTest2Props) {
   const [value0, setValue0] = React.useState(0);
   const [value1, setValue1] = React.useState(0);
-  const taskChain = useTaskChain(
-    action,
-    React.useCallback(async () => {
-      console.log("Got somethingElse = " + somethingElse);
-      for (let i = 1; i <= 3; ++i) {
-        setValue0(i);
-        await delay(1000);
-      }
-      //throw new Error("Fail2");
-    }, [somethingElse]),
-    (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
-  )
-    .chainWith(
+  const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(async () => {
+        console.log("Got somethingElse = " + somethingElse);
+        for (let i = 1; i <= 3; ++i) {
+          setValue0(i);
+          await delay(1000);
+        }
+        //throw new Error("Fail2");
+      }, [somethingElse]),
+      (p) => <Text>{`1. Status: ${p.taskStatus}, value: ${value0}`}</Text>
+    )
+    .withTask(
       React.useCallback(async () => {
         //console.log("Got somethingElse = " + somethingElse);
         for (let i = 1; i <= 2; ++i) {
@@ -105,18 +105,18 @@ function TestPage() {
   const [something, setSomething] = React.useState("1");
   const [somethingElse, setSomethingElse] = React.useState(2);
   const [cancel, setCancel] = React.useState(false);
-  const taskChain = useTaskChain(
-    cancel ? "cancel" : "run",
-    ...useTaskComponent("Test1", cancel, (p) => (
-      <MyTest1 {...p} something={something} onSomeValue={setSomethingElse} />
-    ))
-  )
-    .chainWith(
+  const taskChain = useTaskChain(cancel ? "cancel" : "run")
+    .withTask(
+      ...useTaskComponent("Test1", cancel, (p) => (
+        <MyTest1 {...p} something={something} onSomeValue={setSomethingElse} />
+      ))
+    )
+    .withTask(
       ...useTaskComponent("Test2", cancel, (p) => (
         <MyTest2 {...p} somethingElse={somethingElse} />
       ))
     )
-    .chainWith(
+    .withTask(
       ...useTaskComponent("Test3", cancel, (p) => (
         <MyTest1 {...p} something={something} onSomeValue={setSomethingElse} />
       ))

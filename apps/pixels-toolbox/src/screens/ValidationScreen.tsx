@@ -422,21 +422,29 @@ function RunTestsPage({
   );
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
-  const taskChain = useTaskChain(
-    cancel ? "cancel" : "run",
-    ...useTaskComponent("UpdateFirmware", cancel, (p) => (
-      <UpdateFirmware
-        {...p}
-        pixelId={pixelId}
-        settings={settings}
-        onPixelFound={setPixel}
-        onFirmwareUpdated={onFirmwareUpdated}
-      />
-    ))
-  );
-  if (settings.sequence !== "firmwareUpdate") {
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
+  // Some conditions to filter tests
+  const seq = settings.sequence;
+  const isFWUpdate = seq === "firmwareUpdate";
+  const skipIfFwUpdate = { skip: isFWUpdate };
+  const skipIfBoard = { skip: isBoard(seq) };
+  const skipIfNoCoil = { skip: isFWUpdate || seq === "boardNoCoil" };
+  const skipIfDieFinal = { skip: isFWUpdate || seq === "dieFinal" };
+  const skipIfNotDieFinal = { skip: isFWUpdate || seq !== "dieFinal" };
+
+  // The entire test sequence
+  const taskChain = useTaskChain(cancel ? "cancel" : "run")
+    .withTask(
+      ...useTaskComponent("UpdateFirmware", cancel, (p) => (
+        <UpdateFirmware
+          {...p}
+          pixelId={pixelId}
+          settings={settings}
+          onPixelFound={setPixel}
+          onFirmwareUpdated={onFirmwareUpdated}
+        />
+      ))
+    )
+    .withTask(
       ...useTaskComponent("ConnectPixel", cancel, (p) => (
         <ConnectPixel
           {...p}
@@ -445,20 +453,18 @@ function RunTestsPage({
           settings={settings}
           onPixelFound={setPixel}
         />
-      ))
-    );
-    if (settings.sequence !== "boardNoCoil") {
-      taskChain.chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitCharging", cancel, (p) => (
-          <>
-            {pixel && <WaitCharging {...p} pixel={pixel} settings={settings} />}
-          </>
-        ))
-      );
-    }
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
+      )),
+      skipIfFwUpdate
+    )
+    .withTask(
+      ...useTaskComponent("WaitCharging", cancel, (p) => (
+        <>
+          {pixel && <WaitCharging {...p} pixel={pixel} settings={settings} />}
+        </>
+      )),
+      skipIfNoCoil
+    )
+    .withTask(
       ...useTaskComponent("CheckBoard", cancel, (p) => (
         <>
           {pixel && (
@@ -470,116 +476,102 @@ function RunTestsPage({
             />
           )}
         </>
-      ))
-    );
-    if (settings.sequence !== "boardNoCoil") {
-      taskChain.chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitNotCharging", cancel, (p) => (
-          <>
-            {pixel && (
-              <WaitCharging
-                {...p}
-                pixel={pixel}
-                settings={settings}
-                notCharging
-              />
-            )}
-          </>
-        ))
-      );
-    }
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
+      )),
+      skipIfFwUpdate
+    )
+    .withTask(
+      ...useTaskComponent("WaitNotCharging", cancel, (p) => (
+        <>
+          {pixel && (
+            <WaitCharging
+              {...p}
+              pixel={pixel}
+              settings={settings}
+              notCharging
+            />
+          )}
+        </>
+      )),
+      skipIfNoCoil
+    )
+    .withTask(
       ...useTaskComponent("CheckLEDs", cancel, (p) => (
         <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
-      ))
-    );
-    if (!isBoard(settings.sequence)) {
-      taskChain.chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("WaitFaceUp", cancel, (p) => (
-          <>
-            {pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}
-          </>
-        ))
-      );
-    }
-    taskChain.chainWith(
-      // eslint-disable-next-line react-hooks/rules-of-hooks
+      )),
+      skipIfFwUpdate
+    )
+    .withTask(
+      ...useTaskComponent("WaitFaceUp", cancel, (p) => (
+        <>{pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}</>
+      )),
+      skipIfBoard
+    )
+    .withTask(
       ...useTaskComponent("StoreSettings", cancel, (p) => (
         <>
           {pixel && <StoreSettings {...p} pixel={pixel} settings={settings} />}
         </>
-      ))
-    );
-    if (settings.sequence !== "dieFinal") {
-      taskChain.chainWith(
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        ...useTaskComponent("TurnOffDevice", cancel, (p) => (
-          <>
-            {pixel && (
-              <TurnOffDevice {...p} pixel={pixel} settings={settings} />
-            )}
-          </>
-        ))
-      );
-    } else {
-      taskChain
-        .chainWith(
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          ...useTaskComponent("PrepareDie", cancel, (p) => (
-            <>
-              {pixel && (
-                <PrepareDie
-                  {...p}
-                  pixel={pixel}
-                  settings={settings}
-                  onPrintStatus={setPrintStatus}
-                />
-              )}
-            </>
-          ))
-        )
-        .chainWith(
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          ...useTaskComponent("ConnectPixel", cancel, (p) => (
-            <ConnectPixel
+      )),
+      skipIfFwUpdate
+    )
+    .withTask(
+      ...useTaskComponent("TurnOffDevice", cancel, (p) => (
+        <>
+          {pixel && <TurnOffDevice {...p} pixel={pixel} settings={settings} />}
+        </>
+      )),
+      skipIfDieFinal
+    )
+    .withTask(
+      ...useTaskComponent("PrepareDie", cancel, (p) => (
+        <>
+          {pixel && (
+            <PrepareDie
               {...p}
-              pixelId={pixelId}
+              pixel={pixel}
               settings={settings}
-              onPixelFound={setPixel}
+              onPrintStatus={setPrintStatus}
             />
-          ))
-        )
-        .chainWith(
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          ...useTaskComponent("WaitDieInCase", cancel, (p) => (
-            <>
-              {pixel && (
-                <WaitDieInCase {...p} pixel={pixel} settings={settings} />
-              )}
-            </>
-          ))
-        )
-        .chainWith(
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          ...useTaskComponent("CheckLabel", cancel, (p) => (
-            <>
-              {pixel && (
-                <LabelPrinting
-                  {...p}
-                  pixel={pixel}
-                  settings={settings}
-                  printResult={printStatus}
-                  onPrintStatus={setPrintStatus}
-                />
-              )}
-            </>
-          ))
-        );
-    }
-  }
+          )}
+        </>
+      )),
+      skipIfNotDieFinal
+    )
+    .withTask(
+      ...useTaskComponent("ConnectPixel", cancel, (p) => (
+        <ConnectPixel
+          {...p}
+          pixelId={pixelId}
+          settings={settings}
+          onPixelFound={setPixel}
+        />
+      )),
+      skipIfNotDieFinal
+    )
+    .withTask(
+      ...useTaskComponent("WaitDieInCase", cancel, (p) => (
+        <>
+          {pixel && <WaitDieInCase {...p} pixel={pixel} settings={settings} />}
+        </>
+      )),
+      skipIfNotDieFinal
+    )
+    .withTask(
+      ...useTaskComponent("CheckLabel", cancel, (p) => (
+        <>
+          {pixel && (
+            <LabelPrinting
+              {...p}
+              pixel={pixel}
+              settings={settings}
+              printResult={printStatus}
+              onPrintStatus={setPrintStatus}
+            />
+          )}
+        </>
+      )),
+      skipIfNotDieFinal
+    );
 
   // Get result
   const result = getTaskResult(taskChain.status);

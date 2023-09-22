@@ -1,10 +1,6 @@
 import TaskChain from "./TaskChain";
-import { TaskOperation, TaskAction, TaskRenderer } from "./useTask";
+import { TaskAction } from "./useTask";
 
-export function useTaskChain(
-  action: TaskAction,
-  asyncOp: TaskOperation,
-  taskRenderer: TaskRenderer
-): TaskChain {
-  return new TaskChain(action, asyncOp, taskRenderer);
+export function useTaskChain(action: TaskAction): TaskChain {
+  return new TaskChain(action);
 }
