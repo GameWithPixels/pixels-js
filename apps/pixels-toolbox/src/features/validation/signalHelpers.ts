@@ -177,9 +177,9 @@ export async function withTimeoutAndDisconnect(
 }
 
 export async function withBlink(
+  abortSignal: AbortSignal,
   pixel: Pixel,
   blinkColor: Color,
-  abortSignal: AbortSignal,
   promise: () => Promise<void>,
   options?: {
     faceMask?: number;
@@ -215,9 +215,9 @@ export async function withBlink(
 }
 
 export async function withSolidColor(
+  abortSignal: AbortSignal,
   pixel: Pixel,
   color: Color,
-  abortSignal: AbortSignal,
   promise: () => Promise<void>,
   options?: {
     faceMask?: number;
@@ -251,10 +251,10 @@ export async function withSolidColor(
 }
 
 export async function withTelemetry(
-  pixel: Pixel,
-  listener: (msg: Telemetry) => boolean, // Return true to stop telemetry
   abortSignal: AbortSignal,
-  testName: string
+  testName: string,
+  pixel: Pixel,
+  listener: (msg: Telemetry) => boolean // Return true to stop telemetry
 ): Promise<void> {
   if (abortSignal.aborted) {
     throw getSignalReason(abortSignal, testName);

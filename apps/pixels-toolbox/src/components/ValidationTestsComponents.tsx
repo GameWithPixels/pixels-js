@@ -130,6 +130,9 @@ function get24BitsTimestamp(): number {
   // Use the KickStarter date as our epoch
   const ksDate = new Date("Tue, 09 Mar 2021 17:00:00 GMT");
   return Math.floor((Date.now() - ksDate.getTime()) / 60000);
+  // function from24BitsTimestamp(timestamp24bits: number): Date {
+  //   return new Date(timestamp24bits * 60000 + ksDate.getTime())
+  // }
 }
 
 // List of faces to test, last face is the one with the copper counter weight
@@ -298,14 +301,14 @@ interface MessageYesNoProps extends FastBoxProps {
   message: string;
   onYes?: () => void;
   onNo?: () => void;
-  hideYesNo?: boolean;
+  hideButtons?: boolean;
 }
 
 function MessageYesNo({
   message,
   onYes,
   onNo,
-  hideYesNo,
+  hideButtons: hideYesNo,
   ...props
 }: MessageYesNoProps) {
   const { t } = useTranslation();
@@ -494,7 +497,7 @@ export function UpdateFirmware({
         title: t("firmwareUpdate"),
         children: (
           <>
-            {dfuState && (
+            {dfuState && dfuState !== "completed" && (
               <Text variant="bodyLarge">
                 {t("dfuStateWithStatus", {
                   status: t(dfuState),
@@ -754,7 +757,7 @@ export function CheckLEDs({
             message={t("areAllLEDsWhiteWithCount", {
               count: getLEDCount(settings.dieType),
             })}
-            hideYesNo={!resolvePromise}
+            hideButtons={!resolvePromise}
             onYes={() => resolvePromise?.()}
             onNo={() => userAbort?.()}
           />
@@ -937,6 +940,9 @@ export function StoreSettings({
   );
   const storeDieType = React.useCallback(async () => {
     if (pixel.dieType !== settings.dieType) {
+      console.log(
+        `Storing die type: ${settings.dieType} (was ${pixel.dieType})`
+      );
       const value = PixelDieTypeValues[settings.dieType];
       assert(value);
       await pixelStoreValue(pixel, PixelValueStoreType.DieType, value);
@@ -960,7 +966,6 @@ export function StoreSettings({
             async (abortSignal) => {
               let keepSettings = false;
               let colorway = pixel.colorway;
-              console.log(`Initial colorway: ${colorway}`);
               if (colorway && colorway !== "unknown") {
                 keepSettings = await withPromise(
                   abortSignal,
@@ -970,7 +975,6 @@ export function StoreSettings({
                 );
               }
               if (!keepSettings) {
-                console.log("Requesting colorway...");
                 colorway = await withPromise(
                   abortSignal,
                   "storeColorway",
@@ -980,7 +984,9 @@ export function StoreSettings({
                 console.log(`Selected colorway: ${colorway}`);
               }
               if (colorway !== "unknown" && colorway !== pixel.colorway) {
-                console.log(`Storing colorway: ${colorway}`);
+                console.log(
+                  `Storing colorway: ${colorway} (was ${pixel.colorway})`
+                );
                 const value = PixelColorwayValues[colorway];
                 assert(value);
                 await pixelStoreValue(
@@ -998,14 +1004,18 @@ export function StoreSettings({
         title: t("storeColorway"),
         children: (
           <FastHStack gap={20}>
-            <ColorwayImage name={pixel.colorway} />
-            <MessageYesNo
-              justifyContent="center"
-              message={t("keepColorway")}
-              hideYesNo={!resolveConfirmPromise}
-              onYes={() => resolveConfirmPromise?.(true)}
-              onNo={() => resolveConfirmPromise?.(false)}
-            />
+            {resolveConfirmPromise && (
+              <>
+                <ColorwayImage name={pixel.colorway} />
+
+                <MessageYesNo
+                  justifyContent="center"
+                  message={t("keepColorway")}
+                  onYes={() => resolveConfirmPromise?.(true)}
+                  onNo={() => resolveConfirmPromise?.(false)}
+                />
+              </>
+            )}
             <RequestColorway
               visible={!!resolveColorwayPromise}
               onSelect={(c) => resolveColorwayPromise?.(c)}
@@ -1188,13 +1198,13 @@ export function LabelPrinting({
         children: (
           <MessageYesNo
             message={t("isLabelPrinted")}
+            hideButtons={!resolvePrintOkPromise}
             onYes={() => resolvePrintOkPromise?.(true)}
             onNo={() => resolvePrintOkPromise?.(false)}
           />
         ),
       })
     )
-    .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
   return (

@@ -146,14 +146,16 @@ export const ValidationTests = {
           faceMask: getTopFaceMask(pixel),
         };
         await withBlink(
+          abortSignal,
           pixel,
           blinkColor,
-          abortSignal,
           async () => {
             // And wait for battery (not)charging
             let lastMsg: Telemetry | undefined;
             try {
               await withTelemetry(
+                abortSignal,
+                shouldBeCharging ? "waitCharging" : "waitNotCharging",
                 pixel,
                 (msg: Telemetry) => {
                   lastMsg = msg;
@@ -182,9 +184,7 @@ export const ValidationTests = {
                     vCoil: msg.vCoilTimes50 / 50,
                   });
                   return false;
-                },
-                abortSignal,
-                shouldBeCharging ? "waitCharging" : "waitNotCharging"
+                }
               );
             } catch (error: any) {
               // TODO temporary
@@ -231,9 +231,9 @@ export const ValidationTests = {
           faceMask: getFaceMask(face, pixel.dieType),
         };
         await withBlink(
+          abortSignal,
           pixel,
           blinkColor,
-          abortSignal,
           async () => {
             let rollListener: ((ev: RollEvent) => void) | undefined;
             let lastRoll: RollEvent | undefined;
@@ -315,7 +315,7 @@ export const ValidationTests = {
       pixel,
       (abortSignal) =>
         // Show solid color
-        withSolidColor(pixel, color, abortSignal, () =>
+        withSolidColor(abortSignal, pixel, color, () =>
           withPromise<void>(abortSignal, "checkLEDsLitUp", (resolve) => {
             // Wait on promised being resolved
             setResolve(() => {
@@ -373,7 +373,7 @@ export const ValidationTests = {
     await withTimeout(abortSignal, timeout, async (abortSignal) => {
       let statusListener: ((status: PixelStatus) => void) | undefined;
       // Blink all faces
-      await withBlink(pixel, blinkColor, abortSignal, async () =>
+      await withBlink(abortSignal, pixel, blinkColor, async () =>
         withPromise(
           abortSignal,
           "waitDisconnected",
