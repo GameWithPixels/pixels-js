@@ -567,10 +567,13 @@ export function ConnectPixel({
         }
         if (pixel.ledCount !== getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
-            `Incorrect die type, expected ${settings.dieType} but got ${pixel.ledCount} LEDs`
+            t("dieTypeMismatch", {
+              dieType: t(settings.dieType),
+              ledCount: pixel.ledCount,
+            })
           );
         }
-      }, [pixel, settings.dieType]),
+      }, [pixel, settings.dieType, t]),
       createTaskStatusContainer(t("checkDieType"))
     )
     .withTask(

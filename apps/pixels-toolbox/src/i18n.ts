@@ -233,6 +233,7 @@ i18n
           isLabelPrinted: "Is label correctly printed?",
           scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
           connectionErrorTryAgain: "Connection error, reset device and try again.",
+          dieTypeMismatch: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
 
           // Roll Screen
           rollDemo: "Roll Demo",
@@ -438,6 +439,12 @@ i18n
           isLabelPrinted: "Is label correctly printed?",
           scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
           connectionErrorTryAgain: "Connection error, reset device and try again.",
+          dieTypeMismatch: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
+
+          // Roll Screen
+          rollDemo: "Roll Demo",
+          animationsEditor: "Animations Editor",
+          diceRenderer: "3D Dice Renderer",
         },
       },
     },
