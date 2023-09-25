@@ -1,5 +1,5 @@
 /** Constants used across the pixels-core-connect package. */
-const Constants = {
+export const Constants = {
   /** The lowest Maximum Transmission Unit (MTU) value allowed by the BLE standard. */
   minMtu: 23,
 
@@ -18,5 +18,3 @@ const Constants = {
   /** The maximum size of messages send to a Pixel. */
   maxMessageSize: 100,
 } as const;
-
-export default Constants;

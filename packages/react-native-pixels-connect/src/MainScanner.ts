@@ -17,7 +17,7 @@ import {
 } from "@systemic-games/react-native-bluetooth-le";
 
 import { ScannedPixel } from "./ScannedPixel";
-import ScannedPixelsRegistry from "./ScannedPixelsRegistry";
+import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
 import SequentialDataReader from "./SequentialDataReader";
 
 // Execution queue
@@ -155,7 +155,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
 /**
  * Global object for scanning for Pixels using Bluetooth.
  */
-const MainScanner = {
+export const MainScanner = {
   /** Gets whether a Pixels scan is running. */
   isScanning(): boolean {
     return _scanCount > 0 && Central.isScanning();
@@ -220,5 +220,3 @@ const MainScanner = {
     });
   },
 } as const;
-
-export default MainScanner;

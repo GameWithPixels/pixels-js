@@ -2,7 +2,7 @@
  * Bluetooth UUIDs related to Pixels peripherals.
  * @category Pixels
  */
-const PixelBleUuids = {
+export const PixelBleUuids = {
   /** Pixel dice service UUID. */
   service: "6e400001-b5a3-f393-e0a9-e50e24dcca9e",
 
@@ -15,5 +15,3 @@ const PixelBleUuids = {
   /** The short UUID of the Nordic's DFU service. */
   dfuService: 0xfe59,
 } as const;
-
-export default PixelBleUuids;

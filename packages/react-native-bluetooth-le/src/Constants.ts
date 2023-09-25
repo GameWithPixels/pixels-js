@@ -1,4 +1,4 @@
-const Constants = {
+export const Constants = {
   // The lowest Maximum Transmission Unit (MTU) value allowed by the BLE standard.
   minMtu: 23,
 
@@ -12,5 +12,3 @@ const Constants = {
 
   maxMessageSize: 100,
 } as const;
-
-export default Constants;

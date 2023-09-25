@@ -4,7 +4,7 @@ import { assert } from "@systemic-games/pixels-core-utils";
 import BleSession from "./BleSession";
 import { PixelsMap } from "./PixelsMap";
 import { type ScannedPixel } from "./ScannedPixel";
-import ScannedPixelsRegistry from "./ScannedPixelsRegistry";
+import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
 
 /**
  * Returns a Pixel instance for the corresponding scanned Pixel instance of Pixel id.

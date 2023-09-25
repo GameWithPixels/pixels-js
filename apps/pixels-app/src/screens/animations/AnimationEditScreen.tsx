@@ -4,7 +4,7 @@ import React from "react";
 import { ObservableAnimationEditor } from "./components/ObservableAnimationEditor";
 
 import { useAppUpdateAnimation } from "~/app/hooks";
-import FromStore from "~/features/FromStore";
+import { FromStore } from "~/features/FromStore";
 import { makeObservable } from "~/features/makeObservable";
 import { AnimationEditScreenProps } from "~/navigation";
 

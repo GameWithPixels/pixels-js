@@ -14,7 +14,7 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
-import Constants from "./Constants";
+import { Constants } from "./Constants";
 import { DiceUtils } from "./DiceUtils";
 import {
   MessageType,

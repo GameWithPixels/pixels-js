@@ -1,7 +1,7 @@
 /**
  * @category Animation
  */
-const Constants = {
+export const Constants = {
   /** Maximum number of LED on a die. */
   maxLEDsCount: 20,
 
@@ -20,5 +20,3 @@ const Constants = {
   /** Magic number for the current face index. */
   currentFaceIndex: -1,
 } as const;
-
-export default Constants;

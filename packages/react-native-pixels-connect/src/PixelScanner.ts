@@ -8,7 +8,7 @@ import {
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
 
-import MainScanner from "./MainScanner";
+import { MainScanner } from "./MainScanner";
 import { ScannedPixel } from "./ScannedPixel";
 
 /**

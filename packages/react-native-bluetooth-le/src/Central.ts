@@ -15,7 +15,7 @@ import {
   CentralPeripheralsMap as peripheralsMap,
   PeripheralState,
 } from "./CentralPeripheralsMap";
-import Constants from "./Constants";
+import { Constants } from "./Constants";
 import * as Errors from "./errors";
 import {
   BleBluetoothStateEvent,

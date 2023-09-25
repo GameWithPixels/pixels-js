@@ -1,7 +1,7 @@
 import { Pixel } from "@systemic-games/pixels-core-connect";
 
 import BleSession from "./BleSession";
-import PixelsDevices from "./PixelsDevices";
+import { PixelsDevices } from "./PixelsDevices";
 
 const _pixels = new Map<string, Pixel>();
 

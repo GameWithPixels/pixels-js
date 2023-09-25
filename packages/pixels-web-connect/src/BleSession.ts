@@ -3,7 +3,7 @@ import {
   PixelBleUuids,
 } from "@systemic-games/pixels-core-connect";
 
-import PixelsDevices from "./PixelsDevices";
+import { PixelsDevices } from "./PixelsDevices";
 
 class ScanTimeoutError extends Error {
   constructor(message?: string) {

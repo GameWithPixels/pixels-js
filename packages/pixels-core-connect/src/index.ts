@@ -1,7 +1,7 @@
 export * from "./getPixelUniqueName";
 export * from "./repeatConnect";
 export * from "./toFullUuid";
-export { default as PixelBleUuids } from "./PixelBleUuids";
+export * from "./PixelBleUuids";
 export * from "./PixelInfo";
 export * from "./PixelInfoNotifier";
 export * from "./PixelSession";

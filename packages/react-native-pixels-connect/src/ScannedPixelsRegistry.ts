@@ -3,7 +3,7 @@ import { ScannedPixel } from "./ScannedPixel";
 const _pixelIdMap = new Map<number, ScannedPixel>();
 
 // For internal use only
-const ScannedPixelsRegistry = {
+export const ScannedPixelsRegistry = {
   register(scannedPixel: ScannedPixel): void {
     _pixelIdMap.set(scannedPixel.pixelId, scannedPixel);
   },
@@ -16,5 +16,3 @@ const ScannedPixelsRegistry = {
     return [..._pixelIdMap.values()];
   },
 } as const;
-
-export default ScannedPixelsRegistry;

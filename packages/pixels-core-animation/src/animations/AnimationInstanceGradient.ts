@@ -1,6 +1,6 @@
 import AnimationGradient from "./AnimationGradient";
 import AnimationInstance from "./AnimationInstance";
-import Constants from "./Constants";
+import { Constants } from "./Constants";
 
 /**
  * @category Animation Instance

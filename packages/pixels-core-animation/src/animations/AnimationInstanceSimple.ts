@@ -1,6 +1,6 @@
 import AnimationInstance from "./AnimationInstance";
 import AnimationSimple from "./AnimationSimple";
-import Constants from "./Constants";
+import { Constants } from "./Constants";
 import * as Color32Utils from "../color/color32Utils";
 
 /**

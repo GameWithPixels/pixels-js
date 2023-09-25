@@ -46,7 +46,7 @@ function deserializeAnimation<T extends keyof Serializable.AnimationSetData>(
   );
 }
 
-const FromStore = {
+export const FromStore = {
   loadProfile(uuid: string): EditProfile {
     const profilesSet = store.getState().profilesSet;
     const profile = profilesSet.profiles.find((p) => p.uuid === uuid);
@@ -82,5 +82,3 @@ const FromStore = {
     throw new Error(`retrieveAnimation: No animation with uuid ${uuid}`);
   },
 } as const;
-
-export default FromStore;

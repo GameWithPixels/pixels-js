@@ -3,7 +3,7 @@ import { PixelBleUuids } from "@systemic-games/pixels-core-connect";
 const _devices = new Map<string, BluetoothDevice>();
 
 /** Singleton that manages a list of Bluetooth devices for Pixels. */
-const PixelsDevices = {
+export const PixelsDevices = {
   /**
    * Request the user to select a Bluetooth device among a list of
    * scanned Pixels dice.
@@ -52,5 +52,3 @@ const PixelsDevices = {
     return device;
   },
 };
-
-export default PixelsDevices;

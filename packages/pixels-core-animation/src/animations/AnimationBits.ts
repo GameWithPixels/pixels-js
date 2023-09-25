@@ -4,7 +4,7 @@ import {
   serialize,
 } from "@systemic-games/pixels-core-utils";
 
-import Constants from "./Constants";
+import { Constants } from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 import RgbTrack from "./RgbTrack";
 import SimpleKeyframe from "./SimpleKeyframe";

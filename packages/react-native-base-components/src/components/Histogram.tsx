@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import Svg, { Rect, Text as SvgText } from "react-native-svg";
 
-import BaseStyles from "../BaseStyles";
+import { BaseStyles } from "../BaseStyles";
 
 export interface HistogramProps {
   rolls: number[];

@@ -1,6 +1,6 @@
 export * from "@systemic-games/react-native-bluetooth-le";
 
-export { default as MainScanner } from "./MainScanner";
+export * from "./MainScanner";
 export * from "./initBluetooth";
 export * from "./getPixel";
 export * from "./ScannedPixel";

@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+export const BaseStyles = StyleSheet.create({
   // One prop styles
   empty: {},
   flex: {

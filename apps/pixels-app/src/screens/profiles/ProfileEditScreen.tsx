@@ -4,7 +4,7 @@ import React from "react";
 import { ObservableProfileEditor } from "./components/ObservableProfileEditor";
 
 import { useAppUpdateProfile } from "~/app/hooks";
-import FromStore from "~/features/FromStore";
+import { FromStore } from "~/features/FromStore";
 import { makeObservable } from "~/features/makeObservable";
 import { ProfileEditScreenProps } from "~/navigation";
 
