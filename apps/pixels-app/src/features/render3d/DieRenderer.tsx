@@ -14,7 +14,7 @@ import { Text } from "react-native-paper";
 
 import { createDie3DAsync } from "./createDie3DAsync";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 
 class SceneRenderer {
   private readonly _die3d: Die3D;

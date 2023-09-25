@@ -26,9 +26,9 @@ import {
 import { PixelInfoCard, PixelInfoCardProps } from "./PixelInfoCard";
 import { ProgressBar } from "./ProgressBar";
 
+import { AppStyles } from "~/AppStyles";
 import { isDfuDone } from "~/features/dfu/updateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import gs from "~/styles";
 
 function UserMessageDialog({
   title,
@@ -225,11 +225,11 @@ function PixelCard({
             >
               <Text>{t("firmwareUpdate")}: </Text>
               {dfuState === "uploading" ? (
-                <View style={gs.flex}>
+                <View style={AppStyles.flex}>
                   <ProgressBar percent={dfuProgress} />
                 </View>
               ) : (
-                dfuState && <Text style={gs.italic}>{t(dfuState)}</Text>
+                dfuState && <Text style={AppStyles.italic}>{t(dfuState)}</Text>
               )}
             </BaseHStack>
           ) : profileUpload ? (
@@ -240,13 +240,13 @@ function PixelCard({
               justifyContent="center"
             >
               <Text>Profile Update: </Text>
-              <View style={gs.flex}>
+              <View style={AppStyles.flex}>
                 <ProgressBar percent={profileUpload} />
               </View>
             </BaseHStack>
           ) : isDisco && lastActivitySec >= 5 ? (
             // Pixel is disconnected and hasn't been seen for a while (no advertising)
-            <Text style={gs.italic}>{`${t("unavailable")} (${
+            <Text style={AppStyles.italic}>{`${t("unavailable")} (${
               lastActivitySec < 120
                 ? t("secondsWithValue", {
                     value: lastActivitySec,
@@ -259,7 +259,7 @@ function PixelCard({
             // Pixel is either connecting/connected or advertising
             <Text>
               <Text>{t("status")}: </Text>
-              <Text style={gs.italic}>{statusStr}</Text>
+              <Text style={AppStyles.italic}>{statusStr}</Text>
             </Text>
           )}
           {children}

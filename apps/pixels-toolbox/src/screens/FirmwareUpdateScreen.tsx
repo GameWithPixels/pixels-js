@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { Button, Card, Text, useTheme } from "react-native-paper";
 
+import { AppStyles } from "~/AppStyles";
 import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
@@ -22,7 +23,6 @@ import { isDfuDone } from "~/features/dfu/updateFirmware";
 import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { FirmwareUpdateScreenProps } from "~/navigation";
-import gs from "~/styles";
 
 function formatAddress(address: number): string {
   return address.toString(16).toUpperCase();
@@ -249,7 +249,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
               <ProgressBar percent={dfuProgress} />
             </BaseBox>
           ) : (
-            <Text style={gs.italic}>
+            <Text style={AppStyles.italic}>
               {t("dfuStateWithStatus", { status: t(dfuState) })}
             </Text>
           )}
@@ -258,20 +258,20 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         // Scan list
         <>
           <Button
-            labelStyle={{ alignSelf: "center", ...gs.underlined }}
+            labelStyle={{ alignSelf: "center", ...AppStyles.underlined }}
             onPress={() => navigation.navigate("SelectDfuFiles")}
           >
             {bundleLabel ?? t("tapToSelectFirmware")}
           </Button>
           {bundleLabel && (
             <BaseVStack gap={10}>
-              <Text style={gs.italic}>
+              <Text style={AppStyles.italic}>
                 Tap on a peripheral to attempt a Pixel firmware update.
               </Text>
               <Text variant="bodyLarge">Bluetooth Scanned Peripherals:</Text>
               <FlatList
-                style={gs.fullWidth}
-                contentContainerStyle={gs.listContentContainer}
+                style={AppStyles.fullWidth}
+                contentContainerStyle={AppStyles.listContentContainer}
                 data={scannedPeripherals}
                 renderItem={renderItem}
                 refreshControl={refreshControl}

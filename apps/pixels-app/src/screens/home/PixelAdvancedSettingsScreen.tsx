@@ -9,7 +9,7 @@ import React from "react";
 import { ScrollView } from "react-native";
 import { Button, Text } from "react-native-paper";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 import { PixelAdvancedSettingsScreenProps } from "~/navigation";
 
 export function PixelAdvancedSettingsScreen(

@@ -34,12 +34,12 @@ import { FlatList, StyleSheet } from "react-native";
 import { Button, Divider, Text } from "react-native-paper";
 
 import standardProfilesJson from "!/profiles/standard-profiles.json";
+import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
 import { useForceUpdate } from "~/features/hooks/useForceUpdate";
 import { range } from "~/features/range";
-import gs from "~/styles";
 
 // function test() {
 //   try {
@@ -219,7 +219,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
     case "slider": {
       return (
         <>
-          <Text style={gs.bold}>{`${
+          <Text style={AppStyles.bold}>{`${
             widget.displayName
           }: ${widget.getValue()}`}</Text>
           <Slider
@@ -240,7 +240,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
     case "playbackFace":
     case "bitField": {
       return (
-        <Text style={gs.bold}>{`No editor for ${
+        <Text style={AppStyles.bold}>{`No editor for ${
           widget.displayName
         }: ${widget.getValue()}`}</Text>
       );
@@ -254,7 +254,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       ];
       return (
         <>
-          <Text style={gs.bold}>{widget.displayName}</Text>
+          <Text style={AppStyles.bold}>{widget.displayName}</Text>
           {facesGroups.map((faces, i) => (
             <BaseHStack key={i}>
               {faces.map((face) => (
@@ -280,13 +280,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             <Button
               mode="contained-tonal"
               key={itemInfo.item.name}
-              style={gs.mv3}
+              style={AppStyles.mv3}
               onPress={() => update(itemInfo.item.color)}
             >
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={gs.spacer}
+          contentContainerStyle={AppStyles.spacer}
         />
       );
     }
@@ -299,13 +299,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             <Button
               key={itemInfo.item.name}
               mode="contained-tonal"
-              style={gs.mv3}
+              style={AppStyles.mv3}
               onPress={() => update(itemInfo.item.gradient)}
             >
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={gs.spacer}
+          contentContainerStyle={AppStyles.spacer}
         />
       );
 
@@ -318,13 +318,13 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
             <Button
               key={itemInfo.item.name}
               mode="contained-tonal"
-              style={gs.mv3}
+              style={AppStyles.mv3}
               onPress={() => update(itemInfo.item)}
             >
               {itemInfo.item.name}
             </Button>
           )}
-          contentContainerStyle={gs.spacer}
+          contentContainerStyle={AppStyles.spacer}
         />
       );
 
@@ -387,13 +387,15 @@ function AnimationPage() {
           </Button>
           {editAnim && widget ? (
             <>
-              <Text style={gs.bold}>{`Editing ${widget.displayName}`}</Text>
+              <Text
+                style={AppStyles.bold}
+              >{`Editing ${widget.displayName}`}</Text>
               <Button onPress={() => setWidget(undefined)}>Back</Button>
               <RenderAnimWidget widget={widget} />
             </>
           ) : editAnim ? (
             <>
-              <Text style={gs.bold}>{`Editing ${editAnim.name}`}</Text>
+              <Text style={AppStyles.bold}>{`Editing ${editAnim.name}`}</Text>
               <Button
                 mode="contained-tonal"
                 onPress={() => setEditAnim(undefined)}
@@ -421,7 +423,7 @@ function AnimationPage() {
                 renderItem={(itemInfo) => (
                   <Button
                     mode="contained-tonal"
-                    style={gs.mv3}
+                    style={AppStyles.mv3}
                     onPress={() => setWidget(itemInfo.item)}
                   >
                     {`${itemInfo.item.displayName}: ${getPropValueString(
@@ -430,19 +432,19 @@ function AnimationPage() {
                     )}`}
                   </Button>
                 )}
-                contentContainerStyle={gs.spacer}
+                contentContainerStyle={AppStyles.spacer}
               />
             </>
           ) : (
             <>
               <Divider style={{ marginVertical: 5 }} />
-              <Text style={gs.bold}>Effects:</Text>
+              <Text style={AppStyles.bold}>Effects:</Text>
               <FlatList
                 data={animList}
                 renderItem={(itemInfo) => (
                   <Button
                     mode="contained-tonal"
-                    style={gs.mv3}
+                    style={AppStyles.mv3}
                     onPress={() => {
                       setEditAnim(itemInfo.item);
                     }}
@@ -450,18 +452,18 @@ function AnimationPage() {
                     {`Edit ${itemInfo.item.name}`}
                   </Button>
                 )}
-                contentContainerStyle={gs.spacer}
+                contentContainerStyle={AppStyles.spacer}
               />
             </>
           )}
           <Divider style={{ marginVertical: 5 }} />
-          <Text style={gs.bold}>Add Effect:</Text>
+          <Text style={AppStyles.bold}>Add Effect:</Text>
           <FlatList
             data={editAnimationTypes}
             renderItem={(itemInfo) => (
               <Button
                 mode="contained-tonal"
-                style={gs.mv3}
+                style={AppStyles.mv3}
                 onPress={() => {
                   setAnimList((anims) => {
                     const anim = new itemInfo.item();
@@ -473,7 +475,7 @@ function AnimationPage() {
                 {itemInfo.item.name.replace(EditAnimation.name, "")}
               </Button>
             )}
-            contentContainerStyle={gs.spacer}
+            contentContainerStyle={AppStyles.spacer}
           />
         </BaseVStack>
       )}

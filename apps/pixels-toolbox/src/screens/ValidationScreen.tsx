@@ -30,6 +30,7 @@ import {
   useCameraDevices,
 } from "react-native-vision-camera";
 
+import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
@@ -65,7 +66,6 @@ import {
   ValidationSequences,
 } from "~/features/validation/ValidationSequences";
 import { capitalize } from "~/i18n";
-import gs from "~/styles";
 
 // Board types used for validation
 const BoardTypes: readonly PixelDieType[] = [
@@ -102,7 +102,7 @@ function getTestingMessage(
 
 function BottomButton({ children, ...props }: Omit<ButtonProps, "style">) {
   return (
-    <Button mode="outlined" style={gs.fullWidth} {...props}>
+    <Button mode="outlined" style={AppStyles.fullWidth} {...props}>
       {children}
     </Button>
   );
@@ -195,7 +195,7 @@ function SelectDieTypePage({
       gap={20}
       justifyContent="space-around"
     >
-      <Text variant="headlineSmall" style={gs.textCentered}>
+      <Text variant="headlineSmall" style={AppStyles.textCentered}>
         {t("testingSequence", { sequence: t(sequence) })}
       </Text>
       {items.map((items, i) => (
@@ -622,8 +622,8 @@ function RunTestsPage({
     >
       <Text variant="titleLarge">{getTestingMessage(t, settings)}</Text>
       <ScrollView
-        style={gs.fullWidth}
-        contentContainerStyle={gs.listContentContainer}
+        style={AppStyles.fullWidth}
+        contentContainerStyle={AppStyles.listContentContainer}
         ref={scrollRef}
       >
         <>{taskChain.render()}</>

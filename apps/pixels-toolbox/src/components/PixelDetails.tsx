@@ -41,6 +41,7 @@ import {
   DynamicLinesChartProps,
 } from "./DynamicLinesChart";
 
+import { AppStyles, useModalStyle } from "~/AppStyles";
 import { ProgressBar } from "~/components/ProgressBar";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
@@ -53,7 +54,6 @@ import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { range } from "~/features/range";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { capitalize } from "~/i18n";
-import gs, { useModalStyle } from "~/styles";
 
 interface TextEntryBaseProps extends React.PropsWithChildren {
   title: string;
@@ -67,11 +67,11 @@ function TextEntryBase({
 }: TextEntryBaseProps) {
   return (
     <Text variant="bodyLarge">
-      <Text style={gs.bold}>
+      <Text style={AppStyles.bold}>
         {capitalize(title)}
         {colonSeparator}
       </Text>
-      <Text style={gs.italic}>{children}</Text>
+      <Text style={AppStyles.italic}>{children}</Text>
     </Text>
   );
 }
@@ -165,7 +165,10 @@ function TelemetryModal({
   return (
     <Portal>
       <Modal contentContainerStyle={modalStyle} {...props}>
-        <Text style={[gs.mv3, gs.textCentered]} variant="titleLarge">
+        <Text
+          style={[AppStyles.mv3, AppStyles.textCentered]}
+          variant="titleLarge"
+        >
           {t("telemetryGraph")}
         </Text>
         <DynamicLinesChart
@@ -314,7 +317,7 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
       )}
       <Divider style={{ height: 3, marginVertical: 5 }} />
       <BaseHStack w="100%" alignContent="space-around">
-        <Text style={[gs.flex, gs.bold]} variant="bodyLarge">
+        <Text style={[AppStyles.flex, AppStyles.bold]} variant="bodyLarge">
           {t("enableTelemetry")}
         </Text>
         <Switch onValueChange={setTelemetryOn} value={telemetryOn} />
@@ -508,7 +511,7 @@ function DischargeModal({
   return (
     <Portal>
       <Modal contentContainerStyle={modalStyle} {...props}>
-        <Text style={gs.mv3} variant="bodyLarge">
+        <Text style={AppStyles.mv3} variant="bodyLarge">
           {t("dischargeCurrentWithValue", { current })}
         </Text>
         <Slider
@@ -548,7 +551,7 @@ function PrintModal({
         <BaseVStack gap={10}>
           <Title>{t("labelPrinting")}</Title>
           <Divider style={{ height: 2 }} />
-          <Text style={gs.centered} variant="bodyLarge">
+          <Text style={AppStyles.centered} variant="bodyLarge">
             {}
           </Text>
           <Text>
@@ -574,7 +577,7 @@ function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
         contentContainerStyle={modalStyle}
         dismissable={false}
       >
-        <Text style={gs.mv3} variant="bodyLarge">
+        <Text style={AppStyles.mv3} variant="bodyLarge">
           {t("updatingProfile") + t("colonSeparator")}
         </Text>
         <ProgressBar percent={updateProgress ?? 0} />
@@ -704,14 +707,14 @@ export function PixelDetails({
           </PaperButton>
         </Card.Content>
       </Card>
-      <View style={gs.mv3} />
+      <View style={AppStyles.mv3} />
       <Card>
         <Card.Content>
           <BaseInfo pixel={pixel} />
           <TelemetryInfo pixel={pixel} />
         </Card.Content>
       </Card>
-      <View style={gs.mv3} />
+      <View style={AppStyles.mv3} />
       <ScrollView>
         <Card>
           <Card.Content>

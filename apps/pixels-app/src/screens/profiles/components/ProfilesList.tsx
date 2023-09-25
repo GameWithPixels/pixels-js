@@ -11,7 +11,7 @@ import { useTheme } from "react-native-paper";
 
 import { ProfileSwipeableCard } from "./ProfileSwipeableCard";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 import {
   useAppAddProfile,
   useAppProfiles,

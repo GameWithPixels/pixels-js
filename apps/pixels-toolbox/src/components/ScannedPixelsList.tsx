@@ -8,10 +8,10 @@ import { useTranslation } from "react-i18next";
 import { FlatList, Pressable } from "react-native";
 import { Button, Text } from "react-native-paper";
 
+import { AppStyles } from "~/AppStyles";
 import { PixelInfoCard } from "~/components/PixelInfoCard";
 import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
-import gs from "~/styles";
 
 export function ScannedPixelsList({
   onSelect: onSelected,
@@ -58,17 +58,17 @@ export function ScannedPixelsList({
           {t("clearScanList")}
         </Button>
       </BaseHStack>
-      <Text style={gs.bold}>
+      <Text style={AppStyles.bold}>
         {scannedPixels.length
           ? t("scannedPixelsWithCount", { count: scannedPixels.length })
           : t("noPixelsFound")}
       </Text>
       {scannedPixels.length > 0 && (
         <>
-          <Text style={gs.italic}>{t("tapOnItemToSelect")}</Text>
+          <Text style={AppStyles.italic}>{t("tapOnItemToSelect")}</Text>
           <FlatList
-            style={gs.fullWidth}
-            contentContainerStyle={gs.listContentContainer}
+            style={AppStyles.fullWidth}
+            contentContainerStyle={AppStyles.listContentContainer}
             data={scannedPixels}
             renderItem={renderItem}
           />

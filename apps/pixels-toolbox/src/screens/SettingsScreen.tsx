@@ -20,12 +20,12 @@ import {
   Title,
 } from "react-native-paper";
 
+import { AppStyles, useModalStyle } from "~/AppStyles";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
 import { setOpenOnStart } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
-import gs, { useModalStyle } from "~/styles";
 
 function toYesNo(value: boolean) {
   return value ? "Yes" : "No";
@@ -302,7 +302,7 @@ function AppInfoModal({
 
 function SettingsPage() {
   return (
-    <ScrollView contentContainerStyle={gs.listContentContainer}>
+    <ScrollView contentContainerStyle={AppStyles.listContentContainer}>
       <ThemeCard />
       <LanguageCard />
       <ValidationCard />

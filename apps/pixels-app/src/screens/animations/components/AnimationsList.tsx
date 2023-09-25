@@ -14,7 +14,7 @@ import { useTheme } from "react-native-paper";
 
 import { AnimationSwipeableCard } from "./AnimationSwipeableCard";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 import {
   useAppAddAnimation,
   useAppAnimations,
@@ -92,7 +92,7 @@ export function AnimationsList({
     <>
       {/* TODO GLView is crashing when used in FlatList */}
       {/* <FlatList
-        style={gs.fullWidth}
+        style={AppStyles.fullWidth}
         bg="gray"
         rounded="lg"
         p={2}

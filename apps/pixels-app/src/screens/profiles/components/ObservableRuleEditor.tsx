@@ -18,7 +18,7 @@ import { Text, useTheme } from "react-native-paper";
 import { ObservableActionEditor } from "./ObservableActionEditor";
 import { ObservableConditionEditor } from "./ObservableConditionEditor";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 import { useAppAnimations, useAppUserTexts } from "~/app/hooks";
 import { IconButton } from "~/components/IconButton";
 import { getCachedDataSet } from "~/features/appDataSet/getCachedDataSet";

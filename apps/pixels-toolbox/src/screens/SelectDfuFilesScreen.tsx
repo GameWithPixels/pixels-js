@@ -9,6 +9,7 @@ import React from "react";
 import { FlatList, Pressable, StyleSheet } from "react-native";
 import { Button, Card, Switch, Text, useTheme } from "react-native-paper";
 
+import { AppStyles } from "~/AppStyles";
 import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
 import { AppPage } from "~/components/AppPage";
@@ -20,7 +21,6 @@ import {
 } from "~/features/store/dfuBundlesSlice";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { SelectDfuFilesScreenProps } from "~/navigation";
-import gs from "~/styles";
 
 async function importDfuFile() {
   const file = await DocumentPicker.getDocumentAsync({
@@ -89,7 +89,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
       return (
         <Pressable
           key={bundle?.bootloader?.pathname ?? bundle?.firmware?.pathname}
-          style={gs.flex}
+          style={AppStyles.flex}
           onPress={() => {
             appDispatch(setSelectedDfuBundle(availableBundles.indexOf(bundle)));
             navigation.goBack();
@@ -100,7 +100,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
           >
             <Card.Title title={`📅 ${toLocaleDateTimeString(bundle.date)}`} />
             <Card.Content>
-              <Text style={gs.bold}>{`Type: ${bundle.items
+              <Text style={AppStyles.bold}>{`Type: ${bundle.items
                 .map((i) => i.type)
                 .join(", ")}`}</Text>
               {desc && <Text>{`Remark: ${desc}`}</Text>}
@@ -137,14 +137,16 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
           </BaseHStack>
           <Text>Select Firmware:</Text>
           <FlatList
-            style={gs.fullWidth}
-            contentContainerStyle={gs.listContentContainer}
+            style={AppStyles.fullWidth}
+            contentContainerStyle={AppStyles.listContentContainer}
             data={bundles}
             renderItem={renderItem}
           />
         </>
       ) : (
-        <Text style={gs.bold}>{`${bundlesError ?? "No DFU files!"}`}</Text>
+        <Text style={AppStyles.bold}>{`${
+          bundlesError ?? "No DFU files!"
+        }`}</Text>
       )}
     </BaseVStack>
   );

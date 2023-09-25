@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
 import { Text } from "react-native-paper";
 
+import { AppStyles } from "~/AppStyles";
 import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
@@ -14,7 +15,6 @@ import PixelDispatcher, {
   PixelDispatcherActionName,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
-import gs from "~/styles";
 
 function ListItem({
   pixelDispatcher,
@@ -175,15 +175,15 @@ export const SwipeablePixelsList = React.memo(function ({
           value={expandedInfo ? "expanded" : "normal"}
         >
           <FlatList
-            style={gs.fullWidth}
-            contentContainerStyle={gs.listContentContainer}
+            style={AppStyles.fullWidth}
+            contentContainerStyle={AppStyles.listContentContainer}
             data={pixels}
             renderItem={renderItem}
             refreshControl={refreshControl}
           />
         </PixelInfoCardModeContext.Provider>
       ) : (
-        <Text style={gs.italic}>{t("noPixelsFound")}</Text>
+        <Text style={AppStyles.italic}>{t("noPixelsFound")}</Text>
       )}
     </>
   );

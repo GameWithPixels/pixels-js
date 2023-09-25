@@ -17,7 +17,7 @@ import React from "react";
 import { Image, ScrollView, View } from "react-native";
 import { Card, Text, useTheme } from "react-native-paper";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 import {
   useAppPairedDice,
   useAppProfiles,

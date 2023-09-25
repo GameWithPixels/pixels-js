@@ -8,9 +8,9 @@ import { TFunction, useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Card, Text } from "react-native-paper";
 
+import { AppStyles } from "~/AppStyles";
 import { useForceUpdate } from "~/features/hooks/useForceUpdate";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
-import gs from "~/styles";
 
 interface PixelAndTranslation {
   pixel: PixelInfoNotifier;
@@ -80,7 +80,7 @@ function PixelRollState({ pixel, t }: PixelAndTranslation) {
   return (
     <Text>
       <Text>{`${t(pixel.dieType)} 🎲 ${pixel.currentFace} `}</Text>
-      <Text style={gs.italic}>{`(${t(pixel.rollState)})`}</Text>
+      <Text style={AppStyles.italic}>{`(${t(pixel.rollState)})`}</Text>
     </Text>
   );
 }
@@ -95,7 +95,7 @@ function PixelFirmwareDate({ pixel, t }: PixelAndTranslation) {
     };
   }, [pixel, forceUpdate]);
   return (
-    <Text style={gs.textCentered}>
+    <Text style={AppStyles.textCentered}>
       {t("firmware")}
       {t("colonSeparator")}
       {toLocaleDateTimeString(pixel.firmwareDate)}

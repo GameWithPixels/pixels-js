@@ -26,8 +26,7 @@ import {
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
-import AppStyles from "./AppStyles";
-
+import { AppStyles } from "~/AppStyles";
 import { persistor, store } from "~/app/store";
 import { RootStackParamList } from "~/navigation";
 import { AppSettings } from "~/screens/AppSettings";

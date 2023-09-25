@@ -1,6 +1,6 @@
 import { TextInput, TextInputProps, useTheme } from "react-native-paper";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 
 const Icon = <TextInput.Icon icon="pen" />;
 

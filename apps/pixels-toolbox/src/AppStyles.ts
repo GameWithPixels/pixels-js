@@ -6,8 +6,8 @@ import React from "react";
 import { StyleSheet, ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
 
-// Global style
-const gs = StyleSheet.create({
+// App styles
+export const AppStyles = StyleSheet.create({
   ...BaseStyles,
   // One prop styles
   mv3: {
@@ -19,8 +19,6 @@ const gs = StyleSheet.create({
     gap: 8,
   },
 });
-
-export default gs;
 
 export function useModalStyle(): ViewStyle {
   const theme = useTheme();

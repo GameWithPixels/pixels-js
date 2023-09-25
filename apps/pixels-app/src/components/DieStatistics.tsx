@@ -14,7 +14,7 @@ import React from "react";
 import { View } from "react-native";
 import { Divider, Switch, Text, useTheme } from "react-native-paper";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 
 export function DieStatistics({
   sessionRolls,

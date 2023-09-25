@@ -34,6 +34,7 @@ import {
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
+import { AppStyles, useModalStyle } from "~/AppStyles";
 import { ProgressBar } from "~/components/ProgressBar";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
@@ -73,7 +74,6 @@ import {
   getSignalReason,
   withTimeoutAndDisconnect,
 } from "~/features/validation/signalHelpers";
-import gs, { useModalStyle } from "~/styles";
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 
@@ -825,9 +825,9 @@ export function RequestColorway({
             {t("selectColorway")}
           </Text>
           <FlatList
-            style={gs.fullWidth}
+            style={AppStyles.fullWidth}
             contentContainerStyle={{
-              ...gs.listContentContainer,
+              ...AppStyles.listContentContainer,
               gap: 20,
             }}
             columnWrapperStyle={{

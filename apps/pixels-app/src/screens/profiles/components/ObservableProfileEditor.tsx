@@ -28,7 +28,7 @@ import DraggableFlatList, {
 import { Swipeable } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 import { IconButton } from "~/components/IconButton";
 import { TextInputClear } from "~/components/TextInputClear";
 import { getCachedDataSet } from "~/features/appDataSet/getCachedDataSet";

@@ -8,6 +8,7 @@ import { Button, Text, useTheme } from "react-native-paper";
 
 import { SwipeablePixelsList } from "./SwipeablePixelsList";
 
+import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
 import {
   useAppDfuFilesBundles,
@@ -15,7 +16,6 @@ import {
 } from "~/features/hooks/useAppDfuFilesBundles";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { HomeScreenProps } from "~/navigation";
-import gs from "~/styles";
 
 function DfuBundleSelection({
   navigation,
@@ -50,8 +50,8 @@ function DfuBundleSelection({
   return !dfuBundlesError || noDFUFilesError ? (
     <Button
       onPress={dfuFilesLoading ? undefined : selectDfuFile}
-      contentStyle={gs.fullWidth}
-      labelStyle={dfuFilesLoading ? gs.empty : gs.underlined}
+      contentStyle={AppStyles.fullWidth}
+      labelStyle={dfuFilesLoading ? AppStyles.empty : AppStyles.underlined}
     >
       {selectedDfuBundle
         ? selectedFwLabel ?? t("tapToSelectFirmware")
@@ -61,7 +61,11 @@ function DfuBundleSelection({
     </Button>
   ) : (
     <Text
-      style={{ ...gs.bold, color: theme.colors.error, marginVertical: 10 }}
+      style={{
+        ...AppStyles.bold,
+        color: theme.colors.error,
+        marginVertical: 10,
+      }}
     >{`${dfuBundlesError}`}</Text>
   );
 }
@@ -101,7 +105,8 @@ function HomePage({ navigation }: HomeScreenProps) {
       {/* Takes all available space except for footer (see footer below this Box) */}
       <BaseBox flex={1} gap={5} alignItems="center">
         <Text style={styles.textValidation}>
-          ↖️ <Text style={gs.italic}>{t("openMenuToGoToValidation")}</Text>
+          ↖️{" "}
+          <Text style={AppStyles.italic}>{t("openMenuToGoToValidation")}</Text>
         </Text>
         {hasEasUpdate && (
           <Text style={{ marginTop: 5 }}>

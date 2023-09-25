@@ -24,6 +24,7 @@ import {
 } from "react-native";
 import { Button, ProgressBar, Text } from "react-native-paper";
 
+import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
 import { LineChart } from "~/components/LineChart";
 import { PixelInfoCard } from "~/components/PixelInfoCard";
@@ -33,7 +34,6 @@ import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedP
 import { pixelTransferTest } from "~/features/pixels/extensions";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
-import gs from "~/styles";
 
 function PixelListItem({
   pixel,
@@ -92,10 +92,10 @@ function SelectPixel({
   return (
     <>
       <Text>Select Pixel:</Text>
-      {lastError && <Text style={gs.bold}>{`${lastError}`}</Text>}
+      {lastError && <Text style={AppStyles.bold}>{`${lastError}`}</Text>}
       <FlatList
-        style={gs.fullWidth}
-        contentContainerStyle={gs.listContentContainer}
+        style={AppStyles.fullWidth}
+        contentContainerStyle={AppStyles.listContentContainer}
         data={scannedPixels}
         renderItem={renderItem}
         refreshControl={refreshControl}
@@ -110,7 +110,7 @@ function RunTest({ pixelInfo }: { pixelInfo: PixelInfoNotifier }) {
   );
   return (
     <>
-      {lastError && <Text style={gs.bold}>{`${lastError}`}</Text>}
+      {lastError && <Text style={AppStyles.bold}>{`${lastError}`}</Text>}
       {pixel && <SendData pixel={pixel} />}
     </>
   );

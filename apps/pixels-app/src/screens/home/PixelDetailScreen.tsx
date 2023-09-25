@@ -22,7 +22,7 @@ import React from "react";
 import { ScrollView } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
-import AppStyles from "~/AppStyles";
+import { AppStyles } from "~/AppStyles";
 import {
   useAppProfiles,
   useAppPairedDice,
