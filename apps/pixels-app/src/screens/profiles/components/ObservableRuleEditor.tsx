@@ -8,6 +8,7 @@ import {
 import {
   BaseHStack,
   BaseVStack,
+  getBorderRadius,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -77,7 +78,7 @@ const ObservableActionsList = observer(function ({
   const renderItem = React.useCallback(
     ({ item: observableAction }: { item: Readonly<EditAction> }) => (
       <ObservableActionEditor
-        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderRadius={getBorderRadius(theme)}
         borderWidth={1}
         borderColor={theme.colors.primary}
         bg={theme.colors.background}
@@ -122,7 +123,7 @@ export function ObservableRuleEditor({
   return (
     <BaseVStack w="100%" h="100%" gap={10}>
       <ObservableConditionEditor
-        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderRadius={getBorderRadius(theme)}
         borderWidth={1}
         borderColor={theme.colors.primary}
         bg={theme.colors.background}

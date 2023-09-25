@@ -1,3 +1,4 @@
+import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { ViewStyle } from "react-native";
 import {
@@ -83,7 +84,7 @@ export function useModalStyle(): ViewStyle {
       margin: 10,
       padding: 10,
       borderWidth: 2,
-      borderRadius: (theme.isV3 ? 5 : 1) * theme.roundness,
+      borderRadius: getBorderRadius(theme),
       backgroundColor: theme.colors.background,
       borderColor: theme.colors.onBackground,
     }),

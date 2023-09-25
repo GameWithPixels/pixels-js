@@ -3,6 +3,7 @@ import {
   useVisibility,
   BaseHStack,
   BaseButton,
+  getBorderRadius,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -110,7 +111,7 @@ export function ProfilesList({
         key={profile.uuid}
         w="100%"
         h={100}
-        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderRadius={getBorderRadius(theme)}
         borderWidth={1}
         borderColor={theme.colors.primary}
         bg={theme.colors.background}

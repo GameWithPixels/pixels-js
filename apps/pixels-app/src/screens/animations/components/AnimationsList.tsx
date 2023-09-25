@@ -6,6 +6,7 @@ import {
   useVisibility,
   BaseButton,
   BaseHStack,
+  getBorderRadius,
 } from "@systemic-games/react-native-pixels-components";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -73,7 +74,7 @@ export function AnimationsList({
         key={anim.uuid}
         w="100%"
         h={100}
-        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderRadius={getBorderRadius(theme)}
         borderWidth={1}
         borderColor={theme.colors.primary}
         bg={theme.colors.background}

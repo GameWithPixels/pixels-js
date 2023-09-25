@@ -15,6 +15,7 @@ import {
   BaseHStack,
   BaseFlexProps,
   ProfileRuleCardProps,
+  getBorderRadius,
 } from "@systemic-games/react-native-pixels-components";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -180,7 +181,7 @@ const ObservableRulesListEditor = observer(function ({
   const renderItem = React.useCallback(
     ({ item: observableRule, drag, isActive }: RenderItemParams<EditRule>) => (
       <ObservableDraggableRuleItem
-        borderRadius={(theme.isV3 ? 5 : 1) * theme.roundness}
+        borderRadius={getBorderRadius(theme)}
         borderWidth={1}
         borderColor={theme.colors.primary}
         bg={theme.colors.background}
