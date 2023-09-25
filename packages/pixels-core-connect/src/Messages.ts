@@ -535,6 +535,67 @@ export class IAmADie implements PixelMessage {
 }
 
 /**
+ * Message send by a Pixel running a legacy firmware,
+ * after receiving a "WhoAmI" message.
+ * @category Message
+ */
+export class LegacyIAmADie implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.iAmADie;
+
+  /** Number of LEDs. */
+  @serializable(1)
+  ledCount = 0;
+
+  /** Die look. */
+  @serializable(1)
+  colorway = PixelColorwayValues.unknown;
+
+  /** Type of die. */
+  @serializable(1)
+  dieType = PixelDieTypeValues.unknown;
+
+  /** Hash of the uploaded profile. */
+  @serializable(4)
+  dataSetHash = 0;
+
+  /** The Pixel id. */
+  @serializable(4)
+  pixelId = 0;
+
+  /** Amount of available flash. */
+  @serializable(2)
+  availableFlashSize = 0;
+
+  /** UNIX timestamp in seconds for the date of the firmware. */
+  @serializable(4)
+  buildTimestamp = 0;
+
+  // Roll state
+
+  /** Current roll state. */
+  @serializable(1)
+  rollState = PixelRollStateValues.unknown;
+
+  /** Face index, starts at 0. */
+  @serializable(1)
+  currentFaceIndex = 0;
+
+  // Battery level
+
+  /** The battery charge level in percent. */
+  @serializable(1)
+  batteryLevelPercent = 0;
+
+  /** The charging state of the battery. */
+  @serializable(1)
+  batteryState = PixelBatteryStateValues.ok;
+
+  static readonly expectedSize = 22;
+}
+
+/**
  * Pixel roll states.
  * @enum
  * @category Message
@@ -1387,7 +1448,7 @@ export class PlayProfileAnimation implements PixelMessage {
 // Returns the list of message classes defined in this file.
 function _getMessageClasses(): MessageClass[] {
   return [
-    IAmADie,
+    LegacyIAmADie,
     RollState,
     Telemetry,
     BulkSetup,

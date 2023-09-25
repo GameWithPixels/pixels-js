@@ -55,6 +55,7 @@ import {
   PixelPowerOperationValues,
   PixelDieType,
   PixelDieTypeValues,
+  LegacyIAmADie,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 import { PixelInfoNotifier } from "./PixelInfoNotifier";
@@ -1052,35 +1053,64 @@ export class Pixel extends PixelInfoNotifier {
     const iAmADie = (await this.sendAndWaitForResponse(
       "whoAreYou",
       "iAmADie"
-    )) as IAmADie;
+    )) as IAmADie | LegacyIAmADie;
 
-    // We should have got the response
-    if (this._info.pixelId && this._info.pixelId !== iAmADie.dieInfo.pixelId) {
-      throw new PixelConnectIdMismatchError(this, iAmADie.dieInfo.pixelId);
+    if (iAmADie instanceof LegacyIAmADie) {
+      // We should have got the response
+      if (this._info.pixelId && this._info.pixelId !== iAmADie.pixelId) {
+        throw new PixelConnectIdMismatchError(this, iAmADie.pixelId);
+      }
+
+      // Update properties
+      this._info.ledCount = iAmADie.ledCount;
+      this._info.colorway =
+        getValueKeyName(iAmADie.colorway, PixelColorwayValues) ?? "unknown";
+      this._info.dieType =
+        getValueKeyName(iAmADie.dieType, PixelDieTypeValues) ?? "unknown";
+      this._info.pixelId = iAmADie.pixelId;
+      this._updateFirmwareDate(new Date(1000 * iAmADie.buildTimestamp));
+      this._updateBatteryInfo({
+        level: iAmADie.batteryLevelPercent,
+        isCharging: isPixelChargingOrDone(iAmADie.batteryState),
+      });
+      this._updateRollInfo({
+        state:
+          getValueKeyName(iAmADie.rollState, PixelRollStateValues) ?? "unknown",
+        face: iAmADie.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
+      });
+    } else {
+      // We should have got the response
+      if (
+        this._info.pixelId &&
+        this._info.pixelId !== iAmADie.dieInfo.pixelId
+      ) {
+        throw new PixelConnectIdMismatchError(this, iAmADie.dieInfo.pixelId);
+      }
+
+      // Update properties
+      this._info.ledCount = iAmADie.dieInfo.ledCount;
+      this._info.colorway =
+        getValueKeyName(iAmADie.dieInfo.colorway, PixelColorwayValues) ??
+        "unknown";
+      this._info.dieType =
+        getValueKeyName(iAmADie.dieInfo.dieType, PixelDieTypeValues) ??
+        "unknown";
+      this._info.pixelId = iAmADie.dieInfo.pixelId;
+      this._updateFirmwareDate(
+        new Date(1000 * iAmADie.firmwareInfo.buildTimestamp)
+      );
+      this._updateBatteryInfo({
+        level: iAmADie.statusInfo.batteryLevelPercent,
+        isCharging: isPixelChargingOrDone(iAmADie.statusInfo.batteryState),
+      });
+      this._updateRollInfo({
+        state:
+          getValueKeyName(iAmADie.statusInfo.rollState, PixelRollStateValues) ??
+          "unknown",
+        face:
+          iAmADie.statusInfo.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
+      });
     }
-
-    // Update properties
-    this._info.ledCount = iAmADie.dieInfo.ledCount;
-    this._info.colorway =
-      getValueKeyName(iAmADie.dieInfo.colorway, PixelColorwayValues) ??
-      "unknown";
-    this._info.dieType =
-      getValueKeyName(iAmADie.dieInfo.dieType, PixelDieTypeValues) ?? "unknown";
-    this._info.pixelId = iAmADie.dieInfo.pixelId;
-    this._updateFirmwareDate(
-      new Date(1000 * iAmADie.firmwareInfo.buildTimestamp)
-    );
-    this._updateBatteryInfo({
-      level: iAmADie.statusInfo.batteryLevelPercent,
-      isCharging: isPixelChargingOrDone(iAmADie.statusInfo.batteryState),
-    });
-    this._updateRollInfo({
-      state:
-        getValueKeyName(iAmADie.statusInfo.rollState, PixelRollStateValues) ??
-        "unknown",
-      face:
-        iAmADie.statusInfo.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
-    });
   }
 
   private _updateStatus(status: PixelStatus): void {
@@ -1201,7 +1231,8 @@ export class Pixel extends PixelInfoNotifier {
       }
       const msgOrType =
         dataView.byteLength &&
-        dataView.getUint8(0) === MessageTypeValues.iAmADie
+        dataView.getUint8(0) === MessageTypeValues.iAmADie &&
+        dataView.byteLength !== LegacyIAmADie.expectedSize
           ? this._deserializeImADie(dataView)
           : deserializeMessage(dataView);
       if (msgOrType) {
