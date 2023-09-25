@@ -65,6 +65,7 @@ export async function unzipEmbeddedDfuFilesAsync(): Promise<{
   factory: string[];
   others: string[];
 }> {
+  // Clear existing files
   const others = await unzipDfuFilesFromAssetsAsync(otherDfuFiles, {
     clearCache: true,
   });
@@ -74,7 +75,5 @@ export async function unzipEmbeddedDfuFilesAsync(): Promise<{
 }
 
 export async function unzipFactoryDfuFilesAsync(): Promise<string[]> {
-  return await unzipDfuFilesFromAssetsAsync(factoryDfuFiles, {
-    clearCache: true,
-  });
+  return await unzipDfuFilesFromAssetsAsync(factoryDfuFiles);
 }

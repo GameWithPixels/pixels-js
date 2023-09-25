@@ -11,9 +11,7 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
-import dfuBundlesReducer, {
-  DfuBundleState,
-} from "~/features/store/dfuBundlesSlice";
+import dfuBundlesReducer from "~/features/store/dfuBundlesSlice";
 import displaySettingsReducer, {
   DisplaySettingsState,
 } from "~/features/store/displaySettingsSlice";
@@ -25,7 +23,9 @@ const conf = { key: "user", storage: AsyncStorage };
 
 export const store = configureStore({
   reducer: {
-    dfuBundles: persistReducer<DfuBundleState>(conf, dfuBundlesReducer),
+    // Don't persist DFU bundles so they are always updated
+    // and imported ones are removed on reload
+    dfuBundles: dfuBundlesReducer,
     displaySettings: persistReducer<DisplaySettingsState>(
       conf,
       displaySettingsReducer

@@ -3,7 +3,7 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
-import { unzipEmbeddedDfuFilesAsync as unzipAppDfuFiles } from "~/features/dfu/unzip";
+import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
 import { resetEmbeddedDfuBundles } from "~/features/store/dfuBundlesSlice";
 
 export class NoDfuFileLoadedError extends Error {
@@ -26,7 +26,7 @@ export function useAppDfuFilesBundles(): [
     if (available.every((item) => item.kind === "imported")) {
       const unzipAll = async () => {
         // Unzip app DFU files
-        const files = await unzipAppDfuFiles();
+        const files = await unzipEmbeddedDfuFilesAsync();
         // Group them in DFU bundles
         const factory = await DfuFilesBundle.createMany(
           files.factory.map((p) => getDfuFileInfo(p))
