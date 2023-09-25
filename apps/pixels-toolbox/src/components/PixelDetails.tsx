@@ -93,16 +93,19 @@ function BaseInfo({ pixel }: { pixel: Pixel }) {
       <TextEntry title={t("pixelId")}>
         {pixel.pixelId.toString(16)}
         {t("commaSeparator")}
-        {pixel.ledCount} {t("leds")}
       </TextEntry>
-      <TextEntry title={t("characteristics")}>
+      <TextEntry title={t("descriptionAbbrev")}>
         {pixel.dieType === "unknown" ? t("unknownDieType") : t(pixel.dieType)}
         {pixel.colorway === "unknown"
           ? ""
           : t("commaSeparator") + t(pixel.colorway)}
+        {t("commaSeparator")}
+        {pixel.ledCount} {t("leds")}
       </TextEntry>
       <TextEntry title={t("firmware")}>
-        {pixel.firmwareDate.toString()}
+        {pixel.firmwareDate.toLocaleDateString()}
+        {t("commaSeparator")}
+        {pixel.firmwareDate.toLocaleTimeString()}
       </TextEntry>
     </>
   );
@@ -277,10 +280,12 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             )}
           </TextEntry>
           <TextEntry title={t("batteryControllerState")}>
-            {getValueKeyName(
-              telemetry?.batteryControllerState,
-              PixelBatteryControllerStateValues
-            ) ?? "unknown"}
+            {capitalize(
+              getValueKeyName(
+                telemetry?.batteryControllerState,
+                PixelBatteryControllerStateValues
+              ) ?? "unknown"
+            )}
           </TextEntry>
           <TextEntry title={t("internalChargerState")}>
             {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff")}

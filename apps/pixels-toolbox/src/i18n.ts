@@ -146,6 +146,7 @@ i18n
           setFixedRainbowProfile: "Upload Static Hello",
           setFixedRainbowProfileD4: "Upload Static D4",
           unknownDieType: "Unknown Die Type",
+          descriptionAbbrev: "Desc.",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -440,6 +441,7 @@ i18n
           scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
           connectionErrorTryAgain: "Connection error, reset device and try again.",
           dieTypeMismatch: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
+          descriptionAbbrev: "Desc.",
 
           // Roll Screen
           rollDemo: "Roll Demo",
