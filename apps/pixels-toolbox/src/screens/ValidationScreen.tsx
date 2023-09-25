@@ -30,6 +30,7 @@ import {
 } from "react-native-vision-camera";
 
 import { AppPage } from "~/components/AppPage";
+import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import {
   CheckBoard,
@@ -275,7 +276,7 @@ function DecodePixelIdPage({
   }, [cameraPermission, device, errorHandler, t]);
 
   // Frame processor for decoding PixelId
-  const [frameProcessor, pixelId, lastColor, info, lastError] =
+  const [frameProcessor, decoderState, lastError] =
     usePixelIdDecoderFrameProcessor();
 
   // Log FPS suggestions for frame processor
@@ -288,17 +289,17 @@ function DecodePixelIdPage({
   );
   // Notify when pixel id has been decoded
   React.useEffect(() => {
-    if (pixelId) {
-      onDecodedPixelId(pixelId);
+    if (decoderState.pixelId) {
+      onDecodedPixelId(decoderState.pixelId);
     }
-  }, [onDecodedPixelId, pixelId]);
+  }, [onDecodedPixelId, decoderState.pixelId]);
 
   // Monitor color changes
   const lastColorChangesRef = React.useRef<number[]>([]);
   const [readingColors, setReadingColors] = React.useState(false);
   React.useEffect(() => {
     const lastColorsChanges = lastColorChangesRef.current;
-    if (lastColor) {
+    if (decoderState.scanColor) {
       const now = Date.now();
       lastColorsChanges.push(now);
       if (lastColorsChanges.length >= 5) {
@@ -314,7 +315,7 @@ function DecodePixelIdPage({
         }
       }
     }
-  }, [lastColor]);
+  }, [decoderState.scanColor]);
 
   // Scan list
   const [showScanList, setShowScanList] = React.useState(false);
@@ -351,36 +352,40 @@ function DecodePixelIdPage({
       ) : (
         <Text variant="headlineSmall">{t("startingCamera")}</Text>
       )}
-      {(!readingColors || lastError) && (
-        // Show message on top
-        <FastBox position="absolute" top={0} w="100%" p={10}>
-          <Card>
-            <Card.Content style={{ flexDirection: "row", gap: 10 }}>
-              {lastError ? (
-                <Card.Content style={{ flex: 1 }}>
-                  <Text
-                    variant="bodyLarge"
-                    style={{ flex: 1, color: theme.colors.error }}
-                  >{`${lastError}`}</Text>
-                </Card.Content>
-              ) : (
-                <Text variant="bodyLarge" style={{ flex: 1 }}>
-                  {t("resetUsingMagnetWithFormFactor", {
-                    formFactor: t(getBoardOrDie(settings.sequence)),
-                  })}
-                </Text>
-              )}
-              <Button
-                mode="contained-tonal"
-                onPress={() => setShowScanList(true)}
-              >
-                {t("scan")}
-              </Button>
-            </Card.Content>
-          </Card>
-        </FastBox>
-      )}
-      {/* Show info and back button on bottom */}
+      {/* Show message on top */}
+      <FastBox position="absolute" top={0} w="100%" p={10}>
+        <Card>
+          <Card.Content style={{ flexDirection: "row", gap: 10 }}>
+            {!readingColors || lastError ? (
+              <>
+                {lastError ? (
+                  <Card.Content style={{ flex: 1 }}>
+                    <Text
+                      variant="bodyLarge"
+                      style={{ flex: 1, color: theme.colors.error }}
+                    >{`${lastError}`}</Text>
+                  </Card.Content>
+                ) : (
+                  <Text variant="bodyLarge" style={{ flex: 1 }}>
+                    {t("resetUsingMagnetWithFormFactor", {
+                      formFactor: t(getBoardOrDie(settings.sequence)),
+                    })}
+                  </Text>
+                )}
+                <Button
+                  mode="contained-tonal"
+                  onPress={() => setShowScanList(true)}
+                >
+                  {t("scan")}
+                </Button>
+              </>
+            ) : (
+              <ProgressBar percent={Math.round(100 * decoderState.progress)} />
+            )}
+          </Card.Content>
+        </Card>
+      </FastBox>
+      {/* Bottom button */}
       <FastBox position="absolute" bottom={0} w="100%" p={10}>
         <Card>
           <Card.Content
@@ -393,7 +398,9 @@ function DecodePixelIdPage({
             <Text variant="bodyLarge">{getTestingMessage(t, settings)}</Text>
             <BottomButton onPress={onBack}>{t("back")}</BottomButton>
           </Card.Content>
-          <Text style={{ alignSelf: "center", marginVertical: 2 }}>{info}</Text>
+          <Text style={{ alignSelf: "center", marginVertical: 2 }}>
+            {decoderState.info}
+          </Text>
         </Card>
       </FastBox>
     </FastVStack>

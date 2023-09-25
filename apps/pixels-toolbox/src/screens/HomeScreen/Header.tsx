@@ -12,7 +12,7 @@ function getVersion(): string {
     // and we remove any extra 0 sub versions.
     const parts = version.split(".");
     try {
-      while (parts.length > 2 && Number(parts[parts.length - 1]) === 0) {
+      while (parts.length > 2 && Number(parts.at(-1)) === 0) {
         parts.pop();
       }
       if (parts.length <= 1) {

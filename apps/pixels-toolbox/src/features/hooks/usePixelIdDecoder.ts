@@ -5,6 +5,7 @@ import PixelIdDecoder, { RbgColor } from "~/features/pixels/PixelIdDecoder";
 
 export interface PixelIdDecoderState {
   pixelId: number;
+  progress: number;
   scanColor?: RbgColor;
   info?: string;
 }
@@ -26,7 +27,10 @@ export function usePixelIdDecoder(): [
     frames: [] as { timestamp: number; duration: number }[],
   });
   // Store the state that is returned
-  const [state, setState] = React.useState<PixelIdDecoderState>({ pixelId: 0 });
+  const [state, setState] = React.useState<PixelIdDecoderState>({
+    pixelId: 0,
+    progress: 0,
+  });
 
   const processRgbAverages = React.useCallback(
     (action: PixelIdDecoderAction) => {
@@ -34,6 +38,7 @@ export function usePixelIdDecoder(): [
       // Prepare to decode Pixel id
       const decoder = data.pixelIdDecoder;
       let pixelId: number | undefined;
+      let progress = 0;
       let scanColor: RbgColor | undefined;
       // Reset?
       if (action.reset) {
@@ -51,16 +56,15 @@ export function usePixelIdDecoder(): [
         });
         // Try to decode id
         const time = action.rgbAverages.timestamp;
-        const decodedValue = decoder.processFrameResult(
+        ({ value: pixelId, progress } = decoder.processFrameResult(
           action.rgbAverages.redAverage,
           action.rgbAverages.greenAverage,
           action.rgbAverages.blueAverage,
           time
-        );
+        ));
 
         // Update device id
-        if (decodedValue !== undefined) {
-          pixelId = decodedValue;
+        if (pixelId !== undefined) {
           data.lastResultTimestamp = time;
         }
         // Reset result if it hasn't been updated for a while
@@ -78,7 +82,11 @@ export function usePixelIdDecoder(): [
         if (pixelId === undefined) {
           pixelId = state.pixelId;
         }
-        if (pixelId !== state.pixelId || scanColor !== state.scanColor) {
+        if (
+          pixelId !== state.pixelId ||
+          progress !== state.progress ||
+          scanColor !== state.scanColor
+        ) {
           // Compute stats
           const frames = data.frames;
           const fps =
@@ -93,11 +101,12 @@ export function usePixelIdDecoder(): [
               frames.length // Length can't be 0
           );
           const avg = action.rgbAverages;
-          // Note: we only update this info when the pixel id or the decoded color changes
+          // Note: only update the info when some other value has changed
+          //       to limit the number of re-render
           const info =
             avg &&
             `res:${avg.imageWidth}x${avg?.imageHeight} ss:${avg.widthSubSampling}x${avg.heightSubSampling} fps:${fps} cpu:${cpu}ms`;
-          return { pixelId, scanColor, info };
+          return { pixelId, progress, scanColor, info };
         } else {
           return state;
         }

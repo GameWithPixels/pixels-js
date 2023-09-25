@@ -3,17 +3,13 @@ import React from "react";
 import { runOnJS } from "react-native-reanimated";
 import { Frame, useFrameProcessor } from "react-native-vision-camera";
 
-import { usePixelIdDecoder } from "./usePixelIdDecoder";
-
-import { RbgColor } from "~/features/pixels/PixelIdDecoder";
+import { PixelIdDecoderState, usePixelIdDecoder } from "./usePixelIdDecoder";
 
 export type FrameProcessor = (frame: Frame) => void;
 
 export function usePixelIdDecoderFrameProcessor(): [
   FrameProcessor,
-  number, // Pixel id
-  RbgColor?, // Color
-  string?, // Some info about the frame processor performance
+  PixelIdDecoderState,
   Error?
 ] {
   const [lastError, setLastError] = React.useState<Error>();
@@ -37,11 +33,5 @@ export function usePixelIdDecoderFrameProcessor(): [
     [decoderDispatch]
   );
 
-  return [
-    frameProcessor,
-    decoderState.pixelId,
-    decoderState.scanColor,
-    decoderState.info,
-    lastError,
-  ];
+  return [frameProcessor, decoderState, lastError];
 }

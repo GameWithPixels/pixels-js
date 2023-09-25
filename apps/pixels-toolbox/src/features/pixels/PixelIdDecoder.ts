@@ -49,7 +49,7 @@ export default class PixelIdDecoder {
     greenAverage: number,
     blueAverage: number,
     timestamp: number
-  ): number | undefined {
+  ): { value?: number; progress: number } {
     // Keep the color averages and time values
     const numFrames = this._redValues.length;
     if (numFrames >= 2 * messageFrameCount) {
@@ -63,66 +63,70 @@ export default class PixelIdDecoder {
     this._blueValues.push(blueAverage);
     this._timeValues.push(timestamp);
 
-    if (numFrames >= messageBitCount) {
-      // First compute average for each color channel
-      const redAvg = this._redValues.reduce((acc, v) => acc + v, 0) / numFrames;
-      const greenAvg =
-        this._greenValues.reduce((acc, v) => acc + v, 0) / numFrames;
-      const blueAvg =
-        this._blueValues.reduce((acc, v) => acc + v, 0) / numFrames;
+    // First compute average for each color channel
+    const redAvg = this._redValues.reduce((acc, v) => acc + v, 0) / numFrames;
+    const greenAvg =
+      this._greenValues.reduce((acc, v) => acc + v, 0) / numFrames;
+    const blueAvg = this._blueValues.reduce((acc, v) => acc + v, 0) / numFrames;
 
-      // Go through frames from the last to the first
-      const colors: RbgColor[] = [];
-      let lastColorTime = 0;
-      for (let i = numFrames - 1; i >= 0; --i) {
-        // Normalize color channels
-        const r = this._redValues[i] / redAvg;
-        const g = this._greenValues[i] / greenAvg;
-        const b = this._blueValues[i] / blueAvg;
-        const t = this._timeValues[i];
-        // Get dominance for each channel
-        const rd = r / Math.max(g, b);
-        const gd = g / Math.max(r, b);
-        const bd = b / Math.max(r, g);
-        // Get dominant channel (if any)
-        const threshold = 0.03; // 3%
-        const color =
-          rd - gd > threshold && rd - bd > threshold
-            ? "red"
-            : gd - rd > threshold && gd - bd > threshold
-            ? "green"
-            : bd - rd > threshold && bd - gd > threshold
-            ? "blue"
-            : undefined;
-        if (!lastColorTime) {
-          this._lastFrameColor = color;
-        }
-        if (color && (!colors.length || colors.at(-1) !== color)) {
-          // Use color if different from last one
-          colors.push(color);
-          lastColorTime = t;
-          // Check if we have already enough colors
-          const len = colors.length;
-          if (len >= messageBitCount) {
-            // Check that the last colors match the expected header
-            // (and which were emitted first as we traverse the color channels in reverse order)
-            let equal = true;
-            for (let j = 0; j < headerBitsCount && equal; ++j) {
-              equal = colors[len - j - 1] === header[j];
-            }
-            if (equal) {
-              // Decode the colors to get the Pixel id
-              return this.decodeColors(
-                colors.slice(len - messageBitCount, len).reverse()
-              );
-            }
+    // Go through frames from the last to the first
+    const colors: RbgColor[] = [];
+    let lastColorTime = 0;
+    for (let i = numFrames - 1; i >= 0; --i) {
+      // Normalize color channels
+      const r = this._redValues[i] / redAvg;
+      const g = this._greenValues[i] / greenAvg;
+      const b = this._blueValues[i] / blueAvg;
+      const t = this._timeValues[i];
+      // Get dominance for each channel
+      const rd = r / Math.max(g, b);
+      const gd = g / Math.max(r, b);
+      const bd = b / Math.max(r, g);
+      // Get dominant channel (if any)
+      const threshold = 0.03; // 3%
+      const color =
+        rd - gd > threshold && rd - bd > threshold
+          ? "red"
+          : gd - rd > threshold && gd - bd > threshold
+          ? "green"
+          : bd - rd > threshold && bd - gd > threshold
+          ? "blue"
+          : undefined;
+      if (!lastColorTime) {
+        this._lastFrameColor = color;
+      }
+      if (color && colors.at(-1) !== color) {
+        // Use color if different from last one
+        colors.push(color);
+        lastColorTime = t;
+        // Check if we have already enough colors
+        const len = colors.length;
+        if (len >= messageBitCount) {
+          // Check that the last colors match the expected header
+          // (and which were emitted first as we traverse the color channels in reverse order)
+          let equal = true;
+          for (let j = 0; j < headerBitsCount && equal; ++j) {
+            equal = colors[len - j - 1] === header[j];
           }
-        } else if (lastColorTime - t > 2 * bitDuration) {
-          // Reset if the color didn't change for a while
-          colors.length = 0;
+          let value: number | undefined;
+          if (equal) {
+            // Decode the colors to get the Pixel id
+            value = this.decodeColors(
+              colors.slice(len - messageBitCount, len).reverse()
+            );
+          }
+          return { value, progress: 1 };
         }
+      } else if (lastColorTime - t > 2 * bitDuration) {
+        // Stop if the color didn't change for a while
+        break;
       }
     }
+    return {
+      // Do not take first frame into account as there always almost at least one
+      progress:
+        colors.length <= 1 ? 0 : (colors.length - 1) / (messageBitCount - 1),
+    };
   }
 
   private computeCrc(value: number): number {
