@@ -347,10 +347,13 @@ export interface ValidationTestProps extends TaskComponentProps {
   settings: ValidationTestsSettings;
 }
 
-interface UpdateFirmwareProps extends Omit<ValidationTestProps, "pixel"> {
+export type UpdateFirmwareStatus = "updating" | "success" | "error";
+
+export interface UpdateFirmwareProps
+  extends Omit<ValidationTestProps, "pixel"> {
   pixelId: number;
   onPixelFound?: (pixel: Pixel) => void;
-  onFirmwareUpdated?: () => void;
+  onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }
 
 // Note: Pixel should be disconnected by parent component
@@ -359,7 +362,7 @@ export function UpdateFirmware({
   onTaskStatus,
   pixelId,
   onPixelFound,
-  onFirmwareUpdated,
+  onFirmwareUpdate,
 }: UpdateFirmwareProps) {
   const { t } = useTranslation();
 
@@ -449,26 +452,32 @@ export function UpdateFirmware({
             !areSameFirmwareDates(dfuBundle.date, dfuTarget.firmwareDate) &&
             dfuBundle.date > dfuTarget.firmwareDate
           ) {
+            onFirmwareUpdate?.("updating");
             // Prepare for updating firmware
             const blPath = dfuBundle.bootloader.pathname;
             const fwPath = dfuBundle.firmware.pathname;
             const updateFW = async (blAddr?: number) => {
               let dfuState: DfuState | undefined;
-              await updateFirmware(
-                blAddr ?? dfuTarget,
-                blPath,
-                fwPath,
-                (s) => {
-                  dfuState = s;
-                  setDfuState(s);
-                },
-                setDfuProgress,
-                !!blAddr
-              );
-              if (dfuState === "aborted") {
-                throw new Error("Firmware update aborted");
-              } else if (dfuState === "completed") {
-                onFirmwareUpdated?.();
+              try {
+                await updateFirmware(
+                  blAddr ?? dfuTarget,
+                  blPath,
+                  fwPath,
+                  (s) => {
+                    dfuState = s;
+                    setDfuState(s);
+                  },
+                  setDfuProgress,
+                  !!blAddr
+                );
+                if (dfuState === "aborted") {
+                  throw new Error("Firmware update aborted");
+                } else if (dfuState === "completed") {
+                  onFirmwareUpdate?.("success");
+                }
+              } catch (error) {
+                onFirmwareUpdate?.("error");
+                throw error;
               }
             };
             // Update firmware
@@ -492,7 +501,7 @@ export function UpdateFirmware({
           // Pixel is already disconnected if DFU has proceeded
           await Central.disconnectPeripheral(dfuTarget.systemId);
         }
-      }, [scannedPixel, onFirmwareUpdated]),
+      }, [scannedPixel, onFirmwareUpdate]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
         children: (
@@ -517,7 +526,7 @@ export function UpdateFirmware({
   );
 }
 
-interface ConnectPixelProps extends Omit<ValidationTestProps, "pixel"> {
+export interface ConnectPixelProps extends Omit<ValidationTestProps, "pixel"> {
   pixelId: number;
   onPixelFound?: (pixel: Pixel) => void;
   pixel?: Pixel;
@@ -602,7 +611,7 @@ export function ConnectPixel({
   return <TaskChainComponent title={t("connect")} taskChain={taskChain} />;
 }
 
-interface ValidationTestCheckBoardProps extends ValidationTestProps {
+export interface ValidationTestCheckBoardProps extends ValidationTestProps {
   firmwareUpdated: boolean;
 }
 

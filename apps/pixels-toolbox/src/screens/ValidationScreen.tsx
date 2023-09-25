@@ -45,6 +45,7 @@ import {
   TurnOffDevice,
   StoreSettings,
   LabelPrinting,
+  UpdateFirmwareStatus,
 } from "~/components/ValidationTestsComponents";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
 import { PrintStatus } from "~/features/labels/printLabelAsync";
@@ -98,12 +99,9 @@ function getTestingMessage(
   });
 }
 
-function BottomButton({
-  children,
-  onPress,
-}: Pick<ButtonProps, "children" | "onPress">) {
+function BottomButton({ children, ...props }: Omit<ButtonProps, "style">) {
   return (
-    <Button mode="outlined" style={gs.fullWidth} onPress={onPress}>
+    <Button mode="outlined" style={gs.fullWidth} {...props}>
       {children}
     </Button>
   );
@@ -422,11 +420,8 @@ function RunTestsPage({
   const { t } = useTranslation();
   const [pixel, setPixel] = React.useState<Pixel>();
   const [cancel, setCancel] = React.useState(false);
-  const [firmwareUpdated, setFirmwareUpdated] = React.useState(false);
-  const onFirmwareUpdated = React.useCallback(
-    () => setFirmwareUpdated(true),
-    []
-  );
+  const [firmwareUpdateStatus, setFirmwareUpdateStatus] =
+    React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
   // Some conditions to filter tests
@@ -447,7 +442,7 @@ function RunTestsPage({
           pixelId={pixelId}
           settings={settings}
           onPixelFound={setPixel}
-          onFirmwareUpdated={onFirmwareUpdated}
+          onFirmwareUpdate={setFirmwareUpdateStatus}
         />
       ))
     )
@@ -479,7 +474,7 @@ function RunTestsPage({
               {...p}
               pixel={pixel}
               settings={settings}
-              firmwareUpdated={firmwareUpdated}
+              firmwareUpdated={firmwareUpdateStatus === "success"}
             />
           )}
         </>
@@ -647,7 +642,10 @@ function RunTestsPage({
           </FastVStack>
         )}
       </ScrollView>
-      <BottomButton onPress={onOkCancel}>
+      <BottomButton
+        disabled={firmwareUpdateStatus === "updating"}
+        onPress={onOkCancel}
+      >
         {result ? t("next") : t("cancel")}
       </BottomButton>
     </FastVStack>
