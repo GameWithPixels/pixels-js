@@ -36,6 +36,7 @@ import {
   PixelDieType,
   HelloGoodbyeFlagsValues,
   ScannedPixelNotifierMutableProps,
+  PixelInfo,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -361,10 +362,12 @@ class PixelDispatcher
       write("received", msgOrType)
     );
     // Forward scanned pixel property events
+    function copyProp<T, Key extends keyof T>(src: T, dst: T, key: Key) {
+      dst[key] = src[key];
+    }
     for (const prop of ScannedPixelNotifier.ExtendedMutablePropsList) {
       scannedPixel.addPropertyListener(prop, () => {
-        // @ts-ignore TypeScript doesn't recognize that the prop is same on both side
-        this._info[prop] = scannedPixel[prop];
+        copyProp(scannedPixel, this._info, prop);
         this.emitPropertyEvent(prop);
         if (prop === "timestamp") {
           this.emitPropertyEvent("lastScanUpdate");
@@ -376,10 +379,9 @@ class PixelDispatcher
     }
     // Forward pixel instance property events
     for (const prop of PixelInfoNotifier.MutablePropsList) {
-      this._pixel.addPropertyListener(prop, () => {
-        // @ts-ignore TypeScript doesn't recognize that the prop on both side is the same
-        this._info[prop] = scannedPixel[prop];
-      });
+      this._pixel.addPropertyListener(prop, () =>
+        copyProp(this._pixel as PixelInfo, this._info, prop)
+      );
     }
     // Forward and monitor status
     this._pixel.addEventListener("status", (status) => {
@@ -511,12 +513,13 @@ class PixelDispatcher
   }
 
   private _guard(promise: Promise<unknown>, action: string): void {
-    promise?.catch((error) =>
+    promise?.catch((error) => {
+      console.log(`[${this.name}] PixelDispatcher error: ${error}`);
       this._evEmitter.emit(
         "error",
         new PixelDispatcherError(this, `Action ${action} failed`, error)
-      )
-    );
+      );
+    });
   }
 
   private _updateLastActivity(): void {

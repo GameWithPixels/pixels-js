@@ -13,6 +13,7 @@ import {
   Pixel,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
+  PixelInfoNotifier,
   PixelRollStateValues,
   usePixelStatus,
   usePixelValue,
@@ -85,7 +86,7 @@ function Button({ ...props }: Omit<ButtonProps, "style">) {
   return <PaperButton mode="contained-tonal" {...props} />;
 }
 
-function BaseInfo({ pixel }: { pixel: Pixel }) {
+function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
@@ -644,11 +645,8 @@ export function PixelDetails({
 
   // Connect on mount
   React.useEffect(() => {
-    // TODO it shouldn't be necessary to do this check
-    if (pd.pixel.status === "disconnected") {
-      pd.pixel.connect().catch(setLastError);
-    }
-  }, [pd]);
+    pixel.connect().catch(setLastError);
+  }, [pixel]);
 
   // Profile upload
   const [uploadProgress, setUploadProgress] = React.useState<number>();
@@ -715,7 +713,7 @@ export function PixelDetails({
       <View style={AppStyles.mv3} />
       <Card>
         <Card.Content>
-          <BaseInfo pixel={pixel} />
+          <BaseInfo pixel={pd} />
           <TelemetryInfo pixel={pixel} />
         </Card.Content>
       </Card>
