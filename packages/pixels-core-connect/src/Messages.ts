@@ -399,34 +399,31 @@ export interface MessageChunk {
   chunkSize: number;
 }
 
-export class VersionInfo implements MessageChunk {
+export class VersionInfoChunk implements MessageChunk {
   /** Size in bytes of the version info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
 
+  @serializable(2)
+  firmwareVersion = 0;
+
   @serializable(4)
-  apiVersion = 0;
-
-  @serializable(4)
-  profileVersion = 0;
+  buildTimestamp = 0;
 
   @serializable(2)
-  tier1 = 0;
+  settingsVersion = 0;
 
   @serializable(2)
-  tier2 = 0;
+  compatStandardApiVersion = 0;
 
   @serializable(2)
-  tier3 = 0;
+  compatExtendedApiVersion = 0;
 
   @serializable(2)
-  tier4 = 0;
-
-  @serializable(2)
-  tier5 = 0;
+  compatManagementApiVersion = 0;
 }
 
-export class DieInfo implements MessageChunk {
+export class DieInfoChunk implements MessageChunk {
   /** Size in bytes of the die info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -448,37 +445,28 @@ export class DieInfo implements MessageChunk {
   /** Die look. */
   @serializable(1)
   colorway = PixelColorwayValues.unknown;
-
-  @serializable(32)
-  customDesignAndColorName = ""; // Set only when designAndColor is custom
-
-  @serializable(32)
-  name = "";
-
-  @serializable(2)
-  plop = 0;
 }
 
-export class FirmwareInfo implements MessageChunk {
-  /** Size in bytes of the die info data chunk. */
+export class CustomDesignAndColorNameChunk implements MessageChunk {
   @serializable(1)
-  chunkSize = byteSizeOf(this);
+  chunkSize = 0;
 
-  /** UNIX timestamp in seconds for the date of the firmware. */
-  @serializable(4)
-  buildTimestamp = 0;
-
-  // @serializable(4)
-  // firmwareVersion = 0;
+  @serializable(0, { terminator: true })
+  name = "";
 }
 
-export class SettingsInfo implements MessageChunk {
+export class DieNameChunk implements MessageChunk {
+  @serializable(1)
+  chunkSize = 0;
+
+  @serializable(0, { terminator: true })
+  name = "";
+}
+
+export class SettingsInfoChunk implements MessageChunk {
   /** Size in bytes of the settings info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
-
-  @serializable(4)
-  settingsTimeStamp = 0;
 
   /** Hash of the uploaded profile. */
   @serializable(4)
@@ -493,7 +481,7 @@ export class SettingsInfo implements MessageChunk {
   totalUsableFlash = 0;
 }
 
-export class StatusInfo implements MessageChunk {
+export class StatusInfoChunk implements MessageChunk {
   /** Size in bytes of the battery info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -527,11 +515,12 @@ export class IAmADie implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.iAmADie;
 
-  versionInfo = new VersionInfo();
-  dieInfo = new DieInfo();
-  firmwareInfo = new FirmwareInfo();
-  settingsInfo = new SettingsInfo();
-  statusInfo = new StatusInfo();
+  versionInfo = new VersionInfoChunk();
+  dieInfo = new DieInfoChunk();
+  customDesignAndColorName = new CustomDesignAndColorNameChunk();
+  dieName = new DieNameChunk();
+  settingsInfo = new SettingsInfoChunk();
+  statusInfo = new StatusInfoChunk();
 }
 
 /**
@@ -900,7 +889,7 @@ export class DebugLog implements PixelMessage {
   readonly type = MessageTypeValues.debugLog;
 
   /** The message to log. */
-  @serializable(Constants.maxMessageSize)
+  @serializable(0, { terminator: true })
   message = "";
 }
 

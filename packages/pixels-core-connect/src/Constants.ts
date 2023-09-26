@@ -17,4 +17,10 @@ export const Constants = {
 
   /** The maximum size of messages send to a Pixel. */
   maxMessageSize: 100,
+
+  /** Messages and related data structures version number. */
+  apiVersion: 256,
+
+  /** Minimum compatible version for the messages and related data structures. */
+  compatApiVersion: 256,
 } as const;

@@ -119,3 +119,28 @@ export class PixelWaitForMessageDisconnectError extends PixelError {
     this.name = "PixelMessageConnectStatusError";
   }
 }
+
+/**
+ * Thrown by methods of the {@link Pixel} class when trying to send a message which
+ * is incompatible with the current firmware running on the die.
+ * @category Pixels
+ */
+export class PixelIncompatibleMessageError extends PixelConnectError {
+  constructor(
+    pixel: Pixel,
+    name: string,
+    libApiVersion: number,
+    fwApiVersion: number,
+    compat: "library" | "firmware"
+  ) {
+    super(
+      pixel,
+      `Message ${name} cannot be send, firmware ${
+        compat === "firmware" ? "compat. " : ""
+      } API version is ${fwApiVersion} but library ${
+        compat === "library" ? "compat. " : ""
+      } API version is ${libApiVersion}`
+    );
+    this.name = "PixelConnectIncompatibleFirmwareError";
+  }
+}

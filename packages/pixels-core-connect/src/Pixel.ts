@@ -56,6 +56,7 @@ import {
   PixelDieType,
   PixelDieTypeValues,
   LegacyIAmADie,
+  VersionInfoChunk,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 import { PixelInfoNotifier } from "./PixelInfoNotifier";
@@ -66,6 +67,7 @@ import {
   PixelConnectIdMismatchError,
   PixelConnectTimeoutError,
   PixelError,
+  PixelIncompatibleMessageError,
   PixelWaitForMessageDisconnectError as WaitMsgDiscoErr,
   PixelWaitForMessageTimeoutError as WaitMsgTimeoutErr,
 } from "./errors";
@@ -185,6 +187,10 @@ export class Pixel extends PixelInfoNotifier {
 
   // Pixel data
   private readonly _info: Mutable<PixelInfo>;
+  private readonly _versions: Omit<
+    VersionInfoChunk,
+    "chunkSize" | "buildTimestamp"
+  >;
 
   // Clean-up
   private _disposeFunc: () => void;
@@ -329,6 +335,13 @@ export class Pixel extends PixelInfoNotifier {
       rollState: "unknown",
       currentFace: 0,
     };
+    this._versions = {
+      firmwareVersion: 0,
+      settingsVersion: 0,
+      compatStandardApiVersion: 0,
+      compatExtendedApiVersion: 0,
+      compatManagementApiVersion: 0,
+    };
 
     // Listen to session connection status changes
     session.setConnectionEventListener(({ connectionStatus }) => {
@@ -428,7 +441,7 @@ export class Pixel extends PixelInfoNotifier {
       }
       // Firmware data
       if (info.firmwareDate) {
-        this._updateFirmwareDate(info.firmwareDate);
+        this._updateFirmwareDate(info.firmwareDate.getTime());
       }
       // RSSI
       if (info.rssi !== undefined) {
@@ -635,13 +648,17 @@ export class Pixel extends PixelInfoNotifier {
       };
       this.addEventListener("status", statusListener);
       // 3. Setup timeout
-      const timeoutId = setTimeout(() => {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      timeoutId = setTimeout(() => {
+        timeoutId = undefined;
         cleanup();
         reject(new WaitMsgTimeoutErr(this, timeoutMs, expectedMsgType));
       }, timeoutMs);
       cleanup = () => {
         // Cancel timeout and unhook listeners
-        clearTimeout(timeoutId);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
         this.removeMessageListener(expectedMsgType, messageListener);
         this.removeEventListener("status", statusListener);
       };
@@ -662,10 +679,33 @@ export class Pixel extends PixelInfoNotifier {
       const msgName = getMessageType(msgOrType);
       this._log(`Sending message ${msgName} (${MessageTypeValues[msgName]})`);
     }
+    // Check API version
+    const fwVer = this._versions.firmwareVersion;
+    if (fwVer > 0 && Constants.compatApiVersion > fwVer) {
+      throw new PixelIncompatibleMessageError(
+        this,
+        getMessageType(msgOrType),
+        Constants.compatApiVersion,
+        fwVer,
+        "library"
+      );
+    }
+    const fwCompatVer = this._versions.compatStandardApiVersion;
+    if (fwCompatVer > 0 && Constants.apiVersion < fwCompatVer) {
+      throw new PixelIncompatibleMessageError(
+        this,
+        getMessageType(msgOrType),
+        Constants.apiVersion,
+        fwCompatVer,
+        "firmware"
+      );
+    }
+    // Deserialize message
     const data = serializeMessage(msgOrType);
     if (this._logData) {
       this._logArray(data);
     }
+    // And send it
     await this._session.writeValue(data, withoutAck);
     this._evEmitter.emit("messageSend", msgOrType);
   }
@@ -1045,6 +1085,12 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   private async _internalSetup(): Promise<void> {
+    // Reset version numbers
+    let verProp: keyof typeof this._versions;
+    for (verProp in this._versions) {
+      this._versions[verProp] = 0;
+    }
+
     // Subscribe to get messages from die
     await this._session.subscribe((dv: DataView) => this._onValueChanged(dv));
 
@@ -1068,7 +1114,7 @@ export class Pixel extends PixelInfoNotifier {
       this._info.dieType =
         getValueKeyName(iAmADie.dieType, PixelDieTypeValues) ?? "unknown";
       this._info.pixelId = iAmADie.pixelId;
-      this._updateFirmwareDate(new Date(1000 * iAmADie.buildTimestamp));
+      this._updateFirmwareDate(1000 * iAmADie.buildTimestamp);
       this._updateBatteryInfo({
         level: iAmADie.batteryLevelPercent,
         isCharging: isPixelChargingOrDone(iAmADie.batteryState),
@@ -1078,6 +1124,14 @@ export class Pixel extends PixelInfoNotifier {
           getValueKeyName(iAmADie.rollState, PixelRollStateValues) ?? "unknown",
         face: iAmADie.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
       });
+
+      // Set versions
+      const legacyVersion = 0x100;
+      this._versions.firmwareVersion = legacyVersion;
+      this._versions.settingsVersion = legacyVersion;
+      this._versions.compatStandardApiVersion = legacyVersion;
+      this._versions.compatExtendedApiVersion = legacyVersion;
+      this._versions.compatManagementApiVersion = legacyVersion;
     } else {
       // We should have got the response
       if (
@@ -1096,9 +1150,7 @@ export class Pixel extends PixelInfoNotifier {
         getValueKeyName(iAmADie.dieInfo.dieType, PixelDieTypeValues) ??
         "unknown";
       this._info.pixelId = iAmADie.dieInfo.pixelId;
-      this._updateFirmwareDate(
-        new Date(1000 * iAmADie.firmwareInfo.buildTimestamp)
-      );
+      this._updateFirmwareDate(1000 * iAmADie.versionInfo.buildTimestamp);
       this._updateBatteryInfo({
         level: iAmADie.statusInfo.batteryLevelPercent,
         isCharging: isPixelChargingOrDone(iAmADie.statusInfo.batteryState),
@@ -1110,11 +1162,19 @@ export class Pixel extends PixelInfoNotifier {
         face:
           iAmADie.statusInfo.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
       });
+
+      // Store versions
+      for (verProp in this._versions) {
+        this._versions[verProp] = iAmADie.versionInfo[verProp];
+      }
+
+      // Update name
+      this._updateName(iAmADie.dieName.name);
     }
   }
 
   private _updateStatus(status: PixelStatus): void {
-    if (this._status !== status) {
+    if (status !== this._status) {
       this._status = status;
       this._log(`Status changed to ${status}`);
       this._evEmitter.emit("status", status); // TODO pass this as first argument to listener
@@ -1122,7 +1182,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   private _updateName(name: string) {
-    if (this._info.name !== name) {
+    if (name.length && name !== this._info.name) {
       this._info.name = name;
       this.emitPropertyEvent("name");
     }
@@ -1135,15 +1195,15 @@ export class Pixel extends PixelInfoNotifier {
     }
   }
 
-  private _updateFirmwareDate(firmwareDate: Date) {
-    if (this._info.firmwareDate.getTime() !== firmwareDate.getTime()) {
-      this._info.firmwareDate = firmwareDate;
+  private _updateFirmwareDate(firmwareTime: number) {
+    if (firmwareTime && firmwareTime !== this._info.firmwareDate.getTime()) {
+      this._info.firmwareDate = new Date(firmwareTime);
       this.emitPropertyEvent("firmwareDate");
     }
   }
 
   private _updateRssi(rssi: number) {
-    if (this._info.rssi !== rssi) {
+    if (rssi && rssi !== this._info.rssi) {
       this._info.rssi = rssi;
       this.emitPropertyEvent("rssi");
       this._evEmitter.emit("rssi", rssi);
@@ -1255,6 +1315,7 @@ export class Pixel extends PixelInfoNotifier {
       }
     } catch (error) {
       this._log(`Message deserialization error: ${error}`);
+      // TODO the error should be propagated to listeners of that message
     }
   }
 
@@ -1262,13 +1323,11 @@ export class Pixel extends PixelInfoNotifier {
     assert(dataView.getUint8(0) === MessageTypeValues.iAmADie);
     const msg = new IAmADie();
     let offset = 1;
-    let typeSize = 1;
     for (const [key, value] of Object.entries(msg)) {
       if (key !== ("type" as keyof IAmADie)) {
         assert(typeof value === "object" && "chunkSize" in value);
-        typeSize += value.chunkSize;
         const dataSize = dataView.getUint8(offset);
-        if (dataSize !== value.chunkSize) {
+        if (value.chunkSize > 0 && dataSize !== value.chunkSize) {
           console.log(
             `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
           );
@@ -1278,17 +1337,14 @@ export class Pixel extends PixelInfoNotifier {
           new DataView(
             dataView.buffer,
             dataView.byteOffset + offset,
-            Math.min(dataSize, value.chunkSize)
+            value.chunkSize === 0
+              ? dataSize
+              : Math.min(dataSize, value.chunkSize)
           ),
           { allowSkipLastProps: true }
         );
         offset += dataSize;
       }
-    }
-    if (typeSize !== dataView.byteLength) {
-      console.log(
-        `Received IAmADie of size ${dataView.byteLength} but expected ${typeSize} bytes`
-      );
     }
     return msg;
   }
