@@ -6,14 +6,11 @@ import { DfuTargetId } from "./events";
  *      <a href="https://github.com/NordicSemiconductor/Android-DFU-Library/blob/main/lib/dfu/src/main/java/no/nordicsemi/android/error/GattError.java">GattError.java</a>.
  */
 export class DfuError extends Error {
-  private readonly _target: DfuTargetId;
-  get target(): DfuTargetId {
-    return this._target;
-  }
+  readonly target: DfuTargetId;
   constructor(target: DfuTargetId, message?: string) {
     super(message);
     this.name = "DfuError";
-    this._target = target;
+    this.target = target;
   }
 }
 

@@ -6,23 +6,14 @@ import { Pixel } from "./Pixel";
  * @category Pixels
  */
 export class PixelError extends Error {
-  protected readonly _pixel: Pixel;
-  protected readonly _cause?: Error;
-  protected readonly _description: string;
-
   /** The Pixel for which the error occurred. */
-  get pixel(): Pixel {
-    return this._pixel;
-  }
+  readonly pixel: Pixel;
+
+  /** The error description. */
+  readonly description: string;
 
   /** The original error that caused this error to be thrown. */
-  get cause(): Error | undefined {
-    return this._cause;
-  }
-
-  get description(): string {
-    return this._description;
-  }
+  readonly cause?: Error;
 
   constructor(pixel: Pixel, message: string, cause?: Error) {
     // We get a code from native errors
@@ -33,9 +24,9 @@ export class PixelError extends Error {
     // Initialize instance
     super(`Pixel ${pixel.name}: ${message}`);
     this.name = "PixelError";
-    this._pixel = pixel;
-    this._description = message;
-    this._cause = cause;
+    this.pixel = pixel;
+    this.description = message;
+    this.cause = cause;
   }
 }
 

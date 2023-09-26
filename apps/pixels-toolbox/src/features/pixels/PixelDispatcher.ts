@@ -120,24 +120,17 @@ export type PixelDispatcherMutableProps = ScannedPixelNotifierMutableProps &
 
 /** Error type thrown by {@link PixelDispatcher}. */
 export class PixelDispatcherError extends Error {
-  protected readonly _pixel: PixelDispatcher;
-  protected readonly _cause?: Error;
-
   /** The Pixel for which the error occurred. */
-  get pixel(): PixelDispatcher {
-    return this._pixel;
-  }
+  readonly pixel: PixelDispatcher;
 
   /** The original error that caused this error to be thrown. */
-  get cause(): Error | undefined {
-    return this._cause;
-  }
+  readonly cause?: Error;
 
   constructor(pixel: PixelDispatcher, message: string, cause?: Error) {
     super(`Pixel ${pixel.name}: ${message}${cause ? ` => ${cause}` : ""}`);
     this.name = "PixelDispatcherError";
-    this._pixel = pixel;
-    this._cause = cause;
+    this.pixel = pixel;
+    this.cause = cause;
   }
 }
 
