@@ -9,6 +9,7 @@ import {
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
+import { ScrollView } from "react-native";
 import { Button, Divider, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
@@ -19,20 +20,29 @@ async function forAllPixels(
   scannedPixels: ScannedPixelNotifier[],
   op: (pixel: Pixel) => Promise<void>,
   abortSignal: AbortSignal,
-  onUsingPixel?: (pixel: Pixel) => void
+  onUsingPixel?: (pixel: Pixel, status: "starting" | "done" | Error) => void
 ): Promise<void> {
   const pixels = scannedPixels.map((sp) => getPixel(sp.systemId));
   for (const pixel of pixels) {
     if (abortSignal.aborted) {
       break;
     }
+    console.log("Running operation on Pixel " + pixel.name);
     try {
-      console.log("Running operation on Pixel " + pixel.name);
-      onUsingPixel?.(pixel);
+      onUsingPixel?.(pixel, "starting");
       await pixel.connect(10000);
+      if (abortSignal.aborted) {
+        await pixel.disconnect();
+        break;
+      }
       await op(pixel);
-    } finally {
       await pixel.disconnect();
+      onUsingPixel?.(pixel, "done");
+    } catch (error) {
+      try {
+        await pixel.disconnect();
+      } catch {}
+      onUsingPixel?.(pixel, error as Error);
     }
   }
 }
@@ -53,9 +63,11 @@ function BatchPage() {
     useFocusScannedPixelNotifiers();
 
   // Batch operations
-  const [lastError, setLastError] = React.useState<Error>();
   const [batchOp, setBatchOp] =
     React.useState<(pixel: Pixel) => Promise<void>>();
+
+  // Progress
+  const [opsStatuses, setOpsStatuses] = React.useState<string[]>([]);
 
   // Active Pixel
   const [activePixel, setActivePixel] = React.useState<Pixel>();
@@ -74,18 +86,26 @@ function BatchPage() {
     if (batchOp) {
       const abortController = new AbortController();
       console.log("Starting batch");
-      setLastError(undefined);
+      setOpsStatuses([]);
       forAllPixels(
         scannedPixels,
         batchOp,
         abortController.signal,
-        setActivePixel
+        (pixel, opStatus) => {
+          setActivePixel(pixel);
+          if (opStatus !== "starting") {
+            setOpsStatuses((statuses) => [
+              ...statuses,
+              `${pixel.name}: ${opStatus}`,
+            ]);
+          }
+        }
       )
         .finally(() => {
           console.log("Batch stopped");
           setBatchOp(undefined);
         })
-        .catch(setLastError);
+        .catch((error) => console.error(String(error)));
       return () => {
         abortController.abort();
       };
@@ -115,20 +135,28 @@ function BatchPage() {
           >
             Update Profile
           </Button>
-          {lastError && <Text>{String(lastError)}</Text>}
         </>
       ) : (
         <>
           <Button mode="contained-tonal" onPress={() => setBatchOp(undefined)}>
             Stop
           </Button>
+          <Divider bold style={{ width: "90%" }} />
           {!!activePixel && (
-            <Text>
-              Operating on {activePixel.name}, status is {pixelStatus}
-            </Text>
+            <>
+              <Text>Operating on {activePixel.name}</Text>
+              <Text>Status is {pixelStatus}</Text>
+            </>
           )}
         </>
       )}
+      <Divider bold style={{ width: "90%" }} />
+      <Text>Completed:</Text>
+      <ScrollView>
+        {opsStatuses.map((s, i) => (
+          <Text key={i}>{s}</Text>
+        ))}
+      </ScrollView>
     </BaseVStack>
   );
 }
