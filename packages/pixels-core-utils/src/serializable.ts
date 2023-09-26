@@ -2,12 +2,12 @@
 import "reflect-metadata";
 
 import { assert } from "./assert";
-import { decodeUtf8 } from "./decodeUtf8";
+import { decodeUtf8, DecodeUtf8Error } from "./decodeUtf8";
 import { encodeUtf8 } from "./encodeUtf8";
 
 const serializableKey = Symbol("pixelAnimationSerializable");
 
-/** */
+/** Error thrown during (de)serialization. */
 export class SerializationError extends Error {
   constructor(message?: string) {
     super(message);
@@ -15,29 +15,33 @@ export class SerializationError extends Error {
   }
 }
 
-/** */
+/** Type of the metadata attached to properties by the {@link serializable} decorator. */
 export interface SerializableProperty {
   propertyKey: string;
   size: number;
   options?: SerializableOptions;
 }
 
-/** */
+/** Supported number formats. */
 export type SerializedNumberFormat = "unsigned" | "signed" | "float";
 
-/** */
+/** Options for the {@link serializable} function. */
 export interface SerializableOptions {
-  // Padding is the number of bytes to be left after the serialized property
+  /** Padding is the number of bytes to be left after the serialized property. */
   padding?: number;
-  // By default numbers are serialized as unsigned integers
+  /** By default numbers are serialized as unsigned integers. */
   numberFormat?: SerializedNumberFormat;
+  /** Data of dynamic size, end is signaled by a 0 (typically used for strings). */
+  nullTerminated?: boolean;
+  /** Data of dynamic size, will consume all the data left when deserializing. */
+  terminator?: boolean;
 }
 
 /**
- * Decorator factory
- * @param size
- * @param options
- * @returns
+ * Decorator factory for tagging properties to (de)serialization.
+ * @param size Number of bytes for the binary data.
+ * @param options Options, see {@link SerializableOptions}.
+ * @returns The function decorator.
  */
 export function serializable(
   size: number,
@@ -77,9 +81,13 @@ export function getSerializableProperties(
 export function byteSizeOfProp<T extends object>(
   target: T,
   propertyKey: Extract<keyof T, string>
-): number {
-  const props = getSerializableProperties(target);
-  return props?.find((sp) => sp.propertyKey === propertyKey)?.size ?? 0;
+): number | "dynamic" {
+  const prop = getSerializableProperties(target)?.find(
+    (sp) => sp.propertyKey === propertyKey
+  );
+  return prop?.options?.nullTerminated || prop?.options?.terminator
+    ? "dynamic"
+    : prop?.size ?? 0;
 }
 
 /**
@@ -91,12 +99,15 @@ export function byteSizeOfProp<T extends object>(
 export function byteSizeOfPropWithPadding<T extends object>(
   target: T,
   propertyKey: Extract<keyof T, string>
-): number {
-  const props = getSerializableProperties(target);
-  const serializableProp = props?.find((sp) => sp.propertyKey === propertyKey);
-  return serializableProp
-    ? serializableProp.size + (serializableProp.options?.padding ?? 0)
-    : 0;
+): number | "dynamic" {
+  const prop = getSerializableProperties(target)?.find(
+    (sp) => sp.propertyKey === propertyKey
+  );
+  if (prop?.options?.nullTerminated || prop?.options?.terminator) {
+    return "dynamic";
+  } else {
+    return prop ? prop.size + (prop.options?.padding ?? 0) : 0;
+  }
 }
 
 /**
@@ -108,12 +119,13 @@ export function byteSizeOf<T extends object>(objOrArray: T | T[]): number {
   if (Array.isArray(objOrArray)) {
     return objOrArray.reduce((acc, obj) => acc + byteSizeOf(obj), 0);
   } else {
-    const props = getSerializableProperties(objOrArray);
     return (
-      props?.reduce(
-        (acc, prop) => acc + prop.size + (prop.options?.padding ?? 0),
-        0
-      ) ?? 0
+      getSerializableProperties(objOrArray)?.reduce((acc, prop) => {
+        if (prop.options?.nullTerminated || prop?.options?.terminator) {
+          throw new SerializationError("Dynamic size");
+        }
+        return acc + prop.size + (prop.options?.padding ?? 0);
+      }, 0) ?? 0
     );
   }
 }
@@ -130,7 +142,7 @@ function forEachSerializableProp(
     const value = (obj as any)[prop.propertyKey];
     const isBuffer =
       value instanceof ArrayBuffer ||
-      (value.buffer && value.buffer instanceof ArrayBuffer);
+      (value && value.buffer instanceof ArrayBuffer);
     if (
       typeof value !== "number" &&
       typeof value !== "bigint" &&
@@ -281,14 +293,21 @@ function internalSerialize<T extends object>(
       }
       if (buffer) {
         const arr = new Uint8Array(buffer);
-        const size = Math.min(arr.byteLength, prop.size);
+        const size = prop.options?.nullTerminated
+          ? arr.byteLength
+          : prop.options?.terminator
+          ? arr.byteLength
+          : Math.min(arr.byteLength, prop.size);
         for (let i = 0; i < size; ++i) {
           dataView.setUint8(byteOffset, arr[i]);
           ++byteOffset;
         }
-        for (let i = size; i < prop.size; ++i) {
-          dataView.setUint8(byteOffset, 0);
-          ++byteOffset;
+        if (!prop.options?.nullTerminated && !prop.options?.terminator) {
+          // Fill left over with zeroes
+          for (let i = size; i < prop.size; ++i) {
+            dataView.setUint8(byteOffset, 0);
+            ++byteOffset;
+          }
         }
       } else {
         // Value must be a numeric type then
@@ -339,6 +358,15 @@ function readNumber(
   }
 }
 
+function findNullIndex(dataView: DataView, byteOffset: number): number {
+  for (let i = byteOffset; i < dataView.byteLength; ++i) {
+    if (!dataView.getUint8(i)) {
+      return i;
+    }
+  }
+  throw new SerializationError("Data is not null terminated");
+}
+
 function internalDeserialize<T extends object>(
   objOrArray: T | T[],
   dataView: DataView,
@@ -368,7 +396,11 @@ function internalDeserialize<T extends object>(
     if (opt?.allowSkipLastProps && byteOffset === dataView.byteLength) {
       // Stop if we exactly reached the end of the buffer
       return false; // Stop iterating props
-    } else if (byteOffset + prop.size > dataView.byteLength) {
+    } else if (
+      !prop.options?.nullTerminated &&
+      !prop.options?.terminator &&
+      byteOffset + prop.size > dataView.byteLength
+    ) {
       // Not enough data left
       throw new SerializationError(
         `Not enough bytes for deserializing property ${prop.propertyKey} of size ${prop.size}`
@@ -378,20 +410,44 @@ function internalDeserialize<T extends object>(
     if (Array.isArray(objOrArray)) {
       // Arrays not supported
       throw new SerializationError(
-        "Array type not (yet) supported for deserialization"
+        "Array type not supported for deserialization"
       );
     } else if (typeof value === "string") {
       // Read string
       const begin = dataView.byteOffset + byteOffset;
-      if (begin + prop.size > dataView.buffer.byteLength) {
+      if (
+        !prop.options?.nullTerminated &&
+        !prop.options?.terminator &&
+        begin + prop.size > dataView.buffer.byteLength
+      ) {
         throw new SerializationError(
           `Unexpected property size, got ${prop.size} but there are only ${
             dataView.buffer.byteLength - begin
           } left`
         );
       }
-      const msgArr = dataView.buffer.slice(begin, begin + prop.size);
-      setProp(objOrArray, prop, decodeUtf8(new Uint8Array(msgArr)), value);
+      const strArr = dataView.buffer.slice(
+        begin,
+        prop.options?.nullTerminated
+          ? findNullIndex(dataView, byteOffset) - 1
+          : prop.options?.terminator
+          ? dataView.byteOffset + dataView.byteLength
+          : begin + prop.size
+      );
+      try {
+        setProp(objOrArray, prop, decodeUtf8(new Uint8Array(strArr)), value);
+      } catch (error: any) {
+        if (error instanceof DecodeUtf8Error) {
+          // Go on with what we have
+          setProp(objOrArray, prop, error.decodedString, value);
+          console.warn(
+            `Error decoding string for ${prop.propertyKey}: ${error}`
+          );
+        } else {
+          throw new SerializationError(error?.message ?? String(error));
+        }
+      }
+      byteOffset += strArr.byteLength;
     } else {
       // Read number
       const isFloat = prop.options?.numberFormat === "float";
@@ -404,8 +460,9 @@ function internalDeserialize<T extends object>(
         isFloat
       );
       setProp(objOrArray, prop, newValue, value);
+      byteOffset += prop.size;
     }
-    byteOffset += prop.size + (prop.options?.padding ?? 0);
+    byteOffset += prop.options?.padding ?? 0;
     return true; // Continue
   });
   return byteOffset;
@@ -430,10 +487,11 @@ export function serialize<T extends object>(
   options?: SerializeOptions
 ): [DataView, number] {
   if (!options?.dataView) {
+    const size = byteSizeOf(objOrArray);
     // Create buffer and serialize
     const [dataView, byteOffset] = internalSerialize(
       objOrArray,
-      new DataView(new ArrayBuffer(byteSizeOf(objOrArray)))
+      new DataView(new ArrayBuffer(size))
     );
     assert(
       byteOffset === dataView.buffer.byteLength,
