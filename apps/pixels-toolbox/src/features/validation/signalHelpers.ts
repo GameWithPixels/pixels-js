@@ -100,7 +100,7 @@ export function anySignal(
   return [controller.signal, unsubscribeAll];
 }
 
-export async function withPromise<T>(
+export async function withPromise<T = void>(
   abortSignal: AbortSignal,
   testName: string,
   mount: (
@@ -127,11 +127,11 @@ export async function withPromise<T>(
   }
 }
 
-export async function withTimeout(
+export async function withTimeout<T = void>(
   signal: AbortSignal,
   timeoutMs: number,
-  promise: (signal: AbortSignal) => Promise<void>
-): Promise<void> {
+  promise: (signal: AbortSignal) => Promise<T>
+): Promise<T> {
   const [tSignal, tCleanup] = timeoutSignal(timeoutMs);
   const [combinedSignal, csCleanup] = anySignal([signal, tSignal]);
   let cleanupAllCalled = false;
@@ -144,18 +144,18 @@ export async function withTimeout(
   };
   combinedSignal.addEventListener("abort", cleanupAll);
   try {
-    await promise(combinedSignal);
+    return await promise(combinedSignal);
   } finally {
     cleanupAll();
   }
 }
 
-export async function withTimeoutAndDisconnect(
+export async function withTimeoutAndDisconnect<T = void>(
   signal: AbortSignal,
   pixel: Pixel,
-  promise: (signal: AbortSignal) => Promise<void>,
+  promise: (signal: AbortSignal) => Promise<T>,
   timeoutMs: number
-): Promise<void> {
+): Promise<T> {
   const [tSignal, tCleanup] = timeoutSignal(timeoutMs);
   const [ccSignal, ccCleanup] = connectedSignal(pixel);
   const [combinedSignal, csCleanup] = anySignal([signal, tSignal, ccSignal]);
@@ -170,22 +170,22 @@ export async function withTimeoutAndDisconnect(
   };
   combinedSignal.addEventListener("abort", cleanupAll);
   try {
-    await promise(combinedSignal);
+    return await promise(combinedSignal);
   } finally {
     cleanupAll();
   }
 }
 
-export async function withBlink(
+export async function withBlink<T = void>(
   abortSignal: AbortSignal,
   pixel: Pixel,
   blinkColor: Color,
-  promise: () => Promise<void>,
+  promise: () => Promise<T>,
   options?: {
     faceMask?: number;
     blinkDuration?: number;
   }
-): Promise<void> {
+): Promise<T> {
   let status: "init" | "blink" | "cancel" = "init";
   const blink = async () => {
     if (!abortSignal.aborted) {
@@ -204,7 +204,7 @@ export async function withBlink(
   };
   try {
     blink().catch(() => {});
-    await promise();
+    return await promise();
   } finally {
     // @ts-ignore status may have been changed in async task
     if (status === "blink") {
@@ -214,15 +214,15 @@ export async function withBlink(
   }
 }
 
-export async function withSolidColor(
+export async function withSolidColor<T = void>(
   abortSignal: AbortSignal,
   pixel: Pixel,
   color: Color,
-  promise: () => Promise<void>,
+  promise: () => Promise<T>,
   options?: {
     faceMask?: number;
   }
-): Promise<void> {
+): Promise<T> {
   let status: "init" | "blink" | "cancel" = "init";
   const lightUp = async () => {
     if (!abortSignal.aborted) {
@@ -240,7 +240,7 @@ export async function withSolidColor(
   };
   try {
     lightUp().catch(() => {});
-    await promise();
+    return await promise();
   } finally {
     // @ts-ignore status may have been changed in async task
     if (status === "blink") {
