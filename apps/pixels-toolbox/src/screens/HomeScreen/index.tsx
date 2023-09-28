@@ -110,7 +110,7 @@ function HomePage({ navigation }: HomeScreenProps) {
         </Text>
         {hasEasUpdate && (
           <Text style={{ marginTop: 5 }}>
-            ⚠️ {t("updateAvailableOpenSettings")}
+            ⚠️ {t("updateAvailableGoToSettings")}
           </Text>
         )}
         <DfuBundleSelection navigation={navigation} />

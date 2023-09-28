@@ -164,7 +164,7 @@ i18n
           playProfileAnimation: "Play Profile Animation",
           updateProfile: "Update Profile",
           updateBootloaderAndFirmware: "Update Bootloader & Firmware",
-          updateAvailableOpenSettings: "Update available, open app settings to install.",
+          updateAvailableGoToSettings: "Update available, go to Settings page to install.",
 
           // DFU
           dfuStateWithStatus: "DFU State: {{status}}",
@@ -240,6 +240,9 @@ i18n
           rollDemo: "Roll Demo",
           animationsEditor: "Animations Editor",
           diceRenderer: "3D Dice Renderer",
+
+          // Settings
+          settings: "Settings",
         },
       },
       zh: {
@@ -336,10 +339,10 @@ i18n
           enableCharging: "开始充电",
           disableCharging: "停止充电",
           blinkId: "闪烁ID",
-          updatingProfile: "Updating Profile",
+          updatingProfile: "更新资料",
           dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
-          turnOff: "Turn Off",
-          resetAllSettings: "Reset All Settings",
+          turnOff: "关闭",
+          resetAllSettings: "重置所有设置",
           setMinimalProfile: "Set Minimal Profile",
           setUserProfile: "Set User Profile",
           enableTelemetry: "Enable Telemetry",
@@ -352,7 +355,7 @@ i18n
           rename: "重命名",
           setFixedRainbowProfile: "Upload Static Hello",
           setFixedRainbowProfileD4: "Upload Static D4",
-          unknownDieType: "Unknown Die Type",
+          unknownDieType: "未知的骰子类型",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
@@ -370,7 +373,7 @@ i18n
           playProfileAnimation: "Play Profile Animation",
           updateProfile: "更新资料",
           updateBootloaderAndFirmware: "更新引导装载程序和固件",
-          updateAvailableOpenSettings: "Update available, open app settings to install.",
+          updateAvailableGoToSettings: "有新的更新，请到设置页面安装。",
 
           // DFU
           dfuStateWithStatus: "DFU 状态: {{status}}",
@@ -428,25 +431,28 @@ i18n
           testSucceeded: "测试成功！",
           testFailed: "测试失败！",
           testCanceled: "取消测试！",
-          clearSettings: "Clear Settings",
-          storeSettings: "Store Settings",
-          storeDieType: "Store Die Type",
-          storeColorway: "Store Colorway",
-          keepColorway: "Keep colorway?",
-          selectColorway: "Select Colorway",
-          storeTimestamp: "Store Timestamp",
-          labelPrinting: "Label Printing",
-          waitingOnPrint: "Waiting On Print",
-          isLabelPrinted: "Is label correctly printed?",
-          scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
-          connectionErrorTryAgain: "Connection error, reset device and try again.",
-          dieTypeMismatchWithLedCount: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
-          descriptionAbbrev: "Desc.",
+          clearSettings: "清除设置",
+          storeSettings: "保存设置",
+          storeDieType: "保存骰子类型",
+          storeColorway: "保存亮光方式",
+          keepColorway: "保持亮光方式？",
+          selectColorway: "选择亮光方式",
+          storeTimestamp: "保存时间戳",
+          labelPrinting: "标签印刷",
+          waitingOnPrint: "等待印刷",
+          isLabelPrinted: "标贴是否印刷正确？",
+          scanTimeoutTryAgain: "扫描时间已经超时，请重置设备并重新开始。",
+          connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
+          dieTypeMismatchWithLedCount: "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
+          descriptionAbbrev: "描述",
 
           // Roll Screen
           rollDemo: "Roll Demo",
           animationsEditor: "Animations Editor",
           diceRenderer: "3D Dice Renderer",
+
+          // Settings
+          settings: "Settings",
         },
       },
     },

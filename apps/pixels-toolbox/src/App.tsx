@@ -150,7 +150,11 @@ function AppContent() {
             <Drawer.Screen name="Roll" component={RollScreen} />
             <Drawer.Screen name="Animations" component={AnimationsScreen} />
             <Drawer.Screen name="Batch" component={BatchScreen} />
-            <Drawer.Screen name="Settings" component={SettingsScreen} />
+            <Drawer.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{ title: t("settings") }}
+            />
           </Drawer.Navigator>
         </NavigationContainer>
       </PersistGate>
