@@ -292,6 +292,19 @@ function internalSerialize<T extends object>(
         buffer = value.buffer;
       }
       if (buffer) {
+        // Check size
+        const serializedSize =
+          buffer.byteLength + (typeof value === "string" ? 1 : 0);
+        if (
+          !prop.options?.nullTerminated &&
+          !prop.options?.terminator &&
+          prop.size < serializedSize
+        ) {
+          throw new SerializationError(
+            `Serialized value for \`${prop.propertyKey}\` takes ${serializedSize} bytes but prop size is ${prop.size}`
+          );
+        }
+        // Copy data
         const arr = new Uint8Array(buffer);
         const size = prop.options?.nullTerminated
           ? arr.byteLength
@@ -403,7 +416,7 @@ function internalDeserialize<T extends object>(
     ) {
       // Not enough data left
       throw new SerializationError(
-        `Not enough bytes for deserializing property ${prop.propertyKey} of size ${prop.size}`
+        `Not enough bytes for deserializing \`${prop.propertyKey}\` of size ${prop.size}`
       );
     }
     // Check type
@@ -441,7 +454,7 @@ function internalDeserialize<T extends object>(
           // Go on with what we have
           setProp(objOrArray, prop, error.decodedString, value);
           console.warn(
-            `Error decoding string for ${prop.propertyKey}: ${error}`
+            `Error decoding string for \`${prop.propertyKey}\`: ${error}`
           );
         } else {
           throw new SerializationError(error?.message ?? String(error));
