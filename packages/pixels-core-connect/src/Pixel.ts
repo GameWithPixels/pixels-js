@@ -1178,7 +1178,8 @@ export class Pixel extends PixelInfoNotifier {
     }
   }
 
-  private _updateColorway(colorway: PixelColorway) {
+  // TODO private
+  _updateColorway(colorway: PixelColorway) {
     if (this._info.colorway !== colorway) {
       this._info.colorway = colorway;
       this.emitPropertyEvent("colorway");

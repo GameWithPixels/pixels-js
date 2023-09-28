@@ -80,7 +80,7 @@ export async function readLabelHtmlAsync(
       "GROK STONEBREAKER!": product.deviceName.toLocaleUpperCase(),
     }).forEach(([k, v]) => {
       html = html.replace(k, v);
-      console.log(`Replacing ${k} by ${v}`);
+      console.log(`Replacing \`${k}\` by \`${v}\``);
     });
     // Load barcode script
     const jsBarcode = await FileSystem.readAsStringAsync(

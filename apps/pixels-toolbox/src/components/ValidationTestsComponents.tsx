@@ -81,13 +81,20 @@ export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
   return PixelDispatcher.getDispatcher(scannedPixel).pixel;
 }
 
-const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
-
 function printLabel(
   pixel: Pixel,
+  dieType: PixelDieType,
   statusCallback: (status: PrintStatus | Error) => void
 ): void {
-  printLabelAsync(pixel, statusCallback).catch(statusCallback);
+  printLabelAsync(
+    {
+      pixelId: pixel.pixelId,
+      name: pixel.name,
+      colorway: pixel.colorway,
+      dieType,
+    },
+    statusCallback
+  ).catch(statusCallback);
   // async function testPrintLabelAsync(
   //   pixel: Pixel,
   //   statusCallback?: (status: PrintStatus) => void
@@ -98,6 +105,8 @@ function printLabel(
   //   setTimeout(() => statusCallback?.("done"), 2000);
   // }
 }
+
+const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 
 async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
   let loadedSound = soundMap.get(source);
@@ -985,6 +994,7 @@ export function StoreSettings({
                   PixelValueStoreType.Colorway,
                   value
                 );
+                pixel._updateColorway(colorway);
               }
             },
             testTimeout
@@ -1027,7 +1037,7 @@ export function StoreSettings({
   );
 }
 
-export interface PrintStatusProp {
+export interface PrintingProp {
   onPrintStatus: (status: PrintStatus | Error | undefined) => void;
 }
 
@@ -1037,7 +1047,7 @@ export function PrepareDie({
   settings,
   pixel,
   onPrintStatus,
-}: ValidationTestProps & PrintStatusProp) {
+}: ValidationTestProps & PrintingProp) {
   const { t } = useTranslation();
 
   const [progress, setProgress] = React.useState(-1);
@@ -1050,16 +1060,18 @@ export function PrepareDie({
           getDefaultProfile(settings.dieType),
           setProgress
         );
-        // Start printing ahead of time
-        printLabel(pixel, onPrintStatus);
-      }, [onPrintStatus, pixel, settings.dieType]),
+      }, [pixel, settings.dieType]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
       })
     )
     .withTask(
-      React.useCallback(() => ValidationTests.renameDie(pixel), [pixel]),
+      React.useCallback(async () => {
+        await ValidationTests.renameDie(pixel);
+        // Start printing ahead of time
+        printLabel(pixel, settings.dieType, onPrintStatus);
+      }, [onPrintStatus, pixel, settings.dieType]),
       createTaskStatusContainer(t("setDieName"))
     )
     .withTask(
@@ -1119,11 +1131,12 @@ export function WaitDieInCase({
 export function LabelPrinting({
   action,
   onTaskStatus,
+  settings,
   pixel,
   printResult,
   onPrintStatus,
 }: ValidationTestProps &
-  PrintStatusProp & {
+  PrintingProp & {
     printResult: PrintStatus | Error | undefined;
   }) {
   const { t } = useTranslation();
@@ -1186,10 +1199,10 @@ export function LabelPrinting({
             console.log("Reprinting label");
             onPrintStatus(undefined);
             setReset(true);
-            printLabel(pixel, onPrintStatus);
+            printLabel(pixel, settings.dieType, onPrintStatus);
           }
         },
-        [onPrintStatus, pixel]
+        [onPrintStatus, pixel, settings.dieType]
       ),
       createTaskStatusContainer({
         children: (
