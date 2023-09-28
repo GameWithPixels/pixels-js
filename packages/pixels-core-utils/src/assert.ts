@@ -9,7 +9,7 @@ export class AssertionError extends Error {
 }
 
 /**
- * A typical assert function with an optional message.
+ * A typical assert function for Typescript with an optional message.
  */
 export function assert(condition: unknown, msg?: string): asserts condition {
   if (!condition) {
