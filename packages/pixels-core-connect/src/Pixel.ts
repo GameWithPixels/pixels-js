@@ -1101,29 +1101,42 @@ export class Pixel extends PixelInfoNotifier {
       "iAmADie"
     )) as IAmADie | LegacyIAmADie;
 
-    if (iAmADie instanceof LegacyIAmADie) {
-      // We should have got the response
-      if (this._info.pixelId && this._info.pixelId !== iAmADie.pixelId) {
-        throw new PixelConnectIdMismatchError(this, iAmADie.pixelId);
-      }
+    // Check Pixel id
+    const pixelId =
+      (iAmADie as LegacyIAmADie).pixelId ??
+      (iAmADie as IAmADie).dieInfo?.pixelId;
+    if (!pixelId) {
+      // This should never happen
+      throw new PixelConnectError(this, "Got an empty Pixel id");
+    }
+    if (this._info.pixelId && this._info.pixelId !== pixelId) {
+      throw new PixelConnectIdMismatchError(this, pixelId);
+    }
 
-      // Update properties
-      this._info.ledCount = iAmADie.ledCount;
+    const setProperties = (
+      info: Omit<LegacyIAmADie, "type" | "dataSetHash" | "availableFlashSize">
+    ): void => {
+      this._info.ledCount = info.ledCount;
       this._info.colorway =
-        getValueKeyName(iAmADie.colorway, PixelColorwayValues) ?? "unknown";
+        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown";
       this._info.dieType =
-        getValueKeyName(iAmADie.dieType, PixelDieTypeValues) ?? "unknown";
-      this._info.pixelId = iAmADie.pixelId;
-      this._updateFirmwareDate(1000 * iAmADie.buildTimestamp);
+        getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown";
+      this._info.pixelId = info.pixelId;
+      this._updateFirmwareDate(1000 * info.buildTimestamp);
       this._updateBatteryInfo({
-        level: iAmADie.batteryLevelPercent,
-        isCharging: isPixelChargingOrDone(iAmADie.batteryState),
+        level: info.batteryLevelPercent,
+        isCharging: isPixelChargingOrDone(info.batteryState),
       });
       this._updateRollInfo({
         state:
-          getValueKeyName(iAmADie.rollState, PixelRollStateValues) ?? "unknown",
-        face: iAmADie.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
+          getValueKeyName(info.rollState, PixelRollStateValues) ?? "unknown",
+        face: info.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
       });
+    };
+
+    if (iAmADie instanceof LegacyIAmADie) {
+      // Update properties
+      setProperties(iAmADie);
 
       // Set versions
       const legacyVersion = 0x100;
@@ -1133,34 +1146,11 @@ export class Pixel extends PixelInfoNotifier {
       this._versions.compatExtendedApiVersion = legacyVersion;
       this._versions.compatManagementApiVersion = legacyVersion;
     } else {
-      // We should have got the response
-      if (
-        this._info.pixelId &&
-        this._info.pixelId !== iAmADie.dieInfo.pixelId
-      ) {
-        throw new PixelConnectIdMismatchError(this, iAmADie.dieInfo.pixelId);
-      }
-
       // Update properties
-      this._info.ledCount = iAmADie.dieInfo.ledCount;
-      this._info.colorway =
-        getValueKeyName(iAmADie.dieInfo.colorway, PixelColorwayValues) ??
-        "unknown";
-      this._info.dieType =
-        getValueKeyName(iAmADie.dieInfo.dieType, PixelDieTypeValues) ??
-        "unknown";
-      this._info.pixelId = iAmADie.dieInfo.pixelId;
-      this._updateFirmwareDate(1000 * iAmADie.versionInfo.buildTimestamp);
-      this._updateBatteryInfo({
-        level: iAmADie.statusInfo.batteryLevelPercent,
-        isCharging: isPixelChargingOrDone(iAmADie.statusInfo.batteryState),
-      });
-      this._updateRollInfo({
-        state:
-          getValueKeyName(iAmADie.statusInfo.rollState, PixelRollStateValues) ??
-          "unknown",
-        face:
-          iAmADie.statusInfo.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
+      setProperties({
+        ...iAmADie.dieInfo,
+        ...iAmADie.versionInfo,
+        ...iAmADie.statusInfo,
       });
 
       // Store versions

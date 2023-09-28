@@ -81,7 +81,7 @@ export class PixelConnectCancelledError extends PixelConnectError {
  * received during identification.
  * @category Pixels
  */
-export class PixelConnectIdMismatchError extends PixelError {
+export class PixelConnectIdMismatchError extends PixelConnectError {
   constructor(pixel: Pixel, pixelId: number) {
     super(
       pixel,
