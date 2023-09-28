@@ -23,7 +23,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">Die3D</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L8">packages/pixels-three/src/Die3D.ts:8</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L5">packages/pixels-three/src/Die3D.ts:5</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -134,7 +134,7 @@
 <section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class"><a id="constructor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-<li class="tsd-signature tsd-anchor-link" id="constructor.new_Die3D">new <wbr/>Die3D<span class="tsd-signature-symbol">(</span>facesGeometry<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BufferGeometry</span><span class="tsd-signature-symbol">[]</span>, normalMap<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Texture</span>, faceMap<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Texture</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span>createLights<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_systemic_games_pixels_three.Die3D.html" class="tsd-signature-type" data-tsd-kind="Class">Die3D</a><a href="#constructor.new_Die3D" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="constructor.new_Die3D">new <wbr/>Die3D<span class="tsd-signature-symbol">(</span>facesGeometry<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BufferGeometry</span><span class="tsd-signature-symbol">[]</span>, normalMap<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Texture</span>, faceMap<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Texture</span>, opt<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span>createLights<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>lightIntensity<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>scale<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_systemic_games_pixels_three.Die3D.html" class="tsd-signature-type" data-tsd-kind="Class">Die3D</a><a href="#constructor.new_Die3D" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -146,26 +146,30 @@
 <li>
 <h5>faceMap: <span class="tsd-signature-type">Texture</span></h5></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-symbol">{ </span><br/><span>    </span>createLights<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></h5>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> opt: <span class="tsd-signature-symbol">{ </span><br/><span>    </span>createLights<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>lightIntensity<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>scale<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></h5>
 <ul class="tsd-parameters">
 <li class="tsd-parameter">
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> create<wbr/>Lights<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span></h5></li></ul></li></ul></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> create<wbr/>Lights<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span></h5></li>
+<li class="tsd-parameter">
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> light<wbr/>Intensity<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span></h5></li>
+<li class="tsd-parameter">
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> scale<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span></h5></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="_systemic_games_pixels_three.Die3D.html" class="tsd-signature-type" data-tsd-kind="Class">Die3D</a></h4><aside class="tsd-sources">
 <p>Overrides THREE.Object3D.constructor</p>
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L16">packages/pixels-three/src/Die3D.ts:16</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L13">packages/pixels-three/src/Die3D.ts:13</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_lights" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>_lights</span><a href="#_lights" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_lights<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">PointLight</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L10">packages/pixels-three/src/Die3D.ts:10</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L7">packages/pixels-three/src/Die3D.ts:7</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_materials" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>_materials</span><a href="#_materials" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_materials<span class="tsd-signature-symbol">:</span> <a href="_systemic_games_pixels_three.DieStandardMaterial.html" class="tsd-signature-type" data-tsd-kind="Class">DieStandardMaterial</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L9">packages/pixels-three/src/Die3D.ts:9</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L6">packages/pixels-three/src/Die3D.ts:6</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="animations" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>animations</span><a href="#animations" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">animations<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">AnimationClip</span><span class="tsd-signature-symbol">[]</span></div>
@@ -542,7 +546,7 @@ When this property is set for an instance of Group, all descendants objects will
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L12">packages/pixels-three/src/Die3D.ts:12</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L9">packages/pixels-three/src/Die3D.ts:9</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="_checkLEDIndex" class="tsd-anchor"></a>
@@ -557,7 +561,7 @@ When this property is set for an instance of Group, all descendants objects will
 <h5>index: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L80">packages/pixels-three/src/Die3D.ts:80</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L83">packages/pixels-three/src/Die3D.ts:83</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="_setColor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_set<wbr/>Color</span><a href="#_setColor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -572,7 +576,7 @@ When this property is set for an instance of Group, all descendants objects will
 <h5>color: <span class="tsd-signature-type">Color</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L86">packages/pixels-three/src/Die3D.ts:86</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L89">packages/pixels-three/src/Die3D.ts:89</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="add" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>add</span><a href="#add" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -682,7 +686,7 @@ When this property is set for an instance of Group, all descendants objects will
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L73">packages/pixels-three/src/Die3D.ts:73</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L76">packages/pixels-three/src/Die3D.ts:76</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="clone" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>clone</span><a href="#clone" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -736,7 +740,7 @@ When this property is set for an instance of Group, all descendants objects will
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L55">packages/pixels-three/src/Die3D.ts:55</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L58">packages/pixels-three/src/Die3D.ts:58</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getLEDColor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>getLEDColor</span><a href="#getLEDColor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -749,7 +753,7 @@ When this property is set for an instance of Group, all descendants objects will
 <h5>index: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Color</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L62">packages/pixels-three/src/Die3D.ts:62</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L65">packages/pixels-three/src/Die3D.ts:65</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="getObjectById" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Object<wbr/>By<wbr/>Id</span><a href="#getObjectById" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -1120,7 +1124,7 @@ This method does not support objects having non-uniformly-scaled parent(s).</p>
 <h5>color: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Color</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/d452bb4/packages/pixels-three/src/Die3D.ts#L67">packages/pixels-three/src/Die3D.ts:67</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/GameWithPixels/pixels-js/blob/6981f36/packages/pixels-three/src/Die3D.ts#L70">packages/pixels-three/src/Die3D.ts:70</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="setRotationFromAxisAngle" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Rotation<wbr/>From<wbr/>Axis<wbr/>Angle</span><a href="#setRotationFromAxisAngle" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
