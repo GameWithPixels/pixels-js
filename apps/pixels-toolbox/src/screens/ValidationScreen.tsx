@@ -103,7 +103,7 @@ function getTestingMessage(
 
 function BottomButton({ children, ...props }: Omit<ButtonProps, "style">) {
   return (
-    <Button mode="outlined" style={AppStyles.fullWidth} {...props}>
+    <Button mode="outlined" style={{ ...AppStyles.fullWidth }} {...props}>
       {children}
     </Button>
   );
@@ -192,9 +192,9 @@ function SelectDieTypePage({
       w="100%"
       h="100%"
       px={5}
-      py={20}
       gap={20}
       justifyContent="space-around"
+      paddingBottom={10}
     >
       <Text variant="headlineSmall" style={AppStyles.textCentered}>
         {t("testingSequence", { sequence: t(sequence) })}
@@ -213,7 +213,9 @@ function SelectDieTypePage({
           )}
         </View>
       ))}
-      <BottomButton onPress={onBack}>{t("back")}</BottomButton>
+      <BaseBox paddingHorizontal={10}>
+        <BottomButton onPress={onBack}>{t("back")}</BottomButton>
+      </BaseBox>
     </BaseVStack>
   );
 }
@@ -353,54 +355,56 @@ function DecodePixelIdPage({
         <Text variant="headlineSmall">{t("startingCamera")}</Text>
       )}
       {/* Show message on top */}
-      <BaseBox position="absolute" top={0} w="100%" p={10}>
-        <Card>
-          <Card.Content style={{ flexDirection: "row", gap: 10 }}>
-            {!readingColors || lastError ? (
-              <>
-                {lastError ? (
-                  <Card.Content style={{ flex: 1 }}>
-                    <Text
-                      variant="bodyLarge"
-                      style={{ flex: 1, color: theme.colors.error }}
-                    >{`${lastError}`}</Text>
-                  </Card.Content>
-                ) : (
-                  <Text variant="bodyLarge" style={{ flex: 1 }}>
-                    {t("resetUsingMagnetWithFormFactor", {
-                      formFactor: t(getBoardOrDie(settings.sequence)),
-                    })}
-                  </Text>
-                )}
-                <Button
-                  mode="contained-tonal"
-                  onPress={() => setShowScanList(true)}
-                >
-                  {t("scan")}
-                </Button>
-              </>
-            ) : (
-              <ProgressBar percent={Math.round(100 * decoderState.progress)} />
-            )}
-          </Card.Content>
+      <BaseBox position="absolute" top={0} w="100%" p={5}>
+        <Card
+          contentStyle={{
+            ...AppStyles.centered,
+            flexDirection: "row",
+            padding: 10,
+            gap: 10,
+          }}
+        >
+          {!readingColors || lastError ? (
+            <>
+              {lastError ? (
+                <Card.Content style={{ flex: 1 }}>
+                  <Text
+                    variant="bodyLarge"
+                    style={{ flex: 1, color: theme.colors.error }}
+                  >{`${lastError}`}</Text>
+                </Card.Content>
+              ) : (
+                <Text variant="bodyLarge" style={{ flex: 1 }}>
+                  {t("resetUsingMagnetWithFormFactor", {
+                    formFactor: t(getBoardOrDie(settings.sequence)),
+                  })}
+                </Text>
+              )}
+              <Button
+                mode="contained-tonal"
+                onPress={() => setShowScanList(true)}
+              >
+                {t("scan")}
+              </Button>
+            </>
+          ) : (
+            <ProgressBar percent={Math.round(100 * decoderState.progress)} />
+          )}
         </Card>
       </BaseBox>
       {/* Bottom button */}
-      <BaseBox position="absolute" bottom={0} w="100%" p={10}>
-        <Card>
-          <Card.Content
-            style={{
-              gap: 10,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text variant="bodyLarge">{getTestingMessage(t, settings)}</Text>
-            <BottomButton onPress={onBack}>{t("back")}</BottomButton>
-          </Card.Content>
-          <Text style={{ alignSelf: "center", marginVertical: 2 }}>
-            {decoderState.info}
-          </Text>
+      <BaseBox position="absolute" bottom={0} w="100%" p={5}>
+        <Card
+          contentStyle={{
+            ...AppStyles.centered,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            gap: 2,
+          }}
+        >
+          <Text variant="bodyLarge">{getTestingMessage(t, settings)}</Text>
+          {!!decoderState.info && <Text>{decoderState.info}</Text>}
+          <BottomButton onPress={onBack}>{t("back")}</BottomButton>
         </Card>
       </BaseBox>
     </BaseVStack>
@@ -608,6 +612,7 @@ function RunTestsPage({
       gap={8}
       alignItems="center"
       justifyContent="center"
+      paddingBottom={10}
     >
       <Text variant="titleLarge">{getTestingMessage(t, settings)}</Text>
       <ScrollView
@@ -632,12 +637,14 @@ function RunTestsPage({
           </BaseVStack>
         )}
       </ScrollView>
-      <BottomButton
-        disabled={firmwareUpdateStatus === "updating"}
-        onPress={onOkCancel}
-      >
-        {result ? t("next") : t("cancel")}
-      </BottomButton>
+      <BaseBox w="100%" paddingHorizontal={15}>
+        <BottomButton
+          disabled={firmwareUpdateStatus === "updating"}
+          onPress={onOkCancel}
+        >
+          {result ? t("next") : t("cancel")}
+        </BottomButton>
+      </BaseBox>
     </BaseVStack>
   );
 }
