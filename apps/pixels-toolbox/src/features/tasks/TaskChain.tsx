@@ -81,14 +81,14 @@ export default class TaskChain {
     taskRenderer: TaskRenderer,
     opt?: { skip?: boolean }
   ): TaskChain {
-    const numTasks = this._tasksItems.length;
-    const prevTaskSucceeded = numTasks
-      ? this._tasksItems[numTasks - 1]?.status === "succeeded"
-      : true;
-    const action = !prevTaskSucceeded ? "reset" : this._action;
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [status, component, error] = useTask(asyncOp, taskRenderer, action);
     if (!opt?.skip) {
+      const numTasks = this._tasksItems.length;
+      const prevTaskSucceeded = numTasks
+        ? this._tasksItems[numTasks - 1]?.status === "succeeded"
+        : true;
+      const action = !prevTaskSucceeded ? "reset" : this._action;
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [status, component, error] = useTask(asyncOp, taskRenderer, action);
       this._tasksItems.push({ status, component, error });
     }
     return this;
