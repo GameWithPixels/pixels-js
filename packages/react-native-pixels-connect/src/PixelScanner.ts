@@ -53,7 +53,11 @@ export type PixelScannerFilter =
  *          and listen for roll events.
  */
 export class PixelScanner {
-  private readonly _queue = new SequentialPromiseQueue();
+  // Use a shared queue so start/stop commands across multiple instances
+  // are executed in expected order
+  private static readonly _queue = new SequentialPromiseQueue();
+
+  // Instance internal data
   private readonly _pixels: ScannedPixel[] = [];
   private _scannerListener?: (pixel: ScannedPixel) => void;
   private _userListener: PixelScannerListener;
@@ -142,7 +146,7 @@ export class PixelScanner {
    * than 5 times over the last 30 seconds.
    */
   async start(): Promise<void> {
-    return this._queue.run(async () => {
+    return PixelScanner._queue.run(async () => {
       // Check if a scan was already started
       if (!this._scannerListener) {
         // Listener for scanned Pixels events
@@ -223,7 +227,7 @@ export class PixelScanner {
    * @returns A promise.
    */
   async stop(): Promise<void> {
-    return this._queue.run(async () => {
+    return PixelScanner._queue.run(async () => {
       // Check if a scan was already started
       if (this._scannerListener) {
         if (this._emulatorTimeoutId) {
@@ -250,7 +254,7 @@ export class PixelScanner {
    * @returns A promise.
    */
   async clear(): Promise<void> {
-    return this._queue.run(async () => {
+    return PixelScanner._queue.run(async () => {
       // Always notify a "clear" even if the list is already empty as
       // some consumer logic might depend on getting the notification
       // even in the case of an empty list
