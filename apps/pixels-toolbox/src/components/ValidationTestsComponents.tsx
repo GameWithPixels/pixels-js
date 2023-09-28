@@ -73,6 +73,7 @@ import {
   AbortControllerWithReason,
   getSignalReason,
   withTimeoutAndDisconnect,
+  withTimeout,
 } from "~/features/validation/signalHelpers";
 
 export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
@@ -1153,12 +1154,14 @@ export function LabelPrinting({
     .withTask(
       React.useCallback(
         (abortSignal) =>
-          withPromise<void>(
-            abortSignal,
-            "labelPrinting",
-            (resolve, reject) =>
-              setResolveRejectResultPromise({ resolve, reject }),
-            () => setResolveRejectResultPromise(undefined)
+          withTimeout(abortSignal, testTimeout, (abortSignal) =>
+            withPromise<void>(
+              abortSignal,
+              "labelPrinting",
+              (resolve, reject) =>
+                setResolveRejectResultPromise({ resolve, reject }),
+              () => setResolveRejectResultPromise(undefined)
+            )
           ),
         []
       ),
@@ -1168,11 +1171,16 @@ export function LabelPrinting({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          const printOk = await withPromise<boolean>(
+          const printOk = await withTimeout(
             abortSignal,
-            "labelPrinting",
-            (resolve) => setResolvePrintOkPromise(() => resolve),
-            () => setResolvePrintOkPromise(undefined)
+            testTimeout,
+            (abortSignal) =>
+              withPromise<boolean>(
+                abortSignal,
+                "labelPrinting",
+                (resolve) => setResolvePrintOkPromise(() => resolve),
+                () => setResolvePrintOkPromise(undefined)
+              )
           );
           if (!printOk) {
             console.log("Reprinting label");
