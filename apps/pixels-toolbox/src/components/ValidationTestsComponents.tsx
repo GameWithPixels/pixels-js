@@ -315,6 +315,17 @@ async function scanForPixelWithTimeout(
   }
 }
 
+async function storeValueChecked(
+  pixel: Pixel,
+  valueType: number,
+  value: number
+): Promise<void> {
+  const result = await pixelStoreValue(pixel, valueType, value);
+  if (result !== "success") {
+    throw new Error(`Failed to store value, got response ${result}`);
+  }
+}
+
 interface MessageYesNoProps extends BaseBoxProps {
   message: string;
   onYes?: () => void;
@@ -930,7 +941,7 @@ export function StoreSettings({
 
   const storeTimestamp = React.useCallback(
     () =>
-      pixelStoreValue(
+      storeValueChecked(
         pixel,
         PixelValueStoreType.ValidationTimestampStart +
           getSequenceIndex(settings.sequence),
@@ -945,7 +956,7 @@ export function StoreSettings({
       );
       const value = PixelDieTypeValues[settings.dieType];
       assert(value);
-      await pixelStoreValue(pixel, PixelValueStoreType.DieType, value);
+      await storeValueChecked(pixel, PixelValueStoreType.DieType, value);
     }
   }, [pixel, settings.dieType]);
 
@@ -989,7 +1000,7 @@ export function StoreSettings({
                 );
                 const value = PixelColorwayValues[colorway];
                 assert(value);
-                await pixelStoreValue(
+                await storeValueChecked(
                   pixel,
                   PixelValueStoreType.Colorway,
                   value
