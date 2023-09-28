@@ -48,6 +48,7 @@ import {
   StoreSettings,
   LabelPrinting,
   UpdateFirmwareStatus,
+  getPixelThroughDispatcher,
 } from "~/components/ValidationTestsComponents";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
 import { PrintStatus } from "~/features/labels/printLabelAsync";
@@ -419,11 +420,24 @@ function RunTestsPage({
   useKeepAwake();
 
   const { t } = useTranslation();
+
   const [pixel, setPixel] = React.useState<Pixel>();
+  const [ledCount, setLedCount] = React.useState(0);
+  const onPixelFound = React.useCallback((scannedPixel: ScannedPixel) => {
+    setLedCount(scannedPixel.ledCount);
+    setPixel(getPixelThroughDispatcher(scannedPixel));
+  }, []);
+
   const [cancel, setCancel] = React.useState(false);
   const [firmwareUpdateStatus, setFirmwareUpdateStatus] =
     React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
+
+  // We must have a Pixel once past the UpdateFirmware task
+  const getPixel = (): Pixel => {
+    if (!pixel) throw new Error("No Pixel instance");
+    return pixel;
+  };
 
   // Some conditions to filter tests
   const seq = settings.sequence;
@@ -440,9 +454,9 @@ function RunTestsPage({
       ...useTaskComponent("UpdateFirmware", cancel, (p) => (
         <UpdateFirmware
           {...p}
-          pixelId={pixelId}
           settings={settings}
-          onPixelFound={setPixel}
+          pixelId={pixelId}
+          onPixelFound={onPixelFound}
           onFirmwareUpdate={setFirmwareUpdateStatus}
         />
       ))
@@ -451,92 +465,73 @@ function RunTestsPage({
       ...useTaskComponent("ConnectPixel", cancel, (p) => (
         <ConnectPixel
           {...p}
-          pixel={pixel}
-          pixelId={pixelId}
           settings={settings}
-          onPixelFound={setPixel}
+          pixel={getPixel()}
+          ledCount={ledCount}
         />
       )),
       skipIfFwUpdate
     )
     .withTask(
       ...useTaskComponent("WaitCharging", cancel, (p) => (
-        <>
-          {pixel && <WaitCharging {...p} pixel={pixel} settings={settings} />}
-        </>
+        <WaitCharging {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfNoCoil
     )
     .withTask(
       ...useTaskComponent("CheckBoard", cancel, (p) => (
-        <>
-          {pixel && (
-            <CheckBoard
-              {...p}
-              pixel={pixel}
-              settings={settings}
-              firmwareUpdated={firmwareUpdateStatus === "success"}
-            />
-          )}
-        </>
+        <CheckBoard
+          {...p}
+          settings={settings}
+          pixel={getPixel()}
+          firmwareUpdated={firmwareUpdateStatus === "success"}
+        />
       )),
       skipIfFwUpdate
     )
     .withTask(
       ...useTaskComponent("WaitNotCharging", cancel, (p) => (
-        <>
-          {pixel && (
-            <WaitCharging
-              {...p}
-              pixel={pixel}
-              settings={settings}
-              notCharging
-            />
-          )}
-        </>
+        <WaitCharging
+          {...p}
+          settings={settings}
+          pixel={getPixel()}
+          notCharging
+        />
       )),
       skipIfNoCoil
     )
     .withTask(
       ...useTaskComponent("CheckLEDs", cancel, (p) => (
-        <>{pixel && <CheckLEDs {...p} pixel={pixel} settings={settings} />}</>
+        <CheckLEDs {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfFwUpdate
     )
     .withTask(
       ...useTaskComponent("WaitFaceUp", cancel, (p) => (
-        <>{pixel && <WaitFaceUp {...p} pixel={pixel} settings={settings} />}</>
+        <WaitFaceUp {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfBoard
     )
     .withTask(
       ...useTaskComponent("StoreSettings", cancel, (p) => (
-        <>
-          {pixel && <StoreSettings {...p} pixel={pixel} settings={settings} />}
-        </>
+        <StoreSettings {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfFwUpdate
     )
     .withTask(
       ...useTaskComponent("TurnOffDevice", cancel, (p) => (
-        <>
-          {pixel && <TurnOffDevice {...p} pixel={pixel} settings={settings} />}
-        </>
+        <TurnOffDevice {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfDieFinal
     )
     .withTask(
       ...useTaskComponent("PrepareDie", cancel, (p) => (
-        <>
-          {pixel && (
-            <PrepareDie
-              {...p}
-              pixel={pixel}
-              settings={settings}
-              onPrintStatus={setPrintStatus}
-            />
-          )}
-        </>
+        <PrepareDie
+          {...p}
+          settings={settings}
+          pixel={getPixel()}
+          onPrintStatus={setPrintStatus}
+        />
       )),
       skipIfNotDieFinal
     )
@@ -544,34 +539,28 @@ function RunTestsPage({
       ...useTaskComponent("ConnectPixel", cancel, (p) => (
         <ConnectPixel
           {...p}
-          pixelId={pixelId}
           settings={settings}
-          onPixelFound={setPixel}
+          pixel={getPixel()}
+          ledCount={ledCount}
         />
       )),
       skipIfNotDieFinal
     )
     .withTask(
       ...useTaskComponent("WaitDieInCase", cancel, (p) => (
-        <>
-          {pixel && <WaitDieInCase {...p} pixel={pixel} settings={settings} />}
-        </>
+        <WaitDieInCase {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfNotDieFinal
     )
     .withTask(
       ...useTaskComponent("CheckLabel", cancel, (p) => (
-        <>
-          {pixel && (
-            <LabelPrinting
-              {...p}
-              pixel={pixel}
-              settings={settings}
-              printResult={printStatus}
-              onPrintStatus={setPrintStatus}
-            />
-          )}
-        </>
+        <LabelPrinting
+          {...p}
+          settings={settings}
+          pixel={getPixel()}
+          printResult={printStatus}
+          onPrintStatus={setPrintStatus}
+        />
       )),
       skipIfNotDieFinal
     );

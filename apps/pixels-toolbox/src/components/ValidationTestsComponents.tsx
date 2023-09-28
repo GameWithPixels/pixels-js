@@ -65,7 +65,7 @@ import {
   ValidationSequence,
 } from "~/features/validation/ValidationSequences";
 import {
-  disconnectTimeout,
+  testTimeout,
   ValidationTests,
 } from "~/features/validation/ValidationTests";
 import {
@@ -74,6 +74,11 @@ import {
   getSignalReason,
   withTimeoutAndDisconnect,
 } from "~/features/validation/signalHelpers";
+
+export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
+  // We use a PixelDispatcher to get our Pixel instance so to enable message logging
+  return PixelDispatcher.getDispatcher(scannedPixel).pixel;
+}
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 
@@ -291,6 +296,9 @@ async function scanForPixelWithTimeout(
         scanner.start();
       }
     );
+    console.log(
+      `Found Pixel with id ${pixelId.toString(16)}: ${scannedPixel.name}`
+    );
     return scannedPixel;
   } finally {
     scanner.stop();
@@ -343,8 +351,8 @@ export interface ValidationTestsSettings {
 }
 
 export interface ValidationTestProps extends TaskComponentProps {
-  pixel: Pixel;
   settings: ValidationTestsSettings;
+  pixel: Pixel;
 }
 
 export type UpdateFirmwareStatus = "updating" | "success" | "error";
@@ -352,7 +360,7 @@ export type UpdateFirmwareStatus = "updating" | "success" | "error";
 export interface UpdateFirmwareProps
   extends Omit<ValidationTestProps, "pixel"> {
   pixelId: number;
-  onPixelFound?: (pixel: Pixel) => void;
+  onPixelFound?: (scannedPixel: ScannedPixel) => void;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }
 
@@ -385,10 +393,7 @@ export function UpdateFirmware({
           );
           setScannedPixel(scannedPixel);
           // Notify parent
-          if (onPixelFound) {
-            // We use a PixelDispatcher to get our Pixel instance so to enable message logging
-            onPixelFound(PixelDispatcher.getDispatcher(scannedPixel).pixel);
-          }
+          onPixelFound?.(scannedPixel);
         },
         [onPixelFound, pixelId, t]
       ),
@@ -458,40 +463,44 @@ export function UpdateFirmware({
             const fwPath = dfuBundle.firmware.pathname;
             const updateFW = async (blAddr?: number) => {
               let dfuState: DfuState | undefined;
-              try {
-                await updateFirmware(
-                  blAddr ?? dfuTarget,
-                  blPath,
-                  fwPath,
-                  (s) => {
-                    dfuState = s;
-                    setDfuState(s);
-                  },
-                  setDfuProgress,
-                  !!blAddr
-                );
-                if (dfuState === "aborted") {
-                  throw new Error("Firmware update aborted");
-                } else if (dfuState === "completed") {
-                  onFirmwareUpdate?.("success");
-                }
-              } catch (error) {
-                onFirmwareUpdate?.("error");
-                throw error;
+              await updateFirmware(
+                blAddr ?? dfuTarget,
+                blPath,
+                fwPath,
+                (s) => {
+                  dfuState = s;
+                  setDfuState(s);
+                },
+                setDfuProgress,
+                !!blAddr
+              );
+              if (dfuState === "aborted") {
+                throw new Error("Firmware update aborted");
               }
+              onFirmwareUpdate?.("success");
             };
             // Update firmware
             try {
               await updateFW();
             } catch (error) {
+              let lastError: any = error;
               if (dfuTarget.address && error instanceof DfuCommunicationError) {
-                console.log("Error updating firmware, trying again...");
+                console.log(
+                  "Error updating FW, trying again with BL address..."
+                );
                 setDfuState(undefined);
                 setDfuProgress(0);
                 // Switch to bootloader address (only available on Android)
-                await updateFW(dfuTarget.address + 1);
-              } else {
-                throw error;
+                try {
+                  await updateFW(dfuTarget.address + 1);
+                  lastError = undefined;
+                } catch (error) {
+                  lastError = error;
+                }
+              }
+              if (lastError) {
+                onFirmwareUpdate?.("error");
+                throw lastError;
               }
             }
           } else {
@@ -526,63 +535,34 @@ export function UpdateFirmware({
   );
 }
 
-export interface ConnectPixelProps extends Omit<ValidationTestProps, "pixel"> {
-  pixelId: number;
-  onPixelFound?: (pixel: Pixel) => void;
-  pixel?: Pixel;
-}
-
 // Note: Pixel should be disconnected by parent component
 export function ConnectPixel({
   action,
   onTaskStatus,
-  pixel: givenPixel,
-  pixelId,
   settings,
-  onPixelFound,
-}: ConnectPixelProps) {
+  pixel,
+  ledCount,
+}: ValidationTestProps & {
+  ledCount: number;
+}) {
   const { t } = useTranslation();
-
-  // Our Pixel
-  const [pixel, setPixel] = React.useState(givenPixel);
 
   const taskChain = useTaskChain(action)
     .withTask(
-      React.useCallback(
-        async (abortSignal) => {
-          if (!pixel) {
-            // Start scanning for our Pixel
-            const scannedPixel = await scanForPixelWithTimeout(
-              abortSignal,
-              t,
-              pixelId
-            );
-            // We use a PixelDispatcher to get our Pixel instance so to enable message logging
-            const pixel = PixelDispatcher.getDispatcher(scannedPixel).pixel;
-            setPixel(pixel); // TODO setting the Pixel changes the dependency list and restarts the task
-            // Notify parent
-            onPixelFound?.(pixel);
-          }
-        },
-        [onPixelFound, pixel, pixelId, t]
-      ),
-      createTaskStatusContainer(t("bluetoothScan"))
-    )
-    .withTask(
       React.useCallback(async () => {
-        // Get our Pixel and check LED count
-        if (!pixel) {
-          throw new TaskFaultedError("No scanned Pixel");
+        if (ledCount <= 0) {
+          throw new TaskFaultedError(`Invalid LED count: ${ledCount}`);
         }
-        if (pixel.ledCount !== getLEDCount(settings.dieType)) {
+        // Check LED count
+        if (ledCount !== getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
-            t("dieTypeMismatch", {
+            t("dieTypeMismatchWithLedCount", {
               dieType: t(settings.dieType),
-              ledCount: pixel.ledCount,
+              ledCount,
             })
           );
         }
-      }, [pixel, settings.dieType, t]),
+      }, [ledCount, settings.dieType, t]),
       createTaskStatusContainer(t("checkDieType"))
     )
     .withTask(
@@ -590,7 +570,7 @@ export function ConnectPixel({
         async (abortSignal) => {
           // Get our Pixel and connect to it
           if (!pixel) {
-            throw new TaskFaultedError("No scanned Pixel");
+            throw new TaskFaultedError("No Pixel instance");
           }
           await repeatConnect(
             abortSignal,
@@ -611,17 +591,15 @@ export function ConnectPixel({
   return <TaskChainComponent title={t("connect")} taskChain={taskChain} />;
 }
 
-export interface ValidationTestCheckBoardProps extends ValidationTestProps {
-  firmwareUpdated: boolean;
-}
-
 export function CheckBoard({
   action,
   onTaskStatus,
-  pixel,
   settings,
+  pixel,
   firmwareUpdated,
-}: ValidationTestCheckBoardProps) {
+}: ValidationTestProps & {
+  firmwareUpdated: boolean;
+}) {
   const { t } = useTranslation();
 
   const taskChain = useTaskChain(action)
@@ -661,8 +639,8 @@ export function CheckBoard({
 export function WaitCharging({
   action,
   onTaskStatus,
-  pixel,
   settings,
+  pixel,
   notCharging,
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
@@ -726,8 +704,8 @@ export function WaitCharging({
 export function CheckLEDs({
   action,
   onTaskStatus,
-  pixel,
   settings,
+  pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
@@ -767,7 +745,7 @@ export function CheckLEDs({
         children: (
           <MessageYesNo
             message={t("areAllLEDsWhiteWithCount", {
-              count: getLEDCount(settings.dieType),
+              count: pixel.ledCount,
             })}
             hideButtons={!resolvePromise}
             onYes={() => resolvePromise?.()}
@@ -930,8 +908,8 @@ export function WaitFaceUp({
 export function StoreSettings({
   action,
   onTaskStatus,
-  pixel,
   settings,
+  pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
@@ -1008,7 +986,7 @@ export function StoreSettings({
                 );
               }
             },
-            disconnectTimeout
+            testTimeout
           ),
         [pixel]
       ),
@@ -1055,8 +1033,8 @@ export interface PrintStatusProp {
 export function PrepareDie({
   action,
   onTaskStatus,
-  pixel,
   settings,
+  pixel,
   onPrintStatus,
 }: ValidationTestProps & PrintStatusProp) {
   const { t } = useTranslation();
@@ -1137,17 +1115,16 @@ export function WaitDieInCase({
   );
 }
 
-export interface CheckLabelProps extends ValidationTestProps, PrintStatusProp {
-  printResult: PrintStatus | Error | undefined;
-}
-
 export function LabelPrinting({
   action,
   onTaskStatus,
   pixel,
   printResult,
   onPrintStatus,
-}: CheckLabelProps) {
+}: ValidationTestProps &
+  PrintStatusProp & {
+    printResult: PrintStatus | Error | undefined;
+  }) {
   const { t } = useTranslation();
 
   // Print result
@@ -1227,8 +1204,8 @@ export function LabelPrinting({
 export function TurnOffDevice({
   action,
   onTaskStatus,
-  pixel,
   settings,
+  pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
 

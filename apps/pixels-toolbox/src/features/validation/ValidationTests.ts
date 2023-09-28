@@ -46,7 +46,7 @@ function isBatteryCharging(state: number): boolean {
   );
 }
 
-export const disconnectTimeout = 30000; // 30s;
+export const testTimeout = 30000; // 30s;
 export const shortTimeout = 3000; // 3s;
 
 export const ValidationTests = {
@@ -121,7 +121,7 @@ export const ValidationTests = {
     blinkColor: Color,
     abortSignal: AbortSignal,
     notifyState: (info: { state?: string; vCoil: number }) => void,
-    timeout = disconnectTimeout
+    timeout = testTimeout
   ): Promise<void> => {
     await withTimeoutAndDisconnect(
       abortSignal,
@@ -208,7 +208,7 @@ export const ValidationTests = {
     abortSignal: AbortSignal,
     notifyFaceUp: (roll: RollEvent) => void,
     holdDelay = 1000, // Number of ms to wait before validating the face up
-    timeout = disconnectTimeout
+    timeout = testTimeout
   ): Promise<void> {
     console.log(`Waiting on face up: ${face}`);
     await withTimeoutAndDisconnect(
@@ -297,7 +297,7 @@ export const ValidationTests = {
     color: Color,
     setResolve: (resolve: () => void) => void,
     abortSignal: AbortSignal,
-    timeout = disconnectTimeout
+    timeout = testTimeout
   ) {
     await withTimeoutAndDisconnect(
       abortSignal,
@@ -357,7 +357,7 @@ export const ValidationTests = {
     pixel: Pixel,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    timeout = disconnectTimeout
+    timeout = testTimeout
   ) {
     await withTimeout(abortSignal, timeout, async (abortSignal) => {
       let statusListener: ((status: PixelStatus) => void) | undefined;
