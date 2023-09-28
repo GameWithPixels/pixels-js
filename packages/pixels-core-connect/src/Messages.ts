@@ -1241,7 +1241,7 @@ export class SetName implements PixelMessage {
   readonly type = MessageTypeValues.setName;
 
   /** The name to set. */
-  @serializable(Constants.maxMessageSize)
+  @serializable(Constants.maxNameByteSize + 1) // +1 for null terminator
   name = "";
 }
 

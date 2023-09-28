@@ -510,6 +510,9 @@ export class Pixel extends PixelInfoNotifier {
         } catch (error) {
           // Note: the error may be cause by a call to disconnect
           try {
+            console.log(
+              this._tagLogString(`Disconnecting after getting error: ${error}`)
+            );
             await this._session.disconnect();
           } catch {}
           // Ignore any disconnection error and throw the error
@@ -1063,23 +1066,29 @@ export class Pixel extends PixelInfoNotifier {
     );
   }
 
+  private _tagLogString(str: string): string {
+    return `[${_getTime()} - ${this.name}] ${str}`;
+  }
+
   // Log the given message prepended with a timestamp and the Pixel name
   private _log(msg: unknown): void {
     if (this._logFunc) {
-      if ((msg as PixelMessage)?.type) {
-        this._logFunc(`[${_getTime()} - ${this.name}] ${JSON.stringify(msg)}`);
-      } else {
-        this._logFunc(`[${_getTime()} - ${this.name}] ${msg}`);
-      }
+      this._logFunc(
+        this._tagLogString(
+          (msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg)
+        )
+      );
     }
   }
 
   private _logArray(arr: ArrayBuffer) {
     if (this._logFunc) {
       this._logFunc(
-        `[${_getTime()} - ${this.name}] ${[...new Uint8Array(arr)]
-          .map((b) => (b <= 0xf ? "0" + b.toString(16) : b.toString(16)))
-          .join(":")}`
+        this._tagLogString(
+          `${[...new Uint8Array(arr)]
+            .map((b) => (b <= 0xf ? "0" + b.toString(16) : b.toString(16)))
+            .join(":")}`
+        )
       );
     }
   }
@@ -1232,9 +1241,9 @@ export class Pixel extends PixelInfoNotifier {
       info.face = this._fixDieFace(info.face);
       if (info.face === undefined) {
         console.log(
-          `[${_getTime()} - ${this.name}] /!\\ Dropping ${
-            this.dieType
-          } roll event for face ${info.face}`
+          this._tagLogString(
+            `/!\\ Dropping ${this.dieType} roll event for face ${info.face}`
+          )
         );
         return;
       }
@@ -1320,7 +1329,9 @@ export class Pixel extends PixelInfoNotifier {
         const dataSize = dataView.getUint8(offset);
         if (value.chunkSize > 0 && dataSize !== value.chunkSize) {
           console.log(
-            `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
+            this._tagLogString(
+              `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
+            )
           );
         }
         deserialize(
