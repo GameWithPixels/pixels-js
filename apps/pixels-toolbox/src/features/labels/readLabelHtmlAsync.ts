@@ -82,9 +82,9 @@ export async function readLabelHtmlAsync(
       html = html.replace(k, v);
       console.log(`Replacing \`${k}\` by \`${v}\``);
     });
-    // Load barcode script
+    // Load barcode scripts
     const jsBarcode = await FileSystem.readAsStringAsync(
-      tempDir + "JsBarcode.ean-upc.min.js"
+      tempDir + "JsBarcode.all.min.js"
     );
     // And embed it HTML
     console.log("Inserting barcode");
@@ -96,26 +96,53 @@ export async function readLabelHtmlAsync(
       parts[0] +
       `<script>\n${jsBarcode}\n</script>\n` +
       `<script>
-        JsBarcode("#barcode", "${product.upcCode}", {
+        JsBarcode("#barcode_upc", "${product.upcCode}", {
           format: "upc", font: "Roboto Condensed"
+        })
+      </script>\n` +
+      `<script>
+        JsBarcode("#barcode_sn", "${product.deviceId.toLocaleUpperCase()}", {
+          format: "code39", margin: 0, displayValue: false, height: 15
         })
       </script>\n` +
       parts[1];
 
-    // Insert barcode
-    const barcodeIndex = html.indexOf('"barcode-00850055703353.gif"');
-    if (barcodeIndex < 0) {
-      throw new Error("readLabelHtmlAsync: barcode image not found");
-    }
-    const barcodeStart = html.lastIndexOf("<img", barcodeIndex);
-    const barcodeEnd = html.indexOf(">", barcodeIndex) + 1;
-    if (barcodeStart < 0 || barcodeEnd <= 0) {
-      throw new Error("readLabelHtmlAsync: barcode image tag not found");
-    }
-    html =
-      html.substring(0, barcodeStart) +
-      '<svg id="barcode" class="gwd-img-sq5f gwd-img-u4dl"></svg>' +
-      html.substring(barcodeEnd);
+    const replaceBarcode = (
+      placeHolderFile: string,
+      id: string,
+      styleClass: string
+    ) => {
+      // Insert barcode
+      const barcodeIndex = html.indexOf('"' + placeHolderFile + '"');
+      if (barcodeIndex < 0) {
+        throw new Error("readLabelHtmlAsync: barcode image not found");
+      }
+      const barcodeStart = html.lastIndexOf("<img", barcodeIndex);
+      const barcodeEnd = html.indexOf(">", barcodeIndex) + 1;
+      if (barcodeStart < 0 || barcodeEnd <= 0) {
+        throw new Error("readLabelHtmlAsync: barcode image tag not found");
+      }
+      html =
+        html.substring(0, barcodeStart) +
+        '<svg id="' +
+        id +
+        '" class="' +
+        styleClass +
+        '"></svg>' +
+        html.substring(barcodeEnd);
+    };
+
+    replaceBarcode(
+      "barcode-00850055703353.gif",
+      "barcode_upc",
+      "gwd-img-sq5f gwd-img-u4dl"
+    );
+
+    replaceBarcode(
+      "pixel-id-barcode.png",
+      "barcode_sn",
+      "gwd-img-1ui0 gwd-img-17g5"
+    );
 
     // Embed external files in HTML as base64 string
     const embedFiles = async (prefix: string, dataType: string) => {
