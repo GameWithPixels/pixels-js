@@ -23,19 +23,13 @@ import {
 import { Audio, AVPlaybackSource } from "expo-av";
 import React from "react";
 import { useTranslation, TFunction } from "react-i18next";
-import { FlatList, Image } from "react-native";
-import {
-  Button,
-  Modal,
-  Portal,
-  Text,
-  TouchableRipple,
-} from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
-import { AppStyles, useModalStyle } from "~/AppStyles";
+import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
+import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
@@ -781,71 +775,6 @@ export function CheckLEDs({
   return <TaskChainComponent title={t("checkLEDs")} taskChain={taskChain} />;
 }
 
-function ColorwayImage({ name }: { name: PixelColorway }) {
-  switch (name) {
-    default:
-      return <Image source={require("!images/colorways/unknown.png")} />;
-    case "onyxBlack":
-      return <Image source={require("!images/colorways/onyxBlack.png")} />;
-    case "hematiteGrey":
-      return <Image source={require("!images/colorways/hematiteGrey.png")} />;
-    case "midnightGalaxy":
-      return <Image source={require("!images/colorways/midnightGalaxy.png")} />;
-    case "auroraSky":
-      return <Image source={require("!images/colorways/auroraSky.png")} />;
-    case "auroraClear":
-      return <Image source={require("!images/colorways/auroraClear.png")} />;
-  }
-}
-
-export function RequestColorway({
-  visible,
-  onSelect,
-}: {
-  visible: boolean;
-  onSelect?: (colorway: PixelColorway) => void;
-}) {
-  // Values for UI
-  const modalStyle = useModalStyle();
-  const { t } = useTranslation();
-  const colors = (Object.keys(PixelColorwayValues) as [PixelColorway]).filter(
-    (c) => c !== "unknown" && c !== "custom"
-  );
-  colors.push("unknown");
-  return (
-    <Portal>
-      <Modal
-        visible={visible}
-        contentContainerStyle={modalStyle}
-        dismissable={false}
-      >
-        <BaseVStack paddingVertical={10} gap={20}>
-          <Text style={{ alignSelf: "center" }} variant="headlineMedium">
-            {t("selectColorway")}
-          </Text>
-          <FlatList
-            style={AppStyles.fullWidth}
-            contentContainerStyle={{
-              ...AppStyles.listContentContainer,
-              gap: 20,
-            }}
-            columnWrapperStyle={{
-              justifyContent: "space-around",
-            }}
-            numColumns={2}
-            data={colors}
-            renderItem={({ item: c }) => (
-              <TouchableRipple onPress={() => onSelect?.(c)}>
-                <ColorwayImage name={c} />
-              </TouchableRipple>
-            )}
-          />
-        </BaseVStack>
-      </Modal>
-    </Portal>
-  );
-}
-
 export function WaitFaceUp({
   action,
   onTaskStatus,
@@ -1018,8 +947,7 @@ export function StoreSettings({
           <BaseHStack gap={20}>
             {resolveConfirmPromise && (
               <>
-                <ColorwayImage name={pixel.colorway} />
-
+                <ColorwayImage colorway={pixel.colorway} />
                 <MessageYesNo
                   justifyContent="center"
                   message={t("keepColorway")}
@@ -1028,7 +956,7 @@ export function StoreSettings({
                 />
               </>
             )}
-            <RequestColorway
+            <SelectColorwayModal
               visible={!!resolveColorwayPromise}
               onSelect={(c) => resolveColorwayPromise?.(c)}
             />

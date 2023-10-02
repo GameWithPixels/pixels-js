@@ -371,28 +371,6 @@ export const PixelDieTypeValues = {
  */
 export type PixelDieType = keyof typeof PixelDieTypeValues;
 
-/**
- * Available combinations of Pixels dice designs and colors.
- * @enum
- * @category Message
- */
-export const PixelDesignAndColorValues = {
-  unknown: enumValue(0),
-  generic: enumValue(),
-  onyxBlack: enumValue(),
-  hematiteGrey: enumValue(),
-  midnightGalaxy: enumValue(),
-  auroraSky: enumValue(),
-  auroraClear: enumValue(),
-  custom: 0xff,
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelDesignAndColorValues}.
- * @category Message
- */
-export type PixelDesignAndColor = keyof typeof PixelDesignAndColorValues;
-
 export interface MessageChunk {
   // On initialization: size of serializable object
   // After deserialization: number of bytes read from buffer

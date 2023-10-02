@@ -13,6 +13,7 @@ import {
   Pixel,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
+  PixelColorway,
   PixelInfoNotifier,
   PixelRollStateValues,
   usePixelStatus,
@@ -44,6 +45,7 @@ import {
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
 import { ProgressBar } from "~/components/ProgressBar";
+import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
@@ -346,12 +348,14 @@ function BottomButtons({
   const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
   const [printStatus, setPrintStatus] = React.useState("");
+
   // Print modal
   const {
     visible: printVisible,
     show: showPrint,
     hide: hidePrint,
   } = useVisibility();
+
   // Discharge modal
   const {
     visible: dischargeVisible,
@@ -359,6 +363,10 @@ function BottomButtons({
     hide: hideDischarge,
   } = useVisibility();
   const { t } = useTranslation();
+
+  // Colorway selection on print
+  const [onSelectColorway, setOnSelectColorway] =
+    React.useState<(c: PixelColorway) => void>();
 
   return (
     <>
@@ -404,24 +412,42 @@ function BottomButtons({
             </>
           )}
           <Button
-            onPress={() => {
+            onPress={async () => {
               setPrintStatus("");
               showPrint();
-              printLabelAsync(pd.pixel, (status) => {
-                switch (status) {
-                  case "preparing":
-                    setPrintStatus("Preparing label...");
-                    break;
-                  case "sending":
-                    setPrintStatus("Sending label to printer...");
-                    break;
-                  case "done":
-                    setPrintStatus("Printing successful!");
-                    break;
-                  default:
-                    assertNever(status, "Unsupported print status");
+              const px = pd.pixel;
+              const colorway =
+                px.colorway !== "unknown"
+                  ? px.colorway
+                  : await new Promise<PixelColorway>((resolve) =>
+                      setOnSelectColorway(() => (colorway: PixelColorway) => {
+                        setOnSelectColorway(undefined);
+                        resolve(colorway);
+                      })
+                    );
+              printLabelAsync(
+                {
+                  pixelId: px.pixelId,
+                  name: px.name,
+                  dieType: px.dieType,
+                  colorway,
+                },
+                (status) => {
+                  switch (status) {
+                    case "preparing":
+                      setPrintStatus(t("preparingLabel"));
+                      break;
+                    case "sending":
+                      setPrintStatus(t("sendingLabelToPrint"));
+                      break;
+                    case "done":
+                      setPrintStatus(t("printSuccessful"));
+                      break;
+                    default:
+                      assertNever(status, "Unsupported print status");
+                  }
                 }
-              }).catch((error) => {
+              ).catch((error) => {
                 const msg = error.message ?? error;
                 console.warn(msg);
                 setPrintStatus(msg);
@@ -478,7 +504,7 @@ function BottomButtons({
               </Button>
             </>
           )}
-          <Button onPress={onExportMessages}>{t("exportLog")}</Button>
+          <Button onPress={onExportMessages}>{t("exportLogs")}</Button>
         </BaseVStack>
       </BaseHStack>
 
@@ -492,6 +518,11 @@ function BottomButtons({
         status={printStatus}
         visible={printVisible}
         onDismiss={hidePrint}
+      />
+
+      <SelectColorwayModal
+        visible={!!onSelectColorway}
+        onSelect={onSelectColorway}
       />
     </>
   );

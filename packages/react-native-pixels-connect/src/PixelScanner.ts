@@ -281,11 +281,11 @@ export class PixelScanner {
     }, 150 + 100 * Math.random());
   }
 
-  private static _maxDesignAndColor = Math.max(
+  private static readonly _maxColorway = Math.max(
     ...Object.values(PixelColorwayValues)
   );
 
-  private static _maxRollState = Math.max(
+  private static readonly _maxRollState = Math.max(
     ...Object.values(PixelRollStateValues)
   );
 
@@ -298,7 +298,7 @@ export class PixelScanner {
       ledCount: 20,
       colorway:
         getValueKeyName(
-          1 + (index % PixelScanner._maxDesignAndColor),
+          1 + (index % PixelScanner._maxColorway),
           PixelColorwayValues
         ) ?? "unknown",
       dieType: "d20",

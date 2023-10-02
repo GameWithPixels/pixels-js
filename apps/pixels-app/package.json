@@ -30,7 +30,6 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/apps/pixels-app",
   "dependencies": {
-    "@react-native-community/slider": "4.4.2",
     "@expo/react-native-action-sheet": "^4.0.1",
     "@react-native-async-storage/async-storage": "~1.19.3",
     "@react-native-community/slider": "4.4.2",
