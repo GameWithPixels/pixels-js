@@ -88,3 +88,11 @@ export class DfuFirmwareVersionFailureError extends DfuError {
     this.name = "DfuFirmwareVersionFailureError";
   }
 }
+
+/** DFU error thrown when the update fails because of the device disconnected. */
+export class DfuDeviceDisconnectedError extends DfuError {
+  constructor(target: DfuTargetId, message?: string) {
+    super(target, message);
+    this.name = "DfuFirmwareVersionFailureError";
+  }
+}

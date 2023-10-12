@@ -11,6 +11,7 @@ import {
   DfuInternalError,
   DfuInvalidArgumentError,
   DfuRemoteError,
+  DfuDeviceDisconnectedError,
 } from "./errors";
 import {
   DfuProgressEvent,
@@ -256,6 +257,9 @@ export async function startDfu(
         throw new DfuDeviceNotSupportedError(targetId, msg);
       case "FW version failure":
         throw new DfuFirmwareVersionFailureError(targetId, msg);
+      // We sometime get this error
+      case "DFU DEVICE DISCONNECTED":
+        throw new DfuDeviceDisconnectedError(targetId, msg);
       default:
         switch (error.code) {
           // iOS errors
@@ -265,6 +269,8 @@ export async function startDfu(
             throw new DfuDeviceNotSupportedError(targetId, msg);
           case "DFUErrorRemoteExtendedErrorFwVersionFailure":
             throw new DfuFirmwareVersionFailureError(targetId, msg);
+          case "DFUErrorDeviceDisconnected":
+            throw new DfuDeviceDisconnectedError(targetId, msg);
           // Android & common errors
           case "E_INTERNAL":
             throw new DfuInternalError(targetId, msg);
