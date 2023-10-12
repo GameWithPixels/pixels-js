@@ -379,9 +379,10 @@ class PixelDispatcher
     }
     // Forward pixel instance property events
     for (const prop of PixelInfoNotifier.MutablePropsList) {
-      this._pixel.addPropertyListener(prop, () =>
-        copyProp(this._pixel as PixelInfo, this._info, prop)
-      );
+      this._pixel.addPropertyListener(prop, () => {
+        copyProp(this._pixel as PixelInfo, this._info, prop);
+        this.emitPropertyEvent(prop);
+      });
     }
     // Forward and monitor status
     this._pixel.addEventListener("status", (status) => {
