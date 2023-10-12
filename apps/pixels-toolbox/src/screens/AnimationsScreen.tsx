@@ -1,5 +1,5 @@
 import Slider from "@react-native-community/slider";
-import { assertNever } from "@systemic-games/pixels-core-utils";
+import { assertNever, range } from "@systemic-games/pixels-core-utils";
 import {
   loadAppDataSet,
   AppDataSet,
@@ -39,7 +39,6 @@ import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
 import { useForceUpdate } from "~/features/hooks/useForceUpdate";
-import { range } from "~/features/range";
 
 // function test() {
 //   try {

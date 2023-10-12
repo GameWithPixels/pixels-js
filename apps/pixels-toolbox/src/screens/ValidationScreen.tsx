@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { range } from "@systemic-games/pixels-core-utils";
 import {
   BaseBox,
   BaseVStack,
@@ -52,7 +53,6 @@ import {
 } from "~/components/ValidationTestsComponents";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
 import { PrintStatus } from "~/features/labels/printLabelAsync";
-import { range } from "~/features/range";
 import {
   getTaskResult,
   getTaskResultEmoji,

@@ -11,6 +11,7 @@ export * from "./serializable";
 export * from "./SequentialPromiseQueue";
 export * from "./bitMasksUtils";
 export * from "./keyValuesUtils";
+export * from "./range";
 
 //
 // TypeScript helpers

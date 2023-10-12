@@ -3,6 +3,7 @@ import Slider from "@react-native-community/slider";
 import {
   assertNever,
   getValueKeyName,
+  range,
 } from "@systemic-games/pixels-core-utils";
 import {
   BaseHStack,
@@ -54,7 +55,6 @@ import { printLabelAsync } from "~/features/labels/printLabelAsync";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
-import { range } from "~/features/range";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { capitalize } from "~/i18n";
 

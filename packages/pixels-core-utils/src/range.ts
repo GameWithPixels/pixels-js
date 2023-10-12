@@ -1,5 +1,11 @@
-// Similar to Python range (but limited to numbers)
-// https://www.w3schools.com/python/ref_func_range.asp
+/**
+ * Creates a sequence of numbers.
+ * @param startOrStop An integer number specifying at which position to start,
+ *                    or if `stop` is undefined, at which position to stop (starting at 0).
+ * @param stop Optional. An integer number specifying at which position to stop (not included).
+ * @param step Optional. An integer number specifying the incrementation. Default is 1.
+ * @returns A sequence of numbers.
+ */
 export function range(
   startOrStop: number,
   stop?: number,
