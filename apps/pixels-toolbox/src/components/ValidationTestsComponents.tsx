@@ -230,8 +230,10 @@ async function repeatConnect(
         }
         --retries;
         if (!abortSignal.aborted) {
-          await delay(1000);
-          console.log("Try connecting again...");
+          console.log(`Connection error: ${error}`);
+          const delayMs = 2000;
+          console.log(`Try connecting again in ${delayMs}ms...`);
+          await delay(delayMs);
         }
       }
   } finally {

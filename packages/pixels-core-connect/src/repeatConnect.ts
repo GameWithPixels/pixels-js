@@ -30,7 +30,7 @@ export async function repeatConnect(
 ): Promise<void> {
   await exponentialBackOff(
     opt?.retries ?? 2,
-    1000,
+    2000,
     pixel.connect.bind(pixel),
     opt
   );
