@@ -97,12 +97,12 @@ export async function readLabelHtmlAsync(
       `<script>\n${jsBarcode}\n</script>\n` +
       `<script>
         JsBarcode("#barcode_upc", "${product.upcCode}", {
-          format: "upc", font: "Roboto Condensed"
+          format: "upc", font: "Roboto Condensed", margin: 0, marginLeft: 25
         })
       </script>\n` +
       `<script>
         JsBarcode("#barcode_sn", "${product.deviceId.toLocaleUpperCase()}", {
-          format: "code39", margin: 0, displayValue: false, height: 15
+          format: "code39", displayValue: false, height: 30, margin: 0, marginLeft: 45
         })
       </script>\n` +
       parts[1];
@@ -113,7 +113,7 @@ export async function readLabelHtmlAsync(
       styleClass: string
     ) => {
       // Insert barcode
-      const barcodeIndex = html.indexOf('"' + placeHolderFile + '"');
+      const barcodeIndex = html.indexOf(`"${placeHolderFile}"`);
       if (barcodeIndex < 0) {
         throw new Error("readLabelHtmlAsync: barcode image not found");
       }
@@ -124,11 +124,10 @@ export async function readLabelHtmlAsync(
       }
       html =
         html.substring(0, barcodeStart) +
-        '<svg id="' +
-        id +
-        '" class="' +
-        styleClass +
-        '"></svg>' +
+        // Use 2 nested SVG tags so CSS transform works properly
+        `<svg class="${styleClass}">` +
+        `<svg id="${id}"></svg>` + //
+        "</svg>" +
         html.substring(barcodeEnd);
     };
 
