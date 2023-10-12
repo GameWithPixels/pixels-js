@@ -335,10 +335,12 @@ export const ValidationTests = {
     }
   },
 
-  async renameDie(pixel: Pixel, name?: string): Promise<void> {
-    const newName = name ?? (await getRandomDieNameAsync());
-    console.log("Setting die name to " + newName);
-    await pixel.rename(newName);
+  async renameDie(_pixel: Pixel, _name?: string): Promise<void> {
+    const _unused = getRandomDieNameAsync;
+    // Disabled until we have a good list of names
+    // const newName = name ?? (await getRandomDieNameAsync());
+    // console.log("Setting die name to " + newName);
+    // await pixel.rename(newName);
   },
 
   async exitValidationMode(pixel: Pixel): Promise<void> {
