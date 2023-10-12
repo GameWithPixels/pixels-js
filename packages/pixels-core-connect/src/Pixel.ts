@@ -226,7 +226,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /** Shorthand property that indicates if the Pixel status is "ready". */
   get isReady(): boolean {
-    return this.status === "ready";
+    return this._status === "ready";
   }
 
   /** Gets the unique id assigned by the system to the Pixel Bluetooth peripheral. */
@@ -345,7 +345,11 @@ export class Pixel extends PixelInfoNotifier {
 
     // Listen to session connection status changes
     session.setConnectionEventListener(({ connectionStatus }) => {
-      if (connectionStatus !== "connected" && connectionStatus !== "ready") {
+      if (connectionStatus === "connected" || connectionStatus === "ready") {
+        // It's possible that we skip some steps and get a "ready" without
+        // getting a "connecting" before that if the device was already connected
+        this._updateStatus("connecting");
+      } else {
         this._updateStatus(
           connectionStatus === "failedToConnect"
             ? "disconnected"

@@ -26,12 +26,21 @@ import {
 } from "./events";
 import { requestPermissions } from "./requestPermissions";
 
-function _toArray(strList?: string): string[] {
+function toArray(strList?: string): string[] {
   return strList?.split(",") ?? [];
 }
 
-function _toString(...values: (string | number)[]): string {
+function toString(...values: (string | number)[]): string {
   return values.join(",");
+}
+
+function errToStr(error: unknown): string {
+  const e = error as any;
+  if (e.code) {
+    return `${e.message ?? error} (${e.code})`;
+  } else {
+    return e.message ?? String(error);
+  }
 }
 
 export interface ScanStatusEvent {
@@ -90,7 +99,7 @@ function _notifyScanStatus(scanStatus: boolean) {
     _scanEvEmitter.emit("scanStatus", { scanning: scanStatus });
   } catch (error) {
     console.error(
-      `[BLE] Uncaught error in Scan Status event listener: ${error}`
+      `[BLE] Uncaught error in Scan Status event listener: ${errToStr(error)}`
     );
   }
 }
@@ -164,8 +173,9 @@ export const Central = {
               );
             }
           } catch (error) {
+            const e = errToStr(error);
             console.error(
-              `[BLE ${ev.device.name}] Uncaught error in Connection Status event listener: ${error}`
+              `[BLE ${ev.device.name}] Uncaught error in Connection Status event listener: ${e}`
             );
           }
         }
@@ -180,7 +190,7 @@ export const Central = {
             const pInf = peripheralsMap.get(ev.device.systemId);
             if (pInf) {
               const onValueChanged = pInf.valueChangedCallbacks.get(
-                _toString(
+                toString(
                   ev.characteristic.serviceUuid,
                   ev.characteristic.uuid,
                   ev.characteristic.instanceIndex
@@ -199,8 +209,9 @@ export const Central = {
               );
             }
           } catch (error) {
+            const e = errToStr(error);
             console.error(
-              `[BLE ${ev.device.name}] Uncaught error in Characteristic Value Changed event listener: ${error}`
+              `[BLE ${ev.device.name}] Uncaught error in Characteristic Value Changed event listener: ${e}`
             );
           }
         }
@@ -317,8 +328,9 @@ export const Central = {
               }
               _scanEvEmitter.emit("scannedPeripheral", { peripheral });
             } catch (error) {
+              const e = errToStr(error);
               console.error(
-                `[BLE] Uncaught error in Scan Result event listener: ${error}`
+                `[BLE] Uncaught error in Scan Result event listener: ${e}`
               );
             }
           }
@@ -327,10 +339,10 @@ export const Central = {
 
       // Start scan
       await BluetoothLE.startScan(requiredServices);
-    } catch (error: any) {
+    } catch (error) {
       _scanResultSubs?.remove();
       _scanResultSubs = undefined;
-      throw Error(`Failed to start scan: ${error.message} (${error.code})`);
+      throw Error(`Failed to start scan: ${errToStr(error)})`);
     }
 
     console.log(
@@ -433,7 +445,9 @@ export const Central = {
         console.log(`[BLE ${name}] MTU set to ${mtu}`);
 
         // Continue if there wasn't any state change since we got connected
-        if (pInf.state === "connecting") {
+        // Note: always notify the ready state so a new status listener will
+        //       get the notification if even the peripheral was already connected.
+        if (pInf.state === "connecting" || pInf.state === "ready") {
           // Log services and characteristics
           // const services = await BluetoothLE.getDiscoveredServices(sysId);
           // const logs: string[][] = [];
@@ -478,7 +492,7 @@ export const Central = {
               peripheral: pInf.scannedPeripheral,
             });
           }
-        } else if (pInf.state !== "ready") {
+        } else {
           throw new Errors.ConnectError(name, "disconnected");
         }
       } catch (error) {
@@ -490,7 +504,9 @@ export const Central = {
             await Central.disconnectPeripheral(peripheral);
           } catch (error) {
             console.warn(
-              `[BLE ${name}] Error trying to disconnect after failing to connect: ${error}`
+              `[BLE ${name}] Error trying to disconnect after failing to connect: ${errToStr(
+                error
+              )}`
             );
           }
           throw error;
@@ -498,7 +514,9 @@ export const Central = {
       }
     } catch (error) {
       // Log error
-      console.log(`[BLE ${name}] Error connecting to peripheral ${error}`);
+      console.log(
+        `[BLE ${name}] Error connecting to peripheral: ${errToStr(error)}`
+      );
       throw error;
     } finally {
       if (timeoutId) {
@@ -544,7 +562,7 @@ export const Central = {
   async getDiscoveredServices(
     peripheral: PeripheralOrSystemId
   ): Promise<string[]> {
-    return _toArray(
+    return toArray(
       await BluetoothLE.getDiscoveredServices(_getSystemId(peripheral))
     );
   },
@@ -553,7 +571,7 @@ export const Central = {
     peripheral: PeripheralOrSystemId,
     serviceUuid: string
   ): Promise<string[]> {
-    return _toArray(
+    return toArray(
       await BluetoothLE.getServiceCharacteristics(
         _getSystemId(peripheral),
         serviceUuid
@@ -633,7 +651,7 @@ export const Central = {
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    const key = _toString(
+    const key = toString(
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0
@@ -657,7 +675,7 @@ export const Central = {
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    const key = _toString(
+    const key = toString(
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0

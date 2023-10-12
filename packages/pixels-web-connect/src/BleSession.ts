@@ -5,6 +5,13 @@ import {
 
 import { PixelsDevices } from "./PixelsDevices";
 
+class BluetoothError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "BluetoothError";
+  }
+}
+
 class ScanTimeoutError extends Error {
   constructor(message?: string) {
     super(message);
@@ -86,7 +93,10 @@ export default class BleSession extends PixelSession {
     });
 
     const server = this._device.gatt;
-    if (server && !server.connected) {
+    if (!server) {
+      throw new BluetoothError("Gatt server not available");
+    }
+    if (!server.connected) {
       try {
         // Attempt to connect
         this._notifyConnectionEvent("connecting");
@@ -124,8 +134,10 @@ export default class BleSession extends PixelSession {
       this._write = await service.getCharacteristic(
         PixelBleUuids.writeCharacteristic
       );
-      this._notifyConnectionEvent("ready");
     }
+    // Note: always notify the ready state so a new status listener will
+    //       get the notification if even the device was already connected.
+    this._notifyConnectionEvent("ready");
   }
 
   async disconnect(): Promise<void> {
