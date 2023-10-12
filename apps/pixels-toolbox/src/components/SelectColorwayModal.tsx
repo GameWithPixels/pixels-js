@@ -5,7 +5,13 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
-import { Modal, Portal, Text, TouchableRipple } from "react-native-paper";
+import {
+  Modal,
+  ModalProps,
+  Portal,
+  Text,
+  TouchableRipple,
+} from "react-native-paper";
 
 import { ColorwayImage } from "./ColorwayImage";
 
@@ -14,10 +20,11 @@ import { useModalStyle, AppStyles } from "~/AppStyles";
 export function SelectColorwayModal({
   visible,
   onSelect,
+  ...props
 }: {
   visible: boolean;
   onSelect?: (colorway: PixelColorway) => void;
-}) {
+} & Omit<ModalProps, "children">) {
   // Values for UI
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
@@ -27,11 +34,7 @@ export function SelectColorwayModal({
   colors.push("unknown");
   return (
     <Portal>
-      <Modal
-        visible={visible}
-        contentContainerStyle={modalStyle}
-        dismissable={false}
-      >
+      <Modal visible={visible} contentContainerStyle={modalStyle} {...props}>
         <BaseVStack paddingVertical={10} gap={20}>
           <Text style={{ alignSelf: "center" }} variant="headlineMedium">
             {t("selectColorway")}

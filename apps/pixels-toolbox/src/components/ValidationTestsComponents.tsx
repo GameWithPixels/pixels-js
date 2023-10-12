@@ -959,6 +959,7 @@ export function StoreSettings({
             <SelectColorwayModal
               visible={!!resolveColorwayPromise}
               onSelect={(c) => resolveColorwayPromise?.(c)}
+              dismissable={false}
             />
           </BaseHStack>
         ),

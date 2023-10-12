@@ -523,6 +523,10 @@ function BottomButtons({
       <SelectColorwayModal
         visible={!!onSelectColorway}
         onSelect={onSelectColorway}
+        onDismiss={() => {
+          setOnSelectColorway(undefined);
+          hidePrint();
+        }}
       />
     </>
   );
@@ -589,9 +593,6 @@ function PrintModal({
           <Title>{t("labelPrinting")}</Title>
           <Divider style={{ height: 2 }} />
           <Text style={AppStyles.centered} variant="bodyLarge">
-            {}
-          </Text>
-          <Text>
             {t("status")}
             {t("colonSeparator")}
             {status}
