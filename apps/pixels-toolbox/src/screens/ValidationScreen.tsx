@@ -32,6 +32,7 @@ import {
 } from "react-native-vision-camera";
 
 import { AppStyles } from "~/AppStyles";
+import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
@@ -437,6 +438,10 @@ function RunTestsPage({
     React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
+  const useSelectedFirmware = useAppSelector(
+    (state) => state.validationSettings.useSelectedFirmware
+  );
+
   // We must have a Pixel once past the UpdateFirmware task
   const getPixel = (): Pixel => {
     if (!pixel) throw new Error("No Pixel instance");
@@ -445,12 +450,12 @@ function RunTestsPage({
 
   // Some conditions to filter tests
   const seq = settings.sequence;
-  const isFWUpdate = seq === "firmwareUpdate";
-  const skipIfFwUpdate = { skip: isFWUpdate };
+  const isFwUpdate = seq === "firmwareUpdate";
+  const skipIfFwUpdate = { skip: isFwUpdate };
   const skipIfBoard = { skip: isBoard(seq) };
-  const skipIfNoCoil = { skip: isFWUpdate || seq === "boardNoCoil" };
-  const skipIfDieFinal = { skip: isFWUpdate || seq === "dieFinal" };
-  const skipIfNotDieFinal = { skip: isFWUpdate || seq !== "dieFinal" };
+  const skipIfNoCoil = { skip: isFwUpdate || seq === "boardNoCoil" };
+  const skipIfDieFinal = { skip: isFwUpdate || seq === "dieFinal" };
+  const skipIfNotDieFinal = { skip: isFwUpdate || seq !== "dieFinal" };
 
   // The entire test sequence
   const taskChain = useTaskChain(cancel ? "cancel" : "run")
@@ -460,6 +465,7 @@ function RunTestsPage({
           {...p}
           settings={settings}
           pixelId={pixelId}
+          useSelectedFirmware={useSelectedFirmware}
           onPixelFound={onPixelFound}
           onFirmwareUpdate={setFirmwareUpdateStatus}
         />
@@ -470,7 +476,9 @@ function RunTestsPage({
         <ConnectPixel
           {...p}
           settings={settings}
-          pixel={getPixel()}
+          pixelId={pixelId}
+          pixel={pixel}
+          onPixelFound={onPixelFound}
           ledCount={ledCount}
         />
       )),
@@ -544,7 +552,7 @@ function RunTestsPage({
         <ConnectPixel
           {...p}
           settings={settings}
-          pixel={getPixel()}
+          pixel={pixel}
           ledCount={ledCount}
         />
       )),

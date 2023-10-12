@@ -24,7 +24,10 @@ import { AppStyles, useModalStyle } from "~/AppStyles";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
-import { setOpenOnStart } from "~/features/store/validationSettingsSlice";
+import {
+  setUseSelectedFirmware,
+  setOpenOnStart,
+} from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
 
 function toYesNo(value: boolean) {
@@ -42,10 +45,7 @@ function ThemeRadio({
     (state) => state.displaySettings.themeMode
   );
   const appDispatch = useAppDispatch();
-  const setMode = React.useCallback(
-    () => appDispatch(setThemeMode(themeMode)),
-    [appDispatch, themeMode]
-  );
+  const setMode = () => appDispatch(setThemeMode(themeMode));
   return (
     <Pressable onPress={setMode} style={styles.radioPressable}>
       <RadioButton
@@ -61,7 +61,7 @@ function ThemeRadio({
 function ThemeCard() {
   return (
     <Card>
-      <Card.Content>
+      <Card.Content style={{ gap: 10 }}>
         <Title>Theme</Title>
         <BaseHStack px={5} justifyContent="space-between">
           <ThemeRadio label="System" themeMode="system" />
@@ -101,7 +101,7 @@ function LanguageRadio({
 function LanguageCard() {
   return (
     <Card>
-      <Card.Content>
+      <Card.Content style={{ gap: 10 }}>
         <Title>Language</Title>
         <BaseHStack px={5} justifyContent="space-between">
           <LanguageRadio label="Chinese" language="zh" />
@@ -113,24 +113,35 @@ function LanguageCard() {
 }
 
 function ValidationCard() {
+  const appDispatch = useAppDispatch();
   const openOnStart = useAppSelector(
     (state) => state.validationSettings.openOnStart
   );
-  const appDispatch = useAppDispatch();
-  const updateOpenOnStart = React.useCallback(
-    (openOnStart: boolean) => {
-      appDispatch(setOpenOnStart(openOnStart));
-    },
-    [appDispatch]
+  const latestFirmware = useAppSelector(
+    (state) => state.validationSettings.useSelectedFirmware
   );
 
   return (
     <Card>
-      <Card.Content>
+      <Card.Content style={{ gap: 10 }}>
         <Title>Validation</Title>
         <BaseHStack px={5} justifyContent="space-between">
           <Text>Open On Start</Text>
-          <Switch value={openOnStart} onValueChange={updateOpenOnStart} />
+          <Switch
+            value={openOnStart}
+            onValueChange={(value) => {
+              appDispatch(setOpenOnStart(value));
+            }}
+          />
+        </BaseHStack>
+        <BaseHStack px={5} justifyContent="space-between">
+          <Text>Use Selected Firmware</Text>
+          <Switch
+            value={latestFirmware}
+            onValueChange={(value) => {
+              appDispatch(setUseSelectedFirmware(value));
+            }}
+          />
         </BaseHStack>
       </Card.Content>
     </Card>
@@ -219,7 +230,7 @@ function EasCard() {
   return (
     <>
       <Card>
-        <Card.Content>
+        <Card.Content style={{ gap: 10 }}>
           <Title>EAS Updates</Title>
           <Text style={styles.text}>{`Status: ${updateStatus}`}</Text>
           {/* <Text style={styles.text}>

@@ -237,6 +237,7 @@ i18n
           isLabelPrinted: "Is label correctly printed?",
           scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
           connectionErrorTryAgain: "Connection error, reset device and try again.",
+          dfuErrorTryAgain: "Error trying to update firmware, reset device and try again.",
           dieTypeMismatchWithLedCount: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
 
           // Roll Screen

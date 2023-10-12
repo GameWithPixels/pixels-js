@@ -28,6 +28,7 @@ import { Button, Text } from "react-native-paper";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
+import { store } from "~/app/store";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
@@ -288,6 +289,15 @@ async function scanForPixelWithTimeout(
   }
 }
 
+function getSelectedDfuFilesBundle(): DfuFilesBundle {
+  const { selected, available } = store.getState().dfuBundles;
+  const files = available[selected];
+  if (!files) {
+    throw new Error();
+  }
+  return DfuFilesBundle.create(files);
+}
+
 async function storeValueChecked(
   pixel: Pixel,
   valueType: number,
@@ -351,21 +361,20 @@ export interface ValidationTestProps extends TaskComponentProps {
 
 export type UpdateFirmwareStatus = "updating" | "success" | "error";
 
-export interface UpdateFirmwareProps
-  extends Omit<ValidationTestProps, "pixel"> {
-  pixelId: number;
-  onPixelFound?: (scannedPixel: ScannedPixel) => void;
-  onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
-}
-
 // Note: Pixel should be disconnected by parent component
 export function UpdateFirmware({
   action,
   onTaskStatus,
   pixelId,
+  useSelectedFirmware,
   onPixelFound,
   onFirmwareUpdate,
-}: UpdateFirmwareProps) {
+}: Omit<ValidationTestProps, "pixel"> & {
+  pixelId: number;
+  useSelectedFirmware: boolean;
+  onPixelFound?: (scannedPixel: ScannedPixel) => void;
+  onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
+}) {
   const { t } = useTranslation();
 
   // Our Pixel
@@ -399,7 +408,7 @@ export function UpdateFirmware({
           if (!scannedPixel) {
             throw new TaskFaultedError("No scanned Pixel");
           }
-          // Try to connect up to 3 times
+          // Try to connect with a few attempts
           const sysId = scannedPixel.systemId;
           await repeatConnect(
             abortSignal,
@@ -424,9 +433,11 @@ export function UpdateFirmware({
         const dfuTarget = scannedPixel;
         try {
           // Get the DFU files bundles from the zip file
-          const dfuBundle = DfuFilesBundle.create({
-            pathnames: await unzipFactoryDfuFilesAsync(),
-          });
+          const dfuBundle = useSelectedFirmware
+            ? getSelectedDfuFilesBundle()
+            : DfuFilesBundle.create({
+                pathnames: await unzipFactoryDfuFilesAsync(),
+              });
           if (!dfuBundle.bootloader) {
             throw new TaskFaultedError(
               "DFU bootloader file not found or problematic"
@@ -494,17 +505,19 @@ export function UpdateFirmware({
               }
               if (lastError) {
                 onFirmwareUpdate?.("error");
-                throw lastError;
+                throw new TaskFaultedError(
+                  t("dfuErrorTryAgain") + " " + String(error)
+                );
               }
             }
           } else {
             console.log("Skipping firmware update");
           }
         } finally {
-          // Pixel is already disconnected if DFU has proceeded
-          await Central.disconnectPeripheral(dfuTarget.systemId);
+          // Leave Pixel connected to save time on the next connected test
+          //await Central.disconnectPeripheral(dfuTarget.systemId);
         }
-      }, [scannedPixel, onFirmwareUpdate]),
+      }, [scannedPixel, useSelectedFirmware, onFirmwareUpdate, t]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
         children: (
@@ -534,14 +547,41 @@ export function ConnectPixel({
   action,
   onTaskStatus,
   settings,
+  pixelId,
   pixel,
+  onPixelFound,
   ledCount,
-}: ValidationTestProps & {
+}: Omit<ValidationTestProps, "pixel"> & {
+  pixelId?: number;
+  pixel?: Pixel;
   ledCount: number;
+  onPixelFound?: (scannedPixel: ScannedPixel) => void;
+  onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
   const { t } = useTranslation();
 
   const taskChain = useTaskChain(action)
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          if (!pixel) {
+            if (!pixelId) {
+              throw new TaskFaultedError("No Pixel instance and no Pixel id");
+            }
+            // Start scanning for our Pixel
+            const scannedPixel = await scanForPixelWithTimeout(
+              abortSignal,
+              t,
+              pixelId
+            );
+            // Notify parent
+            onPixelFound?.(scannedPixel);
+          }
+        },
+        [onPixelFound, pixel, pixelId, t]
+      ),
+      createTaskStatusContainer(t("bluetoothScan"))
+    )
     .withTask(
       React.useCallback(async () => {
         if (ledCount <= 0) {
@@ -562,10 +602,10 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          // Get our Pixel and connect to it
           if (!pixel) {
             throw new TaskFaultedError("No Pixel instance");
           }
+          // Try to connect with a few attempts
           await repeatConnect(
             abortSignal,
             t,
