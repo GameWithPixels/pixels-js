@@ -5,7 +5,7 @@ import { getProductName } from "./getProductName";
 import { loadCertificationIds, ProductIds } from "./loadCertificationIds";
 import {
   prepareDieLabelHtmlAsync,
-  prepareFactoryBoxLabelHtmlAsync,
+  prepareCartonLabelHtmlAsync,
 } from "./prepareHtmlAsync";
 import { PrintError, PrintStatus, UnknownProductPrintError } from "./types";
 
@@ -72,7 +72,7 @@ export async function printDieBoxLabelAsync(
   );
 }
 
-export async function printFactoryBoxLabelAsync(
+export async function printCartonLabelAsync(
   pixelInfo: Pick<PixelInfo, "colorway" | "dieType">,
   asn: string,
   statusCallback?: (status: PrintStatus) => void
@@ -80,7 +80,7 @@ export async function printFactoryBoxLabelAsync(
   await printLabelAsync(
     pixelInfo,
     (product) =>
-      prepareFactoryBoxLabelHtmlAsync({
+      prepareCartonLabelHtmlAsync({
         ...product,
         dieTypeImageFilename: "label-icon-" + pixelInfo.dieType + ".png",
         asn,

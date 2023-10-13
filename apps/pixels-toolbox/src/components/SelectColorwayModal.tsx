@@ -31,7 +31,7 @@ export function SelectColorwayModal({
   const colors = (Object.keys(PixelColorwayValues) as [PixelColorway]).filter(
     (c) => c !== "unknown" && c !== "custom"
   );
-  colors.push("unknown");
+  colors.push("unknown"); // We want to show unknown last
   return (
     <Portal>
       <Modal visible={visible} contentContainerStyle={modalStyle} {...props}>

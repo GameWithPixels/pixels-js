@@ -201,7 +201,7 @@ export async function prepareDieLabelHtmlAsync(
   return await prepareHtmlAsync(labelHtmlZip, substitutions, barcodes);
 }
 
-export async function prepareFactoryBoxLabelHtmlAsync(
+export async function prepareCartonLabelHtmlAsync(
   product: ProductIds & {
     dieTypeImageFilename: string;
     asn: string;

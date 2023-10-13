@@ -240,8 +240,8 @@ i18n
           dfuErrorTryAgain: "Error trying to update firmware, reset device and try again.",
           dieTypeMismatchWithLedCount: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
 
-          // Factory box label
-          factoryBoxLabel: "Factory Box Label",
+          // Carton label
+          cartonLabel: "Carton Label",
           asn: "ASN",
           example: "Example",
           dieType: "Die Type",
@@ -442,6 +442,16 @@ i18n
           connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
           dieTypeMismatchWithLedCount: "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
           descriptionAbbrev: "描述",
+          preparingAsPrintStatus: "准备标贴",
+          sendingAsPrintStatus: "发送标贴到打印机",
+          doneAsPrintStatus: "打印成功",
+
+          // Factory box label
+          cartonLabel: "工厂纸箱标贴",
+          asn: "ASN",
+          example: "示例",
+          dieType: "骰子类型",
+          colorway: "亮光方式",
         },
       },
     },

@@ -29,6 +29,7 @@ import { persistor, store } from "~/app/store";
 import { type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";
 import { BatchScreen } from "~/screens/BatchScreen";
+import { CartonLabelScreen } from "~/screens/CartonLabelScreen";
 import { FirmwareUpdateNavigator } from "~/screens/FirmwareUpdateNavigator";
 import { HomeNavigator } from "~/screens/HomeNavigator";
 import { RollScreen } from "~/screens/RollScreen";
@@ -141,6 +142,11 @@ function AppContent() {
               name="Validation"
               component={ValidationScreen}
               options={{ title: t("factoryValidation") }}
+            />
+            <Drawer.Screen
+              name="CartonLabel"
+              component={CartonLabelScreen}
+              options={{ title: t("cartonLabel") }}
             />
             <Drawer.Screen
               name="FirmwareUpdateNavigator"
