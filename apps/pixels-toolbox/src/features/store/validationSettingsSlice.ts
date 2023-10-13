@@ -5,7 +5,6 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 export interface ValidationSettingsState {
-  openOnStart: boolean;
   useSelectedFirmware: boolean;
   boxShipment: {
     asn: string;
@@ -15,7 +14,6 @@ export interface ValidationSettingsState {
 }
 
 const initialState: ValidationSettingsState = {
-  openOnStart: true,
   useSelectedFirmware: false,
   boxShipment: {
     asn: "",
@@ -29,9 +27,6 @@ const validationSettingsSlice = createSlice({
   name: "validationSettings",
   initialState,
   reducers: {
-    setOpenOnStart(state, action: PayloadAction<boolean>) {
-      state.openOnStart = action.payload;
-    },
     setUseSelectedFirmware(state, action: PayloadAction<boolean>) {
       state.useSelectedFirmware = action.payload;
     },
@@ -48,7 +43,6 @@ const validationSettingsSlice = createSlice({
 });
 
 export const {
-  setOpenOnStart,
   setUseSelectedFirmware,
   setBoxShipmentAsn,
   setBoxShipmentDieType,

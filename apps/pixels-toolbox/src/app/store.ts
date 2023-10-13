@@ -11,10 +11,10 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
+import appSettingsReducer, {
+  AppSettingsState,
+} from "~/features/store/appSettingsSlice";
 import dfuBundlesReducer from "~/features/store/dfuBundlesSlice";
-import displaySettingsReducer, {
-  DisplaySettingsState,
-} from "~/features/store/displaySettingsSlice";
 import validationSettingsReducer, {
   ValidationSettingsState,
 } from "~/features/store/validationSettingsSlice";
@@ -26,10 +26,7 @@ export const store = configureStore({
     // Don't persist DFU bundles so they are always updated
     // and imported ones are removed on reload
     dfuBundles: dfuBundlesReducer,
-    displaySettings: persistReducer<DisplaySettingsState>(
-      conf,
-      displaySettingsReducer
-    ),
+    appSettings: persistReducer<AppSettingsState>(conf, appSettingsReducer),
     validationSettings: persistReducer<ValidationSettingsState>(
       conf,
       validationSettingsReducer

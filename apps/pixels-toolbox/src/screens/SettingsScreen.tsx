@@ -3,6 +3,7 @@ import {
   BaseBox,
   BaseHStack,
 } from "@systemic-games/react-native-base-components";
+import * as Localization from "expo-localization";
 import * as Updates from "expo-updates";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -23,12 +24,14 @@ import {
 import { AppStyles, useModalStyle } from "~/AppStyles";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
-import { setThemeMode, ThemeMode } from "~/features/store/displaySettingsSlice";
 import {
-  setUseSelectedFirmware,
-  setOpenOnStart,
-} from "~/features/store/validationSettingsSlice";
+  setOpenPageOnStart,
+  setThemeMode,
+  ThemeMode,
+} from "~/features/store/appSettingsSlice";
+import { setUseSelectedFirmware } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
+import { AppRootPageName } from "~/navigation";
 
 function toYesNo(value: boolean) {
   return value ? "Yes" : "No";
@@ -42,16 +45,16 @@ function ThemeRadio({
   themeMode: ThemeMode;
 }) {
   const currentThemeMode = useAppSelector(
-    (state) => state.displaySettings.themeMode
+    (state) => state.appSettings.themeMode
   );
   const appDispatch = useAppDispatch();
-  const setMode = () => appDispatch(setThemeMode(themeMode));
+  const setTheme = () => appDispatch(setThemeMode(themeMode));
   return (
-    <Pressable onPress={setMode} style={styles.radioPressable}>
+    <Pressable onPress={setTheme} style={styles.radioPressable}>
       <RadioButton
         value={themeMode}
         status={themeMode === currentThemeMode ? "checked" : "unchecked"}
-        onPress={setMode}
+        onPress={setTheme}
       />
       <Text>{label}</Text>
     </Pressable>
@@ -81,17 +84,22 @@ function LanguageRadio({
   language: string;
 }) {
   const { i18n } = useTranslation();
-  const setMode = React.useCallback(
-    () => i18n.changeLanguage(language),
+  const setLanguage = React.useCallback(
+    () =>
+      i18n.changeLanguage(
+        language === "system"
+          ? getLanguageShortCode(Localization.locale)
+          : language
+      ),
     [i18n, language]
   );
   const selected = getLanguageShortCode(i18n.language);
   return (
-    <Pressable onPress={setMode} style={styles.radioPressable}>
+    <Pressable onPress={setLanguage} style={styles.radioPressable}>
       <RadioButton
         value={label}
         status={selected === language ? "checked" : "unchecked"}
-        onPress={setMode}
+        onPress={setLanguage}
       />
       <Text>{label}</Text>
     </Pressable>
@@ -104,6 +112,7 @@ function LanguageCard() {
       <Card.Content style={{ gap: 10 }}>
         <Title>Language</Title>
         <BaseHStack px={5} justifyContent="space-between">
+          {/* <LanguageRadio label="System" language="system" /> // TODO Need to store value */}
           <LanguageRadio label="Chinese" language="zh" />
           <LanguageRadio label="English" language="en" />
         </BaseHStack>
@@ -112,27 +121,44 @@ function LanguageCard() {
   );
 }
 
+function PageRadio({
+  label,
+  page,
+}: {
+  label: string;
+  page: AppRootPageName | "";
+}) {
+  const appDispatch = useAppDispatch();
+  const openPageOnStart = useAppSelector(
+    (state) => state.appSettings.openPageOnStart
+  );
+  const setPage = () => appDispatch(setOpenPageOnStart(page));
+  return (
+    <Pressable onPress={setPage} style={styles.radioPressable}>
+      <RadioButton
+        value={label}
+        status={openPageOnStart === page ? "checked" : "unchecked"}
+        onPress={setPage}
+      />
+      <Text>{label}</Text>
+    </Pressable>
+  );
+}
+
 function ValidationCard() {
   const appDispatch = useAppDispatch();
-  const openOnStart = useAppSelector(
-    (state) => state.validationSettings.openOnStart
-  );
   const latestFirmware = useAppSelector(
     (state) => state.validationSettings.useSelectedFirmware
   );
-
   return (
     <Card>
       <Card.Content style={{ gap: 10 }}>
         <Title>Validation</Title>
+        <Text>Open On Start</Text>
         <BaseHStack px={5} justifyContent="space-between">
-          <Text>Open On Start</Text>
-          <Switch
-            value={openOnStart}
-            onValueChange={(value) => {
-              appDispatch(setOpenOnStart(value));
-            }}
-          />
+          <PageRadio label="Default" page="" />
+          <PageRadio label="Validation" page="Validation" />
+          <PageRadio label="Box Label" page="CartonLabel" />
         </BaseHStack>
         <BaseHStack px={5} justifyContent="space-between">
           <Text>Use Selected Firmware</Text>

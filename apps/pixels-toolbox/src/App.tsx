@@ -26,7 +26,7 @@ import * as Sentry from "sentry-expo";
 
 import { useAppSelector } from "~/app/hooks";
 import { persistor, store } from "~/app/store";
-import { type RootScreensParamList } from "~/navigation";
+import { AppRootPageName, type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";
 import { BatchScreen } from "~/screens/BatchScreen";
 import { CartonLabelScreen } from "~/screens/CartonLabelScreen";
@@ -101,7 +101,7 @@ const DarkTheme = {
 const Drawer = createDrawerNavigator<RootScreensParamList>();
 
 function AppContent() {
-  const themeMode = useAppSelector((state) => state.displaySettings.themeMode);
+  const themeMode = useAppSelector((state) => state.appSettings.themeMode);
   const colorScheme = useColorScheme();
   const darkOrLight = themeMode === "system" ? colorScheme : themeMode;
   const theme = darkOrLight === "dark" ? DarkTheme : LightTheme;
@@ -121,9 +121,7 @@ function AppContent() {
         <NavigationContainer theme={theme}>
           <Drawer.Navigator
             initialRouteName={
-              store.getState().validationSettings.openOnStart
-                ? "Validation"
-                : undefined
+              store.getState().appSettings.openPageOnStart as AppRootPageName
             }
             screenOptions={{
               headerTitleStyle: {

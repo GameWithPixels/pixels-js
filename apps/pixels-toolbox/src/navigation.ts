@@ -14,6 +14,8 @@ export type RootScreensParamList = {
   Settings: undefined;
 };
 
+export type AppRootPageName = keyof RootScreensParamList;
+
 // Home screen and sub screens
 export type HomeNavigatorProps = DrawerScreenProps<
   RootScreensParamList,
