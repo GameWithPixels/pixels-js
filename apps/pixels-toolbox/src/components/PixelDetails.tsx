@@ -1,10 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
-import {
-  assertNever,
-  getValueKeyName,
-  range,
-} from "@systemic-games/pixels-core-utils";
+import { getValueKeyName, range } from "@systemic-games/pixels-core-utils";
 import {
   BaseHStack,
   BaseVStack,
@@ -432,21 +428,7 @@ function BottomButtons({
                   dieType: px.dieType,
                   colorway,
                 },
-                (status) => {
-                  switch (status) {
-                    case "preparing":
-                      setPrintStatus(t("preparingLabel"));
-                      break;
-                    case "sending":
-                      setPrintStatus(t("sendingLabelToPrint"));
-                      break;
-                    case "done":
-                      setPrintStatus(t("printSuccessful"));
-                      break;
-                    default:
-                      assertNever(status, "Unsupported print status");
-                  }
-                }
+                (status) => setPrintStatus(t(status + "AsPrintStatus"))
               ).catch((error) => {
                 const msg = error.message ?? error;
                 console.warn(msg);

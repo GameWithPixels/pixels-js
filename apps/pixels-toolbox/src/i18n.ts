@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import * as Localization from "expo-localization";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
@@ -8,11 +7,11 @@ export function capitalize(str: string): string {
   if (!l) {
     return str;
   } else if (l === 1) {
-    return str.toUpperCase()
+    return str.toUpperCase();
   } else {
-    return str.charAt(0).toUpperCase() + str.slice(1)
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
-};
+}
 
 export function getLanguageShortCode(language: string): string {
   return language.split("_")[0].split("-")[0];
@@ -147,9 +146,9 @@ i18n
           setFixedRainbowProfileD4: "Upload Static D4",
           unknownDieType: "Unknown Die Type",
           descriptionAbbrev: "Desc.",
-          preparingLabel: "Preparing label...",
-          sendingLabelToPrint: "Sending label to printer...",
-          printSuccessful: "Print successful!",
+          preparingAsPrintStatus: "Preparing label...",
+          sendingAsPrintStatus: "Sending label to printer...",
+          doneAsPrintStatus: "Print successful!",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -167,7 +166,8 @@ i18n
           playProfileAnimation: "Play Profile Animation",
           updateProfile: "Update Profile",
           updateBootloaderAndFirmware: "Update Bootloader & Firmware",
-          updateAvailableGoToSettings: "Update available, go to Settings page to install.",
+          updateAvailableGoToSettings:
+            "Update available, go to Settings page to install.",
 
           // DFU
           dfuStateWithStatus: "DFU State: {{status}}",
@@ -197,7 +197,8 @@ i18n
           testingSequence: "Testing {{sequence}}",
           testingDieTypeWithSequence: "Testing {{dieType}} {{sequence}}",
           scan: "Scan",
-          resetUsingMagnetWithFormFactor: "Reset {{formFactor}} using magnet and point camera at it",
+          resetUsingMagnetWithFormFactor:
+            "Reset {{formFactor}} using magnet and point camera at it",
           firmwareUpdate: "Firmware Update",
           bluetoothScan: "Bluetooth Scan",
           checkDieType: "Check Die Type",
@@ -235,10 +236,14 @@ i18n
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
           isLabelPrinted: "Is label correctly printed?",
-          scanTimeoutTryAgain: "Timeout scanning for Pixel, reset device and try again.",
-          connectionErrorTryAgain: "Connection error, reset device and try again.",
-          dfuErrorTryAgain: "Error trying to update firmware, reset device and try again.",
-          dieTypeMismatchWithLedCount: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
+          scanTimeoutTryAgain:
+            "Timeout scanning for Pixel, reset device and try again.",
+          connectionErrorTryAgain:
+            "Connection error, reset device and try again.",
+          dfuErrorTryAgain:
+            "Error trying to update firmware, reset device and try again.",
+          dieTypeMismatchWithLedCount:
+            "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
 
           // Carton label
           cartonLabel: "Carton Label",
@@ -400,7 +405,8 @@ i18n
           testingSequence: "测试 {{sequence}}",
           testingDieTypeWithSequence: "测试 {{dieType}} {{sequence}}",
           scan: "扫描",
-          resetUsingMagnetWithFormFactor: "使用磁铁重置 {{formFactor}}，然后使用摄像头对准",
+          resetUsingMagnetWithFormFactor:
+            "使用磁铁重置 {{formFactor}}，然后使用摄像头对准",
           firmwareUpdate: "更新固件",
           bluetoothScan: "扫描蓝牙",
           checkDieType: "检查骰子类型",
@@ -440,7 +446,8 @@ i18n
           isLabelPrinted: "标贴是否印刷正确？",
           scanTimeoutTryAgain: "扫描时间已经超时，请重置设备并重新开始。",
           connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
-          dieTypeMismatchWithLedCount: "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
+          dieTypeMismatchWithLedCount:
+            "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
           descriptionAbbrev: "描述",
           preparingAsPrintStatus: "准备标贴",
           sendingAsPrintStatus: "发送标贴到打印机",

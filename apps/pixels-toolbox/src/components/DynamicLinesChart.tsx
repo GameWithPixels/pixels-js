@@ -1,4 +1,4 @@
-import { assert } from "@systemic-games/pixels-core-utils";
+import { assert, range } from "@systemic-games/pixels-core-utils";
 import React from "react";
 import { View } from "react-native";
 import Svg, { Polyline, Text as SvgText } from "react-native-svg";
@@ -156,11 +156,9 @@ export const DynamicLinesChart = React.forwardRef(function (
     // (assumes x1 value is representative of the space the labels take)
     const labelWidth = Math.floor(Math.log10(Math.abs(x1)) + 1) * fontSize;
     const numLabelsX = Math.min(10, Math.ceil(area.w / labelWidth / 2));
-    rdrData.xLabels = Array(numLabelsX)
-      .fill(0)
-      .map((_, i) =>
-        Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))
-      );
+    rdrData.xLabels = range(numLabelsX).map((i) =>
+      Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))
+    );
     // Update state
     assert(srcData.lines.length === rdrData.lines.length);
     rdrData.origin = x0;
@@ -178,9 +176,9 @@ export const DynamicLinesChart = React.forwardRef(function (
         .join(" ");
       // Labels
       const numLabelsY = Math.min(10, Math.ceil(area.h / fontSize / 3));
-      line.labels = Array(numLabelsY)
-        .fill(0)
-        .map((_, i) => Math.round(y1 - ((y1 - y0) * i) / numLabelsY));
+      line.labels = range(numLabelsY).map((i) =>
+        Math.round(y1 - ((y1 - y0) * i) / numLabelsY)
+      );
     });
     forceUpdate();
   }, [area.h, area.w, fontSize, forceUpdate]);

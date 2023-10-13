@@ -1,3 +1,4 @@
+import { range } from "@systemic-games/pixels-core-utils";
 import React from "react";
 import { View, ViewStyle } from "react-native";
 import Svg, { Polyline, Text as SvgText } from "react-native-svg";
@@ -90,35 +91,31 @@ export function LineChart({
           stroke={lineColor}
         />
         <>
-          {Array(numLabelsX)
-            .fill(0)
-            .map((_, i) => (
-              <SvgText
-                key={i}
-                x={(layout.width * (i + 0.5)) / (numLabelsX - 1)}
-                y={layout.height - 1}
-                textAnchor="middle"
-                fontSize={fontSize}
-                fill={textColor}
-              >
-                {Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))}
-              </SvgText>
-            ))}
+          {range(numLabelsX).map((i) => (
+            <SvgText
+              key={i}
+              x={(layout.width * (i + 0.5)) / (numLabelsX - 1)}
+              y={layout.height - 1}
+              textAnchor="middle"
+              fontSize={fontSize}
+              fill={textColor}
+            >
+              {Math.round(x0 + ((x1 - x0) * (i + 0.5)) / (numLabelsX - 1))}
+            </SvgText>
+          ))}
         </>
         <>
-          {Array(numLabelsY)
-            .fill(0)
-            .map((_, i) => (
-              <SvgText
-                key={i}
-                x={1}
-                y={fontSize + (layout.height * i) / numLabelsY}
-                fontSize={fontSize}
-                fill={textColor}
-              >
-                {Math.round(y1 - ((y1 - y0) * i) / numLabelsY)}
-              </SvgText>
-            ))}
+          {range(numLabelsY).map((i) => (
+            <SvgText
+              key={i}
+              x={1}
+              y={fontSize + (layout.height * i) / numLabelsY}
+              fontSize={fontSize}
+              fill={textColor}
+            >
+              {Math.round(y1 - ((y1 - y0) * i) / numLabelsY)}
+            </SvgText>
+          ))}
         </>
       </Svg>
     </View>
