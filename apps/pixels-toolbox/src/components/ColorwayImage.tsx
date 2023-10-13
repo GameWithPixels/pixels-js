@@ -1,19 +1,29 @@
 import { PixelColorway } from "@systemic-games/react-native-pixels-connect";
-import { Image } from "react-native";
+import { Image, ImageProps } from "react-native";
 
-export function ColorwayImage({ colorway }: { colorway: PixelColorway }) {
+export function ColorwayImage({
+  colorway,
+  ...props
+}: { colorway: PixelColorway } & Omit<ImageProps, "source">) {
+  let source;
   switch (colorway) {
-    default:
-      return <Image source={require("!images/colorways/unknown.png")} />;
     case "onyxBlack":
-      return <Image source={require("!images/colorways/onyxBlack.png")} />;
+      source = require("!images/colorways/onyxBlack.png");
+      break;
     case "hematiteGrey":
-      return <Image source={require("!images/colorways/hematiteGrey.png")} />;
+      source = require("!images/colorways/hematiteGrey.png");
+      break;
     case "midnightGalaxy":
-      return <Image source={require("!images/colorways/midnightGalaxy.png")} />;
+      source = require("!images/colorways/midnightGalaxy.png");
+      break;
     case "auroraSky":
-      return <Image source={require("!images/colorways/auroraSky.png")} />;
-    case "auroraClear":
-      return <Image source={require("!images/colorways/auroraClear.png")} />;
+      source = require("!images/colorways/auroraSky.png");
+      break;
+    case "clear":
+      source = require("!images/colorways/clear.png");
+      break;
+    default:
+      source = require("!images/colorways/unknown.png");
   }
+  return <Image source={source} {...props} />;
 }

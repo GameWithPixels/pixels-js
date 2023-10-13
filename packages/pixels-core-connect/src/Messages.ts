@@ -337,7 +337,7 @@ export const PixelColorwayValues = {
   hematiteGrey: enumValue(),
   midnightGalaxy: enumValue(),
   auroraSky: enumValue(),
-  auroraClear: enumValue(),
+  clear: enumValue(),
   custom: 0xff,
 } as const;
 

@@ -79,7 +79,7 @@ i18n
           hematiteGrey: "Hematite Grey",
           midnightGalaxy: "Midnight Galaxy",
           auroraSky: "Aurora Sky",
-          auroraClear: "Aurora Clear",
+          clear: "Clear",
           custom: "Custom",
 
           // Pixels Scan List
@@ -300,7 +300,7 @@ i18n
           hematiteGrey: "赤铁灰",
           midnightGalaxy: "星空色",
           auroraSky: "天蓝色",
-          auroraClear: "透明色",
+          clear: "透明色",
           custom: "定制色",
 
           // Pixels Scan List
