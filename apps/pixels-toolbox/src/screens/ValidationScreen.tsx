@@ -53,7 +53,7 @@ import {
   getPixelThroughDispatcher,
 } from "~/components/ValidationTestsComponents";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
-import { PrintStatus } from "~/features/labels/printLabelAsync";
+import { PrintStatus } from "~/features/print";
 import {
   getTaskResult,
   getTaskResultEmoji,

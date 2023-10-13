@@ -240,6 +240,13 @@ i18n
           dfuErrorTryAgain: "Error trying to update firmware, reset device and try again.",
           dieTypeMismatchWithLedCount: "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
 
+          // Factory box label
+          factoryBoxLabel: "Factory Box Label",
+          asn: "ASN",
+          example: "Example",
+          dieType: "Die Type",
+          colorway: "Colorway",
+
           // Roll Screen
           rollDemo: "Roll Demo",
           animationsEditor: "Animations Editor",

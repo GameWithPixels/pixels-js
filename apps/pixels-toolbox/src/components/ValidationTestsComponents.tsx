@@ -37,10 +37,6 @@ import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { unzipFactoryDfuFilesAsync } from "~/features/dfu/unzip";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
-import {
-  PrintStatus,
-  printLabelAsync,
-} from "~/features/labels/printLabelAsync";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   pixelClearSettings,
@@ -49,6 +45,7 @@ import {
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
+import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
 import { useTaskChain } from "~/features/tasks/useTaskChain";
@@ -78,7 +75,7 @@ function printLabel(
   dieType: PixelDieType,
   statusCallback: (status: PrintStatus | Error) => void
 ): void {
-  printLabelAsync(
+  printDieBoxLabelAsync(
     {
       pixelId: pixel.pixelId,
       name: pixel.name,
