@@ -118,15 +118,15 @@ function LargeTonalButton({
   fontSize?: TextStyle["fontSize"];
   children: React.ReactNode;
 }) {
-  const theme = useTheme();
-  const borderRadius = getBorderRadius(theme);
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
   // Paper's button doesn't have multiline text (by design) so we render our own custom button
   return (
     <TouchableRipple
-      rippleColor={theme.colors.surface}
+      rippleColor={colors.surface}
       style={{
         flex: 1,
-        backgroundColor: theme.colors.secondaryContainer,
+        backgroundColor: colors.secondaryContainer,
         padding: 10,
         borderRadius,
         alignContent: "center",
@@ -140,7 +140,7 @@ function LargeTonalButton({
           fontWeight: "bold",
           flexWrap: "wrap",
           textAlign: "center",
-          color: theme.colors.onSecondaryContainer,
+          color: colors.onSecondaryContainer,
         }}
       >
         {children}
@@ -236,7 +236,7 @@ function DecodePixelIdPage({
   settings: ValidationTestsSettings;
   onBack?: () => void;
 }) {
-  const theme = useTheme();
+  const { colors } = useTheme();
   const { t } = useTranslation();
   const errorHandler = useErrorHandler();
 
@@ -371,7 +371,7 @@ function DecodePixelIdPage({
                 <Card.Content style={{ flex: 1 }}>
                   <Text
                     variant="bodyLarge"
-                    style={{ flex: 1, color: theme.colors.error }}
+                    style={{ flex: 1, color: colors.error }}
                   >{`${lastError}`}</Text>
                 </Card.Content>
               ) : (

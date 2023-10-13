@@ -16,7 +16,7 @@ export function TaskChainComponent({
   taskChain,
 }: TaskChainComponentProps) {
   const taskStatus = taskChain.status;
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <Card>
       <Card.Content>
@@ -24,7 +24,7 @@ export function TaskChainComponent({
           {taskStatus === "faulted" ? (
             <Text
               variant="titleLarge"
-              style={{ color: theme.colors.error }}
+              style={{ color: colors.error }}
             >{`${taskChain.lastError}`}</Text>
           ) : (
             taskStatus !== "succeeded" && taskChain.render()

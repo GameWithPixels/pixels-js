@@ -12,7 +12,7 @@ export function AppPage({
   px = 3,
   pt = 5,
 }: React.PropsWithChildren<{ px?: number; pt?: number }>) {
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <View
       style={{
@@ -21,7 +21,7 @@ export function AppPage({
         height: "100%",
         paddingHorizontal: px,
         paddingTop: pt,
-        backgroundColor: theme.colors.background,
+        backgroundColor: colors.background,
       }}
     >
       <ErrorBoundary FallbackComponent={ErrorFallback}>

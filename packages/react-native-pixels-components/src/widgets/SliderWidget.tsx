@@ -29,16 +29,16 @@ export function SliderWidget({
   ...flexProps
 }: SliderWidgetProps) {
   const valueStr = step && step < 1 ? value.toFixed(3) : value.toString();
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <BaseVStack {...flexProps}>
       <Text variant="titleMedium">{title}</Text>
       <BaseHStack alignItems="center">
         <Slider
           style={BaseStyles.spacer}
-          thumbTintColor={theme.colors.primary}
-          minimumTrackTintColor={theme.colors.secondaryContainer}
-          maximumTrackTintColor={theme.colors.primaryContainer}
+          thumbTintColor={colors.primary}
+          minimumTrackTintColor={colors.secondaryContainer}
+          maximumTrackTintColor={colors.primaryContainer}
           step={step}
           minimumValue={minimumValue}
           maximumValue={maximumValue}

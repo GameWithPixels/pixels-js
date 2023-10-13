@@ -54,13 +54,13 @@ export function ProfileCard({
   highlighted,
   ...flexProps
 }: ProfileCardProps) {
-  const theme = useTheme();
-  const textColor = theme.colors.onBackground;
+  const { colors } = useTheme();
+  const textColor = colors.onBackground;
   return (
     <BaseButton
       onPress={onPress}
       borderWidth={highlighted ? 2 : undefined}
-      borderColor={theme.colors.primary}
+      borderColor={colors.primary}
       bg={undefined}
       alignItems="center"
       gap={10}

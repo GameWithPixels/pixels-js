@@ -25,12 +25,12 @@ export function PatternCard({
   highlighted,
   ...flexProps
 }: PatternCardProps) {
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <BaseButton
       onPress={onPress}
       borderWidth={highlighted ? 2 : undefined}
-      borderColor={theme.colors.primary}
+      borderColor={colors.primary}
       bg={undefined}
       alignItems="center"
       {...flexProps}

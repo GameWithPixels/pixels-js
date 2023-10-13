@@ -157,7 +157,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   }, []);
 
   // Values for UI
-  const theme = useTheme();
+  const { colors } = useTheme();
   const { t } = useTranslation();
   const [refreshing, setRefreshing] = React.useState(false);
   const [errorCleared, setErrorCleared] = React.useState(false);
@@ -206,7 +206,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         <BaseVStack alignItems="center" justifyContent="center" gap={10}>
           <Text
             variant="bodyLarge"
-            style={{ color: theme.colors.error }}
+            style={{ color: colors.error }}
           >{`${dfuLastError}`}</Text>
           <Button
             mode="contained-tonal"

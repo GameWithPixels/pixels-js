@@ -13,8 +13,8 @@ export interface SwipeableButtonsProps {
 export const SwipeableButtons = React.memo(function (
   props: SwipeableButtonsProps
 ) {
-  const theme = useTheme();
-  const borderRadius = getBorderRadius(theme);
+  const { roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
   const w = props.width / props.buttons.length;
   return (
     <BaseHStack>

@@ -17,15 +17,15 @@ export function useRoundedStyle({
   borderThemeColor = "primary",
   ...props
 }: RoundedFlexProps) {
-  const theme = useTheme();
+  const { colors, roundness } = useTheme();
   const style = expandShorthandStyle(props);
   if (fill && !Object.hasOwn(style, "backgroundColor")) {
-    style.backgroundColor = theme.colors[fillThemeColor];
+    style.backgroundColor = colors[fillThemeColor];
   }
   if (!Object.hasOwn(style, "borderColor")) {
-    style.borderColor = theme.colors[borderThemeColor];
+    style.borderColor = colors[borderThemeColor];
   }
-  style.borderRadius = getBorderRadius(theme);
+  style.borderRadius = getBorderRadius(roundness);
   if (border && !style.borderWidth) {
     style.borderWidth = 1;
   }

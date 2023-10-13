@@ -29,11 +29,11 @@ function getVersion(): string {
 
 export function Header({ onPress }: { onPress?: () => void }) {
   const { top } = useSafeAreaInsets();
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <BaseHStack mt={top}>
       <Pressable style={styles.icon} onPress={onPress}>
-        <Ionicons name="menu" size={40} color={theme.colors.onBackground} />
+        <Ionicons name="menu" size={40} color={colors.onBackground} />
       </Pressable>
       <Text style={styles.text} variant="headlineMedium">
         {`Toolbox ${__DEV__ ? " 🚧" : getVersion()}`}

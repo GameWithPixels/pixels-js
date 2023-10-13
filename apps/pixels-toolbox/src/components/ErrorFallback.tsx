@@ -3,27 +3,27 @@ import { View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 
 export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <View
       style={{
-        backgroundColor: theme.colors.errorContainer,
+        backgroundColor: colors.errorContainer,
         padding: 20,
         alignItems: "center",
       }}
     >
-      <Text variant="headlineMedium" style={{ color: theme.colors.error }}>
+      <Text variant="headlineMedium" style={{ color: colors.error }}>
         Error!
       </Text>
       <Text
         variant="bodyLarge"
-        style={{ color: theme.colors.error, marginVertical: 30 }}
+        style={{ color: colors.error, marginVertical: 30 }}
       >
         {error.message}
       </Text>
       <Button
         mode="outlined"
-        textColor={theme.colors.error}
+        textColor={colors.error}
         onPress={resetErrorBoundary}
       >
         Continue

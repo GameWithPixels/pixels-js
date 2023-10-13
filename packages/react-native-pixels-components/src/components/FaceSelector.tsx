@@ -77,7 +77,7 @@ function SelectFaceModal({
     [faceCount]
   );
   const modalStyle = useModalStyle();
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <Portal>
       <Modal
@@ -100,7 +100,7 @@ function SelectFaceModal({
                   key={f}
                   onPress={() => onFaceSelect?.(f)}
                   borderWidth={f === face ? 2 : undefined}
-                  borderColor={theme.colors.primary}
+                  borderColor={colors.primary}
                   alignItems="center"
                   m={5}
                 >

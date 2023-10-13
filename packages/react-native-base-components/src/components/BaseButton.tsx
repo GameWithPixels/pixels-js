@@ -29,14 +29,14 @@ export function BaseButton({
   _text,
   ...props
 }: BaseButtonProps) {
-  const theme = useTheme();
-  const borderRadius = getBorderRadius(theme);
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
   const childrenNode = React.useMemo(
     () =>
       typeof children === "string" || typeof children === "number" ? (
         <Text
           style={{
-            color: theme.colors.onSecondaryContainer,
+            color: colors.onSecondaryContainer,
             textAlign: "center",
           }}
         >
@@ -49,14 +49,14 @@ export function BaseButton({
           />
         )
       ),
-    [children, theme.colors.onSecondaryContainer]
+    [children, colors.onSecondaryContainer]
   );
   return (
     <TouchableRipple
-      rippleColor={theme.colors.surface}
+      rippleColor={colors.surface}
       style={[
         {
-          backgroundColor: color ?? theme.colors.secondaryContainer,
+          backgroundColor: color ?? colors.secondaryContainer,
           borderRadius,
           minWidth: 64,
           paddingVertical: 10,

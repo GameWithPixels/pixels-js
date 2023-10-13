@@ -71,16 +71,16 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
   );
 
   // FlatList item rendering
-  const theme = useTheme();
+  const { colors } = useTheme();
   const styles = React.useMemo(
     () =>
       StyleSheet.create({
         selectedCard: {
-          borderColor: theme.colors.primary,
+          borderColor: colors.primary,
           borderWidth: 2,
         },
       }),
-    [theme.colors.primary]
+    [colors.primary]
   );
   const renderItem = React.useCallback(
     ({ item: bundle }: { item: DfuFilesBundle; index: number }) => {

@@ -12,12 +12,12 @@ export interface AppPageProps extends ViewProps {}
  * @param props See {@link AppPageProps} for props parameters.
  */
 export function AppPage({ style, ...props }: AppPageProps) {
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <View
       style={[
         {
-          backgroundColor: theme.colors.background,
+          backgroundColor: colors.background,
           width: "100%",
           height: "100%",
           flex: 1,

@@ -208,7 +208,7 @@ function PixelCard({
   const statusStr = t(
     !status || (isDisco && lastActivitySec < 5000) ? "advertising" : status
   );
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <>
       <PixelInfoCard pixelInfo={pixelDispatcher.asNotifier()} {...props}>
@@ -265,9 +265,7 @@ function PixelCard({
           {children}
           {lastError && (
             <>
-              <Text style={{ color: theme.colors.error }}>
-                {lastError?.message}
-              </Text>
+              <Text style={{ color: colors.error }}>{lastError?.message}</Text>
               <Button mode="outlined" onPress={clearError}>
                 {t("clearError")}
               </Button>

@@ -33,7 +33,7 @@ function DfuBundleSelection({
   );
 
   // Values for UI
-  const theme = useTheme();
+  const { colors } = useTheme();
   const { t } = useTranslation();
 
   // Label to display for the selected firmware
@@ -63,7 +63,7 @@ function DfuBundleSelection({
     <Text
       style={{
         ...AppStyles.bold,
-        color: theme.colors.error,
+        color: colors.error,
         marginVertical: 10,
       }}
     >{`${dfuBundlesError}`}</Text>

@@ -626,16 +626,16 @@ function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
 
 function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
   // Values for UI
-  const theme = useTheme();
+  const { colors } = useTheme();
   const { t } = useTranslation();
   return (
     <>
       <Text
         style={{
-          color: theme.colors.error,
+          color: colors.error,
           fontWeight: "bold",
           padding: 10,
-          borderColor: theme.colors.errorContainer,
+          borderColor: colors.errorContainer,
           borderWidth: 3,
           borderRadius: 8,
           marginTop: 20,
@@ -724,7 +724,7 @@ export function PixelDetails({
   }, [status]);
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
-  const theme = useTheme();
+  const { colors } = useTheme();
   return (
     <>
       <Card>
@@ -737,7 +737,7 @@ export function PixelDetails({
             <Ionicons
               name="arrow-back-outline"
               size={24}
-              color={theme.colors.onBackground}
+              color={colors.onBackground}
             />
           </PaperButton>
         </Card.Content>
