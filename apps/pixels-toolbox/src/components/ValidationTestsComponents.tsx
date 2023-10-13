@@ -55,22 +55,18 @@ import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
-  getBoardOrDie,
-  getSequenceIndex,
-  isBoard,
-  ValidationSequence,
-} from "~/features/validation/ValidationSequences";
-import {
-  testTimeout,
-  ValidationTests,
-} from "~/features/validation/ValidationTests";
-import {
   withPromise,
   AbortControllerWithReason,
   getSignalReason,
   withTimeoutAndDisconnect,
   withTimeout,
-} from "~/features/validation/signalHelpers";
+  getBoardOrDie,
+  getSequenceIndex,
+  isBoard,
+  testTimeout,
+  ValidationSequence,
+  ValidationTests,
+} from "~/features/validation";
 
 export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
   // We use a PixelDispatcher to get our Pixel instance so to enable message logging

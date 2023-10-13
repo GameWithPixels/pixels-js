@@ -64,33 +64,12 @@ import { useTaskComponent } from "~/features/tasks/useTaskComponent";
 import {
   getBoardOrDie,
   isBoard,
+  ValidationBoardTypes,
+  ValidationDieTypes,
   ValidationSequence,
   ValidationSequences,
-} from "~/features/validation/ValidationSequences";
+} from "~/features/validation";
 import { capitalize } from "~/i18n";
-
-// Board types used for validation
-const BoardTypes: readonly PixelDieType[] = [
-  "d6",
-  "d6pipped",
-  "d8",
-  "d10",
-  "d12",
-  "d20",
-];
-
-// Die types used for validation
-const DieTypes: readonly PixelDieType[] = [
-  "d4",
-  "d6",
-  "d6pipped",
-  "d6fudge",
-  "d8",
-  "d10",
-  "d00",
-  "d12",
-  "d20",
-];
 
 function getTestingMessage(
   t: TFunction<"translation", undefined>,
@@ -182,7 +161,7 @@ function SelectDieTypePage({
   onSelectDieType: (type: PixelDieType) => void;
   onBack?: () => void;
 }) {
-  const types = isBoard(sequence) ? BoardTypes : DieTypes;
+  const types = isBoard(sequence) ? ValidationBoardTypes : ValidationDieTypes;
   const items =
     types.length > 6
       ? range(types.length / 2).map((i) => [types[2 * i], types[2 * i + 1]]) // Breaks in 2 columns
