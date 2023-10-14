@@ -32,10 +32,11 @@ export async function printLabelAsync(
       enableJs: true,
       imageWidth: 940,
     });
-    if (result !== "success") {
+    const success = result === "success";
+    statusCallback?.(success ? "done" : "error");
+    if (!success) {
       throw new PrintError(result);
     }
-    statusCallback?.("done");
   } else {
     throw new UnknownProductPrintError(name);
   }

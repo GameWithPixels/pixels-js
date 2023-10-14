@@ -82,17 +82,8 @@ function printLabel(
       colorway: pixel.colorway,
       dieType,
     },
-    statusCallback
+    (status) => status !== "error" && statusCallback(status)
   ).catch(statusCallback);
-  // async function testPrintLabelAsync(
-  //   pixel: Pixel,
-  //   statusCallback?: (status: PrintStatus) => void
-  // ) {
-  //   console.log("TEST PRINTING");
-  //   statusCallback?.("preparing");
-  //   setTimeout(() => statusCallback?.("sending"), 1000);
-  //   setTimeout(() => statusCallback?.("done"), 2000);
-  // }
 }
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
@@ -250,36 +241,33 @@ async function scanForPixelWithTimeout(
   scanner.scanFilter = (pixel: ScannedPixel) => pixel.pixelId === pixelId;
 
   // Wait until we find our Pixel or timeout
-  try {
-    const scannedPixel = await withPromise<ScannedPixel>(
-      abortSignal,
-      "scan",
-      (resolve, reject) => {
-        // Setup timeout
-        const timeoutId = setTimeout(
-          () => reject(new TaskFaultedError(t("scanTimeoutTryAgain"))),
-          timeout
-        );
-        // Setup our scan listener
-        scanner.scanListener = () => {
-          const scannedPixel = scanner.scannedPixels[0];
-          if (scannedPixel) {
-            clearTimeout(timeoutId);
-            resolve(scannedPixel);
-          }
-        };
-        // Start scanning
-        console.log(`Scanning for Pixel with id ${pixelId.toString(16)}`);
-        scanner.start();
-      }
-    );
-    console.log(
-      `Found Pixel with id ${pixelId.toString(16)}: ${scannedPixel.name}`
-    );
-    return scannedPixel;
-  } finally {
-    scanner.stop();
-  }
+  const scannedPixel = await withPromise<ScannedPixel>(
+    abortSignal,
+    "scan",
+    (resolve, reject) => {
+      // Setup timeout
+      const timeoutId = setTimeout(
+        () => reject(new TaskFaultedError(t("scanTimeoutTryAgain"))),
+        timeout
+      );
+      // Setup our scan listener
+      scanner.scanListener = () => {
+        const scannedPixel = scanner.scannedPixels[0];
+        if (scannedPixel) {
+          clearTimeout(timeoutId);
+          resolve(scannedPixel);
+        }
+      };
+      // Start scanning
+      console.log(`Scanning for Pixel with id ${pixelId.toString(16)}`);
+      scanner.start();
+    },
+    () => scanner.stop()
+  );
+  console.log(
+    `Found Pixel with id ${pixelId.toString(16)}: ${scannedPixel.name}`
+  );
+  return scannedPixel;
 }
 
 function getSelectedDfuFilesBundle(): DfuFilesBundle {
@@ -1158,22 +1146,24 @@ export function LabelPrinting({
   const { t } = useTranslation();
 
   // Print result
-  const [resolveRejectResultPromise, setResolveRejectResultPromise] =
-    React.useState<{ resolve: () => void; reject: (error: Error) => void }>();
+  const [resolveResultPromise, setResolveResultPromise] =
+    React.useState<() => void>();
   React.useEffect(() => {
-    console.log(`Print result: ${printResult}`);
-    if (resolveRejectResultPromise) {
+    if (resolveResultPromise && printResult) {
+      console.log(`Print result: ${printResult}`);
       if (printResult === "done") {
-        resolveRejectResultPromise.resolve();
+        resolveResultPromise();
       } else if (printResult instanceof Error) {
-        resolveRejectResultPromise.reject(printResult);
+        resolveResultPromise();
       }
     }
-  }, [printResult, resolveRejectResultPromise]);
+  }, [printResult, resolveResultPromise]);
 
   // Print check
   const [resolvePrintOkPromise, setResolvePrintOkPromise] =
-    React.useState<(ok: boolean) => void>();
+    React.useState<(okOrError: boolean | Error) => void>();
+
+  const printError = printResult instanceof Error ? printResult : undefined;
 
   // Reset task chain
   const [reset, setReset] = React.useState(false);
@@ -1187,9 +1177,8 @@ export function LabelPrinting({
             withPromise<void>(
               abortSignal,
               "labelPrinting",
-              (resolve, reject) =>
-                setResolveRejectResultPromise({ resolve, reject }),
-              () => setResolveRejectResultPromise(undefined)
+              (resolve) => setResolveResultPromise(() => resolve),
+              () => setResolveResultPromise(undefined)
             )
           ),
         []
@@ -1200,34 +1189,35 @@ export function LabelPrinting({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          const printOk = await withTimeout(
+          const printOk = await withPromise<boolean | Error>(
             abortSignal,
-            testTimeout,
-            (abortSignal) =>
-              withPromise<boolean>(
-                abortSignal,
-                "labelPrinting",
-                (resolve) => setResolvePrintOkPromise(() => resolve),
-                () => setResolvePrintOkPromise(undefined)
-              )
+            "labelPrinting",
+            (resolve) => setResolvePrintOkPromise(() => resolve)
           );
           if (!printOk) {
             console.log("Reprinting label");
             onPrintStatus(undefined);
             setReset(true);
             printLabel(pixel, settings.dieType, onPrintStatus);
+          } else if (printOk instanceof Error) {
+            throw printOk;
           }
         },
         [onPrintStatus, pixel, settings.dieType]
       ),
       createTaskStatusContainer({
         children: (
-          <MessageYesNo
-            message={t("isLabelPrinted")}
-            hideButtons={!resolvePrintOkPromise}
-            onYes={() => resolvePrintOkPromise?.(true)}
-            onNo={() => resolvePrintOkPromise?.(false)}
-          />
+          <>
+            {printError && <Text>{String(printError)}</Text>}
+            <MessageYesNo
+              message={t(
+                printError ? "tryPrintingLabelAgain" : "isLabelPrinted"
+              )}
+              hideButtons={!resolvePrintOkPromise}
+              onYes={() => resolvePrintOkPromise?.(!printError)}
+              onNo={() => resolvePrintOkPromise?.(printError ?? false)}
+            />
+          </>
         ),
       })
     )

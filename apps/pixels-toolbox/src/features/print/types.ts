@@ -1,4 +1,4 @@
-export type PrintStatus = "preparing" | "sending" | "done";
+export type PrintStatus = "preparing" | "sending" | "done" | "error";
 
 export class PrintError extends Error {
   constructor(message: string) {

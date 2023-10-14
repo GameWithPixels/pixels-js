@@ -238,6 +238,7 @@ i18n
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
           isLabelPrinted: "Is label correctly printed?",
+          tryPrintingLabelAgain: "Try printing label again?",
           scanTimeoutTryAgain:
             "Timeout scanning for Pixel, reset device and try again.",
           connectionErrorTryAgain:
