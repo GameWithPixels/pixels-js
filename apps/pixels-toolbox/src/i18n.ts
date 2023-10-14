@@ -202,9 +202,11 @@ i18n
           firmwareUpdate: "Firmware Update",
           bluetoothScan: "Bluetooth Scan",
           checkDieType: "Check Die Type",
+          checkLEDCount: "Check LED Count",
           checkBoard: "Check Board",
           accelerometer: "Accelerometer",
           batteryVoltage: "Battery Voltage",
+          batteryLevel: "Battery Level",
           waitCharging: "Wait Charging",
           waitNotCharging: "Wait Not Charging",
           removeFromChargerWithCoilOrDie: "Remove {{coilOrDie}} from charger",
@@ -242,8 +244,12 @@ i18n
             "Connection error, reset device and try again.",
           dfuErrorTryAgain:
             "Error trying to update firmware, reset device and try again.",
-          dieTypeMismatchWithLedCount:
+          dieTypeMismatchWithTypeAndLedCount:
             "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
+          dieTypeMismatchWithExpectedAndReceived:
+            "Die type mismatch, expected {{expected}} but got {{received}}",
+          updateDieTypeWithFromAndTo:
+            "Update die type to {{to}}? Programmed type is {{from}}.",
 
           // Carton label
           cartonLabel: "Carton Label",
@@ -446,7 +452,8 @@ i18n
           isLabelPrinted: "标贴是否印刷正确？",
           scanTimeoutTryAgain: "扫描时间已经超时，请重置设备并重新开始。",
           connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
-          dieTypeMismatchWithLedCount:
+          dfuErrorTryAgain: "更新固件错误，请重置机器并重新尝试。",
+          dieTypeMismatchWithTypeAndLedCount:
             "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
           descriptionAbbrev: "描述",
           preparingAsPrintStatus: "准备标贴",

@@ -153,8 +153,8 @@ export async function withTimeout<T = void>(
 export async function withTimeoutAndDisconnect<T = void>(
   signal: AbortSignal,
   pixel: Pixel,
-  promise: (signal: AbortSignal) => Promise<T>,
-  timeoutMs: number
+  timeoutMs: number,
+  promise: (signal: AbortSignal) => Promise<T>
 ): Promise<T> {
   const [tSignal, tCleanup] = timeoutSignal(timeoutMs);
   const [ccSignal, ccCleanup] = connectedSignal(pixel);

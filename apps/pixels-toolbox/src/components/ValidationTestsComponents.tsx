@@ -52,17 +52,17 @@ import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
-  withPromise,
   AbortControllerWithReason,
-  getSignalReason,
-  withTimeoutAndDisconnect,
-  withTimeout,
   getBoardOrDie,
   getSequenceIndex,
+  getSignalReason,
   isBoard,
   testTimeout,
   ValidationSequence,
   ValidationTests,
+  withPromise,
+  withTimeout,
+  withTimeoutAndDisconnect,
 } from "~/features/validation";
 
 export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
@@ -498,9 +498,7 @@ export function UpdateFirmware({
               }
               if (lastError) {
                 onFirmwareUpdate?.("error");
-                throw new TaskFaultedError(
-                  t("dfuErrorTryAgain") + " " + String(error)
-                );
+                throw new TaskFaultedError(`${t("dfuErrorTryAgain")} ${error}`);
               }
             }
           } else {
@@ -544,14 +542,19 @@ export function ConnectPixel({
   pixel,
   onPixelFound,
   ledCount,
+  dieType,
 }: Omit<ValidationTestProps, "pixel"> & {
   pixelId?: number;
   pixel?: Pixel;
   ledCount: number;
+  dieType?: PixelDieType;
   onPixelFound?: (scannedPixel: ScannedPixel) => void;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
   const { t } = useTranslation();
+
+  const [resolveUpdateDieTypePromise, setResolveUpdateDieTypePromise] =
+    React.useState<(updateDieType: boolean) => void>();
 
   const taskChain = useTaskChain(action)
     .withTask(
@@ -583,14 +586,65 @@ export function ConnectPixel({
         // Check LED count
         if (ledCount !== getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
-            t("dieTypeMismatchWithLedCount", {
+            t("dieTypeMismatchWithTypeAndLedCount", {
               dieType: t(settings.dieType),
               ledCount,
             })
           );
         }
       }, [ledCount, settings.dieType, t]),
-      createTaskStatusContainer(t("checkDieType"))
+      createTaskStatusContainer(t("checkLEDCount"))
+    )
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          if (
+            dieType &&
+            dieType !== "unknown" &&
+            dieType !== settings.dieType
+          ) {
+            const update = await withTimeout<boolean>(
+              abortSignal,
+              testTimeout,
+              (abortSignal) =>
+                withPromise<boolean>(
+                  abortSignal,
+                  "updateDieType",
+                  (resolve) => {
+                    setResolveUpdateDieTypePromise(() => resolve);
+                  }
+                )
+            );
+            if (!update) {
+              throw new TaskFaultedError(
+                t("dieTypeMismatchWithExpectedAndReceived", {
+                  expected: t(settings.dieType),
+                  received: t(dieType),
+                })
+              );
+            }
+          }
+        },
+        [dieType, settings.dieType, t]
+      ),
+      createTaskStatusContainer({
+        title: t("checkDieType"),
+        children: (
+          <>
+            {dieType && resolveUpdateDieTypePromise && (
+              <MessageYesNo
+                message={t("updateDieTypeWithFromAndTo", {
+                  from: t(dieType),
+                  to: t(settings.dieType),
+                })}
+                hideButtons={!resolveUpdateDieTypePromise}
+                onYes={() => resolveUpdateDieTypePromise(true)}
+                onNo={() => resolveUpdateDieTypePromise(false)}
+              />
+            )}
+          </>
+        ),
+      })
     )
     .withTask(
       React.useCallback(
@@ -716,6 +770,16 @@ export function WaitCharging({
           </>
         ),
       })
+    )
+    .withTask(
+      React.useCallback(async () => {
+        if (pixel.batteryLevel < 50) {
+          throw new TaskFaultedError(
+            `Battery level too low: ${pixel.batteryLevel}%`
+          );
+        }
+      }, [pixel]),
+      createTaskStatusContainer(t("batteryLevel"))
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -915,6 +979,7 @@ export function StoreSettings({
           withTimeoutAndDisconnect(
             abortSignal,
             pixel,
+            testTimeout,
             async (abortSignal) => {
               let keepSettings = false;
               let colorway = pixel.colorway;
@@ -948,8 +1013,7 @@ export function StoreSettings({
                 );
                 pixel._updateColorway(colorway);
               }
-            },
-            testTimeout
+            }
           ),
         [pixel]
       ),
@@ -963,8 +1027,8 @@ export function StoreSettings({
                 <MessageYesNo
                   justifyContent="center"
                   message={t("keepColorway")}
-                  onYes={() => resolveConfirmPromise?.(true)}
-                  onNo={() => resolveConfirmPromise?.(false)}
+                  onYes={() => resolveConfirmPromise(true)}
+                  onNo={() => resolveConfirmPromise(false)}
                 />
               </>
             )}

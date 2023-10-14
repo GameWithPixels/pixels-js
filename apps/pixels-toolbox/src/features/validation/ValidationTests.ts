@@ -126,6 +126,7 @@ export const ValidationTests = {
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,
+      timeout,
       async (abortSignal) => {
         // Blink face
         const options = {
@@ -196,8 +197,7 @@ export const ValidationTests = {
           },
           options
         );
-      },
-      timeout
+      }
     );
   },
 
@@ -214,6 +214,7 @@ export const ValidationTests = {
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,
+      timeout,
       async (abortSignal) => {
         // Blink face
         const options = {
@@ -287,8 +288,7 @@ export const ValidationTests = {
           },
           options
         );
-      },
-      timeout
+      }
     );
   },
 
@@ -299,22 +299,18 @@ export const ValidationTests = {
     abortSignal: AbortSignal,
     timeout = testTimeout
   ) {
-    await withTimeoutAndDisconnect(
-      abortSignal,
-      pixel,
-      (abortSignal) =>
-        // Show solid color
-        withSolidColor(abortSignal, pixel, color, () =>
-          withPromise<void>(abortSignal, "checkLEDsLitUp", (resolve) => {
-            // Wait on promised being resolved
-            setResolve(() => {
-              if (!abortSignal.aborted) {
-                resolve();
-              }
-            });
-          })
-        ),
-      timeout
+    await withTimeoutAndDisconnect(abortSignal, pixel, timeout, (abortSignal) =>
+      // Show solid color
+      withSolidColor(abortSignal, pixel, color, () =>
+        withPromise<void>(abortSignal, "checkLEDsLitUp", (resolve) => {
+          // Wait on promised being resolved
+          setResolve(() => {
+            if (!abortSignal.aborted) {
+              resolve();
+            }
+          });
+        })
+      )
     );
   },
 

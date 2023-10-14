@@ -407,8 +407,10 @@ function RunTestsPage({
 
   const [pixel, setPixel] = React.useState<Pixel>();
   const [ledCount, setLedCount] = React.useState(0);
+  const [dieType, setDieType] = React.useState<PixelDieType>("unknown");
   const onPixelFound = React.useCallback((scannedPixel: ScannedPixel) => {
     setLedCount(scannedPixel.ledCount);
+    setDieType(scannedPixel.dieType);
     setPixel(getPixelThroughDispatcher(scannedPixel));
   }, []);
 
@@ -459,6 +461,7 @@ function RunTestsPage({
           pixel={pixel}
           onPixelFound={onPixelFound}
           ledCount={ledCount}
+          dieType={seq === "dieFinal" ? dieType : undefined}
         />
       )),
       skipIfFwUpdate
