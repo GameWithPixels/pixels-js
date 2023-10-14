@@ -14,21 +14,9 @@ import Pathname from "~/features/files/Pathname";
 import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
 import { unzipFileAsync } from "~/features/files/unzipFileAsync";
 
-/**
- * Read HTML from label ZIP file and embed resources into it.
- * Using https://lindell.me/JsBarcode/ for generating the barcode.
- */
-async function prepareHtmlAsync(
-  htmlModuleId: number | string,
-  substitutions?: Record<string, string>,
-  barcodes?: {
-    format: string;
-    value: string;
-    arguments?: string;
-    placeholder: string;
-    styleClass: string;
-  }[]
-) {
+const htmlCache = new Map<number | string, string>();
+
+async function readHtml(htmlModuleId: number | string): Promise<string> {
   if (!FileSystem.cacheDirectory) {
     throw new Error("prepareHtmlAsync: FileSystem.cacheDirectory is null");
   }
@@ -67,64 +55,6 @@ async function prepareHtmlAsync(
     // }
     // html = await FileSystem.readAsStringAsync(uri);
 
-    // Apply substitutions
-    if (substitutions) {
-      Object.entries(substitutions).forEach(([k, v]) => {
-        console.log(`Replacing \`${k}\` by \`${v}\``);
-        html = html.replace(k, v);
-      });
-    }
-
-    // Insert barcodes
-    if (barcodes) {
-      // Load barcode scripts
-      console.log("Loading barcode script");
-      const jsBarcode = await FileSystem.readAsStringAsync(
-        tempDir + "JsBarcode.all.min.js"
-      );
-      // And embed it HTML
-      console.log("Inserting barcodes");
-      const parts = html.split("</body>");
-      if (parts.length !== 2) {
-        throw new Error("prepareHtmlAsync: end body tag not found");
-      }
-      html =
-        parts[0] +
-        `<script>\n${jsBarcode}\n</script>\n` +
-        barcodes
-          .map(
-            (bc, i) =>
-              `<script>
-                JsBarcode("#barcode_${i + 1}", "${bc.value}", {
-                  format: "${bc.format}", ${bc.arguments ?? ""}
-                })
-              </script>\n`
-          )
-          .join() +
-        parts[1];
-
-      // Insert barcode SVG element
-      barcodes.forEach((bc, i) => {
-        // Insert barcode
-        const barcodeIndex = html.indexOf(`"${bc.placeholder}"`);
-        if (barcodeIndex < 0) {
-          throw new Error("prepareHtmlAsync: barcode image not found");
-        }
-        const barcodeStart = html.lastIndexOf("<img", barcodeIndex);
-        const barcodeEnd = html.indexOf(">", barcodeIndex) + 1;
-        if (barcodeStart < 0 || barcodeEnd <= 0) {
-          throw new Error("prepareHtmlAsync: barcode image tag not found");
-        }
-        html =
-          html.substring(0, barcodeStart) +
-          // Use 2 nested SVG tags so CSS transform works properly
-          `<svg class="${bc.styleClass}">` +
-          `<svg id="barcode_${i + 1}"></svg>` + //
-          "</svg>" +
-          html.substring(barcodeEnd);
-      });
-    }
-
     // Embed external files in HTML as base64 string
     const embedFiles = async (prefix: string, dataType: string) => {
       let pos = 0;
@@ -146,7 +76,9 @@ async function prepareHtmlAsync(
           html = html.substring(0, start) + imageData + html.substring(end);
           pos += imageData.length + end - start;
         } else {
-          console.warn(filename + " not found");
+          if (!filename.includes("barcode")) {
+            console.warn(filename + " not found");
+          }
           pos = end;
         }
       }
@@ -155,9 +87,94 @@ async function prepareHtmlAsync(
     // Replace file references by base64 data
     await embedFiles("src=", "image/png");
     await embedFiles("url(", "font/ttf");
+
+    // Load barcode scripts
+    console.log("Loading barcode script");
+    const jsBarcode = await FileSystem.readAsStringAsync(
+      tempDir + "JsBarcode.all.min.js"
+    );
+    // And embed it HTML
+    console.log("Inserting barcodes");
+    const parts = html.split("</body>");
+    if (parts.length !== 2) {
+      throw new Error("prepareHtmlAsync: end body tag not found");
+    }
+    html = parts[0] + `<script>\n${jsBarcode}\n</script>\n</body>` + parts[1];
   } finally {
     // Clean up temp folder
     await FileSystem.deleteAsync(tempDir, { idempotent: true });
+  }
+
+  return html;
+}
+
+/**
+ * Read HTML from label ZIP file and embed resources into it.
+ * Using https://lindell.me/JsBarcode/ for generating the barcode.
+ */
+async function prepareHtmlAsync(
+  htmlModuleId: number | string,
+  substitutions?: Record<string, string>,
+  barcodes?: {
+    format: string;
+    value: string;
+    arguments?: string;
+    placeholder: string;
+    styleClass: string;
+  }[]
+) {
+  let html = htmlCache.get(htmlModuleId) ?? (await readHtml(htmlModuleId));
+  htmlCache.set(htmlModuleId, html);
+
+  // Apply substitutions
+  if (substitutions) {
+    Object.entries(substitutions).forEach(([k, v]) => {
+      console.log(`Replacing \`${k}\` by \`${v}\``);
+      html = html.replace(k, v);
+    });
+  }
+
+  // Insert barcodes
+  if (barcodes) {
+    const parts = html.split("</body>");
+    if (parts.length !== 2) {
+      throw new Error("prepareHtmlAsync: end body tag not found");
+    }
+    html =
+      parts[0] +
+      barcodes
+        .map(
+          (bc, i) =>
+            ` <script>
+                JsBarcode("#barcode_${i + 1}", "${bc.value}", {
+                  format: "${bc.format}", ${bc.arguments ?? ""}
+                })
+              </script>\n`
+        )
+        .join() +
+      "</body>" +
+      parts[1];
+
+    // Insert barcode SVG element
+    barcodes.forEach((bc, i) => {
+      // Insert barcode
+      const barcodeIndex = html.indexOf(`"${bc.placeholder}"`);
+      if (barcodeIndex < 0) {
+        throw new Error("prepareHtmlAsync: barcode image not found");
+      }
+      const barcodeStart = html.lastIndexOf("<img", barcodeIndex);
+      const barcodeEnd = html.indexOf(">", barcodeIndex) + 1;
+      if (barcodeStart < 0 || barcodeEnd <= 0) {
+        throw new Error("prepareHtmlAsync: barcode image tag not found");
+      }
+      html =
+        html.substring(0, barcodeStart) +
+        // Use 2 nested SVG tags so CSS transform works properly
+        `<svg class="${bc.styleClass}">` +
+        `<svg id="barcode_${i + 1}"></svg>` + //
+        "</svg>" +
+        html.substring(barcodeEnd);
+    });
   }
 
   return html;
