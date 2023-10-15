@@ -15,7 +15,7 @@
   "dependencies": {
     "@systemic-games/vision-camera-rgb-averages": "*",
     "react": "18.2.0",
-    "react-native": "0.71.8",
+    "react-native": "0.71.13",
     "react-native-reanimated": "~2.14.4",
     "react-native-vision-camera": "~2.15.6"
   },
