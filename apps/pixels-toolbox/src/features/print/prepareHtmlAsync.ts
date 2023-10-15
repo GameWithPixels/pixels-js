@@ -9,7 +9,8 @@ import * as FileSystem from "expo-file-system";
 
 import { ProductIds } from "./loadCertificationIds";
 
-import labelHtmlZip from "!/labels/single-die-label.zip";
+import cartonLabelHtmlZip from "!/labels/carton-label.zip";
+import dieLabelHtmlZip from "!/labels/single-die-label.zip";
 import Pathname from "~/features/files/Pathname";
 import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
 import { unzipFileAsync } from "~/features/files/unzipFileAsync";
@@ -120,7 +121,7 @@ async function prepareHtmlAsync(
     value: string;
     arguments?: string;
     placeholder: string;
-    styleClass: string;
+    scale?: number;
   }[]
 ) {
   let html = htmlCache.get(htmlModuleId) ?? (await readHtml(htmlModuleId));
@@ -163,15 +164,20 @@ async function prepareHtmlAsync(
         throw new Error("prepareHtmlAsync: barcode image not found");
       }
       const barcodeStart = html.lastIndexOf("<img", barcodeIndex);
+      const barcodeBeforeClass = html.indexOf("class=", barcodeIndex);
       const barcodeEnd = html.indexOf(">", barcodeIndex) + 1;
       if (barcodeStart < 0 || barcodeEnd <= 0) {
         throw new Error("prepareHtmlAsync: barcode image tag not found");
       }
+      const scale = bc.scale;
       html =
         html.substring(0, barcodeStart) +
         // Use 2 nested SVG tags so CSS transform works properly
-        `<svg class="${bc.styleClass}">` +
-        `<svg id="barcode_${i + 1}"></svg>` + //
+        "<svg " +
+        html.substring(barcodeBeforeClass, barcodeEnd) +
+        (scale ? `<g transform="scale(${scale}, ${scale})">` : "") +
+        `<svg id="barcode_${i + 1}"></svg>` +
+        (scale ? "</g>" : "") +
         "</svg>" +
         html.substring(barcodeEnd);
     });
@@ -203,19 +209,17 @@ export async function prepareDieLabelHtmlAsync(
     {
       format: "upc",
       value: product.upcCode,
-      arguments: 'font: "Roboto Condensed", margin: 0, marginLeft: 25',
+      arguments: `font: "Roboto Condensed", margin: 0, marginLeft: 25`,
       placeholder: "barcode-00850055703353.gif",
-      styleClass: "gwd-img-sq5f gwd-img-u4dl",
     },
     {
       format: "code39",
       value: product.deviceId.toLocaleUpperCase(),
       arguments: "displayValue: false, height: 30, margin: 0, marginLeft: 45",
       placeholder: "pixel-id-barcode.png",
-      styleClass: "gwd-img-1ui0 gwd-img-17g5",
     },
   ];
-  return await prepareHtmlAsync(labelHtmlZip, substitutions, barcodes);
+  return await prepareHtmlAsync(dieLabelHtmlZip, substitutions, barcodes);
 }
 
 export async function prepareCartonLabelHtmlAsync(
@@ -226,23 +230,18 @@ export async function prepareCartonLabelHtmlAsync(
 ): Promise<string> {
   const substitutions = {
     "PIPPED D6 - MIDNIGHT GALAXY": product.name.toLocaleUpperCase(),
-    "PXL-DP6A (MG)": product.model,
+    "PXL-D10A-OB": product.model,
     "label-icon-d6pipped.png": product.dieTypeImageFilename,
-    "-MG-": product.colorInitials,
-    "2BB52-PXLDIEA": product.fccId1,
-    "2BB52-CHG001A": product.fccId2,
-    "31060-PXLDIEA": product.icId1,
-    "31060-CHG001A": product.icId2,
-    "GROK STONEBREAKER!": product.asn,
+    FASN0000012345: product.asn,
   };
   const barcodes = [
     {
       format: "upc",
       value: product.upcCode,
-      arguments: 'font: "Roboto Condensed", margin: 0, marginLeft: 25',
+      arguments: `font: "Roboto Condensed", height: 90, margin: 0, marginLeft: 15`,
       placeholder: "barcode-00850055703353.gif",
-      styleClass: "gwd-img-sq5f gwd-img-u4dl",
+      scale: 2,
     },
   ];
-  return await prepareHtmlAsync(labelHtmlZip, substitutions, barcodes);
+  return await prepareHtmlAsync(cartonLabelHtmlZip, substitutions, barcodes);
 }
