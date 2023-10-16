@@ -158,7 +158,7 @@ function ValidationCard() {
         <BaseHStack px={5} justifyContent="space-between">
           <PageRadio label="Default" page="" />
           <PageRadio label="Validation" page="Validation" />
-          <PageRadio label="Box Label" page="CartonLabel" />
+          <PageRadio label="Carton Label" page="CartonLabel" />
         </BaseHStack>
         <BaseHStack px={5} justifyContent="space-between">
           <Text>Use Selected Firmware</Text>
