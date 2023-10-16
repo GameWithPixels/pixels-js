@@ -91,6 +91,9 @@ export interface PixelDispatcherActionMap {
   dequeueDFU: undefined;
 }
 
+/** List of possible DFU actions. */
+export type DfuAction = "none" | "upgrade" | "downgrade";
+
 /**
  * Event map for {@link PixelDispatcher} class.
  * This is the list of supported events where the property name
@@ -102,7 +105,7 @@ export interface PixelDispatcherEventMap {
   profileUploadProgress: number | undefined;
   status: PixelStatus;
   durationSinceLastActivity: number;
-  hasAvailableDFU: boolean;
+  hasAvailableDFU: DfuAction;
   hasActiveDFU: boolean;
   hasQueuedDFU: boolean;
   dfuState: DfuState;
@@ -144,7 +147,7 @@ interface IPixelDispatcher extends ScannedPixel {
   durationSinceLastActivity: number;
   lastScanUpdate: Date;
   isUpdatingProfile: boolean;
-  hasAvailableDFU: boolean;
+  hasAvailableDFU: DfuAction;
   hasQueuedDFU: boolean;
   hasActiveDFU: boolean;
   telemetryData: readonly TelemetryData[];
@@ -181,7 +184,7 @@ class PixelDispatcher
   private _lastActivityMs = 0;
   private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
   private _isUpdatingProfile = false;
-  private _isDfuAvailable = false;
+  private _hasAvailableDFU: DfuAction = "none";
   private _messagesLogFilePath;
   private _telemetryData: TelemetryData[] = [];
   // Our own event emitter
@@ -261,8 +264,8 @@ class PixelDispatcher
     return this._isUpdatingProfile;
   }
 
-  get hasAvailableDFU(): boolean {
-    return this._isDfuAvailable;
+  get hasAvailableDFU(): DfuAction {
+    return this._hasAvailableDFU;
   }
 
   get hasQueuedDFU(): boolean {
@@ -690,10 +693,15 @@ class PixelDispatcher
 
   private _updateIsDFUAvailable() {
     const bundle = this._getSelectedDfuBundle();
-    const av =
+    const isDiff =
       !!bundle && !areSameFirmwareDates(bundle.date, this.firmwareDate);
-    if (this._isDfuAvailable !== av) {
-      this._isDfuAvailable = av;
+    const av = !isDiff
+      ? "none"
+      : bundle.date > this.firmwareDate
+      ? "upgrade"
+      : "downgrade";
+    if (this._hasAvailableDFU !== av) {
+      this._hasAvailableDFU = av;
       this._evEmitter.emit("hasAvailableDFU", av);
     }
   }

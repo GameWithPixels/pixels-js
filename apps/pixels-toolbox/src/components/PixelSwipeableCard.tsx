@@ -370,7 +370,7 @@ export function PixelSwipeableCard({
   );
   const renderRightActions = React.useCallback(
     () =>
-      (!isDisco || (dfuAvailable && !dfuActive)) && (
+      (!isDisco || (dfuAvailable !== "none" && !dfuActive)) && (
         <SwipeableActionView
           w={150}
           backgroundColor={isDisco ? "mediumpurple" : "darkorange"}
@@ -397,7 +397,11 @@ export function PixelSwipeableCard({
     >
       <Pressable onPress={() => onShowDetails()}>
         <PixelCard pixelDispatcher={pixelDispatcher} {...props} />
-        {dfuAvailable && <Text style={styles.topRightCorner}>⬆️</Text>}
+        {dfuAvailable !== "none" && (
+          <Text style={styles.topRightCorner}>
+            {dfuAvailable === "upgrade" ? "⬆️" : "⬇️"}
+          </Text>
+        )}
       </Pressable>
     </Swipeable>
   );
