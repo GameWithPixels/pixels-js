@@ -368,6 +368,10 @@ i18n
           printLabel: "打印标签",
           rename: "重命名",
           unknownDieType: "未知的骰子类型",
+          descriptionAbbrev: "描述",
+          preparingAsPrintStatus: "准备标贴",
+          sendingAsPrintStatus: "发送标贴到打印机",
+          doneAsPrintStatus: "打印成功",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
@@ -417,9 +421,11 @@ i18n
           firmwareUpdate: "更新固件",
           bluetoothScan: "扫描蓝牙",
           checkDieType: "检查骰子类型",
+          checkLEDCount: "检查LED数量",
           checkBoard: "检查板",
           accelerometer: "加速度计",
           batteryVoltage: "电池电压",
+          batteryLevel: "电池容量",
           waitCharging: "等待充电",
           waitNotCharging: "没有充电",
           removeFromChargerWithCoilOrDie: "从充电器上移开{{coilOrDie}} ",
@@ -451,18 +457,18 @@ i18n
           labelPrinting: "标签印刷",
           waitingOnPrint: "等待印刷",
           isLabelPrinted: "标贴是否印刷正确？",
+          tryPrintingLabelAgain: "尝试重新打印标贴？",
           scanTimeoutTryAgain: "扫描时间已经超时，请重置设备并重新开始。",
           connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
           dfuErrorTryAgain: "更新固件错误，请重置机器并重新尝试。",
           dieTypeMismatchWithTypeAndLedCount:
             "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
-          descriptionAbbrev: "描述",
-          preparingAsPrintStatus: "准备标贴",
-          sendingAsPrintStatus: "发送标贴到打印机",
-          doneAsPrintStatus: "打印成功",
+          dieTypeMismatchWithExpectedAndReceived:
+            "骰子类型错误，本应该是{expected} 结果是{received}",
+          updateDieTypeWithFromAndTo: "更新骰子类型是{to}，烧录的类型是{from}",
 
-          // Factory box label
-          cartonLabel: "工厂纸箱标贴",
+          // Carton label
+          cartonLabel: "大箱标贴",
           asn: "ASN",
           example: "示例",
           dieType: "骰子类型",
