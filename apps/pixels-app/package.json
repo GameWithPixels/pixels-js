@@ -44,7 +44,7 @@
     "@systemic-games/react-native-pixels-components": "*",
     "@systemic-games/react-native-pixels-connect": "*",
     "base64-js": "^1.5.1",
-    "expo": "~48.0.20",
+    "expo": "48.0.20",
     "expo-asset": "~8.9.1",
     "expo-build-properties": "~0.6.0",
     "expo-crypto": "~12.2.1",
@@ -80,6 +80,9 @@
     "@types/react": "~18.0.27",
     "@types/three": "^0.146.0",
     "babel-plugin-root-import": "^6.6.0"
+  },
+  "resolutions": {
+    "react-native": "0.71.13"
   },
   "private": true
 }
