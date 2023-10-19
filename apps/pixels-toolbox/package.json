@@ -34,7 +34,7 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/apps/pixels-toolbox",
   "dependencies": {
     "@expo/react-native-action-sheet": "^4.0.1",
-    "@react-native-async-storage/async-storage": "~1.19.3",
+    "@react-native-async-storage/async-storage": "1.17.11",
     "@react-native-community/slider": "4.4.2",
     "@react-navigation/drawer": "^6.6.3",
     "@react-navigation/native": "^6.1.7",
@@ -48,7 +48,7 @@
     "@systemic-games/react-native-pixels-connect": "*",
     "@systemic-games/react-native-zpl-print": "*",
     "@systemic-games/vision-camera-rgb-averages": "*",
-    "expo": "48.0.20",
+    "expo": "~48.0.21",
     "expo-application": "~5.1.1",
     "expo-asset": "~8.9.1",
     "expo-av": "~13.2.1",
@@ -95,9 +95,6 @@
     "@types/three": "0.146.0",
     "babel-plugin-root-import": "^6.6.0",
     "babel-plugin-transform-remove-console": "^6.9.4"
-  },
-  "resolutions": {
-    "react-native": "0.71.13"
   },
   "private": true
 }
