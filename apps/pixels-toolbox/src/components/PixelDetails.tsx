@@ -90,7 +90,7 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
   return (
     <>
       <TextEntry title={t("pixelId")}>
-        {pixel.pixelId.toString(16)}
+        {pixel.pixelId.toString(16).padStart(8, "0")}
         {t("commaSeparator")}
       </TextEntry>
       <TextEntry title={t("descriptionAbbrev")}>

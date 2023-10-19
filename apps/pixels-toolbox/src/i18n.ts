@@ -239,8 +239,8 @@ i18n
           waitingOnPrint: "Waiting On Print",
           isLabelPrinted: "Is label correctly printed?",
           tryPrintingLabelAgain: "Try printing label again?",
-          scanTimeoutTryAgain:
-            "Timeout scanning for Pixel, reset device and try again.",
+          timeoutScanningTryAgainWithId:
+            "Timeout scanning for Pixel {{id}}, reset device and try again.",
           connectionErrorTryAgain:
             "Connection error, reset device and try again.",
           dfuErrorTryAgain:
@@ -458,7 +458,8 @@ i18n
           waitingOnPrint: "等待印刷",
           isLabelPrinted: "标贴是否印刷正确？",
           tryPrintingLabelAgain: "尝试重新打印标贴？",
-          scanTimeoutTryAgain: "扫描时间已经超时，请重置设备并重新开始。",
+          timeoutScanningTryAgainWithId:
+            "扫描时间已经超时{{id}}，请重置设备并重新开始。",
           connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
           dfuErrorTryAgain: "更新固件错误，请重置机器并重新尝试。",
           dieTypeMismatchWithTypeAndLedCount:

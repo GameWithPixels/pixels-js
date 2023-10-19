@@ -13,7 +13,9 @@ export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {
   React.useEffect(() => {
     if (!pixelDispatcher) {
       errorHandler(
-        new Error(`Unknown given Pixel Id: ${pixelId.toString(16)}`)
+        new Error(
+          `Unknown given Pixel Id: ${pixelId.toString(16).padStart(8, "0")}`
+        )
       );
     }
   }, [errorHandler, pixelDispatcher, pixelId]);

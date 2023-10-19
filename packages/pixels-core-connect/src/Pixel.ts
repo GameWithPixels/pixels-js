@@ -908,7 +908,7 @@ export class Pixel extends PixelInfoNotifier {
         "Incorrect computation of computeDataSetByteSize()"
       );
       const hash = DataSet.computeHash(data);
-      const hashStr = (hash >>> 0).toString(16).toUpperCase();
+      const hashStr = (hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
       this._log(
         "Ready to receive dataset, " +
           `byte array should be ${data.length} bytes ` +
@@ -967,7 +967,10 @@ export class Pixel extends PixelInfoNotifier {
       case TransferInstantAnimationsSetAckTypeValues.download:
         {
           // Upload data
-          const hashStr = (hash >>> 0).toString(16).toUpperCase();
+          const hashStr = (hash >>> 0)
+            .toString(16)
+            .toUpperCase()
+            .padStart(8, "0");
           this._log(
             "Ready to receive test dataset, " +
               `byte array should be: ${data.length} bytes ` +
@@ -1034,7 +1037,10 @@ export class Pixel extends PixelInfoNotifier {
       case TransferInstantAnimationsSetAckTypeValues.download:
         {
           // Upload data
-          const hashStr = (hash >>> 0).toString(16).toUpperCase();
+          const hashStr = (hash >>> 0)
+            .toString(16)
+            .toUpperCase()
+            .padStart(8, "0");
           this._log(
             "Ready to receive instant animations, " +
               `byte array should be: ${data.length} bytes ` +
@@ -1090,7 +1096,7 @@ export class Pixel extends PixelInfoNotifier {
       this._logFunc(
         this._tagLogString(
           `${[...new Uint8Array(arr)]
-            .map((b) => (b <= 0xf ? "0" + b.toString(16) : b.toString(16)))
+            .map((b) => b.toString(16).padStart(2, "0"))
             .join(":")}`
         )
       );

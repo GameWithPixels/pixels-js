@@ -73,8 +73,7 @@ export function rgbToHsv({ r, g, b }: IColor): IColorHsv {
 }
 
 function colorByteToHex(byte: number): string {
-  const str = byte.toString(16);
-  return str.length === 1 ? "0" + str : str;
+  return byte.toString(16).padStart(2, "0");
 }
 
 /**

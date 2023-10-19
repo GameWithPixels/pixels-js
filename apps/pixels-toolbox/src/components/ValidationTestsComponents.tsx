@@ -247,7 +247,14 @@ async function scanForPixelWithTimeout(
     (resolve, reject) => {
       // Setup timeout
       const timeoutId = setTimeout(
-        () => reject(new TaskFaultedError(t("scanTimeoutTryAgain"))),
+        () =>
+          reject(
+            new TaskFaultedError(
+              t("timeoutScanningTryAgainWithId", {
+                id: pixelId.toString(16).padStart(8, "0"),
+              })
+            )
+          ),
         timeout
       );
       // Setup our scan listener
