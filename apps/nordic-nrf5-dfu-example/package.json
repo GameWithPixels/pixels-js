@@ -20,14 +20,14 @@
     "@systemic-games/react-native-bluetooth-le": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
     "react": "18.2.0",
-    "react-native": "0.71.13",
+    "react-native": "0.72.6",
     "react-native-document-picker": "^9.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
-    "@types/react": "~18.0.27",
+    "@types/react": "~18.2.29",
     "metro-react-native-babel-preset": "~0.73.10"
   },
   "private": true

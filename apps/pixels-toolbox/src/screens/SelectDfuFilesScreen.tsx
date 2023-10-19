@@ -27,11 +27,11 @@ async function importDfuFile() {
     type: "application/zip",
     copyToCacheDirectory: true,
   });
-  if (file.type === "success") {
-    const pathname = FileSystem.cacheDirectory + file.name;
+  if (file.assets?.length) {
+    const pathname = FileSystem.cacheDirectory + file.assets[0].name;
     await FileSystem.deleteAsync(pathname, { idempotent: true });
     await FileSystem.moveAsync({
-      from: file.uri,
+      from: file.assets[0].uri,
       to: pathname,
     });
     store.dispatch(addImportedDfuBundle([pathname]));

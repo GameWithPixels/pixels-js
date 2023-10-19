@@ -8,7 +8,7 @@ const config = {
     name: prod ? "Pixels Beta" : "Dev Pixels Beta",
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "48.0",
+    runtimeVersion: "49.0",
     version: "1.0.0",
     platforms: ["ios", "android"],
     orientation: "portrait",

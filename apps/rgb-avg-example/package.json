@@ -15,15 +15,15 @@
   "dependencies": {
     "@systemic-games/vision-camera-rgb-averages": "*",
     "react": "18.2.0",
-    "react-native": "0.71.13",
-    "react-native-reanimated": "~2.14.4",
-    "react-native-vision-camera": "~2.15.6"
+    "react-native": "0.72.6",
+    "react-native-reanimated": "~3.3.0",
+    "react-native-vision-camera": "~2.16.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
-    "@types/react": "~18.0.27",
+    "@types/react": "~18.2.29",
     "metro-react-native-babel-preset": "~0.73.10"
   },
   "private": true
