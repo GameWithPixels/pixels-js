@@ -209,13 +209,15 @@ export async function prepareDieLabelHtmlAsync(
     {
       format: "upc",
       value: product.upcCode,
-      arguments: `font: "Roboto Condensed", margin: 0, marginLeft: 25`,
+      arguments:
+        'font: "Roboto Condensed", width: 2.5, margin: 0, marginLeft: 15',
       placeholder: "barcode-00850055703353.gif",
     },
     {
       format: "code39",
       value: product.deviceId.toLocaleUpperCase(),
-      arguments: "displayValue: false, height: 30, margin: 0, marginLeft: 45",
+      arguments:
+        "displayValue: false, width: 2.4, height: 30, margin: 0, marginLeft: 0",
       placeholder: "pixel-id-barcode.png",
     },
   ];
