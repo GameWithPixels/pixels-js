@@ -16,6 +16,31 @@ import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsyn
 import { unzipFileAsync } from "~/features/files/unzipFileAsync";
 
 const htmlCache = new Map<number | string, string>();
+const embeddedFilesCache = new Map<string, string>();
+
+async function parseHtmlForTagsWithResource(
+  html: string,
+  prefix: string,
+  callback: (start: number, end: number) => Promise<string>
+) {
+  let pos = 0;
+  while (true) {
+    // Search for prefix followed by quotes
+    pos = html.indexOf(prefix + '"', pos);
+    if (pos < 0) {
+      break;
+    }
+    // Search for end quotes
+    const start = pos + prefix.length + 1;
+    const end = html.indexOf('"', start);
+    if (end < 0) {
+      throw new Error("parseHtmlForTags: Matching end quotes not found");
+    }
+    const newHtml = await callback(start, end);
+    pos = end + newHtml.length - html.length;
+    html = newHtml;
+  }
+}
 
 async function readHtml(htmlModuleId: number | string): Promise<string> {
   if (!FileSystem.cacheDirectory) {
@@ -56,38 +81,22 @@ async function readHtml(htmlModuleId: number | string): Promise<string> {
     // }
     // html = await FileSystem.readAsStringAsync(uri);
 
-    // Embed external files in HTML as base64 string
-    const embedFiles = async (prefix: string, dataType: string) => {
-      let pos = 0;
-      while (true) {
-        pos = html.indexOf(prefix + '"', pos);
-        if (pos < 0) {
-          break;
-        }
-        const start = pos + prefix.length + 1;
-        const end = html.indexOf('"', start);
+    // Read external files referenced by HTML as base64 string
+    const readFiles = (prefix: string, dataType: string) =>
+      parseHtmlForTagsWithResource(html, prefix, async (start, end) => {
         const filename = html.substring(start, end);
         if (files.includes(filename)) {
-          console.log("Embedding " + filename);
+          console.log("Reading " + filename);
           const uri = tempDir + filename;
           const data = await FileSystem.readAsStringAsync(uri, {
             encoding: FileSystem.EncodingType.Base64,
           });
-          const imageData = `data:${dataType};base64,` + data;
-          html = html.substring(0, start) + imageData + html.substring(end);
-          pos += imageData.length + end - start;
-        } else {
-          if (!filename.includes("barcode")) {
-            console.warn(filename + " not found");
-          }
-          pos = end;
+          embeddedFilesCache.set(filename, `data:${dataType};base64,` + data);
         }
-      }
-    };
-
-    // Replace file references by base64 data
-    await embedFiles("src=", "image/png");
-    await embedFiles("url(", "font/ttf");
+        return html;
+      });
+    await readFiles("src=", "image/png");
+    await readFiles("url(", "font/ttf");
 
     // Load barcode scripts
     console.log("Loading barcode script");
@@ -116,7 +125,7 @@ async function readHtml(htmlModuleId: number | string): Promise<string> {
 async function prepareHtmlAsync(
   htmlModuleId: number | string,
   substitutions?: Record<string, string>,
-  barcodes?: {
+  barcodeDescriptors?: {
     format: string;
     value: string;
     arguments?: string;
@@ -136,14 +145,14 @@ async function prepareHtmlAsync(
   }
 
   // Insert barcodes
-  if (barcodes) {
+  if (barcodeDescriptors) {
     const parts = html.split("</body>");
     if (parts.length !== 2) {
       throw new Error("prepareHtmlAsync: end body tag not found");
     }
     html =
       parts[0] +
-      barcodes
+      barcodeDescriptors
         .map(
           (bc, i) =>
             ` <script>
@@ -157,7 +166,7 @@ async function prepareHtmlAsync(
       parts[1];
 
     // Insert barcode SVG element
-    barcodes.forEach((bc, i) => {
+    barcodeDescriptors.forEach((bc, i) => {
       // Insert barcode
       const barcodeIndex = html.indexOf(`"${bc.placeholder}"`);
       if (barcodeIndex < 0) {
@@ -182,6 +191,22 @@ async function prepareHtmlAsync(
         html.substring(barcodeEnd);
     });
   }
+
+  // Embed external files in HTML
+  const embedFiles = (prefix: string) =>
+    parseHtmlForTagsWithResource(html, prefix, async (start, end) => {
+      const filename = html.substring(start, end);
+      const base64Data = embeddedFilesCache.get(filename);
+      if (base64Data) {
+        console.log("Embedding " + filename);
+        return html.substring(0, start) + base64Data + html.substring(end);
+      } else {
+        console.warn(filename + " not found");
+        return html;
+      }
+    });
+  await embedFiles("src=");
+  await embedFiles("url(");
 
   return html;
 }
@@ -240,7 +265,8 @@ export async function prepareCartonLabelHtmlAsync(
     {
       format: "upc",
       value: product.upcCode,
-      arguments: `font: "Roboto Condensed", height: 90, margin: 0, marginLeft: 15`,
+      arguments:
+        'font: "Roboto Condensed", height: 90, margin: 0, marginLeft: 15',
       placeholder: "barcode-00850055703353.gif",
       scale: 2,
     },
