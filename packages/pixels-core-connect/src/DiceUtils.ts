@@ -5,6 +5,8 @@ export const DiceUtils = {
   getFaceCount(dieType: PixelDieType): number {
     if (!dieType || dieType.length < 2 || dieType[0] !== "d") {
       return 0;
+    } else if (dieType === "d00") {
+      return 10;
     } else {
       let i = 1;
       while (i < dieType.length) {
