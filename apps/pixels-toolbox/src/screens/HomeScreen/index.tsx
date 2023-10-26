@@ -10,10 +10,13 @@ import { SwipeablePixelsList } from "./SwipeablePixelsList";
 
 import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
+import { PrintDieLabelModal } from "~/components/PrintDieLabelModal";
 import {
   useAppDfuFilesBundles,
   NoDfuFileLoadedError,
 } from "~/features/hooks/useAppDfuFilesBundles";
+import { usePrintDieLabel } from "~/features/hooks/usePrintDieLabel";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { HomeScreenProps } from "~/navigation";
 
@@ -72,9 +75,18 @@ function DfuBundleSelection({
 
 function HomePage({ navigation }: HomeScreenProps) {
   // Navigation
-  const onDieDetails = React.useCallback(
-    (pixelId: number) => navigation.navigate("DieDetails", { pixelId }),
+  const showDetails = React.useCallback(
+    (pd: PixelDispatcher) =>
+      navigation.navigate("DieDetails", { pixelId: pd.pixelId }),
     [navigation]
+  );
+
+  // Print modal
+  const [printPixel, setPrintPixel] = React.useState<PixelDispatcher>();
+  const { setPrintDieLabel } = usePrintDieLabel();
+  React.useEffect(
+    () => setPrintDieLabel(() => setPrintPixel),
+    [setPrintDieLabel]
   );
 
   // EAS updates
@@ -114,7 +126,10 @@ function HomePage({ navigation }: HomeScreenProps) {
           </Text>
         )}
         <DfuBundleSelection navigation={navigation} />
-        <SwipeablePixelsList onDieDetails={onDieDetails} />
+        <SwipeablePixelsList
+          onShowDetails={showDetails}
+          onPrintLabel={setPrintPixel}
+        />
       </BaseBox>
       {/* Footer showing app and system info */}
       <BaseBox mt={8} alignSelf="center">
@@ -130,6 +145,11 @@ function HomePage({ navigation }: HomeScreenProps) {
             })}
         </Text>
       </BaseBox>
+
+      <PrintDieLabelModal
+        pixel={printPixel}
+        onDismiss={() => setPrintPixel(undefined)}
+      />
     </>
   );
 }

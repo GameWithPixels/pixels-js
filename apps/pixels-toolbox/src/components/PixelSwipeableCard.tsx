@@ -1,6 +1,4 @@
 import {
-  BaseBox,
-  BaseBoxProps,
   BaseHStack,
   BaseVStack,
   useVisibility,
@@ -12,16 +10,12 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
-import Swipeable from "react-native-gesture-handler/Swipeable";
-import {
-  Button,
-  Dialog,
-  Portal,
-  Text,
-  TextProps,
-  useTheme,
-} from "react-native-paper";
+import { Animated, Pressable, View } from "react-native";
+import { RectButton } from "react-native-gesture-handler";
+import Swipeable, {
+  type SwipeableProps,
+} from "react-native-gesture-handler/Swipeable";
+import { Button, Dialog, Portal, Text, useTheme } from "react-native-paper";
 
 import { PixelInfoCard, PixelInfoCardProps } from "./PixelInfoCard";
 import { ProgressBar } from "./ProgressBar";
@@ -83,21 +77,6 @@ function UserMessageDialog({
         </Dialog.Actions>
       </Dialog>
     </Portal>
-  );
-}
-
-function SwipeableActionView({
-  label,
-  textStyle,
-  ...props
-}: BaseBoxProps & {
-  label: string;
-  textStyle: TextProps<string>["style"];
-}) {
-  return (
-    <BaseBox alignItems="center" justifyContent="center" {...props}>
-      <Text style={textStyle}>{label}</Text>
-    </BaseBox>
   );
 }
 
@@ -292,15 +271,61 @@ function PixelCard({
   );
 }
 
+function RenderRightItem({
+  label,
+  color,
+  position,
+  width,
+  progress,
+  onPress,
+}: {
+  label: string;
+  color: string;
+  position: number;
+  width: number;
+  progress: Animated.AnimatedInterpolation<string | number>;
+  onPress: () => void;
+}) {
+  const trans = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [position, 0],
+    extrapolate: "extend",
+  });
+  return (
+    <Animated.View
+      style={{
+        width,
+        transform: [{ translateX: trans }],
+        backgroundColor: color,
+      }}
+    >
+      <RectButton
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onPress={onPress}
+      >
+        <Text variant="labelLarge" style={{ fontWeight: "bold" }}>
+          {label.replace(" ", "\n")}
+        </Text>
+      </RectButton>
+    </Animated.View>
+  );
+}
+
 export interface SwipeablePixelCardProps
   extends Omit<PixelInfoCardProps, "pixelInfo"> {
   pixelDispatcher: PixelDispatcher;
-  onShowDetails: () => void;
+  onShowDetails?: (pixelDispatcher: PixelDispatcher) => void;
+  onPrintLabel?: (pixelDispatcher: PixelDispatcher) => void;
 }
 
 export function PixelSwipeableCard({
   pixelDispatcher,
   onShowDetails,
+  onPrintLabel,
   ...props
 }: SwipeablePixelCardProps) {
   const status = usePixelStatus(pixelDispatcher.pixel);
@@ -331,74 +356,144 @@ export function PixelSwipeableCard({
   const isDisco = !status || status === "disconnected";
 
   // Swipeable
+  const swipeableRef = React.useRef<Swipeable>(null);
   const onSwipeableOpen = React.useCallback(
     (direction: "left" | "right", swipeable: Swipeable) => {
       if (direction === "left") {
-        if (!dfuQueued) {
-          if (isDisco) {
-            pixelDispatcher.dispatch("connect");
-          } else {
-            pixelDispatcher.dispatch("disconnect");
-          }
-        }
-      } else {
         if (isDisco) {
-          if (dfuQueued) {
-            pixelDispatcher.dispatch("dequeueDFU");
-          } else {
-            pixelDispatcher.dispatch("queueDFU");
-          }
+          pixelDispatcher.dispatch("connect");
         } else {
-          pixelDispatcher.dispatch("blink");
+          pixelDispatcher.dispatch("disconnect");
         }
+        swipeable.close();
       }
-      swipeable.close();
     },
-    [dfuQueued, isDisco, pixelDispatcher]
+    [isDisco, pixelDispatcher]
   );
-  const renderLeftActions = React.useCallback(
-    () =>
-      !dfuQueued && (
-        <SwipeableActionView
-          w={150}
-          backgroundColor={isDisco ? "limegreen" : "tomato"}
-          label={t(isDisco ? "connect" : "disconnect")}
-          textStyle={styles.textSwipe}
-        />
-      ),
-    [dfuQueued, isDisco, t]
+  const renderLeftActions = React.useCallback<
+    NonNullable<SwipeableProps["renderLeftActions"]>
+  >(
+    (_, dragX) => {
+      const trans = dragX.interpolate({
+        inputRange: [0, 50, 100, 101],
+        outputRange: [-20, 0, 0, 1],
+        extrapolate: "clamp",
+      });
+      return (
+        !dfuActive && (
+          <RectButton
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              backgroundColor: isDisco ? "#22a11c" : "#c81818",
+            }}
+          >
+            <Animated.Text
+              style={{
+                color: "white",
+                fontSize: 16,
+                backgroundColor: "transparent",
+                padding: 10,
+                transform: [{ translateX: trans }],
+              }}
+            >
+              {t(isDisco ? "connect" : "disconnect")}
+            </Animated.Text>
+          </RectButton>
+        )
+      );
+    },
+    [dfuActive, isDisco, t]
   );
-  const renderRightActions = React.useCallback(
-    () =>
-      (!isDisco || (dfuAvailable !== "none" && !dfuActive)) && (
-        <SwipeableActionView
-          w={150}
-          backgroundColor={isDisco ? "mediumpurple" : "darkorange"}
-          label={
-            isDisco
-              ? dfuActive
-                ? ""
-                : dfuQueued
-                ? t("cancelFirmwareUpdate")
-                : t("updateFirmware").replace(" ", "\n")
-              : t("blink")
-          }
-          textStyle={styles.textSwipe}
-        />
-      ),
-    [isDisco, dfuAvailable, dfuActive, dfuQueued, t]
+  const renderRightActions = React.useCallback<
+    NonNullable<SwipeableProps["renderRightActions"]>
+  >(
+    (progress) => {
+      const buttonWidth = 100;
+      const color = isDisco ? "#be19c3" : "#21aba2";
+      const label = isDisco
+        ? dfuActive
+          ? ""
+          : dfuQueued
+          ? t("cancelFirmwareUpdate")
+          : dfuAvailable !== "none"
+          ? t("updateFirmware")
+          : ""
+        : t("blink");
+      const numButtons = (label.length ? 1 : 0) + (onPrintLabel ? 1 : 0);
+      return (
+        !!numButtons && (
+          <View
+            style={{
+              width: numButtons * buttonWidth,
+              flexDirection: "row",
+            }}
+          >
+            {!!onPrintLabel && (
+              <RenderRightItem
+                label={t("printLabel")}
+                color="#274fcd"
+                position={numButtons * buttonWidth}
+                width={buttonWidth}
+                progress={progress}
+                onPress={() => {
+                  onPrintLabel(pixelDispatcher);
+                  swipeableRef.current?.close();
+                }}
+              />
+            )}
+            {!!label.length && (
+              <RenderRightItem
+                label={label}
+                color={color}
+                position={0}
+                width={buttonWidth}
+                progress={progress}
+                onPress={() => {
+                  pixelDispatcher.dispatch(
+                    isDisco ? (dfuQueued ? "dequeueDFU" : "queueDFU") : "blink"
+                  );
+                  swipeableRef.current?.close();
+                }}
+              />
+            )}
+          </View>
+        )
+      );
+    },
+    [
+      isDisco,
+      dfuActive,
+      dfuQueued,
+      t,
+      dfuAvailable,
+      onPrintLabel,
+      pixelDispatcher,
+    ]
   );
 
   return (
     <Swipeable
+      ref={swipeableRef}
       onSwipeableOpen={onSwipeableOpen}
       renderLeftActions={renderLeftActions}
       renderRightActions={renderRightActions}
     >
-      <Pressable onPress={() => onShowDetails()}>
+      <Pressable
+        onPress={
+          onShowDetails ? () => onShowDetails(pixelDispatcher) : undefined
+        }
+      >
         <PixelCard pixelDispatcher={pixelDispatcher} {...props} />
         {dfuAvailable !== "none" && (
-          <Text style={styles.topRightCorner}>
+          <Text
+            // Top right corner
+            style={{
+              position: "absolute",
+              top: 1,
+              right: 2,
+            }}
+          >
             {dfuAvailable === "upgrade" ? "⬆️" : "⬇️"}
           </Text>
         )}
@@ -406,16 +501,3 @@ export function PixelSwipeableCard({
     </Swipeable>
   );
 }
-
-const styles = StyleSheet.create({
-  topRightCorner: {
-    position: "absolute",
-    top: 1,
-    right: 2,
-  },
-  textSwipe: {
-    marginHorizontal: 5,
-    color: "floralwhite",
-    fontWeight: "bold",
-  },
-});

@@ -8,39 +8,24 @@ import { Text } from "react-native-paper";
 import { AppStyles } from "~/AppStyles";
 import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
-import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
+import {
+  PixelSwipeableCard,
+  SwipeablePixelCardProps,
+} from "~/components/PixelSwipeableCard";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import PixelDispatcher, {
   PixelDispatcherActionMap,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 
-function ListItem({
-  pixelDispatcher,
-  onDieDetails,
-}: {
-  pixelDispatcher: PixelDispatcher;
-  onDieDetails: (pixelId: number) => void;
-}) {
-  const onDetails = React.useCallback(
-    () => onDieDetails(pixelDispatcher.pixelId),
-    [onDieDetails, pixelDispatcher.pixelId]
-  );
-  return (
-    <PixelSwipeableCard
-      pixelDispatcher={pixelDispatcher}
-      onShowDetails={onDetails}
-    />
-  );
-}
-
-interface SwipeablePixelsListProps {
-  onDieDetails: (pixelId: number) => void;
+interface SwipeablePixelsListProps
+  extends Pick<SwipeablePixelCardProps, "onShowDetails" | "onPrintLabel"> {
   minUpdateInterval?: number;
 }
 
 export const SwipeablePixelsList = React.memo(function ({
-  onDieDetails,
+  onShowDetails,
+  onPrintLabel,
   minUpdateInterval,
 }: SwipeablePixelsListProps) {
   // Scanning
@@ -128,13 +113,14 @@ export const SwipeablePixelsList = React.memo(function ({
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: pixelDispatcher }: { item: PixelDispatcher }) => (
-      <ListItem
+      <PixelSwipeableCard
         key={pixelDispatcher.pixelId}
         pixelDispatcher={pixelDispatcher}
-        onDieDetails={onDieDetails}
+        onShowDetails={onShowDetails}
+        onPrintLabel={onPrintLabel}
       />
     ),
-    [onDieDetails]
+    [onPrintLabel, onShowDetails]
   );
   const refreshControl = React.useMemo(
     () => (

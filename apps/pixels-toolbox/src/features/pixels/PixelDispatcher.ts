@@ -548,6 +548,9 @@ class PixelDispatcher
   }
 
   private async _connect(): Promise<void> {
+    if (this.hasActiveDFU) {
+      return;
+    }
     // Connect
     await this._pixel.connect();
     // Blink to show we're connected (but don't wait for the blink ack)
@@ -555,6 +558,9 @@ class PixelDispatcher
   }
 
   private async _disconnect(): Promise<void> {
+    if (this.hasActiveDFU) {
+      return;
+    }
     // Blink to show we're disconnecting
     try {
       await this._pixel.blink(Color.dimCyan, { count: 3 });

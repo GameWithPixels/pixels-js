@@ -44,13 +44,7 @@ export function ScannedPixelsList({
     <BaseVStack gap={10} alignItems="center">
       <BaseHStack>
         {onClose && (
-          <Button
-            mode="outlined"
-            style={{
-              marginRight: 5,
-            }}
-            onPress={onClose}
-          >
+          <Button mode="outlined" style={{ marginRight: 5 }} onPress={onClose}>
             {t("close")}
           </Button>
         )}

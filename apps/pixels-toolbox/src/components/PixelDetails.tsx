@@ -10,7 +10,6 @@ import {
   Pixel,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
-  PixelColorway,
   PixelInfoNotifier,
   PixelRollStateValues,
   usePixelStatus,
@@ -31,7 +30,6 @@ import {
   Text,
   useTheme,
   ModalProps,
-  Title,
 } from "react-native-paper";
 
 import {
@@ -42,7 +40,6 @@ import {
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
 import { ProgressBar } from "~/components/ProgressBar";
-import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
@@ -50,7 +47,6 @@ import { useAppBackgroundState } from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
-import { printDieBoxLabelAsync } from "~/features/print";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { capitalize } from "~/i18n";
 
@@ -335,22 +331,16 @@ function BottomButtons({
   onShowTelemetry,
   onExportTelemetry,
   onExportMessages,
+  onPrintLabel,
 }: {
   pixelDispatcher: PixelDispatcher;
   onShowTelemetry?: () => void;
   onExportTelemetry?: () => void;
   onExportMessages?: () => void;
+  onPrintLabel?: () => void;
 }) {
   const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
-  const [printStatus, setPrintStatus] = React.useState("");
-
-  // Print modal
-  const {
-    visible: printVisible,
-    show: showPrint,
-    hide: hidePrint,
-  } = useVisibility();
 
   // Discharge modal
   const {
@@ -359,10 +349,6 @@ function BottomButtons({
     hide: hideDischarge,
   } = useVisibility();
   const { t } = useTranslation();
-
-  // Colorway selection on print
-  const [onSelectColorway, setOnSelectColorway] =
-    React.useState<(c: PixelColorway) => void>();
 
   return (
     <>
@@ -407,37 +393,7 @@ function BottomButtons({
               </Button>
             </>
           )}
-          <Button
-            onPress={async () => {
-              setPrintStatus("");
-              showPrint();
-              const px = pd.pixel;
-              const colorway =
-                px.colorway !== "unknown"
-                  ? px.colorway
-                  : await new Promise<PixelColorway>((resolve) =>
-                      setOnSelectColorway(() => (colorway: PixelColorway) => {
-                        setOnSelectColorway(undefined);
-                        resolve(colorway);
-                      })
-                    );
-              printDieBoxLabelAsync(
-                {
-                  pixelId: px.pixelId,
-                  name: px.name,
-                  dieType: px.dieType,
-                  colorway,
-                },
-                (status) => setPrintStatus(t(status + "AsPrintStatus"))
-              ).catch((error) => {
-                const msg = error.message ?? error;
-                console.warn(msg);
-                setPrintStatus(msg);
-              });
-            }}
-          >
-            {t("printLabel")}
-          </Button>
+          <Button onPress={onPrintLabel}>{t("printLabel")}</Button>
         </BaseVStack>
         <BaseVStack gap={4}>
           {status === "ready" && (
@@ -495,21 +451,6 @@ function BottomButtons({
         visible={dischargeVisible}
         onDismiss={hideDischarge}
       />
-
-      <PrintModal
-        status={printStatus}
-        visible={printVisible}
-        onDismiss={hidePrint}
-      />
-
-      <SelectColorwayModal
-        visible={!!onSelectColorway}
-        onSelect={onSelectColorway}
-        onDismiss={() => {
-          setOnSelectColorway(undefined);
-          hidePrint();
-        }}
-      />
     </>
   );
 }
@@ -555,32 +496,6 @@ function DischargeModal({
           </Button>
           <Button onPress={props.onDismiss}>{t("ok")}</Button>
         </BaseHStack>
-      </Modal>
-    </Portal>
-  );
-}
-
-function PrintModal({
-  status,
-  ...props
-}: { status: string } & Omit<ModalProps, "children">) {
-  const showClose = status.length > 0 && !status.endsWith("...");
-  // Values for UI
-  const modalStyle = useModalStyle();
-  const { t } = useTranslation();
-  return (
-    <Portal>
-      <Modal contentContainerStyle={modalStyle} dismissable={false} {...props}>
-        <BaseVStack gap={10}>
-          <Title>{t("labelPrinting")}</Title>
-          <Divider style={{ height: 2 }} />
-          <Text style={AppStyles.centered} variant="bodyLarge">
-            {t("status")}
-            {t("colonSeparator")}
-            {status}
-          </Text>
-          {showClose && <Button onPress={props.onDismiss}>{t("close")}</Button>}
-        </BaseVStack>
       </Modal>
     </Portal>
   );
@@ -643,9 +558,11 @@ function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
 
 export function PixelDetails({
   pixelDispatcher: pd,
+  onPrintLabel,
   goBack,
 }: {
   pixelDispatcher: PixelDispatcher;
+  onPrintLabel?: (pixelDispatcher: PixelDispatcher) => void;
   goBack: () => void;
 }) {
   // Error handling
@@ -768,6 +685,7 @@ export function PixelDetails({
                   };
                   saveFile().catch(setLastError);
                 }}
+                onPrintLabel={() => onPrintLabel?.(pd)}
               />
             )}
           </Card.Content>
