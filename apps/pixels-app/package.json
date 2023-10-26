@@ -60,7 +60,7 @@
     "mobx": "^6.8.0",
     "mobx-react-lite": "^3.4.3",
     "react": "18.2.0",
-    "react-native": "0.71.13",
+    "react-native": "0.71.14",
     "react-native-draggable-flatlist": "^4.0.1",
     "react-native-gesture-handler": "~2.9.0",
     "react-native-paper": "^5.10.4",
