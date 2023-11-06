@@ -274,10 +274,14 @@ function getSelectedDfuFilesBundle(): DfuFilesBundle {
 async function storeValueChecked(
   pixel: Pixel,
   valueType: number,
-  value: number
+  value: number,
+  opt?: { allowNotPermitted?: boolean }
 ): Promise<void> {
   const result = await pixelStoreValue(pixel, valueType, value);
-  if (result !== "success") {
+  if (
+    result !== "success" &&
+    (!opt?.allowNotPermitted || result !== "notPermitted")
+  ) {
     throw new Error(`Failed to store value, got response ${result}`);
   }
 }
@@ -887,7 +891,8 @@ export function StoreSettings({
         pixel,
         PixelValueStoreType.ValidationTimestampStart +
           getSequenceIndex(settings.sequence),
-        get24BitsTimestamp()
+        get24BitsTimestamp(),
+        { allowNotPermitted: settings.sequence === "dieFinal" }
       ),
     [pixel, settings.sequence]
   );

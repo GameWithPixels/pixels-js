@@ -165,12 +165,6 @@ export const ValidationTests = {
                       );
                     }
                   }
-                  console.log(
-                    `Battery controller state is ${getValueKeyName(
-                      msg.batteryControllerState,
-                      PixelBatteryControllerStateValues
-                    )} and vCoil = ${msg.vCoilTimes50 / 50}`
-                  );
                   return false;
                 }
               );
