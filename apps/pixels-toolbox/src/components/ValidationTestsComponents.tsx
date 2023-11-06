@@ -18,7 +18,6 @@ import {
   PixelDieType,
   PixelDieTypeValues,
   PixelScanner,
-  RollEvent,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
@@ -172,20 +171,6 @@ function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
       return faces[2];
     default:
       assertNever(step);
-  }
-}
-
-function getFudgeFaceDesc(face: number): string {
-  switch (face) {
-    case 1:
-      return " = ➕ (bottom)";
-    case 2:
-    case 5:
-      return " = ➖";
-    case 6:
-      return " = ➕ (top)";
-    default:
-      return "";
   }
 }
 
@@ -720,10 +705,6 @@ export function WaitCharging({
   notCharging,
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
-  const [lastState, setLastState] = React.useState<{
-    state?: string;
-    vCoil: number;
-  }>();
 
   const taskChain = useTaskChain(action)
     .withTask(
@@ -733,8 +714,7 @@ export function WaitCharging({
             pixel,
             !notCharging,
             notCharging ? Color.dimGreen : Color.dimOrange,
-            abortSignal,
-            setLastState
+            abortSignal
           ),
         [notCharging, pixel]
       ),
@@ -749,19 +729,6 @@ export function WaitCharging({
                 { coilOrDie: t(getCoilOrDie(settings)) }
               )}
             </Text>
-            {lastState && (
-              <Text variant="bodyLarge">
-                {t("chargingState")}
-                {t("colonSeparator")}
-                {lastState.state ?? ""}
-                {t("commaSeparator")}
-                {t("coil")}
-                {t("colonSeparator")}
-                {t("voltageWithValue", {
-                  value: lastState.vCoil ?? 0,
-                })}
-              </Text>
-            )}
           </>
         ),
       })
@@ -852,19 +819,6 @@ export function WaitFaceUp({
   pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
-  const [lastRoll, setRoll] = React.useState<RollEvent>();
-  const FaceUpText = () => (
-    <>
-      {!!lastRoll && (
-        <Text variant="bodyLarge">
-          {t(lastRoll.state)}
-          {t("colonSeparator")}
-          {lastRoll.face}
-          {pixel.dieType === "d6fudge" ? getFudgeFaceDesc(lastRoll.face) : ""}
-        </Text>
-      )}
-    </>
-  );
 
   const taskChain = useTaskChain(action)
     .withTask(
@@ -874,15 +828,11 @@ export function WaitFaceUp({
             pixel,
             getFaceUp(pixel, "1"),
             Color.dimMagenta,
-            abortSignal,
-            setRoll
+            abortSignal
           ),
         [pixel]
       ),
-      createTaskStatusContainer({
-        title: t("placeBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
+      createTaskStatusContainer(t("placeBlinkingFaceUp"))
     )
     .withStatusChanged(playSoundOnResult)
     .withTask(
@@ -892,15 +842,11 @@ export function WaitFaceUp({
             pixel,
             getFaceUp(pixel, "2"),
             Color.dimYellow,
-            abortSignal,
-            setRoll
+            abortSignal
           ),
         [pixel]
       ),
-      createTaskStatusContainer({
-        title: t("placeNewBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
+      createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
     .withStatusChanged(playSoundOnResult)
     .withTask(
@@ -910,15 +856,11 @@ export function WaitFaceUp({
             pixel,
             getFaceUp(pixel, "3"),
             Color.dimCyan,
-            abortSignal,
-            setRoll
+            abortSignal
           ),
         [pixel]
       ),
-      createTaskStatusContainer({
-        title: t("placeNewBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
+      createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -1158,9 +1100,7 @@ export function LabelPrinting({
   React.useEffect(() => {
     if (resolveResultPromise && printResult) {
       console.log(`Print result: ${printResult}`);
-      if (printResult === "done") {
-        resolveResultPromise();
-      } else if (printResult instanceof Error) {
+      if (printResult === "done" || printResult instanceof Error) {
         resolveResultPromise();
       }
     }
@@ -1215,7 +1155,13 @@ export function LabelPrinting({
       createTaskStatusContainer({
         children: (
           <>
-            {printError && <Text>{String(printError)}</Text>}
+            {printError && (
+              <Text>
+                {t("errorPrintingLabel") +
+                  t("colonSeparator") +
+                  printError.message}
+              </Text>
+            )}
             <MessageYesNo
               message={t(
                 printError ? "tryPrintingLabelAgain" : "isLabelPrinted"

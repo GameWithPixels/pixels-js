@@ -120,7 +120,6 @@ export const ValidationTests = {
     shouldBeCharging: boolean,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    notifyState: (info: { state?: string; vCoil: number }) => void,
     timeout = testTimeout
   ): Promise<void> => {
     await withTimeoutAndDisconnect(
@@ -166,18 +165,16 @@ export const ValidationTests = {
                       );
                     }
                   }
-                  notifyState({
-                    state: getValueKeyName(
+                  console.log(
+                    `Battery controller state is ${getValueKeyName(
                       msg.batteryControllerState,
                       PixelBatteryControllerStateValues
-                    ),
-                    vCoil: msg.vCoilTimes50 / 50,
-                  });
+                    )} and vCoil = ${msg.vCoilTimes50 / 50}`
+                  );
                   return false;
                 }
               );
             } catch (error: any) {
-              // TODO temporary
               if (lastMsg && error instanceof ValidationTestsTimeoutError) {
                 const stateStr =
                   getValueKeyName(
@@ -206,7 +203,6 @@ export const ValidationTests = {
     face: number,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    notifyFaceUp: (roll: RollEvent) => void,
     holdDelay = 1000, // Number of ms to wait before validating the face up
     timeout = testTimeout
   ): Promise<void> {
@@ -254,8 +250,10 @@ export const ValidationTests = {
                       clearTimeout(holdTimeout);
                       holdTimeout = undefined;
                     }
+                    console.log(
+                      `Die roll state is ${state} and face = ${currentFace}`
+                    );
                     lastRoll = { state, face: currentFace };
-                    notifyFaceUp(lastRoll);
                   };
                   // Listen to roll events to detect when required face is up
                   pixel.addEventListener("rollState", rollListener);
@@ -276,7 +274,6 @@ export const ValidationTests = {
                 }
               );
             } catch (error) {
-              // TODO temporary
               if (lastRoll && error instanceof ValidationTestsTimeoutError) {
                 throw new Error(
                   `Timeout waiting for face ${face}, face up was ${lastRoll.face} and state ${lastRoll.state}`

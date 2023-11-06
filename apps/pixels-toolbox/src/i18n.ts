@@ -237,6 +237,7 @@ i18n
           storeTimestamp: "Store Timestamp",
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
+          errorPrintingLabel: "Error printing label",
           isLabelPrinted: "Is label correctly printed?",
           tryPrintingLabelAgain: "Try printing label again?",
           timeoutScanningTryAgainWithId:
@@ -251,6 +252,7 @@ i18n
             "Die type mismatch, expected {{expected}} but got {{received}}",
           updateDieTypeWithFromAndTo:
             "Update die type to {{to}}? Programmed type is {{from}}.",
+          lowBatteryPleaseCharge: "Low battery, please charge.",
 
           // Carton label
           cartonLabel: "Carton Label",
@@ -456,6 +458,7 @@ i18n
           storeTimestamp: "保存时间戳",
           labelPrinting: "标签印刷",
           waitingOnPrint: "等待印刷",
+          errorPrintingLabel: "标签不会被打印",
           isLabelPrinted: "标贴是否印刷正确？",
           tryPrintingLabelAgain: "尝试重新打印标贴？",
           timeoutScanningTryAgainWithId:
@@ -467,6 +470,7 @@ i18n
           dieTypeMismatchWithExpectedAndReceived:
             "骰子类型错误，本应该是{expected} 结果是{received}",
           updateDieTypeWithFromAndTo: "更新骰子类型是{to}，烧录的类型是{from}",
+          lowBatteryPleaseCharge: "电池电量低，需要充电",
 
           // Carton label
           cartonLabel: "大箱标贴",

@@ -595,6 +595,8 @@ function RunTestsPage({
     }
   });
 
+  const borderRadius = getBorderRadius(useTheme());
+
   return (
     <BaseVStack
       w="100%"
@@ -612,18 +614,40 @@ function RunTestsPage({
       >
         <>{taskChain.render()}</>
         {result && (
-          <BaseVStack alignItems="center" justifyContent="center" gap={10}>
+          <BaseVStack
+            alignItems="center"
+            justifyContent="center"
+            paddingBottom={20}
+            gap={20}
+          >
             <Text style={{ fontSize: 100 }}>
               {getTaskResultEmoji(taskChain.status)}
             </Text>
             <Text variant="headlineMedium">
               {t(`test${capitalize(result)}`)}
             </Text>
-            <Text variant="titleLarge">
-              {t("battery")}
-              {t("colonSeparator")}
-              {t("percentWithValue", { value: pixel?.batteryLevel ?? 0 })}
-            </Text>
+            {!!pixel && (
+              <Text variant="titleLarge">
+                {t("battery")}
+                {t("colonSeparator")}
+                {t("percentWithValue", { value: pixel.batteryLevel })}
+              </Text>
+            )}
+            {!!pixel &&
+              pixel.batteryLevel < 75 &&
+              settings.sequence === "dieFinal" && (
+                <Text
+                  variant="titleLarge"
+                  style={{
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    backgroundColor: "darkgoldenrod",
+                    borderRadius,
+                  }}
+                >
+                  ⚠️ {t("lowBatteryPleaseCharge")}
+                </Text>
+              )}
           </BaseVStack>
         )}
       </ScrollView>
