@@ -11,7 +11,7 @@ import {
 import {
   Central,
   Color,
-  getLEDCount,
+  DiceUtils,
   Pixel,
   PixelColorway,
   PixelColorwayValues,
@@ -568,7 +568,7 @@ export function ConnectPixel({
           throw new TaskFaultedError(`Invalid LED count: ${ledCount}`);
         }
         // Check LED count
-        if (ledCount !== getLEDCount(settings.dieType)) {
+        if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
             t("dieTypeMismatchWithTypeAndLedCount", {
               dieType: t(settings.dieType),
