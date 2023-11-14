@@ -7,7 +7,10 @@ import {
   BlinkId,
   Discharge,
   Pixel,
+  PixelBatteryControllerMode,
+  PixelBatteryControllerModeValues,
   PlayProfileAnimation,
+  SetBatteryControllerMode,
   StoreValue,
   StoreValueAck,
   StoreValueResult,
@@ -38,19 +41,19 @@ export async function pixelBlinkId(
 }
 
 /**
- * Requests Pixel to turn on/off charging.
+ * Requests Pixel to set the battery controller to the given mode.
  * @param pixel The Pixel instance to use.
- * @param enable Whether to enable charging feature.
+ * @param mode The charging mode to set.
  */
-export async function pixelForceEnableCharging(
+export async function pixelSetBatteryControllerMode(
   pixel: Pixel,
-  enable: boolean
+  mode: PixelBatteryControllerMode
 ): Promise<void> {
-  log(pixel, `${enable ? "Enabling" : "Disabling"} charging`);
-  await pixel.sendMessage(
-    enable ? "enableCharging" : "disableCharging",
-    true // withoutAck
-  );
+  log(pixel, `Setting battery controller mode to ${mode}`);
+  const setMode = safeAssign(new SetBatteryControllerMode(), {
+    mode: PixelBatteryControllerModeValues[mode],
+  });
+  await pixel.sendMessage(setMode, true); // withoutAck
 }
 
 /**

@@ -2,11 +2,13 @@ import { getValueKeyName } from "@systemic-games/pixels-core-utils";
 import {
   PixelRollState,
   PixelBatteryState,
-  BatteryControllerState,
+  PixelBatteryControllerState,
   Telemetry,
   PixelRollStateValues,
   PixelBatteryStateValues,
   PixelBatteryControllerStateValues,
+  PixelBatteryControllerMode,
+  PixelBatteryControllerModeValues,
 } from "@systemic-games/react-native-pixels-connect";
 
 export type TelemetryData = {
@@ -20,7 +22,7 @@ export type TelemetryData = {
   faceIndex: number;
   battery: number;
   batteryState: PixelBatteryState;
-  batteryControllerState: BatteryControllerState;
+  batteryControllerState: PixelBatteryControllerState;
   voltage: number;
   voltageCoil: number;
   rssi: number;
@@ -28,7 +30,7 @@ export type TelemetryData = {
   mcuTemperature: number;
   batteryTemperature: number;
   internalChargeState: boolean;
-  forceDisableChargingState: boolean;
+  batteryControllerMode: PixelBatteryControllerMode;
   ledCurrent: number;
 };
 
@@ -59,7 +61,11 @@ export function toTelemetryData(telemetry: Telemetry): TelemetryData {
     mcuTemperature: telemetry.mcuTemperatureTimes100 / 100,
     batteryTemperature: telemetry.batteryTemperatureTimes100 / 100,
     internalChargeState: telemetry.internalChargeState,
-    forceDisableChargingState: telemetry.forceDisableChargingState,
+    batteryControllerMode:
+      getValueKeyName(
+        telemetry.batteryControllerMode,
+        PixelBatteryControllerModeValues
+      ) ?? "default",
     ledCurrent: telemetry.ledCurrent,
   };
 }

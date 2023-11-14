@@ -8,6 +8,8 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
+  PixelBatteryControllerMode,
+  PixelBatteryControllerModeValues,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
   PixelInfoNotifier,
@@ -30,6 +32,7 @@ import {
   Text,
   useTheme,
   ModalProps,
+  Menu,
 } from "react-native-paper";
 
 import {
@@ -282,15 +285,16 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
               ) ?? "unknown"
             )}
           </TextEntry>
+          <TextEntry title={t("batteryControllerMode")}>
+            {t(
+              getValueKeyName(
+                telemetry?.batteryControllerMode,
+                PixelBatteryControllerModeValues
+              ) ?? "unknown"
+            )}
+          </TextEntry>
           <TextEntry title={t("internalChargerState")}>
             {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff")}
-          </TextEntry>
-          <TextEntry title={t("internalChargerOverrideState")}>
-            {t(
-              telemetry?.forceDisableChargingState
-                ? "disallowCharging"
-                : "allowCharging"
-            )}
           </TextEntry>
           <TextEntry title={t("mcuTemperature")}>
             {t("celsiusWithValue", {
@@ -342,14 +346,21 @@ function BottomButtons({
   const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
 
+  // Charger mode modal
+  const {
+    visible: chargerModeMenuVisible,
+    show: showChargerModeMenu,
+    hide: hideChargerModeMenu,
+  } = useVisibility();
+
   // Discharge modal
   const {
     visible: dischargeVisible,
     show: showDischarge,
     hide: hideDischarge,
   } = useVisibility();
-  const { t } = useTranslation();
 
+  const { t } = useTranslation();
   return (
     <>
       <BaseHStack gap={6}>
@@ -360,8 +371,8 @@ function BottomButtons({
           {status === "ready" && (
             <>
               <Button onPress={showDischarge}>{t("discharge")}</Button>
-              <Button onPress={() => pd.dispatch("enableCharging")}>
-                {t("enableCharging")}
+              <Button onPress={() => pd.dispatch("blinkId")}>
+                {t("blinkId")}
               </Button>
               <Button onPress={() => pd.dispatch("blink")}>{t("blink")}</Button>
               <Button
@@ -401,15 +412,30 @@ function BottomButtons({
               <Button onPress={() => pd.dispatch("turnOff")}>
                 {t("turnOff")}
               </Button>
-              <Button onPress={() => pd.dispatch("discharge", 0)}>
-                {t("stopDischarge")}
-              </Button>
-              <Button onPress={() => pd.dispatch("enableCharging", false)}>
-                {t("disableCharging")}
-              </Button>
-              <Button onPress={() => pd.dispatch("blinkId")}>
-                {t("blinkId")}
-              </Button>
+              <Menu
+                visible={chargerModeMenuVisible}
+                onDismiss={hideChargerModeMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showChargerModeMenu}>
+                    {t("setChargerMode")}
+                  </Button>
+                }
+              >
+                {Object.keys(PixelBatteryControllerModeValues).map((mode) => (
+                  <Menu.Item
+                    key={mode}
+                    title={t(mode)}
+                    onPress={() => {
+                      pd.dispatch(
+                        "setChargerMode",
+                        mode as PixelBatteryControllerMode
+                      );
+                      hideChargerModeMenu();
+                    }}
+                  />
+                ))}
+              </Menu>
               <Button
                 onPress={() =>
                   pd.dispatch(
@@ -492,7 +518,7 @@ function DischargeModal({
               props.onDismiss?.();
             }}
           >
-            {t("cancel")}
+            {t("stopDischarge")}
           </Button>
           <Button onPress={props.onDismiss}>{t("ok")}</Button>
         </BaseHStack>
@@ -501,7 +527,10 @@ function DischargeModal({
   );
 }
 
-function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
+function ProfileUpdateModal({
+  updateProgress,
+  ...props
+}: { updateProgress?: number } & Omit<ModalProps, "children" | "visible">) {
   // Values for UI
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
@@ -511,6 +540,7 @@ function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
         visible={updateProgress !== undefined}
         contentContainerStyle={modalStyle}
         dismissable={false}
+        {...props}
       >
         <Text style={AppStyles.mv3} variant="bodyLarge">
           {t("updatingProfile") + t("colonSeparator")}
