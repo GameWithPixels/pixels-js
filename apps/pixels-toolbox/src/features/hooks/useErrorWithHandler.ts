@@ -1,11 +1,11 @@
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 
 export function useErrorWithHandler(error?: Error): void {
-  const errorHandler = useErrorHandler();
+  const { showBoundary } = useErrorBoundary();
   React.useEffect(() => {
     if (error) {
-      errorHandler(error);
+      showBoundary(error);
     }
-  }, [errorHandler, error]);
+  }, [error, showBoundary]);
 }

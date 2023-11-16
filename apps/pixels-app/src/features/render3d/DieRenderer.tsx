@@ -9,7 +9,7 @@ import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 import { Text } from "react-native-paper";
 
 import { createDie3DAsync } from "./createDie3DAsync";
@@ -186,7 +186,7 @@ export interface DieRendererProps {
  * See {@link DieRendererProps} for the supported props.
  */
 export function DieRenderer({ renderData }: DieRendererProps) {
-  const errorHandler = useErrorHandler();
+  const { showBoundary } = useErrorBoundary();
 
   const [loaded, setLoaded] = React.useState(false);
   const rendererRef = React.useRef<SceneRenderer>();
@@ -201,11 +201,11 @@ export function DieRenderer({ renderData }: DieRendererProps) {
           () => animInstanceRef.current
         );
       })
-      .catch(errorHandler);
+      .catch(showBoundary);
     return () => {
       rendererRef.current?.shutdown();
     };
-  }, [errorHandler, renderData?.dieType]);
+  }, [renderData?.dieType, showBoundary]);
 
   // Create an instance to play the animation
   const animInstanceRef = React.useRef<AnimationInstance[]>([]);

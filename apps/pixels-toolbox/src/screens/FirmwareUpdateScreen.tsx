@@ -9,7 +9,7 @@ import {
   ScannedPeripheral,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { Button, Card, Text, useTheme } from "react-native-paper";
@@ -53,7 +53,7 @@ function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
 // 5. Wait for advertisement to stop for that device.
 // 6. Ask user to turn device back on, trigger DFU on first received advertisement.
 function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
-  const errorHandler = useErrorHandler();
+  const { showBoundary } = useErrorBoundary();
 
   // DFU files bundles are loaded asynchronously
   const { selected, available } = useAppSelector((state) => state.dfuBundles);
@@ -108,13 +108,13 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
               arr[i] = sp;
             }
           }
-        }).catch(errorHandler);
+        }).catch(showBoundary);
         return () => {
           console.log("### STOP SCAN");
-          BleScanner.stop().catch(errorHandler);
+          BleScanner.stop().catch(showBoundary);
         };
       }
-    }, [errorHandler, dfuTarget])
+    }, [dfuTarget, showBoundary])
   );
   // Process scan events in batches
   React.useEffect(() => {
@@ -143,7 +143,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
     return () => {
       clearInterval(id);
     };
-  }, [errorHandler]);
+  }, []);
   React.useEffect(() => {
     if (!dfuTarget) {
       setScannedPeripherals([]);

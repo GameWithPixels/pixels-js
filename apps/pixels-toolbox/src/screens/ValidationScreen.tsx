@@ -12,7 +12,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useKeepAwake } from "expo-keep-awake";
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
 import { ScrollView, TextStyle, View } from "react-native";
 import {
@@ -217,7 +217,7 @@ function DecodePixelIdPage({
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const errorHandler = useErrorHandler();
+  const { showBoundary } = useErrorBoundary();
 
   // Camera
   const [cameraPermission, setCameraPermission] =
@@ -251,11 +251,11 @@ function DecodePixelIdPage({
       setCameraStatus("initializing");
     } else if (cameraPermission === "denied") {
       setCameraStatus("needPermission");
-      errorHandler(new Error(t("needCameraPermission")));
+      showBoundary(new Error(t("needCameraPermission")));
     } else if (cameraPermission === "authorized" && device) {
       setCameraStatus("ready");
     }
-  }, [cameraPermission, device, errorHandler, t]);
+  }, [cameraPermission, device, showBoundary, t]);
 
   // Frame processor for decoding PixelId
   const [frameProcessor, decoderState, lastError] =

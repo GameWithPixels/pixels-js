@@ -14,7 +14,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import FileSystem, { StorageAccessFramework } from "expo-file-system";
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 import {
   FlatList,
   Platform,
@@ -145,7 +145,7 @@ class DataRate {
 }
 
 function SendData({ pixel }: { pixel: Pixel }) {
-  const errorHandler = useErrorHandler();
+  const { showBoundary } = useErrorBoundary();
   const status = usePixelStatus(pixel);
   const [transferring, setTransferring] = React.useState(false);
   const [transferSize, settTransferSize] = React.useState<number>(10000);
@@ -166,9 +166,9 @@ function SendData({ pixel }: { pixel: Pixel }) {
       setPoints(dataRate.points);
       setTransferredBytes(bytesCount);
     })
-      .catch(errorHandler)
+      .catch(showBoundary)
       .finally(() => setTransferring(false));
-  }, [dataRate, errorHandler, pixel, transferSize]);
+  }, [dataRate, pixel, showBoundary, transferSize]);
 
   // Export to CSV file
   const exportCsv = React.useCallback(() => {
@@ -195,8 +195,8 @@ function SendData({ pixel }: { pixel: Pixel }) {
         }
       }
     };
-    promise().catch(errorHandler);
-  }, [dataRate, errorHandler, pixel.name]);
+    promise().catch(showBoundary);
+  }, [dataRate.points, pixel.name, showBoundary]);
 
   // UI
   const progress = transferredBytes / transferSize;
