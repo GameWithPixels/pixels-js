@@ -20,7 +20,6 @@ import {
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import { toByteArray } from "base64-js";
-import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
 import { decode } from "fast-png";
 import React from "react";
@@ -29,6 +28,7 @@ import { Button, Divider, Switch, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
 import { PatternImages } from "~/features/PatternImages";
+import { ensureAssetReadableAsync } from "~/features/duplicated/ensureAssetReadableAsync";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 
@@ -41,7 +41,10 @@ async function getGradientFromImage(
   if (cachedPattern) {
     return cachedPattern;
   }
-  const asset = await Asset.fromModule(virtualAssetModule).downloadAsync();
+  const asset = await ensureAssetReadableAsync(
+    virtualAssetModule,
+    "some-pattern.png"
+  );
   if (!asset.localUri) {
     throw new Error("No localUri");
   }
