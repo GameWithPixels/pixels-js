@@ -61,8 +61,8 @@ async function getGradientFromImage(
     `Expected pattern image height is 20 but got ${png.height}`
   );
   assert(
-    png.channels === 4,
-    `Expected pattern image to have 4 channels but got ${png.channels}`
+    png.channels === 3 || png.channels === 4,
+    `Expected pattern image to have 3 or 4 channels but got ${png.channels}`
   );
   assert(
     png.width * png.height * png.channels === png.data.length,
@@ -73,7 +73,7 @@ async function getGradientFromImage(
     gradients: range(png.height).map((i) => {
       const line = png.data.slice(i * lineByteSize, (i + 1) * lineByteSize);
       const pixels: Color[] = [];
-      for (let j = 0; j < 4 * png.width; j += 4) {
+      for (let j = 0; j < png.channels * png.width; j += png.channels) {
         pixels.push(
           new Color(line[j] / 255, line[j + 1] / 255, line[j + 2] / 255)
         );
