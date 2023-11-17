@@ -16,20 +16,18 @@ import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
  * @returns A {@link Pixel} instance.
  */
 export function getPixel(id: string | number): Pixel {
-  // Get system id from the input data
-  const systemId =
-    typeof id === "string"
-      ? id
-      : (typeof id === "number" ? ScannedPixelsRegistry.find(id) : id)
-          ?.systemId;
   assert(
-    systemId && systemId.length > 0,
-    `getPixel(): Invalid argument: ${id}`
+    typeof id === "number" ? id !== 0 : id?.length > 0,
+    `getPixel(): Id can't be 0 or an empty string: ${id}`
   );
+  const sp = ScannedPixelsRegistry.find(id);
+  // Get system id from the input data
+  const systemId = typeof id === "string" ? id : sp?.systemId;
+  assert(systemId, `getPixel(): Not Pixel found with id ${id}`);
   // Check for an existing Pixel object for the given system id
   const exitingPixel = PixelsMap.get(systemId);
   // Or create a new Pixel instance
-  const pixel = exitingPixel ?? new Pixel(new BleSession(systemId));
+  const pixel = exitingPixel ?? new Pixel(new BleSession(systemId, sp?.name));
   if (!exitingPixel) {
     // Keep track of this new instance
     PixelsMap.set(systemId, pixel);

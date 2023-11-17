@@ -8,8 +8,16 @@ export const ScannedPixelsRegistry = {
     _pixelIdMap.set(scannedPixel.pixelId, scannedPixel);
   },
 
-  find(pixelId: number): ScannedPixel | undefined {
-    return _pixelIdMap.get(pixelId);
+  find(id: string | number): ScannedPixel | undefined {
+    if (typeof id === "number") {
+      return _pixelIdMap.get(id);
+    } else {
+      for (const sp of _pixelIdMap.values()) {
+        if (sp.systemId === id) {
+          return sp;
+        }
+      }
+    }
   },
 
   getAll(): ScannedPixel[] {
