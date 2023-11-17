@@ -26,7 +26,7 @@ export async function ensureAssetReadableAsync(
     throw new Error("ensureAssetReadable(): Empty asset filename");
   }
   const asset = Asset.fromModule(virtualAssetModule);
-  // Check if we are running on Android and if the asset as a scheme
+  // Check if we are running on Android and if the asset has a scheme
   if (
     Platform.OS !== "android" ||
     !asset.localUri ||

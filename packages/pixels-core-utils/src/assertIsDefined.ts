@@ -6,8 +6,6 @@ import { AssertionError } from "./assert";
  */
 export function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
   if (value === undefined || value === null) {
-    throw new AssertionError(
-      `Expected 'val' to be defined, but received ${value}`
-    );
+    throw new AssertionError(`Assert failed on nullable value "${value}"`);
   }
 }
