@@ -9,3 +9,4 @@ export * from "./createDataSet";
 export * from "./loadAppDataSet";
 export * from "./getEditWidgetsData";
 export * from "./edit";
+export * from "./extractKeyframes";
