@@ -4,7 +4,13 @@ import {
   getRed,
   toColor32 as convertToColor32,
 } from "./color32Utils";
-import { IColor, colorToString, colorComponentToByte } from "./colorUtils";
+import {
+  IColor,
+  colorToString,
+  colorComponentToByte,
+  desaturate,
+  lerp,
+} from "./colorUtils";
 
 /**
  * Represents an RGB color using values ranging from O and 1
@@ -36,12 +42,15 @@ export default class Color implements IColor {
    */
   constructor();
   constructor(r: number, g: number, b: number);
+  constructor(color: IColor);
   constructor(color24: number);
   constructor(hexColor: string);
-  constructor(rOrHexColor?: number | string, g?: number, b?: number) {
+  constructor(rOrHexColor?: number | IColor | string, g?: number, b?: number) {
     if (rOrHexColor !== undefined) {
       if (typeof rOrHexColor === "string") {
         this.setWithHex(rOrHexColor);
+      } else if (typeof rOrHexColor === "object") {
+        this.set(rOrHexColor.r, rOrHexColor.g, rOrHexColor.b);
       } else if (g === undefined) {
         this.setWithValue(rOrHexColor);
       } else {
@@ -59,11 +68,7 @@ export default class Color implements IColor {
   }
 
   desaturate(): number {
-    return (
-      (Math.min(this.r, Math.min(this.g, this.b)) +
-        Math.max(this.r, Math.max(this.g, this.b))) *
-      0.5
-    );
+    return desaturate(this);
   }
 
   serialize(dataView: DataView, byteOffset = 0): [DataView, number] {
@@ -124,6 +129,10 @@ export default class Color implements IColor {
 
   static fromString(hexColor: string): Color {
     return new Color().setWithHex(hexColor);
+  }
+
+  static lerp(color1: Color, color2: Color, t: number): Color {
+    return new Color(lerp(color1, color2, t));
   }
 
   // Black is LED off
