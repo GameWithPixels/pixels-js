@@ -32,7 +32,6 @@ import {
 } from "react-native-vision-camera";
 
 import { AppStyles } from "~/AppStyles";
-import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
@@ -52,6 +51,10 @@ import {
   UpdateFirmwareStatus,
   getPixelThroughDispatcher,
 } from "~/components/ValidationTestsComponents";
+import {
+  FactoryDfuBundleFiles,
+  useFactoryDfuFilesBundle,
+} from "~/features/hooks/useFactoryDfuFilesBundle";
 import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
 import { PrintStatus } from "~/features/print";
 import {
@@ -61,6 +64,7 @@ import {
 } from "~/features/tasks/TaskResult";
 import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { useTaskComponent } from "~/features/tasks/useTaskComponent";
+import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
   getBoardOrDie,
   isBoard,
@@ -119,7 +123,9 @@ function LargeTonalButton({
           fontWeight: "bold",
           flexWrap: "wrap",
           textAlign: "center",
-          color: colors.onSecondaryContainer,
+          color: props.disabled
+            ? colors.onSurfaceDisabled
+            : colors.onSecondaryContainer,
         }}
       >
         {children}
@@ -129,10 +135,20 @@ function LargeTonalButton({
 }
 
 function SelectSequencePage({
+  dfuFilesBundle,
+  dfuBundleError,
   onSelectSequence,
 }: {
+  dfuFilesBundle?: FactoryDfuBundleFiles;
+  dfuBundleError?: Error;
   onSelectSequence: (sequence: ValidationSequence) => void;
 }) {
+  const fwDateLabel = React.useMemo(() => {
+    if (dfuFilesBundle) {
+      return toLocaleDateTimeString(dfuFilesBundle.date);
+    }
+  }, [dfuFilesBundle]);
+  const { colors } = useTheme();
   const { t } = useTranslation();
   return (
     <BaseVStack
@@ -143,8 +159,29 @@ function SelectSequencePage({
       gap={30}
       justifyContent="space-around"
     >
+      {dfuBundleError ? (
+        <BaseVStack padding={20} backgroundColor={colors.errorContainer}>
+          <Text style={{ color: colors.onErrorContainer }}>
+            {t("firmwareFilesLoadingError") +
+              t("colonSeparator") +
+              dfuBundleError.message}
+          </Text>
+        </BaseVStack>
+      ) : (
+        <BaseVStack alignItems="center" marginVertical={-10}>
+          <Text variant="titleSmall">
+            {dfuFilesBundle
+              ? t("updateFirmwareIfOlderWithDate", { date: fwDateLabel })
+              : t("loadingFirmwareFiles")}
+          </Text>
+        </BaseVStack>
+      )}
       {ValidationSequences.map((s) => (
-        <LargeTonalButton key={s} onPress={() => onSelectSequence(s)}>
+        <LargeTonalButton
+          key={s}
+          disabled={!!dfuBundleError || !dfuFilesBundle}
+          onPress={() => onSelectSequence(s)}
+        >
           {t(s === "firmwareUpdate" ? s : "validate" + capitalize(s))}
         </LargeTonalButton>
       ))}
@@ -174,7 +211,7 @@ function SelectDieTypePage({
       px={5}
       gap={20}
       justifyContent="space-around"
-      paddingBottom={10}
+      paddingVertical={10}
     >
       <Text variant="headlineSmall" style={AppStyles.textCentered}>
         {t("testingSequence", { sequence: t(sequence) })}
@@ -419,10 +456,6 @@ function RunTestsPage({
     React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
-  const useSelectedFirmware = useAppSelector(
-    (state) => state.validationSettings.useSelectedFirmware
-  );
-
   // We must have a Pixel once past the UpdateFirmware task
   const getPixel = (): Pixel => {
     if (!pixel) throw new Error("No Pixel instance");
@@ -446,7 +479,6 @@ function RunTestsPage({
           {...p}
           settings={settings}
           pixelId={pixelId}
-          useSelectedFirmware={useSelectedFirmware}
           onPixelFound={onPixelFound}
           onFirmwareUpdate={setFirmwareUpdateStatus}
         />
@@ -664,12 +696,17 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
+  const [dfuFilesBundle, dfuBundleError] = useFactoryDfuFilesBundle();
   const [sequence, setSequence] = React.useState<ValidationSequence>();
   const [dieType, setDieType] = React.useState<PixelDieType>();
   const [pixelId, setPixelId] = React.useState(0);
 
-  return !sequence ? (
-    <SelectSequencePage onSelectSequence={setSequence} />
+  return !sequence || !dfuFilesBundle ? (
+    <SelectSequencePage
+      onSelectSequence={setSequence}
+      dfuFilesBundle={dfuFilesBundle}
+      dfuBundleError={dfuBundleError}
+    />
   ) : !dieType ? (
     <SelectDieTypePage
       sequence={sequence}
@@ -678,7 +715,7 @@ function ValidationPage() {
     />
   ) : !pixelId ? (
     <DecodePixelIdPage
-      settings={{ sequence, dieType }}
+      settings={{ sequence, dieType, dfuFilesBundle }}
       onDecodedPixelId={(pixelId) => {
         console.log("Decoded PixelId:", pixelId);
         setPixelId(pixelId);
@@ -687,7 +724,7 @@ function ValidationPage() {
     />
   ) : (
     <RunTestsPage
-      settings={{ sequence, dieType }}
+      settings={{ sequence, dieType, dfuFilesBundle }}
       pixelId={pixelId}
       onResult={(result) => {
         console.log("Validation tests result:", result);

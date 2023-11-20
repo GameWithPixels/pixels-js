@@ -1,10 +1,14 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { BaseBox } from "@systemic-games/react-native-base-components";
+import {
+  BaseBox,
+  BaseHStack,
+  BaseVStack,
+} from "@systemic-games/react-native-base-components";
 import * as Updates from "expo-updates";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, StyleSheet, useWindowDimensions } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import { Platform, useWindowDimensions } from "react-native";
+import { Button, Card, Text, useTheme } from "react-native-paper";
 
 import { SwipeablePixelsList } from "./SwipeablePixelsList";
 
@@ -40,28 +44,57 @@ function DfuBundleSelection({
   const { t } = useTranslation();
 
   // Label to display for the selected firmware
-  const selectedFwLabel = React.useMemo(() => {
-    const b = selectedDfuBundle;
-    if (b) {
-      const index = availableDfuBundles.indexOf(selectedDfuBundle);
-      const date = toLocaleDateTimeString(b.date);
-      const type = b.items.map((i) => t(i.type)).join(", ");
-      return `${index === 0 ? "(*) " : ""}${type}: ${date}`;
+  const blFwLabel = React.useMemo(() => {
+    if (selectedDfuBundle) {
+      return selectedDfuBundle.items.map((i) => t(i.type)).join(" & ");
     }
-  }, [availableDfuBundles, selectedDfuBundle, t]);
+  }, [selectedDfuBundle, t]);
+  const dateLabel = React.useMemo(() => {
+    if (selectedDfuBundle) {
+      return toLocaleDateTimeString(selectedDfuBundle.date);
+    }
+  }, [selectedDfuBundle]);
 
   return !dfuBundlesError || noDFUFilesError ? (
-    <Button
-      onPress={dfuFilesLoading ? undefined : selectDfuFile}
-      contentStyle={AppStyles.fullWidth}
-      labelStyle={dfuFilesLoading ? AppStyles.empty : AppStyles.underlined}
-    >
-      {selectedDfuBundle
-        ? selectedFwLabel ?? t("tapToSelectFirmware")
-        : noDFUFilesError
-        ? "No DFU files loaded"
-        : "Loading DFU files..."}
-    </Button>
+    <>
+      <Card
+        style={{ width: "100%", paddingVertical: 10, paddingHorizontal: 20 }}
+      >
+        <BaseVStack gap={5}>
+          <Text variant="titleMedium">
+            {blFwLabel ? `${blFwLabel}:` : "Loading..."}
+          </Text>
+          <BaseHStack alignItems="flex-end" justifyContent="space-between">
+            <BaseVStack gap={5}>
+              <Text>
+                {selectedDfuBundle
+                  ? dateLabel ?? t("tapToSelectFirmware")
+                  : noDFUFilesError
+                  ? "No DFU files loaded"
+                  : "Loading DFU files..."}
+              </Text>
+              {selectedDfuBundle && (
+                <Text>
+                  {availableDfuBundles.indexOf(selectedDfuBundle) === 0
+                    ? "(Same As Validation)"
+                    : `(${
+                        selectedDfuBundle.date > availableDfuBundles[0].date
+                          ? "More recent"
+                          : "Older"
+                      } than Validation)`}
+                </Text>
+              )}
+            </BaseVStack>
+            <Button
+              mode="outlined"
+              onPress={dfuFilesLoading ? undefined : selectDfuFile}
+            >
+              Change
+            </Button>
+          </BaseHStack>
+        </BaseVStack>
+      </Card>
+    </>
   ) : (
     <Text
       style={{
@@ -115,18 +148,17 @@ function HomePage({ navigation }: HomeScreenProps) {
   return (
     <>
       {/* Takes all available space except for footer (see footer below this Box) */}
-      <BaseBox flex={1} gap={5} alignItems="center">
-        <Text style={styles.textValidation}>
-          ↖️{" "}
-          <Text style={AppStyles.italic}>{t("openMenuToGoToValidation")}</Text>
-        </Text>
+      <BaseBox flex={1} gap={10} width="100%" alignItems="center">
         {hasEasUpdate && (
-          <Text style={{ marginTop: 5 }}>
+          <Text style={{ marginVertical: 10 }}>
             ⚠️ {t("updateAvailableGoToSettings")}
           </Text>
         )}
         <DfuBundleSelection navigation={navigation} />
         <SwipeablePixelsList
+          flex={1}
+          flexGrow={1}
+          width="100%"
           onShowDetails={showDetails}
           onPrintLabel={setPrintPixel}
         />
@@ -156,15 +188,8 @@ function HomePage({ navigation }: HomeScreenProps) {
 
 export function HomeScreen(props: HomeScreenProps) {
   return (
-    <AppPage pt={0}>
+    <AppPage>
       <HomePage {...props} />
     </AppPage>
   );
 }
-
-const styles = StyleSheet.create({
-  textValidation: {
-    marginLeft: 20,
-    alignSelf: "flex-start",
-  },
-});

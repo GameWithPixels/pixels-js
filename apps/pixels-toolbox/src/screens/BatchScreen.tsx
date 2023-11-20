@@ -277,6 +277,9 @@ function BatchPage() {
     };
   };
 
+  const scannedButNotConnected = scannedPixels.filter(
+    (sp) => !pixels.find((p) => p.pixelId === sp.pixelId)
+  );
   return (
     <BaseVStack flex={1} w="100%" gap={10} alignItems="center">
       {scanError && <Text>{`Scan error! ${scanError}`}</Text>}
@@ -284,8 +287,10 @@ function BatchPage() {
         <>
           <Text variant="titleMedium">Scanning for dice...</Text>
           <Text variant="bodySmall" numberOfLines={1}>
-            {scannedPixels.length
-              ? `Found ${scannedPixels.length} Pixels: ${scannedPixels
+            {scannedButNotConnected.length
+              ? `Found ${
+                  scannedButNotConnected.length
+                } Pixels: ${scannedButNotConnected
                   .map((p) => p.name)
                   .join(", ")}`
               : "No available Pixels found so far."}

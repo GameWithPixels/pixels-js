@@ -27,15 +27,13 @@ import { Button, Text } from "react-native-paper";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
-import { store } from "~/app/store";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
-import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
-import { unzipFactoryDfuFilesAsync } from "~/features/dfu/unzip";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { FactoryDfuBundleFiles } from "~/features/hooks/useFactoryDfuFilesBundle";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   pixelClearSettings,
@@ -262,15 +260,6 @@ async function scanForPixelWithTimeout(
   return scannedPixel;
 }
 
-function getSelectedDfuFilesBundle(): DfuFilesBundle {
-  const { selected, available } = store.getState().dfuBundles;
-  const files = available[selected];
-  if (!files) {
-    throw new Error();
-  }
-  return DfuFilesBundle.create(files);
-}
-
 async function storeValueChecked(
   pixel: Pixel,
   valueType: number,
@@ -329,6 +318,7 @@ function MessageYesNo({
 export interface ValidationTestsSettings {
   sequence: ValidationSequence;
   dieType: PixelDieType;
+  dfuFilesBundle: FactoryDfuBundleFiles;
 }
 
 export interface ValidationTestProps extends TaskComponentProps {
@@ -342,13 +332,12 @@ export type UpdateFirmwareStatus = "updating" | "success" | "error";
 export function UpdateFirmware({
   action,
   onTaskStatus,
+  settings,
   pixelId,
-  useSelectedFirmware,
   onPixelFound,
   onFirmwareUpdate,
 }: Omit<ValidationTestProps, "pixel"> & {
   pixelId: number;
-  useSelectedFirmware: boolean;
   onPixelFound?: (scannedPixel: ScannedPixel) => void;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
@@ -409,26 +398,6 @@ export function UpdateFirmware({
         }
         const dfuTarget = scannedPixel;
         try {
-          // Get the DFU files bundles from the zip file
-          const dfuBundle = useSelectedFirmware
-            ? getSelectedDfuFilesBundle()
-            : DfuFilesBundle.create({
-                pathnames: await unzipFactoryDfuFilesAsync(),
-              });
-          if (!dfuBundle.bootloader) {
-            throw new TaskFaultedError(
-              "DFU bootloader file not found or problematic"
-            );
-          }
-          if (!dfuBundle.firmware) {
-            throw new TaskFaultedError(
-              "DFU firmware file not found or problematic"
-            );
-          }
-          console.log(
-            "DFU files loaded, firmware/bootloader build date is",
-            toLocaleDateTimeString(dfuBundle.date)
-          );
           // Use firmware date from scanned data as it is the most up-to-date
           console.log(
             "On device firmware build timestamp is",
@@ -436,13 +405,16 @@ export function UpdateFirmware({
           );
           // Start DFU
           if (
-            !areSameFirmwareDates(dfuBundle.date, dfuTarget.firmwareDate) &&
-            dfuBundle.date > dfuTarget.firmwareDate
+            !areSameFirmwareDates(
+              settings.dfuFilesBundle.date,
+              dfuTarget.firmwareDate
+            ) &&
+            settings.dfuFilesBundle.date > dfuTarget.firmwareDate
           ) {
             onFirmwareUpdate?.("updating");
             // Prepare for updating firmware
-            const blPath = dfuBundle.bootloader.pathname;
-            const fwPath = dfuBundle.firmware.pathname;
+            const blPath = settings.dfuFilesBundle.bootloader.pathname;
+            const fwPath = settings.dfuFilesBundle.firmware.pathname;
             const updateFW = async (blAddr?: number) => {
               let dfuState: DfuState | undefined;
               await updateFirmware(
@@ -492,7 +464,7 @@ export function UpdateFirmware({
           // Leave Pixel connected to save time on the next connected test
           //await Central.disconnectPeripheral(dfuTarget.systemId);
         }
-      }, [scannedPixel, useSelectedFirmware, onFirmwareUpdate, t]),
+      }, [scannedPixel, settings.dfuFilesBundle, onFirmwareUpdate, t]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
         children: (

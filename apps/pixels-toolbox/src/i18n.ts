@@ -182,7 +182,6 @@ i18n
 
           // Validation Screen
           factoryValidation: "Factory Validation",
-          openMenuToGoToValidation: "Open menu to go to Validation",
           validateBoardNoCoil: "Validate FPC Board No Coil",
           validateBoard: "Validate FPC Board",
           validateDie: "Validate Resin Die",
@@ -253,6 +252,10 @@ i18n
           updateDieTypeWithFromAndTo:
             "Update die type to {{to}}? Programmed type is {{from}}.",
           lowBatteryPleaseCharge: "Low battery, please charge.",
+          updateFirmwareIfOlderWithDate:
+            "Factory Validation will update firmware if on board firmware is older than {{date}}.",
+          loadingFirmwareFiles: "Loading firmware files...",
+          firmwareFilesLoadingError: "Firmware files loading error",
 
           // Carton label
           cartonLabel: "Carton Label",
@@ -398,7 +401,6 @@ i18n
 
           // Validation Screen
           factoryValidation: "工厂测试",
-          openMenuToGoToValidation: "打开菜单进入测试模式",
           validateBoardNoCoil: "测试FPC光板（不带线圈）",
           validateBoard: "测试FPC板",
           validateDie: "测试骰子",
