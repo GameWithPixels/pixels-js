@@ -21,11 +21,10 @@ export function TaskChainComponent({
     <Card>
       <Card.Content>
         <TaskContainer title={title} taskStatus={taskStatus}>
-          {taskStatus === "faulted" ? (
-            <Text
-              variant="titleLarge"
-              style={{ color: colors.error }}
-            >{`${taskChain.lastError}`}</Text>
+          {taskStatus === "faulted" || taskStatus === "canceled" ? (
+            <Text variant="titleLarge" style={{ color: colors.error }}>
+              {taskChain.lastError?.message ?? String(taskChain.lastError)}
+            </Text>
           ) : (
             taskStatus !== "succeeded" && taskChain.render()
           )}

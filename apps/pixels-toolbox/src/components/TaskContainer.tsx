@@ -22,10 +22,10 @@ export function TaskContainer({
   return taskStatus === "pending" ? (
     <></>
   ) : (
-    <BaseVStack gap={8} ml={isSubTask ? "10%" : undefined}>
+    <BaseVStack gap={8} ml={isSubTask ? 35 : undefined}>
       {title && (
         <BaseHStack gap={8} alignItems="center">
-          <BaseBox w="10%" alignItems="center" justifyContent="center">
+          <BaseBox w={35} alignItems="center" justifyContent="center">
             {taskStatus === "running" ? (
               <ActivityIndicator />
             ) : (
