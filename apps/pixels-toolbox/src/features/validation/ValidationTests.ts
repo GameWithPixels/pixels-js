@@ -35,15 +35,25 @@ function vectToString(x: number, y: number, z: number): string {
   return `(${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)})`;
 }
 
-function isBatteryCharging(state: number): boolean {
-  const v = PixelBatteryControllerStateValues;
-  return (
-    state === v.chargingLow ||
-    state === v.charging ||
-    state === v.cooldown ||
-    state === v.trickle ||
-    state === v.done
-  );
+function isBatteryCharging(state: number): "yes" | "no" | "unknown" {
+  const values = PixelBatteryControllerStateValues;
+  if (
+    state === values.chargingLow ||
+    state === values.charging ||
+    state === values.cooldown ||
+    state === values.trickle ||
+    state === values.done
+  ) {
+    return "yes";
+  } else if (
+    state === values.ok ||
+    state === values.low ||
+    state === values.empty
+  ) {
+    return "no";
+  } else {
+    return "unknown";
+  }
 }
 
 export const testTimeout = 30000; // 30s;
@@ -88,8 +98,8 @@ export const ValidationTests = {
     // Check received battery voltage
     const voltage = msg.voltageTimes50 / 50;
     console.log(
-      `Battery voltage: ${voltage.toFixed(2)} V,` +
-        ` level: ${msg.batteryLevelPercent} %,` +
+      `Battery voltage: ${voltage.toFixed(2)}V,` +
+        ` level: ${msg.batteryLevelPercent}%,` +
         ` charging: ${
           msg.batteryState === PixelBatteryStateValues.charging ||
           msg.batteryState === PixelBatteryStateValues.done
@@ -150,9 +160,9 @@ export const ValidationTests = {
                   lastMsg = msg;
                   const state = msg.batteryControllerState;
                   const charging = isBatteryCharging(state);
-                  if (charging === shouldBeCharging) {
+                  if (charging === (shouldBeCharging ? "yes" : "no")) {
                     const vCoil = msg.vCoilTimes50 / 50;
-                    if (!charging || vCoil >= 4.2) {
+                    if (charging === "no" || vCoil >= 4.2) {
                       return true;
                     } else {
                       const stateStr =
