@@ -28,33 +28,21 @@ const dfuBundlesSlice = createSlice({
     // Replace embedded bundles by a new list
     resetEmbeddedDfuBundles(
       state,
-      action: PayloadAction<{ app?: string[][]; factory?: string[] }>
+      action: PayloadAction<{
+        selected: number;
+        bundles: { pathnames: string[]; kind: DfuFilesBundleKind }[];
+      }>
     ) {
-      const { app, factory } = action.payload;
-      // Get factory files
-      const bundles = [];
-      if (factory) {
-        bundles.push({
-          pathnames: factory,
-          kind: "factory" as DfuFilesBundleKind,
-        });
-      }
-      // Build array of app files
-      if (app) {
-        bundles.push(
-          ...app?.map((files) => ({
-            pathnames: files,
-            kind: "app" as DfuFilesBundleKind,
-          }))
-        );
-      }
-      // Get imported files
-      bundles.push(...state.available.filter((b) => b.kind === "imported"));
+      const { selected, bundles } = action.payload;
+      // Keep imported files, but put them last
+      const available = bundles.concat(
+        state.available.filter((b) => b.kind === "imported")
+      );
 
       // Update state
       return {
-        available: bundles,
-        selected: 0,
+        available,
+        selected,
       };
     },
 

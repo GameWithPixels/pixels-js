@@ -37,11 +37,18 @@ export function useAppDfuFilesBundles(): [
         if (!factory.length && !others.length) {
           throw new NoDfuFileLoadedError();
         }
-        // Store pathnames
+        // Store pathnames and selection
+        const allBundles = factory.concat(others);
+        const selected = allBundles.indexOf(
+          allBundles.reduce((a, b) => (a.date >= b.date ? a : b))
+        );
         dispatch(
           resetEmbeddedDfuBundles({
-            app: others.map((b) => b.items.map((i) => i.pathname)),
-            factory: factory[0].items.map((i) => i.pathname),
+            selected,
+            bundles: factory.concat(others).map((b) => ({
+              pathnames: b.items.map((i) => i.pathname),
+              kind: factory.includes(b) ? "factory" : "app",
+            })),
           })
         );
       };
