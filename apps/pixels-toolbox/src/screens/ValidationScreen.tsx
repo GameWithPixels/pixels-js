@@ -627,8 +627,6 @@ function RunTestsPage({
     }
   });
 
-  const borderRadius = getBorderRadius(useTheme());
-
   return (
     <BaseVStack
       w="100%"
@@ -665,21 +663,6 @@ function RunTestsPage({
                 {t("percentWithValue", { value: pixel.batteryLevel })}
               </Text>
             )}
-            {!!pixel &&
-              pixel.batteryLevel < 75 &&
-              settings.sequence === "dieFinal" && (
-                <Text
-                  variant="titleLarge"
-                  style={{
-                    paddingHorizontal: 20,
-                    paddingVertical: 10,
-                    backgroundColor: "darkgoldenrod",
-                    borderRadius,
-                  }}
-                >
-                  ⚠️ {t("lowBatteryPleaseCharge")}
-                </Text>
-              )}
           </BaseVStack>
         )}
       </ScrollView>

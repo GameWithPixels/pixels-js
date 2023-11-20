@@ -44,7 +44,11 @@ import {
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
-import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
+import {
+  TaskCanceledError,
+  TaskFaultedError,
+  TaskStatus,
+} from "~/features/tasks/useTask";
 import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
@@ -711,13 +715,12 @@ export function WaitCharging({
     )
     .withTask(
       React.useCallback(async () => {
-        if (pixel.batteryLevel < 50) {
-          throw new TaskFaultedError(
-            `Battery level too low: ${pixel.batteryLevel}%`
-          );
+        if (pixel.batteryLevel < 75) {
+          throw new TaskCanceledError(t("lowBatteryPleaseCharge"));
         }
-      }, [pixel]),
-      createTaskStatusContainer(t("batteryLevel"))
+      }, [pixel, t]),
+      createTaskStatusContainer(t("batteryLevel")),
+      { skip: settings.sequence !== "dieFinal" }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);

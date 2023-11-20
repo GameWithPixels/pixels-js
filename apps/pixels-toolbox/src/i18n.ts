@@ -252,7 +252,7 @@ i18n
             "Die type mismatch, expected {{expected}} but got {{received}}",
           updateDieTypeWithFromAndTo:
             "Update die type to {{to}}? Programmed type is {{from}}.",
-          lowBatteryPleaseCharge: "Low battery, please charge.",
+          lowBatteryPleaseCharge: "Low battery, please charge",
           updateFirmwareIfOlderWithDate:
             "Factory Validation will update firmware if on board firmware is older than {{date}}.",
           loadingFirmwareFiles: "Loading firmware files...",
