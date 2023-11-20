@@ -97,13 +97,12 @@ Classes to manipulate animation data are available in a separate package:
 
 ```JavaScript
 import {
-  EditDataSet,
+  createDataSetForAnimation,
   EditAnimationRainbow,
 } from "@systemic-games/pixels-edit-animation";
 
 // Create a simple rainbow animation
-const editDataSet = new EditDataSet();
-editDataSet.animations.push(
+const editDataSet = createDataSetForAnimation(
     new EditAnimationRainbow({
         duration: 3,
         count: 2,

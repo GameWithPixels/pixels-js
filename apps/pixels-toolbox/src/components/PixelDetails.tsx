@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import { getValueKeyName, range } from "@systemic-games/pixels-core-utils";
+import { EditAnimationKeyframed } from "@systemic-games/pixels-edit-animation";
 import {
   BaseHStack,
   BaseVStack,
@@ -43,6 +44,8 @@ import {
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
 import { ProgressBar } from "~/components/ProgressBar";
+import { PatternImages } from "~/features/PatternImages";
+import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
@@ -330,6 +333,22 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   );
 }
 
+async function playKeyframes(pixelDispatcher: PixelDispatcher) {
+  const pattern = await createPatternFromImage(PatternImages.rainbowFalls);
+  const keyframesCount = pattern.gradients.map((g) => g.keyframes.length);
+  console.log(
+    `Extracted ${keyframesCount.reduce(
+      (a, b) => a + b,
+      0
+    )} keyframes: ${keyframesCount.join(", ")}`
+  );
+  const anim = new EditAnimationKeyframed({
+    duration: 3,
+    pattern,
+  });
+  pixelDispatcher.dispatch("playAnimation", anim);
+}
+
 function BottomButtons({
   pixelDispatcher: pd,
   onShowTelemetry,
@@ -374,7 +393,9 @@ function BottomButtons({
               <Button onPress={() => pd.dispatch("blinkId")}>
                 {t("blinkId")}
               </Button>
-              <Button onPress={() => pd.dispatch("blink")}>{t("blink")}</Button>
+              <Button onPress={() => pd.dispatch("uploadProfile")}>
+                {t("setUserProfile")}
+              </Button>
               <Button
                 onPress={() =>
                   pd.dispatch("playAnimation", PrebuildAnimations.rainbow)
@@ -389,18 +410,23 @@ function BottomButtons({
               >
                 {t("fixedRainbow")}
               </Button>
-              <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
-              <Button onPress={() => pd.dispatch("calibrate")}>
-                {t("calibrate")}
+              <Button
+                onPress={() => pd.dispatch("uploadProfile", "fixedRainbowD4")}
+              >
+                {t("setFixedRainbowProfileD4")}
               </Button>
-              <Button onPress={() => pd.dispatch("reprogramDefaultBehavior")}>
-                {t("setMinimalProfile")}
+              <Button
+                onPress={() =>
+                  playKeyframes(pd).catch((error) =>
+                    console.log("Error loading gradient", error)
+                  )
+                }
+              >
+                {t("playKeyframes")}
               </Button>
+              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
               <Button onPress={() => pd.dispatch("resetAllSettings")}>
                 {t("resetAllSettings")}
-              </Button>
-              <Button onPress={() => pd.dispatch("rename")}>
-                {t("rename")}
               </Button>
             </>
           )}
@@ -436,6 +462,10 @@ function BottomButtons({
                   />
                 ))}
               </Menu>
+              <Button onPress={() => pd.dispatch("blink")}>{t("blink")}</Button>
+              <Button onPress={() => pd.dispatch("reprogramDefaultBehavior")}>
+                {t("setMinimalProfile")}
+              </Button>
               <Button
                 onPress={() =>
                   pd.dispatch(
@@ -446,25 +476,23 @@ function BottomButtons({
               >
                 {t("rainbowAllFaces")}
               </Button>
-              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
-              <Button onPress={() => pd.dispatch("exitValidation")}>
-                {t("exitValidationMode")}
-              </Button>
-              <Button onPress={() => pd.dispatch("uploadProfile")}>
-                {t("setUserProfile")}
-              </Button>
               <Button
                 onPress={() => pd.dispatch("uploadProfile", "fixedRainbow")}
               >
                 {t("setFixedRainbowProfile")}
               </Button>
-              <Button
-                onPress={() => pd.dispatch("uploadProfile", "fixedRainbowD4")}
-              >
-                {t("setFixedRainbowProfileD4")}
-              </Button>
               <Button onPress={() => pd.dispatch("playProfileAnimation", 0)}>
                 {t("playProfileAnim")}
+              </Button>
+              <Button onPress={() => pd.dispatch("calibrate")}>
+                {t("calibrate")}
+              </Button>
+              <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
+              <Button onPress={() => pd.dispatch("exitValidation")}>
+                {t("exitValidationMode")}
+              </Button>
+              <Button onPress={() => pd.dispatch("rename")}>
+                {t("rename")}
               </Button>
             </>
           )}

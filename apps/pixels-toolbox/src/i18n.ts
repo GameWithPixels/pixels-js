@@ -149,6 +149,7 @@ i18n
           preparingAsPrintStatus: "Preparing label...",
           sendingAsPrintStatus: "Sending label to printer...",
           doneAsPrintStatus: "Print successful!",
+          playKeyframes: "Play Keyframes",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",

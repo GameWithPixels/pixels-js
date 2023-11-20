@@ -6,13 +6,13 @@ import {
   Mutable,
 } from "@systemic-games/pixels-core-utils";
 import {
+  createDataSetForAnimation,
   createDataSetForProfile,
   EditActionPlayAnimation,
   EditAnimation,
   EditAnimationRainbow,
   EditConditionFaceCompare,
   EditConditionHelloGoodbye,
-  EditDataSet,
   EditProfile,
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
@@ -586,8 +586,7 @@ class PixelDispatcher
 
   private async _playAnimation(anim: EditAnimation): Promise<void> {
     this._evEmitter.emit("profileUploadProgress", 0);
-    const editDataSet = new EditDataSet();
-    editDataSet.animations.push(anim);
+    const editDataSet = createDataSetForAnimation(anim);
     try {
       await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
         this._evEmitter.emit("profileUploadProgress", p)
