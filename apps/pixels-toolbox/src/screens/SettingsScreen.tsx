@@ -16,7 +16,6 @@ import {
   Modal,
   Portal,
   RadioButton,
-  Switch,
   Text,
   Title,
 } from "react-native-paper";
@@ -29,7 +28,6 @@ import {
   setThemeMode,
   ThemeMode,
 } from "~/features/store/appSettingsSlice";
-import { setUseSelectedFirmware } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
 import { AppRootPageName } from "~/navigation";
 
@@ -146,10 +144,6 @@ function PageRadio({
 }
 
 function ValidationCard() {
-  const appDispatch = useAppDispatch();
-  const latestFirmware = useAppSelector(
-    (state) => state.validationSettings.useSelectedFirmware
-  );
   return (
     <Card>
       <Card.Content style={{ gap: 10 }}>
@@ -159,15 +153,6 @@ function ValidationCard() {
           <PageRadio label="Default" page="" />
           <PageRadio label="Validation" page="Validation" />
           <PageRadio label="Carton Label" page="CartonLabel" />
-        </BaseHStack>
-        <BaseHStack px={5} justifyContent="space-between">
-          <Text>Use Selected Firmware</Text>
-          <Switch
-            value={latestFirmware}
-            onValueChange={(value) => {
-              appDispatch(setUseSelectedFirmware(value));
-            }}
-          />
         </BaseHStack>
       </Card.Content>
     </Card>

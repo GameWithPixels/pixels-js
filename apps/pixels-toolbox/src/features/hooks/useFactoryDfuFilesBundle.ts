@@ -17,27 +17,16 @@ export function useFactoryDfuFilesBundle(): [
   FactoryDfuBundleFiles | undefined,
   Error | undefined
 ] {
-  const useSelectedFirmware = useAppSelector(
-    (state) => state.validationSettings.useSelectedFirmware
-  );
   const dfuBundles = useAppSelector((state) => state.dfuBundles);
   const [dfuBundle, setDfuBundle] = React.useState<FactoryDfuBundleFiles>();
   const [error, setError] = React.useState<Error>();
   React.useEffect(() => {
     const task = async () => {
       setError(undefined);
-      const getFiles = () => {
-        if (!dfuBundles.available[dfuBundles.selected]) {
-          throw new Error("No DFU files bundle selected");
-        }
-        return dfuBundles.available[dfuBundles.selected];
-      };
       // Get the DFU files bundles from the zip file
-      const dfuBundle = DfuFilesBundle.create(
-        useSelectedFirmware
-          ? getFiles()
-          : { pathnames: await unzipFactoryDfuFilesAsync() }
-      );
+      const dfuBundle = DfuFilesBundle.create({
+        pathnames: await unzipFactoryDfuFilesAsync(),
+      });
       if (!dfuBundle.bootloader) {
         throw new Error(
           "Validation DFU bootloader file not found or problematic"
@@ -59,7 +48,7 @@ export function useFactoryDfuFilesBundle(): [
       });
     };
     task().catch(setError);
-  }, [dfuBundles, useSelectedFirmware]);
+  }, [dfuBundles]);
 
   return [dfuBundle, error];
 }
