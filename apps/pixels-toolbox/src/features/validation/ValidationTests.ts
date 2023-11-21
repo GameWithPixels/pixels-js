@@ -122,7 +122,8 @@ function isBatteryCharging(state: number): "yes" | "no" | "unknown" {
   } else if (
     state === values.ok ||
     state === values.low ||
-    state === values.empty
+    state === values.empty ||
+    state === values.transitionOff // To speed up "wait not charging" test
   ) {
     return "no";
   } else {
