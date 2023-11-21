@@ -255,20 +255,20 @@ i18n
             "Update die type to {{to}}? Programmed type is {{from}}.",
           lowBatteryPleaseCharge: "Low battery, please charge",
           updateFirmwareIfOlderWithDate:
-            "Factory Validation will update firmware if on board firmware is older than {{date}}.",
+            "Factory Validation will update firmware if on-board firmware is older than {{date}}.",
           loadingFirmwareFiles: "Loading firmware files...",
           errorLoadingFirmwareFiles: "Error loading firmware files",
           invalidLedCountWithValue: "Invalid LED count: {{value}}",
           invalidAccelerometerValue: "Invalid accelerometer value: {{value}}",
           outOfRangeBatteryVoltage: "Out of range battery voltage: {{value}}v",
           timeoutWhileWaitingForChargingState:
-            "Timeout while waiting for 'charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
+            "Timeout waiting for 'charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
           timeoutWhileWaitingForNotChargingState:
-            "Timeout while waiting for 'not charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
+            "Timeout waiting for 'not charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
           timeoutWaitingForFace:
             "Timeout waiting for face {{face}}. Face up: {{rollFace}}, roll state: {{rollState}}",
           disconnectedFromPixel: "Disconnected from Pixel",
-          timedOutWithValue: "Timed out after waiting {{value}}s",
+          timedOutWithValue: "Timed out after {{value}}s",
 
           // Carton label
           cartonLabel: "Carton Label",

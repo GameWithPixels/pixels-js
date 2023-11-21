@@ -33,7 +33,7 @@ export class AccelerationInvalidValueError extends LocalizedError {
   readonly y: number;
   readonly z: number;
   constructor(x: number, y: number, z: number) {
-    super();
+    super(`Invalid accelerometer value ${vectToString(x, y, z)}`);
     this.name = "AccelerationInvalidValueError";
     this.x = x;
     this.y = y;
@@ -49,7 +49,7 @@ export class AccelerationInvalidValueError extends LocalizedError {
 export class BatteryOutOfRangeVoltageError extends LocalizedError {
   readonly voltage: number;
   constructor(voltage: number) {
-    super();
+    super(`Out of range battery voltage: ${voltage}v`);
     this.name = "BatteryOutOfRangeVoltageError";
     this.voltage = voltage;
   }
@@ -62,7 +62,18 @@ export class WaitForChargingTimeoutError extends LocalizedError {
   readonly shouldBeCharging: boolean;
   readonly telemetry: Readonly<Telemetry>;
   constructor(shouldBeCharging: boolean, telemetry: Telemetry) {
-    super();
+    const state =
+      getValueKeyName(
+        telemetry.batteryControllerState,
+        PixelBatteryControllerStateValues
+      ) ?? "unknown";
+    super(
+      `Timeout waiting for '${
+        shouldBeCharging ? "" : "not "
+      }charging' state. Controller state: ${state}, coil: ${
+        telemetry.vCoilTimes50 / 50
+      }v`
+    );
     this.name = "WaitForChargingTimeoutError";
     this.shouldBeCharging = shouldBeCharging;
     this.telemetry = { ...telemetry };
@@ -87,7 +98,9 @@ export class WaitFaceUpTimeoutError extends LocalizedError {
   readonly face: number;
   readonly roll: Readonly<RollEvent>;
   constructor(face: number, roll: RollEvent) {
-    super();
+    super(
+      `Timeout waiting for face ${face}, face up: ${roll.face}, roll state: ${roll.state}`
+    );
     this.name = "WaitFaceUpTimeoutError";
     this.face = face;
     this.roll = { ...roll };

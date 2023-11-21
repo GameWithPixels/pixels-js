@@ -17,7 +17,7 @@ import { TaskCanceledError } from "~/features/tasks/useTask";
 export class SignalTimeoutError extends LocalizedError {
   readonly timeout: number;
   constructor(ms: number) {
-    super();
+    super(`Timed out after ${ms}ms`);
     this.name = "SignalTimeoutError";
     this.timeout = ms;
   }
