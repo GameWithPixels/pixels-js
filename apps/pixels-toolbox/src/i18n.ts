@@ -225,6 +225,7 @@ i18n
           exitValidationMode: "Exit Validation Mode",
           waitDieInCase: "Wait Die In Case",
           placeDieInCaseAndCloseLid: "Place die in case and close the lid",
+          canceled: "Canceled",
           testSucceeded: "Test Successful!",
           testFailed: "Test Failed!",
           testCanceled: "Test Canceled!",
@@ -256,7 +257,18 @@ i18n
           updateFirmwareIfOlderWithDate:
             "Factory Validation will update firmware if on board firmware is older than {{date}}.",
           loadingFirmwareFiles: "Loading firmware files...",
-          firmwareFilesLoadingError: "Firmware files loading error",
+          errorLoadingFirmwareFiles: "Error loading firmware files",
+          invalidLedCountWithValue: "Invalid LED count: {{value}}",
+          invalidAccelerometerValue: "Invalid accelerometer value: {{value}}",
+          outOfRangeBatteryVoltage: "Out of range battery voltage: {{value}}v",
+          timeoutWhileWaitingForChargingState:
+            "Timeout while waiting for 'charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
+          timeoutWhileWaitingForNotChargingState:
+            "Timeout while waiting for 'not charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
+          timeoutWaitingForFace:
+            "Timeout waiting for face {{face}}. Face up: {{rollFace}}, roll state: {{rollState}}",
+          disconnectedFromPixel: "Disconnected from Pixel",
+          timedOutWithValue: "Timed out after waiting {{value}}s",
 
           // Carton label
           cartonLabel: "Carton Label",
@@ -281,7 +293,7 @@ i18n
           cancel: "取消",
           close: "关闭",
           back: "后退",
-          next: "Next",
+          next: "下一个",
           yes: "是",
           no: "否",
           d4: "D4",
@@ -444,6 +456,7 @@ i18n
           exitValidationMode: "退出测试模式",
           waitDieInCase: "等待骰子放入盒中",
           placeDieInCaseAndCloseLid: "将骰子放在盒中并关闭盖子",
+          canceled: "取消",
           testSucceeded: "测试成功！",
           testFailed: "测试失败！",
           testCanceled: "取消测试！",
@@ -466,9 +479,25 @@ i18n
           dieTypeMismatchWithTypeAndLedCount:
             "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
           dieTypeMismatchWithExpectedAndReceived:
-            "骰子类型错误，本应该是{expected} 结果是{received}",
-          updateDieTypeWithFromAndTo: "更新骰子类型是{to}，烧录的类型是{from}",
+            "骰子类型错误，本应该是{{expected}} 结果是{{received}}",
+          updateDieTypeWithFromAndTo:
+            "更新骰子类型是{{to}}，烧录的类型是{{from}}",
           lowBatteryPleaseCharge: "电池电量低，需要充电",
+          updateFirmwareIfOlderWithDate:
+            "工厂测试时会升级低于这个{{date}}的固件的FPC",
+          loadingFirmwareFiles: "装载固件中...",
+          errorLoadingFirmwareFiles: "装载固件错误",
+          invalidLedCountWithValue: "错误的LED数量：{{value}}",
+          invalidAccelerometerValue: "错误的加速度计值：{{value}}",
+          outOfRangeBatteryVoltage: "电池电压超出范围：{{value}}v",
+          timeoutWhileWaitingForChargingState:
+            "等待充电状态超时，控制的状态是{{state}}，线圈电压是{{vCoil}}v",
+          timeoutWhileWaitingForNotChargingState:
+            "等待不充电超时，控制的状态是{{state}}，线圈电压是{{vCoil}}v",
+          timeoutWaitingForFace:
+            "等待{{face}}面朝上超时，朝上面是{{rollFace}}，状态是{{rollState}}",
+          disconnectedFromPixel: "从Pixel断开连接",
+          timedOutWithValue: "等待{{value}}s后超时",
 
           // Carton label
           cartonLabel: "大箱标贴",

@@ -18,9 +18,11 @@ export type TaskRenderer = React.FC<TaskRendererProps>;
 export type TaskOperation = (abortSignal: AbortSignal) => Promise<unknown>;
 
 export class TaskCanceledError extends Error {
-  constructor(message?: string) {
+  readonly userMessage?: string;
+  constructor(message?: string, userMessage?: string) {
     super(message);
     this.name = "TaskCanceledError";
+    this.userMessage = userMessage;
   }
 }
 

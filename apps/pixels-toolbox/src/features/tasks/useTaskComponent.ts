@@ -46,8 +46,8 @@ export function useTaskComponent(
             } else {
               reject(
                 s === "canceled"
-                  ? new TaskCanceledError(`Task ${taskName} canceled`)
-                  : new TaskFaultedError(`Task ${taskName} faulted`)
+                  ? new TaskCanceledError(taskName)
+                  : new TaskFaultedError(taskName)
               );
             }
             break;

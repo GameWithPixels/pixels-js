@@ -219,9 +219,7 @@ async function scanForPixelWithTimeout(
   pixelId: number,
   timeout = 10000 // 10s
 ): Promise<ScannedPixel> {
-  if (!pixelId) {
-    throw new TaskFaultedError("Empty Pixel Id");
-  }
+  assert(pixelId, "Empty Pixel Id");
 
   // Setup scanner
   const scanner = new PixelScanner();
@@ -375,9 +373,7 @@ export function UpdateFirmware({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          if (!scannedPixel) {
-            throw new TaskFaultedError("No scanned Pixel");
-          }
+          assert(scannedPixel, "No scanned Pixel");
           // Try to connect with a few attempts
           const sysId = scannedPixel.systemId;
           await repeatConnect(
@@ -396,10 +392,8 @@ export function UpdateFirmware({
     )
     .withTask(
       React.useCallback(async () => {
+        assert(scannedPixel, "No scanned Pixel");
         // Get our Pixel and prepare for DFU
-        if (!scannedPixel) {
-          throw new TaskFaultedError("No scanned Pixel");
-        }
         const dfuTarget = scannedPixel;
         try {
           // Use firmware date from scanned data as it is the most up-to-date
@@ -521,9 +515,7 @@ export function ConnectPixel({
       React.useCallback(
         async (abortSignal) => {
           if (!pixel) {
-            if (!pixelId) {
-              throw new TaskFaultedError("No Pixel instance and no Pixel id");
-            }
+            assert(pixelId, "No Pixel instance and no Pixel id");
             // Start scanning for our Pixel
             const scannedPixel = await scanForPixelWithTimeout(
               abortSignal,
@@ -541,7 +533,9 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(async () => {
         if (ledCount <= 0) {
-          throw new TaskFaultedError(`Invalid LED count: ${ledCount}`);
+          throw new TaskFaultedError(
+            t("invalidLedCountWithValue", { value: ledCount })
+          );
         }
         // Check LED count
         if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
@@ -609,9 +603,7 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          if (!pixel) {
-            throw new TaskFaultedError("No Pixel instance");
-          }
+          assert(pixel, "No Pixel instance");
           // Try to connect with a few attempts
           await repeatConnect(
             abortSignal,
@@ -716,7 +708,10 @@ export function WaitCharging({
     .withTask(
       React.useCallback(async () => {
         if (pixel.batteryLevel < 75) {
-          throw new TaskCanceledError(t("lowBatteryPleaseCharge"));
+          throw new TaskCanceledError(
+            "WaitCharging",
+            t("lowBatteryPleaseCharge")
+          );
         }
       }, [pixel, t]),
       createTaskStatusContainer(t("batteryLevel")),

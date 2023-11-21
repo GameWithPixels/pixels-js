@@ -162,7 +162,7 @@ function SelectSequencePage({
       {dfuBundleError ? (
         <BaseVStack padding={20} backgroundColor={colors.errorContainer}>
           <Text style={{ color: colors.onErrorContainer }}>
-            {t("firmwareFilesLoadingError") +
+            {t("errorLoadingFirmwareFiles") +
               t("colonSeparator") +
               dfuBundleError.message}
           </Text>
