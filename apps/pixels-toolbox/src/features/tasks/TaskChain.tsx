@@ -17,6 +17,7 @@ interface TaskChainItem {
 export default class TaskChain {
   private readonly _tasksItems: TaskChainItem[] = [];
   private readonly _action: TaskAction;
+  private readonly _name: string | undefined;
 
   get tasksCount(): number {
     return this._tasksItems.length;
@@ -52,8 +53,9 @@ export default class TaskChain {
     return this._tasksItems.find((ti) => !!ti.error)?.error;
   }
 
-  constructor(action: TaskAction) {
+  constructor(action: TaskAction, name?: string) {
     this._action = action;
+    this._name = name;
   }
 
   getStatusAt(index: number): TaskStatus | undefined {
@@ -88,7 +90,12 @@ export default class TaskChain {
         : true;
       const action = !prevTaskSucceeded ? "reset" : this._action;
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [status, component, error] = useTask(asyncOp, taskRenderer, action);
+      const [status, component, error] = useTask(
+        asyncOp,
+        taskRenderer,
+        action,
+        this._name
+      );
       this._tasksItems.push({ status, component, error });
     }
     return this;

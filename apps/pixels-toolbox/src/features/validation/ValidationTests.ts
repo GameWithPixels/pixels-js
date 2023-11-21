@@ -346,8 +346,6 @@ export const ValidationTests = {
                 }
               );
             } catch (error) {
-              console.log("lastRoll " + JSON.stringify(lastMsg));
-              console.log(JSON.stringify(error));
               if (lastMsg && error instanceof SignalTimeoutError) {
                 throw new WaitFaceUpTimeoutError(face, lastMsg);
               } else {

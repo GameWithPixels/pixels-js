@@ -1,4 +1,5 @@
 import React from "react";
+import * as Sentry from "sentry-expo";
 
 export type TaskStatus =
   | "pending"
@@ -36,10 +37,12 @@ export class TaskFaultedError extends Error {
 export function useTask(
   asyncOp: TaskOperation,
   taskRenderer: TaskRenderer,
-  action: TaskAction = "run"
+  action: TaskAction = "run",
+  name?: string
 ): [TaskStatus, React.FC<React.PropsWithChildren>, Error?] {
   const [status, setStatus] = React.useState<TaskStatus>("pending");
   const [lastError, setLastError] = React.useState<Error>();
+  const nameRef = React.useRef(name);
   React.useEffect(() => {
     setLastError(undefined);
     if (action === "run") {
@@ -50,14 +53,22 @@ export function useTask(
       asyncOp(abortCtrl.signal)
         .then(() => !abortCtrl.signal.aborted && updateStatus("succeeded"))
         .catch((error) => {
-          console.log(
-            `Task error (with aborted: ${abortCtrl.signal.aborted}): ${error}`
-          );
+          const name = nameRef.current;
+          const errorMsg = `${name ?? "Task"} error [aborted: ${
+            abortCtrl.signal.aborted
+          }]: ${error}`;
+          console.log(errorMsg);
+          // Keep error
           setLastError(error);
+          // Update status
           if (error instanceof TaskCanceledError) {
             updateStatus("canceled");
           } else if (!abortCtrl.signal.aborted) {
             updateStatus("faulted");
+          }
+          // Report error to Sentry
+          if (name) {
+            Sentry.Native.captureMessage(errorMsg, "warning");
           }
         });
       return () => {
@@ -69,7 +80,7 @@ export function useTask(
     } else if (action === "reset") {
       setStatus("pending");
     }
-  }, [asyncOp, action]);
+  }, [asyncOp, action, nameRef]);
   return [
     status,
     ({ children }) => taskRenderer({ children, taskStatus: status }),

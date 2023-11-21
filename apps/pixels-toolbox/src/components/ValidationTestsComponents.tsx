@@ -352,7 +352,7 @@ export function UpdateFirmware({
   const [dfuState, setDfuState] = React.useState<DfuState>();
   const [dfuProgress, setDfuProgress] = React.useState(0);
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "UpdateFirmware")
     .withTask(
       React.useCallback(
         async (abortSignal) => {
@@ -510,7 +510,7 @@ export function ConnectPixel({
   const [resolveUpdateDieTypePromise, setResolveUpdateDieTypePromise] =
     React.useState<(updateDieType: boolean) => void>();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "ConnectPixel")
     .withTask(
       React.useCallback(
         async (abortSignal) => {
@@ -635,7 +635,7 @@ export function CheckBoard({
 }) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "CheckBoard")
     .withTask(
       React.useCallback(
         () => ValidationTests.checkAccelerationValid(pixel),
@@ -678,7 +678,7 @@ export function WaitCharging({
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "WaitCharging")
     .withTask(
       React.useCallback(
         async (abortSignal) =>
@@ -738,7 +738,7 @@ export function CheckLEDs({
 
   const [resolvePromise, setResolvePromise] = React.useState<() => void>();
   const [userAbort, setUserAbort] = React.useState<() => void>();
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "CheckLEDs")
     .withTask(
       React.useCallback(
         async (abortSignal) => {
@@ -794,7 +794,7 @@ export function WaitFaceUp({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "WaitFaceUp")
     .withTask(
       React.useCallback(
         (abortSignal) =>
@@ -878,7 +878,7 @@ export function StoreSettings({
   }, [pixel, settings.dieType]);
 
   const onlyTimestamp = isBoard(settings.sequence);
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "StoreSettings")
     .withTask(
       onlyTimestamp ? storeTimestamp : storeDieType,
       createTaskStatusContainer(
@@ -979,7 +979,7 @@ export function PrepareDie({
   const { t } = useTranslation();
 
   const [progress, setProgress] = React.useState(-1);
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
       React.useCallback(async () => {
         // Update profile
@@ -1035,7 +1035,7 @@ export function WaitDieInCase({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "WaitDieInCase")
     .withTask(
       React.useCallback(
         (abortSignal) =>
@@ -1091,7 +1091,7 @@ export function LabelPrinting({
   const [reset, setReset] = React.useState(false);
   React.useEffect(() => setReset(false), [reset]);
 
-  const taskChain = useTaskChain(reset ? "reset" : action)
+  const taskChain = useTaskChain(reset ? "reset" : action, "LabelPrinting")
     .withTask(
       React.useCallback(
         (abortSignal) =>
@@ -1164,7 +1164,7 @@ export function TurnOffDevice({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "TurnOffDevice")
     .withTask(
       React.useCallback(() => pixel.turnOff(), [pixel]),
       createTaskStatusContainer(t("turningOff"))
