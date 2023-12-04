@@ -317,18 +317,27 @@ export class Pixel extends PixelInfoNotifier {
    * Instantiates a Pixel.
    * @param session The session used to communicate with the Pixel.
    */
-  constructor(session: PixelSession) {
+  constructor(
+    session: PixelSession,
+    // Static values
+    info?: Partial<
+      Pick<
+        PixelInfo,
+        "pixelId" | "ledCount" | "dieType" | "colorway" | "firmwareDate"
+      >
+    >
+  ) {
     super();
     this._session = session;
     this._status = "disconnected"; // TODO use the getLastConnectionStatus()
     this._info = {
       systemId: session.pixelSystemId,
-      pixelId: 0,
+      pixelId: info?.pixelId ?? 0,
       name: "",
-      ledCount: 0,
-      colorway: "unknown",
-      dieType: "unknown",
-      firmwareDate: new Date(),
+      ledCount: info?.ledCount ?? 0,
+      colorway: info?.colorway ?? "unknown",
+      dieType: info?.dieType ?? "unknown",
+      firmwareDate: info?.firmwareDate ?? new Date(0),
       rssi: 0,
       batteryLevel: 0,
       isCharging: false,

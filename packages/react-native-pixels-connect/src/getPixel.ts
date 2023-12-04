@@ -27,7 +27,8 @@ export function getPixel(id: string | number): Pixel {
   // Check for an existing Pixel object for the given system id
   const exitingPixel = PixelsMap.get(systemId);
   // Or create a new Pixel instance
-  const pixel = exitingPixel ?? new Pixel(new BleSession(systemId, sp?.name));
+  const pixel =
+    exitingPixel ?? new Pixel(new BleSession(systemId, sp?.name), sp);
   if (!exitingPixel) {
     // Keep track of this new instance
     PixelsMap.set(systemId, pixel);
