@@ -9,21 +9,32 @@ import {
   TelemetryRequestModeValues,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { LocalizedError } from "../LocalizedError";
 import { pixelStopAllAnimations } from "../pixels/extensions";
 
 import { TaskCanceledError } from "~/features/tasks/useTask";
 
-export class ValidationTestsTimeoutError extends Error {
+export class SignalTimeoutError extends LocalizedError {
+  readonly timeout: number;
   constructor(ms: number) {
-    super(`Timed out after waiting ${Math.round(ms / 1000)}s`);
-    this.name = "ValidationTestsTimeoutError";
+    super(`Timed out after ${ms}ms`);
+    this.name = "SignalTimeoutError";
+    this.timeout = ms;
+  }
+  toLocalizedString(t: (key: string, params: any) => string): string {
+    return t("timedOutWithValue", { value: Math.round(this.timeout / 1000) });
   }
 }
 
-export class ValidationTestsDisconnectedError extends Error {
-  constructor() {
-    super(`Disconnected from Pixel`);
-    this.name = "ValidationTestsDisconnectedError";
+export class SignalDisconnectedError extends LocalizedError {
+  readonly pixel: Pixel;
+  constructor(pixel: Pixel) {
+    super();
+    this.name = "SignalDisconnectedError";
+    this.pixel = pixel;
+  }
+  toLocalizedString(t: (key: string, params: any) => string): string {
+    return t("disconnectedFromPixel", {});
   }
 }
 
@@ -44,7 +55,7 @@ export class AbortControllerWithReason extends AbortController {
 export function timeoutSignal(ms: number): [AbortSignal, () => void] {
   const controller = new AbortControllerWithReason();
   const id = setTimeout(() => {
-    controller.abortWithReason(new ValidationTestsTimeoutError(ms));
+    controller.abortWithReason(new SignalTimeoutError(ms));
   }, ms);
   return [controller.signal, () => clearTimeout(id)];
 }
@@ -54,12 +65,12 @@ export function connectedSignal(
 ): [AbortSignal, (() => void) | undefined] {
   const controller = new AbortControllerWithReason();
   if (!pixel.isReady) {
-    controller.abortWithReason(new ValidationTestsDisconnectedError());
+    controller.abortWithReason(new SignalDisconnectedError(pixel));
     return [controller.signal, undefined];
   } else {
     const listener = (status: PixelStatus) => {
       if (status === "disconnecting" || status === "disconnected") {
-        controller.abortWithReason(new ValidationTestsDisconnectedError());
+        controller.abortWithReason(new SignalDisconnectedError(pixel));
       }
     };
     pixel.addEventListener("status", listener);

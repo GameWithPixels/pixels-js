@@ -1,11 +1,7 @@
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { ViewStyle } from "react-native";
-import {
-  Provider as PaperProvider,
-  ProviderProps,
-  useTheme,
-} from "react-native-paper";
+import { PaperProvider, ProviderProps, useTheme } from "react-native-paper";
 
 export const PixelColors = {
   dark: "#100F1E",

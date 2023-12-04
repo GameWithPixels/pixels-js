@@ -73,8 +73,7 @@ export function rgbToHsv({ r, g, b }: IColor): IColorHsv {
 }
 
 function colorByteToHex(byte: number): string {
-  const str = byte.toString(16);
-  return str.length === 1 ? "0" + str : str;
+  return byte.toString(16).padStart(2, "0");
 }
 
 /**
@@ -106,4 +105,28 @@ export function colorToString({ r, g, b }: IColor): string {
     colorComponentToByte(g),
     colorComponentToByte(b)
   );
+}
+
+export function desaturate(color: IColor): number {
+  return (
+    (Math.min(color.r, Math.min(color.g, color.b)) +
+      Math.max(color.r, Math.max(color.g, color.b))) *
+    0.5
+  );
+}
+
+export function sqrDistance(color1: IColor, color2: IColor): number {
+  const dr = color1.r - color2.r;
+  const dg = color1.g - color2.g;
+  const db = color1.b - color2.b;
+  return dr * dr + dg * dg + db * db;
+}
+
+export function lerp(color1: IColor, color2: IColor, t: number): IColor {
+  t = Math.min(1, Math.max(0, t));
+  return {
+    r: color1.r + (color2.r - color1.r) * t,
+    g: color1.g + (color2.g - color1.g) * t,
+    b: color1.b + (color2.b - color1.b) * t,
+  };
 }

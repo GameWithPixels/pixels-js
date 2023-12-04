@@ -41,7 +41,7 @@ async function importDfuFile() {
 function getDescription(bundle: DfuFilesBundle): string | undefined {
   switch (bundle.kind) {
     case "factory":
-      return "(*) Used In Validation";
+      return "🔥 Used In Factory Validation 🔥";
     case "app":
       return undefined;
     case "imported":
@@ -99,14 +99,14 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
             style={bundle === selectedBundle ? styles.selectedCard : undefined}
           >
             <Card.Title title={`📅 ${toLocaleDateTimeString(bundle.date)}`} />
-            <Card.Content>
+            <Card.Content style={{ gap: 5 }}>
               <Text style={AppStyles.bold}>{`Type: ${bundle.items
                 .map((i) => i.type)
                 .join(", ")}`}</Text>
-              {desc && <Text>{`Remark: ${desc}`}</Text>}
               {(comment?.length ?? 0) > 0 && (
                 <Text>{`Comment: ${comment}`}</Text>
               )}
+              {desc && <Text style={{ marginTop: 10 }}>{desc}</Text>}
             </Card.Content>
           </Card>
         </Pressable>
@@ -122,7 +122,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
   );
 
   return (
-    <BaseVStack gap={8} alignItems="center">
+    <BaseVStack height="100%" alignItems="center" gap={10}>
       <Button mode="contained-tonal" onPress={importDfuFile}>
         Import A DFU Zip File
       </Button>
@@ -135,7 +135,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
               value={hideBootloaders}
             />
           </BaseHStack>
-          <Text>Select Firmware:</Text>
+          <Text variant="titleLarge">Select Firmware:</Text>
           <FlatList
             style={AppStyles.fullWidth}
             contentContainerStyle={AppStyles.listContentContainer}

@@ -116,7 +116,7 @@ function CameraScreen() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const format = React.useMemo(() => {
     if (device) {
-      const colorSpace = Platform.OS === "android" ? "yuv" : "srgb";
+      const colorSpace = Platform.select({ android: "yuv", default: "srgb" });
       const checkFormat = (f: CameraDeviceFormat) =>
         f.videoWidth === desiredWidth &&
         f.videoHeight === desiredHeight &&

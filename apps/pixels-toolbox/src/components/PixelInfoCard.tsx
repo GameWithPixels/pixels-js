@@ -105,10 +105,7 @@ function PixelFirmwareDate({ pixel, t }: PixelAndTranslation) {
 
 function PixelMoreInfo(props: PixelAndTranslation) {
   const { pixel, t } = props;
-  const pixIdHex = pixel.pixelId
-    .toString(16)
-    .padStart(8, "0")
-    .toLocaleUpperCase();
+  const pixIdHex = pixel.pixelId.toString(16).padStart(8, "0");
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();

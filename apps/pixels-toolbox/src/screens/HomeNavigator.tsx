@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { Header } from "./HomeScreen/Header";
 
+import { PrintDieLabelContext } from "~/features/hooks/usePrintDieLabel";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { HomeNavigatorProps, type HomeScreensParamList } from "~/navigation";
 import { DieDetailsScreen } from "~/screens/DieDetailsScreen";
 import { HomeScreen } from "~/screens/HomeScreen";
@@ -19,16 +21,20 @@ export function HomeNavigator({ navigation }: HomeNavigatorProps) {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const [printDieLabel, setPrintDieLabel] =
+    React.useState<(pixel: PixelDispatcher) => void>();
   const { t } = useTranslation();
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen
-        name="SelectDfuFiles"
-        component={SelectDfuFilesScreen}
-        options={{ title: t("selectFirmware") }}
-      />
-      <Stack.Screen name="DieDetails" component={DieDetailsScreen} />
-    </Stack.Navigator>
+    <PrintDieLabelContext.Provider value={{ printDieLabel, setPrintDieLabel }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen
+          name="SelectDfuFiles"
+          component={SelectDfuFilesScreen}
+          options={{ title: t("selectFirmware") }}
+        />
+        <Stack.Screen name="DieDetails" component={DieDetailsScreen} />
+      </Stack.Navigator>
+    </PrintDieLabelContext.Provider>
   );
 }

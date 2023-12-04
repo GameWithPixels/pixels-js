@@ -6,9 +6,7 @@ const Pathname = {
   },
 
   getIndexOfExtension(pathname: string): number {
-    const i = Pathname.getIndexOfFilename(pathname);
-    // Skip the first character as a filename may start with a dot
-    return pathname.indexOf(".", i + 1);
+    return pathname.lastIndexOf(".");
   },
 
   getFilename(pathname: string): string {

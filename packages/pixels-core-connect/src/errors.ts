@@ -85,9 +85,10 @@ export class PixelConnectIdMismatchError extends PixelConnectError {
   constructor(pixel: Pixel, pixelId: number) {
     super(
       pixel,
-      `Identification mismatch, expecting ${pixel.pixelId.toString(
-        16
-      )} but got ${pixelId.toString(16)}`
+      "Identification mismatch, expecting " +
+        pixel.pixelId.toString(16).padStart(8, "0") +
+        " but got " +
+        pixelId.toString(16).padStart(8, "0")
     );
     this.name = "PixelIdMismatchError";
   }

@@ -16,7 +16,7 @@ import {
   configureFonts,
   MD3DarkTheme,
   MD3LightTheme,
-  Provider as PaperProvider,
+  PaperProvider,
   Text,
 } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";

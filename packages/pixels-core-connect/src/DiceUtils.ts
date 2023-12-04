@@ -1,10 +1,38 @@
+import { assertNever, range } from "@systemic-games/pixels-core-utils";
+
 import { PixelDieType } from "./Messages";
 
 export const DiceUtils = {
+  getLEDCount(dieType: PixelDieType): number {
+    switch (dieType) {
+      case "unknown":
+        return 0;
+      case "d4":
+      case "d6":
+      case "d6fudge":
+        return 6;
+      case "d6pipped":
+        return 21;
+      case "d8":
+        return 8;
+      case "d10":
+      case "d00":
+        return 10;
+      case "d12":
+        return 12;
+      case "d20":
+        return 20;
+      default:
+        assertNever(dieType);
+    }
+  },
+
   // DieType must start by a letter followed by the number of faces
   getFaceCount(dieType: PixelDieType): number {
     if (!dieType || dieType.length < 2 || dieType[0] !== "d") {
       return 0;
+    } else if (dieType === "d00") {
+      return 10;
     } else {
       let i = 1;
       while (i < dieType.length) {
@@ -48,5 +76,30 @@ export const DiceUtils = {
 
   faceFromIndex(faceIndex: number, ledCount: number): number {
     return faceIndex + (ledCount === 10 ? 0 : 1);
+  },
+
+  getDieFaces(dieType: PixelDieType): number[] {
+    switch (dieType) {
+      case "unknown":
+        return [];
+      case "d4":
+        return range(1, 5);
+      case "d6":
+      case "d6pipped":
+      case "d6fudge":
+        return range(1, 7);
+      case "d8":
+        return range(1, 9);
+      case "d10":
+        return range(0, 10);
+      case "d00":
+        return range(0, 100, 10);
+      case "d12":
+        return range(1, 13);
+      case "d20":
+        return range(1, 21);
+      default:
+        assertNever(dieType);
+    }
   },
 } as const;

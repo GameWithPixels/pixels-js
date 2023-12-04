@@ -15,9 +15,16 @@ import Pathname from "~/features/files/Pathname";
 import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
 import { unzipFileAsync } from "~/features/files/unzipFileAsync";
 
-const htmlCache = new Map<number | string, string>();
+interface FilesContent {
+  html: string;
+  resources: Map<string, string>;
+}
 
-async function readHtml(htmlModuleId: number | string): Promise<string> {
+const htmlCache = new Map<number | string, FilesContent>();
+
+async function readFilesContent(
+  htmlModuleId: number | string
+): Promise<FilesContent> {
   if (!FileSystem.cacheDirectory) {
     throw new Error("prepareHtmlAsync: FileSystem.cacheDirectory is null");
   }
@@ -40,14 +47,14 @@ async function readHtml(htmlModuleId: number | string): Promise<string> {
     const files = await FileSystem.readDirectoryAsync(tempDir);
 
     // Get HTML file
-    const htmlFile = files.find((f) => f.endsWith(".html"));
-    if (!htmlFile) {
+    const htmlFilename = files.find((f) => f.endsWith(".html"));
+    if (!htmlFilename) {
       throw new Error("prepareHtmlAsync: HTML file not found");
     }
 
     // And load it
-    console.log("Reading " + htmlFile);
-    html = await FileSystem.readAsStringAsync(tempDir + htmlFile);
+    console.log("Reading " + htmlFilename);
+    html = await FileSystem.readAsStringAsync(tempDir + htmlFilename);
     // Comment line above and uncomment below to load HTML from embedded asset
     // const htmlAssets = await Asset.loadAsync(htmlModule);
     // const uri = htmlAssets[0].localUri;
@@ -56,57 +63,25 @@ async function readHtml(htmlModuleId: number | string): Promise<string> {
     // }
     // html = await FileSystem.readAsStringAsync(uri);
 
-    // Embed external files in HTML as base64 string
-    const embedFiles = async (prefix: string, dataType: string) => {
-      let pos = 0;
-      while (true) {
-        pos = html.indexOf(prefix + '"', pos);
-        if (pos < 0) {
-          break;
-        }
-        const start = pos + prefix.length + 1;
-        const end = html.indexOf('"', start);
-        const filename = html.substring(start, end);
-        if (files.includes(filename)) {
-          console.log("Embedding " + filename);
-          const uri = tempDir + filename;
-          const data = await FileSystem.readAsStringAsync(uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          const imageData = `data:${dataType};base64,` + data;
-          html = html.substring(0, start) + imageData + html.substring(end);
-          pos += imageData.length + end - start;
-        } else {
-          if (!filename.includes("barcode")) {
-            console.warn(filename + " not found");
-          }
-          pos = end;
-        }
-      }
-    };
-
-    // Replace file references by base64 data
-    await embedFiles("src=", "image/png");
-    await embedFiles("url(", "font/ttf");
-
-    // Load barcode scripts
-    console.log("Loading barcode script");
-    const jsBarcode = await FileSystem.readAsStringAsync(
-      tempDir + "JsBarcode.all.min.js"
-    );
-    // And embed it HTML
-    console.log("Inserting barcodes");
-    const parts = html.split("</body>");
-    if (parts.length !== 2) {
-      throw new Error("prepareHtmlAsync: end body tag not found");
+    // Load other files
+    const resources = new Map<string, string>();
+    for (const filename of files.filter((f) => f !== htmlFilename)) {
+      console.log("Reading " + filename);
+      const uri = tempDir + filename;
+      const encoding =
+        Pathname.getExtension(filename) === ".js"
+          ? FileSystem.EncodingType.UTF8
+          : FileSystem.EncodingType.Base64;
+      const data = await FileSystem.readAsStringAsync(uri, { encoding });
+      resources.set(filename, data);
     }
-    html = parts[0] + `<script>\n${jsBarcode}\n</script>\n</body>` + parts[1];
+
+    // Return files contents
+    return { html, resources };
   } finally {
     // Clean up temp folder
     await FileSystem.deleteAsync(tempDir, { idempotent: true });
   }
-
-  return html;
 }
 
 /**
@@ -116,7 +91,7 @@ async function readHtml(htmlModuleId: number | string): Promise<string> {
 async function prepareHtmlAsync(
   htmlModuleId: number | string,
   substitutions?: Record<string, string>,
-  barcodes?: {
+  barcodeDescriptors?: {
     format: string;
     value: string;
     arguments?: string;
@@ -124,8 +99,11 @@ async function prepareHtmlAsync(
     scale?: number;
   }[]
 ) {
-  let html = htmlCache.get(htmlModuleId) ?? (await readHtml(htmlModuleId));
-  htmlCache.set(htmlModuleId, html);
+  const filesContent =
+    htmlCache.get(htmlModuleId) ?? (await readFilesContent(htmlModuleId));
+  htmlCache.set(htmlModuleId, filesContent);
+
+  let html = filesContent.html;
 
   // Apply substitutions
   if (substitutions) {
@@ -136,14 +114,23 @@ async function prepareHtmlAsync(
   }
 
   // Insert barcodes
-  if (barcodes) {
+  if (barcodeDescriptors) {
+    // Load barcode scripts
+    const jsBarcode = filesContent.resources.get("JsBarcode.all.min.js");
+    if (!jsBarcode) {
+      throw new Error("prepareHtmlAsync: missing barcode script file");
+    }
+
+    // And embed in HTML
+    console.log("Inserting barcodes");
     const parts = html.split("</body>");
     if (parts.length !== 2) {
       throw new Error("prepareHtmlAsync: end body tag not found");
     }
     html =
       parts[0] +
-      barcodes
+      `<script>\n${jsBarcode}\n</script>\n` +
+      barcodeDescriptors
         .map(
           (bc, i) =>
             ` <script>
@@ -152,12 +139,12 @@ async function prepareHtmlAsync(
                 })
               </script>\n`
         )
-        .join() +
-      "</body>" +
+        .join("") +
+      "</body>\n" +
       parts[1];
 
     // Insert barcode SVG element
-    barcodes.forEach((bc, i) => {
+    barcodeDescriptors.forEach((bc, i) => {
       // Insert barcode
       const barcodeIndex = html.indexOf(`"${bc.placeholder}"`);
       if (barcodeIndex < 0) {
@@ -182,6 +169,40 @@ async function prepareHtmlAsync(
         html.substring(barcodeEnd);
     });
   }
+
+  // Embed external files in HTML
+  const embedFiles = (prefix: string, dataType: string) => {
+    let pos = 0;
+    while (true) {
+      // Search for prefix followed by quotes
+      pos = html.indexOf(prefix + '"', pos);
+      if (pos < 0) {
+        break;
+      }
+      // Search for end quotes
+      const start = pos + prefix.length + 1;
+      const end = html.indexOf('"', start);
+      if (end < 0) {
+        throw new Error("prepareHtmlAsync: Matching end quotes not found");
+      }
+      const filename = html.substring(start, end);
+      const base64Data = filesContent.resources.get(filename);
+      if (base64Data) {
+        console.log("Embedding " + filename);
+        html =
+          html.substring(0, start) +
+          `data:${dataType};base64,` +
+          base64Data +
+          html.substring(end);
+        pos = start + base64Data.length + 1;
+      } else {
+        console.warn(filename + " not found");
+        pos = end + 1;
+      }
+    }
+  };
+  await embedFiles("src=", "image/png");
+  await embedFiles("url(", "font/ttf");
 
   return html;
 }
@@ -209,13 +230,15 @@ export async function prepareDieLabelHtmlAsync(
     {
       format: "upc",
       value: product.upcCode,
-      arguments: `font: "Roboto Condensed", margin: 0, marginLeft: 25`,
+      arguments:
+        'font: "Roboto Condensed", width: 2.5, margin: 0, marginLeft: 15',
       placeholder: "barcode-00850055703353.gif",
     },
     {
       format: "code39",
       value: product.deviceId.toLocaleUpperCase(),
-      arguments: "displayValue: false, height: 30, margin: 0, marginLeft: 45",
+      arguments:
+        "displayValue: false, width: 2.4, height: 30, margin: 0, marginLeft: 0",
       placeholder: "pixel-id-barcode.png",
     },
   ];
@@ -238,7 +261,8 @@ export async function prepareCartonLabelHtmlAsync(
     {
       format: "upc",
       value: product.upcCode,
-      arguments: `font: "Roboto Condensed", height: 90, margin: 0, marginLeft: 15`,
+      arguments:
+        'font: "Roboto Condensed", height: 90, margin: 0, marginLeft: 15',
       placeholder: "barcode-00850055703353.gif",
       scale: 2,
     },

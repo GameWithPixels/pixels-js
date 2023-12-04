@@ -1,5 +1,9 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { BaseBox } from "@systemic-games/react-native-base-components";
+import {
+  BaseBoxProps,
+  BaseHStack,
+  BaseVStack,
+} from "@systemic-games/react-native-base-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
@@ -8,41 +12,27 @@ import { Text } from "react-native-paper";
 import { AppStyles } from "~/AppStyles";
 import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
-import { PixelSwipeableCard } from "~/components/PixelSwipeableCard";
+import {
+  PixelSwipeableCard,
+  SwipeablePixelCardProps,
+} from "~/components/PixelSwipeableCard";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import PixelDispatcher, {
   PixelDispatcherActionMap,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 
-function ListItem({
-  pixelDispatcher,
-  onDieDetails,
-}: {
-  pixelDispatcher: PixelDispatcher;
-  onDieDetails: (pixelId: number) => void;
-}) {
-  const onDetails = React.useCallback(
-    () => onDieDetails(pixelDispatcher.pixelId),
-    [onDieDetails, pixelDispatcher.pixelId]
-  );
-  return (
-    <PixelSwipeableCard
-      pixelDispatcher={pixelDispatcher}
-      onShowDetails={onDetails}
-    />
-  );
-}
-
-interface SwipeablePixelsListProps {
-  onDieDetails: (pixelId: number) => void;
+interface SwipeablePixelsListProps
+  extends Pick<SwipeablePixelCardProps, "onShowDetails" | "onPrintLabel"> {
   minUpdateInterval?: number;
 }
 
 export const SwipeablePixelsList = React.memo(function ({
-  onDieDetails,
+  onShowDetails,
+  onPrintLabel,
   minUpdateInterval,
-}: SwipeablePixelsListProps) {
+  ...props
+}: SwipeablePixelsListProps & BaseBoxProps) {
   // Scanning
   const [scannedPixels, scannerDispatch, lastError] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
@@ -128,13 +118,14 @@ export const SwipeablePixelsList = React.memo(function ({
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: pixelDispatcher }: { item: PixelDispatcher }) => (
-      <ListItem
+      <PixelSwipeableCard
         key={pixelDispatcher.pixelId}
         pixelDispatcher={pixelDispatcher}
-        onDieDetails={onDieDetails}
+        onShowDetails={onShowDetails}
+        onPrintLabel={onPrintLabel}
       />
     ),
-    [onDieDetails]
+    [onPrintLabel, onShowDetails]
   );
   const refreshControl = React.useMemo(
     () => (
@@ -154,10 +145,9 @@ export const SwipeablePixelsList = React.memo(function ({
   );
 
   return (
-    <>
-      <BaseBox
+    <BaseVStack {...props}>
+      <BaseHStack
         width="100%"
-        flexDir="row"
         alignItems="baseline"
         justifyContent="space-between"
       >
@@ -166,7 +156,7 @@ export const SwipeablePixelsList = React.memo(function ({
           {t("pixelsWithCount", { count: pixels.length })}
         </Text>
         <EmojiButton onPress={showActionSheet}>⚙️</EmojiButton>
-      </BaseBox>
+      </BaseHStack>
       {lastError ? (
         <Text>{`${lastError}`}</Text>
       ) : pixels.length ? (
@@ -174,7 +164,6 @@ export const SwipeablePixelsList = React.memo(function ({
           value={expandedInfo ? "expanded" : "normal"}
         >
           <FlatList
-            style={AppStyles.fullWidth}
             contentContainerStyle={AppStyles.listContentContainer}
             data={pixels}
             renderItem={renderItem}
@@ -182,8 +171,10 @@ export const SwipeablePixelsList = React.memo(function ({
           />
         </PixelInfoCardModeContext.Provider>
       ) : (
-        <Text style={AppStyles.italic}>{t("noPixelsFound")}</Text>
+        <Text style={[AppStyles.italic, AppStyles.selfCentered, AppStyles.mv3]}>
+          {t("noPixelsFound")}
+        </Text>
       )}
-    </>
+    </BaseVStack>
   );
 });

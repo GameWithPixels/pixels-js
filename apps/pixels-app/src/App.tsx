@@ -16,7 +16,7 @@ import {
   adaptNavigationTheme,
   MD3DarkTheme,
   MD3LightTheme,
-  Provider as PaperProvider,
+  PaperProvider,
   Text,
 } from "react-native-paper";
 import {

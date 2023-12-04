@@ -5,7 +5,6 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 export interface ValidationSettingsState {
-  useSelectedFirmware: boolean;
   boxShipment: {
     asn: string;
     dieType: PixelDieType;
@@ -14,7 +13,6 @@ export interface ValidationSettingsState {
 }
 
 const initialState: ValidationSettingsState = {
-  useSelectedFirmware: false,
   boxShipment: {
     asn: "",
     dieType: "unknown",
@@ -27,9 +25,6 @@ const validationSettingsSlice = createSlice({
   name: "validationSettings",
   initialState,
   reducers: {
-    setUseSelectedFirmware(state, action: PayloadAction<boolean>) {
-      state.useSelectedFirmware = action.payload;
-    },
     setBoxShipmentAsn(state, action: PayloadAction<string>) {
       state.boxShipment.asn = action.payload;
     },
@@ -43,7 +38,6 @@ const validationSettingsSlice = createSlice({
 });
 
 export const {
-  setUseSelectedFirmware,
   setBoxShipmentAsn,
   setBoxShipmentDieType,
   setBoxShipmentDieColorway,

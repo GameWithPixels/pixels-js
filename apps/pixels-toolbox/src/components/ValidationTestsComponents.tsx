@@ -11,14 +11,13 @@ import {
 import {
   Central,
   Color,
-  getLEDCount,
+  DiceUtils,
   Pixel,
   PixelColorway,
   PixelColorwayValues,
   PixelDieType,
   PixelDieTypeValues,
   PixelScanner,
-  RollEvent,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
@@ -28,15 +27,13 @@ import { Button, Text } from "react-native-paper";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
-import { store } from "~/app/store";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
-import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
-import { unzipFactoryDfuFilesAsync } from "~/features/dfu/unzip";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { FactoryDfuBundleFiles } from "~/features/hooks/useFactoryDfuFilesBundle";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   pixelClearSettings,
@@ -47,7 +44,11 @@ import {
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
-import { TaskFaultedError, TaskStatus } from "~/features/tasks/useTask";
+import {
+  TaskCanceledError,
+  TaskFaultedError,
+  TaskStatus,
+} from "~/features/tasks/useTask";
 import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
@@ -175,20 +176,6 @@ function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
   }
 }
 
-function getFudgeFaceDesc(face: number): string {
-  switch (face) {
-    case 1:
-      return " = ➕ (bottom)";
-    case 2:
-    case 5:
-      return " = ➖";
-    case 6:
-      return " = ➕ (top)";
-    default:
-      return "";
-  }
-}
-
 async function repeatConnect(
   abortSignal: AbortSignal,
   t: TFunction,
@@ -232,9 +219,7 @@ async function scanForPixelWithTimeout(
   pixelId: number,
   timeout = 10000 // 10s
 ): Promise<ScannedPixel> {
-  if (!pixelId) {
-    throw new TaskFaultedError("Empty Pixel Id");
-  }
+  assert(pixelId, "Empty Pixel Id");
 
   // Setup scanner
   const scanner = new PixelScanner();
@@ -247,7 +232,14 @@ async function scanForPixelWithTimeout(
     (resolve, reject) => {
       // Setup timeout
       const timeoutId = setTimeout(
-        () => reject(new TaskFaultedError(t("scanTimeoutTryAgain"))),
+        () =>
+          reject(
+            new TaskFaultedError(
+              t("timeoutScanningTryAgainWithId", {
+                id: pixelId.toString(16).padStart(8, "0"),
+              })
+            )
+          ),
         timeout
       );
       // Setup our scan listener
@@ -270,22 +262,17 @@ async function scanForPixelWithTimeout(
   return scannedPixel;
 }
 
-function getSelectedDfuFilesBundle(): DfuFilesBundle {
-  const { selected, available } = store.getState().dfuBundles;
-  const files = available[selected];
-  if (!files) {
-    throw new Error();
-  }
-  return DfuFilesBundle.create(files);
-}
-
 async function storeValueChecked(
   pixel: Pixel,
   valueType: number,
-  value: number
+  value: number,
+  opt?: { allowNotPermitted?: boolean }
 ): Promise<void> {
   const result = await pixelStoreValue(pixel, valueType, value);
-  if (result !== "success") {
+  if (
+    result !== "success" &&
+    (!opt?.allowNotPermitted || result !== "notPermitted")
+  ) {
     throw new Error(`Failed to store value, got response ${result}`);
   }
 }
@@ -333,6 +320,7 @@ function MessageYesNo({
 export interface ValidationTestsSettings {
   sequence: ValidationSequence;
   dieType: PixelDieType;
+  dfuFilesBundle: FactoryDfuBundleFiles;
 }
 
 export interface ValidationTestProps extends TaskComponentProps {
@@ -346,13 +334,12 @@ export type UpdateFirmwareStatus = "updating" | "success" | "error";
 export function UpdateFirmware({
   action,
   onTaskStatus,
+  settings,
   pixelId,
-  useSelectedFirmware,
   onPixelFound,
   onFirmwareUpdate,
 }: Omit<ValidationTestProps, "pixel"> & {
   pixelId: number;
-  useSelectedFirmware: boolean;
   onPixelFound?: (scannedPixel: ScannedPixel) => void;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
@@ -365,7 +352,7 @@ export function UpdateFirmware({
   const [dfuState, setDfuState] = React.useState<DfuState>();
   const [dfuProgress, setDfuProgress] = React.useState(0);
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "UpdateFirmware")
     .withTask(
       React.useCallback(
         async (abortSignal) => {
@@ -386,9 +373,7 @@ export function UpdateFirmware({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          if (!scannedPixel) {
-            throw new TaskFaultedError("No scanned Pixel");
-          }
+          assert(scannedPixel, "No scanned Pixel");
           // Try to connect with a few attempts
           const sysId = scannedPixel.systemId;
           await repeatConnect(
@@ -407,32 +392,10 @@ export function UpdateFirmware({
     )
     .withTask(
       React.useCallback(async () => {
+        assert(scannedPixel, "No scanned Pixel");
         // Get our Pixel and prepare for DFU
-        if (!scannedPixel) {
-          throw new TaskFaultedError("No scanned Pixel");
-        }
         const dfuTarget = scannedPixel;
         try {
-          // Get the DFU files bundles from the zip file
-          const dfuBundle = useSelectedFirmware
-            ? getSelectedDfuFilesBundle()
-            : DfuFilesBundle.create({
-                pathnames: await unzipFactoryDfuFilesAsync(),
-              });
-          if (!dfuBundle.bootloader) {
-            throw new TaskFaultedError(
-              "DFU bootloader file not found or problematic"
-            );
-          }
-          if (!dfuBundle.firmware) {
-            throw new TaskFaultedError(
-              "DFU firmware file not found or problematic"
-            );
-          }
-          console.log(
-            "DFU files loaded, firmware/bootloader build date is",
-            toLocaleDateTimeString(dfuBundle.date)
-          );
           // Use firmware date from scanned data as it is the most up-to-date
           console.log(
             "On device firmware build timestamp is",
@@ -440,13 +403,16 @@ export function UpdateFirmware({
           );
           // Start DFU
           if (
-            !areSameFirmwareDates(dfuBundle.date, dfuTarget.firmwareDate) &&
-            dfuBundle.date > dfuTarget.firmwareDate
+            !areSameFirmwareDates(
+              settings.dfuFilesBundle.date,
+              dfuTarget.firmwareDate
+            ) &&
+            settings.dfuFilesBundle.date > dfuTarget.firmwareDate
           ) {
             onFirmwareUpdate?.("updating");
             // Prepare for updating firmware
-            const blPath = dfuBundle.bootloader.pathname;
-            const fwPath = dfuBundle.firmware.pathname;
+            const blPath = settings.dfuFilesBundle.bootloader.pathname;
+            const fwPath = settings.dfuFilesBundle.firmware.pathname;
             const updateFW = async (blAddr?: number) => {
               let dfuState: DfuState | undefined;
               await updateFirmware(
@@ -496,7 +462,7 @@ export function UpdateFirmware({
           // Leave Pixel connected to save time on the next connected test
           //await Central.disconnectPeripheral(dfuTarget.systemId);
         }
-      }, [scannedPixel, useSelectedFirmware, onFirmwareUpdate, t]),
+      }, [scannedPixel, settings.dfuFilesBundle, onFirmwareUpdate, t]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
         children: (
@@ -544,14 +510,12 @@ export function ConnectPixel({
   const [resolveUpdateDieTypePromise, setResolveUpdateDieTypePromise] =
     React.useState<(updateDieType: boolean) => void>();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "ConnectPixel")
     .withTask(
       React.useCallback(
         async (abortSignal) => {
           if (!pixel) {
-            if (!pixelId) {
-              throw new TaskFaultedError("No Pixel instance and no Pixel id");
-            }
+            assert(pixelId, "No Pixel instance and no Pixel id");
             // Start scanning for our Pixel
             const scannedPixel = await scanForPixelWithTimeout(
               abortSignal,
@@ -569,10 +533,12 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(async () => {
         if (ledCount <= 0) {
-          throw new TaskFaultedError(`Invalid LED count: ${ledCount}`);
+          throw new TaskFaultedError(
+            t("invalidLedCountWithValue", { value: ledCount })
+          );
         }
         // Check LED count
-        if (ledCount !== getLEDCount(settings.dieType)) {
+        if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
           throw new TaskFaultedError(
             t("dieTypeMismatchWithTypeAndLedCount", {
               dieType: t(settings.dieType),
@@ -637,9 +603,7 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          if (!pixel) {
-            throw new TaskFaultedError("No Pixel instance");
-          }
+          assert(pixel, "No Pixel instance");
           // Try to connect with a few attempts
           await repeatConnect(
             abortSignal,
@@ -671,7 +635,7 @@ export function CheckBoard({
 }) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "CheckBoard")
     .withTask(
       React.useCallback(
         () => ValidationTests.checkAccelerationValid(pixel),
@@ -713,12 +677,8 @@ export function WaitCharging({
   notCharging,
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
-  const [lastState, setLastState] = React.useState<{
-    state?: string;
-    vCoil: number;
-  }>();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "WaitCharging")
     .withTask(
       React.useCallback(
         async (abortSignal) =>
@@ -726,8 +686,7 @@ export function WaitCharging({
             pixel,
             !notCharging,
             notCharging ? Color.dimGreen : Color.dimOrange,
-            abortSignal,
-            setLastState
+            abortSignal
           ),
         [notCharging, pixel]
       ),
@@ -742,32 +701,21 @@ export function WaitCharging({
                 { coilOrDie: t(getCoilOrDie(settings)) }
               )}
             </Text>
-            {lastState && (
-              <Text variant="bodyLarge">
-                {t("chargingState")}
-                {t("colonSeparator")}
-                {lastState.state ?? ""}
-                {t("commaSeparator")}
-                {t("coil")}
-                {t("colonSeparator")}
-                {t("voltageWithValue", {
-                  value: lastState.vCoil ?? 0,
-                })}
-              </Text>
-            )}
           </>
         ),
       })
     )
     .withTask(
       React.useCallback(async () => {
-        if (pixel.batteryLevel < 50) {
-          throw new TaskFaultedError(
-            `Battery level too low: ${pixel.batteryLevel}%`
+        if (pixel.batteryLevel < 75) {
+          throw new TaskCanceledError(
+            "WaitCharging",
+            t("lowBatteryPleaseCharge")
           );
         }
-      }, [pixel]),
-      createTaskStatusContainer(t("batteryLevel"))
+      }, [pixel, t]),
+      createTaskStatusContainer(t("batteryLevel")),
+      { skip: settings.sequence !== "dieFinal" }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -790,7 +738,7 @@ export function CheckLEDs({
 
   const [resolvePromise, setResolvePromise] = React.useState<() => void>();
   const [userAbort, setUserAbort] = React.useState<() => void>();
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "CheckLEDs")
     .withTask(
       React.useCallback(
         async (abortSignal) => {
@@ -845,21 +793,8 @@ export function WaitFaceUp({
   pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
-  const [lastRoll, setRoll] = React.useState<RollEvent>();
-  const FaceUpText = () => (
-    <>
-      {!!lastRoll && (
-        <Text variant="bodyLarge">
-          {t(lastRoll.state)}
-          {t("colonSeparator")}
-          {lastRoll.face}
-          {pixel.dieType === "d6fudge" ? getFudgeFaceDesc(lastRoll.face) : ""}
-        </Text>
-      )}
-    </>
-  );
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "WaitFaceUp")
     .withTask(
       React.useCallback(
         (abortSignal) =>
@@ -867,15 +802,11 @@ export function WaitFaceUp({
             pixel,
             getFaceUp(pixel, "1"),
             Color.dimMagenta,
-            abortSignal,
-            setRoll
+            abortSignal
           ),
         [pixel]
       ),
-      createTaskStatusContainer({
-        title: t("placeBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
+      createTaskStatusContainer(t("placeBlinkingFaceUp"))
     )
     .withStatusChanged(playSoundOnResult)
     .withTask(
@@ -885,15 +816,11 @@ export function WaitFaceUp({
             pixel,
             getFaceUp(pixel, "2"),
             Color.dimYellow,
-            abortSignal,
-            setRoll
+            abortSignal
           ),
         [pixel]
       ),
-      createTaskStatusContainer({
-        title: t("placeNewBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
+      createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
     .withStatusChanged(playSoundOnResult)
     .withTask(
@@ -903,15 +830,11 @@ export function WaitFaceUp({
             pixel,
             getFaceUp(pixel, "3"),
             Color.dimCyan,
-            abortSignal,
-            setRoll
+            abortSignal
           ),
         [pixel]
       ),
-      createTaskStatusContainer({
-        title: t("placeNewBlinkingFaceUp"),
-        children: <FaceUpText />,
-      })
+      createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -938,7 +861,8 @@ export function StoreSettings({
         pixel,
         PixelValueStoreType.ValidationTimestampStart +
           getSequenceIndex(settings.sequence),
-        get24BitsTimestamp()
+        get24BitsTimestamp(),
+        { allowNotPermitted: settings.sequence === "dieFinal" }
       ),
     [pixel, settings.sequence]
   );
@@ -954,7 +878,7 @@ export function StoreSettings({
   }, [pixel, settings.dieType]);
 
   const onlyTimestamp = isBoard(settings.sequence);
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "StoreSettings")
     .withTask(
       onlyTimestamp ? storeTimestamp : storeDieType,
       createTaskStatusContainer(
@@ -1055,7 +979,7 @@ export function PrepareDie({
   const { t } = useTranslation();
 
   const [progress, setProgress] = React.useState(-1);
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
       React.useCallback(async () => {
         // Update profile
@@ -1111,7 +1035,7 @@ export function WaitDieInCase({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "WaitDieInCase")
     .withTask(
       React.useCallback(
         (abortSignal) =>
@@ -1151,9 +1075,7 @@ export function LabelPrinting({
   React.useEffect(() => {
     if (resolveResultPromise && printResult) {
       console.log(`Print result: ${printResult}`);
-      if (printResult === "done") {
-        resolveResultPromise();
-      } else if (printResult instanceof Error) {
+      if (printResult === "done" || printResult instanceof Error) {
         resolveResultPromise();
       }
     }
@@ -1169,7 +1091,7 @@ export function LabelPrinting({
   const [reset, setReset] = React.useState(false);
   React.useEffect(() => setReset(false), [reset]);
 
-  const taskChain = useTaskChain(reset ? "reset" : action)
+  const taskChain = useTaskChain(reset ? "reset" : action, "LabelPrinting")
     .withTask(
       React.useCallback(
         (abortSignal) =>
@@ -1208,7 +1130,13 @@ export function LabelPrinting({
       createTaskStatusContainer({
         children: (
           <>
-            {printError && <Text>{String(printError)}</Text>}
+            {printError && (
+              <Text>
+                {t("errorPrintingLabel") +
+                  t("colonSeparator") +
+                  printError.message}
+              </Text>
+            )}
             <MessageYesNo
               message={t(
                 printError ? "tryPrintingLabelAgain" : "isLabelPrinted"
@@ -1236,7 +1164,7 @@ export function TurnOffDevice({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const taskChain = useTaskChain(action)
+  const taskChain = useTaskChain(action, "TurnOffDevice")
     .withTask(
       React.useCallback(() => pixel.turnOff(), [pixel]),
       createTaskStatusContainer(t("turningOff"))

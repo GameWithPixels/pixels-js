@@ -81,8 +81,8 @@ export const MessageTypeValues = {
   stopAllAnimations: enumValue(),
   requestTemperature: enumValue(),
   temperature: enumValue(),
-  enableCharging: enumValue(),
-  disableCharging: enumValue(),
+  setBatteryControllerMode: enumValue(),
+  _unused: enumValue(),
   discharge: enumValue(),
   blinkId: enumValue(),
   blinkIdAck: enumValue(),
@@ -609,6 +609,29 @@ export class RollState implements PixelMessage {
 }
 
 /**
+ * Available Pixel battery controller modes.
+ * @enum
+ * @category Message
+ */
+export const PixelBatteryControllerModeValues = {
+  /** Charging allowed. */
+  default: enumValue(0),
+
+  /** Disable charging. */
+  forceDisableCharging: enumValue(),
+
+  /** Ignore battery temperature. */
+  forceEnableCharging: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link PixelBatteryControllerModeValues}.
+ * @category Message
+ */
+export type PixelBatteryControllerMode =
+  keyof typeof PixelBatteryControllerModeValues;
+
+/**
  * Message send by a Pixel to notify of its telemetry data.
  * @category Message
  */
@@ -694,7 +717,7 @@ export class Telemetry implements PixelMessage {
 
   /** Internal disabling of charging (because of temperature for instance) */
   @serializable(1)
-  forceDisableChargingState = false;
+  batteryControllerMode = PixelBatteryControllerModeValues.default;
 
   /** led power draw in mA */
   @serializable(1)
@@ -1034,7 +1057,7 @@ export const PixelBatteryControllerStateValues = {
  * The names for the "enum" type {@link PixelBatteryControllerStateValues}.
  * @category Message
  */
-export type BatteryControllerState =
+export type PixelBatteryControllerState =
   keyof typeof PixelBatteryControllerStateValues;
 
 /**
@@ -1339,6 +1362,22 @@ export class Temperature implements PixelMessage {
 }
 
 /**
+ * Message send to a Pixel to set its battery controller mode.
+ * @category Message
+ */
+export class SetBatteryControllerMode implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.setBatteryControllerMode;
+
+  /**
+   * The battery controller mode to set.
+   */
+  @serializable(1)
+  mode = PixelBatteryControllerModeValues.default;
+}
+
+/**
  * Message send to a Pixel to make it light up its LEDs to quickly discharge the battery.
  * @category Message
  */
@@ -1442,6 +1481,7 @@ function _getMessageClasses(): MessageClass[] {
     TransferInstantAnimationSetAck,
     PlayInstantAnimation,
     Temperature,
+    SetBatteryControllerMode,
     Discharge,
     BlinkId,
     TransferTest,

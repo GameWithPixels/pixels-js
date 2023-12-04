@@ -26,10 +26,10 @@ export function useModalStyle(): ViewStyle {
     () => ({
       margin: 10,
       padding: 10,
-      borderWidth: 2,
+      borderWidth: 1,
       borderRadius: getBorderRadius(theme),
       backgroundColor: theme.colors.background,
-      borderColor: theme.colors.onBackground,
+      borderColor: theme.colors.outline,
     }),
     [theme]
   );

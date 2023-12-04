@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import { getValueKeyName, range } from "@systemic-games/pixels-core-utils";
+import { EditAnimationKeyframed } from "@systemic-games/pixels-edit-animation";
 import {
   BaseHStack,
   BaseVStack,
@@ -8,9 +9,10 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
+  PixelBatteryControllerMode,
+  PixelBatteryControllerModeValues,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
-  PixelColorway,
   PixelInfoNotifier,
   PixelRollStateValues,
   usePixelStatus,
@@ -31,7 +33,7 @@ import {
   Text,
   useTheme,
   ModalProps,
-  Title,
+  Menu,
 } from "react-native-paper";
 
 import {
@@ -42,7 +44,8 @@ import {
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
 import { ProgressBar } from "~/components/ProgressBar";
-import { SelectColorwayModal } from "~/components/SelectColorwayModal";
+import { PatternImages } from "~/features/PatternImages";
+import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
@@ -50,7 +53,6 @@ import { useAppBackgroundState } from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
-import { printDieBoxLabelAsync } from "~/features/print";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { capitalize } from "~/i18n";
 
@@ -90,7 +92,7 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
   return (
     <>
       <TextEntry title={t("pixelId")}>
-        {pixel.pixelId.toString(16)}
+        {pixel.pixelId.toString(16).padStart(8, "0")}
         {t("commaSeparator")}
       </TextEntry>
       <TextEntry title={t("descriptionAbbrev")}>
@@ -286,15 +288,16 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
               ) ?? "unknown"
             )}
           </TextEntry>
+          <TextEntry title={t("batteryControllerMode")}>
+            {t(
+              getValueKeyName(
+                telemetry?.batteryControllerMode,
+                PixelBatteryControllerModeValues
+              ) ?? "unknown"
+            )}
+          </TextEntry>
           <TextEntry title={t("internalChargerState")}>
             {t(telemetry?.internalChargeState ? "chargerOn" : "chargerOff")}
-          </TextEntry>
-          <TextEntry title={t("internalChargerOverrideState")}>
-            {t(
-              telemetry?.forceDisableChargingState
-                ? "disallowCharging"
-                : "allowCharging"
-            )}
           </TextEntry>
           <TextEntry title={t("mcuTemperature")}>
             {t("celsiusWithValue", {
@@ -330,26 +333,43 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   );
 }
 
+async function playKeyframes(pixelDispatcher: PixelDispatcher) {
+  const pattern = await createPatternFromImage(PatternImages.rainbowFalls);
+  const keyframesCount = pattern.gradients.map((g) => g.keyframes.length);
+  console.log(
+    `Extracted ${keyframesCount.reduce(
+      (a, b) => a + b,
+      0
+    )} keyframes: ${keyframesCount.join(", ")}`
+  );
+  const anim = new EditAnimationKeyframed({
+    duration: 3,
+    pattern,
+  });
+  pixelDispatcher.dispatch("playAnimation", anim);
+}
+
 function BottomButtons({
   pixelDispatcher: pd,
   onShowTelemetry,
   onExportTelemetry,
   onExportMessages,
+  onPrintLabel,
 }: {
   pixelDispatcher: PixelDispatcher;
   onShowTelemetry?: () => void;
   onExportTelemetry?: () => void;
   onExportMessages?: () => void;
+  onPrintLabel?: () => void;
 }) {
   const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
-  const [printStatus, setPrintStatus] = React.useState("");
 
-  // Print modal
+  // Charger mode modal
   const {
-    visible: printVisible,
-    show: showPrint,
-    hide: hidePrint,
+    visible: chargerModeMenuVisible,
+    show: showChargerModeMenu,
+    hide: hideChargerModeMenu,
   } = useVisibility();
 
   // Discharge modal
@@ -358,12 +378,8 @@ function BottomButtons({
     show: showDischarge,
     hide: hideDischarge,
   } = useVisibility();
+
   const { t } = useTranslation();
-
-  // Colorway selection on print
-  const [onSelectColorway, setOnSelectColorway] =
-    React.useState<(c: PixelColorway) => void>();
-
   return (
     <>
       <BaseHStack gap={6}>
@@ -374,10 +390,12 @@ function BottomButtons({
           {status === "ready" && (
             <>
               <Button onPress={showDischarge}>{t("discharge")}</Button>
-              <Button onPress={() => pd.dispatch("enableCharging")}>
-                {t("enableCharging")}
+              <Button onPress={() => pd.dispatch("blinkId")}>
+                {t("blinkId")}
               </Button>
-              <Button onPress={() => pd.dispatch("blink")}>{t("blink")}</Button>
+              <Button onPress={() => pd.dispatch("uploadProfile")}>
+                {t("setUserProfile")}
+              </Button>
               <Button
                 onPress={() =>
                   pd.dispatch("playAnimation", PrebuildAnimations.rainbow)
@@ -392,52 +410,27 @@ function BottomButtons({
               >
                 {t("fixedRainbow")}
               </Button>
-              <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
-              <Button onPress={() => pd.dispatch("calibrate")}>
-                {t("calibrate")}
+              <Button
+                onPress={() => pd.dispatch("uploadProfile", "fixedRainbowD4")}
+              >
+                {t("setFixedRainbowProfileD4")}
               </Button>
-              <Button onPress={() => pd.dispatch("reprogramDefaultBehavior")}>
-                {t("setMinimalProfile")}
+              <Button
+                onPress={() =>
+                  playKeyframes(pd).catch((error) =>
+                    console.log("Error loading gradient", error)
+                  )
+                }
+              >
+                {t("playKeyframes")}
               </Button>
+              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
               <Button onPress={() => pd.dispatch("resetAllSettings")}>
                 {t("resetAllSettings")}
               </Button>
-              <Button onPress={() => pd.dispatch("rename")}>
-                {t("rename")}
-              </Button>
             </>
           )}
-          <Button
-            onPress={async () => {
-              setPrintStatus("");
-              showPrint();
-              const px = pd.pixel;
-              const colorway =
-                px.colorway !== "unknown"
-                  ? px.colorway
-                  : await new Promise<PixelColorway>((resolve) =>
-                      setOnSelectColorway(() => (colorway: PixelColorway) => {
-                        setOnSelectColorway(undefined);
-                        resolve(colorway);
-                      })
-                    );
-              printDieBoxLabelAsync(
-                {
-                  pixelId: px.pixelId,
-                  name: px.name,
-                  dieType: px.dieType,
-                  colorway,
-                },
-                (status) => setPrintStatus(t(status + "AsPrintStatus"))
-              ).catch((error) => {
-                const msg = error.message ?? error;
-                console.warn(msg);
-                setPrintStatus(msg);
-              });
-            }}
-          >
-            {t("printLabel")}
-          </Button>
+          <Button onPress={onPrintLabel}>{t("printLabel")}</Button>
         </BaseVStack>
         <BaseVStack gap={4}>
           {status === "ready" && (
@@ -445,14 +438,33 @@ function BottomButtons({
               <Button onPress={() => pd.dispatch("turnOff")}>
                 {t("turnOff")}
               </Button>
-              <Button onPress={() => pd.dispatch("discharge", 0)}>
-                {t("stopDischarge")}
-              </Button>
-              <Button onPress={() => pd.dispatch("enableCharging", false)}>
-                {t("disableCharging")}
-              </Button>
-              <Button onPress={() => pd.dispatch("blinkId")}>
-                {t("blinkId")}
+              <Menu
+                visible={chargerModeMenuVisible}
+                onDismiss={hideChargerModeMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showChargerModeMenu}>
+                    {t("setChargerMode")}
+                  </Button>
+                }
+              >
+                {Object.keys(PixelBatteryControllerModeValues).map((mode) => (
+                  <Menu.Item
+                    key={mode}
+                    title={t(mode)}
+                    onPress={() => {
+                      pd.dispatch(
+                        "setChargerMode",
+                        mode as PixelBatteryControllerMode
+                      );
+                      hideChargerModeMenu();
+                    }}
+                  />
+                ))}
+              </Menu>
+              <Button onPress={() => pd.dispatch("blink")}>{t("blink")}</Button>
+              <Button onPress={() => pd.dispatch("reprogramDefaultBehavior")}>
+                {t("setMinimalProfile")}
               </Button>
               <Button
                 onPress={() =>
@@ -464,25 +476,23 @@ function BottomButtons({
               >
                 {t("rainbowAllFaces")}
               </Button>
-              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
-              <Button onPress={() => pd.dispatch("exitValidation")}>
-                {t("exitValidationMode")}
-              </Button>
-              <Button onPress={() => pd.dispatch("uploadProfile")}>
-                {t("setUserProfile")}
-              </Button>
               <Button
                 onPress={() => pd.dispatch("uploadProfile", "fixedRainbow")}
               >
                 {t("setFixedRainbowProfile")}
               </Button>
-              <Button
-                onPress={() => pd.dispatch("uploadProfile", "fixedRainbowD4")}
-              >
-                {t("setFixedRainbowProfileD4")}
-              </Button>
               <Button onPress={() => pd.dispatch("playProfileAnimation", 0)}>
                 {t("playProfileAnim")}
+              </Button>
+              <Button onPress={() => pd.dispatch("calibrate")}>
+                {t("calibrate")}
+              </Button>
+              <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
+              <Button onPress={() => pd.dispatch("exitValidation")}>
+                {t("exitValidationMode")}
+              </Button>
+              <Button onPress={() => pd.dispatch("rename")}>
+                {t("rename")}
               </Button>
             </>
           )}
@@ -494,21 +504,6 @@ function BottomButtons({
         pixelDispatcher={pd}
         visible={dischargeVisible}
         onDismiss={hideDischarge}
-      />
-
-      <PrintModal
-        status={printStatus}
-        visible={printVisible}
-        onDismiss={hidePrint}
-      />
-
-      <SelectColorwayModal
-        visible={!!onSelectColorway}
-        onSelect={onSelectColorway}
-        onDismiss={() => {
-          setOnSelectColorway(undefined);
-          hidePrint();
-        }}
       />
     </>
   );
@@ -551,7 +546,7 @@ function DischargeModal({
               props.onDismiss?.();
             }}
           >
-            {t("cancel")}
+            {t("stopDischarge")}
           </Button>
           <Button onPress={props.onDismiss}>{t("ok")}</Button>
         </BaseHStack>
@@ -560,33 +555,10 @@ function DischargeModal({
   );
 }
 
-function PrintModal({
-  status,
+function ProfileUpdateModal({
+  updateProgress,
   ...props
-}: { status: string } & Omit<ModalProps, "children">) {
-  const showClose = status.length > 0 && !status.endsWith("...");
-  // Values for UI
-  const modalStyle = useModalStyle();
-  const { t } = useTranslation();
-  return (
-    <Portal>
-      <Modal contentContainerStyle={modalStyle} dismissable={false} {...props}>
-        <BaseVStack gap={10}>
-          <Title>{t("labelPrinting")}</Title>
-          <Divider style={{ height: 2 }} />
-          <Text style={AppStyles.centered} variant="bodyLarge">
-            {t("status")}
-            {t("colonSeparator")}
-            {status}
-          </Text>
-          {showClose && <Button onPress={props.onDismiss}>{t("close")}</Button>}
-        </BaseVStack>
-      </Modal>
-    </Portal>
-  );
-}
-
-function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
+}: { updateProgress?: number } & Omit<ModalProps, "children" | "visible">) {
   // Values for UI
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
@@ -596,6 +568,7 @@ function ProfileUpdateModal({ updateProgress }: { updateProgress?: number }) {
         visible={updateProgress !== undefined}
         contentContainerStyle={modalStyle}
         dismissable={false}
+        {...props}
       >
         <Text style={AppStyles.mv3} variant="bodyLarge">
           {t("updatingProfile") + t("colonSeparator")}
@@ -643,9 +616,11 @@ function ErrorCard({ error, clear }: { error: Error; clear: () => void }) {
 
 export function PixelDetails({
   pixelDispatcher: pd,
+  onPrintLabel,
   goBack,
 }: {
   pixelDispatcher: PixelDispatcher;
+  onPrintLabel?: (pixelDispatcher: PixelDispatcher) => void;
   goBack: () => void;
 }) {
   // Error handling
@@ -768,6 +743,7 @@ export function PixelDetails({
                   };
                   saveFile().catch(setLastError);
                 }}
+                onPrintLabel={() => onPrintLabel?.(pd)}
               />
             )}
           </Card.Content>

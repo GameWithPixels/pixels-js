@@ -6,13 +6,13 @@ import {
   Mutable,
 } from "@systemic-games/pixels-core-utils";
 import {
+  createDataSetForAnimation,
   createDataSetForProfile,
   EditActionPlayAnimation,
   EditAnimation,
   EditAnimationRainbow,
   EditConditionFaceCompare,
   EditConditionHelloGoodbye,
-  EditDataSet,
   EditProfile,
   EditRule,
 } from "@systemic-games/pixels-edit-animation";
@@ -37,6 +37,7 @@ import {
   HelloGoodbyeFlagsValues,
   ScannedPixelNotifierMutableProps,
   PixelInfo,
+  PixelBatteryControllerMode,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -46,7 +47,7 @@ import { TelemetryData, toTelemetryData } from "./TelemetryData";
 import {
   pixelBlinkId,
   pixelDischarge,
-  pixelForceEnableCharging,
+  pixelSetBatteryControllerMode,
   pixelPlayProfileAnimation,
   pixelReprogramDefaultBehavior,
   pixelResetAllSettings,
@@ -82,7 +83,7 @@ export interface PixelDispatcherActionMap {
   exitValidation: undefined;
   turnOff: undefined;
   discharge: number;
-  enableCharging: boolean;
+  setChargerMode: PixelBatteryControllerMode;
   rename: string;
   uploadProfile: ProfileType;
   reprogramDefaultBehavior: undefined;
@@ -464,9 +465,11 @@ class PixelDispatcher
       case "discharge":
         this._guard(this._discharge((params as number) ?? 50), action);
         break;
-      case "enableCharging":
+      case "setChargerMode":
         this._guard(
-          this._forceEnableCharging((params as boolean) ?? true),
+          this._setChargerMode(
+            (params as PixelBatteryControllerMode) ?? "default"
+          ),
           action
         );
         break;
@@ -492,7 +495,7 @@ class PixelDispatcher
         this._dequeueDFU();
         break;
       default:
-        assertNever(action);
+        assertNever(action, `Unknown action ${action}`);
     }
   }
 
@@ -548,6 +551,9 @@ class PixelDispatcher
   }
 
   private async _connect(): Promise<void> {
+    if (this.hasActiveDFU) {
+      return;
+    }
     // Connect
     await this._pixel.connect();
     // Blink to show we're connected (but don't wait for the blink ack)
@@ -555,6 +561,9 @@ class PixelDispatcher
   }
 
   private async _disconnect(): Promise<void> {
+    if (this.hasActiveDFU) {
+      return;
+    }
     // Blink to show we're disconnecting
     try {
       await this._pixel.blink(Color.dimCyan, { count: 3 });
@@ -577,8 +586,7 @@ class PixelDispatcher
 
   private async _playAnimation(anim: EditAnimation): Promise<void> {
     this._evEmitter.emit("profileUploadProgress", 0);
-    const editDataSet = new EditDataSet();
-    editDataSet.animations.push(anim);
+    const editDataSet = createDataSetForAnimation(anim);
     try {
       await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
         this._evEmitter.emit("profileUploadProgress", p)
@@ -600,8 +608,10 @@ class PixelDispatcher
     await pixelDischarge(this._pixel, current);
   }
 
-  private async _forceEnableCharging(enable: boolean): Promise<void> {
-    await pixelForceEnableCharging(this._pixel, enable);
+  private async _setChargerMode(
+    mode: PixelBatteryControllerMode
+  ): Promise<void> {
+    await pixelSetBatteryControllerMode(this._pixel, mode);
   }
 
   private async _uploadProfile(type: ProfileType): Promise<void> {

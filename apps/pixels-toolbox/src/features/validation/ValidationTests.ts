@@ -23,27 +23,125 @@ import {
   withPromise,
   withSolidColor,
   withTimeout,
-  ValidationTestsTimeoutError,
+  SignalTimeoutError,
 } from "./signalHelpers";
+import { LocalizedError } from "../LocalizedError";
 import { getRandomDieNameAsync } from "../getRandomDieNameAsync";
+
+export class AccelerationInvalidValueError extends LocalizedError {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  constructor(x: number, y: number, z: number) {
+    super(`Invalid accelerometer value ${vectToString(x, y, z)}`);
+    this.name = "AccelerationInvalidValueError";
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+  toLocalizedString(t: (key: string, params: any) => string): string {
+    return t("invalidAccelerometerValue", {
+      value: vectToString(this.x, this.y, this.z),
+    });
+  }
+}
+
+export class BatteryOutOfRangeVoltageError extends LocalizedError {
+  readonly voltage: number;
+  constructor(voltage: number) {
+    super(`Out of range battery voltage: ${voltage}v`);
+    this.name = "BatteryOutOfRangeVoltageError";
+    this.voltage = voltage;
+  }
+  toLocalizedString(t: (key: string, params: any) => string): string {
+    return t("outOfRangeBatteryVoltage", { value: this.voltage.toFixed(2) });
+  }
+}
+
+export class WaitForChargingTimeoutError extends LocalizedError {
+  readonly shouldBeCharging: boolean;
+  readonly telemetry: Readonly<Telemetry>;
+  constructor(shouldBeCharging: boolean, telemetry: Telemetry) {
+    const state =
+      getValueKeyName(
+        telemetry.batteryControllerState,
+        PixelBatteryControllerStateValues
+      ) ?? "unknown";
+    super(
+      `Timeout waiting for '${
+        shouldBeCharging ? "" : "not "
+      }charging' state. Controller state: ${state}, coil: ${
+        telemetry.vCoilTimes50 / 50
+      }v`
+    );
+    this.name = "WaitForChargingTimeoutError";
+    this.shouldBeCharging = shouldBeCharging;
+    this.telemetry = { ...telemetry };
+  }
+  toLocalizedString(t: (key: string, params: any) => string): string {
+    const state =
+      getValueKeyName(
+        this.telemetry.batteryControllerState,
+        PixelBatteryControllerStateValues
+      ) ?? "unknown";
+    const vCoil = this.telemetry.vCoilTimes50 / 50;
+    return t(
+      this.shouldBeCharging
+        ? "timeoutWhileWaitingForChargingState"
+        : "timeoutWhileWaitingForNotChargingState",
+      { state, vCoil }
+    );
+  }
+}
+
+export class WaitFaceUpTimeoutError extends LocalizedError {
+  readonly face: number;
+  readonly roll: Readonly<RollEvent>;
+  constructor(face: number, roll: RollEvent) {
+    super(
+      `Timeout waiting for face ${face}, face up: ${roll.face}, roll state: ${roll.state}`
+    );
+    this.name = "WaitFaceUpTimeoutError";
+    this.face = face;
+    this.roll = { ...roll };
+  }
+  toLocalizedString(t: (key: string, params: any) => string): string {
+    return t("timeoutWaitingForFace", {
+      face: this.face,
+      rollFace: this.roll.face,
+      rollState: this.roll.state,
+    });
+  }
+}
 
 function vectNorm(x: number, y: number, z: number): number {
   return Math.sqrt(x * x + y * y + z * z);
 }
 
 function vectToString(x: number, y: number, z: number): string {
-  return `(${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)})`;
+  return `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
 }
 
-function isBatteryCharging(state: number): boolean {
-  const v = PixelBatteryControllerStateValues;
-  return (
-    state === v.chargingLow ||
-    state === v.charging ||
-    state === v.cooldown ||
-    state === v.trickle ||
-    state === v.done
-  );
+function isBatteryCharging(state: number): "yes" | "no" | "unknown" {
+  const values = PixelBatteryControllerStateValues;
+  if (
+    state === values.chargingLow ||
+    state === values.charging ||
+    state === values.cooldown ||
+    state === values.trickle ||
+    state === values.done
+  ) {
+    return "yes";
+  } else if (
+    state === values.ok ||
+    state === values.low ||
+    state === values.empty ||
+    state === values.transitionOff // To speed up "wait not charging" test
+  ) {
+    return "no";
+  } else {
+    return "unknown";
+  }
 }
 
 export const testTimeout = 30000; // 30s;
@@ -63,14 +161,14 @@ export const ValidationTests = {
       "telemetry",
       timeout
     )) as Telemetry;
-    // Check received acceleration
+    // Check acceleration
     const x = msg.accXTimes1000 / 1000;
     const y = msg.accYTimes1000 / 1000;
     const z = msg.accZTimes1000 / 1000;
     const n = vectNorm(x, y, z);
-    console.log(`Acceleration: ${vectToString(x, y, z)}, norm=${n}`);
+    console.log(`Acceleration: ${vectToString(x, y, z)}, norm: ${n}`);
     if (n > maxDeviationFactor || n < 1 / maxDeviationFactor) {
-      throw new Error("Invalid accelerometer value: " + vectToString(x, y, z));
+      throw new AccelerationInvalidValueError(x, y, z);
     }
   },
 
@@ -85,18 +183,18 @@ export const ValidationTests = {
       "telemetry",
       timeout
     )) as Telemetry;
-    // Check received battery voltage
+    // Check battery voltage
     const voltage = msg.voltageTimes50 / 50;
     console.log(
-      `Battery voltage: ${voltage.toFixed(2)} V,` +
-        ` level: ${msg.batteryLevelPercent} %,` +
+      `Battery voltage: ${voltage.toFixed(2)}V,` +
+        ` level: ${msg.batteryLevelPercent}%,` +
         ` charging: ${
           msg.batteryState === PixelBatteryStateValues.charging ||
           msg.batteryState === PixelBatteryStateValues.done
         }`
     );
     if (voltage < 3 || voltage > 5) {
-      throw new Error(`Out of range battery voltage: ${voltage}`);
+      throw new BatteryOutOfRangeVoltageError(voltage);
     }
   },
 
@@ -108,7 +206,7 @@ export const ValidationTests = {
       "rssi",
       timeout
     )) as Rssi;
-    // Check received RSSI
+    // Check RSSI
     console.log(`RSSI is ${rssi.value}`);
     if (rssi.value < -70) {
       throw new Error(`Low RSSI value: ${rssi.value}`);
@@ -120,7 +218,6 @@ export const ValidationTests = {
     shouldBeCharging: boolean,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    notifyState: (info: { state?: string; vCoil: number }) => void,
     timeout = testTimeout
   ): Promise<void> => {
     await withTimeoutAndDisconnect(
@@ -148,12 +245,12 @@ export const ValidationTests = {
                 shouldBeCharging ? "waitCharging" : "waitNotCharging",
                 pixel,
                 (msg: Telemetry) => {
-                  lastMsg = msg;
                   const state = msg.batteryControllerState;
+                  lastMsg = msg;
                   const charging = isBatteryCharging(state);
-                  if (charging === shouldBeCharging) {
+                  if (charging === (shouldBeCharging ? "yes" : "no")) {
                     const vCoil = msg.vCoilTimes50 / 50;
-                    if (!charging || vCoil >= 4.2) {
+                    if (charging === "no" || vCoil >= 4.2) {
                       return true;
                     } else {
                       const stateStr =
@@ -166,29 +263,14 @@ export const ValidationTests = {
                       );
                     }
                   }
-                  notifyState({
-                    state: getValueKeyName(
-                      msg.batteryControllerState,
-                      PixelBatteryControllerStateValues
-                    ),
-                    vCoil: msg.vCoilTimes50 / 50,
-                  });
                   return false;
                 }
               );
             } catch (error: any) {
-              // TODO temporary
-              if (lastMsg && error instanceof ValidationTestsTimeoutError) {
-                const stateStr =
-                  getValueKeyName(
-                    lastMsg.batteryControllerState,
-                    PixelBatteryControllerStateValues
-                  ) ?? "unknown";
-                const vCoil = lastMsg.vCoilTimes50 / 50;
-                throw new Error(
-                  `Timeout while waiting for '${
-                    shouldBeCharging ? "" : "not "
-                  }charging' state, controller state was ${stateStr} and coil was ${vCoil}v`
+              if (lastMsg && error instanceof SignalTimeoutError) {
+                throw new WaitForChargingTimeoutError(
+                  shouldBeCharging,
+                  lastMsg
                 );
               } else {
                 throw error;
@@ -206,7 +288,6 @@ export const ValidationTests = {
     face: number,
     blinkColor: Color,
     abortSignal: AbortSignal,
-    notifyFaceUp: (roll: RollEvent) => void,
     holdDelay = 1000, // Number of ms to wait before validating the face up
     timeout = testTimeout
   ): Promise<void> {
@@ -226,7 +307,7 @@ export const ValidationTests = {
           blinkColor,
           async () => {
             let rollListener: ((ev: RollEvent) => void) | undefined;
-            let lastRoll: RollEvent | undefined;
+            let lastMsg: RollEvent | undefined;
             try {
               await withPromise<void>(
                 abortSignal,
@@ -244,6 +325,7 @@ export const ValidationTests = {
                   }
                   // Roll listener that checks if the required face is up
                   rollListener = ({ state, face: currentFace }: RollEvent) => {
+                    lastMsg = { state, face: currentFace };
                     if (state === "onFace" && currentFace === face) {
                       // Required face is up, start hold timer
                       console.log(`Die rolled on required face ${face}`);
@@ -254,8 +336,9 @@ export const ValidationTests = {
                       clearTimeout(holdTimeout);
                       holdTimeout = undefined;
                     }
-                    lastRoll = { state, face: currentFace };
-                    notifyFaceUp(lastRoll);
+                    console.log(
+                      `Die roll state is ${state} and face = ${currentFace}`
+                    );
                   };
                   // Listen to roll events to detect when required face is up
                   pixel.addEventListener("rollState", rollListener);
@@ -276,11 +359,8 @@ export const ValidationTests = {
                 }
               );
             } catch (error) {
-              // TODO temporary
-              if (lastRoll && error instanceof ValidationTestsTimeoutError) {
-                throw new Error(
-                  `Timeout waiting for face ${face}, face up was ${lastRoll.face} and state ${lastRoll.state}`
-                );
+              if (lastMsg && error instanceof SignalTimeoutError) {
+                throw new WaitFaceUpTimeoutError(face, lastMsg);
               } else {
                 throw error;
               }

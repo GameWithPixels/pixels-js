@@ -25,7 +25,7 @@ import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
 function formatAddress(address: number): string {
-  return address.toString(16).toUpperCase();
+  return address.toString(16).toUpperCase().padStart(8, "0");
 }
 
 function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {

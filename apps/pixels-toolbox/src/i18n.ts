@@ -108,12 +108,14 @@ i18n
           battery: "Battery",
           chargingState: "Charging State",
           batteryControllerState: "Battery Controller State",
+          batteryControllerMode: "Battery Controller Mode",
           internalChargerState: "MCP73832 Charger State",
-          internalChargerOverrideState: "MCP73832 Override State",
           chargerOn: "Charger On",
           chargerOff: "Charger Off",
-          disallowCharging: "Disallow Charging",
-          allowCharging: "Allow Charging",
+          default: "Default",
+          forceDisableCharging: "Force Disable Charging",
+          forceEnableCharging: "Force Enable Charging",
+          setChargerMode: "Set Charger Mode",
           rssi: "RSSI",
           temperature: "Temperature",
           mcuTemperature: "MCU Temperature",
@@ -125,8 +127,6 @@ i18n
           fixedRainbow: "Static Rainbow",
           discharge: "Discharge",
           stopDischarge: "Stop Discharging",
-          enableCharging: "Enable Charging",
-          disableCharging: "Disable Charging",
           blinkId: "Blink Id",
           updatingProfile: "Updating Profile",
           dischargeCurrentWithValue: "Discharge Current: {{current}}mA",
@@ -149,6 +149,7 @@ i18n
           preparingAsPrintStatus: "Preparing label...",
           sendingAsPrintStatus: "Sending label to printer...",
           doneAsPrintStatus: "Print successful!",
+          playKeyframes: "Play Keyframes",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -182,7 +183,6 @@ i18n
 
           // Validation Screen
           factoryValidation: "Factory Validation",
-          openMenuToGoToValidation: "Open menu to go to Validation",
           validateBoardNoCoil: "Validate FPC Board No Coil",
           validateBoard: "Validate FPC Board",
           validateDie: "Validate Resin Die",
@@ -225,6 +225,7 @@ i18n
           exitValidationMode: "Exit Validation Mode",
           waitDieInCase: "Wait Die In Case",
           placeDieInCaseAndCloseLid: "Place die in case and close the lid",
+          canceled: "Canceled",
           testSucceeded: "Test Successful!",
           testFailed: "Test Failed!",
           testCanceled: "Test Canceled!",
@@ -237,10 +238,11 @@ i18n
           storeTimestamp: "Store Timestamp",
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
+          errorPrintingLabel: "Error printing label",
           isLabelPrinted: "Is label correctly printed?",
           tryPrintingLabelAgain: "Try printing label again?",
-          scanTimeoutTryAgain:
-            "Timeout scanning for Pixel, reset device and try again.",
+          timeoutScanningTryAgainWithId:
+            "Timeout scanning for Pixel {{id}}, reset device and try again.",
           connectionErrorTryAgain:
             "Connection error, reset device and try again.",
           dfuErrorTryAgain:
@@ -251,6 +253,22 @@ i18n
             "Die type mismatch, expected {{expected}} but got {{received}}",
           updateDieTypeWithFromAndTo:
             "Update die type to {{to}}? Programmed type is {{from}}.",
+          lowBatteryPleaseCharge: "Low battery, please charge",
+          updateFirmwareIfOlderWithDate:
+            "Factory Validation will update firmware if on-board firmware is older than {{date}}.",
+          loadingFirmwareFiles: "Loading firmware files...",
+          errorLoadingFirmwareFiles: "Error loading firmware files",
+          invalidLedCountWithValue: "Invalid LED count: {{value}}",
+          invalidAccelerometerValue: "Invalid accelerometer value: {{value}}",
+          outOfRangeBatteryVoltage: "Out of range battery voltage: {{value}}v",
+          timeoutWhileWaitingForChargingState:
+            "Timeout waiting for 'charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
+          timeoutWhileWaitingForNotChargingState:
+            "Timeout waiting for 'not charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
+          timeoutWaitingForFace:
+            "Timeout waiting for face {{face}}. Face up: {{rollFace}}, roll state: {{rollState}}",
+          disconnectedFromPixel: "Disconnected from Pixel",
+          timedOutWithValue: "Timed out after {{value}}s",
 
           // Carton label
           cartonLabel: "Carton Label",
@@ -275,7 +293,7 @@ i18n
           cancel: "取消",
           close: "关闭",
           back: "后退",
-          next: "Next",
+          next: "下一个",
           yes: "是",
           no: "否",
           d4: "D4",
@@ -343,11 +361,8 @@ i18n
           chargingState: "电池状态",
           batteryControllerState: "电池充电放电状态",
           internalChargerState: "MCP73832充电器状态",
-          internalChargerOverrideState: "MCP73832 改写状态",
           chargerOn: "打开充电器",
           chargerOff: "关闭充电器",
-          disallowCharging: "不允许充电",
-          allowCharging: "允许充电",
           rssi: "RSSI",
           temperature: "温度",
           mcuTemperature: "MCU 温度",
@@ -358,8 +373,6 @@ i18n
           rainbow: "彩虹动画效果",
           discharge: "放电",
           stopDischarge: "停止放电",
-          enableCharging: "开始充电",
-          disableCharging: "停止充电",
           blinkId: "闪烁ID",
           updatingProfile: "更新资料",
           dischargeCurrentWithValue: "放电电流：{{current}}mA",
@@ -401,7 +414,6 @@ i18n
 
           // Validation Screen
           factoryValidation: "工厂测试",
-          openMenuToGoToValidation: "打开菜单进入测试模式",
           validateBoardNoCoil: "测试FPC光板（不带线圈）",
           validateBoard: "测试FPC板",
           validateDie: "测试骰子",
@@ -444,6 +456,7 @@ i18n
           exitValidationMode: "退出测试模式",
           waitDieInCase: "等待骰子放入盒中",
           placeDieInCaseAndCloseLid: "将骰子放在盒中并关闭盖子",
+          canceled: "取消",
           testSucceeded: "测试成功！",
           testFailed: "测试失败！",
           testCanceled: "取消测试！",
@@ -456,16 +469,35 @@ i18n
           storeTimestamp: "保存时间戳",
           labelPrinting: "标签印刷",
           waitingOnPrint: "等待印刷",
+          errorPrintingLabel: "标签不会被打印",
           isLabelPrinted: "标贴是否印刷正确？",
           tryPrintingLabelAgain: "尝试重新打印标贴？",
-          scanTimeoutTryAgain: "扫描时间已经超时，请重置设备并重新开始。",
+          timeoutScanningTryAgainWithId:
+            "扫描时间已经超时{{id}}，请重置设备并重新开始。",
           connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
           dfuErrorTryAgain: "更新固件错误，请重置机器并重新尝试。",
           dieTypeMismatchWithTypeAndLedCount:
             "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
           dieTypeMismatchWithExpectedAndReceived:
-            "骰子类型错误，本应该是{expected} 结果是{received}",
-          updateDieTypeWithFromAndTo: "更新骰子类型是{to}，烧录的类型是{from}",
+            "骰子类型错误，本应该是{{expected}} 结果是{{received}}",
+          updateDieTypeWithFromAndTo:
+            "更新骰子类型是{{to}}，烧录的类型是{{from}}",
+          lowBatteryPleaseCharge: "电池电量低，需要充电",
+          updateFirmwareIfOlderWithDate:
+            "工厂测试时会升级低于这个{{date}}的固件的FPC",
+          loadingFirmwareFiles: "装载固件中...",
+          errorLoadingFirmwareFiles: "装载固件错误",
+          invalidLedCountWithValue: "错误的LED数量：{{value}}",
+          invalidAccelerometerValue: "错误的加速度计值：{{value}}",
+          outOfRangeBatteryVoltage: "电池电压超出范围：{{value}}v",
+          timeoutWhileWaitingForChargingState:
+            "等待充电状态超时，控制的状态是{{state}}，线圈电压是{{vCoil}}v",
+          timeoutWhileWaitingForNotChargingState:
+            "等待不充电超时，控制的状态是{{state}}，线圈电压是{{vCoil}}v",
+          timeoutWaitingForFace:
+            "等待{{face}}面朝上超时，朝上面是{{rollFace}}，状态是{{rollState}}",
+          disconnectedFromPixel: "从Pixel断开连接",
+          timedOutWithValue: "等待{{value}}s后超时",
 
           // Carton label
           cartonLabel: "大箱标贴",

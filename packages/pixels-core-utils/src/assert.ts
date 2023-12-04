@@ -11,8 +11,8 @@ export class AssertionError extends Error {
 /**
  * A typical assert function for Typescript with an optional message.
  */
-export function assert(condition: unknown, msg?: string): asserts condition {
-  if (!condition) {
-    throw new AssertionError(msg ?? "Assert failed");
+export function assert(value: unknown, msg?: string): asserts value {
+  if (!value) {
+    throw new AssertionError(msg ?? `Asserted failed with value ${value}`);
   }
 }

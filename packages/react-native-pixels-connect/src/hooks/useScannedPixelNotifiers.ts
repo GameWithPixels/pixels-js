@@ -1,4 +1,4 @@
-import { assert, assertNever } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import {
@@ -52,8 +52,13 @@ export function useScannedPixelNotifiers(
             break;
           }
           case "update":
-            assert(retItems[op.index]);
-            retItems[op.index].updateProperties(op.scannedPixel);
+            if (retItems[op.index]) {
+              retItems[op.index].updateProperties(op.scannedPixel);
+            } else {
+              console.error(
+                "useScannedPixelNotifiers: index out of range on update operation"
+              );
+            }
             break;
           default:
             assertNever(t);

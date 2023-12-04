@@ -1,46 +1,77 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Pixel } from "@systemic-games/pixels-core-connect";
 import { delay } from "@systemic-games/pixels-core-utils";
-import { BaseVStack } from "@systemic-games/react-native-base-components";
+import {
+  createDataSetForAnimation,
+  EditAnimationKeyframed,
+  EditPattern,
+} from "@systemic-games/pixels-edit-animation";
+import {
+  BaseHStack,
+  BaseVStack,
+} from "@systemic-games/react-native-base-components";
 import {
   Color,
   getPixel,
-  ScannedPixelNotifier,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView } from "react-native";
-import { Button, Divider, Text } from "react-native-paper";
+import { Button, Divider, Switch, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
+import { PatternImages } from "~/features/PatternImages";
+import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 
+const patternsCache = new Map<string | number, EditPattern>();
+
+async function getPatternFromImage(
+  virtualAssetModule: string | number
+): Promise<EditPattern> {
+  const cachedPattern = patternsCache.get(virtualAssetModule);
+  if (cachedPattern) {
+    return cachedPattern;
+  }
+  const pattern = await createPatternFromImage(virtualAssetModule);
+  patternsCache.set(virtualAssetModule, pattern);
+  return pattern;
+}
+
 async function forAllPixels(
-  scannedPixels: ScannedPixelNotifier[],
+  pixels: Pixel[],
+  stayConnected: boolean,
   op: (pixel: Pixel) => Promise<void>,
   abortSignal: AbortSignal,
-  onUsingPixel?: (pixel: Pixel, status: "starting" | "done" | Error) => void
+  onUsingPixel?: (
+    pixel: Pixel,
+    status: "connecting" | "starting" | "done" | Error
+  ) => void
 ): Promise<void> {
-  const pixels = scannedPixels.map((sp) => getPixel(sp.systemId));
   for (const pixel of pixels) {
     if (abortSignal.aborted) {
       break;
     }
-    console.log("Running operation on Pixel " + pixel.name);
+    console.log(`Running operation on Pixel ${pixel.name}`);
     try {
-      onUsingPixel?.(pixel, "starting");
+      onUsingPixel?.(pixel, "connecting");
       await pixel.connect(10000);
       if (abortSignal.aborted) {
         await pixel.disconnect();
         break;
       }
+      onUsingPixel?.(pixel, "starting");
       await op(pixel);
-      await pixel.disconnect();
+      if (!stayConnected) {
+        await pixel.disconnect();
+      }
       onUsingPixel?.(pixel, "done");
     } catch (error) {
       try {
-        await pixel.disconnect();
+        if (!stayConnected) {
+          await pixel.disconnect();
+        }
       } catch {}
       onUsingPixel?.(pixel, error as Error);
     }
@@ -57,10 +88,40 @@ async function uploadProfile(pixel: Pixel): Promise<void> {
   await pixel.transferDataSet(getDefaultProfile(pixel.dieType));
 }
 
+async function testAnimation(pixel: Pixel): Promise<void> {
+  const pattern = await getPatternFromImage(
+    PatternImages.rainbowFalls
+    // PatternImages.circles -> too many keyframes
+    // PatternImages.rotatingRings -> too many keyframes
+  );
+  const anim = new EditAnimationKeyframed({
+    duration: 3,
+    pattern,
+  });
+  const dataSet = createDataSetForAnimation(anim).toDataSet();
+  await pixel.playTestAnimation(dataSet, (progress) =>
+    console.log(`Animation upload progress: ${progress}%`)
+  );
+}
+
 function BatchPage() {
   // Scanned Pixels
   const [scannedPixels, scanDispatch, scanError] =
     useFocusScannedPixelNotifiers();
+  const [pixels, setPixels] = React.useState<Pixel[]>([]);
+  const [stayConnected, setStayConnected] = React.useState(false);
+  React.useEffect(() => {
+    if (!stayConnected && pixels.length) {
+      setPixels((pixels) => {
+        pixels.forEach((p) =>
+          p
+            .disconnect()
+            .catch((e) => console.log(`Error disconnecting ${p.name}: ${e}`))
+        );
+        return [];
+      });
+    }
+  }, [pixels, stayConnected]);
 
   // Batch operations
   const [batchOp, setBatchOp] =
@@ -82,79 +143,127 @@ function BatchPage() {
   );
 
   // Run batch
-  React.useEffect(() => {
-    if (batchOp) {
-      const abortController = new AbortController();
-      console.log("Starting batch");
-      setOpsStatuses([]);
-      forAllPixels(
-        scannedPixels,
-        batchOp,
-        abortController.signal,
-        (pixel, opStatus) => {
-          setActivePixel(pixel);
-          if (opStatus !== "starting") {
-            setOpsStatuses((statuses) => [
-              ...statuses,
-              `${pixel.name}: ${opStatus}`,
-            ]);
+  const runBatchOp = (batchOp: (pixel: Pixel) => Promise<void>) => {
+    setBatchOp(() => batchOp);
+    setOpsStatuses([]);
+    const abortController = new AbortController();
+    const pixelsToUse = pixels.concat(
+      scannedPixels
+        .filter((sp) => !pixels.find((p) => p.pixelId === sp.pixelId))
+        .map((sp) => getPixel(sp.systemId))
+    );
+    forAllPixels(
+      pixelsToUse,
+      stayConnected,
+      batchOp,
+      abortController.signal,
+      (pixel, opStatus) => {
+        setActivePixel(pixel);
+        if (opStatus === "starting") {
+          if (stayConnected) {
+            setPixels((pixels) =>
+              pixels.includes(pixel) ? pixels : [...pixels, pixel]
+            );
           }
+        } else if (opStatus !== "connecting") {
+          setOpsStatuses((statuses) => [
+            ...statuses,
+            `${pixel.name}: ${opStatus}`,
+          ]);
         }
-      )
-        .finally(() => {
-          console.log("Batch stopped");
-          setBatchOp(undefined);
-        })
-        .catch((error) => console.error(String(error)));
-      return () => {
-        abortController.abort();
-      };
-    }
-  }, [batchOp, scannedPixels]);
+      }
+    )
+      .finally(() => {
+        console.log("Batch stopped");
+        setBatchOp(undefined);
+      })
+      .catch((error) => console.error(String(error)));
+    return () => {
+      abortController.abort();
+    };
+  };
 
+  const scannedButNotConnected = scannedPixels.filter(
+    (sp) => !pixels.find((p) => p.pixelId === sp.pixelId)
+  );
   return (
-    <BaseVStack flex={1} w="100%" gap={20} alignItems="center">
+    <BaseVStack flex={1} w="100%" gap={10} alignItems="center">
       {scanError && <Text>{`Scan error! ${scanError}`}</Text>}
-      <Text>Found {scannedPixels.length} Pixels dice</Text>
       {!batchOp ? (
         <>
+          <Text variant="titleMedium">Scanning for dice...</Text>
+          <Text variant="bodySmall" numberOfLines={1}>
+            {scannedButNotConnected.length
+              ? `Found ${
+                  scannedButNotConnected.length
+                } Pixels: ${scannedButNotConnected
+                  .map((p) => p.name)
+                  .join(", ")}`
+              : "No available Pixels found so far."}
+          </Text>
           <Button mode="contained-tonal" onPress={() => scanDispatch("clear")}>
             Clear Scan List
           </Button>
-          <Divider bold style={{ width: "90%" }} />
+          <Divider bold style={{ width: "90%", marginVertical: 10 }} />
           <Text>Possible actions to run on all dice, 1 by 1:</Text>
-          <Button
-            mode="contained-tonal"
-            onPress={() => setBatchOp(() => blink)}
-          >
-            Blink
-          </Button>
-          <Button
-            mode="contained-tonal"
-            onPress={() => setBatchOp(() => uploadProfile)}
-          >
-            Update Profile
-          </Button>
+          <BaseHStack flexWrap="wrap" justifyContent="center" gap={10}>
+            <Button mode="contained-tonal" onPress={() => runBatchOp(blink)}>
+              Blink
+            </Button>
+            <Button
+              mode="contained-tonal"
+              onPress={() => runBatchOp(uploadProfile)}
+            >
+              Update Profile
+            </Button>
+            <Button
+              mode="contained-tonal"
+              onPress={() => {
+                patternsCache.clear();
+                runBatchOp(testAnimation);
+              }}
+            >
+              Play Kframes
+            </Button>
+          </BaseHStack>
+          <BaseHStack alignItems="center" justifyContent="center" gap={10}>
+            <Switch value={stayConnected} onValueChange={setStayConnected} />
+            <Text>Stay connected</Text>
+          </BaseHStack>
+          {stayConnected && (
+            <Text variant="bodySmall" numberOfLines={1}>
+              {pixels.length
+                ? pixels.map((p) => p.name).join(", ")
+                : "No connected Pixels yet."}
+            </Text>
+          )}
         </>
       ) : (
         <>
-          <Button mode="contained-tonal" onPress={() => setBatchOp(undefined)}>
-            Stop
-          </Button>
-          <Divider bold style={{ width: "90%" }} />
+          <Text variant="titleMedium">Running Selected Action on Dice...</Text>
           {!!activePixel && (
-            <>
-              <Text>Operating on {activePixel.name}</Text>
-              <Text>Status is {pixelStatus}</Text>
-            </>
+            <Text>
+              Operating on {activePixel.name}, status is {pixelStatus}
+            </Text>
           )}
+          <Button mode="contained-tonal" onPress={() => setBatchOp(undefined)}>
+            Request Stop
+          </Button>
         </>
       )}
-      <Divider bold style={{ width: "90%" }} />
-      <Text>Completed:</Text>
-      <ScrollView>
+      <Divider bold style={{ width: "90%", marginVertical: 10 }} />
+      <Text variant="titleMedium">Completed:</Text>
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: 10,
+          alignItems: "center",
+          gap: 5,
+        }}
+      >
         {opsStatuses.map((s, i) => (
-          <Text key={i}>{s}</Text>
+          <Text key={i} variant="bodyLarge">
+            {s}
+          </Text>
         ))}
       </ScrollView>
     </BaseVStack>
@@ -163,7 +272,7 @@ function BatchPage() {
 
 export function BatchScreen() {
   return (
-    <AppPage>
+    <AppPage pt={10}>
       <BatchPage />
     </AppPage>
   );

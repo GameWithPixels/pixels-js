@@ -22,8 +22,9 @@ export default class BleSession extends PixelSession {
     return this._name;
   }
 
-  constructor(deviceSystemId: string) {
+  constructor(deviceSystemId: string, name?: string) {
     super(deviceSystemId);
+    this._name = name;
     this._centralConnStatusCb = (ev: PeripheralConnectionEvent) => {
       this._notifyConnectionEvent(ev.connectionStatus);
     };
