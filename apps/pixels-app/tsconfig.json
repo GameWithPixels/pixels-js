@@ -1,0 +1,18 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "#/*": [
+        "assets/*"
+      ],
+      "@systemic-games/*": [
+        "@systemic-games/*"
+      ]
+    }
+  }
+}

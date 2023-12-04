@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Pixels UI",
+    "slug": "pixels-app-ui",
+    "owner": "gamewithpixels",
+    "version": "1.7.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gamewithpixels.pixelsappui"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.gamewithpixels.pixelsappui"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-localization"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "19c705d2-71d7-4443-995b-d537a43f7321"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/19c705d2-71d7-4443-995b-d537a43f7321"
+    },
+    "experiments": {
+      "tsconfigPaths": true
+    }
+  }
+}
