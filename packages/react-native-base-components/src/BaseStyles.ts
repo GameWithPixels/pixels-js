@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export const BaseStyles = StyleSheet.create({
+export const BaseStylesObject = {
   // One prop styles
   empty: {},
   flex: {
@@ -47,4 +47,6 @@ export const BaseStyles = StyleSheet.create({
   underlined: {
     textDecorationLine: "underline",
   },
-});
+} as const;
+
+export const BaseStyles = StyleSheet.create(BaseStylesObject);
