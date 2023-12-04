@@ -6,11 +6,11 @@ import { IconButton } from "react-native-paper";
 
 import { EditProfile } from "./components/EditProfile";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { getFavoriteIcon } from "@/components/icons";
-import { useProfile, useProfiles } from "@/hooks";
-import { EditProfileScreenProps, ProfilesStackParamList } from "@/navigation";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { getFavoriteIcon } from "~/components/icons";
+import { useProfile, useProfiles } from "~/hooks";
+import { EditProfileScreenProps, ProfilesStackParamList } from "~/navigation";
 
 function EditProfilePage({
   navigation,

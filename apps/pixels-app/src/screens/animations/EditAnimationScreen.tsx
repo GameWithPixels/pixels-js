@@ -4,22 +4,22 @@ import React from "react";
 import { View, ScrollView } from "react-native";
 import { Switch, Text, TextInput, useTheme } from "react-native-paper";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { SliderWithTitle } from "@/components/SliderWithTitle";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { SliderWithTitle } from "~/components/SliderWithTitle";
 import {
   ButtonWithCarets,
   GradientButton,
   MenuButton,
   OutlineButton,
-} from "@/components/buttons";
-import { useAnimation, useAnimations, useConfirmActionSheet } from "@/hooks";
+} from "~/components/buttons";
+import { useAnimation, useAnimations, useConfirmActionSheet } from "~/hooks";
 import {
   AnimationsStackParamList,
   EditAnimationScreenProps,
-} from "@/navigation";
-import { DieRenderer } from "@/render3d/DieRenderer";
-import { ColorDesign } from "@/temp";
+} from "~/navigation";
+import { DieRenderer } from "~/render3d/DieRenderer";
+import { ColorDesign } from "~/temp";
 
 function EditAnimationPage({
   animationUuid,

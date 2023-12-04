@@ -12,7 +12,7 @@ import { SelectionButton } from "./buttons";
 
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
-import { getBottomSheetBackgroundStyle } from "@/themes";
+import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function SortByDateIcon({ size, color }: { size?: number; color?: string }) {
   return (

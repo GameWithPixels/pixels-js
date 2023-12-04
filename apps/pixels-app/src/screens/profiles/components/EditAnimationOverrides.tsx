@@ -5,9 +5,9 @@ import React from "react";
 import { View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
-import { SliderWithValue } from "@/components/SliderWithTitle";
-import { makeTransparent } from "@/components/utils";
-import { useConfirmActionSheet } from "@/hooks";
+import { SliderWithValue } from "~/components/SliderWithTitle";
+import { makeTransparent } from "~/components/utils";
+import { useConfirmActionSheet } from "~/hooks";
 
 export interface AnimationOverrides {
   duration: number;

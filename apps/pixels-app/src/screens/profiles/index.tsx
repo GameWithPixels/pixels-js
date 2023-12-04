@@ -13,8 +13,8 @@ import {
   ProfilesStackProps,
   ProfilesStackParamList,
   getStackNavigationOptions,
-} from "@/navigation";
-import { getRootScreenTheme } from "@/themes";
+} from "~/navigation";
+import { getRootScreenTheme } from "~/themes";
 
 const Stack = createStackNavigator<ProfilesStackParamList>();
 

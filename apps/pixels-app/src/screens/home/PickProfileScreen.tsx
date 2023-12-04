@@ -2,15 +2,15 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { View } from "react-native";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { ProfilePicker } from "@/components/ProfilePicker";
-import { usePixelProfile, usePairedPixel } from "@/hooks";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { ProfilePicker } from "~/components/ProfilePicker";
+import { usePixelProfile, usePairedPixel } from "~/hooks";
 import {
   HomeStackParamList,
   PickProfileAndroidScreenProps,
   PickProfileScreenProps,
-} from "@/navigation";
+} from "~/navigation";
 
 function PickProfilePage({
   pixelId,

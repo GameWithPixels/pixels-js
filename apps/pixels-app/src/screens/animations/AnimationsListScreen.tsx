@@ -6,18 +6,18 @@ import { Divider, IconButton, Menu, useTheme } from "react-native-paper";
 
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
-import { AppBackground } from "@/components/AppBackground";
-import { HeaderBar } from "@/components/HeaderBar";
-import { SortBottomSheet } from "@/components/SortBottomSheet";
-import { AnimationsGrid, AnimationsList } from "@/components/animation";
-import { FloatingAddButton } from "@/components/buttons";
-import { useAnimations } from "@/hooks";
+import { AppBackground } from "~/components/AppBackground";
+import { HeaderBar } from "~/components/HeaderBar";
+import { SortBottomSheet } from "~/components/SortBottomSheet";
+import { AnimationsGrid, AnimationsList } from "~/components/animation";
+import { FloatingAddButton } from "~/components/buttons";
+import { useAnimations } from "~/hooks";
 import {
   AnimationsListScreenProps,
   AnimationsStackParamList,
-} from "@/navigation";
-import { AppStyles } from "@/styles";
-import { PixelAnimation } from "@/temp";
+} from "~/navigation";
+import { AppStyles } from "~/styles";
+import { PixelAnimation } from "~/temp";
 
 type ProfilesViewMode = "list" | "grid";
 

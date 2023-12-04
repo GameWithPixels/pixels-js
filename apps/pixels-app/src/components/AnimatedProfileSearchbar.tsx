@@ -5,7 +5,7 @@ import { StyleSheet, View } from "react-native";
 import { Searchbar, Text, TouchableRipple, useTheme } from "react-native-paper";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
-import { ProfileGroups } from "@/data";
+import { ProfileGroups } from "~/data";
 
 export function AnimatedProfileSearchbar({
   positionY,

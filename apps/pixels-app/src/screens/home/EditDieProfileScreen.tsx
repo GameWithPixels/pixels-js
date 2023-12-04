@@ -5,10 +5,10 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 
 import { EditProfile } from "../profiles/components/EditProfile";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { usePixelProfile, usePairedPixel } from "@/hooks";
-import { EditDieProfileScreenProps, HomeStackParamList } from "@/navigation";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { usePixelProfile, usePairedPixel } from "~/hooks";
+import { EditDieProfileScreenProps, HomeStackParamList } from "~/navigation";
 
 function EditDieProfilePage({
   pixelId,

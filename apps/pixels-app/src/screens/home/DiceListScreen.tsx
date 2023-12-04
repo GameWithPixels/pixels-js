@@ -28,23 +28,23 @@ import { PixelFocusView, PixelFocusViewHeader } from "./PixelFocusView";
 import FocusIcon from "#/icons/home/focus";
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
-import { AppBackground } from "@/components/AppBackground";
-import { HeaderBar } from "@/components/HeaderBar";
-import { IntroSlides } from "@/components/IntroSlides";
-import { SortBottomSheet } from "@/components/SortBottomSheet";
-import { Banner, PromoBanner } from "@/components/banners";
+import { AppBackground } from "~/components/AppBackground";
+import { HeaderBar } from "~/components/HeaderBar";
+import { IntroSlides } from "~/components/IntroSlides";
+import { SortBottomSheet } from "~/components/SortBottomSheet";
+import { Banner, PromoBanner } from "~/components/banners";
 import {
   GradientButton,
   SelectionButton,
   TightTextButton,
-} from "@/components/buttons";
-import { DieWireframeCard } from "@/components/cards";
-import { DiceGrid, DiceList } from "@/components/dice";
-import { usePairedPixels, useScannedPixels } from "@/hooks";
-import { useSettings } from "@/hooks/useSettings";
-import { DiceListScreenProps, HomeStackParamList } from "@/navigation";
-import { AppStyles } from "@/styles";
-import { getBottomSheetBackgroundStyle } from "@/themes";
+} from "~/components/buttons";
+import { DieWireframeCard } from "~/components/cards";
+import { DiceGrid, DiceList } from "~/components/dice";
+import { usePairedPixels, useScannedPixels } from "~/hooks";
+import { useSettings } from "~/hooks/useSettings";
+import { DiceListScreenProps, HomeStackParamList } from "~/navigation";
+import { AppStyles } from "~/styles";
+import { getBottomSheetBackgroundStyle } from "~/themes";
 
 type DiceViewMode = "focus" | "list" | "grid";
 

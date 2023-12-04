@@ -42,23 +42,23 @@ import Animated, {
 } from "react-native-reanimated";
 
 import CalibrateIcon from "#/icons/home/calibrate";
-import { Card } from "@/components/Card";
-import { ProfilePicker } from "@/components/ProfilePicker";
-import { Chip, GradientChip } from "@/components/buttons";
-import { BatteryIcon, RssiIcon } from "@/components/icons";
-import { ProfileCard } from "@/components/profile";
+import { Card } from "~/components/Card";
+import { ProfilePicker } from "~/components/ProfilePicker";
+import { Chip, GradientChip } from "~/components/buttons";
+import { BatteryIcon, RssiIcon } from "~/components/icons";
+import { ProfileCard } from "~/components/profile";
 import {
   getTextColorStyle,
   getIconColor,
   makeTransparent,
-} from "@/components/utils";
-import { randomRoll } from "@/data";
-import { usePixelProfile } from "@/hooks";
-import { HomeStackParamList } from "@/navigation";
-import { DieRenderer } from "@/render3d/DieRenderer";
-import { AppStyles } from "@/styles";
-import { PixelProfile } from "@/temp";
-import { getBottomSheetBackgroundStyle } from "@/themes";
+} from "~/components/utils";
+import { randomRoll } from "~/data";
+import { usePixelProfile } from "~/hooks";
+import { HomeStackParamList } from "~/navigation";
+import { DieRenderer } from "~/render3d/DieRenderer";
+import { AppStyles } from "~/styles";
+import { PixelProfile } from "~/temp";
+import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function ChevronDownIcon({
   size,

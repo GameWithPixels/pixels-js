@@ -1,11 +1,11 @@
 import { StackNavigationProp } from "@react-navigation/stack";
 import { ScrollView } from "react-native";
 
-import { AppBackground } from "@/components/AppBackground";
-import { MenuButton } from "@/components/buttons";
-import { useConfirmActionSheet } from "@/hooks";
-import { useSettings } from "@/hooks/useSettings";
-import { SettingsMenuScreenProps, SettingsStackParamList } from "@/navigation";
+import { AppBackground } from "~/components/AppBackground";
+import { MenuButton } from "~/components/buttons";
+import { useConfirmActionSheet } from "~/hooks";
+import { useSettings } from "~/hooks/useSettings";
+import { SettingsMenuScreenProps, SettingsStackParamList } from "~/navigation";
 
 const pages = [
   "Audio Clips",

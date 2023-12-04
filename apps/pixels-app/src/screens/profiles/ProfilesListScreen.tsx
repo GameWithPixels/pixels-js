@@ -10,16 +10,16 @@ import Animated, {
 
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
-import { AnimatedProfileSearchbar } from "@/components/AnimatedProfileSearchbar";
-import { AppBackground } from "@/components/AppBackground";
-import { HeaderBar } from "@/components/HeaderBar";
-import { SortBottomSheet } from "@/components/SortBottomSheet";
-import { FloatingAddButton } from "@/components/buttons";
-import { ProfilesGrid, ProfilesList } from "@/components/profile";
-import { useProfiles } from "@/hooks";
-import { ProfilesListScreenProps, ProfilesStackParamList } from "@/navigation";
-import { AppStyles } from "@/styles";
-import { PixelProfile } from "@/temp";
+import { AnimatedProfileSearchbar } from "~/components/AnimatedProfileSearchbar";
+import { AppBackground } from "~/components/AppBackground";
+import { HeaderBar } from "~/components/HeaderBar";
+import { SortBottomSheet } from "~/components/SortBottomSheet";
+import { FloatingAddButton } from "~/components/buttons";
+import { ProfilesGrid, ProfilesList } from "~/components/profile";
+import { useProfiles } from "~/hooks";
+import { ProfilesListScreenProps, ProfilesStackParamList } from "~/navigation";
+import { AppStyles } from "~/styles";
+import { PixelProfile } from "~/temp";
 
 type ProfilesViewMode = "list" | "grid";
 

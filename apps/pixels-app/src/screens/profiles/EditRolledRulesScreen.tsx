@@ -13,25 +13,25 @@ import { Text, useTheme } from "react-native-paper";
 
 import { ConfigureAnimationModal } from "./components/ConfigureAnimationModal";
 
-import { AppBackground } from "@/components/AppBackground";
-import { Card, CardProps } from "@/components/Card";
-import { PageHeader } from "@/components/PageHeader";
-import { TouchableCard } from "@/components/TouchableCard";
-import { actionTypes, getActionTypeIcon } from "@/components/actions";
-import { FloatingAddButton, GradientIconButton } from "@/components/buttons";
-import { getBorderColor } from "@/components/utils";
+import { AppBackground } from "~/components/AppBackground";
+import { Card, CardProps } from "~/components/Card";
+import { PageHeader } from "~/components/PageHeader";
+import { TouchableCard } from "~/components/TouchableCard";
+import { actionTypes, getActionTypeIcon } from "~/components/actions";
+import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
+import { getBorderColor } from "~/components/utils";
 import {
   getActionTypeDescription,
   getConditionTypeDescription,
   getConditionTypeLabel,
-} from "@/descriptions";
-import { useCondition, useProfiles, useRule } from "@/hooks";
+} from "~/descriptions";
+import { useCondition, useProfiles, useRule } from "~/hooks";
 import {
   EditProfileSubStackParamList,
   EditRollRulesScreenProps,
-} from "@/navigation";
-import { DieRenderer } from "@/render3d/DieRenderer";
-import { Colors } from "@/themes";
+} from "~/navigation";
+import { DieRenderer } from "~/render3d/DieRenderer";
+import { Colors } from "~/themes";
 
 function InnerScrollView({ ...props }: ScrollViewProps) {
   const { width } = useWindowDimensions();

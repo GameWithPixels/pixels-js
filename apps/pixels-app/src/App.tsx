@@ -65,7 +65,7 @@ import AnimationsIcon from "#/icons/navigation/animations";
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
-import { PixelAnimation, PixelProfile } from "@/temp";
+import { PixelAnimation, PixelProfile } from "~/temp";
 
 LogBox.ignoreLogs(["THREE.WebGLProgram: Program Info Log:"]);
 

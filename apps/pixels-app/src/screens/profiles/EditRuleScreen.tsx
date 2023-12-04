@@ -5,16 +5,16 @@ import { View, ScrollView } from "react-native";
 import { EditActionCard } from "./components/EditActionCard";
 import { EditAdvancedRules } from "./components/EditProfile";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { getConditionTypeLabel } from "@/descriptions";
-import { useProfiles, useRule } from "@/hooks";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { getConditionTypeLabel } from "~/descriptions";
+import { useProfiles, useRule } from "~/hooks";
 import {
   EditAdvancedRulesScreenProps,
   EditProfileSubStackParamList,
   EditRuleScreenProps,
-} from "@/navigation";
-import { Action, ActionType, ActionTypeValues } from "@/temp";
+} from "~/navigation";
+import { Action, ActionType, ActionTypeValues } from "~/temp";
 
 function EditRulePage({
   profileUuid,

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { PixelProfile } from "@/temp";
+import { PixelProfile } from "~/temp";
 
 export interface ProfilesContextData {
   profiles: PixelProfile[];

@@ -5,16 +5,16 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { GradientButton, OutlineButton } from "@/components/buttons";
-import { DiceList } from "@/components/dice";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { GradientButton, OutlineButton } from "~/components/buttons";
+import { DiceList } from "~/components/dice";
 import {
   PixelDfuStatus,
   PixelDfuStatusesContext,
   usePairedPixels,
-} from "@/hooks";
-import { HomeStackParamList, FirmwareUpdateScreenProps } from "@/navigation";
+} from "~/hooks";
+import { HomeStackParamList, FirmwareUpdateScreenProps } from "~/navigation";
 
 export function useConfirmStopUpdatingActionSheet(
   onConfirm?: () => void,

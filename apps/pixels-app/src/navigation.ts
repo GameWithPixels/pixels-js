@@ -3,7 +3,7 @@ import { StackNavigationOptions } from "@react-navigation/stack/lib/typescript/s
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Platform } from "react-native";
 
-import { ColorDesign, PixelAnimation } from "@/temp";
+import { ColorDesign, PixelAnimation } from "~/temp";
 
 // Root screens
 export type BottomTabParamList = {

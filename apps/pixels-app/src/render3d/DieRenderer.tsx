@@ -13,7 +13,7 @@ import { Text } from "react-native-paper";
 import { MeshLine, MeshLineMaterial } from "./MeshLine";
 import { createDie3DAsync } from "./createDie3DAsync";
 
-import Die3D from "@/pixels-three/Die3D";
+import Die3D from "~/pixels-three/Die3D";
 
 function addMagicRing(scene: THREE.Object3D, scale = 1) {
   const makeRing = (

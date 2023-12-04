@@ -1,4 +1,4 @@
-import { Condition, ConditionType } from "@/temp";
+import { Condition, ConditionType } from "~/temp";
 
 export function useCondition(condition: Condition): {
   type: ConditionType;

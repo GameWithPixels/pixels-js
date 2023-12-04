@@ -27,9 +27,9 @@ import { getBorderColor, getTextColorStyle, makeTransparent } from "./utils";
 
 import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
-import { useProfile } from "@/hooks";
-import { DieRenderer } from "@/render3d/DieRenderer";
-import { PixelProfile } from "@/temp";
+import { useProfile } from "~/hooks";
+import { DieRenderer } from "~/render3d/DieRenderer";
+import { PixelProfile } from "~/temp";
 
 export function ProfileCard({
   profile,

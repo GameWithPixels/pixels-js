@@ -21,8 +21,8 @@ import {
   getStackNavigationOptions,
   HomeStackParamList,
   HomeStackProps,
-} from "@/navigation";
-import { getRootScreenTheme } from "@/themes";
+} from "~/navigation";
+import { getRootScreenTheme } from "~/themes";
 
 const Stack = createStackNavigator<HomeStackParamList>();
 

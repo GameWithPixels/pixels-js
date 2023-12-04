@@ -17,19 +17,19 @@ import Animated, {
 import AnimationsIcon from "#/icons/navigation/animations";
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import SpeakIcon from "#/icons/profiles/speak";
-import { TouchableCardProps, TouchableCard } from "@/components/TouchableCard";
-import { Banner } from "@/components/banners";
+import { TouchableCardProps, TouchableCard } from "~/components/TouchableCard";
+import { Banner } from "~/components/banners";
 import {
   GradientButton,
   OutlineButton,
   TightTextButton,
-} from "@/components/buttons";
-import { getConditionTypeLabel } from "@/descriptions";
-import { useConfirmActionSheet, useProfile, useProfiles } from "@/hooks";
-import { ProfilesStackParamList } from "@/navigation";
-import { DieRenderer } from "@/render3d/DieRenderer";
-import { ConditionType } from "@/temp";
-import { Colors } from "@/themes";
+} from "~/components/buttons";
+import { getConditionTypeLabel } from "~/descriptions";
+import { useConfirmActionSheet, useProfile, useProfiles } from "~/hooks";
+import { ProfilesStackParamList } from "~/navigation";
+import { DieRenderer } from "~/render3d/DieRenderer";
+import { ConditionType } from "~/temp";
+import { Colors } from "~/themes";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
   return <Text variant="titleMedium">{children}</Text>;

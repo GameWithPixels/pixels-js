@@ -1,4 +1,4 @@
-import { ColorDesign } from "@/temp";
+import { ColorDesign } from "~/temp";
 
 export function useColorDesign(design: ColorDesign): {
   name: string;

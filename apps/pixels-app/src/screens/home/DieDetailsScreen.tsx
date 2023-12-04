@@ -10,16 +10,16 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Switch, Text, useTheme } from "react-native-paper";
 
 import RollsPerFaceIcon from "#/icons/home/rolls-per-face";
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { Banner } from "@/components/banners";
-import { StatsViewMode, StatsViewModeButton } from "@/components/buttons";
-import { ProfileCard } from "@/components/profile";
-import { StatsBarGraph, StatsGrid, StatsList } from "@/components/stats";
-import { getRollStats } from "@/data";
-import { usePixelProfile, usePairedPixel } from "@/hooks";
-import { DieDetailsScreenProps, HomeStackParamList } from "@/navigation";
-import { Colors } from "@/themes";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { Banner } from "~/components/banners";
+import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
+import { ProfileCard } from "~/components/profile";
+import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
+import { getRollStats } from "~/data";
+import { usePixelProfile, usePairedPixel } from "~/hooks";
+import { DieDetailsScreenProps, HomeStackParamList } from "~/navigation";
+import { Colors } from "~/themes";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
   return (

@@ -9,8 +9,8 @@ import {
   getStackNavigationOptions,
   SettingsStackParamList,
   SettingsStackProps,
-} from "@/navigation";
-import { getRootScreenTheme } from "@/themes";
+} from "~/navigation";
+import { getRootScreenTheme } from "~/themes";
 
 const Stack = createStackNavigator<SettingsStackParamList>();
 

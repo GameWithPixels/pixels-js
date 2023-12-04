@@ -22,14 +22,14 @@ import {
   createAnimationOverride,
 } from "./EditAnimationOverrides";
 
-import { FacesGrid } from "@/components/FacesGrid";
-import { SliderWithValue } from "@/components/SliderWithTitle";
-import { AnimationsGrid } from "@/components/animation";
-import { GradientButton } from "@/components/buttons";
-import { getConditionTypeLabel } from "@/descriptions";
-import { useAnimations, useConfirmActionSheet } from "@/hooks";
-import { ActionType, ConditionType, PixelAnimation } from "@/temp";
-import { getBottomSheetBackgroundStyle } from "@/themes";
+import { FacesGrid } from "~/components/FacesGrid";
+import { SliderWithValue } from "~/components/SliderWithTitle";
+import { AnimationsGrid } from "~/components/animation";
+import { GradientButton } from "~/components/buttons";
+import { getConditionTypeLabel } from "~/descriptions";
+import { useAnimations, useConfirmActionSheet } from "~/hooks";
+import { ActionType, ConditionType, PixelAnimation } from "~/temp";
+import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function PickAnimationModal({
   animation,

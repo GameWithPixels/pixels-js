@@ -11,8 +11,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { makeTransparent } from "./utils";
 
-import { RootScreenName } from "@/navigation";
-import { getRootScreenTheme } from "@/themes";
+import { RootScreenName } from "~/navigation";
+import { getRootScreenTheme } from "~/themes";
 
 function TabButton({
   label,

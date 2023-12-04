@@ -42,7 +42,7 @@ import { GradientButton, OutlineButton } from "./buttons";
 import { DieWireframeCard } from "./cards";
 import { makeTransparent } from "./utils";
 
-import { getBottomSheetBackgroundStyle } from "@/themes";
+import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function LightUpYourGameImage({
   height,

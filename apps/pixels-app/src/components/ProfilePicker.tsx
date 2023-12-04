@@ -9,8 +9,8 @@ import Animated, {
 import { AnimatedProfileSearchbar } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
-import { useProfiles } from "@/hooks";
-import { PixelProfile } from "@/temp";
+import { useProfiles } from "~/hooks";
+import { PixelProfile } from "~/temp";
 
 export function ProfilePicker({
   selected,

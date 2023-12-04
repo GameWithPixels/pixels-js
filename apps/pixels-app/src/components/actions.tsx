@@ -4,7 +4,7 @@ import { StyleProp, TextStyle } from "react-native";
 
 import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
-import { ActionTypeValues, ActionType } from "@/temp";
+import { ActionTypeValues, ActionType } from "~/temp";
 
 export const actionTypes = (
   Object.keys(ActionTypeValues) as ActionType[]

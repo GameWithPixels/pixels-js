@@ -1,6 +1,6 @@
 import React from "react";
 
-import { PixelAnimation } from "@/temp";
+import { PixelAnimation } from "~/temp";
 
 export interface AnimationsContextData {
   animations: PixelAnimation[];

@@ -11,8 +11,8 @@ import {
   AnimationsStackParamList,
   AnimationsStackProps,
   getStackNavigationOptions,
-} from "@/navigation";
-import { getRootScreenTheme } from "@/themes";
+} from "~/navigation";
+import { getRootScreenTheme } from "~/themes";
 
 const Stack = createStackNavigator<AnimationsStackParamList>();
 

@@ -2,14 +2,14 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
-import { AppBackground } from "@/components/AppBackground";
-import { ColorDesignPicker } from "@/components/ColorDesignPicker";
-import { PageHeader } from "@/components/PageHeader";
+import { AppBackground } from "~/components/AppBackground";
+import { ColorDesignPicker } from "~/components/ColorDesignPicker";
+import { PageHeader } from "~/components/PageHeader";
 import {
   AnimationsStackParamList,
   PickColorDesignScreenProps,
-} from "@/navigation";
-import { ColorDesign } from "@/temp";
+} from "~/navigation";
+import { ColorDesign } from "~/temp";
 
 function PickColorDesignPage({
   colorDesign,

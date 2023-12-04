@@ -4,9 +4,9 @@ import { useLocales } from "expo-localization";
 import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { SettingsInfoScreenProps, SettingsStackParamList } from "@/navigation";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { SettingsInfoScreenProps, SettingsStackParamList } from "~/navigation";
 
 function SystemInfoPage({
   navigation,

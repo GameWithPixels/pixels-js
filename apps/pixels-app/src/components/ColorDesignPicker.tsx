@@ -5,8 +5,8 @@ import { Text } from "react-native-paper";
 import { SortButton, SortMode } from "./buttons";
 import { ColorDesignGrid } from "./designs";
 
-import { useColorDesigns } from "@/hooks/useColorDesigns";
-import { ColorDesign } from "@/temp";
+import { useColorDesigns } from "~/hooks/useColorDesigns";
+import { ColorDesign } from "~/temp";
 
 export function ColorDesignPicker({
   colorDesign,

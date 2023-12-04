@@ -4,13 +4,13 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { GradientButton, TightTextButton } from "@/components/buttons";
-import { ProfilesGrid } from "@/components/profile";
-import { createProfile } from "@/data";
-import { useProfiles } from "@/hooks";
-import { CreateProfileScreenProps, ProfilesStackParamList } from "@/navigation";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { GradientButton, TightTextButton } from "~/components/buttons";
+import { ProfilesGrid } from "~/components/profile";
+import { createProfile } from "~/data";
+import { useProfiles } from "~/hooks";
+import { CreateProfileScreenProps, ProfilesStackParamList } from "~/navigation";
 
 function CreateProfilePage({
   navigation,

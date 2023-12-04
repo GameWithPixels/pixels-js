@@ -4,16 +4,16 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
-import { AnimationsGrid } from "@/components/animation";
-import { GradientButton, TightTextButton } from "@/components/buttons";
-import { createAnimation } from "@/data";
-import { useAnimations } from "@/hooks";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
+import { AnimationsGrid } from "~/components/animation";
+import { GradientButton, TightTextButton } from "~/components/buttons";
+import { createAnimation } from "~/data";
+import { useAnimations } from "~/hooks";
 import {
   AnimationsStackParamList,
   CreateAnimationScreenProps,
-} from "@/navigation";
+} from "~/navigation";
 
 function CreateAnimationPage({
   navigation,

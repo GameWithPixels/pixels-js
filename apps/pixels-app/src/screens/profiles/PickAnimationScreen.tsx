@@ -2,14 +2,14 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
-import { AnimationPicker } from "@/components/AnimationPicker";
-import { AppBackground } from "@/components/AppBackground";
-import { PageHeader } from "@/components/PageHeader";
+import { AnimationPicker } from "~/components/AnimationPicker";
+import { AppBackground } from "~/components/AppBackground";
+import { PageHeader } from "~/components/PageHeader";
 import {
   EditProfileSubStackParamList,
   PickAnimationScreenProps,
-} from "@/navigation";
-import { PixelAnimation } from "@/temp";
+} from "~/navigation";
+import { PixelAnimation } from "~/temp";
 
 function PickAnimationPage({
   animation,

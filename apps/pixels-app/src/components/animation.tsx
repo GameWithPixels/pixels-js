@@ -7,9 +7,9 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { getTextColorStyle } from "./utils";
 
-import { useAnimation } from "@/hooks";
-import { DieRenderer } from "@/render3d/DieRenderer";
-import { PixelAnimation } from "@/temp";
+import { useAnimation } from "~/hooks";
+import { DieRenderer } from "~/render3d/DieRenderer";
+import { PixelAnimation } from "~/temp";
 
 export function AnimationCard({
   animation,

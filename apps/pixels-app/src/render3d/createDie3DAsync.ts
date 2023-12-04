@@ -12,7 +12,7 @@ import { loadAsync, THREE } from "expo-three";
 import "./readAsArrayBuffer";
 import { ensureAssetReadableAsync } from "./ensureAssetReadableAsync";
 
-import Die3D from "@/pixels-three/Die3D";
+import Die3D from "~/pixels-three/Die3D";
 
 function getGlbAsset(dieType: PixelDieType): number {
   switch (dieType) {

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ColorDesign } from "@/temp";
+import { ColorDesign } from "~/temp";
 
 export interface ColorDesignsContextData {
   colorDesigns: ColorDesign[];
