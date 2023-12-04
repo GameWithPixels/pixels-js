@@ -1,4 +1,4 @@
-import { ColorDesign } from "@systemic-games/pixels-core-connect";
+import { ColorDesign } from "@/temp";
 
 export function useColorDesign(design: ColorDesign): {
   name: string;

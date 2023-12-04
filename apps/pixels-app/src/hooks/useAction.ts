@@ -1,4 +1,4 @@
-import { Action, ActionType } from "@systemic-games/pixels-core-connect";
+import { Action, ActionType } from "@/temp";
 
 export function useAction(action: Action): {
   type: ActionType;

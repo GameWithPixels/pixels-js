@@ -7,11 +7,10 @@ import {
   RouteProp,
 } from "@react-navigation/native";
 import {
+  getPixel,
   Pixel,
-  PixelAnimation,
-  PixelProfile,
   ScannedPixel,
-} from "@systemic-games/pixels-core-connect";
+} from "@systemic-games/react-native-pixels-connect";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -66,6 +65,7 @@ import AnimationsIcon from "#/icons/navigation/animations";
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
+import { PixelAnimation, PixelProfile } from "@/temp";
 
 LogBox.ignoreLogs(["THREE.WebGLProgram: Program Info Log:"]);
 
@@ -84,7 +84,7 @@ function getTabBarStyle<T extends object>(
 
 function createAndConnect(sp: ScannedPixel): Pixel {
   // Pair all initially scanned dice
-  const pixel = new Pixel(sp);
+  const pixel = getPixel(sp.pixelId);
   // Auto connect to dice
   pixel.connect().catch((e) => console.log(`Connection error: ${e}`));
   return pixel;

@@ -1,7 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { ConditionType } from "@systemic-games/pixels-core-connect";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Pressable, View, ViewProps } from "react-native";
@@ -29,6 +28,7 @@ import { getConditionTypeLabel } from "@/descriptions";
 import { useConfirmActionSheet, useProfile, useProfiles } from "@/hooks";
 import { ProfilesStackParamList } from "@/navigation";
 import { DieRenderer } from "@/render3d/DieRenderer";
+import { ConditionType } from "@/temp";
 import { Colors } from "@/themes";
 
 function SectionTitle({ children }: React.PropsWithChildren) {

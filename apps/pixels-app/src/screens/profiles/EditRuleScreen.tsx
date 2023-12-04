@@ -1,9 +1,4 @@
 import { StackNavigationProp } from "@react-navigation/stack";
-import {
-  Action,
-  ActionType,
-  ActionTypeValues,
-} from "@systemic-games/pixels-core-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
@@ -19,6 +14,7 @@ import {
   EditProfileSubStackParamList,
   EditRuleScreenProps,
 } from "@/navigation";
+import { Action, ActionType, ActionTypeValues } from "@/temp";
 
 function EditRulePage({
   profileUuid,

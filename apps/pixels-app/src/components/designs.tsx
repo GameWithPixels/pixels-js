@@ -1,5 +1,5 @@
-import { ColorDesign, PixelDieType } from "@systemic-games/pixels-core-connect";
 import { range } from "@systemic-games/pixels-core-utils";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
 import React from "react";
 import { View } from "react-native";
@@ -9,6 +9,7 @@ import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
 import { useColorDesign } from "@/hooks";
 import { DieRenderer } from "@/render3d/DieRenderer";
+import { ColorDesign } from "@/temp";
 
 export function ColorDesignCard({
   design,

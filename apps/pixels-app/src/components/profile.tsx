@@ -4,12 +4,9 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import {
-  PixelProfile,
-  PixelDieType,
-} from "@systemic-games/pixels-core-connect";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { View, ViewProps } from "react-native";
@@ -32,6 +29,7 @@ import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
 import { useProfile } from "@/hooks";
 import { DieRenderer } from "@/render3d/DieRenderer";
+import { PixelProfile } from "@/temp";
 
 export function ProfileCard({
   profile,

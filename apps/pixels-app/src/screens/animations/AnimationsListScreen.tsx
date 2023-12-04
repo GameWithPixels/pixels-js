@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { PixelAnimation } from "@systemic-games/pixels-core-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { Divider, IconButton, Menu, useTheme } from "react-native-paper";
@@ -18,6 +17,7 @@ import {
   AnimationsStackParamList,
 } from "@/navigation";
 import { AppStyles } from "@/styles";
+import { PixelAnimation } from "@/temp";
 
 type ProfilesViewMode = "list" | "grid";
 

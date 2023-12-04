@@ -1,4 +1,4 @@
-import { Pixel } from "@systemic-games/pixels-core-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 export interface PixelDfuStatus {

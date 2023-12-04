@@ -1,5 +1,4 @@
 import { StackNavigationProp } from "@react-navigation/stack";
-import { ColorDesign } from "@systemic-games/pixels-core-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
@@ -10,6 +9,7 @@ import {
   AnimationsStackParamList,
   PickColorDesignScreenProps,
 } from "@/navigation";
+import { ColorDesign } from "@/temp";
 
 function PickColorDesignPage({
   colorDesign,

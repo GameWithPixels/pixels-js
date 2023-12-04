@@ -1,7 +1,4 @@
-import {
-  PixelDieType,
-  PixelProfile,
-} from "@systemic-games/pixels-core-connect";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import Animated, {
@@ -13,6 +10,7 @@ import { AnimatedProfileSearchbar } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
 import { useProfiles } from "@/hooks";
+import { PixelProfile } from "@/temp";
 
 export function ProfilePicker({
   selected,
@@ -38,7 +36,7 @@ export function ProfilePicker({
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingBottom: 10 }}
         scrollEventThrottle={16}
-        contentOffset={{ y: searchbarHeight }}
+        contentOffset={{ x: 0, y: searchbarHeight }}
         snapToOffsets={[0, searchbarHeight]}
         snapToEnd={false}
       >

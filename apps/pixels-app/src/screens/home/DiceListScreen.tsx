@@ -6,7 +6,10 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { Pixel, ScannedPixel } from "@systemic-games/pixels-core-connect";
+import {
+  Pixel,
+  ScannedPixel,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import {

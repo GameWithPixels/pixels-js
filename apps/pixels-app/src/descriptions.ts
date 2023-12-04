@@ -1,5 +1,6 @@
-import { ActionType, ConditionType } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
+
+import { ActionType, ConditionType } from "@/temp";
 
 export function getConditionTypeLabel(type: ConditionType): string {
   switch (type) {

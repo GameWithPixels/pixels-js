@@ -1,7 +1,8 @@
-import { Pixel, PixelProfile } from "@systemic-games/pixels-core-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { defaultProfile } from "@/data";
+import { PixelProfile } from "@/temp";
 
 export interface ActiveProfile {
   pixel: Pixel;

@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pixel } from "@systemic-games/pixels-core-connect";
 import { range } from "@systemic-games/pixels-core-utils";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { View, ViewProps } from "react-native";
 import { useTheme } from "react-native-paper";
 

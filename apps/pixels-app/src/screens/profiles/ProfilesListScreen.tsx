@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { PixelProfile } from "@systemic-games/pixels-core-connect";
 import React from "react";
 import { View } from "react-native";
 import { Divider, IconButton, Menu, useTheme } from "react-native-paper";
@@ -20,6 +19,7 @@ import { ProfilesGrid, ProfilesList } from "@/components/profile";
 import { useProfiles } from "@/hooks";
 import { ProfilesListScreenProps, ProfilesStackParamList } from "@/navigation";
 import { AppStyles } from "@/styles";
+import { PixelProfile } from "@/temp";
 
 type ProfilesViewMode = "list" | "grid";
 

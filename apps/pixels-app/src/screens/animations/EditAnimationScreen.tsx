@@ -1,5 +1,4 @@
 import { StackNavigationProp } from "@react-navigation/stack";
-import { ColorDesign } from "@systemic-games/pixels-core-connect";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { View, ScrollView } from "react-native";
@@ -20,6 +19,7 @@ import {
   EditAnimationScreenProps,
 } from "@/navigation";
 import { DieRenderer } from "@/render3d/DieRenderer";
+import { ColorDesign } from "@/temp";
 
 function EditAnimationPage({
   animationUuid,

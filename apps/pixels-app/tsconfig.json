@@ -1,18 +1,40 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "./../../tsconfig.expo",
   "compilerOptions": {
-    "strict": true,
+    "outDir": "./dist",
+    "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
+      "@systemic-games/*": [
+        "./../../packages/*/src"
+      ],
       "@/*": [
         "src/*"
       ],
       "#/*": [
         "assets/*"
       ],
-      "@systemic-games/*": [
-        "@systemic-games/*"
-      ]
     }
-  }
+  },
+  "files": [
+    "assets/profiles/standard-profiles.json",
+  ],
+  "include": [
+    "src/**/*",
+    "assets/icons/**/*",
+  ],
+  "references": [
+    {
+      "path": "./../../packages/react-native-pixels-components"
+    },
+    {
+      "path": "./../../packages/react-native-pixels-connect"
+    },
+    {
+      "path": "./../../packages/pixels-edit-animation"
+    },
+    {
+      "path": "./../../packages/pixels-three"
+    }
+  ]
 }

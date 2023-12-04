@@ -5,13 +5,12 @@ import {
 } from "@expo/vector-icons";
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { StackNavigationProp } from "@react-navigation/stack";
-import {
-  Pixel,
-  PixelProfile,
-  usePixelStatus,
-} from "@systemic-games/pixels-core-connect";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import {
+  Pixel,
+  usePixelStatus,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import {
   Platform,
@@ -58,6 +57,7 @@ import { usePixelProfile } from "@/hooks";
 import { HomeStackParamList } from "@/navigation";
 import { DieRenderer } from "@/render3d/DieRenderer";
 import { AppStyles } from "@/styles";
+import { PixelProfile } from "@/temp";
 import { getBottomSheetBackgroundStyle } from "@/themes";
 
 function ChevronDownIcon({

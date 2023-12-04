@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { PixelDieType } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
 import { ColorValue, TextProps, View, ViewProps } from "react-native";
 import { useTheme } from "react-native-paper";

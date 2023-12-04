@@ -1,20 +1,22 @@
 import {
-  Action,
-  ColorDesign,
-  Condition,
   DiceUtils,
   Pixel,
-  PixelAnimation,
   PixelColorway,
   PixelColorwayValues,
   PixelDieType,
-  PixelProfile,
   PixelRollState,
-  Rule,
   ScannedPixel,
-} from "@systemic-games/pixels-core-connect";
+} from "@systemic-games/react-native-pixels-connect";
 
 import { dieTypes } from "./dieTypes";
+import {
+  Action,
+  ColorDesign,
+  Condition,
+  PixelAnimation,
+  PixelProfile,
+  Rule,
+} from "./temp";
 
 const names = [
   "Verkol",
@@ -67,6 +69,7 @@ export function createScannedPixel(): ScannedPixel {
   const ledCount = DiceUtils.getLEDCount(dieType);
   const sp = {
     systemId: String(id),
+    address: id,
     pixelId: id,
     name,
     ledCount,
@@ -82,6 +85,7 @@ export function createScannedPixel(): ScannedPixel {
     isCharging: false,
     rollState: "onFace" as PixelRollState,
     currentFace: randomRoll(dieType),
+    timestamp: new Date(),
   };
   allScannedPixels.push(sp);
   for (const f of listeners) {

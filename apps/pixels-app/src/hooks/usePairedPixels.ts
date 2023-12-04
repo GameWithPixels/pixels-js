@@ -1,5 +1,8 @@
-import { Pixel, ScannedPixel } from "@systemic-games/pixels-core-connect";
 import { assert } from "@systemic-games/pixels-core-utils";
+import {
+  Pixel,
+  ScannedPixel,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 export interface PairedPixelsContextData {

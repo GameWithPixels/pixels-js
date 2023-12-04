@@ -1,5 +1,6 @@
-import { ColorDesign } from "@systemic-games/pixels-core-connect";
 import React from "react";
+
+import { ColorDesign } from "@/temp";
 
 export interface ColorDesignsContextData {
   colorDesigns: ColorDesign[];

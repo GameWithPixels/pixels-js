@@ -6,13 +6,8 @@ import {
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import {
-  ActionType,
-  ConditionType,
-  DiceUtils,
-  PixelAnimation,
-} from "@systemic-games/pixels-core-connect";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { DiceUtils } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, Platform } from "react-native";
 import { Button, Text, ThemeProvider, useTheme } from "react-native-paper";
@@ -33,6 +28,7 @@ import { AnimationsGrid } from "@/components/animation";
 import { GradientButton } from "@/components/buttons";
 import { getConditionTypeLabel } from "@/descriptions";
 import { useAnimations, useConfirmActionSheet } from "@/hooks";
+import { ActionType, ConditionType, PixelAnimation } from "@/temp";
 import { getBottomSheetBackgroundStyle } from "@/themes";
 
 function PickAnimationModal({

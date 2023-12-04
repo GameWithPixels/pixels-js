@@ -1,7 +1,5 @@
+import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-
-// Don't import from ./core-connect/index to avoid require cycle
-import { ScannedPixel } from "@/../@systemic-games/pixels-core-connect/ScannedPixel";
 
 export interface ScannedPixelsContextData {
   scannedPixels: ScannedPixel[];

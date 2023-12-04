@@ -1,4 +1,3 @@
-import { ColorDesign } from "@systemic-games/pixels-core-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
@@ -7,6 +6,7 @@ import { SortButton, SortMode } from "./buttons";
 import { ColorDesignGrid } from "./designs";
 
 import { useColorDesigns } from "@/hooks/useColorDesigns";
+import { ColorDesign } from "@/temp";
 
 export function ColorDesignPicker({
   colorDesign,

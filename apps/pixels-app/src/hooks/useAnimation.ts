@@ -1,5 +1,6 @@
-import { PixelAnimation } from "@systemic-games/pixels-core-connect";
 import { assert } from "@systemic-games/pixels-core-utils";
+
+import { PixelAnimation } from "@/temp";
 
 export function useAnimation(
   animOrUuid: PixelAnimation | string,

@@ -1,8 +1,8 @@
+import { range } from "@systemic-games/pixels-core-utils";
 import {
   PixelColorway,
   PixelDieType,
-} from "@systemic-games/pixels-core-connect";
-import { range } from "@systemic-games/pixels-core-utils";
+} from "@systemic-games/react-native-pixels-connect";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 import React from "react";

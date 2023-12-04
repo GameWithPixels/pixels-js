@@ -1,5 +1,6 @@
-import { PixelProfile } from "@systemic-games/pixels-core-connect";
 import React from "react";
+
+import { PixelProfile } from "@/temp";
 
 export interface ProfilesContextData {
   profiles: PixelProfile[];

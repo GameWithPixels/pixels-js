@@ -1,9 +1,6 @@
-import {
-  ActionType,
-  ConditionType,
-  PixelProfile,
-} from "@systemic-games/pixels-core-connect";
 import { assert } from "@systemic-games/pixels-core-utils";
+
+import { ActionType, ConditionType, PixelProfile } from "@/temp";
 
 export function useRule(
   profileUuid: string,

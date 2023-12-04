@@ -4,9 +4,9 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { Pixel } from "@systemic-games/pixels-core-connect";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { Image, ImageProps } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";

@@ -1,7 +1,7 @@
 import {
   PixelDieTypeValues,
   PixelDieType,
-} from "@systemic-games/pixels-core-connect";
+} from "@systemic-games/react-native-pixels-connect";
 
 export const dieTypes = (
   Object.keys(PixelDieTypeValues) as PixelDieType[]

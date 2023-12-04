@@ -1,11 +1,11 @@
 import {
-  PixelDieType,
-  PixelColorway,
-} from "@systemic-games/pixels-core-connect";
-import {
   createTypedEventEmitter,
   assertNever,
 } from "@systemic-games/pixels-core-utils";
+import {
+  PixelDieType,
+  PixelColorway,
+} from "@systemic-games/react-native-pixels-connect";
 import { Asset } from "expo-asset";
 import { loadAsync, THREE } from "expo-three";
 
@@ -177,7 +177,7 @@ async function loadMaterialAsync(
       require("#/textures/dice/normals.png"),
       "textures/normals.png"
     );
-    if (colorway !== "onyxBlack" && colorway !== "auroraClear") {
+    if (colorway !== "onyxBlack" && colorway !== "clear") {
       material.roughnessMap = await loadTextureAsync(
         require("#/textures/dice/roughness.png"),
         "textures/roughness.png"
@@ -255,7 +255,7 @@ async function loadMaterialAsync(
         material.iridescence = 0.1;
         material.sheen = 0;
         break;
-      case "auroraClear":
+      case "clear":
         material.map = await loadTextureAsync(
           require("#/textures/dice/clear-base.png"),
           "textures/clear-base.png"

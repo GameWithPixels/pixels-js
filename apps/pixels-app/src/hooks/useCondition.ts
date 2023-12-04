@@ -1,4 +1,4 @@
-import { Condition, ConditionType } from "@systemic-games/pixels-core-connect";
+import { Condition, ConditionType } from "@/temp";
 
 export function useCondition(condition: Condition): {
   type: ConditionType;

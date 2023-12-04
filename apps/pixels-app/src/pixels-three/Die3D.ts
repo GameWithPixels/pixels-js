@@ -1,7 +1,7 @@
 import {
   PixelColorway,
   PixelDieType,
-} from "@systemic-games/pixels-core-connect";
+} from "@systemic-games/react-native-pixels-connect";
 import * as THREE from "three";
 
 export default class Die3D extends THREE.Object3D {

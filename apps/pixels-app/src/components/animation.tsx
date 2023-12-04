@@ -1,8 +1,5 @@
-import {
-  PixelAnimation,
-  PixelDieType,
-} from "@systemic-games/pixels-core-connect";
 import { range } from "@systemic-games/pixels-core-utils";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -12,6 +9,7 @@ import { getTextColorStyle } from "./utils";
 
 import { useAnimation } from "@/hooks";
 import { DieRenderer } from "@/render3d/DieRenderer";
+import { PixelAnimation } from "@/temp";
 
 export function AnimationCard({
   animation,

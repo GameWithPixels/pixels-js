@@ -1,9 +1,9 @@
+import { usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
   PixelDieType,
   ScannedPixel,
-  usePixelStatus,
-} from "@systemic-games/pixels-core-connect";
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Text, useTheme } from "react-native-paper";

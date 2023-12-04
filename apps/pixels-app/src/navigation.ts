@@ -1,11 +1,9 @@
 import { StackScreenProps, TransitionPresets } from "@react-navigation/stack";
 import { StackNavigationOptions } from "@react-navigation/stack/lib/typescript/src/types";
-import {
-  ColorDesign,
-  PixelAnimation,
-} from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Platform } from "react-native";
+
+import { ColorDesign, PixelAnimation } from "@/temp";
 
 // Root screens
 export type BottomTabParamList = {

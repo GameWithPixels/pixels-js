@@ -1,9 +1,7 @@
-import { Action, ConditionType } from "@systemic-games/pixels-core-connect";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { View, ViewProps } from "react-native";
-import { useTheme, Text, TouchableRipple, Switch } from "react-native-paper";
+import { useTheme, Text, Switch } from "react-native-paper";
 import Animated, {
   AnimateProps,
   CurvedTransition,
@@ -20,10 +18,10 @@ import { ConfigureAnimationModal } from "./ConfigureAnimationModal";
 
 import { TouchableCard } from "@/components/TouchableCard";
 import { ActionTypeIcon } from "@/components/actions";
-import { getBorderColor, makeTransparent } from "@/components/utils";
 import { getActionTypeLabel } from "@/descriptions";
 import { useAction } from "@/hooks";
 import { DieRenderer } from "@/render3d/DieRenderer";
+import { Action, ConditionType } from "@/temp";
 import { Colors } from "@/themes";
 
 function EditActionContents({

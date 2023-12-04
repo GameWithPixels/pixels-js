@@ -1,5 +1,4 @@
 import { StackNavigationProp } from "@react-navigation/stack";
-import { PixelAnimation } from "@systemic-games/pixels-core-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
@@ -10,6 +9,7 @@ import {
   EditProfileSubStackParamList,
   PickAnimationScreenProps,
 } from "@/navigation";
+import { PixelAnimation } from "@/temp";
 
 function PickAnimationPage({
   animation,

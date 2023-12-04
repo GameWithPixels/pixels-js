@@ -1,6 +1,9 @@
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { Pixel, usePixelStatus } from "@systemic-games/pixels-core-connect";
+import {
+  Pixel,
+  usePixelStatus,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";

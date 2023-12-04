@@ -1,5 +1,6 @@
-import { PixelAnimation } from "@systemic-games/pixels-core-connect";
 import React from "react";
+
+import { PixelAnimation } from "@/temp";
 
 export interface AnimationsContextData {
   animations: PixelAnimation[];

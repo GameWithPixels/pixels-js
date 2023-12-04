@@ -1,13 +1,10 @@
 import { MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
-import {
-  ActionTypeValues,
-  ActionType,
-} from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { StyleProp, TextStyle } from "react-native";
 
 import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
+import { ActionTypeValues, ActionType } from "@/temp";
 
 export const actionTypes = (
   Object.keys(ActionTypeValues) as ActionType[]
@@ -49,7 +46,7 @@ export function ActionTypeIcon({
 }: {
   type: ActionType;
   size: number;
-    style: StyleProp<TextStyle>;
+  style: StyleProp<TextStyle>;
 }) {
   const Icon = getActionTypeIcon(type);
   // @ts-ignore
