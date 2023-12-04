@@ -3,7 +3,6 @@ import React from "react";
 import { View, ViewProps } from "react-native";
 import { useTheme, Text, Switch } from "react-native-paper";
 import Animated, {
-  AnimateProps,
   CurvedTransition,
   FadeIn,
   FadeOut,
@@ -16,6 +15,7 @@ import Animated, {
 
 import { ConfigureAnimationModal } from "./ConfigureAnimationModal";
 
+import { AnimatedText } from "~/components/AnimatedText";
 import { TouchableCard } from "~/components/TouchableCard";
 import { ActionTypeIcon } from "~/components/actions";
 import { getActionTypeLabel } from "~/descriptions";
@@ -23,6 +23,7 @@ import { useAction } from "~/hooks";
 import { DieRenderer } from "~/render3d/DieRenderer";
 import { Action, ConditionType } from "~/temp";
 import { Colors } from "~/themes";
+import { withAnimated } from "~/withAnimated";
 
 function EditActionContents({
   action,
@@ -139,24 +140,6 @@ function EditActionContents({
   );
 }
 
-// https://github.com/callstack/react-native-paper/issues/2364#issuecomment-1606736358
-export function withAnimated<T extends object>(
-  WrappedComponent: React.ComponentType<T>
-): React.ComponentClass<AnimateProps<T>, any> {
-  const displayName =
-    WrappedComponent.displayName || WrappedComponent.name || "Component";
-
-  class WithAnimated extends React.Component<T, any> {
-    static displayName = `WithAnimated(${displayName})`;
-
-    render(): React.ReactNode {
-      return <WrappedComponent {...this.props} />;
-    }
-  }
-  return Animated.createAnimatedComponent(WithAnimated);
-}
-
-const AnimatedText = withAnimated(Text);
 const AnimatedActionTypeIcon = withAnimated(ActionTypeIcon);
 const AnimatedEditActionContents = withAnimated(EditActionContents);
 

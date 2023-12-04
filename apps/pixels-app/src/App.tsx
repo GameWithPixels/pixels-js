@@ -8,6 +8,7 @@ import {
 } from "@react-navigation/native";
 import {
   getPixel,
+  initBluetooth,
   Pixel,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
@@ -33,19 +34,16 @@ import {
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
 import {
-  createScannedPixel,
   getDefaultAnimations,
   getDefaultColorDesigns,
   getDefaultProfiles,
 } from "./data";
-import { dieTypes } from "./dieTypes";
 import {
   ActiveProfile,
   ActiveProfilesContext,
   AnimationsContext,
   PairedPixelsContext,
   ProfilesContext,
-  ScannedPixelsContext,
 } from "./hooks";
 import { ColorDesignsContext } from "./hooks/useColorDesigns";
 import { SettingsContext } from "./hooks/useSettings";
@@ -69,6 +67,9 @@ import { PixelAnimation, PixelProfile } from "~/temp";
 
 LogBox.ignoreLogs(["THREE.WebGLProgram: Program Info Log:"]);
 
+// Initialize Bluetooth globally
+initBluetooth();
+
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 function getTabBarStyle<T extends object>(
@@ -80,14 +81,6 @@ function getTabBarStyle<T extends object>(
     route
   ) as keyof HomeStackParamList;
   return routeName && routeName !== name ? { display: "none" } : undefined;
-}
-
-function createAndConnect(sp: ScannedPixel): Pixel {
-  // Pair all initially scanned dice
-  const pixel = getPixel(sp.pixelId);
-  // Auto connect to dice
-  pixel.connect().catch((e) => console.log(`Connection error: ${e}`));
-  return pixel;
 }
 
 function AppPage() {
@@ -148,35 +141,21 @@ function AppPage() {
   );
 }
 
+function createAndConnect(sp: ScannedPixel): Pixel {
+  // Pair all initially scanned dice
+  const pixel = getPixel(sp.pixelId);
+  // Auto connect to dice
+  pixel.connect().catch((e) => console.log(`Connection error: ${e}`));
+  return pixel;
+}
+
 function AppDataProviders({ children }: React.PropsWithChildren) {
   // Settings
   const [showIntro, setShowIntro] = React.useState(false);
   const [showPromo, setShowPromo] = React.useState(true);
 
-  // Fake Pixels management
-  const [allScannedPixels, setScannedPixels] = React.useState<ScannedPixel[]>(
-    dieTypes.map(() => createScannedPixel())
-  );
-  const newScannedPixel = React.useCallback(
-    () =>
-      setScannedPixels((scannedPixels) => [
-        ...scannedPixels,
-        createScannedPixel(),
-      ]),
-    []
-  );
-  const [pixels, setPixels] = React.useState<Pixel[]>(() =>
-    allScannedPixels.map((sp) => createAndConnect(sp))
-  );
-  const resetScannedList = React.useCallback(
-    () =>
-      setScannedPixels((scannedPixels) =>
-        scannedPixels.filter(
-          (sp) => !pixels.every((p) => p.pixelId !== sp.pixelId)
-        )
-      ),
-    [pixels]
-  );
+  // Paired Pixels management
+  const [pixels, setPixels] = React.useState<Pixel[]>([]);
   const pairDie = React.useCallback((sp: ScannedPixel) => {
     setPixels((pixels) =>
       pixels.every((p) => sp.systemId !== p.systemId)
@@ -189,13 +168,6 @@ function AppDataProviders({ children }: React.PropsWithChildren) {
       pixels.includes(p) ? pixels.filter((p2) => p2 !== p) : pixels
     );
   }, []);
-  const scannedPixels = React.useMemo(
-    () =>
-      allScannedPixels.filter((sp) =>
-        pixels.every((p) => p.systemId !== sp.systemId)
-      ),
-    [allScannedPixels, pixels]
-  );
   const [activeProfiles, setActiveProfiles] = React.useState<ActiveProfile[]>(
     []
   );
@@ -264,49 +236,39 @@ function AppDataProviders({ children }: React.PropsWithChildren) {
         [showIntro, showPromo]
       )}
     >
-      <ScannedPixelsContext.Provider
+      <PairedPixelsContext.Provider
         value={React.useMemo(
-          () => ({ scannedPixels, newScannedPixel, resetScannedList }),
-          [newScannedPixel, resetScannedList, scannedPixels]
+          () => ({ pairedPixels: pixels, pairDie, unpairDie }),
+          [pairDie, pixels, unpairDie]
         )}
       >
-        <PairedPixelsContext.Provider
+        <ActiveProfilesContext.Provider
           value={React.useMemo(
-            () => ({ pairedPixels: pixels, pairDie, unpairDie }),
-            [pairDie, pixels, unpairDie]
+            () => ({ activeProfiles, changeProfile }),
+            [activeProfiles, changeProfile]
           )}
         >
-          <ActiveProfilesContext.Provider
+          <ProfilesContext.Provider
             value={React.useMemo(
-              () => ({ activeProfiles, changeProfile }),
-              [activeProfiles, changeProfile]
+              () => ({ profiles, addProfile, removeProfile }),
+              [addProfile, profiles, removeProfile]
             )}
           >
-            <ProfilesContext.Provider
+            <AnimationsContext.Provider
               value={React.useMemo(
-                () => ({ profiles, addProfile, removeProfile }),
-                [addProfile, profiles, removeProfile]
+                () => ({ animations, addAnimation, removeAnimation }),
+                [addAnimation, animations, removeAnimation]
               )}
             >
-              <AnimationsContext.Provider
-                value={React.useMemo(
-                  () => ({ animations, addAnimation, removeAnimation }),
-                  [addAnimation, animations, removeAnimation]
-                )}
+              <ColorDesignsContext.Provider
+                value={React.useMemo(() => ({ colorDesigns }), [colorDesigns])}
               >
-                <ColorDesignsContext.Provider
-                  value={React.useMemo(
-                    () => ({ colorDesigns }),
-                    [colorDesigns]
-                  )}
-                >
-                  {children}
-                </ColorDesignsContext.Provider>
-              </AnimationsContext.Provider>
-            </ProfilesContext.Provider>
-          </ActiveProfilesContext.Provider>
-        </PairedPixelsContext.Provider>
-      </ScannedPixelsContext.Provider>
+                {children}
+              </ColorDesignsContext.Provider>
+            </AnimationsContext.Provider>
+          </ProfilesContext.Provider>
+        </ActiveProfilesContext.Provider>
+      </PairedPixelsContext.Provider>
     </SettingsContext.Provider>
   );
 }

@@ -9,6 +9,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Pixel,
   ScannedPixel,
+  useScannedPixelNotifiers,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -40,7 +41,7 @@ import {
 } from "~/components/buttons";
 import { DieWireframeCard } from "~/components/cards";
 import { DiceGrid, DiceList } from "~/components/dice";
-import { usePairedPixels, useScannedPixels } from "~/hooks";
+import { usePairedPixels } from "~/hooks";
 import { useSettings } from "~/hooks/useSettings";
 import { DiceListScreenProps, HomeStackParamList } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -55,31 +56,20 @@ function PairDieBottomSheet({
   visible: boolean;
   onDismiss: (pixels?: ScannedPixel[]) => void;
 }) {
+  const [scannedPixels, dispatch] = useScannedPixelNotifiers();
+
   const sheetRef = React.useRef<BottomSheetModal>(null);
   React.useEffect(() => {
     if (visible) {
+      dispatch("start");
       sheetRef.current?.present();
     } else {
+      dispatch("stop");
       sheetRef.current?.dismiss();
     }
-  }, [visible]);
+  }, [dispatch, visible]);
 
-  const { scannedPixels, newScannedPixel, resetScannedList } =
-    useScannedPixels();
   const [selected, setSelected] = React.useState<ScannedPixel[]>([]);
-
-  React.useEffect(() => {
-    if (visible) {
-      const id = setInterval(() => newScannedPixel(), 3000);
-      return () => {
-        clearInterval(id);
-        setSelected([]);
-      };
-    } else {
-      resetScannedList();
-    }
-  }, [newScannedPixel, resetScannedList, visible]);
-
   const { bottom } = useSafeAreaInsets();
   const theme = useTheme();
   return (
@@ -297,7 +287,7 @@ function DiceListPage({
   return (
     <>
       <View style={{ height: "100%" }}>
-        {isFocus && selectedPixel && (
+        {isFocus && (
           <PixelFocusViewHeader
             pixel={selectedPixel}
             onUnpair={unpairDieWithConfirmation}
@@ -321,58 +311,54 @@ function DiceListPage({
           {isFocus && selectedPixel && (
             <PixelFocusView pixel={selectedPixel} navigation={navigation} />
           )}
-          {pairedPixels.length ? (
-            viewMode === "list" ? (
-              <DiceList
+          {pairedPixels.length === 0 && (
+            <Text>Tap on the (+) button to pair a die</Text>
+          )}
+          {viewMode === "list" ? (
+            <DiceList
+              pixels={pairedPixels}
+              onSelectDie={showDetails}
+              onPressNewDie={() => setPairVisible(true)}
+              style={{ marginTop: 40 }}
+            />
+          ) : (
+            <View style={{ gap: 10 }}>
+              {isFocus && (
+                <TightTextButton
+                  icon={({ size, color }) => (
+                    <MaterialCommunityIcons
+                      name="refresh"
+                      size={size}
+                      color={color}
+                    />
+                  )}
+                  style={{ alignSelf: "flex-start", marginTop: -5 }}
+                  onPress={() => {}}
+                >
+                  Bulp and Gork are missing! Tap to try to connect to them.
+                </TightTextButton>
+              )}
+              <DiceGrid
+                selection={isFocus ? selectedPixel : undefined}
+                numColumns={isFocus ? 4 : 2}
+                miniCards={isFocus}
                 pixels={pairedPixels}
                 onSelectDie={showDetails}
                 onPressNewDie={() => setPairVisible(true)}
-                style={{ marginTop: 40 }}
+                style={isFocus ? undefined : { marginTop: 40 }}
               />
-            ) : (
-              <View style={{ gap: 10 }}>
-                {isFocus && (
-                  <TightTextButton
-                    icon={({ size, color }) => (
-                      <MaterialCommunityIcons
-                        name="refresh"
-                        size={size}
-                        color={color}
-                      />
-                    )}
-                    style={{ alignSelf: "flex-start", marginTop: -5 }}
-                    onPress={() => {}}
-                  >
-                    Bulp and Gork are missing! Tap to try to connect to them.
-                  </TightTextButton>
-                )}
-                <DiceGrid
-                  selection={isFocus ? selectedPixel : undefined}
-                  numColumns={isFocus ? 4 : 2}
-                  miniCards={isFocus}
-                  pixels={pairedPixels}
-                  onSelectDie={showDetails}
-                  onPressNewDie={() => setPairVisible(true)}
-                  style={isFocus ? undefined : { marginTop: 40 }}
-                />
-                {isFocus && (
-                  <Banner
-                    visible={focusInfoBannerVisible && pairedPixels.length > 0}
-                    style={{ marginTop: 10 }}
-                    onDismiss={() => setFocusInfoBannerVisible(false)}
-                  >
-                    Focus mode shows information about the selected die. Tap on
-                    the 3D die to make your Pixels wave. Only connected dice are
-                    displayed in this view mode.
-                  </Banner>
-                )}
-              </View>
-            )
-          ) : (
-            <Text style={{ marginVertical: 40, alignSelf: "flex-start" }}>
-              No paired Pixels, press the (+) button on the bottom right corner
-              to add a die.
-            </Text>
+              {isFocus && (
+                <Banner
+                  visible={focusInfoBannerVisible && pairedPixels.length > 0}
+                  style={{ marginTop: 10 }}
+                  onDismiss={() => setFocusInfoBannerVisible(false)}
+                >
+                  Focus mode shows information about the selected die. Tap on
+                  the 3D die to make your Pixels wave. Only connected dice are
+                  displayed in this view mode.
+                </Banner>
+              )}
+            </View>
           )}
         </ScrollView>
       </View>

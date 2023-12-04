@@ -1,14 +1,5 @@
-import {
-  DiceUtils,
-  Pixel,
-  PixelColorway,
-  PixelColorwayValues,
-  PixelDieType,
-  PixelRollState,
-  ScannedPixel,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 
-import { dieTypes } from "./dieTypes";
 import {
   Action,
   ColorDesign,
@@ -18,80 +9,8 @@ import {
   Rule,
 } from "./temp";
 
-const names = [
-  "Verkol",
-  "Rutriel",
-  "Hudin",
-  "Lutos",
-  "Zoril",
-  "Joseph",
-  "Louie",
-  "Cameron",
-  "Theo",
-  "Owen",
-  "Cot",
-  "Orott",
-  "Noliss",
-  "Draffip",
-  "Dhorit",
-  "Shilgak",
-  "Zhalgir",
-  "Uffiss",
-  "Zhobisq",
-  "Affak",
-  "Czega",
-  "Duzzun",
-  "Penir",
-  "Nofor",
-  "Cziggad",
-  "Damir",
-  "Dmitriy",
-  "Ilarion",
-  "Leontiy",
-  "Krasimir",
-] as const;
-
-const allScannedPixels: ScannedPixel[] = [];
-const listeners: ((sp: ScannedPixel) => void)[] = [];
-
 function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function pickNext<T>(arr: readonly T[]): T {
-  return arr[allScannedPixels.length % arr.length];
-}
-
-export function createScannedPixel(): ScannedPixel {
-  const id = 1 + allScannedPixels.length;
-  const name = pick(names);
-  const dieType = pickNext(dieTypes) as PixelDieType;
-  const ledCount = DiceUtils.getLEDCount(dieType);
-  const sp = {
-    systemId: String(id),
-    address: id,
-    pixelId: id,
-    name,
-    ledCount,
-    colorway: pickNext(
-      Object.keys(PixelColorwayValues).filter(
-        (c) => c !== "unknown" && c !== "custom"
-      )
-    ) as PixelColorway,
-    dieType,
-    firmwareDate: new Date(),
-    rssi: Math.round(-40 - 40 * Math.random()),
-    batteryLevel: Math.round(1 + 99 * Math.random()),
-    isCharging: false,
-    rollState: "onFace" as PixelRollState,
-    currentFace: randomRoll(dieType),
-    timestamp: new Date(),
-  };
-  allScannedPixels.push(sp);
-  for (const f of listeners) {
-    f(sp);
-  }
-  return sp;
 }
 
 export function createAnimation(name: string): PixelAnimation {
@@ -185,13 +104,4 @@ export function getRollStats(pixel: Pixel): number[] {
   return Array(pixel.dieFaceCount)
     .fill(0)
     .map(() => 10 + Math.round(15 * Math.random()));
-}
-
-export function randomRoll(dieType: PixelDieType): number {
-  const faceCount = DiceUtils.getFaceCount(dieType);
-  return (
-    (Math.ceil(Math.random() * faceCount) -
-      (dieType === "d00" || dieType === "d10" ? 1 : 0)) *
-    (dieType === "d10" ? 10 : 1)
-  );
 }

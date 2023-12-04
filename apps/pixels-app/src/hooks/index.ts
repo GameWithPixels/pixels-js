@@ -10,4 +10,3 @@ export * from "./usePixelProfile";
 export * from "./useProfile";
 export * from "./useProfiles";
 export * from "./useRule";
-export * from "./useScannedPixels";

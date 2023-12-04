@@ -5,7 +5,6 @@ import {
 } from "@expo/vector-icons";
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
@@ -42,6 +41,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import CalibrateIcon from "#/icons/home/calibrate";
+import { AnimatedText } from "~/components/AnimatedText";
 import { Card } from "~/components/Card";
 import { ProfilePicker } from "~/components/ProfilePicker";
 import { Chip, GradientChip } from "~/components/buttons";
@@ -52,7 +52,6 @@ import {
   getIconColor,
   makeTransparent,
 } from "~/components/utils";
-import { randomRoll } from "~/data";
 import { usePixelProfile } from "~/hooks";
 import { HomeStackParamList } from "~/navigation";
 import { DieRenderer } from "~/render3d/DieRenderer";
@@ -177,7 +176,7 @@ export function PixelFocusViewHeader({
   onUnpair,
   navigation,
 }: {
-  pixel: Pixel;
+  pixel?: Pixel;
   onUnpair: () => void;
   navigation: StackNavigationProp<HomeStackParamList>;
 }) {
@@ -185,6 +184,11 @@ export function PixelFocusViewHeader({
   const disabled = status !== "ready";
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const [renameVisible, setRenameVisible] = React.useState(false);
+  React.useEffect(() => {
+    if (!pixel) {
+      setRenameVisible(false);
+    }
+  }, [pixel]);
   const textInputRef = React.useRef<RNTextInput>(null);
   React.useEffect(() => {
     if (renameVisible && textInputRef.current) {
@@ -192,13 +196,15 @@ export function PixelFocusViewHeader({
     }
   }, [renameVisible]);
   const { width: windowWidth } = useWindowDimensions();
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
   const color = actionsMenuVisible
     ? colors.onSurfaceDisabled
     : colors.onSurface;
   return (
     <View>
-      {!renameVisible ? (
+      {!pixel ? (
+        <View style={{ height: 10 + fonts.titleLarge.lineHeight }} />
+      ) : !renameVisible ? (
         <Pressable
           onPress={() => setActionsMenuVisible(true)}
           style={{
@@ -217,25 +223,31 @@ export function PixelFocusViewHeader({
           >
             {disabled ? `${status}...` : pixel.name}
           </Text>
-          <ChevronDownIcon
-            size={18}
-            color={color}
-            backgroundColor={makeTransparent(colors.onBackground, 0.2)}
-            style={{ marginBottom: 3 }}
-          />
-          <DieMenu
-            visible={actionsMenuVisible}
-            contentStyle={{
-              marginTop: Platform.select({ ios: 10, default: 2 }),
-              width: 250,
-            }}
-            anchor={{ x: (windowWidth - 250) / 2, y: 80 }}
-            onDismiss={() => setActionsMenuVisible(false)}
-            onFirmwareUpdate={() => navigation.navigate("firmwareUpdate")}
-            onRename={() => setRenameVisible(true)}
-            onUnpair={onUnpair}
-          />
-          <Badge style={{ position: "absolute", right: -15, top: 5 }}>!</Badge>
+          {!!pixel && (
+            <>
+              <ChevronDownIcon
+                size={18}
+                color={color}
+                backgroundColor={makeTransparent(colors.onBackground, 0.2)}
+                style={{ marginBottom: 3 }}
+              />
+              <DieMenu
+                visible={actionsMenuVisible}
+                contentStyle={{
+                  marginTop: Platform.select({ ios: 10, default: 2 }),
+                  width: 250,
+                }}
+                anchor={{ x: (windowWidth - 250) / 2, y: 80 }}
+                onDismiss={() => setActionsMenuVisible(false)}
+                onFirmwareUpdate={() => navigation.navigate("firmwareUpdate")}
+                onRename={() => setRenameVisible(true)}
+                onUnpair={onUnpair}
+              />
+              <Badge style={{ position: "absolute", right: -15, top: 5 }}>
+                !
+              </Badge>
+            </>
+          )}
         </Pressable>
       ) : (
         <TextInput
@@ -254,18 +266,16 @@ export function PixelFocusViewHeader({
   );
 }
 
-const AnimatedMaterialCommunityIcons = Animated.createAnimatedComponent(
-  MaterialCommunityIcons
-);
-
 function AnimatedDieIcon({
   value,
   size,
   color,
+  backgroundColor,
 }: {
   value: number;
   size: number;
   color: string;
+  backgroundColor: string;
 }) {
   const sharedSize = useSharedValue(size);
   React.useEffect(() => {
@@ -278,15 +288,21 @@ function AnimatedDieIcon({
     fontSize: sharedSize.value,
   }));
   return (
-    <AnimatedMaterialCommunityIcons
+    <Animated.View
       layout={CurvedTransition.easingX(Easing.bounce).duration(600)}
       entering={FadeIn.duration(400).delay(200)}
       exiting={FadeOut.duration(200)}
-      // @ts-ignore-error
-      name={`dice-${value}-outline`}
-      color={color}
-      style={animStyle}
-    />
+      style={{
+        alignItems: "center",
+        padding: 5,
+        paddingHorizontal: value < 10 ? 10 : 5,
+        borderRadius: 10,
+        borderCurve: "continuous",
+        backgroundColor,
+      }}
+    >
+      <AnimatedText style={[animStyle, { color }]}>{value}</AnimatedText>
+    </Animated.View>
   );
 }
 
@@ -301,28 +317,25 @@ export function PixelFocusView({
 } & Omit<ViewProps, "children">) {
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
-  const [lastRolls, setLastRolls] = React.useState(() =>
-    range(4).map(() => ({
-      key: Math.random().toString(),
-      value: randomRoll("d6"),
-    }))
-  );
-  // Fake rolls
+  const [lastRolls, setLastRolls] = React.useState<
+    { key: string; value: number }[]
+  >([]);
+  // Listen for rolls
   React.useEffect(() => {
-    let id: ReturnType<typeof setTimeout> | undefined;
-    const addRoll = () => {
+    const onRoll = (value: number) => {
       setLastRolls((rolls) => {
-        id = setTimeout(addRoll, Math.random() * 10000 + 5000);
-        const copy = [...rolls];
-        copy.shift();
-        copy.push({ key: Math.random().toString(), value: randomRoll("d6") });
-        return copy;
+        const newRolls = [...rolls, { key: Math.random().toString(), value }];
+        if (newRolls.length > 4) {
+          newRolls.shift();
+        }
+        return newRolls;
       });
     };
-    id = setTimeout(addRoll, 5000);
-    return () => clearTimeout(id);
+    pixel.addEventListener("roll", onRoll);
+    return () => {
+      pixel.removeEventListener("roll", onRoll);
+    };
   }, [pixel]);
-
   const { profile, changeProfile } = usePixelProfile(pixel);
   const [transferring, setTransferring] = React.useState(false);
   const [pickProfile, setPickProfile] = React.useState(false);
@@ -374,6 +387,7 @@ export function PixelFocusView({
                   value={roll.value}
                   size={16 + 4 * i}
                   color={getIconColor(colors, disabled)}
+                  backgroundColor={makeTransparent(colors.primary, 0.2)}
                 />
               ))}
             </View>

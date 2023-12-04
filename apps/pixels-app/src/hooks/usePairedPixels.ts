@@ -15,7 +15,7 @@ export const PairedPixelsContext = React.createContext<PairedPixelsContextData>(
   { pairedPixels: [], pairDie: () => {}, unpairDie: () => {} }
 );
 
-export function usePairedPixels(): PairedPixelsContextData {
+export function usePairedPixels() {
   return { ...React.useContext(PairedPixelsContext) };
 }
 
