@@ -12,7 +12,7 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, DieWireframe, RssiIcon } from "./icons";
 import { getTextColorStyle, makeTransparent } from "./utils";
 
-import { usePixelDfuStatus, usePixelProfile } from "~/hooks";
+import { usePixelDfuStatus, useActiveProfile } from "~/hooks";
 import { DieRenderer } from "~/render3d/DieRenderer";
 
 export function ScannedPixelCard({
@@ -127,7 +127,7 @@ export function PixelHCard({
 } & Omit<TouchableCardProps, "children">) {
   const status = usePixelStatus(pixel);
   const dfuStatus = usePixelDfuStatus(pixel);
-  const { profile } = usePixelProfile(pixel);
+  const { activeProfile } = useActiveProfile(pixel);
   const disabled = status !== "ready";
   const textStyle = getTextColorStyle(useTheme().colors, disabled);
   return (
@@ -150,7 +150,7 @@ export function PixelHCard({
             ? dfuStatus
             : disabled
             ? `${status}...`
-            : profile?.name ?? "No Profile!"}
+            : activeProfile?.name ?? "No Profile!"}
         </Text>
       </View>
       <View

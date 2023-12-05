@@ -1,27 +1,55 @@
 import { assert } from "@systemic-games/pixels-core-utils";
 import {
+  getPixel,
+  getPixelOrThrow,
   Pixel,
-  ScannedPixel,
+  PixelInfo,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
-export interface PairedPixelsContextData {
-  pairedPixels: Pixel[];
-  pairDie: (pixel: ScannedPixel) => void;
-  unpairDie: (pixel: Pixel) => void;
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  addPairedDie,
+  removePairedDie,
+} from "~/features/store/pairedDiceSlice";
+
+function notEmpty<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined;
 }
 
-export const PairedPixelsContext = React.createContext<PairedPixelsContextData>(
-  { pairedPixels: [], pairDie: () => {}, unpairDie: () => {} }
-);
-
-export function usePairedPixels() {
-  return { ...React.useContext(PairedPixelsContext) };
+export function usePairedPixels(): {
+  pixels: Pixel[];
+  addDie: (pixel: PixelInfo) => void;
+  removeDie: (pixel: PixelInfo) => void;
+} {
+  // Paired dice
+  const pixelsIds = useAppSelector((state) => state.pairedDice.pixelsIds);
+  const lastPixelsRef = React.useRef<Pixel[]>([]);
+  const newPixels = pixelsIds.map(getPixel).filter(notEmpty);
+  const pixels =
+    lastPixelsRef.current?.length === newPixels.length
+      ? lastPixelsRef.current
+      : newPixels;
+  lastPixelsRef.current = pixels;
+  // Actions
+  const appDispatch = useAppDispatch();
+  const addDie = (pixel: PixelInfo) =>
+    appDispatch(
+      addPairedDie({
+        pixelId: pixel.pixelId,
+        name: pixel.name,
+      })
+    );
+  const removeDie = (pixel: PixelInfo) =>
+    appDispatch(removePairedDie(pixel.pixelId));
+  return { pixels, addDie, removeDie };
 }
 
 export function usePairedPixel(pixelId: number): Pixel {
-  const { pairedPixels } = React.useContext(PairedPixelsContext);
-  const pixel = pairedPixels.find((p) => p.pixelId === pixelId);
-  assert(pixel, `Pixel ${pixelId.toString(16).padStart(8)} not found`);
-  return pixel;
+  const pixelsIds = useAppSelector((state) => state.pairedDice.pixelsIds);
+  assert(
+    pixelsIds.indexOf(pixelId) >= 0,
+    `Pixel ${pixelId.toString(16).padStart(8)} not paired`
+  );
+  return getPixelOrThrow(pixelId);
 }

@@ -6,12 +6,7 @@ import {
   NavigationContainer,
   RouteProp,
 } from "@react-navigation/native";
-import {
-  getPixel,
-  initBluetooth,
-  Pixel,
-  ScannedPixel,
-} from "@systemic-games/react-native-pixels-connect";
+import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -24,13 +19,17 @@ import {
   MD3LightTheme,
   MD3Theme,
   PaperProvider,
+  Text,
   useTheme,
 } from "react-native-paper";
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { Provider as ReduxProvider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 
+import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
 import {
@@ -38,15 +37,8 @@ import {
   getDefaultColorDesigns,
   getDefaultProfiles,
 } from "./data";
-import {
-  ActiveProfile,
-  ActiveProfilesContext,
-  AnimationsContext,
-  PairedPixelsContext,
-  ProfilesContext,
-} from "./hooks";
+import { AnimationsContext, ProfilesContext } from "./hooks";
 import { ColorDesignsContext } from "./hooks/useColorDesigns";
-import { SettingsContext } from "./hooks/useSettings";
 import {
   AnimationsStackParamList,
   BottomTabParamList,
@@ -141,66 +133,22 @@ function AppPage() {
   );
 }
 
-function createAndConnect(sp: ScannedPixel): Pixel {
-  // Pair all initially scanned dice
-  const pixel = getPixel(sp.pixelId);
-  // Auto connect to dice
-  pixel.connect().catch((e) => console.log(`Connection error: ${e}`));
-  return pixel;
-}
-
 function AppDataProviders({ children }: React.PropsWithChildren) {
-  // Settings
-  const [showIntro, setShowIntro] = React.useState(false);
-  const [showPromo, setShowPromo] = React.useState(true);
-
-  // Paired Pixels management
-  const [pixels, setPixels] = React.useState<Pixel[]>([]);
-  const pairDie = React.useCallback((sp: ScannedPixel) => {
-    setPixels((pixels) =>
-      pixels.every((p) => sp.systemId !== p.systemId)
-        ? [...pixels, createAndConnect(sp)]
-        : pixels
-    );
-  }, []);
-  const unpairDie = React.useCallback((p: Pixel) => {
-    setPixels((pixels) =>
-      pixels.includes(p) ? pixels.filter((p2) => p2 !== p) : pixels
-    );
-  }, []);
-  const [activeProfiles, setActiveProfiles] = React.useState<ActiveProfile[]>(
-    []
-  );
-  const changeProfile = React.useCallback(
-    (pixel: Pixel, profile: PixelProfile) => {
-      setActiveProfiles((profiles) => {
-        const i = profiles.findIndex((p) => p.pixel === pixel);
-        if (i >= 0) {
-          const copy = [...profiles];
-          copy[i] = { pixel, profile };
-          return copy;
-        } else {
-          return [...profiles, { pixel, profile }];
-        }
-      });
-    },
-    []
-  );
   // Profiles management
   const [profiles, setProfiles] = React.useState(() => getDefaultProfiles());
   const addProfile = React.useCallback(
     (p: PixelProfile) =>
       setProfiles((profiles) =>
-        profiles.find((p2) => p.uuid === p2.uuid) ? profiles : [...profiles, p]
+        profiles.every((p2) => p.uuid !== p2.uuid) ? [...profiles, p] : profiles
       ),
     []
   );
   const removeProfile = React.useCallback(
     (uuid: string) =>
       setProfiles((profiles) =>
-        profiles.find((p) => p.uuid === uuid)
-          ? profiles.filter((p) => p.uuid !== uuid)
-          : profiles
+        profiles.every((p) => p.uuid !== uuid)
+          ? profiles
+          : profiles.filter((p) => p.uuid !== uuid)
       ),
     []
   );
@@ -211,18 +159,18 @@ function AppDataProviders({ children }: React.PropsWithChildren) {
   const addAnimation = React.useCallback(
     (a: PixelAnimation) =>
       setAnimations((animations) =>
-        animations.find((a2) => a.uuid === a2.uuid)
-          ? animations
-          : [...animations, a]
+        animations.every((a2) => a.uuid !== a2.uuid)
+          ? [...animations, a]
+          : animations
       ),
     []
   );
   const removeAnimation = React.useCallback(
     (uuid: string) =>
       setAnimations((animations) =>
-        animations.find((a) => a.uuid !== uuid)
-          ? animations.filter((a) => a.uuid === uuid)
-          : animations
+        animations.every((a) => a.uuid !== uuid)
+          ? animations
+          : animations.filter((a) => a.uuid === uuid)
       ),
     []
   );
@@ -230,46 +178,30 @@ function AppDataProviders({ children }: React.PropsWithChildren) {
   const colorDesigns = React.useMemo(() => getDefaultColorDesigns(), []);
 
   return (
-    <SettingsContext.Provider
-      value={React.useMemo(
-        () => ({ showIntro, setShowIntro, showPromo, setShowPromo }),
-        [showIntro, showPromo]
-      )}
-    >
-      <PairedPixelsContext.Provider
+    // TODO enable with reanimated 3.6
+    // <React.StrictMode>
+    <ReduxProvider store={store}>
+      <ProfilesContext.Provider
         value={React.useMemo(
-          () => ({ pairedPixels: pixels, pairDie, unpairDie }),
-          [pairDie, pixels, unpairDie]
+          () => ({ profiles, addProfile, removeProfile }),
+          [addProfile, profiles, removeProfile]
         )}
       >
-        <ActiveProfilesContext.Provider
+        <AnimationsContext.Provider
           value={React.useMemo(
-            () => ({ activeProfiles, changeProfile }),
-            [activeProfiles, changeProfile]
+            () => ({ animations, addAnimation, removeAnimation }),
+            [addAnimation, animations, removeAnimation]
           )}
         >
-          <ProfilesContext.Provider
-            value={React.useMemo(
-              () => ({ profiles, addProfile, removeProfile }),
-              [addProfile, profiles, removeProfile]
-            )}
+          <ColorDesignsContext.Provider
+            value={React.useMemo(() => ({ colorDesigns }), [colorDesigns])}
           >
-            <AnimationsContext.Provider
-              value={React.useMemo(
-                () => ({ animations, addAnimation, removeAnimation }),
-                [addAnimation, animations, removeAnimation]
-              )}
-            >
-              <ColorDesignsContext.Provider
-                value={React.useMemo(() => ({ colorDesigns }), [colorDesigns])}
-              >
-                {children}
-              </ColorDesignsContext.Provider>
-            </AnimationsContext.Provider>
-          </ProfilesContext.Provider>
-        </ActiveProfilesContext.Provider>
-      </PairedPixelsContext.Provider>
-    </SettingsContext.Provider>
+            {children}
+          </ColorDesignsContext.Provider>
+        </AnimationsContext.Provider>
+      </ProfilesContext.Provider>
+    </ReduxProvider>
+    // </React.StrictMode>
   );
 }
 
@@ -335,10 +267,25 @@ export default function App() {
               <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <ActionSheetProvider>
                   <BottomSheetModalProvider>
-                    <NavigationContainer theme={AppDarkTheme}>
-                      <StatusBar style="light" />
-                      <AppPage />
-                    </NavigationContainer>
+                    <StatusBar style="light" />
+                    <PersistGate
+                      loading={
+                        <View
+                          style={{
+                            flex: 1,
+                            alignContent: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Text>Loading...</Text>
+                        </View>
+                      }
+                      persistor={persistor}
+                    >
+                      <NavigationContainer theme={AppDarkTheme}>
+                        <AppPage />
+                      </NavigationContainer>
+                    </PersistGate>
                   </BottomSheetModalProvider>
                 </ActionSheetProvider>
               </ErrorBoundary>

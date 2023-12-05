@@ -41,7 +41,7 @@ export function CollapsableContainer({
       marginBottom: animatedHeight.value > 0 ? 0 : collapsedMarginBottom ?? 0,
     };
   }, [animatedHeight, collapsedMarginBottom, height, visible]);
-  // <LayoutAnimationConfig skipEntering> // TODO v3.6
+  // TODO use LayoutAnimationConfig with reanimated 3.6
   return (
     <Animated.View style={[collapsableStyle, { overflow: "hidden" }]}>
       <View onLayout={onCustomLayout} {...props} />

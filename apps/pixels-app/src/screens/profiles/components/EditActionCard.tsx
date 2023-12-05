@@ -15,9 +15,9 @@ import Animated, {
 
 import { ConfigureAnimationModal } from "./ConfigureAnimationModal";
 
-import { AnimatedText } from "~/components/AnimatedText";
 import { TouchableCard } from "~/components/TouchableCard";
 import { ActionTypeIcon } from "~/components/actions";
+import { AnimatedText } from "~/components/animated";
 import { getActionTypeLabel } from "~/descriptions";
 import { useAction } from "~/hooks";
 import { DieRenderer } from "~/render3d/DieRenderer";

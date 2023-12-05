@@ -167,10 +167,10 @@ function FirmwareUpdatePage({
 export function FirmwareUpdateScreen({
   navigation,
 }: FirmwareUpdateScreenProps) {
-  const { pairedPixels } = usePairedPixels();
+  const { pixels } = usePairedPixels();
   return (
     <AppBackground>
-      <FirmwareUpdatePage navigation={navigation} pixels={pairedPixels} />
+      <FirmwareUpdatePage navigation={navigation} pixels={pixels} />
     </AppBackground>
   );
 }

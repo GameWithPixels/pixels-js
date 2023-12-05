@@ -1,10 +1,12 @@
 import { StackNavigationProp } from "@react-navigation/stack";
 import { ScrollView } from "react-native";
 
+import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
+import { setShowIntro, setShowPromo } from "~/features/store/appSettingsSlice";
+import { removeAllPairedDie } from "~/features/store/pairedDiceSlice";
 import { useConfirmActionSheet } from "~/hooks";
-import { useSettings } from "~/hooks/useSettings";
 import { SettingsMenuScreenProps, SettingsStackParamList } from "~/navigation";
 
 const pages = [
@@ -23,12 +25,13 @@ function SettingsMenuPage({
 }: {
   navigation: StackNavigationProp<SettingsStackParamList>;
 }) {
-  const { setShowIntro, setShowPromo } = useSettings();
+  const appDispatch = useAppDispatch();
   const showConfirmRestore = useConfirmActionSheet(
     "Restore Default Settings",
     () => {
-      setShowIntro(true);
-      setShowPromo(true);
+      appDispatch(setShowIntro(false));
+      appDispatch(setShowPromo(true));
+      appDispatch(removeAllPairedDie());
     }
   );
   const openPage = (page: (typeof pages)[number]) => {

@@ -7,7 +7,7 @@ import { EditProfile } from "../profiles/components/EditProfile";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { usePixelProfile, usePairedPixel } from "~/hooks";
+import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { EditDieProfileScreenProps, HomeStackParamList } from "~/navigation";
 
 function EditDieProfilePage({
@@ -18,8 +18,8 @@ function EditDieProfilePage({
   navigation: StackNavigationProp<HomeStackParamList>;
 }) {
   const pixel = usePairedPixel(pixelId);
-  const { profile } = usePixelProfile(pixel);
-  if (!profile) {
+  const { activeProfile } = useActiveProfile(pixel);
+  if (!activeProfile) {
     // TODO create profile
     navigation.goBack();
     console.warn("No profile found for pixel", pixelId);
@@ -36,7 +36,7 @@ function EditDieProfilePage({
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingBottom: 10 }}
       >
-        <EditProfile profileUuid={profile.uuid} unnamed />
+        <EditProfile profileUuid={activeProfile.uuid} unnamed />
       </GHScrollView>
     </View>
   );

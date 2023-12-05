@@ -17,7 +17,7 @@ import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
 import { ProfileCard } from "~/components/profile";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
 import { getRollStats } from "~/data";
-import { usePixelProfile, usePairedPixel } from "~/hooks";
+import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { DieDetailsScreenProps, HomeStackParamList } from "~/navigation";
 import { Colors } from "~/themes";
 
@@ -166,7 +166,7 @@ function DieDetailsPage({
   navigation: StackNavigationProp<HomeStackParamList>;
 }) {
   const pixel = usePairedPixel(pixelId);
-  const { profile } = usePixelProfile(pixel);
+  const { activeProfile } = useActiveProfile(pixel);
   React.useEffect(() => {
     if (!pixel) {
       navigation.goBack();
@@ -202,10 +202,10 @@ function DieDetailsPage({
             A software update is available for your die.
           </Banner>
           <SectionTitle>Active Profile</SectionTitle>
-          {profile ? (
+          {activeProfile ? (
             <ProfileCard
               row
-              profile={profile}
+              profile={activeProfile}
               dieType={pixel.dieType}
               disabled={disabled}
             />

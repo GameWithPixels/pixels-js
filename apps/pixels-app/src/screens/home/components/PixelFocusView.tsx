@@ -41,9 +41,9 @@ import Animated, {
 } from "react-native-reanimated";
 
 import CalibrateIcon from "#/icons/home/calibrate";
-import { AnimatedText } from "~/components/AnimatedText";
 import { Card } from "~/components/Card";
 import { ProfilePicker } from "~/components/ProfilePicker";
+import { AnimatedText } from "~/components/animated";
 import { Chip, GradientChip } from "~/components/buttons";
 import { BatteryIcon, RssiIcon } from "~/components/icons";
 import { ProfileCard } from "~/components/profile";
@@ -52,7 +52,7 @@ import {
   getIconColor,
   makeTransparent,
 } from "~/components/utils";
-import { usePixelProfile } from "~/hooks";
+import { useActiveProfile } from "~/hooks";
 import { HomeStackParamList } from "~/navigation";
 import { DieRenderer } from "~/render3d/DieRenderer";
 import { AppStyles } from "~/styles";
@@ -336,15 +336,15 @@ export function PixelFocusView({
       pixel.removeEventListener("roll", onRoll);
     };
   }, [pixel]);
-  const { profile, changeProfile } = usePixelProfile(pixel);
+  const { activeProfile, setActiveProfile } = useActiveProfile(pixel);
   const [transferring, setTransferring] = React.useState(false);
   const [pickProfile, setPickProfile] = React.useState(false);
   React.useEffect(() => {
-    if (profile) {
+    if (activeProfile) {
       setTransferring(true);
       setTimeout(() => setTransferring(false), 5000); //TODO get status from Pixel
     }
-  }, [profile]);
+  }, [activeProfile]);
 
   const { colors } = useTheme();
   const textStyle = getTextColorStyle(colors, disabled);
@@ -532,7 +532,7 @@ export function PixelFocusView({
         </Card> */}
         <ProfileCard
           row
-          profile={profile}
+          profile={activeProfile}
           dieType={pixel.dieType}
           transferring={transferring}
           footer={
@@ -580,11 +580,11 @@ export function PixelFocusView({
       </View>
       <PickProfileBottomSheet
         pixel={pixel}
-        profile={profile}
+        profile={activeProfile}
         transferring={transferring}
         onSelectProfile={(profile) => {
           if (!transferring) {
-            changeProfile(profile);
+            setActiveProfile(profile);
           }
         }}
         visible={pickProfile}

@@ -5,7 +5,7 @@ import { View } from "react-native";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { ProfilePicker } from "~/components/ProfilePicker";
-import { usePixelProfile, usePairedPixel } from "~/hooks";
+import { useActiveProfile, usePairedPixel } from "~/hooks";
 import {
   HomeStackParamList,
   PickProfileAndroidScreenProps,
@@ -20,7 +20,7 @@ function PickProfilePage({
   navigation: StackNavigationProp<HomeStackParamList>;
 }) {
   const pixel = usePairedPixel(pixelId);
-  const { profile, changeProfile } = usePixelProfile(pixel);
+  const { activeProfile, setActiveProfile } = useActiveProfile(pixel);
   return (
     <View style={{ height: "100%", gap: 10 }}>
       <PageHeader
@@ -29,10 +29,10 @@ function PickProfilePage({
         onGoBack={() => navigation.goBack()}
       />
       <ProfilePicker
-        selected={profile}
+        selected={activeProfile}
         onSelectProfile={(profile) => {
           // TODO check if already transferring
-          changeProfile(profile);
+          setActiveProfile(profile);
           navigation.goBack();
         }}
         style={{ flex: 1, flexGrow: 1, marginHorizontal: 10 }}
