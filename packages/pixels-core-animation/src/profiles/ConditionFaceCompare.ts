@@ -28,7 +28,7 @@ export type FaceCompareFlags = keyof typeof FaceCompareFlagsValues;
  */
 export default class ConditionFaceCompare implements Condition {
   @serializable(1)
-  type: number = ConditionTypeValues.faceCompare;
+  type: number = ConditionTypeValues.rolled;
 
   @serializable(1)
   faceIndex = 0;

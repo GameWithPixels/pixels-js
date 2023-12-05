@@ -86,7 +86,7 @@ export function getConditionDescription(condition: EditCondition): string {
       case "handling":
         return "die is picked up";
 
-      case "batteryState":
+      case "battery":
         return (
           "Battery is " +
           bitsToFlags((condition as EditConditionBatteryState).flags)
@@ -107,7 +107,7 @@ export function getConditionDescription(condition: EditCondition): string {
             .join(" or ")
         );
 
-      case "connectionState":
+      case "connection":
         return (
           " Die is " +
           bitsToFlags((condition as EditConditionConnectionState).flags).map(
@@ -127,7 +127,7 @@ export function getConditionDescription(condition: EditCondition): string {
       case "crooked":
         return "die is crooked";
 
-      case "faceCompare":
+      case "rolled":
         return (
           "Die roll is " +
           bitsToFlags((condition as EditConditionFaceCompare).flags)

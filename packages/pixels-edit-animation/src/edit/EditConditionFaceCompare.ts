@@ -11,7 +11,7 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, range, values, widget } from "./decorators";
 
 export default class EditConditionFaceCompare extends EditCondition {
-  readonly type = "faceCompare";
+  readonly type = "rolled";
 
   @widget("bitField")
   @name("Comparison")

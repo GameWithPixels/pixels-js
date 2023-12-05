@@ -122,7 +122,7 @@ function toAnimationsAndGradients(
           case "none":
             throw new Error(`Invalid animation type: ${type}`);
           case "simple":
-            push(type, animIndex, {
+            push("flashes", animIndex, {
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
@@ -148,8 +148,17 @@ function toAnimationsAndGradients(
               cycles: 1,
             });
             break;
-          case "keyframed":
+          case "gradient":
             push(type, animIndex, {
+              uuid: generateUuid(),
+              name: data.name ?? "",
+              duration: data.duration ?? 1,
+              faces: data.faces ?? Constants.faceMaskAll,
+              gradientUuid: register(data.gradient?.keyframes),
+            });
+            break;
+          case "keyframed":
+            push("colorDesign", animIndex, {
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
@@ -161,22 +170,13 @@ function toAnimationsAndGradients(
             });
             break;
           case "gradientPattern":
-            push(type, animIndex, {
+            push("gradientModulated", animIndex, {
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
               gradientUuid: register(data.gradient?.keyframes),
               overrideWithFace: data.overrideWithFace ?? false,
-            });
-            break;
-          case "gradient":
-            push(type, animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
-              faces: data.faces ?? Constants.faceMaskAll,
-              gradientUuid: register(data.gradient?.keyframes),
             });
             break;
           case "cycle":
@@ -247,21 +247,21 @@ function toCondition(
       return { type, index: -1 };
     case "rolling":
       return register(type, { recheckAfter: data?.recheckAfter ?? 0 });
-    case "faceCompare":
+    case "rolled":
       return register(type, {
         flags: valuesToKeys(bitsToFlags(data?.flags), FaceCompareFlagsValues),
         face: (data?.faceIndex ?? 0) + 1,
       });
     case "crooked":
       return { type, index: -1 };
-    case "connectionState":
+    case "connection":
       return register(type, {
         flags: valuesToKeys(
           bitsToFlags(data?.flags),
           ConnectionStateFlagsValues
         ),
       });
-    case "batteryState":
+    case "battery":
       return register(type, {
         flags: valuesToKeys(bitsToFlags(data?.flags), BatteryStateFlagsValues),
         recheckAfter: data?.recheckAfter ?? 1,
@@ -313,6 +313,10 @@ function toActions(
         return register("playAudioClip", {
           clipUuid: audioClipsUuidsMap.get(data.audioClipIndex ?? -1),
         });
+      case "playAudioClip":
+      case "speakText":
+      case "makeWebRequest":
+        throw new Error(`Unsupported action type: ${type}`);
       default:
         assertNever(type, `Unsupported action type: ${type}`);
     }
@@ -348,9 +352,7 @@ function toProfile(
   };
 }
 
-export function jsonConvert(
-  dataSet: Json.DataSet
-): Serializable.ProfilesSetData {
+export function jsonConvert(dataSet: Json.DataSet): Serializable.LibraryData {
   const patterns = dataSet.patterns?.map(toPattern) ?? [];
   const { animations, animationUuidsMap, gradients } = toAnimationsAndGradients(
     dataSet.animations,

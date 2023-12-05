@@ -7,9 +7,9 @@ import { jsonConvert } from "./jsonConvert";
 import StandardProfilesJson from "!/profiles/standard-profiles.json";
 
 // eslint-disable-next-line import/namespace
-export interface ProfileSetState extends Serializable.ProfilesSetData {}
+export interface ProfilesLibraryState extends Serializable.LibraryData {}
 
-function initialState(): ProfileSetState {
+function initialState(): ProfilesLibraryState {
   return jsonConvert(StandardProfilesJson);
 }
 
@@ -63,8 +63,8 @@ function insert<T extends Serializable.UniqueData>(
 }
 
 // Redux slice that stores the list of profiles, animations, patterns and gradients
-const profilesSetSlice = createSlice({
-  name: "profilesSet",
+const profilesLibrarySlice = createSlice({
+  name: "profilesLibrary",
   initialState,
   reducers: {
     resetProfilesToDefault() {
@@ -261,6 +261,6 @@ export const {
   addGradient,
   updateGradient,
   removeGradient,
-} = profilesSetSlice.actions;
+} = profilesLibrarySlice.actions;
 
-export default profilesSetSlice.reducer;
+export default profilesLibrarySlice.reducer;

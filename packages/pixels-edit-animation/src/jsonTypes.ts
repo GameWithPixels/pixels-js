@@ -1,3 +1,5 @@
+import { enumValue } from "@systemic-games/pixels-core-utils";
+
 export type RgbColor = Partial<{
   r: number;
   g: number;
@@ -97,3 +99,30 @@ export type DataSet = Partial<{
   audioClips: AudioClip[];
   defaultBehavior: Profile; // defaultProfile
 }>;
+
+export const AnimationTypeValues = {
+  none: enumValue(0),
+  simple: enumValue(),
+  rainbow: enumValue(),
+  keyframed: enumValue(),
+  gradientPattern: enumValue(),
+  gradient: enumValue(),
+} as const;
+
+export const ConditionTypeValues = {
+  none: enumValue(0),
+  helloGoodbye: enumValue(),
+  handling: enumValue(),
+  rolling: enumValue(),
+  faceCompare: enumValue(),
+  crooked: enumValue(),
+  connectionState: enumValue(),
+  batteryState: enumValue(),
+  idle: enumValue(),
+} as const;
+
+export const ActionTypeValues = {
+  none: enumValue(0),
+  playAnimation: enumValue(),
+  playAudioClip: enumValue(),
+} as const;

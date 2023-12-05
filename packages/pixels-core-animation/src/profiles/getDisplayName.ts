@@ -91,13 +91,13 @@ export function getConditionTypeDisplayName(
       return { name: "Pixel is picked up", order: 1 };
     case "rolling":
       return { name: "Pixel is rolling", order: 2 };
-    case "faceCompare":
+    case "rolled":
       return { name: "Pixel roll is...", order: 3 };
     case "crooked":
       return { name: "Pixel is crooked", order: 4 };
-    case "connectionState":
+    case "connection":
       return { name: "Bluetooth Event...", order: 5 };
-    case "batteryState":
+    case "battery":
       return { name: "Battery Event...", order: 6 };
     case "idle":
       return { name: "Pixel is idle for...", order: 7 };

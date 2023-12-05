@@ -18,12 +18,12 @@ import { fromByteArray, toByteArray } from "base64-js";
 
 import {
   AnimationGradientData,
-  AnimationGradientPatternData,
-  AnimationKeyframedData,
+  AnimationGradientModulatedData,
+  AnimationColorDesignData,
   AnimationNoiseData,
   AnimationRainbowData,
   AnimationSetData,
-  AnimationSimpleData,
+  AnimationFlashesData,
 } from "./animations";
 import { GradientData } from "./gradient";
 import { PatternData } from "./pattern";
@@ -121,9 +121,9 @@ export function toProfile(
           condition = new EditConditionRolling(condData);
         }
         break;
-      case "faceCompare":
+      case "rolled":
         {
-          const condData = data.conditions.faceCompare[index];
+          const condData = data.conditions.rolled[index];
           assert(
             condData,
             `No data for ${condType} condition at index ${index}`
@@ -139,9 +139,9 @@ export function toProfile(
       case "crooked":
         condition = new EditConditionCrooked();
         break;
-      case "connectionState":
+      case "connection":
         {
-          const condData = data.conditions.connectionState[index];
+          const condData = data.conditions.connection[index];
           assert(
             condData,
             `No data for ${condType} condition at index ${index}`
@@ -154,9 +154,9 @@ export function toProfile(
           });
         }
         break;
-      case "batteryState":
+      case "battery":
         {
-          const condData = data.conditions.batteryState[index];
+          const condData = data.conditions.battery[index];
           assert(
             condData,
             `No data for ${condType} condition at index ${index}`
@@ -241,8 +241,8 @@ export function toAnimation<T extends keyof AnimationSetData>(
     }
   };
   switch (type) {
-    case "simple": {
-      const animData = data as AnimationSimpleData;
+    case "flashes": {
+      const animData = data as AnimationFlashesData;
       return new EditAnimationSimple({
         ...animData,
         color: toColor(animData.color),
@@ -252,15 +252,15 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationRainbowData;
       return new EditAnimationRainbow(animData);
     }
-    case "keyframed": {
-      const animData = data as AnimationKeyframedData;
+    case "colorDesign": {
+      const animData = data as AnimationColorDesignData;
       return new EditAnimationKeyframed({
         ...animData,
         pattern: checkGetPattern(animData.patternUuid),
       });
     }
-    case "gradientPattern": {
-      const animData = data as AnimationGradientPatternData;
+    case "gradientModulated": {
+      const animData = data as AnimationGradientModulatedData;
       return new EditAnimationGradientPattern({
         ...animData,
         pattern: checkGetPattern(animData.patternUuid),
@@ -359,7 +359,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
           });
         }
         break;
-      case "faceCompare":
+      case "rolled":
         {
           condIndex = conditions[condType].length;
           const cond = r.condition as EditConditionFaceCompare;
@@ -372,7 +372,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
           });
         }
         break;
-      case "connectionState":
+      case "connection":
         {
           condIndex = conditions[condType].length;
           const cond = r.condition as EditConditionConnectionState;
@@ -384,7 +384,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
           });
         }
         break;
-      case "batteryState":
+      case "battery":
         {
           condIndex = conditions[condType].length;
           const cond = r.condition as EditConditionBatteryState;
@@ -462,6 +462,10 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
             }
             break;
           }
+          case "playAudioClip":
+          case "speakText":
+          case "makeWebRequest":
+            throw new Error(`Unsupported action type: ${actType}`);
           default:
             assertNever(actType, `Unsupported action type: ${actType}`);
         }
@@ -506,7 +510,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
     case "simple": {
       const anim = animation as EditAnimationSimple;
       return {
-        type,
+        type: "flashes",
         data: {
           uuid: anim.uuid,
           name: anim.name,
@@ -539,7 +543,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
     case "keyframed": {
       const anim = animation as EditAnimationKeyframed;
       return {
-        type,
+        type: "colorDesign",
         data: {
           uuid: anim.uuid,
           name: anim.name,
@@ -552,7 +556,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
     case "gradientPattern": {
       const anim = animation as EditAnimationGradientPattern;
       return {
-        type,
+        type: "gradientModulated",
         data: {
           uuid: anim.uuid,
           name: anim.name,

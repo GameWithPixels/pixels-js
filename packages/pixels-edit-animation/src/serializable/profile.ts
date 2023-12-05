@@ -5,23 +5,7 @@ import {
   HelloGoodbyeFlags,
 } from "@systemic-games/pixels-core-animation";
 
-import { AnimationSetData } from "./animations";
-import { AudioClipData } from "./audioClip";
-import { GradientData } from "./gradient";
-import { PatternData } from "./pattern";
 import { UniqueNamedData } from "./unique";
-
-//
-// ProfileSet and Profile
-//
-
-export interface ProfilesSetData {
-  profiles: ProfileData[];
-  animations: AnimationSetData;
-  patterns: PatternData[];
-  gradients: GradientData[];
-  audioClips: AudioClipData[];
-}
 
 export interface ProfileData extends UniqueNamedData {
   conditions: {
@@ -31,14 +15,14 @@ export interface ProfileData extends UniqueNamedData {
     rolling: {
       recheckAfter: number;
     }[];
-    faceCompare: {
+    rolled: {
       face: number;
       flags: FaceCompareFlags[];
     }[];
-    connectionState: {
+    connection: {
       flags: ConnectionStateFlags[];
     }[];
-    batteryState: {
+    battery: {
       flags: BatteryStateFlags[];
       recheckAfter: number;
     }[];
@@ -87,13 +71,13 @@ export type ConditionRollingData = NonNullable<
   ConditionSetData["rolling"]
 >[number];
 export type ConditionFaceCompareData = NonNullable<
-  ConditionSetData["faceCompare"]
+  ConditionSetData["rolled"]
 >[number];
 export type ConditionConnectionStateData = NonNullable<
-  ConditionSetData["connectionState"]
+  ConditionSetData["connection"]
 >[number];
 export type ConditionBatteryStateData = NonNullable<
-  ConditionSetData["batteryState"]
+  ConditionSetData["battery"]
 >[number];
 export type ConditionIdleData = NonNullable<ConditionSetData["idle"]>[number];
 
@@ -116,9 +100,9 @@ export function createConditionSetData(): ConditionSetData {
   return {
     helloGoodbye: [],
     rolling: [],
-    faceCompare: [],
-    connectionState: [],
-    batteryState: [],
+    rolled: [],
+    connection: [],
+    battery: [],
     idle: [],
   };
 }

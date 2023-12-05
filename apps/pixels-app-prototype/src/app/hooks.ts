@@ -23,7 +23,7 @@ import {
   addPattern,
   updatePattern,
   removePattern,
-} from "~/features/appDataSet/profilesSetSlice";
+} from "~/features/appDataSet/profilesLibrarySlice";
 import {
   DieInfo,
   removePairedDie,
@@ -69,11 +69,11 @@ const profilesCache = new DataMap<
 >();
 
 export function useAppProfiles(): Readonly<EditProfile>[] {
-  const profilesSet = useAppSelector((state) => state.profilesSet);
+  const profilesLibrary = useAppSelector((state) => state.profilesLibrary);
   const animations = useAppAnimations();
   return useMemo(
     () =>
-      profilesSet.profiles.map((profileData) =>
+      profilesLibrary.profiles.map((profileData) =>
         profilesCache.getOrCreate(profileData, () =>
           Serializable.toProfile(
             profileData,
@@ -83,7 +83,7 @@ export function useAppProfiles(): Readonly<EditProfile>[] {
           )
         )
       ),
-    [animations, profilesSet.profiles]
+    [animations, profilesLibrary.profiles]
   );
 }
 
@@ -149,7 +149,9 @@ const animCache = new DataMap<
 >();
 
 export function useAppAnimations(): Readonly<EditAnimation>[] {
-  const animations = useAppSelector((state) => state.profilesSet.animations);
+  const animations = useAppSelector(
+    (state) => state.profilesLibrary.animations
+  );
   const patterns = useAppPatterns();
   const gradients = useAppGradients();
   // Get all animation arrays
@@ -249,7 +251,9 @@ const patternsCache = new DataMap<
 >();
 
 export function useAppPatterns(): Readonly<EditPattern>[] {
-  const patternsData = useAppSelector((state) => state.profilesSet.patterns);
+  const patternsData = useAppSelector(
+    (state) => state.profilesLibrary.patterns
+  );
   return useMemo(
     () =>
       patternsData.map((p) =>
@@ -320,7 +324,9 @@ const gradientsCache = new DataMap<
   Readonly<EditRgbGradient>
 >();
 export function useAppGradients(): Readonly<EditRgbGradient>[] {
-  const gradientsData = useAppSelector((state) => state.profilesSet.gradients);
+  const gradientsData = useAppSelector(
+    (state) => state.profilesLibrary.gradients
+  );
   return useMemo(
     () =>
       gradientsData.map((g) =>
@@ -335,7 +341,7 @@ export function useAppGradients(): Readonly<EditRgbGradient>[] {
 //
 
 export function useAppUserTexts(): string[] {
-  const profiles = useAppSelector((state) => state.profilesSet.profiles);
+  const profiles = useAppSelector((state) => state.profilesLibrary.profiles);
   return useMemo(() => {
     const texts: string[] = [];
     profiles

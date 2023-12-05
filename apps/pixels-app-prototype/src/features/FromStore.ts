@@ -48,8 +48,8 @@ function deserializeAnimation<T extends keyof Serializable.AnimationSetData>(
 
 export const FromStore = {
   loadProfile(uuid: string): EditProfile {
-    const profilesSet = store.getState().profilesSet;
-    const profile = profilesSet.profiles.find((p) => p.uuid === uuid);
+    const profilesLibrary = store.getState().profilesLibrary;
+    const profile = profilesLibrary.profiles.find((p) => p.uuid === uuid);
     assert(profile, `getProfileFromUuid(): No profile with uuid ${uuid}`);
     return Serializable.toProfile(
       profile,
@@ -59,9 +59,9 @@ export const FromStore = {
   },
 
   loadAnimation(uuid: string): EditAnimation {
-    const profilesSet = store.getState().profilesSet;
+    const profilesLibrary = store.getState().profilesLibrary;
     // Get all animation arrays
-    const animArrays = Object.entries(profilesSet.animations).filter(
+    const animArrays = Object.entries(profilesLibrary.animations).filter(
       Array.isArray
     );
     // And search for our animation
@@ -74,8 +74,8 @@ export const FromStore = {
         return deserializeAnimation(
           animArrays[i][0] as keyof Serializable.AnimationSetData,
           animData,
-          profilesSet.patterns,
-          profilesSet.gradients
+          profilesLibrary.patterns,
+          profilesLibrary.gradients
         );
       }
     }

@@ -100,16 +100,16 @@ function toCondition(condition: Json.Condition): EditCondition {
         return new EditConditionHandling();
       case ConditionTypeValues.rolling:
         return safeAssign(new EditConditionRolling(), data);
-      case ConditionTypeValues.faceCompare:
+      case ConditionTypeValues.rolled:
         return safeAssign(new EditConditionFaceCompare(), {
           ...data,
           face: data.faceIndex && data.faceIndex + 1,
         });
       case ConditionTypeValues.crooked:
         return new EditConditionCrooked();
-      case ConditionTypeValues.connectionState:
+      case ConditionTypeValues.connection:
         return safeAssign(new EditConditionConnectionState(), data);
-      case ConditionTypeValues.batteryState:
+      case ConditionTypeValues.battery:
         return safeAssign(new EditConditionBatteryState(), data);
       case ConditionTypeValues.idle:
         return safeAssign(new EditConditionIdle(), data);

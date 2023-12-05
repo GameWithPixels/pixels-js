@@ -5,7 +5,7 @@ import {
 } from "@systemic-games/react-native-pixels-components";
 
 import { useAppDispatch } from "~/app/hooks";
-import { resetProfilesToDefault } from "~/features/appDataSet/profilesSetSlice";
+import { resetProfilesToDefault } from "~/features/appDataSet/profilesLibrarySlice";
 import { removeAllPairedDice } from "~/features/pairedDiceSlice";
 
 export function AppSettings() {

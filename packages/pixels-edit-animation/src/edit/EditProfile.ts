@@ -13,6 +13,9 @@ import Editable from "./Editable";
 import { observable } from "./decorators";
 
 export default class EditProfile extends Editable {
+  favorite: boolean;
+  group: string;
+
   @observable
   description: string;
 
@@ -32,10 +35,14 @@ export default class EditProfile extends Editable {
     name?: string;
     description?: string;
     rules?: EditRule[];
+    group?: string;
+    favorite?: boolean;
   }) {
     super(opt);
     this.description = opt?.description ?? "";
     this.rules = opt?.rules ?? [];
+    this.group = opt?.group ?? "";
+    this.favorite = opt?.favorite ?? false;
   }
 
   getRemoteAction(actionId: number): EditActionRunOnDevice | undefined {

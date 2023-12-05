@@ -11,7 +11,7 @@ import EditDataSet from "./EditDataSet";
 import { name, widget, range, unit, values, observable } from "./decorators";
 
 export default class EditConditionBatteryState extends EditCondition {
-  readonly type = "batteryState";
+  readonly type = "battery";
 
   @widget("bitField")
   @name("Battery State")

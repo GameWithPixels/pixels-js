@@ -11,7 +11,7 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, values, widget } from "./decorators";
 
 export default class EditConditionConnectionState extends EditCondition {
-  readonly type = "connectionState";
+  readonly type = "connection";
 
   @widget("bitField")
   @name("Connection Event")

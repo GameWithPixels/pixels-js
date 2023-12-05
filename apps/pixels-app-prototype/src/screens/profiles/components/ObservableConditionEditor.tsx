@@ -38,7 +38,7 @@ const ObservableConditionSelection = observer(function ({
   const conditions = React.useMemo(
     () => [
       {
-        label: getConditionTitle("faceCompare"),
+        label: getConditionTitle("rolled"),
         onSelect: () => {
           observableRule.condition = new EditConditionFaceCompare();
         },
@@ -68,13 +68,13 @@ const ObservableConditionSelection = observer(function ({
         },
       },
       {
-        label: getConditionTitle("connectionState"),
+        label: getConditionTitle("connection"),
         onSelect: () => {
           observableRule.condition = new EditConditionConnectionState();
         },
       },
       {
-        label: getConditionTitle("batteryState"),
+        label: getConditionTitle("battery"),
         onSelect: () => {
           observableRule.condition = new EditConditionBatteryState();
         },
