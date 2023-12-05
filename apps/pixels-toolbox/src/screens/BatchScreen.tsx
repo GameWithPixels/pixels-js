@@ -12,7 +12,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   Color,
-  getPixel,
+  getPixelOrThrow,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -150,7 +150,7 @@ function BatchPage() {
     const pixelsToUse = pixels.concat(
       scannedPixels
         .filter((sp) => !pixels.find((p) => p.pixelId === sp.pixelId))
-        .map((sp) => getPixel(sp.systemId))
+        .map((sp) => getPixelOrThrow(sp.systemId))
     );
     forAllPixels(
       pixelsToUse,

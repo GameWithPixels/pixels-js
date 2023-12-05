@@ -14,7 +14,7 @@ import {
   RSSIStrength,
 } from "@systemic-games/react-native-pixels-components";
 import {
-  getPixel,
+  getPixelOrThrow,
   usePixel,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
@@ -42,7 +42,7 @@ export function PixelDetailScreen({
   route,
 }: PixelDetailScreenProps) {
   const { pixelId } = route.params;
-  const pixel = getPixel(pixelId);
+  const pixel = getPixelOrThrow(pixelId);
   const [status, lastError] = usePixel(pixel);
   const [rollState] = usePixelValue(pixel, "rollState", { minInterval: 100 });
 

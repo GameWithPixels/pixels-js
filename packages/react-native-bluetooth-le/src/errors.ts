@@ -22,7 +22,7 @@ export class BluetoothPermissionsDeniedError extends BluetoothLEError {
 
 export class UnknownPeripheralError extends BluetoothLEError {
   constructor(systemId: string) {
-    super(`No peripheral found with SystemId ${systemId}`);
+    super(`No peripheral found with system id ${systemId}`);
     this.name = "UnknownPeripheralError";
   }
 }

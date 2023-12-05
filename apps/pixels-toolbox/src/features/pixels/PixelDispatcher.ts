@@ -19,7 +19,6 @@ import {
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
-  getPixel,
   Pixel,
   PixelColorway,
   PixelRollState,
@@ -38,6 +37,7 @@ import {
   ScannedPixelNotifierMutableProps,
   PixelInfo,
   PixelBatteryControllerMode,
+  getPixelOrThrow,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -330,7 +330,7 @@ class PixelDispatcher
       address: scannedPixel.address,
       timestamp: scannedPixel.timestamp,
     };
-    this._pixel = getPixel(scannedPixel.systemId);
+    this._pixel = getPixelOrThrow(scannedPixel.systemId);
     Static.instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
