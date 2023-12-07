@@ -10,8 +10,8 @@ import { Button, Text } from "react-native-paper";
 
 import { AppStyles } from "~/AppStyles";
 import { PixelInfoCard } from "~/components/PixelInfoCard";
-import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
-import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
+import { useErrorWithHandler } from "~/hooks/useErrorWithHandler";
+import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
 
 export function ScannedPixelsList({
   onSelect: onSelected,

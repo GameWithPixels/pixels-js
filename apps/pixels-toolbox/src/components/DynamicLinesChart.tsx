@@ -5,7 +5,7 @@ import Svg, { Polyline, Text as SvgText } from "react-native-svg";
 
 import { LineChartProps } from "./LineChart";
 
-import { useForceUpdate } from "~/features/hooks/useForceUpdate";
+import { useForceUpdate } from "~/hooks/useForceUpdate";
 
 export interface LineInfo {
   title: string;

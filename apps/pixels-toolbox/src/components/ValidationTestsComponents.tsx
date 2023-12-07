@@ -33,7 +33,6 @@ import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
-import { FactoryDfuBundleFiles } from "~/features/hooks/useFactoryDfuFilesBundle";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   pixelClearSettings,
@@ -65,6 +64,7 @@ import {
   withTimeout,
   withTimeoutAndDisconnect,
 } from "~/features/validation";
+import { FactoryDfuBundleFiles } from "~/hooks/useFactoryDfuFilesBundle";
 
 export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
   // We use a PixelDispatcher to get our Pixel instance so to enable message logging

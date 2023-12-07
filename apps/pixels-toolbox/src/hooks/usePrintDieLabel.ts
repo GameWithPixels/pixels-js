@@ -1,6 +1,6 @@
 import React from "react";
 
-import PixelDispatcher from "../pixels/PixelDispatcher";
+import PixelDispatcher from "../features/pixels/PixelDispatcher";
 
 export interface PrintDieLabelContextData {
   printDieLabel?: (pixel: PixelDispatcher) => void;

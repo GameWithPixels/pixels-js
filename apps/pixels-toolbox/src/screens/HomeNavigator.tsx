@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { Header } from "./HomeScreen/Header";
 
-import { PrintDieLabelContext } from "~/features/hooks/usePrintDieLabel";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { PrintDieLabelContext } from "~/hooks/usePrintDieLabel";
 import { HomeNavigatorProps, type HomeScreensParamList } from "~/navigation";
 import { DieDetailsScreen } from "~/screens/DieDetailsScreen";
 import { HomeScreen } from "~/screens/HomeScreen";

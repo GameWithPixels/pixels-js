@@ -22,8 +22,8 @@ import { Button, Divider, Switch, Text } from "react-native-paper";
 import { AppPage } from "~/components/AppPage";
 import { PatternImages } from "~/features/PatternImages";
 import { createPatternFromImage } from "~/features/createPatternFromImage";
-import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
+import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
 
 const patternsCache = new Map<string | number, EditPattern>();
 

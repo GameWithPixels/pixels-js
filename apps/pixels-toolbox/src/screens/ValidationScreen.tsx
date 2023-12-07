@@ -51,11 +51,6 @@ import {
   UpdateFirmwareStatus,
   getPixelThroughDispatcher,
 } from "~/components/ValidationTestsComponents";
-import {
-  FactoryDfuBundleFiles,
-  useFactoryDfuFilesBundle,
-} from "~/features/hooks/useFactoryDfuFilesBundle";
-import { usePixelIdDecoderFrameProcessor } from "~/features/hooks/usePixelIdDecoderFrameProcessor";
 import { PrintStatus } from "~/features/print";
 import {
   getTaskResult,
@@ -73,6 +68,11 @@ import {
   ValidationSequence,
   ValidationSequences,
 } from "~/features/validation";
+import {
+  FactoryDfuBundleFiles,
+  useFactoryDfuFilesBundle,
+} from "~/hooks/useFactoryDfuFilesBundle";
+import { usePixelIdDecoderFrameProcessor } from "~/hooks/usePixelIdDecoderFrameProcessor";
 import { capitalize } from "~/i18n";
 
 function getTestingMessage(

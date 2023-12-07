@@ -20,8 +20,8 @@ import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { isDfuDone } from "~/features/dfu/updateFirmware";
-import { useUpdateFirmware } from "~/features/hooks/useUpdateFirmware";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
+import { useUpdateFirmware } from "~/hooks/useUpdateFirmware";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
 function formatAddress(address: number): string {

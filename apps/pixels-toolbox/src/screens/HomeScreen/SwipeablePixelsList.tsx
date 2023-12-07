@@ -16,11 +16,11 @@ import {
   PixelSwipeableCard,
   SwipeablePixelCardProps,
 } from "~/components/PixelSwipeableCard";
-import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import PixelDispatcher, {
   PixelDispatcherActionMap,
 } from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
+import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
 
 interface SwipeablePixelsListProps
   extends Pick<SwipeablePixelCardProps, "onShowDetails" | "onPrintLabel"> {

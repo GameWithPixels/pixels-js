@@ -1,9 +1,9 @@
 import React from "react";
 
-import DfuFilesBundle from "../dfu/DfuFilesBundle";
-import { DfuFileInfo } from "../dfu/getDfuFileInfo";
-import { unzipFactoryDfuFilesAsync } from "../dfu/unzip";
-import { toLocaleDateTimeString } from "../toLocaleDateTimeString";
+import DfuFilesBundle from "../features/dfu/DfuFilesBundle";
+import { DfuFileInfo } from "../features/dfu/getDfuFileInfo";
+import { unzipFactoryDfuFilesAsync } from "../features/dfu/unzip";
+import { toLocaleDateTimeString } from "../features/toLocaleDateTimeString";
 
 import { useAppSelector } from "~/app/hooks";
 

@@ -3,8 +3,8 @@ import { useErrorBoundary } from "react-error-boundary";
 
 import { AppPage } from "~/components/AppPage";
 import { PixelDetails } from "~/components/PixelDetails";
-import { usePrintDieLabel } from "~/features/hooks/usePrintDieLabel";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { usePrintDieLabel } from "~/hooks/usePrintDieLabel";
 import { DieDetailsScreenProps } from "~/navigation";
 
 export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {

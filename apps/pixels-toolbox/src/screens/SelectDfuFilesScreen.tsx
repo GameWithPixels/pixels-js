@@ -14,12 +14,12 @@ import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
 import { AppPage } from "~/components/AppPage";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import { useAppDfuFilesBundles } from "~/features/hooks/useAppDfuFilesBundles";
 import {
   addImportedDfuBundle,
   setSelectedDfuBundle,
 } from "~/features/store/dfuBundlesSlice";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
+import { useAppDfuFilesBundles } from "~/hooks/useAppDfuFilesBundles";
 import { SelectDfuFilesScreenProps } from "~/navigation";
 
 async function importDfuFile() {
