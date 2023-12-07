@@ -53,9 +53,9 @@ import {
   getIconColor,
   makeTransparent,
 } from "~/components/utils";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useActiveProfile } from "~/hooks";
 import { HomeStackParamList } from "~/navigation";
-import { DieRenderer } from "~/render3d/DieRenderer";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 

@@ -14,12 +14,12 @@ import {
   MenuButton,
   OutlineButton,
 } from "~/components/buttons";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useAnimation, useAnimations, useConfirmActionSheet } from "~/hooks";
 import {
   AnimationsStackParamList,
   EditAnimationScreenProps,
 } from "~/navigation";
-import { DieRenderer } from "~/render3d/DieRenderer";
 
 function EditAnimationPage({
   animationUuid,

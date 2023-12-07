@@ -23,12 +23,12 @@ import {
   getConditionTypeDescription,
   getConditionTypeLabel,
 } from "~/descriptions";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useCondition, useProfiles, useRule } from "~/hooks";
 import {
   EditProfileSubStackParamList,
   EditRollRulesScreenProps,
 } from "~/navigation";
-import { DieRenderer } from "~/render3d/DieRenderer";
 import { Colors } from "~/themes";
 
 function InnerScrollView({ ...props }: ScrollViewProps) {

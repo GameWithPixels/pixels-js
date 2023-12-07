@@ -20,8 +20,8 @@ import { TouchableCard } from "~/components/TouchableCard";
 import { ActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { getActionTypeLabel } from "~/descriptions";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useAction } from "~/hooks";
-import { DieRenderer } from "~/render3d/DieRenderer";
 import { Colors } from "~/themes";
 import { withAnimated } from "~/withAnimated";
 

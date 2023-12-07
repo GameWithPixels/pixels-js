@@ -10,8 +10,8 @@ import { Text } from "react-native-paper";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useColorDesign } from "~/hooks";
-import { DieRenderer } from "~/render3d/DieRenderer";
 
 export function ColorDesignCard({
   design,

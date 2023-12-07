@@ -12,8 +12,8 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, DieWireframe, RssiIcon } from "./icons";
 import { getTextColorStyle, makeTransparent } from "./utils";
 
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { usePixelDfuStatus, useActiveProfile } from "~/hooks";
-import { DieRenderer } from "~/render3d/DieRenderer";
 
 export function ScannedPixelCard({
   scannedPixel,

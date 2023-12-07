@@ -26,9 +26,9 @@ import {
   TightTextButton,
 } from "~/components/buttons";
 import { getConditionTypeLabel } from "~/descriptions";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useConfirmActionSheet, useProfile, useProfiles } from "~/hooks";
 import { ProfilesStackParamList } from "~/navigation";
-import { DieRenderer } from "~/render3d/DieRenderer";
 import { Colors } from "~/themes";
 
 function SectionTitle({ children }: React.PropsWithChildren) {

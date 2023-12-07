@@ -30,8 +30,8 @@ import { getBorderColor, getTextColorStyle, makeTransparent } from "./utils";
 
 import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
+import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useProfile } from "~/hooks";
-import { DieRenderer } from "~/render3d/DieRenderer";
 
 export function ProfileCard({
   profile,
