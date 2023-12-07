@@ -158,7 +158,7 @@ function toAnimationsAndGradients(
             });
             break;
           case "keyframed":
-            push("colorDesign", animIndex, {
+            push("pattern", animIndex, {
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
@@ -170,7 +170,7 @@ function toAnimationsAndGradients(
             });
             break;
           case "gradientPattern":
-            push("gradientModulated", animIndex, {
+            push(type, animIndex, {
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,

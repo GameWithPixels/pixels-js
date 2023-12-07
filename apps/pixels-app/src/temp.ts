@@ -4,19 +4,19 @@ function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function getDefaultColorDesigns(): Profiles.ColorDesign[] {
+export function getDefaultColorDesigns(): Profiles.Pattern[] {
   return [
-    new Profiles.ColorDesign({ name: "Orange To Purple " }),
-    new Profiles.ColorDesign({ name: "Simple" }),
-    new Profiles.ColorDesign({ name: "Colored Twinkle" }),
-    new Profiles.ColorDesign({ name: "Tiger" }),
-    new Profiles.ColorDesign({ name: "Rainbow Falls" }),
-    new Profiles.ColorDesign({ name: "Down and Up" }),
-    new Profiles.ColorDesign({ name: "Circles" }),
-    new Profiles.ColorDesign({ name: "Twinkle All" }),
-    new Profiles.ColorDesign({ name: "Flicker On" }),
-    new Profiles.ColorDesign({ name: "Noise" }),
-    new Profiles.ColorDesign({ name: "Rotating Rings" }),
+    new Profiles.Pattern({ name: "Orange To Purple " }),
+    new Profiles.Pattern({ name: "Simple" }),
+    new Profiles.Pattern({ name: "Colored Twinkle" }),
+    new Profiles.Pattern({ name: "Tiger" }),
+    new Profiles.Pattern({ name: "Rainbow Falls" }),
+    new Profiles.Pattern({ name: "Down and Up" }),
+    new Profiles.Pattern({ name: "Circles" }),
+    new Profiles.Pattern({ name: "Twinkle All" }),
+    new Profiles.Pattern({ name: "Flicker On" }),
+    new Profiles.Pattern({ name: "Noise" }),
+    new Profiles.Pattern({ name: "Rotating Rings" }),
   ];
 }
 export function getDefaultAnimations(): Profiles.Animation[] {

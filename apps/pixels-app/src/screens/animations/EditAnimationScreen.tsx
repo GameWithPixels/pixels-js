@@ -37,7 +37,7 @@ function EditAnimationPage({
   const [duration, setDuration] = React.useState(1);
   const [repeatCount, setRepeatCount] = React.useState(1);
   const [colorOverride, setColorOverride] = React.useState(false);
-  const [colorDesign, setColorDesign] = React.useState<Profiles.ColorDesign>();
+  const [colorDesign, setColorDesign] = React.useState<Profiles.Pattern>();
   const [travelingOrder, setTravelingOrder] = React.useState(false);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });

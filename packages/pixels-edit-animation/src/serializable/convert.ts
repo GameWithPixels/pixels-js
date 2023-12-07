@@ -18,8 +18,8 @@ import { fromByteArray, toByteArray } from "base64-js";
 
 import {
   AnimationGradientData,
-  AnimationGradientModulatedData,
-  AnimationColorDesignData,
+  AnimationGradientPatternData,
+  AnimationPatternData,
   AnimationNoiseData,
   AnimationRainbowData,
   AnimationSetData,
@@ -252,15 +252,15 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationRainbowData;
       return new EditAnimationRainbow(animData);
     }
-    case "colorDesign": {
-      const animData = data as AnimationColorDesignData;
+    case "pattern": {
+      const animData = data as AnimationPatternData;
       return new EditAnimationKeyframed({
         ...animData,
         pattern: checkGetPattern(animData.patternUuid),
       });
     }
-    case "gradientModulated": {
-      const animData = data as AnimationGradientModulatedData;
+    case "gradientPattern": {
+      const animData = data as AnimationGradientPatternData;
       return new EditAnimationGradientPattern({
         ...animData,
         pattern: checkGetPattern(animData.patternUuid),
@@ -543,7 +543,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
     case "keyframed": {
       const anim = animation as EditAnimationKeyframed;
       return {
-        type: "colorDesign",
+        type: "pattern",
         data: {
           uuid: anim.uuid,
           name: anim.name,
@@ -556,7 +556,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
     case "gradientPattern": {
       const anim = animation as EditAnimationGradientPattern;
       return {
-        type: "gradientModulated",
+        type,
         data: {
           uuid: anim.uuid,
           name: anim.name,

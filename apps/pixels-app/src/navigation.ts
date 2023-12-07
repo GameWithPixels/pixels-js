@@ -133,8 +133,8 @@ export type AnimationsStackParamList = {
   createAnimation: undefined;
   editAnimation: { animationUuid: string };
   pickColorDesign: {
-    colorDesign?: Profiles.ColorDesign;
-    onSelectDesign?: (colorDesign: Profiles.ColorDesign) => void;
+    colorDesign?: Profiles.Pattern;
+    onSelectDesign?: (colorDesign: Profiles.Pattern) => void;
   };
 };
 

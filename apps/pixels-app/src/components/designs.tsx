@@ -11,18 +11,16 @@ import { Text } from "react-native-paper";
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useColorDesign } from "~/hooks";
 
 export function ColorDesignCard({
-  design,
+  pattern,
   dieType,
   style,
   ...props
 }: {
-  design: Profiles.ColorDesign;
+  pattern: Profiles.Pattern;
   dieType: PixelDieType;
 } & Omit<TouchableCardProps, "children">) {
-  const { name } = useColorDesign(design);
   return (
     <TouchableCard
       contentStyle={[
@@ -37,7 +35,7 @@ export function ColorDesignCard({
       <View style={{ width: 100, aspectRatio: 1 }}>
         <DieRenderer dieType={dieType} colorway="hematiteGrey" />
       </View>
-      <Text variant="titleMedium">{name}</Text>
+      <Text variant="titleMedium">{pattern.name}</Text>
       <Image
         contentFit="contain"
         style={{ flex: 1, width: "100%" }}
@@ -48,23 +46,23 @@ export function ColorDesignCard({
 }
 
 export interface ColorDesignListProps {
-  designs: Profiles.ColorDesign[];
-  selected?: Profiles.ColorDesign;
-  onSelectDesign?: (design: Profiles.ColorDesign) => void;
+  patterns: Profiles.Pattern[];
+  selected?: Profiles.Pattern;
+  onSelectDesign?: (design: Profiles.Pattern) => void;
 }
 
 function ColorDesignColumn({
-  designs,
+  patterns,
   selected,
   onSelectDesign,
 }: ColorDesignListProps) {
   return (
     <View style={{ flex: 1, gap: 10 }}>
-      {designs.map((d) => (
+      {patterns.map((d) => (
         <ColorDesignCard
           key={d.uuid}
           style={{ height: 180 }}
-          design={d}
+          pattern={d}
           dieType="d20"
           selected={d === selected}
           onPress={() => onSelectDesign?.(d)}
@@ -75,7 +73,7 @@ function ColorDesignColumn({
 }
 
 export function ColorDesignGrid({
-  designs,
+  patterns,
   numColumns = 2,
   selected,
   onSelectDesign,
@@ -93,7 +91,7 @@ export function ColorDesignGrid({
       {range(numColumns).map((col) => (
         <ColorDesignColumn
           key={col}
-          designs={designs.filter((_, i) => i % numColumns === col)}
+          patterns={patterns.filter((_, i) => i % numColumns === col)}
           selected={selected}
           onSelectDesign={onSelectDesign}
         />

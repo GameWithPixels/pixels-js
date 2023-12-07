@@ -16,8 +16,8 @@ function PickColorDesignPage({
   onSelectDesign,
   navigation,
 }: {
-  colorDesign?: Profiles.ColorDesign;
-  onSelectDesign?: (colorDesign: Profiles.ColorDesign) => void;
+  colorDesign?: Profiles.Pattern;
+  onSelectDesign?: (colorDesign: Profiles.Pattern) => void;
   navigation: StackNavigationProp<AnimationsStackParamList>;
 }) {
   return (

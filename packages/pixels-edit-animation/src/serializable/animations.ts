@@ -3,8 +3,8 @@ import { UniqueNamedData } from "./unique";
 export interface AnimationSetData {
   flashes: AnimationFlashesData[];
   rainbow: AnimationRainbowData[];
-  colorDesign: AnimationColorDesignData[];
-  gradientModulated: AnimationGradientModulatedData[];
+  pattern: AnimationPatternData[];
+  gradientPattern: AnimationGradientPatternData[];
   gradient: AnimationGradientData[];
   noise: AnimationNoiseData[];
 }
@@ -29,12 +29,12 @@ export interface AnimationRainbowData extends AnimationData {
   cycles: number;
 }
 
-export interface AnimationColorDesignData extends AnimationData {
+export interface AnimationPatternData extends AnimationData {
   patternUuid?: string;
   animFlags: number;
 }
 
-export interface AnimationGradientModulatedData extends AnimationData {
+export interface AnimationGradientPatternData extends AnimationData {
   patternUuid?: string;
   gradientUuid?: string;
   overrideWithFace: boolean;
@@ -63,8 +63,8 @@ export function createAnimationSetData(): AnimationSetData {
     flashes: [],
     rainbow: [],
     gradient: [],
-    colorDesign: [],
-    gradientModulated: [],
+    pattern: [],
+    gradientPattern: [],
     noise: [],
   };
 }

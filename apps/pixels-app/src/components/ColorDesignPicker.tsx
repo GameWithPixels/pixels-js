@@ -6,17 +6,17 @@ import { Text } from "react-native-paper";
 import { SortButton, SortMode } from "./buttons";
 import { ColorDesignGrid } from "./designs";
 
-import { useColorDesigns } from "~/hooks/useColorDesigns";
+import { usePatterns } from "~/hooks";
 
 export function ColorDesignPicker({
   colorDesign,
   onSelectDesign,
   ...props
 }: {
-  colorDesign?: Profiles.ColorDesign;
-  onSelectDesign?: (colorDesign: Profiles.ColorDesign) => void;
+  colorDesign?: Profiles.Pattern;
+  onSelectDesign?: (colorDesign: Profiles.Pattern) => void;
 } & ViewProps) {
-  const { colorDesigns } = useColorDesigns();
+  const { patterns } = usePatterns();
   const [sortMode, setSortMode] = React.useState<SortMode>("a-z");
   return (
     <View {...props}>
@@ -34,7 +34,7 @@ export function ColorDesignPicker({
       <ColorDesignGrid
         selected={colorDesign}
         onSelectDesign={onSelectDesign}
-        designs={colorDesigns}
+        patterns={patterns}
       />
     </View>
   );
