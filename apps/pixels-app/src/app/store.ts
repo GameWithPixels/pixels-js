@@ -17,13 +17,31 @@ import appSettingsReducer, {
 import pairedDiceReducer, {
   PairedDiceState,
 } from "~/features/store/pairedDiceSlice";
+import profilesLibraryReducer, {
+  LibraryState,
+} from "~/features/store/profilesLibrarySlice";
 
-const conf = { key: "user", storage: AsyncStorage };
+function conf(key: string) {
+  return {
+    key,
+    storage: AsyncStorage,
+  };
+}
 
 export const store = configureStore({
   reducer: {
-    appSettings: persistReducer<AppSettingsState>(conf, appSettingsReducer),
-    pairedDice: persistReducer<PairedDiceState>(conf, pairedDiceReducer),
+    appSettings: persistReducer<AppSettingsState>(
+      conf("settings"),
+      appSettingsReducer
+    ),
+    pairedDice: persistReducer<PairedDiceState>(
+      conf("pairedDice"),
+      pairedDiceReducer
+    ),
+    profilesLibrary: persistReducer<LibraryState>(
+      conf("profilesLibrary"),
+      profilesLibraryReducer
+    ),
   },
   middleware: (getDefaultMiddleware) => {
     const middleware = getDefaultMiddleware({

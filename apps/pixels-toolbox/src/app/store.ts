@@ -19,16 +19,24 @@ import validationSettingsReducer, {
   ValidationSettingsState,
 } from "~/features/store/validationSettingsSlice";
 
-const conf = { key: "user", storage: AsyncStorage };
+function conf(key: string) {
+  return {
+    key,
+    storage: AsyncStorage,
+  };
+}
 
 export const store = configureStore({
   reducer: {
     // Don't persist DFU bundles so they are always updated
     // and imported ones are removed on reload
     dfuBundles: dfuBundlesReducer,
-    appSettings: persistReducer<AppSettingsState>(conf, appSettingsReducer),
+    appSettings: persistReducer<AppSettingsState>(
+      conf("appSettings"),
+      appSettingsReducer
+    ),
     validationSettings: persistReducer<ValidationSettingsState>(
-      conf,
+      conf("validationSettings"),
       validationSettingsReducer
     ),
   },

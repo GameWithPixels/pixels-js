@@ -11,19 +11,33 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
-import profilesSetReducer, {
-  ProfileSetState,
-} from "~/features/appDataSet/profilesSetSlice";
+import profilesLibraryReducer, {
+  ProfilesLibraryState,
+} from "~/features/appDataSet/profilesLibrarySlice";
 import pairedDiceReducer, { PairedDiceState } from "~/features/pairedDiceSlice";
 import themeModeReducer, { ThemeModeState } from "~/features/themeModeSlice";
 
-const conf = { key: "user", storage: AsyncStorage };
+function conf(key: string) {
+  return {
+    key,
+    storage: AsyncStorage,
+  };
+}
 
 export const store = configureStore({
   reducer: {
-    themeMode: persistReducer<ThemeModeState>(conf, themeModeReducer),
-    pairedDice: persistReducer<PairedDiceState>(conf, pairedDiceReducer),
-    profilesSet: persistReducer<ProfileSetState>(conf, profilesSetReducer),
+    themeMode: persistReducer<ThemeModeState>(
+      conf("themeMode"),
+      themeModeReducer
+    ),
+    pairedDice: persistReducer<PairedDiceState>(
+      conf("pairedDice"),
+      pairedDiceReducer
+    ),
+    profilesLibrary: persistReducer<ProfilesLibraryState>(
+      conf("profilesLibrary"),
+      profilesLibraryReducer
+    ),
   },
   middleware: (getDefaultMiddleware) => {
     const middleware = getDefaultMiddleware({
