@@ -1,5 +1,6 @@
 import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 import { Switch, Text, TextInput, useTheme } from "react-native-paper";
@@ -19,7 +20,6 @@ import {
   EditAnimationScreenProps,
 } from "~/navigation";
 import { DieRenderer } from "~/render3d/DieRenderer";
-import { ColorDesign } from "~/temp";
 
 function EditAnimationPage({
   animationUuid,
@@ -37,7 +37,7 @@ function EditAnimationPage({
   const [duration, setDuration] = React.useState(1);
   const [repeatCount, setRepeatCount] = React.useState(1);
   const [colorOverride, setColorOverride] = React.useState(false);
-  const [colorDesign, setColorDesign] = React.useState<ColorDesign>();
+  const [colorDesign, setColorDesign] = React.useState<Profiles.ColorDesign>();
   const [travelingOrder, setTravelingOrder] = React.useState(false);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });

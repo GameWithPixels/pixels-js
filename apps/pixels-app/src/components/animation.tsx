@@ -1,5 +1,8 @@
 import { range } from "@systemic-games/pixels-core-utils";
-import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import { View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -9,7 +12,6 @@ import { getTextColorStyle } from "./utils";
 
 import { useAnimation } from "~/hooks";
 import { DieRenderer } from "~/render3d/DieRenderer";
-import { PixelAnimation } from "~/temp";
 
 export function AnimationCard({
   animation,
@@ -22,7 +24,7 @@ export function AnimationCard({
   contentStyle,
   ...props
 }: {
-  animation: PixelAnimation;
+  animation: Profiles.Animation;
   dieType: PixelDieType;
   row?: boolean;
   fadeInDuration?: number;
@@ -63,9 +65,9 @@ export function AnimationCard({
 }
 
 export interface AnimationsListProps extends ViewProps {
-  animations: PixelAnimation[];
-  selected?: PixelAnimation;
-  onSelectAnimation?: (animation: PixelAnimation) => void;
+  animations: Profiles.Animation[];
+  selected?: Profiles.Animation;
+  onSelectAnimation?: (animation: Profiles.Animation) => void;
 }
 
 export function AnimationsList({

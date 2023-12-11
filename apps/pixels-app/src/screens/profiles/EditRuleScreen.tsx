@@ -1,4 +1,5 @@
 import { StackNavigationProp } from "@react-navigation/stack";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
@@ -7,6 +8,7 @@ import { EditAdvancedRules } from "./components/EditProfile";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
+import { actionTypes } from "~/components/actions";
 import { getConditionTypeLabel } from "~/descriptions";
 import { useProfiles, useRule } from "~/hooks";
 import {
@@ -14,7 +16,6 @@ import {
   EditProfileSubStackParamList,
   EditRuleScreenProps,
 } from "~/navigation";
-import { Action, ActionType, ActionTypeValues } from "~/temp";
 
 function EditRulePage({
   profileUuid,
@@ -27,11 +28,8 @@ function EditRulePage({
 }) {
   const { profiles } = useProfiles();
   const { condition } = useRule(profileUuid, ruleIndex, profiles);
-  const actionTypes = React.useMemo(
-    () =>
-      (Object.keys(ActionTypeValues) as ActionType[])
-        .filter((a) => a !== "none")
-        .map((a) => new Action(a)),
+  const actions = React.useMemo(
+    () => actionTypes.map((a) => Profiles.createAction(a)),
     []
   );
   return (
@@ -50,7 +48,7 @@ function EditRulePage({
             gap: 20,
           }}
         >
-          {actionTypes.map((a) => (
+          {actions.map((a) => (
             <EditActionCard
               key={a.type}
               action={a}

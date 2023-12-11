@@ -1,4 +1,5 @@
 import { StackNavigationProp } from "@react-navigation/stack";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
@@ -9,22 +10,21 @@ import {
   AnimationsStackParamList,
   PickColorDesignScreenProps,
 } from "~/navigation";
-import { ColorDesign } from "~/temp";
 
 function PickColorDesignPage({
   colorDesign,
   onSelectDesign,
   navigation,
 }: {
-  colorDesign?: ColorDesign;
-  onSelectDesign?: (colorDesign: ColorDesign) => void;
+  colorDesign?: Profiles.ColorDesign;
+  onSelectDesign?: (colorDesign: Profiles.ColorDesign) => void;
   navigation: StackNavigationProp<AnimationsStackParamList>;
 }) {
   return (
     <View style={{ height: "100%", gap: 10 }}>
       <PageHeader
         mode="chevron-down"
-        title="Select a ColorDesign"
+        title="Select a Scheme.ColorDesign"
         onGoBack={() => navigation.goBack()}
       />
       <ScrollView contentInsetAdjustmentBehavior="automatic">

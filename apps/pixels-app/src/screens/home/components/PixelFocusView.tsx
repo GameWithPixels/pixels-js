@@ -8,6 +8,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
+  Profiles,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -56,7 +57,6 @@ import { useActiveProfile } from "~/hooks";
 import { HomeStackParamList } from "~/navigation";
 import { DieRenderer } from "~/render3d/DieRenderer";
 import { AppStyles } from "~/styles";
-import { PixelProfile } from "~/temp";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function ChevronDownIcon({
@@ -603,9 +603,9 @@ function PickProfileBottomSheet({
   onDismiss,
 }: {
   pixel: Pixel;
-  profile?: PixelProfile;
+  profile?: Profiles.Profile;
   transferring: boolean;
-  onSelectProfile: (profile: PixelProfile) => void;
+  onSelectProfile: (profile: Profiles.Profile) => void;
   visible: boolean;
   onDismiss: () => void;
 }) {

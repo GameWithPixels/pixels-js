@@ -1,10 +1,9 @@
 import { assert } from "@systemic-games/pixels-core-utils";
-
-import { PixelAnimation } from "~/temp";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 export function useAnimation(
-  animOrUuid: PixelAnimation | string,
-  animations?: PixelAnimation[]
+  animOrUuid: Profiles.Animation | string,
+  animations?: Profiles.Animation[]
 ): {
   name: string;
 } {

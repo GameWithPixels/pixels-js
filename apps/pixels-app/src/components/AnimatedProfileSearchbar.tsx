@@ -3,15 +3,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Searchbar, Text, TouchableRipple, useTheme } from "react-native-paper";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import Animated, {
+  SharedValue,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 
-import { ProfileGroups } from "~/data";
+import { ProfileGroups } from "~/temp";
 
 export function AnimatedProfileSearchbar({
   positionY,
   headerHeight,
 }: {
-  positionY: Animated.SharedValue<number>;
+  positionY: SharedValue<number>;
   headerHeight: number;
 }) {
   const animStyle = useAnimatedStyle(() => {

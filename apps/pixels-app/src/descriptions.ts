@@ -1,8 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
-import { ActionType, ConditionType } from "~/temp";
-
-export function getConditionTypeLabel(type: ConditionType): string {
+export function getConditionTypeLabel(type: Profiles.ConditionType): string {
   switch (type) {
     case "none":
       return "";
@@ -16,9 +15,9 @@ export function getConditionTypeLabel(type: ConditionType): string {
       return "When Die is Rolled";
     case "crooked":
       return "When Die is Crooked";
-    case "bluetoothEvent":
+    case "connection":
       return "Bluetooth Notifications";
-    case "batteryEvent":
+    case "battery":
       return "Battery Notifications";
     case "idle":
       return "When Die is Idle";
@@ -27,7 +26,9 @@ export function getConditionTypeLabel(type: ConditionType): string {
   }
 }
 
-export function getConditionTypeDescription(type: ConditionType): string {
+export function getConditionTypeDescription(
+  type: Profiles.ConditionType
+): string {
   switch (type) {
     case "none":
       return "";
@@ -41,9 +42,9 @@ export function getConditionTypeDescription(type: ConditionType): string {
       return "when die has rolled";
     case "crooked":
       return "when die is crooked";
-    case "bluetoothEvent":
+    case "connection":
       return "on Bluetooth event";
-    case "batteryEvent":
+    case "battery":
       return "on battery state event";
     case "idle":
       return "when die is idle";
@@ -52,35 +53,39 @@ export function getConditionTypeDescription(type: ConditionType): string {
   }
 }
 
-export function getActionTypeLabel(type: ActionType): string {
+export function getActionTypeLabel(type: Profiles.ActionType): string {
   switch (type) {
     case "none":
       return "";
     case "playAnimation":
       return "Animation";
-    case "playSound":
+    case "playAudioClip":
       return "Sound";
-    case "textToSpeech":
+    case "speakText":
       return "Speak";
-    case "webRequest":
+    case "makeWebRequest":
       return "Web Request";
+    case "runOnDevice":
+      return "";
     default:
       assertNever(type);
   }
 }
 
-export function getActionTypeDescription(type: ActionType): string {
+export function getActionTypeDescription(type: Profiles.ActionType): string {
   switch (type) {
     case "none":
       return "";
     case "playAnimation":
       return "Play an animation on the Pixel LEDs";
-    case "playSound":
+    case "playAudioClip":
       return "Play a sound file on your phone";
-    case "textToSpeech":
+    case "speakText":
       return "Speak a text on your phone";
-    case "webRequest":
+    case "makeWebRequest":
       return "Send a web request";
+    case "runOnDevice":
+      return "";
     default:
       assertNever(type);
   }

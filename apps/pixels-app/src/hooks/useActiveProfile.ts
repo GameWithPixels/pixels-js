@@ -1,19 +1,18 @@
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
+import { assert } from "@systemic-games/pixels-core-utils";
+import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 
 import { useProfiles } from "./useProfiles";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { defaultProfile } from "~/data";
 import { setPairedDieProfile } from "~/features/store/pairedDiceSlice";
-import { PixelProfile } from "~/temp";
 
 export function useActiveProfile(pixel: Pixel): {
-  activeProfile: PixelProfile;
-  setActiveProfile: (profile: PixelProfile) => void;
+  activeProfile: Profiles.Profile;
+  setActiveProfile: (profile: Profiles.Profile) => void;
 } {
   const appDispatch = useAppDispatch();
   const activeProfiles = useAppSelector((state) => state.pairedDice.diceData);
-  const setActiveProfile = (profile: PixelProfile) =>
+  const setActiveProfile = (profile: Profiles.Profile) =>
     appDispatch(
       setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
     );
@@ -23,6 +22,7 @@ export function useActiveProfile(pixel: Pixel): {
   const { profiles } = useProfiles();
   const activeProfile =
     (profileUuid ? profiles.find((p) => p.uuid === profileUuid) : undefined) ??
-    defaultProfile;
+    profiles[0];
+  assert(activeProfile);
   return { activeProfile, setActiveProfile };
 }

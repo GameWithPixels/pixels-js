@@ -1,5 +1,8 @@
 import { range } from "@systemic-games/pixels-core-utils";
-import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
 import React from "react";
 import { View } from "react-native";
@@ -9,7 +12,6 @@ import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
 import { useColorDesign } from "~/hooks";
 import { DieRenderer } from "~/render3d/DieRenderer";
-import { ColorDesign } from "~/temp";
 
 export function ColorDesignCard({
   design,
@@ -17,7 +19,7 @@ export function ColorDesignCard({
   style,
   ...props
 }: {
-  design: ColorDesign;
+  design: Profiles.ColorDesign;
   dieType: PixelDieType;
 } & Omit<TouchableCardProps, "children">) {
   const { name } = useColorDesign(design);
@@ -46,9 +48,9 @@ export function ColorDesignCard({
 }
 
 export interface ColorDesignListProps {
-  designs: ColorDesign[];
-  selected?: ColorDesign;
-  onSelectDesign?: (design: ColorDesign) => void;
+  designs: Profiles.ColorDesign[];
+  selected?: Profiles.ColorDesign;
+  onSelectDesign?: (design: Profiles.ColorDesign) => void;
 }
 
 function ColorDesignColumn({

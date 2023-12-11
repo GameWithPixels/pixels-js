@@ -7,7 +7,10 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import { DiceUtils } from "@systemic-games/react-native-pixels-connect";
+import {
+  DiceUtils,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, Platform } from "react-native";
 import { Button, Text, ThemeProvider, useTheme } from "react-native-paper";
@@ -28,7 +31,6 @@ import { AnimationsGrid } from "~/components/animation";
 import { GradientButton } from "~/components/buttons";
 import { getConditionTypeLabel } from "~/descriptions";
 import { useAnimations, useConfirmActionSheet } from "~/hooks";
-import { ActionType, ConditionType, PixelAnimation } from "~/temp";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function PickAnimationModal({
@@ -37,8 +39,8 @@ function PickAnimationModal({
   visible,
   onDismiss,
 }: {
-  animation?: PixelAnimation;
-  onSelectAnimation?: (animation: PixelAnimation) => void;
+  animation?: Profiles.Animation;
+  onSelectAnimation?: (animation: Profiles.Animation) => void;
   onDismiss: () => void;
   visible: boolean;
 }) {
@@ -97,12 +99,12 @@ export function ConfigureAnimationModal({
   visible,
   onDismiss,
 }: {
-  conditionType: ConditionType;
-  actionType: ActionType;
+  conditionType: Profiles.ConditionType;
+  actionType: Profiles.ActionType;
   onDismiss: () => void;
   visible: boolean;
 }) {
-  const [animation, setAnimation] = React.useState<PixelAnimation>();
+  const [animation, setAnimation] = React.useState<Profiles.Animation>();
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
   const visibleRef = React.useRef(visible);
   visibleRef.current = visible;
@@ -262,7 +264,7 @@ export function ConfigureAnimationModal({
                   onValueChange={setDelay}
                 />
               </>
-            ) : actionType === "playSound" ? (
+            ) : actionType === "playAudioClip" ? (
               <>
                 <Text variant="titleMedium">Play</Text>
                 <GradientButton outline onPress={() => {}}>
@@ -278,7 +280,7 @@ export function ConfigureAnimationModal({
                   onValueChange={setVolume}
                 />
               </>
-            ) : actionType === "textToSpeech" ? (
+            ) : actionType === "speakText" ? (
               <>
                 <Text variant="titleMedium">Text to Read</Text>
                 <BottomSheetTextInput
@@ -307,7 +309,7 @@ export function ConfigureAnimationModal({
                   onValueChange={setVolume}
                 />
               </>
-            ) : actionType === "webRequest" ? (
+            ) : actionType === "makeWebRequest" ? (
               <>
                 <Text variant="titleMedium">URL</Text>
                 <BottomSheetTextInput

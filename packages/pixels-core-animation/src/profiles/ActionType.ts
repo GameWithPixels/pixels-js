@@ -9,6 +9,9 @@ export const ActionTypeValues = {
   none: enumValue(0),
   playAnimation: enumValue(),
   runOnDevice: enumValue(),
+  playAudioClip: enumValue(),
+  speakText: enumValue(),
+  makeWebRequest: enumValue(),
 } as const;
 
 /**

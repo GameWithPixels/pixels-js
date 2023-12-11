@@ -16,9 +16,9 @@ import { Banner } from "~/components/banners";
 import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
 import { ProfileCard } from "~/components/profile";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
-import { getRollStats } from "~/data";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { DieDetailsScreenProps, HomeStackParamList } from "~/navigation";
+import { generateRollStats } from "~/temp";
 import { Colors } from "~/themes";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
@@ -37,8 +37,8 @@ export function DieStats({
   const [viewType, setViewType] = React.useState<"session" | "lifetime">(
     "session"
   );
-  const sessionValues = React.useMemo(() => getRollStats(pixel), [pixel]);
-  const lifetimeValues = React.useMemo(() => getRollStats(pixel), [pixel]);
+  const sessionValues = React.useMemo(() => generateRollStats(pixel), [pixel]);
+  const lifetimeValues = React.useMemo(() => generateRollStats(pixel), [pixel]);
   const values = viewType === "session" ? sessionValues : lifetimeValues;
   const isSession = viewType === "session";
   const [viewMode, setViewMode] = React.useState<StatsViewMode>("bars");

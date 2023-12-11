@@ -1,14 +1,14 @@
 import { MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { StyleProp, TextStyle } from "react-native";
 
 import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
-import { ActionTypeValues, ActionType } from "~/temp";
 
 export const actionTypes = (
-  Object.keys(ActionTypeValues) as ActionType[]
-).filter((t) => t !== "none");
+  Object.keys(Profiles.ActionTypeValues) as Profiles.ActionType[]
+).filter((t) => t !== "none" && t !== "runOnDevice");
 
 function GlobeIcon({ size, color }: { size: number; color: string }) {
   return <MaterialCommunityIcons name="web" size={size} color={color} />;
@@ -19,20 +19,21 @@ function FileAudioIcon({ size, color }: { size: number; color: string }) {
 }
 
 export function getActionTypeIcon(
-  type: ActionType
+  type: Profiles.ActionType
 ):
   | (({ size, color }: { size: number; color: string }) => React.JSX.Element)
   | undefined {
   switch (type) {
     case "none":
+    case "runOnDevice":
       return undefined;
     case "playAnimation":
       return AnimationsIcon;
-    case "playSound":
+    case "playAudioClip":
       return FileAudioIcon;
-    case "textToSpeech":
+    case "speakText":
       return SpeakIcon;
-    case "webRequest":
+    case "makeWebRequest":
       return GlobeIcon;
     default:
       assertNever(type);
@@ -44,7 +45,7 @@ export function ActionTypeIcon({
   size,
   style,
 }: {
-  type: ActionType;
+  type: Profiles.ActionType;
   size: number;
   style: StyleProp<TextStyle>;
 }) {

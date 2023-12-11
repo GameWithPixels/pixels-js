@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Divider, IconButton, Menu, useTheme } from "react-native-paper";
@@ -19,7 +20,6 @@ import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import { useProfiles } from "~/hooks";
 import { ProfilesListScreenProps, ProfilesStackParamList } from "~/navigation";
 import { AppStyles } from "~/styles";
-import { PixelProfile } from "~/temp";
 
 type ProfilesViewMode = "list" | "grid";
 
@@ -113,7 +113,7 @@ function ProfilesListPage({
 }) {
   const { profiles } = useProfiles();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
-  const editProfile = (profile: PixelProfile) =>
+  const editProfile = (profile: Profiles.Profile) =>
     navigation.navigate("editProfile", { profileUuid: profile.uuid });
 
   const aref = useAnimatedRef<Animated.ScrollView>();

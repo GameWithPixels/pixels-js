@@ -1,21 +1,20 @@
 import { assert } from "@systemic-games/pixels-core-utils";
-
-import { ActionType, ConditionType, PixelProfile } from "~/temp";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 export function useRule(
   profileUuid: string,
   index: number,
-  profiles: PixelProfile[]
+  profiles: Profiles.Profile[]
 ): {
-  condition: { type: ConditionType };
-  actions: { type: ActionType }[];
+  condition: Profiles.Condition;
+  actions: Profiles.Action[];
 } {
   const profile = profiles?.find((p) => p.uuid === profileUuid);
   assert(profile, `Profile ${profileUuid} not found`);
   const rule = profile.rules[index];
   assert(rule, `Rule at index ${index} not found`);
   return {
-    condition: { type: rule.condition.type },
-    actions: rule.actions.map((a) => ({ type: a.type })),
+    condition: rule.condition,
+    actions: rule.actions,
   };
 }

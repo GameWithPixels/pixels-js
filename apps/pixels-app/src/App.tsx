@@ -6,7 +6,10 @@ import {
   NavigationContainer,
   RouteProp,
 } from "@react-navigation/native";
-import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
+import {
+  initBluetooth,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -32,11 +35,6 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
-import {
-  getDefaultAnimations,
-  getDefaultColorDesigns,
-  getDefaultProfiles,
-} from "./data";
 import { AnimationsContext, ProfilesContext } from "./hooks";
 import { ColorDesignsContext } from "./hooks/useColorDesigns";
 import {
@@ -49,13 +47,17 @@ import { AnimationsStack } from "./screens/animations";
 import { HomeStack } from "./screens/home";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
+import {
+  createDefaultProfiles,
+  getDefaultAnimations,
+  getDefaultColorDesigns,
+} from "./temp";
 import { AppDarkTheme, PixelThemes } from "./themes";
 
 import AnimationsIcon from "#/icons/navigation/animations";
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
-import { PixelAnimation, PixelProfile } from "~/temp";
 
 LogBox.ignoreLogs(["THREE.WebGLProgram: Program Info Log:"]);
 
@@ -135,9 +137,9 @@ function AppPage() {
 
 function AppDataProviders({ children }: React.PropsWithChildren) {
   // Profiles management
-  const [profiles, setProfiles] = React.useState(() => getDefaultProfiles());
+  const [profiles, setProfiles] = React.useState(() => createDefaultProfiles());
   const addProfile = React.useCallback(
-    (p: PixelProfile) =>
+    (p: Profiles.Profile) =>
       setProfiles((profiles) =>
         profiles.every((p2) => p.uuid !== p2.uuid) ? [...profiles, p] : profiles
       ),
@@ -157,7 +159,7 @@ function AppDataProviders({ children }: React.PropsWithChildren) {
     getDefaultAnimations()
   );
   const addAnimation = React.useCallback(
-    (a: PixelAnimation) =>
+    (a: Profiles.Animation) =>
       setAnimations((animations) =>
         animations.every((a2) => a.uuid !== a2.uuid)
           ? [...animations, a]

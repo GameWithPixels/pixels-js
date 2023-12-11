@@ -1,10 +1,9 @@
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
-import { PixelAnimation } from "~/temp";
-
 export interface AnimationsContextData {
-  animations: PixelAnimation[];
-  addAnimation: (animation: PixelAnimation) => void;
+  animations: Profiles.Animation[];
+  addAnimation: (animation: Profiles.Animation) => void;
   removeAnimation: (animUuid: string) => void;
 }
 

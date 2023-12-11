@@ -73,13 +73,14 @@ export function EditAnimationOverrides({
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
-      {Object.entries(overrides)
-        .filter(([_, value]) => !!value)
-        .map(([name, value]) => (
+      {AnimationOverrideNames.map((name) => ({
+        name,
+        value: overrides[name],
+      }))
+        .filter(({ value }) => !!value)
+        .map(({ name, value }) => (
           <View key={name}>
-            <Text>
-              {getAnimationOverrideUserName(name as AnimationOverrideName)}
-            </Text>
+            <Text>{getAnimationOverrideUserName(name)}</Text>
             <View
               style={{
                 flexDirection: "row",
@@ -114,11 +115,11 @@ export function EditAnimationOverrides({
                 color={makeTransparent(colors.onBackground, 0.5)}
                 onPress={() =>
                   showConfirmRemove(
-                    `Remove ${getAnimationOverrideUserName(
-                      name as AnimationOverrideName
-                    )} Override`,
-                    () =>
-                      onChangeOverrides?.({ ...overrides, [name]: undefined })
+                    `Remove ${getAnimationOverrideUserName(name)} Override`,
+                    () => {
+                      const { [name]: _, ...copy } = overrides;
+                      return copy;
+                    }
                   )
                 }
               />

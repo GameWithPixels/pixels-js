@@ -1,4 +1,7 @@
-import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import Animated, {
@@ -10,7 +13,6 @@ import { AnimatedProfileSearchbar } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
 import { useProfiles } from "~/hooks";
-import { PixelProfile } from "~/temp";
 
 export function ProfilePicker({
   selected,
@@ -20,10 +22,10 @@ export function ProfilePicker({
   style,
   ...props
 }: {
-  selected?: PixelProfile;
+  selected?: Profiles.Profile;
   transferring?: boolean;
   dieType?: PixelDieType;
-  onSelectProfile: (profile: PixelProfile) => void;
+  onSelectProfile: (profile: Profiles.Profile) => void;
 } & ViewProps) {
   const { profiles } = useProfiles();
   const aref = useAnimatedRef<Animated.ScrollView>();

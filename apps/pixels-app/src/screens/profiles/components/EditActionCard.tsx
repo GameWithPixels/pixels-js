@@ -1,4 +1,5 @@
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { useTheme, Text, Switch } from "react-native-paper";
@@ -21,7 +22,6 @@ import { AnimatedText } from "~/components/animated";
 import { getActionTypeLabel } from "~/descriptions";
 import { useAction } from "~/hooks";
 import { DieRenderer } from "~/render3d/DieRenderer";
-import { Action, ConditionType } from "~/temp";
 import { Colors } from "~/themes";
 import { withAnimated } from "~/withAnimated";
 
@@ -105,7 +105,7 @@ function EditActionContents({
             <DieRenderer dieType="d20" colorway="midnightGalaxy" />
           </View>
         </View>
-      ) : actionType === "playSound" ? (
+      ) : actionType === "playAudioClip" ? (
         <View style={{ marginVertical: 5, gap: 5 }}>
           <Text variant="titleSmall">
             {hasData ? `Play "Trumpets"` : "No sound selected"}
@@ -117,14 +117,14 @@ function EditActionContents({
             </>
           )}
         </View>
-      ) : actionType === "textToSpeech" ? (
+      ) : actionType === "speakText" ? (
         <View style={{ marginVertical: 5, gap: 5 }}>
           <Text variant="titleSmall">Speak "Face"</Text>
           {hasData && (
             <Text style={{ color: Colors.grey500 }}>Volume: 70%</Text>
           )}
         </View>
-      ) : actionType === "webRequest" ? (
+      ) : actionType === "makeWebRequest" ? (
         <View style={{ marginVertical: 5, gap: 5 }}>
           <Text variant="titleSmall">
             {hasData ? `Notify "ifttt.com"` : "No website selected"}
@@ -144,8 +144,8 @@ const AnimatedActionTypeIcon = withAnimated(ActionTypeIcon);
 const AnimatedEditActionContents = withAnimated(EditActionContents);
 
 export interface ActionEditCommonProps {
-  conditionType: ConditionType;
-  action: Action;
+  conditionType: Profiles.ConditionType;
+  action: Profiles.Action;
 }
 
 export function EditActionCard({
@@ -210,7 +210,7 @@ export function EditActionCard({
         {showContent && hasData && (
           <AnimatedEditActionContents
             conditionType={conditionType}
-            action={{ type: actionType }}
+            action={Profiles.createAction(actionType)}
             hasData={hasData}
             entering={FadeIn.duration(300).delay(100)}
             exiting={FadeOut.duration(300)}

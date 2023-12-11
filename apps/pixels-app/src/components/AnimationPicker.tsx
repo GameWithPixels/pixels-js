@@ -1,3 +1,4 @@
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
@@ -6,15 +7,14 @@ import { AnimationsGrid } from "./animation";
 import { SortMode, SortButton } from "./buttons";
 
 import { useAnimations } from "~/hooks";
-import { PixelAnimation } from "~/temp";
 
 export function AnimationPicker({
   animation,
   onSelectAnimation,
   ...props
 }: {
-  animation?: PixelAnimation;
-  onSelectAnimation?: (animation: PixelAnimation) => void;
+  animation?: Profiles.Animation;
+  onSelectAnimation?: (animation: Profiles.Animation) => void;
 } & ViewProps) {
   const { animations } = useAnimations();
   const [sortMode, setSortMode] = React.useState<SortMode>("a-z");

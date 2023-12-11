@@ -53,6 +53,9 @@ export function getActionTypeDisplayName(
 ): NameAndOrder | undefined {
   switch (actionType) {
     case "none":
+    case "playAudioClip":
+    case "speakText":
+    case "makeWebRequest":
       return;
     case "playAnimation":
       return { name: "Trigger Pattern", order: 0 };

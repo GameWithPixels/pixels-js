@@ -6,6 +6,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
 import { setShowIntro, setShowPromo } from "~/features/store/appSettingsSlice";
 import { removeAllPairedDie } from "~/features/store/pairedDiceSlice";
+import { resetProfilesToDefault } from "~/features/store/profilesLibrarySlice";
 import { useConfirmActionSheet } from "~/hooks";
 import { SettingsMenuScreenProps, SettingsStackParamList } from "~/navigation";
 
@@ -32,6 +33,7 @@ function SettingsMenuPage({
       appDispatch(setShowIntro(false));
       appDispatch(setShowPromo(true));
       appDispatch(removeAllPairedDie());
+      appDispatch(resetProfilesToDefault());
     }
   );
   const openPage = (page: (typeof pages)[number]) => {

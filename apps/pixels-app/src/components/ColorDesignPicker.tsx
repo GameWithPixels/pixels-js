@@ -1,3 +1,4 @@
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
@@ -6,15 +7,14 @@ import { SortButton, SortMode } from "./buttons";
 import { ColorDesignGrid } from "./designs";
 
 import { useColorDesigns } from "~/hooks/useColorDesigns";
-import { ColorDesign } from "~/temp";
 
 export function ColorDesignPicker({
   colorDesign,
   onSelectDesign,
   ...props
 }: {
-  colorDesign?: ColorDesign;
-  onSelectDesign?: (colorDesign: ColorDesign) => void;
+  colorDesign?: Profiles.ColorDesign;
+  onSelectDesign?: (colorDesign: Profiles.ColorDesign) => void;
 } & ViewProps) {
   const { colorDesigns } = useColorDesigns();
   const [sortMode, setSortMode] = React.useState<SortMode>("a-z");

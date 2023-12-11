@@ -6,7 +6,10 @@ import {
 } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { View, ViewProps } from "react-native";
@@ -29,7 +32,6 @@ import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
 import { useProfile } from "~/hooks";
 import { DieRenderer } from "~/render3d/DieRenderer";
-import { PixelProfile } from "~/temp";
 
 export function ProfileCard({
   profile,
@@ -52,7 +54,7 @@ export function ProfileCard({
   contentStyle,
   ...props
 }: {
-  profile: PixelProfile;
+  profile: Profiles.Profile;
   transferring?: boolean;
   expanded?: Animated.SharedValue<boolean>;
   dieType: PixelDieType;
@@ -327,10 +329,10 @@ export function ProfileCardItem({
 }
 
 export interface ProfilesListProps extends ViewProps {
-  profiles: PixelProfile[];
-  selected?: PixelProfile;
-  transferring?: PixelProfile;
-  onSelectProfile?: (profile: PixelProfile) => void;
+  profiles: Profiles.Profile[];
+  selected?: Profiles.Profile;
+  transferring?: Profiles.Profile;
+  onSelectProfile?: (profile: Profiles.Profile) => void;
 }
 
 export function ProfilesList({
@@ -344,11 +346,11 @@ export function ProfilesList({
 }: { expandableItems?: boolean } & ProfilesListProps) {
   const favorites = profiles.filter((p) => p.favorite);
   const expandedIndex = useSharedValue(-1);
-  const onPress = (i: number, p: PixelProfile) =>
+  const onPress = (i: number, p: Profiles.Profile) =>
     expandableItems
       ? (expandedIndex.value = expandedIndex.value === i ? -1 : i)
       : onSelectProfile?.(p);
-  const onAction = (action: string, p: PixelProfile) => {
+  const onAction = (action: string, p: Profiles.Profile) => {
     if (action === "edit") {
       expandedIndex.value = -1;
       onSelectProfile?.(p);

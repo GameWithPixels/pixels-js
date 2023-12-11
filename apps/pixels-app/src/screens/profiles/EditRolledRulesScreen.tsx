@@ -4,7 +4,6 @@ import React from "react";
 import {
   View,
   ScrollView,
-  TouchableOpacity,
   useWindowDimensions,
   ScrollViewProps,
 } from "react-native";
@@ -19,7 +18,6 @@ import { PageHeader } from "~/components/PageHeader";
 import { TouchableCard } from "~/components/TouchableCard";
 import { actionTypes, getActionTypeIcon } from "~/components/actions";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
-import { getBorderColor } from "~/components/utils";
 import {
   getActionTypeDescription,
   getConditionTypeDescription,

@@ -1,9 +1,11 @@
-import { StackScreenProps, TransitionPresets } from "@react-navigation/stack";
-import { StackNavigationOptions } from "@react-navigation/stack/lib/typescript/src/types";
+import {
+  StackNavigationOptions,
+  StackScreenProps,
+  TransitionPresets,
+} from "@react-navigation/stack";
 import { assertNever } from "@systemic-games/pixels-core-utils";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { Platform } from "react-native";
-
-import { ColorDesign, PixelAnimation } from "~/temp";
 
 // Root screens
 export type BottomTabParamList = {
@@ -38,8 +40,8 @@ export type EditProfileSubStackParamList = {
   editRule: { profileUuid: string; ruleIndex: number };
   editRollRules: { profileUuid: string };
   pickAnimation: {
-    animation?: PixelAnimation;
-    onSelectAnimation?: (animation: PixelAnimation) => void;
+    animation?: Profiles.Animation;
+    onSelectAnimation?: (animation: Profiles.Animation) => void;
   };
 };
 
@@ -131,8 +133,8 @@ export type AnimationsStackParamList = {
   createAnimation: undefined;
   editAnimation: { animationUuid: string };
   pickColorDesign: {
-    colorDesign?: ColorDesign;
-    onSelectDesign?: (colorDesign: ColorDesign) => void;
+    colorDesign?: Profiles.ColorDesign;
+    onSelectDesign?: (colorDesign: Profiles.ColorDesign) => void;
   };
 };
 

@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { Pressable, View, ViewProps } from "react-native";
 import { Text, TextInput, useTheme } from "react-native-paper";
@@ -28,7 +29,6 @@ import { getConditionTypeLabel } from "~/descriptions";
 import { useConfirmActionSheet, useProfile, useProfiles } from "~/hooks";
 import { ProfilesStackParamList } from "~/navigation";
 import { DieRenderer } from "~/render3d/DieRenderer";
-import { ConditionType } from "~/temp";
 import { Colors } from "~/themes";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
@@ -42,7 +42,7 @@ function RuleMenuButton({
   option,
   ...props
 }: {
-  condition?: ConditionType;
+  condition?: Profiles.ConditionType;
   option?: string;
 } & TouchableCardProps) {
   const { colors, roundness } = useTheme();
@@ -136,7 +136,7 @@ function RuleMenuButton({
             </Text>
           )}
           <View style={rulesGroupStyle}>
-            {condition === "bluetoothEvent" ||
+            {condition === "connection" ||
             condition === "helloGoodbye" ||
             condition === "handling" ||
             condition === "rolling" ||
@@ -288,7 +288,7 @@ function RulesSection({
   ...props
 }: {
   profileUuid: string;
-  condition: ConditionType;
+  condition: Profiles.ConditionType;
   options: string[];
 } & ViewProps) {
   const navigation =
@@ -332,13 +332,13 @@ export function EditAdvancedRules({ profileUuid }: { profileUuid: string }) {
       <RulesSection
         style={{ gap: 10 }}
         profileUuid={profileUuid}
-        condition="bluetoothEvent"
+        condition="connection"
         options={["Connect", "Disconnect"]}
       />
       <RulesSection
         style={{ gap: 10 }}
         profileUuid={profileUuid}
-        condition="batteryEvent"
+        condition="battery"
         options={["Ok", "Low", "Charging", "Done", "Bad Charging"]}
       />
     </View>
@@ -406,7 +406,7 @@ export function EditProfile({
     profileUuid,
     profiles
   );
-  const conditionsTypes: ConditionType[] = ["rolled", "rolling"];
+  const conditionsTypes: Profiles.ConditionType[] = ["rolled", "rolling"];
   const showConfirmDelete = useConfirmActionSheet("Delete", onDelete);
   const { colors } = useTheme();
   return (

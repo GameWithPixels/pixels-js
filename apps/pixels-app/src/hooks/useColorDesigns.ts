@@ -1,9 +1,8 @@
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
-import { ColorDesign } from "~/temp";
-
 export interface ColorDesignsContextData {
-  colorDesigns: ColorDesign[];
+  colorDesigns: Profiles.ColorDesign[];
 }
 
 export const ColorDesignsContext = React.createContext<ColorDesignsContextData>(

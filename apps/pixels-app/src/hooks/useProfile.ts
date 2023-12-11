@@ -1,16 +1,15 @@
 import { assert } from "@systemic-games/pixels-core-utils";
-
-import { Action, ConditionType, PixelProfile } from "~/temp";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 export function useProfile(
-  profileOrUuid: PixelProfile | string,
-  profiles?: PixelProfile[]
+  profileOrUuid: Profiles.Profile | string,
+  profiles?: Profiles.Profile[]
 ): {
   name: string;
   description: string;
   group: string;
   favorite: boolean;
-  getOrAddRule: (conditionType: ConditionType) => number;
+  getOrAddRule: (conditionType: Profiles.ConditionType) => number;
 } {
   const profile =
     typeof profileOrUuid === "string"
@@ -22,17 +21,18 @@ export function useProfile(
     description: profile.description,
     group: profile.group,
     favorite: profile.favorite,
-    getOrAddRule: (conditionType: ConditionType) => {
+    getOrAddRule: (conditionType: Profiles.ConditionType) => {
       const index = profile.rules.findIndex(
         (r) => r.condition.type === conditionType
       );
       if (index >= 0) {
         return index;
       }
-      profile.rules.push({
-        condition: { type: conditionType },
-        actions: [new Action("playAnimation")],
-      });
+      profile.rules.push(
+        new Profiles.Rule(Profiles.createCondition(conditionType), {
+          actions: [Profiles.createAction("playAnimation")],
+        })
+      );
       return profile.rules.length - 1;
     },
   };
