@@ -1,8 +1,4 @@
-import {
-  PixelColorway,
-  PixelColorwayValues,
-  PixelDieType,
-} from "@systemic-games/react-native-pixels-connect";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 
 export const ValidationSequences = [
   "firmwareUpdate",
@@ -36,11 +32,6 @@ export const ValidationDieTypes: readonly PixelDieType[] = [
   "d12",
   "d20",
 ];
-
-// Colorways used for validation
-export const ValidationColorways: readonly PixelColorway[] = (
-  Object.keys(PixelColorwayValues) as PixelColorway[]
-).filter((c) => c !== "unknown" && c !== "custom");
 
 export function getBoardOrDie(sequence: ValidationSequence): "board" | "die" {
   return sequence.startsWith("die") ? "die" : "board";
