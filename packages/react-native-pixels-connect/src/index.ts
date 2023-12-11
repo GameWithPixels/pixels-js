@@ -1,3 +1,6 @@
+import * as Profiles from "./Profiles";
+export { Profiles };
+
 export * from "@systemic-games/react-native-bluetooth-le";
 
 export * from "./MainScanner";
