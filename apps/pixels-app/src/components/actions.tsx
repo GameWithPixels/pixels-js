@@ -8,7 +8,7 @@ import SpeakIcon from "#/icons/profiles/speak";
 
 export const actionTypes = (
   Object.keys(Profiles.ActionTypeValues) as Profiles.ActionType[]
-).filter((t) => t !== "none" && t !== "runOnDevice");
+).filter((t) => t !== "none");
 
 function GlobeIcon({ size, color }: { size: number; color?: string }) {
   return <MaterialCommunityIcons name="web" size={size} color={color} />;
@@ -32,16 +32,15 @@ export function getActionTypeIcon(
   | undefined {
   switch (type) {
     case "none":
-    case "runOnDevice":
       return undefined;
     case "playAnimation":
       return AnimationsIcon;
     case "playAudioClip":
       return FileAudioIcon;
-    case "speakText":
-      return SpeakIcon;
     case "makeWebRequest":
       return GlobeIcon;
+    case "speakText":
+      return SpeakIcon;
     default:
       assertNever(type);
   }

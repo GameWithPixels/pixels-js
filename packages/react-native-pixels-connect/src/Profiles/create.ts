@@ -30,30 +30,16 @@ export function createCondition(
   }
 }
 
-// TODO temp type override!!
 export function createAction(type: Profiles.ActionType): Profiles.Action {
   switch (type) {
     case "playAnimation":
       return new Profiles.ActionPlayAnimation();
-    case "playAudioClip": {
-      const action = new Profiles.ActionPlayAudioClip();
-      // @ts-ignore
-      action.type = type;
-      return action;
-    }
-    case "speakText": {
-      const action = new Profiles.ActionMakeWebRequest(); // TODO missing specific action class
-      // @ts-ignore
-      action.type = type;
-      return action;
-    }
-    case "makeWebRequest": {
-      const action = new Profiles.ActionMakeWebRequest();
-      // @ts-ignore
-      action.type = type;
-      return action;
-    }
-    case "runOnDevice":
+    case "playAudioClip":
+      return new Profiles.ActionPlayAudioClip();
+    case "makeWebRequest":
+      return new Profiles.ActionMakeWebRequest();
+    case "speakText":
+      return new Profiles.ActionSpeakText();
     default:
       throw new Error(`Unsupported action type: ${type}`);
   }

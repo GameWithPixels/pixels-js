@@ -28,7 +28,6 @@ import { GradientData } from "./gradient";
 import { toKeyframes, fromKeyframes } from "./keyframes";
 import { PatternData } from "./pattern";
 import {
-  ActionSetData,
   ProfileData,
   createActionSetData,
   createConditionSetData,
@@ -36,7 +35,6 @@ import {
 import {
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
-  EditActionRunOnDevice,
   EditAnimation,
   EditAnimationGradient,
   EditAnimationGradientPattern,
@@ -60,6 +58,7 @@ import {
   EditRule,
 } from "../edit";
 import EditActionMakeWebRequest from "../edit/EditActionMakeWebRequest";
+import EditActionSpeakText from "../edit/EditActionSpeakText";
 
 export function toProfile(
   data: Readonly<ProfileData>,
@@ -203,6 +202,11 @@ export function toProfile(
           const actData = data.actions.makeWebRequest[a.index];
           assert(actData, `No data for ${actType} action at index ${a.index}`);
           return new EditActionMakeWebRequest(actData);
+        }
+        case "speakText": {
+          const actData = data.actions.speakText[a.index];
+          assert(actData, `No data for ${actType} action at index ${a.index}`);
+          return new EditActionSpeakText(actData);
         }
         default:
           assertNever(actType, `Unsupported action type: ${actType}`);
@@ -402,13 +406,12 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
       },
       actions: r.actions.map((action) => {
         const actType = action.type;
-        let retActType: keyof ActionSetData;
+        if (actType === "none") {
+          throw new Error(`Invalid action type: ${actType}`);
+        }
         switch (actType) {
-          case "none":
-            throw new Error(`Invalid action type: ${actType}`);
           case "playAnimation":
             {
-              retActType = actType;
               const act = action as EditActionPlayAnimation;
               actions[actType].push({
                 animationUuid: act.animation?.uuid,
@@ -417,47 +420,37 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
               });
             }
             break;
-          case "runOnDevice": {
-            const remoteType = (action as EditActionRunOnDevice).remoteType;
-            switch (remoteType) {
-              case "none":
-                throw new Error(`Invalid remote action type: ${remoteType}`);
-              case "playAudioClip":
-                {
-                  retActType = remoteType;
-                  const act = action as EditActionPlayAudioClip;
-                  actions[retActType].push({
-                    clipUuid: act.clip?.uuid,
-                  });
-                }
-                break;
-              case "makeWebRequest": {
-                retActType = remoteType;
-                const act = action as EditActionMakeWebRequest;
-                actions[retActType].push({
-                  url: act.url,
-                  value: act.value,
-                });
-                break;
-              }
-              default:
-                assertNever(
-                  remoteType,
-                  `Unsupported remote action type: ${remoteType}`
-                );
+          case "playAudioClip":
+            {
+              const act = action as EditActionPlayAudioClip;
+              actions[actType].push({
+                clipUuid: act.clip?.uuid,
+              });
             }
             break;
-          }
-          case "playAudioClip":
-          case "speakText":
           case "makeWebRequest":
-            throw new Error(`Unsupported action type: ${actType}`);
+            {
+              const act = action as EditActionMakeWebRequest;
+              actions[actType].push({
+                url: act.url,
+                value: act.value,
+              });
+            }
+            break;
+          case "speakText":
+            {
+              const act = action as EditActionSpeakText;
+              actions[actType].push({
+                text: act.text,
+              });
+            }
+            break;
           default:
             assertNever(actType, `Unsupported action type: ${actType}`);
         }
         return {
-          type: retActType,
-          index: actions[retActType].length - 1,
+          type: actType,
+          index: actions[actType].length - 1,
         };
       }),
     };

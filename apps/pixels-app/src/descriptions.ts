@@ -61,12 +61,10 @@ export function getActionTypeLabel(type: Profiles.ActionType): string {
       return "Animation";
     case "playAudioClip":
       return "Sound";
-    case "speakText":
-      return "Speak";
     case "makeWebRequest":
       return "Web Request";
-    case "runOnDevice":
-      return "";
+    case "speakText":
+      return "Speak";
     default:
       assertNever(type);
   }
@@ -80,12 +78,10 @@ export function getActionTypeDescription(type: Profiles.ActionType): string {
       return "Play an animation on the Pixel LEDs";
     case "playAudioClip":
       return "Play a sound file on your phone";
-    case "speakText":
-      return "Speak a text on your phone";
     case "makeWebRequest":
       return "Send a web request";
-    case "runOnDevice":
-      return "";
+    case "speakText":
+      return "Speak a text on your phone";
     default:
       assertNever(type);
   }

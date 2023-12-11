@@ -102,8 +102,14 @@ export function ProfileSwipeableCard({
     [profile]
   );
 
-  const hasSound = React.useMemo(() => profile.hasSound, [profile]);
-  const hasWebRequest = React.useMemo(() => profile.hasWebRequest, [profile]);
+  const hasSound = React.useMemo(
+    () => profile.hasActionOfType("playAudioClip"),
+    [profile]
+  );
+  const hasWebRequest = React.useMemo(
+    () => profile.hasActionOfType("makeWebRequest"),
+    [profile]
+  );
 
   return (
     <Swipeable

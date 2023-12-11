@@ -11,8 +11,7 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, widget } from "./decorators";
 
 export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
-  readonly type = "runOnDevice";
-  readonly remoteType = "makeWebRequest";
+  readonly type = "makeWebRequest";
 
   @widget("userText")
   @name("URL")

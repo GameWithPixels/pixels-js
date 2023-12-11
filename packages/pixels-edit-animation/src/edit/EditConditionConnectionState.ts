@@ -19,6 +19,10 @@ export default class EditConditionConnectionState extends EditCondition {
   @observable
   flags: number;
 
+  get flagName(): string | undefined {
+    return this.getFlagName(this.flags, ConnectionStateFlagsValues);
+  }
+
   constructor(opt?: { flags?: number }) {
     super();
     this.flags = opt?.flags ?? 0;

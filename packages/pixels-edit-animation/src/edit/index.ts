@@ -1,13 +1,12 @@
 import * as decorators from "./decorators";
-export { decorators };
-
 export * from "./ColorMode";
 export { default as Editable } from "./Editable";
 export { default as EditAction } from "./EditAction";
-export { default as EditActionRunOnDevice } from "./EditActionRunOnDevice";
 export { default as EditActionMakeWebRequest } from "./EditActionMakeWebRequest";
 export { default as EditActionPlayAnimation } from "./EditActionPlayAnimation";
 export { default as EditActionPlayAudioClip } from "./EditActionPlayAudioClip";
+export { default as EditActionRunOnDevice } from "./EditActionRunOnDevice";
+export { default as EditActionSpeakText } from "./EditActionSpeakText";
 export { default as EditAnimation } from "./EditAnimation";
 export { default as EditAnimationGradient } from "./EditAnimationGradient";
 export { default as EditAnimationGradientPattern } from "./EditAnimationGradientPattern";
@@ -33,3 +32,4 @@ export { default as EditRgbGradient } from "./EditRgbGradient";
 export { default as EditRgbKeyframe } from "./EditRgbKeyframe";
 export { default as EditRgbTrack } from "./EditRgbTrack";
 export { default as EditRule } from "./EditRule";
+export { decorators };

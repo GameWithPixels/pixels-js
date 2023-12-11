@@ -26,6 +26,10 @@ export default class EditConditionBatteryState extends EditCondition {
   @observable
   recheckAfter: number;
 
+  get flagName(): string | undefined {
+    return this.getFlagName(this.flags, BatteryStateFlagsValues);
+  }
+
   constructor(opt?: { flags?: number; recheckAfter?: number }) {
     super();
     this.flags = opt?.flags ?? 0;

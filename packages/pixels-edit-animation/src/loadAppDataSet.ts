@@ -142,7 +142,7 @@ function toActions(
               (data.faceIndex > 0 ? data.faceIndex + 1 : data.faceIndex),
             loopCount: data.loopCount,
           });
-        case ActionTypeValues.runOnDevice:
+        case ActionTypeValues.playAudioClip:
           return safeAssign(new EditActionPlayAudioClip(), {
             clip: audioClips[data.audioClipIndex ?? -1],
           });

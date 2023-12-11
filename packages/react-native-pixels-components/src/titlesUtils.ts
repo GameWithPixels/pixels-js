@@ -1,6 +1,5 @@
 import { assertNever, bitsToFlags } from "@systemic-games/pixels-core-utils";
 import {
-  RemoteActionType,
   ActionType,
   AnimationType,
   BatteryStateFlagsValues,
@@ -22,11 +21,8 @@ import {
   getConditionTypeDisplayName,
 } from "@systemic-games/pixels-edit-animation";
 
-export function getActionTitle(
-  actionType: ActionType,
-  actionRemoteType: RemoteActionType = "none"
-): string {
-  const title = getActionTypeDisplayName(actionType, actionRemoteType)?.name;
+export function getActionTitle(actionType: ActionType): string {
+  const title = getActionTypeDisplayName(actionType)?.name;
   if (!title) {
     throw new Error(`getActionTitle(): unsupported action type: ${actionType}`);
   }

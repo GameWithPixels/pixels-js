@@ -46,6 +46,9 @@ export interface ProfileData extends UniqueNamedData {
       url: string;
       value: string;
     }[];
+    speakText: {
+      text: string;
+    }[];
   };
   rules: {
     condition: {
@@ -115,5 +118,6 @@ export function createActionSetData(): ActionSetData {
     playAnimation: [],
     playAudioClip: [],
     makeWebRequest: [],
+    speakText: [],
   };
 }

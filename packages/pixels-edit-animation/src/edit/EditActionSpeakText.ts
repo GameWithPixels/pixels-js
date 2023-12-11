@@ -1,36 +1,35 @@
 import {
   DataSet,
   Action,
-  ActionPlayAudioClip,
+  ActionSpeakText,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAction from "./EditAction";
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
-import EditAudioClip from "./EditAudioClip";
 import EditDataSet from "./EditDataSet";
 import { name, observable, widget } from "./decorators";
 
-export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
-  readonly type = "playAudioClip";
+export default class EditActionSpeakText extends EditActionRunOnDevice {
+  readonly type = "speakText";
 
-  @widget("audioClip")
-  @name("Audio Clip")
+  @widget("userText")
+  @name("Text")
   @observable
-  clip?: EditAudioClip;
+  text: string;
 
-  constructor(opt?: { clip?: EditAudioClip }) {
+  constructor(opt?: { text?: string }) {
     super();
-    this.clip = opt?.clip;
+    this.text = opt?.text ?? "";
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {
-    return safeAssign(new ActionPlayAudioClip(), {
+    return safeAssign(new ActionSpeakText(), {
       actionId,
     });
   }
 
   duplicate(): EditAction {
-    return new EditActionPlayAudioClip(this);
+    return new EditActionSpeakText(this);
   }
 }

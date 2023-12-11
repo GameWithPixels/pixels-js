@@ -2,7 +2,6 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { ActionType } from "./ActionType";
 import { ConditionType } from "./ConditionType";
-import { RemoteActionType } from "./RemoteActionType";
 import { AnimationType } from "../animations/AnimationType";
 
 /**
@@ -48,32 +47,19 @@ export function getAnimationTypeDisplayName(
  * @category Profile
  */
 export function getActionTypeDisplayName(
-  actionType: ActionType,
-  actionRemoteType: RemoteActionType = "none"
+  actionType: ActionType
 ): NameAndOrder | undefined {
   switch (actionType) {
     case "none":
-    case "playAudioClip":
-    case "speakText":
-    case "makeWebRequest":
       return;
     case "playAnimation":
       return { name: "Trigger Pattern", order: 0 };
-    case "runOnDevice":
-      switch (actionRemoteType) {
-        case "none":
-          return;
-        case "playAudioClip":
-          return { name: "Play Audio Clip", order: 1 };
-        case "makeWebRequest":
-          return { name: "Make Web Request", order: 2 };
-        default:
-          assertNever(
-            actionRemoteType,
-            `Unknown action remote type: ${actionRemoteType}`
-          );
-      }
-      break;
+    case "playAudioClip":
+      return { name: "Play Audio Clip", order: 1 };
+    case "makeWebRequest":
+      return { name: "Make Web Request", order: 2 };
+    case "speakText":
+      return { name: "Speak Text", order: 3 };
     default:
       assertNever(actionType, `Unknown action type: ${actionType}`);
   }

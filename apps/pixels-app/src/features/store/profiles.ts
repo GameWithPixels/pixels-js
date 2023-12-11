@@ -189,6 +189,13 @@ function updateAction(
         act.value = data.value;
       }
       break;
+    case "speakText":
+      {
+        const act = action as Profiles.ActionSpeakText;
+        const data = actionSetData[type][index];
+        act.text = data.text;
+      }
+      break;
     default:
       assertNever(type, `Unsupported action type: ${type}`);
   }

@@ -2,11 +2,11 @@
 export { default as Profile } from "./Profile";
 export { default as Rule } from "./Rule";
 export * from "./ActionType";
-export * from "./RemoteActionType";
 export type { default as Action } from "./Action";
 export { default as ActionPlayAnimation } from "./ActionPlayAnimation";
 export { default as ActionPlayAudioClip } from "./ActionPlayAudioClip";
 export { default as ActionMakeWebRequest } from "./ActionMakeWebRequest";
+export { default as ActionSpeakText } from "./ActionSpeakText";
 export * from "./ConditionType";
 export { default as ConditionBatteryState } from "./ConditionBatteryState";
 export * from "./ConditionBatteryState";
