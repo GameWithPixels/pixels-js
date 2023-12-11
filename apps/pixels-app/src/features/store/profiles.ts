@@ -4,13 +4,7 @@ import {
   combineFlags,
   keysToValues,
 } from "@systemic-games/pixels-core-utils";
-import {
-  BatteryStateFlagsValues,
-  ConnectionStateFlagsValues,
-  FaceCompareFlagsValues,
-  HelloGoodbyeFlagsValues,
-  Serializable,
-} from "@systemic-games/pixels-edit-animation";
+import { Serializable } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
@@ -62,7 +56,7 @@ function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
     if (rule?.condition?.type !== conditionType) {
       const cond = Profiles.createCondition(conditionType);
       if (!rule) {
-        rule = new Profiles.Rule(cond);
+        rule = makeObservable(new Profiles.Rule(cond));
         profile.rules[i] = rule;
       } else {
         rule.condition = cond;
@@ -98,7 +92,7 @@ function updateCondition(
         const cond = condition as Profiles.ConditionHelloGoodbye;
         const data = conditionSetData[type][index];
         cond.flags = combineFlags(
-          keysToValues(data.flags, HelloGoodbyeFlagsValues)
+          keysToValues(data.flags, Profiles.HelloGoodbyeFlagsValues)
         );
       }
       break;
@@ -116,7 +110,7 @@ function updateCondition(
         const cond = condition as Profiles.ConditionRolled;
         const data = conditionSetData[type][index];
         cond.flags = combineFlags(
-          keysToValues(data.flags, FaceCompareFlagsValues)
+          keysToValues(data.flags, Profiles.FaceCompareFlagsValues)
         );
         cond.face = data.face;
       }
@@ -128,7 +122,7 @@ function updateCondition(
         const cond = condition as Profiles.ConditionConnection;
         const data = conditionSetData[type][index];
         cond.flags = combineFlags(
-          keysToValues(data.flags, ConnectionStateFlagsValues)
+          keysToValues(data.flags, Profiles.ConnectionFlagsValues)
         );
       }
       break;
@@ -137,7 +131,7 @@ function updateCondition(
         const cond = condition as Profiles.ConditionBattery;
         const data = conditionSetData[type][index];
         cond.flags = combineFlags(
-          keysToValues(data.flags, BatteryStateFlagsValues)
+          keysToValues(data.flags, Profiles.BatteryFlagsValues)
         );
         cond.recheckAfter = data.recheckAfter;
       }

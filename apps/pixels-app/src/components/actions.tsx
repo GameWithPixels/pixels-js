@@ -6,10 +6,6 @@ import { StyleProp, TextStyle } from "react-native";
 import AnimationsIcon from "#/icons/navigation/animations";
 import SpeakIcon from "#/icons/profiles/speak";
 
-export const actionTypes = (
-  Object.keys(Profiles.ActionTypeValues) as Profiles.ActionType[]
-).filter((t) => t !== "none");
-
 function GlobeIcon({ size, color }: { size: number; color?: string }) {
   return <MaterialCommunityIcons name="web" size={size} color={color} />;
 }

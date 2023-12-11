@@ -40,5 +40,6 @@ export function discardEditableProfile(profileUuid: string): void {
 
 // Returns an observable profile that is editable
 export function useEditableProfile(profileUuid: string): Profiles.Profile {
+  assert(profileUuid !== "default", "Can't edit default profile");
   return getEditableProfile(profileUuid); // TODO not reactive but that's ok for your usage
 }

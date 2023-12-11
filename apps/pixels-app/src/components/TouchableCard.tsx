@@ -50,12 +50,12 @@ export function TouchableCard({
   const gradientAlpha = gradientBorder
     ? 1
     : transparent
-    ? 0
-    : frameless
-    ? props.disabled
-      ? 0.2
-      : 0.4
-    : 0.1;
+      ? 0
+      : frameless
+        ? props.disabled
+          ? 0.2
+          : 0.4
+        : 0.1;
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}

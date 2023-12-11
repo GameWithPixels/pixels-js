@@ -15,28 +15,26 @@ export function SectionTitle({ children }: React.PropsWithChildren) {
 export function RulesSection({
   profileUuid,
   conditionType,
-  options,
+  flags,
   onEditRule,
 }: {
   profileUuid: string;
   conditionType: Profiles.ConditionType;
-  options: string[];
+  flags: string[];
   onEditRule: EditRuleCallback;
 }) {
   return (
     <SlideInView style={{ gap: 10 }}>
       <SectionTitle>{getConditionTypeLabel(conditionType)}</SectionTitle>
-      {options.map((opt) => (
+      {flags.map((flagName) => (
         <RuleCard
-          key={opt}
+          key={flagName}
           profileUuid={profileUuid}
           conditionType={conditionType}
-          option={opt}
-          onPress={() =>
-            onEditRule({ profileUuid, conditionType, option: opt })
-          }
+          flagName={flagName}
+          onPress={() => onEditRule({ profileUuid, conditionType, flagName })}
         >
-          {opt}
+          {flagName}
         </RuleCard>
       ))}
     </SlideInView>

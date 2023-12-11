@@ -17,6 +17,26 @@ function getInitialState(): LibraryState {
   return _initialState;
 }
 
+function storeLog(
+  action:
+    | "addProfile"
+    | "updateProfile"
+    | "removeProfile"
+    | "addAnimation"
+    | "updateAnimation"
+    | "removeAnimation"
+    | "addPattern"
+    | "updatePattern"
+    | "removePattern"
+    | "addGradient"
+    | "updateGradient"
+    | "removeGradient",
+  uuid: string,
+  name?: string
+) {
+  console.log(`TO-STORE ${action} ${uuid} ${name ?? ""}`);
+}
+
 function findAnimation(
   uuid: string,
   animations: Serializable.AnimationSetData
@@ -88,7 +108,7 @@ const profilesLibrarySlice = createSlice({
     ) {
       const { profile, afterUuid } = action.payload;
       insert(profile, state.profiles, afterUuid);
-      console.log(">> REDUX", "addProfile", profile.uuid, profile.name);
+      storeLog("addProfile", profile.uuid, profile.name);
     },
 
     updateProfile(state, action: PayloadAction<Serializable.ProfileData>) {
@@ -99,7 +119,7 @@ const profilesLibrarySlice = createSlice({
       } else {
         console.warn(`Redux: No profile with uuid ${profile.uuid} to update`);
       }
-      console.log(">> REDUX", "updateProfile", profile.uuid, profile.name);
+      storeLog("updateProfile", profile.uuid, profile.name);
     },
 
     removeProfile(state, action: PayloadAction<string>) {
@@ -110,7 +130,7 @@ const profilesLibrarySlice = createSlice({
       } else {
         console.warn(`Redux: No profile with uuid ${uuid} to remove`);
       }
-      console.log(">> REDUX", "removeProfile", uuid);
+      storeLog("removeProfile", uuid);
     },
 
     //
@@ -130,7 +150,7 @@ const profilesLibrarySlice = createSlice({
       assert(anims);
       // @ts-ignore Trust that we're getting the proper data
       anims.push(data);
-      console.log(">> REDUX", "addAnimation", data.uuid);
+      storeLog("addAnimation", data.uuid);
     },
 
     updateAnimation(
@@ -155,7 +175,7 @@ const profilesLibrarySlice = createSlice({
           // @ts-ignore Trust that we're getting the proper data
           anims[animEntry.index] = data;
         }
-        console.log(">> REDUX", "updateAnimation", data.uuid);
+        storeLog("updateAnimation", data.uuid);
       } else {
         console.warn(`Redux: No animation with uuid ${data.uuid} to update`);
       }
@@ -167,7 +187,7 @@ const profilesLibrarySlice = createSlice({
       const animEntry = findAnimation(uuid, state.animations);
       if (animEntry) {
         animEntry.animations.splice(animEntry.index, 1);
-        console.log(">> REDUX", "removeAnimation", uuid);
+        storeLog("removeAnimation", uuid);
       } else {
         console.warn(`Redux: No animation with uuid ${uuid} to remove`);
       }
@@ -186,7 +206,7 @@ const profilesLibrarySlice = createSlice({
     ) {
       const { pattern, afterUuid } = action.payload;
       insert(pattern, state.patterns, afterUuid);
-      console.log(">> REDUX", "addPattern", pattern.uuid);
+      storeLog("addPattern", pattern.uuid);
     },
 
     updatePattern(state, action: PayloadAction<Serializable.PatternData>) {
@@ -194,7 +214,7 @@ const profilesLibrarySlice = createSlice({
       const index = state.patterns.findIndex((p) => p.uuid === pattern.uuid);
       if (index >= 0) {
         state.patterns[index] = pattern;
-        console.log(">> REDUX", "updatePattern", pattern.uuid);
+        storeLog("updatePattern", pattern.uuid);
       } else {
         console.warn(`Redux: No pattern with uuid ${pattern.uuid} to update`);
       }
@@ -205,7 +225,7 @@ const profilesLibrarySlice = createSlice({
       const index = state.patterns.findIndex((p) => p.uuid === uuid);
       if (index >= 0) {
         state.patterns.splice(index, 1);
-        console.log(">> REDUX", "removePattern", uuid);
+        storeLog("removePattern", uuid);
       } else {
         console.warn(`Redux: No pattern with uuid ${uuid} to remove`);
       }
@@ -224,7 +244,7 @@ const profilesLibrarySlice = createSlice({
     ) {
       const { gradient, afterUuid } = action.payload;
       insert(gradient, state.gradients, afterUuid);
-      console.log(">> REDUX", "addGradient", gradient.uuid);
+      storeLog("addGradient", gradient.uuid);
     },
 
     updateGradient(state, action: PayloadAction<Serializable.GradientData>) {
@@ -232,7 +252,7 @@ const profilesLibrarySlice = createSlice({
       const index = state.patterns.findIndex((p) => p.uuid === gradient.uuid);
       if (index >= 0) {
         state.gradients[index] = gradient;
-        console.log(">> REDUX", "updateGradient", gradient.uuid);
+        storeLog("updateGradient", gradient.uuid);
       } else {
         console.warn(`Redux: No gradient with uuid ${gradient.uuid} to update`);
       }
@@ -243,7 +263,7 @@ const profilesLibrarySlice = createSlice({
       const index = state.patterns.findIndex((p) => p.uuid === uuid);
       if (index >= 0) {
         state.patterns.splice(index, 1);
-        console.log(">> REDUX", "removeGradient", uuid);
+        storeLog("removeGradient", uuid);
       } else {
         console.warn(`Redux: Redux: No gradient with uuid ${uuid} to remove`);
       }

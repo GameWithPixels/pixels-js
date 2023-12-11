@@ -1,5 +1,6 @@
 import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme } from "react-native-paper";
@@ -13,7 +14,13 @@ import {
   AnimationsStackParamList,
   CreateAnimationScreenProps,
 } from "~/navigation";
-import { createAnimation } from "~/temp";
+
+export function createAnimation(name: string): Profiles.Animation {
+  return new Profiles.AnimationFlashes({
+    uuid: Math.random().toString(),
+    name,
+  });
+}
 
 function CreateAnimationPage({
   navigation,

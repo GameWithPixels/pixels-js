@@ -9,6 +9,7 @@ import { MD3Theme, Text, TextInput, useTheme } from "react-native-paper";
 import { RuleCard } from "./RuleCard";
 import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
+import { helloGoodbyeFlags } from "~/actionTypes";
 import { useAppSelector } from "~/app/hooks";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
@@ -208,7 +209,7 @@ export function EditProfile({
           profileUuid={profileUuid}
           onEditRule={onEditRule}
           conditionType="helloGoodbye"
-          options={["Wakes up", "Wave"]}
+          flags={helloGoodbyeFlags}
         />
         <SectionTitle>Profile Usage</SectionTitle>
         <View style={{ paddingLeft: 10, paddingVertical: 10, gap: 10 }}>

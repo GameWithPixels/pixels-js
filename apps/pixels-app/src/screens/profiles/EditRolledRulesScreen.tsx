@@ -8,27 +8,30 @@ import {
   ScrollView,
   useWindowDimensions,
   ScrollViewProps,
+  StyleSheet,
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
 
 import { ConfigureAnimationModal } from "./components/ConfigureAnimationModal";
 
+import { actionTypes } from "~/actionTypes";
 import { AppBackground } from "~/components/AppBackground";
 import { Card, CardProps } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
 import { TouchableCard } from "~/components/TouchableCard";
-import { actionTypes, getActionTypeIcon } from "~/components/actions";
+import { getActionTypeIcon } from "~/components/actions";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
 import {
   getActionTypeDescription,
   getConditionTypeDescription,
   getConditionTypeLabel,
 } from "~/descriptions";
+import { makeObservable } from "~/features/makeObservable";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useEditableProfile } from "~/hooks";
 import { EditRollRulesScreenProps } from "~/navigation";
-import { Colors } from "~/themes";
+import { AppStyles } from "~/styles";
 
 function InnerScrollView({ ...props }: ScrollViewProps) {
   const { width } = useWindowDimensions();
@@ -118,19 +121,11 @@ const EditAnimations = observer(function ({
             </TouchableCard>
             <View
               style={{
-                flexDirection: "row",
-                marginTop: -20,
-                paddingTop: 20,
-                paddingLeft: 20,
-                paddingRight: 10,
-                alignItems: "stretch",
-                borderWidth: 1,
-                borderTopWidth: 0,
+                ...styles.bottomView,
                 borderRadius,
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
                 borderColor: colors.outline,
                 gap: 10,
+                pointerEvents: "none",
               }}
             >
               {playAnim?.animation && (
@@ -147,9 +142,7 @@ const EditAnimations = observer(function ({
                       Play "{playAnim.animation.name}"
                     </Text>
                     {!!((overrides ?? 0) & 1) && (
-                      <Text style={{ color: Colors.grey500 }}>
-                        Repeat Count: 2
-                      </Text>
+                      <Text style={AppStyles.greyedOut}>Repeat Count: 2</Text>
                     )}
                     {!!((overrides ?? 0) & 2) && (
                       <View
@@ -159,7 +152,7 @@ const EditAnimations = observer(function ({
                           gap: 10,
                         }}
                       >
-                        <Text style={{ color: Colors.grey500 }}>Color</Text>
+                        <Text style={AppStyles.greyedOut}>Color</Text>
                         <View
                           style={{
                             height: 12,
@@ -194,18 +187,18 @@ function EditSounds({ profile }: { profile: Profiles.Profile }) {
       <ActionCard>
         <Text variant="titleSmall">When roll is 20</Text>
         <Text variant="bodySmall">Play "Trumpets"</Text>
-        <Text style={{ color: Colors.grey500 }}>Volume: 80%</Text>
-        <Text style={{ color: Colors.grey500 }}>Repeat Count: 2</Text>
+        <Text style={AppStyles.greyedOut}>Volume: 80%</Text>
+        <Text style={AppStyles.greyedOut}>Repeat Count: 2</Text>
       </ActionCard>
       <ActionCard>
         <Text variant="titleSmall">When roll is 19</Text>
         <Text variant="bodySmall">Play "Joy"</Text>
-        <Text style={{ color: Colors.grey500 }}>Volume: 100%</Text>
+        <Text style={AppStyles.greyedOut}>Volume: 100%</Text>
       </ActionCard>
       <ActionCard>
         <Text variant="titleSmall">When roll is 1</Text>
         <Text variant="bodySmall">Play "Sadness"</Text>
-        <Text style={{ color: Colors.grey500 }}>Volume: 90%</Text>
+        <Text style={AppStyles.greyedOut}>Volume: 90%</Text>
       </ActionCard>
     </InnerScrollView>
   );
@@ -217,7 +210,7 @@ function EditSpeak({ profile }: { profile: Profiles.Profile }) {
       <ActionCard>
         <Text variant="titleSmall">On all rolls</Text>
         <Text variant="bodySmall">Speak "Face"</Text>
-        <Text style={{ color: Colors.grey500 }}>Volume: 70%</Text>
+        <Text style={AppStyles.greyedOut}>Volume: 70%</Text>
       </ActionCard>
     </InnerScrollView>
   );
@@ -236,7 +229,7 @@ function EditWebRequests({ profile }: { profile: Profiles.Profile }) {
       >
         <Text variant="titleSmall">On all rolls</Text>
         <Text variant="bodySmall">Notify "ifttt.com"</Text>
-        <Text style={{ color: Colors.grey500 }}>Parameters: $face</Text>
+        <Text style={AppStyles.greyedOut}>Parameters: $face</Text>
       </Card>
     </InnerScrollView>
   );
@@ -251,6 +244,7 @@ function EditRolledRulesPage({
 }) {
   const profile = useEditableProfile(profileUuid);
   const [configureRule, setConfigureRule] = React.useState<Profiles.Rule>();
+  const [configureVisible, setConfigureVisible] = React.useState(false);
   const { roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
 
@@ -302,9 +296,9 @@ function EditRolledRulesPage({
         <Text
           variant="bodySmall"
           style={{
+            ...AppStyles.greyedOut,
             marginHorizontal: 10,
             marginBottom: 10,
-            color: Colors.grey500,
           }}
         >
           {getActionTypeDescription(actionTypes[index]) +
@@ -337,18 +331,24 @@ function EditRolledRulesPage({
             case 0:
               runInAction(() =>
                 profile.rules.push(
-                  new Profiles.Rule(new Profiles.ConditionRolled())
+                  makeObservable(
+                    new Profiles.Rule(new Profiles.ConditionRolled())
+                  )
                 )
               );
               break;
           }
         }}
       />
-      <ConfigureAnimationModal
-        conditionType={configureRule?.condition?.type}
-        action={configureRule?.actions[0]}
-        onDismiss={() => setConfigureRule(undefined)}
-      />
+      {configureRule && (
+        <ConfigureAnimationModal
+          dieType="d20"
+          condition={configureRule.condition}
+          action={configureRule.actions[0]}
+          visible={configureVisible}
+          onDismiss={() => setConfigureRule(undefined)}
+        />
+      )}
     </>
   );
 }
@@ -368,3 +368,18 @@ export function EditRollRuleScreen({
     </AppBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  bottomView: {
+    flexDirection: "row",
+    marginTop: -20,
+    paddingTop: 20,
+    paddingLeft: 20,
+    paddingRight: 10,
+    alignItems: "stretch",
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+});

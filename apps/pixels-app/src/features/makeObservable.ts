@@ -10,13 +10,17 @@ export function makeObservable<T extends object>(obj: T): T {
   if (propsData.length) {
     const annotations: Partial<Record<keyof T, AnnotationMapEntry>> = {};
     for (const data of propsData) {
-      annotations[data.propertyKey as keyof T] = observable;
-      const prop = obj[data.propertyKey as keyof T];
-      if (prop) {
-        if (Array.isArray(prop)) {
-          prop.forEach((p) => makeObservable(p));
-        } else if (typeof prop === "object") {
-          makeObservable(prop);
+      if (data.propertyKey !== "keyframes") {
+        annotations[data.propertyKey as keyof T] = observable;
+        const prop = obj[data.propertyKey as keyof T];
+        if (prop) {
+          if (Array.isArray(prop)) {
+            for (const p of prop) {
+              makeObservable(p);
+            }
+          } else if (typeof prop === "object") {
+            makeObservable(prop);
+          }
         }
       }
     }

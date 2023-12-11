@@ -4,5 +4,5 @@ export function storeLog(
   uuid: string,
   message?: string
 ) {
-  console.log(`STORE ${action} ${type}: ${uuid} ${message ?? ""}`);
+  console.log(`FROM STORE ${action} ${type}: ${uuid} ${message ?? ""}`);
 }

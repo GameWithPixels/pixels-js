@@ -90,9 +90,7 @@ export function getRootScreenTheme(screenName: RootScreenName): MD3Theme {
 export function backgroundImageFromColor(color: string): number {
   switch (color) {
     default:
-      console.log(
-        `getBackgroundFromPrimaryColor: Unknown primary color ${color}`
-      );
+      console.log(`backgroundImageFromColor: Unknown primary color ${color}`);
     // eslint-disable-next-line no-fallthrough
     case BlueDarkTheme.colors.primary:
       return require("#/backgrounds/blue.png");

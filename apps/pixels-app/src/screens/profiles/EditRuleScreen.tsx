@@ -1,17 +1,14 @@
 import { StackNavigationProp } from "@react-navigation/stack";
-import { assert } from "@systemic-games/pixels-core-utils";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
 import { EditActionCard } from "./components/EditActionCard";
 import { RuleIndex } from "./components/RuleCard";
 
+import { actionTypes } from "~/actionTypes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { actionTypes } from "~/components/actions";
 import { getConditionTypeLabel } from "~/descriptions";
-import { useEditableProfile } from "~/hooks";
 import {
   EditProfileSubStackParamList,
   EditRuleScreenProps,
@@ -20,24 +17,17 @@ import {
 function EditRulePage({
   profileUuid,
   conditionType,
-  option: string,
+  flagName,
   navigation,
 }: RuleIndex & {
   navigation: StackNavigationProp<EditProfileSubStackParamList>;
 }) {
-  const profile = useEditableProfile(profileUuid);
-  const rule = profile.rules.find((r) => r.condition.type === conditionType);
-  assert(rule);
-  const actions = React.useMemo(
-    () => actionTypes.map((a) => Profiles.createAction(a)),
-    []
-  );
   return (
     <>
       <View style={{ height: "100%" }}>
         <PageHeader
           mode="arrow-left"
-          title={getConditionTypeLabel(rule.condition.type)}
+          title={getConditionTypeLabel(conditionType)}
           onGoBack={() => navigation.goBack()}
         />
         <ScrollView
@@ -48,11 +38,13 @@ function EditRulePage({
             gap: 20,
           }}
         >
-          {actions.map((a) => (
+          {actionTypes.map((at) => (
             <EditActionCard
-              key={a.type}
-              action={a}
-              conditionType={rule.condition.type}
+              key={at}
+              profileUuid={profileUuid}
+              conditionType={conditionType}
+              actionType={at}
+              flagName={flagName}
             />
           ))}
         </ScrollView>

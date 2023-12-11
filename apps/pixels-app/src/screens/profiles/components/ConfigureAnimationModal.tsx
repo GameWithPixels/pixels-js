@@ -6,11 +6,14 @@ import {
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { bitsToIndices } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   DiceUtils,
+  PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, Platform } from "react-native";
 import { Button, Text, ThemeProvider, useTheme } from "react-native-paper";
@@ -93,16 +96,19 @@ function PickAnimationModal({
     </BottomSheetModal>
   );
 }
-export function ConfigureAnimationModal({
-  conditionType,
+export const ConfigureAnimationModal = observer(function ({
+  condition,
   action,
+  dieType,
+  visible,
   onDismiss,
 }: {
-  conditionType?: Profiles.ConditionType;
-  action?: Profiles.Action;
+  condition: Profiles.Condition;
+  action: Profiles.Action;
+  dieType: PixelDieType;
+  visible?: boolean;
   onDismiss: () => void;
 }) {
-  const visible = !!conditionType;
   const actionType = action?.type ?? "none";
   const [animation, setAnimation] =
     React.useState<Readonly<Profiles.Animation>>();
@@ -169,8 +175,8 @@ export function ConfigureAnimationModal({
     <BottomSheetModal
       ref={sheetRef}
       enableDynamicSizing
-      // activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
-      // failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
+      activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
+      failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
       keyboardBehavior={Platform.OS === "ios" ? "interactive" : "fillParent"}
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
@@ -225,12 +231,18 @@ export function ConfigureAnimationModal({
             gap: 10,
           }}
         >
-          {conditionType === "rolled" && (
+          {condition.type === "rolled" && (
             <>
               <Text variant="titleMedium">When Roll is</Text>
               <FacesGrid
-                faces={DiceUtils.getDieFaces("d12")}
-                selected={[2, 4]}
+                faces={DiceUtils.getDieFaces(dieType)}
+                selected={bitsToIndices(
+                  (condition as Profiles.ConditionRolled).face
+                )}
+                onToggleFace={(face) => {
+                  const cond = condition as Profiles.ConditionRolled;
+                  cond.face = cond.face ^ (1 << face);
+                }}
                 style={{ marginHorizontal: 10 }}
               />
             </>
@@ -238,9 +250,9 @@ export function ConfigureAnimationModal({
           {actionType === "playAnimation" && (
             <>
               <Text variant="titleMedium">
-                {conditionType === "rolled"
+                {condition.type === "rolled"
                   ? ""
-                  : getConditionTypeLabel(conditionType ?? "none") + " "}
+                  : getConditionTypeLabel(condition.type) + " "}
                 Play
               </Text>
               <GradientButton
@@ -252,7 +264,7 @@ export function ConfigureAnimationModal({
               </GradientButton>
             </>
           )}
-          {conditionType !== "rolled" &&
+          {condition.type !== "rolled" &&
             (actionType === "playAnimation" ? (
               <>
                 <Text variant="titleMedium">Recheck After</Text>
@@ -364,4 +376,4 @@ export function ConfigureAnimationModal({
       />
     </BottomSheetModal>
   );
-}
+});

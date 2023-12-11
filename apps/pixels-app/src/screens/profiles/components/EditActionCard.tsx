@@ -1,8 +1,9 @@
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { runInAction } from "mobx";
 import React from "react";
-import { View, ViewProps } from "react-native";
-import { useTheme, Text, Switch } from "react-native-paper";
+import { View, ViewProps, StyleSheet } from "react-native";
+import { useTheme, Switch } from "react-native-paper";
 import Animated, {
   CurvedTransition,
   FadeIn,
@@ -14,46 +15,39 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { ActionDetails } from "./ActionDetails";
 import { ConfigureAnimationModal } from "./ConfigureAnimationModal";
+import { RuleIndex } from "./RuleCard";
 
 import { TouchableCard } from "~/components/TouchableCard";
 import { ActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { getActionTypeLabel } from "~/descriptions";
+import { makeObservable } from "~/features/makeObservable";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { Colors } from "~/themes";
+import { useEditableProfile } from "~/hooks";
 import { withAnimated } from "~/withAnimated";
 
 function EditActionContents({
   action,
   style,
-  hasData,
   ...props
 }: {
   conditionType: Profiles.ConditionType;
   action: Profiles.Action;
-  hasData: boolean;
 } & ViewProps) {
   const actionType = action.type;
-  const animName = "Rotating Rings";
-  const overridesFlag = 3;
-
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <View
       style={[
         {
-          marginTop: -20,
-          paddingTop: 20,
-          padding: 10,
-          borderWidth: 1,
-          borderTopWidth: 0,
+          ...styles.bottomView,
           borderRadius,
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
           borderColor: colors.outline,
           gap: 10,
+          pointerEvents: "none",
         },
         style,
       ]}
@@ -65,78 +59,28 @@ function EditActionContents({
             flexDirection: "row",
             justifyContent: "space-evenly",
             alignItems: "center",
+            marginVertical: 5,
           }}
         >
           <View
             style={{
               flexGrow: 1,
-              marginVertical: 5,
-              justifyContent: "space-evenly",
+              justifyContent: "space-between",
               gap: 5,
             }}
           >
-            <Text variant="titleSmall">
-              {hasData ? `Play "${animName}"` : "No animation selected"}
-            </Text>
-            {hasData && !!((overridesFlag ?? 0) & 1) && (
-              <Text style={{ color: Colors.grey500 }}>Repeat Count: 2</Text>
-            )}
-            {hasData && !!((overridesFlag ?? 0) & 2) && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <Text style={{ color: Colors.grey500 }}>Color</Text>
-                <View
-                  style={{
-                    height: 12,
-                    aspectRatio: 1,
-                    borderRadius,
-                    borderWidth: 1,
-                    borderColor: colors.onSurfaceVariant,
-                    backgroundColor: "orange",
-                  }}
-                />
-              </View>
-            )}
+            <ActionDetails action={action} noActionIcon />
           </View>
           <View style={{ width: 60, aspectRatio: 1 }}>
             <DieRenderer dieType="d20" colorway="midnightGalaxy" />
           </View>
         </View>
-      ) : actionType === "playAudioClip" ? (
-        <View style={{ marginVertical: 5, gap: 5 }}>
-          <Text variant="titleSmall">
-            {hasData ? `Play "Trumpets"` : "No sound selected"}
-          </Text>
-          {hasData && (
-            <>
-              <Text style={{ color: Colors.grey500 }}>Volume: 80%</Text>
-              <Text style={{ color: Colors.grey500 }}>Repeat Count: 2</Text>
-            </>
-          )}
-        </View>
-      ) : actionType === "speakText" ? (
-        <View style={{ marginVertical: 5, gap: 5 }}>
-          <Text variant="titleSmall">Speak "Face"</Text>
-          {hasData && (
-            <Text style={{ color: Colors.grey500 }}>Volume: 70%</Text>
-          )}
-        </View>
-      ) : actionType === "makeWebRequest" ? (
-        <View style={{ marginVertical: 5, gap: 5 }}>
-          <Text variant="titleSmall">
-            {hasData ? `Notify "ifttt.com"` : "No website selected"}
-          </Text>
-          {hasData && (
-            <Text style={{ color: Colors.grey500 }}>Parameters: $face</Text>
-          )}
-        </View>
       ) : (
-        <></>
+        <ActionDetails
+          action={action}
+          noActionIcon
+          style={{ marginVertical: 10 }}
+        />
       )}
     </View>
   );
@@ -146,16 +90,39 @@ const AnimatedActionTypeIcon = withAnimated(ActionTypeIcon);
 const AnimatedEditActionContents = withAnimated(EditActionContents);
 
 export function EditActionCard({
-  action,
+  profileUuid,
   conditionType,
-}: {
-  conditionType: Profiles.ConditionType;
-  action: Profiles.Action;
+  flagName,
+  actionType,
+}: RuleIndex & {
+  actionType: Profiles.ActionType;
 }) {
-  const actionType = action.type;
-  const [showContent, setShowContent] = React.useState(false);
-  const [hasData, setHasData] = React.useState(false);
-  const svShowContent = useSharedValue(showContent);
+  const profile = useEditableProfile(profileUuid);
+  const getRule = React.useCallback(
+    () =>
+      profile.rules.find(
+        (r) =>
+          r.condition.type === conditionType &&
+          r.condition.flagName === flagName
+      ),
+    [conditionType, flagName, profile.rules]
+  );
+  const condition = React.useMemo(
+    () =>
+      getRule()?.condition ??
+      makeObservable(Profiles.createCondition(conditionType)),
+    [conditionType, getRule]
+  );
+  const action = React.useMemo(
+    () =>
+      getRule()?.actions?.find((a) => a.type === actionType) ??
+      makeObservable(Profiles.createAction(actionType)),
+    [actionType, getRule]
+  );
+  const [hasContent, setHasContent] = React.useState(
+    () => getRule()?.actions.includes(action) ?? false
+  );
+  const svShowContent = useSharedValue(hasContent);
   const svProgress = useDerivedValue(() =>
     withTiming(svShowContent.value ? 1 : 0, { duration: 300 })
   );
@@ -177,7 +144,7 @@ export function EditActionCard({
         <TouchableCard
           noBorder
           frameless
-          disabled={!showContent}
+          disabled={!hasContent}
           contentStyle={{
             flexDirection: "row",
             minHeight: 50,
@@ -186,7 +153,7 @@ export function EditActionCard({
             alignItems: "center",
             justifyContent: "space-between",
           }}
-          onPress={showContent ? () => setConfigureVisible(true) : undefined}
+          onPress={() => setConfigureVisible(true)}
         >
           <AnimatedActionTypeIcon
             type={actionType}
@@ -197,34 +164,71 @@ export function EditActionCard({
             {getActionTypeLabel(actionType)}
           </AnimatedText>
           <Switch
-            value={showContent}
-            onValueChange={(v) => {
-              setShowContent(v);
-              svShowContent.value = v;
-              if (!hasData) {
-                setConfigureVisible(v);
-              }
+            value={hasContent}
+            onValueChange={(isOn) => {
+              const rule = getRule();
+              runInAction(() => {
+                if (isOn) {
+                  if (rule) {
+                    rule.condition = condition;
+                    if (!rule.actions.includes(action)) {
+                      rule.actions.push(action);
+                    }
+                  } else {
+                    // Create the rule with a new condition so Mobx doesn't complain about re-annotating with 'observable'
+                    const newRule = makeObservable(
+                      new Profiles.Rule(Profiles.createCondition(conditionType))
+                    );
+                    newRule.condition = condition;
+                    newRule.actions.push(action);
+                    profile.rules.push(newRule);
+                  }
+                } else if (rule) {
+                  rule.condition = condition;
+                  const index = rule.actions.indexOf(action);
+                  if (index >= 0) {
+                    if (rule.actions.length === 1) {
+                      profile.rules.splice(profile.rules.indexOf(rule), 1);
+                    } else {
+                      rule.actions.splice(index, 1);
+                    }
+                  }
+                }
+              });
+              setConfigureVisible(isOn);
+              setHasContent(isOn);
+              svShowContent.value = isOn;
             }}
           />
         </TouchableCard>
-        {showContent && hasData && (
+        {hasContent && (
           <AnimatedEditActionContents
             conditionType={conditionType}
-            action={Profiles.createAction(actionType)}
-            hasData={hasData}
+            action={action}
             entering={FadeIn.duration(300).delay(100)}
             exiting={FadeOut.duration(300)}
           />
         )}
       </Animated.View>
       <ConfigureAnimationModal
-        conditionType={configureVisible ? conditionType : undefined}
+        dieType="d20"
+        condition={condition}
         action={action}
-        onDismiss={() => {
-          setConfigureVisible(false);
-          setHasData(true);
-        }}
+        visible={configureVisible}
+        onDismiss={() => setConfigureVisible(false)}
       />
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  bottomView: {
+    marginTop: -20,
+    paddingTop: 20,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+});

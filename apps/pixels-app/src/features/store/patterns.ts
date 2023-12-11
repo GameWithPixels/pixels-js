@@ -51,7 +51,7 @@ function updatePattern(
   let changed = false;
   for (let i = 0; i < gradientsCount; ++i) {
     if (!pattern.gradients[i]) {
-      pattern.gradients[i] = new Profiles.RgbGradient();
+      pattern.gradients[i] = makeObservable(new Profiles.RgbGradient());
     }
     let keyframes = patternCache.keyframesCache?.find(
       (e) => e.data === patternData.gradients[i].keyframes

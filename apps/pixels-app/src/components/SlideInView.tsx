@@ -1,6 +1,6 @@
-import Animated, { SlideInRight } from "react-native-reanimated";
-import { ViewProps } from "react-native";
 import React from "react";
+import { ViewProps } from "react-native";
+import Animated, { SlideInRight } from "react-native-reanimated";
 
 type ReactChildArray = ReturnType<typeof React.Children.toArray>;
 
@@ -27,8 +27,8 @@ export function SlideInView({
     <>
       {React.Children.map(flattenChildren(children), (child, i) => (
         <Animated.View
-          entering={SlideInRight.delay((delay ?? 0) + 30 * i)}
           key={i}
+          entering={SlideInRight.delay((delay ?? 0) + 30 * i)}
           {...props}
         >
           {child}

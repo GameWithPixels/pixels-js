@@ -2,6 +2,7 @@ import React from "react";
 
 import { EditRuleCallback, RulesSection } from "./RulesSection";
 
+import { connectionFlags, batteryFlags } from "~/actionTypes";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 
@@ -26,13 +27,13 @@ export function EditAdvancedRules({
         profileUuid={profileUuid}
         onEditRule={onEditRule}
         conditionType="connection"
-        options={["Connect", "Disconnect"]}
+        flags={connectionFlags}
       />
       <RulesSection
         profileUuid={profileUuid}
         onEditRule={onEditRule}
         conditionType="battery"
-        options={["Ok", "Low", "Charging", "Done", "Bad Charging"]}
+        flags={batteryFlags}
       />
     </SlideInView>
   );

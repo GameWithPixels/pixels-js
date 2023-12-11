@@ -3,14 +3,7 @@ import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import {
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewProps,
-  ViewStyle,
-} from "react-native";
+import { Pressable, StyleSheet, View, ViewProps } from "react-native";
 import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, {
   CurvedTransition,
@@ -20,83 +13,50 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { ActionDetails } from "./ActionDetails";
+
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { TouchableCardProps, TouchableCard } from "~/components/TouchableCard";
-import { ActionTypeIcon } from "~/components/actions";
 import { useEditableProfile } from "~/hooks";
-import { Colors } from "~/themes";
+import { AppStyles } from "~/styles";
 
 export interface RuleIndex {
   profileUuid: string;
   conditionType: Profiles.ConditionType;
-  option?: string;
+  flagName?: string;
 }
 
-function getActionText(action: Profiles.Action) {
-  switch (action.type) {
-    case "playAnimation": {
-      const act = action as Profiles.ActionPlayAnimation;
-      return `Play "${act.animation?.name ?? ""}" ${act.loopCount} time${
-        act.loopCount > 1 ? "s" : ""
-      }`;
-    }
-    case "playAudioClip":
-      return `Play "${
-        (action as Profiles.ActionPlayAudioClip).clip?.name ?? ""
-      }"`;
-    case "speakText":
-      return `Say "${"some text"}"`;
-    case "makeWebRequest":
-      return `Sned request to "${
-        (action as Profiles.ActionMakeWebRequest).url
-      }"`;
-    default:
-      return "Unknown action";
-  }
-}
-
-const ActionDetails = observer(function ({
+const RuleDetails = observer(function ({
   rule,
-  style,
+  ...props
 }: {
   rule?: Profiles.Rule;
-  style?: StyleProp<ViewStyle>;
-}) {
+} & ViewProps) {
   return (
-    <View style={[style, styles.ruleGroupStyle]}>
+    <View {...props}>
       {rule?.actions.length ? (
-        rule.actions.map((action) => (
-          <View key={action.type} style={styles.ruleGroupStyle}>
-            <View style={styles.ruleIconStyle}>
-              <ActionTypeIcon
-                type="speakText"
-                size={16}
-                color={Colors.grey500}
-              />
-            </View>
-            <View style={styles.ruleTextStyle}>
-              <Text style={styles.actionTextStyle}>
-                {getActionText(action)}
-              </Text>
-            </View>
-          </View>
+        rule.actions.map((action, i) => (
+          <ActionDetails
+            key={action.type + i} // In case we have multiple of actions of same type
+            action={action}
+            style={styles.ruleGroupStyle}
+          />
         ))
       ) : (
-        <Text style={styles.actionTextStyle}>No action</Text>
+        <Text style={AppStyles.greyedOut}>No action</Text>
       )}
     </View>
   );
 });
 
-function RolledRulesDetails({
+const RolledRulesDetails = observer(function ({
   rules,
-  bottomViewStyle,
   colors,
+  ...props
 }: {
   rules: Profiles.Rule[];
-  bottomViewStyle: ViewProps["style"];
   colors: MD3Theme["colors"];
-}) {
+} & ViewProps) {
   const [expandedToggle, setExpandedToggle] = React.useState(false);
   const expanded = useSharedValue(0);
   const animChevronStyle = useAnimatedStyle(
@@ -117,10 +77,7 @@ function RolledRulesDetails({
   }, [expanded]);
   const canExpand = rules.length > 2;
   return (
-    <Animated.View
-      style={bottomViewStyle}
-      layout={CurvedTransition.duration(300)}
-    >
+    <Animated.View layout={CurvedTransition.duration(300)} {...props}>
       <Pressable
         onPress={canExpand ? toggleExpand : undefined}
         style={styles.gap5}
@@ -154,7 +111,7 @@ function RolledRulesDetails({
       </Pressable>
     </Animated.View>
   );
-}
+});
 
 const RolledActionDetails = observer(function ({
   rule,
@@ -169,94 +126,38 @@ const RolledActionDetails = observer(function ({
           On face {(rule.condition as Profiles.ConditionRolled).face}
         </Text>
       )}
-      <ActionDetails
+      <RuleDetails
         rule={rule}
         style={rule ? styles.rolledRuleGroupStyle : styles.ruleGroupStyle}
       />
     </View>
   );
 });
-// isRolled ? (
-//   <View style={styles.rolledRuleGroupStyle}>
-//     <View style={styles.ruleIconStyle}>
-//       <MaterialCommunityIcons
-//         name="web"
-//         size={16}
-//         color={Colors.grey500}
-//       />
-//     </View>
-//     <View style={styles.ruleTextStyle}>
-//       <Text style={{ color: Colors.grey500 }}>
-//         Make request to "ifttt.com"
-//       </Text>
-//     </View>
-//   </View>
-// < Text style = { styles.facesStyle } variant = "bodyMedium" >
-//   On face 1
-//           </Text >
-// <View style={styles.rolledRuleGroupStyle}>
-//   <View style={styles.ruleIconStyle}>
-//     <AnimationsIcon size={16} color={Colors.grey500} />
-//   </View>
-//   <View style={{ flex: 1, flexGrow: 1 }}>
-//     <Text
-//       numberOfLines={expandedToggle ? 0 : 1}
-//       style={{ color: Colors.grey500, marginRight: 1 }} // Weird bug that clip the text
-//     >
-//       Play "Three Red Blinks" twice for 3s with fading set to 0.5
-//     </Text>
-//   </View>
-// </View>
-
-// function ExpandedRolledActionDetails() {
-//   return (
-//     <Animated.View entering={FadeIn.duration(300)}>
-//       <Text style={styles.facesStyle} variant="bodyMedium">
-//         On faces 2 to 19
-//       </Text>
-//       <View style={styles.rolledRuleGroupStyle}>
-//         <View style={styles.ruleIconStyle}>
-//           <AnimationsIcon size={16} color={Colors.grey500} />
-//         </View>
-//         <Text style={{ color: Colors.grey500 }}>Play "Waterfall" for 5s</Text>
-//       </View>
-//       <Text style={styles.facesStyle} variant="bodyMedium">
-//         On all faces
-//       </Text>
-//       <View style={styles.rolledRuleGroupStyle}>
-//         <View style={styles.ruleIconStyle}>
-//           <ActionTypeIcon type="speakText" size={16} color={Colors.grey500} />
-//         </View>
-//         <Text style={{ color: Colors.grey500 }}>Speak Number</Text>
-//       </View>
-//     </Animated.View>
-//   );
-// }
 
 export const RuleCard = observer(function ({
   children,
   profileUuid,
   conditionType,
-  option,
+  flagName,
   style,
   ...props
 }: RuleIndex & TouchableCardProps) {
+  const profile = useEditableProfile(profileUuid);
+  const rules = profile.rules.filter(
+    (r) =>
+      r.condition.type === conditionType && r.condition.flagName === flagName
+  );
+  if (conditionType === "rolling") {
+  }
+  console.log(conditionType + " => rules = " + rules.length);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
-  const profile = useEditableProfile(profileUuid);
-  const rules = profile.rules.filter((r) => r.condition.type === conditionType);
   const bottomViewStyle = {
-    marginTop: -20,
-    marginBottom: 10,
-    paddingTop: 20,
-    paddingLeft: 20,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderTopWidth: 0,
+    ...styles.bottomView,
     borderRadius,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
     borderColor: colors.outline,
+    gap: 5,
+    pointerEvents: "box-none",
   } as const;
   return (
     <>
@@ -286,11 +187,11 @@ export const RuleCard = observer(function ({
       {conditionType === "rolled" ? (
         <RolledRulesDetails
           rules={rules}
-          bottomViewStyle={bottomViewStyle}
+          style={bottomViewStyle}
           colors={colors}
         />
       ) : (
-        <ActionDetails rule={rules[0]} style={bottomViewStyle} />
+        <RuleDetails rule={rules[0]} style={bottomViewStyle} />
       )}
     </>
   );
@@ -312,16 +213,17 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     gap: 5,
   },
-  ruleIconStyle: {
-    width: 20,
-    alignItems: "center",
-  },
-  ruleTextStyle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  actionTextStyle: { color: Colors.grey500 },
   rolledFacesStyle: { paddingBottom: 5 },
   bottomRightIcon: { position: "absolute", bottom: -3, right: 5 },
+  bottomView: {
+    marginTop: -20,
+    marginBottom: 10,
+    paddingTop: 20,
+    paddingLeft: 20,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
 });

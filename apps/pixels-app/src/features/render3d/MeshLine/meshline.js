@@ -43,10 +43,9 @@ export class MeshLine extends THREE.BufferGeometry {
           this.setGeometry(value, this.widthCallback);
         },
       },
-      // for declaritive architectures
+      // for declarative architectures
       // to return the same value that sets the points
       // eg. this.points = points
-      // console.log(this.points) -> points
       points: {
         enumerable: true,
         get() {

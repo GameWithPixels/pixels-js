@@ -48,9 +48,7 @@ export function EditAdvancedRulesScreen({
     <AppBackground>
       <EditAdvancedRulesPage
         profileUuid={profileUuid}
-              onEditRule={(ruleIndex) =>
-          navigation.navigate("editRule", ruleIndex)
-        }
+        onEditRule={(ruleIndex) => navigation.navigate("editRule", ruleIndex)}
         onGoBack={() => navigation.goBack()}
       />
     </AppBackground>
