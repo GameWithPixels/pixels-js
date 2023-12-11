@@ -8,6 +8,9 @@ import {
 import { UniqueNamedData } from "./unique";
 
 export interface ProfileData extends UniqueNamedData {
+  description: string;
+  group: string;
+  favorite: boolean;
   conditions: {
     helloGoodbye: {
       flags: HelloGoodbyeFlags[];

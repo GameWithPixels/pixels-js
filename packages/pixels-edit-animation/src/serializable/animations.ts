@@ -1,6 +1,13 @@
+import { AnimationFlags } from "@systemic-games/pixels-core-animation";
+
 import { UniqueNamedData } from "./unique";
 
 export interface AnimationSetData {
+  // TODO add animations indices list
+  // all: {
+  //   type: Exclude<keyof AnimationSetData, "all">;
+  //   index: number;
+  // }[];
   flashes: AnimationFlashesData[];
   rainbow: AnimationRainbowData[];
   pattern: AnimationPatternData[];
@@ -11,6 +18,7 @@ export interface AnimationSetData {
 
 export interface AnimationData extends UniqueNamedData {
   duration: number;
+  animFlags: AnimationFlags[];
 }
 
 export interface AnimationFlashesData extends AnimationData {
@@ -24,14 +32,12 @@ export interface AnimationRainbowData extends AnimationData {
   faces: number;
   count: number;
   fade: number;
-  animFlags: number;
   intensity: number;
   cycles: number;
 }
 
 export interface AnimationPatternData extends AnimationData {
   patternUuid?: string;
-  animFlags: number;
 }
 
 export interface AnimationGradientPatternData extends AnimationData {

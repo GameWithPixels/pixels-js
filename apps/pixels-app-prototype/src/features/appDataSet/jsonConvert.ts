@@ -6,7 +6,6 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import {
   ActionTypeValues,
-  AnimationFlagsValues,
   AnimationTypeValues,
   BatteryStateFlagsValues,
   Color32Utils,
@@ -126,6 +125,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
+              animFlags: [],
               faces: data.faces ?? Constants.faceMaskAll,
               color: toColor(data.color),
               count: data.count ?? 1,
@@ -137,10 +137,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
-              animFlags: data.traveling
-                ? AnimationFlagsValues.traveling |
-                  AnimationFlagsValues.useLedIndices
-                : 0,
+              animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
               fade: data.fade ?? 0,
@@ -153,6 +150,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
+              animFlags: [],
               faces: data.faces ?? Constants.faceMaskAll,
               gradientUuid: register(data.gradient?.keyframes),
             });
@@ -162,10 +160,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
-              animFlags: data.traveling
-                ? AnimationFlagsValues.traveling |
-                  AnimationFlagsValues.useLedIndices
-                : 0,
+              animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
             });
             break;
@@ -174,6 +169,7 @@ function toAnimationsAndGradients(
               uuid: generateUuid(),
               name: data.name ?? "",
               duration: data.duration ?? 1,
+              animFlags: [],
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
               gradientUuid: register(data.gradient?.keyframes),
               overrideWithFace: data.overrideWithFace ?? false,
@@ -337,7 +333,9 @@ function toProfile(
   return {
     uuid: generateUuid(),
     name: profile.name ?? "",
-    description: profile.description ?? undefined,
+    description: profile.description ?? "",
+    group: "",
+    favorite: false,
     conditions,
     actions,
     rules: filteredRules.map((r) => ({

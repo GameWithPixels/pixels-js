@@ -1,7 +1,6 @@
 import {
+  AnimationFlagsValues,
   BatteryStateFlagsValues,
-  Color,
-  ColorUtils,
   ConnectionStateFlagsValues,
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
@@ -14,7 +13,6 @@ import {
   keysToValues,
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
-import { fromByteArray, toByteArray } from "base64-js";
 
 import {
   AnimationGradientData,
@@ -25,7 +23,9 @@ import {
   AnimationSetData,
   AnimationFlashesData,
 } from "./animations";
+import { fromColor, toColor } from "./color";
 import { GradientData } from "./gradient";
+import { toKeyframes, fromKeyframes } from "./keyframes";
 import { PatternData } from "./pattern";
 import {
   ActionSetData,
@@ -45,7 +45,6 @@ import {
   EditAnimationRainbow,
   EditAnimationSimple,
   EditAudioClip,
-  EditColor,
   EditCondition,
   EditConditionBatteryState,
   EditConditionConnectionState,
@@ -58,7 +57,6 @@ import {
   EditPattern,
   EditProfile,
   EditRgbGradient,
-  EditRgbKeyframe,
   EditRule,
 } from "../edit";
 import EditActionMakeWebRequest from "../edit/EditActionMakeWebRequest";
@@ -240,22 +238,30 @@ export function toAnimation<T extends keyof AnimationSetData>(
       return gradient;
     }
   };
+  const animFlags = combineFlags(
+    keysToValues(data.animFlags, AnimationFlagsValues)
+  );
   switch (type) {
     case "flashes": {
       const animData = data as AnimationFlashesData;
       return new EditAnimationSimple({
         ...animData,
+        animFlags,
         color: toColor(animData.color),
       });
     }
     case "rainbow": {
       const animData = data as AnimationRainbowData;
-      return new EditAnimationRainbow(animData);
+      return new EditAnimationRainbow({
+        ...animData,
+        animFlags,
+      });
     }
     case "pattern": {
       const animData = data as AnimationPatternData;
       return new EditAnimationKeyframed({
         ...animData,
+        animFlags,
         pattern: checkGetPattern(animData.patternUuid),
       });
     }
@@ -263,6 +269,7 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationGradientPatternData;
       return new EditAnimationGradientPattern({
         ...animData,
+        animFlags,
         pattern: checkGetPattern(animData.patternUuid),
         gradient: checkGetGradient(animData.gradientUuid),
       });
@@ -271,6 +278,7 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationGradientData;
       return new EditAnimationGradient({
         ...animData,
+        animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
       });
     }
@@ -278,6 +286,7 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationNoiseData;
       return new EditAnimationNoise({
         ...animData,
+        animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
         blinkGradient: checkGetGradient(animData.blinkGradientUuid),
       });
@@ -301,29 +310,6 @@ export function toGradient(data: Readonly<GradientData>): EditRgbGradient {
     ...data,
     keyframes: toKeyframes(data.keyframes),
   });
-}
-
-export function toKeyframes(base64: string): EditRgbKeyframe[] {
-  const dataView = new DataView(toByteArray(base64).buffer);
-  const keyframes: EditRgbKeyframe[] = [];
-  let byteOffset = 0;
-  const lengthMinus8 = dataView.byteLength - 8;
-  while (byteOffset <= lengthMinus8) {
-    const time = dataView.getFloat32(byteOffset);
-    byteOffset += 4;
-    const color = new Color(dataView.getUint32(byteOffset));
-    byteOffset += 4;
-    keyframes.push(new EditRgbKeyframe({ time, color }));
-  }
-  return keyframes;
-}
-
-export function toColor(data: string): EditColor {
-  if (data === "face" || data === "random") {
-    return new EditColor(data);
-  } else {
-    return new EditColor(new Color(data));
-  }
 }
 
 export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
@@ -480,23 +466,12 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     uuid: profile.uuid,
     name: profile.name,
     description: profile.description,
+    group: "",
+    favorite: false,
     conditions,
     actions,
     rules,
   };
-}
-
-function fromColor(color: EditColor): string {
-  const mode = color.mode;
-  switch (mode) {
-    case "rgb":
-      return ColorUtils.colorToString(color.color).toString();
-    case "face":
-    case "random":
-      return mode;
-    default:
-      assertNever(mode, `Unsupported color mode: ${mode}`);
-  }
 }
 
 export function fromAnimation(animation: Readonly<EditAnimation>): {
@@ -504,6 +479,10 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
   data: AnimationSetData[keyof AnimationSetData][number];
 } {
   const type = animation.type;
+  const animFlags = valuesToKeys(
+    bitsToFlags(animation.animFlags),
+    AnimationFlagsValues
+  );
   switch (type) {
     case "none":
       throw new Error(`Invalid animation type: ${type}`);
@@ -515,7 +494,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
           faces: anim.faces,
           color: fromColor(anim.color),
           count: anim.count,
@@ -531,7 +510,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
           faces: anim.faces,
           count: anim.count,
           fade: anim.fade,
@@ -548,7 +527,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
           patternUuid: anim.pattern?.uuid,
         },
       };
@@ -561,7 +540,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
           patternUuid: anim.pattern?.uuid,
           gradientUuid: anim.gradient?.uuid,
           overrideWithFace: anim.overrideWithFace,
@@ -576,7 +555,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
           faces: anim.faces,
           gradientUuid: anim.gradient?.uuid,
         },
@@ -590,7 +569,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
           faces: anim.faces,
           gradientUuid: anim.gradient?.uuid,
           blinkDuration: anim.blinkDuration,
@@ -608,22 +587,9 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
   }
 }
 
-function toKeyframesBase64(keyframes?: Readonly<EditRgbKeyframe[]>): string {
-  const array = new Uint8Array(8 * (keyframes?.length ?? 0));
-  const dataView = new DataView(array.buffer);
-  let byteOffset = 0;
-  keyframes?.forEach((kf) => {
-    dataView.setFloat32(byteOffset, kf.time ?? 0);
-    byteOffset += 4;
-    dataView.setUint32(byteOffset, kf.color.toColor32());
-    byteOffset += 4;
-  });
-  return fromByteArray(array);
-}
-
 export function fromPattern(pattern: Readonly<EditPattern>): PatternData {
   const gradients = pattern.gradients.map((g) => ({
-    keyframes: toKeyframesBase64(g.keyframes),
+    keyframes: fromKeyframes(g.keyframes),
   }));
   return { uuid: pattern.uuid, name: pattern.name, gradients };
 }
@@ -631,6 +597,6 @@ export function fromPattern(pattern: Readonly<EditPattern>): PatternData {
 export function fromGradient(
   gradient: Readonly<EditRgbGradient>
 ): GradientData {
-  const keyframes = toKeyframesBase64(gradient.keyframes);
+  const keyframes = fromKeyframes(gradient.keyframes);
   return { uuid: gradient.uuid, keyframes };
 }
