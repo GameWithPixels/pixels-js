@@ -308,12 +308,14 @@ function AnimatedDieIcon({
 
 export function PixelFocusView({
   pixel,
-  navigation,
+  onEditProfile,
+  onShowDetails,
   style,
   ...props
 }: {
   pixel: Pixel;
-  navigation: StackNavigationProp<HomeStackParamList>;
+  onEditProfile: () => void;
+  onShowDetails: () => void;
 } & Omit<ViewProps, "children">) {
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
@@ -398,12 +400,7 @@ export function PixelFocusView({
               Tap to switch widget
             </Text>
           </Card>
-          <Pressable
-            style={{ flex: 1, flexGrow: 1 }}
-            onPress={() =>
-              navigation.navigate("dieDetails", { pixelId: pixel.pixelId })
-            }
-          >
+          <Pressable style={{ flex: 1, flexGrow: 1 }} onPress={onShowDetails}>
             <Card
               style={{ flexGrow: 1 }}
               contentStyle={{
@@ -551,11 +548,7 @@ export function PixelFocusView({
                     color={color}
                   />
                 )}
-                onPress={() =>
-                  navigation.navigate("editDieProfile", {
-                    pixelId: pixel.pixelId,
-                  })
-                }
+                onPress={onEditProfile}
               >
                 Customize
               </GradientChip>
@@ -567,8 +560,9 @@ export function PixelFocusView({
                     color={color}
                   />
                 )}
-                onPress={() =>
-                  navigation.navigate("pickProfile", { pixelId: pixel.pixelId })
+                onPress={
+                  () => {}
+                  //navigation.navigate("pickProfile", { pixelId: pixel.pixelId })
                 }
               >
                 Switch
@@ -603,9 +597,9 @@ function PickProfileBottomSheet({
   onDismiss,
 }: {
   pixel: Pixel;
-  profile?: Profiles.Profile;
+  profile?: Readonly<Profiles.Profile>;
   transferring: boolean;
-  onSelectProfile: (profile: Profiles.Profile) => void;
+  onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
   visible: boolean;
   onDismiss: () => void;
 }) {

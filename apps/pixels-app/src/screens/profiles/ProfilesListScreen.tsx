@@ -17,7 +17,7 @@ import { HeaderBar } from "~/components/HeaderBar";
 import { SortBottomSheet } from "~/components/SortBottomSheet";
 import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
-import { useProfiles } from "~/hooks";
+import { useProfilesList } from "~/hooks";
 import { ProfilesListScreenProps, ProfilesStackParamList } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -111,9 +111,9 @@ function ProfilesListPage({
 }: {
   navigation: StackNavigationProp<ProfilesStackParamList>;
 }) {
-  const { profiles } = useProfiles();
+  const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
-  const editProfile = (profile: Profiles.Profile) =>
+  const editProfile = (profile: Readonly<Profiles.Profile>) =>
     navigation.navigate("editProfile", { profileUuid: profile.uuid });
 
   const aref = useAnimatedRef<Animated.ScrollView>();

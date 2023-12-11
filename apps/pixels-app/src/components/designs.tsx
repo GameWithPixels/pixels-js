@@ -18,7 +18,7 @@ export function ColorDesignCard({
   style,
   ...props
 }: {
-  pattern: Profiles.Pattern;
+  pattern: Readonly<Profiles.Pattern>;
   dieType: PixelDieType;
 } & Omit<TouchableCardProps, "children">) {
   return (
@@ -46,9 +46,9 @@ export function ColorDesignCard({
 }
 
 export interface ColorDesignListProps {
-  patterns: Profiles.Pattern[];
-  selected?: Profiles.Pattern;
-  onSelectDesign?: (design: Profiles.Pattern) => void;
+  patterns: Readonly<Profiles.Pattern>[];
+  selected?: Readonly<Profiles.Pattern>;
+  onSelectDesign?: (design: Readonly<Profiles.Pattern>) => void;
 }
 
 function ColorDesignColumn({

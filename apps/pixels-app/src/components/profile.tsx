@@ -1,9 +1,4 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
-import {
-  FontAwesome,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
@@ -11,6 +6,7 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
@@ -25,13 +21,175 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
+import { ActionTypeIcon } from "./actions";
 import { Chip, GradientChip } from "./buttons";
 import { getBorderColor, getTextColorStyle, makeTransparent } from "./utils";
 
-import AnimationsIcon from "#/icons/navigation/animations";
-import SpeakIcon from "#/icons/profiles/speak";
+import { useAppSelector } from "~/app/hooks";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useProfile } from "~/hooks";
+
+const ProfileNameAndDescription = observer(function ({
+  profile,
+  row,
+  numberOfLines,
+  textStyle,
+}: {
+  profile: Readonly<Profiles.Profile>;
+  row?: boolean;
+  numberOfLines: number;
+  textStyle: { color: string } | undefined;
+}) {
+  return (
+    <>
+      <Text
+        numberOfLines={1}
+        style={textStyle}
+        variant={row ? "titleLarge" : "titleMedium"}
+      >
+        {profile.name}
+      </Text>
+      {!!profile.description.length && (
+        <Text numberOfLines={numberOfLines} style={textStyle}>
+          {profile.description}
+        </Text>
+      )}
+    </>
+  );
+});
+
+const ProfileGroup = observer(function ({
+  profile,
+  iconColor,
+  numberOfLines,
+  textStyle,
+}: {
+  profile: Readonly<Profiles.Profile>;
+  iconColor: string;
+  numberOfLines: number;
+  textStyle: { color: string } | undefined;
+}) {
+  return profile.group.length ? (
+    <View
+      style={{
+        alignSelf: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+      }}
+    >
+      <MaterialIcons name="groups" size={24} color={iconColor} />
+      <Text numberOfLines={numberOfLines} style={textStyle}>
+        {profile.group}
+      </Text>
+    </View>
+  ) : null;
+});
+
+const ProfileDiceNames = observer(function ({
+  profile,
+  iconColor,
+}: {
+  profile: Readonly<Profiles.Profile>;
+  iconColor: string;
+}) {
+  const diceNames = useAppSelector((state) => state.pairedDice.diceData)
+    .filter((d) => d.profileUuid === profile.uuid)
+    .map((d) => d.name);
+  return diceNames.length ? (
+    <View style={{ flexDirection: "row" }}>
+      <MaterialCommunityIcons
+        name="dice-multiple-outline"
+        size={24}
+        color={iconColor}
+      />
+      <Text>{diceNames.join(", ")}</Text>
+    </View>
+  ) : null;
+});
+
+function ProfileActions({
+  profile,
+  onAction,
+}: {
+  profile: Readonly<Profiles.Profile>;
+  onAction?: (
+    action: "edit" | "activate",
+    profile: Readonly<Profiles.Profile>
+  ) => void;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        marginRight: 20,
+        justifyContent: "space-between",
+      }}
+    >
+      <GradientChip
+        icon={({ size, color }) => (
+          <MaterialCommunityIcons name="upload" size={size} color={color} />
+        )}
+        onPress={() => onAction?.("activate", profile)}
+      >
+        Activate
+      </GradientChip>
+      <Chip
+        icon={({ size, color }) => (
+          <MaterialCommunityIcons
+            name="movie-open-edit-outline"
+            size={size}
+            color={color}
+          />
+        )}
+        onPress={() => onAction?.("edit", profile)}
+      >
+        Edit
+      </Chip>
+    </View>
+  );
+}
+
+const ProfileActionsIcons = observer(function ({
+  profile,
+  gap,
+  iconColor,
+}: {
+  profile: Readonly<Profiles.Profile>;
+  gap: number;
+  iconColor: string;
+}) {
+  const actions = profile.rules.flatMap((r) => r.actions);
+  const hasAnim = !actions.every((a) => a.type !== "playAnimation");
+  const hasSound = !actions.every((a) => a.type !== "playAudioClip");
+  const hasSpeak = !actions.every((a) => a.type !== "speakText");
+  const hasWeb = !actions.every((a) => a.type !== "makeWebRequest");
+  return (
+    <View
+      style={{
+        alignSelf: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap,
+        height: 24,
+      }}
+    >
+      {hasAnim && (
+        <ActionTypeIcon type="playAnimation" size={16} color={iconColor} />
+      )}
+      {hasSound && (
+        <ActionTypeIcon type="playAudioClip" size={16} color={iconColor} />
+      )}
+      {hasSpeak && (
+        <ActionTypeIcon type="speakText" size={16} color={iconColor} />
+      )}
+      {hasWeb && (
+        <ActionTypeIcon type="makeWebRequest" size={16} color={iconColor} />
+      )}
+    </View>
+  );
+});
 
 export function ProfileCard({
   profile,
@@ -54,16 +212,18 @@ export function ProfileCard({
   contentStyle,
   ...props
 }: {
-  profile: Profiles.Profile;
+  profile: Readonly<Profiles.Profile>;
   transferring?: boolean;
-  expanded?: Animated.SharedValue<boolean>;
+  expanded?: SharedValue<boolean>;
   dieType: PixelDieType;
   fadeInDuration?: number;
   fadeInDelay?: number;
   footer?: React.ReactNode;
-  onAction?: (action: "edit" | "activate") => void;
+  onAction?: (
+    action: "edit" | "activate",
+    profile: Readonly<Profiles.Profile>
+  ) => void;
 } & Omit<TouchableCardProps, "children">) {
-  const { name, description, group } = useProfile(profile);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dieViewCornersStyle = {
@@ -163,6 +323,7 @@ export function ProfileCard({
             flexDirection: "column",
             justifyContent: "space-around",
             paddingHorizontal: row ? 10 : 5,
+            paddingTop: row ? 5 : 0,
             // Borders
             borderWidth: noBorder ? 0 : 1,
             borderLeftWidth: noBorder || row ? 0 : 1,
@@ -175,50 +336,18 @@ export function ProfileCard({
             borderBottomRightRadius: squaredBottomBorder ? 0 : borderRadius,
           }}
         >
-          <Text
-            numberOfLines={1}
-            style={textStyle}
-            variant={row ? "titleLarge" : "titleMedium"}
-          >
-            {name}
-          </Text>
-          {!!description.length && (
-            <Text numberOfLines={footer ? 1 : 2} style={textStyle}>
-              {description}
-            </Text>
-          )}
+          <ProfileNameAndDescription
+            profile={profile}
+            row={row}
+            numberOfLines={footer ? 1 : 2}
+            textStyle={textStyle}
+          />
           {footer ?? (
-            <View
-              style={{
-                alignSelf: "flex-start",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: row ? 10 : 5,
-                height: 24,
-              }}
-            >
-              {Math.random() > 0.3 && (
-                <AnimationsIcon size={16} color={colors.onSurface} />
-              )}
-              {Math.random() > 0.5 && (
-                <SpeakIcon size={16} color={colors.onSurface} />
-              )}
-              {Math.random() > 0.7 && (
-                <MaterialCommunityIcons
-                  name="web"
-                  size={16}
-                  color={colors.onSurface}
-                />
-              )}
-              {Math.random() > 0.8 && (
-                <FontAwesome
-                  name="file-sound-o"
-                  size={16}
-                  color={colors.onSurface}
-                />
-              )}
-            </View>
+            <ProfileActionsIcons
+              profile={profile}
+              gap={row ? 10 : 5}
+              iconColor={colors.onSurface}
+            />
           )}
           <Animated.View style={animBottomStyle}>
             <View
@@ -230,68 +359,17 @@ export function ProfileCard({
                 justifyContent: "space-between",
               }}
             >
-              {!!group.length && (
-                <View
-                  style={{
-                    alignSelf: "flex-start",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 10,
-                  }}
-                >
-                  <MaterialIcons
-                    name="groups"
-                    size={24}
-                    color={colors.onSurface}
-                  />
-                  <Text numberOfLines={row ? 1 : 2} style={textStyle}>
-                    {group}
-                  </Text>
-                </View>
-              )}
-              {Math.random() >= 0 && (
-                <View style={{ flexDirection: "row" }}>
-                  <MaterialCommunityIcons
-                    name="dice-multiple-outline"
-                    size={24}
-                    color={colors.onSurface}
-                  />
-                  <Text>Zhobisq, Uffiss</Text>
-                </View>
-              )}
-              <View
-                style={{
-                  flexDirection: "row",
-                  marginRight: 20,
-                  justifyContent: "space-between",
-                }}
-              >
-                <GradientChip
-                  icon={({ size, color }) => (
-                    <MaterialCommunityIcons
-                      name="upload"
-                      size={size}
-                      color={color}
-                    />
-                  )}
-                  onPress={() => onAction?.("activate")}
-                >
-                  Activate
-                </GradientChip>
-                <Chip
-                  icon={({ size, color }) => (
-                    <MaterialCommunityIcons
-                      name="movie-open-edit-outline"
-                      size={size}
-                      color={color}
-                    />
-                  )}
-                  onPress={() => onAction?.("edit")}
-                >
-                  Edit
-                </Chip>
-              </View>
+              <ProfileGroup
+                profile={profile}
+                iconColor={colors.onSurface}
+                numberOfLines={row ? 1 : 2}
+                textStyle={textStyle}
+              />
+              <ProfileDiceNames
+                profile={profile}
+                iconColor={colors.onSurface}
+              />
+              <ProfileActions profile={profile} onAction={onAction} />
             </View>
           </Animated.View>
           {row && expanded && (
@@ -329,10 +407,10 @@ export function ProfileCardItem({
 }
 
 export interface ProfilesListProps extends ViewProps {
-  profiles: Profiles.Profile[];
-  selected?: Profiles.Profile;
-  transferring?: Profiles.Profile;
-  onSelectProfile?: (profile: Profiles.Profile) => void;
+  profiles: Readonly<Profiles.Profile>[];
+  selected?: Readonly<Profiles.Profile>;
+  transferring?: Readonly<Profiles.Profile>;
+  onSelectProfile?: (profile: Readonly<Profiles.Profile>) => void;
 }
 
 export function ProfilesList({
@@ -346,16 +424,19 @@ export function ProfilesList({
 }: { expandableItems?: boolean } & ProfilesListProps) {
   const favorites = profiles.filter((p) => p.favorite);
   const expandedIndex = useSharedValue(-1);
-  const onPress = (i: number, p: Profiles.Profile) =>
+  const onPress = (i: number, p: Readonly<Profiles.Profile>) =>
     expandableItems
       ? (expandedIndex.value = expandedIndex.value === i ? -1 : i)
       : onSelectProfile?.(p);
-  const onAction = (action: string, p: Profiles.Profile) => {
-    if (action === "edit") {
-      expandedIndex.value = -1;
-      onSelectProfile?.(p);
-    }
-  };
+  const onAction = React.useCallback(
+    (action: string, profile: Readonly<Profiles.Profile>) => {
+      if (action === "edit") {
+        expandedIndex.value = -1;
+        onSelectProfile?.(profile);
+      }
+    },
+    [expandedIndex, onSelectProfile]
+  );
 
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
@@ -374,7 +455,7 @@ export function ProfilesList({
               itemIndex={i}
               expandItemIndex={expandableItems ? expandedIndex : undefined}
               onPress={() => onPress(i, p)}
-              onAction={(action) => onAction(action, p)}
+              onAction={onAction}
             />
           ))}
         </>
@@ -394,7 +475,7 @@ export function ProfilesList({
             itemIndex={favorites.length + i}
             expandItemIndex={expandableItems ? expandedIndex : undefined}
             onPress={() => onPress(favorites.length + i, p)}
-            onAction={(action) => onAction(action, p)}
+            onAction={onAction}
           />
         ))}
       <Text variant="headlineSmall">Last Month</Text>
@@ -412,7 +493,7 @@ export function ProfilesList({
             itemIndex={favorites.length + 5 + i}
             expandItemIndex={expandableItems ? expandedIndex : undefined}
             onPress={() => onPress(favorites.length + 5 + i, p)}
-            onAction={(action) => onAction(action, p)}
+            onAction={onAction}
           />
         ))}
     </View>

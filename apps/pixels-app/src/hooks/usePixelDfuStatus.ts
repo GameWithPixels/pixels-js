@@ -9,6 +9,7 @@ export interface PixelDfuStatus {
 export interface PixelDfuStatusesContextData {
   statuses: PixelDfuStatus[];
 }
+
 export const PixelDfuStatusesContext =
   React.createContext<PixelDfuStatusesContextData>({ statuses: [] });
 

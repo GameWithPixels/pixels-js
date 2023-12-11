@@ -8,7 +8,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { AnimationsGrid } from "~/components/animation";
 import { GradientButton, TightTextButton } from "~/components/buttons";
-import { useAnimations } from "~/hooks";
+import { useAnimationsList } from "~/hooks";
 import {
   AnimationsStackParamList,
   CreateAnimationScreenProps,
@@ -20,7 +20,7 @@ function CreateAnimationPage({
 }: {
   navigation: StackNavigationProp<AnimationsStackParamList>;
 }) {
-  const { animations, addAnimation } = useAnimations();
+  const animations = useAnimationsList();
   const templates = React.useMemo(
     () => [
       [
@@ -81,7 +81,7 @@ function CreateAnimationPage({
           animations={templates[filterNames.indexOf(filter)]}
           onSelectAnimation={() => {
             const newAnim = createAnimation("New Animation");
-            addAnimation(newAnim);
+            // addAnimation(newAnim);
             const openEdit = () => {
               navigation.navigate("editAnimation", {
                 animationUuid: newAnim.uuid,

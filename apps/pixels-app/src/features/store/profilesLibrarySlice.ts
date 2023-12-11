@@ -88,7 +88,7 @@ const profilesLibrarySlice = createSlice({
     ) {
       const { profile, afterUuid } = action.payload;
       insert(profile, state.profiles, afterUuid);
-      console.log(">> REDUX", "addProfile", profile.uuid);
+      console.log(">> REDUX", "addProfile", profile.uuid, profile.name);
     },
 
     updateProfile(state, action: PayloadAction<Serializable.ProfileData>) {
@@ -99,7 +99,7 @@ const profilesLibrarySlice = createSlice({
       } else {
         console.warn(`Redux: No profile with uuid ${profile.uuid} to update`);
       }
-      console.log(">> REDUX", "updateProfile", profile.uuid);
+      console.log(">> REDUX", "updateProfile", profile.uuid, profile.name);
     },
 
     removeProfile(state, action: PayloadAction<string>) {

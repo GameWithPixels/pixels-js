@@ -285,7 +285,7 @@ function toActions(
   return validActions?.map((action) => {
     const type = getValueKeyName(action.type, Json.ActionTypeValues);
     if (!type) {
-      throw new Error(`Unsupported action type: ${action.type}`);
+      throw new Error(`Unknown action type: ${action.type}`);
     }
     const data = action.data;
     switch (type) {

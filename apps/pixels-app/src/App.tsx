@@ -6,10 +6,7 @@ import {
   NavigationContainer,
   RouteProp,
 } from "@react-navigation/native";
-import {
-  initBluetooth,
-  Profiles,
-} from "@systemic-games/react-native-pixels-connect";
+import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -35,8 +32,6 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
-import { AnimationsContext, ProfilesContext } from "./hooks";
-import { ColorDesignsContext } from "./hooks/useColorDesigns";
 import {
   AnimationsStackParamList,
   BottomTabParamList,
@@ -47,11 +42,6 @@ import { AnimationsStack } from "./screens/animations";
 import { HomeStack } from "./screens/home";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
-import {
-  createDefaultProfiles,
-  getDefaultAnimations,
-  getDefaultColorDesigns,
-} from "./temp";
 import { AppDarkTheme, PixelThemes } from "./themes";
 
 import AnimationsIcon from "#/icons/navigation/animations";
@@ -135,78 +125,6 @@ function AppPage() {
   );
 }
 
-function AppDataProviders({ children }: React.PropsWithChildren) {
-  // Profiles management
-  const [profiles, setProfiles] = React.useState(() => createDefaultProfiles());
-  const addProfile = React.useCallback(
-    (p: Profiles.Profile) =>
-      setProfiles((profiles) =>
-        profiles.every((p2) => p.uuid !== p2.uuid) ? [...profiles, p] : profiles
-      ),
-    []
-  );
-  const removeProfile = React.useCallback(
-    (uuid: string) =>
-      setProfiles((profiles) =>
-        profiles.every((p) => p.uuid !== uuid)
-          ? profiles
-          : profiles.filter((p) => p.uuid !== uuid)
-      ),
-    []
-  );
-  // Animations management
-  const [animations, setAnimations] = React.useState(() =>
-    getDefaultAnimations()
-  );
-  const addAnimation = React.useCallback(
-    (a: Profiles.Animation) =>
-      setAnimations((animations) =>
-        animations.every((a2) => a.uuid !== a2.uuid)
-          ? [...animations, a]
-          : animations
-      ),
-    []
-  );
-  const removeAnimation = React.useCallback(
-    (uuid: string) =>
-      setAnimations((animations) =>
-        animations.every((a) => a.uuid !== uuid)
-          ? animations
-          : animations.filter((a) => a.uuid === uuid)
-      ),
-    []
-  );
-  // Color designs management
-  const colorDesigns = React.useMemo(() => getDefaultColorDesigns(), []);
-
-  return (
-    // TODO enable with reanimated 3.6
-    // <React.StrictMode>
-    <ReduxProvider store={store}>
-      <ProfilesContext.Provider
-        value={React.useMemo(
-          () => ({ profiles, addProfile, removeProfile }),
-          [addProfile, profiles, removeProfile]
-        )}
-      >
-        <AnimationsContext.Provider
-          value={React.useMemo(
-            () => ({ animations, addAnimation, removeAnimation }),
-            [addAnimation, animations, removeAnimation]
-          )}
-        >
-          <ColorDesignsContext.Provider
-            value={React.useMemo(() => ({ colorDesigns }), [colorDesigns])}
-          >
-            {children}
-          </ColorDesignsContext.Provider>
-        </AnimationsContext.Provider>
-      </ProfilesContext.Provider>
-    </ReduxProvider>
-    // </React.StrictMode>
-  );
-}
-
 let themeFontsUpdated = false;
 function updateThemesFonts() {
   function setupThemeFont(theme: MD3Theme): void {
@@ -261,8 +179,10 @@ export default function App() {
   updateThemesFonts();
 
   return (
+    // TODO enable with reanimated 3.6
+    // <React.StrictMode>
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <AppDataProviders>
+      <ReduxProvider store={store}>
         <SafeAreaProvider>
           <GestureHandlerRootView style={StyleSheet.absoluteFill}>
             <PaperProvider theme={AppDarkTheme}>
@@ -294,7 +214,8 @@ export default function App() {
             </PaperProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>
-      </AppDataProviders>
+      </ReduxProvider>
     </View>
+    // </React.StrictMode>
   );
 }

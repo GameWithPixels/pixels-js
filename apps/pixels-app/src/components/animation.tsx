@@ -3,15 +3,32 @@ import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
+import { observer } from "mobx-react-lite";
 import { View, ViewProps } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { getTextColorStyle } from "./utils";
 
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useAnimation } from "~/hooks";
+
+const AnimationName = observer(function ({
+  animation,
+  colors,
+  disabled,
+}: {
+  animation: Readonly<Profiles.Animation>;
+  colors: MD3Theme["colors"];
+  disabled?: boolean;
+}) {
+  const textStyle = getTextColorStyle(colors, disabled);
+  return (
+    <Text numberOfLines={1} style={textStyle} variant="titleMedium">
+      {animation.name}
+    </Text>
+  );
+});
 
 export function AnimationCard({
   animation,
@@ -24,15 +41,13 @@ export function AnimationCard({
   contentStyle,
   ...props
 }: {
-  animation: Profiles.Animation;
+  animation: Readonly<Profiles.Animation>;
   dieType: PixelDieType;
   row?: boolean;
   fadeInDuration?: number;
   fadeInDelay?: number;
 } & Omit<TouchableCardProps, "children">) {
-  const { name } = useAnimation(animation);
   const { colors } = useTheme();
-  const textStyle = getTextColorStyle(colors, disabled);
   return (
     <Animated.View
       entering={FadeIn.duration(fadeInDuration ?? 250).delay(fadeInDelay ?? 0)}
@@ -47,9 +62,11 @@ export function AnimationCard({
         <View style={{ width: row ? 70 : 100, aspectRatio: 1, padding: 10 }}>
           <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
         </View>
-        <Text numberOfLines={1} style={textStyle} variant="titleMedium">
-          {name}
-        </Text>
+        <AnimationName
+          animation={animation}
+          colors={colors}
+          disabled={disabled}
+        />
         {/* <FavoriteIcon
           style={{
             position: "absolute",
@@ -65,9 +82,9 @@ export function AnimationCard({
 }
 
 export interface AnimationsListProps extends ViewProps {
-  animations: Profiles.Animation[];
-  selected?: Profiles.Animation;
-  onSelectAnimation?: (animation: Profiles.Animation) => void;
+  animations: Readonly<Profiles.Animation>[];
+  selected?: Readonly<Profiles.Animation>;
+  onSelectAnimation?: (animation: Readonly<Profiles.Animation>) => void;
 }
 
 export function AnimationsList({

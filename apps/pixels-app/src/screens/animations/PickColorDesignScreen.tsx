@@ -12,12 +12,12 @@ import {
 } from "~/navigation";
 
 function PickColorDesignPage({
-  colorDesign,
-  onSelectDesign,
+  pattern,
+  onSelectPattern,
   navigation,
 }: {
-  colorDesign?: Profiles.Pattern;
-  onSelectDesign?: (colorDesign: Profiles.Pattern) => void;
+  pattern?: Readonly<Profiles.Pattern>;
+  onSelectPattern?: (pattern: Readonly<Profiles.Pattern>) => void;
   navigation: StackNavigationProp<AnimationsStackParamList>;
 }) {
   return (
@@ -29,8 +29,8 @@ function PickColorDesignPage({
       />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <ColorDesignPicker
-          colorDesign={colorDesign}
-          onSelectDesign={onSelectDesign}
+          pattern={pattern}
+          onSelectPattern={onSelectPattern}
           style={{ flex: 1, flexGrow: 1, marginHorizontal: 10 }}
         />
       </ScrollView>
@@ -40,15 +40,15 @@ function PickColorDesignPage({
 
 export function PickColorDesignScreen({
   route: {
-    params: { colorDesign, onSelectDesign },
+    params: { pattern, onSelectPattern },
   },
   navigation,
 }: PickColorDesignScreenProps) {
   return (
     <AppBackground>
       <PickColorDesignPage
-        colorDesign={colorDesign}
-        onSelectDesign={onSelectDesign}
+        pattern={pattern}
+        onSelectPattern={onSelectPattern}
         navigation={navigation}
       />
     </AppBackground>

@@ -12,7 +12,7 @@ import {
   ScannedPixel,
   useScannedPixelNotifiers,
 } from "@systemic-games/react-native-pixels-connect";
-import React, { useEffect } from "react";
+import React from "react";
 import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
@@ -360,7 +360,7 @@ function DiceListPage({
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: reconnectProgress.value + "deg" }],
   }));
-  useEffect(() => {
+  React.useEffect(() => {
     if (reconnect) {
       reconnectProgress.value = 0;
       reconnectProgress.value = withRepeat(
@@ -396,7 +396,19 @@ function DiceListPage({
             />
           )}
           {isFocus && selectedPixel && (
-            <PixelFocusView pixel={selectedPixel} navigation={navigation} />
+            <PixelFocusView
+              pixel={selectedPixel}
+              onEditProfile={() =>
+                navigation.navigate("editDieProfile", {
+                  pixelId: selectedPixel.pixelId,
+                })
+              }
+              onShowDetails={() =>
+                navigation.navigate("dieDetails", {
+                  pixelId: selectedPixel.pixelId,
+                })
+              }
+            />
           )}
           {viewMode === "list" ? (
             <>

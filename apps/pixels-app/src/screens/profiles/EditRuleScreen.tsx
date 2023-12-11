@@ -1,33 +1,33 @@
 import { StackNavigationProp } from "@react-navigation/stack";
+import { assert } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
 import { EditActionCard } from "./components/EditActionCard";
-import { EditAdvancedRules } from "./components/EditProfile";
+import { RuleIndex } from "./components/RuleCard";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { actionTypes } from "~/components/actions";
 import { getConditionTypeLabel } from "~/descriptions";
-import { useProfiles, useRule } from "~/hooks";
+import { useEditableProfile } from "~/hooks";
 import {
-  EditAdvancedRulesScreenProps,
   EditProfileSubStackParamList,
   EditRuleScreenProps,
 } from "~/navigation";
 
 function EditRulePage({
   profileUuid,
-  ruleIndex,
+  conditionType,
+  option: string,
   navigation,
-}: {
-  profileUuid: string;
-  ruleIndex: number;
+}: RuleIndex & {
   navigation: StackNavigationProp<EditProfileSubStackParamList>;
 }) {
-  const { profiles } = useProfiles();
-  const { condition } = useRule(profileUuid, ruleIndex, profiles);
+  const profile = useEditableProfile(profileUuid);
+  const rule = profile.rules.find((r) => r.condition.type === conditionType);
+  assert(rule);
   const actions = React.useMemo(
     () => actionTypes.map((a) => Profiles.createAction(a)),
     []
@@ -37,7 +37,7 @@ function EditRulePage({
       <View style={{ height: "100%" }}>
         <PageHeader
           mode="arrow-left"
-          title={getConditionTypeLabel(condition.type)}
+          title={getConditionTypeLabel(rule.condition.type)}
           onGoBack={() => navigation.goBack()}
         />
         <ScrollView
@@ -52,7 +52,7 @@ function EditRulePage({
             <EditActionCard
               key={a.type}
               action={a}
-              conditionType={condition.type}
+              conditionType={rule.condition.type}
             />
           ))}
         </ScrollView>
@@ -63,7 +63,7 @@ function EditRulePage({
 
 export function EditRuleScreen({
   route: {
-    params: { profileUuid, ruleIndex },
+    params: { profileUuid, conditionType },
   },
   navigation,
 }: EditRuleScreenProps) {
@@ -71,53 +71,7 @@ export function EditRuleScreen({
     <AppBackground>
       <EditRulePage
         profileUuid={profileUuid}
-        ruleIndex={ruleIndex}
-        navigation={navigation}
-      />
-    </AppBackground>
-  );
-}
-
-function EditAdvancedRulesPage({
-  profileUuid,
-  navigation,
-}: {
-  profileUuid: string;
-  navigation: StackNavigationProp<EditProfileSubStackParamList>;
-}) {
-  return (
-    <>
-      <View style={{ height: "100%" }}>
-        <PageHeader
-          mode="arrow-left"
-          title="Advanced Rules"
-          onGoBack={() => navigation.goBack()}
-        />
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{
-            paddingHorizontal: 10,
-            paddingBottom: 10,
-            gap: 10,
-          }}
-        >
-          <EditAdvancedRules profileUuid={profileUuid} />
-        </ScrollView>
-      </View>
-    </>
-  );
-}
-
-export function EditAdvancedRulesScreen({
-  route: {
-    params: { profileUuid },
-  },
-  navigation,
-}: EditAdvancedRulesScreenProps) {
-  return (
-    <AppBackground>
-      <EditAdvancedRulesPage
-        profileUuid={profileUuid}
+        conditionType={conditionType}
         navigation={navigation}
       />
     </AppBackground>

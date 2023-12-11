@@ -13,8 +13,11 @@ import Editable from "./Editable";
 import { observable } from "./decorators";
 
 export default class EditProfile extends Editable {
-  favorite: boolean;
-  group: string;
+  @observable
+  favorite: boolean; // TODO temp
+
+  @observable
+  group: string; // TODO temp
 
   @observable
   description: string;
@@ -68,7 +71,11 @@ export default class EditProfile extends Editable {
   }
 
   duplicate(uuid?: string): EditProfile {
-    return new EditProfile({ ...this, uuid });
+    return new EditProfile({
+      ...this,
+      uuid,
+      rules: this.rules.map((r) => r.duplicate()),
+    });
   }
 
   collectAnimations(): EditAnimation[] {

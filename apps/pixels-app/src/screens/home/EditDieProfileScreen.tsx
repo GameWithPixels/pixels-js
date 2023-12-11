@@ -1,9 +1,11 @@
 import { StackNavigationProp } from "@react-navigation/stack";
+import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 
 import { EditProfile } from "../profiles/components/EditProfile";
+import { RuleIndex } from "../profiles/components/RuleCard";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
@@ -18,7 +20,23 @@ function EditDieProfilePage({
   navigation: StackNavigationProp<HomeStackParamList>;
 }) {
   const pixel = usePairedPixel(pixelId);
+  const pixelName = usePixelValue(pixel, "name");
   const { activeProfile } = useActiveProfile(pixel);
+  const editRule = React.useCallback(
+    (ruleIndex: RuleIndex) => {
+      if (ruleIndex.conditionType === "rolled") {
+        navigation.navigate("editRollRules", ruleIndex);
+      } else {
+        navigation.navigate("editRule", ruleIndex);
+      }
+    },
+    [navigation]
+  );
+  const profileUuid = activeProfile.uuid;
+  const editAdvancedRules = React.useCallback(
+    () => navigation.navigate("editAdvancedRules", { profileUuid }),
+    [navigation, profileUuid]
+  );
   if (!activeProfile) {
     // TODO create profile
     navigation.goBack();
@@ -29,14 +47,19 @@ function EditDieProfilePage({
     <View style={{ height: "100%" }}>
       <PageHeader
         mode="chevron-down"
-        title={`${pixel?.name}'s Profile`}
+        title={`${pixelName}'s Profile`}
         onGoBack={() => navigation.goBack()}
       />
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingBottom: 10 }}
       >
-        <EditProfile profileUuid={activeProfile.uuid} unnamed />
+        <EditProfile
+          profileUuid={profileUuid}
+          unnamed
+          onEditRule={editRule}
+          onEditAdvancedRules={editAdvancedRules}
+        />
       </GHScrollView>
     </View>
   );

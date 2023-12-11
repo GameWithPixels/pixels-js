@@ -12,7 +12,7 @@ import { HeaderBar } from "~/components/HeaderBar";
 import { SortBottomSheet } from "~/components/SortBottomSheet";
 import { AnimationsGrid, AnimationsList } from "~/components/animation";
 import { FloatingAddButton } from "~/components/buttons";
-import { useAnimations } from "~/hooks";
+import { useAnimationsList } from "~/hooks";
 import {
   AnimationsListScreenProps,
   AnimationsStackParamList,
@@ -109,8 +109,8 @@ function AnimationsListPage({
 }: {
   navigation: StackNavigationProp<AnimationsStackParamList>;
 }) {
-  const { animations } = useAnimations();
-  const editAnimation = (animation: Profiles.Animation) => {
+  const animations = useAnimationsList();
+  const editAnimation = (animation: Readonly<Profiles.Animation>) => {
     navigation.navigate("editAnimation", { animationUuid: animation.uuid });
   };
 

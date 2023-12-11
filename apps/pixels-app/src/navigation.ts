@@ -7,6 +7,8 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { Platform } from "react-native";
 
+import { RuleIndex } from "./screens/profiles/components/RuleCard";
+
 // Root screens
 export type BottomTabParamList = {
   home: undefined;
@@ -37,12 +39,8 @@ export type SettingsStackProps = StackScreenProps<
 // Edit profile sub screens
 export type EditProfileSubStackParamList = {
   editAdvancedRules: { profileUuid: string };
-  editRule: { profileUuid: string; ruleIndex: number };
+  editRule: RuleIndex;
   editRollRules: { profileUuid: string };
-  pickAnimation: {
-    animation?: Profiles.Animation;
-    onSelectAnimation?: (animation: Profiles.Animation) => void;
-  };
 };
 
 export type EditRuleScreenProps = StackScreenProps<
@@ -60,18 +58,11 @@ export type EditAdvancedRulesScreenProps = StackScreenProps<
   "editAdvancedRules"
 >;
 
-export type PickAnimationScreenProps = StackScreenProps<
-  EditProfileSubStackParamList,
-  "pickAnimation"
->;
-
 // Home screens
 export type HomeStackParamList = {
   diceList: undefined;
   firmwareUpdate: undefined;
   dieDetails: { pixelId: number };
-  pickProfile: { pixelId: number };
-  pickProfileAndroid: { pixelId: number };
   editDieProfile: { pixelId: number };
 } & EditProfileSubStackParamList;
 
@@ -88,16 +79,6 @@ export type FirmwareUpdateScreenProps = StackScreenProps<
 export type DieDetailsScreenProps = StackScreenProps<
   HomeStackParamList,
   "dieDetails"
->;
-
-export type PickProfileScreenProps = StackScreenProps<
-  HomeStackParamList,
-  "pickProfile"
->;
-
-export type PickProfileAndroidScreenProps = StackScreenProps<
-  HomeStackParamList,
-  "pickProfileAndroid"
 >;
 
 export type EditDieProfileScreenProps = StackScreenProps<
@@ -133,8 +114,8 @@ export type AnimationsStackParamList = {
   createAnimation: undefined;
   editAnimation: { animationUuid: string };
   pickColorDesign: {
-    colorDesign?: Profiles.Pattern;
-    onSelectDesign?: (colorDesign: Profiles.Pattern) => void;
+    pattern?: Readonly<Profiles.Pattern>;
+    onSelectPattern?: (pattern: Readonly<Profiles.Pattern>) => void;
   };
 };
 

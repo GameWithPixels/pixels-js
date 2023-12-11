@@ -7,6 +7,7 @@ export interface PageHeaderProps {
   mode?: "arrow-left" | "chevron-down";
   title?: string;
   onGoBack?: () => void;
+  leftElement?: () => React.ReactNode;
   rightElement?: () => React.ReactNode;
 }
 
@@ -14,6 +15,7 @@ export function PageHeader({
   mode = "arrow-left",
   title,
   onGoBack,
+  leftElement,
   rightElement,
 }: PageHeaderProps) {
   return (
@@ -33,20 +35,22 @@ export function PageHeader({
           justifyContent: "space-between",
         }}
       >
-        {onGoBack && (
-          <IconButton
-            icon={({ size, color }) => (
-              <MaterialCommunityIcons
-                name={mode}
-                size={size}
-                color={color}
-                style={{ padding: 5, marginLeft: -5 }} // Making the touchable surface bigger
+        {leftElement
+          ? leftElement()
+          : onGoBack && (
+              <IconButton
+                icon={({ size, color }) => (
+                  <MaterialCommunityIcons
+                    name={mode}
+                    size={size}
+                    color={color}
+                    style={{ padding: 5, marginLeft: -5 }} // Making the touchable surface bigger
+                  />
+                )}
+                size={mode === "arrow-left" ? 24 : 30}
+                onPress={onGoBack}
               />
             )}
-            size={mode === "arrow-left" ? 24 : 30}
-            onPress={onGoBack}
-          />
-        )}
         {rightElement?.()}
       </View>
     </View>

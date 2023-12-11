@@ -30,7 +30,7 @@ import { SliderWithValue } from "~/components/SliderWithTitle";
 import { AnimationsGrid } from "~/components/animation";
 import { GradientButton } from "~/components/buttons";
 import { getConditionTypeLabel } from "~/descriptions";
-import { useAnimations, useConfirmActionSheet } from "~/hooks";
+import { useAnimationsList, useConfirmActionSheet } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function PickAnimationModal({
@@ -39,12 +39,12 @@ function PickAnimationModal({
   visible,
   onDismiss,
 }: {
-  animation?: Profiles.Animation;
-  onSelectAnimation?: (animation: Profiles.Animation) => void;
+  animation?: Readonly<Profiles.Animation>;
+  onSelectAnimation?: (animation: Readonly<Profiles.Animation>) => void;
   onDismiss: () => void;
   visible: boolean;
 }) {
-  const { animations } = useAnimations();
+  const animations = useAnimationsList();
   const sheetRef = React.useRef<BottomSheetModal>(null);
   React.useEffect(() => {
     if (visible) {
@@ -95,16 +95,17 @@ function PickAnimationModal({
 }
 export function ConfigureAnimationModal({
   conditionType,
-  actionType,
-  visible,
+  action,
   onDismiss,
 }: {
-  conditionType: Profiles.ConditionType;
-  actionType: Profiles.ActionType;
+  conditionType?: Profiles.ConditionType;
+  action?: Profiles.Action;
   onDismiss: () => void;
-  visible: boolean;
 }) {
-  const [animation, setAnimation] = React.useState<Profiles.Animation>();
+  const visible = !!conditionType;
+  const actionType = action?.type ?? "none";
+  const [animation, setAnimation] =
+    React.useState<Readonly<Profiles.Animation>>();
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
   const visibleRef = React.useRef(visible);
   visibleRef.current = visible;
@@ -239,7 +240,7 @@ export function ConfigureAnimationModal({
               <Text variant="titleMedium">
                 {conditionType === "rolled"
                   ? ""
-                  : getConditionTypeLabel(conditionType) + " "}
+                  : getConditionTypeLabel(conditionType ?? "none") + " "}
                 Play
               </Text>
               <GradientButton

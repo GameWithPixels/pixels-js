@@ -6,16 +6,9 @@ import { DiceListScreen } from "./DiceListScreen";
 import { DieDetailsScreen } from "./DieDetailsScreen";
 import { EditDieProfileScreen } from "./EditDieProfileScreen";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
-import {
-  PickProfileScreen,
-  PickProfileScreenAndroid,
-} from "./PickProfileScreen";
+import { EditAdvancedRulesScreen } from "../profiles/EditAdvancedRulesScreen";
 import { EditRollRuleScreen } from "../profiles/EditRolledRulesScreen";
-import {
-  EditAdvancedRulesScreen,
-  EditRuleScreen,
-} from "../profiles/EditRuleScreen";
-import { PickAnimationScreen } from "../profiles/PickAnimationScreen";
+import { EditRuleScreen } from "../profiles/EditRuleScreen";
 
 import {
   getStackNavigationOptions,
@@ -42,16 +35,6 @@ export function HomeStack({ route }: HomeStackProps) {
           options={getStackNavigationOptions("bottom-sheet")}
         />
         <Stack.Screen
-          name="pickProfile"
-          component={PickProfileScreen}
-          options={getStackNavigationOptions("bottom-sheet")}
-        />
-        <Stack.Screen
-          name="pickProfileAndroid"
-          component={PickProfileScreenAndroid}
-          options={getStackNavigationOptions("bottom-sheet-android")}
-        />
-        <Stack.Screen
           name="editDieProfile"
           component={EditDieProfileScreen}
           options={getStackNavigationOptions("slide-from-bottom")}
@@ -62,7 +45,6 @@ export function HomeStack({ route }: HomeStackProps) {
         />
         <Stack.Screen name="editRule" component={EditRuleScreen} />
         <Stack.Screen name="editRollRules" component={EditRollRuleScreen} />
-        <Stack.Screen name="pickAnimation" component={PickAnimationScreen} />
       </Stack.Navigator>
     </ThemeProvider>
   );

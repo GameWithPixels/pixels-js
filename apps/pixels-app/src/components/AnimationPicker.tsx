@@ -6,17 +6,17 @@ import { Text } from "react-native-paper";
 import { AnimationsGrid } from "./animation";
 import { SortMode, SortButton } from "./buttons";
 
-import { useAnimations } from "~/hooks";
+import { useAnimationsList } from "~/hooks";
 
 export function AnimationPicker({
   animation,
   onSelectAnimation,
   ...props
 }: {
-  animation?: Profiles.Animation;
-  onSelectAnimation?: (animation: Profiles.Animation) => void;
+  animation?: Readonly<Profiles.Animation>;
+  onSelectAnimation?: (animation: Readonly<Profiles.Animation>) => void;
 } & ViewProps) {
-  const { animations } = useAnimations();
+  const animations = useAnimationsList();
   const [sortMode, setSortMode] = React.useState<SortMode>("a-z");
   return (
     <View {...props}>

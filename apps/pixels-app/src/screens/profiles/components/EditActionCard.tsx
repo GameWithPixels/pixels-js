@@ -21,7 +21,6 @@ import { ActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { getActionTypeLabel } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useAction } from "~/hooks";
 import { Colors } from "~/themes";
 import { withAnimated } from "~/withAnimated";
 
@@ -30,14 +29,17 @@ function EditActionContents({
   style,
   hasData,
   ...props
-}: { hasData: boolean } & ActionEditCommonProps & ViewProps) {
-  const { type: actionType } = useAction(action);
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
-
+}: {
+  conditionType: Profiles.ConditionType;
+  action: Profiles.Action;
+  hasData: boolean;
+} & ViewProps) {
+  const actionType = action.type;
   const animName = "Rotating Rings";
   const overridesFlag = 3;
 
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <View
       style={[
@@ -143,16 +145,14 @@ function EditActionContents({
 const AnimatedActionTypeIcon = withAnimated(ActionTypeIcon);
 const AnimatedEditActionContents = withAnimated(EditActionContents);
 
-export interface ActionEditCommonProps {
-  conditionType: Profiles.ConditionType;
-  action: Profiles.Action;
-}
-
 export function EditActionCard({
   action,
   conditionType,
-}: ActionEditCommonProps) {
-  const { type: actionType } = useAction(action);
+}: {
+  conditionType: Profiles.ConditionType;
+  action: Profiles.Action;
+}) {
+  const actionType = action.type;
   const [showContent, setShowContent] = React.useState(false);
   const [hasData, setHasData] = React.useState(false);
   const svShowContent = useSharedValue(showContent);
@@ -218,9 +218,8 @@ export function EditActionCard({
         )}
       </Animated.View>
       <ConfigureAnimationModal
-        conditionType={conditionType}
-        actionType={actionType}
-        visible={configureVisible}
+        conditionType={configureVisible ? conditionType : undefined}
+        action={action}
         onDismiss={() => {
           setConfigureVisible(false);
           setHasData(true);

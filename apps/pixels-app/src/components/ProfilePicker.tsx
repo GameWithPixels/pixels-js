@@ -12,7 +12,7 @@ import Animated, {
 import { AnimatedProfileSearchbar } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
-import { useProfiles } from "~/hooks";
+import { useProfilesList } from "~/hooks";
 
 export function ProfilePicker({
   selected,
@@ -22,12 +22,12 @@ export function ProfilePicker({
   style,
   ...props
 }: {
-  selected?: Profiles.Profile;
+  selected?: Readonly<Profiles.Profile>;
   transferring?: boolean;
   dieType?: PixelDieType;
-  onSelectProfile: (profile: Profiles.Profile) => void;
+  onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
 } & ViewProps) {
-  const { profiles } = useProfiles();
+  const profiles = useProfilesList();
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);
   const searchbarHeight = 100;

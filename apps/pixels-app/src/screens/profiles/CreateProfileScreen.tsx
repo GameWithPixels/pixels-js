@@ -1,5 +1,6 @@
 import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme } from "react-native-paper";
@@ -8,19 +9,29 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientButton, TightTextButton } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
-import { useProfiles } from "~/hooks";
+import generateUuid from "~/features/generateUuid";
+import { useEditProfilesList, useProfilesList } from "~/hooks";
 import { CreateProfileScreenProps, ProfilesStackParamList } from "~/navigation";
-import { createProfile } from "~/temp";
+
+const emptyProfileUuid = generateUuid();
 
 function CreateProfilePage({
   navigation,
 }: {
   navigation: StackNavigationProp<ProfilesStackParamList>;
 }) {
-  const { profiles, addProfile } = useProfiles();
+  const profiles = useProfilesList();
+  const { addProfile } = useEditProfilesList();
   const templates = React.useMemo(
     () => [
-      [createProfile("Empty", "A blank profile"), ...profiles.slice(0, 4)],
+      [
+        new Profiles.Profile({
+          uuid: emptyProfileUuid,
+          name: "Empty",
+          description: "A blank profile",
+        }),
+        ...profiles.slice(0, 4),
+      ],
       profiles.slice(4),
       profiles.filter((_, i) => i % 3),
     ],
@@ -71,10 +82,10 @@ function CreateProfilePage({
         <ProfilesGrid
           profiles={templates[filterNames.indexOf(filter)]}
           onSelectProfile={(p) => {
-            const newProfile = createProfile(
-              "New Profile",
-              `Based on ${p.name}`
-            );
+            const newProfile = p.duplicate(generateUuid());
+            newProfile.name = "New Profile";
+            newProfile.description =
+              p.uuid === emptyProfileUuid ? "" : `Based on ${p.name}`;
             addProfile(newProfile);
             const openEdit = () => {
               navigation.navigate("editProfile", {

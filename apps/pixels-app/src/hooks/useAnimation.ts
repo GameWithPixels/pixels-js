@@ -1,16 +1,22 @@
-import { assert } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import React from "react";
+
+import { useAppSelector } from "~/app/hooks";
+import { store } from "~/app/store";
+import { readAnimation } from "~/features/store/animations";
 
 export function useAnimation(
-  animOrUuid: Profiles.Animation | string,
-  animations?: Profiles.Animation[]
-): {
-  name: string;
-} {
-  const anim =
-    typeof animOrUuid === "string"
-      ? animations?.find((p) => p.uuid === animOrUuid)
-      : animOrUuid;
-  assert(anim, `Animation ${animOrUuid} not found`);
-  return { name: anim.name };
+  animationUuid: string
+): Readonly<Profiles.Animation> {
+  const library = useAppSelector((state) => state.profilesLibrary);
+  return readAnimation(animationUuid, library);
+}
+
+export function useEditableAnimation(
+  animationUuid: string
+): Profiles.Animation {
+  return React.useMemo(
+    () => readAnimation(animationUuid, store.getState().profilesLibrary, true),
+    [animationUuid]
+  );
 }

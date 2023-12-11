@@ -10,18 +10,25 @@ export const actionTypes = (
   Object.keys(Profiles.ActionTypeValues) as Profiles.ActionType[]
 ).filter((t) => t !== "none" && t !== "runOnDevice");
 
-function GlobeIcon({ size, color }: { size: number; color: string }) {
+function GlobeIcon({ size, color }: { size: number; color?: string }) {
   return <MaterialCommunityIcons name="web" size={size} color={color} />;
 }
 
-function FileAudioIcon({ size, color }: { size: number; color: string }) {
+function FileAudioIcon({ size, color }: { size: number; color?: string }) {
   return <FontAwesome name="file-sound-o" size={size} color={color} />;
 }
 
 export function getActionTypeIcon(
   type: Profiles.ActionType
 ):
-  | (({ size, color }: { size: number; color: string }) => React.JSX.Element)
+  | (({
+      size,
+      color,
+    }: {
+      size: number;
+      color?: string;
+      style?: StyleProp<TextStyle>;
+    }) => React.JSX.Element)
   | undefined {
   switch (type) {
     case "none":
@@ -43,13 +50,16 @@ export function getActionTypeIcon(
 export function ActionTypeIcon({
   type,
   size,
+  color,
   style,
 }: {
   type: Profiles.ActionType;
   size: number;
-  style: StyleProp<TextStyle>;
+  color?: string;
+  style?: Omit<TextStyle, "color"> & { color: string };
 }) {
   const Icon = getActionTypeIcon(type);
-  // @ts-ignore
-  return Icon ? <Icon size={size} color={style.color} style={style} /> : null;
+  return Icon ? (
+    <Icon size={size} color={color ?? style?.color} style={style} />
+  ) : null;
 }

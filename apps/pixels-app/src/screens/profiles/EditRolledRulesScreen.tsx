@@ -1,5 +1,7 @@
-import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { runInAction } from "mobx";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import {
   View,
@@ -24,11 +26,8 @@ import {
   getConditionTypeLabel,
 } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useCondition, useProfiles, useRule } from "~/hooks";
-import {
-  EditProfileSubStackParamList,
-  EditRollRulesScreenProps,
-} from "~/navigation";
+import { useEditableProfile } from "~/hooks";
+import { EditRollRulesScreenProps } from "~/navigation";
 import { Colors } from "~/themes";
 
 function InnerScrollView({ ...props }: ScrollViewProps) {
@@ -66,129 +65,130 @@ function ActionCard({ ...props }: CardProps) {
   );
 }
 
-function EditAnimations({ onPress }: { onPress?: () => void }) {
+const EditAnimations = observer(function ({
+  profile,
+  onConfigureRule,
+}: {
+  profile: Profiles.Profile;
+  onConfigureRule?: (rule: Profiles.Rule) => void;
+}) {
+  const rules = profile.rules.filter(
+    (r) =>
+      r.condition.type === "rolled" &&
+      (!r.actions.length || !r.actions.every((a) => a.type !== "playAnimation"))
+  );
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <InnerScrollView>
-      {[
-        {
-          anim: "Rainbow Falls",
-          faces: "20",
-        },
-        {
-          anim: "Rotating Rings",
-          faces: "19",
-          overrides: 3,
-        },
-        {
-          anim: "Waterfall",
-          faces: "18, 17 and 16",
-          overrides: 2,
-        },
-        {
-          anim: "Blue to Red",
-          faces: "2",
-        },
-        {
-          anim: "Red to Yellow",
-          faces: "1",
-          overrides: 1,
-        },
-        {
-          anim: "Waterfall",
-          faces: "15, 14, 13 ... 5, 4, 3",
-          remaining: true,
-        },
-      ].map(({ anim, faces, overrides, remaining }, i) => (
-        <View key={i}>
-          <TouchableCard
-            noBorder
-            frameless
-            contentStyle={[
-              {
-                flexDirection: "row",
-                padding: 10,
-                gap: 5,
-              },
-            ]}
-            onPress={onPress}
-          >
-            <>
-              <Text
-                style={{ flexGrow: 1, textAlign: "center" }}
-                variant="bodyLarge"
-              >
-                {remaining
-                  ? `All other rolls (${faces})`
-                  : `When roll ${
-                      faces.includes(" ") ? "is one of" : "is"
-                    } ${faces}`}
-              </Text>
-            </>
-          </TouchableCard>
-          <View
-            style={{
-              flexDirection: "row",
-              marginTop: -20,
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingRight: 10,
-              alignItems: "stretch",
-              borderWidth: 1,
-              borderTopWidth: 0,
-              borderRadius,
-              borderTopLeftRadius: 0,
-              borderTopRightRadius: 0,
-              borderColor: colors.outline,
-              gap: 10,
-            }}
-          >
+      {rules.map((r, i) => {
+        const remaining = false;
+        const cond = r.condition as Profiles.ConditionRolled;
+        const faces = cond.face.toString();
+        const playAnim = r.actions.find(
+          (a) => a.type === "playAnimation"
+        ) as Profiles.ActionPlayAnimation;
+        const overrides = 0;
+        return (
+          <View key={i}>
+            <TouchableCard
+              noBorder
+              frameless
+              contentStyle={[
+                {
+                  flexDirection: "row",
+                  padding: 10,
+                  gap: 5,
+                },
+              ]}
+              onPress={() => onConfigureRule?.(r)}
+            >
+              <>
+                <Text
+                  style={{ flexGrow: 1, textAlign: "center" }}
+                  variant="bodyLarge"
+                >
+                  {remaining
+                    ? `All other rolls (${faces})`
+                    : `When roll ${
+                        faces.includes(" ") ? "is one of" : "is"
+                      } ${faces}`}
+                </Text>
+              </>
+            </TouchableCard>
             <View
               style={{
-                flexGrow: 1,
-                marginVertical: 5,
-                justifyContent: "space-evenly",
-                gap: 5,
+                flexDirection: "row",
+                marginTop: -20,
+                paddingTop: 20,
+                paddingLeft: 20,
+                paddingRight: 10,
+                alignItems: "stretch",
+                borderWidth: 1,
+                borderTopWidth: 0,
+                borderRadius,
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                borderColor: colors.outline,
+                gap: 10,
               }}
             >
-              <Text variant="bodySmall">Play "{anim}"</Text>
-              {!!((overrides ?? 0) & 1) && (
-                <Text style={{ color: Colors.grey500 }}>Repeat Count: 2</Text>
-              )}
-              {!!((overrides ?? 0) & 2) && (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
-                  <Text style={{ color: Colors.grey500 }}>Color</Text>
+              {playAnim?.animation && (
+                <>
                   <View
                     style={{
-                      height: 12,
-                      aspectRatio: 1,
-                      borderRadius,
-                      borderWidth: 1,
-                      borderColor: colors.onSurfaceVariant,
-                      backgroundColor: faces === "19" ? "orange" : "blue",
+                      flexGrow: 1,
+                      marginVertical: 5,
+                      justifyContent: "space-evenly",
+                      gap: 5,
                     }}
-                  />
-                </View>
+                  >
+                    <Text variant="bodySmall">
+                      Play "{playAnim.animation.name}"
+                    </Text>
+                    {!!((overrides ?? 0) & 1) && (
+                      <Text style={{ color: Colors.grey500 }}>
+                        Repeat Count: 2
+                      </Text>
+                    )}
+                    {!!((overrides ?? 0) & 2) && (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <Text style={{ color: Colors.grey500 }}>Color</Text>
+                        <View
+                          style={{
+                            height: 12,
+                            aspectRatio: 1,
+                            borderRadius,
+                            borderWidth: 1,
+                            borderColor: colors.onSurfaceVariant,
+                            backgroundColor: faces === "19" ? "orange" : "blue",
+                          }}
+                        />
+                      </View>
+                    )}
+                  </View>
+                  <View
+                    style={{ width: 60, aspectRatio: 1, marginVertical: 5 }}
+                  >
+                    <DieRenderer dieType="d20" colorway="midnightGalaxy" />
+                  </View>
+                </>
               )}
             </View>
-            <View style={{ width: 60, aspectRatio: 1, marginVertical: 5 }}>
-              <DieRenderer dieType="d20" colorway="midnightGalaxy" />
-            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </InnerScrollView>
   );
-}
+});
 
-function EditSounds() {
+function EditSounds({ profile }: { profile: Profiles.Profile }) {
   return (
     <InnerScrollView>
       <ActionCard>
@@ -211,7 +211,7 @@ function EditSounds() {
   );
 }
 
-function EditSpeak() {
+function EditSpeak({ profile }: { profile: Profiles.Profile }) {
   return (
     <InnerScrollView>
       <ActionCard>
@@ -223,7 +223,7 @@ function EditSpeak() {
   );
 }
 
-function EditWebRequests() {
+function EditWebRequests({ profile }: { profile: Profiles.Profile }) {
   return (
     <InnerScrollView>
       <Card
@@ -242,17 +242,15 @@ function EditWebRequests() {
   );
 }
 
-function EditRollRulesPage({
+function EditRolledRulesPage({
   profileUuid,
-  navigation,
+  onGoBack,
 }: {
   profileUuid: string;
-  navigation: StackNavigationProp<EditProfileSubStackParamList>;
+  onGoBack: () => void;
 }) {
-  const { profiles } = useProfiles();
-  const { condition } = useRule(profileUuid, 0 /*ruleIndex*/, profiles);
-  const { type: conditionType } = useCondition(condition);
-  const [configureVisible, setConfigureVisible] = React.useState(false);
+  const profile = useEditableProfile(profileUuid);
+  const [configureRule, setConfigureRule] = React.useState<Profiles.Rule>();
   const { roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
 
@@ -267,8 +265,8 @@ function EditRollRulesPage({
       <View style={{ height: "100%", gap: 10 }}>
         <PageHeader
           mode="arrow-left"
-          title={getConditionTypeLabel(conditionType)}
-          onGoBack={() => navigation.goBack()}
+          title={getConditionTypeLabel("rolled")}
+          onGoBack={onGoBack}
         />
         <View
           style={{
@@ -324,18 +322,32 @@ function EditRollRulesPage({
           }
           scrollEventThrottle={100}
         >
-          <EditAnimations onPress={() => setConfigureVisible(true)} />
-          <EditSounds />
-          <EditSpeak />
-          <EditWebRequests />
+          <EditAnimations
+            profile={profile}
+            onConfigureRule={setConfigureRule}
+          />
+          <EditSounds profile={profile} />
+          <EditSpeak profile={profile} />
+          <EditWebRequests profile={profile} />
         </GHScrollView>
       </View>
-      <FloatingAddButton onPress={() => {}} />
+      <FloatingAddButton
+        onPress={() => {
+          switch (index) {
+            case 0:
+              runInAction(() =>
+                profile.rules.push(
+                  new Profiles.Rule(new Profiles.ConditionRolled())
+                )
+              );
+              break;
+          }
+        }}
+      />
       <ConfigureAnimationModal
-        conditionType="rolled"
-        actionType="playAnimation"
-        visible={configureVisible}
-        onDismiss={() => setConfigureVisible(false)}
+        conditionType={configureRule?.condition?.type}
+        action={configureRule?.actions[0]}
+        onDismiss={() => setConfigureRule(undefined)}
       />
     </>
   );
@@ -349,7 +361,10 @@ export function EditRollRuleScreen({
 }: EditRollRulesScreenProps) {
   return (
     <AppBackground>
-      <EditRollRulesPage profileUuid={profileUuid} navigation={navigation} />
+      <EditRolledRulesPage
+        profileUuid={profileUuid}
+        onGoBack={() => navigation.goBack()}
+      />
     </AppBackground>
   );
 }

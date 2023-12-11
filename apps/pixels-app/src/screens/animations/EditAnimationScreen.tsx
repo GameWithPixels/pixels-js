@@ -1,9 +1,17 @@
 import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { runInAction } from "mobx";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ScrollView } from "react-native";
-import { Switch, Text, TextInput, useTheme } from "react-native-paper";
+import {
+  MD3Theme,
+  Switch,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
@@ -15,11 +23,45 @@ import {
   OutlineButton,
 } from "~/components/buttons";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useAnimation, useAnimations, useConfirmActionSheet } from "~/hooks";
+import { useConfirmActionSheet, useEditableAnimation } from "~/hooks";
 import {
   AnimationsStackParamList,
   EditAnimationScreenProps,
 } from "~/navigation";
+
+const Header = observer(function ({
+  animation,
+  onGoBack,
+}: {
+  animation: Readonly<Profiles.Animation>;
+  onGoBack: () => void;
+}) {
+  return (
+    <PageHeader
+      mode="chevron-down"
+      title={animation.name}
+      onGoBack={onGoBack}
+    />
+  );
+});
+
+const EditAnimationName = observer(function ({
+  animation,
+  colors,
+}: {
+  animation: Profiles.Animation;
+  colors: MD3Theme["colors"];
+}) {
+  return (
+    <TextInput
+      mode="outlined"
+      dense
+      style={{ backgroundColor: colors.elevation.level0 }}
+      value={animation.name}
+      onChangeText={(t) => runInAction(() => (animation.name = t))}
+    />
+  );
+});
 
 function EditAnimationPage({
   animationUuid,
@@ -28,27 +70,23 @@ function EditAnimationPage({
   animationUuid: string;
   navigation: StackNavigationProp<AnimationsStackParamList>;
 }) {
-  const { animations, removeAnimation } = useAnimations();
-  const { name } = useAnimation(animationUuid, animations);
+  const animation = useEditableAnimation(animationUuid);
   const showConfirmDelete = useConfirmActionSheet("Delete", () => {
-    removeAnimation(animationUuid);
+    //removeAnimation(animationUuid);
     navigation.popToTop();
   });
+  const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
   const [duration, setDuration] = React.useState(1);
   const [repeatCount, setRepeatCount] = React.useState(1);
   const [colorOverride, setColorOverride] = React.useState(false);
-  const [colorDesign, setColorDesign] = React.useState<Profiles.Pattern>();
+  const [pattern, setPattern] = React.useState<Readonly<Profiles.Pattern>>();
   const [travelingOrder, setTravelingOrder] = React.useState(false);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <AppBackground>
       <View style={{ flex: 1 }}>
-        <PageHeader
-          mode="chevron-down"
-          title={name}
-          onGoBack={() => navigation.goBack()}
-        />
+        <Header animation={animation} onGoBack={goBack} />
         <ScrollView
           contentContainerStyle={{
             gap: 10,
@@ -65,13 +103,8 @@ function EditAnimationPage({
           >
             Preview on die
           </GradientButton>
-          <Text>Profile Name</Text>
-          <TextInput
-            mode="outlined"
-            dense
-            style={{ backgroundColor: colors.elevation.level0 }}
-            value={name}
-          />
+          <Text>Animation Name</Text>
+          <EditAnimationName animation={animation} colors={colors} />
           <SliderWithTitle
             title="Duration"
             unit=" s"
@@ -114,15 +147,15 @@ function EditAnimationPage({
             style={{ backgroundColor: "transparent" }}
             onPress={() =>
               navigation.navigate("pickColorDesign", {
-                colorDesign,
-                onSelectDesign: (c) => {
-                  setColorDesign(c);
+                pattern,
+                onSelectPattern: (c) => {
+                  setPattern(c);
                   navigation.goBack();
                 },
               })
             }
           >
-            {colorDesign ? colorDesign.name : "Select Color Design"}
+            {pattern ? pattern.name : "Select Color Design"}
           </MenuButton>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <Switch

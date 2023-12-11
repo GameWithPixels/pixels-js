@@ -1,53 +1,105 @@
 import { StackNavigationProp } from "@react-navigation/stack";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { IconButton } from "react-native-paper";
+import { Button } from "react-native-paper";
 
 import { EditProfile } from "./components/EditProfile";
+import { RuleIndex } from "./components/RuleCard";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { getFavoriteIcon } from "~/components/icons";
-import { useProfile, useProfiles } from "~/hooks";
+import {
+  discardEditableProfile,
+  useCommitEditableProfile,
+  useConfirmActionSheet,
+  useEditableProfile,
+  useEditProfilesList,
+} from "~/hooks";
 import { EditProfileScreenProps, ProfilesStackParamList } from "~/navigation";
 
+const Header = observer(function ({
+  profile,
+  commitChanges,
+  discardChanges,
+}: {
+  profile: Profiles.Profile;
+  commitChanges: () => void;
+  discardChanges: () => void;
+}) {
+  return (
+    <PageHeader
+      mode="chevron-down"
+      title={profile.name}
+      leftElement={() => <Button onPress={commitChanges}>Save</Button>}
+      rightElement={() => (
+        // <IconButton
+        //   icon={getFavoriteIcon(profile.favorite)}
+        //   size={20}
+        //   onPress={() => {}}
+        // />
+        <Button onPress={discardChanges}>Discard</Button>
+      )}
+    />
+  );
+});
+
 function EditProfilePage({
-  navigation,
   profileUuid,
+  navigation,
 }: {
   profileUuid: string;
   navigation: StackNavigationProp<ProfilesStackParamList>;
 }) {
-  const { profiles, removeProfile } = useProfiles();
-  const { name, favorite } = useProfile(profileUuid, profiles);
+  const profile = useEditableProfile(profileUuid);
+  const { removeProfile } = useEditProfilesList();
+  const commitProfile = useCommitEditableProfile();
   const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
-  const deleteProfile = React.useCallback(() => {
+  const commitChanges = React.useCallback(() => {
+    commitProfile(profileUuid);
+    goBack();
+  }, [commitProfile, goBack, profileUuid]);
+  const showConfirmDiscard = useConfirmActionSheet("Discard changes", () => {
+    discardEditableProfile(profileUuid);
+    goBack();
+  });
+  const editRule = React.useCallback(
+    (ruleIndex: RuleIndex) => {
+      if (ruleIndex.conditionType === "rolled") {
+        navigation.navigate("editRollRules", ruleIndex);
+      } else {
+        navigation.navigate("editRule", ruleIndex);
+      }
+    },
+    [navigation]
+  );
+  const editAdvancedRules = React.useCallback(
+    () => navigation.navigate("editAdvancedRules", { profileUuid }),
+    [navigation, profileUuid]
+  );
+  const showConfirmDelete = useConfirmActionSheet("Delete", () => {
     removeProfile(profileUuid);
     goBack();
-  }, [goBack, profileUuid, removeProfile]);
+  });
   return (
     <View style={{ height: "100%" }}>
-      <PageHeader
-        mode="chevron-down"
-        title={name}
-        onGoBack={goBack}
-        rightElement={() => (
-          <IconButton
-            icon={getFavoriteIcon(favorite)}
-            size={20}
-            onPress={() => {}}
-          />
-        )}
+      <Header
+        profile={profile}
+        commitChanges={commitChanges}
+        discardChanges={() => showConfirmDiscard()}
       />
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingBottom: 10 }}
       >
         <EditProfile
-          profileUuid={profileUuid}
           showActionButtons
-          onDelete={deleteProfile}
+          profileUuid={profileUuid}
+          onEditRule={editRule}
+          onEditAdvancedRules={editAdvancedRules}
+          onDelete={() => showConfirmDelete()}
         />
       </GHScrollView>
     </View>
