@@ -18,9 +18,13 @@ export default class EditActionSpeakText extends EditActionRunOnDevice {
   @observable
   text: string;
 
-  constructor(opt?: { text?: string }) {
+  @observable
+  volume: number;
+
+  constructor(opt?: { text?: string; volume?: number }) {
     super();
     this.text = opt?.text ?? "";
+    this.volume = opt?.volume ?? 100;
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {

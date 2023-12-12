@@ -8,6 +8,7 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAction from "./EditAction";
 import EditAnimation from "./EditAnimation";
+import EditColor from "./EditColor";
 import EditDataSet from "./EditDataSet";
 import { name, observable, range, widget } from "./decorators";
 
@@ -30,15 +31,35 @@ export default class EditActionPlayAnimation extends EditAction {
   @observable
   loopCount: number;
 
+  @observable
+  duration?: number;
+
+  @observable
+  fade?: number;
+
+  @observable
+  intensity?: number;
+
+  @observable
+  color?: EditColor;
+
   constructor(opt?: {
     animation?: EditAnimation;
     face?: number;
     loopCount?: number;
+    duration?: number;
+    fade?: number;
+    intensity?: number;
+    color?: EditColor;
   }) {
     super();
     this.animation = opt?.animation;
     this.face = opt?.face ?? Constants.currentFaceIndex;
     this.loopCount = opt?.loopCount ?? 1;
+    this.duration = opt?.duration;
+    this.fade = opt?.fade;
+    this.intensity = opt?.intensity;
+    this.color = opt?.color;
   }
 
   toAction(editSet: EditDataSet, _set: DataSet, _actionId: number): Action {

@@ -19,9 +19,21 @@ export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
   @observable
   clip?: EditAudioClip;
 
-  constructor(opt?: { clip?: EditAudioClip }) {
+  @observable
+  volume: number;
+
+  @observable
+  loopCount: number;
+
+  constructor(opt?: {
+    clip?: EditAudioClip;
+    volume?: number;
+    loopCount?: number;
+  }) {
     super();
     this.clip = opt?.clip;
+    this.volume = opt?.volume ?? 100;
+    this.loopCount = opt?.loopCount ?? 1;
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {
