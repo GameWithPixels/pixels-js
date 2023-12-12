@@ -228,7 +228,7 @@ export function ProfileCard({
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dieViewCornersStyle = {
     borderTopLeftRadius: squaredTopBorder ? 0 : borderRadius,
-    borderTopRightRadius: row || squaredTopBorder ? 0 : borderRadius,
+    borderTopRightRadius: row ?? squaredTopBorder ? 0 : borderRadius,
     borderBottomLeftRadius: !row || squaredBottomBorder ? 0 : borderRadius,
   };
   const textStyle = getTextColorStyle(colors, disabled);
@@ -291,9 +291,9 @@ export function ProfileCard({
                 justifyContent: "center",
                 // Borders (having issues on iOS with those borders applied on the LinearGradient)
                 borderWidth: noBorder ? 0 : 1,
-                borderRightWidth: noBorder || row ? 0 : 1,
-                borderTopWidth: noBorder || noTopBorder ? 0 : undefined,
-                borderBottomWidth: noBorder || noBottomBorder ? 0 : undefined,
+                borderRightWidth: noBorder ?? row ? 0 : 1,
+                borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
+                borderBottomWidth: noBorder ?? noBottomBorder ? 0 : undefined,
                 borderColor: getBorderColor(colors, selected),
                 // Corners
                 ...dieViewCornersStyle,
@@ -326,13 +326,13 @@ export function ProfileCard({
             paddingTop: row ? 5 : 0,
             // Borders
             borderWidth: noBorder ? 0 : 1,
-            borderLeftWidth: noBorder || row ? 0 : 1,
-            borderTopWidth: noBorder || noTopBorder || !row ? 0 : 1,
+            borderLeftWidth: noBorder ?? row ? 0 : 1,
+            borderTopWidth: noBorder ?? noTopBorder ?? !row ? 0 : 1,
             borderColor: getBorderColor(colors, selected),
             // Corners
             borderTopRightRadius: !row || squaredTopBorder ? 0 : borderRadius,
             borderBottomLeftRadius:
-              row || squaredBottomBorder ? 0 : borderRadius,
+              row ?? squaredBottomBorder ? 0 : borderRadius,
             borderBottomRightRadius: squaredBottomBorder ? 0 : borderRadius,
           }}
         >
@@ -450,7 +450,7 @@ export function ProfilesList({
               profile={p}
               selected={p === selected}
               transferring={p === transferring}
-              dieType="d20"
+              dieType={p.dieType}
               fadeInDelay={i * 50}
               itemIndex={i}
               expandItemIndex={expandableItems ? expandedIndex : undefined}
@@ -470,7 +470,7 @@ export function ProfilesList({
             profile={p}
             selected={p === selected}
             transferring={p === transferring}
-            dieType="d20"
+            dieType={p.dieType}
             fadeInDelay={(favorites.length + i) * 50}
             itemIndex={favorites.length + i}
             expandItemIndex={expandableItems ? expandedIndex : undefined}
@@ -488,7 +488,7 @@ export function ProfilesList({
             profile={p}
             selected={p === selected}
             transferring={p === transferring}
-            dieType="d20"
+            dieType={p.dieType}
             fadeInDelay={(favorites.length + 5 + i) * 50}
             itemIndex={favorites.length + 5 + i}
             expandItemIndex={expandableItems ? expandedIndex : undefined}
@@ -516,7 +516,7 @@ function ProfilesColumn({
           profile={p}
           selected={p === selected}
           transferring={p === transferring}
-          dieType="d20"
+          dieType={p.dieType}
           fadeInDuration={500}
           fadeInDelay={i * 100}
           contentStyle={{ height: 200 }}

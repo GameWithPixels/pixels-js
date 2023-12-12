@@ -238,6 +238,7 @@ class SceneRenderer {
       case "d8":
         return 0.88;
       case "d10":
+      case "d00":
         return 0.95;
       case "d12":
         return 0.75;

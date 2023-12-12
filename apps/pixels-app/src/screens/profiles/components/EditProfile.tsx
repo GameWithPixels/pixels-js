@@ -40,6 +40,24 @@ const EditProfileName = observer(function ({
   );
 });
 
+const EditProfileDescription = observer(function ({
+  profile,
+  colors,
+}: {
+  profile: Profiles.Profile;
+  colors: MD3Theme["colors"];
+}) {
+  return (
+    <TextInput
+      mode="outlined"
+      multiline
+      style={{ backgroundColor: colors.elevation.level0 }}
+      value={profile.description}
+      onChangeText={(t) => runInAction(() => (profile.description = t))}
+    />
+  );
+});
+
 function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   const diceNames = useAppSelector((state) => state.pairedDice.diceData)
     .filter((d) => d.profileUuid === profileUuid)
@@ -144,7 +162,7 @@ export function EditProfile({
       {...props}
     >
       <View style={{ width: "50%", aspectRatio: 1, alignSelf: "center" }}>
-        <DieRenderer dieType="d20" colorway="onyxBlack" />
+        <DieRenderer dieType={profile.dieType} colorway="onyxBlack" />
       </View>
       {showActionButtons && (
         <View
@@ -183,6 +201,7 @@ export function EditProfile({
             key={ct}
             profileUuid={profileUuid}
             conditionType={ct}
+            flagName={ct === "rolled" ? "equal" : undefined}
             onPress={() => onEditRule({ profileUuid, conditionType: ct })}
           >
             {getConditionTypeLabel(ct)}
@@ -199,12 +218,7 @@ export function EditProfile({
           </>
         )}
         <SectionTitle>Description</SectionTitle>
-        <TextInput
-          mode="outlined"
-          multiline
-          style={{ backgroundColor: colors.elevation.level0 }}
-          value={profile.description}
-        />
+        <EditProfileDescription profile={profile} colors={colors} />
         <RulesSection
           profileUuid={profileUuid}
           onEditRule={onEditRule}

@@ -1,20 +1,27 @@
+import {
+  DiceUtils,
+  PixelDieType,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 
 import { DieFaceButton } from "./buttons";
 
 export function FacesGrid({
-  faces,
+  dieType,
   selected,
+  unavailable,
   onToggleFace,
   style,
   ...props
 }: {
-  faces: number[];
-  numColumns?: number;
+  dieType: PixelDieType;
   selected?: number[];
+  unavailable?: number[];
+  numColumns?: number;
   onToggleFace?: (face: number) => void;
 } & ViewProps) {
+  const faces = React.useMemo(() => DiceUtils.getDieFaces(dieType), [dieType]);
   return (
     <View
       style={[
@@ -33,7 +40,7 @@ export function FacesGrid({
           <DieFaceButton
             face={f}
             selected={selected?.includes(f)}
-            inUse={f % 4 === 0}
+            disabled={unavailable?.includes(f)}
             onPress={() => onToggleFace?.(f)}
           />
         </View>

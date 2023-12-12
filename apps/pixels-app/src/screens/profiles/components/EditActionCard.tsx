@@ -1,8 +1,9 @@
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
+import { observer } from "mobx-react-lite";
 import React from "react";
-import { View, ViewProps, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { useTheme, Switch } from "react-native-paper";
 import Animated, {
   CurvedTransition,
@@ -15,8 +16,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { ActionDetails } from "./ActionDetails";
-import { ConfigureAnimationModal } from "./ConfigureAnimationModal";
+import { ActionDetailsCard } from "./ActionDetails";
+import { ConfigureActionModal } from "./ConfigureActionModal";
 import { RuleIndex } from "./RuleCard";
 
 import { TouchableCard } from "~/components/TouchableCard";
@@ -24,72 +25,13 @@ import { ActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { getActionTypeLabel } from "~/descriptions";
 import { makeObservable } from "~/features/makeObservable";
-import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useEditableProfile } from "~/hooks";
 import { withAnimated } from "~/withAnimated";
 
-function EditActionContents({
-  action,
-  style,
-  ...props
-}: {
-  conditionType: Profiles.ConditionType;
-  action: Profiles.Action;
-} & ViewProps) {
-  const actionType = action.type;
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
-  return (
-    <View
-      style={[
-        {
-          ...styles.bottomView,
-          borderRadius,
-          borderColor: colors.outline,
-          gap: 10,
-          pointerEvents: "none",
-        },
-        style,
-      ]}
-      {...props}
-    >
-      {actionType === "playAnimation" ? (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            marginVertical: 5,
-          }}
-        >
-          <View
-            style={{
-              flexGrow: 1,
-              justifyContent: "space-between",
-              gap: 5,
-            }}
-          >
-            <ActionDetails action={action} noActionIcon />
-          </View>
-          <View style={{ width: 60, aspectRatio: 1 }}>
-            <DieRenderer dieType="d20" colorway="midnightGalaxy" />
-          </View>
-        </View>
-      ) : (
-        <ActionDetails
-          action={action}
-          noActionIcon
-          style={{ marginVertical: 10 }}
-        />
-      )}
-    </View>
-  );
-}
-
 const AnimatedActionTypeIcon = withAnimated(ActionTypeIcon);
-const AnimatedEditActionContents = withAnimated(EditActionContents);
+const AnimatedActionDetailsCard = withAnimated(ActionDetailsCard);
 
-export function EditActionCard({
+export const EditActionCard = observer(function ({
   profileUuid,
   conditionType,
   flagName,
@@ -110,8 +52,8 @@ export function EditActionCard({
   const condition = React.useMemo(
     () =>
       getRule()?.condition ??
-      makeObservable(Profiles.createCondition(conditionType)),
-    [conditionType, getRule]
+      makeObservable(Profiles.createCondition(conditionType, flagName as any)),
+    [conditionType, flagName, getRule]
   );
   const action = React.useMemo(
     () =>
@@ -127,7 +69,8 @@ export function EditActionCard({
     withTiming(svShowContent.value ? 1 : 0, { duration: 300 })
   );
   const [configureVisible, setConfigureVisible] = React.useState(false);
-  const { colors } = useTheme();
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness, { tight: true });
   const animColorStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
       svProgress.value,
@@ -202,16 +145,23 @@ export function EditActionCard({
           />
         </TouchableCard>
         {hasContent && (
-          <AnimatedEditActionContents
-            conditionType={conditionType}
+          <AnimatedActionDetailsCard
             action={action}
+            dieType={profile.dieType}
             entering={FadeIn.duration(300).delay(100)}
             exiting={FadeOut.duration(300)}
+            style={{
+              ...styles.bottomView,
+              borderRadius,
+              borderColor: colors.outline,
+              gap: 10,
+              pointerEvents: "none",
+            }}
           />
         )}
       </Animated.View>
-      <ConfigureAnimationModal
-        dieType="d20"
+      <ConfigureActionModal
+        dieType={profile.dieType}
         condition={condition}
         action={action}
         visible={configureVisible}
@@ -219,7 +169,7 @@ export function EditActionCard({
       />
     </>
   );
-}
+});
 
 const styles = StyleSheet.create({
   bottomView: {

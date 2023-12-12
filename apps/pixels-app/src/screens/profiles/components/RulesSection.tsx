@@ -26,9 +26,9 @@ export function RulesSection({
   return (
     <SlideInView style={{ gap: 10 }}>
       <SectionTitle>{getConditionTypeLabel(conditionType)}</SectionTitle>
-      {flags.map((flagName) => (
+      {flags.map((flagName, i) => (
         <RuleCard
-          key={flagName}
+          key={flagName + i} // In case we have multiple of actions of same type
           profileUuid={profileUuid}
           conditionType={conditionType}
           flagName={flagName}

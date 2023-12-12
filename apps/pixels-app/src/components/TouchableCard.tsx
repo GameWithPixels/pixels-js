@@ -9,19 +9,24 @@ import {
 
 import { getBorderColor, makeTransparent } from "./utils";
 
-export type TouchableCardProps = TouchableRippleProps & {
-  row?: boolean;
-  selected?: boolean;
-  squaredTopBorder?: boolean;
-  squaredBottomBorder?: boolean;
-  noBorder?: boolean;
-  noTopBorder?: boolean;
-  noBottomBorder?: boolean;
-  frameless?: boolean;
-  gradientBorder?: boolean;
-  transparent?: boolean;
-  contentStyle?: StyleProp<ViewStyle>;
-};
+export type TouchableCardProps = Omit<
+  TouchableRippleProps,
+  "children" | "style"
+> &
+  React.PropsWithChildren<{
+    row?: boolean;
+    selected?: boolean;
+    squaredTopBorder?: boolean;
+    squaredBottomBorder?: boolean;
+    noBorder?: boolean;
+    noTopBorder?: boolean;
+    noBottomBorder?: boolean;
+    frameless?: boolean;
+    gradientBorder?: boolean;
+    transparent?: boolean;
+    style?: StyleProp<ViewStyle>;
+    contentStyle?: StyleProp<ViewStyle>;
+  }>;
 
 export function TouchableCard({
   row,

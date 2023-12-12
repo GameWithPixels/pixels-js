@@ -110,7 +110,7 @@ function updateCondition(
         const cond = condition as Profiles.ConditionRolled;
         const data = conditionSetData[type][index];
         cond.flags = combineFlags(
-          keysToValues(data.flags, Profiles.FaceCompareFlagsValues)
+          keysToValues(data.flags, Profiles.RolledFlagsValues)
         );
         cond.face = data.face;
       }

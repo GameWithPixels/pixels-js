@@ -107,7 +107,7 @@ function EditAnimationPage({
           <EditAnimationName animation={animation} colors={colors} />
           <SliderWithTitle
             title="Duration"
-            unit=" s"
+            unit="s"
             fractionDigits={1}
             value={duration}
             minimumValue={1}

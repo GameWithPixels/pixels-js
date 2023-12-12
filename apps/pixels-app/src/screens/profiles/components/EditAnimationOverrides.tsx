@@ -114,13 +114,15 @@ export function EditAnimationOverrides({
                 size={24}
                 color={makeTransparent(colors.onBackground, 0.5)}
                 onPress={() =>
-                  showConfirmRemove(
-                    `Remove ${getAnimationOverrideUserName(name)} Override`,
-                    () => {
+                  showConfirmRemove({
+                    actionName: `Remove ${getAnimationOverrideUserName(
+                      name
+                    )} Override`,
+                    onConfirm: () => {
                       const { [name]: _, ...copy } = overrides;
                       return copy;
-                    }
-                  )
+                    },
+                  })
                 }
               />
             </View>

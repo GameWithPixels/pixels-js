@@ -88,7 +88,7 @@ function EditProfilePage({
       <Header
         profile={profile}
         commitChanges={commitChanges}
-        discardChanges={() => showConfirmDiscard()}
+        discardChanges={showConfirmDiscard}
       />
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -99,7 +99,7 @@ function EditProfilePage({
           profileUuid={profileUuid}
           onEditRule={editRule}
           onEditAdvancedRules={editAdvancedRules}
-          onDelete={() => showConfirmDelete()}
+          onDelete={showConfirmDelete}
         />
       </GHScrollView>
     </View>

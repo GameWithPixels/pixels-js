@@ -3,7 +3,14 @@ import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { Pressable, StyleSheet, View, ViewProps } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewProps,
+  ViewStyle,
+} from "react-native";
 import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, {
   CurvedTransition,
@@ -18,6 +25,7 @@ import { ActionDetails } from "./ActionDetails";
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { TouchableCardProps, TouchableCard } from "~/components/TouchableCard";
 import { useEditableProfile } from "~/hooks";
+import { useRolledConditionFaces } from "~/hooks/useRolledConditionFaces";
 import { AppStyles } from "~/styles";
 
 export interface RuleIndex {
@@ -26,7 +34,7 @@ export interface RuleIndex {
   flagName?: string;
 }
 
-const RuleDetails = observer(function ({
+const RuleSummary = observer(function ({
   rule,
   ...props
 }: {
@@ -49,7 +57,29 @@ const RuleDetails = observer(function ({
   );
 });
 
-const RolledRulesDetails = observer(function ({
+const RolledActionDetails = observer(function ({
+  rule,
+}: {
+  rule: Profiles.Rule;
+}) {
+  const condition = rule.condition as Profiles.ConditionRolled;
+  const faces = useRolledConditionFaces(condition);
+  return (
+    <View>
+      {faces.length && (
+        <Text style={styles.rolledFacesStyle} variant="bodyMedium">
+          {faces === "all" ? "On other faces" : `On faces ${faces.join(", ")}`}
+        </Text>
+      )}
+      <RuleSummary
+        rule={rule}
+        style={rule ? styles.rolledRuleGroupStyle : styles.ruleGroupStyle}
+      />
+    </View>
+  );
+});
+
+const RolledRulesSummary = observer(function ({
   rules,
   colors,
   ...props
@@ -82,55 +112,45 @@ const RolledRulesDetails = observer(function ({
         onPress={canExpand ? toggleExpand : undefined}
         style={styles.gap5}
       >
-        <RolledActionDetails rule={rules[0]} />
-        {rules[1] && <RolledActionDetails rule={rules[1]} />}
-        {expandedToggle && (
-          <Animated.View entering={FadeIn.duration(300)}>
-            {rules.slice(2).map((rule, i) => (
-              <RolledActionDetails key={i} rule={rule} />
-            ))}
-          </Animated.View>
-        )}
-        {canExpand && (
+        {rules.length ? (
           <>
-            <Text
-              variant="labelSmall"
-              style={{ marginTop: 5, color: colors.onSurfaceDisabled }}
-            >
-              Tap to see {expandedToggle ? "less" : "more"}
-            </Text>
-            <Animated.View style={[styles.bottomRightIcon, animChevronStyle]}>
-              <MaterialCommunityIcons
-                name="chevron-down"
-                size={24}
-                color={colors.onSurface}
-              />
-            </Animated.View>
+            <RolledActionDetails rule={rules[0]} />
+            {rules[1] && <RolledActionDetails rule={rules[1]} />}
+            {expandedToggle && (
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                style={styles.gap5}
+              >
+                {rules.slice(2).map((rule, i) => (
+                  <RolledActionDetails key={i} rule={rule} />
+                ))}
+              </Animated.View>
+            )}
+            {canExpand && (
+              <>
+                <Text
+                  variant="labelSmall"
+                  style={{ marginTop: 5, color: colors.onSurfaceDisabled }}
+                >
+                  Tap to see {expandedToggle ? "less" : "more"}
+                </Text>
+                <Animated.View
+                  style={[styles.bottomRightIcon, animChevronStyle]}
+                >
+                  <MaterialCommunityIcons
+                    name="chevron-down"
+                    size={24}
+                    color={colors.onSurface}
+                  />
+                </Animated.View>
+              </>
+            )}
           </>
+        ) : (
+          <Text style={AppStyles.greyedOut}>No action</Text>
         )}
       </Pressable>
     </Animated.View>
-  );
-});
-
-const RolledActionDetails = observer(function ({
-  rule,
-}: {
-  rule?: Profiles.Rule;
-  // colors: MD3Theme["colors"];
-}) {
-  return (
-    <View>
-      {rule && (
-        <Text style={styles.rolledFacesStyle} variant="bodyMedium">
-          On face {(rule.condition as Profiles.ConditionRolled).face}
-        </Text>
-      )}
-      <RuleDetails
-        rule={rule}
-        style={rule ? styles.rolledRuleGroupStyle : styles.ruleGroupStyle}
-      />
-    </View>
   );
 });
 
@@ -141,15 +161,14 @@ export const RuleCard = observer(function ({
   flagName,
   style,
   ...props
-}: RuleIndex & TouchableCardProps) {
+}: RuleIndex &
+  Omit<TouchableCardProps, "style" | "children"> &
+  React.PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
   const profile = useEditableProfile(profileUuid);
   const rules = profile.rules.filter(
     (r) =>
       r.condition.type === conditionType && r.condition.flagName === flagName
   );
-  if (conditionType === "rolling") {
-  }
-  console.log(conditionType + " => rules = " + rules.length);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const bottomViewStyle = {
@@ -185,13 +204,13 @@ export const RuleCard = observer(function ({
         </TouchableCard>
       </Animated.View>
       {conditionType === "rolled" ? (
-        <RolledRulesDetails
+        <RolledRulesSummary
           rules={rules}
           style={bottomViewStyle}
           colors={colors}
         />
       ) : (
-        <RuleDetails rule={rules[0]} style={bottomViewStyle} />
+        <RuleSummary rule={rules[0]} style={bottomViewStyle} />
       )}
     </>
   );

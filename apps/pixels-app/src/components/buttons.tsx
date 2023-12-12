@@ -57,10 +57,10 @@ export function LargeIconButton({
             color: props.disabled
               ? colors.surfaceDisabled
               : props.mode === "contained"
-              ? colors.onPrimary
-              : props.mode === "contained-tonal"
-              ? colors.onSecondaryContainer
-              : colors.onSurface,
+                ? colors.onPrimary
+                : props.mode === "contained-tonal"
+                  ? colors.onSecondaryContainer
+                  : colors.onSurface,
           })}
         </View>
       )}
@@ -167,8 +167,8 @@ export function StatsViewModeButton({
     viewMode === "list"
       ? ListIcon
       : viewMode === "grid"
-      ? GridIcon
-      : ChartColumnIcon;
+        ? GridIcon
+        : ChartColumnIcon;
   const { colors } = useTheme();
   return (
     <TouchableRipple
@@ -216,7 +216,8 @@ export function TabButton({
   title: string;
   icon: React.FC<{ color: string }>;
   selected?: boolean;
-} & Omit<TouchableRippleProps, "children">) {
+  style?: StyleProp<ViewStyle>;
+} & Omit<TouchableRippleProps, "children" | "style">) {
   const { colors } = useTheme();
   const color = selected ? colors.primary : colors.onSurface;
   const borderBottomWidth = selected ? 2 : StyleSheet.hairlineWidth;
@@ -325,8 +326,9 @@ export function DieFaceButton({
   face: number;
   selected?: boolean;
   inUse?: boolean;
+  style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
-} & Omit<TouchableRippleProps, "children">) {
+} & Omit<TouchableRippleProps, "children" | "style">) {
   const { colors, roundness } = useTheme();
   const textColor =
     props.disabled ?? inUse ? colors.onSurfaceDisabled : colors.onSurface;
@@ -339,8 +341,8 @@ export function DieFaceButton({
         selected
           ? [colors.primary, colors.secondary]
           : props.disabled
-          ? [colors.surfaceDisabled, colors.surfaceDisabled]
-          : [colors.surface, colors.surface]
+            ? [colors.surfaceDisabled, colors.surfaceDisabled]
+            : [colors.surface, colors.surface]
       }
       style={[
         {
@@ -388,11 +390,13 @@ export function GradientButton({
   contentStyle,
   labelStyle,
   ...props
-}: {
+}: React.PropsWithChildren<{
   outline?: boolean;
+  style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-} & TouchableRippleProps) {
+}> &
+  Omit<TouchableRippleProps, "children" | "style">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
   return (
@@ -403,8 +407,8 @@ export function GradientButton({
         disabled
           ? [colors.surfaceDisabled, colors.surfaceDisabled]
           : outline
-          ? [colors.surface, colors.surface]
-          : [colors.primary, colors.secondary]
+            ? [colors.surface, colors.surface]
+            : [colors.primary, colors.secondary]
       }
       style={[
         {
@@ -432,8 +436,8 @@ export function GradientButton({
               color: disabled
                 ? colors.onSurfaceDisabled
                 : outline
-                ? colors.onSurface
-                : colors.onPrimary,
+                  ? colors.onSurface
+                  : colors.onPrimary,
             },
             labelStyle,
           ]}
@@ -455,9 +459,10 @@ export function GradientIconButton({
   {
     icon: (props: { size: number; color: string }) => React.ReactNode;
     outline?: boolean;
+    style?: StyleProp<ViewStyle>;
     contentStyle?: StyleProp<ViewStyle>;
     labelStyle?: StyleProp<TextStyle>;
-  } & Omit<TouchableRippleProps, "children">
+  } & Omit<TouchableRippleProps, "children" | "style">
 >) {
   const { colors, roundness, isV3 } = useTheme();
   const borderRadius = getBorderRadius(roundness);
@@ -471,8 +476,8 @@ export function GradientIconButton({
         disabled
           ? [colors.surfaceDisabled, colors.surfaceDisabled]
           : outline
-          ? [colors.surface, colors.surface]
-          : [colors.primary, colors.secondary]
+            ? [colors.surface, colors.surface]
+            : [colors.primary, colors.secondary]
       }
       style={[
         {
@@ -529,8 +534,9 @@ export function Chip({
 }: {
   disabled?: boolean;
   icon?: (props: IconProps) => React.ReactNode;
+  style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-} & React.PropsWithChildren<Omit<TouchableRippleProps, "children">>) {
+} & React.PropsWithChildren<Omit<TouchableRippleProps, "children" | "style">>) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
@@ -580,12 +586,14 @@ export function GradientChip({
   style,
   labelStyle,
   ...props
-}: {
+}: React.PropsWithChildren<{
   disabled?: boolean;
   outline?: boolean;
   icon?: (props: IconProps) => React.ReactNode;
+  style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-} & TouchableRippleProps) {
+}> &
+  Omit<TouchableRippleProps, "children" | "style">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
@@ -596,8 +604,8 @@ export function GradientChip({
         disabled
           ? [colors.surfaceDisabled, colors.surfaceDisabled]
           : outline
-          ? [colors.surface, colors.surface]
-          : [colors.primary, colors.secondary]
+            ? [colors.surface, colors.surface]
+            : [colors.primary, colors.secondary]
       }
       style={[{ borderRadius }, style]}
     >

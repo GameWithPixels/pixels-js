@@ -10,16 +10,16 @@ export function useConfirmActionSheet(
     cancelActionName?: string;
     onCancel?: () => void;
   }
-): (actionName?: string, onConfirm?: () => void) => void {
+): (overrides?: { actionName?: string; onConfirm?: () => void }) => void {
   const { showActionSheetWithOptions } = useActionSheet();
   const { colors } = useTheme();
-  return (actionNameOverride?: string, onConfirmOverride?: () => void) => {
+  return (overrides?: { actionName?: string; onConfirm?: () => void }) => {
     showActionSheetWithOptions(
       {
         title: opt?.title,
         message: opt?.message,
         options: [
-          actionNameOverride ?? actionName,
+          overrides?.actionName ?? actionName,
           opt?.cancelActionName ?? "Cancel",
         ],
         destructiveButtonIndex: 0,
@@ -33,7 +33,7 @@ export function useConfirmActionSheet(
       (selectedIndex?: number) => {
         switch (selectedIndex) {
           case 0:
-            (onConfirmOverride ?? onConfirm)?.();
+            (overrides?.onConfirm ?? onConfirm)?.();
             break;
           case 1:
             opt?.onCancel?.();

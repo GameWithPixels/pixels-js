@@ -55,7 +55,7 @@ function EditRulePage({
 
 export function EditRuleScreen({
   route: {
-    params: { profileUuid, conditionType },
+    params: { profileUuid, conditionType, flagName },
   },
   navigation,
 }: EditRuleScreenProps) {
@@ -64,6 +64,7 @@ export function EditRuleScreen({
       <EditRulePage
         profileUuid={profileUuid}
         conditionType={conditionType}
+        flagName={flagName}
         navigation={navigation}
       />
     </AppBackground>
