@@ -1,16 +1,14 @@
-export type {
-  ActionType,
-  ConditionType,
-} from "@systemic-games/pixels-edit-animation";
 export {
+  type ActionType,
   ActionTypeValues,
+  type ConditionType,
   ConditionTypeValues,
   ConnectionStateFlagsValues as ConnectionFlagsValues,
   type ConnectionStateFlags as ConnectionFlags,
   BatteryStateFlagsValues as BatteryFlagsValues,
   type BatteryStateFlags as BatteryFlags,
-  FaceCompareFlagsValues,
-  type FaceCompareFlags,
+  FaceCompareFlagsValues as RolledFlagsValues,
+  type FaceCompareFlags as RolledFlags,
   HelloGoodbyeFlagsValues,
   type HelloGoodbyeFlags,
   Editable,
