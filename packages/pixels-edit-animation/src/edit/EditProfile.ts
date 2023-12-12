@@ -1,6 +1,7 @@
 import {
   ActionType,
   DataSet,
+  PixelDieType,
   Profile,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
@@ -14,28 +15,33 @@ import { observable } from "./decorators";
 
 export default class EditProfile extends Editable {
   @observable
-  favorite: boolean; // TODO temp
+  description: string;
+
+  @observable
+  rules: EditRule[];
+
+  @observable
+  dieType: PixelDieType;
 
   @observable
   group: string; // TODO temp
 
   @observable
-  description: string;
-
-  @observable
-  rules: EditRule[];
+  favorite: boolean; // TODO temp
 
   constructor(opt?: {
     uuid?: string;
     name?: string;
     description?: string;
     rules?: EditRule[];
+    dieType?: PixelDieType;
     group?: string;
     favorite?: boolean;
   }) {
     super(opt);
     this.description = opt?.description ?? "";
     this.rules = opt?.rules ?? [];
+    this.dieType = opt?.dieType ?? "d20";
     this.group = opt?.group ?? "";
     this.favorite = opt?.favorite ?? false;
   }

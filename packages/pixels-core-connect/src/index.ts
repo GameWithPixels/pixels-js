@@ -9,3 +9,8 @@ export * from "./Pixel";
 export * from "./errors";
 export * from "./Messages";
 export * from "./DiceUtils";
+
+export {
+  type PixelDieType,
+  PixelDieTypeValues,
+} from "@systemic-games/pixels-core-animation";

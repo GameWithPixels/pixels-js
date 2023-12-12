@@ -1,6 +1,5 @@
+import { PixelDieType } from "@systemic-games/pixels-core-animation";
 import { assertNever, range } from "@systemic-games/pixels-core-utils";
-
-import { PixelDieType } from "./Messages";
 
 export const DiceUtils = {
   getLEDCount(dieType: PixelDieType): number {
