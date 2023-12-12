@@ -214,7 +214,11 @@ export function toProfile(
     });
     return new EditRule(condition, { actions });
   });
-  return new EditProfile({ ...data, rules });
+  return new EditProfile({
+    ...data,
+    rules,
+    creationDate: new Date(data.creationDate),
+  });
 }
 
 export function toAnimation<T extends keyof AnimationSetData>(
@@ -459,8 +463,10 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     uuid: profile.uuid,
     name: profile.name,
     description: profile.description,
-    group: "",
-    favorite: false,
+    dieType: profile.dieType,
+    group: profile.group,
+    favorite: profile.favorite,
+    creationDate: profile.creationDate.getTime(),
     conditions,
     actions,
     rules,

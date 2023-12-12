@@ -3,14 +3,17 @@ import {
   ConnectionStateFlags,
   FaceCompareFlags,
   HelloGoodbyeFlags,
+  PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 
 import { UniqueNamedData } from "./unique";
 
 export interface ProfileData extends UniqueNamedData {
   description: string;
+  dieType: PixelDieType;
   group: string;
   favorite: boolean;
+  creationDate: number;
   conditions: {
     helloGoodbye: {
       flags: HelloGoodbyeFlags[];

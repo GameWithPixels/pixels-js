@@ -6,7 +6,10 @@ import {
   EditRule,
 } from "./edit";
 
-function addAnimations(dataSet: EditDataSet, animations: EditAnimation[]) {
+function addAnimations(
+  dataSet: EditDataSet,
+  animations: Readonly<EditAnimation>[]
+) {
   // Add the single animation we need
   dataSet.animations.push(...animations);
 
@@ -48,7 +51,7 @@ export function createDataSetForAnimation(
 }
 
 export function createDataSetForAnimations(
-  animations: EditAnimation[]
+  animations: Readonly<EditAnimation>[]
 ): EditDataSet {
   // The EditDataSet that will only contain the given animation and its patterns
   const dataSet = new EditDataSet();
@@ -60,8 +63,8 @@ export function createDataSetForAnimations(
 }
 
 export function createDataSetForProfile(
-  profile: EditProfile,
-  defaultProfile?: EditProfile
+  profile: Readonly<EditProfile>,
+  defaultProfile?: Readonly<EditProfile>
 ): EditDataSet {
   // The EditDataSet that will only contain the animations and their patterns
   // for the given profile

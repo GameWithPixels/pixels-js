@@ -29,6 +29,9 @@ export default class EditProfile extends Editable {
   @observable
   favorite: boolean; // TODO temp
 
+  @observable
+  creationDate: Date; // TODO temp
+
   constructor(opt?: {
     uuid?: string;
     name?: string;
@@ -37,6 +40,7 @@ export default class EditProfile extends Editable {
     dieType?: PixelDieType;
     group?: string;
     favorite?: boolean;
+    creationDate?: Date;
   }) {
     super(opt);
     this.description = opt?.description ?? "";
@@ -44,6 +48,7 @@ export default class EditProfile extends Editable {
     this.dieType = opt?.dieType ?? "d20";
     this.group = opt?.group ?? "";
     this.favorite = opt?.favorite ?? false;
+    this.creationDate = opt?.creationDate ?? new Date();
   }
 
   getRemoteAction(actionId: number): EditActionRunOnDevice | undefined {
@@ -73,6 +78,7 @@ export default class EditProfile extends Editable {
       ...this,
       uuid,
       rules: this.rules.map((r) => r.duplicate()),
+      creationDate: new Date(),
     });
   }
 

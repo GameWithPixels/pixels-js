@@ -31,6 +31,8 @@ export default class EditActionPlayAnimation extends EditAction {
   @observable
   loopCount: number;
 
+  // TODO overrides
+
   @observable
   duration?: number;
 
