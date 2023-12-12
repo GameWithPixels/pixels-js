@@ -23,7 +23,11 @@ export default class EditConditionFaceCompare extends EditCondition {
   @range(1, 20)
   @name("Than")
   @observable
-  face: number; // Face value
+  face: number; // Legacy: face value, now a bitfield
+
+  get flagName(): string | undefined {
+    return this.getFlagName(this.flags, FaceCompareFlagsValues);
+  }
 
   constructor(opt?: { flags?: number; face?: number }) {
     super();
@@ -40,5 +44,23 @@ export default class EditConditionFaceCompare extends EditCondition {
 
   duplicate(): EditCondition {
     return new EditConditionFaceCompare(this);
+  }
+
+  getFaceList(): number[] | "all" {
+    if (this.face === -1) {
+      return "all";
+    } else {
+      let val = this.face | 0;
+      let i = 1;
+      const faces = [];
+      while (val) {
+        if (val & 1) {
+          faces.push(i);
+        }
+        val = val >> 1;
+        ++i;
+      }
+      return faces;
+    }
   }
 }
