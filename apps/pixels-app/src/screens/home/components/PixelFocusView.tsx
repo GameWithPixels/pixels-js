@@ -451,86 +451,9 @@ export function PixelFocusView({
           </Pressable>
         </View>
         <Text variant="titleMedium">Active Profile</Text>
-        {/* <Card
-          contentStyle={{
-            alignItems: "flex-start",
-            padding: 10,
-            gap: 10,
-          }}
-        >
-          <View style={{ flexDirection: "row", gap: 20 }}>
-            <View
-              style={{
-                gap: 10,
-                alignItems: "stretch",
-                justifyContent: "space-around",
-              }}
-            >
-              <GradientChip
-                icon={({ size, color }) => (
-                  <MaterialCommunityIcons
-                    name="book-edit-outline"
-                    size={size}
-                    color={color}
-                  />
-                )}
-                onPress={() =>
-                  navigation.navigate("editDieProfile", {
-                    pixelId: pixel.pixelId,
-                  })
-                }
-              >
-                Customize
-              </GradientChip>
-              <Chip
-                icon={({ size, color }) => (
-                  <MaterialCommunityIcons
-                    name="swap-horizontal"
-                    size={size}
-                    color={color}
-                  />
-                )}
-                onPress={() =>
-                  navigation.navigate("pickProfile", { pixelId: pixel.pixelId })
-                }
-              >
-                Switch
-              </Chip>
-            </View>
-            <View
-              style={{
-                flexShrink: 1,
-                justifyContent: "center",
-                gap: 10,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  variant="titleMedium"
-                  style={{ flexShrink: 1 }}
-                >
-                  {profile?.name ?? "No Profile!"}
-                </Text>
-                {transferring && (
-                  <ActivityIndicator style={{ marginLeft: 10 }} />
-                )}
-              </View>
-              {!!profile?.description?.length && (
-                <Text numberOfLines={2}>{profile?.description}</Text>
-              )}
-            </View>
-          </View>
-        </Card> */}
         <ProfileCard
           row
           profile={activeProfile}
-          dieType={pixel.dieType}
           transferring={transferring}
           footer={
             <View

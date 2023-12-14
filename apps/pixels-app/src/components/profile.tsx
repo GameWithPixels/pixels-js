@@ -1,10 +1,7 @@
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import {
-  PixelDieType,
-  Profiles,
-} from "@systemic-games/react-native-pixels-connect";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -68,22 +65,21 @@ const ProfileGroup = observer(function ({
   numberOfLines: number;
   textStyle: { color: string } | undefined;
 }) {
-  return profile.group.length ? (
+  return (
     <View
       style={{
         alignSelf: "flex-start",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center",
         gap: 10,
       }}
     >
       <MaterialIcons name="groups" size={24} color={iconColor} />
       <Text numberOfLines={numberOfLines} style={textStyle}>
-        {profile.group}
+        {profile.group?.length ? profile.group : "(none)"}
       </Text>
     </View>
-  ) : null;
+  );
 });
 
 const ProfileDiceNames = observer(function ({
@@ -96,16 +92,23 @@ const ProfileDiceNames = observer(function ({
   const diceNames = useAppSelector((state) => state.pairedDice.diceData)
     .filter((d) => d.profileUuid === profile.uuid)
     .map((d) => d.name);
-  return diceNames.length ? (
-    <View style={{ flexDirection: "row" }}>
+  return (
+    <View
+      style={{
+        alignSelf: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
       <MaterialCommunityIcons
         name="dice-multiple-outline"
         size={24}
         color={iconColor}
       />
-      <Text>{diceNames.join(", ")}</Text>
+      <Text>{diceNames.length ? diceNames.join(", ") : "Not in use"}</Text>
     </View>
-  ) : null;
+  );
 });
 
 function ProfileActions({
@@ -193,7 +196,6 @@ const ProfileActionsIcons = observer(function ({
 
 export function ProfileCard({
   profile,
-  dieType,
   row,
   disabled,
   selected,
@@ -215,7 +217,6 @@ export function ProfileCard({
   profile: Readonly<Profiles.Profile>;
   transferring?: boolean;
   expanded?: SharedValue<boolean>;
-  dieType: PixelDieType;
   fadeInDuration?: number;
   fadeInDelay?: number;
   footer?: React.ReactNode;
@@ -309,7 +310,11 @@ export function ProfileCard({
                 paddingVertical: 2,
               }}
             >
-              <DieRenderer dieType={dieType} colorway="onyxBlack" withStage />
+              <DieRenderer
+                dieType={profile.dieType}
+                colorway="onyxBlack"
+                withStage
+              />
             </View>
             {transferring && (
               <ActivityIndicator style={{ position: "absolute" }} />
@@ -450,7 +455,6 @@ export function ProfilesList({
               profile={p}
               selected={p === selected}
               transferring={p === transferring}
-              dieType={p.dieType}
               fadeInDelay={i * 50}
               itemIndex={i}
               expandItemIndex={expandableItems ? expandedIndex : undefined}
@@ -470,7 +474,6 @@ export function ProfilesList({
             profile={p}
             selected={p === selected}
             transferring={p === transferring}
-            dieType={p.dieType}
             fadeInDelay={(favorites.length + i) * 50}
             itemIndex={favorites.length + i}
             expandItemIndex={expandableItems ? expandedIndex : undefined}
@@ -488,7 +491,6 @@ export function ProfilesList({
             profile={p}
             selected={p === selected}
             transferring={p === transferring}
-            dieType={p.dieType}
             fadeInDelay={(favorites.length + 5 + i) * 50}
             itemIndex={favorites.length + 5 + i}
             expandItemIndex={expandableItems ? expandedIndex : undefined}
@@ -516,7 +518,6 @@ function ProfilesColumn({
           profile={p}
           selected={p === selected}
           transferring={p === transferring}
-          dieType={p.dieType}
           fadeInDuration={500}
           fadeInDelay={i * 100}
           contentStyle={{ height: 200 }}

@@ -43,8 +43,10 @@ function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
   assert(profileData, `Profile ${profile.uuid} not found`);
   profile.name = profileData.name;
   profile.description = profileData.description;
+  profile.dieType = profileData.dieType;
   profile.group = profileData.group;
   profile.favorite = profileData.favorite;
+  profile.creationDate = new Date(profileData.creationDate);
   // Update rules
   const rulesCount = profileData.rules.length;
   profile.rules.length = rulesCount;

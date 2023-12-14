@@ -322,8 +322,10 @@ function toProfile(
     uuid: generateUuid(),
     name: profile.name ?? "",
     description: profile.description ?? "",
-    group: "",
+    dieType: "d20",
+    group: "default",
     favorite: false,
+    creationDate: new Date(2023, 0, 1).getTime(),
     conditions,
     actions,
     rules: filteredRules.map((r) => ({

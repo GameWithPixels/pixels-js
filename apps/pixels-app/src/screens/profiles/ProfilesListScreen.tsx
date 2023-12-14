@@ -18,6 +18,7 @@ import { SortBottomSheet } from "~/components/SortBottomSheet";
 import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import { useProfilesList } from "~/hooks";
+import { useFilteredProfiles } from "~/hooks/useFilteredProfiles";
 import { ProfilesListScreenProps, ProfilesStackParamList } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -121,6 +122,14 @@ function ProfilesListPage({
   const searchbarHeight = 100;
   const initialPosition = searchbarHeight + (viewMode === "grid" ? 10 : 50);
 
+  const [filter, setFilter] = React.useState("");
+  const [group, setGroup] = React.useState("");
+  const toggleGroup = React.useCallback(
+    (g: string) => setGroup((group) => (group === g ? "" : g)),
+    []
+  );
+  const filteredProfiles = useFilteredProfiles(profiles, filter, group);
+
   React.useEffect(() => {
     aref.current?.scrollTo({ y: initialPosition, animated: false });
   }, [aref, initialPosition]);
@@ -141,15 +150,22 @@ function ProfilesListPage({
       >
         <View style={{ marginTop: 35, height: searchbarHeight }}>
           <AnimatedProfileSearchbar
+            filter={filter}
+            setFilter={setFilter}
+            selectedGroup={group}
+            toggleGroup={toggleGroup}
             positionY={scrollHandler}
             headerHeight={searchbarHeight}
           />
         </View>
         {viewMode === "grid" ? (
-          <ProfilesGrid profiles={profiles} onSelectProfile={editProfile} />
+          <ProfilesGrid
+            profiles={filteredProfiles}
+            onSelectProfile={editProfile}
+          />
         ) : (
           <ProfilesList
-            profiles={profiles}
+            profiles={filteredProfiles}
             expandableItems
             onSelectProfile={editProfile}
           />

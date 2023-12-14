@@ -13,6 +13,7 @@ import { AnimatedProfileSearchbar } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
 import { useProfilesList } from "~/hooks";
+import { useFilteredProfiles } from "~/hooks/useFilteredProfiles";
 
 export function ProfilePicker({
   selected,
@@ -31,6 +32,15 @@ export function ProfilePicker({
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);
   const searchbarHeight = 100;
+
+  const [filter, setFilter] = React.useState("");
+  const [group, setGroup] = React.useState("");
+  const toggleGroup = React.useCallback(
+    (g: string) => setGroup((group) => (group === g ? "" : g)),
+    []
+  );
+  const filteredProfiles = useFilteredProfiles(profiles, filter, group);
+
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <Animated.ScrollView
@@ -44,12 +54,16 @@ export function ProfilePicker({
       >
         <View style={{ height: searchbarHeight }}>
           <AnimatedProfileSearchbar
+            filter={filter}
+            setFilter={setFilter}
+            selectedGroup={group}
+            toggleGroup={toggleGroup}
             positionY={scrollHandler}
             headerHeight={searchbarHeight}
           />
         </View>
         <ProfilesList
-          profiles={profiles}
+          profiles={filteredProfiles}
           selected={selected}
           transferring={transferring ? selected : undefined}
           onSelectProfile={onSelectProfile}

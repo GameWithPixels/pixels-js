@@ -3,6 +3,7 @@ import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import { useProfile } from "./useProfile";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { factoryProfile } from "~/factoryProfile";
 import { setPairedDieProfile } from "~/features/store/pairedDiceSlice";
 
 export function useActiveProfile(pixel: Pixel): {
@@ -15,9 +16,8 @@ export function useActiveProfile(pixel: Pixel): {
     appDispatch(
       setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
     );
-  const profileUuid = activeProfiles.find(
-    (p) => p.pixelId === pixel.pixelId
-  )?.profileUuid;
-  const activeProfile = useProfile(profileUuid ?? "factory");
+  const profileUuid = activeProfiles.find((p) => p.pixelId === pixel.pixelId)
+    ?.profileUuid;
+  const activeProfile = useProfile(profileUuid ?? factoryProfile.uuid);
   return { activeProfile, setActiveProfile };
 }

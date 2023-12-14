@@ -4,6 +4,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
+import { factoryProfile } from "~/factoryProfile";
 import { readProfile } from "~/features/store/profiles";
 import { updateProfile } from "~/features/store/profilesLibrarySlice";
 
@@ -20,7 +21,7 @@ function create(profileUuid: string): Profiles.Profile {
 }
 
 export function getEditableProfile(profileUuid: string): Profiles.Profile {
-  assert(profileUuid !== "factory", "Can't edit factory profile");
+  assert(profileUuid !== factoryProfile.uuid, "Can't edit factory profile");
   return editableProfiles.get(profileUuid) ?? create(profileUuid);
 }
 
@@ -40,6 +41,5 @@ export function discardEditableProfile(profileUuid: string): void {
 
 // Returns an observable profile that is editable
 export function useEditableProfile(profileUuid: string): Profiles.Profile {
-  assert(profileUuid !== "default", "Can't edit default profile");
   return getEditableProfile(profileUuid); // TODO not reactive but that's ok for your usage
 }

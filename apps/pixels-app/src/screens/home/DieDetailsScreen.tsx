@@ -18,8 +18,13 @@ import { ProfileCard } from "~/components/profile";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { DieDetailsScreenProps, HomeStackParamList } from "~/navigation";
-import { generateRollStats } from "~/temp";
 import { Colors } from "~/themes";
+
+export function generateRollStats(pixel: Pixel): number[] {
+  return Array(pixel.dieFaceCount)
+    .fill(0)
+    .map(() => 10 + Math.round(15 * Math.random()));
+}
 
 function SectionTitle({ children }: React.PropsWithChildren) {
   return (
@@ -203,12 +208,7 @@ function DieDetailsPage({
           </Banner>
           <SectionTitle>Active Profile</SectionTitle>
           {activeProfile ? (
-            <ProfileCard
-              row
-              profile={activeProfile}
-              dieType={pixel.dieType}
-              disabled={disabled}
-            />
+            <ProfileCard row profile={activeProfile} disabled={disabled} />
           ) : (
             <Text>No Profile!</Text>
           )}

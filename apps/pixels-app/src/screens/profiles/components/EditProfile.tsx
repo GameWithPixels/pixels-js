@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -58,6 +59,23 @@ const EditProfileDescription = observer(function ({
   );
 });
 
+const EditProfileGroup = observer(function ({
+  profile,
+  colors,
+}: {
+  profile: Profiles.Profile;
+  colors: MD3Theme["colors"];
+}) {
+  return (
+    <TextInput
+      mode="outlined"
+      style={{ backgroundColor: colors.elevation.level0 }}
+      value={profile.group}
+      onChangeText={(t) => runInAction(() => (profile.group = t))}
+    />
+  );
+});
+
 function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   const diceNames = useAppSelector((state) => state.pairedDice.diceData)
     .filter((d) => d.profileUuid === profileUuid)
@@ -72,12 +90,20 @@ const ProfileUsage = observer(function ({
 }: {
   profile: Readonly<Profiles.Profile>;
 }) {
+  const size = createDataSetForProfile(profile)
+    .toDataSet()
+    .computeDataSetByteSize();
+  const patternsCount = new Set(
+    profile
+      .collectAnimations()
+      .map((a) => a.collectPatterns())
+      .flat()
+  ).size;
   return (
     <>
-      <Text>Date created: {new Date().toLocaleString()}</Text>
-      <Text>Date last used: {new Date().toLocaleString()}</Text>
-      <Text>Memory footprint: 1234 Bytes</Text>
-      <Text>Number of Color Designs: 4</Text>
+      <Text>Date created: {profile.creationDate.toLocaleString()}</Text>
+      <Text>Memory footprint: {size} bytes</Text>
+      <Text>Number of unique Color Designs: {patternsCount}</Text>
     </>
   );
 });
@@ -210,11 +236,7 @@ export function EditProfile({
         {!unnamed && (
           <>
             <SectionTitle>Group</SectionTitle>
-            <TextInput
-              mode="outlined"
-              style={{ backgroundColor: colors.elevation.level0 }}
-              value={profile.group}
-            />
+            <EditProfileGroup profile={profile} colors={colors} />
           </>
         )}
         <SectionTitle>Description</SectionTitle>
