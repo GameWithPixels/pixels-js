@@ -176,7 +176,6 @@ function PageActions({
         visible={visible}
         contentStyle={{ width: 220 }}
         onShow={() => setVisible(true)}
-        onSelect={viewMode !== "focus" ? () => {} : undefined}
         onDismiss={() => setVisible(false)}
       >
         <View

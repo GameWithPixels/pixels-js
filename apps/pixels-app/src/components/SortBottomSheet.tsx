@@ -6,7 +6,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import React from "react";
 import { View } from "react-native";
-import { useTheme, Text, ThemeProvider, Switch } from "react-native-paper";
+import { useTheme, Text, ThemeProvider } from "react-native-paper";
 
 import { SelectionButton } from "./buttons";
 
@@ -42,7 +42,6 @@ export function SortBottomSheet({
     }
   }, [visible]);
 
-  const [favOnTop, setFavOnTop] = React.useState(true);
   const [groupBy, setGroupBy] = React.useState(groups[0]);
   const [sort, setSort] = React.useState("Alphabetically");
 
@@ -64,12 +63,6 @@ export function SortBottomSheet({
     >
       <ThemeProvider theme={theme}>
         <BottomSheetScrollView contentContainerStyle={{ padding: 20, gap: 10 }}>
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
-            <Text variant="titleMedium">Favorites On Top</Text>
-            <Switch value={favOnTop} onValueChange={setFavOnTop} />
-          </View>
           <Text variant="titleMedium">Group By</Text>
           <View>
             {groups.map((g, i) => (

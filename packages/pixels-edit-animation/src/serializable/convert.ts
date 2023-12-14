@@ -465,7 +465,6 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     description: profile.description,
     dieType: profile.dieType,
     group: profile.group,
-    favorite: profile.favorite,
     creationDate: profile.creationDate.getTime(),
     conditions,
     actions,

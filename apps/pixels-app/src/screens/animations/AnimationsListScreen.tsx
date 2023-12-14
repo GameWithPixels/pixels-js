@@ -37,7 +37,6 @@ function PageActions({
         visible={visible}
         contentStyle={{ width: 210 }}
         onShow={() => setVisible(true)}
-        onSelect={() => {}}
         onDismiss={() => setVisible(false)}
       >
         <View

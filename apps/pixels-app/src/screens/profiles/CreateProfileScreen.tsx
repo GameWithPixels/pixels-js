@@ -1,19 +1,61 @@
 import { StackNavigationProp } from "@react-navigation/stack";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { ScrollView, View } from "react-native";
-import { useTheme } from "react-native-paper";
+import { View } from "react-native";
+import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { GradientButton, TightTextButton } from "~/components/buttons";
+import { TabsHeaders } from "~/components/TabsHeaders";
+import { GradientChip, TightTextButton } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
+import { getDieTypeLabel } from "~/descriptions";
+import { sortedDieTypes } from "~/dieTypes";
 import generateUuid from "~/features/generateUuid";
 import { useEditProfilesList, useProfilesList } from "~/hooks";
 import { CreateProfileScreenProps, ProfilesStackParamList } from "~/navigation";
 
-const emptyProfileUuid = generateUuid();
+const blankProfile: Readonly<Profiles.Profile> = new Profiles.Profile({
+  uuid: generateUuid(),
+  name: "Empty",
+  description: "A blank profile",
+  group: "template",
+});
+
+const tabsNames = ["Templates", "Profiles"];
+
+function DieTypesSelector({
+  selected,
+  onSelect,
+}: {
+  selected: PixelDieType;
+  onSelect: (dieType: PixelDieType) => void;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        flexWrap: "wrap",
+        paddingHorizontal: 10,
+        gap: 10,
+      }}
+    >
+      {sortedDieTypes.map((dieType) => (
+        <GradientChip
+          key={dieType}
+          outline={dieType !== selected}
+          style={{ minWidth: 60 }}
+          onPress={() => onSelect(dieType)}
+        >
+          {getDieTypeLabel(dieType)}
+        </GradientChip>
+      ))}
+    </View>
+  );
+}
 
 function CreateProfilePage({
   navigation,
@@ -22,25 +64,25 @@ function CreateProfilePage({
 }) {
   const profiles = useProfilesList();
   const { addProfile } = useEditProfilesList();
+  const [tab, setTab] = React.useState(tabsNames[0]);
+  const [dieType, setDieType] = React.useState<PixelDieType>("d20");
   const templates = React.useMemo(
     () => [
-      [
-        new Profiles.Profile({
-          uuid: emptyProfileUuid,
-          name: "Empty",
-          description: "A blank profile",
-        }),
-        ...profiles.slice(0, 4),
-      ],
-      profiles.slice(4),
-      profiles.filter((_, i) => i % 3),
+      [blankProfile].concat(
+        profiles.filter(
+          (p) =>
+            (!p.dieType || p.dieType === dieType) &&
+            p.group === blankProfile.group
+        )
+      ),
+      profiles.filter(
+        (p) =>
+          (!p.dieType || p.dieType === dieType) &&
+          p.group !== blankProfile.group
+      ),
     ],
-    [profiles]
+    [dieType, profiles]
   );
-  const filterNames = ["Templates", "Profiles", "Favorites"];
-  const [filter, setFilter] = React.useState("Templates");
-  const { roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <View style={{ height: "100%", gap: 10 }}>
       <PageHeader
@@ -51,41 +93,18 @@ function CreateProfilePage({
           </TightTextButton>
         )}
       />
-      <ScrollView contentContainerStyle={{ gap: 20, paddingBottom: 10 }}>
-        <View
-          style={{
-            alignSelf: "center",
-            flexDirection: "row",
-            justifyContent: "flex-start",
-          }}
-        >
-          {filterNames.map((f, i) => {
-            return (
-              <GradientButton
-                key={f}
-                style={{
-                  borderTopLeftRadius: i === 0 ? borderRadius : 0,
-                  borderBottomLeftRadius: i === 0 ? borderRadius : 0,
-                  borderTopRightRadius:
-                    i === filterNames.length - 1 ? borderRadius : 0,
-                  borderBottomRightRadius:
-                    i === filterNames.length - 1 ? borderRadius : 0,
-                }}
-                outline={f !== filter}
-                onPress={() => setFilter(f)}
-              >
-                {f}
-              </GradientButton>
-            );
-          })}
-        </View>
+      <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
+      <DieTypesSelector selected={dieType} onSelect={setDieType} />
+      <GHScrollView contentContainerStyle={{ gap: 20, paddingBottom: 10 }}>
         <ProfilesGrid
-          profiles={templates[filterNames.indexOf(filter)]}
+          profiles={templates[tabsNames.indexOf(tab)]}
           onSelectProfile={(p) => {
             const newProfile = p.duplicate(generateUuid());
             newProfile.name = "New Profile";
             newProfile.description =
-              p.uuid === emptyProfileUuid ? "" : `Based on ${p.name}`;
+              p === blankProfile ? "" : `Based on ${p.name}`;
+            newProfile.dieType = dieType;
+            newProfile.group = "";
             addProfile(newProfile);
             const openEdit = () => {
               navigation.navigate("editProfile", {
@@ -97,7 +116,7 @@ function CreateProfilePage({
             navigation.goBack();
           }}
         />
-      </ScrollView>
+      </GHScrollView>
     </View>
   );
 }

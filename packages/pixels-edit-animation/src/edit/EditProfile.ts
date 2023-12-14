@@ -27,9 +27,6 @@ export default class EditProfile extends Editable {
   group: string; // TODO temp
 
   @observable
-  favorite: boolean; // TODO temp
-
-  @observable
   creationDate: Date; // TODO temp
 
   constructor(opt?: {
@@ -39,7 +36,6 @@ export default class EditProfile extends Editable {
     rules?: EditRule[];
     dieType?: PixelDieType;
     group?: string;
-    favorite?: boolean;
     creationDate?: Date;
   }) {
     super(opt);
@@ -47,7 +43,6 @@ export default class EditProfile extends Editable {
     this.rules = opt?.rules ?? [];
     this.dieType = opt?.dieType ?? "d20";
     this.group = opt?.group ?? "";
-    this.favorite = opt?.favorite ?? false;
     this.creationDate = opt?.creationDate ?? new Date();
   }
 

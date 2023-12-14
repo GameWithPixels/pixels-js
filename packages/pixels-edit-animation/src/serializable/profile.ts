@@ -12,7 +12,6 @@ export interface ProfileData extends UniqueNamedData {
   description: string;
   dieType: PixelDieType;
   group: string;
-  favorite: boolean;
   creationDate: number;
   conditions: {
     helloGoodbye: {

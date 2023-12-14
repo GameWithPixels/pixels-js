@@ -64,7 +64,7 @@ function GroupsFilter({
   toggleGroup: (group: string) => void;
 }) {
   const unsorted = useProfilesGroups();
-  const groups = React.useMemo(() => unsorted.sort(), [unsorted]);
+  const groups = React.useMemo(() => [...unsorted].sort(), [unsorted]);
   React.useEffect(() => {
     if (!groups.includes(group)) {
       toggleGroup(group);

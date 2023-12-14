@@ -427,9 +427,8 @@ export function ProfilesList({
   style,
   ...props
 }: { expandableItems?: boolean } & ProfilesListProps) {
-  const favorites = profiles.filter((p) => p.favorite);
   const expandedIndex = useSharedValue(-1);
-  const onPress = (i: number, p: Readonly<Profiles.Profile>) =>
+  const selectProfile = (i: number, p: Readonly<Profiles.Profile>) =>
     expandableItems
       ? (expandedIndex.value = expandedIndex.value === i ? -1 : i)
       : onSelectProfile?.(p);
@@ -445,59 +444,21 @@ export function ProfilesList({
 
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
-      {favorites.length > 0 && (
-        <>
-          <Text variant="headlineSmall">Favorites</Text>
-          {favorites.map((p, i) => (
-            <ProfileCardItem
-              key={p.uuid}
-              row
-              profile={p}
-              selected={p === selected}
-              transferring={p === transferring}
-              fadeInDelay={i * 50}
-              itemIndex={i}
-              expandItemIndex={expandableItems ? expandedIndex : undefined}
-              onPress={() => onPress(i, p)}
-              onAction={onAction}
-            />
-          ))}
-        </>
-      )}
-      <Text variant="headlineSmall">Last Week</Text>
-      {profiles
-        .filter((p, i) => !p.favorite && i < 5)
-        .map((p, i) => (
-          <ProfileCardItem
-            key={p.uuid}
-            row
-            profile={p}
-            selected={p === selected}
-            transferring={p === transferring}
-            fadeInDelay={(favorites.length + i) * 50}
-            itemIndex={favorites.length + i}
-            expandItemIndex={expandableItems ? expandedIndex : undefined}
-            onPress={() => onPress(favorites.length + i, p)}
-            onAction={onAction}
-          />
-        ))}
-      <Text variant="headlineSmall">Last Month</Text>
-      {profiles
-        .filter((p, i) => !p.favorite && i >= 5)
-        .map((p, i) => (
-          <ProfileCardItem
-            key={p.uuid}
-            row
-            profile={p}
-            selected={p === selected}
-            transferring={p === transferring}
-            fadeInDelay={(favorites.length + 5 + i) * 50}
-            itemIndex={favorites.length + 5 + i}
-            expandItemIndex={expandableItems ? expandedIndex : undefined}
-            onPress={() => onPress(favorites.length + 5 + i, p)}
-            onAction={onAction}
-          />
-        ))}
+      {/* <Text variant="headlineSmall">Last Week</Text> */}
+      {profiles.map((p, i) => (
+        <ProfileCardItem
+          key={p.uuid}
+          row
+          profile={p}
+          selected={p === selected}
+          transferring={p === transferring}
+          fadeInDelay={i * 50}
+          itemIndex={i}
+          expandItemIndex={expandableItems ? expandedIndex : undefined}
+          onPress={() => selectProfile(i, p)}
+          onAction={onAction}
+        />
+      ))}
     </View>
   );
 }

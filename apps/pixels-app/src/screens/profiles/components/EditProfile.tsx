@@ -233,14 +233,14 @@ export function EditProfile({
             {getConditionTypeLabel(ct)}
           </RuleCard>
         ))}
+        <SectionTitle>Description</SectionTitle>
+        <EditProfileDescription profile={profile} colors={colors} />
         {!unnamed && (
           <>
             <SectionTitle>Group</SectionTitle>
             <EditProfileGroup profile={profile} colors={colors} />
           </>
         )}
-        <SectionTitle>Description</SectionTitle>
-        <EditProfileDescription profile={profile} colors={colors} />
         <RulesSection
           profileUuid={profileUuid}
           onEditRule={onEditRule}

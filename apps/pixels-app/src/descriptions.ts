@@ -1,5 +1,8 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 
 export function getConditionTypeLabel(type: Profiles.ConditionType): string {
   switch (type) {
@@ -97,5 +100,32 @@ export function getActionTypeDescription(type: Profiles.ActionType): string {
       return "Speak a text on your phone";
     default:
       assertNever(type);
+  }
+}
+
+export function getDieTypeLabel(dieType: PixelDieType): string {
+  switch (dieType) {
+    case "d4":
+      return "D4";
+    case "d6":
+      return "D6";
+    case "d6pipped":
+      return "Pipped D6";
+    case "d6fudge":
+      return "Fudge D6";
+    case "d8":
+      return "D8";
+    case "d10":
+      return "D10";
+    case "d00":
+      return "D00";
+    case "d12":
+      return "D12";
+    case "d20":
+      return "D20";
+    case "unknown":
+      return "";
+    default:
+      assertNever(dieType, `Unsupported die type: ${dieType}`);
   }
 }

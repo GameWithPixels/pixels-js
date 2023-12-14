@@ -76,10 +76,10 @@ export function RssiIcon({
     value >= -50
       ? BarsFullIcon
       : value >= -60
-      ? BarsMidIcon
-      : value >= -70
-      ? BarsLowIcon
-      : BarsWeakIcon;
+        ? BarsMidIcon
+        : value >= -70
+          ? BarsLowIcon
+          : BarsWeakIcon;
   return <Icon size={size} color={color ?? getIconColor(colors, disabled)} />;
 }
 
@@ -94,25 +94,25 @@ export function BatteryIcon({
     value >= 90
       ? BatteryFullIcon
       : value >= 70
-      ? BatteryThreeQuartersIcon
-      : value >= 40
-      ? BatteryHalfIcon
-      : value >= 20
-      ? BatteryQuarterIcon
-      : value >= 1
-      ? BatteryLowIcon
-      : BatteryEmptyIcon;
+        ? BatteryThreeQuartersIcon
+        : value >= 40
+          ? BatteryHalfIcon
+          : value >= 20
+            ? BatteryQuarterIcon
+            : value >= 1
+              ? BatteryLowIcon
+              : BatteryEmptyIcon;
   return <Icon size={size} color={color ?? getIconColor(colors, disabled)} />;
 }
 
-export function getFavoriteIcon(isFavorite = true) {
+export function getFavoriteIcon(favorite = true) {
   return ({
     size,
     color,
     ...props
   }: { size?: number; color?: string } & TextProps) => (
     <MaterialIcons
-      name={isFavorite ? "favorite" : "favorite-outline"}
+      name={favorite ? "favorite" : "favorite-outline"}
       size={size}
       color={color}
       {...props}
