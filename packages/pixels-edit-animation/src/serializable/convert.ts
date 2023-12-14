@@ -218,6 +218,8 @@ export function toProfile(
     ...data,
     rules,
     creationDate: new Date(data.creationDate),
+    lastChanged: new Date(data.lastChanged),
+    lastUsed: data.lastUsed ? new Date(data.lastUsed) : undefined,
   });
 }
 
@@ -466,6 +468,8 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     dieType: profile.dieType,
     group: profile.group,
     creationDate: profile.creationDate.getTime(),
+    lastChanged: profile.lastChanged.getTime(),
+    lastUsed: profile.lastUsed?.getTime() ?? 0,
     conditions,
     actions,
     rules,

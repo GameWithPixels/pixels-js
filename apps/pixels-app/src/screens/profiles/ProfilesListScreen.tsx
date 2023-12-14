@@ -81,7 +81,7 @@ function PageActions({
             setSortVisible(true);
           }}
         />
-        <Divider />
+        {/* <Divider />
         <Menu.Item
           title="Recover Profile"
           trailingIcon={() => (
@@ -95,7 +95,7 @@ function PageActions({
           onPress={() => {
             setVisible(false);
           }}
-        />
+        /> */}
       </HeaderBar>
       <SortBottomSheet
         groups={["Last Activation", "Die Type", "Group Name", "Creation Date"]}

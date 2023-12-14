@@ -32,7 +32,8 @@ export function PageHeader({
           ...StyleSheet.absoluteFillObject,
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent:
+            leftElement ?? onGoBack ? "space-between" : "flex-end",
         }}
       >
         {leftElement

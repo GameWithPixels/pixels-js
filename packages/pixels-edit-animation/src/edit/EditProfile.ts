@@ -23,11 +23,22 @@ export default class EditProfile extends Editable {
   @observable
   dieType: PixelDieType;
 
-  @observable
-  group: string; // TODO temp
+  // TODO The properties below should be moved to a separate class
 
   @observable
-  creationDate: Date; // TODO temp
+  group: string;
+
+  @observable
+  creationDate: Date;
+
+  @observable
+  lastChanged: Date;
+
+  @observable
+  lastUsed?: Date;
+
+  @observable
+  isModified = false; // Not serialized
 
   constructor(opt?: {
     uuid?: string;
@@ -37,6 +48,8 @@ export default class EditProfile extends Editable {
     dieType?: PixelDieType;
     group?: string;
     creationDate?: Date;
+    lastChanged?: Date;
+    lastUsed?: Date;
   }) {
     super(opt);
     this.description = opt?.description ?? "";
@@ -44,6 +57,8 @@ export default class EditProfile extends Editable {
     this.dieType = opt?.dieType ?? "d20";
     this.group = opt?.group ?? "";
     this.creationDate = opt?.creationDate ?? new Date();
+    this.lastChanged = opt?.lastChanged ?? new Date();
+    this.lastUsed = opt?.lastUsed;
   }
 
   getRemoteAction(actionId: number): EditActionRunOnDevice | undefined {
@@ -69,11 +84,14 @@ export default class EditProfile extends Editable {
   }
 
   duplicate(uuid?: string): EditProfile {
+    const now = new Date();
     return new EditProfile({
       ...this,
       uuid,
       rules: this.rules.map((r) => r.duplicate()),
-      creationDate: new Date(),
+      creationDate: now,
+      lastChanged: now,
+      lastUsed: undefined,
     });
   }
 

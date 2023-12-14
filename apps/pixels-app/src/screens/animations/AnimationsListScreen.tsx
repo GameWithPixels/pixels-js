@@ -78,7 +78,7 @@ function PageActions({
             setSortVisible(true);
           }}
         />
-        <Divider />
+        {/* <Divider />
         <Menu.Item
           title="Recover Animation"
           trailingIcon={() => (
@@ -92,7 +92,7 @@ function PageActions({
           onPress={() => {
             setVisible(false);
           }}
-        />
+        /> */}
       </HeaderBar>
       <SortBottomSheet
         groups={["All", "Animation Type", "Die Type"]}

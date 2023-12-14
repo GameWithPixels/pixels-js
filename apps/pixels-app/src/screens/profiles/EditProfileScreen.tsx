@@ -12,7 +12,6 @@ import { RuleIndex } from "./components/RuleCard";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import {
-  discardEditableProfile,
   useCommitEditableProfile,
   useConfirmActionSheet,
   useEditableProfile,
@@ -24,24 +23,34 @@ const Header = observer(function ({
   profile,
   commitChanges,
   discardChanges,
+  confirmDiscard,
 }: {
   profile: Profiles.Profile;
   commitChanges: () => void;
   discardChanges: () => void;
+  confirmDiscard: () => void;
 }) {
   return (
     <PageHeader
       mode="chevron-down"
       title={profile.name}
-      leftElement={() => <Button onPress={discardChanges}>Discard</Button>}
-      rightElement={() => (
-        // <IconButton
-        //   icon={getFavoriteIcon(profile.favorite)}
-        //   size={20}
-        //   onPress={() => {}}
-        // />
-        <Button onPress={commitChanges}>Save</Button>
+      leftElement={() => (
+        <Button onPress={profile.isModified ? confirmDiscard : discardChanges}>
+          Cancel
+        </Button>
       )}
+      rightElement={
+        profile.isModified
+          ? () => (
+              // <IconButton
+              //   icon={getFavoriteIcon(profile.favorite)}
+              //   size={20}
+              //   onPress={() => {}}
+              // />
+              <Button onPress={commitChanges}>Done</Button>
+            )
+          : undefined
+      }
     />
   );
 });
@@ -55,16 +64,20 @@ function EditProfilePage({
 }) {
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();
-  const commitProfile = useCommitEditableProfile();
+  const { commitProfile, discardProfile } = useCommitEditableProfile();
   const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
   const commitChanges = React.useCallback(() => {
     commitProfile(profileUuid);
     goBack();
   }, [commitProfile, goBack, profileUuid]);
-  const showConfirmDiscard = useConfirmActionSheet("Discard changes", () => {
-    discardEditableProfile(profileUuid);
+  const discardChanges = React.useCallback(() => {
+    discardProfile(profileUuid);
     goBack();
-  });
+  }, [discardProfile, goBack, profileUuid]);
+  const showConfirmDiscard = useConfirmActionSheet(
+    "Discard changes",
+    discardChanges
+  );
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
       if (ruleIndex.conditionType === "rolled") {
@@ -88,7 +101,8 @@ function EditProfilePage({
       <Header
         profile={profile}
         commitChanges={commitChanges}
-        discardChanges={showConfirmDiscard}
+        discardChanges={discardChanges}
+        confirmDiscard={showConfirmDiscard}
       />
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"

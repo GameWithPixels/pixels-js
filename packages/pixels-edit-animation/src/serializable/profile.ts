@@ -13,6 +13,8 @@ export interface ProfileData extends UniqueNamedData {
   dieType: PixelDieType;
   group: string;
   creationDate: number;
+  lastChanged: number;
+  lastUsed: number;
   conditions: {
     helloGoodbye: {
       flags: HelloGoodbyeFlags[];

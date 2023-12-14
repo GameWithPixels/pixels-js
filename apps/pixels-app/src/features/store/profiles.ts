@@ -46,6 +46,10 @@ function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
   profile.dieType = profileData.dieType;
   profile.group = profileData.group;
   profile.creationDate = new Date(profileData.creationDate);
+  profile.lastChanged = new Date(profileData.lastChanged);
+  profile.lastUsed = profileData.lastUsed
+    ? new Date(profileData.lastUsed)
+    : undefined;
   // Update rules
   const rulesCount = profileData.rules.length;
   profile.rules.length = rulesCount;

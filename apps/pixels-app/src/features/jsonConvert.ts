@@ -329,6 +329,8 @@ function toProfile(
     dieType: "d20",
     group: "template",
     creationDate: new Date(2023, 0, 1).getTime(),
+    lastChanged: new Date(2023, 0, 1).getTime(),
+    lastUsed: 0,
     conditions,
     actions,
     rules: filteredRules.map((r) => ({

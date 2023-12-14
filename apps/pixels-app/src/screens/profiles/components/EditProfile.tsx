@@ -102,6 +102,10 @@ const ProfileUsage = observer(function ({
   return (
     <>
       <Text>Date created: {profile.creationDate.toLocaleString()}</Text>
+      <Text>Last modified: {profile.lastChanged.toLocaleString()}</Text>
+      {profile.lastUsed && (
+        <Text>Last used: {profile.lastUsed.toLocaleString()}</Text>
+      )}
       <Text>Memory footprint: {size} bytes</Text>
       <Text>Number of unique Color Designs: {patternsCount}</Text>
     </>
