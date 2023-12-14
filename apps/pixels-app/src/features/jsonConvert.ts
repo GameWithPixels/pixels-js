@@ -1,5 +1,6 @@
 import {
   assertNever,
+  bitIndexToFlag,
   bitsToFlags,
   getValueKeyName,
   valuesToKeys,
@@ -239,7 +240,10 @@ function toCondition(
     case "faceCompare":
       return register("rolled", {
         flags: valuesToKeys(bitsToFlags(data?.flags), FaceCompareFlagsValues),
-        face: (data?.faceIndex ?? 0) + 1,
+        face:
+          (data?.faceIndex ?? 0) < 0
+            ? -1
+            : bitIndexToFlag(data?.faceIndex ?? 0),
       });
     case "crooked":
       return { type, index: -1 };

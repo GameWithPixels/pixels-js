@@ -22,10 +22,7 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -68,16 +65,9 @@ function getTabBarStyle<T extends object>(
 }
 
 function AppPage() {
-  const { top } = useSafeAreaInsets();
   const theme = useTheme();
   return (
-    <View
-      style={{
-        flex: 1,
-        paddingTop: top,
-        backgroundColor: theme.colors.background,
-      }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Tab.Navigator
         tabBar={(props) => <TabBar {...props} />}
         screenOptions={{ headerShown: false }}
@@ -121,7 +111,7 @@ function AppPage() {
           options={{ title: "More", tabBarIcon: MoreIcon }}
         />
       </Tab.Navigator>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -186,31 +176,31 @@ export default function App() {
         <SafeAreaProvider>
           <GestureHandlerRootView style={StyleSheet.absoluteFill}>
             <PaperProvider theme={AppDarkTheme}>
-              <ErrorBoundary FallbackComponent={ErrorFallback}>
-                <ActionSheetProvider>
-                  <BottomSheetModalProvider>
-                    <StatusBar style="light" />
-                    <PersistGate
-                      loading={
-                        <View
-                          style={{
-                            flex: 1,
-                            alignContent: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Text>Loading...</Text>
-                        </View>
-                      }
-                      persistor={persistor}
-                    >
-                      <NavigationContainer theme={AppDarkTheme}>
+              <NavigationContainer theme={AppDarkTheme}>
+                <ErrorBoundary FallbackComponent={ErrorFallback}>
+                  <ActionSheetProvider>
+                    <BottomSheetModalProvider>
+                      <StatusBar style="light" />
+                      <PersistGate
+                        loading={
+                          <View
+                            style={{
+                              flex: 1,
+                              alignContent: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Text>Loading...</Text>
+                          </View>
+                        }
+                        persistor={persistor}
+                      >
                         <AppPage />
-                      </NavigationContainer>
-                    </PersistGate>
-                  </BottomSheetModalProvider>
-                </ActionSheetProvider>
-              </ErrorBoundary>
+                      </PersistGate>
+                    </BottomSheetModalProvider>
+                  </ActionSheetProvider>
+                </ErrorBoundary>
+              </NavigationContainer>
             </PaperProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>

@@ -33,14 +33,14 @@ const Header = observer(function ({
     <PageHeader
       mode="chevron-down"
       title={profile.name}
-      leftElement={() => <Button onPress={commitChanges}>Save</Button>}
+      leftElement={() => <Button onPress={discardChanges}>Discard</Button>}
       rightElement={() => (
         // <IconButton
         //   icon={getFavoriteIcon(profile.favorite)}
         //   size={20}
         //   onPress={() => {}}
         // />
-        <Button onPress={discardChanges}>Discard</Button>
+        <Button onPress={commitChanges}>Save</Button>
       )}
     />
   );

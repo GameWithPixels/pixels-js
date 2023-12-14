@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
+  DiceUtils,
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
@@ -34,6 +35,7 @@ import {
 import { makeObservable } from "~/features/makeObservable";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useConfirmActionSheet, useEditableProfile } from "~/hooks";
+import { useRolledConditionFaces } from "~/hooks/useRolledConditionFaces";
 import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -72,7 +74,7 @@ function RolledConditionCard({
   onRemove?: () => void;
 }) {
   const cond = rule.condition as Profiles.ConditionRolled;
-  const faces = cond.getFaceList();
+  const faces = useRolledConditionFaces(cond);
   const action = rule.actions.find((a) => a.type === type);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
@@ -81,33 +83,42 @@ function RolledConditionCard({
       <TouchableCard
         noBorder
         frameless
-        contentStyle={[
-          {
-            flexDirection: "row",
-            padding: 10,
-            gap: 5,
-          },
-        ]}
+        contentStyle={{ flexDirection: "row", padding: 0 }}
         onPress={onConfigure}
       >
         <>
           <Text
-            style={{ flexGrow: 1, textAlign: "center" }}
+            style={{
+              flexGrow: 1,
+              textAlign: "center",
+              paddingVertical: 10,
+              marginHorizontal: 60,
+            }}
             variant="bodyLarge"
           >
             {faces === "all"
-              ? `All other rolls (${faces})`
+              ? `All other rolls`
               : `When roll is ${faces.length > 1 ? "one of" : ""} ${
-                  faces.length ? faces.join(", ") : "?"
+                  faces.length ? [...faces].reverse().join(", ") : "?"
                 }`}
           </Text>
-          <MaterialCommunityIcons
-            name="trash-can-outline"
-            color={colors.onSurface}
-            size={20}
-            style={{ alignSelf: "center" }}
-            onPress={onRemove}
-          />
+          {onRemove && (
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              color={colors.onSurface}
+              size={24}
+              style={{
+                position: "absolute",
+                right: 0,
+                top: 0,
+                height: "100%",
+                paddingHorizontal: 10,
+                textAlign: "center",
+                textAlignVertical: "center",
+              }} // Making the touchable surface take full height
+              onPress={onRemove}
+            />
+          )}
         </>
       </TouchableCard>
       <View
@@ -147,6 +158,45 @@ function RolledConditionCard({
   );
 }
 
+function createObservableRolledRule(
+  face: number | "all",
+  actionType: Profiles.ActionType
+): Profiles.Rule {
+  return makeObservable(
+    new Profiles.Rule(
+      new Profiles.ConditionRolled({
+        flags: Profiles.RolledFlagsValues.equal,
+        face: face === "all" ? -1 : Math.pow(2, face - 1),
+      }),
+      { actions: [Profiles.createAction(actionType)] }
+    )
+  );
+}
+function getRolledRules(rules: Readonly<Profiles.Rule>[]): Profiles.Rule[] {
+  return rules.filter(
+    (r) => r.condition.type === "rolled" && r.condition.flagName === "equal"
+  );
+}
+
+function getRolledFaces(
+  rolledRules: Readonly<Profiles.Rule>[],
+  actionType: Profiles.ActionType,
+  excludedRule?: Readonly<Profiles.Rule>
+): number[] | undefined {
+  return rolledRules
+    .filter(
+      (r) =>
+        r !== excludedRule &&
+        (r.condition as Profiles.ConditionRolled).face >= 0 &&
+        r.actions.find((a) => a.type === actionType)
+    )
+    .map((r) => r.condition)
+    .flatMap((c) => {
+      const faces = (c as Profiles.ConditionRolled).getFaceList();
+      return faces === "all" ? [] : faces;
+    });
+}
+
 const defaultCondition = new Profiles.ConditionRolled();
 const defaultAction = new Profiles.ActionPlayAnimation();
 
@@ -158,17 +208,62 @@ const EditRolledRulesPage = observer(function ({
   onGoBack: () => void;
 }) {
   const profile = useEditableProfile(profileUuid);
+  const rolledRules = React.useMemo(
+    () => getRolledRules(profile.rules),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [profile.rules.length] // TODO recompute when a rule is added or removed
+  );
   const [configureRule, setConfigureRule] = React.useState<Profiles.Rule>();
-  const showConfirmDelete = useConfirmActionSheet("Delete");
+  const fallbackRules = React.useMemo(
+    () =>
+      actionTypes.map(
+        (at) =>
+          rolledRules.find(
+            (r) =>
+              (r.condition as Profiles.ConditionRolled).face === -1 &&
+              r.actions.find((a) => a.type === at)
+          ) ?? createObservableRolledRule("all", at)
+      ),
+    [rolledRules]
+  );
 
+  // Delete rule
+  const showConfirmDeleteActionSheet = useConfirmActionSheet("Delete");
+  const confirmDelete = React.useCallback(
+    (rule: Readonly<Profiles.Rule>) => {
+      showConfirmDeleteActionSheet({
+        onConfirm: () =>
+          runInAction(() => {
+            const index = profile.rules.indexOf(rule);
+            if (index >= 0) {
+              profile.rules.splice(index, 1);
+            }
+          }),
+      });
+    },
+    [profile.rules, showConfirmDeleteActionSheet]
+  );
+
+  // Horizontal scroll
   const [index, setIndex] = React.useState(0);
   const scrollRef = React.useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const scrollTo = (page: number) =>
     scrollRef.current?.scrollTo({ x: page * width });
 
+  // Unavailable faces
+  const dieFaces = React.useMemo(
+    () => DiceUtils.getDieFaces(profile.dieType),
+    [profile.dieType]
+  );
+  const unavailableFaces = getRolledFaces(rolledRules, actionTypes[index]);
+  const availableFace: number | undefined = dieFaces.filter(
+    (f) => !unavailableFaces?.includes(f)
+  )[0];
+
   const { roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
+
   return (
     <>
       <View style={{ height: "100%", gap: 10 }}>
@@ -233,12 +328,16 @@ const EditRolledRulesPage = observer(function ({
         >
           {actionTypes.map((t) => (
             <InnerScrollView key={t}>
-              {profile.rules
+              {rolledRules
                 .filter(
                   (r) =>
-                    r.condition.type === "rolled" &&
-                    r.condition.flagName === "equal" &&
+                    (r.condition as Profiles.ConditionRolled).face >= 0 &&
                     r.actions.find((a) => a.type === t)
+                )
+                .sort(
+                  (r1, r2) =>
+                    (r2.condition as Profiles.ConditionRolled).face -
+                    (r1.condition as Profiles.ConditionRolled).face
                 )
                 .map((r, i) => (
                   <RolledConditionCard
@@ -247,44 +346,51 @@ const EditRolledRulesPage = observer(function ({
                     rule={r}
                     dieType={profile.dieType}
                     onConfigure={() => setConfigureRule(r)}
-                    onRemove={() =>
-                      showConfirmDelete({
-                        onConfirm: () =>
-                          runInAction(() =>
-                            profile.rules.splice(profile.rules.indexOf(r), 1)
-                          ),
-                      })
-                    }
+                    onRemove={() => confirmDelete(r)}
                   />
                 ))}
+              {!!availableFace && (
+                <RolledConditionCard
+                  type={t}
+                  rule={fallbackRules[index]}
+                  dieType={profile.dieType}
+                  onConfigure={() => {
+                    if (!profile.rules.includes(fallbackRules[index])) {
+                      runInAction(() =>
+                        profile.rules.push(fallbackRules[index])
+                      );
+                    }
+                    setConfigureRule(fallbackRules[index]);
+                  }}
+                />
+              )}
             </InnerScrollView>
           ))}
         </GHScrollView>
       </View>
-      <FloatingAddButton
-        onPress={() => {
-          runInAction(() => {
-            const newRule = makeObservable(
-              new Profiles.Rule(Profiles.createCondition("rolled", "equal"), {
-                actions: [Profiles.createAction(actionTypes[index])],
-              })
-            );
-            profile.rules.push(newRule);
-            setConfigureRule(newRule);
-          });
-        }}
-      />
+      {!!availableFace && (
+        <FloatingAddButton
+          onPress={() => {
+            runInAction(() => {
+              const newRule = createObservableRolledRule(
+                availableFace,
+                actionTypes[index]
+              );
+              profile.rules.push(newRule);
+              setConfigureRule(newRule);
+            });
+          }}
+        />
+      )}
       <ConfigureActionModal
         dieType={profile.dieType}
         condition={configureRule?.condition ?? defaultCondition}
         action={configureRule?.actions[0] ?? defaultAction}
-        // unavailableFaces={profile.rules
-        //   .map((r) => r.condition)
-        //   .filter((c) => c !== cond && c.type === "rolled")
-        //   .flatMap((c) => {
-        //     const faces = (c as Profiles.ConditionRolled).getFaceList();
-        //     return faces === "all" ? [] : faces;
-        //   })}
+        unavailableFaces={getRolledFaces(
+          rolledRules,
+          actionTypes[index],
+          configureRule
+        )}
         visible={!!configureRule}
         onDismiss={() => setConfigureRule(undefined)}
       />
@@ -320,5 +426,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+    zIndex: -1,
   },
 });

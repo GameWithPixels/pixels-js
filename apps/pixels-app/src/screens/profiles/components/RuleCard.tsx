@@ -66,11 +66,13 @@ const RolledActionDetails = observer(function ({
   const faces = useRolledConditionFaces(condition);
   return (
     <View>
-      {faces.length && (
-        <Text style={styles.rolledFacesStyle} variant="bodyMedium">
-          {faces === "all" ? "On other faces" : `On faces ${faces.join(", ")}`}
-        </Text>
-      )}
+      <Text style={styles.rolledFacesStyle} variant="bodyMedium">
+        {faces === "all"
+          ? "On other faces"
+          : faces.length <= 1
+            ? `On face ${faces[0].toString() ?? "?"}`
+            : `On faces ${[...faces].reverse().join(", ")}`}
+      </Text>
       <RuleSummary
         rule={rule}
         style={rule ? styles.rolledRuleGroupStyle : styles.ruleGroupStyle}
@@ -165,10 +167,16 @@ export const RuleCard = observer(function ({
   Omit<TouchableCardProps, "style" | "children"> &
   React.PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
   const profile = useEditableProfile(profileUuid);
-  const rules = profile.rules.filter(
-    (r) =>
-      r.condition.type === conditionType && r.condition.flagName === flagName
-  );
+  const rules = profile.rules
+    .filter(
+      (r) =>
+        r.condition.type === conditionType && r.condition.flagName === flagName
+    )
+    .sort(
+      (r1, r2) =>
+        (r2.condition as Profiles.ConditionRolled).face -
+        (r1.condition as Profiles.ConditionRolled).face
+    );
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const bottomViewStyle = {
@@ -244,5 +252,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+    zIndex: -1,
   },
 });

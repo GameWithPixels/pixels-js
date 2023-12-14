@@ -80,7 +80,6 @@ export function ColorDesignGrid({
 }: {
   numColumns?: number;
 } & ColorDesignListProps) {
-  console.log("ColorDesignGrid", selected?.name);
   return (
     <View
       style={{

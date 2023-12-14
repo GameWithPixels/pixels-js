@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { range } from "@systemic-games/pixels-core-utils";
 import {
   PixelColorway,
@@ -80,6 +81,9 @@ function addMagicRing(scene: THREE.Object3D, scale = 1) {
 }
 
 class SceneRenderer {
+  private _shouldRender = false;
+  private _renderLoop?: () => void;
+  // Resources
   private readonly _root = new THREE.Object3D();
   private readonly _die3d: Die3D;
   private readonly _envMap?: THREE.Texture;
@@ -198,14 +202,14 @@ class SceneRenderer {
       }
 
       // Render
-      const renderScene = {
-        callback: (() => {
-          renderer.render(scene, camera);
-          gl.endFrameEXP();
-        }) as (() => void) | undefined,
+      const renderScene = () => {
+        renderer.render(scene, camera);
+        gl.endFrameEXP();
       };
 
+      // Dispose resources
       this._dispose = () => {
+        this.stop();
         scene.clear();
         //whiteLight.dispose();
         staging.traverse((o) => {
@@ -220,45 +224,37 @@ class SceneRenderer {
           }
         });
         renderer.dispose();
-        renderScene.callback = undefined;
       };
 
-      this._setupRenderLoop(!opt?.withStage, renderScene, updateSparks);
+      this._renderLoop = this._createRenderLoopFunc(
+        !opt?.withStage,
+        renderScene,
+        updateSparks
+      );
     } catch (error) {
       console.error("Error while setting up ThreeJS scene graph", error);
     }
   }
 
-  private _getDieSizeRatio() {
-    switch (this._die3d.dieType) {
-      case "d6":
-      case "d6pipped":
-      case "d6fudge":
-        return 1.8;
-      case "d8":
-        return 0.88;
-      case "d10":
-      case "d00":
-        return 0.95;
-      case "d12":
-        return 0.75;
-      case "d20":
-        return 1.05;
-      default:
-        return 1;
-    }
+  start() {
+    this._shouldRender = true;
+    this._renderLoop?.();
   }
 
-  private _setupRenderLoop(
+  stop() {
+    this._shouldRender = false;
+  }
+
+  private _createRenderLoopFunc(
     rotateX: boolean,
-    renderScene: { callback: (() => void) | undefined },
+    renderScene: () => void,
     updateSparks: ((deltaTime: number) => void)[]
-  ): void {
+  ): () => void {
     // Create render function
     let lastTime = Date.now();
 
-    const frameRender = () => {
-      if (renderScene.callback) {
+    const renderLoop = () => {
+      if (this._shouldRender) {
         const time = Date.now();
         const deltaTime = time - lastTime;
 
@@ -279,8 +275,8 @@ class SceneRenderer {
         updateSparks.forEach((update) => update(deltaTime));
 
         try {
-          renderScene.callback();
-          requestAnimationFrame(frameRender);
+          renderScene();
+          requestAnimationFrame(renderLoop);
         } catch (error) {
           console.error(error);
           console.warn(
@@ -292,8 +288,27 @@ class SceneRenderer {
       }
     };
 
-    // Render
-    frameRender();
+    return renderLoop;
+  }
+
+  private _getDieSizeRatio() {
+    switch (this._die3d.dieType) {
+      case "d6":
+      case "d6pipped":
+      case "d6fudge":
+        return 1.8;
+      case "d8":
+        return 0.88;
+      case "d10":
+      case "d00":
+        return 0.95;
+      case "d12":
+        return 0.75;
+      case "d20":
+        return 1.05;
+      default:
+        return 1;
+    }
   }
 
   // https://varun.ca/three-js-particles/
@@ -406,9 +421,20 @@ export function DieRenderer({
   }, [colorway, dieType, showBoundary]);
 
   const onContextCreate = React.useCallback(
-    (gl: ExpoWebGLRenderingContext) =>
-      rendererRef.current?.setup(gl, { withStage }),
+    (gl: ExpoWebGLRenderingContext) => {
+      rendererRef.current?.setup(gl, { withStage });
+      rendererRef.current?.start();
+    },
     [withStage]
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      rendererRef.current?.start();
+      return () => {
+        rendererRef.current?.stop();
+      };
+    }, [])
   );
 
   return (

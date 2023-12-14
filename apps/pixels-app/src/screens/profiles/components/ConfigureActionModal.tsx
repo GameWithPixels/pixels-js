@@ -1,4 +1,4 @@
-import { useActionSheet } from "@expo/react-native-action-sheet";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -11,20 +11,17 @@ import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
+import * as Clipboard from "expo-clipboard";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { Platform } from "react-native";
-import { Text, ThemeProvider, useTheme } from "react-native-paper";
-
+import { Platform, View } from "react-native";
 import {
-  AnimationOverrides,
-  AnimationOverrideName,
-  AnimationOverrideNames,
-  EditAnimationOverrides,
-  getAnimationOverrideUserName,
-  createAnimationOverride,
-} from "./EditAnimationOverrides";
+  Text,
+  ThemeProvider,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 
 import { FacesGrid } from "~/components/FacesGrid";
 import { SliderWithValue } from "~/components/SliderWithTitle";
@@ -97,6 +94,55 @@ function PickAnimationModal({
   );
 }
 
+function TextInput({
+  value,
+  onChangeText,
+}: {
+  value: string;
+  onChangeText?: (text: string) => void;
+}) {
+  const { colors, fonts, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness, { tight: true });
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingLeft: 10,
+        gap: 10,
+      }}
+    >
+      <BottomSheetTextInput
+        value={value}
+        onChangeText={onChangeText}
+        style={{
+          flexGrow: 1,
+          minHeight: 56, // MD3_MIN_HEIGHT,
+          paddingHorizontal: 16, // MD3_INPUT_PADDING_HORIZONTAL,
+          color: colors.onSurfaceVariant,
+          backgroundColor: colors.elevation.level0,
+          borderWidth: 1,
+          borderRadius,
+          borderColor: colors.outline,
+          ...fonts.bodyLarge,
+        }}
+      />
+      <MaterialCommunityIcons
+        name="content-copy"
+        size={20}
+        color={colors.onSurface}
+        onPress={() => {
+          if (value?.length) {
+            Clipboard.setStringAsync(value).catch((e: Error) =>
+              console.log(`Clipboard error: ${e}`)
+            );
+          }
+        }}
+      />
+    </View>
+  );
+}
+
 const ConfigureRolledCondition = observer(function ({
   condition,
   dieType,
@@ -154,9 +200,9 @@ const ConfigureIdleCondition = observer(function ({
       <SliderWithValue
         unit="s"
         value={condition.period}
-        minimumValue={1}
-        maximumValue={15}
-        step={0.5}
+        minimumValue={0.5}
+        maximumValue={30}
+        step={0.1}
         onValueChange={(v) => runInAction(() => (condition.period = v))}
       />
     </>
@@ -191,36 +237,8 @@ const ConfigurePlayAnimation = observer(function ({
   conditionType: Profiles.ConditionType;
 }) {
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
-  const [overrides, setOverrides] = React.useState<Partial<AnimationOverrides>>(
-    {}
-  );
+  const defaultDuration = action.animation?.duration ?? 1;
   const { colors } = useTheme();
-  const { showActionSheetWithOptions } = useActionSheet();
-  const showOverridesActionSheet = () => {
-    const keys: AnimationOverrideName[] = AnimationOverrideNames.filter(
-      (k) => !(k in overrides)
-    );
-    showActionSheetWithOptions(
-      {
-        message: "Select Override to Add",
-        options: [...keys.map(getAnimationOverrideUserName), "Cancel"],
-        cancelButtonIndex: keys.length,
-        tintColor: colors.onSurface,
-        containerStyle: { backgroundColor: colors.background },
-        titleTextStyle: { color: colors.onSurfaceVariant },
-        messageTextStyle: { color: colors.onSurfaceVariant },
-      },
-      (selectedIndex?: number) => {
-        const key = keys[selectedIndex ?? -1];
-        if (key) {
-          setOverrides((overrides) => ({
-            ...overrides,
-            ...createAnimationOverride(key),
-          }));
-        }
-      }
-    );
-  };
   return (
     <>
       <Text variant="titleMedium">
@@ -245,22 +263,43 @@ const ConfigurePlayAnimation = observer(function ({
         visible={animPickerVisible}
         onDismiss={() => setAnimPickerVisible(false)}
       />
-      <EditAnimationOverrides
-        overrides={overrides}
-        onChangeOverrides={setOverrides}
-        style={{ marginLeft: 10 }}
+      <Text variant="titleMedium">Repeat</Text>
+      <SliderWithValue
+        value={action.loopCount}
+        minimumValue={1}
+        maximumValue={10}
+        step={1}
+        onValueChange={(v) => runInAction(() => (action.loopCount = v))}
       />
-      <GradientButton
-        outline
-        disabled={!action.animation}
-        onPress={showOverridesActionSheet}
-        style={{
-          marginHorizontal: 10,
-          marginTop: Object.keys(overrides).length ? 10 : 0,
-        }}
-      >
-        Add Animation Override
-      </GradientButton>
+      <Text variant="titleMedium">Duration Override</Text>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <TouchableRipple
+          disabled={action.duration === undefined}
+          style={{ padding: 10, paddingRight: 20, zIndex: 1 }} // Render on top of scaled slider
+          onPress={() => runInAction(() => (action.duration = undefined))}
+        >
+          <MaterialCommunityIcons
+            name="refresh"
+            size={20}
+            color={
+              action.duration === undefined
+                ? colors.onSurfaceDisabled
+                : colors.onSurface
+            }
+          />
+        </TouchableRipple>
+        <View style={{ flexGrow: 1 }}>
+          <SliderWithValue
+            unit="s"
+            fractionDigits={1}
+            value={action.duration ?? defaultDuration}
+            minimumValue={0.1}
+            maximumValue={10}
+            step={0.1}
+            onValueChange={(v) => runInAction(() => (action.duration = v))}
+          />
+        </View>
+      </View>
     </>
   );
 });
@@ -294,27 +333,13 @@ const ConfigureSpeakText = observer(function ({
 }: {
   action: Profiles.ActionSpeakText;
 }) {
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <>
       <Text variant="titleMedium">Text to Read</Text>
-      <BottomSheetTextInput
-        // mode="outlined"
-        // dense
-        style={{
-          color: colors.onSurfaceVariant,
-          backgroundColor: colors.elevation.level0,
-          borderWidth: 1,
-          borderRadius,
-          borderColor: colors.outline,
-        }}
+      <TextInput
         value={action.text}
         onChangeText={(t) => runInAction(() => (action.text = t))}
       />
-      <GradientButton outline onPress={() => {}}>
-        Copy
-      </GradientButton>
       <Text variant="titleMedium">Volume</Text>
       <SliderWithValue
         unit="%"
@@ -333,27 +358,18 @@ const ConfigureMakeWebRequest = observer(function ({
 }: {
   action: Profiles.ActionMakeWebRequest;
 }) {
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <>
       <Text variant="titleMedium">URL</Text>
-      <BottomSheetTextInput
-        // mode="outlined"
-        // dense
+      <TextInput
         value={action.url}
         onChangeText={(t) => runInAction(() => (action.url = t))}
-        style={{
-          color: colors.onSurfaceVariant,
-          backgroundColor: colors.elevation.level0,
-          borderWidth: 1,
-          borderRadius,
-          borderColor: colors.outline,
-        }}
       />
-      <GradientButton outline onPress={() => {}}>
-        Copy
-      </GradientButton>
+      <Text variant="titleMedium">Parameters</Text>
+      <TextInput
+        value={action.value}
+        onChangeText={(t) => runInAction(() => (action.value = t))}
+      />
     </>
   );
 });
@@ -399,7 +415,7 @@ export const ConfigureActionModal = observer(function ({
         <BottomSheetBackdrop
           appearsOnIndex={0}
           disappearsOnIndex={-1}
-          pressBehavior="none"
+          pressBehavior="close"
           {...props}
         />
       )}

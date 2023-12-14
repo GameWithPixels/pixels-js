@@ -18,9 +18,13 @@ function getActionText(action: Profiles.Action) {
   switch (action.type) {
     case "playAnimation": {
       const act = action as Profiles.ActionPlayAnimation;
-      return `Play "${act.animation?.name ?? ""}" ${getCountText(
+      let msg = `Play "${act.animation?.name ?? ""}" ${getCountText(
         act.loopCount
       )}`;
+      if (act.duration !== undefined) {
+        msg += ` for ${act.duration.toFixed(1)}s`;
+      }
+      return msg;
     }
     case "playAudioClip": {
       const act = action as Profiles.ActionPlayAudioClip;

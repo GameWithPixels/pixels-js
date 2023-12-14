@@ -7,7 +7,6 @@ import {
   TouchableRippleProps,
   TouchableRipple,
 } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { makeTransparent } from "./utils";
 
@@ -89,15 +88,8 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     (style && "display" in style && typeof style.display === "string" // TODO ignoring animated value
       ? style?.display
       : undefined) ?? "flex";
-  const { bottom } = useSafeAreaInsets();
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        display,
-        paddingBottom: bottom,
-      }}
-    >
+    <View style={{ flexDirection: "row", display }}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =

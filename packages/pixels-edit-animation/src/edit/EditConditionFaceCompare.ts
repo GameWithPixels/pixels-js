@@ -50,15 +50,15 @@ export default class EditConditionFaceCompare extends EditCondition {
     if (this.face === -1) {
       return "all";
     } else {
-      let val = this.face | 0;
-      let i = 1;
+      let bits = this.face < 0 ? 0x7fffffff : this.face | 0; // Convert to 32 bits
+      let face = 1;
       const faces = [];
-      while (val) {
-        if (val & 1) {
-          faces.push(i);
+      while (bits && face <= 20) {
+        if (bits & 1) {
+          faces.push(face);
         }
-        val = val >> 1;
-        ++i;
+        bits = bits >> 1;
+        ++face;
       }
       return faces;
     }

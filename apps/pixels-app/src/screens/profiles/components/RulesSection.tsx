@@ -4,7 +4,7 @@ import { Text } from "react-native-paper";
 import { RuleCard, RuleIndex } from "./RuleCard";
 
 import { SlideInView } from "~/components/SlideInView";
-import { getConditionTypeLabel } from "~/descriptions";
+import { getConditionFlagLabel, getConditionTypeLabel } from "~/descriptions";
 
 export type EditRuleCallback = (ruleIndex: RuleIndex) => void;
 
@@ -34,7 +34,7 @@ export function RulesSection({
           flagName={flagName}
           onPress={() => onEditRule({ profileUuid, conditionType, flagName })}
         >
-          {flagName}
+          {getConditionFlagLabel(flagName)}
         </RuleCard>
       ))}
     </SlideInView>

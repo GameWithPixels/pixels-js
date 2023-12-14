@@ -133,14 +133,14 @@ function ProfileAdvancedActions({
       >
         Edit Advanced Rules
       </TightTextButton>
-      <TightTextButton
+      {/* <TightTextButton
         icon={({ size, color }) => (
           <MaterialCommunityIcons name="share" size={size} color={color} />
         )}
         labelStyle={{ textDecorationLine: "underline" }}
       >
         Share
-      </TightTextButton>
+      </TightTextButton> */}
       {children}
       {onDelete && (
         <TightTextButton

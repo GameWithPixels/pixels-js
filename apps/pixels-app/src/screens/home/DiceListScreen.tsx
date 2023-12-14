@@ -30,7 +30,6 @@ import {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   PixelFocusView,
@@ -56,6 +55,7 @@ import { DieWireframeCard } from "~/components/cards";
 import { DiceGrid, DiceList } from "~/components/dice";
 import { setShowIntro, setShowPromo } from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
+import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
 import { DiceListScreenProps, HomeStackParamList } from "~/navigation";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -81,7 +81,7 @@ function PairDieBottomSheet({
   }, [visible]);
 
   const [selected, setSelected] = React.useState<ScannedPixel[]>([]);
-  const { bottom } = useSafeAreaInsets();
+  const paddingBottom = useBottomSheetPadding(0);
   const theme = useTheme();
   return (
     <BottomSheetModal
@@ -103,8 +103,8 @@ function PairDieBottomSheet({
           style={{
             flex: 1,
             flexGrow: 1,
-            marginHorizontal: 10,
-            marginBottom: bottom,
+            paddingHorizontal: 10,
+            paddingBottom,
             gap: 20,
           }}
         >

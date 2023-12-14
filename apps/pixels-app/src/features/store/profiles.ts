@@ -71,7 +71,7 @@ function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
     for (let j = 0; j < actionsCount; ++j) {
       const actionType = ruleData.actions[j].type;
       if (rule.actions[j]?.type !== actionType) {
-        rule.actions[j] = Profiles.createAction(actionType);
+        rule.actions[j] = makeObservable(Profiles.createAction(actionType));
       }
       updateAction(
         rule.actions[j],

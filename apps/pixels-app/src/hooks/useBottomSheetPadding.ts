@@ -1,6 +1,6 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export function useBottomSheetPadding(): number {
+export function useBottomSheetPadding(minPadding = 15): number {
   const { bottom } = useSafeAreaInsets();
-  return Math.max(15, bottom);
+  return Math.max(minPadding, bottom);
 }

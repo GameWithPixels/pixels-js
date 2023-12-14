@@ -180,5 +180,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+    zIndex: -1,
   },
 });

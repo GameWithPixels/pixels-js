@@ -53,6 +53,19 @@ export function getConditionTypeDescription(
   }
 }
 
+export function getConditionFlagLabel(flagName: string): string {
+  const l = flagName?.length;
+  if (!l) {
+    return "";
+  } else if (l === 1) {
+    return flagName.toUpperCase();
+  } else if (flagName === "badCharging") {
+    return "Bad Charging";
+  } else {
+    return flagName.charAt(0).toUpperCase() + flagName.slice(1);
+  }
+}
+
 export function getActionTypeLabel(type: Profiles.ActionType): string {
   switch (type) {
     case "none":
