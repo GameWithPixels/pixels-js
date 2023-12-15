@@ -179,6 +179,7 @@ const ConfigureRollingCondition = observer(function ({
       <Text variant="titleMedium">Recheck After</Text>
       <SliderWithValue
         unit="s"
+        fractionDigits={1}
         value={condition.recheckAfter}
         minimumValue={1}
         maximumValue={30}

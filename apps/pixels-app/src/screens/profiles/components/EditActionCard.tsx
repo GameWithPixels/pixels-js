@@ -29,7 +29,6 @@ import { useEditableProfile } from "~/hooks";
 import { withAnimated } from "~/withAnimated";
 
 const AnimatedActionTypeIcon = withAnimated(ActionTypeIcon);
-const AnimatedActionDetailsCard = withAnimated(ActionDetailsCard);
 
 export const EditActionCard = observer(function ({
   profileUuid,
@@ -145,9 +144,7 @@ export const EditActionCard = observer(function ({
           />
         </TouchableCard>
         {hasContent && (
-          <AnimatedActionDetailsCard
-            action={action}
-            dieType={profile.dieType}
+          <Animated.View
             entering={FadeIn.duration(300).delay(100)}
             exiting={FadeOut.duration(300)}
             style={{
@@ -157,7 +154,13 @@ export const EditActionCard = observer(function ({
               gap: 10,
               pointerEvents: "none",
             }}
-          />
+          >
+            <ActionDetailsCard
+              action={action}
+              condition={condition}
+              dieType={profile.dieType}
+            />
+          </Animated.View>
         )}
       </Animated.View>
       <ConfigureActionModal

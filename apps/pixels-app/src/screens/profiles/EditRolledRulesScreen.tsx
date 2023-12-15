@@ -140,7 +140,7 @@ function RolledConditionCard({
                 gap: 5,
               }}
             >
-              <ActionDetails action={action} noActionIcon />
+              <ActionDetails action={action} />
             </View>
             {type === "playAnimation" && (
               <View style={{ width: 60, aspectRatio: 1, marginVertical: 5 }}>

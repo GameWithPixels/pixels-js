@@ -20,7 +20,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { ActionDetails } from "./ActionDetails";
+import { ActionDetails, ConditionDetails } from "./ActionDetails";
 
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { TouchableCardProps, TouchableCard } from "~/components/TouchableCard";
@@ -43,13 +43,17 @@ const RuleSummary = observer(function ({
   return (
     <View {...props}>
       {rule?.actions.length ? (
-        rule.actions.map((action, i) => (
-          <ActionDetails
-            key={action.type + i} // In case we have multiple of actions of same type
-            action={action}
-            style={styles.ruleGroupStyle}
-          />
-        ))
+        <>
+          <ConditionDetails condition={rule.condition} />
+          {rule.actions.map((action, i) => (
+            <ActionDetails
+              key={action.type + i} // In case we have multiple of actions of same type
+              action={action}
+              withIcon
+              style={styles.ruleGroupStyle}
+            />
+          ))}
+        </>
       ) : (
         <Text style={AppStyles.greyedOut}>No action</Text>
       )}

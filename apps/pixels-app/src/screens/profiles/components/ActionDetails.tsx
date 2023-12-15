@@ -14,7 +14,7 @@ function getCountText(count: number) {
   return count === 1 ? "once" : count === 2 ? "twice" : `${count} times`;
 }
 
-function getActionText(action: Profiles.Action) {
+function getActionText(action: Profiles.Action): string {
   switch (action.type) {
     case "playAnimation": {
       const act = action as Profiles.ActionPlayAnimation;
@@ -45,17 +45,34 @@ function getActionText(action: Profiles.Action) {
   }
 }
 
+function getConditionText(condition: Profiles.Condition): string | undefined {
+  switch (condition.type) {
+    case "rolling":
+      return `Recheck after ${(
+        condition as Profiles.ConditionRolling
+      ).recheckAfter.toFixed(1)}s`;
+    case "idle":
+      return `Period of ${(condition as Profiles.ConditionIdle).period.toFixed(
+        1
+      )}s`;
+    case "battery":
+      return `Recheck after ${(
+        condition as Profiles.ConditionBattery
+      ).recheckAfter.toFixed(0)}s`;
+  }
+}
+
 export const ActionDetails = observer(function ({
   action,
-  noActionIcon,
+  withIcon,
   ...props
 }: {
   action: Profiles.Action;
-  noActionIcon?: boolean;
+  withIcon?: boolean;
 } & ViewProps) {
   return (
     <View {...props}>
-      {!noActionIcon && (
+      {withIcon && (
         <View style={styles.ruleIconStyle}>
           <ActionTypeIcon
             type={action.type}
@@ -71,17 +88,31 @@ export const ActionDetails = observer(function ({
   );
 });
 
+export const ConditionDetails = observer(function ({
+  condition,
+}: {
+  condition: Profiles.Condition;
+}) {
+  const text = getConditionText(condition);
+  return text ? (
+    <View style={styles.ruleTextStyle}>
+      <Text style={AppStyles.greyedOut}>{text}</Text>
+    </View>
+  ) : null;
+});
+
 export function ActionDetailsCard({
   action,
+  condition,
   dieType,
-  ...props
 }: {
   action: Profiles.Action;
+  condition?: Profiles.Condition;
   dieType: PixelDieType;
-} & ViewProps) {
+}) {
   const actionType = action.type;
   return (
-    <View {...props}>
+    <>
       {actionType === "playAnimation" ? (
         <View
           style={{
@@ -98,20 +129,25 @@ export function ActionDetailsCard({
               gap: 5,
             }}
           >
-            <ActionDetails action={action} noActionIcon />
+            <ActionDetails action={action} />
+            {condition && <ConditionDetails condition={condition} />}
           </View>
           <View style={{ width: 60, aspectRatio: 1 }}>
             <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
           </View>
         </View>
       ) : (
-        <ActionDetails
-          action={action}
-          noActionIcon
-          style={{ marginVertical: 10 }}
-        />
+        <View
+          style={{
+            marginVertical: 10,
+            gap: 5,
+          }}
+        >
+          <ActionDetails action={action} />
+          {condition && <ConditionDetails condition={condition} />}
+        </View>
       )}
-    </View>
+    </>
   );
 }
 
