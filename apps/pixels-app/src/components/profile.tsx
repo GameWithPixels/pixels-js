@@ -24,6 +24,11 @@ import { getBorderColor, getTextColorStyle, makeTransparent } from "./utils";
 
 import { useAppSelector } from "~/app/hooks";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
+import {
+  groupAndSortProfiles,
+  ProfilesGrouping,
+  SortMode,
+} from "~/features/sortingOptions";
 
 const ProfileNameAndDescription = observer(function ({
   profile,
@@ -414,6 +419,8 @@ export function ProfileCardItem({
 export interface ProfilesListProps extends ViewProps {
   profiles: Readonly<Profiles.Profile>[];
   selected?: Readonly<Profiles.Profile>;
+  groupBy?: ProfilesGrouping;
+  sortMode?: SortMode;
   transferring?: Readonly<Profiles.Profile>;
   onSelectProfile?: (profile: Readonly<Profiles.Profile>) => void;
 }
@@ -421,6 +428,8 @@ export interface ProfilesListProps extends ViewProps {
 export function ProfilesList({
   profiles,
   selected,
+  groupBy,
+  sortMode,
   transferring,
   expandableItems,
   onSelectProfile,
@@ -428,6 +437,11 @@ export function ProfilesList({
   ...props
 }: { expandableItems?: boolean } & ProfilesListProps) {
   const expandedIndex = useSharedValue(-1);
+  // Reset selection when profiles list changes
+  React.useEffect(() => {
+    expandedIndex.value = -1;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profiles]);
   const selectProfile = (i: number, p: Readonly<Profiles.Profile>) =>
     expandableItems
       ? (expandedIndex.value = expandedIndex.value === i ? -1 : i)
@@ -442,22 +456,36 @@ export function ProfilesList({
     [expandedIndex, onSelectProfile]
   );
 
+  const profilesGroups = React.useMemo(
+    () => groupAndSortProfiles(profiles, groupBy, sortMode),
+    [profiles, groupBy, sortMode]
+  );
+
+  let index = 0;
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
-      {/* <Text variant="headlineSmall">Last Week</Text> */}
-      {profiles.map((p, i) => (
-        <ProfileCardItem
-          key={p.uuid}
-          row
-          profile={p}
-          selected={p === selected}
-          transferring={p === transferring}
-          fadeInDelay={i * 50}
-          itemIndex={i}
-          expandItemIndex={expandableItems ? expandedIndex : undefined}
-          onPress={() => selectProfile(i, p)}
-          onAction={onAction}
-        />
+      {profilesGroups.map(({ title, values: profiles }, i) => (
+        <View key={title + i} style={{ gap: 10 }}>
+          <Text variant="headlineSmall">{title}</Text>
+          {profiles.map((p) => {
+            const i = index;
+            ++index;
+            return (
+              <ProfileCardItem
+                key={p.uuid}
+                row
+                profile={p}
+                selected={p === selected}
+                transferring={p === transferring}
+                fadeInDelay={i * 50}
+                itemIndex={i}
+                expandItemIndex={expandableItems ? expandedIndex : undefined}
+                onPress={() => selectProfile(i, p)}
+                onAction={onAction}
+              />
+            );
+          })}
+        </View>
       ))}
     </View>
   );

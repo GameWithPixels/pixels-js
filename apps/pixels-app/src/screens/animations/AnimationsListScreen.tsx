@@ -7,11 +7,28 @@ import { Divider, IconButton, Menu, useTheme } from "react-native-paper";
 
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
-import { SortBottomSheet } from "~/components/SortBottomSheet";
+import {
+  SortBottomSheet,
+  SortBottomSheetSortIcon,
+} from "~/components/SortBottomSheet";
 import { AnimationsGrid, AnimationsList } from "~/components/animation";
 import { FloatingAddButton } from "~/components/buttons";
+import {
+  AnimationsGrouping,
+  AnimationsGroupingList,
+  getAnimationsGroupingLabel,
+  getSortModeIcon,
+  getSortModeLabel,
+  SortMode,
+  SortModeList,
+} from "~/features/sortingOptions";
+import {
+  setAnimationsGrouping,
+  setAnimationsSortMode,
+} from "~/features/store/appSettingsSlice";
 import { useAnimationsList } from "~/hooks";
 import {
   AnimationsListScreenProps,
@@ -28,8 +45,15 @@ function PageActions({
   viewMode: ProfilesViewMode;
   onSelectViewMode: (viewMode: ProfilesViewMode) => void;
 }) {
+  const appDispatch = useAppDispatch();
   const [visible, setVisible] = React.useState(false);
   const [sortVisible, setSortVisible] = React.useState(false);
+  const groupBy = useAppSelector(
+    (state) => state.appSettings.animationsGrouping
+  );
+  const sortMode = useAppSelector(
+    (state) => state.appSettings.animationsSortMode
+  );
   const { colors } = useTheme();
   return (
     <>
@@ -95,7 +119,21 @@ function PageActions({
         /> */}
       </HeaderBar>
       <SortBottomSheet
-        groups={["All", "Animation Type", "Die Type"]}
+        groups={AnimationsGroupingList}
+        getGroupingLabel={getAnimationsGroupingLabel as (g: string) => string}
+        groupBy={groupBy}
+        onChangeGroupBy={(group) =>
+          appDispatch(setAnimationsGrouping(group as AnimationsGrouping))
+        }
+        sortModes={SortModeList}
+        getSortModeLabel={getSortModeLabel as (g: string) => string}
+        getSortModeIcon={
+          getSortModeIcon as (mode: string) => SortBottomSheetSortIcon
+        }
+        sortMode={sortMode}
+        onChangeSortMode={(mode) =>
+          appDispatch(setAnimationsSortMode(mode as SortMode))
+        }
         visible={sortVisible}
         onDismiss={() => setSortVisible(false)}
       />

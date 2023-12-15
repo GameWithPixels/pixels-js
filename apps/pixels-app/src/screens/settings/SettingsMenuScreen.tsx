@@ -4,7 +4,7 @@ import { ScrollView } from "react-native";
 import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
-import { setShowIntro, setShowPromo } from "~/features/store/appSettingsSlice";
+import { resetAppSettingsToDefault } from "~/features/store/appSettingsSlice";
 import { removeAllPairedDie } from "~/features/store/pairedDiceSlice";
 import { resetProfilesToDefault } from "~/features/store/profilesLibrarySlice";
 import { useConfirmActionSheet } from "~/hooks";
@@ -30,8 +30,7 @@ function SettingsMenuPage({
   const showConfirmRestore = useConfirmActionSheet(
     "Restore Default Settings",
     () => {
-      appDispatch(setShowIntro(false));
-      appDispatch(setShowPromo(true));
+      appDispatch(resetAppSettingsToDefault());
       appDispatch(removeAllPairedDie());
       appDispatch(resetProfilesToDefault());
     }

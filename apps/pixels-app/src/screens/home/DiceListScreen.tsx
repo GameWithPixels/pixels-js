@@ -43,7 +43,10 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
 import { IntroSlides } from "~/components/IntroSlides";
-import { SortBottomSheet } from "~/components/SortBottomSheet";
+import {
+  SortBottomSheet,
+  SortBottomSheetSortIcon,
+} from "~/components/SortBottomSheet";
 import { AnimatedMaterialCommunityIcons } from "~/components/animated";
 import { Banner, PromoBanner } from "~/components/banners";
 import {
@@ -53,7 +56,21 @@ import {
 } from "~/components/buttons";
 import { DieWireframeCard } from "~/components/cards";
 import { DiceGrid, DiceList } from "~/components/dice";
-import { setShowIntro, setShowPromo } from "~/features/store/appSettingsSlice";
+import {
+  DiceGrouping,
+  DiceGroupingList,
+  getDiceGroupingLabel,
+  getSortModeIcon,
+  getSortModeLabel,
+  SortMode,
+  SortModeList,
+} from "~/features/sortingOptions";
+import {
+  setDiceGrouping,
+  setDiceSortMode,
+  setShowIntroSlides,
+  setShowPromoBanner,
+} from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
 import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
 import { DiceListScreenProps, HomeStackParamList } from "~/navigation";
@@ -86,7 +103,7 @@ function PairDieBottomSheet({
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={[500]}
+      snapPoints={["50%"]}
       onDismiss={onDismiss}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
@@ -166,9 +183,12 @@ function PageActions({
   viewMode: DiceViewMode;
   onSelectViewMode: (viewMode: DiceViewMode) => void;
 }) {
+  const appDispatch = useAppDispatch();
   const [visible, setVisible] = React.useState(false);
   const [sortVisible, setSortVisible] = React.useState(false);
   const [discoMode, setDiscoMode] = React.useState(false);
+  const groupBy = useAppSelector((state) => state.appSettings.diceGrouping);
+  const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
   const { colors } = useTheme();
   return (
     <>
@@ -232,7 +252,21 @@ function PageActions({
         />
       </HeaderBar>
       <SortBottomSheet
-        groups={["All", "Die Type", "Active Profile"]}
+        groups={DiceGroupingList}
+        groupBy={groupBy}
+        getGroupingLabel={getDiceGroupingLabel as (g: string) => string}
+        onChangeGroupBy={(group) =>
+          appDispatch(setDiceGrouping(group as DiceGrouping))
+        }
+        sortModes={SortModeList}
+        getSortModeLabel={getSortModeLabel as (g: string) => string}
+        getSortModeIcon={
+          getSortModeIcon as (mode: string) => SortBottomSheetSortIcon
+        }
+        sortMode={sortMode}
+        onChangeSortMode={(mode) =>
+          appDispatch(setDiceSortMode(mode as SortMode))
+        }
         visible={sortVisible}
         onDismiss={() => setSortVisible(false)}
       />
@@ -246,10 +280,12 @@ function DiceListPage({
   navigation: StackNavigationProp<HomeStackParamList>;
 }) {
   const appDispatch = useAppDispatch();
-  const hideIntro = () => appDispatch(setShowIntro(false));
-  const hidePromo = () => appDispatch(setShowPromo(false));
-  const showIntro = useAppSelector((state) => state.appSettings.showIntro);
-  const showPromo = useAppSelector((state) => state.appSettings.showPromo);
+  const showIntro = useAppSelector(
+    (state) => state.appSettings.showIntroSlides
+  );
+  const showPromo = useAppSelector(
+    (state) => state.appSettings.showPromoBanner
+  );
 
   const reconnectProgress = useSharedValue(0);
   const [reconnect, setReconnect] = React.useState(false);
@@ -391,7 +427,7 @@ function DiceListPage({
             <PromoBanner
               visible={showPromo}
               collapsedMarginBottom={-10}
-              onHide={hidePromo}
+              onHide={() => appDispatch(setShowPromoBanner(false))}
             />
           )}
           {isFocus && selectedPixel && (
@@ -482,7 +518,11 @@ function DiceListPage({
         viewMode={viewMode}
         onSelectViewMode={(vm) => setViewMode(vm)}
       />
-      <IntroSlides pixels={pixels} visible={showIntro} onDismiss={hideIntro} />
+      <IntroSlides
+        pixels={pixels}
+        visible={showIntro}
+        onDismiss={() => appDispatch(setShowIntroSlides(false))}
+      />
       <PairDieBottomSheet
         availablePixels={availablePixels}
         visible={pairVisible}

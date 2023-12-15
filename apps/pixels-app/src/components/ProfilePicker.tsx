@@ -9,7 +9,10 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 
-import { AnimatedProfileSearchbar } from "./AnimatedProfileSearchbar";
+import {
+  AnimatedProfileSearchbar,
+  profileSearchbarMinHeight,
+} from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
 import { useProfilesList } from "~/hooks";
@@ -31,15 +34,10 @@ export function ProfilePicker({
   const profiles = useProfilesList();
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);
-  const searchbarHeight = 100;
+  const searchbarHeight = profileSearchbarMinHeight;
 
   const [filter, setFilter] = React.useState("");
-  const [group, setGroup] = React.useState("");
-  const toggleGroup = React.useCallback(
-    (g: string) => setGroup((group) => (group === g ? "" : g)),
-    []
-  );
-  const filteredProfiles = useFilteredProfiles(profiles, filter, group);
+  const filteredProfiles = useFilteredProfiles(profiles, filter, dieType);
 
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
@@ -56,8 +54,6 @@ export function ProfilePicker({
           <AnimatedProfileSearchbar
             filter={filter}
             setFilter={setFilter}
-            selectedGroup={group}
-            toggleGroup={toggleGroup}
             positionY={scrollHandler}
             headerHeight={searchbarHeight}
           />

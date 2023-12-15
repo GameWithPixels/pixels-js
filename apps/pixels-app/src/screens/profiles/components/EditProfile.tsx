@@ -11,7 +11,7 @@ import { RuleCard } from "./RuleCard";
 import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
 import { helloGoodbyeFlags } from "~/actionTypes";
-import { useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 import {
@@ -21,6 +21,7 @@ import {
 } from "~/components/buttons";
 import { getConditionTypeLabel } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
+import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
 import { useEditableProfile } from "~/hooks";
 
 const EditProfileName = observer(function ({
@@ -182,7 +183,8 @@ export function EditProfile({
   onEditAdvancedRules: () => void;
   onDelete?: () => void;
 } & ViewProps) {
-  const [showHelpBanner, setShowHelpBanner] = React.useState(true);
+  const appDispatch = useAppDispatch();
+  const showHelp = useAppSelector((state) => state.appSettings.showProfileHelp);
   const profile = useEditableProfile(profileUuid);
   const { colors } = useTheme();
   return (
@@ -217,8 +219,8 @@ export function EditProfile({
       >
         {unnamed && (
           <Banner
-            visible={showHelpBanner}
-            onDismiss={() => setShowHelpBanner(false)}
+            visible={showHelp}
+            onDismiss={() => appDispatch(setShowProfileHelp(false))}
           >
             How to customize profile blah blah.
           </Banner>

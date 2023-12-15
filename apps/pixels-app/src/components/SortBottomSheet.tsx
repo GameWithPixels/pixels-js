@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   BottomSheetModal,
   BottomSheetBackdrop,
@@ -10,26 +9,36 @@ import { useTheme, Text, ThemeProvider } from "react-native-paper";
 
 import { SelectionButton } from "./buttons";
 
-import SortAZIcon from "#/icons/items-view/sort-a-z";
-import SortZAIcon from "#/icons/items-view/sort-z-a";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
-function SortByDateIcon({ size, color }: { size?: number; color?: string }) {
-  return (
-    <MaterialCommunityIcons
-      name="sort-calendar-descending"
-      size={size}
-      color={color}
-    />
-  );
-}
+export type SortBottomSheetSortIcon = (props: {
+  size: number;
+  color: string;
+}) => React.ReactNode;
 
+// TODO type groupBy, onChangeGroupBy, sortMode, onChangeSortMode props
 export function SortBottomSheet({
   groups,
+  getGroupingLabel,
+  groupBy,
+  onChangeGroupBy,
+  sortModes,
+  getSortModeLabel,
+  getSortModeIcon,
+  sortMode,
+  onChangeSortMode,
   visible,
   onDismiss,
 }: {
-  groups: string[];
+  groups: readonly string[];
+  getGroupingLabel?: (mode: string) => string;
+  groupBy: string;
+  onChangeGroupBy: (group: string) => void;
+  sortModes: readonly string[];
+  getSortModeLabel?: (mode: string) => string;
+  getSortModeIcon?: (mode: string) => SortBottomSheetSortIcon;
+  sortMode: string;
+  onChangeSortMode: (mode: string) => void;
   visible: boolean;
   onDismiss: () => void;
 }) {
@@ -42,14 +51,11 @@ export function SortBottomSheet({
     }
   }, [visible]);
 
-  const [groupBy, setGroupBy] = React.useState(groups[0]);
-  const [sort, setSort] = React.useState("Alphabetically");
-
   const theme = useTheme();
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={[540]}
+      enableDynamicSizing
       onDismiss={onDismiss}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
@@ -72,27 +78,25 @@ export function SortBottomSheet({
                 noTopBorder={i > 0}
                 squaredTopBorder={i > 0}
                 squaredBottomBorder={i < 2}
-                onPress={() => setGroupBy(g)}
+                onPress={() => onChangeGroupBy(g)}
               >
-                {g}
+                {getGroupingLabel?.(g) ?? g}
               </SelectionButton>
             ))}
           </View>
           <Text variant="titleMedium">Sort</Text>
           <View>
-            {["Alphabetically", "Reverse", "Date"].map((s, i) => (
+            {sortModes.map((s, i) => (
               <SelectionButton
                 key={s}
-                selected={sort === s}
+                selected={sortMode === s}
                 noTopBorder={i > 0}
                 squaredTopBorder={i > 0}
                 squaredBottomBorder={i < 1}
-                icon={
-                  i === 0 ? SortAZIcon : i === 1 ? SortZAIcon : SortByDateIcon
-                }
-                onPress={() => setSort(s)}
+                icon={getSortModeIcon?.(s)}
+                onPress={() => onChangeSortMode(s)}
               >
-                {s}
+                {getSortModeLabel?.(s) ?? s}
               </SelectionButton>
             ))}
           </View>

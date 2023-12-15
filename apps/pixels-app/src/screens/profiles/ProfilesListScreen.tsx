@@ -11,12 +11,32 @@ import Animated, {
 
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
-import { AnimatedProfileSearchbar } from "~/components/AnimatedProfileSearchbar";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  AnimatedProfileSearchbar,
+  profileSearchbarMinHeight,
+} from "~/components/AnimatedProfileSearchbar";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
-import { SortBottomSheet } from "~/components/SortBottomSheet";
+import {
+  SortBottomSheet,
+  SortBottomSheetSortIcon,
+} from "~/components/SortBottomSheet";
 import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
+import {
+  getProfilesGroupingLabel,
+  getSortModeIcon,
+  getSortModeLabel,
+  ProfilesGrouping,
+  ProfilesGroupingList,
+  SortMode,
+  SortModeList,
+} from "~/features/sortingOptions";
+import {
+  setProfilesGrouping,
+  setProfilesSortMode,
+} from "~/features/store/appSettingsSlice";
 import { useProfilesList } from "~/hooks";
 import { useFilteredProfiles } from "~/hooks/useFilteredProfiles";
 import { ProfilesListScreenProps, ProfilesStackParamList } from "~/navigation";
@@ -31,8 +51,13 @@ function PageActions({
   viewMode: ProfilesViewMode;
   onSelectViewMode: (viewMode: ProfilesViewMode) => void;
 }) {
+  const appDispatch = useAppDispatch();
   const [visible, setVisible] = React.useState(false);
   const [sortVisible, setSortVisible] = React.useState(false);
+  const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
+  const sortMode = useAppSelector(
+    (state) => state.appSettings.profilesSortMode
+  );
   const { colors } = useTheme();
   return (
     <>
@@ -98,7 +123,21 @@ function PageActions({
         /> */}
       </HeaderBar>
       <SortBottomSheet
-        groups={["Last Activation", "Die Type", "Group Name", "Creation Date"]}
+        groups={ProfilesGroupingList}
+        groupBy={groupBy}
+        getGroupingLabel={getProfilesGroupingLabel as (g: string) => string}
+        onChangeGroupBy={(group) =>
+          appDispatch(setProfilesGrouping(group as ProfilesGrouping))
+        }
+        sortModes={SortModeList}
+        getSortModeLabel={getSortModeLabel as (g: string) => string}
+        getSortModeIcon={
+          getSortModeIcon as (mode: string) => SortBottomSheetSortIcon
+        }
+        sortMode={sortMode}
+        onChangeSortMode={(mode) =>
+          appDispatch(setProfilesSortMode(mode as SortMode))
+        }
         visible={sortVisible}
         onDismiss={() => setSortVisible(false)}
       />
@@ -113,21 +152,21 @@ function ProfilesListPage({
 }) {
   const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
+  const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
+  const sortMode = useAppSelector(
+    (state) => state.appSettings.profilesSortMode
+  );
+
   const editProfile = (profile: Readonly<Profiles.Profile>) =>
     navigation.navigate("editProfile", { profileUuid: profile.uuid });
 
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);
-  const searchbarHeight = 100;
+  const searchbarHeight = profileSearchbarMinHeight;
   const initialPosition = searchbarHeight + (viewMode === "grid" ? 10 : 50);
 
   const [filter, setFilter] = React.useState("");
-  const [group, setGroup] = React.useState("");
-  const toggleGroup = React.useCallback(
-    (g: string) => setGroup((group) => (group === g ? "" : g)),
-    []
-  );
-  const filteredProfiles = useFilteredProfiles(profiles, filter, group);
+  const filteredProfiles = useFilteredProfiles(profiles, filter);
 
   React.useEffect(() => {
     aref.current?.scrollTo({ y: initialPosition, animated: false });
@@ -151,8 +190,6 @@ function ProfilesListPage({
           <AnimatedProfileSearchbar
             filter={filter}
             setFilter={setFilter}
-            selectedGroup={group}
-            toggleGroup={toggleGroup}
             positionY={scrollHandler}
             headerHeight={searchbarHeight}
           />
@@ -167,6 +204,8 @@ function ProfilesListPage({
             profiles={filteredProfiles}
             expandableItems
             onSelectProfile={editProfile}
+            groupBy={groupBy}
+            sortMode={sortMode}
           />
         )}
       </Animated.ScrollView>

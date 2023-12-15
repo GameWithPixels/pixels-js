@@ -311,6 +311,8 @@ function toActions(
   });
 }
 
+const defaultCreationTime = new Date(2023, 0, 1).getTime();
+
 function toProfile(
   profile: Json.Profile,
   animationUuidsMap: Readonly<Map<number, string>>,
@@ -328,8 +330,8 @@ function toProfile(
     description: profile.description ?? "",
     dieType: "d20",
     group: "template",
-    creationDate: new Date(2023, 0, 1).getTime(),
-    lastChanged: new Date(2023, 0, 1).getTime(),
+    creationDate: defaultCreationTime,
+    lastChanged: defaultCreationTime,
     lastUsed: 0,
     conditions,
     actions,
