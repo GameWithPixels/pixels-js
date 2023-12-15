@@ -4,11 +4,15 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import { useFocusEffect } from "@react-navigation/native";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
+import {
+  getPixel,
+  Pixel,
+  useScannedPixelNotifiers,
+} from "@systemic-games/react-native-pixels-connect";
 import { Image, ImageProps } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
   ScrollView,
@@ -21,9 +25,6 @@ import {
 import {
   ActivityIndicator,
   Button,
-  Modal,
-  ModalProps,
-  Portal,
   Switch,
   SwitchProps,
   Text,
@@ -37,11 +38,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppBackground } from "./AppBackground";
-import { GradientButton, OutlineButton } from "./buttons";
-import { DieWireframeCard } from "./cards";
-import { makeTransparent } from "./utils";
-
+import { useAppDispatch } from "~/app/hooks";
+import { AppBackground } from "~/components/AppBackground";
+import { GradientButton, OutlineButton } from "~/components/buttons";
+import { DieWireframeCard } from "~/components/cards";
+import { makeTransparent } from "~/components/utils";
+import { setShowOnboarding } from "~/features/store/appSettingsSlice";
+import { OnboardingScreenProps } from "~/navigation";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function LightUpYourGameImage({
@@ -67,43 +70,33 @@ function Slide({
   ...props
 }: { title?: string; contentStyle?: StyleProp<ViewStyle> } & ViewProps) {
   const { width } = useWindowDimensions();
-  const { colors } = useTheme();
   return (
-    <LinearGradient
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      colors={[
-        makeTransparent(colors.primary, 0.2),
-        makeTransparent(colors.secondary, 0.2),
+    <View
+      style={[
+        {
+          width,
+          height: "100%",
+          flex: 1,
+          paddingHorizontal: 30,
+          paddingTop: title ? 50 : 0,
+          paddingBottom: 40,
+          justifyContent: "space-between",
+        },
+        style,
       ]}
+      {...props}
     >
-      <View
-        style={[
-          {
-            width,
-            height: "100%",
-            flex: 1,
-            paddingHorizontal: 30,
-            paddingTop: title ? 50 : 0,
-            paddingBottom: 40,
-            justifyContent: "space-between",
-          },
-          style,
-        ]}
-        {...props}
-      >
-        {title && (
-          <Text
-            variant="titleLarge"
-            style={{ alignSelf: "center" }}
-            children={title}
-          />
-        )}
-        <View style={[{ flexShrink: 1, flexGrow: 1 }, contentStyle]}>
-          {children}
-        </View>
+      {title && (
+        <Text
+          variant="titleLarge"
+          style={{ alignSelf: "center" }}
+          children={title}
+        />
+      )}
+      <View style={[{ flexShrink: 1, flexGrow: 1 }, contentStyle]}>
+        {children}
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -515,64 +508,74 @@ function ReadySlide({ onDone }: { onDone: () => void }) {
   );
 }
 
-export function IntroSlides({
-  pixels,
-  style,
-  onDismiss,
-  ...props
-}: { pixels: Pixel[] } & Omit<ModalProps, "children">) {
+function OnboardingPage({
+  navigation,
+}: {
+  navigation: OnboardingScreenProps["navigation"];
+}) {
+  const appDispatch = useAppDispatch();
+
+  const [scannedPixels, scannerDispatch] = useScannedPixelNotifiers();
+  const pixels = React.useMemo(
+    () =>
+      scannedPixels
+        .map((p) => getPixel(p.pixelId))
+        .filter((p): p is Pixel => !!p),
+    [scannedPixels]
+  );
+  useFocusEffect(
+    React.useCallback(() => {
+      scrollRef.current?.scrollTo({ x: 0, animated: false });
+      scannerDispatch("start");
+      return () => scannerDispatch("stop");
+    }, [scannerDispatch])
+  );
+
   const [index, setIndex] = React.useState(0);
   const scrollRef = React.useRef<ScrollView>(null);
-  React.useEffect(() => {
-    if (scrollRef && !props.visible) {
-      // Reset when hiding
-      scrollRef.current?.scrollTo({ x: 0 });
-      setIndex(0);
-    }
-  }, [props.visible]);
   const { width } = useWindowDimensions();
   const scrollTo = (page: number) =>
     scrollRef.current?.scrollTo({ x: page * width });
   return (
-    <Portal>
-      <Modal
-        dismissable={false}
-        onDismiss={onDismiss}
-        contentContainerStyle={[{ width, height: "100%" }, style]}
-        {...props}
+    <>
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        scrollEnabled={false}
+        onScroll={({ nativeEvent: { contentOffset } }) =>
+          setIndex(Math.round(contentOffset.x / width))
+        }
+        scrollEventThrottle={100}
       >
-        <AppBackground>
-          <ScrollView
-            ref={scrollRef}
-            horizontal
-            pagingEnabled
-            scrollEnabled={false}
-            onScroll={({ nativeEvent: { contentOffset } }) =>
-              setIndex(Math.round(contentOffset.x / width))
-            }
-            scrollEventThrottle={100}
-          >
-            <WelcomeSlide onNext={() => scrollTo(1)} />
-            <HealthSlide onNext={() => scrollTo(2)} />
-            <SettingsSlide onNext={() => scrollTo(3)} />
-            <ScanSlide pixels={pixels} onNext={() => scrollTo(4)} />
-            <UpdateDiceSlide pixels={pixels} onNext={() => scrollTo(5)} />
-            <ReadySlide onDone={() => onDismiss?.()} />
-          </ScrollView>
-          <View
-            style={{
-              position: "absolute",
-              width: "100%",
-              height: 40,
-              bottom: 0,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 20,
-            }}
-          >
-            <Text>{index + 1} / 6</Text>
-            {/* {range(6).map((i) => (
+        <WelcomeSlide onNext={() => scrollTo(1)} />
+        <HealthSlide onNext={() => scrollTo(2)} />
+        <SettingsSlide onNext={() => scrollTo(3)} />
+        <ScanSlide pixels={pixels} onNext={() => scrollTo(4)} />
+        <UpdateDiceSlide pixels={pixels} onNext={() => scrollTo(5)} />
+        <ReadySlide
+          onDone={() => {
+            appDispatch(setShowOnboarding(false));
+            navigation.navigate("home");
+          }}
+        />
+      </ScrollView>
+
+      {/* Bottom page indicator */}
+      <View
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: 40,
+          bottom: 0,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+        }}
+      >
+        <Text>{index + 1} / 6</Text>
+        {/* {range(6).map((i) => (
               <View
                 key={i}
                 style={{
@@ -586,9 +589,15 @@ export function IntroSlides({
                 }}
               />
             ))} */}
-          </View>
-        </AppBackground>
-      </Modal>
-    </Portal>
+      </View>
+    </>
+  );
+}
+
+export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
+  return (
+    <AppBackground>
+      <OnboardingPage navigation={navigation} />
+    </AppBackground>
   );
 }

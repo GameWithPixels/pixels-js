@@ -1,4 +1,3 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
@@ -9,10 +8,7 @@ import { actionTypes } from "~/actionTypes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { getConditionTypeLabel } from "~/descriptions";
-import {
-  EditProfileSubStackParamList,
-  EditRuleScreenProps,
-} from "~/navigation";
+import { EditRuleScreenProps } from "~/navigation";
 
 function EditRulePage({
   profileUuid,
@@ -20,7 +16,7 @@ function EditRulePage({
   flagName,
   navigation,
 }: RuleIndex & {
-  navigation: NativeStackNavigationProp<EditProfileSubStackParamList>;
+  navigation: EditRuleScreenProps["navigation"];
 }) {
   return (
     <>

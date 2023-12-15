@@ -6,7 +6,6 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   Pixel,
   ScannedPixel,
@@ -42,7 +41,6 @@ import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
-import { IntroSlides } from "~/components/IntroSlides";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
@@ -68,12 +66,11 @@ import {
 import {
   setDiceGrouping,
   setDiceSortMode,
-  setShowIntroSlides,
   setShowPromoBanner,
 } from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
 import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
-import { DiceListScreenProps, HomeStackParamList } from "~/navigation";
+import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -277,12 +274,9 @@ function PageActions({
 function DiceListPage({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<HomeStackParamList, "diceList">;
+  navigation: DiceListScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-  const showIntro = useAppSelector(
-    (state) => state.appSettings.showIntroSlides
-  );
   const showPromo = useAppSelector(
     (state) => state.appSettings.showPromoBanner
   );
@@ -522,11 +516,6 @@ function DiceListPage({
       <PageActions
         viewMode={viewMode}
         onSelectViewMode={(vm) => setViewMode(vm)}
-      />
-      <IntroSlides
-        pixels={pixels}
-        visible={showIntro}
-        onDismiss={() => appDispatch(setShowIntroSlides(false))}
       />
       <PairDieBottomSheet
         availablePixels={availablePixels}

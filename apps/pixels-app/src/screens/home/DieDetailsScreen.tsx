@@ -1,5 +1,4 @@
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   Pixel,
   usePixelStatus,
@@ -17,7 +16,7 @@ import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
 import { ProfileCard } from "~/components/profile";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
-import { DieDetailsScreenProps, HomeStackParamList } from "~/navigation";
+import { DieDetailsScreenProps } from "~/navigation";
 import { Colors } from "~/themes";
 
 export function generateRollStats(pixel: Pixel): number[] {
@@ -168,7 +167,7 @@ function DieDetailsPage({
   navigation,
 }: {
   pixelId: number;
-  navigation: NativeStackNavigationProp<HomeStackParamList>;
+  navigation: DieDetailsScreenProps["navigation"];
 }) {
   const pixel = usePairedPixel(pixelId);
   const { activeProfile } = useActiveProfile(pixel);

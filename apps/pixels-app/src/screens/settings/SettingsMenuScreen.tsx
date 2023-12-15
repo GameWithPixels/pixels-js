@@ -1,4 +1,3 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ScrollView } from "react-native";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -8,7 +7,7 @@ import { resetAppSettingsToDefault } from "~/features/store/appSettingsSlice";
 import { removeAllPairedDie } from "~/features/store/pairedDiceSlice";
 import { resetProfilesToDefault } from "~/features/store/profilesLibrarySlice";
 import { useConfirmActionSheet } from "~/hooks";
-import { SettingsMenuScreenProps, SettingsStackParamList } from "~/navigation";
+import { SettingsMenuScreenProps } from "~/navigation";
 
 const pages = [
   "Audio Clips",
@@ -24,7 +23,7 @@ const pages = [
 function SettingsMenuPage({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<SettingsStackParamList, "settingsMenu">;
+  navigation: SettingsMenuScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
   const showConfirmRestore = useConfirmActionSheet(
@@ -33,6 +32,7 @@ function SettingsMenuPage({
       appDispatch(resetAppSettingsToDefault());
       appDispatch(removeAllPairedDie());
       appDispatch(resetProfilesToDefault());
+      navigation.navigate("onboarding");
     }
   );
   const openPage = (page: (typeof pages)[number]) => {

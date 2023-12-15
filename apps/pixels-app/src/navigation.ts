@@ -1,3 +1,5 @@
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import { CompositeScreenProps } from "@react-navigation/native";
 import {
   NativeStackNavigationOptions,
   NativeStackScreenProps,
@@ -9,6 +11,7 @@ import { RuleIndex } from "./screens/profiles/components/RuleCard";
 
 // Root screens
 export type BottomTabParamList = {
+  onboarding: undefined;
   home: undefined;
   profiles: undefined;
   animations: undefined;
@@ -16,6 +19,11 @@ export type BottomTabParamList = {
 };
 
 export type RootScreenName = keyof BottomTabParamList;
+
+export type OnboardingScreenProps = NativeStackScreenProps<
+  BottomTabParamList,
+  "onboarding"
+>;
 
 export type HomeStackProps = NativeStackScreenProps<BottomTabParamList, "home">;
 
@@ -143,9 +151,9 @@ export type SettingsStackParamList = {
   systemInfo: undefined;
 };
 
-export type SettingsMenuScreenProps = NativeStackScreenProps<
-  SettingsStackParamList,
-  "settingsMenu"
+export type SettingsMenuScreenProps = CompositeScreenProps<
+  NativeStackScreenProps<SettingsStackParamList, "settingsMenu">,
+  BottomTabScreenProps<BottomTabParamList, "settings">
 >;
 
 export type SettingsInfoScreenProps = NativeStackScreenProps<

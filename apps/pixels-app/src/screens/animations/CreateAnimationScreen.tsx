@@ -1,4 +1,3 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -9,10 +8,7 @@ import { TabsHeaders } from "~/components/TabsHeaders";
 import { AnimationsGrid } from "~/components/animation";
 import { TightTextButton } from "~/components/buttons";
 import { useAnimationsList } from "~/hooks";
-import {
-  AnimationsStackParamList,
-  CreateAnimationScreenProps,
-} from "~/navigation";
+import { CreateAnimationScreenProps } from "~/navigation";
 
 export function createAnimation(name: string): Profiles.Animation {
   return new Profiles.AnimationFlashes({
@@ -26,10 +22,7 @@ const tabsNames = ["Templates", "Animations"];
 function CreateAnimationPage({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<
-    AnimationsStackParamList,
-    "createAnimation"
-  >;
+  navigation: CreateAnimationScreenProps["navigation"];
 }) {
   const animations = useAnimationsList();
   const templates = React.useMemo(

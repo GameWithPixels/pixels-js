@@ -26,6 +26,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
+import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
@@ -37,6 +38,7 @@ import {
 } from "./navigation";
 import { AnimationsStack } from "./screens/animations";
 import { HomeStack } from "./screens/home";
+import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
 import { AppDarkTheme, PixelThemes } from "./themes";
@@ -65,13 +67,25 @@ function getTabBarStyle<T extends object>(
 }
 
 function AppPage() {
+  const showOnboarding = useAppSelector(
+    (state) => state.appSettings.showOnboarding
+  );
   const theme = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Tab.Navigator
         tabBar={(props) => <TabBar {...props} />}
         screenOptions={{ headerShown: false }}
+        initialRouteName={showOnboarding ? "onboarding" : "home"}
       >
+        <Tab.Screen
+          name="onboarding"
+          component={OnboardingScreen}
+          options={{
+            tabBarItemStyle: { display: "none" },
+            tabBarStyle: { display: "none" },
+          }}
+        />
         <Tab.Screen
           name="home"
           component={HomeStack}

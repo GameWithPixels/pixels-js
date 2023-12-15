@@ -1,4 +1,3 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
@@ -10,14 +9,14 @@ import { RuleIndex } from "../profiles/components/RuleCard";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
-import { EditDieProfileScreenProps, HomeStackParamList } from "~/navigation";
+import { EditDieProfileScreenProps } from "~/navigation";
 
 function EditDieProfilePage({
   pixelId,
   navigation,
 }: {
   pixelId: number;
-  navigation: NativeStackNavigationProp<HomeStackParamList>;
+  navigation: EditDieProfileScreenProps["navigation"];
 }) {
   const pixel = usePairedPixel(pixelId);
   const pixelName = usePixelValue(pixel, "name");

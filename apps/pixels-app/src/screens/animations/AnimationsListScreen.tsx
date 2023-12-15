@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -30,10 +29,7 @@ import {
   setAnimationsSortMode,
 } from "~/features/store/appSettingsSlice";
 import { useAnimationsList } from "~/hooks";
-import {
-  AnimationsListScreenProps,
-  AnimationsStackParamList,
-} from "~/navigation";
+import { AnimationsListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
 type ProfilesViewMode = "list" | "grid";
@@ -144,10 +140,7 @@ function PageActions({
 function AnimationsListPage({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<
-    AnimationsStackParamList,
-    "animationsList"
-  >;
+  navigation: AnimationsListScreenProps["navigation"];
 }) {
   const animations = useAnimationsList();
   const editAnimation = (animation: Readonly<Profiles.Animation>) => {

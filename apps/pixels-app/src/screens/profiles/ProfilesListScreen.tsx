@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
@@ -39,7 +38,7 @@ import {
 } from "~/features/store/appSettingsSlice";
 import { useProfilesList } from "~/hooks";
 import { useFilteredProfiles } from "~/hooks/useFilteredProfiles";
-import { ProfilesListScreenProps, ProfilesStackParamList } from "~/navigation";
+import { ProfilesListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
 type ProfilesViewMode = "list" | "grid";
@@ -148,7 +147,7 @@ function PageActions({
 function ProfilesListPage({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<ProfilesStackParamList, "profilesList">;
+  navigation: ProfilesListScreenProps["navigation"];
 }) {
   const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");

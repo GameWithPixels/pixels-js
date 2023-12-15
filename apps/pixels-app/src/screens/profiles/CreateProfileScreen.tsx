@@ -1,4 +1,3 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   PixelDieType,
   Profiles,
@@ -16,7 +15,7 @@ import { getDieTypeLabel } from "~/descriptions";
 import { sortedDieTypes } from "~/dieTypes";
 import generateUuid from "~/features/generateUuid";
 import { useEditProfilesList, useProfilesList } from "~/hooks";
-import { CreateProfileScreenProps, ProfilesStackParamList } from "~/navigation";
+import { CreateProfileScreenProps } from "~/navigation";
 
 const blankProfile: Readonly<Profiles.Profile> = new Profiles.Profile({
   uuid: generateUuid(),
@@ -60,10 +59,7 @@ function DieTypesSelector({
 function CreateProfilePage({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<
-    ProfilesStackParamList,
-    "createProfile"
-  >;
+  navigation: CreateProfileScreenProps["navigation"];
 }) {
   const profiles = useProfilesList();
   const { addProfile } = useEditProfilesList();

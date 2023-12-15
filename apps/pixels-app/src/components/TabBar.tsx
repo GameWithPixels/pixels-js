@@ -1,6 +1,6 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
-import { View } from "react-native";
+import { Animated, StyleProp, View, ViewStyle } from "react-native";
 import {
   MD3Theme,
   Text,
@@ -82,16 +82,28 @@ function TabButton({
   );
 }
 
+function getDisplayProp(
+  style?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>
+): "flex" | "none" | undefined {
+  return style && "display" in style && typeof style.display === "string" // TODO ignoring animated value
+    ? style?.display
+    : undefined;
+}
+
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const style = descriptors[state.routes[state.index].key].options.tabBarStyle;
   const display =
-    (style && "display" in style && typeof style.display === "string" // TODO ignoring animated value
-      ? style?.display
-      : undefined) ?? "flex";
+    getDisplayProp(
+      descriptors[state.routes[state.index].key].options.tabBarStyle
+    ) ?? "flex";
   return (
     <View style={{ flexDirection: "row", display }}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
+        const isHidden = getDisplayProp(options.tabBarItemStyle) === "none";
+        if (isHidden) {
+          return null;
+        }
+
         const label =
           typeof options.tabBarLabel === "string"
             ? options.tabBarLabel

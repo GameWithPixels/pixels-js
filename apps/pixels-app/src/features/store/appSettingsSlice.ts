@@ -11,7 +11,7 @@ export type ThemeMode = "system" | "dark" | "light";
 
 export interface AppSettingsState {
   themeMode: ThemeMode;
-  showIntroSlides: boolean;
+  showOnboarding: boolean;
   showPromoBanner: boolean;
   showProfileHelp: boolean;
   showProfileAdvancedHelp: boolean;
@@ -25,7 +25,7 @@ export interface AppSettingsState {
 
 const initialState: AppSettingsState = {
   themeMode: "dark",
-  showIntroSlides: false,
+  showOnboarding: true,
   showPromoBanner: true,
   showProfileHelp: true,
   showProfileAdvancedHelp: true,
@@ -48,8 +48,8 @@ const appSettingsSlice = createSlice({
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
       state.themeMode = action.payload;
     },
-    setShowIntroSlides(state, action: PayloadAction<boolean>) {
-      state.showIntroSlides = action.payload;
+    setShowOnboarding(state, action: PayloadAction<boolean>) {
+      state.showOnboarding = action.payload;
     },
     setShowPromoBanner(state, action: PayloadAction<boolean>) {
       state.showPromoBanner = action.payload;
@@ -84,7 +84,7 @@ const appSettingsSlice = createSlice({
 export const {
   resetAppSettingsToDefault,
   setThemeMode,
-  setShowIntroSlides,
+  setShowOnboarding,
   setShowPromoBanner,
   setShowProfileHelp,
   setShowProfileAdvancedHelp,

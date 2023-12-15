@@ -1,5 +1,4 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -14,7 +13,7 @@ import {
   PixelDfuStatusesContext,
   usePairedPixels,
 } from "~/hooks";
-import { HomeStackParamList, FirmwareUpdateScreenProps } from "~/navigation";
+import { FirmwareUpdateScreenProps } from "~/navigation";
 
 export function useConfirmStopUpdatingActionSheet(
   onConfirm?: () => void,
@@ -54,7 +53,7 @@ function FirmwareUpdatePage({
   navigation,
 }: {
   pixels: Pixel[];
-  navigation: NativeStackNavigationProp<HomeStackParamList, "firmwareUpdate">;
+  navigation: FirmwareUpdateScreenProps["navigation"];
 }) {
   const [step, setStep] = React.useState<
     "select" | "update" | "interrupt" | "done"

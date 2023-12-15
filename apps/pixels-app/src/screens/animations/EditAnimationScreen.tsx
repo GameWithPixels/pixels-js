@@ -1,4 +1,3 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
@@ -24,10 +23,7 @@ import {
 } from "~/components/buttons";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useConfirmActionSheet, useEditableAnimation } from "~/hooks";
-import {
-  AnimationsStackParamList,
-  EditAnimationScreenProps,
-} from "~/navigation";
+import { EditAnimationScreenProps } from "~/navigation";
 
 const Header = observer(function ({
   animation,
@@ -68,7 +64,7 @@ function EditAnimationPage({
   navigation,
 }: {
   animationUuid: string;
-  navigation: NativeStackNavigationProp<AnimationsStackParamList>;
+  navigation: EditAnimationScreenProps["navigation"];
 }) {
   const animation = useEditableAnimation(animationUuid);
   const showConfirmDelete = useConfirmActionSheet("Delete", () => {

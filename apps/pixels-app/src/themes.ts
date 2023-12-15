@@ -73,6 +73,7 @@ export const PixelThemes = {
 
 export function getRootScreenTheme(screenName: RootScreenName): MD3Theme {
   switch (screenName) {
+    case "onboarding":
     case "home":
       return BlueDarkTheme;
     case "profiles":
