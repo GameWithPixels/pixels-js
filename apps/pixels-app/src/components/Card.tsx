@@ -7,18 +7,23 @@ import { makeTransparent } from "./utils";
 
 export type CardProps = ViewProps & {
   row?: boolean;
+  noBorder?: boolean;
+  frameless?: boolean;
   transparent?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
 };
 
 export function Card({
   row,
+  noBorder,
+  frameless,
   transparent,
   style,
   contentStyle,
   children,
   ...props
 }: CardProps) {
+  const gradientAlpha = transparent ? 0 : frameless ? 0.4 : 0.1;
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
@@ -26,8 +31,8 @@ export function Card({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       colors={[
-        makeTransparent(colors.primary, transparent ? 0 : 0.1),
-        makeTransparent(colors.secondary, transparent ? 0 : 0.1),
+        makeTransparent(colors.primary, gradientAlpha),
+        makeTransparent(colors.secondary, gradientAlpha),
       ]}
       style={[{ borderRadius }, style]}
     >
@@ -38,7 +43,7 @@ export function Card({
             alignItems: "center",
             padding: 5,
             // Borders (having issues on iOS with those borders applied on the LinearGradient)
-            borderWidth: 1,
+            borderWidth: noBorder ? 0 : 1,
             borderColor: colors.outline,
             borderRadius,
           },

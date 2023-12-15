@@ -1,10 +1,13 @@
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { computed } from "mobx";
 import React from "react";
 
-export function useRolledConditionFaces(condition: Profiles.ConditionRolled) {
+// TODO until we have the face list as a property
+export function useRolledConditionFaces(
+  condition: Profiles.ConditionRolled
+): number[] | "all" {
   return React.useMemo(
-    () => condition.getFaceList(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [condition.face]
-  ); // TODO until we have the face list as a property
+    () => computed(() => condition.getFaceList()),
+    [condition]
+  ).get();
 }

@@ -16,15 +16,20 @@ import {
   StyleSheet,
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { Text, useTheme } from "react-native-paper";
+import {
+  Text,
+  TouchableRipple,
+  TouchableRippleProps,
+  useTheme,
+} from "react-native-paper";
 
 import { ActionDetails } from "./components/ActionDetails";
 import { ConfigureActionModal } from "./components/ConfigureActionModal";
 
 import { actionTypes } from "~/actionTypes";
 import { AppBackground } from "~/components/AppBackground";
+import { Card } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
-import { TouchableCard } from "~/components/TouchableCard";
 import { getActionTypeIcon } from "~/components/actions";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
 import {
@@ -60,33 +65,27 @@ function RolledConditionCard({
   type,
   rule,
   dieType,
-  onConfigure,
   onDelete,
+  ...props
 }: {
   type: Profiles.ActionType;
   rule: Profiles.Rule;
   dieType: PixelDieType;
-  onConfigure?: () => void;
   onDelete?: () => void;
-}) {
+} & Omit<TouchableRippleProps, "children">) {
   const cond = rule.condition as Profiles.ConditionRolled;
   const faces = useRolledConditionFaces(cond);
   const action = rule.actions.find((a) => a.type === type);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
-    <View>
-      <TouchableCard
-        noBorder
-        frameless
-        contentStyle={styles.conditionCard}
-        onPress={onConfigure}
-      >
-        <>
+    <TouchableRipple {...props}>
+      <>
+        <Card noBorder frameless contentStyle={styles.conditionCard}>
           <Text style={styles.conditionTitle} variant="bodyLarge">
             {faces === "all"
-              ? `All other rolls`
-              : `When roll is ${faces.length > 1 ? "one of" : ""} ${
+              ? `All other faces`
+              : `When rolled face is${faces.length > 1 ? " one of" : ""} ${
                   faces.length ? [...faces].reverse().join(", ") : "?"
                 }`}
           </Text>
@@ -107,40 +106,40 @@ function RolledConditionCard({
               onPress={onDelete}
             />
           )}
-        </>
-      </TouchableCard>
-      <View
-        style={{
-          ...styles.bottomView,
-          borderRadius,
-          borderColor: colors.outline,
-          gap: 10,
-          pointerEvents: "none",
-        }}
-      >
-        {action ? (
-          <>
-            <View
-              style={{
-                flexGrow: 1,
-                marginVertical: type === "playAnimation" ? 5 : 10,
-                justifyContent: "space-evenly",
-                gap: 5,
-              }}
-            >
-              <ActionDetails action={action} />
-            </View>
-            {type === "playAnimation" && (
-              <View style={styles.animationDie}>
-                <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
+        </Card>
+        <View
+          style={{
+            ...styles.bottomView,
+            borderRadius,
+            borderColor: colors.outline,
+            gap: 10,
+            pointerEvents: "none",
+          }}
+        >
+          {action ? (
+            <>
+              <View
+                style={{
+                  flexGrow: 1,
+                  marginVertical: type === "playAnimation" ? 5 : 10,
+                  justifyContent: "space-evenly",
+                  gap: 5,
+                }}
+              >
+                <ActionDetails action={action} />
               </View>
-            )}
-          </>
-        ) : (
-          <Text style={styles.noAction}>No action</Text>
-        )}
-      </View>
-    </View>
+              {type === "playAnimation" && (
+                <View style={styles.animationDie}>
+                  <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
+                </View>
+              )}
+            </>
+          ) : (
+            <Text style={styles.noAction}>No action</Text>
+          )}
+        </View>
+      </>
+    </TouchableRipple>
   );
 }
 
@@ -323,7 +322,7 @@ const EditRolledRulesPage = observer(function ({
                     type={t}
                     rule={r}
                     dieType={profile.dieType}
-                    onConfigure={() => setConfigureRule(r)}
+                    onPress={() => setConfigureRule(r)}
                     onDelete={() => confirmDelete(r)}
                   />
                 ))}
@@ -332,7 +331,7 @@ const EditRolledRulesPage = observer(function ({
                   type={t}
                   rule={fallbackRules[index]}
                   dieType={profile.dieType}
-                  onConfigure={() => {
+                  onPress={() => {
                     if (!profile.rules.includes(fallbackRules[index])) {
                       runInAction(() =>
                         profile.rules.push(fallbackRules[index])

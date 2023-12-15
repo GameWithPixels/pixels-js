@@ -47,6 +47,14 @@ function getActionText(action: Profiles.Action): string {
 
 function getConditionText(condition: Profiles.Condition): string | undefined {
   switch (condition.type) {
+    case "rolled": {
+      const faces = (condition as Profiles.ConditionRolled).getFaceList();
+      return faces === "all"
+        ? "On other faces"
+        : faces.length <= 1
+          ? `On face ${faces[0].toString() ?? "?"}`
+          : `On faces ${[...faces].reverse().join(", ")}`;
+    }
     case "rolling":
       return `Recheck after ${(
         condition as Profiles.ConditionRolling
@@ -96,7 +104,7 @@ export const ConditionDetails = observer(function ({
   const text = getConditionText(condition);
   return text ? (
     <View style={styles.ruleTextStyle}>
-      <Text style={AppStyles.greyedOut}>{text}</Text>
+      <Text variant="titleSmall">{text}</Text>
     </View>
   ) : null;
 });
