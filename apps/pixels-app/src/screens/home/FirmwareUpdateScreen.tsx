@@ -1,5 +1,5 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -54,7 +54,7 @@ function FirmwareUpdatePage({
   navigation,
 }: {
   pixels: Pixel[];
-  navigation: StackNavigationProp<HomeStackParamList>;
+  navigation: NativeStackNavigationProp<HomeStackParamList, "firmwareUpdate">;
 }) {
   const [step, setStep] = React.useState<
     "select" | "update" | "interrupt" | "done"

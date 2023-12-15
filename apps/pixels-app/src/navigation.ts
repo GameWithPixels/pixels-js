@@ -1,11 +1,9 @@
 import {
-  StackNavigationOptions,
-  StackScreenProps,
-  TransitionPresets,
-} from "@react-navigation/stack";
+  NativeStackNavigationOptions,
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
-import { Platform } from "react-native";
 
 import { RuleIndex } from "./screens/profiles/components/RuleCard";
 
@@ -19,19 +17,19 @@ export type BottomTabParamList = {
 
 export type RootScreenName = keyof BottomTabParamList;
 
-export type HomeStackProps = StackScreenProps<BottomTabParamList, "home">;
+export type HomeStackProps = NativeStackScreenProps<BottomTabParamList, "home">;
 
-export type ProfilesStackProps = StackScreenProps<
+export type ProfilesStackProps = NativeStackScreenProps<
   BottomTabParamList,
   "profiles"
 >;
 
-export type AnimationsStackProps = StackScreenProps<
+export type AnimationsStackProps = NativeStackScreenProps<
   BottomTabParamList,
   "animations"
 >;
 
-export type SettingsStackProps = StackScreenProps<
+export type SettingsStackProps = NativeStackScreenProps<
   BottomTabParamList,
   "settings"
 >;
@@ -43,17 +41,17 @@ export type EditProfileSubStackParamList = {
   editRollRules: { profileUuid: string };
 };
 
-export type EditRuleScreenProps = StackScreenProps<
+export type EditRuleScreenProps = NativeStackScreenProps<
   EditProfileSubStackParamList,
   "editRule"
 >;
 
-export type EditRollRulesScreenProps = StackScreenProps<
+export type EditRollRulesScreenProps = NativeStackScreenProps<
   EditProfileSubStackParamList,
   "editRollRules"
 >;
 
-export type EditAdvancedRulesScreenProps = StackScreenProps<
+export type EditAdvancedRulesScreenProps = NativeStackScreenProps<
   EditProfileSubStackParamList,
   "editAdvancedRules"
 >;
@@ -66,22 +64,22 @@ export type HomeStackParamList = {
   editDieProfile: { pixelId: number };
 } & EditProfileSubStackParamList;
 
-export type DiceListScreenProps = StackScreenProps<
+export type DiceListScreenProps = NativeStackScreenProps<
   HomeStackParamList,
   "diceList"
 >;
 
-export type FirmwareUpdateScreenProps = StackScreenProps<
+export type FirmwareUpdateScreenProps = NativeStackScreenProps<
   HomeStackParamList,
   "firmwareUpdate"
 >;
 
-export type DieDetailsScreenProps = StackScreenProps<
+export type DieDetailsScreenProps = NativeStackScreenProps<
   HomeStackParamList,
   "dieDetails"
 >;
 
-export type EditDieProfileScreenProps = StackScreenProps<
+export type EditDieProfileScreenProps = NativeStackScreenProps<
   HomeStackParamList,
   "editDieProfile"
 >;
@@ -93,17 +91,17 @@ export type ProfilesStackParamList = {
   editProfile: { profileUuid: string };
 } & EditProfileSubStackParamList;
 
-export type ProfilesListScreenProps = StackScreenProps<
+export type ProfilesListScreenProps = NativeStackScreenProps<
   ProfilesStackParamList,
   "profilesList"
 >;
 
-export type CreateProfileScreenProps = StackScreenProps<
+export type CreateProfileScreenProps = NativeStackScreenProps<
   ProfilesStackParamList,
   "createProfile"
 >;
 
-export type EditProfileScreenProps = StackScreenProps<
+export type EditProfileScreenProps = NativeStackScreenProps<
   ProfilesStackParamList,
   "editProfile"
 >;
@@ -119,22 +117,22 @@ export type AnimationsStackParamList = {
   };
 };
 
-export type AnimationsListScreenProps = StackScreenProps<
+export type AnimationsListScreenProps = NativeStackScreenProps<
   AnimationsStackParamList,
   "animationsList"
 >;
 
-export type CreateAnimationScreenProps = StackScreenProps<
+export type CreateAnimationScreenProps = NativeStackScreenProps<
   AnimationsStackParamList,
   "createAnimation"
 >;
 
-export type EditAnimationScreenProps = StackScreenProps<
+export type EditAnimationScreenProps = NativeStackScreenProps<
   AnimationsStackParamList,
   "editAnimation"
 >;
 
-export type PickColorDesignScreenProps = StackScreenProps<
+export type PickColorDesignScreenProps = NativeStackScreenProps<
   AnimationsStackParamList,
   "pickColorDesign"
 >;
@@ -145,23 +143,19 @@ export type SettingsStackParamList = {
   systemInfo: undefined;
 };
 
-export type SettingsMenuScreenProps = StackScreenProps<
+export type SettingsMenuScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "settingsMenu"
 >;
 
-export type SettingsInfoScreenProps = StackScreenProps<
+export type SettingsInfoScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "systemInfo"
 >;
 
 export function getStackNavigationOptions(
-  mode?:
-    | "default"
-    | "slide-from-bottom"
-    | "bottom-sheet"
-    | "bottom-sheet-android"
-): StackNavigationOptions {
+  mode?: "default" | "slide-from-bottom" | "bottom-sheet"
+): NativeStackNavigationOptions {
   const config = {
     headerShown: false,
     gestureEnabled: true,
@@ -173,20 +167,13 @@ export function getStackNavigationOptions(
     case "slide-from-bottom":
       return {
         ...config,
-        ...Platform.select({
-          ios: TransitionPresets.ModalSlideFromBottomIOS,
-          default: TransitionPresets.BottomSheetAndroid,
-        }),
+        animation: "slide_from_bottom",
       };
     case "bottom-sheet":
       return {
         ...config,
-        ...TransitionPresets.ModalPresentationIOS,
-      };
-    case "bottom-sheet-android":
-      return {
-        ...config,
-        ...TransitionPresets.BottomSheetAndroid,
+        animation: "slide_from_bottom",
+        presentation: "containedModal",
       };
     default:
       assertNever(mode);

@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
@@ -18,7 +18,7 @@ function PickColorDesignPage({
 }: {
   pattern?: Readonly<Profiles.Pattern>;
   onSelectPattern?: (pattern: Readonly<Profiles.Pattern>) => void;
-  navigation: StackNavigationProp<AnimationsStackParamList>;
+  navigation: NativeStackNavigationProp<AnimationsStackParamList>;
 }) {
   return (
     <View style={{ height: "100%", gap: 10 }}>

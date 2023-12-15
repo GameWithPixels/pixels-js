@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -26,7 +26,10 @@ const tabsNames = ["Templates", "Animations"];
 function CreateAnimationPage({
   navigation,
 }: {
-  navigation: StackNavigationProp<AnimationsStackParamList>;
+  navigation: NativeStackNavigationProp<
+    AnimationsStackParamList,
+    "createAnimation"
+  >;
 }) {
   const animations = useAnimationsList();
   const templates = React.useMemo(

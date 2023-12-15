@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -144,7 +144,10 @@ function PageActions({
 function AnimationsListPage({
   navigation,
 }: {
-  navigation: StackNavigationProp<AnimationsStackParamList>;
+  navigation: NativeStackNavigationProp<
+    AnimationsStackParamList,
+    "animationsList"
+  >;
 }) {
   const animations = useAnimationsList();
   const editAnimation = (animation: Readonly<Profiles.Animation>) => {

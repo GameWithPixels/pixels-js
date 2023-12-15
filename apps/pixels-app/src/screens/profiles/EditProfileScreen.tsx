@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -60,7 +60,7 @@ function EditProfilePage({
   navigation,
 }: {
   profileUuid: string;
-  navigation: StackNavigationProp<ProfilesStackParamList>;
+  navigation: NativeStackNavigationProp<ProfilesStackParamList>;
 }) {
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();

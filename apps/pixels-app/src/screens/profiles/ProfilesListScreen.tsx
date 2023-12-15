@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
@@ -148,7 +148,7 @@ function PageActions({
 function ProfilesListPage({
   navigation,
 }: {
-  navigation: StackNavigationProp<ProfilesStackParamList>;
+  navigation: NativeStackNavigationProp<ProfilesStackParamList, "profilesList">;
 }) {
   const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");

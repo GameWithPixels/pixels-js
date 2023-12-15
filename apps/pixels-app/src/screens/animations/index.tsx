@@ -1,4 +1,4 @@
-import { createStackNavigator } from "@react-navigation/stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { ThemeProvider } from "react-native-paper";
 
@@ -14,7 +14,7 @@ import {
 } from "~/navigation";
 import { getRootScreenTheme } from "~/themes";
 
-const Stack = createStackNavigator<AnimationsStackParamList>();
+const Stack = createNativeStackNavigator<AnimationsStackParamList>();
 
 export function AnimationsStack({ route }: AnimationsStackProps) {
   return (

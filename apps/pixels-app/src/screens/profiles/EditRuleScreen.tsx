@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
@@ -20,7 +20,7 @@ function EditRulePage({
   flagName,
   navigation,
 }: RuleIndex & {
-  navigation: StackNavigationProp<EditProfileSubStackParamList>;
+  navigation: NativeStackNavigationProp<EditProfileSubStackParamList>;
 }) {
   return (
     <>

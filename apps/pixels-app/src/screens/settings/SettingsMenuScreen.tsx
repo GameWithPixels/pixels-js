@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ScrollView } from "react-native";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -24,7 +24,7 @@ const pages = [
 function SettingsMenuPage({
   navigation,
 }: {
-  navigation: StackNavigationProp<SettingsStackParamList>;
+  navigation: NativeStackNavigationProp<SettingsStackParamList, "settingsMenu">;
 }) {
   const appDispatch = useAppDispatch();
   const showConfirmRestore = useConfirmActionSheet(

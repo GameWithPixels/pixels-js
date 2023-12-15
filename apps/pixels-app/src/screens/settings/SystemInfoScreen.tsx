@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Application from "expo-application";
 import { useLocales } from "expo-localization";
 import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
@@ -11,7 +11,7 @@ import { SettingsInfoScreenProps, SettingsStackParamList } from "~/navigation";
 function SystemInfoPage({
   navigation,
 }: {
-  navigation: StackNavigationProp<SettingsStackParamList>;
+  navigation: NativeStackNavigationProp<SettingsStackParamList, "systemInfo">;
 }) {
   const locales = useLocales();
   const window = useWindowDimensions();

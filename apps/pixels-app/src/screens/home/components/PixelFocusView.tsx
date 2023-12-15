@@ -4,7 +4,6 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
-import { StackNavigationProp } from "@react-navigation/stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
@@ -55,7 +54,6 @@ import {
 } from "~/components/utils";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useActiveProfile } from "~/hooks";
-import { HomeStackParamList } from "~/navigation";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -174,11 +172,11 @@ function DieMenu({
 export function PixelFocusViewHeader({
   pixel,
   onUnpair,
-  navigation,
+  onFirmwareUpdate,
 }: {
   pixel?: Pixel;
   onUnpair: () => void;
-  navigation: StackNavigationProp<HomeStackParamList>;
+  onFirmwareUpdate: () => void;
 }) {
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
@@ -239,7 +237,7 @@ export function PixelFocusViewHeader({
                 }}
                 anchor={{ x: (windowWidth - 250) / 2, y: 80 }}
                 onDismiss={() => setActionsMenuVisible(false)}
-                onFirmwareUpdate={() => navigation.navigate("firmwareUpdate")}
+                onFirmwareUpdate={onFirmwareUpdate}
                 onRename={() => setRenameVisible(true)}
                 onUnpair={onUnpair}
               />

@@ -6,7 +6,7 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   Pixel,
   ScannedPixel,
@@ -277,7 +277,7 @@ function PageActions({
 function DiceListPage({
   navigation,
 }: {
-  navigation: StackNavigationProp<HomeStackParamList>;
+  navigation: NativeStackNavigationProp<HomeStackParamList, "diceList">;
 }) {
   const appDispatch = useAppDispatch();
   const showIntro = useAppSelector(
@@ -373,6 +373,11 @@ function DiceListPage({
     );
   }, [colors, selectedPixel, showActionSheetWithOptions, removeDie]);
 
+  const showFirmwareUpdate = React.useCallback(
+    () => navigation.navigate("firmwareUpdate"),
+    [navigation]
+  );
+
   // Update Pixel selection
   React.useEffect(() => {
     if (!pixels.length) {
@@ -413,7 +418,7 @@ function DiceListPage({
           <PixelFocusViewHeader
             pixel={selectedPixel}
             onUnpair={unpairDieWithConfirmation}
-            navigation={navigation}
+            onFirmwareUpdate={showFirmwareUpdate}
           />
         )}
         <ScrollView

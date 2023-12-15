@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
@@ -17,7 +17,7 @@ function EditDieProfilePage({
   navigation,
 }: {
   pixelId: number;
-  navigation: StackNavigationProp<HomeStackParamList>;
+  navigation: NativeStackNavigationProp<HomeStackParamList>;
 }) {
   const pixel = usePairedPixel(pixelId);
   const pixelName = usePixelValue(pixel, "name");

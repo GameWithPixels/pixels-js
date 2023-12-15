@@ -1,5 +1,5 @@
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   Pixel,
   usePixelStatus,
@@ -168,7 +168,7 @@ function DieDetailsPage({
   navigation,
 }: {
   pixelId: number;
-  navigation: StackNavigationProp<HomeStackParamList>;
+  navigation: NativeStackNavigationProp<HomeStackParamList>;
 }) {
   const pixel = usePairedPixel(pixelId);
   const { activeProfile } = useActiveProfile(pixel);

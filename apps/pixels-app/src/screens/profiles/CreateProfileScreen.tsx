@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   PixelDieType,
   Profiles,
@@ -60,7 +60,10 @@ function DieTypesSelector({
 function CreateProfilePage({
   navigation,
 }: {
-  navigation: StackNavigationProp<ProfilesStackParamList>;
+  navigation: NativeStackNavigationProp<
+    ProfilesStackParamList,
+    "createProfile"
+  >;
 }) {
   const profiles = useProfilesList();
   const { addProfile } = useEditProfilesList();

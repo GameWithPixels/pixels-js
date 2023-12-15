@@ -1,4 +1,4 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
@@ -68,7 +68,7 @@ function EditAnimationPage({
   navigation,
 }: {
   animationUuid: string;
-  navigation: StackNavigationProp<AnimationsStackParamList>;
+  navigation: NativeStackNavigationProp<AnimationsStackParamList>;
 }) {
   const animation = useEditableAnimation(animationUuid);
   const showConfirmDelete = useConfirmActionSheet("Delete", () => {
