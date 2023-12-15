@@ -5,7 +5,7 @@ import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
-import { runInAction } from "mobx";
+import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import {
@@ -45,11 +45,7 @@ function InnerScrollView({ ...props }: ScrollViewProps) {
     // Use for Gesture Handler ScrollView for nested scroll views to work
     <GHScrollView
       contentInsetAdjustmentBehavior="automatic"
-      style={{
-        width,
-        height: "100%",
-        flex: 1,
-      }}
+      style={{ width, height: "100%", flex: 1 }}
       contentContainerStyle={{
         paddingHorizontal: 10,
         paddingBottom: 90,
@@ -65,13 +61,13 @@ function RolledConditionCard({
   rule,
   dieType,
   onConfigure,
-  onRemove,
+  onDelete,
 }: {
   type: Profiles.ActionType;
   rule: Profiles.Rule;
   dieType: PixelDieType;
   onConfigure?: () => void;
-  onRemove?: () => void;
+  onDelete?: () => void;
 }) {
   const cond = rule.condition as Profiles.ConditionRolled;
   const faces = useRolledConditionFaces(cond);
@@ -83,26 +79,18 @@ function RolledConditionCard({
       <TouchableCard
         noBorder
         frameless
-        contentStyle={{ flexDirection: "row", padding: 0 }}
+        contentStyle={styles.conditionCard}
         onPress={onConfigure}
       >
         <>
-          <Text
-            style={{
-              flexGrow: 1,
-              textAlign: "center",
-              paddingVertical: 10,
-              marginHorizontal: 60,
-            }}
-            variant="bodyLarge"
-          >
+          <Text style={styles.conditionTitle} variant="bodyLarge">
             {faces === "all"
               ? `All other rolls`
               : `When roll is ${faces.length > 1 ? "one of" : ""} ${
                   faces.length ? [...faces].reverse().join(", ") : "?"
                 }`}
           </Text>
-          {onRemove && (
+          {onDelete && (
             <MaterialCommunityIcons
               name="trash-can-outline"
               color={colors.onSurface}
@@ -116,7 +104,7 @@ function RolledConditionCard({
                 textAlign: "center",
                 textAlignVertical: "center",
               }} // Making the touchable surface take full height
-              onPress={onRemove}
+              onPress={onDelete}
             />
           )}
         </>
@@ -143,15 +131,13 @@ function RolledConditionCard({
               <ActionDetails action={action} />
             </View>
             {type === "playAnimation" && (
-              <View style={{ width: 60, aspectRatio: 1, marginVertical: 5 }}>
+              <View style={styles.animationDie}>
                 <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
               </View>
             )}
           </>
         ) : (
-          <Text style={{ ...AppStyles.greyedOut, marginVertical: 10 }}>
-            No action
-          </Text>
+          <Text style={styles.noAction}>No action</Text>
         )}
       </View>
     </View>
@@ -209,10 +195,9 @@ const EditRolledRulesPage = observer(function ({
 }) {
   const profile = useEditableProfile(profileUuid);
   const rolledRules = React.useMemo(
-    () => getRolledRules(profile.rules),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [profile.rules.length] // TODO recompute when a rule is added or removed
-  );
+    () => computed(() => getRolledRules(profile.rules)),
+    [profile]
+  ).get();
   const [configureRule, setConfigureRule] = React.useState<Profiles.Rule>();
   const fallbackRules = React.useMemo(
     () =>
@@ -303,14 +288,7 @@ const EditRolledRulesPage = observer(function ({
             );
           })}
         </View>
-        <Text
-          variant="bodySmall"
-          style={{
-            ...AppStyles.greyedOut,
-            marginHorizontal: 10,
-            marginBottom: 10,
-          }}
-        >
+        <Text variant="bodySmall" style={styles.description}>
           {getActionTypeDescription(actionTypes[index]) +
             " " +
             getConditionTypeDescription("rolled") +
@@ -346,7 +324,7 @@ const EditRolledRulesPage = observer(function ({
                     rule={r}
                     dieType={profile.dieType}
                     onConfigure={() => setConfigureRule(r)}
-                    onRemove={() => confirmDelete(r)}
+                    onDelete={() => confirmDelete(r)}
                   />
                 ))}
               {!!availableFace && (
@@ -415,6 +393,32 @@ export function EditRollRuleScreen({
 }
 
 const styles = StyleSheet.create({
+  conditionCard: {
+    flexDirection: "row",
+    padding: 0,
+    gap: 10,
+  },
+  conditionTitle: {
+    flexGrow: 1,
+    flexShrink: 1,
+    textAlign: "center",
+    marginHorizontal: 10,
+    marginVertical: 12,
+  },
+  noAction: {
+    ...AppStyles.greyedOut,
+    marginVertical: 10,
+  },
+  animationDie: {
+    width: 60,
+    aspectRatio: 1,
+    marginVertical: 5,
+  },
+  description: {
+    ...AppStyles.greyedOut,
+    marginHorizontal: 10,
+    marginBottom: 10,
+  },
   bottomView: {
     flexDirection: "row",
     marginTop: -20,

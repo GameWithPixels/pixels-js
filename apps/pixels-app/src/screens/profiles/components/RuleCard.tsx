@@ -201,18 +201,16 @@ export const RuleCard = observer(function ({
               flexDirection: "row",
               paddingHorizontal: 10,
               paddingVertical: 12,
-              gap: 5,
+              gap: 10,
             },
             style,
           ]}
           {...props}
         >
-          <>
-            <Text style={styles.title} variant="bodyLarge">
-              {children}
-            </Text>
-            <CaretRightIcon size={16} color={colors.onSurface} />
-          </>
+          <Text style={styles.title} variant="bodyLarge">
+            {children}
+          </Text>
+          <CaretRightIcon size={16} color={colors.onSurface} />
         </TouchableCard>
       </Animated.View>
       {conditionType === "rolled" ? (
@@ -230,7 +228,7 @@ export const RuleCard = observer(function ({
 
 const styles = StyleSheet.create({
   gap5: { gap: 5 },
-  title: { flexGrow: 1, textAlign: "center" },
+  title: { flexGrow: 1, flexShrink: 1, textAlign: "center" },
   ruleGroupStyle: {
     flexDirection: "row",
     alignItems: "center",

@@ -114,25 +114,12 @@ export function ActionDetailsCard({
   return (
     <>
       {actionType === "playAnimation" ? (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            marginVertical: 5,
-          }}
-        >
-          <View
-            style={{
-              flexGrow: 1,
-              justifyContent: "space-between",
-              gap: 5,
-            }}
-          >
+        <View style={styles.animationBox}>
+          <View style={styles.animationDetails}>
             <ActionDetails action={action} />
             {condition && <ConditionDetails condition={condition} />}
           </View>
-          <View style={{ width: 60, aspectRatio: 1 }}>
+          <View style={styles.animationDie}>
             <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
           </View>
         </View>
@@ -160,5 +147,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
+  },
+  animationBox: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  animationDetails: {
+    flexGrow: 1,
+    justifyContent: "space-between",
+    gap: 5,
+  },
+  animationDie: {
+    width: 60,
+    aspectRatio: 1,
   },
 });

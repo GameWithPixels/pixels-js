@@ -80,7 +80,7 @@ export const EditActionCard = observer(function ({
   return (
     <>
       <Animated.View
-        style={{ overflow: "hidden" }}
+        style={styles.hidden}
         layout={CurvedTransition.duration(300)}
       >
         <TouchableCard
@@ -175,6 +175,9 @@ export const EditActionCard = observer(function ({
 });
 
 const styles = StyleSheet.create({
+  hidden: {
+    overflow: "hidden",
+  },
   bottomView: {
     marginTop: -20,
     paddingTop: 20,
