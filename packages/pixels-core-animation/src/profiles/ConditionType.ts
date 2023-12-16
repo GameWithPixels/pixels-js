@@ -9,11 +9,12 @@ export const ConditionTypeValues = {
   helloGoodbye: enumValue(),
   handling: enumValue(),
   rolling: enumValue(),
-  rolled: enumValue(),
+  faceCompare: enumValue(),
   crooked: enumValue(),
   connection: enumValue(),
   battery: enumValue(),
   idle: enumValue(),
+  rolled: enumValue(),
 } as const;
 
 /**

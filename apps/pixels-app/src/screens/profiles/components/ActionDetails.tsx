@@ -48,7 +48,7 @@ function getActionText(action: Profiles.Action): string {
 function getConditionText(condition: Profiles.Condition): string | undefined {
   switch (condition.type) {
     case "rolled": {
-      const faces = (condition as Profiles.ConditionRolled).getFaceList();
+      const faces = (condition as Profiles.ConditionRolled).faces;
       return faces === "all"
         ? "On other faces"
         : faces.length <= 1

@@ -1,4 +1,4 @@
-import { assert, assertNever } from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import * as Profiles from "./Profiles";
 
@@ -14,11 +14,12 @@ export interface CreateConditionFlags {
   helloGoodbye: Profiles.HelloGoodbyeFlags;
   handling: undefined;
   rolling: undefined;
-  rolled: Profiles.RolledFlags;
+  faceCompare: Profiles.FaceCompareFlags;
   crooked: undefined;
   idle: undefined;
   connection: Profiles.ConnectionFlags;
   battery: Profiles.BatteryFlags;
+  rolled: undefined;
 }
 
 export function createCondition<K extends string & keyof CreateConditionFlags>(
@@ -27,8 +28,7 @@ export function createCondition<K extends string & keyof CreateConditionFlags>(
 ): Profiles.Condition {
   switch (type) {
     case "none":
-      assert(false, "Cannot create a condition of type 'none'");
-      break;
+      throw new Error("Cannot create a condition of type 'none'");
     case "helloGoodbye":
       return new Profiles.ConditionHelloGoodbye({
         flags: getFlag(flagName, Profiles.HelloGoodbyeFlagsValues),
@@ -37,9 +37,9 @@ export function createCondition<K extends string & keyof CreateConditionFlags>(
       return new Profiles.ConditionHandling();
     case "rolling":
       return new Profiles.ConditionRolling();
-    case "rolled":
-      return new Profiles.ConditionRolled({
-        flags: getFlag(flagName, Profiles.RolledFlagsValues),
+    case "faceCompare":
+      return new Profiles.ConditionFaceCompare({
+        flags: getFlag(flagName, Profiles.FaceCompareFlagsValues),
       });
     case "crooked":
       return new Profiles.ConditionCrooked();
@@ -53,13 +53,17 @@ export function createCondition<K extends string & keyof CreateConditionFlags>(
       return new Profiles.ConditionBattery({
         flags: getFlag(flagName, Profiles.BatteryFlagsValues),
       });
+    case "rolled":
+      return new Profiles.ConditionRolled();
     default:
-      assertNever(type);
+      assertNever(type, `Unsupported condition type: ${type}`);
   }
 }
 
 export function createAction(type: Profiles.ActionType): Profiles.Action {
   switch (type) {
+    case "none":
+      throw new Error("Cannot create an action of type 'none'");
     case "playAnimation":
       return new Profiles.ActionPlayAnimation();
     case "playAudioClip":
@@ -69,6 +73,6 @@ export function createAction(type: Profiles.ActionType): Profiles.Action {
     case "speakText":
       return new Profiles.ActionSpeakText();
     default:
-      throw new Error(`Unsupported action type: ${type}`);
+      assertNever(type, `Unsupported action type: ${type}`);
   }
 }

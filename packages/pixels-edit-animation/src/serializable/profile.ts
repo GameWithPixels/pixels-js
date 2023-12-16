@@ -1,7 +1,6 @@
 import {
   BatteryStateFlags,
   ConnectionStateFlags,
-  FaceCompareFlags,
   HelloGoodbyeFlags,
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
@@ -22,8 +21,7 @@ export interface ProfileData extends UniqueNamedData {
       recheckAfter: number;
     }[];
     rolled: {
-      face: number;
-      flags: FaceCompareFlags[];
+      faces?: number[]; // undefined means all
     }[];
     connection: {
       flags: ConnectionStateFlags[];

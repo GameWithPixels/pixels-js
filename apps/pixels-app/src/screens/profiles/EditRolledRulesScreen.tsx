@@ -37,10 +37,10 @@ import {
   getConditionTypeDescription,
   getConditionTypeLabel,
 } from "~/descriptions";
+import { getHighestFace } from "~/features/getHighestFace";
 import { makeObservable } from "~/features/makeObservable";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useConfirmActionSheet, useEditableProfile } from "~/hooks";
-import { useRolledConditionFaces } from "~/hooks/useRolledConditionFaces";
 import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -74,7 +74,6 @@ function RolledConditionCard({
   onDelete?: () => void;
 } & Omit<TouchableRippleProps, "children">) {
   const cond = rule.condition as Profiles.ConditionRolled;
-  const faces = useRolledConditionFaces(cond);
   const action = rule.actions.find((a) => a.type === type);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
@@ -83,10 +82,10 @@ function RolledConditionCard({
       <>
         <Card noBorder frameless contentStyle={styles.conditionCard}>
           <Text style={styles.conditionTitle} variant="bodyLarge">
-            {faces === "all"
+            {cond.faces === "all"
               ? `All other faces`
-              : `When rolled face is${faces.length > 1 ? " one of" : ""} ${
-                  faces.length ? [...faces].reverse().join(", ") : "?"
+              : `When rolled face is${cond.faces.length > 1 ? " one of" : ""} ${
+                  cond.faces.length ? [...cond.faces].reverse().join(", ") : "?"
                 }`}
           </Text>
           {onDelete && (
@@ -144,42 +143,35 @@ function RolledConditionCard({
 }
 
 function createObservableRolledRule(
-  face: number | "all",
+  faces: number[] | "all",
   actionType: Profiles.ActionType
 ): Profiles.Rule {
   return makeObservable(
-    new Profiles.Rule(
-      new Profiles.ConditionRolled({
-        flags: Profiles.RolledFlagsValues.equal,
-        face: face === "all" ? -1 : Math.pow(2, face - 1),
-      }),
-      { actions: [Profiles.createAction(actionType)] }
-    )
+    new Profiles.Rule(new Profiles.ConditionRolled({ faces }), {
+      actions: [Profiles.createAction(actionType)],
+    })
   );
 }
+
 function getRolledRules(rules: Readonly<Profiles.Rule>[]): Profiles.Rule[] {
-  return rules.filter(
-    (r) => r.condition.type === "rolled" && r.condition.flagName === "equal"
-  );
+  return rules.filter((r) => r.condition.type === "rolled");
 }
 
 function getRolledFaces(
   rolledRules: Readonly<Profiles.Rule>[],
   actionType: Profiles.ActionType,
   excludedRule?: Readonly<Profiles.Rule>
-): number[] | undefined {
+): number[] {
   return rolledRules
     .filter(
       (r) =>
         r !== excludedRule &&
-        (r.condition as Profiles.ConditionRolled).face >= 0 &&
+        (r.condition as Profiles.ConditionRolled).faces !== "all" &&
         r.actions.find((a) => a.type === actionType)
     )
-    .map((r) => r.condition)
-    .flatMap((c) => {
-      const faces = (c as Profiles.ConditionRolled).getFaceList();
-      return faces === "all" ? [] : faces;
-    });
+    .flatMap(
+      (r) => (r.condition as Profiles.ConditionRolled).faces as number[]
+    );
 }
 
 const defaultCondition = new Profiles.ConditionRolled();
@@ -204,7 +196,7 @@ const EditRolledRulesPage = observer(function ({
         (at) =>
           rolledRules.find(
             (r) =>
-              (r.condition as Profiles.ConditionRolled).face === -1 &&
+              (r.condition as Profiles.ConditionRolled).faces === "all" &&
               r.actions.find((a) => a.type === at)
           ) ?? createObservableRolledRule("all", at)
       ),
@@ -306,13 +298,19 @@ const EditRolledRulesPage = observer(function ({
               {rolledRules
                 .filter(
                   (r) =>
-                    (r.condition as Profiles.ConditionRolled).face >= 0 &&
+                    (r.condition as Profiles.ConditionRolled).faces !== "all" &&
+                    (r.condition as Profiles.ConditionRolled).faces.length >=
+                      0 &&
                     r.actions.find((a) => a.type === t)
                 )
                 .sort(
                   (r1, r2) =>
-                    (r2.condition as Profiles.ConditionRolled).face -
-                    (r1.condition as Profiles.ConditionRolled).face
+                    getHighestFace(
+                      (r2.condition as Profiles.ConditionRolled).faces
+                    ) -
+                    getHighestFace(
+                      (r1.condition as Profiles.ConditionRolled).faces
+                    )
                 )
                 .map((r, i) => (
                   <RolledConditionCard
@@ -348,7 +346,7 @@ const EditRolledRulesPage = observer(function ({
           onPress={() => {
             runInAction(() => {
               const newRule = createObservableRolledRule(
-                availableFace,
+                [availableFace],
                 actionTypes[index]
               );
               profile.rules.push(newRule);

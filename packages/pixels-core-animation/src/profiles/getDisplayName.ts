@@ -80,7 +80,7 @@ export function getConditionTypeDisplayName(
       return { name: "Pixel is picked up", order: 1 };
     case "rolling":
       return { name: "Pixel is rolling", order: 2 };
-    case "rolled":
+    case "faceCompare":
       return { name: "Pixel roll is...", order: 3 };
     case "crooked":
       return { name: "Pixel is crooked", order: 4 };
@@ -90,6 +90,8 @@ export function getConditionTypeDisplayName(
       return { name: "Battery Event...", order: 6 };
     case "idle":
       return { name: "Pixel is idle for...", order: 7 };
+    case "rolled":
+      return { name: "Pixel roll is one of...", order: 8 };
     default:
       assertNever(conditionType, `Unknown condition type: ${conditionType}`);
   }

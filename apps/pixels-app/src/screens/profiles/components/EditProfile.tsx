@@ -134,7 +134,6 @@ export function EditProfile({
             key={ct}
             profileUuid={profileUuid}
             conditionType={ct}
-            flagName={ct === "rolled" ? "equal" : undefined}
             onPress={() => onEditRule({ profileUuid, conditionType: ct })}
           >
             {getConditionTypeLabel(ct)}

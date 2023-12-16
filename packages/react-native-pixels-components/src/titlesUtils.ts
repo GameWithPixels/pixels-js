@@ -19,6 +19,7 @@ import {
   getActionTypeDisplayName,
   getAnimationTypeDisplayName,
   getConditionTypeDisplayName,
+  EditConditionRolled,
 } from "@systemic-games/pixels-edit-animation";
 
 export function getActionTitle(actionType: ActionType): string {
@@ -123,7 +124,7 @@ export function getConditionDescription(condition: EditCondition): string {
       case "crooked":
         return "die is crooked";
 
-      case "rolled":
+      case "faceCompare":
         return (
           "Die roll is " +
           bitsToFlags((condition as EditConditionFaceCompare).flags)
@@ -166,6 +167,20 @@ export function getConditionDescription(condition: EditCondition): string {
 
       case "rolling":
         return "Die is rolling";
+
+      case "rolled": {
+        const faces = (condition as EditConditionRolled).faces;
+        return (
+          "Die roll is " +
+          (faces === "all"
+            ? "any face"
+            : faces.length === 0
+              ? "?"
+              : faces.length === 1
+                ? faces[0].toString()
+                : "one of " + faces.join(", "))
+        );
+      }
 
       default:
         assertNever(type, `Unknown type: ${type}`);

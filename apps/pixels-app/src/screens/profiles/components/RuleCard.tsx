@@ -14,6 +14,7 @@ import { ActionDetails, ConditionDetails } from "./ActionDetails";
 
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { Card } from "~/components/Card";
+import { getHighestFace } from "~/features/getHighestFace";
 import { useEditableProfile } from "~/hooks";
 import { AppStyles } from "~/styles";
 
@@ -71,16 +72,17 @@ export const RuleCard = observer(function ({
 }: React.PropsWithChildren<RuleIndex> &
   Omit<TouchableRippleProps, "children">) {
   const profile = useEditableProfile(profileUuid);
-  const rules = profile.rules
-    .filter(
-      (r) =>
-        r.condition.type === conditionType && r.condition.flagName === flagName
-    )
-    .sort(
+  const rules = profile.rules.filter(
+    (r) =>
+      r.condition.type === conditionType && r.condition.flagName === flagName
+  );
+  if (conditionType === "rolled") {
+    rules.sort(
       (r1, r2) =>
-        (r2.condition as Profiles.ConditionRolled).face -
-        (r1.condition as Profiles.ConditionRolled).face
+        getHighestFace((r2.condition as Profiles.ConditionRolled).faces) -
+        getHighestFace((r1.condition as Profiles.ConditionRolled).faces)
     );
+  }
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (

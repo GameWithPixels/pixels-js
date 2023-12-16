@@ -1,0 +1,64 @@
+import {
+  DataSet,
+  Condition,
+  ConditionRolled,
+} from "@systemic-games/pixels-core-animation";
+import { safeAssign } from "@systemic-games/pixels-core-utils";
+
+import EditCondition from "./EditCondition";
+import EditDataSet from "./EditDataSet";
+import { name, observable, range, widget } from "./decorators";
+
+export default class EditConditionRolled extends EditCondition {
+  readonly type = "rolled";
+
+  @widget("faceMask")
+  @range(1, 20)
+  @name("Than")
+  @observable
+  faces: number[] | "all";
+
+  constructor(opt?: { faces?: number[] | "all" }) {
+    super();
+    this.faces = opt?.faces ?? [];
+  }
+
+  toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
+    return safeAssign(new ConditionRolled(), {
+      faceMask: EditConditionRolled.toFaceMask(this.faces),
+    });
+  }
+
+  duplicate(): EditCondition {
+    return new EditConditionRolled(this);
+  }
+
+  static toFaceMask(faces: number[] | "all"): number {
+    if (faces === "all") {
+      return -1;
+    } else {
+      let mask = 0;
+      for (const face of faces) {
+        mask |= 1 << (face - 1);
+      }
+      return mask;
+    }
+  }
+
+  static fromFaceMask(mask: number): number[] | "all" {
+    if (mask === -1) {
+      return "all";
+    } else {
+      const faces = [];
+      let face = 1;
+      while (mask) {
+        if (mask & 1) {
+          faces.push(face);
+        }
+        mask = mask >> 1;
+        ++face;
+      }
+      return faces;
+    }
+  }
+}

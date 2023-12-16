@@ -1,6 +1,5 @@
 import {
   assertNever,
-  bitIndexToFlag,
   bitsToFlags,
   getValueKeyName,
   valuesToKeys,
@@ -12,7 +11,6 @@ import {
   ColorUtils,
   ConnectionStateFlagsValues,
   Constants,
-  FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
   Json,
   Serializable,
@@ -239,11 +237,10 @@ function toCondition(
       return register(type, { recheckAfter: data?.recheckAfter ?? 0 });
     case "faceCompare":
       return register("rolled", {
-        flags: valuesToKeys(bitsToFlags(data?.flags), FaceCompareFlagsValues),
-        face:
-          (data?.faceIndex ?? 0) < 0
-            ? -1
-            : bitIndexToFlag(data?.faceIndex ?? 0),
+        faces: Serializable.fromFaceCompare(
+          data?.flags ?? 0,
+          (data?.faceIndex ?? 0) + 1
+        ),
       });
     case "crooked":
       return { type, index: -1 };

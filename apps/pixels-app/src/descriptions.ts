@@ -14,6 +14,7 @@ export function getConditionTypeLabel(type: Profiles.ConditionType): string {
       return "When Die is Picked Up";
     case "rolling":
       return "When Die is Rolling";
+    case "faceCompare":
     case "rolled":
       return "When Die is Rolled";
     case "crooked":
@@ -41,6 +42,7 @@ export function getConditionTypeDescription(
       return "when die is picked up";
     case "rolling":
       return "when die is rolling";
+    case "faceCompare":
     case "rolled":
       return "when die has rolled";
     case "crooked":
