@@ -645,6 +645,7 @@ export function GradientChip({
 }
 
 export function FloatingAddButton({
+  disabled,
   bottomInset,
   ...props
 }: { bottomInset?: number } & TextProps) {
@@ -655,6 +656,7 @@ export function FloatingAddButton({
         position: "absolute",
         bottom: 20 + (bottomInset ?? 0),
         right: 10,
+        opacity: disabled ? 0.4 : 1,
       }}
     >
       <AddNewIcon

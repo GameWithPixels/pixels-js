@@ -40,7 +40,7 @@ import {
 import { getHighestFace } from "~/features/getHighestFace";
 import { makeObservable } from "~/features/makeObservable";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useConfirmActionSheet, useEditableProfile } from "~/hooks";
+import { useEditableProfile } from "~/hooks";
 import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -77,34 +77,40 @@ function RolledConditionCard({
   const action = rule.actions.find((a) => a.type === type);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
+  const color = props.disabled ? colors.onSurfaceDisabled : colors.onSurface;
   return (
     <TouchableRipple {...props}>
       <>
-        <Card noBorder frameless contentStyle={styles.conditionCard}>
-          <Text style={styles.conditionTitle} variant="bodyLarge">
+        <Card
+          disabled={props.disabled}
+          noBorder
+          frameless
+          contentStyle={styles.actionCard}
+        >
+          <View style={styles.actionIconBox} />
+          <Text
+            style={{ ...styles.actionCardTitle, color }}
+            variant="bodyLarge"
+          >
             {cond.faces === "all"
               ? `All other faces`
               : `When rolled face is${cond.faces.length > 1 ? " one of" : ""} ${
-                  cond.faces.length ? [...cond.faces].reverse().join(", ") : "?"
+                  cond.faces.length
+                    ? [...cond.faces].sort().reverse().join(", ")
+                    : "?"
                 }`}
           </Text>
-          {onDelete && (
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              color={colors.onSurface}
-              size={24}
-              style={{
-                position: "absolute",
-                right: 0,
-                top: 0,
-                height: "100%",
-                paddingHorizontal: 10,
-                textAlign: "center",
-                textAlignVertical: "center",
-              }} // Making the touchable surface take full height
-              onPress={onDelete}
-            />
-          )}
+          <View style={styles.actionIconBox}>
+            {onDelete && (
+              <MaterialCommunityIcons
+                name="trash-can-outline"
+                color={color}
+                size={24}
+                style={styles.actionDeleteIcon}
+                onPress={props.disabled ? undefined : onDelete}
+              />
+            )}
+          </View>
         </Card>
         <View
           style={{
@@ -115,7 +121,9 @@ function RolledConditionCard({
             pointerEvents: "none",
           }}
         >
-          {action ? (
+          {props.disabled ? (
+            <Text style={styles.noAction}>All faces are assigned</Text>
+          ) : action ? (
             <>
               <View
                 style={{
@@ -134,7 +142,7 @@ function RolledConditionCard({
               )}
             </>
           ) : (
-            <Text style={styles.noAction}>No action</Text>
+            <Text style={styles.noAction}>Tap to enable</Text>
           )}
         </View>
       </>
@@ -144,11 +152,11 @@ function RolledConditionCard({
 
 function createObservableRolledRule(
   faces: number[] | "all",
-  actionType: Profiles.ActionType
+  actionType?: Profiles.ActionType
 ): Profiles.Rule {
   return makeObservable(
     new Profiles.Rule(new Profiles.ConditionRolled({ faces }), {
-      actions: [Profiles.createAction(actionType)],
+      actions: actionType ? [Profiles.createAction(actionType)] : [],
     })
   );
 }
@@ -198,26 +206,9 @@ const EditRolledRulesPage = observer(function ({
             (r) =>
               (r.condition as Profiles.ConditionRolled).faces === "all" &&
               r.actions.find((a) => a.type === at)
-          ) ?? createObservableRolledRule("all", at)
+          ) ?? createObservableRolledRule("all")
       ),
     [rolledRules]
-  );
-
-  // Delete rule
-  const showConfirmDeleteActionSheet = useConfirmActionSheet("Delete");
-  const confirmDelete = React.useCallback(
-    (rule: Readonly<Profiles.Rule>) => {
-      showConfirmDeleteActionSheet({
-        onConfirm: () =>
-          runInAction(() => {
-            const index = profile.rules.indexOf(rule);
-            if (index >= 0) {
-              profile.rules.splice(index, 1);
-            }
-          }),
-      });
-    },
-    [profile.rules, showConfirmDeleteActionSheet]
   );
 
   // Horizontal scroll
@@ -227,15 +218,15 @@ const EditRolledRulesPage = observer(function ({
   const scrollTo = (page: number) =>
     scrollRef.current?.scrollTo({ x: page * width });
 
+  const fbRule = fallbackRules[index];
+
   // Unavailable faces
   const dieFaces = React.useMemo(
-    () => DiceUtils.getDieFaces(profile.dieType),
+    () => [...DiceUtils.getDieFaces(profile.dieType)].reverse(),
     [profile.dieType]
   );
   const unavailableFaces = getRolledFaces(rolledRules, actionTypes[index]);
-  const availableFace: number | undefined = dieFaces.filter(
-    (f) => !unavailableFaces?.includes(f)
-  )[0];
+  const availableFace = dieFaces.find((f) => !unavailableFaces?.includes(f));
 
   const { roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
@@ -299,8 +290,7 @@ const EditRolledRulesPage = observer(function ({
                 .filter(
                   (r) =>
                     (r.condition as Profiles.ConditionRolled).faces !== "all" &&
-                    (r.condition as Profiles.ConditionRolled).faces.length >=
-                      0 &&
+                    (r.condition as Profiles.ConditionRolled).faces.length &&
                     r.actions.find((a) => a.type === t)
                 )
                 .sort(
@@ -319,42 +309,59 @@ const EditRolledRulesPage = observer(function ({
                     rule={r}
                     dieType={profile.dieType}
                     onPress={() => setConfigureRule(r)}
-                    onDelete={() => confirmDelete(r)}
+                    onDelete={() =>
+                      runInAction(() =>
+                        profile.rules.splice(profile.rules.indexOf(r), 1)
+                      )
+                    }
                   />
                 ))}
-              {!!availableFace && (
-                <RolledConditionCard
-                  type={t}
-                  rule={fallbackRules[index]}
-                  dieType={profile.dieType}
-                  onPress={() => {
-                    if (!profile.rules.includes(fallbackRules[index])) {
-                      runInAction(() =>
-                        profile.rules.push(fallbackRules[index])
+              <RolledConditionCard
+                type={t}
+                rule={fbRule}
+                dieType={profile.dieType}
+                disabled={availableFace === undefined}
+                onPress={() => {
+                  if (!profile.rules.includes(fbRule)) {
+                    runInAction(() => {
+                      fbRule.actions[0] = makeObservable(
+                        Profiles.createAction(t)
                       );
-                    }
-                    setConfigureRule(fallbackRules[index]);
-                  }}
-                />
-              )}
+                      profile.rules.push(fbRule);
+                    });
+                  }
+                  setConfigureRule(fbRule);
+                }}
+                onDelete={
+                  profile.rules.includes(fbRule)
+                    ? () =>
+                        runInAction(() =>
+                          profile.rules.splice(profile.rules.indexOf(fbRule), 1)
+                        )
+                    : undefined
+                }
+              />
             </InnerScrollView>
           ))}
         </GHScrollView>
       </View>
-      {!!availableFace && (
-        <FloatingAddButton
-          onPress={() => {
-            runInAction(() => {
-              const newRule = createObservableRolledRule(
-                [availableFace],
-                actionTypes[index]
-              );
-              profile.rules.push(newRule);
-              setConfigureRule(newRule);
-            });
-          }}
-        />
-      )}
+      <FloatingAddButton
+        disabled={availableFace === undefined}
+        onPress={
+          availableFace
+            ? () => {
+                const newRule = createObservableRolledRule(
+                  [availableFace],
+                  actionTypes[index]
+                );
+                runInAction(() => {
+                  profile.rules.push(newRule);
+                });
+                setConfigureRule(newRule);
+              }
+            : undefined
+        }
+      />
       <ConfigureActionModal
         dieType={profile.dieType}
         condition={configureRule?.condition ?? defaultCondition}
@@ -388,17 +395,25 @@ export function EditRollRuleScreen({
 }
 
 const styles = StyleSheet.create({
-  conditionCard: {
+  actionCard: {
     flexDirection: "row",
     padding: 0,
-    gap: 10,
   },
-  conditionTitle: {
+  actionCardTitle: {
     flexGrow: 1,
     flexShrink: 1,
     textAlign: "center",
-    marginHorizontal: 10,
     marginVertical: 12,
+  },
+  actionIconBox: {
+    height: 50,
+    aspectRatio: 1,
+  },
+  actionDeleteIcon: {
+    height: "100%",
+    width: "100%",
+    textAlign: "center",
+    textAlignVertical: "center",
   },
   noAction: {
     ...AppStyles.greyedOut,

@@ -7,6 +7,7 @@ import { makeTransparent } from "./utils";
 
 export type CardProps = ViewProps & {
   row?: boolean;
+  disabled?: boolean;
   noBorder?: boolean;
   frameless?: boolean;
   transparent?: boolean;
@@ -15,6 +16,7 @@ export type CardProps = ViewProps & {
 
 export function Card({
   row,
+  disabled,
   noBorder,
   frameless,
   transparent,
@@ -23,7 +25,13 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  const gradientAlpha = transparent ? 0 : frameless ? 0.4 : 0.1;
+  const gradientAlpha = transparent
+    ? 0
+    : frameless
+      ? disabled
+        ? 0.2
+        : 0.4
+      : 0.1;
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (

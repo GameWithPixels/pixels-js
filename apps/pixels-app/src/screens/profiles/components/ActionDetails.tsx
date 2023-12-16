@@ -53,7 +53,7 @@ function getConditionText(condition: Profiles.Condition): string | undefined {
         ? "On other faces"
         : faces.length <= 1
           ? `On face ${faces[0].toString() ?? "?"}`
-          : `On faces ${[...faces].reverse().join(", ")}`;
+          : `On faces ${[...faces].sort().reverse().join(", ")}`;
     }
     case "rolling":
       return `Recheck after ${(
@@ -124,8 +124,8 @@ export function ActionDetailsCard({
       {actionType === "playAnimation" ? (
         <View style={styles.animationBox}>
           <View style={styles.animationDetails}>
-            <ActionDetails action={action} />
             {condition && <ConditionDetails condition={condition} />}
+            <ActionDetails action={action} />
           </View>
           <View style={styles.animationDie}>
             <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
@@ -138,8 +138,8 @@ export function ActionDetailsCard({
             gap: 5,
           }}
         >
-          <ActionDetails action={action} />
           {condition && <ConditionDetails condition={condition} />}
+          <ActionDetails action={action} />
         </View>
       )}
     </>

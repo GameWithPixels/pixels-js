@@ -16,7 +16,9 @@ export function makeObservable<T extends object>(obj: T): T {
         if (prop) {
           if (Array.isArray(prop)) {
             for (const p of prop) {
-              makeObservable(p);
+              if (typeof p === "object") {
+                makeObservable(p);
+              }
             }
           } else if (typeof prop === "object") {
             makeObservable(prop);
