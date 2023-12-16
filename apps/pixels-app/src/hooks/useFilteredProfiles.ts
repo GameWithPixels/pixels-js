@@ -19,8 +19,7 @@ export function useFilteredProfiles(
             (filterLower &&
               (p.dieType.toLowerCase().includes(filterLower) ||
                 p.name.toLowerCase().includes(filterLower) ||
-                p.description.toLowerCase().includes(filterLower) ||
-                p.group.toLowerCase().includes(filterLower)))
+                p.description.toLowerCase().includes(filterLower)))
         );
   }, [dieType, filter, profiles]);
 }

@@ -108,7 +108,6 @@ export function getDiceGroupingLabel(grouping: DiceGrouping): string {
 export const ProfilesGroupingList = [
   "none",
   "dieType",
-  "group",
   "creationDate",
   "lastChanged",
   "lastUsed",
@@ -122,8 +121,6 @@ export function getProfilesGroupingLabel(grouping: ProfilesGrouping): string {
       return "None";
     case "dieType":
       return "Die Type";
-    case "group":
-      return "Group Name";
     case "creationDate":
       return "Creation Date";
     case "lastChanged":
@@ -409,13 +406,6 @@ export function groupAndSortProfiles(
             values: sort(profiles.filter((p) => p.dieType === dieType)),
           }))
           .filter((group) => group.values.length > 0);
-      case "group":
-        return [...new Set(profiles.map((p) => p.group))]
-          .sort((a, b) => a.localeCompare(b))
-          .map((group) => ({
-            title: group.length ? group : defaultTitle,
-            values: sort(profiles.filter((p) => p.group === group)),
-          }));
       case "creationDate":
         return sortGroupedByTime(
           groupByTime(

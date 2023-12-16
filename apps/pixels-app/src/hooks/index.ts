@@ -7,5 +7,4 @@ export * from "./usePairedPixels";
 export * from "./usePatternsList";
 export * from "./usePixelDfuStatus";
 export * from "./useProfile";
-export * from "./useProfilesGroups";
 export * from "./useProfilesList";

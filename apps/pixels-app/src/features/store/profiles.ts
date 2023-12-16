@@ -44,7 +44,6 @@ function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
   profile.name = profileData.name;
   profile.description = profileData.description;
   profile.dieType = profileData.dieType;
-  profile.group = profileData.group;
   profile.creationDate = new Date(profileData.creationDate);
   profile.lastChanged = new Date(profileData.lastChanged);
   profile.lastUsed = profileData.lastUsed

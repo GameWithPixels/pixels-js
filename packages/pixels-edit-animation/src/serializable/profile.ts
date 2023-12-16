@@ -11,7 +11,6 @@ import { UniqueNamedData } from "./unique";
 export interface ProfileData extends UniqueNamedData {
   description: string;
   dieType: PixelDieType;
-  group: string;
   creationDate: number;
   lastChanged: number;
   lastUsed: number;

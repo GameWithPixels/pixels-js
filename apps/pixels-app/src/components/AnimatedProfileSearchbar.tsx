@@ -29,7 +29,7 @@ export function AnimatedProfileSearchbar({
   return (
     <Animated.View style={[animStyle, { overflow: "hidden", gap: 10 }]}>
       <Searchbar
-        placeholder="Filter by die type, name, description or group"
+        placeholder="Filter by die type, name or description"
         onChangeText={setFilter}
         value={filter}
       />

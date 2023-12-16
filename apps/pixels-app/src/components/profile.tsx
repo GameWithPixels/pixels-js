@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
@@ -56,34 +56,6 @@ const ProfileNameAndDescription = observer(function ({
         </Text>
       )}
     </>
-  );
-});
-
-const ProfileGroup = observer(function ({
-  profile,
-  iconColor,
-  numberOfLines,
-  textStyle,
-}: {
-  profile: Readonly<Profiles.Profile>;
-  iconColor: string;
-  numberOfLines: number;
-  textStyle: { color: string } | undefined;
-}) {
-  return (
-    <View
-      style={{
-        alignSelf: "flex-start",
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-      }}
-    >
-      <MaterialIcons name="groups" size={24} color={iconColor} />
-      <Text numberOfLines={numberOfLines} style={textStyle}>
-        {profile.group?.length ? profile.group : "(none)"}
-      </Text>
-    </View>
   );
 });
 
@@ -168,10 +140,10 @@ const ProfileActionsIcons = observer(function ({
   iconColor: string;
 }) {
   const actions = profile.rules.flatMap((r) => r.actions);
-  const hasAnim = !actions.every((a) => a.type !== "playAnimation");
-  const hasSound = !actions.every((a) => a.type !== "playAudioClip");
-  const hasSpeak = !actions.every((a) => a.type !== "speakText");
-  const hasWeb = !actions.every((a) => a.type !== "makeWebRequest");
+  const hasAnim = actions.some((a) => a.type === "playAnimation");
+  const hasSound = actions.some((a) => a.type === "playAudioClip");
+  const hasSpeak = actions.some((a) => a.type === "speakText");
+  const hasWeb = actions.some((a) => a.type === "makeWebRequest");
   return (
     <View
       style={{
@@ -369,12 +341,6 @@ export function ProfileCard({
                 justifyContent: "space-between",
               }}
             >
-              <ProfileGroup
-                profile={profile}
-                iconColor={colors.onSurface}
-                numberOfLines={row ? 1 : 2}
-                textStyle={textStyle}
-              />
               <ProfileDiceNames
                 profile={profile}
                 iconColor={colors.onSurface}

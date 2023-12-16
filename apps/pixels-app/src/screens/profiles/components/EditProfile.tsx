@@ -37,23 +37,6 @@ const EditProfileDescription = observer(function ({
   );
 });
 
-const EditProfileGroup = observer(function ({
-  profile,
-  colors,
-}: {
-  profile: Profiles.Profile;
-  colors: MD3Theme["colors"];
-}) {
-  return (
-    <TextInput
-      mode="outlined"
-      style={{ backgroundColor: colors.elevation.level0 }}
-      value={profile.group}
-      onChangeText={(t) => runInAction(() => (profile.group = t))}
-    />
-  );
-});
-
 function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   const diceNames = useAppSelector((state) => state.pairedDice.diceData)
     .filter((d) => d.profileUuid === profileUuid)
@@ -159,12 +142,6 @@ export function EditProfile({
         ))}
         <SectionTitle>Description</SectionTitle>
         <EditProfileDescription profile={profile} colors={colors} />
-        {!unnamed && (
-          <>
-            <SectionTitle>Group</SectionTitle>
-            <EditProfileGroup profile={profile} colors={colors} />
-          </>
-        )}
         <RulesSection
           profileUuid={profileUuid}
           onEditRule={onEditRule}

@@ -21,7 +21,6 @@ const blankProfile: Readonly<Profiles.Profile> = new Profiles.Profile({
   uuid: generateUuid(),
   name: "Empty",
   description: "A blank profile",
-  group: "template",
 });
 
 const tabsNames = ["Templates", "Profiles"];
@@ -68,17 +67,9 @@ function CreateProfilePage({
   const templates = React.useMemo(
     () => [
       [blankProfile].concat(
-        profiles.filter(
-          (p) =>
-            (!p.dieType || p.dieType === dieType) &&
-            p.group === blankProfile.group
-        )
+        profiles.slice(0, 3).filter((p) => !p.dieType || p.dieType === dieType)
       ),
-      profiles.filter(
-        (p) =>
-          (!p.dieType || p.dieType === dieType) &&
-          p.group !== blankProfile.group
-      ),
+      profiles.slice(3).filter((p) => !p.dieType || p.dieType === dieType),
     ],
     [dieType, profiles]
   );
@@ -104,7 +95,6 @@ function CreateProfilePage({
             newProfile.description =
               p === blankProfile ? "" : `Based on ${p.name}`;
             newProfile.dieType = dieType;
-            newProfile.group = "";
             addProfile(newProfile);
             navigation.pop();
             navigation.navigate("editProfile", {

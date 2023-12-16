@@ -329,7 +329,6 @@ function toProfile(
     name: profile.name ?? "",
     description: profile.description ?? "",
     dieType: "d20",
-    group: "template",
     creationDate: defaultCreationTime,
     lastChanged: defaultCreationTime,
     lastUsed: 0,

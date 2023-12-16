@@ -26,9 +26,6 @@ export default class EditProfile extends Editable {
   // TODO The properties below should be moved to a separate class
 
   @observable
-  group: string;
-
-  @observable
   creationDate: Date;
 
   @observable
@@ -46,7 +43,6 @@ export default class EditProfile extends Editable {
     description?: string;
     rules?: EditRule[];
     dieType?: PixelDieType;
-    group?: string;
     creationDate?: Date;
     lastChanged?: Date;
     lastUsed?: Date;
@@ -55,7 +51,6 @@ export default class EditProfile extends Editable {
     this.description = opt?.description ?? "";
     this.rules = opt?.rules ?? [];
     this.dieType = opt?.dieType ?? "d20";
-    this.group = opt?.group ?? "";
     this.creationDate = opt?.creationDate ?? new Date();
     this.lastChanged = opt?.lastChanged ?? new Date();
     this.lastUsed = opt?.lastUsed;
