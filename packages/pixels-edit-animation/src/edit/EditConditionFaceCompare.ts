@@ -11,7 +11,7 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, range, values, widget } from "./decorators";
 
 export default class EditConditionFaceCompare extends EditCondition {
-  readonly type = "rolled";
+  readonly type = "faceCompare";
 
   @widget("bitField")
   @name("Comparison")
@@ -23,7 +23,7 @@ export default class EditConditionFaceCompare extends EditCondition {
   @range(1, 20)
   @name("Than")
   @observable
-  face: number; // Legacy: face value, now a bitfield
+  face: number;
 
   get flagName(): string | undefined {
     return this.getFlagName(this.flags, FaceCompareFlagsValues);
@@ -44,23 +44,5 @@ export default class EditConditionFaceCompare extends EditCondition {
 
   duplicate(): EditCondition {
     return new EditConditionFaceCompare(this);
-  }
-
-  getFaceList(): number[] | "all" {
-    if (this.face === -1) {
-      return "all";
-    } else {
-      let bits = this.face < 0 ? 0x7fffffff : this.face | 0; // Convert to 32 bits
-      let face = 1;
-      const faces = [];
-      while (bits && face <= 20) {
-        if (bits & 1) {
-          faces.push(face);
-        }
-        bits = bits >> 1;
-        ++face;
-      }
-      return faces;
-    }
   }
 }

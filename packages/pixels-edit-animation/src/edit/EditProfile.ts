@@ -105,6 +105,6 @@ export default class EditProfile extends Editable {
   }
 
   hasActionOfType(type: ActionType): boolean {
-    return !this.rules.every((r) => !r.actions.every((a) => a.type !== type));
+    return this.rules.some((r) => r.actions.some((a) => a.type === type));
   }
 }

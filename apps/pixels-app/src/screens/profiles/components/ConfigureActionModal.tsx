@@ -30,7 +30,6 @@ import { GradientButton } from "~/components/buttons";
 import { getConditionTypeLabel } from "~/descriptions";
 import { useAnimationsList } from "~/hooks";
 import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
-import { useRolledConditionFaces } from "~/hooks/useRolledConditionFaces";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function PickAnimationModal({
@@ -152,7 +151,7 @@ const ConfigureRolledCondition = observer(function ({
   dieType: PixelDieType;
   unavailableFaces?: number[];
 }) {
-  const faces = useRolledConditionFaces(condition);
+  const faces = condition.faces;
   return faces !== "all" ? (
     <>
       <Text variant="titleMedium">When Roll is</Text>
@@ -161,7 +160,14 @@ const ConfigureRolledCondition = observer(function ({
         selected={faces}
         unavailable={unavailableFaces}
         onToggleFace={(face) =>
-          runInAction(() => (condition.face ^= 1 << (face - 1)))
+          runInAction(() => {
+            const i = faces.indexOf(face);
+            if (i >= 0) {
+              delete faces[i];
+            } else {
+              faces.push(face);
+            }
+          })
         }
         style={{ marginHorizontal: 10 }}
       />

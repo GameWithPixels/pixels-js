@@ -21,4 +21,5 @@ export { default as ConditionCrooked } from "./ConditionCrooked";
 export { default as ConditionHandling } from "./ConditionHandling";
 export { default as ConditionIdle } from "./ConditionIdle";
 export { default as ConditionRolling } from "./ConditionRolling";
+export { default as ConditionRolled } from "./ConditionRolled";
 export * from "./getDisplayName";

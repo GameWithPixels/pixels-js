@@ -11,6 +11,7 @@ import {
   bitsToFlags,
   combineFlags,
   keysToValues,
+  range,
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
 
@@ -51,6 +52,7 @@ import {
   EditConditionHandling,
   EditConditionHelloGoodbye,
   EditConditionIdle,
+  EditConditionRolled,
   EditConditionRolling,
   EditPattern,
   EditProfile,
@@ -125,11 +127,9 @@ export function toProfile(
             condData,
             `No data for ${condType} condition at index ${index}`
           );
-          condition = new EditConditionFaceCompare({
+          condition = new EditConditionRolled({
             ...condData,
-            flags: combineFlags(
-              keysToValues(condData.flags, FaceCompareFlagsValues)
-            ),
+            faces: condData.faces ?? "all",
           });
         }
         break;
@@ -322,6 +322,28 @@ export function toGradient(data: Readonly<GradientData>): EditRgbGradient {
   });
 }
 
+// undefined means "all faces"
+export function fromFaceCompare(
+  flags: number,
+  face: number
+): number[] | undefined {
+  const isEq = flags & FaceCompareFlagsValues.equal ? 1 : 0;
+  const lessOrEqual =
+    FaceCompareFlagsValues.less | FaceCompareFlagsValues.equal;
+  const greaterOrEqual =
+    FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal;
+  return !flags || face <= 0
+    ? []
+    : (face === 20 && (flags & lessOrEqual) === lessOrEqual) ||
+        (face === 1 && (flags & greaterOrEqual) === greaterOrEqual)
+      ? undefined
+      : flags & FaceCompareFlagsValues.less
+        ? range(1, face + isEq)
+        : flags & FaceCompareFlagsValues.greater
+          ? range(face + 1 - isEq, 21)
+          : [face];
+}
+
 export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
   const conditions = createConditionSetData();
   const actions = createActionSetData();
@@ -355,16 +377,21 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
           });
         }
         break;
+      case "faceCompare":
+        {
+          condIndex = conditions["rolled"].length;
+          const cond = r.condition as EditConditionFaceCompare;
+          conditions["rolled"].push({
+            faces: fromFaceCompare(cond.flags, cond.face),
+          });
+        }
+        break;
       case "rolled":
         {
           condIndex = conditions[condType].length;
-          const cond = r.condition as EditConditionFaceCompare;
+          const cond = r.condition as EditConditionRolled;
           conditions[condType].push({
-            flags: valuesToKeys(
-              bitsToFlags(cond.flags),
-              FaceCompareFlagsValues
-            ),
-            face: cond.face,
+            faces: cond.faces === "all" ? undefined : [...cond.faces],
           });
         }
         break;
@@ -407,7 +434,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     }
     return {
       condition: {
-        type: condType,
+        type: condType === "faceCompare" ? "rolled" : condType,
         index: condIndex,
       },
       actions: r.actions.map((action) => {
