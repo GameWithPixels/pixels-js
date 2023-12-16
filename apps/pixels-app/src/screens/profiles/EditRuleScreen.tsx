@@ -21,11 +21,9 @@ function EditRulePage({
   return (
     <>
       <View style={{ height: "100%" }}>
-        <PageHeader
-          mode="arrow-left"
-          title={getConditionTypeLabel(conditionType)}
-          onGoBack={() => navigation.goBack()}
-        />
+        <PageHeader mode="arrow-left" onGoBack={() => navigation.goBack()}>
+          {getConditionTypeLabel(conditionType)}
+        </PageHeader>
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{

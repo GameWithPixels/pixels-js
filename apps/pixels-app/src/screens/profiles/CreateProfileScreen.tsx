@@ -85,13 +85,14 @@ function CreateProfilePage({
   return (
     <View style={{ height: "100%", gap: 10 }}>
       <PageHeader
-        title="Select Template"
         rightElement={() => (
           <TightTextButton onPress={() => navigation.goBack()}>
             Cancel
           </TightTextButton>
         )}
-      />
+      >
+        Select Template
+      </PageHeader>
       <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
       <DieTypesSelector selected={dieType} onSelect={setDieType} />
       <GHScrollView contentContainerStyle={{ gap: 20, paddingBottom: 10 }}>
@@ -108,7 +109,8 @@ function CreateProfilePage({
             navigation.pop();
             navigation.navigate("editProfile", {
               profileUuid: newProfile.uuid,
-              alwaysSave: true,
+              noDiscard: true,
+              editName: true,
             });
           }}
         />

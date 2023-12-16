@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
@@ -14,33 +13,11 @@ import { helloGoodbyeFlags } from "~/actionTypes";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
-import {
-  GradientButton,
-  OutlineButton,
-  TightTextButton,
-} from "~/components/buttons";
+import { GradientButton, OutlineButton } from "~/components/buttons";
 import { getConditionTypeLabel } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
 import { useEditableProfile } from "~/hooks";
-
-const EditProfileName = observer(function ({
-  profile,
-  colors,
-}: {
-  profile: Profiles.Profile;
-  colors: MD3Theme["colors"];
-}) {
-  return (
-    <TextInput
-      mode="outlined"
-      dense
-      style={{ backgroundColor: colors.elevation.level0 }}
-      value={profile.name}
-      onChangeText={(t) => runInAction(() => (profile.name = t))}
-    />
-  );
-});
 
 const EditProfileDescription = observer(function ({
   profile,
@@ -113,66 +90,11 @@ const ProfileUsage = observer(function ({
   );
 });
 
-function ProfileAdvancedActions({
-  children,
-  onEditAdvancedRules,
-  onDelete,
-}: React.PropsWithChildren<{
-  onEditAdvancedRules: () => void;
-  onDelete?: () => void;
-}>) {
-  return (
-    <View
-      style={{
-        alignItems: "flex-start",
-        marginTop: -10,
-        paddingVertical: 10,
-      }}
-    >
-      <TightTextButton
-        icon={({ size, color }) => (
-          <MaterialCommunityIcons name="cog" size={size} color={color} />
-        )}
-        labelStyle={{ textDecorationLine: "underline" }}
-        onPress={onEditAdvancedRules}
-      >
-        Edit Advanced Rules
-      </TightTextButton>
-      {/* <TightTextButton
-        icon={({ size, color }) => (
-          <MaterialCommunityIcons name="share" size={size} color={color} />
-        )}
-        labelStyle={{ textDecorationLine: "underline" }}
-      >
-        Share
-      </TightTextButton> */}
-      {children}
-      {onDelete && (
-        <TightTextButton
-          icon={({ size, color }) => (
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              size={size}
-              color={color}
-            />
-          )}
-          labelStyle={{ textDecorationLine: "underline" }}
-          onPress={onDelete}
-        >
-          Delete Profile
-        </TightTextButton>
-      )}
-    </View>
-  );
-}
-
 export function EditProfile({
   profileUuid,
   unnamed,
   showActionButtons,
   onEditRule,
-  onEditAdvancedRules,
-  onDelete,
   style,
   ...props
 }: {
@@ -180,8 +102,6 @@ export function EditProfile({
   unnamed?: boolean;
   showActionButtons?: boolean;
   onEditRule: EditRuleCallback;
-  onEditAdvancedRules: () => void;
-  onDelete?: () => void;
 } & ViewProps) {
   const appDispatch = useAppDispatch();
   const showHelp = useAppSelector((state) => state.appSettings.showProfileHelp);
@@ -225,8 +145,6 @@ export function EditProfile({
             How to customize profile blah blah.
           </Banner>
         )}
-        {!unnamed && <SectionTitle>Profile Name</SectionTitle>}
-        {!unnamed && <EditProfileName profile={profile} colors={colors} />}
         <SectionTitle>Roll Rules</SectionTitle>
         {(["rolled", "rolling"] as Profiles.ConditionType[]).map((ct) => (
           <RuleCard
@@ -258,26 +176,6 @@ export function EditProfile({
           {!unnamed && <ProfileDiceNames profileUuid={profileUuid} />}
           <ProfileUsage profile={profile} />
         </View>
-        <SectionTitle>More Actions</SectionTitle>
-        <ProfileAdvancedActions
-          onEditAdvancedRules={onEditAdvancedRules}
-          onDelete={onDelete}
-        >
-          {unnamed && (
-            <TightTextButton
-              icon={({ size, color }) => (
-                <MaterialCommunityIcons
-                  name="content-save"
-                  size={size}
-                  color={color}
-                />
-              )}
-              labelStyle={{ textDecorationLine: "underline" }}
-            >
-              Save as Standalone Profile
-            </TightTextButton>
-          )}
-        </ProfileAdvancedActions>
       </SlideInView>
     </SlideInView>
   );

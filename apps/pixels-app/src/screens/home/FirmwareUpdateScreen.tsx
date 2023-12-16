@@ -106,11 +106,9 @@ function FirmwareUpdatePage({
   );
   return (
     <View style={{ height: "100%", gap: 10 }}>
-      <PageHeader
-        mode="chevron-down"
-        title="Select Dice to Update"
-        onGoBack={() => navigation.goBack()}
-      />
+      <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
+        Select Dice to Update
+      </PageHeader>
       <View style={{ flex: 1, flexGrow: 1, marginHorizontal: 10, gap: 20 }}>
         <Text variant="bodyLarge">
           We have a software update for your dice!

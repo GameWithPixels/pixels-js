@@ -19,11 +19,9 @@ function EditAdvancedRulesPage({
 }) {
   return (
     <View style={{ height: "100%" }}>
-      <PageHeader
-        mode="arrow-left"
-        title="Advanced Rules"
-        onGoBack={onGoBack}
-      />
+      <PageHeader mode="arrow-left" onGoBack={onGoBack}>
+        Advanced Rules
+      </PageHeader>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{

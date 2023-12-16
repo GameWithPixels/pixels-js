@@ -3,17 +3,16 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Text, IconButton } from "react-native-paper";
 
-export interface PageHeaderProps {
+export interface PageHeaderProps extends React.PropsWithChildren {
   mode?: "arrow-left" | "chevron-down";
-  title?: string;
   onGoBack?: () => void;
   leftElement?: () => React.ReactNode;
   rightElement?: () => React.ReactNode;
 }
 
 export function PageHeader({
+  children,
   mode = "arrow-left",
-  title,
   onGoBack,
   leftElement,
   rightElement,
@@ -26,7 +25,11 @@ export function PageHeader({
         height: 50,
       }}
     >
-      {!!title?.length && <Text variant="titleMedium">{title}</Text>}
+      {typeof children === "string" ? (
+        <Text variant="titleMedium">{children}</Text>
+      ) : (
+        children
+      )}
       <View
         style={{
           ...StyleSheet.absoluteFillObject,

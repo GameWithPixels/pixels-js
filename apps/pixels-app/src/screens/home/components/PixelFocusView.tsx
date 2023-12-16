@@ -18,7 +18,6 @@ import {
   TextInput as RNTextInput,
   View,
   ViewProps,
-  TextProps,
 } from "react-native";
 import {
   Badge,
@@ -42,6 +41,7 @@ import Animated, {
 
 import CalibrateIcon from "#/icons/home/calibrate";
 import { Card } from "~/components/Card";
+import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { ProfilePicker } from "~/components/ProfilePicker";
 import { AnimatedText } from "~/components/animated";
 import { Chip, GradientChip } from "~/components/buttons";
@@ -56,37 +56,6 @@ import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useActiveProfile } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
-
-function ChevronDownIcon({
-  size,
-  color,
-  backgroundColor,
-  style,
-  ...props
-}: {
-  size: number;
-  color: string;
-  backgroundColor?: string;
-} & TextProps) {
-  return (
-    <MaterialCommunityIcons
-      name="chevron-down"
-      size={size}
-      color={color}
-      style={[
-        {
-          borderRadius: size / 2,
-          overflow: "hidden", // For border radius to work on iOS
-          backgroundColor,
-          textAlign: "center",
-          textAlignVertical: "center",
-        },
-        style,
-      ]}
-      {...props}
-    />
-  );
-}
 
 function DieMenu({
   onFirmwareUpdate,

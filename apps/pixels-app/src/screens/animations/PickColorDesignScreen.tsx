@@ -18,11 +18,9 @@ function PickColorDesignPage({
 }) {
   return (
     <View style={{ height: "100%", gap: 10 }}>
-      <PageHeader
-        mode="chevron-down"
-        title="Select a Scheme.ColorDesign"
-        onGoBack={() => navigation.goBack()}
-      />
+      <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
+        Select Color Design
+      </PageHeader>
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <ColorDesignPicker
           pattern={pattern}

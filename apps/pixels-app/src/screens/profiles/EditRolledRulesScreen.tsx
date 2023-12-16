@@ -251,11 +251,9 @@ const EditRolledRulesPage = observer(function ({
   return (
     <>
       <View style={{ height: "100%", gap: 10 }}>
-        <PageHeader
-          mode="arrow-left"
-          title={getConditionTypeLabel("rolled")}
-          onGoBack={onGoBack}
-        />
+        <PageHeader mode="arrow-left" onGoBack={onGoBack}>
+          {getConditionTypeLabel("rolled")}
+        </PageHeader>
         <View
           style={{
             flexDirection: "row",

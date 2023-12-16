@@ -43,13 +43,14 @@ function CreateAnimationPage({
   return (
     <View style={{ height: "100%", gap: 10 }}>
       <PageHeader
-        title="Select Template"
         rightElement={() => (
           <TightTextButton onPress={() => navigation.goBack()}>
             Cancel
           </TightTextButton>
         )}
-      />
+      >
+        Select Template
+      </PageHeader>
       <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
       <ScrollView contentContainerStyle={{ gap: 20, paddingBottom: 10 }}>
         <AnimationsGrid

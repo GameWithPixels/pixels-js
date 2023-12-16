@@ -33,11 +33,9 @@ const Header = observer(function ({
   onGoBack: () => void;
 }) {
   return (
-    <PageHeader
-      mode="chevron-down"
-      title={animation.name}
-      onGoBack={onGoBack}
-    />
+    <PageHeader mode="chevron-down" onGoBack={onGoBack}>
+      {animation.name}
+    </PageHeader>
   );
 });
 

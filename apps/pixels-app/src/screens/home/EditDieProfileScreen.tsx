@@ -1,13 +1,17 @@
 import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { View } from "react-native";
+import { Platform, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
+import { Text, useTheme } from "react-native-paper";
 
 import { EditProfile } from "../profiles/components/EditProfile";
+import { ProfileMenu } from "../profiles/components/ProfileMenu";
 import { RuleIndex } from "../profiles/components/RuleCard";
 
 import { AppBackground } from "~/components/AppBackground";
+import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
+import { makeTransparent } from "~/components/utils";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { EditDieProfileScreenProps } from "~/navigation";
 
@@ -31,34 +35,43 @@ function EditDieProfilePage({
     },
     [navigation]
   );
+  const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
+  const { width: windowWidth } = useWindowDimensions();
+  const { colors } = useTheme();
+  const color = actionsMenuVisible
+    ? colors.onSurfaceDisabled
+    : colors.onSurface;
   const profileUuid = activeProfile.uuid;
-  const editAdvancedRules = React.useCallback(
-    () => navigation.navigate("editAdvancedRules", { profileUuid }),
-    [navigation, profileUuid]
-  );
-  if (!activeProfile) {
-    // TODO create profile
-    navigation.goBack();
-    console.warn("No profile found for pixel", pixelId);
-    return null;
-  }
   return (
     <View style={{ height: "100%" }}>
-      <PageHeader
-        mode="chevron-down"
-        title={`${pixelName}'s Profile`}
-        onGoBack={() => navigation.goBack()}
-      />
+      <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
+        <Text variant="titleMedium" style={{ paddingHorizontal: 5, color }}>
+          {`${pixelName}'s Profile`}
+        </Text>
+        <ChevronDownIcon
+          size={18}
+          color={color}
+          backgroundColor={makeTransparent(colors.onBackground, 0.2)}
+          style={{ marginBottom: 3 }}
+        />
+        <ProfileMenu
+          visible={actionsMenuVisible}
+          contentStyle={{
+            marginTop: Platform.select({ ios: 10, default: 20 }),
+            width: 230,
+          }}
+          anchor={{ x: (windowWidth - 250) / 2, y: 60 }}
+          onDismiss={() => setActionsMenuVisible(false)}
+          onEditAdvancedRules={() =>
+            navigation.navigate("editAdvancedRules", { profileUuid })
+          }
+        />
+      </PageHeader>
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingBottom: 10 }}
       >
-        <EditProfile
-          profileUuid={profileUuid}
-          unnamed
-          onEditRule={editRule}
-          onEditAdvancedRules={editAdvancedRules}
-        />
+        <EditProfile profileUuid={profileUuid} unnamed onEditRule={editRule} />
       </GHScrollView>
     </View>
   );

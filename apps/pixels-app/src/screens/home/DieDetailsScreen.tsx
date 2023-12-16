@@ -184,11 +184,9 @@ function DieDetailsPage({
     React.useState(true);
   return (
     <View style={{ height: "100%" }}>
-      <PageHeader
-        mode="chevron-down"
-        title={pixel?.name}
-        onGoBack={() => navigation.goBack()}
-      />
+      <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
+        {pixel?.name}
+      </PageHeader>
       {pixel && (
         <GHScrollView
           contentContainerStyle={{
