@@ -82,7 +82,7 @@ const Header = observer(
             : undefined
         }
         rightElement={
-          !onDiscardChanges ?? profile.isModified
+          !onDiscardChanges || profile.isModified
             ? () => <Button onPress={onCommitChanges}>Done</Button>
             : undefined
         }

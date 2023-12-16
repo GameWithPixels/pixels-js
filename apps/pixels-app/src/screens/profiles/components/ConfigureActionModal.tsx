@@ -163,7 +163,7 @@ const ConfigureRolledCondition = observer(function ({
           runInAction(() => {
             const i = faces.indexOf(face);
             if (i >= 0) {
-              delete faces[i];
+              faces.splice(i, 1);
             } else {
               faces.push(face);
             }

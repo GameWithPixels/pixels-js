@@ -1,14 +1,14 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
-import { runInAction } from "mobx";
+import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { StyleSheet } from "react-native";
-import { useTheme, Switch } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 import Animated, {
   CurvedTransition,
   FadeIn,
-  FadeOut,
   interpolateColor,
   useAnimatedStyle,
   useDerivedValue,
@@ -39,31 +39,31 @@ export const EditActionCard = observer(function ({
   actionType: Profiles.ActionType;
 }) {
   const profile = useEditableProfile(profileUuid);
-  const getRule = React.useCallback(
+  const rule = React.useMemo(
     () =>
-      profile.rules.find(
-        (r) =>
-          r.condition.type === conditionType &&
-          r.condition.flagName === flagName
+      computed(() =>
+        profile.rules.find(
+          (r) =>
+            r.condition.type === conditionType &&
+            r.condition.flagName === flagName &&
+            r.actions.some((a) => a.type === actionType)
+        )
       ),
-    [conditionType, flagName, profile.rules]
-  );
+    [actionType, conditionType, flagName, profile.rules]
+  ).get();
   const condition = React.useMemo(
     () =>
-      getRule()?.condition ??
+      rule?.condition ??
       makeObservable(Profiles.createCondition(conditionType, flagName as any)),
-    [conditionType, flagName, getRule]
+    [conditionType, flagName, rule]
   );
   const action = React.useMemo(
     () =>
-      getRule()?.actions?.find((a) => a.type === actionType) ??
+      rule?.actions?.find((a) => a.type === actionType) ??
       makeObservable(Profiles.createAction(actionType)),
-    [actionType, getRule]
+    [actionType, rule]
   );
-  const [hasContent, setHasContent] = React.useState(
-    () => getRule()?.actions.includes(action) ?? false
-  );
-  const svShowContent = useSharedValue(hasContent);
+  const svShowContent = useSharedValue(!!rule);
   const svProgress = useDerivedValue(() =>
     withTiming(svShowContent.value ? 1 : 0, { duration: 300 })
   );
@@ -86,7 +86,6 @@ export const EditActionCard = observer(function ({
         <TouchableCard
           noBorder
           frameless
-          disabled={!hasContent}
           contentStyle={{
             flexDirection: "row",
             minHeight: 50,
@@ -95,7 +94,21 @@ export const EditActionCard = observer(function ({
             alignItems: "center",
             justifyContent: "space-between",
           }}
-          onPress={() => setConfigureVisible(true)}
+          onPress={() => {
+            if (!rule) {
+              // Create the rule with a new condition so Mobx doesn't complain about re-annotating with 'observable'
+              const newRule = makeObservable(
+                new Profiles.Rule(Profiles.createCondition(conditionType))
+              );
+              runInAction(() => {
+                newRule.condition = condition;
+                newRule.actions.push(action);
+                profile.rules.push(newRule);
+              });
+              svShowContent.value = true;
+            }
+            setConfigureVisible(true);
+          }}
         >
           <AnimatedActionTypeIcon
             type={actionType}
@@ -105,63 +118,44 @@ export const EditActionCard = observer(function ({
           <AnimatedText variant="titleMedium" style={animColorStyle}>
             {getActionTypeLabel(actionType)}
           </AnimatedText>
-          <Switch
-            value={hasContent}
-            onValueChange={(isOn) => {
-              const rule = getRule();
-              runInAction(() => {
-                if (isOn) {
-                  if (rule) {
-                    rule.condition = condition;
-                    if (!rule.actions.includes(action)) {
-                      rule.actions.push(action);
-                    }
-                  } else {
-                    // Create the rule with a new condition so Mobx doesn't complain about re-annotating with 'observable'
-                    const newRule = makeObservable(
-                      new Profiles.Rule(Profiles.createCondition(conditionType))
+          <View style={styles.actionIconBox}>
+            {rule && (
+              <MaterialCommunityIcons
+                name="trash-can-outline"
+                color={colors.onSurface}
+                size={24}
+                style={styles.actionDeleteIcon}
+                onPress={() => {
+                  !!rule &&
+                    runInAction(() =>
+                      profile.rules.splice(profile.rules.indexOf(rule), 1)
                     );
-                    newRule.condition = condition;
-                    newRule.actions.push(action);
-                    profile.rules.push(newRule);
-                  }
-                } else if (rule) {
-                  rule.condition = condition;
-                  const index = rule.actions.indexOf(action);
-                  if (index >= 0) {
-                    if (rule.actions.length === 1) {
-                      profile.rules.splice(profile.rules.indexOf(rule), 1);
-                    } else {
-                      rule.actions.splice(index, 1);
-                    }
-                  }
-                }
-              });
-              setConfigureVisible(isOn);
-              setHasContent(isOn);
-              svShowContent.value = isOn;
-            }}
-          />
+                  svShowContent.value = false;
+                }}
+              />
+            )}
+          </View>
         </TouchableCard>
-        {hasContent && (
-          <Animated.View
-            entering={FadeIn.duration(300).delay(100)}
-            exiting={FadeOut.duration(300)}
-            style={{
-              ...styles.bottomView,
-              borderRadius,
-              borderColor: colors.outline,
-              gap: 10,
-              pointerEvents: "none",
-            }}
-          >
+        <Animated.View
+          layout={FadeIn.duration(300)}
+          style={{
+            ...styles.bottomView,
+            borderRadius,
+            borderColor: colors.outline,
+            gap: 10,
+            pointerEvents: "none",
+          }}
+        >
+          {rule ? (
             <ActionDetailsCard
               action={action}
               condition={condition}
               dieType={profile.dieType}
             />
-          </Animated.View>
-        )}
+          ) : (
+            <Text style={styles.noActionText}>Tap to enable</Text>
+          )}
+        </Animated.View>
       </Animated.View>
       <ConfigureActionModal
         dieType={profile.dieType}
@@ -177,6 +171,20 @@ export const EditActionCard = observer(function ({
 const styles = StyleSheet.create({
   hidden: {
     overflow: "hidden",
+  },
+  actionIconBox: {
+    height: 50,
+    aspectRatio: 1,
+    marginRight: -10,
+  },
+  actionDeleteIcon: {
+    height: "100%",
+    width: "100%",
+    textAlign: "center",
+    textAlignVertical: "center",
+  },
+  noActionText: {
+    marginVertical: 10,
   },
   bottomView: {
     marginTop: -20,
