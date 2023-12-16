@@ -4,8 +4,8 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
-import { getDieTypeLabel } from "~/descriptions";
-import { sortedDieTypes } from "~/dieTypes";
+import { getProfileDieTypeLabel } from "~/descriptions";
+import { profileDieTypes } from "~/dieTypes";
 
 function SortByDateDescendingIcon({
   size,
@@ -125,7 +125,7 @@ export function getProfilesGroupingLabel(grouping: ProfilesGrouping): string {
     case "group":
       return "Group Name";
     case "creationDate":
-      return "CreationDate";
+      return "Creation Date";
     case "lastChanged":
       return "Last Modification Date";
     case "lastUsed":
@@ -403,9 +403,9 @@ export function groupAndSortProfiles(
       case "none":
         return [{ title: defaultTitle, values: sort(profiles) }];
       case "dieType":
-        return sortedDieTypes
+        return profileDieTypes
           .map((dieType) => ({
-            title: getDieTypeLabel(dieType),
+            title: getProfileDieTypeLabel(dieType),
             values: sort(profiles.filter((p) => p.dieType === dieType)),
           }))
           .filter((group) => group.values.length > 0);

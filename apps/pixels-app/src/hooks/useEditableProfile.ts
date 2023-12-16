@@ -25,12 +25,13 @@ function create(profileUuid: string): Profiles.Profile {
   );
   let firstAutorun = true;
   const onChange = autorun(() => {
-    // `JSON.stringify` will touch all properties of the profile` so they are automatically observed.
-    JSON.stringify(profile);
-    if (!firstAutorun) {
+    if (firstAutorun) {
+      // `JSON.stringify` will touch all properties of the profile` so they are automatically observed.
+      JSON.stringify(profile);
+      firstAutorun = false;
+    } else {
       runInAction(() => (profile.isModified = true));
     }
-    firstAutorun = false;
   });
   editableProfiles.set(profileUuid, { profile, onChange });
   return profile;
@@ -50,7 +51,7 @@ export function useCommitEditableProfile(): {
     commitProfile: (profileUuid: string) => {
       const profile = editableProfiles.get(profileUuid)?.profile;
       if (profile) {
-        profile.lastChanged = new Date();
+        runInAction(() => (profile.lastChanged = new Date()));
         appDispatch(updateProfile(Serializable.fromProfile(profile)));
         editableProfiles.delete(profileUuid);
       }

@@ -124,8 +124,7 @@ class SceneRenderer {
         this._die3d.size.y,
         this._die3d.size.z
       );
-      const cameraDist =
-        dieSize * 2.7 * (opt?.withStage ? 1 : this._getDieSizeRatio());
+      const cameraDist = dieSize * this._getDieSizeRatio();
       camera.position.set(0, cameraDist, cameraDist);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -293,21 +292,23 @@ class SceneRenderer {
 
   private _getDieSizeRatio() {
     switch (this._die3d.dieType) {
+      case "d4":
+        return 2.7;
       case "d6":
       case "d6pipped":
       case "d6fudge":
-        return 1.8;
+        return 4.86;
       case "d8":
-        return 0.88;
+        return 2.38;
       case "d10":
       case "d00":
-        return 0.95;
+        return 2.57;
       case "d12":
-        return 0.75;
+        return 2;
       case "d20":
-        return 1.05;
+        return 2.84;
       default:
-        return 1;
+        return 2.5;
     }
   }
 

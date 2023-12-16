@@ -26,18 +26,15 @@ const Header = observer(function ({
 }: {
   profile: Profiles.Profile;
   commitChanges: () => void;
-  discardChanges: () => void;
-  confirmDiscard: () => void;
+  discardChanges?: () => void;
+  confirmDiscard?: () => void;
 }) {
+  const onCancel = profile.isModified ? confirmDiscard : discardChanges;
   return (
     <PageHeader
       mode="chevron-down"
       title={profile.name}
-      leftElement={() => (
-        <Button onPress={profile.isModified ? confirmDiscard : discardChanges}>
-          Cancel
-        </Button>
-      )}
+      leftElement={() => onCancel && <Button onPress={onCancel}>Cancel</Button>}
       rightElement={
         profile.isModified
           ? () => (
@@ -56,9 +53,11 @@ const Header = observer(function ({
 
 function EditProfilePage({
   profileUuid,
+  alwaysSave,
   navigation,
 }: {
   profileUuid: string;
+  alwaysSave?: boolean;
   navigation: EditProfileScreenProps["navigation"];
 }) {
   const profile = useEditableProfile(profileUuid);
@@ -100,8 +99,8 @@ function EditProfilePage({
       <Header
         profile={profile}
         commitChanges={commitChanges}
-        discardChanges={discardChanges}
-        confirmDiscard={showConfirmDiscard}
+        discardChanges={alwaysSave ? undefined : discardChanges}
+        confirmDiscard={alwaysSave ? undefined : showConfirmDiscard}
       />
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -111,8 +110,6 @@ function EditProfilePage({
           showActionButtons
           profileUuid={profileUuid}
           onEditRule={editRule}
-          onEditAdvancedRules={editAdvancedRules}
-          onDelete={showConfirmDelete}
         />
       </GHScrollView>
     </View>
@@ -121,13 +118,17 @@ function EditProfilePage({
 
 export function EditProfileScreen({
   route: {
-    params: { profileUuid },
+    params: { profileUuid, alwaysSave },
   },
   navigation,
 }: EditProfileScreenProps) {
   return (
     <AppBackground>
-      <EditProfilePage profileUuid={profileUuid} navigation={navigation} />
+      <EditProfilePage
+        profileUuid={profileUuid}
+        alwaysSave={alwaysSave}
+        navigation={navigation}
+      />
     </AppBackground>
   );
 }

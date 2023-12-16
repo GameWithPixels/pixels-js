@@ -11,8 +11,8 @@ import { PageHeader } from "~/components/PageHeader";
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { GradientChip, TightTextButton } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
-import { getDieTypeLabel } from "~/descriptions";
-import { sortedDieTypes } from "~/dieTypes";
+import { getProfileDieTypeLabel } from "~/descriptions";
+import { profileDieTypes } from "~/dieTypes";
 import generateUuid from "~/features/generateUuid";
 import { useEditProfilesList, useProfilesList } from "~/hooks";
 import { CreateProfileScreenProps } from "~/navigation";
@@ -42,14 +42,14 @@ function DieTypesSelector({
         gap: 10,
       }}
     >
-      {sortedDieTypes.map((dieType) => (
+      {profileDieTypes.map((dieType) => (
         <GradientChip
           key={dieType}
           outline={dieType !== selected}
           style={{ minWidth: 60 }}
           onPress={() => onSelect(dieType)}
         >
-          {getDieTypeLabel(dieType)}
+          {getProfileDieTypeLabel(dieType)}
         </GradientChip>
       ))}
     </View>
@@ -105,14 +105,11 @@ function CreateProfilePage({
             newProfile.dieType = dieType;
             newProfile.group = "";
             addProfile(newProfile);
-            const openEdit = () => {
-              navigation.navigate("editProfile", {
-                profileUuid: newProfile.uuid,
-              });
-              navigation.removeListener("focus", openEdit);
-            };
-            navigation.addListener("transitionEnd", openEdit);
-            navigation.goBack();
+            navigation.pop();
+            navigation.navigate("editProfile", {
+              profileUuid: newProfile.uuid,
+              alwaysSave: true,
+            });
           }}
         />
       </GHScrollView>

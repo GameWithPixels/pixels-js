@@ -96,7 +96,7 @@ export type EditDieProfileScreenProps = NativeStackScreenProps<
 export type ProfilesStackParamList = {
   profilesList: undefined;
   createProfile: undefined;
-  editProfile: { profileUuid: string };
+  editProfile: { profileUuid: string; alwaysSave?: boolean };
 } & EditProfileSubStackParamList;
 
 export type ProfilesListScreenProps = NativeStackScreenProps<
