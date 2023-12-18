@@ -158,6 +158,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
         return getPeripheralForRequest(deviceSystemId, promise, false);
     }
 
+    // TODO use more specific error codes
     void processExceptionForRequest(@NonNull String requestName, Exception ex, @NonNull Promise promise) {
         Log.e(TAG, "Exception in BLE request " + requestName + ": " + ex);
         promise.reject(INTERNAL_ERROR, ex);

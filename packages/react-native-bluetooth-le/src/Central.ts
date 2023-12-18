@@ -24,6 +24,7 @@ import {
   BleEventMap,
   BleScanResultEvent,
 } from "./events";
+import { getNativeErrorCode } from "./getNativeErrorCode";
 import { requestPermissions } from "./requestPermissions";
 
 function toArray(strList?: string): string[] {
@@ -35,9 +36,13 @@ function toString(...values: (string | number)[]): string {
 }
 
 function errToStr(error: unknown): string {
-  const e = error as any;
-  if (e.code) {
-    return `${e.message ?? error} (${e.code})`;
+  if (!error) {
+    return "No error";
+  }
+  const e = error as Error;
+  const code = getNativeErrorCode(e);
+  if (code) {
+    return `${e.message ?? error} (${code})`;
   } else {
     return e.message ?? String(error);
   }
@@ -342,7 +347,12 @@ export const Central = {
     } catch (error) {
       _scanResultSubs?.remove();
       _scanResultSubs = undefined;
-      throw Error(`Failed to start scan: ${errToStr(error)})`);
+      // Need specific error code
+      throw (error as Error)?.message === "BT le scanner not available"
+        ? new Errors.BluetoothTurnedOffError()
+        : new Errors.BluetoothLEError(
+            `Failed to start scan: ${errToStr(error)})`
+          );
     }
 
     console.log(

@@ -20,6 +20,13 @@ export class BluetoothPermissionsDeniedError extends BluetoothLEError {
   }
 }
 
+export class BluetoothTurnedOffError extends BluetoothLEError {
+  constructor() {
+    super("Bluetooth is turned off or not available");
+    this.name = "BluetoothTurnedOffError";
+  }
+}
+
 export class UnknownPeripheralError extends BluetoothLEError {
   constructor(systemId: string) {
     super(`No peripheral found with system id ${systemId}`);
@@ -34,10 +41,10 @@ export class ConnectError extends BluetoothLEError {
       type === "nativeError"
         ? `Failed to create native peripheral for ${name}`
         : type === "inUse"
-        ? `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`
-        : type === "disconnected"
-        ? `Got disconnected while connecting to peripheral ${name}`
-        : `Connection timeout for peripheral ${name}`
+          ? `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`
+          : type === "disconnected"
+            ? `Got disconnected while connecting to peripheral ${name}`
+            : `Connection timeout for peripheral ${name}`
     );
     this.name = "ConnectError";
     this.type = type;
