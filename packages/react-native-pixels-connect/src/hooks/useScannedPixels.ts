@@ -5,6 +5,7 @@ import {
   usePixelScanner,
   PixelScannerOptions,
   PixelScannerDispatchAction,
+  PixelScannerStatus,
 } from "./usePixelScanner";
 import { PixelScannerListOp } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
@@ -18,11 +19,15 @@ import { ScannedPixel } from "../ScannedPixel";
  * @returns An array with:
  * - The list of {@link ScannedPixel}. It is updated every time there is a new scan event.
  * - A stable reducer like function to dispatch actions to the scanner.
- * - The last encountered error.
+ * - The scan status or the last error.
  */
 export function useScannedPixels(
   opt?: PixelScannerOptions
-): [ScannedPixel[], (action: PixelScannerDispatchAction) => void, Error?] {
+): [
+  ScannedPixel[],
+  (action: PixelScannerDispatchAction) => void,
+  PixelScannerStatus,
+] {
   const passthrough = React.useCallback(
     (items: ScannedPixel[], ops: PixelScannerListOp[]) => {
       // Create new list to trigger a React re-render

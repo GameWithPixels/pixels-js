@@ -106,7 +106,7 @@ async function testAnimation(pixel: Pixel): Promise<void> {
 
 function BatchPage() {
   // Scanned Pixels
-  const [scannedPixels, scanDispatch, scanError] =
+  const [scannedPixels, scanDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
   const [pixels, setPixels] = React.useState<Pixel[]>([]);
   const [stayConnected, setStayConnected] = React.useState(false);
@@ -188,7 +188,9 @@ function BatchPage() {
   );
   return (
     <BaseVStack flex={1} w="100%" gap={10} alignItems="center">
-      {scanError && <Text>{`Scan error! ${scanError}`}</Text>}
+      {!(typeof scanStatus === "string") && (
+        <Text>{`Scan error! ${scanStatus}`}</Text>
+      )}
       {!batchOp ? (
         <>
           <Text variant="titleMedium">Scanning for dice...</Text>
