@@ -56,7 +56,7 @@ function SelectPixel({
   onSelect: (pixel: PixelInfoNotifier) => void;
 }) {
   // Scanning
-  const [scannedPixels, scannerDispatch, lastError] =
+  const [scannedPixels, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -92,7 +92,9 @@ function SelectPixel({
   return (
     <>
       <Text>Select Pixel:</Text>
-      {lastError && <Text style={AppStyles.bold}>{`${lastError}`}</Text>}
+      {!(typeof scanStatus === "string") && (
+        <Text style={AppStyles.bold}>{String(scanStatus)}</Text>
+      )}
       <FlatList
         style={AppStyles.fullWidth}
         contentContainerStyle={AppStyles.listContentContainer}

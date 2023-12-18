@@ -186,6 +186,7 @@ export const MainScanner = {
       try {
         await Central.startScanning(PixelBleUuids.service);
       } catch (e) {
+        _scanEvEmitter.removeListener("scannedPixel", listener);
         if (_scanCount) {
           _scanCount -= 1;
           if (!_scanCount) {

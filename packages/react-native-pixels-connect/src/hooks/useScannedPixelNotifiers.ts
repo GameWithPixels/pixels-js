@@ -5,6 +5,7 @@ import {
   usePixelScanner,
   PixelScannerOptions,
   PixelScannerDispatchAction,
+  PixelScannerStatus,
 } from "./usePixelScanner";
 import { PixelScannerListOp } from "../PixelScanner";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
@@ -18,7 +19,7 @@ import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
  * - The list of {@link ScannedPixelNotifier}. The list itself is not modified when
  *   existing items are updated.
  * - A stable reducer like function to dispatch actions to the scanner.
- * - The last encountered error.
+ * - The scan status or the last error.
  * @remarks {@link ScannedPixelNotifier} instances are kept globally, for a given Pixel
  *          the same instance is returned and updated by all scanners.
  */
@@ -27,7 +28,7 @@ export function useScannedPixelNotifiers(
 ): [
   ScannedPixelNotifier[],
   (action: PixelScannerDispatchAction) => void,
-  Error?
+  PixelScannerStatus,
 ] {
   const mapItems = React.useCallback(
     (items: ScannedPixelNotifier[], ops: PixelScannerListOp[]) => {

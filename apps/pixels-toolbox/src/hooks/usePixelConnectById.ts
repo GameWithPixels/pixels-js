@@ -32,10 +32,10 @@ export type PixelConnectByIdDispatch = (
 export function usePixelConnectById(): [
   PixelConnectByIdState,
   PixelConnectByIdDispatch,
-  Error?
+  Error?,
 ] {
   const [lastError, setLastError] = React.useState<Error>();
-  const [scannedPixels, scannerDispatch, scanLastError] = useScannedPixels();
+  const [scannedPixels, scannerDispatch, scanStatus] = useScannedPixels();
   const [pixelId, setPixelId] = React.useState<number>(0);
   const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
   const [pixel, setPixel] = React.useState<Pixel>();
@@ -45,10 +45,10 @@ export function usePixelConnectById(): [
     status: "disconnected",
   });
   React.useEffect(() => {
-    if (scanLastError) {
-      setLastError(scanLastError);
+    if (!(typeof scanStatus === "string")) {
+      setLastError(scanStatus);
     }
-  }, [scanLastError]);
+  }, [scanStatus]);
 
   const dispatch = React.useCallback(
     (
@@ -119,10 +119,10 @@ export function usePixelConnectById(): [
   const status = pixelId
     ? "scanning"
     : pixelStatus === "connecting" || pixelStatus === "identifying"
-    ? "connecting"
-    : pixelStatus === "ready"
-    ? "connected"
-    : "disconnected";
+      ? "connecting"
+      : pixelStatus === "ready"
+        ? "connected"
+        : "disconnected";
   if (
     status !== stateRef.current.status ||
     pixel !== stateRef.current.pixel ||

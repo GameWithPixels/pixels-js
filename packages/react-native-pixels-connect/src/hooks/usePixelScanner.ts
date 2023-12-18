@@ -10,6 +10,12 @@ import { ScannedPixel } from "../ScannedPixel";
 export type PixelScannerDispatchAction = "start" | "stop" | "clear";
 
 /**
+ * Status of the scanner or the last error.
+ * @remarks The scanner is considered stopped when there is an error.
+ */
+export type PixelScannerStatus = "scanning" | "stopped" | Error;
+
+/**
  * Available options for {@link usePixelScanner}.
  */
 export interface PixelScannerOptions {
@@ -22,6 +28,12 @@ export interface PixelScannerOptions {
    * @default 200 ms.
    */
   minUpdateInterval?: number;
+
+  /**
+   * If true, the scanner will start automatically on mount.
+   * @default true.
+   **/
+  autoStart?: boolean;
 
   /** Number of scanned Pixels to emulate, only use in DEV mode! */
   __dev__emulatedPixelsCount?: number;
@@ -41,15 +53,15 @@ export interface PixelScannerOptions {
  * @returns An array with:
  * - The list of {@link T} objects corresponding to the scanned Pixels.
  * - A stable reducer like function to dispatch actions to the scanner.
- * - The last encountered error.
+ * - The scan status or the last error.
  * @remarks This hook is reserved for advanced usage. There are simpler hooks such as
  *          {@link useScannedPixels} or {@link useScannedPixelNotifiers}.
  */
 export function usePixelScanner<T>(
   updateItems: (items: T[], ops: PixelScannerListOp[]) => T[],
   opt?: PixelScannerOptions
-): [T[], (action: PixelScannerDispatchAction) => void, Error?] {
-  const [lastError, setLastError] = React.useState<Error>();
+): [T[], (action: PixelScannerDispatchAction) => void, PixelScannerStatus] {
+  const [status, setStatus] = React.useState<PixelScannerStatus>("stopped");
   const [items, setItems] = React.useState<T[]>([]);
   const itemsRef = React.useRef(items); // Keep track of items list outside of a state
   const scanner = React.useMemo(() => {
@@ -103,17 +115,27 @@ export function usePixelScanner<T>(
             assertNever(action);
         }
       };
-      setLastError(undefined);
-      dispatchAsync().catch(setLastError);
+      dispatchAsync()
+        .then(() => {
+          if (action !== "clear") {
+            setStatus(action === "start" ? "scanning" : "stopped");
+          }
+        })
+        .catch(setStatus);
     },
     [scanner] // Stable
   );
 
   // Init & clean up effect
+  const [autoStart] = React.useState(
+    opt?.autoStart === undefined ?? opt?.autoStart
+  );
   React.useEffect(
     () => {
-      // Start scanning on mount
-      dispatch("start");
+      if (autoStart) {
+        // Start scanning on mount
+        dispatch("start");
+      }
       // Stop scanning on umount
       return () => {
         // We call the scanner directly so to catch and log an eventual error
@@ -124,8 +146,8 @@ export function usePixelScanner<T>(
           );
       };
     },
-    [dispatch, scanner] // Stable
+    [autoStart, dispatch, scanner] // Stable
   );
 
-  return [items, dispatch, lastError];
+  return [items, dispatch, status];
 }

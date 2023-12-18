@@ -34,7 +34,7 @@ export const SwipeablePixelsList = React.memo(function ({
   ...props
 }: SwipeablePixelsListProps & BaseBoxProps) {
   // Scanning
-  const [scannedPixels, scannerDispatch, lastError] =
+  const [scannedPixels, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
 
   // Build our PixelDispatcher instances
@@ -157,8 +157,8 @@ export const SwipeablePixelsList = React.memo(function ({
         </Text>
         <EmojiButton onPress={showActionSheet}>⚙️</EmojiButton>
       </BaseHStack>
-      {lastError ? (
-        <Text>{`${lastError}`}</Text>
+      {!(typeof scanStatus === "string") ? (
+        <Text>{String(scanStatus)}</Text>
       ) : pixels.length ? (
         <PixelInfoCardModeContext.Provider
           value={expandedInfo ? "expanded" : "normal"}

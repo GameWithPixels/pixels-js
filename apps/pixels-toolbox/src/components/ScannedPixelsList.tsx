@@ -22,9 +22,11 @@ export function ScannedPixelsList({
   onClose?: () => void;
   minUpdateInterval?: number;
 }) {
-  const [scannedPixels, scannerDispatch, lastError] =
+  const [scannedPixels, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
-  useErrorWithHandler(lastError);
+  useErrorWithHandler(
+    !(typeof scanStatus === "string") ? scanStatus : undefined
+  );
 
   // FlatList item rendering
   const renderItem = React.useCallback(
