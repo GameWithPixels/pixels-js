@@ -25,6 +25,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import * as Sentry from "sentry-expo";
 
 import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
@@ -48,7 +49,23 @@ import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
 
-LogBox.ignoreLogs(["THREE.WebGLProgram: Program Info Log:"]);
+LogBox.ignoreLogs([
+  "THREE.WebGLProgram: Program Info Log:",
+  // Ignore Sentry warnings
+  "Sentry Logger [warn]:",
+]);
+
+if (!__DEV__) {
+  // Use Sentry for crash reporting
+  Sentry.init({
+    dsn: "https://0a1c5f5b8bc2d93b005d30e6254e0681@o1258420.ingest.sentry.io/4506415846588416",
+    // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+    // We recommend adjusting this value in production.
+    tracesSampleRate: 1.0,
+    enableInExpoDevelopment: true,
+    // Getting a lot of spam messages in the console... debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+  });
+}
 
 // Initialize Bluetooth globally
 initBluetooth();

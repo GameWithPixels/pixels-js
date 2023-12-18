@@ -8,8 +8,8 @@ const config = {
     name: prod ? "Pixels Beta" : "Dev Pixels Beta",
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "49.0",
-    version: "0.1.0",
+    runtimeVersion: "49.0", // Major is Expo version, minor is native code revision
+    version: "0.4.0", // Version number must have 3 parts
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
@@ -52,7 +52,9 @@ const config = {
     },
     plugins: [
       "./withAndroidPermissions",
+      "expo-localization",
       "react-native-vision-camera",
+      "sentry-expo",
       [
         "expo-build-properties",
         {
@@ -62,8 +64,18 @@ const config = {
           },
         },
       ],
-      "expo-localization",
     ],
+    hooks: {
+      postPublish: [
+        {
+          file: "sentry-expo/upload-sourcemaps",
+          config: {
+            organization: "systemic-games",
+            project: prod ? "pixels-app" : "pixels-app-dev",
+          },
+        },
+      ],
+    },
     extra: {
       eas: {
         projectId: prod
