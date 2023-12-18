@@ -69,7 +69,7 @@ export function TouchableCard({
         makeTransparent(colors.primary, gradientAlpha),
         makeTransparent(colors.secondary, gradientAlpha),
       ]}
-      style={[cornersStyle, style]}
+      style={[{ ...cornersStyle, overflow: "hidden" }, style]}
     >
       <TouchableRipple
         style={[

@@ -92,7 +92,7 @@ export function LargeGradientIconButton({
           ? [colors.surfaceDisabled, colors.surfaceDisabled]
           : [colors.primary, colors.secondary]
       }
-      style={{ borderRadius }}
+      style={{ borderRadius, overflow: "hidden" }}
     >
       <TouchableRipple
         disabled={disabled}
@@ -350,6 +350,7 @@ export function DieFaceButton({
           borderWidth: selected ? 0 : 1,
           borderRadius,
           borderColor: colors.outline,
+          overflow: "hidden",
         },
         style,
       ]}
@@ -415,6 +416,7 @@ export function GradientButton({
           borderColor: colors.outline,
           borderWidth: outline ? 1 : 0,
           borderRadius,
+          overflow: "hidden",
         },
         style,
       ]}
@@ -484,6 +486,7 @@ export function GradientIconButton({
           borderColor: colors.outline,
           borderWidth: outline ? 1 : 0,
           borderRadius,
+          overflow: "hidden",
         },
         style,
       ]}
@@ -551,6 +554,7 @@ export function Chip({
           paddingVertical: 6,
           borderRadius,
           backgroundColor: colors.elevation.level2,
+          overflow: "hidden",
         },
         style,
       ]}
@@ -607,7 +611,7 @@ export function GradientChip({
             ? [colors.surface, colors.surface]
             : [colors.primary, colors.secondary]
       }
-      style={[{ borderRadius }, style]}
+      style={[{ borderRadius, overflow: "hidden" }, style]}
     >
       <TouchableRipple
         disabled={disabled}
