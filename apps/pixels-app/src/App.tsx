@@ -12,7 +12,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { LogBox, StyleSheet, View, ViewStyle } from "react-native";
+import { LogBox, Platform, StyleSheet, View, ViewStyle } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   configureFonts,
@@ -77,9 +77,11 @@ function getTabBarStyle<T extends object>(
   name: Extract<keyof T, string>
 ): ViewStyle | undefined {
   // Returns undefined until we navigate to a sub screen
-  const routeName = getFocusedRouteNameFromRoute(
-    route
-  ) as keyof HomeStackParamList;
+  const routeName =
+    Platform.OS === "ios"
+      ? // Hiding the tab bar creates issues on iOS
+        undefined
+      : (getFocusedRouteNameFromRoute(route) as keyof HomeStackParamList);
   return routeName && routeName !== name ? { display: "none" } : undefined;
 }
 

@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { Text, IconButton } from "react-native-paper";
 
 export interface PageHeaderProps extends React.PropsWithChildren {
@@ -26,7 +26,7 @@ export function PageHeader({
       }}
     >
       {typeof children === "string" ? (
-        <Text variant="titleMedium">{children}</Text>
+        <Text variant="bodyLarge">{children}</Text>
       ) : (
         children
       )}
@@ -37,6 +37,7 @@ export function PageHeader({
           alignItems: "center",
           justifyContent:
             leftElement ?? onGoBack ? "space-between" : "flex-end",
+          zIndex: Platform.select({ ios: -1 }),
         }}
       >
         {leftElement

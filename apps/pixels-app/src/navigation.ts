@@ -167,7 +167,7 @@ export function getStackNavigationOptions(
   const config = {
     headerShown: false,
     gestureEnabled: true,
-  };
+  } as const;
   switch (mode) {
     case undefined:
     case "default":
@@ -181,7 +181,7 @@ export function getStackNavigationOptions(
       return {
         ...config,
         animation: "slide_from_bottom",
-        presentation: "containedModal",
+        presentation: "modal",
       };
     default:
       assertNever(mode);

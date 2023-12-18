@@ -107,7 +107,7 @@ const Header = observer(
               alignItems: "flex-end",
             }}
           >
-            <Text variant="titleMedium" style={{ paddingHorizontal: 5, color }}>
+            <Text variant="bodyLarge" style={{ paddingHorizontal: 5, color }}>
               {profile.name}
             </Text>
             <ChevronDownIcon
@@ -119,7 +119,7 @@ const Header = observer(
             <ProfileMenu
               visible={actionsMenuVisible}
               contentStyle={{
-                marginTop: Platform.select({ ios: 10, default: 20 }),
+                marginTop: Platform.select({ ios: 30, default: 15 }),
                 width: 230,
               }}
               anchor={{ x: (windowWidth - 250) / 2, y: 60 }}

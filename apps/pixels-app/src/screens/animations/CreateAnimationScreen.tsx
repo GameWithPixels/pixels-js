@@ -43,7 +43,7 @@ function CreateAnimationPage({
   return (
     <View style={{ height: "100%", gap: 10 }}>
       <PageHeader
-        rightElement={() => (
+        leftElement={() => (
           <TightTextButton onPress={() => navigation.goBack()}>
             Cancel
           </TightTextButton>
