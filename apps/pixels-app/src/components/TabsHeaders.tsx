@@ -13,7 +13,7 @@ export function TabsHeaders({
   selected?: string;
   onSelect?: (name: string) => void;
 }) {
-  const { roundness } = useTheme();
+  const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <View
@@ -25,20 +25,40 @@ export function TabsHeaders({
     >
       {names.map((n, i) => {
         return (
-          <GradientButton
+          // Linear gradient border radius doesn't work properly on iOS
+          // so we use a View with a border instead
+          <View
             key={n}
             style={{
+              borderColor: n !== selected ? colors.outline : "transparent",
+              borderWidth: 1,
+              borderLeftWidth: i > 0 ? 1 : 0,
+              borderRightWidth: i === names.length - 1 ? 1 : 0,
+              borderRadius,
               borderTopLeftRadius: i === 0 ? borderRadius : 0,
               borderBottomLeftRadius: i === 0 ? borderRadius : 0,
               borderTopRightRadius: i === names.length - 1 ? borderRadius : 0,
               borderBottomRightRadius:
                 i === names.length - 1 ? borderRadius : 0,
+              overflow: "hidden",
             }}
-            outline={n !== selected}
-            onPress={() => onSelect?.(n)}
           >
-            {n}
-          </GradientButton>
+            <GradientButton
+              style={{
+                borderWidth: 0,
+                borderRadius,
+                borderTopLeftRadius: i === 0 ? borderRadius : 0,
+                borderBottomLeftRadius: i === 0 ? borderRadius : 0,
+                borderTopRightRadius: i === names.length - 1 ? borderRadius : 0,
+                borderBottomRightRadius:
+                  i === names.length - 1 ? borderRadius : 0,
+              }}
+              outline={n !== selected}
+              onPress={() => onSelect?.(n)}
+            >
+              {n}
+            </GradientButton>
+          </View>
         );
       })}
     </View>

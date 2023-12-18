@@ -14,6 +14,7 @@ import {
   useWindowDimensions,
   ScrollViewProps,
   StyleSheet,
+  Pressable,
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import {
@@ -22,6 +23,12 @@ import {
   TouchableRippleProps,
   useTheme,
 } from "react-native-paper";
+import {
+  CurvedTransition,
+  Easing,
+  FadeIn,
+  FadeOut,
+} from "react-native-reanimated";
 
 import { ActionDetails } from "./components/ActionDetails";
 import { ConfigureActionModal } from "./components/ConfigureActionModal";
@@ -43,6 +50,7 @@ import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useEditableProfile } from "~/hooks";
 import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
+import { withAnimated } from "~/withAnimated";
 
 function InnerScrollView({ ...props }: ScrollViewProps) {
   const { width } = useWindowDimensions();
@@ -61,6 +69,8 @@ function InnerScrollView({ ...props }: ScrollViewProps) {
   );
 }
 
+const AnimatedRolledConditionCard = withAnimated(RolledConditionCard);
+
 function RolledConditionCard({
   type,
   rule,
@@ -77,7 +87,8 @@ function RolledConditionCard({
   const action = rule.actions.find((a) => a.type === type);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
-  const color = props.disabled ? colors.onSurfaceDisabled : colors.onSurface;
+  const color =
+    !props.disabled && action ? colors.onSurface : colors.onSurfaceDisabled;
   return (
     <TouchableRipple {...props}>
       <>
@@ -100,17 +111,17 @@ function RolledConditionCard({
                     : "?"
                 }`}
           </Text>
-          <View style={styles.actionIconBox}>
-            {onDelete && (
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                color={color}
-                size={24}
-                style={styles.actionDeleteIcon}
-                onPress={props.disabled ? undefined : onDelete}
-              />
-            )}
-          </View>
+          <Pressable
+            onPress={props.disabled ? undefined : onDelete}
+            style={styles.actionIconBox}
+          >
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              color={color}
+              size={24}
+              style={styles.actionDeleteIcon}
+            />
+          </Pressable>
         </Card>
         <View
           style={{
@@ -228,7 +239,7 @@ const EditRolledRulesPage = observer(function ({
   const unavailableFaces = getRolledFaces(rolledRules, actionTypes[index]);
   const availableFace = dieFaces.find((f) => !unavailableFaces?.includes(f));
 
-  const { roundness } = useTheme();
+  const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
 
   return (
@@ -248,22 +259,43 @@ const EditRolledRulesPage = observer(function ({
             const Icon = getActionTypeIcon(t);
             return (
               Icon && (
-                <GradientIconButton
+                // Linear gradient border radius doesn't work properly on iOS
+                // so we use a View with a border instead
+                <View
                   key={t}
                   style={{
                     width: "25%",
                     justifyContent: "center",
+                    borderColor: index !== i ? colors.outline : "transparent",
+                    borderWidth: 1,
+                    borderLeftWidth: i > 0 ? 1 : 0,
+                    borderRightWidth: i === actionTypes.length - 1 ? 1 : 0,
+                    borderRadius,
                     borderTopLeftRadius: i === 0 ? borderRadius : 0,
                     borderBottomLeftRadius: i === 0 ? borderRadius : 0,
                     borderTopRightRadius:
                       i === actionTypes.length - 1 ? borderRadius : 0,
                     borderBottomRightRadius:
                       i === actionTypes.length - 1 ? borderRadius : 0,
+                    overflow: "hidden",
                   }}
-                  outline={index !== i}
-                  icon={Icon}
-                  onPress={() => scrollTo(i)}
-                />
+                >
+                  <GradientIconButton
+                    style={{
+                      borderWidth: 0,
+                      borderRadius,
+                      borderTopLeftRadius: i === 0 ? borderRadius : 0,
+                      borderBottomLeftRadius: i === 0 ? borderRadius : 0,
+                      borderTopRightRadius:
+                        i === actionTypes.length - 1 ? borderRadius : 0,
+                      borderBottomRightRadius:
+                        i === actionTypes.length - 1 ? borderRadius : 0,
+                    }}
+                    outline={index !== i}
+                    icon={Icon}
+                    onPress={() => scrollTo(i)}
+                  />
+                </View>
               )
             );
           })}
@@ -303,8 +335,11 @@ const EditRolledRulesPage = observer(function ({
                     )
                 )
                 .map((r, i) => (
-                  <RolledConditionCard
+                  <AnimatedRolledConditionCard
                     key={i}
+                    entering={FadeIn.duration(300).delay(200)}
+                    exiting={FadeOut.duration(300)}
+                    layout={CurvedTransition.easingY(Easing.linear).delay(200)}
                     type={t}
                     rule={r}
                     dieType={profile.dieType}
@@ -316,11 +351,13 @@ const EditRolledRulesPage = observer(function ({
                     }
                   />
                 ))}
-              <RolledConditionCard
+              <AnimatedRolledConditionCard
                 type={t}
+                entering={FadeIn.duration(300)}
+                layout={CurvedTransition.easingY(Easing.linear).delay(200)}
                 rule={fbRule}
                 dieType={profile.dieType}
-                disabled={availableFace === undefined}
+                disabled={!fbRule || availableFace === undefined}
                 onPress={() => {
                   if (!profile.rules.includes(fbRule)) {
                     runInAction(() => {
@@ -402,18 +439,17 @@ const styles = StyleSheet.create({
   actionCardTitle: {
     flexGrow: 1,
     flexShrink: 1,
-    textAlign: "center",
     marginVertical: 12,
+    textAlign: "center",
   },
   actionIconBox: {
     height: 50,
     aspectRatio: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   actionDeleteIcon: {
-    height: "100%",
-    width: "100%",
     textAlign: "center",
-    textAlignVertical: "center",
   },
   noAction: {
     ...AppStyles.greyedOut,
