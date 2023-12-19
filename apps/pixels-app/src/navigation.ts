@@ -1,5 +1,8 @@
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
-import { CompositeScreenProps } from "@react-navigation/native";
+import {
+  CompositeScreenProps,
+  NavigatorScreenParams,
+} from "@react-navigation/native";
 import {
   NativeStackNavigationOptions,
   NativeStackScreenProps,
@@ -96,8 +99,8 @@ export type EditDieProfileScreenProps = NativeStackScreenProps<
 export type ProfilesStackParamList = {
   profilesList: undefined;
   createProfile: undefined;
-  editProfile: { profileUuid: string; noDiscard?: boolean; editName?: boolean };
-} & EditProfileSubStackParamList;
+  editProfileStack: NavigatorScreenParams<EditProfileStackParamList>;
+};
 
 export type ProfilesListScreenProps = NativeStackScreenProps<
   ProfilesStackParamList,
@@ -109,8 +112,22 @@ export type CreateProfileScreenProps = NativeStackScreenProps<
   "createProfile"
 >;
 
-export type EditProfileScreenProps = NativeStackScreenProps<
+export type EditProfileStackProps = NativeStackScreenProps<
   ProfilesStackParamList,
+  "editProfileStack"
+>;
+
+// Edit Profile screens
+export type EditProfileStackParamList = {
+  editProfile: {
+    profileUuid: string;
+    noDiscard?: boolean;
+    editName?: boolean;
+  };
+} & EditProfileSubStackParamList;
+
+export type EditProfileScreenProps = NativeStackScreenProps<
+  EditProfileStackParamList,
   "editProfile"
 >;
 

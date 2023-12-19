@@ -97,10 +97,13 @@ function CreateProfilePage({
             newProfile.dieType = dieType;
             addProfile(newProfile);
             navigation.pop();
-            navigation.navigate("editProfile", {
-              profileUuid: newProfile.uuid,
-              noDiscard: true,
-              editName: true,
+            navigation.navigate("editProfileStack", {
+              screen: "editProfile",
+              params: {
+                profileUuid: newProfile.uuid,
+                noDiscard: true,
+                editName: true,
+              },
             });
           }}
         />
