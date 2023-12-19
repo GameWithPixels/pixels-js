@@ -19,7 +19,7 @@ import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
 import { useEditableProfile } from "~/hooks";
 
-const EditProfileDescription = observer(function ({
+const EditProfileDescription = observer(function EditProfileDescription({
   profile,
   colors,
 }: {
@@ -46,7 +46,7 @@ function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   ) : null;
 }
 
-const ProfileUsage = observer(function ({
+const ProfileUsage = observer(function ProfileUsage({
   profile,
 }: {
   profile: Readonly<Profiles.Profile>;

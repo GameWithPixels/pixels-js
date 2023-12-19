@@ -25,7 +25,7 @@ import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useConfirmActionSheet, useEditableAnimation } from "~/hooks";
 import { EditAnimationScreenProps } from "~/navigation";
 
-const Header = observer(function ({
+const Header = observer(function Header({
   animation,
   onGoBack,
 }: {
@@ -39,7 +39,7 @@ const Header = observer(function ({
   );
 });
 
-const EditAnimationName = observer(function ({
+const EditAnimationName = observer(function EditAnimationName({
   animation,
   colors,
 }: {

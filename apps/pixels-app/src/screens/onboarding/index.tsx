@@ -551,7 +551,7 @@ function getToUpdateCount(statuses: TargetDfuStatus[]): number {
   ).length;
 }
 
-const AnimatedPixelDfuCard = observer(function ({
+const AnimatedPixelDfuCard = observer(function AnimatedPixelDfuCard({
   scannedPixel,
   dfuStatus,
   ...props
@@ -576,7 +576,7 @@ const AnimatedPixelDfuCard = observer(function ({
   );
 });
 
-const StatusText = observer(function ({
+const StatusText = observer(function StatusText({
   statuses,
 }: {
   statuses: TargetDfuStatus[];

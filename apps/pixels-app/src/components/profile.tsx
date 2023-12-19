@@ -30,7 +30,7 @@ import {
   SortMode,
 } from "~/features/sortingOptions";
 
-const ProfileNameAndDescription = observer(function ({
+const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
   profile,
   row,
   numberOfLines,
@@ -59,7 +59,7 @@ const ProfileNameAndDescription = observer(function ({
   );
 });
 
-const ProfileDiceNames = observer(function ({
+const ProfileDiceNames = observer(function ProfileDiceNames({
   profile,
   iconColor,
 }: {
@@ -130,7 +130,7 @@ function ProfileActions({
   );
 }
 
-const ProfileActionsIcons = observer(function ({
+const ProfileActionsIcons = observer(function ProfileActionsIcons({
   profile,
   gap,
   iconColor,

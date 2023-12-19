@@ -28,7 +28,7 @@ export interface RuleProp {
   rule: Profiles.Rule;
 }
 
-const RuleSummary = observer(function ({ rule }: Partial<RuleProp>) {
+const RuleSummary = observer(function RuleSummary({ rule }: Partial<RuleProp>) {
   return rule?.actions.length ? (
     <>
       <ConditionDetails condition={rule.condition} />
@@ -46,15 +46,15 @@ const RuleSummary = observer(function ({ rule }: Partial<RuleProp>) {
   );
 });
 
-const RolledRulesSummary = observer(function ({
+const RolledRulesSummary = observer(function RolledRulesSummary({
   rules,
 }: {
   rules: Profiles.Rule[];
 }) {
   return rules.length ? (
     <>
-      {rules.slice(0, 4).map((rule, i) => (
-        <RuleSummary key={i} rule={rule} />
+      {rules.slice(0, 4).map((r) => (
+        <RuleSummary key={r.uuid} rule={r} />
       ))}
       {rules.length > 4 && <Text style={AppStyles.greyedOut}>And more...</Text>}
     </>
@@ -63,7 +63,7 @@ const RolledRulesSummary = observer(function ({
   );
 });
 
-export const RuleCard = observer(function ({
+export const RuleCard = observer(function RuleCard({
   children,
   profileUuid,
   conditionType,

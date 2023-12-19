@@ -12,6 +12,6 @@ export const batteryFlags = Object.keys(
   Profiles.BatteryFlagsValues
 ) as Profiles.BatteryFlags[];
 
-export const helloGoodbyeFlags = Object.keys(
-  Profiles.HelloGoodbyeFlagsValues
-) as Profiles.HelloGoodbyeFlags[];
+export const helloGoodbyeFlags = (
+  Object.keys(Profiles.HelloGoodbyeFlagsValues) as Profiles.HelloGoodbyeFlags[]
+).filter((t) => t !== "goodbye");

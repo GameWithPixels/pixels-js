@@ -13,7 +13,7 @@ import { getTextColorStyle } from "./utils";
 
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 
-const AnimationName = observer(function ({
+const AnimationName = observer(function AnimationName({
   animation,
   colors,
   disabled,

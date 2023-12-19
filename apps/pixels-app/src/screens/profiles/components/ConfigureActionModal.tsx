@@ -142,7 +142,7 @@ function TextInput({
   );
 }
 
-const ConfigureRolledCondition = observer(function ({
+const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
   condition,
   dieType,
   unavailableFaces,
@@ -175,7 +175,7 @@ const ConfigureRolledCondition = observer(function ({
   ) : null;
 });
 
-const ConfigureRollingCondition = observer(function ({
+const ConfigureRollingCondition = observer(function ConfigureRollingCondition({
   condition,
 }: {
   condition: Profiles.ConditionRolling;
@@ -196,7 +196,7 @@ const ConfigureRollingCondition = observer(function ({
   );
 });
 
-const ConfigureIdleCondition = observer(function ({
+const ConfigureIdleCondition = observer(function ConfigureIdleCondition({
   condition,
 }: {
   condition: Profiles.ConditionIdle;
@@ -216,7 +216,7 @@ const ConfigureIdleCondition = observer(function ({
   );
 });
 
-const ConfigureBatteryCondition = observer(function ({
+const ConfigureBatteryCondition = observer(function ConfigureBatteryCondition({
   condition,
 }: {
   condition: Profiles.ConditionBattery;
@@ -236,7 +236,7 @@ const ConfigureBatteryCondition = observer(function ({
   );
 });
 
-const ConfigurePlayAnimation = observer(function ({
+const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   action,
   conditionType,
 }: {
@@ -311,7 +311,7 @@ const ConfigurePlayAnimation = observer(function ({
   );
 });
 
-const ConfigurePlayAudioClip = observer(function ({
+const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
   action,
 }: {
   action: Profiles.ActionPlayAudioClip;
@@ -335,7 +335,7 @@ const ConfigurePlayAudioClip = observer(function ({
   );
 });
 
-const ConfigureSpeakText = observer(function ({
+const ConfigureSpeakText = observer(function ConfigureSpeakText({
   action,
 }: {
   action: Profiles.ActionSpeakText;
@@ -360,7 +360,7 @@ const ConfigureSpeakText = observer(function ({
   );
 });
 
-const ConfigureMakeWebRequest = observer(function ({
+const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   action,
 }: {
   action: Profiles.ActionMakeWebRequest;
@@ -381,7 +381,7 @@ const ConfigureMakeWebRequest = observer(function ({
   );
 });
 
-export const ConfigureActionModal = observer(function ({
+export const ConfigureActionModal = observer(function ConfigureActionModal({
   condition,
   action,
   dieType,
