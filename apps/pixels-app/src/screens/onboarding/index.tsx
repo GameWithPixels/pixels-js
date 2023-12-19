@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -7,12 +6,20 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
+import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
+  BluetoothPermissionsDeniedError,
+  BluetoothTurnedOffError,
   getPixel,
   Pixel,
+  PixelInfo,
+  PixelScannerStatus,
+  ScannedPixel,
   useScannedPixelNotifiers,
 } from "@systemic-games/react-native-pixels-connect";
 import { Image, ImageProps } from "expo-image";
+import { makeAutoObservable, runInAction } from "mobx";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import {
   ScrollView,
@@ -27,12 +34,15 @@ import {
   Button,
   Switch,
   SwitchProps,
-  Text,
+  Text as PaperText,
+  TextProps,
   ThemeProvider,
   useTheme,
 } from "react-native-paper";
 import Animated, {
+  AnimatedProps,
   CurvedTransition,
+  Easing,
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
@@ -40,26 +50,76 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
-import { GradientButton, OutlineButton } from "~/components/buttons";
-import { DieWireframeCard } from "~/components/cards";
+import { GradientButton, TightTextButton } from "~/components/buttons";
+import { AnimatedDieWireframeCard } from "~/components/cards";
 import { makeTransparent } from "~/components/utils";
+import { getColorwayLabel, getDieTypeLabel } from "~/descriptions";
+import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
+import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
+import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
+import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { getNativeErrorMessage } from "~/features/getNativeErrorMessage";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
+import { usePairedPixels } from "~/hooks";
 import { OnboardingScreenProps } from "~/navigation";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetBackgroundStyle, getRootScreenTheme } from "~/themes";
+import { withAnimated } from "~/withAnimated";
+
+function diceStr(count: number): string {
+  return count <= 1 ? "die" : "dice";
+}
+
+const AnimatedGradientButton = withAnimated(GradientButton);
 
 function LightUpYourGameImage({
-  height,
+  height = 80,
+  marginVertical,
   style,
   ...props
-}: { height?: number } & Omit<ImageProps, "source">) {
+}: { height?: number; marginVertical?: number } & Omit<ImageProps, "source">) {
   return (
     <Image
       contentFit="contain"
       source={require("#/temp/pixels-light-up-your-game.png")}
-      style={[{ height, marginVertical: 20 }, style]}
+      style={[{ height, marginVertical }, style]}
       {...props}
     />
   );
+}
+
+function SkipButton({ onPress }: { onPress: () => void }) {
+  const { colors } = useTheme();
+  return (
+    <Button
+      textColor={makeTransparent(colors.onBackground, 0.5)}
+      style={{ position: "absolute", top: -70, right: -20 }} // TODO better positioning
+      onPress={onPress}
+    >
+      Skip
+    </Button>
+  );
+}
+
+function Title({ children }: React.PropsWithChildren) {
+  return (
+    <PaperText
+      variant="titleLarge"
+      style={{ alignSelf: "center" }}
+      children={children}
+    />
+  );
+}
+
+function SubTitle(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText variant="titleMedium" {...props} />;
+}
+
+function Text(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText variant="bodyLarge" {...props} />;
+}
+
+function SmallText(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText variant="bodySmall" {...props} />;
 }
 
 function Slide({
@@ -77,7 +137,7 @@ function Slide({
           width,
           height: "100%",
           flex: 1,
-          paddingHorizontal: 30,
+          paddingHorizontal: 20,
           paddingTop: title ? 50 : 0,
           paddingBottom: 40,
           justifyContent: "space-between",
@@ -86,13 +146,7 @@ function Slide({
       ]}
       {...props}
     >
-      {title && (
-        <Text
-          variant="titleLarge"
-          style={{ alignSelf: "center" }}
-          children={title}
-        />
-      )}
+      {title && <Title children={title} />}
       <View style={[{ flexShrink: 1, flexGrow: 1 }, contentStyle]}>
         {children}
       </View>
@@ -105,9 +159,7 @@ function WelcomeSlide({ onNext }: { onNext: () => void }) {
     <Slide>
       <View style={{ flexGrow: 1, justifyContent: "space-evenly" }}>
         <LightUpYourGameImage style={{ height: "30%", marginTop: 20 }} />
-        <Text variant="titleMedium" style={{ alignSelf: "center" }}>
-          Welcome to the Pixels app!
-        </Text>
+        <Title>Welcome to the Pixels app!</Title>
       </View>
       <GradientButton
         style={{ width: "50%", alignSelf: "center" }}
@@ -122,31 +174,34 @@ function WelcomeSlide({ onNext }: { onNext: () => void }) {
 function HealthSlide({ onNext }: { onNext: () => void }) {
   return (
     <Slide title="Health & Safety Information">
-      <ScrollView contentContainerStyle={{ gap: 30, paddingBottom: 10 }}>
+      <ScrollView
+        style={{ marginTop: 20 }}
+        contentContainerStyle={{ gap: 30, paddingVertical: 10 }}
+      >
         <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
           <Text>⚠️</Text>
           <View style={{ flex: 1, gap: 20 }}>
-            <Text variant="titleSmall" style={{ textTransform: "uppercase" }}>
+            <SubTitle style={{ textTransform: "uppercase" }}>
               Photosensitive / Epilepsy Warning
-            </Text>
-            <Text style={{ marginBottom: 20 }}>
+            </SubTitle>
+            <PaperText>
               Some individuals may experience epileptic seizures or blackouts
               when exposed to certain light patterns or flashing lights. If you
               or anyone in your family has an epileptic condition or has
               seizures of any kind, consult your physician before using Pixels
               Dice. When opening a Pixels Dice case for the first time, a gentle
               cycling of rainbow colors will display from the dice.
-            </Text>
+            </PaperText>
           </View>
         </View>
         <View style={{ flexDirection: "row", gap: 10 }}>
           <Text>❌</Text>
           <View style={{ flex: 1, gap: 20 }}>
-            <Text variant="titleSmall">
+            <PaperText variant="titleSmall">
               DO NOT use Pixels Dice if you experience any of the following when
               exposed to flashing lights:
-            </Text>
-            <Text>
+            </PaperText>
+            <PaperText>
               {"• dizziness\n" +
                 "• extreme headache or migraine\n" +
                 "• disorientation or confusion\n" +
@@ -154,16 +209,16 @@ function HealthSlide({ onNext }: { onNext: () => void }) {
                 "• loss of awareness\n" +
                 "• seizures or convulsions\n" +
                 "• any involuntary movement"}
-            </Text>
+            </PaperText>
           </View>
         </View>
         <View style={{ flexDirection: "row", gap: 10 }}>
           <Text>🛑</Text>
-          <Text style={{ flex: 1 }} variant="titleSmall">
+          <PaperText style={{ flex: 1 }} variant="titleSmall">
             STOP using Pixels Dice and app immediately if you experience and of
             the above or symptoms such as lightheadedness, nausea, or motion
             sickness.
-          </Text>
+          </PaperText>
         </View>
       </ScrollView>
       <GradientButton onPress={onNext}>I Understand</GradientButton>
@@ -181,7 +236,7 @@ function SwitchWithLabel({ children, ...props }: SwitchProps) {
         justifyContent: "space-between",
       }}
     >
-      <Text variant="bodyLarge" children={children} />
+      <Text children={children} />
       <Switch
         thumbColor={colors.onSurface}
         trackColor={{
@@ -194,6 +249,7 @@ function SwitchWithLabel({ children, ...props }: SwitchProps) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SettingsSlide({ onNext }: { onNext: () => void }) {
   const [disableAnim, setDisableAnim] = React.useState(false);
   const [slowAnim, setSlowAnim] = React.useState(false);
@@ -202,8 +258,8 @@ function SettingsSlide({ onNext }: { onNext: () => void }) {
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <Slide title="Light Sensitive Settings">
-      <LightUpYourGameImage height={80} />
-      <View style={{ flexGrow: 1, gap: 40 }}>
+      <LightUpYourGameImage marginVertical={60} />
+      <View style={{ flexGrow: 1, gap: 60 }}>
         <Text>
           The settings below let you customize the app and dice luminosity and
           flashes. You can always change them later in the app settings.
@@ -236,7 +292,7 @@ function SettingsSlide({ onNext }: { onNext: () => void }) {
   );
 }
 
-function TurnOnDiceModal({
+function HelpTurnOnDiceModal({
   visible,
   onDismiss,
 }: {
@@ -275,14 +331,7 @@ function TurnOnDiceModal({
           style={{ marginBottom: bottom }}
           contentContainerStyle={{ padding: 20, gap: 20 }}
         >
-          <MaterialCommunityIcons
-            name="close"
-            size={16}
-            color={makeTransparent(colors.onBackground, 0.5)}
-            style={{ position: "absolute", top: 0, right: 20 }}
-            onPress={() => sheetRef.current?.dismiss()}
-          />
-          <LightUpYourGameImage height={100} />
+          <LightUpYourGameImage />
           <Text style={{ color: colors.onBackground }}>
             Text and images explaining how to turn on dice.
           </Text>
@@ -291,7 +340,7 @@ function TurnOnDiceModal({
               Adding a lot of text to enable content scrolling.
             </Text>
           ))}
-          <LightUpYourGameImage height={100} />
+          <LightUpYourGameImage />
         </BottomSheetScrollView>
       </ThemeProvider>
     </BottomSheetModal>
@@ -300,63 +349,145 @@ function TurnOnDiceModal({
 
 function ScanSlide({
   pixels,
+  scannerStatus,
+  onStartScan,
   onNext,
 }: {
   pixels: Pixel[];
+  scannerStatus: PixelScannerStatus;
+  onStartScan: () => void;
   onNext: () => void;
 }) {
+  const [showHelpButton, setScanFirstTimeout] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
-  const { colors } = useTheme();
+  React.useEffect(() => {
+    if (scannerStatus === "scanning") {
+      const id = setTimeout(() => setScanFirstTimeout(true), 3000);
+      return () => clearTimeout(id);
+    } else {
+      setScanFirstTimeout(false);
+    }
+  }, [scannerStatus]);
   return (
-    <Slide
-      title="Pair Your Dice"
-      contentStyle={{
-        paddingTop: 20,
-        justifyContent: "space-between",
-      }}
-    >
-      <View style={{ width: "100%" }}>
-        <Image
-          contentFit="cover"
-          style={{
-            width: "100%",
-            height: 60,
-          }}
-          source={require("#/temp/dice-row.jpg")}
-        />
-      </View>
-      <View style={{ gap: 20 }}>
-        <Text>
-          The app needs to connect to your dice to let you customize them.
-        </Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-          <Text>Looking for Pixels...</Text>
-          <ActivityIndicator />
-        </View>
-      </View>
-      <ScrollView
-        contentContainerStyle={{
-          padding: 10,
-          paddingBottom: 20,
-          gap: 10,
+    <Slide title="Pair Your Dice">
+      <Image
+        contentFit="cover"
+        style={{
+          width: "100%",
+          height: 60,
+          marginVertical: 40,
         }}
-      >
-        {pixels.map((p) => (
-          <DieWireframeCard key={p.pixelId} dieType={p.dieType}>
-            {p.name}
-          </DieWireframeCard>
-        ))}
-      </ScrollView>
-      <View style={{ marginTop: 10, gap: 20 }}>
-        <OutlineButton
-          style={{ backgroundColor: colors.backdrop }}
-          onPress={() => setShowTurnOn(true)}
+        source={require("#/temp/dice-row.jpg")}
+      />
+      {scannerStatus !== "scanning" ? (
+        <Animated.View
+          key="stopped"
+          exiting={FadeOut.duration(300)}
+          style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 40 }}
         >
-          I Don't See All My Dice
-        </OutlineButton>
-        <GradientButton onPress={onNext}>All My Dice Are Here</GradientButton>
-      </View>
-      <TurnOnDiceModal
+          <Text>
+            In order to let you customize your dice the app needs to connect to
+            your dice using Bluetooth.
+          </Text>
+          <Text>
+            {scannerStatus === "stopped"
+              ? "Please make sure that you have Bluetooth turned on " +
+                "and give permission for the app to access Bluetooth " +
+                "when prompted after pressing the button bellow."
+              : scannerStatus instanceof BluetoothPermissionsDeniedError
+                ? "❌ The app was not given permission to use Bluetooth, " +
+                  "please tap on the button below again and give permission " +
+                  "for the app to access Bluetooth so it can connect to your dice."
+                : scannerStatus instanceof BluetoothTurnedOffError
+                  ? "❌ Bluetooth seems to be turned off, please first enable " +
+                    "Bluetooth in your system settings and then give permission " +
+                    "for the app to access Bluetooth after pressing the button " +
+                    "bellow again."
+                  : `❌ Got an unexpected error: ${getNativeErrorMessage(
+                      scannerStatus
+                    )}`}
+          </Text>
+          <GradientButton
+            style={{
+              marginTop: 20,
+              alignItems: "flex-start",
+              alignSelf: "center",
+            }}
+            onPress={onStartScan}
+          >
+            Use Bluetooth
+          </GradientButton>
+        </Animated.View>
+      ) : (
+        <Animated.View
+          key="scanning"
+          entering={FadeIn.duration(300).delay(200)}
+          style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 10 }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+            <Text>Looking for Pixels...</Text>
+            <ActivityIndicator />
+          </View>
+          <ScrollView contentContainerStyle={{ paddingBottom: 10, gap: 20 }}>
+            <View
+              style={{
+                paddingHorizontal: 10,
+                paddingTop: pixels.length ? 20 : 0,
+                paddingBottom: pixels.length ? 10 : 0,
+                gap: 10,
+              }}
+            >
+              {pixels.map((p) => (
+                <AnimatedDieWireframeCard
+                  key={p.pixelId}
+                  entering={FadeIn.duration(300)}
+                  dieType={p.dieType}
+                >
+                  <Text>{p.name}</Text>
+                  <SmallText>
+                    {getDieTypeLabel(p.dieType)}, {getColorwayLabel(p.colorway)}
+                  </SmallText>
+                </AnimatedDieWireframeCard>
+              ))}
+            </View>
+            {showHelpButton && (
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                layout={CurvedTransition.easingY(Easing.linear).duration(300)}
+              >
+                {pixels.length ? (
+                  <SmallText>Don't see all your dice?</SmallText>
+                ) : (
+                  <Text>We don't see any dice so far.</Text>
+                )}
+                <TightTextButton
+                  underline
+                  onPress={() => setShowTurnOn(true)}
+                  style={{ marginLeft: -10, alignSelf: "flex-start" }}
+                >
+                  Tap to get help turning on your dice.
+                </TightTextButton>
+                <SmallText style={{ marginTop: 20 }}>
+                  You can also scan for dice later in the app.
+                </SmallText>
+              </Animated.View>
+            )}
+          </ScrollView>
+        </Animated.View>
+      )}
+      {!pixels.length ? (
+        <SkipButton onPress={onNext} />
+      ) : (
+        <AnimatedGradientButton
+          entering={FadeIn.duration(300).delay(200)}
+          onPress={onNext}
+        >
+          {pixels.length === 1
+            ? "Pair This Die"
+            : `Pair These ${pixels.length} Dice`}
+        </AnimatedGradientButton>
+      )}
+      <HelpTurnOnDiceModal
         visible={showTurnOn}
         onDismiss={() => setShowTurnOn(false)}
       />
@@ -364,117 +495,196 @@ function ScanSlide({
   );
 }
 
+interface TargetDfuStatus {
+  scannedPixel: ScannedPixel;
+  state: DfuState | "pending";
+  progress: number;
+}
+
+async function updateDice(
+  statuses: TargetDfuStatus[],
+  dfuBundle: DfuFilesBundle
+): Promise<void> {
+  console.log(`DFU bundle date: ${dfuBundle.date.toLocaleDateString()}`);
+  let i = 0;
+  while (i < statuses.length) {
+    const status = statuses[i++];
+    try {
+      await updateFirmware({
+        target: status.scannedPixel,
+        // bootloaderPath: dfuBundle.bootloader?.pathname,
+        firmwarePath: dfuBundle.firmware?.pathname,
+        dfuStateCallback: (state: DfuState) =>
+          runInAction(() => (status.state = state)),
+        dfuProgressCallback: (progress: number) =>
+          runInAction(() => (status.progress = progress)),
+      });
+    } catch (e) {
+      console.log(`DUF Error with ${status.scannedPixel.name}: ${e}`);
+    }
+  }
+}
+
+function appendNewDiceStatuses(
+  statuses: TargetDfuStatus[],
+  scannedPixels: ScannedPixel[],
+  dfuBundle?: DfuFilesBundle
+) {
+  for (const sp of scannedPixels) {
+    const i = statuses.findIndex((s) => s.scannedPixel === sp);
+    if (i < 0 && !isPixelUpToDate(sp, dfuBundle)) {
+      statuses.push(
+        makeAutoObservable({
+          scannedPixel: sp,
+          state: "pending",
+          progress: 0,
+        })
+      );
+    }
+  }
+}
+
+function getToUpdateCount(statuses: TargetDfuStatus[]): number {
+  return statuses.filter(
+    (s) =>
+      s.state !== "completed" && s.state !== "aborted" && s.state !== "errored"
+  ).length;
+}
+
+const AnimatedPixelDfuCard = observer(function ({
+  scannedPixel,
+  dfuStatus,
+  ...props
+}: AnimatedProps<Omit<ViewProps, "children">> & {
+  scannedPixel: ScannedPixel;
+  dfuStatus?: TargetDfuStatus;
+}) {
+  const state = dfuStatus?.state;
+  return (
+    <AnimatedDieWireframeCard dieType={scannedPixel.dieType} {...props}>
+      <Text>{scannedPixel.name}</Text>
+      <SmallText>
+        {!state || state === "completed"
+          ? "Up To Date"
+          : state === "aborted" || state === "errored"
+            ? "Update Failed"
+            : state === "pending"
+              ? "Update Required"
+              : `State ${state}, ${dfuStatus.progress}%  `}
+      </SmallText>
+    </AnimatedDieWireframeCard>
+  );
+});
+
+const StatusText = observer(function ({
+  statuses,
+}: {
+  statuses: TargetDfuStatus[];
+}) {
+  const toUpdateCount = getToUpdateCount(statuses);
+  const erroredCount = statuses.filter(
+    (s) => s.state === "aborted" || s.state === "errored"
+  ).length;
+  return (
+    <Text>
+      {toUpdateCount
+        ? `${toUpdateCount} ${diceStr(toUpdateCount)} left to update.`
+        : erroredCount
+          ? ""
+          : (statuses.length <= 1 ? "Your die is" : "All your dice are") +
+            " up-to-date."}
+      {erroredCount > 0 &&
+        ` ${erroredCount} ${diceStr(erroredCount)} failed to update.`}
+    </Text>
+  );
+});
+
 function UpdateDiceSlide({
-  pixels,
+  scannedPixels,
+  dfuBundle,
   onNext,
 }: {
-  pixels: Pixel[];
+  scannedPixels: ScannedPixel[];
+  dfuBundle?: DfuFilesBundle;
   onNext: () => void;
 }) {
   const [step, setStep] = React.useState<"wait" | "update" | "done">("wait");
-  const [dfuStatuses, setDfuStatuses] = React.useState(
-    pixels.map((_, i) => ((i + 1) % 2 ? 200 : 0) as number)
-  ); // 200 = already up to date
-  React.useEffect(() => {
-    if (step === "update") {
-      const id = setInterval(
-        () =>
-          setDfuStatuses((statuses) => {
-            const i = statuses.findIndex((s) => s <= 100);
-            if (i === -1) {
-              clearInterval(id);
-              setStep("done");
-              return statuses;
-            } else {
-              const copy = [...statuses];
-              copy[i] += 5; // Go up to 105 to show "✅"
-              return copy;
-            }
-          }),
-        200
-      );
-      return () => clearInterval(id);
-    }
-  }, [step]);
-  const getStatus = (status: number) => {
-    if (status <= 0) {
-      return "";
-    } else if (status >= 100) {
-      return "✅";
-    } else {
-      return `Updating: ${status}%`;
-    }
-  };
-  const outdatedCount = dfuStatuses.filter((s) => s <= 100).length;
-  const { colors } = useTheme();
+  const statusesRef = React.useRef<TargetDfuStatus[]>([]);
+  React.useEffect(
+    () =>
+      // Note: this only works properly if the DFU bundle stays the same
+      // and Pixels are not removed (which is true for our use case)
+      appendNewDiceStatuses(statusesRef.current, scannedPixels, dfuBundle),
+    [dfuBundle, scannedPixels]
+  );
   return (
-    <Slide title="Update Dice Firmware">
-      <LightUpYourGameImage height={50} />
-      <View style={{ gap: 20 }}>
-        <Text variant="bodyLarge">
-          We have a software update for your dice!
-        </Text>
-        <Text variant="bodyLarge">
-          We recommend to update them so they work properly with the app. It
-          takes less than 20 seconds per die.
-        </Text>
-      </View>
-      {outdatedCount ? (
-        <Animated.ScrollView
-          style={{ marginVertical: 10 }}
-          contentContainerStyle={{
-            padding: 10,
-            gap: 10,
-          }}
+    <Slide title="Update Dice Software">
+      <LightUpYourGameImage marginVertical={40} />
+      {step === "wait" ? (
+        <Animated.View
+          key="wait"
+          exiting={FadeOut.duration(300)}
+          style={{ flexGrow: 1, flexShrink: 1, gap: 40 }}
         >
-          {pixels.map(
-            (p, i) =>
-              dfuStatuses[i] <= 100 && (
-                <Animated.View
-                  key={p.pixelId}
-                  exiting={FadeOut.delay(1200).duration(300)}
-                  layout={CurvedTransition.delay(1400)}
-                >
-                  <DieWireframeCard dieType={p.dieType}>
-                    {p.name}
-                    {dfuStatuses[i] > 0 && dfuStatuses[i] < 100 ? " - " : "  "}
-                    {getStatus(dfuStatuses[i])}
-                  </DieWireframeCard>
-                </Animated.View>
-              )
+          <Text>We have a software update for your dice!</Text>
+          <Text>
+            We recommend to update them so they work properly with the app. It
+            usually takes less than 20 seconds per die.
+          </Text>
+          <Text>
+            Please ensure that the dice stay on and close to your phone during
+            the update process. You may place your dice inside the charging case
+            but do not close the lid as it will turn off the die.
+          </Text>
+          {dfuBundle ? (
+            <GradientButton
+              style={{ alignItems: "flex-start", alignSelf: "center" }}
+              onPress={() => {
+                setStep("update");
+                updateDice(statusesRef.current, dfuBundle).then(() =>
+                  setStep("done")
+                );
+              }}
+            >
+              Update{" "}
+              {getToUpdateCount(statusesRef.current) <= 1
+                ? "My Die"
+                : "My Dice"}
+            </GradientButton>
+          ) : (
+            <Text>Loading files...</Text>
           )}
-          {/* Add some bottom padding so animated card don't get cut off during their exit animation */}
-          <View style={{ height: 40 }} />
-        </Animated.ScrollView>
+        </Animated.View>
       ) : (
         <Animated.View
-          entering={FadeIn.delay(1600).duration(300)}
-          style={{ flexGrow: 1, paddingTop: 40 }}
+          key="update"
+          entering={FadeIn.duration(300).delay(200)}
+          style={{ flexGrow: 1, flexShrink: 1, gap: 20 }}
         >
-          <Text variant="bodyLarge">All your dice are up-to-date!</Text>
-        </Animated.View>
-      )}
-      {step === "wait" && (
-        <Animated.View exiting={FadeOut}>
-          <GradientButton onPress={() => setStep("update")}>
-            Update {outdatedCount} Dice
-          </GradientButton>
+          <StatusText statuses={statusesRef.current} />
+          <ScrollView contentContainerStyle={{ paddingVertical: 10, gap: 10 }}>
+            {scannedPixels.map((sp, i) => (
+              <AnimatedPixelDfuCard
+                key={sp.pixelId}
+                entering={FadeIn.duration(300).delay(200 + i * 100)}
+                scannedPixel={sp}
+                dfuStatus={statusesRef.current.find(
+                  (s) => s.scannedPixel === sp
+                )}
+              />
+            ))}
+          </ScrollView>
         </Animated.View>
       )}
       {step === "done" && (
-        <Animated.View entering={FadeIn.delay(1600).duration(300)}>
-          <GradientButton onPress={onNext}>Next</GradientButton>
-        </Animated.View>
-      )}
-      {step === "wait" && (
-        <Button
-          textColor={makeTransparent(colors.onBackground, 0.5)}
-          style={{ position: "absolute", top: -70, right: -20 }} // TODO better positioning
+        <AnimatedGradientButton
+          entering={FadeIn.duration(300)}
           onPress={onNext}
         >
-          Skip
-        </Button>
+          Next
+        </AnimatedGradientButton>
       )}
+      {step === "wait" && <SkipButton onPress={onNext} />}
     </Slide>
   );
 }
@@ -482,30 +692,40 @@ function UpdateDiceSlide({
 function ReadySlide({ onDone }: { onDone: () => void }) {
   return (
     <Slide>
-      <View style={{ flex: 1, justifyContent: "space-evenly" }}>
-        <View style={{ gap: 20 }}>
-          <Text variant="titleMedium">Customize Your Dice</Text>
+      <View style={{ flexGrow: 1 }}>
+        <View style={{ flexGrow: 1, justifyContent: "center", gap: 30 }}>
+          <Title>Customize Your Dice</Title>
           <Text>
             The Pixels app automatically connects to your dice and let you
             customize how they light up.
           </Text>
           <Text>
-            You can make them play text or sound on your phone and have them
-            make web requests.
+            You can make them speak text on your phone and or make web requests.
           </Text>
         </View>
-        <LightUpYourGameImage height={80} />
-        <View style={{ gap: 20 }}>
-          <Text variant="titleMedium">Customize Your App</Text>
+        <LightUpYourGameImage />
+        <View style={{ flexGrow: 1, justifyContent: "center", gap: 30 }}>
+          <Title>Customize Your App</Title>
           <Text>
-            You can configure how the app display your dice to your liking.
-            Explore the different view options!
+            You can configure how the app display your dice and profile lists to
+            your liking. Explore the different view options!
           </Text>
         </View>
       </View>
       <GradientButton onPress={onDone}>Go</GradientButton>
     </Slide>
   );
+}
+
+function connectPixel(sp: ScannedPixel): Pixel | undefined {
+  const pixel = getPixel(sp.pixelId);
+  pixel?.connect().catch((e: Error) => console.log(`Connection error: ${e}`));
+  return pixel;
+}
+
+function isPixelUpToDate(pixel: PixelInfo, dfuBundle?: DfuFilesBundle) {
+  // return !dfuBundle || pixel.firmwareDate >= dfuBundle.date;
+  return !dfuBundle;
 }
 
 function OnboardingPage({
@@ -515,27 +735,53 @@ function OnboardingPage({
 }) {
   const appDispatch = useAppDispatch();
 
-  const [scannedPixels, scannerDispatch] = useScannedPixelNotifiers();
+  const [scannedPixels, scannerDispatch, scannerStatus] =
+    useScannedPixelNotifiers({
+      autoStart: false,
+    });
   const pixels = React.useMemo(
-    () =>
-      scannedPixels
-        .map((p) => getPixel(p.pixelId))
-        .filter((p): p is Pixel => !!p),
+    () => scannedPixels.map(connectPixel).filter((p): p is Pixel => !!p),
     [scannedPixels]
   );
-  useFocusEffect(
-    React.useCallback(() => {
-      scrollRef.current?.scrollTo({ x: 0, animated: false });
-      scannerDispatch("start");
-      return () => scannerDispatch("stop");
-    }, [scannerDispatch])
-  );
+  const { addDie } = usePairedPixels();
+
+  // Stop scanning on leaving scan page
+  React.useEffect(() => {
+    return () => {
+      scannerDispatch("stop");
+      scannerDispatch("clear");
+    };
+  }, [scannerDispatch]);
+
+  const [dfuBundle, setDfuBundle] = React.useState<DfuFilesBundle>();
+  React.useEffect(() => {
+    const task = async () => {
+      // Unzip app DFU files
+      const files = await unzipEmbeddedDfuFilesAsync();
+      // Group them in DFU bundles
+      const bundles = await DfuFilesBundle.createMany(
+        files.map((p) => getDfuFileInfo(p))
+      );
+      // Use most recent bundle
+      setDfuBundle(bundles.reduce((a, b) => (a.date >= b.date ? a : b)));
+    };
+    task().catch((e) => console.log(`Error: ${e}`));
+  }, []);
 
   const [index, setIndex] = React.useState(0);
   const scrollRef = React.useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const scrollTo = (page: number) =>
     scrollRef.current?.scrollTo({ x: page * width });
+
+  // Scroll back to first slide when showing this screen
+  useFocusEffect(
+    React.useCallback(
+      () => scrollRef.current?.scrollTo({ x: 0, animated: false }),
+      []
+    )
+  );
+
   return (
     <>
       <ScrollView
@@ -550,9 +796,29 @@ function OnboardingPage({
       >
         <WelcomeSlide onNext={() => scrollTo(1)} />
         <HealthSlide onNext={() => scrollTo(2)} />
-        <SettingsSlide onNext={() => scrollTo(3)} />
-        <ScanSlide pixels={pixels} onNext={() => scrollTo(4)} />
-        <UpdateDiceSlide pixels={pixels} onNext={() => scrollTo(5)} />
+        {/* <SettingsSlide onNext={() => scrollTo(3)} /> */}
+        <ScanSlide
+          pixels={pixels}
+          scannerStatus={scannerStatus}
+          onStartScan={() => {
+            scannerDispatch("clear");
+            scannerDispatch("start");
+          }}
+          onNext={() => {
+            scannerDispatch("stop");
+            for (const p of pixels) {
+              addDie(p);
+            }
+            scrollTo(
+              pixels.some((p) => !isPixelUpToDate(p, dfuBundle)) ? 3 : 4
+            );
+          }}
+        />
+        <UpdateDiceSlide
+          scannedPixels={scannedPixels}
+          dfuBundle={dfuBundle}
+          onNext={() => scrollTo(4)}
+        />
         <ReadySlide
           onDone={() => {
             appDispatch(setShowOnboarding(false));
@@ -574,7 +840,7 @@ function OnboardingPage({
           gap: 20,
         }}
       >
-        <Text>{index + 1} / 6</Text>
+        <PaperText>{index + 1} / 5</PaperText>
         {/* {range(6).map((i) => (
               <View
                 key={i}
@@ -594,10 +860,12 @@ function OnboardingPage({
   );
 }
 
-export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
+export function OnboardingScreen({ route, navigation }: OnboardingScreenProps) {
   return (
-    <AppBackground>
-      <OnboardingPage navigation={navigation} />
-    </AppBackground>
+    <ThemeProvider theme={getRootScreenTheme(route.name)}>
+      <AppBackground>
+        <OnboardingPage navigation={navigation} />
+      </AppBackground>
+    </ThemeProvider>
   );
 }

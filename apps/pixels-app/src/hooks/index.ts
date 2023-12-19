@@ -5,6 +5,5 @@ export * from "./useConfirmActionSheet";
 export * from "./useEditableProfile";
 export * from "./usePairedPixels";
 export * from "./usePatternsList";
-export * from "./usePixelDfuStatus";
 export * from "./useProfile";
 export * from "./useProfilesList";
