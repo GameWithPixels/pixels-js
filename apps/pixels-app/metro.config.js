@@ -9,6 +9,9 @@ const workspaceRoot = findWorkspaceRoot(__dirname);
 
 const config = getDefaultConfig(projectRoot);
 
+// Let Metro know we have assets with the following extensions
+config.resolver.assetExts.push("zip");
+
 // 1. Watch all files within the monorepo
 config.watchFolders = [workspaceRoot];
 // 2. Let Metro know where to resolve packages and in what order

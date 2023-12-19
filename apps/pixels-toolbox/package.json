@@ -82,7 +82,7 @@
     "react-native-screens": "~3.22.0",
     "react-native-svg": "13.9.0",
     "react-native-vision-camera": "~2.16.5",
-    "react-native-zip-archive": "^6.0.9",
+    "react-native-zip-archive": "^6.1.0",
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",

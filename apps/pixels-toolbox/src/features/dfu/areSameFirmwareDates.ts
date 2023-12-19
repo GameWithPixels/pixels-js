@@ -1,4 +1,4 @@
-export function areSameFirmwareDates(date1?: Date, date2?: Date) {
+export function areSameFirmwareDates(date1?: Date, date2?: Date): boolean {
   if (date1 && date2) {
     const time1 = date1.getTime();
     const time2 = date2.getTime();

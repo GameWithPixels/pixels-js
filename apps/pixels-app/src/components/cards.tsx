@@ -5,15 +5,16 @@ import {
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { View } from "react-native";
+import { View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
+import Animated, { AnimatedProps } from "react-native-reanimated";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, DieWireframe, RssiIcon } from "./icons";
 import { getTextColorStyle, makeTransparent } from "./utils";
 
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { usePixelDfuStatus, useActiveProfile } from "~/hooks";
+import { useActiveProfile } from "~/hooks";
 
 export function ScannedPixelCard({
   scannedPixel,
@@ -109,8 +110,8 @@ export function PixelVCard({
           pixel.name === "+"
             ? "displayLarge"
             : miniCards
-            ? "titleSmall"
-            : "titleMedium"
+              ? "titleSmall"
+              : "titleMedium"
         }
       >
         {status === "ready" || status === "disconnected" ? pixel.name : status}
@@ -126,7 +127,6 @@ export function PixelHCard({
   pixel: Pixel;
 } & Omit<TouchableCardProps, "children">) {
   const status = usePixelStatus(pixel);
-  const dfuStatus = usePixelDfuStatus(pixel);
   const { activeProfile } = useActiveProfile(pixel);
   const disabled = status !== "ready";
   const textStyle = getTextColorStyle(useTheme().colors, disabled);
@@ -145,13 +145,7 @@ export function PixelHCard({
         <Text variant="bodyLarge" style={textStyle}>
           {pixel.name}
         </Text>
-        <Text>
-          {dfuStatus
-            ? dfuStatus
-            : disabled
-            ? `${status}...`
-            : activeProfile?.name ?? "No Profile!"}
-        </Text>
+        <Text>{activeProfile?.name ?? "No Profile!"}</Text>
       </View>
       <View
         style={{
@@ -169,13 +163,45 @@ export function PixelHCard({
 }
 
 export function DieWireframeCard({
-  dieType,
   children,
-}: React.PropsWithChildren<{ dieType: PixelDieType }>) {
+  dieType,
+  style,
+  ...props
+}: ViewProps & { dieType: PixelDieType }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+    <View
+      style={[{ flexDirection: "row", alignItems: "center", gap: 20 }, style]}
+      {...props}
+    >
       <DieWireframe size={40} dieType={dieType} />
-      <Text variant="bodyLarge" children={children} />
+      {typeof children === "string" ? (
+        <Text variant="bodyLarge" children={children} />
+      ) : (
+        <View children={children} />
+      )}
     </View>
+  );
+}
+
+// For some reason DieWireframeCard doesn't work with "withAnimated()"
+export function AnimatedDieWireframeCard({
+  children,
+  dieType,
+  style,
+  ...props
+}: AnimatedProps<Omit<ViewProps, "children">> &
+  React.PropsWithChildren<{ dieType: PixelDieType }>) {
+  return (
+    <Animated.View
+      style={[{ flexDirection: "row", alignItems: "center", gap: 20 }, style]}
+      {...props}
+    >
+      <DieWireframe size={40} dieType={dieType} />
+      {typeof children === "string" ? (
+        <Text variant="bodyLarge" children={children} />
+      ) : (
+        <View style={{ flex: 1 }} children={children} />
+      )}
+    </Animated.View>
   );
 }

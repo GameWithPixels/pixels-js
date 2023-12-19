@@ -96,15 +96,8 @@ function AppPage() {
         tabBar={(props) => <TabBar {...props} />}
         screenOptions={{ headerShown: false }}
         initialRouteName={showOnboarding ? "onboarding" : "home"}
+        backBehavior="none"
       >
-        <Tab.Screen
-          name="onboarding"
-          component={OnboardingScreen}
-          options={{
-            tabBarItemStyle: { display: "none" },
-            tabBarStyle: { display: "none" },
-          }}
-        />
         <Tab.Screen
           name="home"
           component={HomeStack}
@@ -142,6 +135,15 @@ function AppPage() {
           name="settings"
           component={SettingsStack}
           options={{ title: "More", tabBarIcon: MoreIcon }}
+        />
+        <Tab.Screen
+          name="onboarding"
+          component={OnboardingScreen}
+          options={{
+            tabBarItemStyle: { display: "none" },
+            tabBarStyle: { display: "none" },
+            unmountOnBlur: true,
+          }}
         />
       </Tab.Navigator>
     </SafeAreaView>

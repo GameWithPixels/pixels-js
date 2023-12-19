@@ -1,8 +1,13 @@
+import React from "react";
 import { FallbackProps } from "react-error-boundary";
 import { Button, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Sentry from "sentry-expo";
 
 export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+  React.useEffect(() => {
+    Sentry.Native.captureException(error);
+  }, [error]);
   const { colors } = useTheme();
   return (
     <SafeAreaView

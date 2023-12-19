@@ -8,12 +8,13 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import { DiceList } from "~/components/dice";
-import {
-  PixelDfuStatus,
-  PixelDfuStatusesContext,
-  usePairedPixels,
-} from "~/hooks";
+import { usePairedPixels } from "~/hooks";
 import { FirmwareUpdateScreenProps } from "~/navigation";
+
+interface PixelDfuStatus {
+  pixel: Pixel;
+  progress: number;
+}
 
 export function useConfirmStopUpdatingActionSheet(
   onConfirm?: () => void,
@@ -63,10 +64,6 @@ function FirmwareUpdatePage({
   );
   const selection = React.useMemo(
     () => dfuStatuses.map((s) => s.pixel),
-    [dfuStatuses]
-  );
-  const statusesData = React.useMemo(
-    () => ({ statuses: dfuStatuses }),
     [dfuStatuses]
   );
   React.useEffect(() => {
@@ -140,21 +137,19 @@ function FirmwareUpdatePage({
           </OutlineButton>
         )}
         <ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
-          <PixelDfuStatusesContext.Provider value={statusesData}>
-            <DiceList
-              pixels={pixels}
-              selection={selection}
-              onSelectDie={(p) => {
-                if (step === "select") {
-                  setDfuStatuses((statuses) =>
-                    statuses.findIndex((s) => s.pixel === p) >= 0
-                      ? statuses.filter((s) => s.pixel !== p)
-                      : [...statuses, { pixel: p, progress: 0 }]
-                  );
-                }
-              }}
-            />
-          </PixelDfuStatusesContext.Provider>
+          <DiceList
+            pixels={pixels}
+            selection={selection}
+            onSelectDie={(p) => {
+              if (step === "select") {
+                setDfuStatuses((statuses) =>
+                  statuses.findIndex((s) => s.pixel === p) >= 0
+                    ? statuses.filter((s) => s.pixel !== p)
+                    : [...statuses, { pixel: p, progress: 0 }]
+                );
+              }
+            }}
+          />
         </ScrollView>
       </View>
     </View>

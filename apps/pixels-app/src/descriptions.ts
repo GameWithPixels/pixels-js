@@ -1,5 +1,6 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
+  PixelColorway,
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
@@ -107,6 +108,8 @@ export function getActionTypeDescription(type: Profiles.ActionType): string {
 
 export function getDieTypeLabel(dieType: PixelDieType): string {
   switch (dieType) {
+    case "unknown":
+      return "";
     case "d4":
       return "D4";
     case "d6":
@@ -125,8 +128,6 @@ export function getDieTypeLabel(dieType: PixelDieType): string {
       return "D12";
     case "d20":
       return "D20";
-    case "unknown":
-      return "";
     default:
       assertNever(dieType, `Unsupported die type: ${dieType}`);
   }
@@ -134,6 +135,8 @@ export function getDieTypeLabel(dieType: PixelDieType): string {
 
 export function getProfileDieTypeLabel(dieType: PixelDieType): string {
   switch (dieType) {
+    case "unknown":
+      return "";
     case "d4":
       return "D4";
     case "d6":
@@ -151,9 +154,28 @@ export function getProfileDieTypeLabel(dieType: PixelDieType): string {
       return "D12";
     case "d20":
       return "D20";
-    case "unknown":
-      return "";
     default:
       assertNever(dieType, `Unsupported die type: ${dieType}`);
+  }
+}
+
+export function getColorwayLabel(colorway: PixelColorway): string {
+  switch (colorway) {
+    case "unknown":
+      return "";
+    case "onyxBlack":
+      return "Onyx Black";
+    case "hematiteGrey":
+      return "Hematite Grey";
+    case "midnightGalaxy":
+      return "Midnight Galaxy";
+    case "auroraSky":
+      return "Aurora Sky";
+    case "clear":
+      return "Clear";
+    case "custom":
+      return "Custom";
+    default:
+      assertNever(colorway, `Unsupported colorway: ${colorway}`);
   }
 }

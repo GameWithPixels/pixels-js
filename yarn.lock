@@ -10666,7 +10666,7 @@ react-native-vision-camera@~2.16.5:
   resolved "https://registry.yarnpkg.com/react-native-vision-camera/-/react-native-vision-camera-2.16.5.tgz#1d06bde2ca5911b763f8ae18de5f5fa65c30cf9d"
   integrity sha512-MzXhNd597OyMQSEGhqWI4DufWkdr7PR7U9B30E3gXnln7cnvjMVIp4j3eIW9BIrgvEyUcEeL7nZM5NLhTmO/fA==
 
-react-native-zip-archive@^6.0.9:
+react-native-zip-archive@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/react-native-zip-archive/-/react-native-zip-archive-6.1.0.tgz#beed62dea9c7ff1e4fd4b6ce0e496ede5ab2f96f"
   integrity sha512-FEt6O8YD/Is48HGXuHndFktod7S2cUdf0C+B2XRHWeS3zs/gXlzOGo1gcwUxdMyqQwEwnFuAqlYvUK4BNGQsDg==

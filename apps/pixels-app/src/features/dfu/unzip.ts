@@ -1,7 +1,6 @@
 import * as FileSystem from "expo-file-system";
 
-import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
-import otherDfuFiles from "!/dfu/other-dfu-files.zip";
+import dfuFiles from "#/dfu/dfu-files.zip";
 import Pathname from "~/features/files/Pathname";
 import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
 import { unzipFileAsync } from "~/features/files/unzipFileAsync";
@@ -60,19 +59,9 @@ async function unzipDfuFilesFromAssetsAsync(
   return await unzipDfuFilesAsync(info.uri, { clearCache: opt?.clearCache });
 }
 
-export async function unzipEmbeddedDfuFilesAsync(): Promise<{
-  factory: string[];
-  others: string[];
-}> {
+export async function unzipEmbeddedDfuFilesAsync(): Promise<string[]> {
   // Clear existing files
-  const others = await unzipDfuFilesFromAssetsAsync(otherDfuFiles, {
+  return await unzipDfuFilesFromAssetsAsync(dfuFiles, {
     clearCache: true,
   });
-  // Factory files last so we're sure that its content isn't overwritten
-  const factory = await unzipDfuFilesFromAssetsAsync(factoryDfuFiles);
-  return { factory, others };
-}
-
-export async function unzipFactoryDfuFilesAsync(): Promise<string[]> {
-  return await unzipDfuFilesFromAssetsAsync(factoryDfuFiles);
 }

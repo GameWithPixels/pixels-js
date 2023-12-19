@@ -1,6 +1,5 @@
 import { delay } from "@systemic-games/pixels-core-utils";
 import {
-  DfuDeviceDisconnectedError,
   DfuFirmwareVersionFailureError,
   DfuProgressEvent,
   DfuState,
@@ -27,14 +26,21 @@ export type DfuTarget =
   | DfuTargetId
   | Pick<ScannedPixel, "systemId" | "address">;
 
-export async function updateFirmware(
-  target: DfuTarget,
-  bootloaderPath?: string,
-  firmwarePath?: string,
-  setDfuState?: (state: DfuState) => void,
-  setDfuProgress?: (progress: number) => void,
-  isBootloaderMacAddress?: boolean
-): Promise<void> {
+export async function updateFirmware({
+  target,
+  bootloaderPath,
+  firmwarePath,
+  dfuStateCallback,
+  dfuProgressCallback,
+  isBootloaderMacAddress,
+}: {
+  target: DfuTarget;
+  bootloaderPath?: string;
+  firmwarePath?: string;
+  dfuStateCallback?: (state: DfuState) => void;
+  dfuProgressCallback?: (progress: number) => void;
+  isBootloaderMacAddress?: boolean;
+}): Promise<void> {
   const hasFirmware = !!firmwarePath?.length;
   const hasBootloader = !!bootloaderPath?.length;
   let bootloaderSkipped = false;
@@ -57,14 +63,14 @@ export async function updateFirmware(
         state !== "errored" && // Error state is set on catching the actual error
         (state !== "completed" || pendingDfuCount <= 0)
       ) {
-        setDfuState?.(state);
+        dfuStateCallback?.(state);
       }
     },
     dfuProgressListener: ({ percent }: DfuProgressEvent) => {
       const c = dfuCount - (bootloaderSkipped ? 1 : 0);
       const p =
         ((c - pendingDfuCount - 1) / c) * 100 + percent / (pendingDfuCount + 1);
-      setDfuProgress?.(p);
+      dfuProgressCallback?.(p);
     },
   };
 
@@ -90,8 +96,8 @@ export async function updateFirmware(
           await delay(200); // Got the error once more with 100ms, increasing to 200ms
         }
       } else {
-        console.log(`DFU error (bootloader): ${error}`);
-        setDfuState?.("errored");
+        console.log(`DFU bootloader error: ${error}`);
+        dfuStateCallback?.("errored");
         throw error;
       }
     }
@@ -99,7 +105,7 @@ export async function updateFirmware(
 
   // Update firmware
   if (hasFirmware && !abort) {
-    const update = async (canRetry = true) => {
+    const update = async (allowRetry = true) => {
       try {
         // After attempting to update the bootloader, device stays in bootloader mode
         // Bootloader address = firmware address + 1
@@ -116,22 +122,19 @@ export async function updateFirmware(
         await startDfu(fwTargetId, firmwarePath, dfuOptions);
       } catch (error) {
         if (
-          canRetry &&
+          allowRetry &&
           bootloaderSkipped &&
-          (error instanceof DfuFirmwareVersionFailureError ||
-            error instanceof DfuDeviceDisconnectedError)
+          error instanceof DfuFirmwareVersionFailureError
         ) {
-          // We sometime get the "version failure" error, it looks like
-          // a "left over" from the bootloader update attempt that was
-          // performed just before
-          // Also try again if the device got disconnected during the update
-          console.log(`Trying again DFU after error: ${error}`);
+          // We sometime get this error, it looks like "left over" from the
+          // bootloader update attempt that was performed just before
+          console.warn(`DFU firmware version error, trying a second time`);
           pendingDfuCount += 1;
           await delay(500); // Experimental, hopefully is delay is enough to not get the same error again
           await update(false);
         } else {
-          console.log(`DFU error: ${error}`);
-          setDfuState?.("errored");
+          console.log(`DFU firmware error: ${error}`);
+          dfuStateCallback?.("errored");
           throw error;
         }
       }
