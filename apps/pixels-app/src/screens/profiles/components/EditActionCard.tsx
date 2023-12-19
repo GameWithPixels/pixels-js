@@ -50,7 +50,7 @@ const AnimatedTrashIcon = withAnimated(function ({
   );
 });
 
-export const EditActionCard = observer(function ({
+export const EditActionCard = observer(function EditActionCard({
   profileUuid,
   conditionType,
   flagName,

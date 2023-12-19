@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { assert } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   DiceUtils,
@@ -23,11 +24,14 @@ import {
   TouchableRippleProps,
   useTheme,
 } from "react-native-paper";
-import {
+import Animated, {
   CurvedTransition,
   Easing,
   FadeIn,
   FadeOut,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
 } from "react-native-reanimated";
 
 import { ActionDetails } from "./components/ActionDetails";
@@ -43,6 +47,7 @@ import {
   getActionTypeDescription,
   getConditionTypeDescription,
   getConditionTypeLabel,
+  getFacesAsText,
 } from "~/descriptions";
 import { getHighestFace } from "~/features/getHighestFace";
 import { makeObservable } from "~/features/makeObservable";
@@ -52,22 +57,56 @@ import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 import { withAnimated } from "~/withAnimated";
 
-function InnerScrollView({ ...props }: ScrollViewProps) {
+interface InnerScrollViewHandle {
+  addPadding: (padding: number) => void;
+}
+
+const InnerScrollView = React.forwardRef(function InnerScrollView(
+  { children, ...props }: ScrollViewProps,
+  ref: React.ForwardedRef<InnerScrollViewHandle>
+) {
   const { width } = useWindowDimensions();
+
+  // See this issue about jumping when deleting an item with the view scrolled down
+  // https://github.com/software-mansion/react-native-reanimated/issues/3412
+  const scrollViewPadding = useSharedValue(0);
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      addPadding: (padding: number) => {
+        scrollViewPadding.value += padding;
+        console.log("TODO need this log to work" + scrollViewPadding.value);
+      },
+    }),
+    [scrollViewPadding]
+  );
+
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    const maxOffsetY =
+      event.contentSize.height - event.layoutMeasurement.height;
+    const scrolledUp = Math.max(0, maxOffsetY - event.contentOffset.y);
+    scrollViewPadding.value = Math.max(0, scrollViewPadding.value - scrolledUp);
+  });
+  const scrollViewAnimated = useAnimatedStyle(() => {
+    return { paddingBottom: scrollViewPadding.value, gap: 20 };
+  });
+
   return (
-    // Use for Gesture Handler ScrollView for nested scroll views to work
-    <GHScrollView
+    // Use Gesture Handler (now Animated) ScrollView for nested scroll views to work
+    <Animated.ScrollView
       contentInsetAdjustmentBehavior="automatic"
+      onScroll={scrollHandler}
       style={{ width, height: "100%", flex: 1 }}
       contentContainerStyle={{
         paddingHorizontal: 10,
         paddingBottom: 90,
-        gap: 20,
       }}
       {...props}
-    />
+    >
+      <Animated.View style={scrollViewAnimated}>{children}</Animated.View>
+    </Animated.ScrollView>
   );
-}
+});
 
 const AnimatedRolledConditionCard = withAnimated(RolledConditionCard);
 
@@ -105,11 +144,9 @@ function RolledConditionCard({
           >
             {cond.faces === "all"
               ? `All other faces`
-              : `When rolled face is${cond.faces.length > 1 ? " one of" : ""} ${
-                  cond.faces.length
-                    ? [...cond.faces].sort().reverse().join(", ")
-                    : "?"
-                }`}
+              : `When rolled face is${
+                  cond.faces.length > 1 ? " one of" : ""
+                } ${getFacesAsText(cond.faces)}`}
           </Text>
           <Pressable
             onPress={props.disabled ? undefined : onDelete}
@@ -196,7 +233,7 @@ function getRolledFaces(
 const defaultCondition = new Profiles.ConditionRolled();
 const defaultAction = new Profiles.ActionPlayAnimation();
 
-const EditRolledRulesPage = observer(function ({
+const EditRolledRulesPage = observer(function EditRolledRulesPage({
   profileUuid,
   onGoBack,
 }: {
@@ -242,6 +279,16 @@ const EditRolledRulesPage = observer(function ({
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
 
+  const scrollViewRefs = [
+    React.useRef<InnerScrollViewHandle>(null),
+    React.useRef<InnerScrollViewHandle>(null),
+    React.useRef<InnerScrollViewHandle>(null),
+    React.useRef<InnerScrollViewHandle>(null),
+  ];
+  assert(
+    scrollViewRefs.length >= actionTypes.length,
+    `Number of scroll view refs must be at least ${actionTypes.length}`
+  );
   return (
     <>
       <View style={{ height: "100%", gap: 10 }}>
@@ -316,8 +363,8 @@ const EditRolledRulesPage = observer(function ({
           }
           scrollEventThrottle={100}
         >
-          {actionTypes.map((t) => (
-            <InnerScrollView key={t}>
+          {actionTypes.map((t, i) => (
+            <InnerScrollView key={t} ref={scrollViewRefs[i]}>
               {rolledRules
                 .filter(
                   (r) =>
@@ -334,9 +381,9 @@ const EditRolledRulesPage = observer(function ({
                       (r1.condition as Profiles.ConditionRolled).faces
                     )
                 )
-                .map((r, i) => (
+                .map((r) => (
                   <AnimatedRolledConditionCard
-                    key={i}
+                    key={r.uuid}
                     entering={FadeIn.duration(300).delay(200)}
                     exiting={FadeOut.duration(300)}
                     layout={CurvedTransition.easingY(Easing.linear).delay(200)}
@@ -344,11 +391,12 @@ const EditRolledRulesPage = observer(function ({
                     rule={r}
                     dieType={profile.dieType}
                     onPress={() => setConfigureRule(r)}
-                    onDelete={() =>
+                    onDelete={() => {
+                      scrollViewRefs[i].current?.addPadding(200);
                       runInAction(() =>
                         profile.rules.splice(profile.rules.indexOf(r), 1)
-                      )
-                    }
+                      );
+                    }}
                   />
                 ))}
               <AnimatedRolledConditionCard

@@ -179,3 +179,13 @@ export function getColorwayLabel(colorway: PixelColorway): string {
       assertNever(colorway, `Unsupported colorway: ${colorway}`);
   }
 }
+
+export function getFacesAsText(faces: number[]): string {
+  if (faces.length <= 1) {
+    return faces[0].toString() ?? "?";
+  } else {
+    const sorted = [...faces].sort((a, b) => a - b).reverse();
+    const last = sorted.pop();
+    return `${sorted.join(", ")} and ${last}`;
+  }
+}

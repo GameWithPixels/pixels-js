@@ -7,10 +7,11 @@ import { View, StyleSheet, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
 import { ActionTypeIcon } from "~/components/actions";
+import { getFacesAsText } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { AppStyles } from "~/styles";
 
-function getCountText(count: number) {
+function getCountAsText(count: number) {
   return count === 1 ? "once" : count === 2 ? "twice" : `${count} times`;
 }
 
@@ -18,7 +19,7 @@ function getActionText(action: Profiles.Action): string {
   switch (action.type) {
     case "playAnimation": {
       const act = action as Profiles.ActionPlayAnimation;
-      let msg = `Play "${act.animation?.name ?? ""}" ${getCountText(
+      let msg = `Play "${act.animation?.name ?? ""}" ${getCountAsText(
         act.loopCount
       )}`;
       if (act.duration !== undefined) {
@@ -28,7 +29,7 @@ function getActionText(action: Profiles.Action): string {
     }
     case "playAudioClip": {
       const act = action as Profiles.ActionPlayAudioClip;
-      return `Play "${act.clip?.name ?? ""}" ${getCountText(
+      return `Play "${act.clip?.name ?? ""}" ${getCountAsText(
         act.loopCount
       )} at volume ${act.volume}%`;
     }
@@ -51,9 +52,7 @@ function getConditionText(condition: Profiles.Condition): string | undefined {
       const faces = (condition as Profiles.ConditionRolled).faces;
       return faces === "all"
         ? "On other faces"
-        : faces.length <= 1
-          ? `On face ${faces[0].toString() ?? "?"}`
-          : `On faces ${[...faces].sort().reverse().join(", ")}`;
+        : `On face${faces.length > 1 ? "s" : ""} ${getFacesAsText(faces)}`;
     }
     case "rolling":
       return `Recheck after ${(
@@ -70,7 +69,7 @@ function getConditionText(condition: Profiles.Condition): string | undefined {
   }
 }
 
-export const ActionDetails = observer(function ({
+export const ActionDetails = observer(function ActionDetails({
   action,
   withIcon,
   ...props
@@ -96,7 +95,7 @@ export const ActionDetails = observer(function ({
   );
 });
 
-export const ConditionDetails = observer(function ({
+export const ConditionDetails = observer(function ConditionDetails({
   condition,
 }: {
   condition: Profiles.Condition;

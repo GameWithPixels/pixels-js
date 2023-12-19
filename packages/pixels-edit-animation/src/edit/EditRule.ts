@@ -8,6 +8,8 @@ import EditDataSet from "./EditDataSet";
 import { observable } from "./decorators";
 
 export default class EditRule {
+  readonly uuid: string;
+
   @observable
   condition: EditCondition;
 
@@ -15,6 +17,7 @@ export default class EditRule {
   actions: EditAction[];
 
   constructor(condition: EditCondition, opt?: { actions?: EditAction[] }) {
+    this.uuid = Math.random().toString(); // TODO until we have real UUIDs for rules
     this.condition = condition;
     this.actions = opt?.actions ?? [];
   }
