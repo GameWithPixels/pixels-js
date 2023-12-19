@@ -5,7 +5,7 @@ import {
   DfuState,
   DfuStateEvent,
   DfuTargetId,
-  getDfuTarget,
+  getDfuTargetId,
   startDfu,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
@@ -39,10 +39,7 @@ export async function updateFirmware(
   let bootloaderSkipped = false;
 
   // Get target id
-  const targetId =
-    typeof target === "object"
-      ? getDfuTarget(target.systemId, target.address)
-      : target;
+  const targetId = typeof target === "object" ? getDfuTargetId(target) : target;
 
   // Prepare DFU options
   const dfuCount = (hasBootloader ? 1 : 0) + (hasFirmware ? 1 : 0);
