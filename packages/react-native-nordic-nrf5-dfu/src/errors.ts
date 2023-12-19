@@ -93,6 +93,6 @@ export class DfuFirmwareVersionFailureError extends DfuError {
 export class DfuDeviceDisconnectedError extends DfuError {
   constructor(target: DfuTargetId, message?: string) {
     super(target, message);
-    this.name = "DfuFirmwareVersionFailureError";
+    this.name = "DfuDeviceDisconnectedError";
   }
 }
