@@ -1,3 +1,4 @@
+import * as Updates from "expo-updates";
 import { ScrollView } from "react-native";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -9,6 +10,20 @@ import { resetProfilesToDefault } from "~/features/store/profilesLibrarySlice";
 import { useConfirmActionSheet } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
 
+async function onFetchUpdateAsync() {
+  try {
+    const update = await Updates.checkForUpdateAsync();
+
+    if (update.isAvailable) {
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync();
+    }
+  } catch (error) {
+    // You can also add an alert() to see the error message in case of an error when fetching updates.
+    alert(`Error fetching latest Expo update: ${error}`);
+  }
+}
+
 const pages = [
   "Audio Clips",
   "Firmware",
@@ -18,6 +33,7 @@ const pages = [
   "Import Settings",
   "Restore Default",
   "System Info",
+  "Check for Update",
 ] as const;
 
 function SettingsMenuPage({
@@ -43,6 +59,8 @@ function SettingsMenuPage({
       case "Restore Default":
         showConfirmRestore();
         break;
+      case "Check for Update":
+        onFetchUpdateAsync();
     }
   };
   return (
