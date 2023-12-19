@@ -157,7 +157,12 @@ function ProfilesListPage({
   );
 
   const editProfile = (profile: Readonly<Profiles.Profile>) =>
-    navigation.navigate("editProfile", { profileUuid: profile.uuid });
+    navigation.navigate("editProfileStack", {
+      screen: "editProfile",
+      params: {
+        profileUuid: profile.uuid,
+      },
+    });
 
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);

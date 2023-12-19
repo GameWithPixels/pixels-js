@@ -3,10 +3,7 @@ import React from "react";
 import { ThemeProvider } from "react-native-paper";
 
 import { CreateProfileScreen } from "./CreateProfileScreen";
-import { EditAdvancedRulesScreen } from "./EditAdvancedRulesScreen";
-import { EditProfileScreen } from "./EditProfileScreen";
-import { EditRollRuleScreen } from "./EditRolledRulesScreen";
-import { EditRuleScreen } from "./EditRuleScreen";
+import { EditProfilesStack } from "./EditProfileStack";
 import { ProfilesListScreen } from "./ProfilesListScreen";
 
 import {
@@ -29,16 +26,10 @@ export function ProfilesStack({ route }: ProfilesStackProps) {
           options={getStackNavigationOptions("bottom-sheet")}
         />
         <Stack.Screen
-          name="editProfile"
-          component={EditProfileScreen}
-          options={getStackNavigationOptions("slide-from-bottom")}
+          name="editProfileStack"
+          component={EditProfilesStack}
+          options={getStackNavigationOptions("bottom-sheet")}
         />
-        <Stack.Screen
-          name="editAdvancedRules"
-          component={EditAdvancedRulesScreen}
-        />
-        <Stack.Screen name="editRule" component={EditRuleScreen} />
-        <Stack.Screen name="editRollRules" component={EditRollRuleScreen} />
       </Stack.Navigator>
     </ThemeProvider>
   );
