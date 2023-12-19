@@ -125,7 +125,7 @@ export interface StartDfuOptions {
  *
  * The target id may be the device system id or bluetooth address depending on the host OS.
  * See its type {@link DfuTargetId}.
- * Use the helper function {@link getDfuTarget} to select the correct data in a generic way.
+ * Use the helper function {@link getDfuTargetId} to select the correct data in a generic way.
  *
  * Use the optional options.dfuStateListener parameter to get notified about the state
  * changes of the DFU process.
@@ -172,7 +172,7 @@ export async function startDfu(
       // The Bluetooth address of the device when in DFU mode is the normal address + 1
       (typeof targetId === "number" && identifier === targetId + 1)
     ) {
-      notifyState(ev);
+      notifyState({ ...ev, targetId });
     }
   });
 
@@ -186,7 +186,7 @@ export async function startDfu(
         // The Bluetooth address of the device when in DFU mode is the normal address + 1
         (typeof targetId === "number" && identifier === targetId + 1)
       ) {
-        notifyProgress(ev);
+        notifyProgress({ ...ev, targetId });
       }
     });
 
@@ -326,6 +326,12 @@ export async function resumeDfu(): Promise<void> {
  * @param address The Bluetooth peripheral MAC address.
  * @returns The DFU target id for the Bluetooth peripheral.
  */
-export function getDfuTarget(systemId: string, address?: number): DfuTargetId {
+export function getDfuTargetId({
+  systemId,
+  address,
+}: {
+  systemId: string;
+  address?: number;
+}): DfuTargetId {
   return Platform.OS === "ios" || !address ? systemId : address;
 }
