@@ -24,7 +24,7 @@ import {
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { IconProps } from "./icons";
-import { getTextColorStyle, makeTransparent } from "./utils";
+import { getTextColorStyle } from "./utils";
 
 import AddNewIcon from "#/icons/common/fab-add-with-gradient";
 import ChartColumnIcon from "#/icons/home/chart-column";
@@ -34,6 +34,7 @@ import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
 import CaretLeftIcon from "#/icons/profiles/caret-left";
 import CaretRightIcon from "#/icons/profiles/caret-right";
+import { withAnimated } from "~/withAnimated";
 
 const emptyText = "";
 
@@ -383,6 +384,8 @@ export function DieFaceButton({
   );
 }
 
+export const AnimatedGradientButton = withAnimated(GradientButton);
+
 export function GradientButton({
   children,
   disabled,
@@ -676,7 +679,6 @@ export function FloatingAddButton({
 export function SelectionButton({
   children,
   selected,
-  style,
   contentStyle,
   icon,
   ...props
@@ -694,20 +696,22 @@ export function SelectionButton({
           paddingVertical: 12,
           gap: 20,
           backgroundColor: colors.backdrop,
+          borderColor: colors.outlineVariant,
         },
         contentStyle,
-      ]}
-      style={[
-        { borderColor: makeTransparent(colors.onBackground, 0.2) },
-        style,
       ]}
       {...props}
     >
       {icon?.({ size: 20, color: colors.onSurface })}
-      <Text variant="bodyLarge" style={{ color: colors.onSurface }}>
-        {children}
-      </Text>
-      <View style={{ flexGrow: 1 }} />
+      <View style={{ flex: 1 }}>
+        {typeof children === "string" ? (
+          <Text variant="bodyLarge" style={{ color: colors.onSurface }}>
+            {children}
+          </Text>
+        ) : (
+          children
+        )}
+      </View>
       {selected && (
         <MaterialIcons name="check" size={24} color={colors.onSurface} />
       )}

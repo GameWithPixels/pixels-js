@@ -12,6 +12,7 @@ import {
   BluetoothTurnedOffError,
   getPixel,
   Pixel,
+  PixelDieType,
   PixelInfo,
   PixelScannerStatus,
   ScannedPixel,
@@ -50,10 +51,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
-import { GradientButton, TightTextButton } from "~/components/buttons";
-import { AnimatedDieWireframeCard } from "~/components/cards";
+import { DieStaticInfo } from "~/components/ScannedDieStatus";
+import {
+  AnimatedGradientButton,
+  GradientButton,
+  TightTextButton,
+} from "~/components/buttons";
+import { DieWireframe } from "~/components/icons";
 import { makeTransparent } from "~/components/utils";
-import { getColorwayLabel, getDieTypeLabel } from "~/descriptions";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
@@ -63,13 +68,10 @@ import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
 import { OnboardingScreenProps } from "~/navigation";
 import { getBottomSheetBackgroundStyle, getRootScreenTheme } from "~/themes";
-import { withAnimated } from "~/withAnimated";
 
 function diceStr(count: number): string {
   return count <= 1 ? "die" : "dice";
 }
-
-const AnimatedGradientButton = withAnimated(GradientButton);
 
 function LightUpYourGameImage({
   height = 80,
@@ -120,6 +122,28 @@ function Text(props: Omit<TextProps<never>, "variant">) {
 
 function SmallText(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodySmall" {...props} />;
+}
+
+function AnimatedDieWireframeCard({
+  children,
+  dieType,
+  style,
+  ...props
+}: AnimatedProps<Omit<ViewProps, "children">> &
+  React.PropsWithChildren<{ dieType: PixelDieType }>) {
+  return (
+    <Animated.View
+      style={[{ flexDirection: "row", alignItems: "center", gap: 20 }, style]}
+      {...props}
+    >
+      <DieWireframe size={40} dieType={dieType} />
+      {typeof children === "string" ? (
+        <Text children={children} />
+      ) : (
+        <View style={{ flex: 1 }} children={children} />
+      )}
+    </Animated.View>
+  );
 }
 
 function Slide({
@@ -353,7 +377,7 @@ function ScanSlide({
   onStartScan,
   onNext,
 }: {
-  pixels: Pixel[];
+  pixels: readonly Pixel[];
   scannerStatus: PixelScannerStatus;
   onStartScan: () => void;
   onNext: () => void;
@@ -434,7 +458,7 @@ function ScanSlide({
                 paddingHorizontal: 10,
                 paddingTop: pixels.length ? 20 : 0,
                 paddingBottom: pixels.length ? 10 : 0,
-                gap: 10,
+                gap: 20,
               }}
             >
               {pixels.map((p) => (
@@ -443,10 +467,7 @@ function ScanSlide({
                   entering={FadeIn.duration(300)}
                   dieType={p.dieType}
                 >
-                  <Text>{p.name}</Text>
-                  <SmallText>
-                    {getDieTypeLabel(p.dieType)}, {getColorwayLabel(p.colorway)}
-                  </SmallText>
+                  <DieStaticInfo pixel={p} />
                 </AnimatedDieWireframeCard>
               ))}
             </View>
@@ -520,14 +541,14 @@ async function updateDice(
           runInAction(() => (status.progress = progress)),
       });
     } catch (e) {
-      console.log(`DUF Error with ${status.scannedPixel.name}: ${e}`);
+      console.log(`DFU error with ${status.scannedPixel.name}: ${e}`);
     }
   }
 }
 
 function appendNewDiceStatuses(
   statuses: TargetDfuStatus[],
-  scannedPixels: ScannedPixel[],
+  scannedPixels: readonly ScannedPixel[],
   dfuBundle?: DfuFilesBundle
 ) {
   for (const sp of scannedPixels) {
@@ -562,16 +583,18 @@ const AnimatedPixelDfuCard = observer(function AnimatedPixelDfuCard({
   const state = dfuStatus?.state;
   return (
     <AnimatedDieWireframeCard dieType={scannedPixel.dieType} {...props}>
-      <Text>{scannedPixel.name}</Text>
-      <SmallText>
-        {!state || state === "completed"
-          ? "Up To Date"
-          : state === "aborted" || state === "errored"
-            ? "Update Failed"
-            : state === "pending"
-              ? "Update Required"
-              : `State ${state}, ${dfuStatus.progress}%  `}
-      </SmallText>
+      <View style={{ flex: 1, justifyContent: "space-around" }}>
+        <Text>{scannedPixel.name}</Text>
+        <SmallText>
+          {!state || state === "completed"
+            ? "Up To Date"
+            : state === "aborted" || state === "errored"
+              ? "Update Failed"
+              : state === "pending"
+                ? "Update Required"
+                : `State ${state}, ${dfuStatus.progress}%`}
+        </SmallText>
+      </View>
     </AnimatedDieWireframeCard>
   );
 });
@@ -604,7 +627,7 @@ function UpdateDiceSlide({
   dfuBundle,
   onNext,
 }: {
-  scannedPixels: ScannedPixel[];
+  scannedPixels: readonly ScannedPixel[];
   dfuBundle?: DfuFilesBundle;
   onNext: () => void;
 }) {
@@ -662,7 +685,7 @@ function UpdateDiceSlide({
           style={{ flexGrow: 1, flexShrink: 1, gap: 20 }}
         >
           <StatusText statuses={statusesRef.current} />
-          <ScrollView contentContainerStyle={{ paddingVertical: 10, gap: 10 }}>
+          <ScrollView contentContainerStyle={{ paddingVertical: 10, gap: 20 }}>
             {scannedPixels.map((sp, i) => (
               <AnimatedPixelDfuCard
                 key={sp.pixelId}
@@ -743,7 +766,7 @@ function OnboardingPage({
     () => scannedPixels.map(connectPixel).filter((p): p is Pixel => !!p),
     [scannedPixels]
   );
-  const { addDie } = usePairedPixels();
+  const { pairDie } = usePairedPixels();
 
   // Stop scanning on leaving scan page
   React.useEffect(() => {
@@ -807,7 +830,7 @@ function OnboardingPage({
           onNext={() => {
             scannerDispatch("stop");
             for (const p of pixels) {
-              addDie(p);
+              pairDie(p);
             }
             scrollTo(
               pixels.some((p) => !isPixelUpToDate(p, dfuBundle)) ? 3 : 4

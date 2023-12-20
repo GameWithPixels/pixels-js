@@ -24,6 +24,8 @@ import {
 } from "react-native-paper";
 import {
   cancelAnimation,
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -41,6 +43,7 @@ import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
+import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
@@ -48,12 +51,12 @@ import {
 import { AnimatedMaterialCommunityIcons } from "~/components/animated";
 import { Banner, PromoBanner } from "~/components/banners";
 import {
-  GradientButton,
+  AnimatedGradientButton,
   SelectionButton,
   TightTextButton,
 } from "~/components/buttons";
-import { DieWireframeCard } from "~/components/cards";
 import { DiceGrid, DiceList } from "~/components/dice";
+import { DieWireframe } from "~/components/icons";
 import {
   DiceGrouping,
   DiceGroupingList,
@@ -66,6 +69,7 @@ import {
 import {
   setDiceGrouping,
   setDiceSortMode,
+  setShowFocusModeHelp,
   setShowPromoBanner,
 } from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
@@ -81,7 +85,7 @@ function PairDieBottomSheet({
   visible,
   onDismiss,
 }: {
-  availablePixels: ScannedPixel[];
+  availablePixels: readonly ScannedPixel[];
   visible: boolean;
   onDismiss: (pixels?: ScannedPixel[]) => void;
 }) {
@@ -100,7 +104,7 @@ function PairDieBottomSheet({
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={["50%"]}
+      snapPoints={["50%", "92%"]}
       onDismiss={onDismiss}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
@@ -125,7 +129,7 @@ function PairDieBottomSheet({
           <Text variant="titleMedium" style={{ alignSelf: "center" }}>
             Select Pixels Dice to Add
           </Text>
-          <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+          <BottomSheetScrollView>
             <View
               style={{
                 flexDirection: "row",
@@ -141,6 +145,7 @@ function PairDieBottomSheet({
             {availablePixels.map((sp, i) => (
               <SelectionButton
                 key={sp.pixelId}
+                icon={() => <DieWireframe dieType={sp.dieType} size={40} />}
                 selected={selected.includes(sp)}
                 noTopBorder={i > 0}
                 squaredTopBorder={i > 0}
@@ -153,19 +158,19 @@ function PairDieBottomSheet({
                   );
                 }}
               >
-                <DieWireframeCard dieType={sp.dieType}>
-                  {sp.name}, {sp.dieType}
-                </DieWireframeCard>
+                <DieStaticInfo pixel={sp} />
               </SelectionButton>
             ))}
           </BottomSheetScrollView>
           {availablePixels.length > 0 && selected.length > 0 && (
-            <GradientButton
+            <AnimatedGradientButton
+              entering={FadeIn.duration(300)}
+              exiting={FadeOut.duration(300)}
               style={{ marginBottom: 20 }}
               onPress={() => onDismiss(selected)}
             >
               Pair {selected.length} Pixels
-            </GradientButton>
+            </AnimatedGradientButton>
           )}
         </View>
       </ThemeProvider>
@@ -271,85 +276,103 @@ function PageActions({
   );
 }
 
+function getMissingDiceText(
+  missingDice: readonly { name: string }[]
+): React.ReactNode {
+  return `${missingDice.reduce((acc, d, i) => {
+    if (i === 0) {
+      return d.name;
+    } else {
+      return acc + (i >= missingDice.length - 1 ? " and " : ", ") + d.name;
+    }
+  }, "")} ${missingDice.length > 1 ? "are" : "is"} missing!`;
+}
+
 function DiceListPage({
   navigation,
 }: {
   navigation: DiceListScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
+
+  // Dice
+  const [scannedPixels, scannerDispatch, scannerStatus] =
+    useScannedPixelNotifiers();
+  const { pixels, missingDice, availablePixels, pairDie, unpairDie } =
+    usePairedPixels(scannedPixels);
+
+  // Selection
+  const [selectedPixel, setSelectedPixel] = React.useState<Pixel>();
+  React.useEffect(() => {
+    if (!pixels.length) {
+      // Unselect Pixel
+      setSelectedPixel(undefined);
+    } else if (!selectedPixel || !pixels.includes(selectedPixel)) {
+      // Select first Pixel
+      setSelectedPixel(pixels[0]);
+    }
+  }, [pixels, selectedPixel]);
+
+  // Scan & Reconnect
+  const [scanTimeout, setScanTimeout] =
+    React.useState<ReturnType<typeof setTimeout>>(); // TODO keeping this value in a state generates unnecessary re-renders
+  const [showScanList, setShowScanList] = React.useState(false);
+  React.useEffect(
+    () => scannerDispatch(scanTimeout || showScanList ? "start" : "stop"),
+    [scanTimeout, scannerDispatch, showScanList]
+  );
+  const tryReconnectDice = React.useCallback(() => {
+    // Set a timeout to stop scanning in 10s
+    setScanTimeout((id) => {
+      clearTimeout(id);
+      return setTimeout(() => setScanTimeout(undefined), 10000);
+    });
+  }, []);
+  // Auto connect on showing page
+  useFocusEffect(
+    React.useCallback(() => tryReconnectDice(), [tryReconnectDice])
+  );
+
+  // Reconnect animation
+  const connectProgress = useSharedValue(0);
+  React.useEffect(() => {
+    if (scannerStatus === "scanning") {
+      connectProgress.value = withRepeat(
+        withTiming(360, { duration: 2000 }),
+        -1
+      );
+    } else {
+      cancelAnimation(connectProgress);
+      connectProgress.value = 0;
+    }
+  }, [connectProgress, scannerStatus]);
+  const connectAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: connectProgress.value + "deg" }],
+  }));
+
+  // View Mode
+  const [viewMode, setViewMode] = React.useState<DiceViewMode>("focus");
+  const isFocus = viewMode === "focus";
+  const showDetails = (pixel: Pixel) => {
+    setSelectedPixel(pixel);
+    if (!isFocus) {
+      navigation.navigate("dieDetails", { pixelId: pixel.pixelId });
+    }
+  };
+
+  // Banners
   const showPromo = useAppSelector(
     (state) => state.appSettings.showPromoBanner
   );
-
-  const reconnectProgress = useSharedValue(0);
-  const [reconnect, setReconnect] = React.useState(false);
-  const [pairVisible, setPairVisible] = React.useState(false);
-  const [focusInfoBannerVisible, setFocusInfoBannerVisible] =
-    React.useState(true);
-
-  // We need to scan for dice before connecting to them
-  const [scannedPixels, scannerDispatch] = useScannedPixelNotifiers();
-  useFocusEffect(
-    React.useCallback(() => {
-      setReconnect(true);
-    }, [])
-  );
-  React.useEffect(() => {
-    if (reconnect || pairVisible) {
-      scannerDispatch("start");
-      let id: ReturnType<typeof setTimeout>;
-      if (!pairVisible) {
-        id = setTimeout(() => {
-          scannerDispatch("stop");
-          setReconnect(false);
-          cancelAnimation(reconnectProgress);
-        }, 10000);
-      }
-      return () => {
-        scannerDispatch("stop");
-        setReconnect(false);
-        cancelAnimation(reconnectProgress);
-        if (id) {
-          clearTimeout(id);
-        }
-      };
-    }
-  }, [pairVisible, reconnect, reconnectProgress, scannerDispatch]);
-
-  // Call usePairedPixels() after useScannedPixelNotifiers()
-  // so it has access to the latest scanned Pixels
-  const { pixels, addDie, removeDie } = usePairedPixels();
-  const [selectedPixel, setSelectedPixel] = React.useState<Pixel>();
-  React.useEffect(() => {
-    for (const pixel of pixels) {
-      pixel
-        .connect()
-        .catch((e: Error) => console.log(`Connection error: ${e}`));
-    }
-  }, [pixels]);
-
-  // Missing dice
-  const diceData = useAppSelector((state) => state.pairedDice.diceData);
-  const missingDice = React.useMemo(
-    () =>
-      diceData
-        .filter((d) => pixels.every((p) => p.pixelId !== d.pixelId))
-        .map((d) => d.name),
-    [diceData, pixels]
+  const showFocusModeHelp = useAppSelector(
+    (state) => state.appSettings.showFocusModeHelp
   );
 
-  // Filter out Pixels that are already paired
-  const availablePixels = React.useMemo(
-    () =>
-      scannedPixels.filter((sp) =>
-        pixels.every((p) => p.pixelId !== sp.pixelId)
-      ),
-    [pixels, scannedPixels]
-  );
-
-  const { showActionSheetWithOptions } = useActionSheet();
   const { colors } = useTheme();
-  const unpairDieWithConfirmation = React.useCallback(() => {
+
+  // Pair and unpair
+  const { showActionSheetWithOptions } = useActionSheet();
+  const unpairDieWithConfirmation = () =>
     showActionSheetWithOptions(
       {
         options: [`Unpair ${selectedPixel?.name}`, "Keep Die"],
@@ -361,50 +384,11 @@ function DiceListPage({
       },
       (selectedIndex?: number) => {
         if (selectedPixel && selectedIndex === 0) {
-          removeDie(selectedPixel);
+          unpairDie(selectedPixel);
         }
       }
     );
-  }, [colors, selectedPixel, showActionSheetWithOptions, removeDie]);
 
-  const showFirmwareUpdate = React.useCallback(
-    () => navigation.navigate("firmwareUpdate"),
-    [navigation]
-  );
-
-  // Update Pixel selection
-  React.useEffect(() => {
-    if (!pixels.length) {
-      // Unselect Pixel
-      setSelectedPixel(undefined);
-    } else if (!selectedPixel || !pixels.includes(selectedPixel)) {
-      // Select first Pixel
-      setSelectedPixel(pixels[0]);
-    }
-  }, [pixels, selectedPixel]);
-
-  const [viewMode, setViewMode] = React.useState<DiceViewMode>("focus");
-  const showDetails = (pixel: Pixel) => {
-    setSelectedPixel(pixel);
-    if (!isFocus) {
-      navigation.navigate("dieDetails", { pixelId: pixel.pixelId });
-    }
-  };
-
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: reconnectProgress.value + "deg" }],
-  }));
-  React.useEffect(() => {
-    if (reconnect) {
-      reconnectProgress.value = 0;
-      reconnectProgress.value = withRepeat(
-        withTiming(360, { duration: 2000 }),
-        -1
-      );
-    }
-  }, [reconnect, reconnectProgress]);
-
-  const isFocus = viewMode === "focus";
   return (
     <>
       <View style={{ height: "100%" }}>
@@ -412,7 +396,7 @@ function DiceListPage({
           <PixelFocusViewHeader
             pixel={selectedPixel}
             onUnpair={unpairDieWithConfirmation}
-            onFirmwareUpdate={showFirmwareUpdate}
+            onFirmwareUpdate={() => navigation.navigate("firmwareUpdate")}
           />
         )}
         <ScrollView
@@ -452,7 +436,7 @@ function DiceListPage({
               <DiceList
                 pixels={pixels}
                 onSelectDie={showDetails}
-                onPressNewDie={() => setPairVisible(true)}
+                onPressNewDie={() => setShowScanList(true)}
                 style={{ marginTop: 40 }}
               />
             </>
@@ -460,29 +444,22 @@ function DiceListPage({
             <View style={{ gap: 10 }}>
               {isFocus && missingDice.length > 0 && (
                 <>
-                  <Text>
-                    {missingDice.length > 1
-                      ? missingDice
-                          .slice(0, missingDice.length - 1)
-                          .join(", ") +
-                        " and " +
-                        missingDice.at(-1)
-                      : missingDice[0]}{" "}
-                    {missingDice.length > 1 ? "are" : "is"} missing!{" "}
-                  </Text>
+                  <Text>{getMissingDiceText(missingDice)}</Text>
                   <TightTextButton
                     icon={({ size, color }) => (
                       <AnimatedMaterialCommunityIcons
                         name="refresh"
                         size={size}
                         color={color}
-                        style={animStyle}
+                        style={connectAnimStyle}
                       />
                     )}
                     style={{ alignSelf: "flex-start", marginTop: -5 }}
-                    onPress={() => setReconnect(true)}
+                    onPress={tryReconnectDice}
                   >
-                    {reconnect ? "Reconnecting..." : "Tap to try to connect."}
+                    {scannerStatus === "scanning"
+                      ? "Trying to connect..."
+                      : "Tap to try to connect."}
                   </TightTextButton>
                 </>
               )}
@@ -495,14 +472,14 @@ function DiceListPage({
                 miniCards={isFocus}
                 pixels={pixels}
                 onSelectDie={showDetails}
-                onPressNewDie={() => setPairVisible(true)}
+                onPressNewDie={() => setShowScanList(true)}
                 style={isFocus ? undefined : { marginTop: 40 }}
               />
               {isFocus && (
                 <Banner
-                  visible={focusInfoBannerVisible && pixels.length > 0}
+                  visible={showFocusModeHelp && pixels.length > 0}
                   style={{ marginTop: 10 }}
-                  onDismiss={() => setFocusInfoBannerVisible(false)}
+                  onDismiss={() => appDispatch(setShowFocusModeHelp(false))}
                 >
                   Focus mode shows information about the selected die. Tap on
                   the 3D die to make your Pixels wave. Only connected dice are
@@ -519,10 +496,10 @@ function DiceListPage({
       />
       <PairDieBottomSheet
         availablePixels={availablePixels}
-        visible={pairVisible}
+        visible={showScanList}
         onDismiss={(scannedPixels) => {
-          scannedPixels?.forEach(addDie);
-          setPairVisible(false);
+          scannedPixels?.forEach(pairDie);
+          setShowScanList(false);
         }}
       />
     </>

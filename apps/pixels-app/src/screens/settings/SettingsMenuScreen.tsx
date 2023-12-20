@@ -5,7 +5,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
 import { resetAppSettingsToDefault } from "~/features/store/appSettingsSlice";
-import { removeAllPairedDie } from "~/features/store/pairedDiceSlice";
+import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { resetProfilesToDefault } from "~/features/store/profilesLibrarySlice";
 import { useConfirmActionSheet } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
@@ -46,7 +46,7 @@ function SettingsMenuPage({
     "Restore Default Settings",
     () => {
       appDispatch(resetAppSettingsToDefault());
-      appDispatch(removeAllPairedDie());
+      appDispatch(resetPairedDice());
       appDispatch(resetProfilesToDefault());
       navigation.navigate("onboarding");
     }

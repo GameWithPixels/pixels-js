@@ -65,21 +65,22 @@ export function DieIcon({
     />
   );
 }
+
 export function RssiIcon({
   value,
   size,
   disabled,
   color,
-}: IconProps & { value: number }) {
+}: IconProps & { value?: number }) {
   const { colors } = useTheme();
   const Icon =
-    value >= -50
-      ? BarsFullIcon
-      : value >= -60
-        ? BarsMidIcon
-        : value >= -70
-          ? BarsLowIcon
-          : BarsWeakIcon;
+    !value || value < -70
+      ? BarsWeakIcon
+      : value < -60
+        ? BarsLowIcon
+        : value < -50
+          ? BarsMidIcon
+          : BarsFullIcon;
   return <Icon size={size} color={color ?? getIconColor(colors, disabled)} />;
 }
 
@@ -88,20 +89,19 @@ export function BatteryIcon({
   size,
   disabled,
   color,
-}: IconProps & { value: number }) {
+}: IconProps & { value?: number }) {
   const { colors } = useTheme();
-  const Icon =
-    value >= 90
-      ? BatteryFullIcon
-      : value >= 70
-        ? BatteryThreeQuartersIcon
-        : value >= 40
+  const Icon = !value
+    ? BatteryEmptyIcon
+    : value < 20
+      ? BatteryLowIcon
+      : value < 40
+        ? BatteryQuarterIcon
+        : value < 70
           ? BatteryHalfIcon
-          : value >= 20
-            ? BatteryQuarterIcon
-            : value >= 1
-              ? BatteryLowIcon
-              : BatteryEmptyIcon;
+          : value < 95
+            ? BatteryThreeQuartersIcon
+            : BatteryFullIcon;
   return <Icon size={size} color={color ?? getIconColor(colors, disabled)} />;
 }
 
@@ -121,11 +121,11 @@ export function getFavoriteIcon(favorite = true) {
 }
 
 export function DieWireframe({
-  size,
   dieType,
+  size,
 }: {
-  size: number;
   dieType: PixelDieType;
+  size?: number;
 }) {
   const getImage = () => {
     switch (dieType) {
