@@ -13,6 +13,7 @@ export interface AppSettingsState {
   themeMode: ThemeMode;
   showOnboarding: boolean;
   showPromoBanner: boolean;
+  showFocusModeHelp: boolean;
   showProfileHelp: boolean;
   showProfileAdvancedHelp: boolean;
   diceGrouping: DiceGrouping;
@@ -27,6 +28,7 @@ const initialState: AppSettingsState = {
   themeMode: "dark",
   showOnboarding: true,
   showPromoBanner: true,
+  showFocusModeHelp: true,
   showProfileHelp: true,
   showProfileAdvancedHelp: true,
   diceGrouping: "dieType",
@@ -53,6 +55,9 @@ const appSettingsSlice = createSlice({
     },
     setShowPromoBanner(state, action: PayloadAction<boolean>) {
       state.showPromoBanner = action.payload;
+    },
+    setShowFocusModeHelp(state, action: PayloadAction<boolean>) {
+      state.showFocusModeHelp = action.payload;
     },
     setShowProfileHelp(state, action: PayloadAction<boolean>) {
       state.showProfileHelp = action.payload;
@@ -86,6 +91,7 @@ export const {
   setThemeMode,
   setShowOnboarding,
   setShowPromoBanner,
+  setShowFocusModeHelp,
   setShowProfileHelp,
   setShowProfileAdvancedHelp,
   setDiceGrouping,

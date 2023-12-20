@@ -53,7 +53,7 @@ function FirmwareUpdatePage({
   pixels,
   navigation,
 }: {
-  pixels: Pixel[];
+  pixels: readonly Pixel[];
   navigation: FirmwareUpdateScreenProps["navigation"];
 }) {
   const [step, setStep] = React.useState<

@@ -4,13 +4,16 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
+import { assert } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
+  PixelStatus,
   Profiles,
   usePixelStatus,
+  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Platform,
   Pressable,
@@ -40,6 +43,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import CalibrateIcon from "#/icons/home/calibrate";
+import { useAppSelector } from "~/app/hooks";
 import { Card } from "~/components/Card";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { ProfilePicker } from "~/components/ProfilePicker";
@@ -53,6 +57,7 @@ import {
   makeTransparent,
 } from "~/components/utils";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
+import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { useActiveProfile } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -268,8 +273,58 @@ function AnimatedDieIcon({
         backgroundColor,
       }}
     >
-      <AnimatedText style={[animStyle, { color }]}>{value}</AnimatedText>
+      <AnimatedText style={[animStyle, { color }]}>
+        {value >= 0 ? String(value) : " "}
+      </AnimatedText>
     </Animated.View>
+  );
+}
+
+function PixelRssi({
+  pixel,
+  size,
+  disabled,
+}: {
+  pixel: Pixel;
+  size: number;
+  disabled: boolean;
+}) {
+  const [rssi] = usePixelValue(pixel, "rssi");
+  return <RssiIcon value={rssi} size={size} disabled={disabled} />;
+}
+
+function PixelBattery({
+  pixel,
+  size,
+  disabled,
+}: {
+  pixel: Pixel;
+  size: number;
+  disabled: boolean;
+}) {
+  const [battery] = usePixelValue(pixel, "battery");
+  return <BatteryIcon value={battery?.level} size={size} disabled={disabled} />;
+}
+
+function getStatusColor(status?: PixelStatus): string {
+  return status === "ready"
+    ? "green"
+    : status === "connecting" || status === "identifying"
+      ? "yellow"
+      : "red";
+}
+
+function useLastRolls(pairedDie: PairedDie): { key: number; roll: number }[] {
+  return useMemo(
+    () =>
+      [-1, -1, -1, -1] // We want at least 4 rolls
+        .concat(pairedDie.rolls)
+        .slice(pairedDie.rolls.length)
+        .map((roll, i) => ({
+          key: pairedDie.rolls.length + i,
+          roll,
+        })),
+    [pairedDie.rolls]
   );
 }
 
@@ -285,26 +340,12 @@ export function PixelFocusView({
   onShowDetails: () => void;
 } & Omit<ViewProps, "children">) {
   const status = usePixelStatus(pixel);
+  const pairedDie = useAppSelector((state) =>
+    state.pairedDice.data.find((d) => d.pixelId === pixel.pixelId)
+  );
+  assert(pairedDie, `Pixel ${pixel.pixelId} is not paired!`);
+  const lastRolls = useLastRolls(pairedDie);
   const disabled = status !== "ready";
-  const [lastRolls, setLastRolls] = React.useState<
-    { key: string; value: number }[]
-  >([]);
-  // Listen for rolls
-  React.useEffect(() => {
-    const onRoll = (value: number) => {
-      setLastRolls((rolls) => {
-        const newRolls = [...rolls, { key: Math.random().toString(), value }];
-        if (newRolls.length > 4) {
-          newRolls.shift();
-        }
-        return newRolls;
-      });
-    };
-    pixel.addEventListener("roll", onRoll);
-    return () => {
-      pixel.removeEventListener("roll", onRoll);
-    };
-  }, [pixel]);
   const { activeProfile, setActiveProfile } = useActiveProfile(pixel);
   const [transferring, setTransferring] = React.useState(false);
   const [pickProfile, setPickProfile] = React.useState(false);
@@ -350,10 +391,10 @@ export function PixelFocusView({
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
-              {lastRolls.map((roll, i) => (
+              {lastRolls.map(({ key, roll }, i) => (
                 <AnimatedDieIcon
-                  key={roll.key}
-                  value={roll.value}
+                  key={key}
+                  value={roll}
                   size={16 + 4 * i}
                   color={getIconColor(colors, disabled)}
                   backgroundColor={makeTransparent(colors.primary, 0.2)}
@@ -387,16 +428,12 @@ export function PixelFocusView({
                     width: 14,
                     aspectRatio: 1,
                     borderRadius: 7,
-                    backgroundColor: "green",
+                    backgroundColor: getStatusColor(status),
                   }}
                 />
                 <View style={{ flexGrow: 1 }} />
-                <RssiIcon value={pixel.rssi} size={16} disabled={disabled} />
-                <BatteryIcon
-                  value={pixel.batteryLevel}
-                  size={16}
-                  disabled={disabled}
-                />
+                <PixelRssi pixel={pixel} size={16} disabled={disabled} />
+                <PixelBattery pixel={pixel} size={16} disabled={disabled} />
               </View>
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 10 }}

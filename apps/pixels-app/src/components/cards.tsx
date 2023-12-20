@@ -1,16 +1,14 @@
 import { usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
-  PixelDieType,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { View, ViewProps } from "react-native";
+import { View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import Animated, { AnimatedProps } from "react-native-reanimated";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
-import { BatteryIcon, DieWireframe, RssiIcon } from "./icons";
+import { BatteryIcon, RssiIcon } from "./icons";
 import { getTextColorStyle, makeTransparent } from "./utils";
 
 import { DieRenderer } from "~/features/render3d/DieRenderer";
@@ -159,49 +157,5 @@ export function PixelHCard({
         <RssiIcon value={pixel.rssi} size={22} disabled={disabled} />
       </View>
     </TouchableCard>
-  );
-}
-
-export function DieWireframeCard({
-  children,
-  dieType,
-  style,
-  ...props
-}: ViewProps & { dieType: PixelDieType }) {
-  return (
-    <View
-      style={[{ flexDirection: "row", alignItems: "center", gap: 20 }, style]}
-      {...props}
-    >
-      <DieWireframe size={40} dieType={dieType} />
-      {typeof children === "string" ? (
-        <Text variant="bodyLarge" children={children} />
-      ) : (
-        <View children={children} />
-      )}
-    </View>
-  );
-}
-
-// For some reason DieWireframeCard doesn't work with "withAnimated()"
-export function AnimatedDieWireframeCard({
-  children,
-  dieType,
-  style,
-  ...props
-}: AnimatedProps<Omit<ViewProps, "children">> &
-  React.PropsWithChildren<{ dieType: PixelDieType }>) {
-  return (
-    <Animated.View
-      style={[{ flexDirection: "row", alignItems: "center", gap: 20 }, style]}
-      {...props}
-    >
-      <DieWireframe size={40} dieType={dieType} />
-      {typeof children === "string" ? (
-        <Text variant="bodyLarge" children={children} />
-      ) : (
-        <View style={{ flex: 1 }} children={children} />
-      )}
-    </Animated.View>
   );
 }

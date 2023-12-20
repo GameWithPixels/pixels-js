@@ -7,7 +7,10 @@ import { useTheme } from "react-native-paper";
 import { TouchableCard } from "./TouchableCard";
 import { PixelHCard, PixelVCard } from "./cards";
 
-function isSelected(pixel: Pixel, selection?: Pixel | Pixel[]): boolean {
+function isSelected(
+  pixel: Pixel,
+  selection?: Pixel | readonly Pixel[]
+): boolean {
   return Array.isArray(selection)
     ? selection.includes(pixel)
     : selection === pixel;
@@ -15,8 +18,8 @@ function isSelected(pixel: Pixel, selection?: Pixel | Pixel[]): boolean {
 
 function isPreviousItemSelected(
   pixel: Pixel,
-  pixels: Pixel[],
-  selection?: Pixel | Pixel[]
+  pixels: readonly Pixel[],
+  selection?: Pixel | readonly Pixel[]
 ): boolean {
   if (!Array.isArray(selection)) {
     return false;
@@ -27,8 +30,8 @@ function isPreviousItemSelected(
 
 function isNextItemSelected(
   pixel: Pixel,
-  pixels: Pixel[],
-  selection?: Pixel | Pixel[]
+  pixels: readonly Pixel[],
+  selection?: Pixel | readonly Pixel[]
 ): boolean {
   if (!Array.isArray(selection)) {
     return false;
@@ -38,8 +41,8 @@ function isNextItemSelected(
 }
 
 export interface DiceListProps {
-  pixels: Pixel[];
-  selection?: Pixel | Pixel[];
+  pixels: readonly Pixel[];
+  selection?: Pixel | readonly Pixel[];
   onSelectDie?: (pixel: Pixel) => void;
   onPressNewDie?: () => void;
 }

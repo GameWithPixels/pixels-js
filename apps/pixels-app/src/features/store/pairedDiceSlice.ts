@@ -1,19 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export interface DieData {
+export interface PairedDie {
+  paired: boolean;
   pixelId: number;
   name: string;
   profileUuid?: string;
+  rolls: number[];
 }
 
 export interface PairedDiceState {
-  pixelsIds: number[];
-  diceData: DieData[];
+  data: PairedDie[];
 }
 
 const initialState: PairedDiceState = {
-  pixelsIds: [],
-  diceData: [],
+  data: [],
 };
 
 // Redux slice that stores information about paired dice
@@ -25,30 +25,30 @@ const PairedDiceSlice = createSlice({
       state,
       action: PayloadAction<{ pixelId: number; name: string }>
     ) {
-      if (!state.pixelsIds.includes(action.payload.pixelId)) {
-        state.pixelsIds.push(action.payload.pixelId);
-      }
-      const index = state.diceData.findIndex(
+      const index = state.data.findIndex(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
       if (index !== -1) {
-        state.diceData[index].name = action.payload.name;
+        state.data[index].name = action.payload.name;
       } else {
-        state.diceData.push({
+        state.data.push({
+          paired: true,
           pixelId: action.payload.pixelId,
           name: action.payload.name,
+          rolls: [],
         });
       }
     },
     removePairedDie(state, action: PayloadAction<number>) {
-      const index = state.pixelsIds.indexOf(action.payload);
-      if (index !== -1) {
-        state.pixelsIds.splice(index, 1);
+      const pairedDie = state.data.find(
+        ({ pixelId }) => pixelId === action.payload
+      );
+      if (pairedDie) {
+        pairedDie.paired = false;
       }
     },
-    removeAllPairedDie(state) {
-      state.pixelsIds.length = 0;
-      state.diceData.length = 0;
+    resetPairedDice(state) {
+      state.data = [];
     },
     setPairedDieProfile(
       state,
@@ -57,11 +57,22 @@ const PairedDiceSlice = createSlice({
         profileUuid: string;
       }>
     ) {
-      const index = state.diceData.findIndex(
+      const pairedDie = state.data.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
-      if (index !== -1) {
-        state.diceData[index].profileUuid = action.payload.profileUuid;
+      if (pairedDie) {
+        pairedDie.profileUuid = action.payload.profileUuid;
+      }
+    },
+    addPairedDieRoll(
+      state,
+      action: PayloadAction<{ pixelId: number; roll: number }>
+    ) {
+      const pairedDie = state.data.find(
+        ({ pixelId }) => pixelId === action.payload.pixelId
+      );
+      if (pairedDie) {
+        pairedDie.rolls.push(action.payload.roll);
       }
     },
   },
@@ -70,7 +81,8 @@ const PairedDiceSlice = createSlice({
 export const {
   addPairedDie,
   removePairedDie,
-  removeAllPairedDie,
+  resetPairedDice,
   setPairedDieProfile,
+  addPairedDieRoll,
 } = PairedDiceSlice.actions;
 export default PairedDiceSlice.reducer;
