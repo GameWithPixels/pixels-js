@@ -181,6 +181,20 @@ export function getColorwayLabel(colorway: PixelColorway): string {
   }
 }
 
+export function getDieTypeAndColorwayLabel({
+  dieType,
+  colorway,
+}: {
+  dieType: PixelDieType;
+  colorway: PixelColorway;
+}): string {
+  const dieTypeLabel = getDieTypeLabel(dieType);
+  const colorwayLabel = getColorwayLabel(colorway);
+  return colorwayLabel.length
+    ? `${dieTypeLabel}, ${colorwayLabel}`
+    : dieTypeLabel;
+}
+
 export function getFacesAsText(faces: number[]): string {
   if (faces.length <= 1) {
     return faces[0].toString() ?? "?";

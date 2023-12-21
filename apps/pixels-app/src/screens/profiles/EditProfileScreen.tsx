@@ -33,7 +33,7 @@ interface HeaderTextInputHandle {
 }
 
 const Header = observer(
-  React.forwardRef(function (
+  React.forwardRef(function Header(
     {
       profile,
       onCommitChanges,

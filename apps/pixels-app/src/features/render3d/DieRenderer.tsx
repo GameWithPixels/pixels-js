@@ -87,7 +87,15 @@ class SceneRenderer {
   private readonly _die3d: Die3D;
   private readonly _envMap?: THREE.Texture;
   private readonly _lights: THREE.Light[];
+  private _speed = 1;
   private _dispose?: () => void;
+
+  get speed(): number {
+    return this._speed;
+  }
+  set speed(value: number) {
+    this._speed = value;
+  }
 
   constructor(die3d: Die3D, lights: THREE.Light[], envMap?: THREE.Texture) {
     this._die3d = die3d;
@@ -240,10 +248,11 @@ class SceneRenderer {
         const deltaTime = time - lastTime;
 
         // Rotate dice
+        const r = this._speed * deltaTime;
         if (rotateX) {
-          this._root.rotation.x -= deltaTime / 10000;
+          this._root.rotation.x -= r / 10000;
         }
-        this._root.rotation.y -= deltaTime / 5000;
+        this._root.rotation.y -= r / 5000;
         lastTime = time;
 
         // Light random LED
@@ -375,10 +384,12 @@ class SceneRenderer {
 export function DieRenderer({
   dieType,
   colorway,
+  speed,
   withStage,
 }: {
   dieType: PixelDieType;
   colorway: PixelColorway;
+  speed?: number;
   withStage?: boolean;
 }) {
   const { showBoundary } = useErrorBoundary();
@@ -405,10 +416,14 @@ export function DieRenderer({
 
   const onContextCreate = React.useCallback(
     (gl: ExpoWebGLRenderingContext) => {
-      rendererRef.current?.setup(gl, { withStage });
-      rendererRef.current?.start();
+      const renderer = rendererRef.current;
+      if (renderer) {
+        renderer.setup(gl, { withStage });
+        renderer.start();
+        renderer.speed = speed ?? 1;
+      }
     },
-    [withStage]
+    [speed, withStage]
   );
 
   useFocusEffect(
@@ -419,6 +434,10 @@ export function DieRenderer({
       };
     }, [])
   );
+
+  if (rendererRef.current) {
+    rendererRef.current.speed = speed ?? 1;
+  }
 
   return (
     <>
