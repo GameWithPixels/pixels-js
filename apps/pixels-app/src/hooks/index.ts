@@ -7,3 +7,4 @@ export * from "./usePairedPixels";
 export * from "./usePatternsList";
 export * from "./useProfile";
 export * from "./useProfilesList";
+export * from "./toolbox/useForceUpdate";

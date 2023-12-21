@@ -38,7 +38,7 @@ const EditProfileDescription = observer(function EditProfileDescription({
 });
 
 function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
-  const diceNames = useAppSelector((state) => state.pairedDice.data)
+  const diceNames = useAppSelector((state) => state.pairedDice.dice)
     .filter((d) => d.profileUuid === profileUuid)
     .map((d) => d.name);
   return diceNames.length ? (
