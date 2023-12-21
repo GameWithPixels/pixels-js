@@ -72,8 +72,8 @@ export type HomeStackParamList = {
   diceList: undefined;
   firmwareUpdate: undefined;
   dieDetails: { pixelId: number };
-  editDieProfile: { pixelId: number };
-} & EditProfileSubStackParamList;
+  editDieProfileStack: NavigatorScreenParams<EditDieProfileStackParamList>;
+};
 
 export type DiceListScreenProps = NativeStackScreenProps<
   HomeStackParamList,
@@ -90,8 +90,20 @@ export type DieDetailsScreenProps = NativeStackScreenProps<
   "dieDetails"
 >;
 
-export type EditDieProfileScreenProps = NativeStackScreenProps<
+export type EditDieProfileStackProps = NativeStackScreenProps<
   HomeStackParamList,
+  "editDieProfileStack"
+>;
+
+// Edit Die Profile screens
+export type EditDieProfileStackParamList = {
+  editDieProfile: {
+    pixelId: number;
+  };
+} & EditProfileSubStackParamList;
+
+export type EditDieProfileScreenProps = NativeStackScreenProps<
+  EditDieProfileStackParamList,
   "editDieProfile"
 >;
 
