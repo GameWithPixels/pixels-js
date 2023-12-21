@@ -343,7 +343,7 @@ export function PixelFocusView({
 } & Omit<ViewProps, "children">) {
   const status = usePixelStatus(pixel);
   const pairedDie = useAppSelector((state) =>
-    state.pairedDice.data.find((d) => d.pixelId === pixel.pixelId)
+    state.pairedDice.dice.find((d) => d.pixelId === pixel.pixelId)
   );
   assert(pairedDie, `Pixel ${pixel.pixelId} is not paired!`);
   const lastRolls = useLastRolls(pairedDie);

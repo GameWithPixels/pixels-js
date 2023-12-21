@@ -1,19 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface PairedDie {
-  paired: boolean;
   pixelId: number;
   name: string;
+  isPaired: boolean;
   profileUuid?: string;
   rolls: number[];
 }
 
 export interface PairedDiceState {
-  data: PairedDie[];
+  dice: PairedDie[];
 }
 
 const initialState: PairedDiceState = {
-  data: [],
+  dice: [],
 };
 
 // Redux slice that stores information about paired dice
@@ -25,30 +25,31 @@ const PairedDiceSlice = createSlice({
       state,
       action: PayloadAction<{ pixelId: number; name: string }>
     ) {
-      const index = state.data.findIndex(
+      const index = state.dice.findIndex(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
       if (index !== -1) {
-        state.data[index].name = action.payload.name;
+        state.dice[index].name = action.payload.name;
+        state.dice[index].isPaired = true;
       } else {
-        state.data.push({
-          paired: true,
+        state.dice.push({
           pixelId: action.payload.pixelId,
           name: action.payload.name,
+          isPaired: true,
           rolls: [],
         });
       }
     },
     removePairedDie(state, action: PayloadAction<number>) {
-      const pairedDie = state.data.find(
+      const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload
       );
       if (pairedDie) {
-        pairedDie.paired = false;
+        pairedDie.isPaired = false;
       }
     },
     resetPairedDice(state) {
-      state.data = [];
+      state.dice = [];
     },
     setPairedDieProfile(
       state,
@@ -57,7 +58,7 @@ const PairedDiceSlice = createSlice({
         profileUuid: string;
       }>
     ) {
-      const pairedDie = state.data.find(
+      const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
       if (pairedDie) {
@@ -68,7 +69,7 @@ const PairedDiceSlice = createSlice({
       state,
       action: PayloadAction<{ pixelId: number; roll: number }>
     ) {
-      const pairedDie = state.data.find(
+      const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
       if (pairedDie) {

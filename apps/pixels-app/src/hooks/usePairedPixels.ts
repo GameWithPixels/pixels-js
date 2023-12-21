@@ -15,29 +15,16 @@ import {
   PairedDie,
   removePairedDie,
 } from "~/features/store/pairedDiceSlice";
+import { notEmpty, areArraysEqual } from "~/features/utils";
 
-function notEmpty<T>(value: T | null | undefined): value is T {
-  return value !== null && value !== undefined;
-}
-
-function areArrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function getPixelsStable(
+function stableFilterPixels(
   pairedDice: readonly PairedDie[],
   lastPixels: readonly Pixel[]
 ): readonly Pixel[] {
-  const newPixels = pairedDice.map((d) => getPixel(d.pixelId)).filter(notEmpty);
-  return areArrayEqual(newPixels, lastPixels) ? lastPixels : newPixels;
+  const newPixels = pairedDice
+    .map((d) => (d.isPaired ? getPixel(d.pixelId) : undefined))
+    .filter(notEmpty);
+  return areArraysEqual(newPixels, lastPixels) ? lastPixels : newPixels;
 }
 
 // TODO this hooks works if only used once in the app
@@ -51,16 +38,23 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   const appDispatch = useAppDispatch();
 
   // Paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.data);
+  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
   const lastPixelsRef = React.useRef<readonly Pixel[]>([]);
-  lastPixelsRef.current = getPixelsStable(pairedDice, lastPixelsRef.current);
+  lastPixelsRef.current = stableFilterPixels(pairedDice, lastPixelsRef.current);
   const pixels = lastPixelsRef.current;
+  const hookedPixelsRef = React.useRef(new Map<number, () => void>());
   React.useEffect(() => {
     for (const pixel of pixels) {
+      if (!hookedPixelsRef.current.get(pixel.pixelId)) {
+        const onRoll = (roll: number) =>
+          appDispatch(addPairedDieRoll({ pixelId: pixel.pixelId, roll }));
+        pixel.addEventListener("roll", onRoll);
+        hookedPixelsRef.current.set(pixel.pixelId, () => {
+          pixel.removeEventListener("roll", onRoll);
+        });
+      }
+      // TODO should always try to connect?
       if (pixel.status === "disconnected") {
-        pixel.addEventListener("roll", (roll) =>
-          appDispatch(addPairedDieRoll({ pixelId: pixel.pixelId, roll }))
-        );
         pixel
           .connect()
           .catch((e: Error) => console.log(`Connection error: ${e}`));
@@ -69,9 +63,12 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   }, [appDispatch, pixels]);
 
   // Missing dice
-  const diceData = useAppSelector((state) => state.pairedDice.data);
+  const diceData = useAppSelector((state) => state.pairedDice.dice);
   const missingDice = React.useMemo(
-    () => diceData.filter((d) => pixels.every((p) => p.pixelId !== d.pixelId)),
+    () =>
+      diceData.filter(
+        (d) => d.isPaired && pixels.every((p) => p.pixelId !== d.pixelId)
+      ),
     [diceData, pixels]
   );
 
@@ -92,13 +89,19 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
         name: pixel.name,
       })
     );
-  const unpairDie = (pixel: PixelInfo) =>
+  const unpairDie = (pixel: PixelInfo) => {
+    hookedPixelsRef.current.get(pixel.pixelId)?.();
+    hookedPixelsRef.current.delete(pixel.pixelId);
     appDispatch(removePairedDie(pixel.pixelId));
+    getPixel(pixel.pixelId)
+      ?.disconnect()
+      .catch((e: Error) => console.log(`Connection error: ${e}`));
+  };
   return { pixels, availablePixels, missingDice, pairDie, unpairDie };
 }
 
 export function usePairedPixel(pixelId: number): Pixel {
-  const pairedDice = useAppSelector((state) => state.pairedDice.data);
+  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
   assert(
     pairedDice.find((d) => d.pixelId === pixelId),
     `Pixel ${pixelId.toString(16).padStart(8)} not paired`

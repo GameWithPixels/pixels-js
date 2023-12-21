@@ -11,7 +11,7 @@ export function useActiveProfile(pixel: Pixel): {
   setActiveProfile: (profile: Readonly<Profiles.Profile>) => void;
 } {
   const appDispatch = useAppDispatch();
-  const activeProfiles = useAppSelector((state) => state.pairedDice.data);
+  const activeProfiles = useAppSelector((state) => state.pairedDice.dice);
   const setActiveProfile = (profile: Readonly<Profiles.Profile>) =>
     appDispatch(
       setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
