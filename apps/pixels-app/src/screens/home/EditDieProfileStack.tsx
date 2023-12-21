@@ -3,27 +3,27 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { PaperProvider } from "react-native-paper";
 
-import { EditAdvancedRulesScreen } from "./EditAdvancedRulesScreen";
-import { EditProfileScreen } from "./EditProfileScreen";
-import { EditRollRuleScreen } from "./EditRolledRulesScreen";
-import { EditRuleScreen } from "./EditRuleScreen";
+import { EditDieProfileScreen } from "./EditDieProfileScreen";
+import { EditAdvancedRulesScreen } from "../profiles/EditAdvancedRulesScreen";
+import { EditRollRuleScreen } from "../profiles/EditRolledRulesScreen";
+import { EditRuleScreen } from "../profiles/EditRuleScreen";
 
 import {
+  EditDieProfileStackParamList,
   getStackNavigationOptions,
-  EditProfileStackParamList,
 } from "~/navigation";
 import { getRootScreenTheme } from "~/themes";
 
-const Stack = createNativeStackNavigator<EditProfileStackParamList>();
+const Stack = createNativeStackNavigator<EditDieProfileStackParamList>();
 
-export function EditProfilesStack(/* props: EditProfileStackProps */) {
+export function EditDieProfileStack(/* props: EditDieProfileStackProps */) {
   return (
-    <PaperProvider theme={getRootScreenTheme("profiles")}>
+    <PaperProvider theme={getRootScreenTheme("home")}>
       <BottomSheetModalProvider>
         <Stack.Navigator screenOptions={getStackNavigationOptions()}>
           <Stack.Screen
-            name="editProfile"
-            component={EditProfileScreen}
+            name="editDieProfile"
+            component={EditDieProfileScreen}
             options={getStackNavigationOptions("slide-from-bottom")}
           />
           <Stack.Screen

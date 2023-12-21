@@ -4,11 +4,8 @@ import { ThemeProvider } from "react-native-paper";
 
 import { DiceListScreen } from "./DiceListScreen";
 import { DieDetailsScreen } from "./DieDetailsScreen";
-import { EditDieProfileScreen } from "./EditDieProfileScreen";
+import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
-import { EditAdvancedRulesScreen } from "../profiles/EditAdvancedRulesScreen";
-import { EditRollRuleScreen } from "../profiles/EditRolledRulesScreen";
-import { EditRuleScreen } from "../profiles/EditRuleScreen";
 
 import {
   getStackNavigationOptions,
@@ -35,16 +32,10 @@ export function HomeStack({ route }: HomeStackProps) {
           options={getStackNavigationOptions("bottom-sheet")}
         />
         <Stack.Screen
-          name="editDieProfile"
-          component={EditDieProfileScreen}
-          options={getStackNavigationOptions("slide-from-bottom")}
+          name="editDieProfileStack"
+          component={EditDieProfileStack}
+          options={getStackNavigationOptions("bottom-sheet")}
         />
-        <Stack.Screen
-          name="editAdvancedRules"
-          component={EditAdvancedRulesScreen}
-        />
-        <Stack.Screen name="editRule" component={EditRuleScreen} />
-        <Stack.Screen name="editRollRules" component={EditRollRuleScreen} />
       </Stack.Navigator>
     </ThemeProvider>
   );

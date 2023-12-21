@@ -417,8 +417,11 @@ function DiceListPage({
             <PixelFocusView
               pixel={selectedPixel}
               onEditProfile={() =>
-                navigation.navigate("editDieProfile", {
-                  pixelId: selectedPixel.pixelId,
+                navigation.navigate("editDieProfileStack", {
+                  screen: "editDieProfile",
+                  params: {
+                    pixelId: selectedPixel.pixelId,
+                  },
                 })
               }
               onShowDetails={() =>
