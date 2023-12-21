@@ -1,10 +1,5 @@
-import {
-  Feather,
-  FontAwesome5,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Color,
   Pixel,
@@ -14,7 +9,6 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import {
-  Platform,
   Pressable,
   useWindowDimensions,
   TextInput as RNTextInput,
@@ -23,19 +17,16 @@ import {
 } from "react-native";
 import {
   Badge,
-  Divider,
-  Menu,
-  MenuProps,
   Text,
   TextInput,
   ThemeProvider,
   useTheme,
 } from "react-native-paper";
 
+import { DieMenu } from "./DieMenu";
 import { PixelRollCard } from "./PixelRollCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
-import CalibrateIcon from "#/icons/home/calibrate";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { ProfilePicker } from "~/components/ProfilePicker";
 import { Chip, GradientChip } from "~/components/buttons";
@@ -43,115 +34,53 @@ import { ProfileCard } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { useActiveProfile } from "~/hooks";
-import { AppStyles } from "~/styles";
+import { useActiveProfile, useConfirmActionSheet } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
-function DieMenu({
-  onFirmwareUpdate,
-  onRename,
-  onUnpair,
-  ...props
-}: {
-  onFirmwareUpdate: () => void;
-  onRename: () => void;
-  onUnpair: () => void;
-} & Omit<MenuProps, "children" | "theme" | "containerStyle">) {
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness);
+const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
+  {
+    pixel,
+    onEndEditing,
+  }: { pixel: Pixel; onEndEditing: (name: string) => void },
+  ref: React.ForwardedRef<RNTextInput>
+) {
+  const [name, setName] = React.useState(pixel.name);
   return (
-    <Menu
-      contentStyle={{
-        marginTop: Platform.select({ ios: 10, default: 0 }),
-        width: 230,
+    <TextInput
+      ref={ref}
+      mode="flat"
+      dense
+      style={{
+        marginHorizontal: 60,
+        textAlign: "center",
       }}
-      {...props}
-    >
-      <Menu.Item
-        title="Update Firmware!"
-        style={{
-          backgroundColor: colors.errorContainer,
-          borderRadius,
-          margin: 5,
-        }}
-        titleStyle={{ color: colors.onErrorContainer }}
-        trailingIcon={({ size, color }) => (
-          <FontAwesome5 name="download" size={size} color={color} />
-        )}
-        contentStyle={AppStyles.menuItemWithIcon}
-        onPress={() => {
-          props.onDismiss?.();
-          onFirmwareUpdate();
-        }}
-      />
-      <Divider />
-      <Menu.Item
-        title="Rename"
-        trailingIcon={({ size, color }) => (
-          <MaterialCommunityIcons name="rename-box" size={size} color={color} />
-        )}
-        contentStyle={AppStyles.menuItemWithIcon}
-        onPress={() => {
-          props.onDismiss?.();
-          onRename();
-        }}
-      />
-      <Divider />
-      <Menu.Item
-        title="Forget Die"
-        trailingIcon={({ size, color }) => (
-          <MaterialCommunityIcons
-            name="link-variant-off"
-            size={size}
-            color={color}
-          />
-        )}
-        contentStyle={AppStyles.menuItemWithIcon}
-        onPress={() => {
-          props.onDismiss?.();
-          onUnpair();
-        }}
-      />
-      <Divider />
-      <Menu.Item
-        title="Calibrate"
-        trailingIcon={({ size, color }) => (
-          <CalibrateIcon size={size} color={color} />
-        )}
-        contentStyle={AppStyles.menuItemWithIcon}
-        onPress={() => {}}
-      />
-      <Divider />
-      <Menu.Item
-        title="Reset Die Settings"
-        trailingIcon={({ size, color }) => (
-          <Feather name="refresh-ccw" size={size} color={color} />
-        )}
-        contentStyle={AppStyles.menuItemWithIcon}
-        onPress={() => {}}
-      />
-    </Menu>
+      value={name}
+      onChangeText={setName}
+      onEndEditing={() => onEndEditing(name)}
+    />
   );
-}
+});
 
 export function PixelFocusViewHeader({
   pixel,
   onUnpair,
   onFirmwareUpdate,
 }: {
-  pixel?: Pixel;
+  pixel: Pixel;
   onUnpair: () => void;
   onFirmwareUpdate: () => void;
 }) {
   const status = usePixelStatus(pixel);
+  const [pixelName] = usePixelValue(pixel, "name");
   const disabled = status !== "ready";
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
+  const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
+    pixel.sendMessage("clearSettings");
+  });
+  const showConfirmTurnOff = useConfirmActionSheet("Turn Die Off", () => {
+    pixel.turnOff();
+  });
   const [renameVisible, setRenameVisible] = React.useState(false);
-  React.useEffect(() => {
-    if (!pixel) {
-      setRenameVisible(false);
-    }
-  }, [pixel]);
   const textInputRef = React.useRef<RNTextInput>(null);
   React.useEffect(() => {
     if (renameVisible && textInputRef.current) {
@@ -184,7 +113,7 @@ export function PixelFocusViewHeader({
               color,
             }}
           >
-            {disabled ? getPixelStatusLabel(status) : pixel.name}
+            {disabled ? getPixelStatusLabel(status) : pixelName}
           </Text>
           {!!pixel && (
             <>
@@ -201,6 +130,8 @@ export function PixelFocusViewHeader({
                 onFirmwareUpdate={onFirmwareUpdate}
                 onRename={() => setRenameVisible(true)}
                 onUnpair={onUnpair}
+                onReset={() => showConfirmReset()}
+                onTurnOff={() => showConfirmTurnOff()}
               />
               <Badge style={{ position: "absolute", right: -15, top: 5 }}>
                 !
@@ -209,16 +140,12 @@ export function PixelFocusViewHeader({
           )}
         </Pressable>
       ) : (
-        <TextInput
-          ref={textInputRef}
-          mode="flat"
-          dense
-          style={{
-            marginHorizontal: 60,
-            textAlign: "center",
+        <PixelNameTextInput
+          pixel={pixel}
+          onEndEditing={(name) => {
+            pixel.rename(name);
+            setRenameVisible(false);
           }}
-          value={pixel.name}
-          onEndEditing={() => setRenameVisible(false)}
         />
       )}
     </View>

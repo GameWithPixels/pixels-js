@@ -1,4 +1,4 @@
-import { usePixelStatus } from "@systemic-games/pixels-react";
+import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
 import {
   Pixel,
   ScannedPixel,
@@ -48,11 +48,12 @@ export function PixelVCard({
   miniCards?: boolean;
 } & Omit<TouchableCardProps, "children">) {
   const status = usePixelStatus(pixel);
+  const [pixelName] = usePixelValue(pixel, "name");
   const disabled = status !== "ready";
   const [containerSize, setContainerSize] = React.useState(0);
   const { colors } = useTheme();
   const textStyle =
-    pixel.name === "+"
+    pixelName === "+"
       ? { color: makeTransparent(colors.onPrimary, 0.8) }
       : getTextColorStyle(colors, disabled);
   return (
@@ -92,7 +93,7 @@ export function PixelVCard({
           />
         </View>
       )}
-      {pixel.name !== "+" && (
+      {pixelName !== "+" && (
         <View
           style={{
             width: dieIconRatio * containerSize,
@@ -105,14 +106,14 @@ export function PixelVCard({
       <Text
         style={textStyle}
         variant={
-          pixel.name === "+"
+          pixelName === "+"
             ? "displayLarge"
             : miniCards
               ? "titleSmall"
               : "titleMedium"
         }
       >
-        {status === "ready" || status === "disconnected" ? pixel.name : status}
+        {status === "ready" || status === "disconnected" ? pixelName : status}
       </Text>
     </TouchableCard>
   );
@@ -125,6 +126,7 @@ export function PixelHCard({
   pixel: Pixel;
 } & Omit<TouchableCardProps, "children">) {
   const status = usePixelStatus(pixel);
+  const [pixelName] = usePixelValue(pixel, "name");
   const { activeProfile } = useActiveProfile(pixel);
   const disabled = status !== "ready";
   const textStyle = getTextColorStyle(useTheme().colors, disabled);
@@ -141,7 +143,7 @@ export function PixelHCard({
         }}
       >
         <Text variant="bodyLarge" style={textStyle}>
-          {pixel.name}
+          {pixelName}
         </Text>
         <Text>{activeProfile?.name ?? "No Profile!"}</Text>
       </View>

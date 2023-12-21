@@ -414,7 +414,7 @@ function DiceListPage({
   return (
     <>
       <View style={{ height: "100%" }}>
-        {isFocus && (
+        {isFocus && selectedPixel && (
           <PixelFocusViewHeader
             pixel={selectedPixel}
             onUnpair={unpairDieWithConfirmation}
