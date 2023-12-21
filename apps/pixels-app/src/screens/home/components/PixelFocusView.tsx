@@ -6,13 +6,13 @@ import {
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
+  Color,
   Pixel,
-  PixelStatus,
   Profiles,
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
-import React, { useMemo } from "react";
+import React from "react";
 import {
   Platform,
   Pressable,
@@ -31,33 +31,18 @@ import {
   ThemeProvider,
   useTheme,
 } from "react-native-paper";
-import Animated, {
-  CurvedTransition,
-  Easing,
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+
+import { PixelRollCard } from "./PixelRollCard";
+import { PixelStatusCard } from "./PixelStatusCard";
 
 import CalibrateIcon from "#/icons/home/calibrate";
-import { useAppSelector } from "~/app/hooks";
-import { Card } from "~/components/Card";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { ProfilePicker } from "~/components/ProfilePicker";
-import { AnimatedText } from "~/components/animated";
 import { Chip, GradientChip } from "~/components/buttons";
-import { BatteryIcon, RssiIcon } from "~/components/icons";
 import { ProfileCard } from "~/components/profile";
-import {
-  getTextColorStyle,
-  getIconColor,
-  makeTransparent,
-} from "~/components/utils";
+import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
-import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { useActiveProfile } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -240,93 +225,17 @@ export function PixelFocusViewHeader({
   );
 }
 
-function AnimatedDieIcon({
-  value,
-  size,
-  color,
-  backgroundColor,
-}: {
-  value: number;
-  size: number;
-  color: string;
-  backgroundColor: string;
-}) {
-  const sharedSize = useSharedValue(size);
-  React.useEffect(() => {
-    sharedSize.value = withTiming(size, {
-      easing: Easing.out(Easing.quad),
-      duration: 200,
-    });
-  }, [sharedSize, size]);
-  const animStyle = useAnimatedStyle(() => ({
-    fontSize: sharedSize.value,
-  }));
+function RollingDie({ pixel, disabled }: { pixel: Pixel; disabled: boolean }) {
+  const [rollState] = usePixelValue(pixel, "rollState");
+  const rolling =
+    rollState?.state === "rolling" || rollState?.state === "handling";
   return (
-    <Animated.View
-      layout={CurvedTransition.easingX(Easing.bounce).duration(600)}
-      entering={FadeIn.duration(400).delay(200)}
-      exiting={FadeOut.duration(200)}
-      style={{
-        alignItems: "center",
-        padding: 5,
-        paddingHorizontal: value < 10 ? 10 : 5,
-        borderRadius: 10,
-        borderCurve: "continuous",
-        backgroundColor,
-      }}
-    >
-      <AnimatedText style={[animStyle, { color }]}>
-        {value >= 0 ? String(value) : " "}
-      </AnimatedText>
-    </Animated.View>
+    <DieRenderer
+      dieType={pixel.dieType}
+      colorway={pixel.colorway}
+      speed={disabled ? 0 : rolling ? 10 : 1}
+    />
   );
-}
-
-function PixelRssi({
-  pixel,
-  size,
-  disabled,
-}: {
-  pixel: Pixel;
-  size: number;
-  disabled: boolean;
-}) {
-  const [rssi] = usePixelValue(pixel, "rssi");
-  return <RssiIcon value={rssi} size={size} disabled={disabled} />;
-}
-
-function PixelBattery({
-  pixel,
-  size,
-  disabled,
-}: {
-  pixel: Pixel;
-  size: number;
-  disabled: boolean;
-}) {
-  const [battery] = usePixelValue(pixel, "battery");
-  return <BatteryIcon value={battery?.level} size={size} disabled={disabled} />;
-}
-
-function getStatusColor(status?: PixelStatus): string {
-  return status === "ready"
-    ? "green"
-    : status === "connecting" || status === "identifying"
-      ? "yellow"
-      : "red";
-}
-
-function useLastRolls(pairedDie?: PairedDie): { key: number; roll: number }[] {
-  return useMemo(() => {
-    const rolls = pairedDie?.rolls ?? [];
-    return [-1, -1, -1, -1] // We want at least 4 rolls
-      .concat(rolls)
-      .slice(rolls.length)
-      .map((roll, i) => ({
-        key: rolls.length + i,
-        roll,
-      }));
-  }, [pairedDie?.rolls]);
 }
 
 export function PixelFocusView({
@@ -341,12 +250,17 @@ export function PixelFocusView({
   onShowDetails: () => void;
 } & Omit<ViewProps, "children">) {
   const status = usePixelStatus(pixel);
-  const lastRolls = useLastRolls(
-    useAppSelector((state) =>
-      state.pairedDice.dice.find((d) => d.pixelId === pixel.pixelId)
-    )
+  const blink = React.useCallback(
+    () =>
+      pixel
+        .blink(Color.dimMagenta, { duration: 1000, count: 2 })
+        .catch(() => {}),
+    [pixel]
   );
-  const disabled = status !== "ready";
+  React.useEffect(() => {
+    // Blink when die is selected
+    blink();
+  }, [blink]);
   const { activeProfile, setActiveProfile } = useActiveProfile(pixel);
   const [transferring, setTransferring] = React.useState(false);
   const [pickProfile, setPickProfile] = React.useState(false);
@@ -357,20 +271,20 @@ export function PixelFocusView({
     }
   }, [activeProfile]);
 
-  const { colors } = useTheme();
-  const textStyle = getTextColorStyle(colors, disabled);
+  const disabled = status !== "ready";
   return (
     <>
       <View {...props} style={[{ gap: 10 }, style]}>
-        <View
+        <Pressable
           style={{
             width: "50%",
             aspectRatio: 1,
             alignSelf: "center",
           }}
+          onPress={blink}
         >
-          <DieRenderer dieType={pixel.dieType} colorway={pixel.colorway} />
-        </View>
+          <RollingDie pixel={pixel} disabled={disabled} />
+        </Pressable>
         <View
           style={{
             flexDirection: "row",
@@ -379,80 +293,9 @@ export function PixelFocusView({
             gap: 10,
           }}
         >
-          <Card
-            style={{ flex: 1, flexGrow: 1, justifyContent: "center" }}
-            contentStyle={{
-              flexGrow: 1,
-              padding: 10,
-              alignItems: "flex-start",
-              justifyContent: "space-around",
-            }}
-          >
-            <Text style={textStyle}>Rolls:</Text>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-            >
-              {lastRolls.map(({ key, roll }, i) => (
-                <AnimatedDieIcon
-                  key={key}
-                  value={roll}
-                  size={16 + 4 * i}
-                  color={getIconColor(colors, disabled)}
-                  backgroundColor={makeTransparent(colors.primary, 0.2)}
-                />
-              ))}
-            </View>
-            <Text
-              variant="labelSmall"
-              style={{ color: colors.onSurfaceDisabled }}
-            >
-              Tap to switch widget
-            </Text>
-          </Card>
+          <PixelRollCard pixel={pixel} disabled={disabled} />
           <Pressable style={{ flex: 1, flexGrow: 1 }} onPress={onShowDetails}>
-            <Card
-              style={{ flexGrow: 1 }}
-              contentStyle={{
-                flexGrow: 1,
-                padding: 10,
-                alignItems: "flex-start",
-                justifyContent: "space-around",
-                gap: 5,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Text>Status:</Text>
-                <View
-                  style={{
-                    width: 14,
-                    aspectRatio: 1,
-                    borderRadius: 7,
-                    backgroundColor: getStatusColor(status),
-                  }}
-                />
-                <View style={{ flexGrow: 1 }} />
-                <PixelRssi pixel={pixel} size={16} disabled={disabled} />
-                <PixelBattery pixel={pixel} size={16} disabled={disabled} />
-              </View>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Text style={textStyle}>Need charging!</Text>
-                <MaterialCommunityIcons
-                  name="power-plug-off-outline"
-                  size={16}
-                  color={colors.onSurface}
-                />
-              </View>
-              <Text
-                variant="labelSmall"
-                style={{ color: colors.onSurfaceDisabled }}
-              >
-                Tap for more details
-              </Text>
-            </Card>
+            <PixelStatusCard pixel={pixel} disabled={disabled} />
           </Pressable>
         </View>
         <Text variant="titleMedium">Active Profile</Text>

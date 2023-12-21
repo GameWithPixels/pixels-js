@@ -2,7 +2,7 @@ import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
 import { View, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
-import { getDieTypeLabel, getColorwayLabel } from "~/descriptions";
+import { getDieTypeAndColorwayLabel } from "~/descriptions";
 
 export function DieStaticInfo({
   pixel,
@@ -15,9 +15,7 @@ export function DieStaticInfo({
       {...props}
     >
       <Text variant="bodyLarge">{pixel.name}</Text>
-      <Text>
-        {getDieTypeLabel(pixel.dieType)}, {getColorwayLabel(pixel.colorway)}
-      </Text>
+      <Text>{getDieTypeAndColorwayLabel(pixel)}</Text>
     </View>
   );
 }

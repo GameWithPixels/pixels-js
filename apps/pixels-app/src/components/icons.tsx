@@ -81,7 +81,13 @@ export function RssiIcon({
         : value < -50
           ? BarsMidIcon
           : BarsFullIcon;
-  return <Icon size={size} color={color ?? getIconColor(colors, disabled)} />;
+  return (
+    <Icon
+      size={size}
+      color={color ?? getIconColor(colors, disabled)}
+      shadedColor={colors.onSurfaceDisabled}
+    />
+  );
 }
 
 export function BatteryIcon({
