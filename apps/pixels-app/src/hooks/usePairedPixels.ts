@@ -4,6 +4,7 @@ import {
   getPixelOrThrow,
   Pixel,
   PixelInfo,
+  PixelStatus,
   ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -27,7 +28,33 @@ function stableFilterPixels(
   return areArraysEqual(newPixels, lastPixels) ? lastPixels : newPixels;
 }
 
-// TODO this hooks works if only used once in the app
+function pixelLog(pixel: Pick<PixelInfo, "pixelId">, message: string) {
+  console.log(`Pixel ${pixel.pixelId.toString(16).padStart(8)}: ${message}`);
+}
+
+function scheduleConnect(
+  pixel: Pixel,
+  timeout: number,
+  isActive: (id: number) => boolean
+) {
+  // Schedule reconnection
+  setTimeout(() => {
+    if (isActive(pixel.pixelId)) {
+      pixelLog(pixel, `Auto-connecting after delay of ${timeout}ms`);
+      pixel.connect().catch((e: Error) => {
+        pixelLog(pixel, `Connection error, ${e}`);
+      });
+    }
+  }, timeout);
+}
+
+function disconnect(pixel: Pixel) {
+  pixel
+    .disconnect()
+    .catch((e: Error) => pixelLog(pixel, `Disconnection error: ${e}`));
+}
+
+// TODO this hook works if only used once in the app
 export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   pixels: readonly Pixel[];
   availablePixels: readonly ScannedPixelNotifier[];
@@ -42,25 +69,63 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   const lastPixelsRef = React.useRef<readonly Pixel[]>([]);
   lastPixelsRef.current = stableFilterPixels(pairedDice, lastPixelsRef.current);
   const pixels = lastPixelsRef.current;
-  const hookedPixelsRef = React.useRef(new Map<number, () => void>());
+  const activePixelsRef = React.useRef(new Map<number, () => void>());
   React.useEffect(() => {
+    const isActive = (pixelId: number) =>
+      !!activePixelsRef.current.get(pixelId);
+    // Add new paired Pixels
     for (const pixel of pixels) {
-      if (!hookedPixelsRef.current.get(pixel.pixelId)) {
+      if (!isActive(pixel.pixelId)) {
+        pixelLog(pixel, "Die has become active");
+        // Add event listeners
+        const onStatus = (status: PixelStatus) => {
+          if (status === "disconnected") {
+            // TODO Delay reconnecting because our previous call to connect() might still be cleaning up
+            scheduleConnect(pixel, 1000, isActive);
+          }
+        };
+        pixel.addEventListener("status", onStatus);
         const onRoll = (roll: number) =>
           appDispatch(addPairedDieRoll({ pixelId: pixel.pixelId, roll }));
         pixel.addEventListener("roll", onRoll);
-        hookedPixelsRef.current.set(pixel.pixelId, () => {
+        activePixelsRef.current.set(pixel.pixelId, () => {
+          pixel.removeEventListener("status", onStatus);
           pixel.removeEventListener("roll", onRoll);
+          // Disconnect
+          disconnect(pixel);
         });
-      }
-      // TODO should always try to connect?
-      if (pixel.status === "disconnected") {
-        pixel
-          .connect()
-          .catch((e: Error) => console.log(`Connection error: ${e}`));
+        // Schedule connection
+        if (pixel.status === "disconnected") {
+          scheduleConnect(pixel, 0, isActive);
+        }
       }
     }
   }, [appDispatch, pixels]);
+  React.useEffect(() => {
+    // Remove unpaired Pixels
+    const entries = Array.from(activePixelsRef.current.entries());
+    for (const [pixelId, dispose] of entries) {
+      if (!pairedDice.find((d) => d.pixelId === pixelId)?.isPaired) {
+        pixelLog({ pixelId }, "Die has become inactive");
+        activePixelsRef.current.delete(pixelId);
+        // Remove event listeners and disconnect
+        dispose();
+      }
+    }
+  }, [pairedDice]);
+  React.useEffect(() => {
+    // Clean up
+    const activePixels = activePixelsRef.current;
+    return () => {
+      for (const dispose of activePixels.values()) {
+        dispose();
+      }
+      activePixels.clear();
+    };
+  }, []);
+  React.useEffect(() => {
+    console.log("usePairedPixels: scannedPixels changed");
+  }, []);
 
   // Missing dice
   const diceData = useAppSelector((state) => state.pairedDice.dice);
@@ -82,21 +147,22 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   );
 
   // Actions
-  const pairDie = (pixel: PixelInfo) =>
-    appDispatch(
-      addPairedDie({
-        pixelId: pixel.pixelId,
-        name: pixel.name,
-      })
-    );
-  const unpairDie = (pixel: PixelInfo) => {
-    hookedPixelsRef.current.get(pixel.pixelId)?.();
-    hookedPixelsRef.current.delete(pixel.pixelId);
-    appDispatch(removePairedDie(pixel.pixelId));
-    getPixel(pixel.pixelId)
-      ?.disconnect()
-      .catch((e: Error) => console.log(`Connection error: ${e}`));
-  };
+  const pairDie = React.useCallback(
+    (pixel: PixelInfo) =>
+      appDispatch(
+        addPairedDie({
+          pixelId: pixel.pixelId,
+          name: pixel.name,
+        })
+      ),
+    [appDispatch]
+  );
+  const unpairDie = React.useCallback(
+    (pixel: PixelInfo) => {
+      appDispatch(removePairedDie(pixel.pixelId));
+    },
+    [appDispatch]
+  );
   return { pixels, availablePixels, missingDice, pairDie, unpairDie };
 }
 

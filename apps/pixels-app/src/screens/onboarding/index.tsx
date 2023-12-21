@@ -65,7 +65,7 @@ import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getNativeErrorMessage } from "~/features/getNativeErrorMessage";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
-import { usePairedPixels } from "~/hooks";
+import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { OnboardingScreenProps } from "~/navigation";
 import { getBottomSheetBackgroundStyle, getRootScreenTheme } from "~/themes";
 
@@ -766,7 +766,6 @@ function OnboardingPage({
     () => scannedPixels.map(connectPixel).filter((p): p is Pixel => !!p),
     [scannedPixels]
   );
-  const { pairDie } = usePairedPixels();
 
   // Stop scanning on leaving scan page
   React.useEffect(() => {
@@ -830,7 +829,12 @@ function OnboardingPage({
           onNext={() => {
             scannerDispatch("stop");
             for (const p of pixels) {
-              pairDie(p);
+              appDispatch(
+                addPairedDie({
+                  pixelId: p.pixelId,
+                  name: p.name,
+                })
+              );
             }
             scrollTo(
               pixels.some((p) => !isPixelUpToDate(p, dfuBundle)) ? 3 : 4

@@ -8,7 +8,6 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import { DiceList } from "~/components/dice";
-import { usePairedPixels } from "~/hooks";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
 interface PixelDfuStatus {
@@ -159,10 +158,9 @@ function FirmwareUpdatePage({
 export function FirmwareUpdateScreen({
   navigation,
 }: FirmwareUpdateScreenProps) {
-  const { pixels } = usePairedPixels();
   return (
     <AppBackground>
-      <FirmwareUpdatePage navigation={navigation} pixels={pixels} />
+      <FirmwareUpdatePage navigation={navigation} pixels={[]} />
     </AppBackground>
   );
 }

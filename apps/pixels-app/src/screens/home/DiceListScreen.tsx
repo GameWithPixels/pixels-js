@@ -323,13 +323,24 @@ function DiceListPage({
   const tryReconnectDice = React.useCallback(() => {
     // Set a timeout to stop scanning in 10s
     setScanTimeout((id) => {
-      clearTimeout(id);
+      if (id) {
+        clearTimeout(id);
+      }
       return setTimeout(() => setScanTimeout(undefined), 10000);
     });
   }, []);
   // Auto connect on showing page
   useFocusEffect(
-    React.useCallback(() => tryReconnectDice(), [tryReconnectDice])
+    React.useCallback(() => {
+      tryReconnectDice();
+      return () =>
+        setScanTimeout((id) => {
+          if (id) {
+            clearTimeout(id);
+          }
+          return undefined;
+        });
+    }, [tryReconnectDice])
   );
 
   // Reconnect animation

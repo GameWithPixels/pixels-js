@@ -2,6 +2,7 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   PixelColorway,
   PixelDieType,
+  PixelStatus,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
@@ -187,5 +188,22 @@ export function getFacesAsText(faces: number[]): string {
     const sorted = [...faces].sort((a, b) => a - b).reverse();
     const last = sorted.pop();
     return `${sorted.join(", ")} and ${last}`;
+  }
+}
+
+export function getPixelStatusLabel(status?: PixelStatus): string {
+  switch (status) {
+    case undefined:
+    case "disconnected":
+      return "Disconnected";
+    case "connecting":
+    case "identifying":
+      return "Connecting...";
+    case "ready":
+      return "Connected";
+    case "disconnecting":
+      return "Disconnecting...";
+    default:
+      assertNever(status);
   }
 }

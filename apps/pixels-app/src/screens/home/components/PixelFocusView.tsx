@@ -4,7 +4,6 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
-import { assert } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Pixel,
@@ -56,6 +55,7 @@ import {
   getIconColor,
   makeTransparent,
 } from "~/components/utils";
+import { getPixelStatusLabel } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { useActiveProfile } from "~/hooks";
@@ -199,7 +199,7 @@ export function PixelFocusViewHeader({
               color,
             }}
           >
-            {disabled ? `${status}...` : pixel.name}
+            {disabled ? getPixelStatusLabel(status) : pixel.name}
           </Text>
           {!!pixel && (
             <>
@@ -316,18 +316,17 @@ function getStatusColor(status?: PixelStatus): string {
       : "red";
 }
 
-function useLastRolls(pairedDie: PairedDie): { key: number; roll: number }[] {
-  return useMemo(
-    () =>
-      [-1, -1, -1, -1] // We want at least 4 rolls
-        .concat(pairedDie.rolls)
-        .slice(pairedDie.rolls.length)
-        .map((roll, i) => ({
-          key: pairedDie.rolls.length + i,
-          roll,
-        })),
-    [pairedDie.rolls]
-  );
+function useLastRolls(pairedDie?: PairedDie): { key: number; roll: number }[] {
+  return useMemo(() => {
+    const rolls = pairedDie?.rolls ?? [];
+    return [-1, -1, -1, -1] // We want at least 4 rolls
+      .concat(rolls)
+      .slice(rolls.length)
+      .map((roll, i) => ({
+        key: rolls.length + i,
+        roll,
+      }));
+  }, [pairedDie?.rolls]);
 }
 
 export function PixelFocusView({
@@ -342,11 +341,11 @@ export function PixelFocusView({
   onShowDetails: () => void;
 } & Omit<ViewProps, "children">) {
   const status = usePixelStatus(pixel);
-  const pairedDie = useAppSelector((state) =>
-    state.pairedDice.dice.find((d) => d.pixelId === pixel.pixelId)
+  const lastRolls = useLastRolls(
+    useAppSelector((state) =>
+      state.pairedDice.dice.find((d) => d.pixelId === pixel.pixelId)
+    )
   );
-  assert(pairedDie, `Pixel ${pixel.pixelId} is not paired!`);
-  const lastRolls = useLastRolls(pairedDie);
   const disabled = status !== "ready";
   const { activeProfile, setActiveProfile } = useActiveProfile(pixel);
   const [transferring, setTransferring] = React.useState(false);
