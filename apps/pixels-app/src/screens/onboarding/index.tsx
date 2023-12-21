@@ -504,8 +504,8 @@ function ScanSlide({
           onPress={onNext}
         >
           {pixels.length === 1
-            ? "Pair This Die"
-            : `Pair These ${pixels.length} Dice`}
+            ? "Pair My Pixels Die"
+            : `Pair These ${pixels.length} Pixels Dice`}
         </AnimatedGradientButton>
       )}
       <HelpTurnOnDiceModal

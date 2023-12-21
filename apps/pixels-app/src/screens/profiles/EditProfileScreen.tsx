@@ -118,11 +118,7 @@ const Header = observer(
             />
             <ProfileMenu
               visible={actionsMenuVisible}
-              contentStyle={{
-                marginTop: Platform.select({ ios: 30, default: 15 }),
-                width: 230,
-              }}
-              anchor={{ x: (windowWidth - 250) / 2, y: 60 }}
+              anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
               onDismiss={() => setActionsMenuVisible(false)}
               onRename={() => setRenameVisible(true)}
               onEditAdvancedRules={onEditAdvancedRules}

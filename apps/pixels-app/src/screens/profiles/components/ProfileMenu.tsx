@@ -12,9 +12,9 @@ export function ProfileMenu({
   onRename?: () => void;
   onEditAdvancedRules: () => void;
   onDelete?: () => void;
-} & Omit<MenuProps, "children" | "theme">) {
+} & Omit<MenuProps, "children" | "theme" | "contentStyle">) {
   return (
-    <Menu {...props}>
+    <Menu contentStyle={{ width: 230 }} {...props}>
       {onRename ? (
         <Menu.Item
           title="Rename"
