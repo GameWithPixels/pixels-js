@@ -545,6 +545,7 @@ export function Chip({
 } & React.PropsWithChildren<Omit<TouchableRippleProps, "children" | "style">>) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
+  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
   return (
     <TouchableRipple
       disabled={disabled}
@@ -572,14 +573,14 @@ export function Chip({
               {
                 textAlign: "center",
                 marginRight: icon ? 8 : 0,
-                color: disabled ? colors.onSurfaceDisabled : colors.onPrimary,
+                color,
               },
               labelStyle,
             ]}
             children={children}
           />
         )}
-        {icon?.({ size: 18, color: colors.onPrimary })}
+        {icon?.({ size: 18, color })}
       </>
     </TouchableRipple>
   );
@@ -603,6 +604,7 @@ export function GradientChip({
   Omit<TouchableRippleProps, "children" | "style">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
+  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
@@ -638,13 +640,13 @@ export function GradientChip({
               {
                 textAlign: "center",
                 marginRight: icon ? 8 : 0,
-                color: disabled ? colors.onSurfaceDisabled : colors.onPrimary,
+                color,
               },
               labelStyle,
             ]}
             children={children}
           />
-          {icon?.({ size: 18, color: colors.onPrimary })}
+          {icon?.({ size: 18, color })}
         </>
       </TouchableRipple>
     </LinearGradient>

@@ -109,7 +109,7 @@ export function PixelVCard({
           pixelName === "+"
             ? "displayLarge"
             : miniCards
-              ? "titleSmall"
+              ? "labelSmall"
               : "titleMedium"
         }
       >

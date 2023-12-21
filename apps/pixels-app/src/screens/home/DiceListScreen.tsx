@@ -1,26 +1,10 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import {
-  Pixel,
-  ScannedPixel,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import {
-  ActivityIndicator,
-  Divider,
-  IconButton,
-  Menu,
-  Text,
-  ThemeProvider,
-  useTheme,
-} from "react-native-paper";
+import { Divider, IconButton, Menu, Text, useTheme } from "react-native-paper";
 import {
   cancelAnimation,
   FadeIn,
@@ -31,6 +15,7 @@ import {
   withTiming,
 } from "react-native-reanimated";
 
+import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
 import {
   PixelFocusView,
   PixelFocusViewHeader,
@@ -42,21 +27,14 @@ import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
-import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { AnimatedMaterialCommunityIcons } from "~/components/animated";
 import { Banner, PromoBanner } from "~/components/banners";
-import {
-  AnimatedGradientButton,
-  GradientButton,
-  SelectionButton,
-  TightTextButton,
-} from "~/components/buttons";
+import { AnimatedGradientButton, TightTextButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
-import { DieWireframe } from "~/components/icons";
 import {
   DiceGrouping,
   DiceGroupingList,
@@ -73,113 +51,11 @@ import {
   setShowPromoBanner,
 } from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
-import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
 import { usePixelsScanner } from "~/hooks/usePixelsScanner";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
 
 type DiceViewMode = "focus" | "list" | "grid";
-
-function PairDiceBottomSheet({
-  availablePixels,
-  visible,
-  onDismiss,
-}: {
-  availablePixels: readonly ScannedPixel[];
-  visible: boolean;
-  onDismiss: (pixels?: ScannedPixel[]) => void;
-}) {
-  const sheetRef = React.useRef<BottomSheetModal>(null);
-  const [selected, setSelected] = React.useState<ScannedPixel[]>([]);
-  React.useEffect(() => {
-    if (visible) {
-      sheetRef.current?.present();
-    } else {
-      sheetRef.current?.dismiss();
-      setSelected([]);
-    }
-  }, [visible]);
-
-  const paddingBottom = useBottomSheetPadding(0);
-  const theme = useTheme();
-  return (
-    <BottomSheetModal
-      ref={sheetRef}
-      snapPoints={["50%"]}
-      onDismiss={onDismiss}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
-    >
-      <ThemeProvider theme={theme}>
-        <View
-          style={{
-            flex: 1,
-            flexGrow: 1,
-            paddingHorizontal: 10,
-            paddingBottom,
-            gap: 20,
-          }}
-        >
-          <Text variant="titleMedium" style={{ alignSelf: "center" }}>
-            Select Pixels Dice to Pair
-          </Text>
-          <BottomSheetScrollView>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginLeft: 10,
-                marginBottom: 20,
-                gap: 20,
-              }}
-            >
-              <Text variant="titleSmall">Looking for Pixels...</Text>
-              <ActivityIndicator />
-            </View>
-            {availablePixels.map((sp, i) => (
-              <SelectionButton
-                key={sp.pixelId}
-                icon={() => <DieWireframe dieType={sp.dieType} size={40} />}
-                selected={selected.includes(sp)}
-                noTopBorder={i > 0}
-                squaredTopBorder={i > 0}
-                squaredBottomBorder={i < availablePixels.length - 1}
-                onPress={() => {
-                  setSelected((selected) =>
-                    selected.includes(sp)
-                      ? selected.filter((p1) => p1 !== sp)
-                      : [...selected, sp]
-                  );
-                }}
-              >
-                <DieStaticInfo pixel={sp} />
-              </SelectionButton>
-            ))}
-          </BottomSheetScrollView>
-          <GradientButton
-            disabled={!selected.length}
-            style={{ marginBottom: 20 }}
-            onPress={() => onDismiss(selected)}
-          >
-            {!selected.length
-              ? "No Die Selected"
-              : selected.length === 1
-                ? "Pair 1 Pixels Die"
-                : `Pair ${selected.length} Pixels Dice`}
-          </GradientButton>
-        </View>
-      </ThemeProvider>
-    </BottomSheetModal>
-  );
-}
 
 function PageActions({
   viewMode,
@@ -329,6 +205,7 @@ function DiceListPage({
       return setTimeout(() => setScanTimeout(undefined), 10000);
     });
   }, []);
+
   // Auto connect on showing page
   useFocusEffect(
     React.useCallback(() => {
@@ -525,8 +402,7 @@ function DiceListPage({
                   onDismiss={() => appDispatch(setShowFocusModeHelp(false))}
                 >
                   Focus mode shows information about the selected die. Tap on
-                  the 3D die to make your Pixels wave. Only connected dice are
-                  displayed in this view mode.
+                  the 3D die to make your Pixels wave at you.
                 </Banner>
               )}
             </View>

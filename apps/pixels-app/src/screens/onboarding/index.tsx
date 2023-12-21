@@ -382,14 +382,14 @@ function ScanSlide({
   onStartScan: () => void;
   onNext: () => void;
 }) {
-  const [showHelpButton, setScanFirstTimeout] = React.useState(false);
+  const [showHelp, setShowHelp] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
   React.useEffect(() => {
     if (scannerStatus === "scanning") {
-      const id = setTimeout(() => setScanFirstTimeout(true), 3000);
+      const id = setTimeout(() => setShowHelp(true), 3000);
       return () => clearTimeout(id);
     } else {
-      setScanFirstTimeout(false);
+      setShowHelp(false);
     }
   }, [scannerStatus]);
   return (
@@ -471,7 +471,7 @@ function ScanSlide({
                 </AnimatedDieWireframeCard>
               ))}
             </View>
-            {showHelpButton && (
+            {showHelp && (
               <Animated.View
                 entering={FadeIn.duration(300)}
                 layout={CurvedTransition.easingY(Easing.linear).duration(300)}
@@ -479,7 +479,7 @@ function ScanSlide({
                 {pixels.length ? (
                   <SmallText>Don't see all your dice?</SmallText>
                 ) : (
-                  <Text>We don't see any dice so far.</Text>
+                  <Text>No dice found so far.</Text>
                 )}
                 <TightTextButton
                   underline
