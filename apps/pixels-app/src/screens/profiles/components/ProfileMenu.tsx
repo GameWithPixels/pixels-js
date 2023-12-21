@@ -33,10 +33,10 @@ export function ProfileMenu({
         />
       ) : (
         <Menu.Item
-          title="Save as Standalone Profile"
+          title="Save As New Profile"
           trailingIcon={({ size, color }) => (
             <MaterialCommunityIcons
-              name="link-variant-off"
+              name="content-save-outline"
               size={size}
               color={color}
             />

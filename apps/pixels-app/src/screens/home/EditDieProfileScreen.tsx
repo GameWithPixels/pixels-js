@@ -1,6 +1,6 @@
 import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { useWindowDimensions, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
 
@@ -23,7 +23,7 @@ function EditDieProfilePage({
   navigation: EditDieProfileScreenProps["navigation"];
 }) {
   const pixel = usePairedPixel(pixelId);
-  const pixelName = usePixelValue(pixel, "name");
+  const [pixelName] = usePixelValue(pixel, "name");
   const { activeProfile } = useActiveProfile(pixel);
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
@@ -45,23 +45,32 @@ function EditDieProfilePage({
   return (
     <View style={{ height: "100%" }}>
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
-        <Text variant="titleMedium" style={{ paddingHorizontal: 5, color }}>
-          {`${pixelName}'s Profile`}
-        </Text>
-        <ChevronDownIcon
-          size={18}
-          color={color}
-          backgroundColor={makeTransparent(colors.onBackground, 0.2)}
-          style={{ marginBottom: 3 }}
-        />
-        <ProfileMenu
-          visible={actionsMenuVisible}
-          anchor={{ x: (windowWidth - 230) / 2, y: 60 }}
-          onDismiss={() => setActionsMenuVisible(false)}
-          onEditAdvancedRules={() =>
-            navigation.navigate("editAdvancedRules", { profileUuid })
-          }
-        />
+        <Pressable
+          onPress={() => setActionsMenuVisible(true)}
+          style={{
+            alignSelf: "center",
+            flexDirection: "row",
+            alignItems: "flex-end",
+          }}
+        >
+          <Text variant="bodyLarge" style={{ paddingHorizontal: 5, color }}>
+            {`${pixelName}'s Profile`}
+          </Text>
+          <ChevronDownIcon
+            size={18}
+            color={color}
+            backgroundColor={makeTransparent(colors.onBackground, 0.2)}
+            style={{ marginBottom: 3 }}
+          />
+          <ProfileMenu
+            visible={actionsMenuVisible}
+            anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
+            onDismiss={() => setActionsMenuVisible(false)}
+            onEditAdvancedRules={() =>
+              navigation.navigate("editAdvancedRules", { profileUuid })
+            }
+          />
+        </Pressable>
       </PageHeader>
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"

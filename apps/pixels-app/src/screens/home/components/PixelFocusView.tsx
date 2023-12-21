@@ -1,9 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
 import {
   Color,
   Pixel,
-  Profiles,
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
@@ -15,27 +13,20 @@ import {
   View,
   ViewProps,
 } from "react-native";
-import {
-  Badge,
-  Text,
-  TextInput,
-  ThemeProvider,
-  useTheme,
-} from "react-native-paper";
+import { Badge, Text, TextInput, useTheme } from "react-native-paper";
 
 import { DieMenu } from "./DieMenu";
+import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
 import { PixelRollCard } from "./PixelRollCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
-import { ProfilePicker } from "~/components/ProfilePicker";
 import { Chip, GradientChip } from "~/components/buttons";
 import { ProfileCard } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
 import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useActiveProfile, useConfirmActionSheet } from "~/hooks";
-import { getBottomSheetBackgroundStyle } from "~/themes";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
   {
@@ -234,23 +225,24 @@ export function PixelFocusView({
             <View
               style={{
                 flexDirection: "row",
-                gap: 20,
                 justifyContent: "space-around",
               }}
             >
               <GradientChip
-                icon={({ size, color }) => (
-                  <MaterialCommunityIcons
-                    name="book-edit-outline"
-                    size={size}
-                    color={color}
-                  />
-                )}
+                disabled={disabled}
+                // icon={({ size, color }) => (
+                //   <MaterialCommunityIcons
+                //     name="book-edit-outline"
+                //     size={size}
+                //     color={color}
+                //   />
+                // )}
                 onPress={onEditProfile}
               >
                 Customize
               </GradientChip>
               <Chip
+                disabled={disabled}
                 icon={({ size, color }) => (
                   <MaterialCommunityIcons
                     name="swap-horizontal"
@@ -258,10 +250,7 @@ export function PixelFocusView({
                     color={color}
                   />
                 )}
-                onPress={
-                  () => {}
-                  //navigation.navigate("pickProfile", { pixelId: pixel.pixelId })
-                }
+                onPress={() => setPickProfile(true)}
               >
                 Switch
               </Chip>
@@ -277,71 +266,12 @@ export function PixelFocusView({
         onSelectProfile={(profile) => {
           if (!transferring) {
             setActiveProfile(profile);
+            setPickProfile(false);
           }
         }}
         visible={pickProfile}
         onDismiss={() => setPickProfile(false)}
       />
     </>
-  );
-}
-
-function PickProfileBottomSheet({
-  pixel,
-  profile,
-  transferring,
-  onSelectProfile,
-  visible,
-  onDismiss,
-}: {
-  pixel: Pixel;
-  profile?: Readonly<Profiles.Profile>;
-  transferring: boolean;
-  onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
-  visible: boolean;
-  onDismiss: () => void;
-}) {
-  const sheetRef = React.useRef<BottomSheetModal>(null);
-  React.useEffect(() => {
-    if (visible) {
-      sheetRef.current?.present();
-    } else {
-      sheetRef.current?.dismiss();
-    }
-  }, [visible]);
-
-  const theme = useTheme();
-  return (
-    <BottomSheetModal
-      ref={sheetRef}
-      snapPoints={["50%", "92%"]}
-      index={1}
-      onDismiss={onDismiss}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={1}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
-    >
-      <ThemeProvider theme={theme}>
-        <Text
-          variant="titleMedium"
-          style={{ alignSelf: "center", paddingVertical: 10 }}
-        >
-          Active Profile on {pixel.name}
-        </Text>
-        <ProfilePicker
-          selected={profile}
-          dieType={pixel.dieType}
-          transferring={transferring}
-          onSelectProfile={onSelectProfile}
-          style={{ flex: 1, flexGrow: 1, marginHorizontal: 10 }}
-        />
-      </ThemeProvider>
-    </BottomSheetModal>
   );
 }
