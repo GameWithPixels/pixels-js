@@ -25,14 +25,14 @@ async function onFetchUpdateAsync() {
 }
 
 const pages = [
-  "Audio Clips",
-  "Firmware",
-  "Import Profiles",
-  "Export Logs",
-  "Export Settings",
-  "Import Settings",
-  "Restore Default",
-  "System Info",
+  // "Audio Clips",
+  // "Import Profiles",
+  // "Export Logs",
+  // "Export Settings",
+  // "Import Settings",
+  "System Information",
+  "Dice Software Information",
+  "Reset App Settings",
   "Check for Update",
 ] as const;
 
@@ -42,22 +42,22 @@ function SettingsMenuPage({
   navigation: SettingsMenuScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-  const showConfirmRestore = useConfirmActionSheet(
-    "Restore Default Settings",
-    () => {
-      appDispatch(resetAppSettingsToDefault());
-      appDispatch(resetPairedDice());
-      appDispatch(resetProfilesToDefault());
-      navigation.navigate("onboarding");
-    }
-  );
+  const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
+    appDispatch(resetAppSettingsToDefault());
+    appDispatch(resetPairedDice());
+    appDispatch(resetProfilesToDefault());
+    navigation.navigate("onboarding");
+  });
   const openPage = (page: (typeof pages)[number]) => {
     switch (page) {
-      case "System Info":
+      case "System Information":
         navigation.navigate("systemInfo");
         break;
-      case "Restore Default":
-        showConfirmRestore();
+      case "Dice Software Information":
+        navigation.navigate("firmwareInfo");
+        break;
+      case "Reset App Settings":
+        showConfirmReset();
         break;
       case "Check for Update":
         onFetchUpdateAsync();

@@ -60,12 +60,11 @@ import {
 import { DieWireframe } from "~/components/icons";
 import { makeTransparent } from "~/components/utils";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
-import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getNativeErrorMessage } from "~/features/getNativeErrorMessage";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
+import { useDfuBundle } from "~/hooks/useDfuBundle";
 import { OnboardingScreenProps } from "~/navigation";
 import { getBottomSheetBackgroundStyle, getRootScreenTheme } from "~/themes";
 
@@ -775,20 +774,8 @@ function OnboardingPage({
     };
   }, [scannerDispatch]);
 
-  const [dfuBundle, setDfuBundle] = React.useState<DfuFilesBundle>();
-  React.useEffect(() => {
-    const task = async () => {
-      // Unzip app DFU files
-      const files = await unzipEmbeddedDfuFilesAsync();
-      // Group them in DFU bundles
-      const bundles = await DfuFilesBundle.createMany(
-        files.map((p) => getDfuFileInfo(p))
-      );
-      // Use most recent bundle
-      setDfuBundle(bundles.reduce((a, b) => (a.date >= b.date ? a : b)));
-    };
-    task().catch((e) => console.log(`Error: ${e}`));
-  }, []);
+  // DFU files
+  const [dfuBundle] = useDfuBundle();
 
   const [index, setIndex] = React.useState(0);
   const scrollRef = React.useRef<ScrollView>(null);

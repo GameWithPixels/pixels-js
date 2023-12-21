@@ -17,7 +17,9 @@ function SystemInfoPage({
   const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
-      <PageHeader onGoBack={() => navigation.goBack()}>System info</PageHeader>
+      <PageHeader onGoBack={() => navigation.goBack()}>
+        System Information
+      </PageHeader>
       <ScrollView
         contentContainerStyle={{
           paddingVertical: 20,
