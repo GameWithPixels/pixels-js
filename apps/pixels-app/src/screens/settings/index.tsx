@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { ThemeProvider } from "react-native-paper";
 
+import { FirmwareInfoScreen } from "./FirmwareInfoScreen";
 import { SettingsMenuScreen } from "./SettingsMenuScreen";
 import { SystemInfoScreen } from "./SystemInfoScreen";
 
@@ -20,6 +21,7 @@ export function SettingsStack({ route }: SettingsStackProps) {
       <Stack.Navigator screenOptions={getStackNavigationOptions()}>
         <Stack.Screen name="settingsMenu" component={SettingsMenuScreen} />
         <Stack.Screen name="systemInfo" component={SystemInfoScreen} />
+        <Stack.Screen name="firmwareInfo" component={FirmwareInfoScreen} />
       </Stack.Navigator>
     </ThemeProvider>
   );

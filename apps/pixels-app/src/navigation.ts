@@ -178,6 +178,7 @@ export type PickColorDesignScreenProps = NativeStackScreenProps<
 export type SettingsStackParamList = {
   settingsMenu: undefined;
   systemInfo: undefined;
+  firmwareInfo: undefined;
 };
 
 export type SettingsMenuScreenProps = CompositeScreenProps<
@@ -188,6 +189,11 @@ export type SettingsMenuScreenProps = CompositeScreenProps<
 export type SettingsInfoScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "systemInfo"
+>;
+
+export type FirmwareInfoScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "firmwareInfo"
 >;
 
 export function getStackNavigationOptions(

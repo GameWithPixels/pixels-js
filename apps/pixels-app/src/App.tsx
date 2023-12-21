@@ -32,19 +32,16 @@ import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
 import {
-  AnimationsStackParamList,
   BottomTabParamList,
   HomeStackParamList,
   ProfilesStackParamList,
 } from "./navigation";
-import { AnimationsStack } from "./screens/animations";
 import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
 import { AppDarkTheme, PixelThemes } from "./themes";
 
-import AnimationsIcon from "#/icons/navigation/animations";
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
@@ -119,7 +116,7 @@ function AppPage() {
             ),
           })}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="animations"
           component={AnimationsStack}
           options={({ route }) => ({
@@ -130,7 +127,7 @@ function AppPage() {
               "animationsList"
             ),
           })}
-        />
+        /> */}
         <Tab.Screen
           name="settings"
           component={SettingsStack}
