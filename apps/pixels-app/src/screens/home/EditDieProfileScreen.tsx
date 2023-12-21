@@ -1,6 +1,6 @@
 import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { Platform, useWindowDimensions, View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
 
@@ -56,11 +56,7 @@ function EditDieProfilePage({
         />
         <ProfileMenu
           visible={actionsMenuVisible}
-          contentStyle={{
-            marginTop: Platform.select({ ios: 30, default: 15 }),
-            width: 230,
-          }}
-          anchor={{ x: (windowWidth - 250) / 2, y: 60 }}
+          anchor={{ x: (windowWidth - 230) / 2, y: 60 }}
           onDismiss={() => setActionsMenuVisible(false)}
           onEditAdvancedRules={() =>
             navigation.navigate("editAdvancedRules", { profileUuid })

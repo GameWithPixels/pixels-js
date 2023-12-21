@@ -71,11 +71,17 @@ function DieMenu({
   onFirmwareUpdate: () => void;
   onRename: () => void;
   onUnpair: () => void;
-} & Omit<MenuProps, "children" | "theme">) {
+} & Omit<MenuProps, "children" | "theme" | "containerStyle">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
   return (
-    <Menu {...props}>
+    <Menu
+      contentStyle={{
+        marginTop: Platform.select({ ios: 10, default: 0 }),
+        width: 230,
+      }}
+      {...props}
+    >
       <Menu.Item
         title="Update Firmware!"
         style={{
@@ -205,11 +211,7 @@ export function PixelFocusViewHeader({
               />
               <DieMenu
                 visible={actionsMenuVisible}
-                contentStyle={{
-                  marginTop: Platform.select({ ios: 10, default: 2 }),
-                  width: 250,
-                }}
-                anchor={{ x: (windowWidth - 250) / 2, y: 80 }}
+                anchor={{ x: (windowWidth - 230) / 2, y: 80 }}
                 onDismiss={() => setActionsMenuVisible(false)}
                 onFirmwareUpdate={onFirmwareUpdate}
                 onRename={() => setRenameVisible(true)}

@@ -8,7 +8,6 @@ import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 import React from "react";
 import { useErrorBoundary } from "react-error-boundary";
-import { Platform } from "react-native";
 import { Text } from "react-native-paper";
 
 import { MeshLine, MeshLineMaterial } from "./MeshLine";
@@ -139,23 +138,7 @@ class SceneRenderer {
       // Light setup
       this._lights?.forEach((l) => scene.add(l));
 
-      // const dirLight = new THREE.DirectionalLight(0xfdfdfd, 3);
-      // dirLight.position.set(9, 27, 15);
-      // dirLight.lookAt(new THREE.Vector3(0, 0, 0));
-      // scene.add(dirLight);
-
-      // const whiteLight = new THREE.PointLight(0xfdfdfd, 2, 100);
-      // whiteLight.position.set(9, 27, -15);
-      // scene.add(whiteLight);
-
-      // const blueLight = new THREE.PointLight(0x0090ff, 1, 100);
-      // blueLight.position.set(-14, -6, -19);
-      // scene.add(blueLight);
-
-      // const redLight = new THREE.PointLight(0xff4962, 1, 100);
-      // redLight.position.set(31, -11, -4);
-      // scene.add(redLight);
-
+      // Props
       const staging = new THREE.Object3D();
       const updateSparks: ((deltaTime: number) => void)[] = [];
       if (opt?.withStage) {
@@ -166,38 +149,38 @@ class SceneRenderer {
         camera.position.z *= 2;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-        if (Platform.OS === "ios") {
-          // Sparks particles
-          const radius = 10;
-          const sparks = this._createSparks({
-            linesCount: 3,
-            pointsCount: 5,
-            colors: [
-              "#c06995",
-              "#de77c7",
-              "#df86df",
-              "#d998ee",
-              "#ceadf4",
-              "#c6bff9",
-            ],
-            radius,
-            speedMin: 1,
-            speedMax: 5,
-            thickness: 10,
-            dashArray: 0.3,
-            dashRatio: 0.5,
-          });
-          const sparksRoot = new THREE.Object3D();
-          sparksRoot.scale.setScalar(0.09 * dieSize);
-          const sparksOffset = new THREE.Object3D();
-          sparksOffset.position.set(-radius / 2, -radius, 0);
-          sparksRoot.add(sparksOffset);
-          sparks.forEach((spark) => {
-            sparksOffset.add(spark.mesh);
-            updateSparks.push(spark.update);
-          });
-          staging.add(sparksRoot);
-        }
+        // if (Platform.OS === "ios") {
+        //   // Sparks particles
+        //   const radius = 10;
+        //   const sparks = this._createSparks({
+        //     linesCount: 3,
+        //     pointsCount: 5,
+        //     colors: [
+        //       "#c06995",
+        //       "#de77c7",
+        //       "#df86df",
+        //       "#d998ee",
+        //       "#ceadf4",
+        //       "#c6bff9",
+        //     ],
+        //     radius,
+        //     speedMin: 1,
+        //     speedMax: 5,
+        //     thickness: 10,
+        //     dashArray: 0.3,
+        //     dashRatio: 0.5,
+        //   });
+        //   const sparksRoot = new THREE.Object3D();
+        //   sparksRoot.scale.setScalar(0.09 * dieSize);
+        //   const sparksOffset = new THREE.Object3D();
+        //   sparksOffset.position.set(-radius / 2, -radius, 0);
+        //   sparksRoot.add(sparksOffset);
+        //   sparks.forEach((spark) => {
+        //     sparksOffset.add(spark.mesh);
+        //     updateSparks.push(spark.update);
+        //   });
+        //   staging.add(sparksRoot);
+        // }
       }
 
       // Render
@@ -210,7 +193,6 @@ class SceneRenderer {
       this._dispose = () => {
         this.stop();
         scene.clear();
-        //whiteLight.dispose();
         staging.traverse((o) => {
           const mesh = o as THREE.Mesh;
           if (mesh.isMesh) {

@@ -24,8 +24,6 @@ import {
 } from "react-native-paper";
 import {
   cancelAnimation,
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -51,7 +49,7 @@ import {
 import { AnimatedMaterialCommunityIcons } from "~/components/animated";
 import { Banner, PromoBanner } from "~/components/banners";
 import {
-  AnimatedGradientButton,
+  GradientButton,
   SelectionButton,
   TightTextButton,
 } from "~/components/buttons";
@@ -104,7 +102,7 @@ function PairDieBottomSheet({
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={["50%", "92%"]}
+      snapPoints={["50%"]}
       onDismiss={onDismiss}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
@@ -127,7 +125,7 @@ function PairDieBottomSheet({
           }}
         >
           <Text variant="titleMedium" style={{ alignSelf: "center" }}>
-            Select Pixels Dice to Add
+            Select Pixels Dice to Pair
           </Text>
           <BottomSheetScrollView>
             <View
@@ -162,16 +160,17 @@ function PairDieBottomSheet({
               </SelectionButton>
             ))}
           </BottomSheetScrollView>
-          {availablePixels.length > 0 && selected.length > 0 && (
-            <AnimatedGradientButton
-              entering={FadeIn.duration(300)}
-              exiting={FadeOut.duration(300)}
-              style={{ marginBottom: 20 }}
-              onPress={() => onDismiss(selected)}
-            >
-              Pair {selected.length} Pixels
-            </AnimatedGradientButton>
-          )}
+          <GradientButton
+            disabled={!selected.length}
+            style={{ marginBottom: 20 }}
+            onPress={() => onDismiss(selected)}
+          >
+            {!selected.length
+              ? "No Die Selected"
+              : selected.length === 1
+                ? "Pair 1 Pixels Die"
+                : `Pair ${selected.length} Pixels Dice`}
+          </GradientButton>
         </View>
       </ThemeProvider>
     </BottomSheetModal>
