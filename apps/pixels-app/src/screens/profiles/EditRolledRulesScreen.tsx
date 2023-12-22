@@ -34,7 +34,7 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 
-import { ActionDetails } from "./components/ActionDetails";
+import { ActionDetails, ActionDieRenderer } from "./components/ActionDetails";
 import { ConfigureActionModal } from "./components/ConfigureActionModal";
 
 import { actionTypes } from "~/actionTypes";
@@ -51,7 +51,6 @@ import {
 } from "~/descriptions";
 import { getHighestFace } from "~/features/getHighestFace";
 import { makeObservable } from "~/features/makeObservable";
-import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useEditableProfile } from "~/hooks";
 import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -185,7 +184,7 @@ function RolledConditionCard({
               </View>
               {type === "playAnimation" && (
                 <View style={styles.animationDie}>
-                  <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
+                  <ActionDieRenderer action={action} dieType={dieType} />
                 </View>
               )}
             </>

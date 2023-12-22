@@ -2,7 +2,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { readPattern } from "~/features/store/patterns";
+import { readPattern } from "~/features/store/profiles";
 
 export function usePatternsList(): Readonly<Profiles.Pattern>[] {
   const library = useAppSelector((state) => state.profilesLibrary);

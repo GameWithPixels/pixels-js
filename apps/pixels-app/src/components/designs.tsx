@@ -10,7 +10,7 @@ import { Text } from "react-native-paper";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
-import { DieRenderer } from "~/features/render3d/DieRenderer";
+import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 
 export function ColorDesignCard({
   pattern,
@@ -33,7 +33,7 @@ export function ColorDesignCard({
       {...props}
     >
       <View style={{ width: 100, aspectRatio: 1 }}>
-        <DieRenderer dieType={dieType} colorway="hematiteGrey" />
+        <DieRendererWithFocus dieType={dieType} colorway="hematiteGrey" />
       </View>
       <Text variant="titleMedium">{pattern.name}</Text>
       <Image

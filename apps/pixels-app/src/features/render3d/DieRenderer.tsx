@@ -1,6 +1,9 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { range } from "@systemic-games/pixels-core-utils";
 import {
+  AnimationBits,
+  AnimationInstance,
+  AnimationPreset,
+  GammaUtils,
   PixelColorway,
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
@@ -10,72 +13,34 @@ import React from "react";
 import { useErrorBoundary } from "react-error-boundary";
 import { Text } from "react-native-paper";
 
-import { MeshLine, MeshLineMaterial } from "./MeshLine";
+import { UpdateArgs, UpdateCallback } from "./UpdateCallback";
 import { createDie3DAsync } from "./createDie3DAsync";
+import { addPedestal } from "./pedestal";
 
 import Die3D from "~/pixels-three/Die3D";
 
-function addMagicRing(scene: THREE.Object3D, scale = 1) {
-  const makeRing = (
-    r0: number,
-    r1: number,
-    x?: number,
-    y?: number,
-    thetaStart?: number,
-    thetaEnd?: number
-  ) => {
-    const geometry = new THREE.RingGeometry(
-      scale * r0,
-      scale * r1,
-      r0 > 9 ? 64 : 32,
-      1,
-      thetaStart,
-      thetaEnd
+const animIndices: number[] = Array(20).fill(0);
+const animColors: number[] = Array(20).fill(0);
+
+function renderAnimation(
+  die3d: Die3D,
+  anim: AnimationInstance,
+  { time }: UpdateArgs
+): void {
+  animIndices.fill(0);
+  animColors.fill(0);
+  // Get LEDs colors
+  const count = anim.updateLEDs(time, animIndices, animColors);
+  // Light up die
+  const c = new THREE.Color();
+  for (let i = 0; i < count; ++i) {
+    const colorValue = animColors[i];
+    c.setRGB(
+      GammaUtils.reverseGamma8((colorValue >> 16) & 0xff) / 255,
+      GammaUtils.reverseGamma8((colorValue >> 8) & 0xff) / 255,
+      GammaUtils.reverseGamma8(colorValue & 0xff) / 255
     );
-    const material = new THREE.MeshBasicMaterial({
-      color: 0x29a057,
-      side: THREE.DoubleSide,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x ? scale * x : 0, -6 * scale, y ? scale * y : 0);
-    mesh.rotateX(Math.PI / 2);
-    scene.add(mesh);
-  };
-  makeRing(3, 4);
-  makeRing(5.8, 5.9);
-  makeRing(6.1, 6.2);
-  makeRing(9.8, 10);
-  makeRing(10.5, 11.5);
-  makeRing(13, 14);
-  makeRing(14.5, 14.7);
-  for (let i = 0; i < 12; i++) {
-    const r = 12.25;
-    makeRing(
-      0.5,
-      1,
-      r * Math.cos((i * Math.PI) / 6),
-      r * Math.sin((i * Math.PI) / 6)
-    );
-  }
-  for (let i = 0; i < 6; i++) {
-    const r = 6;
-    makeRing(
-      1,
-      1.5,
-      r * Math.cos((i * Math.PI) / 3),
-      r * Math.sin((i * Math.PI) / 3)
-    );
-  }
-  for (let i = 0; i < 6; i++) {
-    const r = 10;
-    makeRing(
-      3,
-      3.2,
-      r * Math.cos((i * Math.PI) / 3),
-      r * Math.sin((i * Math.PI) / 3),
-      (i * Math.PI) / 3 + Math.PI / 2,
-      Math.PI
-    );
+    die3d.setLEDColor(animIndices[i], c);
   }
 }
 
@@ -110,7 +75,10 @@ class SceneRenderer {
     this._lights?.forEach((l) => l.dispose());
   }
 
-  setup(gl: ExpoWebGLRenderingContext, opt?: { withStage?: boolean }): void {
+  setup(
+    gl: ExpoWebGLRenderingContext,
+    opt?: { pedestal?: boolean; animationInstances?: AnimationInstance[] }
+  ): void {
     try {
       // Dispose resources from previous setup
       this._dispose?.();
@@ -148,48 +116,54 @@ class SceneRenderer {
 
       // Props
       const staging = new THREE.Object3D();
-      const updateSparks: ((deltaTime: number) => void)[] = [];
-      if (opt?.withStage) {
+      const update: UpdateCallback[] = [];
+      if (opt?.pedestal) {
         this._root.add(staging);
 
         // Magic ring
-        addMagicRing(staging, cameraDist / 40);
+        addPedestal(staging, cameraDist / 40);
         camera.position.z *= 2;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+        // Sparks
         // if (Platform.OS === "ios") {
-        //   // Sparks particles
-        //   const radius = 10;
-        //   const sparks = this._createSparks({
-        //     linesCount: 3,
-        //     pointsCount: 5,
-        //     colors: [
-        //       "#c06995",
-        //       "#de77c7",
-        //       "#df86df",
-        //       "#d998ee",
-        //       "#ceadf4",
-        //       "#c6bff9",
-        //     ],
-        //     radius,
-        //     speedMin: 1,
-        //     speedMax: 5,
-        //     thickness: 10,
-        //     dashArray: 0.3,
-        //     dashRatio: 0.5,
-        //   });
-        //   const sparksRoot = new THREE.Object3D();
-        //   sparksRoot.scale.setScalar(0.09 * dieSize);
-        //   const sparksOffset = new THREE.Object3D();
-        //   sparksOffset.position.set(-radius / 2, -radius, 0);
-        //   sparksRoot.add(sparksOffset);
-        //   sparks.forEach((spark) => {
-        //     sparksOffset.add(spark.mesh);
-        //     updateSparks.push(spark.update);
-        //   });
-        //   staging.add(sparksRoot);
+        //   update.push(...addSparks(staging, dieSize));
         // }
       }
+
+      if (opt?.animationInstances?.length) {
+        const animations = opt.animationInstances;
+        let lastTime = 0;
+        let endTime = 0;
+        let animIndex = -1;
+        update.push((args: UpdateArgs) => {
+          // Switch to next animation after 1 second delay
+          if (animIndex < 0 || args.time > endTime + 1000) {
+            animIndex = (animIndex + 1) % animations.length;
+            const anim = animations[animIndex];
+            anim.start(args.time);
+            endTime = anim.startTime + anim.duration;
+          }
+          // Limit animation to 30 FPS
+          if (args.time - lastTime > 33) {
+            if (args.time <= endTime) {
+              renderAnimation(this._die3d, animations[animIndex], args);
+            } else {
+              this._die3d.clearLEDs();
+            }
+            lastTime = args.time;
+          }
+        });
+      }
+
+      // update.push(({ time }: UpdateArgs) => {
+      //   // Light random LED
+      //   const ledIndex = Math.floor(Math.random() * this._die3d.faceCount);
+      //   this._die3d.setLEDColor(
+      //     ledIndex,
+      //     new THREE.Color(Math.random(), Math.random(), Math.random())
+      //   );
+      // });
 
       // Render
       const renderScene = () => {
@@ -216,9 +190,9 @@ class SceneRenderer {
       };
 
       this._renderLoop = this._createRenderLoopFunc(
-        !opt?.withStage,
+        !opt?.pedestal,
         renderScene,
-        updateSparks
+        update
       );
     } catch (error) {
       console.error("Error while setting up ThreeJS scene graph", error);
@@ -237,7 +211,7 @@ class SceneRenderer {
   private _createRenderLoopFunc(
     rotateX: boolean,
     renderScene: () => void,
-    updateSparks: ((deltaTime: number) => void)[]
+    update: UpdateCallback[]
   ): () => void {
     // Create render function
     let lastTime = Date.now();
@@ -255,14 +229,9 @@ class SceneRenderer {
         this._root.rotation.y -= r / 5000;
         lastTime = time;
 
-        // Light random LED
-        // const ledIndex = Math.floor(Math.random() * this._die3d.faceCount);
-        // this._die3d.setLEDColor(
-        //   ledIndex,
-        //   new THREE.Color(Math.random(), Math.random(), Math.random())
-        // );
-
-        updateSparks.forEach((update) => update(deltaTime));
+        // Update animations
+        const args = { time, deltaTime } as const;
+        update.forEach((update) => update(args));
 
         try {
           renderScene();
@@ -302,79 +271,18 @@ class SceneRenderer {
         return 2.5;
     }
   }
+}
 
-  // https://varun.ca/three-js-particles/
-  // https://github.com/winkerVSbecks/3d-particle-effects-demo/blob/main/src/Scene.js
-  private _createSparks({
-    linesCount,
-    pointsCount,
-    colors,
-    radius,
-    thickness,
-    speedMin,
-    speedMax,
-    dashArray,
-    dashRatio,
-  }: {
-    linesCount: number;
-    pointsCount: number;
-    colors: string[];
-    radius: number;
-    thickness: number;
-    speedMin: number;
-    speedMax: number;
-    dashArray: number;
-    dashRatio: number;
-  }): {
-    mesh: THREE.Mesh<MeshLine, THREE.ShaderMaterial>;
-    update: (deltaTime: number) => number;
-  }[] {
-    const radiusVariance = () => 0.2 + 0.8 * Math.random();
-    const lines = range(linesCount).map((lineIndex) => {
-      const pos = new THREE.Vector3(
-        Math.sin(0) * radius * radiusVariance(),
-        Math.cos(0) * radius * radiusVariance(),
-        Math.sin(0) * Math.cos(0) * radius * radiusVariance()
-      );
-      const points = range(pointsCount).map((i) => {
-        const angle = (i / pointsCount) * Math.PI * 2;
-        return pos
-          .add(
-            new THREE.Vector3(
-              Math.sin(angle) * radius * radiusVariance(),
-              Math.cos(angle) * radius * radiusVariance(),
-              Math.sin(angle) * Math.cos(angle) * radius * radiusVariance()
-            )
-          )
-          .clone();
-      });
-      const curve = new THREE.CatmullRomCurve3(points).getPoints(100);
-      return {
-        color: colors[Math.floor(colors.length * Math.random())],
-        width: ((lineIndex + 1) / linesCount / 1000) * thickness,
-        speed: (speedMin + (speedMax - speedMin) * Math.random()) / 10000,
-        curve,
-      };
-    });
-
-    return lines.map(({ curve, width, color, speed }) => {
-      const line = new MeshLine();
-      line.setPoints(curve);
-      const material = new MeshLineMaterial({
-        transparent: true,
-        depthTest: true,
-        lineWidth: width,
-        color: new THREE.Color(color),
-        dashArray,
-        dashRatio,
-      }) as THREE.ShaderMaterial;
-      return {
-        mesh: new THREE.Mesh(line, material),
-        update: (deltaTime: number) =>
-          (material.uniforms.dashOffset.value -= speed * deltaTime),
-      };
-    });
-  }
+export interface DieRendererProps {
+  dieType: PixelDieType;
+  colorway: PixelColorway;
+  paused?: boolean;
+  speed?: number;
+  pedestal?: boolean;
+  animationsData?: {
+    animations: AnimationPreset[];
+    bits: AnimationBits;
+  };
 }
 
 /**
@@ -384,14 +292,11 @@ class SceneRenderer {
 export function DieRenderer({
   dieType,
   colorway,
+  paused,
   speed,
-  withStage,
-}: {
-  dieType: PixelDieType;
-  colorway: PixelColorway;
-  speed?: number;
-  withStage?: boolean;
-}) {
+  pedestal,
+  animationsData,
+}: DieRendererProps) {
   const { showBoundary } = useErrorBoundary();
 
   const [loaded, setLoaded] = React.useState(false);
@@ -414,27 +319,42 @@ export function DieRenderer({
     };
   }, [colorway, dieType, showBoundary]);
 
+  // Setup renderer
+  const initArgsRef = React.useRef({ paused, speed, pedestal });
+  initArgsRef.current.paused = paused;
+  initArgsRef.current.speed = speed;
+  initArgsRef.current.pedestal = pedestal;
   const onContextCreate = React.useCallback(
     (gl: ExpoWebGLRenderingContext) => {
       const renderer = rendererRef.current;
       if (renderer) {
-        renderer.setup(gl, { withStage });
-        renderer.start();
+        const { paused, speed, pedestal } = initArgsRef.current;
+        const animationInstances = animationsData
+          ? animationsData.animations.map((a) =>
+              a.createInstance(animationsData.bits)
+            )
+          : undefined;
+        renderer.setup(gl, { pedestal, animationInstances });
+        if (!paused) {
+          renderer.start();
+        }
         renderer.speed = speed ?? 1;
       }
     },
-    [speed, withStage]
+    [animationsData]
   );
 
-  useFocusEffect(
-    React.useCallback(() => {
+  // Pause/resume renderer
+  React.useEffect(() => {
+    if (!paused) {
       rendererRef.current?.start();
       return () => {
         rendererRef.current?.stop();
       };
-    }, [])
-  );
+    }
+  }, [paused]);
 
+  // Update speed, it's just prop => no need to use an effect
   if (rendererRef.current) {
     rendererRef.current.speed = speed ?? 1;
   }
@@ -448,4 +368,17 @@ export function DieRenderer({
       )}
     </>
   );
+}
+
+export function DieRendererWithFocus({
+  ...props
+}: Omit<DieRendererProps, "paused">) {
+  const [paused, setPaused] = React.useState(false);
+  useFocusEffect(
+    React.useCallback(() => {
+      setPaused(false);
+      return () => setPaused(true);
+    }, [])
+  );
+  return <DieRenderer {...props} paused={paused} />;
 }

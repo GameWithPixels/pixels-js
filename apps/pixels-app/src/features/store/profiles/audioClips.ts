@@ -2,8 +2,8 @@ import { assert } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
-import { LibraryState } from "./profilesLibrarySlice";
-import { storeLog } from "./storeLog";
+import { LibraryState } from "../profilesLibrarySlice";
+import { storeLog } from "../storeLog";
 
 import { makeObservable } from "~/features/makeObservable";
 

@@ -3,8 +3,8 @@ import { Serializable } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
-import { LibraryState } from "./profilesLibrarySlice";
-import { storeLog } from "./storeLog";
+import { LibraryState } from "../profilesLibrarySlice";
+import { storeLog } from "../storeLog";
 
 import { makeObservable } from "~/features/makeObservable";
 
@@ -18,7 +18,7 @@ interface GradientCache {
 
 const loadedGradients = new Map<string, GradientCache>();
 
-export function create(uuid: string): GradientCache {
+function create(uuid: string): GradientCache {
   storeLog("create", "gradient", uuid);
   const gradientCache = {
     gradient: makeObservable(new Profiles.RgbGradient({ uuid })),

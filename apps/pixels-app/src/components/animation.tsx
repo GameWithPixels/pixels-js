@@ -1,9 +1,12 @@
 import { range } from "@systemic-games/pixels-core-utils";
+import { createDataSetForAnimation } from "@systemic-games/pixels-edit-animation";
 import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
+import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
+import React from "react";
 import { View, ViewProps } from "react-native";
 import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -11,7 +14,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { getTextColorStyle } from "./utils";
 
-import { DieRenderer } from "~/features/render3d/DieRenderer";
+import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 
 const AnimationName = observer(function AnimationName({
   animation,
@@ -27,6 +30,33 @@ const AnimationName = observer(function AnimationName({
     <Text numberOfLines={1} style={textStyle} variant="titleMedium">
       {animation.name}
     </Text>
+  );
+});
+
+export const AnimationDieRenderer = observer(function ActionDieRenderer({
+  animation,
+  dieType,
+}: {
+  animation: Readonly<Profiles.Animation>;
+  dieType: PixelDieType;
+}) {
+  const animationsData = React.useMemo(
+    () =>
+      computed(() => {
+        const dataSet = createDataSetForAnimation(animation).toDataSet();
+        return {
+          animations: dataSet.animations,
+          bits: dataSet.animationBits,
+        };
+      }),
+    [animation]
+  ).get();
+  return (
+    <DieRendererWithFocus
+      dieType={dieType}
+      colorway="onyxBlack"
+      animationsData={animationsData}
+    />
   );
 });
 
@@ -60,7 +90,7 @@ export function AnimationCard({
         {...props}
       >
         <View style={{ width: row ? 70 : 100, aspectRatio: 1, padding: 10 }}>
-          <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
+          <AnimationDieRenderer animation={animation} dieType={dieType} />
         </View>
         <AnimationName
           animation={animation}

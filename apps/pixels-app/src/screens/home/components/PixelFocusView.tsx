@@ -25,7 +25,7 @@ import { Chip, GradientChip } from "~/components/buttons";
 import { ProfileCard } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
-import { DieRenderer } from "~/features/render3d/DieRenderer";
+import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import { useActiveProfile, useConfirmActionSheet } from "~/hooks";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
@@ -148,7 +148,7 @@ function RollingDie({ pixel, disabled }: { pixel: Pixel; disabled: boolean }) {
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
   return (
-    <DieRenderer
+    <DieRendererWithFocus
       dieType={pixel.dieType}
       colorway={pixel.colorway}
       speed={disabled ? 0 : rolling ? 10 : 1}

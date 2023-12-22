@@ -1,34 +1,20 @@
 import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
-import {
-  Pixel,
-  ScannedPixel,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, RssiIcon } from "./icons";
+import { ProfileDieRenderer } from "./profile";
 import { getTextColorStyle, makeTransparent } from "./utils";
 
-import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useActiveProfile } from "~/hooks";
 
-export function ScannedPixelCard({
-  scannedPixel,
-  ...props
-}: {
-  scannedPixel: ScannedPixel;
-} & Omit<TouchableCardProps, "children">) {
+export function PixelDieRenderer({ pixel }: { pixel: Pixel }) {
+  const { activeProfile } = useActiveProfile(pixel);
   return (
-    <TouchableCard {...props}>
-      <View style={{ width: 70, aspectRatio: 1 }}>
-        <DieRenderer
-          dieType={scannedPixel.dieType}
-          colorway={scannedPixel.colorway}
-        />
-      </View>
-    </TouchableCard>
+    <ProfileDieRenderer profile={activeProfile} colorway={pixel.colorway} />
   );
 }
 
@@ -100,7 +86,7 @@ export function PixelVCard({
             aspectRatio: 1,
           }}
         >
-          <DieRenderer dieType={pixel.dieType} colorway={pixel.colorway} />
+          <PixelDieRenderer pixel={pixel} />
         </View>
       )}
       <Text
@@ -133,7 +119,7 @@ export function PixelHCard({
   return (
     <TouchableCard row {...props}>
       <View style={{ width: 70, aspectRatio: 1, padding: 5 }}>
-        <DieRenderer dieType={pixel.dieType} colorway={pixel.colorway} />
+        <PixelDieRenderer pixel={pixel} />
       </View>
       <View
         style={{

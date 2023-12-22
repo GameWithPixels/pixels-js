@@ -3,7 +3,7 @@ import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
-import { readAnimation } from "~/features/store/animations";
+import { readAnimation } from "~/features/store/profiles";
 
 export function useAnimation(
   animationUuid: string

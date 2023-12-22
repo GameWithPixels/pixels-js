@@ -15,13 +15,13 @@ import {
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithTitle } from "~/components/SliderWithTitle";
+import { AnimationDieRenderer } from "~/components/animation";
 import {
   ButtonWithCarets,
   GradientButton,
   MenuButton,
   OutlineButton,
 } from "~/components/buttons";
-import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { useConfirmActionSheet, useEditableAnimation } from "~/hooks";
 import { EditAnimationScreenProps } from "~/navigation";
 
@@ -89,7 +89,7 @@ function EditAnimationPage({
           }}
         >
           <View style={{ width: 200, aspectRatio: 1, alignSelf: "center" }}>
-            <DieRenderer dieType="d20" colorway="hematiteGrey" />
+            <AnimationDieRenderer dieType="d20" animation={animation} />
           </View>
           <GradientButton
             style={{ width: "50%", alignSelf: "center" }}
