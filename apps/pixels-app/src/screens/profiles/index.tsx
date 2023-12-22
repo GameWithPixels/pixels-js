@@ -28,7 +28,10 @@ export function ProfilesStack({ route }: ProfilesStackProps) {
         <Stack.Screen
           name="editProfileStack"
           component={EditProfilesStack}
-          options={getStackNavigationOptions("bottom-sheet")}
+          options={{
+            ...getStackNavigationOptions("bottom-sheet"),
+            gestureEnabled: false, // TODO disable gestures because sliding down bottom sheet also slides down screen
+          }}
         />
       </Stack.Navigator>
     </ThemeProvider>
