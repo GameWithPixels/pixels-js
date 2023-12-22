@@ -51,6 +51,20 @@ const PairedDiceSlice = createSlice({
     resetPairedDice(state) {
       state.dice = [];
     },
+    setPairedDieName(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        name: string;
+      }>
+    ) {
+      const pairedDie = state.dice.find(
+        ({ pixelId }) => pixelId === action.payload.pixelId
+      );
+      if (pairedDie) {
+        pairedDie.name = action.payload.name;
+      }
+    },
     setPairedDieProfile(
       state,
       action: PayloadAction<{
@@ -83,6 +97,7 @@ export const {
   addPairedDie,
   removePairedDie,
   resetPairedDice,
+  setPairedDieName,
   setPairedDieProfile,
   addPairedDieRoll,
 } = PairedDiceSlice.actions;
