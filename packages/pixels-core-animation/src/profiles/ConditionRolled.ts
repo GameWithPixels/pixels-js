@@ -8,9 +8,9 @@ import { ConditionTypeValues } from "./ConditionType";
  * @category Profile Condition
  */
 export default class ConditionFaceCompare implements Condition {
-  @serializable(1)
+  @serializable(1, { padding: 3 })
   type: number = ConditionTypeValues.rolled;
 
-  @serializable(1)
+  @serializable(4)
   faceMask = 0;
 }
