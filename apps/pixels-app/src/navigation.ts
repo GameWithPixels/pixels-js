@@ -179,6 +179,7 @@ export type SettingsStackParamList = {
   settingsMenu: undefined;
   systemInfo: undefined;
   firmwareInfo: undefined;
+  support: undefined;
 };
 
 export type SettingsMenuScreenProps = CompositeScreenProps<
@@ -194,6 +195,11 @@ export type SettingsInfoScreenProps = NativeStackScreenProps<
 export type FirmwareInfoScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "firmwareInfo"
+>;
+
+export type SupportScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "support"
 >;
 
 export function getStackNavigationOptions(

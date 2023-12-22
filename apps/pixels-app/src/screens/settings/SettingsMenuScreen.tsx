@@ -34,6 +34,7 @@ const pages = [
   "Dice Software Information",
   "Reset App Settings",
   "Check for Update",
+  "Support",
 ] as const;
 
 function SettingsMenuPage({
@@ -61,6 +62,10 @@ function SettingsMenuPage({
         break;
       case "Check for Update":
         onFetchUpdateAsync();
+        break;
+      case "Support":
+        navigation.navigate("support");
+        break;
     }
   };
   return (

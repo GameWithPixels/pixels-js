@@ -4,6 +4,7 @@ import { ThemeProvider } from "react-native-paper";
 
 import { FirmwareInfoScreen } from "./FirmwareInfoScreen";
 import { SettingsMenuScreen } from "./SettingsMenuScreen";
+import { SupportScreen } from "./SupportScreen";
 import { SystemInfoScreen } from "./SystemInfoScreen";
 
 import {
@@ -22,6 +23,7 @@ export function SettingsStack({ route }: SettingsStackProps) {
         <Stack.Screen name="settingsMenu" component={SettingsMenuScreen} />
         <Stack.Screen name="systemInfo" component={SystemInfoScreen} />
         <Stack.Screen name="firmwareInfo" component={FirmwareInfoScreen} />
+        <Stack.Screen name="support" component={SupportScreen} />
       </Stack.Navigator>
     </ThemeProvider>
   );
