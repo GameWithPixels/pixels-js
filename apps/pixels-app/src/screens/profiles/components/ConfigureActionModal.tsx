@@ -34,11 +34,13 @@ import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function PickAnimationModal({
   animation,
+  dieType,
   onSelectAnimation,
   visible,
   onDismiss,
 }: {
   animation?: Readonly<Profiles.Animation>;
+  dieType?: PixelDieType;
   onSelectAnimation?: (animation: Readonly<Profiles.Animation>) => void;
   onDismiss: () => void;
   visible: boolean;
@@ -83,6 +85,7 @@ function PickAnimationModal({
           <Text variant="titleMedium">Select Animation</Text>
           <AnimationsGrid
             animations={animations}
+            dieType={dieType}
             numColumns={2}
             selected={animation}
             onSelectAnimation={onSelectAnimation}
@@ -239,9 +242,11 @@ const ConfigureBatteryCondition = observer(function ConfigureBatteryCondition({
 const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   action,
   conditionType,
+  dieType,
 }: {
   action: Profiles.ActionPlayAnimation;
   conditionType: Profiles.ConditionType;
+  dieType?: PixelDieType;
 }) {
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
   const defaultDuration = action.animation?.duration ?? 1;
@@ -263,6 +268,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       </GradientButton>
       <PickAnimationModal
         animation={action.animation}
+        dieType={dieType}
         onSelectAnimation={(anim) => {
           runInAction(() => (action.animation = anim as Profiles.Animation)); // TODO readonly
           setAnimPickerVisible(false);
@@ -458,6 +464,7 @@ export const ConfigureActionModal = observer(function ConfigureActionModal({
             <ConfigurePlayAnimation
               action={action as Profiles.ActionPlayAnimation}
               conditionType={condition.type}
+              dieType={dieType}
             />
           ) : action.type === "playAudioClip" ? (
             <ConfigurePlayAudioClip

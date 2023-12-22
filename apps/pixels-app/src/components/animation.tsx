@@ -113,12 +113,14 @@ export function AnimationCard({
 
 export interface AnimationsListProps extends ViewProps {
   animations: Readonly<Profiles.Animation>[];
+  dieType?: PixelDieType;
   selected?: Readonly<Profiles.Animation>;
   onSelectAnimation?: (animation: Readonly<Profiles.Animation>) => void;
 }
 
 export function AnimationsList({
   animations,
+  dieType,
   selected,
   onSelectAnimation,
   ...props
@@ -130,7 +132,7 @@ export function AnimationsList({
           key={a.uuid}
           row
           animation={a}
-          dieType="d20"
+          dieType={dieType ?? "d20"}
           selected={a === selected}
           noTopBorder={i > 0}
           squaredTopBorder={i > 0}
@@ -145,6 +147,7 @@ export function AnimationsList({
 
 function AnimationsColumn({
   animations,
+  dieType,
   selected,
   onSelectAnimation,
   style,
@@ -156,7 +159,7 @@ function AnimationsColumn({
         <AnimationCard
           key={a.uuid}
           animation={a}
-          dieType="d20"
+          dieType={dieType ?? "d20"}
           selected={a === selected}
           fadeInDuration={300}
           fadeInDelay={i * 50}
@@ -169,6 +172,7 @@ function AnimationsColumn({
 
 export function AnimationsGrid({
   animations,
+  dieType,
   numColumns = 2,
   selected,
   onSelectAnimation,
@@ -183,6 +187,7 @@ export function AnimationsGrid({
         <AnimationsColumn
           key={col}
           animations={animations.filter((_, i) => i % numColumns === col)}
+          dieType={dieType}
           selected={selected}
           onSelectAnimation={onSelectAnimation}
         />

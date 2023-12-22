@@ -87,7 +87,7 @@ export default class Die3D extends THREE.Object3D {
 
   getLEDColor(index: number): THREE.Color {
     const material = this._materials[index];
-    return material ? material.emissive.clone() : new THREE.Color();
+    return material ? material.emissive.clone() : new THREE.Color(0);
   }
 
   setLEDColor(index: number, color: THREE.Color | number): void {
@@ -96,7 +96,7 @@ export default class Die3D extends THREE.Object3D {
   }
 
   clearLEDs(): void {
-    const c = new THREE.Color();
+    const c = new THREE.Color(0);
     for (let i = 0; i < this.faceCount; ++i) {
       this._setColor(i, c);
     }
