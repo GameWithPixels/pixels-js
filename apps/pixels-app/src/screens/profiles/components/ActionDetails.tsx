@@ -1,14 +1,17 @@
+import { createDataSetForAnimation } from "@systemic-games/pixels-edit-animation";
 import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
+import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
+import React from "react";
 import { View, StyleSheet, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
 import { ActionTypeIcon } from "~/components/actions";
 import { getFacesAsText } from "~/descriptions";
-import { DieRenderer } from "~/features/render3d/DieRenderer";
+import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import { AppStyles } from "~/styles";
 
 function getCountAsText(count: number) {
@@ -19,9 +22,9 @@ function getActionText(action: Profiles.Action): string {
   switch (action.type) {
     case "playAnimation": {
       const act = action as Profiles.ActionPlayAnimation;
-      let msg = `Play "${act.animation?.name ?? ""}" ${getCountAsText(
-        act.loopCount
-      )}`;
+      let msg = act.animation?.name
+        ? `Play "${act.animation.name}" ${getCountAsText(act.loopCount)}`
+        : "No animation selected";
       if (act.duration !== undefined) {
         msg += ` for ${act.duration.toFixed(1)}s`;
       }
@@ -108,6 +111,36 @@ export const ConditionDetails = observer(function ConditionDetails({
   ) : null;
 });
 
+export const ActionDieRenderer = observer(function ActionDieRenderer({
+  action,
+  dieType,
+}: {
+  action: Readonly<Profiles.Action>;
+  dieType: PixelDieType;
+}) {
+  const animationsData = React.useMemo(
+    () =>
+      computed(() => {
+        const animation = action.collectAnimations()[0];
+        if (animation) {
+          const dataSet = createDataSetForAnimation(animation).toDataSet();
+          return {
+            animations: dataSet.animations,
+            bits: dataSet.animationBits,
+          };
+        }
+      }),
+    [action]
+  ).get();
+  return (
+    <DieRendererWithFocus
+      dieType={dieType}
+      colorway="onyxBlack"
+      animationsData={animationsData}
+    />
+  );
+});
+
 export function ActionDetailsCard({
   action,
   condition,
@@ -127,7 +160,7 @@ export function ActionDetailsCard({
             <ActionDetails action={action} />
           </View>
           <View style={styles.animationDie}>
-            <DieRenderer dieType={dieType} colorway="midnightGalaxy" />
+            <ActionDieRenderer dieType={dieType} action={action} />
           </View>
         </View>
       ) : (

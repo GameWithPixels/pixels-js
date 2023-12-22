@@ -10,14 +10,14 @@ import { runInAction } from "mobx";
 
 import { readAnimation } from "./animations";
 import { readAudioClip } from "./audioClips";
-import { LibraryState } from "./profilesLibrarySlice";
-import { storeLog } from "./storeLog";
+import { LibraryState } from "../profilesLibrarySlice";
+import { storeLog } from "../storeLog";
 
 import { makeObservable } from "~/features/makeObservable";
 
 const loadedProfiles = new Map<string, Profiles.Profile>();
 
-export function create(uuid: string, skipAdd: boolean): Profiles.Profile {
+function create(uuid: string, skipAdd: boolean): Profiles.Profile {
   storeLog("create", "profile", uuid); // `rules: ${profile?.rules.map((r) => `${r.condition.type}=>${r.actions.length}`)}`
   const profile = makeObservable(new Profiles.Profile({ uuid }));
   if (!skipAdd) {

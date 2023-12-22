@@ -14,8 +14,8 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 import { GradientButton, OutlineButton } from "~/components/buttons";
+import { ProfileDieRenderer } from "~/components/profile";
 import { getConditionTypeLabel } from "~/descriptions";
-import { DieRenderer } from "~/features/render3d/DieRenderer";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
 import { useEditableProfile } from "~/hooks";
 
@@ -97,7 +97,7 @@ export function EditProfile({
       {...props}
     >
       <View style={{ width: "50%", aspectRatio: 1, alignSelf: "center" }}>
-        <DieRenderer dieType={profile.dieType} colorway="onyxBlack" />
+        <ProfileDieRenderer profile={profile} pedestal />
       </View>
       {showActionButtons && (
         <View

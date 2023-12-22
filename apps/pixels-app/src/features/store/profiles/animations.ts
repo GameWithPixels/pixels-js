@@ -8,8 +8,8 @@ import { runInAction } from "mobx";
 
 import { readGradient } from "./gradients";
 import { readPattern } from "./patterns";
-import { LibraryState } from "./profilesLibrarySlice";
-import { storeLog } from "./storeLog";
+import { LibraryState } from "../profilesLibrarySlice";
+import { storeLog } from "../storeLog";
 
 import { makeObservable } from "~/features/makeObservable";
 

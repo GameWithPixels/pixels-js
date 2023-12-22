@@ -3,8 +3,8 @@ import { Serializable } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
-import { LibraryState } from "./profilesLibrarySlice";
-import { storeLog } from "./storeLog";
+import { LibraryState } from "../profilesLibrarySlice";
+import { storeLog } from "../storeLog";
 
 import { makeObservable } from "~/features/makeObservable";
 
@@ -20,7 +20,7 @@ interface KeyframesCache {
 
 const loadedPatterns = new Map<string, PatternCache>();
 
-export function create(uuid: string): PatternCache {
+function create(uuid: string): PatternCache {
   storeLog("create", "pattern", uuid);
   const patternCache = {
     pattern: makeObservable(new Profiles.Pattern({ uuid })),
@@ -56,12 +56,11 @@ function updatePattern(
     let keyframes = patternCache.keyframesCache?.find(
       (e) => e.data === patternData.gradients[i].keyframes
     )?.keyframes;
-    if (keyframes) {
-      pattern.gradients[i].keyframes = keyframes;
-    } else {
+    if (!keyframes) {
       changed = true;
       keyframes = Serializable.toKeyframes(patternData.gradients[i].keyframes);
     }
+    pattern.gradients[i].keyframes = keyframes;
   }
   if (changed) {
     const cache = new Array(gradientsCount) as KeyframesCache[];

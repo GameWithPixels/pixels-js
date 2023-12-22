@@ -1,8 +1,13 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
+import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelColorway,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
+import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ViewProps } from "react-native";
@@ -23,7 +28,7 @@ import { Chip, GradientChip } from "./buttons";
 import { getBorderColor, getTextColorStyle, makeTransparent } from "./utils";
 
 import { useAppSelector } from "~/app/hooks";
-import { DieRenderer } from "~/features/render3d/DieRenderer";
+import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import {
   groupAndSortProfiles,
   ProfilesGrouping,
@@ -171,6 +176,44 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
   );
 });
 
+export const ProfileDieRenderer = observer(function ProfileDieRenderer({
+  profile,
+  colorway = "onyxBlack",
+  pedestal,
+}: {
+  profile: Readonly<Profiles.Profile>;
+  colorway?: PixelColorway;
+  pedestal?: boolean;
+}) {
+  const animationsData = React.useMemo(
+    () =>
+      computed(() => {
+        const rolledProfile = new Profiles.Profile({
+          ...profile,
+          rules: profile.rules.filter(
+            (r) =>
+              r.condition.type === "rolled" &&
+              r.actions.some((a) => a.type === "playAnimation")
+          ),
+        });
+        const dataSet = createDataSetForProfile(rolledProfile).toDataSet();
+        return {
+          animations: dataSet.animations,
+          bits: dataSet.animationBits,
+        };
+      }),
+    [profile]
+  ).get();
+  return (
+    <DieRendererWithFocus
+      dieType={profile.dieType}
+      colorway={colorway}
+      animationsData={animationsData}
+      pedestal={pedestal}
+    />
+  );
+});
+
 export function ProfileCard({
   profile,
   row,
@@ -287,11 +330,7 @@ export function ProfileCard({
                 paddingVertical: 2,
               }}
             >
-              <DieRenderer
-                dieType={profile.dieType}
-                colorway="onyxBlack"
-                withStage
-              />
+              <ProfileDieRenderer profile={profile} pedestal />
             </View>
             {transferring && (
               <ActivityIndicator style={{ position: "absolute" }} />
