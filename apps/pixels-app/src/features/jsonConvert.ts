@@ -137,7 +137,7 @@ function toAnimationsAndGradients(
               faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
               fade: data.fade ?? 0,
-              intensity: 128,
+              intensity: data.intensity ?? 0.5,
               cycles: 1,
             });
             break;

@@ -42,6 +42,7 @@ export type AnimationData = Partial<{
   count: number;
   fade: number;
   faces: number;
+  intensity: number;
   patternIndex: number;
   traveling: boolean;
   overrideWithFace: boolean;
