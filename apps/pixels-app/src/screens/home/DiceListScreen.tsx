@@ -1,10 +1,9 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Divider, IconButton, Menu, Text, useTheme } from "react-native-paper";
+import { Divider, IconButton, Text, useTheme } from "react-native-paper";
 import {
   cancelAnimation,
   FadeIn,
@@ -53,7 +52,6 @@ import {
 import { usePairedPixels } from "~/hooks";
 import { usePixelsScanner } from "~/hooks/usePixelsScanner";
 import { DiceListScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 type DiceViewMode = "focus" | "list" | "grid";
 
@@ -67,10 +65,8 @@ function PageActions({
   const appDispatch = useAppDispatch();
   const [visible, setVisible] = React.useState(false);
   const [sortVisible, setSortVisible] = React.useState(false);
-  const [discoMode, setDiscoMode] = React.useState(false);
   const groupBy = useAppSelector((state) => state.appSettings.diceGrouping);
   const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
-  const { colors } = useTheme();
   return (
     <>
       <HeaderBar
@@ -79,6 +75,9 @@ function PageActions({
         onShow={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
+        <Text variant="labelLarge" style={{ alignSelf: "center" }}>
+          View Modes
+        </Text>
         <View
           style={{
             flexDirection: "row",
@@ -103,7 +102,7 @@ function PageActions({
           })}
         </View>
         <Divider />
-        <Menu.Item
+        {/* <Menu.Item
           title="Sort"
           trailingIcon={() => (
             <MaterialCommunityIcons
@@ -130,7 +129,7 @@ function PageActions({
           )}
           contentStyle={AppStyles.menuItemWithIcon}
           onPress={() => setDiscoMode((d) => !d)}
-        />
+        /> */}
       </HeaderBar>
       <SortBottomSheet
         groups={DiceGroupingList}
@@ -260,7 +259,7 @@ function DiceListPage({
   };
 
   // Banners
-  const showPromo = useAppSelector(
+  const showWelcome = useAppSelector(
     (state) => state.appSettings.showWelcomeBanner
   );
   const showFocusModeHelp = useAppSelector(
@@ -307,7 +306,7 @@ function DiceListPage({
         >
           {isFocus && (
             <PromoBanner
-              visible={showPromo}
+              visible={showWelcome}
               collapsedMarginBottom={-10}
               style={{ marginTop: selectedPixel ? 0 : 32 }}
               onHide={() => appDispatch(setShowWelcomeBanner(false))}

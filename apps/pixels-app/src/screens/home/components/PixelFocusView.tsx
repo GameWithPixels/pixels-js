@@ -68,9 +68,16 @@ export function PixelFocusViewHeader({
   const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
     pixel.sendMessage("clearSettings");
   });
-  const showConfirmTurnOff = useConfirmActionSheet("Turn Die Off", () => {
-    pixel.turnOff();
-  });
+  const showConfirmTurnOff = useConfirmActionSheet(
+    "Turn Die Off",
+    () => {
+      pixel.turnOff();
+    },
+    {
+      message:
+        "Reminder: your die will stay off until placed back in its case with the lid closed.Alternatively you can turn it back on by holding a magnet to its upper face.",
+    }
+  );
   const [renameVisible, setRenameVisible] = React.useState(false);
   const textInputRef = React.useRef<RNTextInput>(null);
   React.useEffect(() => {
@@ -117,10 +124,11 @@ export function PixelFocusViewHeader({
               <DieMenu
                 visible={actionsMenuVisible}
                 anchor={{ x: (windowWidth - 230) / 2, y: 80 }}
+                disconnected={disabled}
                 onDismiss={() => setActionsMenuVisible(false)}
-                onFirmwareUpdate={onFirmwareUpdate}
-                onRename={() => setRenameVisible(true)}
                 onUnpair={onUnpair}
+                onUpdateFirmware={onFirmwareUpdate}
+                onRename={() => setRenameVisible(true)}
                 onReset={() => showConfirmReset()}
                 onTurnOff={() => showConfirmTurnOff()}
               />

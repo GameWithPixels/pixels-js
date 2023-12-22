@@ -2,6 +2,7 @@ import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   Pixel,
   usePixelStatus,
+  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
@@ -15,6 +16,7 @@ import { Banner } from "~/components/banners";
 import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
 import { ProfileCard } from "~/components/profile";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
+import { getRollStateLabel } from "~/descriptions";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { DieDetailsScreenProps } from "~/navigation";
 import { Colors } from "~/themes";
@@ -30,6 +32,28 @@ function SectionTitle({ children }: React.PropsWithChildren) {
     <Text variant="titleMedium" style={{ paddingTop: 8, marginBottom: -2 }}>
       {children}
     </Text>
+  );
+}
+
+export function DieStatus({
+  pixel,
+  style,
+  ...props
+}: { pixel: Pixel } & ViewProps) {
+  const status = usePixelStatus(pixel);
+  const [battery] = usePixelValue(pixel, "battery");
+  const [rollState] = usePixelValue(pixel, "rollState");
+  return (
+    <View style={[{ gap: 10 }, style]} {...props}>
+      <SectionTitle>Status</SectionTitle>
+      <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
+        <Text>Connection Status: {status}</Text>
+        <Text>Battery: {battery?.level ?? 0}%</Text>
+        <Text>Charging: {battery?.isCharging ? "yes" : "no"}</Text>
+        <Text>Roll Status: {getRollStateLabel(rollState?.state)}</Text>
+        <Text>Face Up: {rollState?.face ?? ""}</Text>
+      </View>
+    </View>
   );
 }
 
@@ -203,14 +227,15 @@ function DieDetailsPage({
           >
             A software update is available for your die.
           </Banner>
+          <DieStatus pixel={pixel} style={{ marginTop: 10 }} />
           <SectionTitle>Active Profile</SectionTitle>
           {activeProfile ? (
             <ProfileCard row profile={activeProfile} disabled={disabled} />
           ) : (
             <Text>No Profile!</Text>
           )}
-          <SectionTitle>Rolls Statistics</SectionTitle>
-          <DieStats pixel={pixel} style={{ marginTop: -10 }} />
+          {/* <SectionTitle>Rolls Statistics</SectionTitle>
+          <DieStats pixel={pixel} style={{ marginTop: -10 }} /> */}
           <DieAdvancedInfo pixel={pixel} style={{ marginTop: 10 }} />
         </GHScrollView>
       )}
