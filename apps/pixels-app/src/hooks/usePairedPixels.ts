@@ -15,6 +15,7 @@ import {
   addPairedDieRoll,
   PairedDie,
   removePairedDie,
+  setPairedDieName,
 } from "~/features/store/pairedDiceSlice";
 import { notEmpty, areArraysEqual } from "~/features/utils";
 
@@ -88,9 +89,19 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
         const onRoll = (roll: number) =>
           appDispatch(addPairedDieRoll({ pixelId: pixel.pixelId, roll }));
         pixel.addEventListener("roll", onRoll);
+        const onRename = ({ name }: PixelInfo) => {
+          appDispatch(
+            setPairedDieName({
+              pixelId: pixel.pixelId,
+              name,
+            })
+          );
+        };
+        pixel.addPropertyListener("name", onRename);
         activePixelsRef.current.set(pixel.pixelId, () => {
           pixel.removeEventListener("status", onStatus);
           pixel.removeEventListener("roll", onRoll);
+          pixel.removePropertyListener("name", onRename);
           // Disconnect
           disconnect(pixel);
         });
