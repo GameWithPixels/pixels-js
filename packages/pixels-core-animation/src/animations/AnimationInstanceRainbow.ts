@@ -1,3 +1,4 @@
+import { AnimationFlagsValues } from "./AnimationFlags";
 import AnimationInstance from "./AnimationInstance";
 import AnimationRainbow from "./AnimationRainbow";
 import { Constants } from "./Constants";
@@ -22,18 +23,18 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
 
     const wheelPos = ((time * preset.count * 255) / preset.duration) % 256;
 
-    let intensity = 255;
+    let intensity = preset.intensity;
     if (time <= fadeTime) {
       // Ramp up
-      intensity = (time * 255) / fadeTime;
+      intensity = (time * preset.intensity) / fadeTime;
     } else if (time >= preset.duration - fadeTime) {
       // Ramp down
-      intensity = ((preset.duration - time) * 255) / fadeTime;
+      intensity = ((preset.duration - time) * preset.intensity) / fadeTime;
     }
 
+    // Fill the indices and colors for the anim controller to know how to update LEDs
     let retCount = 0;
-    if (preset.animFlags) {
-      // Fill the indices and colors for the anim controller to know how to update LEDs
+    if (preset.animFlags & AnimationFlagsValues.traveling) {
       for (let i = 0; i < Constants.maxLEDsCount; ++i) {
         if ((preset.faceMask & (1 << i)) !== 0) {
           retIndices[retCount] = getFaceIndex(i);
@@ -52,7 +53,6 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
         Color32Utils.rainbowWheel(wheelPos, intensity)
       );
 
-      // Fill the indices and colors for the anim controller to know how to update LEDs
       for (let i = 0; i < Constants.maxLEDsCount; ++i) {
         if ((preset.faceMask & (1 << i)) !== 0) {
           retIndices[retCount] = i;
