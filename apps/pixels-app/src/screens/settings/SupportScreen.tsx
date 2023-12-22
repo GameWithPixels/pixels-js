@@ -10,6 +10,7 @@ import { SupportScreenProps } from "~/navigation";
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
 }
+
 interface OpenURLButtonProps {
   url: string;
   children: string;

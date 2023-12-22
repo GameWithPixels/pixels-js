@@ -30,23 +30,25 @@ function SystemInfoPage({
           gap: 20,
         }}
       >
-        <PaperText variant="titleLarge" style={{ marginTop: 20 }}>
-          App Information
-        </PaperText>
-        <Text>Name: {Application.applicationName}</Text>
-        <Text>Version: {Application.nativeApplicationVersion}</Text>
-        <Text>Build: {Application.nativeBuildVersion}</Text>
+        <PaperText variant="titleLarge">App Information</PaperText>
+        <View style={{ marginLeft: 10, gap: 10 }}>
+          <Text>Name: {Application.applicationName}</Text>
+          <Text>Version: {Application.nativeApplicationVersion}</Text>
+          <Text>Build: {Application.nativeBuildVersion}</Text>
+        </View>
         <PaperText variant="titleLarge" style={{ marginTop: 20 }}>
           OS Information
         </PaperText>
-        <Text>
-          {`Display Size: ${Math.round(window.width)}x${Math.round(
-            window.height
-          )}`}
-        </Text>
-        <Text>OS: {Platform.OS}</Text>
-        <Text>Version: {Platform.Version}</Text>
-        <Text>Locales: {locales.map((l) => l.languageCode).join(", ")}</Text>
+        <View style={{ marginLeft: 10, gap: 10 }}>
+          <Text>
+            {`Display Size: ${Math.round(window.width)}x${Math.round(
+              window.height
+            )}`}
+          </Text>
+          <Text>OS: {Platform.OS}</Text>
+          <Text>Version: {Platform.Version}</Text>
+          <Text>Locales: {locales.map((l) => l.languageCode).join(", ")}</Text>
+        </View>
       </ScrollView>
     </View>
   );
