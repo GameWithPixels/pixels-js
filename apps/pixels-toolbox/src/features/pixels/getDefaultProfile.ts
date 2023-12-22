@@ -27,7 +27,7 @@ import {
 
 export function getDefaultProfile(dieType: PixelDieType): DataSet {
   const profile = new EditProfile();
-  profile.name = "fixedRainbow";
+  profile.name = "default";
   // Hello
   profile.rules.push(
     new EditRule(
