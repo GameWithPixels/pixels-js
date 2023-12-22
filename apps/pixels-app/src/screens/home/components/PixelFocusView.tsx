@@ -75,7 +75,7 @@ export function PixelFocusViewHeader({
     },
     {
       message:
-        "Your die will stay off until placed back in its case with the lid on top. Alternatively you can turn it back on by flickering a magnet on its upper face.",
+        "Reminder: your die will stay off until placed back in its case with the lid closed.Alternatively you can turn it back on by holding a magnet to its upper face.",
     }
   );
   const [renameVisible, setRenameVisible] = React.useState(false);

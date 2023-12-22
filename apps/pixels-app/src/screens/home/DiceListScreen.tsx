@@ -259,7 +259,7 @@ function DiceListPage({
   };
 
   // Banners
-  const showPromo = useAppSelector(
+  const showWelcome = useAppSelector(
     (state) => state.appSettings.showWelcomeBanner
   );
   const showFocusModeHelp = useAppSelector(
@@ -306,7 +306,7 @@ function DiceListPage({
         >
           {isFocus && (
             <PromoBanner
-              visible={showPromo}
+              visible={showWelcome}
               collapsedMarginBottom={-10}
               style={{ marginTop: selectedPixel ? 0 : 32 }}
               onHide={() => appDispatch(setShowWelcomeBanner(false))}

@@ -82,8 +82,8 @@ export function PromoBanner({
       onDismiss={onHide}
       {...props}
     >
-      We rebuild it from scratch to make it more fun and intuitive to use.
-      Expect many new features in the coming months.
+      We rebuild it from scratch to make it more fun to use. Expect frequent
+      updates with new features in the coming months.
     </Banner>
   );
 }
