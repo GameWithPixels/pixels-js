@@ -86,33 +86,30 @@ export default class Die3D extends THREE.Object3D {
   }
 
   getLEDColor(index: number): THREE.Color {
-    this._checkLEDIndex(index);
-    return this._materials[index].emissive.clone();
+    const material = this._materials[index];
+    return material ? material.emissive.clone() : new THREE.Color(0);
   }
 
   setLEDColor(index: number, color: THREE.Color | number): void {
-    this._checkLEDIndex(index);
     const c = typeof color === "number" ? new THREE.Color(color) : color;
     this._setColor(index, c);
   }
 
   clearLEDs(): void {
-    const c = new THREE.Color(0, 0, 0);
+    const c = new THREE.Color(0);
     for (let i = 0; i < this.faceCount; ++i) {
       this._setColor(i, c);
     }
   }
 
-  private _checkLEDIndex(index: number) {
-    if (index < 0 || index >= this._materials.length) {
-      throw new Error(`Out of range LED index: ${index}`);
-    }
-  }
-
   private _setColor(index: number, color: THREE.Color): void {
-    this._materials[index].emissive.copy(color);
-    if (this._lights.length) {
-      this._lights[index].color.copy(color);
+    const material = this._materials[index];
+    if (material) {
+      material.emissive.copy(color);
+    }
+    const light = this._lights[index];
+    if (light) {
+      light.color.copy(color);
     }
   }
 }
