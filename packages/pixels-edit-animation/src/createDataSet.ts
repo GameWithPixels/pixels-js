@@ -30,7 +30,7 @@ function addAnimations(
 }
 
 export function createDataSetForAnimation(
-  animation: EditAnimation
+  animation: Readonly<EditAnimation>
 ): EditDataSet {
   // The EditDataSet that will only contain the given animation and its patterns
   const dataSet = new EditDataSet();
