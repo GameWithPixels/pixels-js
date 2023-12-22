@@ -239,30 +239,6 @@ export function getDefaultProfile(dieType: PixelDieType): DataSet {
     )
   );
 
-  // Charging Error
-  profile.rules.push(
-    new EditRule(
-      new EditConditionBatteryState({
-        flags: BatteryStateFlagsValues.error,
-        recheckAfter: 1.5,
-      }),
-      {
-        actions: [
-          new EditActionPlayAnimation({
-            animation: new EditAnimationSimple({
-              count: 1,
-              duration: 1,
-              color: Color.yellow,
-              faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
-            }),
-            face: DiceUtils.getTopFace(dieType),
-            loopCount: 1,
-          }),
-        ],
-      }
-    )
-  );
-
   const dataSet: DataSet = createDataSetForProfile(profile).toDataSet();
   return dataSet;
 }
