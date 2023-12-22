@@ -2,6 +2,7 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   PixelColorway,
   PixelDieType,
+  PixelRollState,
   PixelStatus,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
@@ -219,5 +220,23 @@ export function getPixelStatusLabel(status?: PixelStatus): string {
       return "Disconnecting...";
     default:
       assertNever(status);
+  }
+}
+
+export function getRollStateLabel(state?: PixelRollState): string {
+  switch (state) {
+    case undefined:
+    case "unknown":
+      return "";
+    case "onFace":
+      return "On Face";
+    case "handling":
+      return "Handling";
+    case "rolling":
+      return "Rolling";
+    case "crooked":
+      return "Crooked";
+    default:
+      assertNever(state);
   }
 }

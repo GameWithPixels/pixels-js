@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Divider, IconButton, Menu, useTheme } from "react-native-paper";
+import { Divider, IconButton, Menu, Text, useTheme } from "react-native-paper";
 import Animated, {
   useAnimatedRef,
   useScrollViewOffset,
@@ -66,6 +66,9 @@ function PageActions({
         onShow={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
+        <Text variant="labelLarge" style={{ alignSelf: "center" }}>
+          View Modes
+        </Text>
         <View
           style={{
             flexDirection: "row",

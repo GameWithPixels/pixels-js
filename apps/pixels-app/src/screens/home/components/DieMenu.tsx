@@ -12,17 +12,19 @@ import CalibrateIcon from "#/icons/home/calibrate";
 import { AppStyles } from "~/styles";
 
 export function DieMenu({
-  onFirmwareUpdate: onUpdateFirmware,
-  onRename,
+  disconnected,
   onUnpair,
+  onUpdateFirmware,
+  onRename,
   onCalibrate,
   onReset,
   onTurnOff,
   ...props
 }: {
-  onFirmwareUpdate?: () => void;
+  disconnected?: boolean;
+  onUnpair: () => void;
+  onUpdateFirmware?: () => void;
   onRename?: () => void;
-  onUnpair?: () => void;
   onCalibrate?: () => void;
   onReset?: () => void;
   onTurnOff?: () => void;
@@ -41,6 +43,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Update Firmware!"
+            disabled={disconnected}
             style={{
               backgroundColor: colors.errorContainer,
               borderRadius,
@@ -63,6 +66,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Rename"
+            disabled={disconnected}
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
                 name="rename-box"
@@ -79,30 +83,11 @@ export function DieMenu({
           <Divider />
         </>
       )}
-      {onUnpair && (
-        <>
-          <Menu.Item
-            title="Forget Die"
-            trailingIcon={({ size, color }) => (
-              <MaterialCommunityIcons
-                name="link-variant-off"
-                size={size}
-                color={color}
-              />
-            )}
-            contentStyle={AppStyles.menuItemWithIcon}
-            onPress={() => {
-              props.onDismiss?.();
-              onUnpair();
-            }}
-          />
-          <Divider />
-        </>
-      )}
       {onCalibrate && (
         <>
           <Menu.Item
             title="Calibrate"
+            disabled={disconnected}
             trailingIcon={({ size, color }) => (
               <CalibrateIcon size={size} color={color} />
             )}
@@ -119,6 +104,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Reset Die Settings"
+            disabled={disconnected}
             trailingIcon={({ size, color }) => (
               <Feather name="refresh-ccw" size={size} color={color} />
             )}
@@ -135,6 +121,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Turn Off"
+            disabled={disconnected}
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
                 name="power-standby"
@@ -148,8 +135,24 @@ export function DieMenu({
               onTurnOff();
             }}
           />
+          <Divider />
         </>
       )}
+      <Menu.Item
+        title="Unpair Die"
+        trailingIcon={({ size, color }) => (
+          <MaterialCommunityIcons
+            name="link-variant-off"
+            size={size}
+            color={color}
+          />
+        )}
+        contentStyle={AppStyles.menuItemWithIcon}
+        onPress={() => {
+          props.onDismiss?.();
+          onUnpair();
+        }}
+      />
     </Menu>
   );
 }
