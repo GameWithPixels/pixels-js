@@ -48,7 +48,7 @@ import {
   setDiceGrouping,
   setDiceSortMode,
   setShowFocusModeHelp,
-  setShowPromoBanner,
+  setShowWelcomeBanner,
 } from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
 import { usePixelsScanner } from "~/hooks/usePixelsScanner";
@@ -261,7 +261,7 @@ function DiceListPage({
 
   // Banners
   const showPromo = useAppSelector(
-    (state) => state.appSettings.showPromoBanner
+    (state) => state.appSettings.showWelcomeBanner
   );
   const showFocusModeHelp = useAppSelector(
     (state) => state.appSettings.showFocusModeHelp
@@ -309,7 +309,8 @@ function DiceListPage({
             <PromoBanner
               visible={showPromo}
               collapsedMarginBottom={-10}
-              onHide={() => appDispatch(setShowPromoBanner(false))}
+              style={{ marginTop: selectedPixel ? 0 : 32 }}
+              onHide={() => appDispatch(setShowWelcomeBanner(false))}
             />
           )}
           {isFocus && selectedPixel && (

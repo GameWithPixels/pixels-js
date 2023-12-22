@@ -74,33 +74,16 @@ export function PromoBanner({
   ViewProps) {
   return (
     <Banner
-      title="New Stuff!"
-      actionText="Read Update"
+      title="The New Pixels App!"
+      actionText="Dismiss"
       visible={visible}
       collapsedMarginBottom={collapsedMarginBottom}
-      onAction={() => {}}
+      onAction={onHide}
       onDismiss={onHide}
       {...props}
     >
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum in
-      malesuada leo.
-    </Banner>
-  );
-}
-
-export function WelcomeBanner({
-  onHide,
-  ...props
-}: { onHide: () => void } & ViewProps) {
-  return (
-    <Banner
-      title="Welcome! Let’s get started."
-      onAction={() => {}}
-      onDismiss={onHide}
-      {...props}
-    >
-      To get started connecting your die, open your case and your die should
-      appear below under “Available to Pair”.
+      We rebuild it from scratch to make it more fun to use. Expect frequent
+      updates with new features in the coming months.
     </Banner>
   );
 }

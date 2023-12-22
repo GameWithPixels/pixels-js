@@ -30,6 +30,7 @@ const pages = [
   // "Export Logs",
   // "Export Settings",
   // "Import Settings",
+  "Support",
   "System Information",
   "Dice Software Information",
   "Reset App Settings",
@@ -50,6 +51,9 @@ function SettingsMenuPage({
   });
   const openPage = (page: (typeof pages)[number]) => {
     switch (page) {
+      case "Support":
+        navigation.navigate("support");
+        break;
       case "System Information":
         navigation.navigate("systemInfo");
         break;
@@ -61,6 +65,7 @@ function SettingsMenuPage({
         break;
       case "Check for Update":
         onFetchUpdateAsync();
+        break;
     }
   };
   return (
@@ -71,7 +76,7 @@ function SettingsMenuPage({
       {pages.map((p, i) => (
         <MenuButton
           key={p}
-          iconSize={i >= 2 ? 0 : undefined}
+          iconSize={i >= 3 ? 0 : undefined}
           noTopBorder={i > 0}
           squaredTopBorder={i > 0}
           squaredBottomBorder={i < pages.length - 1}
