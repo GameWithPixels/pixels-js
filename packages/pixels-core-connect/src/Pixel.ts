@@ -1194,10 +1194,6 @@ export class Pixel extends PixelInfoNotifier {
       // Update properties
       setProperties(iAmADie);
 
-      console.log("!!!!! dataSetHash " + iAmADie.dataSetHash.toString(16));
-      console.log("!!!!! dataSetHash " + iAmADie.dataSetHash.toString(16));
-      console.log("!!!!! dataSetHash " + iAmADie.dataSetHash.toString(16));
-
       // Set versions
       const legacyVersion = 0x100;
       this._versions.firmwareVersion = legacyVersion;
