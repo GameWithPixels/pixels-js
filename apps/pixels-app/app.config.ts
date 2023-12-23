@@ -9,7 +9,7 @@ const config = {
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
     runtimeVersion: "49.0", // Major is Expo version, minor is native code revision
-    version: "0.5.0", // Version number must have 3 parts
+    version: "0.99.0", // Version number must have 3 parts
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",

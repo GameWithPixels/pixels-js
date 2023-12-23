@@ -1,8 +1,13 @@
+import { range } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForProfile,
   DataSet,
 } from "@systemic-games/pixels-edit-animation";
-import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  DiceUtils,
+  Pixel,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import { Alert } from "react-native";
 
 import {
@@ -18,7 +23,48 @@ export function transferProfile(
   pixel: Pixel,
   profile: Readonly<Profiles.Profile>
 ): void {
-  const ds = createDataSetForProfile(profile);
+  // Modify a copy of the profile to:
+  // - remove handling rules
+  // - set the actual faces of the "all" faces rolled condition
+  // - apply animation override
+  const modified = profile.duplicate();
+  modified.rules = modified.rules.filter(
+    (r) => r.condition.type !== "handling"
+  );
+  for (const rule of modified.rules) {
+    if (rule.condition.type === "rolled") {
+      const cond = rule.condition as Profiles.ConditionRolled;
+      if (cond.faces === "all") {
+        const at = rule.actions[0]?.type;
+        if (at) {
+          const other = modified.rules
+            .filter(
+              (r) => r.condition.type === "rolled" && r.actions[0]?.type === at
+            )
+            .flatMap((r) => {
+              const faces = (r.condition as Profiles.ConditionRolled).faces;
+              return faces === "all" ? [] : faces;
+            });
+          cond.faces = range(
+            1,
+            1 + DiceUtils.getFaceCount(pixel.dieType)
+          ).filter((f) => !other.includes(f));
+        }
+      }
+    }
+    for (const action of rule.actions) {
+      if (action.type === "playAnimation") {
+        const act = action as Profiles.ActionPlayAnimation;
+        if (act.animation && act.duration !== undefined) {
+          const anim = act.animation.duplicate();
+          anim.duration = act.duration;
+          act.animation = anim;
+        }
+      }
+    }
+  }
+
+  const ds = createDataSetForProfile(modified);
   console.log(
     `Transferring profile ${profile.name} to die ${pixel.pixelId
       .toString(16)
