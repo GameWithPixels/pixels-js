@@ -31,13 +31,13 @@ export function PairDiceBottomSheet({
   onDismiss: (pixels?: ScannedPixel[]) => void;
 }) {
   const sheetRef = React.useRef<BottomSheetModal>(null);
-  const [selected, setSelected] = React.useState<ScannedPixel[]>([]);
+  const [selection, setSelection] = React.useState<ScannedPixel[]>([]);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
     } else {
       sheetRef.current?.dismiss();
-      setSelected([]);
+      setSelection([]);
     }
   }, [visible]);
   const [showNoDie, setShowNoDie] = React.useState(false);
@@ -103,14 +103,14 @@ export function PairDiceBottomSheet({
               <SelectionButton
                 key={sp.pixelId}
                 icon={() => <DieWireframe dieType={sp.dieType} size={40} />}
-                selected={selected.includes(sp)}
+                selected={selection.includes(sp)}
                 noTopBorder={i > 0}
                 squaredTopBorder={i > 0}
                 squaredBottomBorder={i < availablePixels.length - 1}
                 onPress={() => {
-                  setSelected((selected) =>
+                  setSelection((selected) =>
                     selected.includes(sp)
-                      ? selected.filter((p1) => p1 !== sp)
+                      ? selected.filter((other) => other !== sp)
                       : [...selected, sp]
                   );
                 }}
@@ -120,15 +120,15 @@ export function PairDiceBottomSheet({
             ))}
           </BottomSheetScrollView>
           <GradientButton
-            disabled={!selected.length}
+            disabled={!selection.length}
             style={{ marginBottom: 20 }}
-            onPress={() => onDismiss(selected)}
+            onPress={() => onDismiss(selection)}
           >
-            {!selected.length
+            {!selection.length
               ? "No Die Selected"
-              : selected.length === 1
+              : selection.length === 1
                 ? "Pair 1 Pixels Die"
-                : `Pair ${selected.length} Pixels Dice`}
+                : `Pair ${selection.length} Pixels Dice`}
           </GradientButton>
         </View>
       </ThemeProvider>
