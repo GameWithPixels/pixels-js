@@ -75,7 +75,7 @@ export function PromoBanner({
   return (
     <Banner
       title="The New Pixels App!"
-      actionText="Dismiss"
+      actionText="Hide"
       visible={visible}
       collapsedMarginBottom={collapsedMarginBottom}
       onAction={onHide}

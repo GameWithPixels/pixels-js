@@ -31,7 +31,7 @@ import {
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { AnimatedMaterialCommunityIcons } from "~/components/animated";
-import { Banner, PromoBanner } from "~/components/banners";
+import { Banner } from "~/components/banners";
 import { AnimatedGradientButton, TightTextButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
 import {
@@ -47,7 +47,6 @@ import {
   setDiceGrouping,
   setDiceSortMode,
   setShowFocusModeHelp,
-  setShowWelcomeBanner,
 } from "~/features/store/appSettingsSlice";
 import { usePairedPixels } from "~/hooks";
 import { usePixelsScanner } from "~/hooks/usePixelsScanner";
@@ -259,9 +258,9 @@ function DiceListPage({
   };
 
   // Banners
-  const showWelcome = useAppSelector(
-    (state) => state.appSettings.showWelcomeBanner
-  );
+  // const showWelcome = useAppSelector(
+  //   (state) => state.appSettings.showWelcomeBanner
+  // );
   const showFocusModeHelp = useAppSelector(
     (state) => state.appSettings.showFocusModeHelp
   );
@@ -304,14 +303,14 @@ function DiceListPage({
             gap: 10,
           }}
         >
-          {isFocus && (
+          {/* TODO banner is causing visual glitches {isFocus && (
             <PromoBanner
               visible={showWelcome}
               collapsedMarginBottom={-10}
               style={{ marginTop: selectedPixel ? 0 : 32 }}
               onHide={() => appDispatch(setShowWelcomeBanner(false))}
             />
-          )}
+          )} */}
           {isFocus && selectedPixel && (
             <PixelFocusView
               pixel={selectedPixel}
