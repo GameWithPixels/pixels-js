@@ -409,23 +409,22 @@ function ScanSlide({
           style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 40 }}
         >
           <Text>
-            In order to let you customize your dice the app needs to connect to
-            your dice using Bluetooth.
+            To customize your Pixels Dice the app needs to establish a Bluetooth
+            connection.
           </Text>
           <Text>
             {scannerStatus === "stopped"
-              ? "Please make sure that you have Bluetooth turned on " +
-                "and give permission for the app to access Bluetooth " +
-                "when prompted after pressing the button bellow."
+              ? "Please ensure you have Bluetooth turned on and grant permissions " +
+                "through your device settings. Tap the Continue button to allow " +
+                "the app to request access."
               : scannerStatus instanceof BluetoothPermissionsDeniedError
-                ? "❌ The app was not given permission to use Bluetooth, " +
-                  "please tap on the button below again and give permission " +
-                  "for the app to access Bluetooth so it can connect to your dice."
+                ? "❌ The Pixels app does not have Bluetooth access and is unable " +
+                  "to connect to your dice. Please grant permissions through your " +
+                  "device settings and tap the Continue button."
                 : scannerStatus instanceof BluetoothTurnedOffError
-                  ? "❌ Bluetooth seems to be turned off, please first enable " +
-                    "Bluetooth in your system settings and then give permission " +
-                    "for the app to access Bluetooth after pressing the button " +
-                    "bellow again."
+                  ? "❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
+                    "through your device settings and grant the Pixels app access. " +
+                    "Then tap the Continue button."
                   : `❌ Got an unexpected error: ${getNativeErrorMessage(
                       scannerStatus
                     )}`}
@@ -438,7 +437,7 @@ function ScanSlide({
             }}
             onPress={onStartScan}
           >
-            Use Bluetooth
+            Continue
           </GradientButton>
         </Animated.View>
       ) : (
@@ -614,7 +613,7 @@ const StatusText = observer(function StatusText({
   return (
     <Text>
       {toUpdateCount
-        ? `${toUpdateCount} ${diceStr(toUpdateCount)} left to update.`
+        ? `Remaining dice to update: ${toUpdateCount}.`
         : erroredCount
           ? ""
           : (statuses.length <= 1 ? "Your die is" : "All your dice are") +
@@ -657,13 +656,15 @@ function UpdateDiceSlide({
         >
           <Text>We have a software update for your dice!</Text>
           <Text>
-            We recommend to update them so they work properly with the app. It
-            usually takes less than 20 seconds per die.
+            We recommend to keep all dice up-to-date with the latest software to
+            ensure that they stay compatible with the Pixels app.
           </Text>
           <Text>
-            Please ensure that the dice stay on and close to your phone during
-            the update process. You may place your dice inside the charging case
-            but do not close the lid as it will turn off the die.
+            To update your dice now, place them near your device and tap the
+            Update button. Dice may be placed in open chargers during the update
+            process. Avoid moving charger lids or other magnets nearby while the
+            update is in progress as it may turn the dice off. Updates should
+            take less than 30 seconds per die.
           </Text>
           {dfuBundle ? (
             <GradientButton
