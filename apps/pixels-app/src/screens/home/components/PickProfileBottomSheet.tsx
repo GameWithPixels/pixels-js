@@ -3,6 +3,7 @@ import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
+import { useAppSelector } from "~/app/hooks";
 import { ProfilePicker } from "~/components/ProfilePicker";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -23,18 +24,20 @@ import { getBottomSheetBackgroundStyle } from "~/themes";
 export function PickProfileBottomSheet({
   pixel,
   profile,
-  transferring,
   onSelectProfile,
   visible,
   onDismiss,
 }: {
   pixel: Pixel;
   profile?: Readonly<Profiles.Profile>;
-  transferring: boolean;
   onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
   visible: boolean;
   onDismiss: () => void;
 }) {
+  const profileUuid = useAppSelector(
+    (state) => state.diceRolls.transfer?.profileUuid
+  );
+
   const sheetRef = React.useRef<BottomSheetModal>(null);
   React.useEffect(() => {
     if (visible) {
@@ -68,13 +71,21 @@ export function PickProfileBottomSheet({
         >
           Active Profile on {pixel.name}
         </Text>
-        <ProfilePicker
-          selected={profile}
-          dieType={pixel.dieType}
-          transferring={transferring}
-          onSelectProfile={onSelectProfile}
-          style={{ flex: 1, flexGrow: 1, marginHorizontal: 10 }}
-        />
+        {profileUuid ? (
+          <Text
+            variant="bodyLarge"
+            style={{ alignSelf: "center", paddingVertical: 20 }}
+          >
+            A Profile activation is already in progress.
+          </Text>
+        ) : (
+          <ProfilePicker
+            selected={profile}
+            dieType={pixel.dieType}
+            onSelectProfile={onSelectProfile}
+            style={{ flex: 1, flexGrow: 1, marginHorizontal: 10 }}
+          />
+        )}
       </ThemeProvider>
     </BottomSheetModal>
   );

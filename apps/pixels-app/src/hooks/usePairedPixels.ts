@@ -30,7 +30,9 @@ function stableFilterPixels(
 }
 
 function pixelLog(pixel: Pick<PixelInfo, "pixelId">, message: string) {
-  console.log(`Pixel ${pixel.pixelId.toString(16).padStart(8)}: ${message}`);
+  console.log(
+    `Pixel ${(pixel.pixelId >>> 0).toString(16).padStart(8)}: ${message}`
+  );
 }
 
 function scheduleConnect(
@@ -98,10 +100,26 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
           );
         };
         pixel.addPropertyListener("name", onRename);
+        const onProfileHash = (hash: number) => {
+          pixelLog(pixel, "Profile hash is " + (hash >>> 0).toString(16));
+          // const profile =
+          //   store
+          //     .getState()
+          //     .profilesLibrary.profiles.find((p) => p.hash === hash) ??
+          //   getDefaultProfile(pixel.dieType);
+          // appDispatch(
+          //   setPairedDieProfile({
+          //     pixelId: pixel.pixelId,
+          //     profileUuid: profile.uuid,
+          //   })
+          // );
+        };
+        pixel.addEventListener("profileHash", onProfileHash);
         activePixelsRef.current.set(pixel.pixelId, () => {
           pixel.removeEventListener("status", onStatus);
           pixel.removeEventListener("roll", onRoll);
           pixel.removePropertyListener("name", onRename);
+          pixel.removeEventListener("profileHash", onProfileHash);
           // Disconnect
           disconnect(pixel);
         });
@@ -185,7 +203,7 @@ export function usePairedPixel(pixelId: number): Pixel {
   const pairedDice = useAppSelector((state) => state.pairedDice.dice);
   assert(
     pairedDice.find((d) => d.pixelId === pixelId),
-    `Pixel ${pixelId.toString(16).padStart(8)} not paired`
+    `Pixel ${(pixelId >>> 0).toString(16).padStart(8)} not paired`
   );
   return getPixelOrThrow(pixelId);
 }

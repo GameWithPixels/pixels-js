@@ -24,7 +24,7 @@ function EditDieProfilePage({
 }) {
   const pixel = usePairedPixel(pixelId);
   const [pixelName] = usePixelValue(pixel, "name");
-  const { activeProfile } = useActiveProfile(pixel);
+  const activeProfile = useActiveProfile(pixel);
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
       if (ruleIndex.conditionType === "rolled") {

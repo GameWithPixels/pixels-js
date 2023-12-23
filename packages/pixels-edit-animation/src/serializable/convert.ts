@@ -2,6 +2,7 @@ import {
   AnimationFlagsValues,
   BatteryStateFlagsValues,
   ConnectionStateFlagsValues,
+  DataSet,
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
 } from "@systemic-games/pixels-core-animation";
@@ -33,6 +34,7 @@ import {
   createActionSetData,
   createConditionSetData,
 } from "./profile";
+import { createDataSetForProfile } from "../createDataSet";
 import {
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
@@ -488,11 +490,15 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
       }),
     };
   });
+  // Compute hash
+  const data = createDataSetForProfile(profile).toDataSet();
+  const hash = DataSet.computeHash(data.toByteArray());
   return {
     uuid: profile.uuid,
     name: profile.name,
     description: profile.description,
     dieType: profile.dieType,
+    hash,
     creationDate: profile.creationDate.getTime(),
     lastChanged: profile.lastChanged.getTime(),
     lastUsed: profile.lastUsed?.getTime() ?? 0,

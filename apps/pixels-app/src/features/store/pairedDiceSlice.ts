@@ -23,6 +23,19 @@ const initialState: PairedDiceState = {
   dice: [],
 };
 
+function storeLog(
+  action:
+    | "addPairedDie"
+    | "removePairedDie"
+    | "resetPairedDice"
+    | "resetPairedDice"
+    | "setPairedDieName"
+    | "setPairedDieProfile",
+  payload?: any
+) {
+  console.log("STORE " + action + " " + JSON.stringify(payload));
+}
+
 // Redux slice that stores information about paired dice
 const PairedDiceSlice = createSlice({
   name: "PairedDice",
@@ -39,6 +52,7 @@ const PairedDiceSlice = createSlice({
         colorway: PixelColorway;
       }>
     ) {
+      storeLog("addPairedDie", action.payload);
       const index = state.dice.findIndex(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
@@ -56,11 +70,12 @@ const PairedDiceSlice = createSlice({
           dieType,
           colorway,
           isPaired: true,
-          profileUuid: "default" + dieType,
+          profileUuid: "factory" + dieType,
         });
       }
     },
     removePairedDie(state, action: PayloadAction<number>) {
+      storeLog("removePairedDie", action.payload);
       const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload
       );
@@ -69,6 +84,7 @@ const PairedDiceSlice = createSlice({
       }
     },
     resetPairedDice(state) {
+      storeLog("resetPairedDice");
       state.dice = [];
     },
     setPairedDieName(
@@ -78,6 +94,7 @@ const PairedDiceSlice = createSlice({
         name: string;
       }>
     ) {
+      storeLog("setPairedDieName", action.payload);
       const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
@@ -92,6 +109,7 @@ const PairedDiceSlice = createSlice({
         profileUuid: string;
       }>
     ) {
+      storeLog("setPairedDieProfile", action.payload);
       const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );

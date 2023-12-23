@@ -22,6 +22,7 @@ function storeLog(
     | "addProfile"
     | "updateProfile"
     | "removeProfile"
+    | "setProfileHash"
     | "addAnimation"
     | "updateAnimation"
     | "removeAnimation"
@@ -131,6 +132,20 @@ const profilesLibrarySlice = createSlice({
         console.warn(`Redux: No profile with uuid ${uuid} to remove`);
       }
       storeLog("removeProfile", uuid);
+    },
+
+    setProfileHash(
+      state,
+      action: PayloadAction<{ uuid: string; hash: number }>
+    ) {
+      const { uuid, hash } = action.payload;
+      const profile = state.profiles.find((p) => p.uuid === uuid);
+      if (profile) {
+        profile.hash = hash;
+      } else {
+        console.warn(`Redux: No profile with uuid ${uuid} for setting hash`);
+      }
+      storeLog("setProfileHash", uuid);
     },
 
     //
@@ -276,6 +291,7 @@ export const {
   addProfile,
   updateProfile,
   removeProfile,
+  setProfileHash,
   addAnimation,
   updateAnimation,
   removeAnimation,

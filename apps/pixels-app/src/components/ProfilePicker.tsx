@@ -19,14 +19,12 @@ import { useFilteredProfiles, useProfilesList } from "~/hooks";
 
 export function ProfilePicker({
   selected,
-  transferring,
   dieType,
   onSelectProfile,
   style,
   ...props
 }: {
   selected?: Readonly<Profiles.Profile>;
-  transferring?: boolean;
   dieType?: PixelDieType;
   onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
 } & ViewProps) {
@@ -60,7 +58,6 @@ export function ProfilePicker({
         <ProfilesList
           profiles={filteredProfiles}
           selected={selected}
-          transferring={transferring ? selected : undefined}
           onSelectProfile={onSelectProfile}
         />
       </Animated.ScrollView>

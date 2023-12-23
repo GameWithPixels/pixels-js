@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Color,
   Pixel,
@@ -21,17 +20,18 @@ import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
 import { PixelRollCard } from "./PixelRollCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
+import { useAppSelector } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
-import { Chip, GradientChip } from "~/components/buttons";
+import { GradientChip } from "~/components/buttons";
 import { PixelDieRenderer } from "~/components/cards";
 import { ProfileCard } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
+import { transferProfile } from "~/features/transferProfile";
 import {
   useActiveProfile,
   useConfirmActionSheet,
   useHasFirmwareUpdate,
-  usePixelDataTransfer,
 } from "~/hooks";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
@@ -194,8 +194,8 @@ export function PixelFocusView({
     // Blink when die is selected
     blink();
   }, [blink]);
-  const { activeProfile, setActiveProfile } = useActiveProfile(pixel);
-  const transferProgress = usePixelDataTransfer(pixel);
+  const activeProfile = useActiveProfile(pixel);
+  const transferring = useAppSelector((state) => !!state.diceRolls.transfer);
   const [pickProfile, setPickProfile] = React.useState(false);
 
   const disabled = status !== "ready";
@@ -229,7 +229,7 @@ export function PixelFocusView({
         <ProfileCard
           row
           profile={activeProfile}
-          transferring={transferProgress >= 0 && transferProgress < 100}
+          transferring={transferring}
           footer={
             <View
               style={{
@@ -250,7 +250,7 @@ export function PixelFocusView({
               >
                 Customize
               </GradientChip>
-              <Chip
+              <GradientChip
                 disabled={disabled}
                 icon={({ size, color }) => (
                   <MaterialCommunityIcons
@@ -261,8 +261,8 @@ export function PixelFocusView({
                 )}
                 onPress={() => setPickProfile(true)}
               >
-                Switch
-              </Chip>
+                Switch Profile
+              </GradientChip>
             </View>
           }
         />
@@ -271,16 +271,14 @@ export function PixelFocusView({
       <PickProfileBottomSheet
         pixel={pixel}
         profile={activeProfile}
-        transferring={transferProgress >= 0 && transferProgress < 100}
         onSelectProfile={(profile) => {
-          if (transferProgress < 0 || transferProgress >= 100) {
+          if (!transferring) {
             setPickProfile(false);
-            const ds = createDataSetForProfile(profile);
-            pixel.transferDataSet(ds.toDataSet(), (progress) => {
-              console.log("progress " + progress);
-            });
-            // When done
-            setActiveProfile(profile);
+            transferProfile(pixel, profile);
+          } else {
+            console.log(
+              "Dropping profile transfer because one is already in progress"
+            );
           }
         }}
         visible={pickProfile}

@@ -16,7 +16,7 @@ export function PixelDieRenderer({
   pixel,
   speed,
 }: { pixel: Pixel } & Pick<DieRendererProps, "speed">) {
-  const { activeProfile } = useActiveProfile(pixel);
+  const activeProfile = useActiveProfile(pixel);
   return (
     <ProfileDieRenderer
       profile={activeProfile}
@@ -121,7 +121,7 @@ export function PixelHCard({
 } & Omit<TouchableCardProps, "children">) {
   const status = usePixelStatus(pixel);
   const [pixelName] = usePixelValue(pixel, "name");
-  const { activeProfile } = useActiveProfile(pixel);
+  const activeProfile = useActiveProfile(pixel);
   const disabled = status !== "ready";
   const textStyle = getTextColorStyle(useTheme().colors, disabled);
   return (

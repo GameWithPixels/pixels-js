@@ -326,6 +326,7 @@ function toProfile(
     name: profile.name ?? "",
     description: profile.description ?? "",
     dieType: "d20",
+    hash: 0,
     creationDate: defaultCreationTime,
     lastChanged: defaultCreationTime,
     lastUsed: 0,
