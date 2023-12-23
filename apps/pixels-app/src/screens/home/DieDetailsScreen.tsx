@@ -21,8 +21,11 @@ import {
   getDieTypeLabel,
   getRollStateLabel,
 } from "~/descriptions";
-import { useActiveProfile, usePairedPixel } from "~/hooks";
-import { useHasFirmwareUpdate } from "~/hooks/useHasFirmwareUpdate";
+import {
+  useActiveProfile,
+  useHasFirmwareUpdate,
+  usePairedPixel,
+} from "~/hooks";
 import { DieDetailsScreenProps } from "~/navigation";
 import { Colors } from "~/themes";
 

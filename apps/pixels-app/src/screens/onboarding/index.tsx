@@ -64,7 +64,7 @@ import { getNativeErrorMessage } from "~/features/getNativeErrorMessage";
 import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
-import { useDfuBundle } from "~/hooks/useDfuBundle";
+import { useDfuBundle } from "~/hooks";
 import { OnboardingScreenProps } from "~/navigation";
 import { getBottomSheetBackgroundStyle, getRootScreenTheme } from "~/themes";
 

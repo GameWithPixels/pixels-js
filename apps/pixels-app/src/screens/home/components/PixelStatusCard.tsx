@@ -19,6 +19,7 @@ import { Card } from "~/components/Card";
 import { RssiIcon, BatteryIcon } from "~/components/icons";
 import { getTextColorStyle } from "~/components/utils";
 import { getDieTypeAndColorwayLabel } from "~/descriptions";
+import { usePixelDataTransfer } from "~/hooks";
 
 function PixelRssi({
   pixel,
@@ -127,18 +128,22 @@ function PixelStatusDetails({
 }) {
   const [battery] = usePixelValue(pixel, "battery");
   const needCharging = (battery?.level ?? 100) < 10;
+  const transferProgress = usePixelDataTransfer(pixel);
+  const transferring = transferProgress >= 0 && transferProgress < 100;
   const { colors } = useTheme();
   const textStyle = getTextColorStyle(colors, disabled);
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
       <Text style={textStyle}>
-        {battery?.isCharging
-          ? "Charging..."
-          : needCharging
-            ? "Need charging!"
-            : getDieTypeAndColorwayLabel(pixel)}
+        {transferring
+          ? `Transfer data: ${transferProgress}%`
+          : battery?.isCharging
+            ? "Charging..."
+            : needCharging
+              ? "Need charging!"
+              : getDieTypeAndColorwayLabel(pixel)}
       </Text>
-      {battery?.isCharging ? (
+      {!transferring && battery?.isCharging ? (
         <AnimatedChargingIcon size={16} color={colors.onSurface} />
       ) : (
         needCharging && (

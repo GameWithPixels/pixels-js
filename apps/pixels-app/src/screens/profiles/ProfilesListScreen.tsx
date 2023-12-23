@@ -36,8 +36,7 @@ import {
   setProfilesGrouping,
   setProfilesSortMode,
 } from "~/features/store/appSettingsSlice";
-import { useProfilesList } from "~/hooks";
-import { useFilteredProfiles } from "~/hooks/useFilteredProfiles";
+import { useFilteredProfiles, useProfilesList } from "~/hooks";
 import { ProfilesListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 

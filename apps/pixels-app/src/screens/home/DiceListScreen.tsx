@@ -48,8 +48,7 @@ import {
   setDiceSortMode,
   setShowFocusModeHelp,
 } from "~/features/store/appSettingsSlice";
-import { usePairedPixels } from "~/hooks";
-import { usePixelsScanner } from "~/hooks/usePixelsScanner";
+import { usePairedPixels, usePixelsScanner } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 
 type DiceViewMode = "focus" | "list" | "grid";

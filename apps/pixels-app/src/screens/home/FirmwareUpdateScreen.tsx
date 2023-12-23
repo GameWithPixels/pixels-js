@@ -22,9 +22,7 @@ import { DieWireframe } from "~/components/icons";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { PairedDie } from "~/features/store/pairedDiceSlice";
-import { useForceUpdate } from "~/hooks";
-import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
-import { useDfuBundle } from "~/hooks/useDfuBundle";
+import { useBottomSheetPadding, useDfuBundle, useForceUpdate } from "~/hooks";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
