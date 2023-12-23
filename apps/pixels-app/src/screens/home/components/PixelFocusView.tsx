@@ -27,6 +27,7 @@ import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
 import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import { useActiveProfile, useConfirmActionSheet } from "~/hooks";
+import { useHasFirmwareUpdate } from "~/hooks/useHasFirmwareUpdate";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
   {
@@ -63,6 +64,7 @@ export function PixelFocusViewHeader({
 }) {
   const status = usePixelStatus(pixel);
   const [pixelName] = usePixelValue(pixel, "name");
+  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const disabled = status !== "ready";
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
@@ -127,14 +129,18 @@ export function PixelFocusViewHeader({
                 disconnected={disabled}
                 onDismiss={() => setActionsMenuVisible(false)}
                 onUnpair={onUnpair}
-                onUpdateFirmware={onFirmwareUpdate}
+                onUpdateFirmware={
+                  hasFirmwareUpdate ? onFirmwareUpdate : undefined
+                }
                 onRename={() => setRenameVisible(true)}
                 onReset={() => showConfirmReset()}
                 onTurnOff={() => showConfirmTurnOff()}
               />
-              <Badge style={{ position: "absolute", right: -15, top: 5 }}>
-                !
-              </Badge>
+              {hasFirmwareUpdate ? (
+                <Badge style={{ position: "absolute", right: -15, top: 5 }}>
+                  !
+                </Badge>
+              ) : null}
             </>
           )}
         </Pressable>

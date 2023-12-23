@@ -2,6 +2,7 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   PixelColorway,
   PixelDieType,
+  PixelInfo,
   PixelRollState,
   PixelStatus,
   Profiles,
@@ -185,10 +186,7 @@ export function getColorwayLabel(colorway: PixelColorway): string {
 export function getDieTypeAndColorwayLabel({
   dieType,
   colorway,
-}: {
-  dieType: PixelDieType;
-  colorway: PixelColorway;
-}): string {
+}: Pick<PixelInfo, "dieType" | "colorway">): string {
   const dieTypeLabel = getDieTypeLabel(dieType);
   const colorwayLabel = getColorwayLabel(colorway);
   return colorwayLabel.length

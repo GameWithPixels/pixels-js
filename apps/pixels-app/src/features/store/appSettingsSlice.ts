@@ -22,6 +22,7 @@ export interface AppSettingsState {
   profilesSortMode: SortMode;
   animationsGrouping: AnimationsGrouping;
   animationsSortMode: SortMode;
+  updateBootloader: boolean;
 }
 
 const initialState: AppSettingsState = {
@@ -37,6 +38,7 @@ const initialState: AppSettingsState = {
   profilesSortMode: "alphabetical",
   animationsGrouping: "type",
   animationsSortMode: "alphabetical",
+  updateBootloader: false,
 };
 
 // Redux slice that stores app settings
@@ -83,6 +85,9 @@ const appSettingsSlice = createSlice({
     setAnimationsSortMode(state, action: PayloadAction<SortMode>) {
       state.animationsSortMode = action.payload;
     },
+    setUpdateBootloader(state, action: PayloadAction<boolean>) {
+      state.updateBootloader = action.payload;
+    },
   },
 });
 
@@ -100,5 +105,6 @@ export const {
   setProfilesSortMode,
   setAnimationsGrouping,
   setAnimationsSortMode,
+  setUpdateBootloader,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

@@ -24,7 +24,10 @@ export function HomeStack({ route }: HomeStackProps) {
         <Stack.Screen
           name="firmwareUpdate"
           component={FirmwareUpdateScreen}
-          options={getStackNavigationOptions("bottom-sheet")}
+          options={{
+            ...getStackNavigationOptions("bottom-sheet"),
+            gestureEnabled: false,
+          }}
         />
         <Stack.Screen
           name="dieDetails"

@@ -293,7 +293,11 @@ function DiceListPage({
           <PixelFocusViewHeader
             pixel={selectedPixel}
             onUnpair={unpairDieWithConfirmation}
-            onFirmwareUpdate={() => navigation.navigate("firmwareUpdate")}
+            onFirmwareUpdate={() =>
+              navigation.navigate("firmwareUpdate", {
+                pixelId: selectedPixel?.pixelId,
+              })
+            }
           />
         )}
         <ScrollView

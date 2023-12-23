@@ -131,7 +131,7 @@ export function PixelHCard({
         <Text variant="bodyLarge" style={textStyle}>
           {pixelName}
         </Text>
-        <Text>{activeProfile?.name ?? "No Profile!"}</Text>
+        <Text style={textStyle}>{activeProfile?.name ?? "No Profile!"}</Text>
       </View>
       <View
         style={{

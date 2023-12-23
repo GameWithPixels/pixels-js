@@ -75,7 +75,6 @@ const Header = observer(
 
     return (
       <PageHeader
-        mode="chevron-down"
         leftElement={
           onDiscardChanges
             ? () => <Button onPress={onDiscardChanges}>Cancel</Button>
