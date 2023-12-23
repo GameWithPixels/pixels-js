@@ -45,6 +45,10 @@ function PickAnimationModal({
   visible: boolean;
 }) {
   const animations = useAnimationsList();
+  const sortedAnimations = React.useMemo(
+    () => [...animations].sort((a, b) => a.name.localeCompare(b.name)),
+    [animations]
+  );
   const sheetRef = React.useRef<BottomSheetModal>(null);
   React.useEffect(() => {
     if (visible) {
@@ -83,7 +87,7 @@ function PickAnimationModal({
         >
           <Text variant="titleMedium">Select Animation</Text>
           <AnimationsGrid
-            animations={animations}
+            animations={sortedAnimations}
             dieType={dieType}
             numColumns={2}
             selected={animation}
