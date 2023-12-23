@@ -22,10 +22,10 @@ import { PixelStatusCard } from "./PixelStatusCard";
 
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { Chip, GradientChip } from "~/components/buttons";
+import { PixelDieRenderer } from "~/components/cards";
 import { ProfileCard } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
-import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import { useActiveProfile, useConfirmActionSheet } from "~/hooks";
 import { useHasFirmwareUpdate } from "~/hooks/useHasFirmwareUpdate";
 
@@ -162,11 +162,7 @@ function RollingDie({ pixel, disabled }: { pixel: Pixel; disabled: boolean }) {
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
   return (
-    <DieRendererWithFocus
-      dieType={pixel.dieType}
-      colorway={pixel.colorway}
-      speed={disabled ? 0 : rolling ? 10 : 1}
-    />
+    <PixelDieRenderer pixel={pixel} speed={disabled ? 0 : rolling ? 10 : 1} />
   );
 }
 
