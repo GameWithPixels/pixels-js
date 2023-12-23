@@ -157,6 +157,12 @@ export interface PixelEventMap {
   userMessage: UserMessageEvent;
   /** Remote action request. */
   remoteAction: number; // Remote action id
+  /** Data transfer. */
+  dataTransfer: {
+    progress: number;
+    bytesSend: number;
+    totalBytes: number;
+  };
 }
 
 /**
@@ -878,63 +884,85 @@ export class Pixel extends PixelInfoNotifier {
     dataSet: DataSet,
     progressCallback?: (progress: number) => void
   ): Promise<void> {
-    // Notify that we're starting
-    progressCallback?.(0);
+    const notifyProgress = (progress: number) => {
+      try {
+        this._evEmitter.emit("dataTransfer", {
+          progress,
+          bytesSend: 0,
+          totalBytes: 0,
+        });
+        progressCallback?.(progress);
+      } catch (error) {
+        console.log(
+          this._tagLogString(`Error in transfer progress callback: ${error}`)
+        );
+      }
+    };
+    try {
+      // Notify that we're starting
+      notifyProgress(0);
 
-    const transferMsg = safeAssign(new TransferAnimationSet(), {
-      paletteSize: dataSet.animationBits.getPaletteSize(),
-      rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-      rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-      keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-      trackCount: dataSet.animationBits.getTrackCount(),
-      animationCount: dataSet.animations.length,
-      animationSize: dataSet.animations.reduce(
-        (acc, anim) => acc + byteSizeOf(anim),
-        0
-      ),
-      conditionCount: dataSet.conditions.length,
-      conditionSize: dataSet.conditions.reduce(
-        (acc, cond) => acc + byteSizeOf(cond),
-        0
-      ),
-      actionCount: dataSet.actions.length,
-      actionSize: dataSet.actions.reduce(
-        (acc, action) => acc + byteSizeOf(action),
-        0
-      ),
-      ruleCount: dataSet.rules.length,
-    });
+      const transferMsg = safeAssign(new TransferAnimationSet(), {
+        paletteSize: dataSet.animationBits.getPaletteSize(),
+        rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
+        rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
+        keyFrameCount: dataSet.animationBits.getKeyframeCount(),
+        trackCount: dataSet.animationBits.getTrackCount(),
+        animationCount: dataSet.animations.length,
+        animationSize: dataSet.animations.reduce(
+          (acc, anim) => acc + byteSizeOf(anim),
+          0
+        ),
+        conditionCount: dataSet.conditions.length,
+        conditionSize: dataSet.conditions.reduce(
+          (acc, cond) => acc + byteSizeOf(cond),
+          0
+        ),
+        actionCount: dataSet.actions.length,
+        actionSize: dataSet.actions.reduce(
+          (acc, action) => acc + byteSizeOf(action),
+          0
+        ),
+        ruleCount: dataSet.rules.length,
+      });
 
-    const transferAck = await this.sendAndWaitForTypedResponse(
-      transferMsg,
-      TransferAnimationSetAck
-    );
-    if (transferAck.result) {
-      // Upload data
-      const data = dataSet.toByteArray();
-      assert(
-        data.length === dataSet.computeDataSetByteSize(),
-        "Incorrect computation of computeDataSetByteSize()"
+      const transferAck = await this.sendAndWaitForTypedResponse(
+        transferMsg,
+        TransferAnimationSetAck
       );
-      const hash = DataSet.computeHash(data);
-      const hashStr = (hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
-      this._log(
-        "Ready to receive dataset, " +
-          `byte array should be ${data.length} bytes ` +
-          `and hash 0x${hashStr}`
-      );
+      if (transferAck.result) {
+        // Upload data
+        const data = dataSet.toByteArray();
+        assert(
+          data.length === dataSet.computeDataSetByteSize(),
+          "Incorrect computation of computeDataSetByteSize()"
+        );
+        const hash = DataSet.computeHash(data);
+        const hashStr = (hash >>> 0)
+          .toString(16)
+          .toUpperCase()
+          .padStart(8, "0");
+        this._log(
+          "Ready to receive dataset, " +
+            `byte array should be ${data.length} bytes ` +
+            `and hash 0x${hashStr}`
+        );
 
-      await this.uploadBulkDataWithAck(
-        "transferAnimationSetFinished",
-        data,
-        progressCallback
-      );
-    } else {
-      const dataSize = dataSet.computeDataSetByteSize();
-      throw new PixelError(
-        this,
-        `Not enough memory to transfer ${dataSize} bytes`
-      );
+        await this.uploadBulkDataWithAck(
+          "transferAnimationSetFinished",
+          data,
+          notifyProgress
+        );
+      } else {
+        const dataSize = dataSet.computeDataSetByteSize();
+        throw new PixelError(
+          this,
+          `Not enough memory to transfer ${dataSize} bytes`
+        );
+      }
+    } catch (error) {
+      notifyProgress(-1);
+      throw error;
     }
   }
 
