@@ -55,6 +55,7 @@ function createDefaultProfile(dieType: PixelDieType): EditProfile {
     uuid: "factory" + dieType,
     name: "Default",
     description: "Factory profile",
+    dieType,
   });
   // Hello
   profile.rules.push(
