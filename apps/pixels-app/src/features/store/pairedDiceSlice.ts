@@ -12,8 +12,7 @@ export interface PairedDie {
   isPaired: boolean;
   dieType: PixelDieType;
   colorway: PixelColorway;
-  profileUuid?: string;
-  rolls: number[];
+  profileUuid: string;
 }
 
 export interface PairedDiceState {
@@ -47,15 +46,17 @@ const PairedDiceSlice = createSlice({
         state.dice[index].name = action.payload.name;
         state.dice[index].isPaired = true;
       } else {
+        const { systemId, address, pixelId, name, dieType, colorway } =
+          action.payload;
         state.dice.push({
-          systemId: action.payload.systemId,
-          address: action.payload.address,
-          pixelId: action.payload.pixelId,
-          name: action.payload.name,
-          dieType: action.payload.dieType,
-          colorway: action.payload.colorway,
+          systemId,
+          address,
+          pixelId,
+          name,
+          dieType,
+          colorway,
           isPaired: true,
-          rolls: [],
+          profileUuid: "default" + dieType,
         });
       }
     },
@@ -98,17 +99,6 @@ const PairedDiceSlice = createSlice({
         pairedDie.profileUuid = action.payload.profileUuid;
       }
     },
-    addPairedDieRoll(
-      state,
-      action: PayloadAction<{ pixelId: number; roll: number }>
-    ) {
-      const pairedDie = state.dice.find(
-        ({ pixelId }) => pixelId === action.payload.pixelId
-      );
-      if (pairedDie) {
-        pairedDie.rolls.push(action.payload.roll);
-      }
-    },
   },
 });
 
@@ -118,6 +108,5 @@ export const {
   resetPairedDice,
   setPairedDieName,
   setPairedDieProfile,
-  addPairedDieRoll,
 } = PairedDiceSlice.actions;
 export default PairedDiceSlice.reducer;

@@ -10,9 +10,9 @@ import {
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
   addPairedDie,
-  addPairedDieRoll,
   PairedDie,
   removePairedDie,
   setPairedDieName,
@@ -87,7 +87,7 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
         };
         pixel.addEventListener("status", onStatus);
         const onRoll = (roll: number) =>
-          appDispatch(addPairedDieRoll({ pixelId: pixel.pixelId, roll }));
+          appDispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
         pixel.addEventListener("roll", onRoll);
         const onRename = ({ name }: PixelInfo) => {
           appDispatch(
@@ -134,18 +134,14 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
       activePixels.clear();
     };
   }, []);
-  React.useEffect(() => {
-    console.log("usePairedPixels: scannedPixels changed");
-  }, []);
 
   // Missing dice
-  const diceData = useAppSelector((state) => state.pairedDice.dice);
   const missingDice = React.useMemo(
     () =>
-      diceData.filter(
+      pairedDice.filter(
         (d) => d.isPaired && pixels.every((p) => p.pixelId !== d.pixelId)
       ),
-    [diceData, pixels]
+    [pairedDice, pixels]
   );
 
   // Filter out Pixels that are already paired

@@ -23,19 +23,21 @@ import {
   getIconColor,
   makeTransparent,
 } from "~/components/utils";
-import { PairedDie } from "~/features/store/pairedDiceSlice";
 
-function useLastRolls(pairedDie?: PairedDie): { key: number; roll: number }[] {
+function useLastRolls(pixelId: number): { key: number; roll: number }[] {
+  const rolls = useAppSelector(
+    (state) => state.diceRolls.dice.find((d) => d.pixelId === pixelId)?.rolls
+  );
   return React.useMemo(() => {
-    const rolls = pairedDie?.rolls ?? [];
+    const count = rolls?.length ?? 0;
     return [-1, -1, -1, -1] // We want at least 4 rolls
-      .concat(rolls)
-      .slice(rolls.length)
+      .concat(rolls ?? [])
+      .slice(count)
       .map((roll, i) => ({
-        key: rolls.length + i,
+        key: count + i,
         roll,
       }));
-  }, [pairedDie?.rolls]);
+  }, [rolls]);
 }
 
 function PixelRollState({
@@ -47,7 +49,7 @@ function PixelRollState({
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
-  return <Text {...props}>Die is{rolling ? " " : " not "}rolling</Text>;
+  return <Text {...props}>Die is {rolling ? "idle" : "rolling"}</Text>;
 }
 
 function AnimatedDieIcon({
@@ -99,11 +101,7 @@ export function PixelRollCard({
   pixel: Pixel;
   disabled: boolean;
 }) {
-  const lastRolls = useLastRolls(
-    useAppSelector((state) =>
-      state.pairedDice.dice.find((d) => d.pixelId === pixel.pixelId)
-    )
-  );
+  const lastRolls = useLastRolls(pixel.pixelId);
   const { colors } = useTheme();
   const textStyle = getTextColorStyle(colors, disabled);
   return (

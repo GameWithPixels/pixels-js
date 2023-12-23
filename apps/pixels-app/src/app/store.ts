@@ -15,6 +15,7 @@ import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer, {
   AppSettingsState,
 } from "~/features/store/appSettingsSlice";
+import diceRollsReducer from "~/features/store/diceRollsSlice";
 import pairedDiceReducer, {
   PairedDiceState,
 } from "~/features/store/pairedDiceSlice";
@@ -43,7 +44,9 @@ export const store = configureStore({
       conf("profilesLibrary"),
       profilesLibraryReducer
     ),
-    dfuFiles: dfuFilesReducer, // We don't persist this one
+    // Transient data
+    diceRolls: diceRollsReducer,
+    dfuFiles: dfuFilesReducer,
   },
   middleware: (getDefaultMiddleware) => {
     const middleware = getDefaultMiddleware({
