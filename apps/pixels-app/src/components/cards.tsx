@@ -9,12 +9,20 @@ import { BatteryIcon, RssiIcon } from "./icons";
 import { ProfileDieRenderer } from "./profile";
 import { getTextColorStyle, makeTransparent } from "./utils";
 
+import { DieRendererProps } from "~/features/render3d/DieRenderer";
 import { useActiveProfile } from "~/hooks";
 
-export function PixelDieRenderer({ pixel }: { pixel: Pixel }) {
+export function PixelDieRenderer({
+  pixel,
+  speed,
+}: { pixel: Pixel } & Pick<DieRendererProps, "speed">) {
   const { activeProfile } = useActiveProfile(pixel);
   return (
-    <ProfileDieRenderer profile={activeProfile} colorway={pixel.colorway} />
+    <ProfileDieRenderer
+      profile={activeProfile}
+      colorway={pixel.colorway}
+      speed={speed}
+    />
   );
 }
 

@@ -2,10 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import {
-  PixelColorway,
-  Profiles,
-} from "@systemic-games/react-native-pixels-connect";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
 import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -28,7 +25,10 @@ import { Chip, GradientChip } from "./buttons";
 import { getBorderColor, getTextColorStyle, makeTransparent } from "./utils";
 
 import { useAppSelector } from "~/app/hooks";
-import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
+import {
+  DieRendererProps,
+  DieRendererWithFocus,
+} from "~/features/render3d/DieRenderer";
 import {
   groupAndSortProfiles,
   ProfilesGrouping,
@@ -180,11 +180,11 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
   profile,
   colorway = "onyxBlack",
   pedestal,
+  speed,
 }: {
   profile: Readonly<Profiles.Profile>;
-  colorway?: PixelColorway;
-  pedestal?: boolean;
-}) {
+} & Pick<DieRendererProps, "pedestal" | "speed"> &
+  Partial<Pick<DieRendererProps, "colorway">>) {
   const animationsData = React.useMemo(
     () =>
       computed(() => {
@@ -210,6 +210,7 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
       colorway={colorway}
       animationsData={animationsData}
       pedestal={pedestal}
+      speed={speed}
     />
   );
 });
