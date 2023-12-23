@@ -134,18 +134,14 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
       activePixels.clear();
     };
   }, []);
-  React.useEffect(() => {
-    console.log("usePairedPixels: scannedPixels changed");
-  }, []);
 
   // Missing dice
-  const diceData = useAppSelector((state) => state.pairedDice.dice);
   const missingDice = React.useMemo(
     () =>
-      diceData.filter(
+      pairedDice.filter(
         (d) => d.isPaired && pixels.every((p) => p.pixelId !== d.pixelId)
       ),
-    [diceData, pixels]
+    [pairedDice, pixels]
   );
 
   // Filter out Pixels that are already paired
