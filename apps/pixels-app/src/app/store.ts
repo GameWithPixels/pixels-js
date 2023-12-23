@@ -11,6 +11,7 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
+import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer, {
   AppSettingsState,
 } from "~/features/store/appSettingsSlice";
@@ -42,6 +43,7 @@ export const store = configureStore({
       conf("profilesLibrary"),
       profilesLibraryReducer
     ),
+    dfuFiles: dfuFilesReducer, // We don't persist this one
   },
   middleware: (getDefaultMiddleware) => {
     const middleware = getDefaultMiddleware({

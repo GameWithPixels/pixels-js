@@ -158,12 +158,20 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   );
 
   // Actions
+  const addressesRef = React.useRef(new Map<number, number>());
+  for (const { pixelId, address } of pairedDice) {
+    addressesRef.current.set(pixelId, address);
+  }
   const pairDie = React.useCallback(
     (pixel: PixelInfo) =>
       appDispatch(
         addPairedDie({
+          systemId: pixel.systemId,
+          address: addressesRef.current.get(pixel.pixelId) ?? 0,
           pixelId: pixel.pixelId,
           name: pixel.name,
+          dieType: pixel.dieType,
+          colorway: pixel.colorway,
         })
       ),
     [appDispatch]

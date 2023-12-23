@@ -49,7 +49,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import {
@@ -59,9 +59,9 @@ import {
 } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { makeTransparent } from "~/components/utils";
-import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getNativeErrorMessage } from "~/features/getNativeErrorMessage";
+import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { useDfuBundle } from "~/hooks/useDfuBundle";
@@ -521,19 +521,23 @@ interface TargetDfuStatus {
   progress: number;
 }
 
-async function updateDice(
+// TODO duplicated from FirmwareUpdateScreen.tsx
+async function updateDiceAsync(
   statuses: TargetDfuStatus[],
-  dfuBundle: DfuFilesBundle
+  dfuBundle: DfuPathnamesBundle,
+  updateBootloader: boolean
 ): Promise<void> {
-  console.log(`DFU bundle date: ${dfuBundle.date.toLocaleDateString()}`);
+  console.log(
+    `DFU bundle date: ${new Date(dfuBundle.timestamp).toLocaleDateString()}`
+  );
   let i = 0;
   while (i < statuses.length) {
     const status = statuses[i++];
     try {
       await updateFirmware({
         target: status.scannedPixel,
-        // bootloaderPath: dfuBundle.bootloader?.pathname,
-        firmwarePath: dfuBundle.firmware?.pathname,
+        bootloaderPath: updateBootloader ? dfuBundle.bootloader : undefined,
+        firmwarePath: dfuBundle.firmware,
         dfuStateCallback: (state: DfuState) =>
           runInAction(() => (status.state = state)),
         dfuProgressCallback: (progress: number) =>
@@ -548,7 +552,7 @@ async function updateDice(
 function appendNewDiceStatuses(
   statuses: TargetDfuStatus[],
   scannedPixels: readonly ScannedPixel[],
-  dfuBundle?: DfuFilesBundle
+  dfuBundle?: DfuPathnamesBundle
 ) {
   for (const sp of scannedPixels) {
     const i = statuses.findIndex((s) => s.scannedPixel === sp);
@@ -576,7 +580,7 @@ const AnimatedPixelDfuCard = observer(function AnimatedPixelDfuCard({
   dfuStatus,
   ...props
 }: AnimatedProps<Omit<ViewProps, "children">> & {
-  scannedPixel: ScannedPixel;
+  scannedPixel: PixelInfo;
   dfuStatus?: TargetDfuStatus;
 }) {
   const state = dfuStatus?.state;
@@ -586,7 +590,7 @@ const AnimatedPixelDfuCard = observer(function AnimatedPixelDfuCard({
         <Text>{scannedPixel.name}</Text>
         <SmallText>
           {!state || state === "completed"
-            ? "Up To Date"
+            ? "Up-To-Date"
             : state === "aborted" || state === "errored"
               ? "Update Failed"
               : state === "pending"
@@ -627,9 +631,12 @@ function UpdateDiceSlide({
   onNext,
 }: {
   scannedPixels: readonly ScannedPixel[];
-  dfuBundle?: DfuFilesBundle;
+  dfuBundle?: DfuPathnamesBundle;
   onNext: () => void;
 }) {
+  const updateBootloader = useAppSelector(
+    (state) => state.appSettings.updateBootloader
+  );
   const [step, setStep] = React.useState<"wait" | "update" | "done">("wait");
   const statusesRef = React.useRef<TargetDfuStatus[]>([]);
   React.useEffect(
@@ -663,9 +670,11 @@ function UpdateDiceSlide({
               style={{ alignItems: "flex-start", alignSelf: "center" }}
               onPress={() => {
                 setStep("update");
-                updateDice(statusesRef.current, dfuBundle).then(() =>
-                  setStep("done")
-                );
+                updateDiceAsync(
+                  statusesRef.current,
+                  dfuBundle,
+                  updateBootloader
+                ).then(() => setStep("done"));
               }}
             >
               Update{" "}
@@ -745,9 +754,11 @@ function connectPixel(sp: ScannedPixel): Pixel | undefined {
   return pixel;
 }
 
-function isPixelUpToDate(pixel: PixelInfo, dfuBundle?: DfuFilesBundle) {
-  // return !dfuBundle || pixel.firmwareDate >= dfuBundle.date;
-  return !dfuBundle;
+function isPixelUpToDate(
+  pixel: PixelInfo,
+  bundle?: { readonly timestamp: number }
+) {
+  return !bundle || pixel.firmwareDate.getTime() >= bundle.timestamp;
 }
 
 function OnboardingPage({
@@ -775,7 +786,7 @@ function OnboardingPage({
   }, [scannerDispatch]);
 
   // DFU files
-  const [dfuBundle] = useDfuBundle();
+  const [bundle] = useDfuBundle();
 
   const [index, setIndex] = React.useState(0);
   const scrollRef = React.useRef<ScrollView>(null);
@@ -818,19 +829,23 @@ function OnboardingPage({
             for (const p of pixels) {
               appDispatch(
                 addPairedDie({
+                  systemId: p.systemId,
+                  address:
+                    scannedPixels.find((sp) => sp.pixelId === p.pixelId)
+                      ?.address ?? 0,
                   pixelId: p.pixelId,
                   name: p.name,
+                  dieType: p.dieType,
+                  colorway: p.colorway,
                 })
               );
             }
-            scrollTo(
-              pixels.some((p) => !isPixelUpToDate(p, dfuBundle)) ? 3 : 4
-            );
+            scrollTo(pixels.some((p) => !isPixelUpToDate(p, bundle)) ? 3 : 4);
           }}
         />
         <UpdateDiceSlide
           scannedPixels={scannedPixels}
-          dfuBundle={dfuBundle}
+          dfuBundle={bundle}
           onNext={() => scrollTo(4)}
         />
         <ReadySlide

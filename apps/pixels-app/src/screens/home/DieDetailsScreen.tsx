@@ -16,8 +16,13 @@ import { Banner } from "~/components/banners";
 import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
 import { ProfileCard } from "~/components/profile";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
-import { getRollStateLabel } from "~/descriptions";
+import {
+  getColorwayLabel,
+  getDieTypeLabel,
+  getRollStateLabel,
+} from "~/descriptions";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
+import { useHasFirmwareUpdate } from "~/hooks/useHasFirmwareUpdate";
 import { DieDetailsScreenProps } from "~/navigation";
 import { Colors } from "~/themes";
 
@@ -154,25 +159,25 @@ function DieAdvancedInfo({
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>Die</SectionTitle>
       <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
-        <Text>Pixel ID: 45AE645C</Text>
+        <Text>Pixel ID: {pixel.pixelId.toString(16).padStart(8)}</Text>
         <Text>Chip Model: nRF52810</Text>
-        <Text>{`LED Count: ${pixel.ledCount}`}</Text>
-        <Text>{`Die Type: ${pixel.dieType}`}</Text>
-        <Text>{`Colorway: ${pixel.colorway}`}</Text>
-        <Text>Available Flash: 1212kB</Text>
+        <Text>LED Count: {pixel.ledCount}</Text>
+        <Text>Die Type: {getDieTypeLabel(pixel.dieType)}</Text>
+        <Text>Colorway: {getColorwayLabel(pixel.colorway)}</Text>
         <Text>Total Usable Flash: 8192kB</Text>
-        <Text>Last Connected: {new Date().toLocaleString()}</Text>
+        {/* <Text>Available Flash: 1212kB</Text>
+        <Text>Last Connected: {new Date().toLocaleString()}</Text> */}
       </View>
       <SectionTitle>Firmware</SectionTitle>
       <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
-        <Text>Firmware Version: 12.3</Text>
-        <Text>Build Timestamp: {new Date().toLocaleString()}</Text>
+        <Text>Build Timestamp: {pixel.firmwareDate.toLocaleString()}</Text>
+        {/* <Text>Firmware Version: 12.3</Text>
         <Text>Settings Version: 12.3</Text>
         <Text>Compat Standard Api Version: 12.3</Text>
         <Text>Compat Extended Api Version: 12.3</Text>
-        <Text>Compat Management Api Version: 12.3</Text>
+        <Text>Compat Management Api Version: 12.3</Text> */}
       </View>
-      <SectionTitle>Active Profile</SectionTitle>
+      {/* <SectionTitle>Active Profile</SectionTitle>
       <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
         <Text>Profile Size: 1234B</Text>
         <Text>Number Of Sequences: 12</Text>
@@ -181,7 +186,7 @@ function DieAdvancedInfo({
         <Text>Number Of Curves: 12</Text>
         <Text>Number Of Colors: 12</Text>
         <Text>Number Of Scalars: 12</Text>
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -202,6 +207,7 @@ function DieDetailsPage({
   }, [navigation, pixel]);
 
   const status = usePixelStatus(pixel);
+  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const disabled = status !== "ready";
 
   const [firmwareUpdateVisible, setFirmwareUpdateVisible] =
@@ -219,14 +225,17 @@ function DieDetailsPage({
             gap: 10,
           }}
         >
-          <Banner
-            visible={firmwareUpdateVisible}
-            title="Update available!"
-            actionText="Update Now"
-            onDismiss={() => setFirmwareUpdateVisible(false)}
-          >
-            A software update is available for your die.
-          </Banner>
+          {hasFirmwareUpdate && (
+            <Banner
+              visible={firmwareUpdateVisible}
+              title="Update Available!"
+              actionText="Update Now"
+              onAction={() => navigation.replace("firmwareUpdate", { pixelId })}
+              onDismiss={() => setFirmwareUpdateVisible(false)}
+            >
+              A software update is available for your die.
+            </Banner>
+          )}
           <DieStatus pixel={pixel} style={{ marginTop: 10 }} />
           <SectionTitle>Active Profile</SectionTitle>
           {activeProfile ? (

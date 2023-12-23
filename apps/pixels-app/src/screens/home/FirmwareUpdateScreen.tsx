@@ -1,18 +1,34 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
+import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import { getPixel, Pixel } from "@systemic-games/react-native-pixels-connect";
+import { makeAutoObservable, runInAction } from "mobx";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import {
+  Button,
+  Text as PaperText,
+  TextProps,
+  useTheme,
+} from "react-native-paper";
+import { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { GradientButton, OutlineButton } from "~/components/buttons";
-import { DiceList } from "~/components/dice";
+import { AnimatedText } from "~/components/animated";
+import { AnimatedGradientButton, SelectionButton } from "~/components/buttons";
+import { DieWireframe } from "~/components/icons";
+import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
+import { PairedDie } from "~/features/store/pairedDiceSlice";
+import { useForceUpdate } from "~/hooks";
+import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
+import { useDfuBundle } from "~/hooks/useDfuBundle";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
-interface PixelDfuStatus {
-  pixel: Pixel;
-  progress: number;
+function Text(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText variant="bodyLarge" {...props} />;
 }
 
 export function useConfirmStopUpdatingActionSheet(
@@ -48,119 +64,243 @@ export function useConfirmStopUpdatingActionSheet(
   };
 }
 
+type ExtendedDfuState = DfuState | "pending" | "unknown";
+
+interface TargetDfuStatus {
+  pairedDie: PairedDie;
+  state: ExtendedDfuState;
+  progress: number;
+}
+
+async function updateDiceAsync(
+  statuses: TargetDfuStatus[],
+  dfuBundle: DfuPathnamesBundle,
+  updateBootloader: boolean,
+  onUpdated?: (target: TargetDfuStatus) => void
+): Promise<void> {
+  console.log(
+    `DFU bundle date: ${new Date(dfuBundle.timestamp).toLocaleDateString()}`
+  );
+  let i = 0;
+  while (i < statuses.length) {
+    const targetStatus = statuses[i++];
+    try {
+      await updateFirmware({
+        target: targetStatus.pairedDie,
+        bootloaderPath: updateBootloader ? dfuBundle.bootloader : undefined,
+        firmwarePath: dfuBundle.firmware,
+        dfuStateCallback: (state: DfuState) =>
+          runInAction(() => (targetStatus.state = state)),
+        dfuProgressCallback: (progress: number) =>
+          runInAction(() => (targetStatus.progress = progress)),
+      });
+      try {
+        onUpdated?.(targetStatus);
+      } catch {}
+    } catch (e) {
+      console.log(`DFU error with ${targetStatus.pairedDie.name}: ${e}`);
+    }
+  }
+}
+
+function getDfuStatusText(targetStatus: TargetDfuStatus): string {
+  const state = targetStatus.state;
+  return state === "unknown"
+    ? "Not Connected"
+    : state === "pending"
+      ? "Update Required"
+      : state === "completed"
+        ? "Up-To-Date"
+        : state === "aborted" || state === "errored"
+          ? "Update Failed"
+          : `State ${state}, ${targetStatus?.progress ?? 0}%`;
+}
+
+const DieInfo = observer(function DieInfo({
+  targetStatus,
+}: {
+  targetStatus: TargetDfuStatus;
+}) {
+  return (
+    <View style={{ flex: 1, justifyContent: "space-around" }}>
+      <Text>{targetStatus.pairedDie.name}</Text>
+      <PaperText>{getDfuStatusText(targetStatus)}</PaperText>
+    </View>
+  );
+});
+
+function getInitialDfuState(
+  pixel?: Pixel,
+  timestamp?: number
+): ExtendedDfuState {
+  if (!pixel) {
+    return "unknown";
+  }
+  if (!timestamp || pixel.firmwareDate.getTime() >= timestamp) {
+    return "completed";
+  }
+  return "pending";
+}
+
 function FirmwareUpdatePage({
-  pixels,
+  pixelId,
   navigation,
 }: {
-  pixels: readonly Pixel[];
+  pixelId?: number;
   navigation: FirmwareUpdateScreenProps["navigation"];
 }) {
-  const [step, setStep] = React.useState<
-    "select" | "update" | "interrupt" | "done"
-  >("select");
-  const [dfuStatuses, setDfuStatuses] = React.useState<PixelDfuStatus[]>(
-    pixels.map((p) => ({ pixel: p, progress: 0 }))
-  );
-  const selection = React.useMemo(
-    () => dfuStatuses.map((s) => s.pixel),
-    [dfuStatuses]
-  );
+  // TODO we refresh every 3 seconds to pick up newly connected dice
+  const forceUpdate = useForceUpdate();
   React.useEffect(() => {
-    if (step === "update" || step === "interrupt") {
-      const id = setInterval(
-        () =>
-          setDfuStatuses((statuses) => {
-            const p = statuses[0].progress;
-            if (p === 1) {
-              if (statuses.length === 1) {
-                clearInterval(id);
-                setStep("done");
-                return [];
-              } else {
-                if (step === "interrupt") {
-                  clearInterval(id);
-                  setStep("select");
-                }
-                return statuses.filter((_, i) => i > 0);
-              }
-            } else {
-              const copy = [...statuses];
-              copy[0] = {
-                pixel: copy[0].pixel,
-                progress: Math.min(1, copy[0].progress + 0.05),
-              };
-              return copy;
-            }
-          }),
-        200
-      );
-      return () => clearInterval(id);
-    }
-  }, [step]);
-  const showConfirmStop = useConfirmStopUpdatingActionSheet(() =>
-    setStep("interrupt")
+    const id = setInterval(forceUpdate, 3000);
+    return () => clearInterval(id);
+  }, [forceUpdate]);
+
+  // Get list of paired dice
+  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
+
+  // Build DFU statuses
+  const [dfuBundle, error] = useDfuBundle();
+  const targetStatusesRef = React.useRef(new Map<number, TargetDfuStatus>());
+  const targetStatuses = React.useMemo(
+    () =>
+      pairedDice.map((d) => {
+        const target =
+          targetStatusesRef.current.get(d.pixelId) ??
+          makeAutoObservable({
+            pairedDie: d,
+            state: getInitialDfuState(
+              getPixel(d.pixelId),
+              dfuBundle?.timestamp
+            ),
+            progress: 0,
+          } as TargetDfuStatus);
+        targetStatusesRef.current.set(d.pixelId, target);
+        return target;
+      }),
+    [dfuBundle?.timestamp, pairedDice]
   );
+  const [selection, setSelection] = React.useState<TargetDfuStatus[]>(() => {
+    const targetStatus = targetStatusesRef.current.get(pixelId ?? 0);
+    return targetStatus?.state === "pending" ? [targetStatus] : [];
+  });
+
+  // Update function
+  const updateBootloader = useAppSelector(
+    (state) => state.appSettings.updateBootloader
+  );
+  const [updating, setUpdating] = React.useState(false);
+  const update = () => {
+    if (dfuBundle) {
+      setUpdating(true);
+      updateDiceAsync([...selection], dfuBundle, updateBootloader, (t) =>
+        setSelection((selection) => selection.filter((other) => other !== t))
+      ).then(() => setUpdating(false));
+    }
+  };
+
+  const pendingCount = targetStatuses.filter(
+    (t) => t.state === "pending"
+  ).length;
+  const allUpdated = targetStatuses.every(
+    (t) => t.state === "completed" || t.state === "unknown"
+  );
+  const bottom = useBottomSheetPadding();
   return (
     <View style={{ height: "100%", gap: 10 }}>
-      <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
+      <PageHeader
+        rightElement={
+          !updating
+            ? () => <Button onPress={() => navigation.goBack()}>Close</Button>
+            : undefined
+        }
+      >
         Select Dice to Update
       </PageHeader>
-      <View style={{ flex: 1, flexGrow: 1, marginHorizontal: 10, gap: 20 }}>
-        <Text variant="bodyLarge">
-          We have a software update for your dice!
+      <ScrollView
+        style={{ flex: 1, marginHorizontal: 20 }}
+        contentContainerStyle={{ paddingBottom: bottom, gap: 10 }}
+      >
+        <Text>
+          We recommend to update your dice so they work properly with the app.
+          It usually takes less than 20 seconds per die.
         </Text>
-        <Text variant="bodyLarge">
-          We recommend to update them so they work properly with the app. It
-          takes less than 20 seconds per die.
+        <Text>
+          Please ensure that the dice stay on and close to your phone during the
+          update process. You may place your dice inside the charging case but
+          do not close the lid as it will turn off the die.
         </Text>
-        <Text variant="bodyLarge">
-          We've found some dice to update and have selected them in the list
-          below.
-        </Text>
-        {step === "select" || step === "done" ? (
-          <GradientButton
-            onPress={() =>
-              step === "select" ? setStep("update") : navigation.goBack()
-            }
-          >
-            {step === "select" ? `Update ${selection.length} Dice` : "Done!"}
-          </GradientButton>
+        <View style={{ height: 70, width: "100%", justifyContent: "center" }}>
+          {!allUpdated ? (
+            <AnimatedGradientButton
+              exiting={FadeOut.duration(300)}
+              disabled={updating || !pendingCount || !selection.length}
+              onPress={update}
+            >
+              Update Selected
+            </AnimatedGradientButton>
+          ) : (
+            <AnimatedText
+              entering={FadeIn.duration(300).delay(200)}
+              variant="bodyLarge"
+              style={{ alignSelf: "center" }}
+            >
+              {`Your${
+                targetStatuses.filter((t) => t.state === "unknown").length
+                  ? " connected"
+                  : ""
+              } ${
+                targetStatuses.length <= 1 ? "die is" : "dice are"
+              } up-to-date!`}
+            </AnimatedText>
+          )}
+        </View>
+        {dfuBundle ? (
+          <View>
+            {targetStatuses.map((t, i) => (
+              <SelectionButton
+                key={t.pairedDie.pixelId}
+                icon={() => (
+                  <DieWireframe dieType={t.pairedDie.dieType} size={40} />
+                )}
+                selected={selection.includes(t)}
+                noTopBorder={i > 0}
+                squaredTopBorder={i > 0}
+                squaredBottomBorder={i < targetStatuses.length - 1}
+                onPress={
+                  t.state === "pending"
+                    ? () =>
+                        setSelection((selection) =>
+                          selection.includes(t)
+                            ? selection.filter((other) => other !== t)
+                            : [...selection, t]
+                        )
+                    : undefined
+                }
+              >
+                <DieInfo targetStatus={t} />
+              </SelectionButton>
+            ))}
+          </View>
         ) : (
-          <OutlineButton
-            disabled={step === "update" && dfuStatuses.length <= 1}
-            onPress={() =>
-              step === "update" ? showConfirmStop() : setStep("update")
-            }
-          >
-            {step === "update" ? "Interrupt" : "Cancel Interrupt"}
-          </OutlineButton>
+          <Text>
+            {error ? `Error reading files: ${error}` : "Preparing files..."}
+          </Text>
         )}
-        <ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
-          <DiceList
-            pixels={pixels}
-            selection={selection}
-            onSelectDie={(p) => {
-              if (step === "select") {
-                setDfuStatuses((statuses) =>
-                  statuses.findIndex((s) => s.pixel === p) >= 0
-                    ? statuses.filter((s) => s.pixel !== p)
-                    : [...statuses, { pixel: p, progress: 0 }]
-                );
-              }
-            }}
-          />
-        </ScrollView>
-      </View>
+      </ScrollView>
     </View>
   );
 }
 
 export function FirmwareUpdateScreen({
+  route: {
+    params: { pixelId },
+  },
   navigation,
 }: FirmwareUpdateScreenProps) {
   return (
     <AppBackground>
-      <FirmwareUpdatePage navigation={navigation} pixels={[]} />
+      <FirmwareUpdatePage navigation={navigation} pixelId={pixelId} />
     </AppBackground>
   );
 }

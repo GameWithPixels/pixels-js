@@ -8,7 +8,10 @@ export function DieStaticInfo({
   pixel,
   style,
   ...props
-}: { pixel: PixelInfo } & ViewProps) {
+}: { pixel: Pick<PixelInfo, "name" | "dieType" | "colorway"> } & Omit<
+  ViewProps,
+  "children"
+>) {
   return (
     <View
       style={[{ flex: 1, justifyContent: "space-around" }, style]}

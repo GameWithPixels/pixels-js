@@ -1,9 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  PixelColorway,
+  PixelDieType,
+} from "@systemic-games/react-native-pixels-connect";
 
 export interface PairedDie {
+  systemId: string;
+  address: number;
   pixelId: number;
   name: string;
   isPaired: boolean;
+  dieType: PixelDieType;
+  colorway: PixelColorway;
   profileUuid?: string;
   rolls: number[];
 }
@@ -23,7 +31,14 @@ const PairedDiceSlice = createSlice({
   reducers: {
     addPairedDie(
       state,
-      action: PayloadAction<{ pixelId: number; name: string }>
+      action: PayloadAction<{
+        systemId: string;
+        address: number;
+        pixelId: number;
+        name: string;
+        dieType: PixelDieType;
+        colorway: PixelColorway;
+      }>
     ) {
       const index = state.dice.findIndex(
         ({ pixelId }) => pixelId === action.payload.pixelId
@@ -33,8 +48,12 @@ const PairedDiceSlice = createSlice({
         state.dice[index].isPaired = true;
       } else {
         state.dice.push({
+          systemId: action.payload.systemId,
+          address: action.payload.address,
           pixelId: action.payload.pixelId,
           name: action.payload.name,
+          dieType: action.payload.dieType,
+          colorway: action.payload.colorway,
           isPaired: true,
           rolls: [],
         });
