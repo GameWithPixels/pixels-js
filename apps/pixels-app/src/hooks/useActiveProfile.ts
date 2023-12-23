@@ -11,13 +11,15 @@ export function useActiveProfile(pixel: Pixel): {
   setActiveProfile: (profile: Readonly<Profiles.Profile>) => void;
 } {
   const appDispatch = useAppDispatch();
-  const activeProfiles = useAppSelector((state) => state.pairedDice.dice);
+  const profileUuid = useAppSelector(
+    (state) =>
+      state.pairedDice.dice.find((p) => p.pixelId === pixel.pixelId)
+        ?.profileUuid
+  );
   const setActiveProfile = (profile: Readonly<Profiles.Profile>) =>
     appDispatch(
       setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
     );
-  const profileUuid = activeProfiles.find((p) => p.pixelId === pixel.pixelId)
-    ?.profileUuid;
   const activeProfile = useProfile(
     profileUuid ?? getDefaultProfile(pixel.dieType).uuid
   );

@@ -10,9 +10,9 @@ import {
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
   addPairedDie,
-  addPairedDieRoll,
   PairedDie,
   removePairedDie,
   setPairedDieName,
@@ -87,7 +87,7 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
         };
         pixel.addEventListener("status", onStatus);
         const onRoll = (roll: number) =>
-          appDispatch(addPairedDieRoll({ pixelId: pixel.pixelId, roll }));
+          appDispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
         pixel.addEventListener("roll", onRoll);
         const onRename = ({ name }: PixelInfo) => {
           appDispatch(
