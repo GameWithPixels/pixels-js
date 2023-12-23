@@ -4,7 +4,6 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -111,10 +110,6 @@ function Title({ children }: React.PropsWithChildren) {
   );
 }
 
-function SubTitle(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="titleMedium" {...props} />;
-}
-
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
 }
@@ -204,9 +199,9 @@ function HealthSlide({ onNext }: { onNext: () => void }) {
         <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
           <Text>⚠️</Text>
           <View style={{ flex: 1, gap: 20 }}>
-            <SubTitle style={{ textTransform: "uppercase" }}>
+            <Text style={{ textTransform: "uppercase" }}>
               Photosensitive / Epilepsy Warning
-            </SubTitle>
+            </Text>
             <PaperText>
               Some individuals may experience epileptic seizures or blackouts
               when exposed to certain light patterns or flashing lights. If you
@@ -333,7 +328,6 @@ function HelpTurnOnDiceModal({
 
   const { bottom } = useSafeAreaInsets();
   const theme = useTheme();
-  const colors = theme.colors;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -355,14 +349,40 @@ function HelpTurnOnDiceModal({
           contentContainerStyle={{ padding: 20, gap: 20 }}
         >
           <LightUpYourGameImage />
-          <Text style={{ color: colors.onBackground }}>
-            Text and images explaining how to turn on dice.
+          <Text>
+            Pixels Dice are shipped with a pre-programmed user profile and
+            partial battery charge. They are ready to use right out of the box
+            but for the best experience, charge for at least 1 hour before first
+            use.
           </Text>
-          {range(20).map((i) => (
-            <Text key={i} style={{ color: colors.onBackground }}>
-              Adding a lot of text to enable content scrolling.
-            </Text>
-          ))}
+          <PaperText variant="titleLarge">To wake</PaperText>
+          <Text>
+            Open the charger by separating lid from base. The die inside will
+            turn on within 5 seconds and play the rainbow "Hello World" greeting
+            animation.
+          </Text>
+          <PaperText variant="titleLarge">To reboot</PaperText>
+          <Text>
+            Place die inside charger with charging coil face down/highest face
+            up and close lid. Remove the lid after a few seconds and the die
+            will wake, playing the "Hello World" greeting animation.
+          </Text>
+          <PaperText variant="titleLarge">To put to sleep</PaperText>
+          <Text>
+            Place die inside charger with charging coil face down/highest face
+            up and close lid. As the lid's magnet remains in place over the die,
+            it enters a sleep state.
+          </Text>
+          <PaperText variant="titleLarge">Note</PaperText>
+          <Text>
+            In place of a power button, Pixels Dice utilize a Hall Effect Sensor
+            which is activated by magnets. Inside the lid of all charging cases,
+            a small magnet is present to keep the dice in sleep mode when
+            closed. Magnets such as those found in third party dice trays, game
+            pieces, or otherwise may activate the sensor and cause Pixels Dice
+            to reboot or go to sleep mid-roll. This will result in a broken
+            connection between the dice and any connected device.
+          </Text>
           <LightUpYourGameImage />
         </BottomSheetScrollView>
       </ThemeProvider>
