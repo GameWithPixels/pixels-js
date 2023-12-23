@@ -5,8 +5,14 @@ export interface DieRolls {
   rolls: number[];
 }
 
+export interface ProfileTransfer {
+  pixelId: number;
+  profileUuid: string;
+}
+
 export interface DiceRollsState {
   dice: DieRolls[];
+  transfer?: ProfileTransfer;
 }
 
 const initialState: DiceRollsState = {
@@ -22,6 +28,7 @@ const DiceRollsSlice = createSlice({
       state,
       action: PayloadAction<{ pixelId: number; roll: number }>
     ) {
+      console.log("STORE addDieRoll");
       const pair = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
@@ -34,8 +41,24 @@ const DiceRollsSlice = createSlice({
         });
       }
     },
+    setProfileTransfer(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        profileUuid: string;
+      }>
+    ) {
+      console.log("STORE setProfileTransfer");
+      const { pixelId, profileUuid } = action.payload;
+      state.transfer = { pixelId, profileUuid };
+    },
+    clearProfileTransfer(state) {
+      console.log("STORE clearProfileTransfer");
+      state.transfer = undefined;
+    },
   },
 });
 
-export const { addDieRoll } = DiceRollsSlice.actions;
+export const { addDieRoll, setProfileTransfer, clearProfileTransfer } =
+  DiceRollsSlice.actions;
 export default DiceRollsSlice.reducer;

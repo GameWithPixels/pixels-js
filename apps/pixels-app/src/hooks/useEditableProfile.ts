@@ -30,6 +30,7 @@ function create(profileUuid: string): Profiles.Profile {
       JSON.stringify(profile);
       firstAutorun = false;
     } else {
+      // TODO remove from EditProfile
       runInAction(() => (profile.isModified = true));
     }
   });

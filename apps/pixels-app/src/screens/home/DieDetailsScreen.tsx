@@ -25,6 +25,7 @@ import {
   useActiveProfile,
   useHasFirmwareUpdate,
   usePairedPixel,
+  usePixelDataTransfer,
 } from "~/hooks";
 import { DieDetailsScreenProps } from "~/navigation";
 import { Colors } from "~/themes";
@@ -51,6 +52,8 @@ export function DieStatus({
   const status = usePixelStatus(pixel);
   const [battery] = usePixelValue(pixel, "battery");
   const [rollState] = usePixelValue(pixel, "rollState");
+  const transferProgress = usePixelDataTransfer(pixel);
+  const transferring = transferProgress >= 0 && transferProgress < 100;
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>Status</SectionTitle>
@@ -60,6 +63,9 @@ export function DieStatus({
         <Text>Charging: {battery?.isCharging ? "yes" : "no"}</Text>
         <Text>Roll Status: {getRollStateLabel(rollState?.state)}</Text>
         <Text>Face Up: {rollState?.face ?? ""}</Text>
+        <Text>
+          Activating Profile: {transferring ? `${transferProgress}%` : "done"}
+        </Text>
       </View>
     </View>
   );
@@ -162,7 +168,7 @@ function DieAdvancedInfo({
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>Die</SectionTitle>
       <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
-        <Text>Pixel ID: {pixel.pixelId.toString(16).padStart(8)}</Text>
+        <Text>Pixel ID: {(pixel.pixelId >>> 0).toString(16).padStart(8)}</Text>
         <Text>Chip Model: nRF52810</Text>
         <Text>LED Count: {pixel.ledCount}</Text>
         <Text>Die Type: {getDieTypeLabel(pixel.dieType)}</Text>
@@ -202,7 +208,7 @@ function DieDetailsPage({
   navigation: DieDetailsScreenProps["navigation"];
 }) {
   const pixel = usePairedPixel(pixelId);
-  const { activeProfile } = useActiveProfile(pixel);
+  const activeProfile = useActiveProfile(pixel);
   React.useEffect(() => {
     if (!pixel) {
       navigation.goBack();

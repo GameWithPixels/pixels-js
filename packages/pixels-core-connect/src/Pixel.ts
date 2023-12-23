@@ -160,9 +160,11 @@ export interface PixelEventMap {
   /** Data transfer. */
   dataTransfer: {
     progress: number;
-    bytesSend: number;
-    totalBytes: number;
+    // bytesSend: number;
+    // totalBytes: number;
   };
+  /** Profile data hash */
+  profileHash: number;
 }
 
 /**
@@ -886,11 +888,7 @@ export class Pixel extends PixelInfoNotifier {
   ): Promise<void> {
     const notifyProgress = (progress: number) => {
       try {
-        this._evEmitter.emit("dataTransfer", {
-          progress,
-          bytesSend: 0,
-          totalBytes: 0,
-        });
+        this._evEmitter.emit("dataTransfer", { progress });
         progressCallback?.(progress);
       } catch (error) {
         console.log(
@@ -953,6 +951,9 @@ export class Pixel extends PixelInfoNotifier {
           data,
           notifyProgress
         );
+
+        // Notify profile hash
+        this._evEmitter.emit("profileHash", hash);
       } else {
         const dataSize = dataSet.computeDataSetByteSize();
         throw new PixelError(
@@ -1133,7 +1134,7 @@ export class Pixel extends PixelInfoNotifier {
       this._logFunc(
         this._tagLogString(
           `${[...new Uint8Array(arr)]
-            .map((b) => b.toString(16).padStart(2, "0"))
+            .map((b) => (b >>> 0).toString(16).padStart(2, "0"))
             .join(":")}`
         )
       );
@@ -1217,6 +1218,12 @@ export class Pixel extends PixelInfoNotifier {
       // Update name
       this._updateName(iAmADie.dieName.name);
     }
+
+    // Notify profile hash
+    const profileDataHash =
+      (iAmADie as LegacyIAmADie).dataSetHash ??
+      (iAmADie as IAmADie).settingsInfo.profileDataHash;
+    this._evEmitter.emit("profileHash", profileDataHash);
   }
 
   private _updateStatus(status: PixelStatus): void {

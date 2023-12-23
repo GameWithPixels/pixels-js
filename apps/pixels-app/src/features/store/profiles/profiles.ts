@@ -18,7 +18,7 @@ import { makeObservable } from "~/features/makeObservable";
 const loadedProfiles = new Map<string, Profiles.Profile>();
 
 function create(uuid: string, skipAdd: boolean): Profiles.Profile {
-  storeLog("create", "profile", uuid); // `rules: ${profile?.rules.map((r) => `${r.condition.type}=>${r.actions.length}`)}`
+  storeLog("create", "profile", uuid);
   const profile = makeObservable(new Profiles.Profile({ uuid }));
   if (!skipAdd) {
     loadedProfiles.set(uuid, profile);

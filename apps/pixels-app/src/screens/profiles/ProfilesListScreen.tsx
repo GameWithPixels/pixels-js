@@ -8,6 +8,8 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 
+import { PickDieBottomSheet } from "./components/PickDieBottomSheet";
+
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -36,6 +38,7 @@ import {
   setProfilesGrouping,
   setProfilesSortMode,
 } from "~/features/store/appSettingsSlice";
+import { transferProfile } from "~/features/transferProfile";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 import { ProfilesListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -165,6 +168,11 @@ function ProfilesListPage({
         profileUuid: profile.uuid,
       },
     });
+  const [profileToActivate, setProfileToActivate] =
+    React.useState<Readonly<Profiles.Profile>>();
+  const activateProfile = (profile: Readonly<Profiles.Profile>) => {
+    setProfileToActivate(profile);
+  };
 
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);
@@ -204,12 +212,14 @@ function ProfilesListPage({
           <ProfilesGrid
             profiles={filteredProfiles}
             onSelectProfile={editProfile}
+            onActivateProfile={activateProfile}
           />
         ) : (
           <ProfilesList
             profiles={filteredProfiles}
             expandableItems
             onSelectProfile={editProfile}
+            onActivateProfile={activateProfile}
             groupBy={groupBy}
             sortMode={sortMode}
           />
@@ -220,6 +230,16 @@ function ProfilesListPage({
         onSelectViewMode={(vm) => setViewMode(vm)}
       />
       <FloatingAddButton onPress={() => navigation.navigate("createProfile")} />
+      <PickDieBottomSheet
+        dieType={profileToActivate?.dieType}
+        visible={!!profileToActivate}
+        onDismiss={(pixel) => {
+          if (pixel && profileToActivate) {
+            transferProfile(pixel, profileToActivate);
+          }
+          setProfileToActivate(undefined);
+        }}
+      />
     </>
   );
 }

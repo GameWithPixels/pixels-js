@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Fontisto, MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
@@ -93,11 +93,35 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
   );
 });
 
+const ProfileLastChanged = observer(function ProfileDiceNames({
+  profile,
+  iconColor,
+}: {
+  profile: Readonly<Profiles.Profile>;
+  iconColor: string;
+}) {
+  return (
+    <View
+      style={{
+        alignSelf: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 15,
+      }}
+    >
+      <Fontisto name="date" size={16} color={iconColor} />
+      <Text>{profile.lastChanged.toLocaleString()}</Text>
+    </View>
+  );
+});
+
 function ProfileActions({
   profile,
+  transferring,
   onAction,
 }: {
   profile: Readonly<Profiles.Profile>;
+  transferring?: boolean;
   onAction?: (
     action: "edit" | "activate",
     profile: Readonly<Profiles.Profile>
@@ -108,13 +132,14 @@ function ProfileActions({
       style={{
         flexDirection: "row",
         marginRight: 20,
-        justifyContent: "space-between",
+        justifyContent: "space-around",
       }}
     >
       <GradientChip
-        icon={({ size, color }) => (
-          <MaterialCommunityIcons name="upload" size={size} color={color} />
-        )}
+        // icon={({ size, color }) => (
+        //   <MaterialCommunityIcons name="upload" size={size} color={color} />
+        // )}
+        disabled={transferring}
         onPress={() => onAction?.("activate", profile)}
       >
         Activate
@@ -246,6 +271,9 @@ export function ProfileCard({
     profile: Readonly<Profiles.Profile>
   ) => void;
 } & Omit<TouchableCardProps, "children">) {
+  const transferredProfileUuid = useAppSelector(
+    (state) => state.diceRolls.transfer?.profileUuid
+  );
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dieViewCornersStyle = {
@@ -333,7 +361,7 @@ export function ProfileCard({
             >
               <ProfileDieRenderer profile={profile} pedestal />
             </View>
-            {transferring && (
+            {(transferring ?? transferredProfileUuid === profile.uuid) && (
               <ActivityIndicator
                 size="large"
                 style={{ position: "absolute" }}
@@ -388,7 +416,15 @@ export function ProfileCard({
                 profile={profile}
                 iconColor={colors.onSurface}
               />
-              <ProfileActions profile={profile} onAction={onAction} />
+              <ProfileLastChanged
+                profile={profile}
+                iconColor={colors.onSurface}
+              />
+              <ProfileActions
+                profile={profile}
+                onAction={onAction}
+                transferring={!!transferredProfileUuid}
+              />
             </View>
           </Animated.View>
           {row && expanded && (
@@ -430,8 +466,8 @@ export interface ProfilesListProps extends ViewProps {
   selected?: Readonly<Profiles.Profile>;
   groupBy?: ProfilesGrouping;
   sortMode?: SortMode;
-  transferring?: Readonly<Profiles.Profile>;
   onSelectProfile?: (profile: Readonly<Profiles.Profile>) => void;
+  onActivateProfile?: (profile: Readonly<Profiles.Profile>) => void;
 }
 
 export function ProfilesList({
@@ -439,9 +475,9 @@ export function ProfilesList({
   selected,
   groupBy,
   sortMode,
-  transferring,
   expandableItems,
   onSelectProfile,
+  onActivateProfile,
   style,
   ...props
 }: { expandableItems?: boolean } & ProfilesListProps) {
@@ -460,9 +496,11 @@ export function ProfilesList({
       if (action === "edit") {
         expandedIndex.value = -1;
         onSelectProfile?.(profile);
+      } else if (action === "activate") {
+        onActivateProfile?.(profile);
       }
     },
-    [expandedIndex, onSelectProfile]
+    [expandedIndex, onActivateProfile, onSelectProfile]
   );
 
   const profilesGroups = React.useMemo(
@@ -485,7 +523,6 @@ export function ProfilesList({
                 row
                 profile={p}
                 selected={p === selected}
-                transferring={p === transferring}
                 fadeInDelay={i * 50}
                 itemIndex={i}
                 expandItemIndex={expandableItems ? expandedIndex : undefined}
@@ -503,7 +540,6 @@ export function ProfilesList({
 function ProfilesColumn({
   profiles,
   selected,
-  transferring,
   onSelectProfile,
   style,
   ...props
@@ -515,7 +551,6 @@ function ProfilesColumn({
           key={p.uuid}
           profile={p}
           selected={p === selected}
-          transferring={p === transferring}
           fadeInDuration={500}
           fadeInDelay={i * 100}
           contentStyle={{ height: 200 }}
@@ -529,7 +564,6 @@ function ProfilesColumn({
 export function ProfilesGrid({
   profiles,
   selected,
-  transferring,
   numColumns = 3,
   onSelectProfile,
   style,
@@ -544,7 +578,6 @@ export function ProfilesGrid({
           key={col}
           profiles={profiles.filter((_, i) => i % numColumns === col)}
           selected={selected}
-          transferring={transferring}
           onSelectProfile={onSelectProfile}
         />
       ))}
