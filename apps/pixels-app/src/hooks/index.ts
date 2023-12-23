@@ -1,3 +1,4 @@
+export * from "./toolbox/useForceUpdate";
 export * from "./useActiveProfile";
 export * from "./useAnimation";
 export * from "./useAnimationsList";
@@ -5,6 +6,11 @@ export * from "./useConfirmActionSheet";
 export * from "./useEditableProfile";
 export * from "./usePairedPixels";
 export * from "./usePatternsList";
+export * from "./usePixelDataTransfer";
 export * from "./useProfile";
 export * from "./useProfilesList";
-export * from "./toolbox/useForceUpdate";
+export * from "./useFilteredProfiles";
+export * from "./usePixelsScanner";
+export * from "./useHasFirmwareUpdate";
+export * from "./useBottomSheetPadding";
+export * from "./useDfuBundle";

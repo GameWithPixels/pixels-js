@@ -28,8 +28,7 @@ import { SliderWithValue } from "~/components/SliderWithTitle";
 import { AnimationsGrid } from "~/components/animation";
 import { GradientButton } from "~/components/buttons";
 import { getConditionTypeLabel } from "~/descriptions";
-import { useAnimationsList } from "~/hooks";
-import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
+import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function PickAnimationModal({

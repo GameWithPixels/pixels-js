@@ -334,7 +334,10 @@ export function ProfileCard({
               <ProfileDieRenderer profile={profile} pedestal />
             </View>
             {transferring && (
-              <ActivityIndicator style={{ position: "absolute" }} />
+              <ActivityIndicator
+                size="large"
+                style={{ position: "absolute" }}
+              />
             )}
           </Animated.View>
         </LinearGradient>

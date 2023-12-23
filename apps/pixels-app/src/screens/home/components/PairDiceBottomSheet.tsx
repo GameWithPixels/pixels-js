@@ -18,7 +18,7 @@ import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
-import { useBottomSheetPadding } from "~/hooks/useBottomSheetPadding";
+import { useBottomSheetPadding } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PairDiceBottomSheet({

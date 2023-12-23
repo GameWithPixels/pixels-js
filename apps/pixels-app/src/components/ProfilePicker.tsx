@@ -15,8 +15,7 @@ import {
 } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
-import { useProfilesList } from "~/hooks";
-import { useFilteredProfiles } from "~/hooks/useFilteredProfiles";
+import { useFilteredProfiles, useProfilesList } from "~/hooks";
 
 export function ProfilePicker({
   selected,

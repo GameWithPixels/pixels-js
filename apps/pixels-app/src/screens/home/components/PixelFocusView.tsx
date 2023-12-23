@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Color,
   Pixel,
@@ -26,8 +27,12 @@ import { PixelDieRenderer } from "~/components/cards";
 import { ProfileCard } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
-import { useActiveProfile, useConfirmActionSheet } from "~/hooks";
-import { useHasFirmwareUpdate } from "~/hooks/useHasFirmwareUpdate";
+import {
+  useActiveProfile,
+  useConfirmActionSheet,
+  useHasFirmwareUpdate,
+  usePixelDataTransfer,
+} from "~/hooks";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
   {
@@ -190,14 +195,8 @@ export function PixelFocusView({
     blink();
   }, [blink]);
   const { activeProfile, setActiveProfile } = useActiveProfile(pixel);
-  const [transferring, setTransferring] = React.useState(false);
+  const transferProgress = usePixelDataTransfer(pixel);
   const [pickProfile, setPickProfile] = React.useState(false);
-  React.useEffect(() => {
-    if (activeProfile) {
-      setTransferring(true);
-      setTimeout(() => setTransferring(false), 5000); //TODO get status from Pixel
-    }
-  }, [activeProfile]);
 
   const disabled = status !== "ready";
   return (
@@ -230,7 +229,7 @@ export function PixelFocusView({
         <ProfileCard
           row
           profile={activeProfile}
-          transferring={transferring}
+          transferring={transferProgress >= 0 && transferProgress < 100}
           footer={
             <View
               style={{
@@ -272,11 +271,16 @@ export function PixelFocusView({
       <PickProfileBottomSheet
         pixel={pixel}
         profile={activeProfile}
-        transferring={transferring}
+        transferring={transferProgress >= 0 && transferProgress < 100}
         onSelectProfile={(profile) => {
-          if (!transferring) {
-            setActiveProfile(profile);
+          if (transferProgress < 0 || transferProgress >= 100) {
             setPickProfile(false);
+            const ds = createDataSetForProfile(profile);
+            pixel.transferDataSet(ds.toDataSet(), (progress) => {
+              console.log("progress " + progress);
+            });
+            // When done
+            setActiveProfile(profile);
           }
         }}
         visible={pickProfile}
