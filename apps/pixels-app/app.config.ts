@@ -5,11 +5,11 @@ const prod =
 
 const config = {
   expo: {
-    name: prod ? "Pixels Beta" : "Dev Pixels Beta",
+    name: prod ? "Pixels" : "Dev Pixels",
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
     runtimeVersion: "49.0", // Major is Expo version, minor is native code revision
-    version: "0.99.0", // Version number must have 3 parts
+    version: "2.0.0", // Version number must have 3 parts
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
@@ -26,28 +26,30 @@ const config = {
     },
     assetBundlePatterns: ["assets/**/*"],
     ios: {
+      bundleIdentifier: prod
+        ? "com.systemic-games.pixels"
+        : "com.systemicgames.pixelsappdev",
+      buildNumber: "2000",
       supportsTablet: true,
       infoPlist: {
         NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
         NSBluetoothPeripheralUsageDescription:
-          "Allow $(PRODUCT_NAME) to use Bluetooth",
+          "Allow $(PRODUCT_NAME) to use Bluetooth to connect to Pixels dice",
         NSBluetoothAlwaysUsageDescription:
-          "Allow $(PRODUCT_NAME) to use Bluetooth",
+          "Allow $(PRODUCT_NAME) to use Bluetooth to connect to Pixels dice",
       },
-      bundleIdentifier: prod
-        ? "com.systemicgames.pixelsapp"
-        : "com.systemicgames.pixelsappdev",
     },
     android: {
+      package: prod
+        ? "com.SystemicGames.Pixels"
+        : "com.systemicgames.pixelsappdev",
+      versionCode: 2000,
       adaptiveIcon: {
         foregroundImage: prod
           ? "./assets/images/adaptive-icon.png"
           : "./assets/images/adaptive-icon-dev.png",
         backgroundColor: "#222222",
       },
-      package: prod
-        ? "com.systemicgames.pixelsapp"
-        : "com.systemicgames.pixelsappdev",
       permissions: ["android.permission.CAMERA"],
     },
     plugins: [
