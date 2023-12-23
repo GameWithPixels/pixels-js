@@ -279,14 +279,14 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         visible={animPickerVisible}
         onDismiss={() => setAnimPickerVisible(false)}
       />
-      <Text variant="titleMedium">Repeat</Text>
+      {/* <Text variant="titleMedium">Repeat</Text>
       <SliderWithValue
         value={action.loopCount}
         minimumValue={1}
         maximumValue={10}
         step={1}
         onValueChange={(v) => runInAction(() => (action.loopCount = v))}
-      />
+      /> */}
       <Text variant="titleMedium">Duration Override</Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableRipple

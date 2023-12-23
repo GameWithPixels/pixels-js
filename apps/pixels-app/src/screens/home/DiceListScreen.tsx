@@ -397,7 +397,7 @@ function DiceListPage({
                 onPressNewDie={() => setShowPairDice(true)}
                 style={isFocus ? undefined : { marginTop: 35 }}
               />
-              {isFocus && (
+              {/* {isFocus && (
                 <Banner
                   visible={showFocusModeHelp && pixels.length > 0}
                   style={{ marginTop: 10 }}
@@ -406,7 +406,7 @@ function DiceListPage({
                   Focus mode shows information about the selected die. Tap on
                   the 3D die to make your Pixels wave at you.
                 </Banner>
-              )}
+              )} */}
             </View>
           )}
         </ScrollView>

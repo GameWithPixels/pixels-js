@@ -67,9 +67,9 @@ function CreateProfilePage({
   const templates = React.useMemo(
     () => [
       [blankProfile].concat(
-        profiles.slice(0, 3).filter((p) => !p.dieType || p.dieType === dieType)
+        profiles.filter((p) => !p.dieType || p.dieType === dieType)
       ),
-      profiles.slice(3).filter((p) => !p.dieType || p.dieType === dieType),
+      //profiles.slice(3).filter((p) => !p.dieType || p.dieType === dieType),
     ],
     [dieType, profiles]
   );
@@ -84,7 +84,7 @@ function CreateProfilePage({
       >
         Select Template
       </PageHeader>
-      <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
+      {/* <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} /> */}
       <DieTypesSelector selected={dieType} onSelect={setDieType} />
       <GHScrollView contentContainerStyle={{ gap: 20, paddingBottom: 10 }}>
         <ProfilesGrid
