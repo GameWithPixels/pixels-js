@@ -294,7 +294,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
         <PageHeader mode="arrow-left" onGoBack={onGoBack}>
           {getConditionTypeLabel("rolled")}
         </PageHeader>
-        <View
+        {/* <View
           style={{
             flexDirection: "row",
             justifyContent: "flex-start",
@@ -345,7 +345,13 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
               )
             );
           })}
-        </View>
+        </View> */}
+        <Text
+          variant="bodyMedium"
+          style={{ alignSelf: "center", marginBottom: 10 }}
+        >
+          Web Request and Speak Text to be added soon!
+        </Text>
         <Text variant="bodySmall" style={styles.description}>
           {getActionTypeDescription(actionTypes[index]) +
             " " +

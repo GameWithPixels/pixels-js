@@ -47,14 +47,14 @@ export function ProfilePicker({
         snapToOffsets={[0, searchbarHeight]}
         snapToEnd={false}
       >
-        <View style={{ height: searchbarHeight }}>
+        {/* <View style={{ height: searchbarHeight }}>
           <AnimatedProfileSearchbar
             filter={filter}
             setFilter={setFilter}
             positionY={scrollHandler}
             headerHeight={searchbarHeight}
           />
-        </View>
+        </View> */}
         <ProfilesList
           profiles={filteredProfiles}
           selected={selected}

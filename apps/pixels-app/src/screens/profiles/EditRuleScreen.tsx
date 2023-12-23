@@ -1,5 +1,6 @@
 import React from "react";
 import { View, ScrollView } from "react-native";
+import { Text } from "react-native-paper";
 
 import { EditActionCard } from "./components/EditActionCard";
 import { RuleIndex } from "./components/RuleCard";
@@ -32,7 +33,13 @@ function EditRulePage({
             gap: 20,
           }}
         >
-          {actionTypes.map((at) => (
+          <Text
+            variant="bodyMedium"
+            style={{ alignSelf: "center", marginBottom: 10 }}
+          >
+            Web Request and Speak Text to be added soon!
+          </Text>
+          {actionTypes.slice(0, 1).map((at) => (
             <EditActionCard
               key={at}
               profileUuid={profileUuid}

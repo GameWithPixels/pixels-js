@@ -237,7 +237,7 @@ export function PixelFocusView({
                 justifyContent: "space-around",
               }}
             >
-              <GradientChip
+              {/* <GradientChip
                 disabled={disabled}
                 // icon={({ size, color }) => (
                 //   <MaterialCommunityIcons
@@ -249,7 +249,7 @@ export function PixelFocusView({
                 onPress={onEditProfile}
               >
                 Customize
-              </GradientChip>
+              </GradientChip> */}
               <GradientChip
                 disabled={disabled}
                 icon={({ size, color }) => (
