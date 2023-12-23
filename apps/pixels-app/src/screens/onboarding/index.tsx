@@ -698,10 +698,7 @@ function UpdateDiceSlide({
                 ).then(() => setStep("done"));
               }}
             >
-              Update{" "}
-              {getToUpdateCount(statusesRef.current) <= 1
-                ? "My Die"
-                : "My Dice"}
+              Update My{scannedPixels.length <= 1 ? "Die" : "Dice"}
             </GradientButton>
           ) : (
             <Text>Loading files...</Text>

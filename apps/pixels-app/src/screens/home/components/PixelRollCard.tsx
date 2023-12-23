@@ -49,7 +49,7 @@ function PixelRollState({
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
-  return <Text {...props}>Die is{rolling ? " " : " not "}rolling</Text>;
+  return <Text {...props}>Die is {rolling ? "idle" : "rolling"}</Text>;
 }
 
 function AnimatedDieIcon({

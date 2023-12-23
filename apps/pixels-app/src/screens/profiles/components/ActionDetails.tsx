@@ -22,9 +22,9 @@ function getActionText(action: Profiles.Action): string {
   switch (action.type) {
     case "playAnimation": {
       const act = action as Profiles.ActionPlayAnimation;
-      let msg = `Play "${act.animation?.name ?? ""}" ${getCountAsText(
-        act.loopCount
-      )}`;
+      let msg = act.animation?.name
+        ? `Play "${act.animation.name}" ${getCountAsText(act.loopCount)}`
+        : "No animation selected";
       if (act.duration !== undefined) {
         msg += ` for ${act.duration.toFixed(1)}s`;
       }
