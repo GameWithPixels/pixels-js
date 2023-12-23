@@ -4,7 +4,6 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -111,10 +110,6 @@ function Title({ children }: React.PropsWithChildren) {
   );
 }
 
-function SubTitle(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="titleMedium" {...props} />;
-}
-
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
 }
@@ -204,9 +199,9 @@ function HealthSlide({ onNext }: { onNext: () => void }) {
         <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
           <Text>⚠️</Text>
           <View style={{ flex: 1, gap: 20 }}>
-            <SubTitle style={{ textTransform: "uppercase" }}>
+            <Text style={{ textTransform: "uppercase" }}>
               Photosensitive / Epilepsy Warning
-            </SubTitle>
+            </Text>
             <PaperText>
               Some individuals may experience epileptic seizures or blackouts
               when exposed to certain light patterns or flashing lights. If you
@@ -333,7 +328,6 @@ function HelpTurnOnDiceModal({
 
   const { bottom } = useSafeAreaInsets();
   const theme = useTheme();
-  const colors = theme.colors;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -355,14 +349,40 @@ function HelpTurnOnDiceModal({
           contentContainerStyle={{ padding: 20, gap: 20 }}
         >
           <LightUpYourGameImage />
-          <Text style={{ color: colors.onBackground }}>
-            Text and images explaining how to turn on dice.
+          <Text>
+            Pixels Dice are shipped with a pre-programmed user profile and
+            partial battery charge. They are ready to use right out of the box
+            but for the best experience, charge for at least 1 hour before first
+            use.
           </Text>
-          {range(20).map((i) => (
-            <Text key={i} style={{ color: colors.onBackground }}>
-              Adding a lot of text to enable content scrolling.
-            </Text>
-          ))}
+          <PaperText variant="titleLarge">To wake</PaperText>
+          <Text>
+            Open the charger by separating lid from base. The die inside will
+            turn on within 5 seconds and play the rainbow "Hello World" greeting
+            animation.
+          </Text>
+          <PaperText variant="titleLarge">To reboot</PaperText>
+          <Text>
+            Place die inside charger with charging coil face down/highest face
+            up and close lid. Remove the lid after a few seconds and the die
+            will wake, playing the "Hello World" greeting animation.
+          </Text>
+          <PaperText variant="titleLarge">To put to sleep</PaperText>
+          <Text>
+            Place die inside charger with charging coil face down/highest face
+            up and close lid. As the lid's magnet remains in place over the die,
+            it enters a sleep state.
+          </Text>
+          <PaperText variant="titleLarge">Note</PaperText>
+          <Text>
+            In place of a power button, Pixels Dice utilize a Hall Effect Sensor
+            which is activated by magnets. Inside the lid of all charging cases,
+            a small magnet is present to keep the dice in sleep mode when
+            closed. Magnets such as those found in third party dice trays, game
+            pieces, or otherwise may activate the sensor and cause Pixels Dice
+            to reboot or go to sleep mid-roll. This will result in a broken
+            connection between the dice and any connected device.
+          </Text>
           <LightUpYourGameImage />
         </BottomSheetScrollView>
       </ThemeProvider>
@@ -409,23 +429,22 @@ function ScanSlide({
           style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 40 }}
         >
           <Text>
-            In order to let you customize your dice the app needs to connect to
-            your dice using Bluetooth.
+            To customize your Pixels Dice the app needs to establish a Bluetooth
+            connection.
           </Text>
           <Text>
             {scannerStatus === "stopped"
-              ? "Please make sure that you have Bluetooth turned on " +
-                "and give permission for the app to access Bluetooth " +
-                "when prompted after pressing the button bellow."
+              ? "Please ensure you have Bluetooth turned on and grant permissions " +
+                "through your device settings. Tap the Continue button to allow " +
+                "the app to request access."
               : scannerStatus instanceof BluetoothPermissionsDeniedError
-                ? "❌ The app was not given permission to use Bluetooth, " +
-                  "please tap on the button below again and give permission " +
-                  "for the app to access Bluetooth so it can connect to your dice."
+                ? "❌ The Pixels app does not have Bluetooth access and is unable " +
+                  "to connect to your dice. Please grant permissions through your " +
+                  "device settings and tap the Continue button."
                 : scannerStatus instanceof BluetoothTurnedOffError
-                  ? "❌ Bluetooth seems to be turned off, please first enable " +
-                    "Bluetooth in your system settings and then give permission " +
-                    "for the app to access Bluetooth after pressing the button " +
-                    "bellow again."
+                  ? "❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
+                    "through your device settings and grant the Pixels app access. " +
+                    "Then tap the Continue button."
                   : `❌ Got an unexpected error: ${getNativeErrorMessage(
                       scannerStatus
                     )}`}
@@ -438,7 +457,7 @@ function ScanSlide({
             }}
             onPress={onStartScan}
           >
-            Use Bluetooth
+            Continue
           </GradientButton>
         </Animated.View>
       ) : (
@@ -614,7 +633,7 @@ const StatusText = observer(function StatusText({
   return (
     <Text>
       {toUpdateCount
-        ? `${toUpdateCount} ${diceStr(toUpdateCount)} left to update.`
+        ? `Remaining dice to update: ${toUpdateCount}.`
         : erroredCount
           ? ""
           : (statuses.length <= 1 ? "Your die is" : "All your dice are") +
@@ -657,13 +676,15 @@ function UpdateDiceSlide({
         >
           <Text>We have a software update for your dice!</Text>
           <Text>
-            We recommend to update them so they work properly with the app. It
-            usually takes less than 20 seconds per die.
+            We recommend to keep all dice up-to-date with the latest software to
+            ensure that they stay compatible with the Pixels app.
           </Text>
           <Text>
-            Please ensure that the dice stay on and close to your phone during
-            the update process. You may place your dice inside the charging case
-            but do not close the lid as it will turn off the die.
+            To update your dice now, place them near your device and tap the
+            Update button. Dice may be placed in open chargers during the update
+            process. Avoid moving charger lids or other magnets nearby while the
+            update is in progress as it may turn the dice off. Updates should
+            take less than 30 seconds per die.
           </Text>
           {dfuBundle ? (
             <GradientButton
@@ -677,10 +698,7 @@ function UpdateDiceSlide({
                 ).then(() => setStep("done"));
               }}
             >
-              Update{" "}
-              {getToUpdateCount(statusesRef.current) <= 1
-                ? "My Die"
-                : "My Dice"}
+              Update My{scannedPixels.length <= 1 ? "Die" : "Dice"}
             </GradientButton>
           ) : (
             <Text>Loading files...</Text>
