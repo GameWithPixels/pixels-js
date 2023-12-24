@@ -29,8 +29,8 @@ const config = {
       bundleIdentifier: prod
         ? "com.systemic-games.pixels"
         : "com.systemicgames.pixelsappdev",
-      buildNumber: "2000",
-      supportsTablet: true,
+      buildNumber: "2001",
+      supportsTablet: false,
       infoPlist: {
         NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
         NSBluetoothPeripheralUsageDescription:
