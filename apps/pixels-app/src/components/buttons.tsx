@@ -696,7 +696,6 @@ export function SelectionButton({
         {
           paddingHorizontal: 20,
           paddingVertical: 12,
-          gap: 20,
           backgroundColor: colors.backdrop,
           borderColor: colors.outlineVariant,
         },
@@ -704,19 +703,23 @@ export function SelectionButton({
       ]}
       {...props}
     >
-      {icon?.({ size: 20, color: colors.onSurface })}
-      <View style={{ flex: 1 }}>
-        {typeof children === "string" ? (
-          <Text variant="bodyLarge" style={{ color: colors.onSurface }}>
-            {children}
-          </Text>
-        ) : (
-          children
+      {/* We need this extra view to get around some extra right padding
+      that is added when the touchable is pressed */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+        {icon?.({ size: 20, color: colors.onSurface })}
+        <View style={{ flex: 1, flexGrow: 1 }}>
+          {typeof children === "string" ? (
+            <Text variant="bodyLarge" style={{ color: colors.onSurface }}>
+              {children}
+            </Text>
+          ) : (
+            children
+          )}
+        </View>
+        {selected && (
+          <MaterialIcons name="check" size={24} color={colors.onSurface} />
         )}
       </View>
-      {selected && (
-        <MaterialIcons name="check" size={24} color={colors.onSurface} />
-      )}
     </TouchableCard>
   );
 }
