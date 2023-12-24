@@ -202,7 +202,7 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
 export function usePairedPixel(pixelId: number): Pixel {
   const pairedDice = useAppSelector((state) => state.pairedDice.dice);
   assert(
-    pairedDice.find((d) => d.pixelId === pixelId),
+    pairedDice.find((d) => d.pixelId === pixelId)?.isPaired,
     `Pixel ${(pixelId >>> 0).toString(16).padStart(8)} not paired`
   );
   return getPixelOrThrow(pixelId);

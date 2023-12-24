@@ -8,7 +8,7 @@ import { getDefaultProfile } from "~/features/getDefaultProfile";
 export function useActiveProfile(pixel: Pixel): Readonly<Profiles.Profile> {
   const profileUuid = useAppSelector(
     (state) =>
-      state.pairedDice.dice.find((p) => p.pixelId === pixel.pixelId)
+      state.pairedDice.dice.find((d) => d.pixelId === pixel.pixelId)
         ?.profileUuid
   );
   // const setActiveProfile = (profile: Readonly<Profiles.Profile>) =>

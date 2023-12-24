@@ -7,7 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { View, ViewProps } from "react-native";
+import { useWindowDimensions, View, ViewProps } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 import Animated, {
   FadeIn,
@@ -72,7 +72,7 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
   iconColor: string;
 }) {
   const diceNames = useAppSelector((state) => state.pairedDice.dice)
-    .filter((d) => d.profileUuid === profile.uuid)
+    .filter((d) => d.isPaired && d.profileUuid === profile.uuid)
     .map((d) => d.name);
   return (
     <View
@@ -127,6 +127,7 @@ function ProfileActions({
     profile: Readonly<Profiles.Profile>
   ) => void;
 }) {
+  const { width } = useWindowDimensions();
   return (
     <View
       style={{
@@ -135,15 +136,18 @@ function ProfileActions({
         justifyContent: "space-around",
       }}
     >
-      <GradientChip
-        // icon={({ size, color }) => (
-        //   <MaterialCommunityIcons name="upload" size={size} color={color} />
-        // )}
-        disabled={transferring}
-        onPress={() => onAction?.("activate", profile)}
-      >
-        Activate
-      </GradientChip>
+      {/* TODO make button smaller? */}
+      {width > 350 && (
+        <GradientChip
+          // icon={({ size, color }) => (
+          //   <MaterialCommunityIcons name="upload" size={size} color={color} />
+          // )}
+          disabled={transferring}
+          onPress={() => onAction?.("activate", profile)}
+        >
+          Activate
+        </GradientChip>
+      )}
       <Chip
         icon={({ size, color }) => (
           <MaterialCommunityIcons

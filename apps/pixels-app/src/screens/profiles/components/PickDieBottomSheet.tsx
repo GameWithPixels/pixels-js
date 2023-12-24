@@ -39,7 +39,9 @@ export function PickDieBottomSheet({
     }
   }, [visible]);
 
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
+  const pairedDice = useAppSelector((state) => state.pairedDice.dice).filter(
+    (d) => d.isPaired
+  );
   // TODO update on dice connect/disconnect
   const pixels = React.useMemo(
     () =>
@@ -49,6 +51,12 @@ export function PickDieBottomSheet({
         .filter((p) => p.isReady && (!dieType || p.dieType === dieType)),
     [dieType, pairedDice]
   );
+  const hasPairedDiceType = React.useMemo(
+    () => pairedDice.some((p) => !dieType || p.dieType === dieType),
+    [dieType, pairedDice]
+  );
+
+  const dieTypeStr = dieType ? getDieTypeLabel(dieType) + " " : "";
 
   const paddingBottom = useBottomSheetPadding(0);
   const theme = useTheme();
@@ -94,10 +102,17 @@ export function PickDieBottomSheet({
                 <DieStaticInfo pixel={p} />
               </TouchableCard>
             ))}
-            <Text>
-              Only connected {dieType ? getDieTypeLabel(dieType) + " " : ""}dice
-              are listed.
-            </Text>
+            {pixels.length > 0 ? (
+              <Text>{`Only connected ${dieTypeStr}dice are listed.`}</Text>
+            ) : (
+              <Text variant="bodyLarge">
+                {hasPairedDiceType
+                  ? `No connected ${dieTypeStr}die.`
+                  : `You don't have any paired ${
+                      pairedDice.length ? dieTypeStr : ""
+                    }die.`}
+              </Text>
+            )}
           </BottomSheetScrollView>
         </View>
       </ThemeProvider>

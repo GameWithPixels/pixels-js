@@ -155,28 +155,30 @@ function FirmwareUpdatePage({
   }, [forceUpdate]);
 
   // Get list of paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
+  const allPairedDice = useAppSelector((state) => state.pairedDice.dice);
 
   // Build DFU statuses
   const [dfuBundle, error] = useDfuBundle();
   const targetStatusesRef = React.useRef(new Map<number, TargetDfuStatus>());
   const targetStatuses = React.useMemo(
     () =>
-      pairedDice.map((d) => {
-        const target =
-          targetStatusesRef.current.get(d.pixelId) ??
-          makeAutoObservable({
-            pairedDie: d,
-            state: getInitialDfuState(
-              getPixel(d.pixelId),
-              dfuBundle?.timestamp
-            ),
-            progress: 0,
-          } as TargetDfuStatus);
-        targetStatusesRef.current.set(d.pixelId, target);
-        return target;
-      }),
-    [dfuBundle?.timestamp, pairedDice]
+      allPairedDice
+        .filter((d) => d.isPaired)
+        .map((d) => {
+          const target =
+            targetStatusesRef.current.get(d.pixelId) ??
+            makeAutoObservable({
+              pairedDie: d,
+              state: getInitialDfuState(
+                getPixel(d.pixelId),
+                dfuBundle?.timestamp
+              ),
+              progress: 0,
+            } as TargetDfuStatus);
+          targetStatusesRef.current.set(d.pixelId, target);
+          return target;
+        }),
+    [allPairedDice, dfuBundle?.timestamp]
   );
   const [selection, setSelection] = React.useState<TargetDfuStatus[]>(() => {
     const targetStatus = targetStatusesRef.current.get(pixelId ?? 0);
