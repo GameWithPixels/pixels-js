@@ -24,6 +24,7 @@ import {
   AnimationRainbowData,
   AnimationSetData,
   AnimationSimpleData,
+  AnimationNormalsData,
 } from "./animations";
 import { GradientData } from "./gradient";
 import { PatternData } from "./pattern";
@@ -42,6 +43,7 @@ import {
   EditAnimationGradientPattern,
   EditAnimationKeyframed,
   EditAnimationNoise,
+  EditAnimationNormals,
   EditAnimationRainbow,
   EditAnimationSimple,
   EditAudioClip,
@@ -280,6 +282,13 @@ export function toAnimation<T extends keyof AnimationSetData>(
         ...animData,
         gradient: checkGetGradient(animData.gradientUuid),
         blinkGradient: checkGetGradient(animData.blinkGradientUuid),
+      });
+    }
+    case "normals": {
+      const animData = data as AnimationNormalsData;
+      return new EditAnimationNormals({
+        ...animData,
+        gradient: checkGetGradient(animData.gradientUuid),
       });
     }
     default:
@@ -587,12 +596,22 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           name: anim.name,
           duration: anim.duration,
           animFlags: anim.animFlags,
-          faces: anim.faces,
           gradientUuid: anim.gradient?.uuid,
           blinkDuration: anim.blinkDuration,
           blinkGradientUuid: anim.blinkGradient?.uuid,
-          blinkCount: anim.blinkCount,
-          fade: anim.fade,
+        },
+      };
+    }
+    case "normals": {
+      const anim = animation as EditAnimationNormals;
+      return {
+        type,
+        data: {
+          uuid: anim.uuid,
+          name: anim.name,
+          duration: anim.duration,
+          animFlags: anim.animFlags,
+          gradientUuid: anim.gradient?.uuid,
         },
       };
     }

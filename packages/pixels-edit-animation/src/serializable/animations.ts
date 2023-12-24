@@ -7,6 +7,7 @@ export interface AnimationSetData {
   gradientPattern: AnimationGradientPatternData[];
   gradient: AnimationGradientData[];
   noise: AnimationNoiseData[];
+  normals: AnimationNormalsData[];
 }
 
 export interface AnimationData extends UniqueNamedData {
@@ -54,6 +55,10 @@ export interface AnimationNoiseData extends AnimationData {
   fade: number;
 }
 
+export interface AnimationNormalsData extends AnimationData {
+  gradientUuid?: string;
+}
+
 //
 // Helpers
 //
@@ -66,5 +71,6 @@ export function createAnimationSetData(): AnimationSetData {
     gradientPattern: [],
     gradient: [],
     noise: [],
+    normals: [],
   };
 }

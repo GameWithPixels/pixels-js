@@ -147,6 +147,7 @@ export default class Color implements IColor {
   static brightMagenta = new Color(1, 0, 1);
   static brightYellow = new Color(1, 0.922, 0.016);
   static brightOrange = new Color(1, 0.647, 0);
+  static brightPurple = new Color(0.5, 0, 1);
 
   // Moderately bright colors
   static red = new Color(0.7, 0, 0);
