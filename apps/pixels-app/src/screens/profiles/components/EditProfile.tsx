@@ -47,7 +47,7 @@ const EditProfileDescription = observer(function EditProfileDescription({
 
 function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   const diceNames = useAppSelector((state) => state.pairedDice.dice)
-    .filter((d) => d.profileUuid === profileUuid)
+    .filter((d) => d.isPaired && d.profileUuid === profileUuid)
     .map((d) => d.name);
   return diceNames.length ? (
     <Text>Currently applied to: {diceNames.join(", ")}</Text>

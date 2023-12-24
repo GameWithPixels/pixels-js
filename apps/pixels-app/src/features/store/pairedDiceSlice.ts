@@ -9,7 +9,7 @@ export interface PairedDie {
   address: number;
   pixelId: number;
   name: string;
-  isPaired: boolean;
+  isPaired: boolean; // Move unpaired dice to a separate list
   dieType: PixelDieType;
   colorway: PixelColorway;
   profileUuid: string;

@@ -45,6 +45,8 @@ export function PairDiceBottomSheet({
     if (visible) {
       const id = setTimeout(() => setShowNoDie(true), 3000);
       return () => clearTimeout(id);
+    } else {
+      setShowNoDie(false);
     }
   }, [visible]);
 
