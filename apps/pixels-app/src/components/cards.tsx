@@ -2,7 +2,7 @@ import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { Text, TextProps, useTheme } from "react-native-paper";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, RssiIcon } from "./icons";
@@ -23,6 +23,27 @@ export function PixelDieRenderer({
       colorway={pixel.colorway}
       speed={speed}
     />
+  );
+}
+
+function PixelRollState({
+  pixel,
+  ...props
+}: {
+  pixel: Pixel;
+} & Omit<TextProps<string>, "children">) {
+  const [rollState] = usePixelValue(pixel, "rollState");
+  const rolling =
+    rollState?.state === "rolling" || rollState?.state === "handling";
+  return (
+    <Text {...props}>
+      Die is{" "}
+      {rolling
+        ? "rolling"
+        : rollState?.state === "onFace"
+          ? `on face ${rollState.face}`
+          : "still"}
+    </Text>
   );
 }
 
@@ -109,6 +130,7 @@ export function PixelVCard({
       >
         {status === "ready" || status === "disconnected" ? pixelName : status}
       </Text>
+      {!miniCards && <PixelRollState pixel={pixel} style={textStyle} />}
     </TouchableCard>
   );
 }
@@ -140,6 +162,7 @@ export function PixelHCard({
           {pixelName}
         </Text>
         <Text style={textStyle}>{activeProfile?.name ?? "No Profile!"}</Text>
+        <PixelRollState pixel={pixel} style={textStyle} />
       </View>
       <View
         style={{
