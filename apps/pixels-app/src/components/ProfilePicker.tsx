@@ -4,6 +4,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
+import { Text } from "react-native-paper";
 import Animated, {
   useAnimatedRef,
   useScrollViewOffset,
@@ -15,6 +16,7 @@ import {
 } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
+import { getDieTypeLabel } from "~/descriptions";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 
 export function ProfilePicker({
@@ -47,19 +49,29 @@ export function ProfilePicker({
         snapToOffsets={[0, searchbarHeight]}
         snapToEnd={false}
       >
-        {/* <View style={{ height: searchbarHeight }}>
-          <AnimatedProfileSearchbar
-            filter={filter}
-            setFilter={setFilter}
-            positionY={scrollHandler}
-            headerHeight={searchbarHeight}
-          />
-        </View> */}
-        <ProfilesList
-          profiles={filteredProfiles}
-          selected={selected}
-          onSelectProfile={onSelectProfile}
-        />
+        {filteredProfiles.length ? (
+          <>
+            {/* <View style={{ height: searchbarHeight }}>
+              <AnimatedProfileSearchbar
+                filter={filter}
+                setFilter={setFilter}
+                positionY={scrollHandler}
+                headerHeight={searchbarHeight}
+              />
+            </View> */}
+            <ProfilesList
+              profiles={filteredProfiles}
+              selected={selected}
+              onSelectProfile={onSelectProfile}
+            />
+          </>
+        ) : (
+          <Text variant="bodyMedium" style={{ marginTop: 10 }}>
+            There are no profile
+            {dieType ? ` for ${getDieTypeLabel(dieType)}'s` : ""}, try creating
+            a new one.
+          </Text>
+        )}
       </Animated.ScrollView>
     </View>
   );

@@ -15,37 +15,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { Card } from "~/components/Card";
-import { RssiIcon, BatteryIcon } from "~/components/icons";
+import { PixelBattery } from "~/components/PixelBattery";
+import { PixelRssi } from "~/components/PixelRssi";
+import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { getTextColorStyle } from "~/components/utils";
 import { getDieTypeAndColorwayLabel } from "~/descriptions";
 import { usePixelDataTransfer } from "~/hooks";
-
-function PixelRssi({
-  pixel,
-  size,
-  disabled,
-}: {
-  pixel: Pixel;
-  size: number;
-  disabled: boolean;
-}) {
-  const [rssi] = usePixelValue(pixel, "rssi");
-  return <RssiIcon value={rssi} size={size} disabled={disabled} />;
-}
-
-function PixelBattery({
-  pixel,
-  size,
-  disabled,
-}: {
-  pixel: Pixel;
-  size: number;
-  disabled: boolean;
-}) {
-  const [battery] = usePixelValue(pixel, "battery");
-  return <BatteryIcon value={battery?.level} size={size} disabled={disabled} />;
-}
 
 function AnimatedConnectionIcon({
   size,
@@ -136,7 +111,7 @@ function PixelStatusDetails({
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
       <Text style={textStyle}>
         {transferring
-          ? `Transfer data: ${transferProgress}%`
+          ? `Activating Profile: ${transferProgress}%`
           : battery?.isCharging
             ? "Charging..."
             : needCharging
@@ -161,22 +136,24 @@ function PixelStatusDetails({
 export function PixelStatusCard({
   pixel,
   disabled,
+  ...props
 }: {
   pixel: Pixel;
   disabled: boolean;
-}) {
+} & Omit<TouchableCardProps, "contentStyle">) {
   const status = usePixelStatus(pixel);
   const { colors } = useTheme();
   return (
-    <Card
-      style={{ flexGrow: 1 }}
+    <TouchableCard
       contentStyle={{
         flexGrow: 1,
         padding: 10,
+        paddingBottom: 0,
         alignItems: "flex-start",
         justifyContent: "space-around",
         gap: 5,
       }}
+      {...props}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <Text>Status:</Text>
@@ -190,9 +167,12 @@ export function PixelStatusCard({
         <PixelBattery pixel={pixel} size={16} disabled={disabled} />
       </View>
       <PixelStatusDetails pixel={pixel} disabled={disabled} />
-      <Text variant="labelSmall" style={{ color: colors.onSurfaceDisabled }}>
+      <Text
+        variant="labelSmall"
+        style={{ alignSelf: "flex-end", color: colors.onSurfaceDisabled }}
+      >
         Tap for more details
       </Text>
-    </Card>
+    </TouchableCard>
   );
 }

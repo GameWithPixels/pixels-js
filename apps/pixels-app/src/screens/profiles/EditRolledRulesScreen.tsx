@@ -169,7 +169,14 @@ function RolledConditionCard({
           }}
         >
           {props.disabled ? (
-            <Text style={styles.noAction}>All faces are assigned</Text>
+            <Text
+              style={{
+                marginVertical: 10,
+                color: colors.onSurfaceDisabled,
+              }}
+            >
+              All faces are assigned
+            </Text>
           ) : action ? (
             <>
               <View
@@ -189,7 +196,14 @@ function RolledConditionCard({
               )}
             </>
           ) : (
-            <Text style={styles.noAction}>Tap to enable</Text>
+            <Text
+              style={{
+                marginVertical: 10,
+                color: colors.onSurfaceDisabled,
+              }}
+            >
+              Tap to enable
+            </Text>
           )}
         </View>
       </>
@@ -346,17 +360,17 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
             );
           })}
         </View> */}
-        <Text
-          variant="bodyMedium"
-          style={{ alignSelf: "center", marginBottom: 10 }}
-        >
-          Web Request and Speak Text to be added soon!
-        </Text>
         <Text variant="bodySmall" style={styles.description}>
           {getActionTypeDescription(actionTypes[index]) +
             " " +
             getConditionTypeDescription("rolled") +
             "."}
+        </Text>
+        <Text
+          variant="bodyMedium"
+          style={{ alignSelf: "center", marginBottom: 10 }}
+        >
+          Web Request and Speak Text to be added soon!
         </Text>
         {/* Use for Gesture Handler ScrollView for nested scroll views to work */}
         <GHScrollView
@@ -503,10 +517,6 @@ const styles = StyleSheet.create({
   },
   actionDeleteIcon: {
     textAlign: "center",
-  },
-  noAction: {
-    ...AppStyles.greyedOut,
-    marginVertical: 10,
   },
   animationDie: {
     width: 60,

@@ -90,7 +90,13 @@ export function PairDiceBottomSheet({
                 gap: 20,
               }}
             >
-              <Text variant="titleSmall">Looking for Pixels...</Text>
+              <Text variant="titleSmall">
+                {availablePixels.length
+                  ? `${availablePixels.length} available Pixels ${
+                      availablePixels.length <= 1 ? "die" : "dice"
+                    }, scanning for more...`
+                  : "Looking for Pixels dice..."}
+              </Text>
               <ActivityIndicator />
             </View>
             {showNoDie && availablePixels.length === 0 && (

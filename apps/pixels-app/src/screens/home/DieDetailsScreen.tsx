@@ -1,26 +1,28 @@
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   Pixel,
+  Profiles,
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { View, ViewProps } from "react-native";
+import { StyleSheet, View, ViewProps } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Switch, Text, useTheme } from "react-native-paper";
 
 import RollsPerFaceIcon from "#/icons/home/rolls-per-face";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
+import { ProfileUsage } from "~/components/ProfileUsage";
 import { Banner } from "~/components/banners";
 import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
-import { ProfileCard } from "~/components/profile";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
 import {
   getColorwayLabel,
   getDieTypeLabel,
   getRollStateLabel,
 } from "~/descriptions";
+import { unsigned32ToHex } from "~/features/unsigned32ToHex";
 import {
   useActiveProfile,
   useHasFirmwareUpdate,
@@ -50,6 +52,7 @@ export function DieStatus({
   ...props
 }: { pixel: Pixel } & ViewProps) {
   const status = usePixelStatus(pixel);
+  const [rssi] = usePixelValue(pixel, "rssi");
   const [battery] = usePixelValue(pixel, "battery");
   const [rollState] = usePixelValue(pixel, "rollState");
   const transferProgress = usePixelDataTransfer(pixel);
@@ -57,17 +60,42 @@ export function DieStatus({
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>Status</SectionTitle>
-      <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
+      <View style={styles.paragraph}>
         <Text>Connection Status: {status}</Text>
+        <Text>RSSI: {rssi ?? 0} dBm</Text>
         <Text>Battery: {battery?.level ?? 0}%</Text>
         <Text>Charging: {battery?.isCharging ? "yes" : "no"}</Text>
-        <Text>Roll Status: {getRollStateLabel(rollState?.state)}</Text>
+        <Text>
+          Roll Status: {getRollStateLabel(rollState?.state).toLocaleLowerCase()}
+        </Text>
         <Text>Face Up: {rollState?.face ?? ""}</Text>
         <Text>
           Activating Profile: {transferring ? `${transferProgress}%` : "done"}
         </Text>
       </View>
     </View>
+  );
+}
+
+export function DieProfile({
+  profile,
+}: {
+  profile: Readonly<Profiles.Profile>;
+}) {
+  return (
+    <>
+      <SectionTitle>Active Profile</SectionTitle>
+      <View style={styles.paragraph}>
+        {profile ? (
+          <>
+            <Text>Name: {profile.name}</Text>
+            <ProfileUsage profile={profile} />
+          </>
+        ) : (
+          <Text>No Profile!</Text>
+        )}
+      </View>
+    </>
   );
 }
 
@@ -167,8 +195,8 @@ function DieAdvancedInfo({
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>Die</SectionTitle>
-      <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
-        <Text>Pixel ID: {(pixel.pixelId >>> 0).toString(16).padStart(8)}</Text>
+      <View style={styles.paragraph}>
+        <Text>Pixel ID: {unsigned32ToHex(pixel.pixelId)}</Text>
         <Text>Chip Model: nRF52810</Text>
         <Text>LED Count: {pixel.ledCount}</Text>
         <Text>Die Type: {getDieTypeLabel(pixel.dieType)}</Text>
@@ -178,7 +206,7 @@ function DieAdvancedInfo({
         <Text>Last Connected: {new Date().toLocaleString()}</Text> */}
       </View>
       <SectionTitle>Firmware</SectionTitle>
-      <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
+      <View style={styles.paragraph}>
         <Text>Build Timestamp: {pixel.firmwareDate.toLocaleString()}</Text>
         {/* <Text>Firmware Version: 12.3</Text>
         <Text>Settings Version: 12.3</Text>
@@ -186,16 +214,6 @@ function DieAdvancedInfo({
         <Text>Compat Extended Api Version: 12.3</Text>
         <Text>Compat Management Api Version: 12.3</Text> */}
       </View>
-      {/* <SectionTitle>Active Profile</SectionTitle>
-      <View style={{ marginLeft: 10, marginBottom: 10, gap: 5 }}>
-        <Text>Profile Size: 1234B</Text>
-        <Text>Number Of Sequences: 12</Text>
-        <Text>Number Of Animations: 12</Text>
-        <Text>Number Of Gradients: 12</Text>
-        <Text>Number Of Curves: 12</Text>
-        <Text>Number Of Colors: 12</Text>
-        <Text>Number Of Scalars: 12</Text>
-      </View> */}
     </View>
   );
 }
@@ -208,19 +226,20 @@ function DieDetailsPage({
   navigation: DieDetailsScreenProps["navigation"];
 }) {
   const pixel = usePairedPixel(pixelId);
-  const activeProfile = useActiveProfile(pixel);
   React.useEffect(() => {
     if (!pixel) {
       navigation.goBack();
     }
   }, [navigation, pixel]);
 
-  const status = usePixelStatus(pixel);
-  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
-  const disabled = status !== "ready";
+  // Active profile
+  const activeProfile = useActiveProfile(pixel);
 
+  // Firmware update
+  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const [firmwareUpdateVisible, setFirmwareUpdateVisible] =
     React.useState(true);
+
   return (
     <View style={{ height: "100%" }}>
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
@@ -246,15 +265,10 @@ function DieDetailsPage({
             </Banner>
           )}
           <DieStatus pixel={pixel} style={{ marginTop: 10 }} />
-          <SectionTitle>Active Profile</SectionTitle>
-          {activeProfile ? (
-            <ProfileCard row profile={activeProfile} disabled={disabled} />
-          ) : (
-            <Text>No Profile!</Text>
-          )}
+          <DieProfile profile={activeProfile} />
           {/* <SectionTitle>Rolls Statistics</SectionTitle>
           <DieStats pixel={pixel} style={{ marginTop: -10 }} /> */}
-          <DieAdvancedInfo pixel={pixel} style={{ marginTop: 10 }} />
+          <DieAdvancedInfo pixel={pixel} />
         </GHScrollView>
       )}
     </View>
@@ -273,3 +287,11 @@ export function DieDetailsScreen({
     </AppBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  paragraph: {
+    marginLeft: 10,
+    marginBottom: 10,
+    gap: 5,
+  },
+});

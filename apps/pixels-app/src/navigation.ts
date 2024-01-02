@@ -134,7 +134,6 @@ export type EditProfileStackParamList = {
   editProfile: {
     profileUuid: string;
     noDiscard?: boolean;
-    editName?: boolean;
   };
 } & EditProfileSubStackParamList;
 

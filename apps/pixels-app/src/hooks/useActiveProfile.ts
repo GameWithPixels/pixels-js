@@ -3,7 +3,7 @@ import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import { useProfile } from "./useProfile";
 
 import { useAppSelector } from "~/app/hooks";
-import { getDefaultProfile } from "~/features/getDefaultProfile";
+import { getDefaultProfile } from "~/features/getFactoryProfile";
 
 export function useActiveProfile(pixel: Pixel): Readonly<Profiles.Profile> {
   const profileUuid = useAppSelector(

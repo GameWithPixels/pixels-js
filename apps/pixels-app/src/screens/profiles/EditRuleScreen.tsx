@@ -10,6 +10,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { getConditionTypeLabel } from "~/descriptions";
 import { EditRuleScreenProps } from "~/navigation";
+import { AppStyles } from "~/styles";
 
 function EditRulePage({
   profileUuid,
@@ -33,10 +34,14 @@ function EditRulePage({
             gap: 20,
           }}
         >
-          <Text
-            variant="bodyMedium"
-            style={{ alignSelf: "center", marginBottom: 10 }}
-          >
+          <Text variant="bodyMedium" style={AppStyles.greyedOut}>
+            {conditionType === "rolling"
+              ? "Play an animation when die is being handled or is rolling."
+              : conditionType === "helloGoodbye"
+                ? "Play an animation when die turns on (typically when the charger's lid is removed)."
+                : ""}
+          </Text>
+          <Text variant="bodyMedium" style={{ alignSelf: "center" }}>
             Web Request and Speak Text to be added soon!
           </Text>
           {actionTypes.slice(0, 1).map((at) => (

@@ -222,13 +222,13 @@ function FirmwareUpdatePage({
         contentContainerStyle={{ paddingBottom: bottom, gap: 10 }}
       >
         <Text>
-          We recommend to update your dice so they work properly with the app.
-          It usually takes less than 20 seconds per die.
+          We recommend to keep all dice up-to-date to ensure that they stay
+          compatible with the app.
         </Text>
         <Text>
-          Please ensure that the dice stay on and close to your phone during the
-          update process. You may place your dice inside the charging case but
-          do not close the lid as it will turn off the die.
+          Keep your dice near your device during the update process. They may
+          stay in open chargers but avoid moving charger lids or other magnets
+          as it may turn the dice off.
         </Text>
         <View style={{ height: 70, width: "100%", justifyContent: "center" }}>
           {!allUpdated ? (
@@ -237,7 +237,7 @@ function FirmwareUpdatePage({
               disabled={updating || !pendingCount || !selection.length}
               onPress={update}
             >
-              Update Selected
+              Update Selected {selection.length <= 1 ? "Die" : "Dice"}
             </AnimatedGradientButton>
           ) : (
             <AnimatedText

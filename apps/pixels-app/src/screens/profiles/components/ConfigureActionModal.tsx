@@ -8,6 +8,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
+  DiceUtils,
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
@@ -17,6 +18,7 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 import { Platform, View } from "react-native";
 import {
+  Button,
   Text,
   ThemeProvider,
   TouchableRipple,
@@ -27,7 +29,6 @@ import { FacesGrid } from "~/components/FacesGrid";
 import { SliderWithValue } from "~/components/SliderWithTitle";
 import { AnimationsGrid } from "~/components/animation";
 import { GradientButton } from "~/components/buttons";
-import { getConditionTypeLabel } from "~/descriptions";
 import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -157,10 +158,11 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
   dieType: PixelDieType;
   unavailableFaces?: number[];
 }) {
+  const { colors } = useTheme();
   const faces = condition.faces;
   return faces !== "all" ? (
     <>
-      <Text variant="titleMedium">When Roll is</Text>
+      <Text variant="titleMedium">When roll is</Text>
       <FacesGrid
         dieType={dieType}
         selected={faces}
@@ -177,6 +179,37 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
         }
         style={{ marginHorizontal: 10 }}
       />
+      {DiceUtils.getFaceCount(dieType) > 6 && (
+        <View
+          style={{
+            flexDirection: "row",
+            marginHorizontal: 12,
+            justifyContent: "space-between",
+          }}
+        >
+          <Button
+            compact
+            textColor={colors.primary}
+            onPress={() =>
+              runInAction(
+                () =>
+                  (condition.faces = DiceUtils.getDieFaces(dieType).filter(
+                    (f) => !unavailableFaces?.includes(f)
+                  ))
+              )
+            }
+          >
+            Select All
+          </Button>
+          <Button
+            compact
+            textColor={colors.primary}
+            onPress={() => runInAction(() => (faces.length = 0))}
+          >
+            Unselect All
+          </Button>
+        </View>
+      )}
     </>
   ) : null;
 });
@@ -244,11 +277,9 @@ const ConfigureBatteryCondition = observer(function ConfigureBatteryCondition({
 
 const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   action,
-  conditionType,
   dieType,
 }: {
   action: Profiles.ActionPlayAnimation;
-  conditionType: Profiles.ConditionType;
   dieType?: PixelDieType;
 }) {
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
@@ -256,12 +287,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   const { colors } = useTheme();
   return (
     <>
-      <Text variant="titleMedium">
-        {conditionType === "rolled"
-          ? ""
-          : getConditionTypeLabel(conditionType) + " "}
-        Play
-      </Text>
+      <Text variant="titleMedium">Play</Text>
       <GradientButton
         outline
         onPress={() => setAnimPickerVisible(true)}
@@ -287,7 +313,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         step={1}
         onValueChange={(v) => runInAction(() => (action.loopCount = v))}
       /> */}
-      <Text variant="titleMedium">Duration Override</Text>
+      <Text variant="titleMedium">Duration</Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableRipple
           disabled={action.duration === undefined}
@@ -444,29 +470,16 @@ export const ConfigureActionModal = observer(function ConfigureActionModal({
             gap: 10,
           }}
         >
-          {condition.type === "rolled" ? (
+          {condition.type === "rolled" && (
             <ConfigureRolledCondition
               condition={condition as Profiles.ConditionRolled}
               dieType={dieType}
               unavailableFaces={unavailableFaces}
             />
-          ) : condition.type === "rolling" ? (
-            <ConfigureRollingCondition
-              condition={condition as Profiles.ConditionRolling}
-            />
-          ) : condition.type === "idle" ? (
-            <ConfigureIdleCondition
-              condition={condition as Profiles.ConditionIdle}
-            />
-          ) : condition.type === "battery" ? (
-            <ConfigureBatteryCondition
-              condition={condition as Profiles.ConditionBattery}
-            />
-          ) : null}
+          )}
           {action.type === "playAnimation" ? (
             <ConfigurePlayAnimation
               action={action as Profiles.ActionPlayAnimation}
-              conditionType={condition.type}
               dieType={dieType}
             />
           ) : action.type === "playAudioClip" ? (
@@ -478,6 +491,19 @@ export const ConfigureActionModal = observer(function ConfigureActionModal({
           ) : action.type === "makeWebRequest" ? (
             <ConfigureMakeWebRequest
               action={action as Profiles.ActionMakeWebRequest}
+            />
+          ) : null}
+          {condition.type === "rolling" ? (
+            <ConfigureRollingCondition
+              condition={condition as Profiles.ConditionRolling}
+            />
+          ) : condition.type === "idle" ? (
+            <ConfigureIdleCondition
+              condition={condition as Profiles.ConditionIdle}
+            />
+          ) : condition.type === "battery" ? (
+            <ConfigureBatteryCondition
+              condition={condition as Profiles.ConditionBattery}
             />
           ) : null}
         </BottomSheetView>

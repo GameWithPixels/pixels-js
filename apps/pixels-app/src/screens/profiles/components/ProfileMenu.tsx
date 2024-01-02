@@ -47,7 +47,7 @@ export function ProfileMenu({
           }}
         />
       )}
-      <Divider />
+      {/* <Divider />
       <Menu.Item
         title="Edit Advanced Rules"
         trailingIcon={({ size, color }) => (
@@ -63,7 +63,7 @@ export function ProfileMenu({
           onEditAdvancedRules();
         }}
       />
-      {/* <Divider />
+      <Divider />
       <Menu.Item
         title="Share"
         trailingIcon={({ size, color }) => (

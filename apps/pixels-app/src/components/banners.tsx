@@ -61,7 +61,7 @@ export function Banner({
   );
 }
 
-export function PromoBanner({
+export function NewPixelAppBanner({
   visible,
   collapsedMarginBottom,
   onHide,

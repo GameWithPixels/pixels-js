@@ -17,6 +17,7 @@ import {
   removePairedDie,
   setPairedDieName,
 } from "~/features/store/pairedDiceSlice";
+import { unsigned32ToHex } from "~/features/unsigned32ToHex";
 import { notEmpty, areArraysEqual } from "~/features/utils";
 
 function stableFilterPixels(
@@ -30,9 +31,7 @@ function stableFilterPixels(
 }
 
 function pixelLog(pixel: Pick<PixelInfo, "pixelId">, message: string) {
-  console.log(
-    `Pixel ${(pixel.pixelId >>> 0).toString(16).padStart(8)}: ${message}`
-  );
+  console.log(`Pixel ${unsigned32ToHex(pixel.pixelId)}: ${message}`);
 }
 
 function scheduleConnect(
@@ -203,7 +202,7 @@ export function usePairedPixel(pixelId: number): Pixel {
   const pairedDice = useAppSelector((state) => state.pairedDice.dice);
   assert(
     pairedDice.find((d) => d.pixelId === pixelId)?.isPaired,
-    `Pixel ${(pixelId >>> 0).toString(16).padStart(8)} not paired`
+    `Pixel ${unsigned32ToHex(pixelId)} not paired`
   );
   return getPixelOrThrow(pixelId);
 }

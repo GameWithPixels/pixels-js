@@ -133,12 +133,10 @@ const Header = observer(
 function EditProfilePage({
   profileUuid,
   noDiscard,
-  editName,
   navigation,
 }: {
   profileUuid: string;
   noDiscard?: boolean;
-  editName?: boolean;
   navigation: EditProfileScreenProps["navigation"];
 }) {
   const profile = useEditableProfile(profileUuid);
@@ -173,17 +171,9 @@ function EditProfilePage({
     goBack();
   });
 
-  const headerRef = React.useRef<HeaderTextInputHandle>(null);
-  // Focus on name text input when editName is true
-  // When showing the screen for the first time
-  React.useEffect(() => {
-    editName && headerRef.current?.focusEditName();
-  }, [editName]);
-
   return (
     <View style={{ height: "100%" }}>
       <Header
-        ref={headerRef}
         profile={profile}
         onCommitChanges={commitChanges}
         onDiscardChanges={
@@ -199,6 +189,7 @@ function EditProfilePage({
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingBottom: 10 }}
+        automaticallyAdjustKeyboardInsets
       >
         <EditProfile
           showActionButtons
@@ -212,7 +203,7 @@ function EditProfilePage({
 
 export function EditProfileScreen({
   route: {
-    params: { profileUuid, noDiscard, editName },
+    params: { profileUuid, noDiscard },
   },
   navigation,
 }: EditProfileScreenProps) {
@@ -221,7 +212,6 @@ export function EditProfileScreen({
       <EditProfilePage
         profileUuid={profileUuid}
         noDiscard={noDiscard}
-        editName={editName}
         navigation={navigation}
       />
     </AppBackground>

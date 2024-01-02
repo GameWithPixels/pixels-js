@@ -216,6 +216,10 @@ class SceneRenderer {
     // Create render function
     let lastTime = Date.now();
 
+    // Add some random initial rotation to the die
+    const PI2 = Math.PI * 2;
+    this._root.rotation.y += Math.random() * PI2;
+
     const renderLoop = () => {
       if (this._shouldRender) {
         const time = Date.now();
@@ -223,10 +227,11 @@ class SceneRenderer {
 
         // Rotate dice
         const r = this._speed * deltaTime;
+        const rot = this._root.rotation;
         if (rotateX) {
-          this._root.rotation.x -= r / 10000;
+          rot.x = (rot.x - r / 10000) % PI2;
         }
-        this._root.rotation.y -= r / 5000;
+        rot.y = (rot.y - r / 5000) % PI2;
         lastTime = time;
 
         // Update animations

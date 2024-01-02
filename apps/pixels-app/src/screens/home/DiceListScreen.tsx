@@ -31,7 +31,6 @@ import {
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { AnimatedMaterialCommunityIcons } from "~/components/animated";
-import { Banner } from "~/components/banners";
 import { AnimatedGradientButton, TightTextButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
 import {
@@ -46,7 +45,6 @@ import {
 import {
   setDiceGrouping,
   setDiceSortMode,
-  setShowFocusModeHelp,
 } from "~/features/store/appSettingsSlice";
 import { usePairedPixels, usePixelsScanner } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
@@ -169,8 +167,6 @@ function DiceListPage({
 }: {
   navigation: DiceListScreenProps["navigation"];
 }) {
-  const appDispatch = useAppDispatch();
-
   // TODO keeping this value in a state generates unnecessary re-renders
   const [scanTimeout, setScanTimeout] =
     React.useState<ReturnType<typeof setTimeout>>();
@@ -256,14 +252,6 @@ function DiceListPage({
     }
   };
 
-  // Banners
-  // const showWelcome = useAppSelector(
-  //   (state) => state.appSettings.showWelcomeBanner
-  // );
-  const showFocusModeHelp = useAppSelector(
-    (state) => state.appSettings.showFocusModeHelp
-  );
-
   const { colors } = useTheme();
 
   // Unpair
@@ -306,14 +294,6 @@ function DiceListPage({
             gap: 10,
           }}
         >
-          {/* TODO banner is causing visual glitches {isFocus && (
-            <PromoBanner
-              visible={showWelcome}
-              collapsedMarginBottom={-10}
-              style={{ marginTop: selectedPixel ? 0 : 32 }}
-              onHide={() => appDispatch(setShowWelcomeBanner(false))}
-            />
-          )} */}
           {isFocus && selectedPixel && (
             <PixelFocusView
               pixel={selectedPixel}
@@ -397,16 +377,6 @@ function DiceListPage({
                 onPressNewDie={() => setShowPairDice(true)}
                 style={isFocus ? undefined : { marginTop: 35 }}
               />
-              {/* {isFocus && (
-                <Banner
-                  visible={showFocusModeHelp && pixels.length > 0}
-                  style={{ marginTop: 10 }}
-                  onDismiss={() => appDispatch(setShowFocusModeHelp(false))}
-                >
-                  Focus mode shows information about the selected die. Tap on
-                  the 3D die to make your Pixels wave at you.
-                </Banner>
-              )} */}
             </View>
           )}
         </ScrollView>
