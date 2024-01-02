@@ -113,7 +113,7 @@ function updateCondition(
       {
         const cond = condition as Profiles.ConditionRolled;
         const data = conditionSetData[type][index];
-        cond.faces = data.faces ?? "all";
+        cond.faces = data.faces;
       }
       break;
     case "crooked":

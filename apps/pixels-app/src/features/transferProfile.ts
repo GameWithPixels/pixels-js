@@ -1,13 +1,8 @@
-import { range } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForProfile,
   DataSet,
 } from "@systemic-games/pixels-edit-animation";
-import {
-  DiceUtils,
-  Pixel,
-  Profiles,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import { Alert } from "react-native";
 import Toast from "react-native-root-toast";
 
@@ -32,35 +27,12 @@ export function transferProfile(
       .padStart(8)}`
   );
 
-  // Modify a copy of the profile to:
-  // - remove handling rules
-  // - set the actual faces of the "all" faces rolled condition
-  // - apply animation override
+  // Modify a copy of the profile to remove handling rules
   const modified = profile.duplicate();
   modified.rules = modified.rules.filter(
     (r) => r.condition.type !== "handling"
   );
   for (const rule of modified.rules) {
-    if (rule.condition.type === "rolled") {
-      const cond = rule.condition as Profiles.ConditionRolled;
-      if (cond.faces === "all") {
-        const at = rule.actions[0]?.type;
-        if (at) {
-          const other = modified.rules
-            .filter(
-              (r) => r.condition.type === "rolled" && r.actions[0]?.type === at
-            )
-            .flatMap((r) => {
-              const faces = (r.condition as Profiles.ConditionRolled).faces;
-              return faces === "all" ? [] : faces;
-            });
-          cond.faces = range(
-            1,
-            1 + DiceUtils.getFaceCount(pixel.dieType)
-          ).filter((f) => !other.includes(f));
-        }
-      }
-    }
     console.log("  - Rule of type " + rule.condition.type);
     for (const action of rule.actions) {
       if (action.type === "playAnimation") {

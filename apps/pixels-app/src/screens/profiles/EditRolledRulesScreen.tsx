@@ -33,6 +33,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionDetails, ActionDieRenderer } from "./components/ActionDetails";
 import { ConfigureActionModal } from "./components/ConfigureActionModal";
@@ -42,6 +43,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
 import { getActionTypeIcon } from "~/components/actions";
+import { AnimatedText } from "~/components/animated";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
 import {
   getActionTypeDescription,
@@ -49,8 +51,8 @@ import {
   getConditionTypeLabel,
   getFacesAsText,
 } from "~/descriptions";
-import { getHighestFace } from "~/features/getHighestFace";
 import { makeObservable } from "~/features/makeObservable";
+import { rolledConditionComparator } from "~/features/rolledConditionComparator";
 import { useEditableProfile } from "~/hooks";
 import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -141,11 +143,9 @@ function RolledConditionCard({
             style={{ ...styles.actionCardTitle, color }}
             variant="bodyLarge"
           >
-            {cond.faces === "all"
-              ? `All other faces`
-              : `When rolled face is${
-                  cond.faces.length > 1 ? " one of" : ""
-                } ${getFacesAsText(cond.faces)}`}
+            {`When rolled face is${
+              cond.faces.length > 1 ? " one of" : ""
+            } ${getFacesAsText(cond.faces)}`}
           </Text>
           <Pressable
             onPress={props.disabled ? undefined : onDelete}
@@ -212,7 +212,7 @@ function RolledConditionCard({
 }
 
 function createObservableRolledRule(
-  faces: number[] | "all",
+  faces: number[],
   actionType?: Profiles.ActionType
 ): Profiles.Rule {
   return makeObservable(
@@ -233,10 +233,7 @@ function getRolledFaces(
 ): number[] {
   return rolledRules
     .filter(
-      (r) =>
-        r !== excludedRule &&
-        (r.condition as Profiles.ConditionRolled).faces !== "all" &&
-        r.actions.find((a) => a.type === actionType)
+      (r) => r !== excludedRule && r.actions.find((a) => a.type === actionType)
     )
     .flatMap(
       (r) => (r.condition as Profiles.ConditionRolled).faces as number[]
@@ -259,18 +256,6 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
     [profile]
   ).get();
   const [configureRule, setConfigureRule] = React.useState<Profiles.Rule>();
-  const fallbackRules = React.useMemo(
-    () =>
-      actionTypes.map(
-        (at) =>
-          rolledRules.find(
-            (r) =>
-              (r.condition as Profiles.ConditionRolled).faces === "all" &&
-              r.actions.find((a) => a.type === at)
-          ) ?? createObservableRolledRule("all")
-      ),
-    [rolledRules]
-  );
 
   // Horizontal scroll
   const [index, setIndex] = React.useState(0);
@@ -279,18 +264,18 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
   const scrollTo = (page: number) =>
     scrollRef.current?.scrollTo({ x: page * width });
 
-  const fbRule = fallbackRules[index];
-
   // Unavailable faces
   const dieFaces = React.useMemo(
     () => [...DiceUtils.getDieFaces(profile.dieType)].reverse(),
     [profile.dieType]
   );
   const unavailableFaces = getRolledFaces(rolledRules, actionTypes[index]);
-  const availableFace = dieFaces.find((f) => !unavailableFaces?.includes(f));
+  const availableFaces = dieFaces.filter((f) => !unavailableFaces?.includes(f));
+  const availCount = availableFaces.length;
 
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   const scrollViewRefs = [
     React.useRef<InnerScrollViewHandle>(null),
@@ -382,25 +367,17 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
           }
           scrollEventThrottle={100}
         >
-          {actionTypes.map((t, i) => (
-            <InnerScrollView key={t} ref={scrollViewRefs[i]}>
-              {rolledRules
-                .filter(
-                  (r) =>
-                    (r.condition as Profiles.ConditionRolled).faces !== "all" &&
-                    (r.condition as Profiles.ConditionRolled).faces.length &&
-                    r.actions.find((a) => a.type === t)
-                )
-                .sort(
-                  (r1, r2) =>
-                    getHighestFace(
-                      (r2.condition as Profiles.ConditionRolled).faces
-                    ) -
-                    getHighestFace(
-                      (r1.condition as Profiles.ConditionRolled).faces
-                    )
-                )
-                .map((r) => (
+          {actionTypes.map((t, i) => {
+            const actionRules = rolledRules
+              .filter(
+                (r) =>
+                  (r.condition as Profiles.ConditionRolled).faces.length &&
+                  r.actions.find((a) => a.type === t)
+              )
+              .sort(rolledConditionComparator);
+            return (
+              <InnerScrollView key={t} ref={scrollViewRefs[i]}>
+                {actionRules.map((r) => (
                   <AnimatedRolledConditionCard
                     key={r.uuid}
                     entering={FadeIn.duration(300).delay(200)}
@@ -418,53 +395,38 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
                     }}
                   />
                 ))}
-              <AnimatedRolledConditionCard
-                type={t}
-                entering={FadeIn.duration(300)}
-                layout={CurvedTransition.easingY(Easing.linear).delay(200)}
-                rule={fbRule}
-                dieType={profile.dieType}
-                disabled={!fbRule || availableFace === undefined}
-                onPress={() => {
-                  if (!profile.rules.includes(fbRule)) {
-                    runInAction(() => {
-                      fbRule.actions[0] = makeObservable(
-                        Profiles.createAction(t)
-                      );
-                      profile.rules.push(fbRule);
-                    });
-                  }
-                  setConfigureRule(fbRule);
-                }}
-                onDelete={
-                  profile.rules.includes(fbRule)
-                    ? () =>
-                        runInAction(() =>
-                          profile.rules.splice(profile.rules.indexOf(fbRule), 1)
-                        )
-                    : undefined
-                }
-              />
-            </InnerScrollView>
-          ))}
+                <AnimatedText
+                  layout={CurvedTransition.easingY(Easing.linear)
+                    .delay(200)
+                    .easingX(Easing.steps(0))}
+                  style={{ alignSelf: "center", color: colors.onSurface }}
+                >
+                  {!availCount
+                    ? "All faces have an animation :)"
+                    : actionRules.length
+                      ? `Available face${
+                          availCount > 1 ? "s" : ""
+                        }: ${availableFaces.join(", ")}.`
+                      : "Tap on the (+) button to assign an animation to one or more faces."}
+                </AnimatedText>
+              </InnerScrollView>
+            );
+          })}
         </GHScrollView>
       </View>
       <FloatingAddButton
-        disabled={availableFace === undefined}
-        onPress={
-          availableFace
-            ? () => {
-                const newRule = createObservableRolledRule(
-                  [availableFace],
-                  actionTypes[index]
-                );
-                runInAction(() => {
-                  profile.rules.push(newRule);
-                });
-                setConfigureRule(newRule);
-              }
-            : undefined
-        }
+        disabled={!availCount}
+        bottomInset={bottomInset}
+        onPress={() => {
+          const newRule = createObservableRolledRule(
+            [availableFaces[0]],
+            actionTypes[index]
+          );
+          runInAction(() => {
+            profile.rules.push(newRule);
+          });
+          setConfigureRule(newRule);
+        }}
       />
       <ConfigureActionModal
         dieType={profile.dieType}

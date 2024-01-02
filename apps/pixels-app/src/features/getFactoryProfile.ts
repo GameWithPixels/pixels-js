@@ -103,7 +103,7 @@ function createDefaultProfile(dieType: PixelDieType): EditProfile {
   profile.rules.push(
     new EditRule(
       new EditConditionRolled({
-        faces: "all",
+        faces: DiceUtils.getDieFaces(dieType),
       }),
       {
         actions: [
