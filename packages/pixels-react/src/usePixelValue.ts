@@ -149,7 +149,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
 ): [
   UsePixelValueNamesMap[T] | undefined,
   (action: "start" | "stop") => void,
-  Error?
+  Error?,
 ] {
   type ValueType = UsePixelValueNamesMap[T];
   const [lastError, setLastError] = React.useState<Error>();
@@ -279,6 +279,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           // Request Pixel to send RSSI
           pixel.reportRssi(true, minInterval).catch(setLastError);
           return () => {
+            pixel.removeEventListener("rssi", onRssi);
             pixel.reportRssi(false).catch(() => {});
           };
         }
