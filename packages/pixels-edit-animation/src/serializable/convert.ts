@@ -131,7 +131,7 @@ export function toProfile(
           );
           condition = new EditConditionRolled({
             ...condData,
-            faces: condData.faces ?? "all",
+            faces: condData.faces,
           });
         }
         break;
@@ -325,10 +325,7 @@ export function toGradient(data: Readonly<GradientData>): EditRgbGradient {
 }
 
 // undefined means "all faces"
-export function fromFaceCompare(
-  flags: number,
-  face: number
-): number[] | undefined {
+export function fromFaceCompare(flags: number, face: number): number[] {
   const isEq = flags & FaceCompareFlagsValues.equal ? 1 : 0;
   const lessOrEqual =
     FaceCompareFlagsValues.less | FaceCompareFlagsValues.equal;
@@ -338,7 +335,7 @@ export function fromFaceCompare(
     ? []
     : (face === 20 && (flags & lessOrEqual) === lessOrEqual) ||
         (face === 1 && (flags & greaterOrEqual) === greaterOrEqual)
-      ? undefined
+      ? range(1, 21)
       : flags & FaceCompareFlagsValues.less
         ? range(1, face + isEq)
         : flags & FaceCompareFlagsValues.greater
@@ -392,9 +389,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
         {
           condIndex = conditions[condType].length;
           const cond = r.condition as EditConditionRolled;
-          conditions[condType].push({
-            faces: cond.faces === "all" ? undefined : [...cond.faces],
-          });
+          conditions[condType].push({ faces: [...cond.faces] });
         }
         break;
       case "connection":

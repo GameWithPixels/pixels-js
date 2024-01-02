@@ -16,9 +16,9 @@ export default class EditConditionRolled extends EditCondition {
   @range(1, 20)
   @name("Than")
   @observable
-  faces: number[] | "all";
+  faces: number[];
 
-  constructor(opt?: { faces?: number[] | "all" }) {
+  constructor(opt?: { faces?: number[] }) {
     super();
     this.faces = opt?.faces ?? [];
   }
@@ -33,32 +33,24 @@ export default class EditConditionRolled extends EditCondition {
     return new EditConditionRolled(this);
   }
 
-  static toFaceMask(faces: number[] | "all"): number {
-    if (faces === "all") {
-      return -1;
-    } else {
-      let mask = 0;
-      for (const face of faces) {
-        mask |= 1 << (face - 1);
-      }
-      return mask;
+  static toFaceMask(faces: number[]): number {
+    let mask = 0;
+    for (const face of faces) {
+      mask |= 1 << (face - 1);
     }
+    return mask;
   }
 
-  static fromFaceMask(mask: number): number[] | "all" {
-    if (mask === -1) {
-      return "all";
-    } else {
-      const faces = [];
-      let face = 1;
-      while (mask) {
-        if (mask & 1) {
-          faces.push(face);
-        }
-        mask = mask >> 1;
-        ++face;
+  static fromFaceMask(mask: number): number[] {
+    const faces = [];
+    let face = 1;
+    while (mask) {
+      if (mask & 1) {
+        faces.push(face);
       }
-      return faces;
+      mask = mask >> 1;
+      ++face;
     }
+    return faces;
   }
 }
