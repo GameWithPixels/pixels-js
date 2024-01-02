@@ -5,6 +5,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
 import { resetAppSettingsToDefault } from "~/features/store/appSettingsSlice";
+import { resetRollsHistory } from "~/features/store/diceRollsSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { resetProfilesToDefault } from "~/features/store/profilesLibrarySlice";
 import { useConfirmActionSheet } from "~/hooks";
@@ -46,6 +47,7 @@ function SettingsMenuPage({
   const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
     appDispatch(resetAppSettingsToDefault());
     appDispatch(resetPairedDice());
+    appDispatch(resetRollsHistory());
     appDispatch(resetProfilesToDefault());
     navigation.navigate("onboarding");
   });

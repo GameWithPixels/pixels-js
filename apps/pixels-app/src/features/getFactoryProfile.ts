@@ -1,26 +1,24 @@
-import { PixelDieType, DiceUtils } from "@systemic-games/pixels-core-connect";
+import { DiceUtils, PixelDieType } from "@systemic-games/pixels-core-connect";
 import {
+  AnimationFlagsValues,
+  BatteryStateFlagsValues,
+  Color,
+  ConnectionStateFlagsValues,
+  Constants,
   EditActionPlayAnimation,
   EditAnimationRainbow,
-  EditConditionHelloGoodbye,
-  EditProfile,
-  EditRule,
-  EditConditionConnectionState,
   EditAnimationSimple,
-  EditConditionRolling,
   EditColor,
   EditConditionBatteryState,
+  EditConditionConnectionState,
+  EditConditionHelloGoodbye,
   EditConditionRolled,
-} from "@systemic-games/pixels-edit-animation";
-import {
-  Color,
-  HelloGoodbyeFlagsValues,
-  Constants,
-  ConnectionStateFlagsValues,
-  AnimationFlagsValues,
+  EditConditionRolling,
+  EditProfile,
+  EditRule,
   getFaceMask,
-  BatteryStateFlagsValues,
-} from "@systemic-games/react-native-pixels-connect";
+  HelloGoodbyeFlagsValues,
+} from "@systemic-games/pixels-edit-animation";
 
 const profiles = new Map<PixelDieType, EditProfile>();
 
@@ -37,24 +35,24 @@ export function getDefaultProfile(
   }
 }
 
-export function getDefaultProfileByUuid(
+export function getFactoryProfileByUuid(
   uuid: string
 ): Readonly<EditProfile> | undefined {
-  if (isDefaultProfile(uuid)) {
+  if (isFactoryProfile(uuid)) {
     const dieType = uuid.substring("factory".length) as PixelDieType;
     return getDefaultProfile(dieType);
   }
 }
 
-export function isDefaultProfile(uuid: string): boolean {
+export function isFactoryProfile(uuid: string): boolean {
   return uuid.startsWith("factory");
 }
 
 function createDefaultProfile(dieType: PixelDieType): EditProfile {
   const profile = new EditProfile({
     uuid: "factory" + dieType,
-    name: "Default",
-    description: "Factory profile",
+    name: "Default Profile",
+    description: "Your die is configured with the default Profile.",
     dieType,
   });
   // Hello
@@ -74,30 +72,6 @@ function createDefaultProfile(dieType: PixelDieType): EditProfile {
               fade: 200 / 255,
               intensity: 0x80 / 255,
               cycles: 1,
-            }),
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          }),
-        ],
-      }
-    )
-  );
-  // Connection
-  profile.rules.push(
-    new EditRule(
-      new EditConditionConnectionState({
-        flags:
-          ConnectionStateFlagsValues.connected |
-          ConnectionStateFlagsValues.disconnected,
-      }),
-      {
-        actions: [
-          new EditActionPlayAnimation({
-            animation: new EditAnimationSimple({
-              count: 2,
-              duration: 1,
-              color: Color.blue,
-              faces: Constants.faceMaskAll,
             }),
             face: Constants.currentFaceIndex,
             loopCount: 1,
@@ -138,6 +112,39 @@ function createDefaultProfile(dieType: PixelDieType): EditProfile {
               count: 1,
               duration: 3,
               color: new EditColor("face"),
+              faces: Constants.faceMaskAll,
+            }),
+            face: Constants.currentFaceIndex,
+            loopCount: 1,
+          }),
+        ],
+      }
+    )
+  );
+
+  addDefaultAdvancedRules(profile);
+
+  return profile;
+}
+
+export function addDefaultAdvancedRules(profile: EditProfile): EditProfile {
+  const dieType = profile.dieType ?? "d20";
+
+  // Connection
+  profile.rules.push(
+    new EditRule(
+      new EditConditionConnectionState({
+        flags:
+          ConnectionStateFlagsValues.connected |
+          ConnectionStateFlagsValues.disconnected,
+      }),
+      {
+        actions: [
+          new EditActionPlayAnimation({
+            animation: new EditAnimationSimple({
+              count: 2,
+              duration: 1,
+              color: Color.blue,
               faces: Constants.faceMaskAll,
             }),
             face: Constants.currentFaceIndex,

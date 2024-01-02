@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -179,12 +180,7 @@ function WelcomeSlide({ onNext }: { onNext: () => void }) {
         <LightUpYourGameImage style={{ height: "30%", marginTop: 20 }} />
         <Title>Welcome to the Pixels app!</Title>
       </View>
-      <GradientButton
-        style={{ width: "50%", alignSelf: "center" }}
-        onPress={onNext}
-      >
-        Start
-      </GradientButton>
+      <GradientButton onPress={onNext}>Start</GradientButton>
     </Slide>
   );
 }
@@ -411,6 +407,7 @@ function ScanSlide({
       setShowHelp(false);
     }
   }, [scannerStatus]);
+  const { colors } = useTheme();
   return (
     <Slide title="Pair Your Dice">
       <Image
@@ -432,6 +429,12 @@ function ScanSlide({
             To customize your Pixels Dice the app needs to establish a Bluetooth
             connection.
           </Text>
+          <MaterialCommunityIcons
+            name="bluetooth"
+            size={30}
+            color={colors.onSurface}
+            style={{ alignSelf: "center" }}
+          />
           <Text>
             {scannerStatus === "stopped"
               ? "Please ensure you have Bluetooth turned on and grant permissions " +
@@ -467,8 +470,14 @@ function ScanSlide({
           style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 10 }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-            <Text>Looking for Pixels...</Text>
-            <ActivityIndicator />
+            <Text>
+              {pixels.length
+                ? `We have found ${pixels.length} Pixels ${diceStr(
+                    pixels.length
+                  )} so far:`
+                : "Looking for Pixels dice..."}
+            </Text>
+            {!pixels.length && <ActivityIndicator />}
           </View>
           <ScrollView contentContainerStyle={{ paddingBottom: 10, gap: 20 }}>
             <View
@@ -522,8 +531,8 @@ function ScanSlide({
           onPress={onNext}
         >
           {pixels.length === 1
-            ? "Pair My Pixels Die"
-            : `Pair These ${pixels.length} Pixels Dice`}
+            ? "Pair My Die"
+            : `Pair These ${pixels.length} Dice`}
         </AnimatedGradientButton>
       )}
       <HelpTurnOnDiceModal
@@ -608,13 +617,14 @@ const AnimatedPixelDfuCard = observer(function AnimatedPixelDfuCard({
       <View style={{ flex: 1, justifyContent: "space-around" }}>
         <Text>{scannedPixel.name}</Text>
         <SmallText>
+          Status:{" "}
           {!state || state === "completed"
-            ? "Up-To-Date"
+            ? "up-to-date"
             : state === "aborted" || state === "errored"
-              ? "Update Failed"
+              ? "update failed"
               : state === "pending"
-                ? "Update Required"
-                : `State ${state}, ${dfuStatus.progress}%`}
+                ? "update pending"
+                : `${state}, ${dfuStatus.progress}%`}
         </SmallText>
       </View>
     </AnimatedDieWireframeCard>
@@ -676,15 +686,13 @@ function UpdateDiceSlide({
         >
           <Text>We have a software update for your dice!</Text>
           <Text>
-            We recommend to keep all dice up-to-date with the latest software to
-            ensure that they stay compatible with the Pixels app.
+            We recommend to keep all dice up-to-date to ensure that they stay
+            compatible with the app.
           </Text>
           <Text>
-            To update your dice now, place them near your device and tap the
-            Update button. Dice may be placed in open chargers during the update
-            process. Avoid moving charger lids or other magnets nearby while the
-            update is in progress as it may turn the dice off. Updates should
-            take less than 30 seconds per die.
+            Keep your dice near your device during the update process. They may
+            stay in open chargers but avoid moving charger lids or other magnets
+            as it may turn the dice off.
           </Text>
           {dfuBundle ? (
             <GradientButton
@@ -698,7 +706,7 @@ function UpdateDiceSlide({
                 ).then(() => setStep("done"));
               }}
             >
-              Update My{scannedPixels.length <= 1 ? "Die" : "Dice"}
+              Update
             </GradientButton>
           ) : (
             <Text>Loading files...</Text>
@@ -730,7 +738,7 @@ function UpdateDiceSlide({
           entering={FadeIn.duration(300)}
           onPress={onNext}
         >
-          Next
+          Go
         </AnimatedGradientButton>
       )}
       {step === "wait" && <SkipButton onPress={onNext} />}
@@ -738,28 +746,25 @@ function UpdateDiceSlide({
   );
 }
 
-function ReadySlide({ onDone }: { onDone: () => void }) {
+function ReadySlide({
+  pixelsCount,
+  onDone,
+}: {
+  pixelsCount: number;
+  onDone: () => void;
+}) {
+  const { fonts } = useTheme();
+  const dice = diceStr(pixelsCount);
   return (
-    <Slide>
-      <View style={{ flexGrow: 1 }}>
-        <View style={{ flexGrow: 1, justifyContent: "center", gap: 30 }}>
-          <Title>Customize Your Dice</Title>
-          <Text>
-            The Pixels app automatically connects to your dice and let you
-            customize how they light up.
-          </Text>
-          <Text>
-            You can make them speak text on your phone and or make web requests.
-          </Text>
-        </View>
-        <LightUpYourGameImage />
-        <View style={{ flexGrow: 1, justifyContent: "center", gap: 30 }}>
-          <Title>Customize Your App</Title>
-          <Text>
-            You can configure how the app display your dice and profile lists to
-            your liking. Explore the different view options!
-          </Text>
-        </View>
+    <Slide title="You are all set!">
+      <View style={{ flexGrow: 1, justifyContent: "space-evenly" }}>
+        <LightUpYourGameImage style={{ height: "30%" }} />
+        <Text style={{ lineHeight: fonts.headlineMedium.lineHeight }}>
+          Your Pixels {dice} light up accordingly to the settings of
+          {pixelsCount <= 1 ? " its " : " their "}
+          Profile. With the app you may customize your {dice} Profile or create
+          new ones.
+        </Text>
       </View>
       <GradientButton onPress={onDone}>Go</GradientButton>
     </Slide>
@@ -806,6 +811,7 @@ function OnboardingPage({
   // DFU files
   const [bundle] = useDfuBundle();
 
+  // Page scrolling
   const [index, setIndex] = React.useState(0);
   const scrollRef = React.useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
@@ -858,7 +864,8 @@ function OnboardingPage({
                 })
               );
             }
-            scrollTo(pixels.some((p) => !isPixelUpToDate(p, bundle)) ? 3 : 4);
+            const updateDice = pixels.some((p) => !isPixelUpToDate(p, bundle));
+            scrollTo(updateDice ? 3 : 4);
           }}
         />
         <UpdateDiceSlide
@@ -867,13 +874,13 @@ function OnboardingPage({
           onNext={() => scrollTo(4)}
         />
         <ReadySlide
+          pixelsCount={pixels.length}
           onDone={() => {
             appDispatch(setShowOnboarding(false));
             navigation.navigate("home");
           }}
         />
       </ScrollView>
-
       {/* Bottom page indicator */}
       <View
         style={{

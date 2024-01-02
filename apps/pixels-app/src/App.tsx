@@ -22,6 +22,7 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -208,31 +209,33 @@ export default function App() {
         <SafeAreaProvider>
           <GestureHandlerRootView style={StyleSheet.absoluteFill}>
             <PaperProvider theme={AppDarkTheme}>
-              <NavigationContainer theme={AppDarkTheme}>
-                <ErrorBoundary FallbackComponent={ErrorFallback}>
-                  <ActionSheetProvider>
-                    <BottomSheetModalProvider>
-                      <StatusBar style="light" />
-                      <PersistGate
-                        loading={
-                          <View
-                            style={{
-                              flex: 1,
-                              alignContent: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Text>Loading...</Text>
-                          </View>
-                        }
-                        persistor={persistor}
-                      >
-                        <AppPage />
-                      </PersistGate>
-                    </BottomSheetModalProvider>
-                  </ActionSheetProvider>
-                </ErrorBoundary>
-              </NavigationContainer>
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <NavigationContainer theme={AppDarkTheme}>
+                  <RootSiblingParent>
+                    <ActionSheetProvider>
+                      <BottomSheetModalProvider>
+                        <StatusBar style="light" />
+                        <PersistGate
+                          loading={
+                            <View
+                              style={{
+                                flex: 1,
+                                alignContent: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Text>Loading...</Text>
+                            </View>
+                          }
+                          persistor={persistor}
+                        >
+                          <AppPage />
+                        </PersistGate>
+                      </BottomSheetModalProvider>
+                    </ActionSheetProvider>
+                  </RootSiblingParent>
+                </NavigationContainer>
+              </ErrorBoundary>
             </PaperProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>

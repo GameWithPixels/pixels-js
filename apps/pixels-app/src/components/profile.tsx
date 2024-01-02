@@ -3,6 +3,7 @@ import { range } from "@systemic-games/pixels-core-utils";
 import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { Profile } from "@systemic-games/react-native-pixels-connect/src/Profiles";
 import { LinearGradient } from "expo-linear-gradient";
 import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -88,7 +89,9 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
         size={24}
         color={iconColor}
       />
-      <Text>{diceNames.length ? diceNames.join(", ") : "Not in use"}</Text>
+      <Text>
+        {diceNames.length ? diceNames.join(", ") : "Not activated on any die"}
+      </Text>
     </View>
   );
 });
@@ -244,6 +247,18 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
   );
 });
 
+export interface ProfileCardProps extends Omit<TouchableCardProps, "children"> {
+  profile: Readonly<Profiles.Profile>;
+  transferring?: boolean;
+  expanded?: SharedValue<boolean>;
+  fadeInDuration?: number;
+  fadeInDelay?: number;
+  onAction?: (
+    action: "edit" | "activate",
+    profile: Readonly<Profiles.Profile>
+  ) => void;
+}
+
 export function ProfileCard({
   profile,
   row,
@@ -259,22 +274,10 @@ export function ProfileCard({
   fadeInDuration,
   fadeInDelay,
   onAction,
-  footer,
   style,
   contentStyle,
   ...props
-}: {
-  profile: Readonly<Profiles.Profile>;
-  transferring?: boolean;
-  expanded?: SharedValue<boolean>;
-  fadeInDuration?: number;
-  fadeInDelay?: number;
-  footer?: React.ReactNode;
-  onAction?: (
-    action: "edit" | "activate",
-    profile: Readonly<Profiles.Profile>
-  ) => void;
-} & Omit<TouchableCardProps, "children">) {
+}: ProfileCardProps) {
   const transferredProfileUuid = useAppSelector(
     (state) => state.diceRolls.transfer?.profileUuid
   );
@@ -347,7 +350,8 @@ export function ProfileCard({
                 borderWidth: noBorder ? 0 : 1,
                 borderRightWidth: noBorder ?? row ? 0 : 1,
                 borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
-                borderBottomWidth: noBorder ?? noBottomBorder ? 0 : undefined,
+                borderBottomWidth:
+                  noBorder ?? noBottomBorder ?? !row ? 0 : undefined,
                 borderColor: getBorderColor(colors, selected),
                 // Corners
                 ...dieViewCornersStyle,
@@ -396,16 +400,14 @@ export function ProfileCard({
           <ProfileNameAndDescription
             profile={profile}
             row={row}
-            numberOfLines={footer ? 1 : 2}
+            numberOfLines={2}
             textStyle={textStyle}
           />
-          {footer ?? (
-            <ProfileActionsIcons
-              profile={profile}
-              gap={row ? 10 : 5}
-              iconColor={colors.onSurface}
-            />
-          )}
+          <ProfileActionsIcons
+            profile={profile}
+            gap={row ? 10 : 5}
+            iconColor={colors.onSurface}
+          />
           <Animated.View style={animBottomStyle}>
             <View
               style={{

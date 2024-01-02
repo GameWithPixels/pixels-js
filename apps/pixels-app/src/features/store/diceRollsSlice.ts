@@ -24,6 +24,9 @@ const DiceRollsSlice = createSlice({
   name: "DiceRolls",
   initialState,
   reducers: {
+    resetRollsHistory() {
+      return initialState;
+    },
     addDieRoll(
       state,
       action: PayloadAction<{ pixelId: number; roll: number }>
@@ -59,6 +62,10 @@ const DiceRollsSlice = createSlice({
   },
 });
 
-export const { addDieRoll, setProfileTransfer, clearProfileTransfer } =
-  DiceRollsSlice.actions;
+export const {
+  resetRollsHistory,
+  addDieRoll,
+  setProfileTransfer,
+  clearProfileTransfer,
+} = DiceRollsSlice.actions;
 export default DiceRollsSlice.reducer;

@@ -109,15 +109,17 @@ export function LargeGradientIconButton({
 export function TightTextButton({
   children,
   underline,
+  withPrimaryColor,
   labelStyle,
   ...props
-}: { underline?: boolean } & ButtonProps) {
+}: { underline?: boolean; withPrimaryColor?: boolean } & ButtonProps) {
   const { colors } = useTheme();
   return (
-    <Button compact textColor={colors.onSurface} {...props}>
+    <Button compact {...props}>
       <Text
         variant="labelSmall"
         style={[
+          { color: withPrimaryColor ? colors.primary : colors.onSurface },
           underline ? { textDecorationLine: "underline" } : undefined,
           labelStyle,
         ]}

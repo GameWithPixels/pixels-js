@@ -1,3 +1,4 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import {
   PixelDieType,
   Profiles,
@@ -5,25 +6,39 @@ import {
 import React from "react";
 import { View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
+import { Button, Text, TextInput } from "react-native-paper";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { TabsHeaders } from "~/components/TabsHeaders";
-import { GradientChip, TightTextButton } from "~/components/buttons";
+import { GradientChip } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
 import { getProfileDieTypeLabel } from "~/descriptions";
-import { profileDieTypes } from "~/dieTypes";
+import { dieTypes, profileDieTypes } from "~/dieTypes";
 import generateUuid from "~/features/generateUuid";
-import { useEditProfilesList, useProfilesList } from "~/hooks";
+import { addDefaultAdvancedRules } from "~/features/getFactoryProfile";
+import {
+  useBottomSheetPadding,
+  useEditProfilesList,
+  useProfilesList,
+} from "~/hooks";
 import { CreateProfileScreenProps } from "~/navigation";
 
-const blankProfile: Readonly<Profiles.Profile> = new Profiles.Profile({
-  uuid: generateUuid(),
-  name: "Empty",
-  description: "A blank profile",
-});
+const blankProfiles: readonly Readonly<Profiles.Profile>[] = dieTypes.map(
+  (dieType) =>
+    addDefaultAdvancedRules(
+      new Profiles.Profile({
+        name: "Blank",
+        description: "An empty profile",
+        dieType,
+      })
+    )
+);
 
-const tabsNames = ["Templates", "Profiles"];
+function getBlankProfile(dieType: PixelDieType) {
+  const profile = blankProfiles.find((p) => p.dieType === dieType);
+  assert(profile, `No blank profile for die type ${dieType}`);
+  return profile;
+}
 
 function DieTypesSelector({
   selected,
@@ -62,50 +77,73 @@ function CreateProfilePage({
 }) {
   const profiles = useProfilesList();
   const { addProfile } = useEditProfilesList();
-  const [tab, setTab] = React.useState(tabsNames[0]);
   const [dieType, setDieType] = React.useState<PixelDieType>("d20");
+  const [profileName, setProfileName] = React.useState("");
   const templates = React.useMemo(
-    () => [
-      [blankProfile].concat(
+    () =>
+      [getBlankProfile(dieType)].concat(
         profiles.filter((p) => !p.dieType || p.dieType === dieType)
       ),
-      //profiles.slice(3).filter((p) => !p.dieType || p.dieType === dieType),
-    ],
     [dieType, profiles]
   );
+  const [selectedProfile, setSelectedProfile] = React.useState(templates[0]);
+  const createProfile = () => {
+    const newProfile = selectedProfile.duplicate(generateUuid());
+    newProfile.name = profileName.length ? profileName : "New Profile";
+    newProfile.description = blankProfiles.includes(selectedProfile)
+      ? ""
+      : `Based on ${selectedProfile.name}`;
+    newProfile.dieType = dieType;
+    addProfile(newProfile);
+    navigation.pop();
+    navigation.navigate("editProfileStack", {
+      screen: "editProfile",
+      params: {
+        profileUuid: newProfile.uuid,
+        noDiscard: true,
+      },
+    });
+  };
+  const paddingBottom = useBottomSheetPadding();
   return (
-    <View style={{ height: "100%", gap: 10 }}>
+    <View style={{ height: "100%", gap: 10, paddingHorizontal: 10 }}>
       <PageHeader
         leftElement={() => (
-          <TightTextButton onPress={() => navigation.goBack()}>
-            Cancel
-          </TightTextButton>
+          <Button onPress={() => navigation.goBack()}>Cancel</Button>
         )}
-      >
-        Select Template
-      </PageHeader>
+        rightElement={() => (
+          <Button disabled={!profileName.length} onPress={createProfile}>
+            Create
+          </Button>
+        )}
+      />
       {/* <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} /> */}
-      <DieTypesSelector selected={dieType} onSelect={setDieType} />
-      <GHScrollView contentContainerStyle={{ gap: 20, paddingBottom: 10 }}>
+      <Text variant="titleMedium">Enter a name for your new profile</Text>
+      <TextInput
+        mode="outlined"
+        dense
+        style={{ marginHorizontal: 10 }}
+        value={profileName}
+        onChangeText={setProfileName}
+      />
+      <Text variant="titleMedium" style={{ marginTop: 10 }}>
+        Select a die type
+      </Text>
+      <DieTypesSelector
+        selected={dieType}
+        onSelect={(dt) => {
+          setDieType(dt);
+          setSelectedProfile(getBlankProfile(dt));
+        }}
+      />
+      <Text variant="titleMedium" style={{ marginTop: 10 }}>
+        Select a template
+      </Text>
+      <GHScrollView contentContainerStyle={{ paddingBottom }}>
         <ProfilesGrid
-          profiles={templates[tabsNames.indexOf(tab)]}
-          onSelectProfile={(p) => {
-            const newProfile = p.duplicate(generateUuid());
-            newProfile.name = "New Profile";
-            newProfile.description =
-              p === blankProfile ? "" : `Based on ${p.name}`;
-            newProfile.dieType = dieType;
-            addProfile(newProfile);
-            navigation.pop();
-            navigation.navigate("editProfileStack", {
-              screen: "editProfile",
-              params: {
-                profileUuid: newProfile.uuid,
-                noDiscard: true,
-                editName: true,
-              },
-            });
-          }}
+          profiles={templates}
+          selected={selectedProfile}
+          onSelectProfile={setSelectedProfile}
         />
       </GHScrollView>
     </View>

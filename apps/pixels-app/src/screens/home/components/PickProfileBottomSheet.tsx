@@ -69,7 +69,7 @@ export function PickProfileBottomSheet({
           variant="titleMedium"
           style={{ alignSelf: "center", paddingVertical: 10 }}
         >
-          Active Profile on {pixel.name}
+          Select Profile to activate on {pixel.name}
         </Text>
         {profileUuid ? (
           <Text

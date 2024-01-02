@@ -16,7 +16,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useAppSelector } from "~/app/hooks";
-import { Card } from "~/components/Card";
+import { Card, CardProps } from "~/components/Card";
 import { AnimatedText } from "~/components/animated";
 import {
   getTextColorStyle,
@@ -49,7 +49,7 @@ function PixelRollState({
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
-  return <Text {...props}>Die is {rolling ? "rolling" : "still"}</Text>;
+  return <Text {...props}>{rolling ? "Die is rolling" : "Last rolls"}</Text>;
 }
 
 function AnimatedDieIcon({
@@ -97,35 +97,60 @@ function AnimatedDieIcon({
 export function PixelRollCard({
   pixel,
   disabled,
+  ...props
 }: {
   pixel: Pixel;
   disabled: boolean;
-}) {
+} & Omit<CardProps, "contentStyle">) {
   const lastRolls = useLastRolls(pixel.pixelId);
   const { colors } = useTheme();
   const textStyle = getTextColorStyle(colors, disabled);
   return (
     <Card
-      style={{ flex: 1, flexGrow: 1, justifyContent: "center" }}
       contentStyle={{
         flexGrow: 1,
         padding: 10,
         alignItems: "flex-start",
         justifyContent: "space-around",
       }}
+      {...props}
     >
-      <PixelRollState pixel={pixel} variant="labelSmall" style={textStyle} />
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        {lastRolls.map(({ key, roll }, i) => (
-          <AnimatedDieIcon
-            key={key}
-            value={roll}
-            size={16 + 4 * i}
-            color={getIconColor(colors, disabled)}
-            backgroundColor={makeTransparent(colors.primary, 0.2)}
+      {lastRolls.some(({ roll }) => roll >= 0) ? (
+        <>
+          <PixelRollState
+            pixel={pixel}
+            variant="labelSmall"
+            style={textStyle}
           />
-        ))}
-      </View>
+          <View
+            style={{
+              flexDirection: "row",
+              width: "100%",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 8,
+            }}
+          >
+            {lastRolls.map(
+              ({ key, roll }, i) =>
+                roll >= 0 && (
+                  <AnimatedDieIcon
+                    key={key}
+                    value={roll}
+                    size={15 + 4 * i}
+                    color={getIconColor(colors, disabled)}
+                    backgroundColor={makeTransparent(
+                      colors.primary,
+                      (i + 1) * 0.1
+                    )}
+                  />
+                )
+            )}
+          </View>
+        </>
+      ) : (
+        <Text>Rolls will be displayed here</Text>
+      )}
     </Card>
   );
 }

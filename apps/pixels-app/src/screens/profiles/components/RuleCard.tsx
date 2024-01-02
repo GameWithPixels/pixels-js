@@ -4,6 +4,7 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import {
+  MD3Theme,
   Text,
   TouchableRipple,
   TouchableRippleProps,
@@ -28,7 +29,13 @@ export interface RuleProp {
   rule: Profiles.Rule;
 }
 
-const RuleSummary = observer(function RuleSummary({ rule }: Partial<RuleProp>) {
+const RuleSummary = observer(function RuleSummary({
+  rule,
+  colors,
+}: {
+  rule: Profiles.Rule;
+  colors: MD3Theme["colors"];
+}) {
   return rule?.actions.length ? (
     <>
       <ConditionDetails condition={rule.condition} />
@@ -42,24 +49,26 @@ const RuleSummary = observer(function RuleSummary({ rule }: Partial<RuleProp>) {
       ))}
     </>
   ) : (
-    <Text style={AppStyles.greyedOut}>No action</Text>
+    <Text style={{ color: colors.onSurfaceDisabled }}>No action</Text>
   );
 });
 
 const RolledRulesSummary = observer(function RolledRulesSummary({
   rules,
+  colors,
 }: {
   rules: Profiles.Rule[];
+  colors: MD3Theme["colors"];
 }) {
   return rules.length ? (
     <>
       {rules.slice(0, 4).map((r) => (
-        <RuleSummary key={r.uuid} rule={r} />
+        <RuleSummary key={r.uuid} rule={r} colors={colors} />
       ))}
       {rules.length > 4 && <Text style={AppStyles.greyedOut}>And more...</Text>}
     </>
   ) : (
-    <Text style={AppStyles.greyedOut}>No action</Text>
+    <Text style={{ color: colors.onSurfaceDisabled }}>No action</Text>
   );
 });
 
@@ -111,9 +120,9 @@ export const RuleCard = observer(function RuleCard({
           }}
         >
           {conditionType === "rolled" ? (
-            <RolledRulesSummary rules={rules} />
+            <RolledRulesSummary rules={rules} colors={colors} />
           ) : (
-            <RuleSummary rule={rules[0]} />
+            <RuleSummary rule={rules[0]} colors={colors} />
           )}
         </View>
       </>

@@ -1,4 +1,3 @@
-import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -18,6 +17,7 @@ import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
 import { helloGoodbyeFlags } from "~/actionTypes";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { ProfileUsage as ProfileUsageStatic } from "~/components/ProfileUsage";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
@@ -26,6 +26,8 @@ import { getConditionTypeLabel } from "~/descriptions";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
 import { transferProfile } from "~/features/transferProfile";
 import { useEditableProfile } from "~/hooks";
+
+const ProfileUsage = observer(ProfileUsageStatic);
 
 const EditProfileDescription = observer(function EditProfileDescription({
   profile,
@@ -41,6 +43,8 @@ const EditProfileDescription = observer(function EditProfileDescription({
       style={{ backgroundColor: colors.elevation.level0 }}
       value={profile.description}
       onChangeText={(t) => runInAction(() => (profile.description = t))}
+      placeholder="This profile has no description"
+      placeholderTextColor={colors.onSurfaceDisabled}
     />
   );
 });
@@ -54,34 +58,7 @@ function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   ) : null;
 }
 
-const ProfileUsage = observer(function ProfileUsage({
-  profile,
-}: {
-  profile: Readonly<Profiles.Profile>;
-}) {
-  const size = createDataSetForProfile(profile)
-    .toDataSet()
-    .computeDataSetByteSize();
-  const patternsCount = new Set(
-    profile
-      .collectAnimations()
-      .map((a) => a.collectPatterns())
-      .flat()
-  ).size;
-  return (
-    <>
-      <Text>Date created: {profile.creationDate.toLocaleString()}</Text>
-      <Text>Last modified: {profile.lastChanged.toLocaleString()}</Text>
-      {profile.lastUsed && (
-        <Text>Last used: {profile.lastUsed.toLocaleString()}</Text>
-      )}
-      <Text>Memory footprint: {size} bytes</Text>
-      <Text>Number of unique Color Designs: {patternsCount}</Text>
-    </>
-  );
-});
-
-export function TransferProfileButton({ onPress }: { onPress: () => void }) {
+function TransferProfileButton({ onPress }: { onPress: () => void }) {
   const profileUuid = useAppSelector(
     (state) => state.diceRolls.transfer?.profileUuid
   );

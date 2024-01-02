@@ -1,6 +1,4 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  Color,
   Pixel,
   usePixelStatus,
   usePixelValue,
@@ -20,13 +18,15 @@ import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
 import { PixelRollCard } from "./PixelRollCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
-import { useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
-import { GradientChip } from "~/components/buttons";
+import { NewPixelAppBanner } from "~/components/banners";
 import { PixelDieRenderer } from "~/components/cards";
-import { ProfileCard } from "~/components/profile";
+import { ProfileCard, ProfileCardProps } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
+import { blinkDie } from "~/features/blinkDie";
+import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
 import { transferProfile } from "~/features/transferProfile";
 import {
   useActiveProfile,
@@ -171,6 +171,26 @@ function RollingDie({ pixel, disabled }: { pixel: Pixel; disabled: boolean }) {
   );
 }
 
+function PixelProfile({ ...props }: Omit<ProfileCardProps, "row">) {
+  const { colors } = useTheme();
+  return (
+    <View>
+      <ProfileCard row {...props} />
+      <Text
+        variant="labelSmall"
+        style={{
+          position: "absolute",
+          right: 10,
+          bottom: 0,
+          color: colors.onSurfaceDisabled,
+        }}
+      >
+        Tap to switch Profile
+      </Text>
+    </View>
+  );
+}
+
 export function PixelFocusView({
   pixel,
   onEditProfile,
@@ -182,33 +202,37 @@ export function PixelFocusView({
   onEditProfile: () => void;
   onShowDetails: () => void;
 } & Omit<ViewProps, "children">) {
+  const appDispatch = useAppDispatch();
+
   const status = usePixelStatus(pixel);
-  const blink = React.useCallback(
-    () =>
-      pixel
-        .blink(Color.dimMagenta, { duration: 1000, count: 2 })
-        .catch(() => {}),
-    [pixel]
-  );
   React.useEffect(() => {
     // Blink when die is selected
-    blink();
-  }, [blink]);
+    blinkDie(pixel);
+  }, [pixel]);
   const activeProfile = useActiveProfile(pixel);
   const transferring = useAppSelector((state) => !!state.diceRolls.transfer);
   const [pickProfile, setPickProfile] = React.useState(false);
+
+  const showNewPixelsAppBanner = useAppSelector(
+    (state) => state.appSettings.showNewPixelsAppBanner
+  );
 
   const disabled = status !== "ready";
   return (
     <>
       <View {...props} style={[{ gap: 10 }, style]}>
+        <NewPixelAppBanner
+          visible={showNewPixelsAppBanner}
+          collapsedMarginBottom={-10}
+          onHide={() => appDispatch(setShowNewPixelsAppBanner(false))}
+        />
         <Pressable
           style={{
-            width: "50%",
+            width: "60%",
             aspectRatio: 1,
             alignSelf: "center",
           }}
-          onPress={blink}
+          onPress={() => blinkDie(pixel)}
         >
           <RollingDie pixel={pixel} disabled={disabled} />
         </Pressable>
@@ -220,51 +244,23 @@ export function PixelFocusView({
             gap: 10,
           }}
         >
-          <PixelRollCard pixel={pixel} disabled={disabled} />
-          <Pressable style={{ flex: 1, flexGrow: 1 }} onPress={onShowDetails}>
-            <PixelStatusCard pixel={pixel} disabled={disabled} />
-          </Pressable>
+          <PixelRollCard
+            pixel={pixel}
+            disabled={disabled}
+            style={{ flex: 1, flexGrow: 1 }}
+          />
+          <PixelStatusCard
+            pixel={pixel}
+            disabled={disabled}
+            onPress={onShowDetails}
+            style={{ flex: 1, flexGrow: 1 }}
+          />
         </View>
         <Text variant="titleMedium">Active Profile</Text>
-        <ProfileCard
-          row
+        <PixelProfile
           profile={activeProfile}
           transferring={transferring}
-          footer={
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-around",
-              }}
-            >
-              {/* <GradientChip
-                disabled={disabled}
-                // icon={({ size, color }) => (
-                //   <MaterialCommunityIcons
-                //     name="book-edit-outline"
-                //     size={size}
-                //     color={color}
-                //   />
-                // )}
-                onPress={onEditProfile}
-              >
-                Customize
-              </GradientChip> */}
-              <GradientChip
-                disabled={disabled}
-                icon={({ size, color }) => (
-                  <MaterialCommunityIcons
-                    name="swap-horizontal"
-                    size={size}
-                    color={color}
-                  />
-                )}
-                onPress={() => setPickProfile(true)}
-              >
-                Switch Profile
-              </GradientChip>
-            </View>
-          }
+          onPress={() => setPickProfile(true)}
         />
         <Text variant="titleMedium">Available Dice</Text>
       </View>

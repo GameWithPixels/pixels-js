@@ -4,6 +4,8 @@ import React from "react";
 import { View } from "react-native";
 import { Text, TextProps, useTheme } from "react-native-paper";
 
+import { PixelBattery } from "./PixelBattery";
+import { PixelRssi } from "./PixelRssi";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, RssiIcon } from "./icons";
 import { ProfileDieRenderer } from "./profile";
@@ -172,8 +174,8 @@ export function PixelHCard({
           gap: 10,
         }}
       >
-        <BatteryIcon value={pixel.batteryLevel} size={22} disabled={disabled} />
-        <RssiIcon value={pixel.rssi} size={22} disabled={disabled} />
+        <PixelRssi pixel={pixel} size={22} disabled={disabled} />
+        <PixelBattery pixel={pixel} size={22} disabled={disabled} />
       </View>
     </TouchableCard>
   );
