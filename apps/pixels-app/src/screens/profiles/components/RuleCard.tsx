@@ -15,7 +15,7 @@ import { ActionDetails, ConditionDetails } from "./ActionDetails";
 
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { Card } from "~/components/Card";
-import { getHighestFace } from "~/features/getHighestFace";
+import { rolledConditionComparator } from "~/features/rolledConditionComparator";
 import { useEditableProfile } from "~/hooks";
 import { AppStyles } from "~/styles";
 
@@ -86,11 +86,7 @@ export const RuleCard = observer(function RuleCard({
       r.condition.type === conditionType && r.condition.flagName === flagName
   );
   if (conditionType === "rolled") {
-    rules.sort(
-      (r1, r2) =>
-        getHighestFace((r2.condition as Profiles.ConditionRolled).faces) -
-        getHighestFace((r1.condition as Profiles.ConditionRolled).faces)
-    );
+    rules.sort(rolledConditionComparator);
   }
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });

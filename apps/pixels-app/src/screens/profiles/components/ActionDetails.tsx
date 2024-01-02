@@ -53,9 +53,7 @@ function getConditionText(condition: Profiles.Condition): string | undefined {
   switch (condition.type) {
     case "rolled": {
       const faces = (condition as Profiles.ConditionRolled).faces;
-      return faces === "all"
-        ? "On other faces"
-        : `On face${faces.length > 1 ? "s" : ""} ${getFacesAsText(faces)}`;
+      return `On face${faces.length > 1 ? "s" : ""} ${getFacesAsText(faces)}`;
     }
     case "rolling":
       return `Recheck after ${(

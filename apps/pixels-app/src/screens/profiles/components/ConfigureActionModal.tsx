@@ -160,7 +160,7 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
 }) {
   const { colors } = useTheme();
   const faces = condition.faces;
-  return faces !== "all" ? (
+  return (
     <>
       <Text variant="titleMedium">When roll is</Text>
       <FacesGrid
@@ -211,7 +211,7 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
         </View>
       )}
     </>
-  ) : null;
+  );
 });
 
 const ConfigureRollingCondition = observer(function ConfigureRollingCondition({
