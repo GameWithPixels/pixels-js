@@ -22,7 +22,7 @@ export interface ProfileData extends UniqueNamedData {
       recheckAfter: number;
     }[];
     rolled: {
-      faces?: number[]; // undefined means all
+      faces: number[];
     }[];
     connection: {
       flags: ConnectionStateFlags[];
