@@ -9,7 +9,7 @@ const config = {
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
     runtimeVersion: "49.0", // Major is Expo version, minor is native code revision
-    version: "2.0.0", // Version number must have 3 parts
+    version: "2.0.2", // Version number must have 3 parts
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
@@ -29,7 +29,7 @@ const config = {
       bundleIdentifier: prod
         ? "com.systemic-games.pixels"
         : "com.systemicgames.pixelsappdev",
-      buildNumber: "2001",
+      buildNumber: "2002",
       supportsTablet: false,
       infoPlist: {
         NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
@@ -43,7 +43,7 @@ const config = {
       package: prod
         ? "com.SystemicGames.Pixels"
         : "com.systemicgames.pixelsappdev",
-      versionCode: 2000,
+      versionCode: 2002,
       adaptiveIcon: {
         foregroundImage: prod
           ? "./assets/images/adaptive-icon.png"
