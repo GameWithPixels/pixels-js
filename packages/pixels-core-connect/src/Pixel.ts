@@ -352,6 +352,10 @@ export class Pixel extends PixelInfoNotifier {
       rollState: "unknown",
       currentFace: 0,
     };
+    if (this.ledCount && info?.dieType === "unknown") {
+      // Try to guess the die type if we got "unknown" from the info
+      this._info.dieType = DiceUtils.estimateDieType(this.ledCount);
+    }
     this._versions = {
       firmwareVersion: 0,
       settingsVersion: 0,
@@ -1178,6 +1182,10 @@ export class Pixel extends PixelInfoNotifier {
         getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown";
       this._info.dieType =
         getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown";
+      if (this.dieType === "unknown") {
+        // Try to guess the die type
+        this._info.dieType = DiceUtils.estimateDieType(this.ledCount);
+      }
       this._info.pixelId = info.pixelId;
       this._updateFirmwareDate(1000 * info.buildTimestamp);
       this._updateBatteryInfo({
