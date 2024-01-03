@@ -25,6 +25,10 @@ const profiles = new Map<PixelDieType, EditProfile>();
 export function getDefaultProfile(
   dieType: PixelDieType
 ): Readonly<EditProfile> {
+  if (!dieType || dieType === "unknown") {
+    // Assume D20 for unknown die type for now
+    dieType = "d20";
+  }
   const profile = profiles.get(dieType);
   if (profile) {
     return profile;

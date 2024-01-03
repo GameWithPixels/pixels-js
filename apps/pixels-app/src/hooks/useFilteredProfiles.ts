@@ -15,7 +15,7 @@ export function useFilteredProfiles(
       ? profiles
       : profiles.filter(
           (p) =>
-            (dieType && p.dieType === dieType) ??
+            (dieType && (dieType === "unknown" || p.dieType === dieType)) ??
             (filterLower &&
               (p.dieType.toLowerCase().includes(filterLower) ||
                 p.name.toLowerCase().includes(filterLower) ||
