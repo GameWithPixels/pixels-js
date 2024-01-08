@@ -53,6 +53,7 @@ class SceneRenderer {
   private readonly _envMap?: THREE.Texture;
   private readonly _lights: THREE.Light[];
   private _speed = 1;
+  private _rotateX = true;
   private _dispose?: () => void;
 
   get speed(): number {
@@ -60,6 +61,13 @@ class SceneRenderer {
   }
   set speed(value: number) {
     this._speed = value;
+  }
+
+  get rotateX(): boolean {
+    return this._rotateX;
+  }
+  set rotateX(value: boolean) {
+    this._rotateX = value;
   }
 
   constructor(die3d: Die3D, lights: THREE.Light[], envMap?: THREE.Texture) {
@@ -77,7 +85,10 @@ class SceneRenderer {
 
   setup(
     gl: ExpoWebGLRenderingContext,
-    opt?: { pedestal?: boolean; animationInstances?: AnimationInstance[] }
+    opt?: {
+      animationInstances?: AnimationInstance[];
+      pedestalStyle?: PedestalStyle;
+    }
   ): void {
     try {
       // Dispose resources from previous setup
@@ -117,11 +128,12 @@ class SceneRenderer {
       // Props
       const staging = new THREE.Object3D();
       const update: UpdateCallback[] = [];
-      if (opt?.pedestal) {
+      if (opt?.pedestalStyle) {
         this._root.add(staging);
 
         // Magic ring
-        addPedestal(staging, cameraDist / 40);
+        const color = opt.pedestalStyle.color ?? 0x6667ab;
+        addPedestal(staging, color, cameraDist / 40);
         camera.position.z *= 2;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -189,11 +201,7 @@ class SceneRenderer {
         renderer.dispose();
       };
 
-      this._renderLoop = this._createRenderLoopFunc(
-        !opt?.pedestal,
-        renderScene,
-        update
-      );
+      this._renderLoop = this._createRenderLoopFunc(renderScene, update);
     } catch (error) {
       console.error("Error while setting up ThreeJS scene graph", error);
     }
@@ -209,7 +217,6 @@ class SceneRenderer {
   }
 
   private _createRenderLoopFunc(
-    rotateX: boolean,
     renderScene: () => void,
     update: UpdateCallback[]
   ): () => void {
@@ -228,7 +235,7 @@ class SceneRenderer {
         // Rotate dice
         const r = this._speed * deltaTime;
         const rot = this._root.rotation;
-        if (rotateX) {
+        if (this._rotateX) {
           rot.x = (rot.x - r / 10000) % PI2;
         }
         rot.y = (rot.y - r / 5000) % PI2;
@@ -278,16 +285,30 @@ class SceneRenderer {
   }
 }
 
+function setRendererProps(
+  renderer: SceneRenderer,
+  speed: number | undefined,
+  hasPedestal: boolean
+): void {
+  renderer.speed = (speed ?? 1) * (hasPedestal ? 0.5 : 1);
+  renderer.rotateX = !hasPedestal;
+}
+
+export interface PedestalStyle {
+  color?: string;
+}
+
 export interface DieRendererProps {
   dieType: PixelDieType;
   colorway: PixelColorway;
   paused?: boolean;
   speed?: number;
-  pedestal?: boolean;
   animationsData?: {
     animations: AnimationPreset[];
     bits: AnimationBits;
   };
+  pedestal?: boolean;
+  pedestalStyle?: PedestalStyle;
 }
 
 /**
@@ -300,6 +321,7 @@ export function DieRenderer({
   paused,
   speed,
   pedestal,
+  pedestalStyle,
   animationsData,
 }: DieRendererProps) {
   const { showBoundary } = useErrorBoundary();
@@ -325,25 +347,28 @@ export function DieRenderer({
   }, [colorway, dieType, showBoundary]);
 
   // Setup renderer
-  const initArgsRef = React.useRef({ paused, speed, pedestal });
+  const initArgsRef = React.useRef({ paused, speed, pedestalStyle });
   initArgsRef.current.paused = paused;
   initArgsRef.current.speed = speed;
-  initArgsRef.current.pedestal = pedestal;
+  initArgsRef.current.pedestalStyle = !pedestal
+    ? undefined
+    : pedestalStyle ?? {};
   const onContextCreate = React.useCallback(
     (gl: ExpoWebGLRenderingContext) => {
       const renderer = rendererRef.current;
       if (renderer) {
-        const { paused, speed, pedestal } = initArgsRef.current;
+        const { paused, speed, pedestalStyle } = initArgsRef.current;
         const animationInstances = animationsData
           ? animationsData.animations.map((a) =>
               a.createInstance(animationsData.bits)
             )
           : undefined;
-        renderer.setup(gl, { pedestal, animationInstances });
+        renderer.setup(gl, { animationInstances, pedestalStyle });
         if (!paused) {
           renderer.start();
         }
-        renderer.speed = speed ?? 1;
+        // TODO props are set again on each render
+        setRendererProps(renderer, speed, !!pedestalStyle);
       }
     },
     [animationsData]
@@ -359,9 +384,13 @@ export function DieRenderer({
     }
   }, [paused]);
 
-  // Update speed, it's just prop => no need to use an effect
+  // Update rendering parameters, it's just prop => no need to use an effect
   if (rendererRef.current) {
-    rendererRef.current.speed = speed ?? 1;
+    setRendererProps(
+      rendererRef.current,
+      speed,
+      !!initArgsRef.current.pedestalStyle
+    );
   }
 
   return (

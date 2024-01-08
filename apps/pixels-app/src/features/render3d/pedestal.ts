@@ -1,6 +1,10 @@
 import { THREE } from "expo-three";
 
-export function addPedestal(root: THREE.Object3D, scale = 1): void {
+export function addPedestal(
+  root: THREE.Object3D,
+  color: THREE.ColorRepresentation,
+  scale = 1
+): void {
   const makeRing = (
     r0: number,
     r1: number,
@@ -18,7 +22,7 @@ export function addPedestal(root: THREE.Object3D, scale = 1): void {
       thetaEnd
     );
     const material = new THREE.MeshBasicMaterial({
-      color: 0x29a057,
+      color,
       side: THREE.DoubleSide,
     });
     const mesh = new THREE.Mesh(geometry, material);

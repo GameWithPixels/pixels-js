@@ -55,10 +55,7 @@ export function useCommitEditableProfile(): {
     commitProfile: (profileUuid: string) => {
       const profile = editableProfiles.get(profileUuid)?.profile;
       if (profile) {
-        runInAction(() => {
-          profile.name = profile.name.trim();
-          profile.lastChanged = new Date();
-        });
+        runInAction(() => (profile.lastChanged = new Date()));
         appDispatch(updateProfile(Serializable.fromProfile(profile)));
         editableProfiles.delete(profileUuid);
       }

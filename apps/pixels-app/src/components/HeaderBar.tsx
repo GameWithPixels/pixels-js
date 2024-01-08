@@ -3,6 +3,8 @@ import React from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { Menu, MenuProps, Text, useTheme } from "react-native-paper";
 
+import { iOSBorderRadiusFix } from "~/fixes";
+
 export function HeaderBar({
   onShow,
   onSelect,
@@ -30,12 +32,12 @@ export function HeaderBar({
           <Text
             variant="bodySmall"
             style={{
+              ...iOSBorderRadiusFix,
               height,
               paddingHorizontal: 10,
               borderRadius: 12,
               borderWidth: 1,
               borderColor: colors.outline,
-              overflow: "hidden", // For border radius to work on iOS
               color: colors.onSurface,
               backgroundColor,
               lineHeight: height, // Same as height to center text vertically
@@ -52,11 +54,11 @@ export function HeaderBar({
           size={height - 8}
           color={color}
           style={{
+            ...iOSBorderRadiusFix,
             padding: 2,
             borderRadius: height / 2,
             borderWidth: 1,
             borderColor: color,
-            overflow: "hidden", // For border radius to work on iOS
             backgroundColor,
             textAlign: "center",
             textAlignVertical: "center",

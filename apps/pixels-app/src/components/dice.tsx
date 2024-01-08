@@ -1,10 +1,8 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { View, ViewProps } from "react-native";
-import { useTheme } from "react-native-paper";
 
-import { TouchableCard } from "./TouchableCard";
+import { AddDieButton } from "./buttons";
 import { PixelHCard, PixelVCard } from "./cards";
 
 function isSelected(
@@ -54,7 +52,6 @@ export function DiceList({
   onPressNewDie,
   ...props
 }: DiceListProps & ViewProps) {
-  const { colors } = useTheme();
   return (
     <View {...props}>
       {pixels.map((p, i) => {
@@ -75,16 +72,10 @@ export function DiceList({
         );
       })}
       {onPressNewDie && (
-        <TouchableCard
-          style={{ marginTop: pixels.length ? 20 : 0 }}
-          contentStyle={{
-            paddingVertical: 10,
-            justifyContent: "center",
-          }}
+        <AddDieButton
           onPress={onPressNewDie}
-        >
-          <MaterialIcons name="add" size={32} color={colors.onSurfaceVariant} />
-        </TouchableCard>
+          style={{ marginTop: pixels.length ? 20 : 0 }}
+        />
       )}
     </View>
   );
@@ -99,7 +90,6 @@ export function DiceColumn({
 }: {
   miniCards?: boolean;
 } & DiceListProps) {
-  const { colors } = useTheme();
   return (
     <View style={{ flex: 1, gap: 10 }}>
       {pixels.map((p) => (
@@ -112,12 +102,10 @@ export function DiceColumn({
         />
       ))}
       {onPressNewDie && (
-        <TouchableCard
-          contentStyle={{ aspectRatio: 1, justifyContent: "center" }}
+        <AddDieButton
           onPress={onPressNewDie}
-        >
-          <MaterialIcons name="add" size={32} color={colors.onSurfaceVariant} />
-        </TouchableCard>
+          contentStyle={{ aspectRatio: 1 }}
+        />
       )}
     </View>
   );

@@ -54,6 +54,7 @@ import {
 } from "~/descriptions";
 import { makeObservable } from "~/features/makeObservable";
 import { rolledConditionComparator } from "~/features/rolledConditionComparator";
+import { fixForScrollViewPadding } from "~/fixes";
 import { useEditableProfile } from "~/hooks";
 import { EditRollRulesScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -77,7 +78,7 @@ const InnerScrollView = React.forwardRef(function InnerScrollView(
     () => ({
       addPadding: (padding: number) => {
         scrollViewPadding.value += padding;
-        console.log("TODO need this log to work" + scrollViewPadding.value);
+        fixForScrollViewPadding(scrollViewPadding.value);
       },
     }),
     [scrollViewPadding]
