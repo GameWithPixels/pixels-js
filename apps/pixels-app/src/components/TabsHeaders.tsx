@@ -30,6 +30,7 @@ export function TabsHeaders({
           <View
             key={n}
             style={{
+              flex: 1,
               borderColor: n !== selected ? colors.outline : "transparent",
               borderWidth: 1,
               borderLeftWidth: i > 0 ? 1 : 0,
@@ -53,6 +54,7 @@ export function TabsHeaders({
                 borderBottomRightRadius:
                   i === names.length - 1 ? borderRadius : 0,
               }}
+              labelStyle={{ marginHorizontal: 0 }}
               outline={n !== selected}
               onPress={() => onSelect?.(n)}
             >

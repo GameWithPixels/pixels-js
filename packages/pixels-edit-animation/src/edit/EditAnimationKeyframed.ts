@@ -5,7 +5,7 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
-import EditAnimation from "./EditAnimation";
+import EditAnimation, { EditAnimationParams } from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
 import { name, observable, widget } from "./decorators";
@@ -18,13 +18,11 @@ export default class EditAnimationKeyframed extends EditAnimation {
   @observable
   pattern?: EditPattern;
 
-  constructor(opt?: {
-    uuid?: string;
-    name?: string;
-    duration?: number;
-    animFlags?: number;
-    pattern?: EditPattern;
-  }) {
+  constructor(
+    opt?: EditAnimationParams & {
+      pattern?: EditPattern;
+    }
+  ) {
     super(opt);
     this.pattern = opt?.pattern;
   }

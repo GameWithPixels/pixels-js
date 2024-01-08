@@ -41,6 +41,8 @@ export type Color = Partial<{
 export type AnimationData = Partial<{
   name: string;
   uuid: string;
+  category: number;
+  dieType: number;
   duration: number;
   count: number;
   fade: number;

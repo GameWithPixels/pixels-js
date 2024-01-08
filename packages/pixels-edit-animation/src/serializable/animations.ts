@@ -1,4 +1,8 @@
-import { AnimationFlags } from "@systemic-games/pixels-core-animation";
+import {
+  AnimationCategory,
+  AnimationFlags,
+  PixelDieType,
+} from "@systemic-games/pixels-core-animation";
 
 import { UniqueNamedData } from "./unique";
 
@@ -19,6 +23,8 @@ export interface AnimationSetData {
 export interface AnimationData extends UniqueNamedData {
   duration: number;
   animFlags: AnimationFlags[];
+  category: AnimationCategory;
+  dieType: PixelDieType;
 }
 
 export interface AnimationFlashesData extends AnimationData {

@@ -6,7 +6,7 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
-import EditAnimation from "./EditAnimation";
+import EditAnimation, { EditAnimationParams } from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
@@ -25,14 +25,12 @@ export default class EditAnimationGradient extends EditAnimation {
   @observable
   faces: number;
 
-  constructor(opt?: {
-    uuid?: string;
-    name?: string;
-    duration?: number;
-    animFlags?: number;
-    faces?: number;
-    gradient?: EditRgbGradient;
-  }) {
+  constructor(
+    opt?: EditAnimationParams & {
+      faces?: number;
+      gradient?: EditRgbGradient;
+    }
+  ) {
     super(opt);
     this.faces = opt?.faces ?? Constants.faceMaskAll;
     this.gradient = opt?.gradient;

@@ -3,12 +3,25 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationFlagsValues,
+  PixelDieTypeValues,
+  AnimationCategoryValues,
+  AnimationCategory,
+  PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
 import Editable from "./Editable";
 import { widget, range, unit, name, observable, values } from "./decorators";
+
+export interface EditAnimationParams {
+  uuid?: string;
+  name?: string;
+  animFlags?: number;
+  duration?: number;
+  category?: AnimationCategory;
+  dieType?: PixelDieType;
+}
 
 /**
  * Base class for animation editing classes.
@@ -31,15 +44,20 @@ export default abstract class EditAnimation extends Editable {
   @observable
   animFlags: number;
 
-  constructor(opt?: {
-    uuid?: string;
-    name?: string;
-    animFlags?: number;
-    duration?: number;
-  }) {
+  @values(AnimationCategoryValues)
+  @observable
+  category: AnimationCategory;
+
+  @values(PixelDieTypeValues)
+  @observable
+  dieType: PixelDieType;
+
+  constructor(opt?: EditAnimationParams) {
     super(opt);
     this.animFlags = opt?.animFlags ?? AnimationFlagsValues.none;
     this.duration = opt?.duration ?? 1;
+    this.category = opt?.category ?? "system";
+    this.dieType = opt?.dieType ?? "unknown";
   }
 
   abstract toAnimation(

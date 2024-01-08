@@ -6,6 +6,8 @@ import {
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
 import {
+  AnimationCategoryValues,
+  AnimationFlags,
   BatteryStateFlagsValues,
   Color32Utils,
   ColorModeValues,
@@ -14,6 +16,7 @@ import {
   Constants,
   HelloGoodbyeFlagsValues,
   Json,
+  PixelDieTypeValues,
   Serializable,
 } from "@systemic-games/pixels-edit-animation";
 import { fromByteArray } from "base64-js";
@@ -124,15 +127,22 @@ function toAnimationsAndGradients(
       }
       const data = anim.data;
       if (data) {
+        const anim = {
+          uuid: checkUuid(data.uuid),
+          name: data.name ?? "",
+          duration: data.duration ?? 1,
+          animFlags: [] as AnimationFlags[],
+          category:
+            getValueKeyName(data.category, AnimationCategoryValues) ?? "system",
+          dieType:
+            getValueKeyName(data.dieType, PixelDieTypeValues) ?? "unknown",
+        } as const;
         switch (type) {
           case "none":
             throw new Error(`Invalid animation type: ${type}`);
           case "simple":
             push("flashes", animIndex, {
-              uuid: checkUuid(data.uuid),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
-              animFlags: [],
+              ...anim,
               faces: data.faces ?? Constants.faceMaskAll,
               color: toColor(data.color),
               count: data.count ?? 1,
@@ -141,9 +151,7 @@ function toAnimationsAndGradients(
             break;
           case "rainbow":
             push(type, animIndex, {
-              uuid: checkUuid(data.uuid),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+              ...anim,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
@@ -154,19 +162,14 @@ function toAnimationsAndGradients(
             break;
           case "keyframed":
             push("pattern", animIndex, {
-              uuid: checkUuid(data.uuid),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+              ...anim,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
             });
             break;
           case "gradientPattern":
             push(type, animIndex, {
-              uuid: checkUuid(data.uuid),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
-              animFlags: [],
+              ...anim,
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
               gradientUuid: register(data.gradient),
               overrideWithFace: data.overrideWithFace ?? false,
@@ -174,10 +177,7 @@ function toAnimationsAndGradients(
             break;
           case "gradient":
             push(type, animIndex, {
-              uuid: checkUuid(data.uuid),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
-              animFlags: [],
+              ...anim,
               faces: data.faces ?? Constants.faceMaskAll,
               gradientUuid: register(data.gradient),
             });

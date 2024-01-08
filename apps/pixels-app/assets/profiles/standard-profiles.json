@@ -89614,6 +89614,7 @@
         },
         "name": "Red to Blue",
         "uuid": "5d5aaab3-53db-4148-ba8e-81844abd9830",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89630,6 +89631,7 @@
         "intensity": 0.467736542,
         "name": "Rainbow",
         "uuid": "2b3be6b8-2b78-4f74-8cab-51ff5445dbaa",
+        "category": 2,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89641,6 +89643,7 @@
       "data": {
         "name": "Rainbow Falls",
         "uuid": "98193cfc-9be9-47b6-b17b-8b2a93b5ce8a",
+        "category": 2,
         "patternIndex": 4,
         "duration": 2.03453064
       }
@@ -89692,6 +89695,7 @@
         },
         "name": "Blue to Red",
         "uuid": "fdf8727b-907f-4dd6-b6e2-5912f197a93b",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89715,6 +89719,7 @@
         "fade": 0.101229057,
         "name": "Five Red Blinks",
         "uuid": "a938a5ac-f305-4bd5-89f0-9a94d979d40c",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89738,6 +89743,7 @@
         "fade": 1.0,
         "name": "Picked Up Solid",
         "uuid": "9cb824c9-b652-4659-b1fd-d1b697b69f5b",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89761,6 +89767,7 @@
         "fade": 1.0,
         "name": "Long Red blink",
         "uuid": "8473a2e8-6b77-480a-bd26-574d4fef1b68",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89814,6 +89821,7 @@
         },
         "name": "Red to Yellow",
         "uuid": "03bccffc-35bd-461d-9a96-d5f7430caea1",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89825,6 +89833,7 @@
       "data": {
         "name": "Waterfall",
         "uuid": "5bc4ca35-9b6f-494b-93c9-16afe0410c13",
+        "category": 4,
         "patternIndex": 1,
         "duration": 0.967730165,
         "gradient": {
@@ -89881,6 +89890,7 @@
         "intensity": 0.5,
         "name": "Rainbow All Faces",
         "uuid": "1467cb4f-4f65-455f-a921-4af5b9151514",
+        "category": 2,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89902,8 +89912,9 @@
         },
         "count": 1,
         "fade": 0.5378627,
-        "name": "Rolling Anim",
+        "name": "Rolling",
         "uuid": "2791da7b-15b0-4c35-8a2e-fbb1d7ab20e0",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -89915,6 +89926,7 @@
       "data": {
         "name": "Flicker On",
         "uuid": "3c64d3f5-12bf-4b34-ad78-b609b405c6eb",
+        "category": 3,
         "patternIndex": 8,
         "duration": 10.0,
         "gradient": {
@@ -90020,6 +90032,7 @@
       "data": {
         "name": "Rotating Rings",
         "uuid": "262a7486-c872-4453-94ba-aaa522269cdc",
+        "category": 4,
         "patternIndex": 6,
         "duration": 6.763664
       }
@@ -90029,6 +90042,7 @@
       "data": {
         "name": "Noise",
         "uuid": "1f38cafd-6f48-4985-bdad-be966383fc1b",
+        "category": 3,
         "patternIndex": 9,
         "duration": 2.01629782,
         "gradient": {
@@ -90080,6 +90094,7 @@
       "data": {
         "name": "Rotating Ring",
         "uuid": "d9afafca-feaa-4420-b056-3728c5b94d14",
+        "category": 4,
         "patternIndex": 10,
         "duration": 2.533202,
         "gradient": {
@@ -90158,6 +90173,7 @@
       "data": {
         "name": "Red to Green Rotation",
         "uuid": "bb5bba37-7195-4e69-a532-d815b16316da",
+        "category": 4,
         "patternIndex": 11,
         "duration": 3.44610739
       }
@@ -90167,6 +90183,7 @@
       "data": {
         "name": "Trifold",
         "uuid": "cde4e29e-bfba-4b59-86d4-809b9fe21017",
+        "category": 4,
         "patternIndex": 12,
         "duration": 3.03161
       }
@@ -90176,6 +90193,7 @@
       "data": {
         "name": "Accelerating",
         "uuid": "ac5cdf70-3724-4504-ad8d-8ab8ca9e9f16",
+        "category": 3,
         "patternIndex": 13,
         "duration": 5.31990671,
         "gradient": {
@@ -90254,6 +90272,7 @@
       "data": {
         "name": "Vertical Rotating Ring",
         "uuid": "37c357fb-c9e6-40c1-904f-88f898dd16f0",
+        "category": 4,
         "patternIndex": 14,
         "duration": 3.9740963,
         "gradient": {
@@ -90316,6 +90335,7 @@
         "count": 3,
         "fade": 0.1,
         "name": "Quick Connect",
+        "category": 1,
         "uuid": "2b9fac28-0f14-4f41-a9d7-244b3e7a9edd",
         "defaultPreviewSettings": {
           "design": 5
@@ -90340,6 +90360,7 @@
         "fade": 0.1,
         "name": "Quick Disconnect",
         "uuid": "7b184288-eb36-4474-940a-b7d6e8c41c8c",
+        "category": 1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90351,6 +90372,7 @@
       "data": {
         "name": "More Noise",
         "uuid": "99b77f41-d209-4dfd-91fa-59bd90712dd4",
+        "category": 3,
         "patternIndex": 15,
         "duration": 5.01176,
         "gradient": {
@@ -90402,6 +90424,7 @@
       "data": {
         "name": "Short Noise",
         "uuid": "e49f044f-3fd6-4800-b47f-94dc6385c9d8",
+        "category": 3,
         "patternIndex": 16,
         "duration": 1.0054872,
         "gradient": {
@@ -90453,6 +90476,7 @@
       "data": {
         "name": "Very Short Noise",
         "uuid": "ca576600-79e7-456a-920c-4732f5f3de1b",
+        "category": 3,
         "patternIndex": 19,
         "duration": 0.43623966,
         "gradient": {
@@ -90495,6 +90519,7 @@
       "data": {
         "name": "Rainbow Noise",
         "uuid": "d8f7c1d0-560d-4faf-9642-a9a35eb70692",
+        "category": 3,
         "patternIndex": 15,
         "duration": 3.474771,
         "gradient": {
@@ -90609,6 +90634,7 @@
       "data": {
         "name": "Pastel Rainbow",
         "uuid": "ca5d7955-e474-4b5f-b57d-8341d2b9aa54",
+        "category": 2,
         "patternIndex": 17,
         "duration": 3.0,
         "gradient": {
@@ -90717,6 +90743,7 @@
         "fade": 1.0,
         "name": "Slow Charge Blink",
         "uuid": "55dfc88c-ad52-4e86-9a95-d22558871805",
+        "category": 0,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90738,8 +90765,9 @@
         },
         "count": 6,
         "fade": 0.1,
-        "name": "Low batt",
+        "name": "Low Battery",
         "uuid": "03528737-c960-4e73-917f-498e84ddff98",
+        "category": -1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90762,6 +90790,7 @@
         "count": 10,
         "fade": 0.1,
         "name": "Charge Error",
+        "category": -1,
         "uuid": "6b573a3c-4307-4549-a0dc-8f865bba9ac0",
         "defaultPreviewSettings": {
           "design": 5
@@ -90786,6 +90815,7 @@
         "fade": 1.0,
         "name": "Finished Charge",
         "uuid": "c3082cfe-06e5-453c-abb1-fa9f81ad8efd",
+        "category": -1,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90797,6 +90827,7 @@
       "data": {
         "name": "Explosion with Flicker",
         "uuid": "3062f728-95c1-456f-ba51-a6772c54b607",
+        "category": 3,
         "patternIndex": 21,
         "duration": 5.007392,
         "gradient": {
@@ -90875,6 +90906,7 @@
       "data": {
         "name": "Flicker",
         "uuid": "1e18fc29-2776-46cb-9867-b77d1f38faad",
+        "category": 3,
         "patternIndex": 7,
         "duration": 3.0,
         "gradient": {
@@ -90924,8 +90956,9 @@
     {
       "type": 3,
       "data": {
-        "name": "Rainbow Faterwall overlap",
+        "name": "Rainbow Waterfall Overlap",
         "uuid": "8c677768-975f-4544-b3ce-a219f68b9a79",
+        "category": 2,
         "patternIndex": 22,
         "duration": 8.061675
       }
@@ -90933,8 +90966,10 @@
     {
       "type": 4,
       "data": {
-        "name": "Rotating Rings 20",
+        "name": "Disco",
         "uuid": "f0a0096f-e4d8-44da-b45c-631e8188eba6",
+        "category": 3,
+        "dieType": 7,
         "patternIndex": 23,
         "duration": 3.531451,
         "gradient": {
@@ -91080,8 +91115,10 @@
             }
           ]
         },
-        "name": "gradient 20",
+        "name": "Super Gradient",
         "uuid": "2267bd4d-f194-428a-b72a-ef71c2f4c236",
+        "category": 1,
+        "dieType": 7,
         "defaultPreviewSettings": {
           "design": 5
         },

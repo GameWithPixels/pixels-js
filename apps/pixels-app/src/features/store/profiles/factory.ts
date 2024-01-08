@@ -106,6 +106,10 @@ export function getFactoryProfileUuid(dieType: PixelDieType): string {
   return profilesUuids[dieTypes.indexOf(dieType)];
 }
 
+export function isFactoryProfileUuid(uuid: string): boolean {
+  return profilesUuids.includes(uuid as any);
+}
+
 export type FactoryAnimationType =
   | "hello"
   | "rolling"
@@ -367,6 +371,7 @@ export function createFactoryAnimations(): Profiles.Animation[] {
       animFlags:
         Profiles.AnimationFlagsValues.traveling |
         Profiles.AnimationFlagsValues.useLedIndices,
+      category: "colorful",
       duration: 2.0,
       faces: Constants.faceMaskAll,
       count: 2,
@@ -422,50 +427,53 @@ export function createFactoryAnimations(): Profiles.Animation[] {
 
   for (let i = 0; i < dieTypesCount; ++i) {
     const dieType = dieTypes[i];
-    const typeStr = getDieTypeLabel(dieType);
     const topFace = getFaceMask(DiceUtils.getTopFace(dieType), dieType);
 
     animations.push(
       new Profiles.AnimationFlashes({
-        name: "Face Up " + typeStr,
+        name: "Face Up",
         uuid: rollingUuids[i],
         count: 1,
         duration: 0.1,
         color: new Profiles.Color("face"),
         faces: topFace,
+        dieType,
       })
     );
 
     animations.push(
       new Profiles.AnimationFlashes({
-        name: "Charging " + topFace,
+        name: "Charging",
         uuid: batteryChargingUuids[i],
         count: 1,
         duration: 3,
         color: Color.red,
         faces: topFace,
+        dieType,
       })
     );
 
     animations.push(
       new Profiles.AnimationFlashes({
-        name: "Done Charging " + topFace,
+        name: "Finished Charging",
         uuid: batteryDoneUuids[i],
         count: 1,
         duration: 3,
         color: Color.green,
         faces: topFace,
+        dieType,
       })
     );
 
     animations.push(
       new Profiles.AnimationFlashes({
-        name: "Charging Error " + topFace,
+        name: "Charging Error",
         uuid: batteryErrorUuids[i],
         count: 1,
         duration: 1,
         color: Color.yellow,
         faces: topFace,
+        dieType,
       })
     );
   }

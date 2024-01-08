@@ -7,11 +7,16 @@ import {
   FactoryAnimationType,
   getFactoryAnimationUuid,
   getFactoryProfileUuid,
+  isFactoryProfileUuid,
   readAnimation,
   readProfile,
 } from "~/features/store/profiles";
 
 export const FactoryProfile = {
+  getUuid(dieType: PixelDieType): string {
+    return getFactoryProfileUuid(dieType);
+  },
+
   get(dieType: PixelDieType): Readonly<Profiles.Profile> {
     if (!dieType || dieType === "unknown") {
       // Assume D20 for unknown die type for now
@@ -22,10 +27,10 @@ export const FactoryProfile = {
     return readProfile(profileUuid, library);
   },
 
-  getByUuid(uuid: string): Readonly<Profiles.Profile> | undefined {
-    if (FactoryProfile.isFactory(uuid)) {
-      const dieType = uuid.substring("factory".length) as PixelDieType;
-      return FactoryProfile.get(dieType);
+  getByUuid(profileUuid: string): Readonly<Profiles.Profile> | undefined {
+    if (FactoryProfile.isFactory(profileUuid)) {
+      const library = store.getState().profilesLibrary;
+      return readProfile(profileUuid, library);
     }
   },
 

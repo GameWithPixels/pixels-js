@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { assert } from "@systemic-games/pixels-core-utils";
-import { Serializable } from "@systemic-games/pixels-edit-animation";
+import { Serializable } from "@systemic-games/pixels-edit-animation"; // TODO add
 
 import {
   createFactoryAnimations,
