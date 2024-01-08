@@ -47,7 +47,7 @@ export function ProfileMenu({
           }}
         />
       )}
-      {/* <Divider />
+      <Divider />
       <Menu.Item
         title="Edit Advanced Rules"
         trailingIcon={({ size, color }) => (
@@ -73,7 +73,7 @@ export function ProfileMenu({
         onPress={() => {
           props.onDismiss?.();
         }}
-      /> */}
+      />
       {onDelete && (
         <>
           <Divider />

@@ -2,8 +2,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { assert } from "@systemic-games/pixels-core-utils";
 import { Serializable } from "@systemic-games/pixels-edit-animation";
 
+import {
+  createFactoryAnimations,
+  createFactoryProfiles,
+  jsonConvert,
+} from "./profiles";
+
 import StandardProfilesJson from "#/profiles/standard-profiles.json";
-import { jsonConvert } from "~/features/jsonConvert";
 
 // eslint-disable-next-line import/namespace
 export interface LibraryState extends Serializable.LibraryData {}
@@ -12,7 +17,18 @@ let _initialState: Serializable.LibraryData;
 
 function getInitialState(): LibraryState {
   if (!_initialState) {
+    // Get standard profiles from JSON
     _initialState = jsonConvert(StandardProfilesJson);
+    // Add factory profiles and animations
+    const animations = createFactoryAnimations();
+    const profiles = createFactoryProfiles(animations);
+    for (const a of animations) {
+      const data = Serializable.fromAnimation(a);
+      _initialState.animations[data.type].push(data.data as any); // TODO typing
+    }
+    for (const p of profiles) {
+      _initialState.profiles.push(Serializable.fromProfile(p));
+    }
   }
   return _initialState;
 }

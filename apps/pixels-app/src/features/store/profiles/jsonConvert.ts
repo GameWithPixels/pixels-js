@@ -1,4 +1,5 @@
 import {
+  assert,
   assertNever,
   bitsToFlags,
   getValueKeyName,
@@ -18,6 +19,17 @@ import {
 import { fromByteArray } from "base64-js";
 
 import generateUuid from "~/features/generateUuid";
+
+const regexExp =
+  /^[0-9A-F]{8}-[0-9A-F]{4}-[5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
+function checkUuid(uuid?: string): string {
+  if (__DEV__) {
+    assert(uuid?.length === 36, `Invalid uuid length: ${uuid}`);
+    assert(!regexExp.test(uuid), `Invalid uuid: ${uuid}`);
+  }
+  return uuid!;
+}
 
 function toKeyframesBase64(keyframes?: Readonly<Json.Keyframe[]>): string {
   const array = new Uint8Array(8 * (keyframes?.length ?? 0));
@@ -69,7 +81,7 @@ function toPattern(pattern: Readonly<Json.Pattern>): Serializable.PatternData {
       keyframes: toKeyframesBase64(g.keyframes),
     })) ?? [];
   return {
-    uuid: generateUuid(),
+    uuid: checkUuid(pattern.uuid),
     name: pattern.name ?? "",
     gradients,
   };
@@ -86,14 +98,13 @@ function toAnimationsAndGradients(
   const gradients: Serializable.GradientData[] = [];
   const animMap = new Map<number, string>(); // Maps animation index to uuid
   const animSet = Serializable.createAnimationSetData();
-  function register(keyframes?: Json.Keyframe[]): string | undefined {
-    if (keyframes?.length) {
-      const uuid = generateUuid();
+  function register(gradient?: Json.Gradient): string | undefined {
+    if (gradient?.keyframes?.length) {
       gradients.push({
-        uuid,
-        keyframes: toKeyframesBase64(keyframes),
+        uuid: checkUuid(gradient.uuid),
+        keyframes: toKeyframesBase64(gradient.keyframes),
       });
-      return uuid;
+      return gradient.uuid;
     }
   }
   function push<T extends keyof Serializable.AnimationSetData>(
@@ -118,7 +129,7 @@ function toAnimationsAndGradients(
             throw new Error(`Invalid animation type: ${type}`);
           case "simple":
             push("flashes", animIndex, {
-              uuid: generateUuid(),
+              uuid: checkUuid(data.uuid),
               name: data.name ?? "",
               duration: data.duration ?? 1,
               animFlags: [],
@@ -130,7 +141,7 @@ function toAnimationsAndGradients(
             break;
           case "rainbow":
             push(type, animIndex, {
-              uuid: generateUuid(),
+              uuid: checkUuid(data.uuid),
               name: data.name ?? "",
               duration: data.duration ?? 1,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
@@ -143,7 +154,7 @@ function toAnimationsAndGradients(
             break;
           case "keyframed":
             push("pattern", animIndex, {
-              uuid: generateUuid(),
+              uuid: checkUuid(data.uuid),
               name: data.name ?? "",
               duration: data.duration ?? 1,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
@@ -152,23 +163,23 @@ function toAnimationsAndGradients(
             break;
           case "gradientPattern":
             push(type, animIndex, {
-              uuid: generateUuid(),
+              uuid: checkUuid(data.uuid),
               name: data.name ?? "",
               duration: data.duration ?? 1,
               animFlags: [],
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
-              gradientUuid: register(data.gradient?.keyframes),
+              gradientUuid: register(data.gradient),
               overrideWithFace: data.overrideWithFace ?? false,
             });
             break;
           case "gradient":
             push(type, animIndex, {
-              uuid: generateUuid(),
+              uuid: checkUuid(data.uuid),
               name: data.name ?? "",
               duration: data.duration ?? 1,
               animFlags: [],
               faces: data.faces ?? Constants.faceMaskAll,
-              gradientUuid: register(data.gradient?.keyframes),
+              gradientUuid: register(data.gradient),
             });
             break;
           default:
@@ -322,7 +333,7 @@ function toProfile(
       (r): r is Required<Json.Rule> => !!r.condition && !!r.actions
     ) ?? [];
   return {
-    uuid: generateUuid(),
+    uuid: checkUuid(profile.uuid),
     name: profile.name ?? "",
     description: profile.description ?? "",
     dieType: "d20",

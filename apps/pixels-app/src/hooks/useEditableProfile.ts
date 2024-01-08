@@ -5,7 +5,7 @@ import { autorun, runInAction } from "mobx";
 
 import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
-import { isFactoryProfile } from "~/features/getFactoryProfile";
+import { FactoryProfile } from "~/features/FactoryProfile";
 import { readProfile } from "~/features/store/profiles";
 import { updateProfile } from "~/features/store/profilesLibrarySlice";
 
@@ -39,7 +39,10 @@ function create(profileUuid: string): Profiles.Profile {
 }
 
 export function getEditableProfile(profileUuid: string): Profiles.Profile {
-  assert(!isFactoryProfile(profileUuid), "Can't edit factory profile");
+  assert(
+    !FactoryProfile.isFactory(profileUuid),
+    "Can't edit factory profile"
+  );
   // if (isDefaultProfile(profileUuid)) {
   //   return getDefaultProfileByUuid(profileUuid);
   // }

@@ -47,6 +47,8 @@ const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
       ref={ref}
       mode="flat"
       dense
+      autoFocus
+      maxLength={15}
       style={{
         marginHorizontal: 60,
         textAlign: "center",
