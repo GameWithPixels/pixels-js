@@ -6,6 +6,7 @@ import { FirmwareInfoScreen } from "./FirmwareInfoScreen";
 import { SettingsMenuScreen } from "./SettingsMenuScreen";
 import { SupportScreen } from "./SupportScreen";
 import { SystemInfoScreen } from "./SystemInfoScreen";
+import { TurnOnDiceScreen } from "./TurnOnDiceScreen";
 
 import {
   getStackNavigationOptions,
@@ -24,6 +25,7 @@ export function SettingsStack({ route }: SettingsStackProps) {
         <Stack.Screen name="systemInfo" component={SystemInfoScreen} />
         <Stack.Screen name="firmwareInfo" component={FirmwareInfoScreen} />
         <Stack.Screen name="support" component={SupportScreen} />
+        <Stack.Screen name="turnOnDice" component={TurnOnDiceScreen} />
       </Stack.Navigator>
     </ThemeProvider>
   );

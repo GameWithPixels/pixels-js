@@ -82,7 +82,7 @@ export function NewPixelAppBanner({
       onDismiss={onHide}
       {...props}
     >
-      We rebuild it from scratch to make it more fun to use. Expect frequent
+      We rebuilt it from scratch to make it more fun to use. Expect frequent
       updates with new features in the coming months.
     </Banner>
   );

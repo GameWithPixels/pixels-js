@@ -20,6 +20,7 @@ import {
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import {
   Text,
+  TextProps,
   TouchableRipple,
   TouchableRippleProps,
   useTheme,
@@ -211,6 +212,32 @@ function RolledConditionCard({
   );
 }
 
+function RemainingFacesText({
+  availableCount,
+  hasActions,
+  dieFacesCount,
+  ...props
+}: {
+  availableCount: number;
+  hasActions: boolean;
+  dieFacesCount: number;
+} & Omit<TextProps<never>, "children">) {
+  return (
+    <AnimatedText
+      layout={CurvedTransition.easingY(Easing.linear).delay(200)}
+      {...props}
+    >
+      {!availableCount
+        ? "All faces have an animation :)"
+        : hasActions
+          ? `${availableCount} face${
+              availableCount > 1 ? "s" : ""
+            } out of ${dieFacesCount} without an animation.`
+          : "Tap on the (+) button at the bottom to assign an animation to one or more faces."}
+    </AnimatedText>
+  );
+}
+
 function createObservableRolledRule(
   faces: number[],
   actionType?: Profiles.ActionType
@@ -395,20 +422,12 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
                     }}
                   />
                 ))}
-                <AnimatedText
-                  layout={CurvedTransition.easingY(Easing.linear)
-                    .delay(200)
-                    .easingX(Easing.steps(0))}
+                <RemainingFacesText
+                  availableCount={availCount}
+                  hasActions={!!actionRules.length}
+                  dieFacesCount={dieFaces.length}
                   style={{ alignSelf: "center", color: colors.onSurface }}
-                >
-                  {!availCount
-                    ? "All faces have an animation :)"
-                    : actionRules.length
-                      ? `Available face${
-                          availCount > 1 ? "s" : ""
-                        }: ${availableFaces.join(", ")}.`
-                      : "Tap on the (+) button to assign an animation to one or more faces."}
-                </AnimatedText>
+                />
               </InnerScrollView>
             );
           })}

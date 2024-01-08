@@ -31,8 +31,9 @@ const pages = [
   // "Export Logs",
   // "Export Settings",
   // "Import Settings",
+  "How To Turn On Your Dice",
   "Support",
-  "System Information",
+  "App & System Information",
   "Dice Software Information",
   "Reset App Settings",
   "Check for Update",
@@ -53,10 +54,13 @@ function SettingsMenuPage({
   });
   const openPage = (page: (typeof pages)[number]) => {
     switch (page) {
+      case "How To Turn On Your Dice":
+        navigation.navigate("turnOnDice");
+        break;
       case "Support":
         navigation.navigate("support");
         break;
-      case "System Information":
+      case "App & System Information":
         navigation.navigate("systemInfo");
         break;
       case "Dice Software Information":
@@ -78,7 +82,7 @@ function SettingsMenuPage({
       {pages.map((p, i) => (
         <MenuButton
           key={p}
-          iconSize={i >= 3 ? 0 : undefined}
+          iconSize={i >= 4 ? 0 : undefined}
           noTopBorder={i > 0}
           squaredTopBorder={i > 0}
           squaredBottomBorder={i < pages.length - 1}

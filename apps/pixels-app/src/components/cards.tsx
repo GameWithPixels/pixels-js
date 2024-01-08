@@ -44,7 +44,7 @@ function PixelRollState({
         ? "rolling"
         : rollState?.state === "onFace"
           ? `on face ${rollState.face}`
-          : "still"}
+          : "not moving"}
     </Text>
   );
 }

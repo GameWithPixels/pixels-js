@@ -3,22 +3,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Divider, IconButton, Text, useTheme } from "react-native-paper";
-import {
-  cancelAnimation,
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from "react-native-reanimated";
+import { Card, Divider, IconButton, Text, useTheme } from "react-native-paper";
+import { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
 import {
   PixelFocusView,
   PixelFocusViewHeader,
 } from "./components/PixelFocusView";
+import { TapToReconnect } from "./components/TapToReconnect";
 
 import FocusIcon from "#/icons/home/focus";
 import GridIcon from "#/icons/items-view/grid";
@@ -30,8 +23,7 @@ import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
-import { AnimatedMaterialCommunityIcons } from "~/components/animated";
-import { AnimatedGradientButton, TightTextButton } from "~/components/buttons";
+import { AnimatedGradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
 import {
   DiceGrouping,
@@ -51,7 +43,7 @@ import { DiceListScreenProps } from "~/navigation";
 
 type DiceViewMode = "focus" | "list" | "grid";
 
-function PageActions({
+function PageHeader({
   viewMode,
   onSelectViewMode,
 }: {
@@ -150,16 +142,37 @@ function PageActions({
   );
 }
 
-function getMissingDiceText(
-  missingDice: readonly { name: string }[]
-): React.ReactNode {
-  return `Couldn't find ${missingDice.reduce((acc, d, i) => {
-    if (i === 0) {
-      return d.name;
-    } else {
-      return acc + (i >= missingDice.length - 1 ? " and " : ", ") + d.name;
-    }
-  }, "")}.`;
+function NoPairedDie({
+  showPairDice,
+  onPairDice,
+}: {
+  showPairDice?: boolean;
+  onPairDice: () => void;
+}) {
+  return (
+    // Set view height so Pair Die button is not clipped during exit animation
+    <View style={{ height: 400, alignItems: "center", gap: 20 }}>
+      <Card style={{ width: "100%" }}>
+        <Card.Title title="No dice is paired with the app" />
+        <Card.Content>
+          <Text variant="bodyMedium">
+            In order to customize your Pixels dice you need to pair them with
+            the app.{"\n"}
+            Tap on the button below to get started.
+          </Text>
+        </Card.Content>
+      </Card>
+      {!showPairDice && (
+        <AnimatedGradientButton
+          entering={FadeIn.duration(300)}
+          exiting={FadeOut.duration(300).delay(200)}
+          onPress={onPairDice}
+        >
+          Scan For Dice
+        </AnimatedGradientButton>
+      )}
+    </View>
+  );
 }
 
 function DiceListPage({
@@ -212,23 +225,6 @@ function DiceListPage({
         });
     }, [tryReconnectDice])
   );
-
-  // Reconnect animation
-  const connectProgress = useSharedValue(0);
-  React.useEffect(() => {
-    if (scannerStatus === "scanning") {
-      connectProgress.value = withRepeat(
-        withTiming(360, { duration: 2000 }),
-        -1
-      );
-    } else {
-      cancelAnimation(connectProgress);
-      connectProgress.value = 0;
-    }
-  }, [connectProgress, scannerStatus]);
-  const connectAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: connectProgress.value + "deg" }],
-  }));
 
   // Selection
   const [selectedPixel, setSelectedPixel] = React.useState<Pixel>();
@@ -294,7 +290,7 @@ function DiceListPage({
             gap: 10,
           }}
         >
-          {isFocus && selectedPixel && (
+          {isFocus && selectedPixel ? (
             <PixelFocusView
               pixel={selectedPixel}
               onEditProfile={() =>
@@ -311,77 +307,41 @@ function DiceListPage({
                 })
               }
             />
+          ) : (
+            <View style={{ marginTop: 30 }} />
+          )}
+          {missingDice.length > 0 && (
+            <TapToReconnect
+              scannerStatus={scannerStatus}
+              missingDice={missingDice}
+              hasConnectedDie={pixels.some((p) => p.status !== "disconnected")}
+              onPress={tryReconnectDice}
+            />
           )}
           {missingDice.length + pixels.length === 0 ? (
-            // Set view height so Pair Die button is not clipped during exit animation
-            <View
-              style={{
-                height: 300,
-                marginVertical: 40,
-                alignItems: "center",
-                gap: 20,
-              }}
-            >
-              <Text variant="titleMedium">
-                You haven't paired any Pixels die.
-              </Text>
-              <Text variant="titleMedium">Scan for dice to get started.</Text>
-              {!showPairDice && (
-                <AnimatedGradientButton
-                  entering={FadeIn.duration(300)}
-                  exiting={FadeOut.duration(300)}
-                  onPress={() => setShowPairDice(true)}
-                >
-                  Start Scanning For Dice
-                </AnimatedGradientButton>
-              )}
-            </View>
+            <NoPairedDie
+              showPairDice={showPairDice}
+              onPairDice={() => setShowPairDice(true)}
+            />
           ) : viewMode === "list" ? (
             <DiceList
               pixels={pixels}
               onSelectDie={showDetails}
               onPressNewDie={() => setShowPairDice(true)}
-              style={{ marginTop: 35 }}
             />
           ) : (
-            <View style={{ gap: 10 }}>
-              {isFocus && missingDice.length > 0 && (
-                <View>
-                  <Text style={{ marginLeft: 8 }}>
-                    {getMissingDiceText(missingDice)}
-                  </Text>
-                  <TightTextButton
-                    icon={({ size, color }) => (
-                      <AnimatedMaterialCommunityIcons
-                        name="refresh"
-                        size={size}
-                        color={color}
-                        style={connectAnimStyle}
-                      />
-                    )}
-                    style={{ alignSelf: "flex-start" }}
-                    onPress={tryReconnectDice}
-                  >
-                    {scannerStatus === "scanning"
-                      ? "Trying to connect..."
-                      : "Tap to try again to connect."}
-                  </TightTextButton>
-                </View>
-              )}
-              <DiceGrid
-                selection={isFocus ? selectedPixel : undefined}
-                numColumns={isFocus ? 4 : 2}
-                miniCards={isFocus}
-                pixels={pixels}
-                onSelectDie={showDetails}
-                onPressNewDie={() => setShowPairDice(true)}
-                style={isFocus ? undefined : { marginTop: 35 }}
-              />
-            </View>
+            <DiceGrid
+              selection={isFocus ? selectedPixel : undefined}
+              numColumns={isFocus ? 4 : 2}
+              miniCards={isFocus}
+              pixels={pixels}
+              onSelectDie={showDetails}
+              onPressNewDie={() => setShowPairDice(true)}
+            />
           )}
         </ScrollView>
       </View>
-      <PageActions
+      <PageHeader
         viewMode={viewMode}
         onSelectViewMode={(vm) => setViewMode(vm)}
       />

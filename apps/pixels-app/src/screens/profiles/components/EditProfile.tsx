@@ -91,6 +91,8 @@ export function EditProfile({
 } & ViewProps) {
   const appDispatch = useAppDispatch();
   const showHelp = useAppSelector((state) => state.appSettings.showProfileHelp);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const initialShowHelp = React.useMemo(() => showHelp, []); // TODO need banner fix to not initially show empty view
   const profile = useEditableProfile(profileUuid);
   const [pickDieVisible, setPickDieVisible] = React.useState(false);
   const { colors } = useTheme();
@@ -123,12 +125,16 @@ export function EditProfile({
           delay={unnamed ? 0 : 250}
           style={{ paddingHorizontal: 10, gap: 10 }}
         >
-          {unnamed && (
+          {initialShowHelp && (
             <Banner
               visible={showHelp}
+              collapsedMarginBottom={-10}
               onDismiss={() => appDispatch(setShowProfileHelp(false))}
             >
-              In this screen you may customize the profile running on your die.
+              A Profile is composed of rules that dictate what action to take on
+              rolls and others dice events.{"\n\n"}
+              Tap on the Activate button above to apply a Profile to one of your
+              dice.
             </Banner>
           )}
           <SectionTitle>Roll Rules</SectionTitle>

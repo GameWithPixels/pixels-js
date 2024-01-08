@@ -1,6 +1,12 @@
 import * as Application from "expo-application";
 import { useLocales } from "expo-localization";
-import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
+import {
+  PixelRatio,
+  Platform,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { Text as PaperText, TextProps } from "react-native-paper";
 
 import { AppBackground } from "~/components/AppBackground";
@@ -21,7 +27,7 @@ function SystemInfoPage({
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>
-        System Information
+        App & System Information
       </PageHeader>
       <ScrollView
         contentContainerStyle={{
@@ -37,16 +43,18 @@ function SystemInfoPage({
           <Text>Build: {Application.nativeBuildVersion}</Text>
         </View>
         <PaperText variant="titleLarge" style={{ marginTop: 20 }}>
-          OS Information
+          System Information
         </PaperText>
         <View style={{ marginLeft: 10, gap: 10 }}>
+          <Text>OS: {Platform.OS}</Text>
+          <Text>Version: {Platform.Version}</Text>
           <Text>
             {`Display Size: ${Math.round(window.width)}x${Math.round(
               window.height
             )}`}
           </Text>
-          <Text>OS: {Platform.OS}</Text>
-          <Text>Version: {Platform.Version}</Text>
+          <Text>Pixel Ratio: {PixelRatio.get()}</Text>
+          <Text>Font Scale: {PixelRatio.getFontScale()}</Text>
           <Text>Locales: {locales.map((l) => l.languageCode).join(", ")}</Text>
         </View>
       </ScrollView>

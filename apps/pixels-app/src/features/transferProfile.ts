@@ -45,7 +45,7 @@ export function transferProfile(
         const anim = act.animation;
         console.log(
           anim
-            ? `      Play anim named ${anim.duration} of type ${anim.type}`
+            ? `      Play anim ${anim.name} of type ${anim.type} with a duration of ${anim.duration}`
             : "      No animation!"
         );
       }

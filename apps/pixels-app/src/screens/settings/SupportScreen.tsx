@@ -5,16 +5,16 @@ import { Text as PaperText, TextProps } from "react-native-paper";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { OutlineButton } from "~/components/buttons";
+import { TrailingSpaceFix } from "~/fixes";
 import { SupportScreenProps } from "~/navigation";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
 }
 
-interface OpenURLButtonProps {
+type OpenURLButtonProps = React.PropsWithChildren<{
   url: string;
-  children: string;
-}
+}>;
 
 function URLButton({ url, children }: OpenURLButtonProps) {
   const handlePress = React.useCallback(async () => {
@@ -48,11 +48,9 @@ function SupportPage({
           To report issues or send suggestions, contact us via our website:
         </Text>
         <URLButton url="https://gamewithpixels.com/contact-us/">
-          Contact Us
+          {"Contact Us" + TrailingSpaceFix}
         </URLButton>
-        <Text style={{ marginTop: 20 }}>
-          Our join us on our Discord server:
-        </Text>
+        <Text style={{ marginTop: 20 }}>Or join us on our Discord server:</Text>
         <URLButton url="https://discord.com/invite/9ghxBYQFYA">
           Pixels Discord Server
         </URLButton>
