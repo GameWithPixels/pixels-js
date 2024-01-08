@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { StyleProp, View, ViewProps, ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { makeTransparent } from "./utils";
+import { darken, makeTransparent } from "./utils";
 
 export type CardProps = ViewProps & {
   row?: boolean;
@@ -25,13 +25,13 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  const gradientAlpha = transparent
+  const gradientAlpha = transparent //
     ? 0
-    : frameless
-      ? disabled
+    : !frameless
+      ? 0.1
+      : disabled
         ? 0.2
-        : 0.4
-      : 0.1;
+        : 1;
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
@@ -39,8 +39,12 @@ export function Card({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       colors={[
-        makeTransparent(colors.primary, gradientAlpha),
-        makeTransparent(colors.secondary, gradientAlpha),
+        gradientAlpha < 1
+          ? makeTransparent(colors.primary, gradientAlpha)
+          : darken(colors.primary, 0.5),
+        gradientAlpha < 1
+          ? makeTransparent(colors.secondary, gradientAlpha)
+          : darken(colors.secondary, 0.5),
       ]}
       style={[{ borderRadius }, style]}
     >

@@ -25,7 +25,7 @@ export function TabsHeaders({
     >
       {names.map((n, i) => {
         return (
-          // Linear gradient border radius doesn't work properly on iOS
+          // FIX Linear gradient border radius doesn't work properly on iOS
           // so we use a View with a border instead
           <View
             key={n}

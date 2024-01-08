@@ -23,7 +23,7 @@ import Animated, {
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
 import { Chip, GradientChip } from "./buttons";
-import { getBorderColor, getTextColorStyle, makeTransparent } from "./utils";
+import { darken, getBorderColor, getTextColorStyle } from "./utils";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -335,10 +335,7 @@ export function ProfileCard({
         <LinearGradient
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          colors={[
-            makeTransparent(colors.primary, 0.2),
-            makeTransparent(colors.secondary, 0.2),
-          ]}
+          colors={[darken(colors.primary, 0.4), darken(colors.secondary, 0.4)]}
           style={{ width: row ? undefined : "100%", ...dieViewCornersStyle }}
         >
           <Animated.View

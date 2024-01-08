@@ -1,6 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TextProps } from "react-native";
 
+import { iOSBorderRadiusFix } from "~/fixes";
+
 export function ChevronDownIcon({
   size,
   color,
@@ -19,8 +21,8 @@ export function ChevronDownIcon({
       color={color}
       style={[
         {
+          ...iOSBorderRadiusFix,
           borderRadius: size / 2,
-          overflow: "hidden", // For border radius to work on iOS
           backgroundColor,
           textAlign: "center",
           textAlignVertical: "center",

@@ -56,11 +56,11 @@ export function TouchableCard({
     ? 1
     : transparent
       ? 0
-      : frameless
-        ? props.disabled
+      : !frameless
+        ? 0.1
+        : props.disabled
           ? 0.2
-          : 0.4
-        : 0.1;
+          : 1;
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}

@@ -725,3 +725,29 @@ export function SelectionButton({
     </TouchableCard>
   );
 }
+
+export function AddDieButton({ contentStyle, ...props }: TouchableCardProps) {
+  const { colors } = useTheme();
+  return (
+    <TouchableCard
+      contentStyle={[
+        {
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        contentStyle,
+      ]}
+      {...props}
+    >
+      <View style={{ width: 54, height: 54 }}>
+        <MaterialIcons name="add" size={40} color={colors.onSurfaceVariant} />
+        <MaterialCommunityIcons
+          name="dice-multiple-outline"
+          size={28}
+          color={colors.onSurfaceVariant}
+          style={{ position: "absolute", right: 0, bottom: 0 }}
+        />
+      </View>
+    </TouchableCard>
+  );
+}
