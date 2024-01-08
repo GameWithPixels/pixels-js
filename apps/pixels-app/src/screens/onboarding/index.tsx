@@ -52,6 +52,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
+import { TurnOnDiceHelp } from "~/components/TunOnDiceHelp";
 import {
   AnimatedGradientButton,
   GradientButton,
@@ -229,7 +230,7 @@ function HealthSlide({ onNext }: { onNext: () => void }) {
         <View style={{ flexDirection: "row", gap: 10 }}>
           <Text>🛑</Text>
           <PaperText style={{ flex: 1 }} variant="titleSmall">
-            STOP using Pixels Dice and app immediately if you experience and of
+            STOP using Pixels Dice and app immediately if you experience any of
             the above or symptoms such as lightheadedness, nausea, or motion
             sickness.
           </PaperText>
@@ -345,40 +346,7 @@ function HelpTurnOnDiceModal({
           contentContainerStyle={{ padding: 20, gap: 20 }}
         >
           <LightUpYourGameImage />
-          <Text>
-            Pixels Dice are shipped with a pre-programmed user profile and
-            partial battery charge. They are ready to use right out of the box
-            but for the best experience, charge for at least 1 hour before first
-            use.
-          </Text>
-          <PaperText variant="titleLarge">To wake</PaperText>
-          <Text>
-            Open the charger by separating lid from base. The die inside will
-            turn on within 5 seconds and play the rainbow "Hello World" greeting
-            animation.
-          </Text>
-          <PaperText variant="titleLarge">To reboot</PaperText>
-          <Text>
-            Place die inside charger with charging coil face down/highest face
-            up and close lid. Remove the lid after a few seconds and the die
-            will wake, playing the "Hello World" greeting animation.
-          </Text>
-          <PaperText variant="titleLarge">To put to sleep</PaperText>
-          <Text>
-            Place die inside charger with charging coil face down/highest face
-            up and close lid. As the lid's magnet remains in place over the die,
-            it enters a sleep state.
-          </Text>
-          <PaperText variant="titleLarge">Note</PaperText>
-          <Text>
-            In place of a power button, Pixels Dice utilize a Hall Effect Sensor
-            which is activated by magnets. Inside the lid of all charging cases,
-            a small magnet is present to keep the dice in sleep mode when
-            closed. Magnets such as those found in third party dice trays, game
-            pieces, or otherwise may activate the sensor and cause Pixels Dice
-            to reboot or go to sleep mid-roll. This will result in a broken
-            connection between the dice and any connected device.
-          </Text>
+          <TurnOnDiceHelp />
           <LightUpYourGameImage />
         </BottomSheetScrollView>
       </ThemeProvider>
@@ -506,7 +474,7 @@ function ScanSlide({
                 {pixels.length ? (
                   <SmallText>Don't see all your dice?</SmallText>
                 ) : (
-                  <Text>No dice found so far.</Text>
+                  <Text>No available dice found so far.</Text>
                 )}
                 <TightTextButton
                   underline
@@ -738,7 +706,7 @@ function UpdateDiceSlide({
           entering={FadeIn.duration(300)}
           onPress={onNext}
         >
-          Go
+          Next
         </AnimatedGradientButton>
       )}
       {step === "wait" && <SkipButton onPress={onNext} />}

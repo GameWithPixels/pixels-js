@@ -32,17 +32,23 @@ function getActionText(action: Profiles.Action): string {
     }
     case "playAudioClip": {
       const act = action as Profiles.ActionPlayAudioClip;
-      return `Play "${act.clip?.name ?? ""}" ${getCountAsText(
-        act.loopCount
-      )} at volume ${act.volume}%`;
+      return act.clip?.name
+        ? `Play "${act.clip.name}" ${getCountAsText(act.loopCount)} at volume ${
+            act.volume
+          }%`
+        : "No clip selected";
     }
     case "speakText": {
       const act = action as Profiles.ActionSpeakText;
-      return `Speak "${act.text ?? ""}" at volume ${act.volume}%`;
+      return act.text.length
+        ? `Speak "${act.text}" at volume ${act.volume}%`
+        : "No text to speak";
     }
     case "makeWebRequest": {
       const act = action as Profiles.ActionMakeWebRequest;
-      return `Send request to "${act.url}" with parameters "${act.value}"`;
+      return act.url.length
+        ? `Send request to "${act.url}" with parameters "${act.value}"`
+        : "No URL entered";
     }
     default:
       return "Unknown action";

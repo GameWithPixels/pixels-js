@@ -104,7 +104,9 @@ export function PairDiceBottomSheet({
                 entering={FadeIn.duration(300)}
                 style={{ marginLeft: 10 }}
               >
-                No dice found so far.
+                No available dice found so far. Check that your available dice
+                are turned on and not connected to another device.{"\n\n"}
+                For help with turning on your dice go in the "More" tab.
               </AnimatedText>
             )}
             {availablePixels.map((sp, i) => (

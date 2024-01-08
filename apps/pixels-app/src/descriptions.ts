@@ -13,7 +13,7 @@ export function getConditionTypeLabel(type: Profiles.ConditionType): string {
     case "none":
       return "";
     case "helloGoodbye":
-      return "Hello Notifications";
+      return "When Die Turns On";
     case "handling":
       return "When Die is Picked Up";
     case "rolling":
@@ -66,6 +66,8 @@ export function getConditionFlagLabel(flagName: string): string {
   const l = flagName?.length;
   if (!l) {
     return "";
+  } else if (flagName === "hello") {
+    return "When Die Turns On";
   } else if (l === 1) {
     return flagName.toUpperCase();
   } else if (flagName === "badCharging") {

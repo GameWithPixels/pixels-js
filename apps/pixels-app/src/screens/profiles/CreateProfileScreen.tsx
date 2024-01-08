@@ -137,7 +137,7 @@ function CreateProfilePage({
         }}
       />
       <Text variant="titleMedium" style={{ marginTop: 10 }}>
-        Select a template
+        Select a Profile to base your new Profile on
       </Text>
       <GHScrollView contentContainerStyle={{ paddingBottom }}>
         <ProfilesGrid

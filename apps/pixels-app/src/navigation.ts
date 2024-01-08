@@ -179,6 +179,7 @@ export type SettingsStackParamList = {
   systemInfo: undefined;
   firmwareInfo: undefined;
   support: undefined;
+  turnOnDice: undefined;
 };
 
 export type SettingsMenuScreenProps = CompositeScreenProps<
@@ -199,6 +200,11 @@ export type FirmwareInfoScreenProps = NativeStackScreenProps<
 export type SupportScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "support"
+>;
+
+export type TurnOnDiceScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "turnOnDice"
 >;
 
 export function getStackNavigationOptions(

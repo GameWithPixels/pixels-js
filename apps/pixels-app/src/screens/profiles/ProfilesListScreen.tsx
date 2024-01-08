@@ -45,7 +45,7 @@ import { AppStyles } from "~/styles";
 
 type ProfilesViewMode = "list" | "grid";
 
-function PageActions({
+function PageHeader({
   viewMode,
   onSelectViewMode,
 }: {
@@ -225,7 +225,7 @@ function ProfilesListPage({
           />
         )}
       </Animated.ScrollView>
-      <PageActions
+      <PageHeader
         viewMode={viewMode}
         onSelectViewMode={(vm) => setViewMode(vm)}
       />

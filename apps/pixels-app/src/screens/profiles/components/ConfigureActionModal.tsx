@@ -29,6 +29,7 @@ import { FacesGrid } from "~/components/FacesGrid";
 import { SliderWithValue } from "~/components/SliderWithTitle";
 import { AnimationsGrid } from "~/components/animation";
 import { GradientButton } from "~/components/buttons";
+import { TrailingSpaceFix } from "~/fixes";
 import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -199,7 +200,7 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
               )
             }
           >
-            Select All
+            {"Select All" + TrailingSpaceFix}
           </Button>
           <Button
             compact
