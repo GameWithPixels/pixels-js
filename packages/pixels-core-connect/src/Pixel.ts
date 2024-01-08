@@ -785,6 +785,9 @@ export class Pixel extends PixelInfoNotifier {
    * @returns A promise that resolves once the die has confirmed being renamed.
    */
   async rename(name: string): Promise<void> {
+    // Remove leading and trailing spaces
+    name = name?.trim() ?? "";
+    // Skip sending message if name is empty or unchanged
     if (name.length && name !== this.name) {
       await this.sendAndWaitForResponse(
         safeAssign(new SetName(), { name }),
