@@ -51,6 +51,7 @@ const Header = observer(
     ref: React.ForwardedRef<HeaderTextInputHandle>
   ) {
     const [renameVisible, setRenameVisible] = React.useState(false);
+    const [editedName, setEditedName] = React.useState("");
     const textInputRef = React.useRef<RNTextInput>(null);
     React.useEffect(() => {
       if (renameVisible && textInputRef.current) {
@@ -93,9 +94,15 @@ const Header = observer(
             dense
             selectTextOnFocus={Platform.OS !== "android"} // keyboard not appearing on Android
             style={{ marginHorizontal: 60, textAlign: "center" }}
-            value={profile.name}
-            onChangeText={(t) => runInAction(() => (profile.name = t))}
-            onEndEditing={() => setRenameVisible(false)}
+            value={editedName}
+            onChangeText={setEditedName}
+            onEndEditing={() => {
+              const name = editedName.trim();
+              if (name.length) {
+                runInAction(() => (profile.name = editedName));
+              }
+              setRenameVisible(false);
+            }}
           />
         ) : (
           <Pressable
@@ -119,7 +126,10 @@ const Header = observer(
               visible={actionsMenuVisible}
               anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
               onDismiss={() => setActionsMenuVisible(false)}
-              onRename={() => setRenameVisible(true)}
+              onRename={() => {
+                setEditedName(profile.name);
+                setRenameVisible(true);
+              }}
               onEditAdvancedRules={onEditAdvancedRules}
               onDelete={onDeleteProfile}
             />

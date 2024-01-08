@@ -89,7 +89,7 @@ function CreateProfilePage({
   const [selectedProfile, setSelectedProfile] = React.useState(templates[0]);
   const createProfile = () => {
     const newProfile = selectedProfile.duplicate(generateUuid());
-    newProfile.name = profileName.length ? profileName : "New Profile";
+    newProfile.name = profileName.trim();
     newProfile.description = blankProfiles.includes(selectedProfile)
       ? ""
       : `Based on ${selectedProfile.name}`;
@@ -112,7 +112,7 @@ function CreateProfilePage({
           <Button onPress={() => navigation.goBack()}>Cancel</Button>
         )}
         rightElement={() => (
-          <Button disabled={!profileName.length} onPress={createProfile}>
+          <Button disabled={!profileName.trim().length} onPress={createProfile}>
             Create
           </Button>
         )}
