@@ -89717,7 +89717,7 @@
         },
         "count": 6,
         "fade": 0.101229057,
-        "name": "Five Red Blinks",
+        "name": "(discard) Five Red Blinks",
         "uuid": "a938a5ac-f305-4bd5-89f0-9a94d979d40c",
         "category": 1,
         "defaultPreviewSettings": {
@@ -90335,7 +90335,7 @@
         "count": 3,
         "fade": 0.1,
         "name": "Quick Connect",
-        "category": 1,
+        "category": 0,
         "uuid": "2b9fac28-0f14-4f41-a9d7-244b3e7a9edd",
         "defaultPreviewSettings": {
           "design": 5
@@ -90360,7 +90360,7 @@
         "fade": 0.1,
         "name": "Quick Disconnect",
         "uuid": "7b184288-eb36-4474-940a-b7d6e8c41c8c",
-        "category": 1,
+        "category": 0,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90765,9 +90765,9 @@
         },
         "count": 6,
         "fade": 0.1,
-        "name": "Low Battery",
+        "name": "(discard) Low Battery",
         "uuid": "03528737-c960-4e73-917f-498e84ddff98",
-        "category": -1,
+        "category": 0,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90789,9 +90789,9 @@
         },
         "count": 10,
         "fade": 0.1,
-        "name": "Charge Error",
-        "category": -1,
+        "name": "(discard) Charge Error",
         "uuid": "6b573a3c-4307-4549-a0dc-8f865bba9ac0",
+        "category": 0,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90813,9 +90813,9 @@
         },
         "count": 1,
         "fade": 1.0,
-        "name": "Finished Charge",
+        "name": "(discard) Finished Charge",
         "uuid": "c3082cfe-06e5-453c-abb1-fa9f81ad8efd",
-        "category": -1,
+        "category": 0,
         "defaultPreviewSettings": {
           "design": 5
         },
@@ -90966,7 +90966,7 @@
     {
       "type": 4,
       "data": {
-        "name": "Disco",
+        "name": "Explosion",
         "uuid": "f0a0096f-e4d8-44da-b45c-631e8188eba6",
         "category": 3,
         "dieType": 7,
@@ -91115,7 +91115,7 @@
             }
           ]
         },
-        "name": "Super Gradient",
+        "name": "Face Up Gradient",
         "uuid": "2267bd4d-f194-428a-b72a-ef71c2f4c236",
         "category": 1,
         "dieType": 7,

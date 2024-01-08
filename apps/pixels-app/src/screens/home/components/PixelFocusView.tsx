@@ -25,6 +25,7 @@ import { PixelDieRenderer } from "~/components/cards";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
 import { makeTransparent } from "~/components/utils";
 import { getPixelStatusLabel } from "~/descriptions";
+import { FactoryProfile } from "~/features/FactoryProfile";
 import { blinkDie } from "~/features/blinkDie";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
 import { transferProfile } from "~/features/transferProfile";
@@ -175,9 +176,12 @@ function RollingDie({ pixel, disabled }: { pixel: Pixel; disabled: boolean }) {
 
 function PixelProfile({ ...props }: Omit<ProfileCardProps, "row">) {
   const { colors } = useTheme();
+  const description = FactoryProfile.isFactory(props.profile.uuid)
+    ? "Your die is configured with the factory Profile."
+    : undefined;
   return (
     <View>
-      <ProfileCard row {...props} />
+      <ProfileCard row description={description} {...props} />
       <Text
         variant="labelSmall"
         style={{

@@ -102,7 +102,7 @@ const InnerScrollView = React.forwardRef(function InnerScrollView(
       style={{ width, height: "100%", flex: 1 }}
       contentContainerStyle={{
         paddingHorizontal: 10,
-        paddingBottom: 90,
+        paddingBottom: 60,
       }}
       {...props}
     >

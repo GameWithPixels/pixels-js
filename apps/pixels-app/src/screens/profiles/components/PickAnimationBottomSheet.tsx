@@ -18,6 +18,7 @@ import { getBottomSheetBackgroundStyle } from "~/themes";
 
 const categories: Profiles.AnimationCategory[] = [
   "colorful",
+  "animated",
   "flashy",
   "uniform",
   "system",
@@ -83,7 +84,7 @@ export function PickAnimationBottomSheet({
       <ThemeProvider theme={theme}>
         <BottomSheetScrollView
           contentContainerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 10,
             paddingBottom,
             gap: 10,
           }}

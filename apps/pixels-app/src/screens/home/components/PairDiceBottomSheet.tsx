@@ -106,7 +106,7 @@ export function PairDiceBottomSheet({
               >
                 No available dice found so far. Check that your available dice
                 are turned on and not connected to another device.{"\n\n"}
-                For help with turning on your dice go in the "More" tab.
+                For help about turning on your dice go in the "More" tab.
               </AnimatedText>
             )}
             {availablePixels.map((sp, i) => (

@@ -27,7 +27,8 @@ function getInitialState(): LibraryState {
       _initialState.animations[data.type].push(data.data as any); // TODO typing
     }
     for (const p of profiles) {
-      _initialState.profiles.push(Serializable.fromProfile(p));
+      const data = Serializable.fromProfile(p);
+      _initialState.profiles.push(data);
     }
   }
   return _initialState;

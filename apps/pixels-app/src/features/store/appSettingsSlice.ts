@@ -14,7 +14,6 @@ export interface AppSettingsState {
   showOnboarding: boolean;
   showNewPixelsAppBanner: boolean;
   showProfileHelp: boolean;
-  showProfileAdvancedHelp: boolean;
   diceGrouping: DiceGrouping;
   diceSortMode: SortMode;
   profilesGrouping: ProfilesGrouping;
@@ -29,7 +28,6 @@ const initialState: AppSettingsState = {
   showOnboarding: true,
   showNewPixelsAppBanner: true,
   showProfileHelp: true,
-  showProfileAdvancedHelp: true,
   diceGrouping: "dieType",
   diceSortMode: "alphabetical",
   profilesGrouping: "dieType",
@@ -58,9 +56,6 @@ const appSettingsSlice = createSlice({
     },
     setShowProfileHelp(state, action: PayloadAction<boolean>) {
       state.showProfileHelp = action.payload;
-    },
-    setShowProfileAdvancedHelp(state, action: PayloadAction<boolean>) {
-      state.showProfileAdvancedHelp = action.payload;
     },
     setDiceGrouping(state, action: PayloadAction<DiceGrouping>) {
       state.diceGrouping = action.payload;
@@ -92,7 +87,6 @@ export const {
   setShowOnboarding,
   setShowNewPixelsAppBanner,
   setShowProfileHelp,
-  setShowProfileAdvancedHelp,
   setDiceGrouping,
   setDiceSortMode,
   setProfilesGrouping,

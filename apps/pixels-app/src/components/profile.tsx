@@ -39,14 +39,17 @@ import {
 const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
   profile,
   row,
+  description,
   numberOfLines,
   textStyle,
 }: {
   profile: Readonly<Profiles.Profile>;
   row?: boolean;
+  description?: string;
   numberOfLines: number;
   textStyle: { color: string } | undefined;
 }) {
+  description = description ?? profile.description;
   return (
     <>
       <Text
@@ -56,9 +59,9 @@ const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
       >
         {profile.name}
       </Text>
-      {!!profile.description.length && (
+      {!!description.length && (
         <Text numberOfLines={numberOfLines} style={textStyle}>
-          {profile.description}
+          {description}
         </Text>
       )}
     </>
@@ -250,6 +253,7 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
 export interface ProfileCardProps extends Omit<TouchableCardProps, "children"> {
   profile: Readonly<Profiles.Profile>;
   transferring?: boolean;
+  description?: string;
   expanded?: SharedValue<boolean>;
   fadeInDuration?: number;
   fadeInDelay?: number;
@@ -266,6 +270,7 @@ export function ProfileCard({
   selected,
   expanded,
   transferring,
+  description,
   squaredTopBorder,
   squaredBottomBorder,
   noBorder,
@@ -397,6 +402,7 @@ export function ProfileCard({
           <ProfileNameAndDescription
             profile={profile}
             row={row}
+            description={description}
             numberOfLines={2}
             textStyle={textStyle}
           />

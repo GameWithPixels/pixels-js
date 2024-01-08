@@ -3,6 +3,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { FactoryProfile } from "~/features/FactoryProfile";
 import { readProfile } from "~/features/store/profiles";
 import {
   addProfile,
@@ -10,12 +11,18 @@ import {
 } from "~/features/store/profilesLibrarySlice";
 
 // Returns a list of observable profiles from Redux store
-export function useProfilesList(): Readonly<Profiles.Profile>[] {
+export function useProfilesList(opt?: {
+  skipFactory?: boolean;
+}): Readonly<Profiles.Profile>[] {
   const library = useAppSelector((state) => state.profilesLibrary);
-  return React.useMemo(
-    () => library.profiles.map((p) => readProfile(p.uuid, library)),
-    [library]
-  );
+  const skipFactory = opt?.skipFactory ?? false;
+  return React.useMemo(() => {
+    let { profiles } = library;
+    if (skipFactory) {
+      profiles = profiles.filter((p) => !FactoryProfile.isFactory(p.uuid));
+    }
+    return profiles.map((p) => readProfile(p.uuid, library));
+  }, [library, skipFactory]);
 }
 
 export function useEditProfilesList(): {

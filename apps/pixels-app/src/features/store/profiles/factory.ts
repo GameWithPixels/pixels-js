@@ -9,8 +9,6 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { getDieTypeLabel } from "~/descriptions";
-
 // List of valid dice types
 const dieTypes = (Object.keys(PixelDieTypeValues) as PixelDieType[]).filter(
   (d) => d !== "unknown"
@@ -340,11 +338,13 @@ export function createFactoryProfiles(
   animations: Profiles.Animation[]
 ): Profiles.Profile[] {
   const profiles: Profiles.Profile[] = [];
-  for (const dieType of dieTypes) {
+
+  for (let i = 0; i < dieTypes.length; ++i) {
+    const dieType = dieTypes[i];
     const profile = new Profiles.Profile({
-      uuid: "factory" + dieType,
-      name: "Default Profile",
-      description: "Your die is configured with the default Profile.",
+      uuid: profilesUuids[i],
+      name: "Factory Profile",
+      description: "Basic profile",
       dieType,
     });
     const getAnimation = (type: FactoryAnimationType) => {
@@ -357,12 +357,12 @@ export function createFactoryProfiles(
     addFactoryAdvancedRules(profile, getAnimation);
     profiles.push(profile);
   }
+
   return profiles;
 }
 
 export function createFactoryAnimations(): Profiles.Animation[] {
   const animations: Profiles.Animation[] = [];
-  const dieTypesCount = dieTypes.length;
 
   animations.push(
     new Profiles.AnimationRainbow({
@@ -383,7 +383,7 @@ export function createFactoryAnimations(): Profiles.Animation[] {
 
   animations.push(
     new Profiles.AnimationFlashes({
-      name: "Colored Blink",
+      name: "Face Colored Blink",
       uuid: rolledUuid,
       count: 1,
       duration: 3,
@@ -425,7 +425,7 @@ export function createFactoryAnimations(): Profiles.Animation[] {
     })
   );
 
-  for (let i = 0; i < dieTypesCount; ++i) {
+  for (let i = 0; i < dieTypes.length; ++i) {
     const dieType = dieTypes[i];
     const topFace = getFaceMask(DiceUtils.getTopFace(dieType), dieType);
 
