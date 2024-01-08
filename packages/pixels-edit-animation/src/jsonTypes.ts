@@ -13,11 +13,13 @@ export type Keyframe = Partial<{
 
 export type Gradient = Partial<{
   // TODO empty, duration, firstTime, lastTime not needed
+  uuid: string;
   keyframes: Keyframe[];
 }>;
 
 export type Pattern = Partial<{
   name: string;
+  uuid: string;
   gradients: Gradient[];
   // TODO not needed duration?: number;
 }>;
@@ -38,6 +40,9 @@ export type Color = Partial<{
 
 export type AnimationData = Partial<{
   name: string;
+  uuid: string;
+  category: number;
+  dieType: number;
   duration: number;
   count: number;
   fade: number;
@@ -87,6 +92,7 @@ export type Rule = Partial<{
 
 export type Profile = Partial<{
   name: string | null;
+  uuid: string;
   description: string | null;
   rules: Rule[];
   defaultPreviewSettings: PreviewSettings;

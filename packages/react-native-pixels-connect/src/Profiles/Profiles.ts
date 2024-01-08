@@ -1,6 +1,10 @@
 export {
   type AnimationType,
   AnimationTypeValues,
+  type AnimationFlags,
+  AnimationFlagsValues,
+  type AnimationCategory,
+  AnimationCategoryValues,
   type ActionType,
   ActionTypeValues,
   type ConditionType,
