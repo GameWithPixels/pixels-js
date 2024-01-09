@@ -6,6 +6,7 @@ import { jsonConvert } from "./jsonConvert";
 import StandardProfilesJson from "#/profiles/standard-profiles.json";
 
 export function loadDefault(): Serializable.LibraryData {
+  console.log("=== LOADING DEFAULT LIBRARY ===");
   // Get standard profiles from JSON
   const library = jsonConvert(StandardProfilesJson);
   // Add factory profiles and animations

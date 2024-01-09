@@ -344,7 +344,7 @@ export function createFactoryProfiles(
     const profile = new Profiles.Profile({
       uuid: profilesUuids[i],
       name: "Factory Profile",
-      description: "Basic profile",
+      description: "Simple default profile",
       dieType,
     });
     const getAnimation = (name: FactoryAnimationName) => {

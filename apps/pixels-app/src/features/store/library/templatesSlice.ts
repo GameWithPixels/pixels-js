@@ -20,11 +20,7 @@ const templatesSlice = createSlice({
   reducers: {
     reset(_, action: PayloadAction<Serializable.LibraryData>) {
       const state = templatesAdapter.getInitialState();
-      log(
-        "reset",
-        "template",
-        "count=" + action.payload.profiles.length
-      );
+      log("reset", "template", "count=" + action.payload.profiles.length);
       return templatesAdapter.addMany(state, action.payload.profiles);
     },
   },

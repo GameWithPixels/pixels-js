@@ -1,5 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
+import {
+  Action,
+  combineReducers,
+  configureStore,
+  ThunkAction,
+} from "@reduxjs/toolkit";
 import {
   FLUSH,
   PAUSE,
@@ -10,75 +15,48 @@ import {
   REGISTER,
   REHYDRATE,
 } from "redux-persist";
+// import autoMergeLevel1 from "redux-persist/lib/stateReconciler/autoMergeLevel1";
 
-import { Library } from "~/features/store";
 import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
-import appSettingsReducer, {
-  AppSettingsState,
-} from "~/features/store/appSettingsSlice";
+import appSettingsReducer from "~/features/store/appSettingsSlice";
 import diceRollsReducer from "~/features/store/diceRollsSlice";
-import animationsReducer, {
-  animationsAdapter,
-  AnimationsState,
-} from "~/features/store/library/animationsSlice";
-import gradientsReducer, {
-  gradientsAdapter,
-  GradientsState,
-} from "~/features/store/library/gradientsSlice";
-import patternsReducer, {
-  patternsAdapter,
-  PatternsState,
-} from "~/features/store/library/patternsSlice";
-import profilesReducer, {
-  profilesAdapter,
-  ProfilesState,
-} from "~/features/store/library/profilesSlice";
-import templatesReducer, {
-  templatesAdapter,
-  TemplatesState,
-} from "~/features/store/library/templatesSlice";
-import pairedDiceReducer, {
-  PairedDiceState,
-} from "~/features/store/pairedDiceSlice";
+import { gradientsAdapter } from "~/features/store/library/gradientsSlice";
+import { patternsAdapter } from "~/features/store/library/patternsSlice";
+import { profilesAdapter } from "~/features/store/library/profilesSlice";
+import libraryReducer from "~/features/store/library/reducer";
+import { templatesAdapter } from "~/features/store/library/templatesSlice";
+import pairedDiceReducer from "~/features/store/pairedDiceSlice";
 
-function conf(key: string) {
-  return {
-    key,
-    storage: AsyncStorage,
-  };
-}
+const rootReducer = combineReducers({
+  // General app data
+  appSettings: appSettingsReducer,
+  // Dice data
+  pairedDice: pairedDiceReducer,
+  // Library data
+  library: libraryReducer,
+  // Transient data
+  diceRolls: diceRollsReducer,
+  dfuFiles: dfuFilesReducer,
+});
 
 export const store = configureStore({
-  reducer: {
-    // General app data
-    appSettings: persistReducer<AppSettingsState>(
-      conf("settings"),
-      appSettingsReducer
-    ),
-    // Dice data
-    pairedDice: persistReducer<PairedDiceState>(
-      conf("pairedDice"),
-      pairedDiceReducer
-    ),
-    // Library data
-    profiles: persistReducer<ProfilesState>(conf("profiles"), profilesReducer),
-    templates: persistReducer<TemplatesState>(
-      conf("templates"),
-      templatesReducer
-    ),
-    animations: persistReducer<AnimationsState>(
-      conf("animations"),
-      animationsReducer
-    ),
-    patterns: persistReducer<PatternsState>(conf("patterns"), patternsReducer),
-    gradients: persistReducer<GradientsState>(
-      conf("gradients"),
-      gradientsReducer
-    ),
-    // Transient data
-    diceRolls: diceRollsReducer,
-    dfuFiles: dfuFilesReducer,
-  },
+  reducer: persistReducer<RootState>(
+    {
+      key: "root",
+      storage: AsyncStorage,
+      blacklist: ["diceRolls", "dfuFiles"], // TODO type this with RootState keys
+      // stateReconciler: (
+      //   inbound: RootState,
+      //   original: RootState,
+      //   reduced: RootState,
+      //   config: any
+      // ) => {
+      //   console.log("stateReconciler: ", Object.keys(inbound).join(", "));
+      //   return autoMergeLevel1(inbound, original, reduced, config);
+      // },
+    },
+    rootReducer
+  ),
   middleware: (getDefaultMiddleware) => {
     const middleware = getDefaultMiddleware({
       serializableCheck: {
@@ -92,7 +70,7 @@ export const store = configureStore({
 export const persistor = persistStore(store);
 
 export type AppDispatch = typeof store.dispatch;
-export type RootState = ReturnType<typeof store.getState>;
+export type RootState = ReturnType<typeof rootReducer>;
 export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,
   RootState,
@@ -100,27 +78,24 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   Action<string>
 >;
 
-export type LibraryState = Pick<
-  RootState,
-  "profiles" | "templates" | "animations" | "patterns" | "gradients"
->;
+export type LibraryState = RootState["library"];
 
 export const profilesSelectors = profilesAdapter.getSelectors<RootState>(
-  (state) => state.profiles
+  (state) => state.library.profiles
 );
 
 export const templatesSelectors = templatesAdapter.getSelectors<RootState>(
-  (state) => state.templates
+  (state) => state.library.templates
 );
 
-export const animationsSelectors = animationsAdapter.getSelectors<RootState>(
-  (state) => state.animations
-);
+// export const animationsSelectors = animationsAdapter.getSelectors<RootState>(
+//   (state) => state.library.animations
+// );
 
 export const patternsSelectors = patternsAdapter.getSelectors<RootState>(
-  (state) => state.patterns
+  (state) => state.library.patterns
 );
 
 export const gradientsSelectors = gradientsAdapter.getSelectors<RootState>(
-  (state) => state.gradients
+  (state) => state.library.gradients
 );

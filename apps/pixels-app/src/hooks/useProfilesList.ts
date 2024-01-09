@@ -12,7 +12,7 @@ import { readProfile } from "~/features/store/profiles";
 export function useProfilesList(opt?: {
   skipFactory?: boolean;
 }): Readonly<Profiles.Profile>[] {
-  const library = useAppSelector((state) => state);
+  const library = useAppSelector((state) => state.library);
   const skipFactory = opt?.skipFactory ?? false;
   return React.useMemo(() => {
     const profilesUuids = skipFactory

@@ -20,11 +20,7 @@ const patternsSlice = createSlice({
   reducers: {
     reset(_, action: PayloadAction<Serializable.LibraryData>) {
       const state = patternsAdapter.getInitialState();
-      log(
-        "reset",
-        "pattern",
-        "count=" + action.payload.patterns.length
-      );
+      log("reset", "pattern", "count=" + action.payload.patterns.length);
       return patternsAdapter.addMany(state, action.payload.patterns);
     },
 

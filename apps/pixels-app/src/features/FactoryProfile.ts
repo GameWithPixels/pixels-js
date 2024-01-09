@@ -23,12 +23,12 @@ export const FactoryProfile = {
 
   get(dieType: PixelDieType): Readonly<Profiles.Profile> {
     const profileUuid = getFactoryProfileUuid(fixDieType(dieType));
-    return readProfile(profileUuid, store.getState());
+    return readProfile(profileUuid, store.getState().library);
   },
 
   getByUuid(profileUuid: string): Readonly<Profiles.Profile> | undefined {
     if (FactoryProfile.isFactory(profileUuid)) {
-      return readProfile(profileUuid, store.getState());
+      return readProfile(profileUuid, store.getState().library);
     }
     return undefined;
   },
@@ -39,7 +39,7 @@ export const FactoryProfile = {
 
   addAdvancedRules(profile: Profiles.Profile): Profiles.Profile {
     const dieType = fixDieType(profile.dieType);
-    const library = store.getState();
+    const library = store.getState().library;
     const getAnimation = (name: FactoryAnimationName) => {
       const uuid = getFactoryAnimationUuid(name, dieType);
       return readAnimation(uuid, library);

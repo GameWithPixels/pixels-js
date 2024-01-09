@@ -20,7 +20,7 @@ const editableProfiles = new Map<
 >();
 
 function create(profileUuid: string): Profiles.Profile {
-  const profile = readProfile(profileUuid, store.getState(), true);
+  const profile = readProfile(profileUuid, store.getState().library, true);
   let firstAutorun = true;
   const onChange = autorun(() => {
     if (firstAutorun) {

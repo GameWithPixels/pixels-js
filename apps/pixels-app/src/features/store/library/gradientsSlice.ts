@@ -20,11 +20,7 @@ const gradientsSlice = createSlice({
   reducers: {
     reset(_, action: PayloadAction<Serializable.LibraryData>) {
       const state = gradientsAdapter.getInitialState();
-      log(
-        "reset",
-        "gradient",
-        "count=" + action.payload.gradients.length
-      );
+      log("reset", "gradient", "count=" + action.payload.gradients.length);
       return gradientsAdapter.addMany(state, action.payload.gradients);
     },
 
