@@ -108,7 +108,7 @@ export function isFactoryProfileUuid(uuid: string): boolean {
   return profilesUuids.includes(uuid as any);
 }
 
-export type FactoryAnimationType =
+export type FactoryAnimationName =
   | "hello"
   | "rolling"
   | "rolled"
@@ -120,10 +120,10 @@ export type FactoryAnimationType =
   | "batteryError";
 
 export function getFactoryAnimationUuid(
-  type: FactoryAnimationType,
+  name: FactoryAnimationName,
   dieType: PixelDieType
 ): string {
-  switch (type) {
+  switch (name) {
     case "hello":
       return helloUuid;
     case "rolling":
@@ -147,7 +147,7 @@ export function getFactoryAnimationUuid(
 
 function addFactoryBaseRules(
   profile: Profiles.Profile,
-  getAnimation: (type: FactoryAnimationType) => Profiles.Animation
+  getAnimation: (name: FactoryAnimationName) => Profiles.Animation
 ): void {
   // Hello
   profile.rules.push(
@@ -201,7 +201,7 @@ function addFactoryBaseRules(
 
 export function addFactoryAdvancedRules(
   profile: Profiles.Profile,
-  getAnimation: (type: FactoryAnimationType) => Profiles.Animation
+  getAnimation: (name: FactoryAnimationName) => Profiles.Animation
 ): void {
   const topFace = DiceUtils.getTopFace(profile.dieType);
 
@@ -347,10 +347,10 @@ export function createFactoryProfiles(
       description: "Basic profile",
       dieType,
     });
-    const getAnimation = (type: FactoryAnimationType) => {
-      const uuid = getFactoryAnimationUuid(type, dieType);
+    const getAnimation = (name: FactoryAnimationName) => {
+      const uuid = getFactoryAnimationUuid(name, dieType);
       const a = animations.find((a) => a.uuid === uuid);
-      assert(a, `Missing factory animation ${uuid} of type ${type}`);
+      assert(a, `Missing factory animation ${uuid} of type ${name}`);
       return a;
     };
     addFactoryBaseRules(profile, getAnimation);

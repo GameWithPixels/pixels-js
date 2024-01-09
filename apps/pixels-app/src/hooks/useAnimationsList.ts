@@ -5,7 +5,7 @@ import { useAppSelector } from "~/app/hooks";
 import { readAnimation } from "~/features/store/profiles";
 
 export function useAnimationsList(): Readonly<Profiles.Animation>[] {
-  const library = useAppSelector((state) => state.profilesLibrary);
+  const library = useAppSelector((state) => state);
   return React.useMemo(
     () =>
       Object.values(library.animations)

@@ -5,10 +5,10 @@ import { Text } from "react-native-paper";
 import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
+import { Library } from "~/features/store";
 import { resetAppSettingsToDefault } from "~/features/store/appSettingsSlice";
 import { resetRollsHistory } from "~/features/store/diceRollsSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
-import { resetProfilesToDefault } from "~/features/store/profilesLibrarySlice";
 import { useConfirmActionSheet } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
 
@@ -94,7 +94,7 @@ function SettingsMenuPage({
     appDispatch(resetAppSettingsToDefault());
     appDispatch(resetPairedDice());
     appDispatch(resetRollsHistory());
-    appDispatch(resetProfilesToDefault());
+    Library.dispatchReset(appDispatch);
     navigation.navigate("onboarding");
   });
   const openPage = (page: PageName) => {

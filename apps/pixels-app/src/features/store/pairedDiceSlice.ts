@@ -3,8 +3,7 @@ import {
   PixelColorway,
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
-
-import { getFactoryProfileUuid } from "./profiles";
+import { getFactoryProfileUuid } from "./library/factory";
 
 export interface PairedDie {
   systemId: string;

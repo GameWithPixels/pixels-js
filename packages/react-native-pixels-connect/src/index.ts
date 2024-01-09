@@ -14,6 +14,10 @@ export * from "./hooks/usePixelScanner";
 export * from "./hooks/useScannedPixels";
 export * from "./hooks/useScannedPixelNotifiers";
 
+// eslint-disable-next-line import/export
 export * from "@systemic-games/pixels-core-connect";
+// eslint-disable-next-line import/export
 export * from "@systemic-games/pixels-core-animation";
 export * from "@systemic-games/pixels-react";
+
+export { Serializable } from "@systemic-games/pixels-edit-animation";

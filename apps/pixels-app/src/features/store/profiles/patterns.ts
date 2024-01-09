@@ -1,11 +1,13 @@
 import { assert } from "@systemic-games/pixels-core-utils";
-import { Serializable } from "@systemic-games/pixels-edit-animation";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  Profiles,
+  Serializable,
+} from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
-import { LibraryState } from "../profilesLibrarySlice";
-import { storeLog } from "../storeLog";
+import { log } from "./log";
 
+import { LibraryState } from "~/app/store";
 import { makeObservable } from "~/features/makeObservable";
 
 interface PatternCache {
@@ -21,7 +23,7 @@ interface KeyframesCache {
 const loadedPatterns = new Map<string, PatternCache>();
 
 function create(uuid: string): PatternCache {
-  storeLog("create", "pattern", uuid);
+  log("create", "pattern", uuid);
   const patternCache = {
     pattern: makeObservable(new Profiles.Pattern({ uuid })),
   };
@@ -43,7 +45,7 @@ function updatePattern(
   library: LibraryState
 ): void {
   const { pattern } = patternCache;
-  const patternData = library.patterns.find((p) => p.uuid === pattern.uuid);
+  const patternData = library.patterns.entities[pattern.uuid];
   assert(patternData, `Pattern ${pattern.uuid} not found`);
   pattern.name = patternData.name;
   const gradientsCount = patternData.gradients.length;

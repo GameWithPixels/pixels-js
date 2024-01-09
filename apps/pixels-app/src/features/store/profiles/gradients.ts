@@ -1,11 +1,13 @@
 import { assert } from "@systemic-games/pixels-core-utils";
-import { Serializable } from "@systemic-games/pixels-edit-animation";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  Profiles,
+  Serializable,
+} from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
-import { LibraryState } from "../profilesLibrarySlice";
-import { storeLog } from "../storeLog";
+import { log } from "./log";
 
+import { LibraryState } from "~/app/store";
 import { makeObservable } from "~/features/makeObservable";
 
 interface GradientCache {
@@ -19,7 +21,7 @@ interface GradientCache {
 const loadedGradients = new Map<string, GradientCache>();
 
 function create(uuid: string): GradientCache {
-  storeLog("create", "gradient", uuid);
+  log("create", "gradient", uuid);
   const gradientCache = {
     gradient: makeObservable(new Profiles.RgbGradient({ uuid })),
   };
@@ -41,7 +43,7 @@ function updateGradient(
   library: LibraryState
 ): void {
   const { gradient } = gradientCache;
-  const gradientData = library.gradients.find((p) => p.uuid === gradient.uuid);
+  const gradientData = library.gradients.entities[gradient.uuid];
   assert(gradientData, `Gradient ${gradient.uuid} not found`);
   if (gradientCache.keyframesCache?.data === gradientData.keyframes) {
     gradient.keyframes = gradientCache.keyframesCache.keyframes;

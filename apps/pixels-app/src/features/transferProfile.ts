@@ -1,7 +1,4 @@
-import {
-  createDataSetForProfile,
-  DataSet,
-} from "@systemic-games/pixels-edit-animation";
+import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import { Alert } from "react-native";
 import Toast from "react-native-root-toast";
@@ -12,7 +9,6 @@ import {
   setProfileTransfer,
 } from "./store/diceRollsSlice";
 import { setPairedDieProfile } from "./store/pairedDiceSlice";
-import { setProfileHash } from "./store/profilesLibrarySlice";
 
 import { store } from "~/app/store";
 import { AppDarkTheme } from "~/themes";
@@ -53,14 +49,6 @@ export function transferProfile(
   }
 
   const ds = createDataSetForProfile(modified);
-  // TODO update hash for factory profiles that were imported without one
-  const serializedProfile = store
-    .getState()
-    .profilesLibrary.profiles.find((p) => p.uuid === profile.uuid);
-  if (serializedProfile && !serializedProfile.hash) {
-    const hash = DataSet.computeHash(ds.toDataSet().toByteArray());
-    store.dispatch(setProfileHash({ uuid: profile.uuid, hash }));
-  }
   // TODO update when getting confirmation from the die in usePairedPixels
   store.dispatch(
     setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })

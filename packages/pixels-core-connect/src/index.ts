@@ -10,6 +10,7 @@ export * from "./errors";
 export * from "./Messages";
 export * from "./DiceUtils";
 
+// TODO duplicated export
 export {
   type PixelDieType,
   PixelDieTypeValues,

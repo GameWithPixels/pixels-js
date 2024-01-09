@@ -11,17 +11,35 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
+import { Library } from "~/features/store";
 import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer, {
   AppSettingsState,
 } from "~/features/store/appSettingsSlice";
 import diceRollsReducer from "~/features/store/diceRollsSlice";
+import animationsReducer, {
+  animationsAdapter,
+  AnimationsState,
+} from "~/features/store/library/animationsSlice";
+import gradientsReducer, {
+  gradientsAdapter,
+  GradientsState,
+} from "~/features/store/library/gradientsSlice";
+import patternsReducer, {
+  patternsAdapter,
+  PatternsState,
+} from "~/features/store/library/patternsSlice";
+import profilesReducer, {
+  profilesAdapter,
+  ProfilesState,
+} from "~/features/store/library/profilesSlice";
+import templatesReducer, {
+  templatesAdapter,
+  TemplatesState,
+} from "~/features/store/library/templatesSlice";
 import pairedDiceReducer, {
   PairedDiceState,
 } from "~/features/store/pairedDiceSlice";
-import profilesLibraryReducer, {
-  LibraryState,
-} from "~/features/store/profilesLibrarySlice";
 
 function conf(key: string) {
   return {
@@ -32,17 +50,30 @@ function conf(key: string) {
 
 export const store = configureStore({
   reducer: {
+    // General app data
     appSettings: persistReducer<AppSettingsState>(
       conf("settings"),
       appSettingsReducer
     ),
+    // Dice data
     pairedDice: persistReducer<PairedDiceState>(
       conf("pairedDice"),
       pairedDiceReducer
     ),
-    profilesLibrary: persistReducer<LibraryState>(
-      conf("profilesLibrary"),
-      profilesLibraryReducer
+    // Library data
+    profiles: persistReducer<ProfilesState>(conf("profiles"), profilesReducer),
+    templates: persistReducer<TemplatesState>(
+      conf("templates"),
+      templatesReducer
+    ),
+    animations: persistReducer<AnimationsState>(
+      conf("animations"),
+      animationsReducer
+    ),
+    patterns: persistReducer<PatternsState>(conf("patterns"), patternsReducer),
+    gradients: persistReducer<GradientsState>(
+      conf("gradients"),
+      gradientsReducer
     ),
     // Transient data
     diceRolls: diceRollsReducer,
@@ -68,3 +99,28 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   unknown,
   Action<string>
 >;
+
+export type LibraryState = Pick<
+  RootState,
+  "profiles" | "templates" | "animations" | "patterns" | "gradients"
+>;
+
+export const profilesSelectors = profilesAdapter.getSelectors<RootState>(
+  (state) => state.profiles
+);
+
+export const templatesSelectors = templatesAdapter.getSelectors<RootState>(
+  (state) => state.templates
+);
+
+export const animationsSelectors = animationsAdapter.getSelectors<RootState>(
+  (state) => state.animations
+);
+
+export const patternsSelectors = patternsAdapter.getSelectors<RootState>(
+  (state) => state.patterns
+);
+
+export const gradientsSelectors = gradientsAdapter.getSelectors<RootState>(
+  (state) => state.gradients
+);
