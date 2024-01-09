@@ -1,24 +1,23 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { ThemeProvider } from "react-native-paper";
 
 import { AnimationsListScreen } from "./AnimationsListScreen";
 import { CreateAnimationScreen } from "./CreateAnimationScreen";
 import { EditAnimationScreen } from "./EditAnimationScreen";
 import { PickColorDesignScreen } from "./PickColorDesignScreen";
 
+import { NavigationRoot } from "~/components/NavigationRoot";
 import {
   AnimationsStackParamList,
   AnimationsStackProps,
   getStackNavigationOptions,
 } from "~/navigation";
-import { getRootScreenTheme } from "~/themes";
 
 const Stack = createNativeStackNavigator<AnimationsStackParamList>();
 
 export function AnimationsStack({ route }: AnimationsStackProps) {
   return (
-    <ThemeProvider theme={getRootScreenTheme(route.name)}>
+    <NavigationRoot screenName={route.name}>
       <Stack.Navigator screenOptions={getStackNavigationOptions()}>
         <Stack.Screen name="animationsList" component={AnimationsListScreen} />
         <Stack.Screen
@@ -37,6 +36,6 @@ export function AnimationsStack({ route }: AnimationsStackProps) {
           options={getStackNavigationOptions("bottom-sheet")}
         />
       </Stack.Navigator>
-    </ThemeProvider>
+    </NavigationRoot>
   );
 }

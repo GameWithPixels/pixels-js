@@ -1,23 +1,22 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { ThemeProvider } from "react-native-paper";
 
 import { CreateProfileScreen } from "./CreateProfileScreen";
 import { EditProfilesStack } from "./EditProfileStack";
 import { ProfilesListScreen } from "./ProfilesListScreen";
 
+import { NavigationRoot } from "~/components/NavigationRoot";
 import {
   ProfilesStackProps,
   ProfilesStackParamList,
   getStackNavigationOptions,
 } from "~/navigation";
-import { getRootScreenTheme } from "~/themes";
 
 const Stack = createNativeStackNavigator<ProfilesStackParamList>();
 
 export function ProfilesStack({ route }: ProfilesStackProps) {
   return (
-    <ThemeProvider theme={getRootScreenTheme(route.name)}>
+    <NavigationRoot screenName={route.name}>
       <Stack.Navigator screenOptions={getStackNavigationOptions()}>
         <Stack.Screen name="profilesList" component={ProfilesListScreen} />
         <Stack.Screen
@@ -34,6 +33,6 @@ export function ProfilesStack({ route }: ProfilesStackProps) {
           }}
         />
       </Stack.Navigator>
-    </ThemeProvider>
+    </NavigationRoot>
   );
 }

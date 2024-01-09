@@ -1,6 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { ThemeProvider } from "react-native-paper";
 
 import { FirmwareInfoScreen } from "./FirmwareInfoScreen";
 import { SettingsMenuScreen } from "./SettingsMenuScreen";
@@ -8,18 +7,18 @@ import { SupportScreen } from "./SupportScreen";
 import { SystemInfoScreen } from "./SystemInfoScreen";
 import { TurnOnDiceScreen } from "./TurnOnDiceScreen";
 
+import { NavigationRoot } from "~/components/NavigationRoot";
 import {
   getStackNavigationOptions,
   SettingsStackParamList,
   SettingsStackProps,
 } from "~/navigation";
-import { getRootScreenTheme } from "~/themes";
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
 export function SettingsStack({ route }: SettingsStackProps) {
   return (
-    <ThemeProvider theme={getRootScreenTheme(route.name)}>
+    <NavigationRoot screenName={route.name}>
       <Stack.Navigator screenOptions={getStackNavigationOptions()}>
         <Stack.Screen name="settingsMenu" component={SettingsMenuScreen} />
         <Stack.Screen name="systemInfo" component={SystemInfoScreen} />
@@ -27,6 +26,6 @@ export function SettingsStack({ route }: SettingsStackProps) {
         <Stack.Screen name="support" component={SupportScreen} />
         <Stack.Screen name="turnOnDice" component={TurnOnDiceScreen} />
       </Stack.Navigator>
-    </ThemeProvider>
+    </NavigationRoot>
   );
 }
