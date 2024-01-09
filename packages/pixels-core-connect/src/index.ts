@@ -9,9 +9,3 @@ export * from "./Pixel";
 export * from "./errors";
 export * from "./Messages";
 export * from "./DiceUtils";
-
-// TODO duplicated export
-export {
-  type PixelDieType,
-  PixelDieTypeValues,
-} from "@systemic-games/pixels-core-animation";
