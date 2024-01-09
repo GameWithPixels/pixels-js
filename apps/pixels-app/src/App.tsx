@@ -28,10 +28,11 @@ import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import * as Sentry from "sentry-expo";
 
-import { useAppSelector } from "./app/hooks";
+import { useAppDispatch, useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
+import { Library } from "./features/store";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -83,6 +84,20 @@ function getTabBarStyle<T extends object>(
   return routeName && routeName !== name ? { display: "none" } : undefined;
 }
 
+// TODO show splash screen until library is loaded
+function LoadDefaultLibrary() {
+  const hasTemplates = useAppSelector(
+    (state) => state.library.templates.ids.length > 0
+  );
+  const appDispatch = useAppDispatch();
+  React.useEffect(() => {
+    if (!hasTemplates) {
+      Library.dispatchReset(appDispatch);
+    }
+  }, [appDispatch, hasTemplates]);
+  return null;
+}
+
 function AppPage() {
   const showOnboarding = useAppSelector(
     (state) => state.appSettings.showOnboarding
@@ -90,6 +105,7 @@ function AppPage() {
   const theme = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <LoadDefaultLibrary />
       <Tab.Navigator
         tabBar={(props) => <TabBar {...props} />}
         screenOptions={{ headerShown: false }}

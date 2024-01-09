@@ -5,12 +5,12 @@ import { useAppSelector } from "~/app/hooks";
 import { readAnimation } from "~/features/store/profiles";
 
 export function useAnimationsList(): Readonly<Profiles.Animation>[] {
-  const library = useAppSelector((state) => state.profilesLibrary);
+  const library = useAppSelector((state) => state.library);
   return React.useMemo(
     () =>
       Object.values(library.animations)
-        .flat()
-        .map((a: Profiles.Animation) => readAnimation(a.uuid, library)),
+        .flatMap((v) => v.ids)
+        .map((uuid) => readAnimation(uuid, library)),
     [library]
   );
 }

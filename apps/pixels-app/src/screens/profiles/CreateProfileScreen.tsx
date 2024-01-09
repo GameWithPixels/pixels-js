@@ -1,4 +1,3 @@
-import { assert } from "@systemic-games/pixels-core-utils";
 import {
   PixelDieType,
   Profiles,
@@ -13,7 +12,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { GradientChip } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
 import { getProfileDieTypeLabel } from "~/descriptions";
-import { dieTypes, profileDieTypes } from "~/dieTypes";
+import { profileDieTypes } from "~/dieTypes";
 import { FactoryProfile } from "~/features/FactoryProfile";
 import generateUuid from "~/features/generateUuid";
 import {
@@ -22,23 +21,6 @@ import {
   useProfilesList,
 } from "~/hooks";
 import { CreateProfileScreenProps } from "~/navigation";
-
-const blankProfiles: readonly Readonly<Profiles.Profile>[] = dieTypes.map(
-  (dieType) =>
-    FactoryProfile.addAdvancedRules(
-      new Profiles.Profile({
-        name: "Blank",
-        description: "An empty profile",
-        dieType,
-      })
-    )
-);
-
-function getBlankProfile(dieType: PixelDieType) {
-  const profile = blankProfiles.find((p) => p.dieType === dieType);
-  assert(profile, `No blank profile for die type ${dieType}`);
-  return profile;
-}
 
 function DieTypesSelector({
   selected,
@@ -79,20 +61,34 @@ function CreateProfilePage({
   const { addProfile } = useEditProfilesList();
   const [dieType, setDieType] = React.useState<PixelDieType>("d20");
   const [profileName, setProfileName] = React.useState("");
+
+  const blankProfile = React.useMemo(
+    () =>
+      FactoryProfile.addAdvancedRules(
+        new Profiles.Profile({
+          name: "Blank",
+          description: "An empty profile",
+          dieType,
+        })
+      ) as Readonly<Profiles.Profile>,
+    [dieType]
+  );
   const templates = React.useMemo(
     () =>
-      [getBlankProfile(dieType)].concat(
+      [blankProfile].concat(
         profiles.filter((p) => !p.dieType || p.dieType === dieType)
       ),
-    [dieType, profiles]
+    [blankProfile, dieType, profiles]
   );
   const [selectedProfile, setSelectedProfile] = React.useState(templates[0]);
+
   const createProfile = () => {
     const newProfile = selectedProfile.duplicate(generateUuid());
     newProfile.name = profileName.trim();
-    newProfile.description = blankProfiles.includes(selectedProfile)
-      ? ""
-      : `Based on ${selectedProfile.name}`;
+    newProfile.description =
+      selectedProfile === blankProfile
+        ? ""
+        : `Based on ${selectedProfile.name}`;
     newProfile.dieType = dieType;
     addProfile(newProfile);
     navigation.pop();
@@ -134,7 +130,7 @@ function CreateProfilePage({
         selected={dieType}
         onSelect={(dt) => {
           setDieType(dt);
-          setSelectedProfile(getBlankProfile(dt));
+          setSelectedProfile(templates[0]);
         }}
       />
       <Text variant="titleMedium" style={{ marginTop: 10 }}>

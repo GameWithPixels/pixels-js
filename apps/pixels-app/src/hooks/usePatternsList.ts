@@ -5,9 +5,10 @@ import { useAppSelector } from "~/app/hooks";
 import { readPattern } from "~/features/store/profiles";
 
 export function usePatternsList(): Readonly<Profiles.Pattern>[] {
-  const library = useAppSelector((state) => state.profilesLibrary);
+  const library = useAppSelector((state) => state.library);
   return React.useMemo(
-    () => library.patterns.map((p) => readPattern(p.uuid, library)),
+    () =>
+      library.patterns.ids.map((uuid) => readPattern(uuid as string, library)),
     [library]
   );
 }

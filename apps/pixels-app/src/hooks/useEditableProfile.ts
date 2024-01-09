@@ -1,13 +1,15 @@
 import { assert } from "@systemic-games/pixels-core-utils";
-import { Serializable } from "@systemic-games/pixels-edit-animation";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  Profiles,
+  Serializable,
+} from "@systemic-games/react-native-pixels-connect";
 import { autorun, runInAction } from "mobx";
 
 import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
 import { FactoryProfile } from "~/features/FactoryProfile";
+import { Library } from "~/features/store";
 import { readProfile } from "~/features/store/profiles";
-import { updateProfile } from "~/features/store/profilesLibrarySlice";
 
 const editableProfiles = new Map<
   string,
@@ -18,11 +20,7 @@ const editableProfiles = new Map<
 >();
 
 function create(profileUuid: string): Profiles.Profile {
-  const profile = readProfile(
-    profileUuid,
-    store.getState().profilesLibrary,
-    true
-  );
+  const profile = readProfile(profileUuid, store.getState().library, true);
   let firstAutorun = true;
   const onChange = autorun(() => {
     if (firstAutorun) {
@@ -39,13 +37,7 @@ function create(profileUuid: string): Profiles.Profile {
 }
 
 export function getEditableProfile(profileUuid: string): Profiles.Profile {
-  assert(
-    !FactoryProfile.isFactory(profileUuid),
-    "Can't edit factory profile"
-  );
-  // if (isDefaultProfile(profileUuid)) {
-  //   return getDefaultProfileByUuid(profileUuid);
-  // }
+  assert(!FactoryProfile.isFactory(profileUuid), "Can't edit factory profile");
   return editableProfiles.get(profileUuid)?.profile ?? create(profileUuid);
 }
 
@@ -59,7 +51,7 @@ export function useCommitEditableProfile(): {
       const profile = editableProfiles.get(profileUuid)?.profile;
       if (profile) {
         runInAction(() => (profile.lastChanged = new Date()));
-        appDispatch(updateProfile(Serializable.fromProfile(profile)));
+        appDispatch(Library.Profiles.update(Serializable.fromProfile(profile)));
         editableProfiles.delete(profileUuid);
       }
     },

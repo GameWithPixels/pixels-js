@@ -4,21 +4,23 @@ import {
   combineFlags,
   keysToValues,
 } from "@systemic-games/pixels-core-utils";
-import { Serializable } from "@systemic-games/pixels-edit-animation";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  Profiles,
+  Serializable,
+} from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
 import { readAnimation } from "./animations";
 import { readAudioClip } from "./audioClips";
-import { LibraryState } from "../profilesLibrarySlice";
-import { storeLog } from "../storeLog";
+import { log } from "./log";
 
+import { LibraryState } from "~/app/store";
 import { makeObservable } from "~/features/makeObservable";
 
 const loadedProfiles = new Map<string, Profiles.Profile>();
 
 function create(uuid: string, skipAdd: boolean): Profiles.Profile {
-  storeLog("create", "profile", uuid);
+  log("create", "profile", uuid);
   const profile = makeObservable(new Profiles.Profile({ uuid }));
   if (!skipAdd) {
     loadedProfiles.set(uuid, profile);
@@ -39,7 +41,9 @@ export function readProfile(
 }
 
 function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
-  const profileData = library.profiles.find((p) => p.uuid === profile.uuid);
+  const profileData =
+    library.profiles.entities[profile.uuid] ??
+    library.templates.entities[profile.uuid];
   assert(profileData, `Profile ${profile.uuid} not found`);
   profile.name = profileData.name;
   profile.description = profileData.description;
