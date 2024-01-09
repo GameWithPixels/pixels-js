@@ -1,24 +1,23 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { ThemeProvider } from "react-native-paper";
 
 import { DiceListScreen } from "./DiceListScreen";
 import { DieDetailsScreen } from "./DieDetailsScreen";
 import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
 
+import { NavigationRoot } from "~/components/NavigationRoot";
 import {
   getStackNavigationOptions,
   HomeStackParamList,
   HomeStackProps,
 } from "~/navigation";
-import { getRootScreenTheme } from "~/themes";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 export function HomeStack({ route }: HomeStackProps) {
   return (
-    <ThemeProvider theme={getRootScreenTheme(route.name)}>
+    <NavigationRoot screenName={route.name}>
       <Stack.Navigator screenOptions={getStackNavigationOptions()}>
         <Stack.Screen name="diceList" component={DiceListScreen} />
         <Stack.Screen
@@ -40,6 +39,6 @@ export function HomeStack({ route }: HomeStackProps) {
           options={getStackNavigationOptions("bottom-sheet")}
         />
       </Stack.Navigator>
-    </ThemeProvider>
+    </NavigationRoot>
   );
 }

@@ -51,6 +51,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
+import { NavigationRoot } from "~/components/NavigationRoot";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TurnOnDiceHelp } from "~/components/TunOnDiceHelp";
 import {
@@ -67,7 +68,7 @@ import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { useDfuBundle } from "~/hooks";
 import { OnboardingScreenProps } from "~/navigation";
-import { getBottomSheetBackgroundStyle, getRootScreenTheme } from "~/themes";
+import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function diceStr(count: number): string {
   return count <= 1 ? "die" : "dice";
@@ -884,10 +885,10 @@ function OnboardingPage({
 
 export function OnboardingScreen({ route, navigation }: OnboardingScreenProps) {
   return (
-    <ThemeProvider theme={getRootScreenTheme(route.name)}>
+    <NavigationRoot screenName={route.name}>
       <AppBackground>
         <OnboardingPage navigation={navigation} />
       </AppBackground>
-    </ThemeProvider>
+    </NavigationRoot>
   );
 }
