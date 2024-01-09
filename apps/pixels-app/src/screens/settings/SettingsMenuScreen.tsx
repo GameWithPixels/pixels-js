@@ -1,5 +1,6 @@
 import * as Updates from "expo-updates";
-import { ScrollView } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
+import { Text } from "react-native-paper";
 
 import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
@@ -31,13 +32,57 @@ const pages = [
   // "Export Logs",
   // "Export Settings",
   // "Import Settings",
+  // "Shop",
   "How To Turn On Your Dice",
   "Support",
+  "Privacy Policy",
   "App & System Information",
   "Dice Software Information",
   "Reset App Settings",
   "Check for Update",
 ] as const;
+
+type PageName = (typeof pages)[number];
+
+function MenuSection({
+  title,
+  start,
+  end,
+  supPagesCount,
+  openPage,
+}: {
+  title: string;
+  start: number;
+  end?: number;
+  supPagesCount: number;
+
+  openPage: (page: PageName) => void;
+}) {
+  return (
+    <>
+      <Text
+        variant="titleLarge"
+        style={{ alignSelf: "center" }}
+        children={title}
+      />
+      <View>
+        {pages.slice(start, end).map((p, i) => (
+          <MenuButton
+            key={p}
+            iconSize={i >= supPagesCount ? 0 : undefined}
+            noTopBorder={i > 0}
+            squaredTopBorder={i > 0}
+            squaredBottomBorder={i < (end ?? pages.length) - start - 1}
+            style={{ backgroundColor: "transparent" }}
+            onPress={() => openPage(p)}
+          >
+            {p}
+          </MenuButton>
+        ))}
+      </View>
+    </>
+  );
+}
 
 function SettingsMenuPage({
   navigation,
@@ -52,13 +97,16 @@ function SettingsMenuPage({
     appDispatch(resetProfilesToDefault());
     navigation.navigate("onboarding");
   });
-  const openPage = (page: (typeof pages)[number]) => {
+  const openPage = (page: PageName) => {
     switch (page) {
       case "How To Turn On Your Dice":
         navigation.navigate("turnOnDice");
         break;
       case "Support":
         navigation.navigate("support");
+        break;
+      case "Privacy Policy":
+        Linking.openURL("https://gamewithpixels.com/privacy-policy/");
         break;
       case "App & System Information":
         navigation.navigate("systemInfo");
@@ -77,21 +125,25 @@ function SettingsMenuPage({
   return (
     <ScrollView
       style={{ height: "100%" }}
-      contentContainerStyle={{ paddingVertical: 20, paddingHorizontal: 10 }}
+      contentContainerStyle={{
+        paddingVertical: 20,
+        paddingHorizontal: 10,
+        gap: 20,
+      }}
     >
-      {pages.map((p, i) => (
-        <MenuButton
-          key={p}
-          iconSize={i >= 4 ? 0 : undefined}
-          noTopBorder={i > 0}
-          squaredTopBorder={i > 0}
-          squaredBottomBorder={i < pages.length - 1}
-          style={{ backgroundColor: "transparent" }}
-          onPress={() => openPage(p)}
-        >
-          {p}
-        </MenuButton>
-      ))}
+      <MenuSection
+        title="Help"
+        start={0}
+        end={3}
+        supPagesCount={2}
+        openPage={openPage}
+      />
+      <MenuSection
+        title="Settings"
+        start={3}
+        supPagesCount={2}
+        openPage={openPage}
+      />
     </ScrollView>
   );
 }
