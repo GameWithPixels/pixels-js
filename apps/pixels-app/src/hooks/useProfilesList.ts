@@ -9,17 +9,23 @@ import { Library } from "~/features/store";
 import { readProfile } from "~/features/store/profiles";
 
 // Returns a list of observable profiles from Redux store
-export function useProfilesList(opt?: {
-  skipFactory?: boolean;
-}): Readonly<Profiles.Profile>[] {
+export function useProfilesList(): Readonly<Profiles.Profile>[] {
   const library = useAppSelector((state) => state.library);
-  const skipFactory = opt?.skipFactory ?? false;
-  return React.useMemo(() => {
-    const profilesUuids = skipFactory
-      ? library.profiles.ids
-      : library.templates.ids.concat(library.profiles.ids);
-    return profilesUuids.map((uuid) => readProfile(uuid as string, library));
-  }, [library, skipFactory]);
+  return React.useMemo(
+    () =>
+      library.profiles.ids.map((uuid) => readProfile(uuid as string, library)),
+    [library]
+  );
+}
+
+// TODO no need to be observable
+export function useTemplatesList(): Readonly<Profiles.Profile>[] {
+  const library = useAppSelector((state) => state.library);
+  return React.useMemo(
+    () =>
+      library.templates.ids.map((uuid) => readProfile(uuid as string, library)),
+    [library]
+  );
 }
 
 export function useEditProfilesList(): {

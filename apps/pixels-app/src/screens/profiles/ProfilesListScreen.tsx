@@ -154,7 +154,7 @@ function ProfilesListPage({
 }: {
   navigation: ProfilesListScreenProps["navigation"];
 }) {
-  const profiles = useProfilesList({ skipFactory: true });
+  const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
   const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
   const sortMode = useAppSelector(
