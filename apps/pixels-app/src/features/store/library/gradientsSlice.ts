@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
+import { LibraryData } from "./LibraryData";
 import { log } from "./log";
 
 export type GradientsState = EntityState<Serializable.GradientData>;
@@ -18,7 +19,7 @@ const gradientsSlice = createSlice({
   name: "gradients",
   initialState: gradientsAdapter.getInitialState(),
   reducers: {
-    reset(_, action: PayloadAction<Serializable.LibraryData>) {
+    reset(_, action: PayloadAction<LibraryData>) {
       const state = gradientsAdapter.getInitialState();
       log("reset", "gradient", "count=" + action.payload.gradients.length);
       return gradientsAdapter.addMany(state, action.payload.gradients);

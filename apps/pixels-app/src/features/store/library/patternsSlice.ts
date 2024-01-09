@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
+import { LibraryData } from "./LibraryData";
 import { log } from "./log";
 
 export type PatternsState = EntityState<Serializable.PatternData>;
@@ -18,7 +19,7 @@ const patternsSlice = createSlice({
   name: "patterns",
   initialState: patternsAdapter.getInitialState(),
   reducers: {
-    reset(_, action: PayloadAction<Serializable.LibraryData>) {
+    reset(_, action: PayloadAction<LibraryData>) {
       const state = patternsAdapter.getInitialState();
       log("reset", "pattern", "count=" + action.payload.patterns.length);
       return patternsAdapter.addMany(state, action.payload.patterns);

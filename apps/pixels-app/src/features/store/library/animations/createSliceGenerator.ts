@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
+import { LibraryData } from "../LibraryData";
 import { log } from "../log";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,7 +55,7 @@ export function createSliceGenerator<T extends Serializable.AnimationData>(
     name,
     initialState: animationsAdapter.getInitialState() as AnimationsState<T>,
     reducers: {
-      reset(_, action: PayloadAction<Serializable.LibraryData>) {
+      reset(_, action: PayloadAction<LibraryData>) {
         const state = animationsAdapter.getInitialState();
         const animations = action.payload.animations[name];
         log("reset", "animation", "count=" + animations.length);

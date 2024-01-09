@@ -5,14 +5,23 @@ import {
   DiceUtils,
   getFaceMask,
   PixelDieType,
-  PixelDieTypeValues,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
-// List of valid dice types
-const dieTypes = (Object.keys(PixelDieTypeValues) as PixelDieType[]).filter(
-  (d) => d !== "unknown"
-);
+// Stable list of dice types, the order is important has
+// it matches the order of the profiles and animations UUIDs
+// TODO switch to a map with the UUIDs as values
+const dieTypesStable: readonly PixelDieType[] = [
+  "d4",
+  "d6",
+  "d8",
+  "d10",
+  "d00",
+  "d12",
+  "d20",
+  "d6pipped",
+  "d6fudge",
+] as const;
 
 const rolledUuid = "39ea1031-aa66-429e-b9e1-25c6f6994b17";
 const helloUuid = "1ab1bf75-dcf7-4302-979b-764323ce5037";
@@ -32,7 +41,7 @@ const profilesUuids = [
   "99f2b7d7-fbd1-47d9-b7a3-a4e90d806ff9",
 ] as const;
 assert(
-  profilesUuids.length === dieTypes.length,
+  profilesUuids.length === dieTypesStable.length,
   "Unexpected profilesUuids length"
 );
 
@@ -48,7 +57,7 @@ const rollingUuids = [
   "71dd5254-9a32-40f8-874c-74762ae4531a",
 ] as const;
 assert(
-  rollingUuids.length === dieTypes.length,
+  rollingUuids.length === dieTypesStable.length,
   "Unexpected rollingUuids length"
 );
 
@@ -64,7 +73,7 @@ const batteryDoneUuids = [
   "bf85fd4c-976f-4e76-ac8f-dffe1796fa85",
 ] as const;
 assert(
-  batteryDoneUuids.length === dieTypes.length,
+  batteryDoneUuids.length === dieTypesStable.length,
   "Unexpected batteryDoneUuids length"
 );
 
@@ -80,7 +89,7 @@ const batteryChargingUuids = [
   "40f6174b-f727-4a7a-8973-631d60ac80c9",
 ] as const;
 assert(
-  batteryChargingUuids.length === dieTypes.length,
+  batteryChargingUuids.length === dieTypesStable.length,
   "Unexpected batteryChargingUuids length"
 );
 
@@ -96,12 +105,12 @@ const batteryErrorUuids = [
   "fbf1fc13-f707-4265-a696-35c92105690a",
 ] as const;
 assert(
-  batteryErrorUuids.length === dieTypes.length,
+  batteryErrorUuids.length === dieTypesStable.length,
   "Unexpected batteryErrorUuids length"
 );
 
 export function getFactoryProfileUuid(dieType: PixelDieType): string {
-  return profilesUuids[dieTypes.indexOf(dieType)];
+  return profilesUuids[dieTypesStable.indexOf(dieType)];
 }
 
 export function isFactoryProfileUuid(uuid: string): boolean {
@@ -127,7 +136,7 @@ export function getFactoryAnimationUuid(
     case "hello":
       return helloUuid;
     case "rolling":
-      return rollingUuids[dieTypes.indexOf(dieType)];
+      return rollingUuids[dieTypesStable.indexOf(dieType)];
     case "rolled":
       return rolledUuid;
     case "connection":
@@ -135,13 +144,13 @@ export function getFactoryAnimationUuid(
     case "batteryLow":
       return batteryLowUuid;
     case "batteryCharging":
-      return batteryChargingUuids[dieTypes.indexOf(dieType)];
+      return batteryChargingUuids[dieTypesStable.indexOf(dieType)];
     case "batteryDone":
-      return batteryDoneUuids[dieTypes.indexOf(dieType)];
+      return batteryDoneUuids[dieTypesStable.indexOf(dieType)];
     case "batteryBadCharging":
       return batteryBadChargingUuid;
     case "batteryError":
-      return batteryErrorUuids[dieTypes.indexOf(dieType)];
+      return batteryErrorUuids[dieTypesStable.indexOf(dieType)];
   }
 }
 
@@ -339,8 +348,8 @@ export function createFactoryProfiles(
 ): Profiles.Profile[] {
   const profiles: Profiles.Profile[] = [];
 
-  for (let i = 0; i < dieTypes.length; ++i) {
-    const dieType = dieTypes[i];
+  for (let i = 0; i < dieTypesStable.length; ++i) {
+    const dieType = dieTypesStable[i];
     const profile = new Profiles.Profile({
       uuid: profilesUuids[i],
       name: "Factory Profile",
@@ -425,8 +434,8 @@ export function createFactoryAnimations(): Profiles.Animation[] {
     })
   );
 
-  for (let i = 0; i < dieTypes.length; ++i) {
-    const dieType = dieTypes[i];
+  for (let i = 0; i < dieTypesStable.length; ++i) {
+    const dieType = dieTypesStable[i];
     const topFace = getFaceMask(DiceUtils.getTopFace(dieType), dieType);
 
     animations.push(

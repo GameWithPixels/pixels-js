@@ -17,6 +17,6 @@ export function dispatchReset(appDispatch: AppDispatch): void {
   appDispatch(Animations.GradientPattern.reset(library));
   appDispatch(Animations.Gradient.reset(library));
   appDispatch(Animations.Noise.reset(library));
-  appDispatch(Profiles.reset(library));
   appDispatch(Templates.reset(library));
+  appDispatch(Profiles.reset(library));
 }

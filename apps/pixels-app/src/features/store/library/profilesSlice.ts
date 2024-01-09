@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
+import { LibraryData } from "./LibraryData";
 import { log } from "./log";
 
 export type ProfilesState = EntityState<Serializable.ProfileData>;
@@ -18,8 +19,10 @@ const profilesSlice = createSlice({
   name: "profiles",
   initialState: profilesAdapter.getInitialState(),
   reducers: {
-    reset(_, _action: PayloadAction<Serializable.LibraryData>) {
-      return profilesAdapter.getInitialState();
+    reset(_, action: PayloadAction<LibraryData>) {
+      const state = profilesAdapter.getInitialState();
+      log("reset", "profile", "count=" + action.payload.profiles.length);
+      return profilesAdapter.addMany(state, action.payload.profiles);
     },
 
     add(state, action: PayloadAction<Serializable.ProfileData>) {
@@ -51,24 +54,9 @@ const profilesSlice = createSlice({
       //   console.warn(`Redux: No profile with uuid ${uuid} to remove`);
       // }
     },
-
-    setHash(state, action: PayloadAction<{ uuid: string; hash: number }>) {
-      const { uuid, hash } = action.payload;
-      profilesAdapter.updateOne(state, {
-        id: uuid,
-        changes: { hash },
-      });
-      log("update", "profile", uuid, "hash");
-      // const profile = state.profiles.find((p) => p.uuid === uuid);
-      // if (profile) {
-      //   profile.hash = hash;
-      // } else {
-      //   console.warn(`Redux: No profile with uuid ${uuid} for setting hash`);
-      // }
-    },
   },
 });
 
-export const { reset, add, update, remove, setHash } = profilesSlice.actions;
+export const { reset, add, update, remove } = profilesSlice.actions;
 
 export default profilesSlice.reducer;

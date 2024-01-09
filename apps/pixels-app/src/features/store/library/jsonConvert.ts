@@ -21,6 +21,8 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import { fromByteArray } from "base64-js";
 
+import { LibraryData } from "./LibraryData";
+
 import generateUuid from "~/features/generateUuid";
 
 const regexExp =
@@ -320,7 +322,7 @@ function toActions(
   });
 }
 
-const defaultCreationTime = new Date(2023, 0, 1).getTime();
+const defaultCreationTime = new Date(2024, 0, 1).getTime();
 
 function toProfile(
   profile: Json.Profile,
@@ -356,19 +358,20 @@ function toProfile(
   };
 }
 
-export function jsonConvert(dataSet: Json.DataSet): Serializable.LibraryData {
+export function jsonConvert(dataSet: Json.DataSet): LibraryData {
   const patterns = dataSet.patterns?.map(toPattern) ?? [];
   const { animations, animationUuids, gradients } = toAnimationsAndGradients(
     dataSet.animations,
     patterns
   );
   const { audioClips, audioClipsUuidsMap } = toAudioClips(dataSet.audioClips);
-  const profiles =
+  const templates =
     dataSet.behaviors?.map((p) =>
       toProfile(p, animationUuids, audioClipsUuidsMap)
     ) ?? [];
   return {
-    profiles,
+    profiles: [],
+    templates,
     animations,
     patterns,
     gradients,

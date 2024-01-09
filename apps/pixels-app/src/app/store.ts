@@ -39,12 +39,17 @@ const rootReducer = combineReducers({
   dfuFiles: dfuFilesReducer,
 });
 
+const blacklist: readonly (keyof RootState)[] = [
+  "diceRolls",
+  "dfuFiles",
+] as const;
+
 export const store = configureStore({
   reducer: persistReducer<RootState>(
     {
       key: "root",
       storage: AsyncStorage,
-      blacklist: ["diceRolls", "dfuFiles"], // TODO type this with RootState keys
+      blacklist: [...blacklist] as string[],
       // stateReconciler: (
       //   inbound: RootState,
       //   original: RootState,
