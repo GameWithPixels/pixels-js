@@ -2,8 +2,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
+  BottomSheetScrollView,
   BottomSheetTextInput,
-  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
@@ -378,7 +378,7 @@ export const ConfigureActionBottomSheet = observer(
     }, [visible]);
 
     const theme = useTheme();
-    const paddingBottom = useBottomSheetPadding();
+    const paddingBottom = useBottomSheetPadding(15);
     return (
       <BottomSheetModal
         ref={sheetRef}
@@ -401,13 +401,26 @@ export const ConfigureActionBottomSheet = observer(
         )}
       >
         <ThemeProvider theme={theme}>
-          <BottomSheetView
-            style={{
+          <BottomSheetScrollView
+            contentContainerStyle={{
               paddingHorizontal: 20,
               paddingBottom,
               gap: 10,
             }}
           >
+            <Text variant="titleMedium" style={{ alignSelf: "center" }}>
+              Configure Rule Action
+            </Text>
+            <Text
+              style={{
+                alignSelf: "center",
+                marginTop: -8,
+                marginBottom: -10,
+                color: theme.colors.onSurfaceDisabled,
+              }}
+            >
+              Slide down to close
+            </Text>
             {condition.type === "rolled" && (
               <ConfigureRolledCondition
                 condition={condition as Profiles.ConditionRolled}
@@ -444,7 +457,7 @@ export const ConfigureActionBottomSheet = observer(
                 condition={condition as Profiles.ConditionBattery}
               />
             ) : null}
-          </BottomSheetView>
+          </BottomSheetScrollView>
         </ThemeProvider>
       </BottomSheetModal>
     );
