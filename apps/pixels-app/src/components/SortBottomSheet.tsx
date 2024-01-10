@@ -9,6 +9,7 @@ import { useTheme, Text, ThemeProvider } from "react-native-paper";
 
 import { SelectionButton } from "./buttons";
 
+import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export type SortBottomSheetSortIcon = (props: {
@@ -43,6 +44,7 @@ export function SortBottomSheet({
   onDismiss: () => void;
 }) {
   const sheetRef = React.useRef<BottomSheetModal>(null);
+  const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
@@ -57,6 +59,7 @@ export function SortBottomSheet({
       ref={sheetRef}
       enableDynamicSizing
       onDismiss={onDismiss}
+      onChange={onChange}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

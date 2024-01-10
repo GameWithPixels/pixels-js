@@ -8,12 +8,13 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { Platform } from "react-native";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { AnimationsGrid } from "~/components/animation";
+import { androidBottomSheetSliderFix } from "~/fixes";
 import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
+import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 const categories: Profiles.AnimationCategory[] = [
@@ -54,6 +55,7 @@ export function PickAnimationBottomSheet({
   );
   const [tab, setTab] = React.useState(tabsNames[0]);
   const sheetRef = React.useRef<BottomSheetModal>(null);
+  const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
@@ -68,10 +70,9 @@ export function PickAnimationBottomSheet({
       ref={sheetRef}
       stackBehavior="push"
       snapPoints={["92%"]}
-      activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
-      failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
       backgroundStyle={getBottomSheetBackgroundStyle()}
       onDismiss={onDismiss}
+      onChange={onChange}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           appearsOnIndex={0}
@@ -80,6 +81,7 @@ export function PickAnimationBottomSheet({
           {...props}
         />
       )}
+      {...androidBottomSheetSliderFix}
     >
       <ThemeProvider theme={theme}>
         <BottomSheetScrollView

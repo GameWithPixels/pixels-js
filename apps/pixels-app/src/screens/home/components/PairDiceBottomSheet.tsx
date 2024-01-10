@@ -19,6 +19,7 @@ import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { useBottomSheetPadding } from "~/hooks";
+import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PairDiceBottomSheet({
@@ -31,6 +32,7 @@ export function PairDiceBottomSheet({
   onDismiss: (pixels?: ScannedPixel[]) => void;
 }) {
   const sheetRef = React.useRef<BottomSheetModal>(null);
+  const onChange = useBottomSheetBackHandler(sheetRef);
   const [selection, setSelection] = React.useState<ScannedPixel[]>([]);
   React.useEffect(() => {
     if (visible) {
@@ -57,6 +59,7 @@ export function PairDiceBottomSheet({
       ref={sheetRef}
       snapPoints={["50%"]}
       onDismiss={onDismiss}
+      onChange={onChange}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

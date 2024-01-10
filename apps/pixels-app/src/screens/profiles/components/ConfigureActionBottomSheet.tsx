@@ -31,6 +31,7 @@ import { SliderWithValue } from "~/components/SliderWithTitle";
 import { GradientButton } from "~/components/buttons";
 import { TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
+import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function TextInput({
@@ -367,6 +368,7 @@ export const ConfigureActionBottomSheet = observer(
     onDismiss: () => void;
   }) {
     const sheetRef = React.useRef<BottomSheetModal>(null);
+    const onChange = useBottomSheetBackHandler(sheetRef);
     React.useEffect(() => {
       if (visible) {
         sheetRef.current?.present();
@@ -382,6 +384,7 @@ export const ConfigureActionBottomSheet = observer(
         ref={sheetRef}
         enableDynamicSizing
         onDismiss={onDismiss}
+        onChange={onChange}
         activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
         failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
         keyboardBehavior={Platform.OS === "ios" ? "interactive" : "fillParent"}

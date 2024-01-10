@@ -19,6 +19,7 @@ import { DieWireframe } from "~/components/icons";
 import { getDieTypeLabel } from "~/features/profiles";
 import { notEmpty } from "~/features/utils";
 import { useBottomSheetPadding } from "~/hooks";
+import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PickDieBottomSheet({
@@ -31,6 +32,7 @@ export function PickDieBottomSheet({
   onDismiss: (pixel?: Pixel) => void;
 }) {
   const sheetRef = React.useRef<BottomSheetModal>(null);
+  const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
@@ -65,6 +67,7 @@ export function PickDieBottomSheet({
       ref={sheetRef}
       snapPoints={["50%"]}
       onDismiss={onDismiss}
+      onChange={onChange}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

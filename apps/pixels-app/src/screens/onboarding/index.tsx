@@ -67,6 +67,7 @@ import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { getNativeErrorMessage } from "~/features/utils";
 import { useDfuBundle } from "~/hooks";
+import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { OnboardingScreenProps } from "~/navigation";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -316,6 +317,7 @@ function HelpTurnOnDiceModal({
   visible: boolean;
 }) {
   const sheetRef = React.useRef<BottomSheetModal>(null);
+  const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
@@ -331,6 +333,7 @@ function HelpTurnOnDiceModal({
       ref={sheetRef}
       snapPoints={["92%"]}
       onDismiss={onDismiss}
+      onChange={onChange}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
