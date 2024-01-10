@@ -28,11 +28,11 @@ import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import * as Sentry from "sentry-expo";
 
-import { useAppDispatch, useAppSelector } from "./app/hooks";
+import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
+import { LoadDefaultLibrary } from "./components/LoadDefaultLibrary";
 import { TabBar } from "./components/TabBar";
-import { Library } from "./features/store";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -58,6 +58,7 @@ if (!__DEV__) {
   // Use Sentry for crash reporting
   Sentry.init({
     dsn: "https://0a1c5f5b8bc2d93b005d30e6254e0681@o1258420.ingest.sentry.io/4506415846588416",
+    // DEV dsn: "https://4b7872190c6f2fb2c5ae87721f0e550d@o1258420.ingest.sentry.io/4506547864666112"
     // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
     // We recommend adjusting this value in production.
     tracesSampleRate: 1.0,
@@ -82,20 +83,6 @@ function getTabBarStyle<T extends object>(
         undefined
       : (getFocusedRouteNameFromRoute(route) as keyof HomeStackParamList);
   return routeName && routeName !== name ? { display: "none" } : undefined;
-}
-
-// TODO show splash screen until library is loaded
-function LoadDefaultLibrary() {
-  const hasTemplates = useAppSelector(
-    (state) => state.library.templates.ids.length > 0
-  );
-  const appDispatch = useAppDispatch();
-  React.useEffect(() => {
-    if (!hasTemplates) {
-      Library.dispatchReset(appDispatch);
-    }
-  }, [appDispatch, hasTemplates]);
-  return null;
 }
 
 function AppPage() {
