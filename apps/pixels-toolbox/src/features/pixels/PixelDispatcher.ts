@@ -634,13 +634,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.fixedRainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.fixedRainbow,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -654,13 +650,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.fixedRainbowD4,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.fixedRainbowD4,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -675,17 +667,13 @@ class PixelDispatcher
                 flags: FaceCompareFlagsValues.less,
                 face: 21,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: new EditAnimationRainbow({
-                      duration: 1,
-                      faces: 0xffff,
-                      count: 1,
-                    }),
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: new EditAnimationRainbow({
+                  duration: 1,
+                  faces: 0xffff,
+                  count: 1,
+                }),
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -708,8 +696,8 @@ class PixelDispatcher
     const av = !isDiff
       ? "none"
       : bundle.date > this.firmwareDate
-      ? "upgrade"
-      : "downgrade";
+        ? "upgrade"
+        : "downgrade";
     if (this._hasAvailableDFU !== av) {
       this._hasAvailableDFU = av;
       this._evEmitter.emit("hasAvailableDFU", av);

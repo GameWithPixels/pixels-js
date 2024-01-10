@@ -164,29 +164,24 @@ function addFactoryBaseRules(
       new Profiles.ConditionHelloGoodbye({
         flags: Profiles.HelloGoodbyeFlagsValues.hello,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("hello"),
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("hello"),
+        face: Constants.currentFaceIndex,
+        loopCount: 1,
+      })
     )
   );
 
   // Rolling
   profile.rules.push(
-    new Profiles.Rule(new Profiles.ConditionRolling({ recheckAfter: 0.5 }), {
-      actions: [
-        new Profiles.ActionPlayAnimation({
-          animation: getAnimation("rolling"),
-          face: Constants.currentFaceIndex,
-          loopCount: 1,
-        }),
-      ],
-    })
+    new Profiles.Rule(
+      new Profiles.ConditionRolling({ recheckAfter: 0.5 }),
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("rolling"),
+        face: Constants.currentFaceIndex,
+        loopCount: 1,
+      })
+    )
   );
 
   // OnFace
@@ -195,15 +190,11 @@ function addFactoryBaseRules(
       new Profiles.ConditionRolled({
         faces: DiceUtils.getDieFaces(profile.dieType),
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("rolled"),
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("rolled"),
+        face: Constants.currentFaceIndex,
+        loopCount: 1,
+      })
     )
   );
 }
@@ -220,15 +211,11 @@ export function addFactoryAdvancedRules(
       new Profiles.ConditionConnection({
         flags: Profiles.ConnectionFlagsValues.connected,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("connection"),
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("connection"),
+        face: Constants.currentFaceIndex,
+        loopCount: 1,
+      })
     )
   );
   profile.rules.push(
@@ -236,15 +223,11 @@ export function addFactoryAdvancedRules(
       new Profiles.ConditionConnection({
         flags: Profiles.ConnectionFlagsValues.disconnected,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("connection"),
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("connection"),
+        face: Constants.currentFaceIndex,
+        loopCount: 1,
+      })
     )
   );
 
@@ -255,15 +238,11 @@ export function addFactoryAdvancedRules(
         flags: Profiles.BatteryFlagsValues.low,
         recheckAfter: 30,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("batteryLow"),
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("batteryLow"),
+        face: Constants.currentFaceIndex,
+        loopCount: 1,
+      })
     )
   );
 
@@ -274,15 +253,11 @@ export function addFactoryAdvancedRules(
         flags: Profiles.BatteryFlagsValues.charging,
         recheckAfter: 5,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("batteryCharging"),
-            face: topFace,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("batteryCharging"),
+        face: topFace,
+        loopCount: 1,
+      })
     )
   );
 
@@ -293,15 +268,11 @@ export function addFactoryAdvancedRules(
         flags: Profiles.BatteryFlagsValues.done,
         recheckAfter: 5,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("batteryDone"),
-            face: topFace,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("batteryDone"),
+        face: topFace,
+        loopCount: 1,
+      })
     )
   );
 
@@ -311,15 +282,11 @@ export function addFactoryAdvancedRules(
       new Profiles.ConditionBattery({
         flags: Profiles.BatteryFlagsValues.badCharging,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("batteryBadCharging"),
-            face: topFace,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("batteryBadCharging"),
+        face: topFace,
+        loopCount: 1,
+      })
     )
   );
 
@@ -330,15 +297,11 @@ export function addFactoryAdvancedRules(
         flags: Profiles.BatteryFlagsValues.error,
         recheckAfter: 1.5,
       }),
-      {
-        actions: [
-          new Profiles.ActionPlayAnimation({
-            animation: getAnimation("batteryError"),
-            face: topFace,
-            loopCount: 1,
-          }),
-        ],
-      }
+      new Profiles.ActionPlayAnimation({
+        animation: getAnimation("batteryError"),
+        face: topFace,
+        loopCount: 1,
+      })
     )
   );
 }

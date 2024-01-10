@@ -164,9 +164,10 @@ export function toRules(
   return (
     validRules?.map(
       (r) =>
-        new EditRule(toCondition(r.condition), {
-          actions: toActions(animations, audioClips, r.actions),
-        })
+        new EditRule(
+          toCondition(r.condition),
+          toActions(animations, audioClips, r.actions)
+        )
     ) ?? []
   );
 }
