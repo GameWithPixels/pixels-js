@@ -5,6 +5,7 @@ import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
 import { ProfilePicker } from "~/components/ProfilePicker";
+import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 // export function PickProfileBottomSheet({
@@ -39,6 +40,7 @@ export function PickProfileBottomSheet({
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
+  const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
@@ -54,6 +56,7 @@ export function PickProfileBottomSheet({
       snapPoints={["50%", "92%"]}
       index={1}
       onDismiss={onDismiss}
+      onChange={onChange}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
