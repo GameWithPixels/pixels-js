@@ -3,6 +3,7 @@ import {
   Action,
   combineReducers,
   configureStore,
+  Reducer,
   ThunkAction,
 } from "@reduxjs/toolkit";
 import {
@@ -20,36 +21,52 @@ import {
 import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer from "~/features/store/appSettingsSlice";
 import diceRollsReducer from "~/features/store/diceRollsSlice";
-import { gradientsAdapter } from "~/features/store/library/gradientsSlice";
-import { patternsAdapter } from "~/features/store/library/patternsSlice";
-import { profilesAdapter } from "~/features/store/library/profilesSlice";
-import libraryReducer from "~/features/store/library/reducer";
-import { templatesAdapter } from "~/features/store/library/templatesSlice";
+import animationsFlashesReducer from "~/features/store/library/animations/flashesSlice";
+import animationsGradientPatternReducer from "~/features/store/library/animations/gradientPatternSlice";
+import animationsGradientReducer from "~/features/store/library/animations/gradientSlice";
+import animationsNoiseReducer from "~/features/store/library/animations/noiseSlice";
+import animationsPatternReducer from "~/features/store/library/animations/patternSlice";
+import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
+import gradientsReducer, {
+  gradientsAdapter,
+} from "~/features/store/library/gradientsSlice";
+import patternsReducer, {
+  patternsAdapter,
+} from "~/features/store/library/patternsSlice";
+import profilesReducer, {
+  profilesAdapter,
+} from "~/features/store/library/profilesSlice";
+import templatesReducer, {
+  templatesAdapter,
+} from "~/features/store/library/templatesSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
 
-const rootReducer = combineReducers({
-  // General app data
-  appSettings: appSettingsReducer,
-  // Dice data
-  pairedDice: pairedDiceReducer,
-  // Library data
-  library: libraryReducer,
-  // Transient data
-  diceRolls: diceRollsReducer,
-  dfuFiles: dfuFilesReducer,
-});
+const MyStorage = {
+  setItem: (key: string, value: string) => {
+    console.log("STORAGE SET ITEM: " + key);
+    return AsyncStorage.setItem(key, value);
+  },
+  getItem: (key: string) => {
+    console.log("STORAGE GET ITEM: " + key);
+    return AsyncStorage.getItem(key);
+  },
+  removeItem: (key: string) => {
+    console.log("STORAGE REMOVE ITEM: " + key);
+    return AsyncStorage.removeItem(key);
+  },
+};
 
-const blacklist: readonly (keyof RootState)[] = [
-  "diceRolls",
-  "dfuFiles",
-] as const;
-
-export const store = configureStore({
-  reducer: persistReducer<RootState>(
+function persist<S, A extends Action = Action>(
+  key: string,
+  reducer: Reducer<S, A>
+) {
+  return persistReducer(
     {
-      key: "root",
-      storage: AsyncStorage,
-      blacklist: [...blacklist] as string[],
+      version: 1,
+      storage: MyStorage,
+      key,
+      // debug: true,
+      // blacklist: [...blacklist] as string[],
       // stateReconciler: (
       //   inbound: RootState,
       //   original: RootState,
@@ -60,8 +77,47 @@ export const store = configureStore({
       //   return autoMergeLevel1(inbound, original, reduced, config);
       // },
     },
-    rootReducer
-  ),
+    reducer
+  );
+}
+
+function persistAnim<S, A extends Action = Action>(
+  key: string,
+  reducer: Reducer<S, A>
+) {
+  return persist("library/animations/" + key, reducer);
+}
+
+const rootReducer = combineReducers({
+  // General app data
+  appSettings: persist("appSettings", appSettingsReducer),
+  // Dice data
+  pairedDice: persist("pairedDice", pairedDiceReducer),
+  // Library data
+  library: combineReducers({
+    profiles: persist("library/profiles", profilesReducer),
+    templates: persist("library/templates", templatesReducer),
+    animations: combineReducers({
+      flashes: persistAnim("flashes", animationsFlashesReducer),
+      gradientPattern: persistAnim(
+        "gradientPattern",
+        animationsGradientPatternReducer
+      ),
+      gradient: persistAnim("gradient", animationsGradientReducer),
+      noise: persistAnim("noise", animationsNoiseReducer),
+      pattern: persistAnim("pattern", animationsPatternReducer),
+      rainbow: persistAnim("rainbow", animationsRainbowReducer),
+    }),
+    patterns: persist("library/patterns", patternsReducer),
+    gradients: persist("library/gradients", gradientsReducer),
+  }),
+  // Transient data
+  diceRolls: diceRollsReducer,
+  dfuFiles: dfuFilesReducer,
+});
+
+export const store = configureStore({
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) => {
     const middleware = getDefaultMiddleware({
       serializableCheck: {

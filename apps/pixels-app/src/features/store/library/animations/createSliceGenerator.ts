@@ -58,7 +58,7 @@ export function createSliceGenerator<T extends Serializable.AnimationData>(
       reset(_, action: PayloadAction<LibraryData>) {
         const state = animationsAdapter.getInitialState();
         const animations = action.payload.animations[name];
-        log("reset", "animation", "count=" + animations.length);
+        log("reset", "animation", `type=${name}, count=${animations.length}`);
         return animationsAdapter.addMany(
           state,
           animations
