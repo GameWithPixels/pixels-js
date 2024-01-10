@@ -64,7 +64,8 @@
   },
   "resolutions": {
     "react-native-reanimated": "~3.5.4",
-    "eslint-plugin-import": "~2.29.1"
+    "eslint-plugin-import": "~2.29.1",
+    "@sentry/react-native": "5.15.2"
   },
   "private": true
 }

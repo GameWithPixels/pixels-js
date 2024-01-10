@@ -2737,17 +2737,6 @@
   resolved "https://registry.yarnpkg.com/@sentry/cli-win32-x64/-/cli-win32-x64-2.23.0.tgz#648b99be78af130dbb0a53506d5c55bbe0d46472"
   integrity sha512-7LP6wA3w93ViYKQR8tMN2i/SfpQzaXqM2SAHI3yfJ3bdREHOV3+/N0mNiWVRvgL0TKNQJS42v2IILLhiDxufHQ==
 
-"@sentry/cli@2.20.7":
-  version "2.20.7"
-  resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-2.20.7.tgz#8f7f3f632c330cac6bd2278d820948163f3128a6"
-  integrity sha512-YaHKEUdsFt59nD8yLvuEGCOZ3/ArirL8GZ/66RkZ8wcD2wbpzOFbzo08Kz4te/Eo3OD5/RdW+1dPaOBgGbrXlA==
-  dependencies:
-    https-proxy-agent "^5.0.0"
-    node-fetch "^2.6.7"
-    progress "^2.0.3"
-    proxy-from-env "^1.1.0"
-    which "^2.0.2"
-
 "@sentry/cli@2.23.0":
   version "2.23.0"
   resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-2.23.0.tgz#d8fa6a514aedfe316a8afc046435b96746e7099f"
@@ -2784,16 +2773,6 @@
     "@sentry/types" "7.81.1"
     "@sentry/utils" "7.81.1"
 
-"@sentry/hub@7.69.0":
-  version "7.69.0"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-7.69.0.tgz#3ef3b98e1810b05cb4fb37a861bd700ef592a2a9"
-  integrity sha512-71TQ7P5de9+cdW1ETGI9wgi2VNqfyWaM3cnUvheXaSjPRBrr6mhwoaSjo+GGsiwx97Ob9DESZEIhdzcLupzkFA==
-  dependencies:
-    "@sentry/core" "7.69.0"
-    "@sentry/types" "7.69.0"
-    "@sentry/utils" "7.69.0"
-    tslib "^2.4.1 || ^1.9.3"
-
 "@sentry/hub@7.81.1":
   version "7.81.1"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-7.81.1.tgz#c49bcc1894bfeb019811bac8e3b6fd81011b6f7c"
@@ -2823,24 +2802,10 @@
     "@sentry/utils" "7.81.1"
     localforage "^1.8.1"
 
-"@sentry/react-native@5.10.0":
-  version "5.10.0"
-  resolved "https://registry.yarnpkg.com/@sentry/react-native/-/react-native-5.10.0.tgz#b61861276fcb35e69dbe9c4e098ed7c88598f5d9"
-  integrity sha512-YuEZJ3tW5qZlFGFm2FoAZ9vw1fWnjrhMh1IHxo+nUHP3FvVgGkAd/PmSSbgPr2T3YLOIJNiyDdG031Qi7YvtGA==
-  dependencies:
-    "@sentry/browser" "7.69.0"
-    "@sentry/cli" "2.20.7"
-    "@sentry/core" "7.69.0"
-    "@sentry/hub" "7.69.0"
-    "@sentry/integrations" "7.69.0"
-    "@sentry/react" "7.69.0"
-    "@sentry/types" "7.69.0"
-    "@sentry/utils" "7.69.0"
-
-"@sentry/react-native@5.15.1":
-  version "5.15.1"
-  resolved "https://registry.yarnpkg.com/@sentry/react-native/-/react-native-5.15.1.tgz#6e7c1afb4f9404025f300e9d6c783041ca5d0f55"
-  integrity sha512-t/t3HZ2rAgOKS1BmjT3jThuT/mi+3hqLnsEZQlrM3oAbqQ/JYo++oMCv5kXLSSKtyXWyANlXSpC3mfiDrJiNDw==
+"@sentry/react-native@5.10.0", "@sentry/react-native@5.15.2":
+  version "5.15.2"
+  resolved "https://registry.yarnpkg.com/@sentry/react-native/-/react-native-5.15.2.tgz#a081d090e881a447b28821ed51ccf65c60bfbac9"
+  integrity sha512-X9yYdgIvVloR4WUrX8zSU0SXbmqY5Yq1W68TT2xe4LyKpWYJHFFbeJUaFAXFn65JXOSJvjEpEFYYyGJ9dzQ9rg==
   dependencies:
     "@sentry/browser" "7.81.1"
     "@sentry/cli" "2.23.0"
@@ -6322,10 +6287,10 @@ expo-updates-interface@~0.10.0:
   resolved "https://registry.yarnpkg.com/expo-updates-interface/-/expo-updates-interface-0.10.1.tgz#cab075641cd381718ccd9264bf133dc393430a44"
   integrity sha512-I6JMR7EgjXwckrydDmrkBEX/iw750dcqpzQVsjznYWfi0HTEOxajLHB90fBFqQkUV5i5s4Fd3hYQ1Cn0oMzUbA==
 
-expo-updates@~0.18.18:
-  version "0.18.18"
-  resolved "https://registry.yarnpkg.com/expo-updates/-/expo-updates-0.18.18.tgz#6650a144c48f5831b6e03f413a4599d47acca97d"
-  integrity sha512-j9I/vCepUwJ2ZfXsqy5wG+IxXAR05+uiiPABDP9fd++09zt/r2H97abyl5sWaR1h4/0Z9wxXtI0ZssVdDXPE8A==
+expo-updates@~0.18.19:
+  version "0.18.19"
+  resolved "https://registry.yarnpkg.com/expo-updates/-/expo-updates-0.18.19.tgz#40a69ac25f6fcdde7d9ee76b5a5e4e73eb6cd25d"
+  integrity sha512-dakYQ7XhZtBKMLcim08wum108ZUQcNigurijb/6PKdg3QHn21IzOr/27n6x54DctcoW8w1B8w8y1Xw2svVsx4w==
   dependencies:
     "@expo/code-signing-certificates" "0.0.5"
     "@expo/config" "~8.1.0"
