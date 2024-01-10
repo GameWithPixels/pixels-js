@@ -27,7 +27,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
         {error.message}
       </Text>
       <Button
-        mode="outlined"
+        mode="contained-tonal"
         textColor={colors.error}
         onPress={resetErrorBoundary}
       >
