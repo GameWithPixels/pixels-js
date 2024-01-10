@@ -66,6 +66,7 @@
     "expo-localization": "~14.3.0",
     "expo-splash-screen": "~0.20.5",
     "expo-status-bar": "~1.6.0",
+    "expo-system-ui": "~2.4.0",
     "expo-three": "^7.0.0",
     "expo-updates": "~0.18.18",
     "mobx": "^6.12.0",
