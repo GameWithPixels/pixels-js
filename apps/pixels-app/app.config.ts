@@ -54,6 +54,7 @@ const config = {
     },
     plugins: [
       "./withAndroidPermissions",
+      "./withAsyncStorageDbSize",
       "expo-localization",
       "react-native-vision-camera",
       "sentry-expo",
@@ -67,6 +68,18 @@ const config = {
         },
       ],
     ],
+    // Getting an error with Expo 49
+    // TypeError: [android.gradleProperties]: withAndroidGradlePropertiesBaseMod: nextMod is not a function
+    // mods: {
+    //   android: {
+    //     gradleProperties: [
+    //       {
+    //         key: "AsyncStorage_db_size_in_MB",
+    //         value: "50",
+    //       },
+    //     ],
+    //   },
+    // },
     hooks: {
       postPublish: [
         {
