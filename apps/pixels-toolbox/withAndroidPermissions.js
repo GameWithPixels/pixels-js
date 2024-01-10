@@ -1,7 +1,7 @@
-const expoConfigPlugins = require("@expo/config-plugins");
+const { withAndroidManifest } = require("@expo/config-plugins");
 
 module.exports = function withAndroidPermissions(config) {
-  return expoConfigPlugins.withAndroidManifest(config, async (config) => {
+  return withAndroidManifest(config, async (config) => {
     const androidManifest = config.modResults.manifest;
     androidManifest["uses-permission"].push(
       // Request legacy Bluetooth permissions on older devices
