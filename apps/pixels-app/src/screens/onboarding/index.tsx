@@ -114,8 +114,14 @@ function Title({ children }: React.PropsWithChildren) {
   );
 }
 
-function Text(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="bodyLarge" {...props} />;
+function Text({ style, ...props }: Omit<TextProps<never>, "variant">) {
+  return (
+    <PaperText
+      variant="bodyLarge"
+      style={[{ textAlign: "center" }, style]}
+      {...props}
+    />
+  );
 }
 
 function SmallText(props: Omit<TextProps<never>, "variant">) {
@@ -136,7 +142,7 @@ function AnimatedDieWireframeCard({
     >
       <DieWireframe size={40} dieType={dieType} />
       {typeof children === "string" ? (
-        <Text children={children} />
+        <Text style={{ textAlign: "auto" }} children={children} />
       ) : (
         <View style={{ flex: 1 }} children={children} />
       )}
@@ -395,7 +401,13 @@ function ScanSlide({
         <Animated.View
           key="stopped"
           exiting={FadeOut.duration(300)}
-          style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 40 }}
+          style={{
+            flexGrow: 1,
+            flexShrink: 1,
+            marginVertical: 10,
+            alignItems: "center",
+            gap: 40,
+          }}
         >
           <Text>
             To customize your Pixels Dice the app needs to establish a Bluetooth
@@ -405,7 +417,6 @@ function ScanSlide({
             name="bluetooth"
             size={30}
             color={colors.onSurface}
-            style={{ alignSelf: "center" }}
           />
           <Text>
             {scannerStatus === "stopped"
@@ -478,7 +489,9 @@ function ScanSlide({
                 {pixels.length ? (
                   <SmallText>Don't see all your dice?</SmallText>
                 ) : (
-                  <Text>No available dice found so far.</Text>
+                  <Text style={{ textAlign: "auto" }}>
+                    No available dice found so far.
+                  </Text>
                 )}
                 <TightTextButton
                   underline
@@ -587,7 +600,7 @@ const AnimatedPixelDfuCard = observer(function AnimatedPixelDfuCard({
   return (
     <AnimatedDieWireframeCard dieType={scannedPixel.dieType} {...props}>
       <View style={{ flex: 1, justifyContent: "space-around" }}>
-        <Text>{scannedPixel.name}</Text>
+        <Text style={{ textAlign: "auto" }}>{scannedPixel.name}</Text>
         <SmallText>
           Status:{" "}
           {!state || state === "completed"
@@ -654,7 +667,7 @@ function UpdateDiceSlide({
         <Animated.View
           key="wait"
           exiting={FadeOut.duration(300)}
-          style={{ flexGrow: 1, flexShrink: 1, gap: 40 }}
+          style={{ flexGrow: 1, flexShrink: 1, alignItems: "center", gap: 40 }}
         >
           <Text>We have a software update for your dice!</Text>
           <Text>
@@ -731,11 +744,15 @@ function ReadySlide({
     <Slide title="You are all set!">
       <View style={{ flexGrow: 1, justifyContent: "space-evenly" }}>
         <LightUpYourGameImage style={{ height: "30%" }} />
-        <Text style={{ lineHeight: fonts.headlineMedium.lineHeight }}>
-          Your Pixels {dice} light up accordingly to the settings of
-          {pixelsCount <= 1 ? " its " : " their "}
-          Profile. With the app you may customize your {dice} Profile or create
-          new ones.
+        <Text
+          style={{
+            lineHeight: fonts.headlineMedium.lineHeight,
+            textAlign: "center",
+          }}
+        >
+          Your Pixels {dice} light{pixelsCount <= 1 ? "s" : ""} up accordingly
+          to the settings of {pixelsCount <= 1 ? " its " : " their "} Profile.
+          With the app you may customize your {dice} Profile or create new ones.
         </Text>
       </View>
       <GradientButton onPress={onDone}>Go</GradientButton>
