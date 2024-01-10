@@ -2,10 +2,11 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
+import { getProfileDieTypeLabel } from "./descriptions";
+import { profileDieTypes } from "./dieTypes";
+
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
-import { getProfileDieTypeLabel } from "~/descriptions";
-import { profileDieTypes } from "~/dieTypes";
 
 function SortByDateDescendingIcon({
   size,

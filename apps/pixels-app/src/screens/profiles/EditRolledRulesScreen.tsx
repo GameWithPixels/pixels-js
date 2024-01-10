@@ -39,7 +39,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActionDetails, ActionDieRenderer } from "./components/ActionDetails";
 import { ConfigureActionBottomSheet } from "./components/ConfigureActionBottomSheet";
 
-import { actionTypes } from "~/actionTypes";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
@@ -47,13 +46,14 @@ import { getActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
 import {
+  actionTypes,
   getActionTypeDescription,
   getConditionTypeDescription,
   getConditionTypeLabel,
   getFacesAsText,
-} from "~/descriptions";
-import { makeObservable } from "~/features/makeObservable";
-import { rolledConditionComparator } from "~/features/rolledConditionComparator";
+  rolledConditionComparator,
+} from "~/features/profiles";
+import { makeObservable } from "~/features/utils";
 import { fixForScrollViewPadding } from "~/fixes";
 import { useEditableProfile } from "~/hooks";
 import { EditRollRulesScreenProps } from "~/navigation";

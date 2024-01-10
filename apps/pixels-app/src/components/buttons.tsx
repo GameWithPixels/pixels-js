@@ -23,8 +23,8 @@ import {
 } from "react-native-paper";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
+import { getTextColorStyle } from "./colors";
 import { IconProps } from "./icons";
-import { getTextColorStyle } from "./utils";
 
 import AddNewIcon from "#/icons/common/fab-add-with-gradient";
 import ChartColumnIcon from "#/icons/home/chart-column";

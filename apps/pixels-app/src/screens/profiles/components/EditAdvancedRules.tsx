@@ -2,8 +2,8 @@ import React from "react";
 
 import { EditRuleCallback, RulesSection } from "./RulesSection";
 
-import { connectionFlags, batteryFlags } from "~/actionTypes";
 import { SlideInView } from "~/components/SlideInView";
+import { connectionFlags, batteryFlags } from "~/features/profiles";
 
 export function EditAdvancedRules({
   profileUuid,

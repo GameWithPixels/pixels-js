@@ -7,9 +7,9 @@ import { Text, TextProps, useTheme } from "react-native-paper";
 import { PixelBattery } from "./PixelBattery";
 import { PixelRssi } from "./PixelRssi";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
+import { getTextColorStyle, makeTransparent } from "./colors";
 import { BatteryIcon, RssiIcon } from "./icons";
 import { ProfileDieRenderer } from "./profile";
-import { getTextColorStyle, makeTransparent } from "./utils";
 
 import { DieRendererProps } from "~/features/render3d/DieRenderer";
 import { useActiveProfile } from "~/hooks";

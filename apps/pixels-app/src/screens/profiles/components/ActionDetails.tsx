@@ -10,7 +10,7 @@ import { View, StyleSheet, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
 import { ActionTypeIcon } from "~/components/actions";
-import { getFacesAsText } from "~/descriptions";
+import { getFacesAsText } from "~/features/profiles";
 import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import { AppStyles } from "~/styles";
 

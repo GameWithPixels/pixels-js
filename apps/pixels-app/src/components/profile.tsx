@@ -23,18 +23,18 @@ import Animated, {
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
 import { Chip, GradientChip } from "./buttons";
-import { darken, getBorderColor, getTextColorStyle } from "./utils";
+import { darken, getBorderColor, getTextColorStyle } from "./colors";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  DieRendererProps,
-  DieRendererWithFocus,
-} from "~/features/render3d/DieRenderer";
 import {
   groupAndSortProfiles,
   ProfilesGrouping,
   SortMode,
-} from "~/features/sortingOptions";
+} from "~/features/profiles";
+import {
+  DieRendererProps,
+  DieRendererWithFocus,
+} from "~/features/render3d/DieRenderer";
 
 const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
   profile,

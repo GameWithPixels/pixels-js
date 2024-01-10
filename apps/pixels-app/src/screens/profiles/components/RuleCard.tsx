@@ -15,7 +15,7 @@ import { ActionDetails, ConditionDetails } from "./ActionDetails";
 
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { Card } from "~/components/Card";
-import { rolledConditionComparator } from "~/features/rolledConditionComparator";
+import { rolledConditionComparator } from "~/features/profiles";
 import { useEditableProfile } from "~/hooks";
 import { AppStyles } from "~/styles";
 

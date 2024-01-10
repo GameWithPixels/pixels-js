@@ -5,7 +5,7 @@ import { Image } from "expo-image";
 import { ColorValue, TextProps, View, ViewProps } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { getIconColor } from "./utils";
+import { getIconColor } from "./colors";
 
 import BarsFullIcon from "#/icons/dice/bars-full";
 import BarsLowIcon from "#/icons/dice/bars-low";

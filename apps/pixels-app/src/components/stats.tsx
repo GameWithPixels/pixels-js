@@ -5,8 +5,8 @@ import React from "react";
 import { Animated, StyleSheet, View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
+import { makeTransparent } from "./colors";
 import { DieIcon } from "./icons";
-import { makeTransparent } from "./utils";
 
 export function StatsBarGraph({
   rollStats,

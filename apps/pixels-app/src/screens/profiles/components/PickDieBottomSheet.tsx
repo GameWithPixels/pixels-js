@@ -16,7 +16,7 @@ import { useAppSelector } from "~/app/hooks";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TouchableCard } from "~/components/TouchableCard";
 import { DieWireframe } from "~/components/icons";
-import { getDieTypeLabel } from "~/descriptions";
+import { getDieTypeLabel } from "~/features/profiles";
 import { notEmpty } from "~/features/utils";
 import { useBottomSheetPadding } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";

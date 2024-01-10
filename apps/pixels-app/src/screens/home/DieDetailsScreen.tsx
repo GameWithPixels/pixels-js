@@ -21,8 +21,8 @@ import {
   getColorwayLabel,
   getDieTypeLabel,
   getRollStateLabel,
-} from "~/descriptions";
-import { unsigned32ToHex } from "~/features/unsigned32ToHex";
+} from "~/features/profiles";
+import { unsigned32ToHex } from "~/features/utils";
 import {
   useActiveProfile,
   useHasFirmwareUpdate,

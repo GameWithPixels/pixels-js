@@ -23,8 +23,8 @@ import { RuleIndex } from "./RuleCard";
 import { Card } from "~/components/Card";
 import { ActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
-import { getActionTypeLabel } from "~/descriptions";
-import { makeObservable } from "~/features/makeObservable";
+import { getActionTypeLabel } from "~/features/profiles";
+import { makeObservable } from "~/features/utils";
 import { useEditableProfile } from "~/hooks";
 import { withAnimated } from "~/withAnimated";
 

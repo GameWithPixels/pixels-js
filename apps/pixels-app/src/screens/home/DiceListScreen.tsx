@@ -33,7 +33,7 @@ import {
   getSortModeLabel,
   SortMode,
   SortModeList,
-} from "~/features/sortingOptions";
+} from "~/features/profiles";
 import {
   setDiceGrouping,
   setDiceSortMode,

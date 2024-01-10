@@ -11,7 +11,7 @@ import { RuleIndex } from "../profiles/components/RuleCard";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
-import { makeTransparent } from "~/components/utils";
+import { makeTransparent } from "~/components/colors";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { EditDieProfileScreenProps } from "~/navigation";
 

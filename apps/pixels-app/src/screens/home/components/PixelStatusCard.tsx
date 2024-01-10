@@ -18,8 +18,8 @@ import Animated, {
 import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
-import { getTextColorStyle } from "~/components/utils";
-import { getDieTypeAndColorwayLabel } from "~/descriptions";
+import { getTextColorStyle } from "~/components/colors";
+import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 import { usePixelDataTransfer } from "~/hooks";
 
 function AnimatedConnectionIcon({

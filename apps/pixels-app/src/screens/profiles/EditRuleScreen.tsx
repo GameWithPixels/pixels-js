@@ -5,10 +5,9 @@ import { Text } from "react-native-paper";
 import { EditActionCard } from "./components/EditActionCard";
 import { RuleIndex } from "./components/RuleCard";
 
-import { actionTypes } from "~/actionTypes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { getConditionTypeLabel } from "~/descriptions";
+import { actionTypes, getConditionTypeLabel } from "~/features/profiles";
 import { EditRuleScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 

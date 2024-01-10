@@ -16,7 +16,7 @@ import {
 } from "./AnimatedProfileSearchbar";
 import { ProfilesList } from "./profile";
 
-import { getDieTypeLabel } from "~/descriptions";
+import { getDieTypeLabel } from "~/features/profiles";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 
 export function ProfilePicker({

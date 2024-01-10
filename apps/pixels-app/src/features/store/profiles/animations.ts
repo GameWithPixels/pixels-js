@@ -10,7 +10,7 @@ import { log } from "./log";
 import { readPattern } from "./patterns";
 
 import { LibraryState } from "~/app/store";
-import { makeObservable } from "~/features/makeObservable";
+import { makeObservable } from "~/features/utils";
 
 const loadedAnimations = new Map<string, Profiles.Animation>();
 
