@@ -7,7 +7,7 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import { getBorderColor, makeTransparent } from "./utils";
+import { getBorderColor, makeTransparent } from "./colors";
 
 export type TouchableCardProps = Omit<
   TouchableRippleProps,

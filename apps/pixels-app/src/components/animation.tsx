@@ -12,7 +12,7 @@ import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
-import { getTextColorStyle } from "./utils";
+import { getTextColorStyle } from "./colors";
 
 import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 

@@ -59,13 +59,13 @@ import {
   GradientButton,
   TightTextButton,
 } from "~/components/buttons";
+import { makeTransparent } from "~/components/colors";
 import { DieWireframe } from "~/components/icons";
-import { makeTransparent } from "~/components/utils";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
-import { getNativeErrorMessage } from "~/features/getNativeErrorMessage";
 import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
+import { getNativeErrorMessage } from "~/features/utils";
 import { useDfuBundle } from "~/hooks";
 import { OnboardingScreenProps } from "~/navigation";
 import { getBottomSheetBackgroundStyle } from "~/themes";

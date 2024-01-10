@@ -5,7 +5,7 @@ import {
   DiceGrouping,
   ProfilesGrouping,
   SortMode,
-} from "~/features/sortingOptions";
+} from "~/features/profiles";
 
 export type ThemeMode = "system" | "dark" | "light";
 

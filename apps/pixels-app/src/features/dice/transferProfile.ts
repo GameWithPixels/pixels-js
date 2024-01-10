@@ -7,8 +7,8 @@ import { blinkDie } from "./blinkDie";
 import {
   clearProfileTransfer,
   setProfileTransfer,
-} from "./store/diceRollsSlice";
-import { setPairedDieProfile } from "./store/pairedDiceSlice";
+} from "../store/diceRollsSlice";
+import { setPairedDieProfile } from "../store/pairedDiceSlice";
 
 import { store } from "~/app/store";
 import { AppDarkTheme } from "~/themes";

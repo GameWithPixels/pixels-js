@@ -22,7 +22,7 @@ import {
   getTextColorStyle,
   getIconColor,
   makeTransparent,
-} from "~/components/utils";
+} from "~/components/colors";
 
 function useLastRolls(pixelId: number): { key: number; roll: number }[] {
   const rolls = useAppSelector(

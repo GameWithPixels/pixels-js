@@ -8,7 +8,7 @@ import {
   TouchableRipple,
 } from "react-native-paper";
 
-import { makeTransparent } from "./utils";
+import { makeTransparent } from "./colors";
 
 import { RootScreenName } from "~/navigation";
 import { getRootScreenTheme } from "~/themes";

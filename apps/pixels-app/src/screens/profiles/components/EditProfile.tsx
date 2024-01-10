@@ -15,16 +15,15 @@ import { PickDieBottomSheet } from "./PickDieBottomSheet";
 import { RuleCard } from "./RuleCard";
 import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
-import { helloGoodbyeFlags } from "~/actionTypes";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ProfileUsage as ProfileUsageStatic } from "~/components/ProfileUsage";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
 import { ProfileDieRenderer } from "~/components/profile";
-import { getConditionTypeLabel } from "~/descriptions";
+import { transferProfile } from "~/features/dice";
+import { getConditionTypeLabel, helloGoodbyeFlags } from "~/features/profiles";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
-import { transferProfile } from "~/features/transferProfile";
 import { useEditableProfile } from "~/hooks";
 
 const ProfileUsage = observer(ProfileUsageStatic);

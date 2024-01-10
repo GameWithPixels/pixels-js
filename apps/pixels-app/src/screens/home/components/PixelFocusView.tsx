@@ -22,13 +22,11 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { NewPixelAppBanner } from "~/components/banners";
 import { PixelDieRenderer } from "~/components/cards";
+import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
-import { makeTransparent } from "~/components/utils";
-import { getPixelStatusLabel } from "~/descriptions";
-import { FactoryProfile } from "~/features/FactoryProfile";
-import { blinkDie } from "~/features/blinkDie";
+import { blinkDie, transferProfile } from "~/features/dice";
+import { FactoryProfile, getPixelStatusLabel } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
-import { transferProfile } from "~/features/transferProfile";
 import {
   useActiveProfile,
   useConfirmActionSheet,

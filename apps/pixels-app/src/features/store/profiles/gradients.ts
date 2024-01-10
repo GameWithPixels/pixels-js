@@ -8,7 +8,7 @@ import { runInAction } from "mobx";
 import { log } from "./log";
 
 import { LibraryState } from "~/app/store";
-import { makeObservable } from "~/features/makeObservable";
+import { makeObservable } from "~/features/utils";
 
 interface GradientCache {
   gradient: Profiles.RgbGradient;

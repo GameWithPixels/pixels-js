@@ -12,10 +12,12 @@ import { PageHeader } from "~/components/PageHeader";
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { GradientChip } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
-import { getProfileDieTypeLabel } from "~/descriptions";
-import { profileDieTypes } from "~/dieTypes";
-import { FactoryProfile } from "~/features/FactoryProfile";
-import generateUuid from "~/features/generateUuid";
+import {
+  FactoryProfile,
+  getProfileDieTypeLabel,
+  profileDieTypes,
+} from "~/features/profiles";
+import { generateUuid } from "~/features/utils";
 import {
   useBottomSheetPadding,
   useEditProfilesList,

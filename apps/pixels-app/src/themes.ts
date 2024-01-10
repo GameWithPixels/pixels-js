@@ -11,7 +11,7 @@ import {
   MD3Theme,
 } from "react-native-paper";
 
-import { makeTransparent } from "./components/utils";
+import { makeTransparent } from "./components/colors";
 import { RootScreenName } from "./navigation";
 
 function createTheme(

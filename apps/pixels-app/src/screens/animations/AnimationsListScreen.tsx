@@ -23,7 +23,7 @@ import {
   getSortModeLabel,
   SortMode,
   SortModeList,
-} from "~/features/sortingOptions";
+} from "~/features/profiles";
 import {
   setAnimationsGrouping,
   setAnimationsSortMode,

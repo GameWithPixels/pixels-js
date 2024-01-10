@@ -25,6 +25,7 @@ import {
 } from "~/components/SortBottomSheet";
 import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
+import { transferProfile } from "~/features/dice";
 import {
   getProfilesGroupingLabel,
   getSortModeIcon,
@@ -33,12 +34,11 @@ import {
   ProfilesGroupingList,
   SortMode,
   SortModeList,
-} from "~/features/sortingOptions";
+} from "~/features/profiles";
 import {
   setProfilesGrouping,
   setProfilesSortMode,
 } from "~/features/store/appSettingsSlice";
-import { transferProfile } from "~/features/transferProfile";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 import { ProfilesListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";

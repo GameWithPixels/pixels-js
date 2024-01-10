@@ -4,7 +4,10 @@ import { Text } from "react-native-paper";
 import { RuleCard, RuleIndex } from "./RuleCard";
 
 import { SlideInView } from "~/components/SlideInView";
-import { getConditionFlagLabel, getConditionTypeLabel } from "~/descriptions";
+import {
+  getConditionFlagLabel,
+  getConditionTypeLabel,
+} from "~/features/profiles";
 
 export type EditRuleCallback = (ruleIndex: RuleIndex) => void;
 

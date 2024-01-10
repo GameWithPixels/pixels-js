@@ -17,8 +17,7 @@ import {
   removePairedDie,
   setPairedDieName,
 } from "~/features/store/pairedDiceSlice";
-import { unsigned32ToHex } from "~/features/unsigned32ToHex";
-import { notEmpty, areArraysEqual } from "~/features/utils";
+import { notEmpty, areArraysEqual, unsigned32ToHex } from "~/features/utils";
 
 function stableFilterPixels(
   pairedDice: readonly PairedDie[],

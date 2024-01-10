@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { StyleProp, View, ViewProps, ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { darken, makeTransparent } from "./utils";
+import { darken, makeTransparent } from "./colors";
 
 export type CardProps = ViewProps & {
   row?: boolean;

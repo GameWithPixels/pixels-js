@@ -23,7 +23,7 @@ import { fromByteArray } from "base64-js";
 
 import { LibraryData } from "./LibraryData";
 
-import generateUuid from "~/features/generateUuid";
+import { generateUuid } from "~/features/utils";
 
 const regexExp =
   /^[0-9A-F]{8}-[0-9A-F]{4}-[5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;

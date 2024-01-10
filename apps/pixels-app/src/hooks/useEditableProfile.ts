@@ -7,7 +7,7 @@ import { autorun, runInAction } from "mobx";
 
 import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
-import { FactoryProfile } from "~/features/FactoryProfile";
+import { FactoryProfile } from "~/features/profiles";
 import { Library } from "~/features/store";
 import { readProfile } from "~/features/store/profiles";
 
