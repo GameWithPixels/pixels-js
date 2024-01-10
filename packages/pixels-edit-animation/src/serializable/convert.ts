@@ -214,7 +214,7 @@ export function toProfile(
           assertNever(actType, `Unsupported action type: ${actType}`);
       }
     });
-    return new EditRule(condition, { actions });
+    return new EditRule(condition, actions);
   });
   return new EditProfile({
     ...data,

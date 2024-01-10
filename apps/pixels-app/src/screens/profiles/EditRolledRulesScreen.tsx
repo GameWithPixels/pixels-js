@@ -244,9 +244,10 @@ function createObservableRolledRule(
   actionType?: Profiles.ActionType
 ): Profiles.Rule {
   return makeObservable(
-    new Profiles.Rule(new Profiles.ConditionRolled({ faces }), {
-      actions: actionType ? [Profiles.createAction(actionType)] : [],
-    })
+    new Profiles.Rule(
+      new Profiles.ConditionRolled({ faces }),
+      actionType ? Profiles.createAction(actionType) : undefined
+    )
   );
 }
 
