@@ -26,6 +26,7 @@ import {
   useTheme,
 } from "react-native-paper";
 import Animated, {
+  cancelAnimation,
   CurvedTransition,
   Easing,
   FadeIn,
@@ -33,6 +34,10 @@ import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -302,6 +307,33 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
   const availableFaces = dieFaces.filter((f) => !unavailableFaces?.includes(f));
   const availCount = availableFaces.length;
 
+  const bounce = availCount > 0;
+  const bounceSv = useSharedValue(0);
+  React.useEffect(() => {
+    if (bounce) {
+      // const duration = 1200;
+      // bounceSv.value = withRepeat(withTiming(1.3, { duration }), -1, true);
+      bounceSv.value = withRepeat(
+        withSequence(withTiming(15), withSpring(0, { damping: 2.5 })),
+        -1,
+        true
+      );
+      return () => cancelAnimation(bounceSv);
+    }
+  }, [bounce, bounceSv]);
+  const bounceStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        // TODO those factors are arbitrary
+        // { translateX: 150 * (1 - bounceSv.value) },
+        // { translateY: 75 * (bounceSv.value - 1) },
+        // { scaleX: bounceSv.value },
+        // { scaleY: bounceSv.value },
+        { translateY: -bounceSv.value },
+      ],
+    };
+  });
+
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const { bottom: bottomInset } = useSafeAreaInsets();
@@ -435,20 +467,23 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
           })}
         </GHScrollView>
       </View>
-      <FloatingAddButton
-        disabled={!availCount}
-        bottomInset={bottomInset}
-        onPress={() => {
-          const newRule = createObservableRolledRule(
-            [availableFaces[0]],
-            actionTypes[index]
-          );
-          runInAction(() => {
-            profile.rules.push(newRule);
-          });
-          setConfigureRule(newRule);
-        }}
-      />
+      <Animated.View style={bounceStyle}>
+        <FloatingAddButton
+          disabled={!availCount}
+          bottomInset={bottomInset}
+          onPress={() => {
+            cancelAnimation(bounceSv);
+            const newRule = createObservableRolledRule(
+              [availableFaces[0]],
+              actionTypes[index]
+            );
+            runInAction(() => {
+              profile.rules.push(newRule);
+            });
+            setConfigureRule(newRule);
+          }}
+        />
+      </Animated.View>
       <ConfigureActionBottomSheet
         dieType={profile.dieType}
         condition={configureRule?.condition ?? defaultCondition}
