@@ -9,38 +9,6 @@ import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import { LibraryData } from "../LibraryData";
 import { log } from "../log";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function findAnimation(
-  uuid: string,
-  animations: Serializable.AnimationSetData
-):
-  | {
-      animations: Serializable.AnimationData[];
-      index: number;
-      type: keyof Serializable.AnimationSetData;
-    }
-  | undefined {
-  // Get all animation arrays
-  const animArrays = Object.entries(animations).filter(Array.isArray);
-  // And search for our animation
-  let arrayIndex = 0,
-    animIndex = -1;
-  while (arrayIndex < animArrays.length) {
-    const entry = animArrays[arrayIndex];
-    animIndex = entry[1].findIndex(
-      (kv: Serializable.AnimationData) => kv.uuid === uuid
-    );
-    if (animIndex >= 0) {
-      return {
-        animations: entry[1],
-        index: animIndex,
-        type: entry[0] as keyof Serializable.AnimationSetData,
-      };
-    }
-    ++arrayIndex;
-  }
-}
-
 export type AnimationsState<T extends Serializable.AnimationData> =
   EntityState<T>;
 
@@ -67,13 +35,9 @@ export function createSliceGenerator<T extends Serializable.AnimationData>(
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       add(state, action: PayloadAction<T>) {
-        // const data = action.payload;
-        // const anims = state.animations[type];
-        // assert(anims);
-        // // @ts-ignore Trust that we're getting the proper data
-        // anims.push(data);
-        // log("add", "animation", data.uuid);
-        throw new Error("Not implemented");
+        const data = action.payload;
+        animationsAdapter.addOne(state, data);
+        log("add", "animation", data.uuid, `type=${name}`);
       },
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
