@@ -12,13 +12,13 @@ import {
 // it matches the order of the profiles and animations UUIDs
 // TODO switch to a map with the UUIDs as values
 const dieTypesStable: readonly PixelDieType[] = [
-  "d4",
-  "d6",
-  "d8",
+  "d20",
+  "d12",
   "d10",
   "d00",
-  "d12",
-  "d20",
+  "d8",
+  "d6",
+  "d4",
   "d6pipped",
   "d6fudge",
 ] as const;
@@ -110,7 +110,7 @@ assert(
 );
 
 export function getFactoryProfileUuid(dieType: PixelDieType): string {
-  return profilesUuids[dieTypesStable.indexOf(dieType)];
+  return profilesUuids[dieTypesStable.indexOf(dieType)] ?? profilesUuids[0];
 }
 
 export function isFactoryProfileUuid(uuid: string): boolean {

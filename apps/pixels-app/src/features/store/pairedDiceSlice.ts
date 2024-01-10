@@ -43,6 +43,10 @@ const PairedDiceSlice = createSlice({
   name: "PairedDice",
   initialState,
   reducers: {
+    resetPairedDice(state) {
+      storeLog("resetPairedDice");
+      state.dice = [];
+    },
     addPairedDie(
       state,
       action: PayloadAction<{
@@ -84,10 +88,6 @@ const PairedDiceSlice = createSlice({
       if (pairedDie) {
         pairedDie.isPaired = false;
       }
-    },
-    resetPairedDice(state) {
-      storeLog("resetPairedDice");
-      state.dice = [];
     },
     setPairedDieName(
       state,
