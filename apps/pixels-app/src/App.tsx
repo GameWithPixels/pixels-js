@@ -28,10 +28,10 @@ import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import * as Sentry from "sentry-expo";
 
+import { AppTasks } from "./AppTasks";
 import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
-import { LoadDefaultLibrary } from "./components/LoadDefaultLibrary";
 import { TabBar } from "./components/TabBar";
 import {
   BottomTabParamList,
@@ -92,7 +92,6 @@ function AppPage() {
   const theme = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <LoadDefaultLibrary />
       <Tab.Navigator
         tabBar={(props) => <TabBar {...props} />}
         screenOptions={{ headerShown: false }}
@@ -232,6 +231,7 @@ export default function App() {
                           }
                           persistor={persistor}
                         >
+                          <AppTasks />
                           <AppPage />
                         </PersistGate>
                       </BottomSheetModalProvider>

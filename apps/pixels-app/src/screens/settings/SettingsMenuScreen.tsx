@@ -1,4 +1,3 @@
-import * as Updates from "expo-updates";
 import { Linking, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 
@@ -6,25 +5,12 @@ import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
 import { Library } from "~/features/store";
-import { resetAppSettingsToDefault } from "~/features/store/appSettingsSlice";
+import { resetAppSettings } from "~/features/store/appSettingsSlice";
+import { resetAppUpdate } from "~/features/store/appUpdateSlice";
 import { resetRollsHistory } from "~/features/store/diceRollsSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { useConfirmActionSheet } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
-
-async function onFetchUpdateAsync() {
-  try {
-    const update = await Updates.checkForUpdateAsync();
-
-    if (update.isAvailable) {
-      await Updates.fetchUpdateAsync();
-      await Updates.reloadAsync();
-    }
-  } catch (error) {
-    // You can also add an alert() to see the error message in case of an error when fetching updates.
-    alert(`Error fetching latest Expo update: ${error}`);
-  }
-}
 
 const pages = [
   // "Audio Clips",
@@ -38,8 +24,8 @@ const pages = [
   "Privacy Policy",
   "App & System Information",
   "Dice Software Information",
-  "Reset App Settings",
   "Check for Update",
+  "Reset App Settings",
 ] as const;
 
 type PageName = (typeof pages)[number];
@@ -91,9 +77,10 @@ function SettingsMenuPage({
 }) {
   const appDispatch = useAppDispatch();
   const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
-    appDispatch(resetAppSettingsToDefault());
+    appDispatch(resetAppSettings());
     appDispatch(resetPairedDice());
     appDispatch(resetRollsHistory());
+    appDispatch(resetAppUpdate());
     Library.dispatchReset(appDispatch);
     navigation.navigate("onboarding");
   });
@@ -114,11 +101,11 @@ function SettingsMenuPage({
       case "Dice Software Information":
         navigation.navigate("firmwareInfo");
         break;
+      case "Check for Update":
+        navigation.navigate("checkForUpdate");
+        break;
       case "Reset App Settings":
         showConfirmReset();
-        break;
-      case "Check for Update":
-        onFetchUpdateAsync();
         break;
     }
   };
@@ -141,7 +128,7 @@ function SettingsMenuPage({
       <MenuSection
         title="Settings"
         start={3}
-        supPagesCount={2}
+        supPagesCount={3}
         openPage={openPage}
       />
     </ScrollView>

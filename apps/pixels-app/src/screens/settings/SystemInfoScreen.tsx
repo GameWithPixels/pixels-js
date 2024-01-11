@@ -1,5 +1,6 @@
 import * as Application from "expo-application";
 import { useLocales } from "expo-localization";
+import * as Updates from "expo-updates";
 import {
   PixelRatio,
   Platform,
@@ -41,6 +42,10 @@ function SystemInfoPage({
           <Text>Name: {Application.applicationName}</Text>
           <Text>Version: {Application.nativeApplicationVersion}</Text>
           <Text>Build: {Application.nativeBuildVersion}</Text>
+          {!Updates.isEmbeddedLaunch && Updates.createdAt && (
+            <Text>Update: {Updates.createdAt.toUTCString()}</Text>
+          )}
+          {Updates.isEmergencyLaunch && <Text>Using Fallback Version</Text>}
         </View>
         <PaperText variant="titleLarge" style={{ marginTop: 20 }}>
           System Information

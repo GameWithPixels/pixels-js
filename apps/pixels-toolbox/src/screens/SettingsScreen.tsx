@@ -198,7 +198,7 @@ function EasCard() {
           "Failed to download manifest from URL"
         )
       ) {
-        // Unfortunately we ge this error is there is no published update yet
+        // We get this error is there is no published update for this build
         setUpdateStatus("Up-To-Date (no update)");
       } else {
         setUpdateError(error, "check");

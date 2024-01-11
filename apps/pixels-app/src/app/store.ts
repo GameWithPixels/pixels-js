@@ -20,6 +20,7 @@ import {
 
 import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer from "~/features/store/appSettingsSlice";
+import appUpdateReducer from "~/features/store/appUpdateSlice";
 import diceRollsReducer from "~/features/store/diceRollsSlice";
 import animationsFlashesReducer from "~/features/store/library/animations/flashesSlice";
 import animationsGradientPatternReducer from "~/features/store/library/animations/gradientPatternSlice";
@@ -114,6 +115,7 @@ const rootReducer = combineReducers({
   // Transient data
   diceRolls: diceRollsReducer,
   dfuFiles: dfuFilesReducer,
+  appUpdate: appUpdateReducer,
 });
 
 export const store = configureStore({
