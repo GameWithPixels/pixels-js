@@ -78,6 +78,7 @@ export function TapToReconnect({
             style={connectAnimStyle}
           />
         )}
+        sentry-label="reconnect-dice"
         style={{ alignSelf: "flex-start" }}
         onPress={onPress}
       >

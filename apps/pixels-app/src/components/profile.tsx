@@ -149,6 +149,7 @@ function ProfileActions({
           //   <MaterialCommunityIcons name="upload" size={size} color={color} />
           // )}
           disabled={transferring}
+          sentry-label="activate-on-die"
           onPress={() => onAction?.("activate", profile)}
         >
           Activate

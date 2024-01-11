@@ -59,6 +59,7 @@ function MenuSection({
             noTopBorder={i > 0}
             squaredTopBorder={i > 0}
             squaredBottomBorder={i < (end ?? pages.length) - start - 1}
+            sentry-label={"settings-" + p.toLocaleLowerCase().replace(" ", "-")}
             style={{ backgroundColor: "transparent" }}
             onPress={() => openPage(p)}
           >

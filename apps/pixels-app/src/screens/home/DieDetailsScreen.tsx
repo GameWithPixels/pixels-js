@@ -139,9 +139,10 @@ export function DieStats({
         {["bars", "list", "grid"].map((vm) => (
           <StatsViewModeButton
             key={vm}
-            style={{ padding: 10 }}
             viewMode={vm as StatsViewMode}
             activeMode={viewMode}
+            sentry-label="view-mode"
+            style={{ padding: 10 }}
             onChange={setViewMode}
           />
         ))}

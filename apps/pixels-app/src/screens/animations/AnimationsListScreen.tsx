@@ -56,7 +56,7 @@ function PageHeader({
       <HeaderBar
         visible={visible}
         contentStyle={{ width: 210 }}
-        onShow={() => setVisible(true)}
+        onShowMenu={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
         <Text variant="labelLarge" style={{ alignSelf: "center" }}>
@@ -181,6 +181,7 @@ function AnimationsListPage({
         />
       </AppBackground>
       <FloatingAddButton
+        sentry-label="add-animation"
         onPress={() => navigation.navigate("createAnimation")}
       />
     </>

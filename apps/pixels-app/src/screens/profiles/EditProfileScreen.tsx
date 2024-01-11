@@ -49,12 +49,26 @@ const Header = observer(function Header({
     <PageHeader
       leftElement={
         onDiscardChanges
-          ? () => <Button onPress={onDiscardChanges}>Cancel</Button>
+          ? () => (
+              <Button
+                sentry-label="cancel-edit-profile"
+                onPress={onDiscardChanges}
+              >
+                Cancel
+              </Button>
+            )
           : undefined
       }
       rightElement={
         !onDiscardChanges || profile.isModified
-          ? () => <Button onPress={onCommitChanges}>Done</Button>
+          ? () => (
+              <Button
+                sentry-label="commit-edit-profile"
+                onPress={onCommitChanges}
+              >
+                Done
+              </Button>
+            )
           : undefined
       }
     >
@@ -78,12 +92,13 @@ const Header = observer(function Header({
         />
       ) : (
         <Pressable
-          onPress={() => setActionsMenuVisible(true)}
+          sentry-label="profile-menu"
           style={{
             alignSelf: "center",
             flexDirection: "row",
             alignItems: "flex-end",
           }}
+          onPress={() => setActionsMenuVisible(true)}
         >
           <Text variant="bodyLarge" style={{ paddingHorizontal: 5, color }}>
             {profile.name}

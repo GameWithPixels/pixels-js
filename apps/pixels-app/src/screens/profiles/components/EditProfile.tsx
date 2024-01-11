@@ -64,7 +64,11 @@ function TransferProfileButton({ onPress }: { onPress: () => void }) {
   );
   return (
     <View>
-      <GradientButton disabled={!!profileUuid} onPress={onPress}>
+      <GradientButton
+        disabled={!!profileUuid}
+        sentry-label="activate-on-die"
+        onPress={onPress}
+      >
         Activate On Die
       </GradientButton>
       {!!profileUuid && (
@@ -115,7 +119,11 @@ export function EditProfile({
               marginVertical: 10,
             }}
           >
-            {/* <OutlineButton style={{ width: "40%" }} onPress={() => {}}>
+            {/* <OutlineButton
+              sentry-label="preview-on-die"
+              style={{ width: "40%" }}
+              onPress={() => {}}
+            >
               Preview
             </OutlineButton> */}
             <TransferProfileButton onPress={() => setPickDieVisible(true)} />

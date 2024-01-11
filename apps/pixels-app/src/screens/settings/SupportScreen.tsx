@@ -12,11 +12,11 @@ function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
 }
 
-type OpenURLButtonProps = React.PropsWithChildren<{
+type OpenURLButtonProps = Required<React.PropsWithChildren> & {
   url: string;
-}>;
+};
 
-function URLButton({ url, children }: OpenURLButtonProps) {
+function URLButton({ url, ...props }: OpenURLButtonProps) {
   const handlePress = React.useCallback(async () => {
     // Checking if the link is supported for links with custom URL scheme.
     const supported = await Linking.canOpenURL(url);
@@ -26,7 +26,7 @@ function URLButton({ url, children }: OpenURLButtonProps) {
       await Linking.openURL(url);
     }
   }, [url]);
-  return <OutlineButton onPress={handlePress} children={children} />;
+  return <OutlineButton onPress={handlePress} {...props} />;
 }
 
 function SupportPage({
@@ -47,11 +47,17 @@ function SupportPage({
         <Text>
           To report issues or send suggestions, contact us via our website:
         </Text>
-        <URLButton url="https://gamewithpixels.com/contact-us/">
+        <URLButton
+          url="https://gamewithpixels.com/contact-us/"
+          sentry-label="contact-us"
+        >
           {"Contact Us" + TrailingSpaceFix}
         </URLButton>
         <Text style={{ marginTop: 20 }}>Or join us on our Discord server:</Text>
-        <URLButton url="https://discord.com/invite/9ghxBYQFYA">
+        <URLButton
+          url="https://discord.com/invite/9ghxBYQFYA"
+          sentry-label="discord-server"
+        >
           Pixels Discord Server
         </URLButton>
       </ScrollView>

@@ -73,8 +73,9 @@ export function DiceList({
       })}
       {onPressNewDie && (
         <AddDieButton
-          onPress={onPressNewDie}
+          sentry-label="new-die-from-list"
           style={{ marginTop: pixels.length ? 20 : 0 }}
+          onPress={onPressNewDie}
         />
       )}
     </View>
@@ -103,8 +104,9 @@ export function DiceColumn({
       ))}
       {onPressNewDie && (
         <AddDieButton
-          onPress={onPressNewDie}
+          sentry-label="new-die-from-column"
           contentStyle={{ aspectRatio: 1 }}
+          onPress={onPressNewDie}
         />
       )}
     </View>

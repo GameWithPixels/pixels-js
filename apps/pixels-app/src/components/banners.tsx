@@ -52,6 +52,10 @@ export function Banner({
               <MaterialCommunityIcons name="close" size={size} color={color} />
             )}
             size={20}
+            sentry-label={
+              "hide-banner-" + title?.toLocaleLowerCase().replace(" ", "-") ??
+              "unnamed"
+            }
             style={{ position: "absolute", right: -5, top: -5 }}
             onPress={onDismiss}
           />

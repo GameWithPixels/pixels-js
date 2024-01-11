@@ -155,8 +155,9 @@ function RolledConditionCard({
             } ${getFacesAsText(cond.faces)}`}
           </Text>
           <Pressable
-            onPress={props.disabled ? undefined : onDelete}
+            sentry-label="remove-rolled-rule"
             style={styles.actionIconBox}
+            onPress={props.disabled ? undefined : onDelete}
           >
             <MaterialCommunityIcons
               name="trash-can-outline"
@@ -399,6 +400,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
                     }}
                     outline={index !== i}
                     icon={Icon}
+                    sentry-label={"select-" + t}
                     onPress={() => scrollTo(i)}
                   />
                 </View>
@@ -471,6 +473,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
         <FloatingAddButton
           disabled={!availCount}
           bottomInset={bottomInset}
+          sentry-label="add-rolled-rule"
           onPress={() => {
             cancelAnimation(bounceSv);
             const newRule = createObservableRolledRule(

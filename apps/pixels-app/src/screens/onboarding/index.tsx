@@ -33,6 +33,7 @@ import {
 import {
   ActivityIndicator,
   Button,
+  ButtonProps,
   Switch,
   SwitchProps,
   Text as PaperText,
@@ -91,13 +92,15 @@ function LightUpYourGameImage({
   );
 }
 
-function SkipButton({ onPress }: { onPress: () => void }) {
+function SkipButton({
+  ...props
+}: Omit<ButtonProps, "children" | "style" | "textColor">) {
   const { colors } = useTheme();
   return (
     <Button
       textColor={makeTransparent(colors.onBackground, 0.5)}
       style={{ position: "absolute", top: -70, right: -20 }} // TODO better positioning
-      onPress={onPress}
+      {...props}
     >
       Skip
     </Button>
@@ -189,7 +192,9 @@ function WelcomeSlide({ onNext }: { onNext: () => void }) {
         <LightUpYourGameImage style={{ height: "30%", marginTop: 20 }} />
         <Title>Welcome to the Pixels app!</Title>
       </View>
-      <GradientButton onPress={onNext}>Start</GradientButton>
+      <GradientButton sentry-label="onboarding-start" onPress={onNext}>
+        Start
+      </GradientButton>
     </Slide>
   );
 }
@@ -495,8 +500,9 @@ function ScanSlide({
                 )}
                 <TightTextButton
                   underline
-                  onPress={() => setShowTurnOn(true)}
+                  sentry-label="show-help"
                   style={{ marginLeft: -10, alignSelf: "flex-start" }}
+                  onPress={() => setShowTurnOn(true)}
                 >
                   Tap to get help turning on your dice.
                 </TightTextButton>
@@ -509,7 +515,7 @@ function ScanSlide({
         </Animated.View>
       )}
       {!pixels.length ? (
-        <SkipButton onPress={onNext} />
+        <SkipButton sentry-label="skip-pairing" onPress={onNext} />
       ) : (
         <AnimatedGradientButton
           entering={FadeIn.duration(300).delay(200)}
@@ -726,7 +732,9 @@ function UpdateDiceSlide({
           Next
         </AnimatedGradientButton>
       )}
-      {step === "wait" && <SkipButton onPress={onNext} />}
+      {step === "wait" && (
+        <SkipButton sentry-label="skip-update-dice" onPress={onNext} />
+      )}
     </Slide>
   );
 }
@@ -755,7 +763,9 @@ function ReadySlide({
           With the app you may customize your {dice} Profile or create new ones.
         </Text>
       </View>
-      <GradientButton onPress={onDone}>Go</GradientButton>
+      <GradientButton sentry-label="onboarding-done" onPress={onDone}>
+        Go
+      </GradientButton>
     </Slide>
   );
 }

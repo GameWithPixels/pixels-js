@@ -7,6 +7,7 @@ import {
   RouteProp,
 } from "@react-navigation/native";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
+import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -42,6 +43,7 @@ import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
+import { AppStyles } from "./styles";
 import { AppDarkTheme, PixelThemes } from "./themes";
 
 import DiceBagIcon from "#/icons/navigation/dice-bag";
@@ -50,20 +52,36 @@ import ProfilesIcon from "#/icons/navigation/profiles";
 
 LogBox.ignoreLogs([
   "THREE.WebGLProgram: Program Info Log:",
-  // Ignore Sentry warnings
   "Sentry Logger [warn]:",
+  "ImmutableStateInvariantMiddleware",
 ]);
 
-if (!__DEV__) {
-  // Use Sentry for crash reporting
+const routingInstrumentation = !__DEV__
+  ? new Sentry.Native.ReactNavigationInstrumentation()
+  : undefined;
+if (routingInstrumentation) {
+  const loggingUri = Constants.expoConfig?.hostUri
+    ? `http://${Constants.expoConfig.hostUri}/logs`
+    : undefined;
+  // Construct a new instrumentation instance. This is needed to communicate between the integration and React
   Sentry.init({
-    dsn: "https://0a1c5f5b8bc2d93b005d30e6254e0681@o1258420.ingest.sentry.io/4506415846588416",
-    // DEV dsn: "https://4b7872190c6f2fb2c5ae87721f0e550d@o1258420.ingest.sentry.io/4506547864666112"
-    // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-    // We recommend adjusting this value in production.
-    tracesSampleRate: 1.0,
+    dsn: __DEV__
+      ? "https://4b7872190c6f2fb2c5ae87721f0e550d@o1258420.ingest.sentry.io/4506547864666112"
+      : "https://0a1c5f5b8bc2d93b005d30e6254e0681@o1258420.ingest.sentry.io/4506415846588416",
+    tracesSampleRate: 1.0, // TODO Set to a lower value in production
     enableInExpoDevelopment: true,
-    // Getting a lot of spam messages in the console... debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+    debug: __DEV__,
+    integrations: [
+      new Sentry.Native.ReactNativeTracing({
+        enableUserInteractionTracing: true,
+        idleTimeoutMs: 5000,
+        routingInstrumentation,
+        // https://docs.expo.dev/guides/using-sentry/#expo-dev-client-transactions-never-finish
+        shouldCreateSpanForRequest: (url) => {
+          return !__DEV__ || !loggingUri || !url.startsWith(loggingUri);
+        },
+      }),
+    ],
   });
 }
 
@@ -184,7 +202,14 @@ function updateThemesFonts() {
 // Let fonts time to load before hiding splash screen
 SplashScreen.preventAutoHideAsync();
 
-export default function App() {
+function App() {
+  // Instrument React Navigation
+  const navigation = React.useRef(null);
+  const onReady = React.useCallback(
+    () => routingInstrumentation?.registerNavigationContainer(navigation),
+    []
+  );
+
   // Load fonts
   const [fontsLoaded, fontError] = useFonts({
     "LTInternet-Regular": require("#/fonts/LTInternet-Regular.ttf"),
@@ -206,44 +231,47 @@ export default function App() {
   return (
     // TODO enable with reanimated 3.6
     // <React.StrictMode>
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <ReduxProvider store={store}>
-        <SafeAreaProvider>
-          <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-            <PaperProvider theme={AppDarkTheme}>
-              <ErrorBoundary FallbackComponent={ErrorFallback}>
-                <NavigationContainer theme={AppDarkTheme}>
-                  <RootSiblingParent>
-                    <ActionSheetProvider>
-                      <BottomSheetModalProvider>
-                        <StatusBar style="light" />
-                        <PersistGate
-                          loading={
-                            <View
-                              style={{
-                                flex: 1,
-                                alignContent: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <Text>Loading...</Text>
-                            </View>
-                          }
-                          persistor={persistor}
-                        >
-                          <AppTasks />
-                          <AppPage />
-                        </PersistGate>
-                      </BottomSheetModalProvider>
-                    </ActionSheetProvider>
-                  </RootSiblingParent>
-                </NavigationContainer>
-              </ErrorBoundary>
-            </PaperProvider>
-          </GestureHandlerRootView>
-        </SafeAreaProvider>
-      </ReduxProvider>
-    </View>
+    <Sentry.Native.TouchEventBoundary>
+      <View style={AppStyles.flex} onLayout={onLayoutRootView}>
+        <ReduxProvider store={store}>
+          <SafeAreaProvider>
+            <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+              <PaperProvider theme={AppDarkTheme}>
+                <ErrorBoundary FallbackComponent={ErrorFallback}>
+                  <NavigationContainer
+                    ref={navigation}
+                    theme={AppDarkTheme}
+                    onReady={onReady}
+                  >
+                    <RootSiblingParent>
+                      <ActionSheetProvider>
+                        <BottomSheetModalProvider>
+                          <StatusBar style="light" />
+                          <PersistGate
+                            loading={
+                              <View style={AppStyles.centeredFlex}>
+                                <Text>Loading...</Text>
+                              </View>
+                            }
+                            persistor={persistor}
+                          >
+                            <AppTasks />
+                            <AppPage />
+                          </PersistGate>
+                        </BottomSheetModalProvider>
+                      </ActionSheetProvider>
+                    </RootSiblingParent>
+                  </NavigationContainer>
+                </ErrorBoundary>
+              </PaperProvider>
+            </GestureHandlerRootView>
+          </SafeAreaProvider>
+        </ReduxProvider>
+      </View>
+    </Sentry.Native.TouchEventBoundary>
     // </React.StrictMode>
   );
 }
+
+// For instrumentation
+export default routingInstrumentation ? Sentry.Native.wrap(App) : App;

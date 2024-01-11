@@ -104,12 +104,13 @@ export function PixelFocusViewHeader({
         <View style={{ height: 10 + fonts.titleLarge.lineHeight }} />
       ) : !renameVisible ? (
         <Pressable
-          onPress={() => setActionsMenuVisible(true)}
+          sentry-label="actions-menu"
           style={{
             alignSelf: "center",
             flexDirection: "row",
             alignItems: "flex-end",
           }}
+          onPress={() => setActionsMenuVisible(true)}
         >
           <Text
             variant="titleLarge"
@@ -231,6 +232,7 @@ export function PixelFocusView({
           onHide={() => appDispatch(setShowNewPixelsAppBanner(false))}
         />
         <Pressable
+          sentry-label="header-bar-select"
           style={{
             width: "60%",
             aspectRatio: 1,
