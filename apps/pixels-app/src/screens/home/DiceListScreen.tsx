@@ -60,7 +60,7 @@ function PageHeader({
       <HeaderBar
         visible={visible}
         contentStyle={{ width: 220 }}
-        onShow={() => setVisible(true)}
+        onShowMenu={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
         <Text variant="labelLarge" style={{ alignSelf: "center" }}>

@@ -46,12 +46,13 @@ function EditDieProfilePage({
     <View style={{ height: "100%" }}>
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
         <Pressable
-          onPress={() => setActionsMenuVisible(true)}
+          sentry-label="actions-menu"
           style={{
             alignSelf: "center",
             flexDirection: "row",
             alignItems: "flex-end",
           }}
+          onPress={() => setActionsMenuVisible(true)}
         >
           <Text variant="bodyLarge" style={{ paddingHorizontal: 5, color }}>
             {`${pixelName}'s Profile`}

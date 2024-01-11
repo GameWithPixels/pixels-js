@@ -134,6 +134,7 @@ export function PairDiceBottomSheet({
           </BottomSheetScrollView>
           <GradientButton
             disabled={!selection.length}
+            sentry-label="pair-dice"
             style={{ marginBottom: 20 }}
             onPress={() => onDismiss(selection)}
           >

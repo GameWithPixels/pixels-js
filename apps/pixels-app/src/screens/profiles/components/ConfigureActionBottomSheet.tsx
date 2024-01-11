@@ -125,6 +125,7 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
           <Button
             compact
             textColor={colors.primary}
+            sentry-label="select-all-faces"
             onPress={() =>
               runInAction(
                 () =>
@@ -139,6 +140,7 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
           <Button
             compact
             textColor={colors.primary}
+            sentry-label="unselect-all-faces"
             onPress={() => runInAction(() => (faces.length = 0))}
           >
             Unselect All
@@ -164,6 +166,7 @@ const ConfigureRollingCondition = observer(function ConfigureRollingCondition({
         minimumValue={1}
         maximumValue={30}
         step={0.1}
+        sentry-label="change-rolling-recheck-after"
         onValueChange={(v) => runInAction(() => (condition.recheckAfter = v))}
       />
     </>
@@ -184,6 +187,7 @@ const ConfigureIdleCondition = observer(function ConfigureIdleCondition({
         minimumValue={0.5}
         maximumValue={30}
         step={0.1}
+        sentry-label="change-idle-period"
         onValueChange={(v) => runInAction(() => (condition.period = v))}
       />
     </>
@@ -204,6 +208,7 @@ const ConfigureBatteryCondition = observer(function ConfigureBatteryCondition({
         minimumValue={5}
         maximumValue={60}
         step={1}
+        sentry-label="change-battery-recheck-after"
         onValueChange={(v) => runInAction(() => (condition.recheckAfter = v))}
       />
     </>
@@ -225,19 +230,20 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       <Text variant="titleMedium">Play</Text>
       <GradientButton
         outline
-        onPress={() => setAnimPickerVisible(true)}
+        sentry-label="select-animation"
         style={{ marginHorizontal: 10 }}
+        onPress={() => setAnimPickerVisible(true)}
       >
         {action.animation?.name ?? "Select Animation"}
       </GradientButton>
       <PickAnimationBottomSheet
         animation={action.animation}
         dieType={dieType}
+        visible={animPickerVisible}
         onSelectAnimation={(anim) => {
           runInAction(() => (action.animation = anim as Profiles.Animation)); // TODO readonly
           setAnimPickerVisible(false);
         }}
-        visible={animPickerVisible}
         onDismiss={() => setAnimPickerVisible(false)}
       />
       {/* <Text variant="titleMedium">Repeat</Text>
@@ -252,6 +258,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableRipple
           disabled={action.duration === undefined}
+          sentry-label="reset-animation-duration"
           style={{ padding: 10, paddingRight: 20, zIndex: 1 }} // Render on top of scaled slider
           onPress={() => runInAction(() => (action.duration = undefined))}
         >
@@ -273,6 +280,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
             minimumValue={0.1}
             maximumValue={10}
             step={0.1}
+            sentry-label="animation-duration"
             onValueChange={(v) => runInAction(() => (action.duration = v))}
           />
         </View>
@@ -289,7 +297,11 @@ const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
   return (
     <>
       <Text variant="titleMedium">Play</Text>
-      <GradientButton outline onPress={() => {}}>
+      <GradientButton
+        outline
+        sentry-label="select-sound-file"
+        onPress={() => {}}
+      >
         Select Sound File
       </GradientButton>
       <Text variant="titleMedium">Volume</Text>
@@ -324,6 +336,7 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         minimumValue={1}
         maximumValue={100}
         step={1}
+        sentry-label="change-volume"
         onValueChange={(v) => runInAction(() => (action.volume = v))}
       />
     </>

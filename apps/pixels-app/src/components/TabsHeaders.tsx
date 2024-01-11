@@ -45,6 +45,9 @@ export function TabsHeaders({
             }}
           >
             <GradientButton
+              outline={n !== selected}
+              sentry-label={"tab-" + n.toLocaleLowerCase().replace(" ", "-")}
+              labelStyle={{ marginHorizontal: 0 }}
               style={{
                 borderWidth: 0,
                 borderRadius,
@@ -54,8 +57,6 @@ export function TabsHeaders({
                 borderBottomRightRadius:
                   i === names.length - 1 ? borderRadius : 0,
               }}
-              labelStyle={{ marginHorizontal: 0 }}
-              outline={n !== selected}
               onPress={() => onSelect?.(n)}
             >
               {n}

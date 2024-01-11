@@ -6,10 +6,10 @@ import { Menu, MenuProps, Text, useTheme } from "react-native-paper";
 import { iOSBorderRadiusFix } from "~/fixes";
 
 export function HeaderBar({
-  onShow,
+  onShowMenu,
   onSelect,
   ...props
-}: { onShow: () => void; onSelect?: () => void } & Omit<
+}: { onShowMenu: () => void; onSelect?: () => void } & Omit<
   MenuProps,
   "anchor" | "theme"
 >) {
@@ -28,7 +28,11 @@ export function HeaderBar({
       }}
     >
       {onSelect && (
-        <Pressable style={{ padding }} onPress={onSelect}>
+        <Pressable
+          sentry-label="header-bar-select"
+          style={{ padding }}
+          onPress={onSelect}
+        >
           <Text
             variant="bodySmall"
             style={{
@@ -48,7 +52,11 @@ export function HeaderBar({
         </Pressable>
       )}
       {/* Make bigger pressable area */}
-      <Pressable style={{ padding }} onPress={onShow}>
+      <Pressable
+        sentry-label="header-bar-show-menu"
+        style={{ padding }}
+        onPress={onShowMenu}
+      >
         <MaterialCommunityIcons
           name="dots-horizontal"
           size={height - 8}

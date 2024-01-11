@@ -93,6 +93,7 @@ function EditAnimationPage({
             <AnimationDieRenderer dieType="d20" animation={animation} />
           </View>
           <GradientButton
+            sentry-label="preview-on-die"
             style={{ width: "50%", alignSelf: "center" }}
             onPress={() => {}}
           >

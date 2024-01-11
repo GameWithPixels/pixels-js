@@ -140,6 +140,7 @@ export const EditActionCard = observer(function EditActionCard({
               {getActionTypeLabel(actionType)}
             </AnimatedText>
             <Pressable
+              sentry-label="remove-action"
               style={styles.actionIconBox}
               onPress={() => {
                 !!rule &&

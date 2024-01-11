@@ -75,6 +75,7 @@ function CheckForUpdatePage({
         <Button
           mode="outlined"
           disabled={checking || !appUpdate.gotResponse}
+          sentry-label={appUpdate.manifest ? "update-now" : "check-for-update"}
           style={{ marginTop: 20 }}
           onPress={async () => {
             setChecking(true);

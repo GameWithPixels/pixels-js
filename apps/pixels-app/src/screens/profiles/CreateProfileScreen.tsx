@@ -117,11 +117,17 @@ function CreateProfilePage({
     <View style={{ height: "100%", paddingHorizontal: 10 }}>
       <PageHeader
         leftElement={() => (
-          <Button onPress={() => navigation.goBack()}>Cancel</Button>
+          <Button
+            sentry-label="cancel-new-profile"
+            onPress={() => navigation.goBack()}
+          >
+            Cancel
+          </Button>
         )}
         rightElement={() => (
           <Button
             disabled={!selectedProfile && !profileName.trim().length}
+            sentry-label="create-profile"
             onPress={createProfile}
           >
             Create

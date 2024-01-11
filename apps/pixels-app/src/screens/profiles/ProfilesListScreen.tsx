@@ -65,7 +65,7 @@ function PageHeader({
       <HeaderBar
         visible={visible}
         contentStyle={{ width: 190 }}
-        onShow={() => setVisible(true)}
+        onShowMenu={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
         <Text variant="labelLarge" style={{ alignSelf: "center" }}>
@@ -229,7 +229,10 @@ function ProfilesListPage({
         viewMode={viewMode}
         onSelectViewMode={(vm) => setViewMode(vm)}
       />
-      <FloatingAddButton onPress={() => navigation.navigate("createProfile")} />
+      <FloatingAddButton
+        sentry-label="add-profile"
+        onPress={() => navigation.navigate("createProfile")}
+      />
       <PickDieBottomSheet
         dieType={profileToActivate?.dieType}
         visible={!!profileToActivate}

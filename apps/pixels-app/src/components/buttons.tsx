@@ -2,9 +2,7 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-  ColorValue,
   StyleProp,
-  StyleSheet,
   TextProps,
   TextStyle,
   View,
@@ -15,7 +13,6 @@ import {
   Button,
   ButtonProps,
   IconButton,
-  IconButtonProps,
   Text,
   TouchableRipple,
   TouchableRippleProps,
@@ -23,7 +20,6 @@ import {
 } from "react-native-paper";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
-import { getTextColorStyle } from "./colors";
 import { IconProps } from "./icons";
 
 import AddNewIcon from "#/icons/common/fab-add-with-gradient";
@@ -36,75 +32,75 @@ import CaretLeftIcon from "#/icons/profiles/caret-left";
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { withAnimated } from "~/withAnimated";
 
-const emptyText = "";
+// const emptyText = "";
 
-export function LargeIconButton({
-  icon,
-  iconSize,
-  ...props
-}: {
-  icon: React.FC<{ size: number; color: ColorValue }>;
-  iconSize: number;
-} & Omit<ButtonProps, "icon" | "children">) {
-  const { colors } = useTheme();
-  // Trying to get around the fact that Paper's button expects a child to be displayed as text
-  return (
-    <Button
-      mode="outlined"
-      icon={() => (
-        <View style={{ paddingLeft: iconSize / 2 }}>
-          {icon({
-            size: iconSize,
-            color: props.disabled
-              ? colors.surfaceDisabled
-              : props.mode === "contained"
-                ? colors.onPrimary
-                : props.mode === "contained-tonal"
-                  ? colors.onSecondaryContainer
-                  : colors.onSurface,
-          })}
-        </View>
-      )}
-      {...props}
-    >
-      {emptyText}
-    </Button>
-  );
-}
+// export function LargeIconButton({
+//   icon,
+//   iconSize,
+//   ...props
+// }: {
+//   icon: React.FC<{ size: number; color: ColorValue }>;
+//   iconSize: number;
+// } & Omit<ButtonProps, "icon" | "children">) {
+//   const { colors } = useTheme();
+//   // Trying to get around the fact that Paper's button expects a child to be displayed as text
+//   return (
+//     <Button
+//       mode="outlined"
+//       icon={() => (
+//         <View style={{ paddingLeft: iconSize / 2 }}>
+//           {icon({
+//             size: iconSize,
+//             color: props.disabled
+//               ? colors.surfaceDisabled
+//               : props.mode === "contained"
+//                 ? colors.onPrimary
+//                 : props.mode === "contained-tonal"
+//                   ? colors.onSecondaryContainer
+//                   : colors.onSurface,
+//           })}
+//         </View>
+//       )}
+//       {...props}
+//     >
+//       {emptyText}
+//     </Button>
+//   );
+// }
 
-export function LargeGradientIconButton({
-  icon,
-  iconSize,
-  disabled,
-  style,
-  ...props
-}: {
-  icon: React.FC<{ size: number; color: ColorValue }>;
-  iconSize: number;
-} & Omit<ButtonProps, "icon" | "children">) {
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness);
-  return (
-    <LinearGradient
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      colors={
-        disabled
-          ? [colors.surfaceDisabled, colors.surfaceDisabled]
-          : [colors.primary, colors.secondary]
-      }
-      style={{ borderRadius, overflow: "hidden" }}
-    >
-      <TouchableRipple
-        disabled={disabled}
-        style={[{ flex: 1, paddingVertical: 7, alignItems: "center" }, style]}
-        {...props}
-      >
-        {icon({ size: iconSize, color: colors.onSurface })}
-      </TouchableRipple>
-    </LinearGradient>
-  );
-}
+// export function LargeGradientIconButton({
+//   icon,
+//   iconSize,
+//   disabled,
+//   style,
+//   ...props
+// }: {
+//   icon: React.FC<{ size: number; color: ColorValue }>;
+//   iconSize: number;
+// } & Omit<ButtonProps, "icon" | "children">) {
+//   const { colors, roundness } = useTheme();
+//   const borderRadius = getBorderRadius(roundness);
+//   return (
+//     <LinearGradient
+//       start={{ x: 0, y: 0 }}
+//       end={{ x: 1, y: 0 }}
+//       colors={
+//         disabled
+//           ? [colors.surfaceDisabled, colors.surfaceDisabled]
+//           : [colors.primary, colors.secondary]
+//       }
+//       style={{ borderRadius, overflow: "hidden" }}
+//     >
+//       <TouchableRipple
+//         disabled={disabled}
+//         style={[{ flex: 1, paddingVertical: 7, alignItems: "center" }, style]}
+//         {...props}
+//       >
+//         {icon({ size: iconSize, color: colors.onSurface })}
+//       </TouchableRipple>
+//     </LinearGradient>
+//   );
+// }
 
 export function TightTextButton({
   children,
@@ -130,29 +126,29 @@ export function TightTextButton({
   );
 }
 
-export function CollapseButton({
-  collapsed,
-  onToggle,
-  ...props
-}: Omit<IconButtonProps, "icon" | "onPress"> & {
-  collapsed?: boolean;
-  onToggle?: () => void;
-}) {
-  return (
-    <IconButton
-      icon={({ size, color }) => (
-        <MaterialCommunityIcons
-          name={collapsed ? "chevron-right" : "chevron-down"}
-          size={size}
-          color={color}
-        />
-      )}
-      size={16}
-      onPress={onToggle}
-      {...props}
-    />
-  );
-}
+// export function CollapseButton({
+//   collapsed,
+//   onToggle,
+//   ...props
+// }: Omit<IconButtonProps, "icon" | "onPress"> & {
+//   collapsed?: boolean;
+//   onToggle?: () => void;
+// }) {
+//   return (
+//     <IconButton
+//       icon={({ size, color }) => (
+//         <MaterialCommunityIcons
+//           name={collapsed ? "chevron-right" : "chevron-down"}
+//           size={size}
+//           color={color}
+//         />
+//       )}
+//       size={16}
+//       onPress={onToggle}
+//       {...props}
+//     />
+//   );
+// }
 
 export type StatsViewMode = "bars" | "list" | "grid";
 
@@ -205,44 +201,6 @@ export function SortButton({
       {...props}
     >
       <Icon size={16} />
-    </TouchableRipple>
-  );
-}
-
-export function TabButton({
-  title,
-  icon,
-  selected,
-  style,
-  ...props
-}: {
-  title: string;
-  icon: React.FC<{ color: string }>;
-  selected?: boolean;
-  style?: StyleProp<ViewStyle>;
-} & Omit<TouchableRippleProps, "children" | "style">) {
-  const { colors } = useTheme();
-  const color = selected ? colors.primary : colors.onSurface;
-  const borderBottomWidth = selected ? 2 : StyleSheet.hairlineWidth;
-  const textStyle = getTextColorStyle(colors, props.disabled, color);
-  return (
-    <TouchableRipple
-      style={[
-        {
-          alignItems: "center",
-          paddingBottom: 5 - borderBottomWidth,
-          gap: 5,
-          borderBottomColor: color,
-          borderBottomWidth,
-        },
-        style,
-      ]}
-      {...props}
-    >
-      <>
-        {icon({ color })}
-        <Text style={textStyle}>{title}</Text>
-      </>
     </TouchableRipple>
   );
 }
