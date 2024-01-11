@@ -1,5 +1,6 @@
 // FIX this file contain various fixes for React Native or other external libraries
 
+import * as Updates from "expo-updates";
 import { Platform } from "react-native";
 
 // https://github.com/facebook/react-native/issues/15114
@@ -18,3 +19,11 @@ export const androidBottomSheetSliderFix = {
   activeOffsetY: Platform.OS === "android" ? [-1, 1] : undefined,
   failOffsetX: Platform.OS === "android" ? [-5, 5] : undefined,
 };
+
+export function isErrorNoUpdatePublished(error?: string): boolean {
+  // We get this error is there is no published update for this build
+  return (
+    Updates.isEmbeddedLaunch &&
+    !!error?.startsWith("Failed to download manifest from URL")
+  );
+}

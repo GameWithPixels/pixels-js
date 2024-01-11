@@ -42,7 +42,7 @@ const appSettingsSlice = createSlice({
   name: "appSettings",
   initialState,
   reducers: {
-    resetAppSettingsToDefault() {
+    resetAppSettings() {
       return initialState;
     },
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
@@ -82,7 +82,7 @@ const appSettingsSlice = createSlice({
 });
 
 export const {
-  resetAppSettingsToDefault,
+  resetAppSettings,
   setThemeMode,
   setShowOnboarding,
   setShowNewPixelsAppBanner,
