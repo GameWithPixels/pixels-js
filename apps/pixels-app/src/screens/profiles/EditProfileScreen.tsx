@@ -24,15 +24,16 @@ import { EditProfileScreenProps } from "~/navigation";
 
 const Header = observer(function Header({
   profile,
+  noDiscard,
   onCommitChanges,
   onDiscardChanges,
   onEditAdvancedRules,
   onDeleteProfile,
 }: {
   profile: Profiles.Profile;
+  noDiscard?: boolean;
   onCommitChanges: () => void;
-  onDiscardChanges?: () => void;
-  confirmDiscard?: () => void;
+  onDiscardChanges: () => void;
   onEditAdvancedRules: () => void;
   onDeleteProfile?: () => void;
 }) {
@@ -45,22 +46,35 @@ const Header = observer(function Header({
     ? colors.onSurfaceDisabled
     : colors.onSurface;
 
+  const showConfirmDiscard = useConfirmActionSheet(
+    "Discard changes",
+    onDiscardChanges
+  );
+
+  const initialLastChanged = React.useMemo(
+    () => profile.lastChanged,
+    [profile]
+  );
+  const isModified = profile.lastChanged !== initialLastChanged;
+
   return (
     <PageHeader
       leftElement={
-        onDiscardChanges
-          ? () => (
+        noDiscard
+          ? undefined
+          : () => (
               <Button
                 sentry-label="cancel-edit-profile"
-                onPress={onDiscardChanges}
+                onPress={
+                  isModified ? () => showConfirmDiscard() : onDiscardChanges
+                }
               >
                 Cancel
               </Button>
             )
-          : undefined
       }
       rightElement={
-        !onDiscardChanges || profile.isModified
+        noDiscard ?? isModified
           ? () => (
               <Button
                 sentry-label="commit-edit-profile"
@@ -147,10 +161,6 @@ function EditProfilePage({
     discardProfile(profileUuid);
     goBack();
   }, [discardProfile, goBack, profileUuid]);
-  const showConfirmDiscard = useConfirmActionSheet(
-    "Discard changes",
-    discardChanges
-  );
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
       if (ruleIndex.conditionType === "rolled") {
@@ -171,12 +181,9 @@ function EditProfilePage({
     <View style={{ height: "100%" }}>
       <Header
         profile={profile}
+        noDiscard={noDiscard}
         onCommitChanges={commitChanges}
-        onDiscardChanges={
-          noDiscard
-            ? undefined
-            : () => (profile.isModified ? showConfirmDiscard : discardChanges)()
-        }
+        onDiscardChanges={discardChanges}
         onEditAdvancedRules={() =>
           navigation.navigate("editAdvancedRules", { profileUuid })
         }
