@@ -15,24 +15,24 @@ const editableProfiles = new Map<
   string,
   {
     profile: Profiles.Profile;
-    onChange: () => void;
+    disposer: () => void;
   }
 >();
 
 function create(profileUuid: string): Profiles.Profile {
   const profile = readProfile(profileUuid, store.getState().library, true);
   let firstAutorun = true;
-  const onChange = autorun(() => {
+  const disposer = autorun(() => {
     if (firstAutorun) {
       // `JSON.stringify` will touch all properties of the profile` so they are automatically observed.
       JSON.stringify(profile);
       firstAutorun = false;
     } else {
-      // TODO remove from EditProfile
-      runInAction(() => (profile.isModified = true));
+      disposer();
+      runInAction(() => (profile.lastChanged = new Date()));
     }
   });
-  editableProfiles.set(profileUuid, { profile, onChange });
+  editableProfiles.set(profileUuid, { profile, disposer });
   return profile;
 }
 
@@ -48,11 +48,14 @@ export function useCommitEditableProfile(): {
   const appDispatch = useAppDispatch();
   return {
     commitProfile: (profileUuid: string) => {
-      const profile = editableProfiles.get(profileUuid)?.profile;
-      if (profile) {
-        runInAction(() => (profile.lastChanged = new Date()));
-        appDispatch(Library.Profiles.update(Serializable.fromProfile(profile)));
+      const item = editableProfiles.get(profileUuid);
+      if (item) {
+        const { profile, disposer } = item;
+        disposer();
         editableProfiles.delete(profileUuid);
+        appDispatch(Library.Profiles.update(Serializable.fromProfile(profile)));
+        // Update original profile
+        readProfile(profileUuid, store.getState().library);
       }
     },
     discardProfile: (profileUuid: string) =>

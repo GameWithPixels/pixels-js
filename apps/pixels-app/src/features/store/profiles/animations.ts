@@ -72,19 +72,6 @@ function createAnimation(
   throw new Error(`Animation ${uuid} not found`);
 }
 
-function updateAnimBase(
-  anim: Profiles.Animation,
-  data: Serializable.AnimationData
-): void {
-  anim.name = data.name;
-  anim.duration = data.duration;
-  anim.animFlags = combineFlags(
-    keysToValues(data.animFlags, Profiles.AnimationFlagsValues)
-  );
-  anim.category = data.category;
-  anim.dieType = data.dieType;
-}
-
 function updateAnimation(
   anim: Profiles.Animation,
   library: LibraryState
@@ -162,8 +149,21 @@ function updateAnimation(
   throw new Error(`Animation ${uuid} not found`);
 }
 
-function updateColor(color: Profiles.Color, colorData: string) {
+function updateAnimBase(
+  anim: Profiles.Animation,
+  data: Serializable.AnimationData
+): void {
+  anim.name = data.name;
+  anim.duration = data.duration;
+  anim.animFlags = combineFlags(
+    keysToValues(data.animFlags, Profiles.AnimationFlagsValues)
+  );
+  anim.category = data.category;
+  anim.dieType = data.dieType;
+}
+
+function updateColor(color: Profiles.Color, colorData: string): void {
   const newColor = Serializable.toColor(colorData);
   color.mode = newColor.mode;
-  color.color = newColor.color;
+  color.color.assign(newColor.color);
 }

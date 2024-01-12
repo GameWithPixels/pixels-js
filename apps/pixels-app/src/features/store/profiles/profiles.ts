@@ -48,11 +48,13 @@ function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
   profile.name = profileData.name;
   profile.description = profileData.description;
   profile.dieType = profileData.dieType;
-  profile.creationDate = new Date(profileData.creationDate);
-  profile.lastChanged = new Date(profileData.lastChanged);
-  profile.lastUsed = profileData.lastUsed
-    ? new Date(profileData.lastUsed)
-    : undefined;
+  profile.creationDate.setTime(profileData.creationDate);
+  profile.lastChanged.setTime(profileData.lastChanged);
+  if (profile.lastUsed?.getTime() !== profileData.lastUsed) {
+    profile.lastUsed = profileData.lastUsed
+      ? new Date(profileData.lastUsed)
+      : undefined;
+  }
   // Update rules
   const rulesCount = profileData.rules.length;
   profile.rules.length = rulesCount;
@@ -93,7 +95,7 @@ function updateCondition(
   condition: Profiles.Condition,
   { type, index }: Serializable.RuleData["condition"],
   conditionSetData: Serializable.ConditionSetData
-) {
+): void {
   switch (type) {
     case "helloGoodbye":
       {
@@ -117,7 +119,11 @@ function updateCondition(
       {
         const cond = condition as Profiles.ConditionRolled;
         const data = conditionSetData[type][index];
-        cond.faces = data.faces;
+        const facesCount = data.faces.length;
+        cond.faces.length = facesCount;
+        for (let j = 0; j < facesCount; ++j) {
+          cond.faces[j] = data.faces[j];
+        }
       }
       break;
     case "crooked":
@@ -158,7 +164,7 @@ function updateAction(
   { type, index }: Serializable.RuleData["actions"][number],
   actionSetData: Serializable.ActionSetData,
   library: LibraryState
-) {
+): void {
   switch (type) {
     case "playAnimation":
       {

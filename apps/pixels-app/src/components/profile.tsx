@@ -225,7 +225,6 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
     () =>
       computed(() => {
         const rolledProfile = new Profiles.Profile({
-          ...profile,
           rules: profile.rules.filter(
             (r) =>
               r.condition.type === "rolled" &&
