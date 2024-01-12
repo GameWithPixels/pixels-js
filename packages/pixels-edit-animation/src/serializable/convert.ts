@@ -1,6 +1,8 @@
 import {
   AnimationFlagsValues,
   BatteryStateFlagsValues,
+  Color,
+  ColorUtils,
   ConnectionStateFlagsValues,
   DataSet,
   FaceCompareFlagsValues,
@@ -190,6 +192,7 @@ export function toProfile(
           return new EditActionPlayAnimation({
             ...actData,
             animation: checkGetAnimation(actData.animationUuid),
+            colors: actData.colors.map((c) => new Color(c)),
           });
         }
         case "playAudioClip": {
@@ -447,6 +450,10 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
                 animationUuid: act.animation?.uuid,
                 face: act.face,
                 loopCount: act.loopCount,
+                duration: act.duration,
+                fade: act.fade,
+                intensity: act.intensity,
+                colors: act.colors.map(ColorUtils.colorToString),
               });
             }
             break;

@@ -230,7 +230,7 @@ export async function startDfu(
         targetId,
         options?.deviceName,
         filePath,
-        options?.retries !== undefined ? options.retries : 2,
+        options?.retries ?? 2,
         options?.disableButtonlessServiceInSecureDfu ?? false,
         options?.forceDfu ?? false,
         options?.forceScanningForNewAddressInLegacyDfu ?? false,

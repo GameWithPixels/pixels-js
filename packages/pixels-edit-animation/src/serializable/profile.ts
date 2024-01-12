@@ -40,6 +40,10 @@ export interface ProfileData extends UniqueNamedData {
       animationUuid?: string;
       face: number;
       loopCount: number;
+      duration?: number;
+      fade?: number;
+      intensity?: number;
+      colors: string[];
     }[];
     playAudioClip: {
       clipUuid?: string;

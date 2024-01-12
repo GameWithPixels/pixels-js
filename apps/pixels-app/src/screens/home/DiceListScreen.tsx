@@ -40,6 +40,7 @@ import {
 } from "~/features/store/appSettingsSlice";
 import { usePairedPixels, usePixelsScanner } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
+import { AppStyles } from "~/styles";
 
 type DiceViewMode = "focus" | "list" | "grid";
 
@@ -63,7 +64,7 @@ function PageHeader({
         onShowMenu={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
-        <Text variant="labelLarge" style={{ alignSelf: "center" }}>
+        <Text variant="labelLarge" style={AppStyles.selfCentered}>
           View Modes
         </Text>
         <View

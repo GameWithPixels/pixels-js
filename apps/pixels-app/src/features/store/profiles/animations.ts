@@ -162,7 +162,7 @@ function updateAnimBase(
   anim.dieType = data.dieType;
 }
 
-function updateColor(color: Profiles.Color, colorData: string): void {
+function updateColor(color: Profiles.FaceColor, colorData: string): void {
   const newColor = Serializable.toColor(colorData);
   color.mode = newColor.mode;
   color.color.assign(newColor.color);

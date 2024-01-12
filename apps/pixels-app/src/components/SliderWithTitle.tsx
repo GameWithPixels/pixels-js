@@ -78,11 +78,16 @@ export function SliderWithTitle({
   );
 }
 
+export interface SliderWithValueProps extends SliderProps {
+  unit?: string;
+  fractionDigits?: number;
+}
+
 export function SliderWithValue({
   unit,
   fractionDigits,
   ...props
-}: { unit?: string; fractionDigits?: number } & SliderProps) {
+}: SliderWithValueProps) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (

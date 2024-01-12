@@ -307,7 +307,6 @@ export function DieFaceButton({
       }
       style={[
         {
-          width: 60,
           borderWidth: selected ? 0 : 1,
           borderRadius,
           borderColor: colors.outline,
@@ -328,12 +327,12 @@ export function DieFaceButton({
         {...props}
       >
         <Text
-          variant="bodyLarge"
+          variant="labelLarge"
           numberOfLines={1}
           style={{
             alignSelf: "center",
             textAlign: "center",
-            marginVertical: 6 + (selected ? 1 : 0),
+            marginVertical: 4 + (selected ? 1 : 0),
             color: textColor,
           }}
         >

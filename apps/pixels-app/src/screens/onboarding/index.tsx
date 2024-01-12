@@ -70,6 +70,7 @@ import { getNativeErrorMessage } from "~/features/utils";
 import { useDfuBundle } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { OnboardingScreenProps } from "~/navigation";
+import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function diceStr(count: number): string {
@@ -111,7 +112,7 @@ function Title({ children }: React.PropsWithChildren) {
   return (
     <PaperText
       variant="titleLarge"
-      style={{ alignSelf: "center" }}
+      style={AppStyles.selfCentered}
       children={children}
     />
   );

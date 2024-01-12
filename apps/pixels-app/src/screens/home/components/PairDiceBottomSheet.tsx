@@ -20,6 +20,7 @@ import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PairDiceBottomSheet({
@@ -80,7 +81,7 @@ export function PairDiceBottomSheet({
             gap: 20,
           }}
         >
-          <Text variant="titleMedium" style={{ alignSelf: "center" }}>
+          <Text variant="titleMedium" style={AppStyles.selfCentered}>
             Select Pixels Dice to Pair
           </Text>
           <BottomSheetScrollView>

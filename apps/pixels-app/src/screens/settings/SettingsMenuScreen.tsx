@@ -11,6 +11,7 @@ import { resetRollsHistory } from "~/features/store/diceRollsSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { useConfirmActionSheet } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
+import { AppStyles } from "~/styles";
 
 const pages = [
   // "Audio Clips",
@@ -48,7 +49,7 @@ function MenuSection({
     <>
       <Text
         variant="titleLarge"
-        style={{ alignSelf: "center" }}
+        style={AppStyles.selfCentered}
         children={title}
       />
       <View>

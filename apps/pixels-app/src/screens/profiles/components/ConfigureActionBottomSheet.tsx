@@ -5,6 +5,7 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
+import { assert } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   DiceUtils,
@@ -12,7 +13,7 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import * as Clipboard from "expo-clipboard";
-import { runInAction } from "mobx";
+import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { Platform, View } from "react-native";
@@ -24,14 +25,20 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import { PickAnimationBottomSheet } from "./PickAnimationBottomSheet";
-
+import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
-import { SliderWithValue } from "~/components/SliderWithTitle";
+import { KeyframeGradient } from "~/components/KeyframeGradient";
+import { PickAnimationBottomSheet } from "~/components/PickAnimationBottomSheet";
+import { PickColorBottomSheet } from "~/components/PickColorBottomSheet";
+import {
+  SliderWithValue,
+  SliderWithValueProps,
+} from "~/components/SliderWithTitle";
 import { GradientButton } from "~/components/buttons";
-import { TrailingSpaceFix } from "~/fixes";
+import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function TextInput({
@@ -98,55 +105,57 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
   return (
     <>
       <Text variant="titleMedium">When roll is</Text>
-      <FacesGrid
-        dieType={dieType}
-        selected={faces}
-        unavailable={unavailableFaces}
-        onToggleFace={(face) =>
-          runInAction(() => {
-            const i = faces.indexOf(face);
-            if (i >= 0) {
-              faces.splice(i, 1);
-            } else {
-              faces.push(face);
-            }
-          })
-        }
-        style={{ marginHorizontal: 10 }}
-      />
-      {DiceUtils.getFaceCount(dieType) > 6 && (
-        <View
-          style={{
-            flexDirection: "row",
-            marginHorizontal: 12,
-            justifyContent: "space-between",
-          }}
-        >
-          <Button
-            compact
-            textColor={colors.primary}
-            sentry-label="select-all-faces"
-            onPress={() =>
-              runInAction(
-                () =>
-                  (condition.faces = DiceUtils.getDieFaces(dieType).filter(
-                    (f) => !unavailableFaces?.includes(f)
-                  ))
-              )
-            }
+      <View>
+        <FacesGrid
+          dieType={dieType}
+          selected={faces}
+          unavailable={unavailableFaces}
+          onToggleFace={(face) =>
+            runInAction(() => {
+              const i = faces.indexOf(face);
+              if (i >= 0) {
+                faces.splice(i, 1);
+              } else {
+                faces.push(face);
+              }
+            })
+          }
+          style={{ marginHorizontal: 10 }}
+        />
+        {DiceUtils.getFaceCount(dieType) > 6 && (
+          <View
+            style={{
+              flexDirection: "row",
+              marginHorizontal: 10,
+              justifyContent: "space-between",
+            }}
           >
-            {"Select All" + TrailingSpaceFix}
-          </Button>
-          <Button
-            compact
-            textColor={colors.primary}
-            sentry-label="unselect-all-faces"
-            onPress={() => runInAction(() => (faces.length = 0))}
-          >
-            Unselect All
-          </Button>
-        </View>
-      )}
+            <Button
+              compact
+              textColor={colors.primary}
+              sentry-label="select-all-faces"
+              onPress={() =>
+                runInAction(
+                  () =>
+                    (condition.faces = DiceUtils.getDieFaces(dieType).filter(
+                      (f) => !unavailableFaces?.includes(f)
+                    ))
+                )
+              }
+            >
+              {"Select All" + TrailingSpaceFix}
+            </Button>
+            <Button
+              compact
+              textColor={colors.primary}
+              sentry-label="unselect-all-faces"
+              onPress={() => runInAction(() => (faces.length = 0))}
+            >
+              Unselect All
+            </Button>
+          </View>
+        )}
+      </View>
     </>
   );
 });
@@ -223,69 +232,319 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   dieType?: PixelDieType;
 }) {
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
-  const defaultDuration = action.animation?.duration ?? 1;
-  const { colors } = useTheme();
+  const color = (action.animation as Partial<Profiles.AnimationFlashes>)?.color;
+  const keyframes = (action.animation as Profiles.AnimationGradient)?.gradient
+    ?.keyframes;
+  const repeatCount = (action.animation as Partial<Profiles.AnimationFlashes>)
+    ?.count;
+  const fading = (action.animation as Partial<Profiles.AnimationFlashes>)?.fade;
+  const intensity = (action.animation as Partial<Profiles.AnimationRainbow>)
+    ?.intensity;
   return (
     <>
-      <Text variant="titleMedium">Play</Text>
-      <GradientButton
-        outline
-        sentry-label="select-animation"
-        style={{ marginHorizontal: 10 }}
-        onPress={() => setAnimPickerVisible(true)}
-      >
-        {action.animation?.name ?? "Select Animation"}
-      </GradientButton>
+      <View>
+        <Text variant="titleMedium">Play</Text>
+        <GradientButton
+          outline
+          sentry-label="select-animation"
+          style={{ marginHorizontal: 10 }}
+          onPress={() => setAnimPickerVisible(true)}
+        >
+          {action.animation?.name ?? "Select Animation"}
+        </GradientButton>
+      </View>
       <PickAnimationBottomSheet
         animation={action.animation}
         dieType={dieType}
         visible={animPickerVisible}
         onSelectAnimation={(anim) => {
-          runInAction(() => (action.animation = anim as Profiles.Animation)); // TODO readonly
+          runInAction(() => {
+            action.animation = anim as Profiles.Animation;
+            // Clear overrides
+            action.duration = undefined;
+            action.fade = undefined;
+            action.intensity = undefined;
+            action.colors.length = 0;
+          });
           setAnimPickerVisible(false);
         }}
         onDismiss={() => setAnimPickerVisible(false)}
       />
-      {/* <Text variant="titleMedium">Repeat</Text>
-      <SliderWithValue
-        value={action.loopCount}
-        minimumValue={1}
+      <PlayAnimationSlider
+        title="Duration"
+        unit="s"
+        fractionDigits={1}
+        minimumValue={0.1}
         maximumValue={10}
-        step={1}
-        onValueChange={(v) => runInAction(() => (action.loopCount = v))}
-      /> */}
-      <Text variant="titleMedium">Duration</Text>
+        step={0.1}
+        value={action.duration ?? action.animation?.duration ?? 1}
+        isDefault={action.duration === undefined}
+        onValueChange={(v) => (action.duration = v)}
+        onReset={() => (action.duration = undefined)}
+      />
+      {color && color.mode === "rgb" && (
+        <PlayAnimationColor action={action} defaultColor={color.color} />
+      )}
+      {keyframes && keyframes.length > 1 && (
+        <PlayAnimationGradient action={action} defaultKeyframes={keyframes} />
+      )}
+      {repeatCount !== undefined && (
+        <PlayAnimationSlider
+          title="Repeat Count"
+          minimumValue={1}
+          maximumValue={10}
+          step={1}
+          value={action.loopCount > 0 ? action.loopCount : repeatCount}
+          isDefault={!action.loopCount}
+          onValueChange={(v) => (action.loopCount = v)}
+          onReset={() => (action.loopCount = 0)}
+        />
+      )}
+      {fading !== undefined && (
+        <PlayAnimationSlider
+          title="Fading"
+          minimumValue={0}
+          maximumValue={1}
+          step={0.01}
+          fractionDigits={2}
+          value={action.fade ?? fading}
+          isDefault={action.fade === undefined}
+          onValueChange={(v) => (action.fade = v)}
+          onReset={() => (action.fade = undefined)}
+        />
+      )}
+      {intensity !== undefined && (
+        <PlayAnimationSlider
+          title="Intensity"
+          minimumValue={0}
+          maximumValue={1}
+          step={0.01}
+          fractionDigits={2}
+          value={action.intensity ?? intensity}
+          isDefault={action.intensity === undefined}
+          onValueChange={(v) => (action.intensity = v)}
+          onReset={() => (action.intensity = undefined)}
+        />
+      )}
+    </>
+  );
+});
+
+const PlayAnimationSlider = observer(function Slider({
+  title,
+  value,
+  isDefault,
+  onValueChange,
+  onReset,
+  ...props
+}: {
+  title: string;
+  value: number;
+  isDefault: boolean;
+  onValueChange: (value: number) => void;
+  onReset: () => void;
+} & Omit<SliderWithValueProps, "value" | "onValueChange">) {
+  const sentryLabel = title.toLowerCase().replace(" ", "-");
+  const { colors } = useTheme();
+  return (
+    <View>
+      <Text variant="titleMedium">{title}</Text>
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginTop: -5 }}
+      >
+        <TouchableRipple
+          disabled={isDefault}
+          sentry-label={"reset-animation-" + sentryLabel}
+          style={{ padding: 10, paddingRight: 20, zIndex: 10 }} // Render on top of scaled slider
+          onPress={() => runInAction(onReset)}
+        >
+          <MaterialCommunityIcons
+            name="refresh"
+            size={20}
+            color={isDefault ? colors.onSurfaceDisabled : colors.onSurface}
+          />
+        </TouchableRipple>
+        <View style={{ flexGrow: 1 }}>
+          <SliderWithValue
+            value={value}
+            sentry-label={"edit-animation-" + sentryLabel}
+            onValueChange={(v) => runInAction(() => onValueChange(v))}
+            {...props}
+          />
+        </View>
+      </View>
+    </View>
+  );
+});
+
+const PlayAnimationColor = observer(function PlayAnimationColor({
+  action,
+  defaultColor,
+}: {
+  action: Profiles.ActionPlayAnimation;
+  defaultColor: Profiles.Color;
+}) {
+  const selectedColor = action.colors[0] ?? defaultColor;
+  const [colorPickerVisible, setColorPickerVisible] = React.useState(false);
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
+  return (
+    <View>
+      <Text variant="titleMedium">Color</Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableRipple
-          disabled={action.duration === undefined}
-          sentry-label="reset-animation-duration"
+          disabled={!action.colors}
+          sentry-label="reset-color"
           style={{ padding: 10, paddingRight: 20, zIndex: 1 }} // Render on top of scaled slider
-          onPress={() => runInAction(() => (action.duration = undefined))}
+          onPress={() => runInAction(() => (action.colors.length = 0))}
+        >
+          <MaterialCommunityIcons
+            name="refresh"
+            size={20}
+            color={!action.colors ? colors.onSurfaceDisabled : colors.onSurface}
+          />
+        </TouchableRipple>
+        <TouchableRipple
+          sentry-label="edit-color"
+          style={{ flexGrow: 1, height: 32 }}
+          onPress={() => setColorPickerVisible(true)}
+        >
+          <View
+            style={{
+              flexGrow: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 1,
+              borderRadius,
+              borderColor: colors.outline,
+              backgroundColor: selectedColor.toString(),
+            }}
+          >
+            <Text
+              style={{
+                position: "absolute",
+                top: -20,
+                color: colors.onSurfaceDisabled,
+                alignSelf: "center",
+              }}
+            >
+              Tap to modify
+            </Text>
+          </View>
+        </TouchableRipple>
+      </View>
+
+      <PickColorBottomSheet
+        color={selectedColor}
+        visible={colorPickerVisible}
+        onSelectColor={(color) => {
+          runInAction(() => {
+            action.colors.length = 1;
+            action.colors[0] = new Profiles.Color(color);
+          });
+          setColorPickerVisible(false);
+        }}
+        onDismiss={() => setColorPickerVisible(false)}
+      />
+    </View>
+  );
+});
+
+const PlayAnimationGradient = observer(function PlayAnimationGradient({
+  action,
+  defaultKeyframes,
+}: {
+  action: Profiles.ActionPlayAnimation;
+  defaultKeyframes: Profiles.RgbKeyframe[];
+}) {
+  assert(defaultKeyframes.length > 1, "Must have at least 2 keyframes");
+  const [gradientEditorVisible, setGradientEditorVisible] =
+    React.useState(false);
+
+  // At least 2 keyframes
+  const keyframes = React.useMemo(
+    () =>
+      computed(() =>
+        action.colors.length > 1
+          ? defaultKeyframes.map(
+              (kf, i) =>
+                new Profiles.RgbKeyframe({
+                  time: kf.time,
+                  color: action.colors[i] ?? kf.color,
+                })
+            )
+          : defaultKeyframes
+      ),
+    [action.colors, defaultKeyframes]
+  ).get();
+
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
+  return (
+    <View>
+      <Text variant="titleMedium">Gradient</Text>
+      <Text
+        style={{
+          position: "absolute",
+          color: colors.onSurfaceDisabled,
+          alignSelf: "center",
+          paddingLeft: 50,
+          marginTop: 10,
+        }}
+      >
+        Tap to modify
+      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <TouchableRipple
+          disabled={!action.colors.length}
+          sentry-label="reset-gradient"
+          style={{ padding: 10, paddingRight: 20, zIndex: 1 }} // Render on top of scaled slider
+          onPress={() => runInAction(() => (action.colors.length = 0))}
         >
           <MaterialCommunityIcons
             name="refresh"
             size={20}
             color={
-              action.duration === undefined
+              !action.colors.length
                 ? colors.onSurfaceDisabled
                 : colors.onSurface
             }
           />
         </TouchableRipple>
-        <View style={{ flexGrow: 1 }}>
-          <SliderWithValue
-            unit="s"
-            fractionDigits={1}
-            value={action.duration ?? defaultDuration}
-            minimumValue={0.1}
-            maximumValue={10}
-            step={0.1}
-            sentry-label="animation-duration"
-            onValueChange={(v) => runInAction(() => (action.duration = v))}
-          />
-        </View>
+        <TouchableRipple
+          sentry-label="edit-gradient"
+          style={{
+            overflow: "hidden",
+            flex: 1,
+            flexGrow: 1,
+            height: 32,
+            borderColor: colors.outline,
+            borderWidth: 1,
+            borderRadius,
+          }}
+          onPress={() => setGradientEditorVisible(true)}
+        >
+          <KeyframeGradient keyframes={keyframes} />
+        </TouchableRipple>
       </View>
-    </>
+
+      <EditGradientBottomSheet
+        keyframes={keyframes}
+        visible={gradientEditorVisible}
+        onChangeKeyframes={(keyframes) => {
+          if (keyframes.length > 1) {
+            runInAction(() => {
+              const count = keyframes.length;
+              action.colors.length = count;
+              for (let i = 0; i < count; ++i) {
+                action.colors[i] = keyframes[i].color.duplicate();
+              }
+            });
+          }
+        }}
+        onDismiss={() => setGradientEditorVisible(false)}
+      />
+    </View>
   );
 });
 
@@ -398,8 +657,6 @@ export const ConfigureActionBottomSheet = observer(
         enableDynamicSizing
         onDismiss={onDismiss}
         onChange={onChange}
-        activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
-        failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
         keyboardBehavior={Platform.OS === "ios" ? "interactive" : "fillParent"}
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
@@ -412,23 +669,22 @@ export const ConfigureActionBottomSheet = observer(
             {...props}
           />
         )}
+        {...androidBottomSheetSliderFix}
       >
         <ThemeProvider theme={theme}>
           <BottomSheetScrollView
             contentContainerStyle={{
               paddingHorizontal: 20,
               paddingBottom,
-              gap: 10,
+              gap: 5,
             }}
           >
-            <Text variant="titleMedium" style={{ alignSelf: "center" }}>
+            <Text variant="titleMedium" style={AppStyles.selfCentered}>
               Configure Rule Action
             </Text>
             <Text
               style={{
                 alignSelf: "center",
-                marginTop: -8,
-                marginBottom: -10,
                 color: theme.colors.onSurfaceDisabled,
               }}
             >

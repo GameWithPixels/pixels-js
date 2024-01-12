@@ -11,11 +11,11 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import { PickDieBottomSheet } from "./PickDieBottomSheet";
 import { RuleCard } from "./RuleCard";
 import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
 import { ProfileUsage as ProfileUsageStatic } from "~/components/ProfileUsage";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";

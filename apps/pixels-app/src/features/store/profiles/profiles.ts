@@ -175,6 +175,14 @@ function updateAction(
           : undefined;
         act.face = data.face;
         act.loopCount = data.loopCount;
+        act.duration = data.duration;
+        act.fade = data.fade;
+        act.intensity = data.intensity;
+        const colorsCount = data.colors.length;
+        act.colors.length = colorsCount;
+        for (let i = 0; i < colorsCount; ++i) {
+          act.colors[i] = new Profiles.Color(data.colors[i]);
+        }
       }
       break;
     case "playAudioClip":
