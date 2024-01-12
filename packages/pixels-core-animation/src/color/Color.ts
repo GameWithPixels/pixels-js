@@ -59,8 +59,15 @@ export default class Color implements IColor {
     }
   }
 
-  equals(other: Color): boolean {
+  equals(other: IColor): boolean {
     return this.r === other.r && this.g === other.g && this.b === other.b;
+  }
+
+  assign(other: IColor): Color {
+    this.r = other.r;
+    this.g = other.g;
+    this.b = other.b;
+    return this;
   }
 
   duplicate(): Color {
