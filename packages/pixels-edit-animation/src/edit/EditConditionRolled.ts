@@ -7,20 +7,20 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
-import { name, observable, range, widget } from "./decorators";
+import { observable } from "./decorators";
 
 export default class EditConditionRolled extends EditCondition {
   readonly type = "rolled";
 
-  @widget("faceMask")
-  @range(1, 20)
-  @name("Than")
+  // @widget("faces")
+  // @range(1, 20)
+  // @name("Faces")
   @observable
   faces: number[];
 
   constructor(opt?: { faces?: number[] }) {
     super();
-    this.faces = opt?.faces ?? [];
+    this.faces = opt?.faces ? [...opt.faces] : [];
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
