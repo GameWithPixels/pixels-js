@@ -634,8 +634,6 @@ class PixelDispatcher
     await delay(6000);
     await this._playAnimation(PrebuildAnimations.rainbow);
     await delay(6000);
-    await this._playAnimation(PrebuildAnimations.normals);
-    await delay(5000);
     await this._playAnimation(PrebuildAnimations.noise);
   }
 
@@ -741,7 +739,7 @@ class PixelDispatcher
               {
                 actions: [
                   new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.normals,
+                    animation: PrebuildAnimations.pink_worm,
                   }),
                 ],
               }
@@ -929,7 +927,7 @@ class PixelDispatcher
               {
                 actions: [
                   new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.upDownSpinning,
+                    animation: PrebuildAnimations.spinning_rainbow,
                     face: Constants.currentFaceIndex,
                     loopCount: 1,
                   }),
@@ -1005,7 +1003,7 @@ class PixelDispatcher
               {
                 actions: [
                   new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.redGreenSpinning,
+                    animation: PrebuildAnimations.spiralUp,
                     face: Constants.currentFaceIndex,
                     loopCount: 1,
                   }),

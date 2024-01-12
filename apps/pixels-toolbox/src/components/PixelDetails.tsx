@@ -337,7 +337,7 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
 }
 
 async function playKeyframes(pixelDispatcher: PixelDispatcher) {
-  const pattern = await createPatternFromImage(PatternImages.rainbowFalls);
+  const pattern = await createPatternFromImage(PatternImages.acceleration);
   const keyframesCount = pattern.gradients.map((g) => g.keyframes.length);
   console.log(
     `Extracted ${keyframesCount.reduce(

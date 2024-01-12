@@ -140,7 +140,7 @@ class PixelsDispatcher {
     sortedPixels[6] = pixels.find((p) => p.dieType === "d4") as PixelDispatcher;
 
     for (let i = 0; i < 7; i += 1) {
-      sortedPixels[i].dispatch("playAnimation", PrebuildAnimations.normals3);
+      sortedPixels[i].dispatch("playAnimation", PrebuildAnimations.cycle_fire);
       await delay(100);
     }
     await delay(5000);

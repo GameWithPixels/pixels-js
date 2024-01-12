@@ -75,7 +75,7 @@ export const SwipeablePixelsList = React.memo(function ({
       t("videoAnim2"),
       t("videoAnim3"),
       t("rainbowAllFaces"),
-      t("normals"),
+      t("fire"),
       t("noise"),
       t("playProfileAnimation"),
       t("updateProfile"),
@@ -122,7 +122,7 @@ export const SwipeablePixelsList = React.memo(function ({
             dispatchAll("playAnimation", PrebuildAnimations.rainbow);
             break;
           case 7:
-            dispatchAll("playAnimation", PrebuildAnimations.normals);
+            dispatchAll("playAnimation", PrebuildAnimations.cycle_fire);
             break;
           case 8:
             dispatchAll("playAnimation", PrebuildAnimations.noise);

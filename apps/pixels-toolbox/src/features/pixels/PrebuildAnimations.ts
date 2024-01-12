@@ -2,6 +2,7 @@ import { NoiseColorOverrideTypeValues } from "@systemic-games/pixels-core-animat
 import { NormalsColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNormals";
 import {
   AnimationFlagsValues,
+  EditAnimationCycle,
   EditAnimationNoise,
   EditAnimationNormals,
   EditAnimationRainbow,
@@ -17,7 +18,7 @@ export const PrebuildAnimations = {
     animFlags:
       AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     count: 4,
-    fade: 0.5,
+    fade: 0.1,
     intensity: 1,
     cycles: 1,
   }),
@@ -27,34 +28,43 @@ export const PrebuildAnimations = {
       AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     count: 4,
     fade: 0.1,
-    intensity: 0.5,
+    intensity: 0.2,
     cycles: 1,
+  }),
+  rainbow_fast: new EditAnimationRainbow({
+    duration: 3,
+    animFlags:
+      AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
+    count: 9,
+    fade: 0.1,
+    intensity: 1,
+    cycles: 3,
   }),
   rainbowAllFaces: new EditAnimationRainbow({
     duration: 5,
     count: 4,
     intensity: 1,
-    fade: 0.5,
+    fade: 0.1,
   }),
   rainbowAllFaces_as: new EditAnimationRainbow({
     duration: 5,
     count: 4,
-    intensity: 0.6,
-    fade: 0.5,
-  }),
-  rainbowAllFaces_as20: new EditAnimationRainbow({
-    duration: 5,
-    count: 4,
     intensity: 0.2,
-    fade: 0.5,
+    fade: 0.1,
+  }),
+  rainbowAllFaces_fast: new EditAnimationRainbow({
+    duration: 3,
+    count: 9,
+    intensity: 1,
+    fade: 0.1,
   }),
   fixedRainbow: new EditAnimationRainbow({
     duration: 5,
     animFlags:
       AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     count: 0,
-    fade: 0.05,
-    cycles: 3.67,
+    fade: 0.1,
+    cycles: 2,
   }),
   fixedRainbowD4: new EditAnimationRainbow({
     duration: 10,
@@ -65,6 +75,106 @@ export const PrebuildAnimations = {
     fade: 0.05,
     cycles: 3.67,
     intensity: 0.1,
+  }),
+  cycle_fire: new EditAnimationCycle({
+    duration: 3,
+    animFlags: AnimationFlagsValues.useLedIndices,
+    count: 5,
+    fade: 0.5,
+    intensity: 1,
+    cycles: 1.5,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: new Color(1.0, 0.5, 0) }),
+        new EditRgbKeyframe({ time: 0.1, color: new Color(1.0, 0.8, 0) }),
+        new EditRgbKeyframe({ time: 0.2, color: Color.black }),
+        new EditRgbKeyframe({ time: 0.3, color: new Color(1.0, 0.8, 0.7) }),
+        new EditRgbKeyframe({ time: 0.5, color: new Color(1.0, 0.8, 0) }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(1.0, 0.5, 0) }),
+      ],
+    }),
+  }),
+  cycle_water: new EditAnimationCycle({
+    duration: 3,
+    animFlags: AnimationFlagsValues.useLedIndices,
+    count: 6,
+    fade: 0.5,
+    intensity: 1,
+    cycles: 1,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
+        new EditRgbKeyframe({ time: 0.1, color: new Color(0.3, 0.3, 1.0) }),
+        new EditRgbKeyframe({ time: 0.3, color: new Color(0.7, 0.7, 1.0) }),
+        new EditRgbKeyframe({ time: 0.5, color: new Color(0.5, 0.5, 1.0) }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+      ],
+    }),
+  }),
+  cycle_magic: new EditAnimationCycle({
+    duration: 3,
+    animFlags: AnimationFlagsValues.useLedIndices,
+    count: 5,
+    fade: 0.5,
+    intensity: 1,
+    cycles: 5,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: new Color(0, 0, 1) }),
+        new EditRgbKeyframe({ time: 0.4, color: new Color(0, 0.8, 1) }),
+        new EditRgbKeyframe({ time: 0.5, color: new Color(0.5, 0, 1) }),
+        new EditRgbKeyframe({ time: 0.7, color: new Color(0.8, 0, 1) }),
+        new EditRgbKeyframe({ time: 1.0, color: new Color(0, 0, 1) }),
+      ],
+    }),
+  }),
+  red_blue_worm: new EditAnimationCycle({
+    duration: 5,
+    animFlags: AnimationFlagsValues.useLedIndices,
+    count: 6,
+    fade: 0.5,
+    intensity: 1,
+    cycles: 0.8,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
+        new EditRgbKeyframe({ time: 0.05, color: new Color(1.0, 0.0, 0.0) }),
+        new EditRgbKeyframe({ time: 0.1, color: new Color(0.3, 0.3, 1.0) }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+      ],
+    }),
+  }),
+  green_red_worm: new EditAnimationCycle({
+    duration: 5,
+    animFlags: AnimationFlagsValues.useLedIndices,
+    count: 6,
+    fade: 0.5,
+    intensity: 1,
+    cycles: 0.8,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
+        new EditRgbKeyframe({ time: 0.05, color: new Color(0.0, 1.0, 0.0) }),
+        new EditRgbKeyframe({ time: 0.1, color: new Color(1.0, 0.3, 0.3) }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+      ],
+    }),
+  }),
+  pink_worm: new EditAnimationCycle({
+    duration: 5,
+    animFlags: AnimationFlagsValues.useLedIndices,
+    count: 6,
+    fade: 0.5,
+    intensity: 1,
+    cycles: 0.8,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
+        new EditRgbKeyframe({ time: 0.05, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 0.15, color: new Color(1.0, 0.5, 0.5) }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+      ],
+    }),
   }),
   waterfall: new EditAnimationNormals({
     duration: 2,
@@ -98,9 +208,9 @@ export const PrebuildAnimations = {
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
       keyframes: [
-        new EditRgbKeyframe({ time: 0.0, color: Color.brightRed }),
+        new EditRgbKeyframe({ time: 0.1, color: Color.brightRed }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightYellow }),
-        new EditRgbKeyframe({ time: 1, color: Color.brightGreen }),
+        new EditRgbKeyframe({ time: 0.9, color: Color.brightGreen }),
       ],
     }),
     gradientAlongAxis: new EditRgbGradient({
@@ -124,7 +234,41 @@ export const PrebuildAnimations = {
     overallGradientColorType: NormalsColorOverrideTypeValues.faceToGradient,
     overallGradientColorVar: 0.2,
   }),
-  normals: new EditAnimationNormals({
+  waterfallRainbow: new EditAnimationNormals({
+    duration: 2,
+    animFlags: AnimationFlagsValues.none,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    gradientAlongAxis: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0, color: new Color(1, 0, 0) }),
+        new EditRgbKeyframe({ time: 0.2, color: new Color(1, 1, 0) }),
+        new EditRgbKeyframe({ time: 0.4, color: new Color(0, 1, 0) }),
+        new EditRgbKeyframe({ time: 0.6, color: new Color(0, 1, 1) }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(0, 0, 1) }),
+        new EditRgbKeyframe({ time: 1, color: new Color(1, 0, 1) }),
+      ],
+    }),
+    axisScale: 2,
+    axisOffset: -0.5,
+    axisScrollSpeed: 2,
+    gradientAlongAngle: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
+      ],
+    }),
+    angleScrollSpeed: 0,
+    fade: 0.5,
+    overallGradientColorType: NormalsColorOverrideTypeValues.none,
+    overallGradientColorVar: 0,
+  }),
+  spinning_rainbow: new EditAnimationNormals({
     duration: 5,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
@@ -155,7 +299,7 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 10,
   }),
-  normals_as: new EditAnimationNormals({
+  spinning_rainbow_as: new EditAnimationNormals({
     duration: 5,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
@@ -186,7 +330,7 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 10,
   }),
-  normals2: new EditAnimationNormals({
+  white_rose: new EditAnimationNormals({
     duration: 5,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
@@ -215,7 +359,7 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
   }),
-  normals3: new EditAnimationNormals({
+  fire_violet: new EditAnimationNormals({
     duration: 5,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
@@ -231,7 +375,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 0.3, color: new Color(0.5, 0.2, 1) }),
         new EditRgbKeyframe({ time: 0.5, color: new Color(1, 0.5, 0) }),
         new EditRgbKeyframe({ time: 0.8, color: new Color(1, 0.8, 0.5) }),
-        //new EditRgbKeyframe({ time: 1.0, color: new Color(1, 0, 0.2)}),
+        new EditRgbKeyframe({ time: 0.92, color: new Color(1, 0.8, 0.5) }),
       ],
     }),
     axisScrollSpeed: 0,
@@ -244,66 +388,59 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
   }),
-  normals4: new EditAnimationNormals({
-    duration: 5,
+  quickGreen: new EditAnimationNormals({
+    duration: 1,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.black }),
-        new EditRgbKeyframe({ time: 0.1, color: Color.brightWhite }),
-        new EditRgbKeyframe({ time: 0.9, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 0.1, color: Color.brightBlue }),
+        new EditRgbKeyframe({ time: 0.9, color: Color.brightCyan }),
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
     gradientAlongAxis: new EditRgbGradient({
       keyframes: [
-        new EditRgbKeyframe({ time: 0.3, color: new Color(0.2, 0.2, 1) }),
-        new EditRgbKeyframe({ time: 0.5, color: new Color(1, 0.2, 0) }),
-        new EditRgbKeyframe({ time: 0.8, color: new Color(1, 0.8, 0.5) }),
-        //new EditRgbKeyframe({ time: 1.0, color: new Color(1, 0, 0.2)}),
+        new EditRgbKeyframe({ time: 0.3, color: Color.brightGreen }),
+        new EditRgbKeyframe({ time: 0.6, color: Color.brightCyan }),
+        new EditRgbKeyframe({ time: 0.9, color: Color.blue }),
       ],
     }),
-    axisScrollSpeed: 0,
+    axisScrollSpeed: -2,
+    axisOffset: 0,
     gradientAlongAngle: new EditRgbGradient({
-      keyframes: [
-        new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
-        new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
-        new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
-      ],
+      keyframes: [new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite })],
     }),
-    angleScrollSpeed: 0,
+    angleScrollSpeed: 10,
+    fade: 0.5,
   }),
-  upDownSpinning: new EditAnimationNormals({
-    duration: 2,
+  quickRed: new EditAnimationNormals({
+    duration: 1,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
       keyframes: [
-        new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
-        new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 0.0, color: Color.black }),
+        new EditRgbKeyframe({ time: 0.1, color: Color.brightMagenta }),
+        new EditRgbKeyframe({ time: 0.9, color: Color.brightRed }),
+        new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
     gradientAlongAxis: new EditRgbGradient({
-      keyframes: [new EditRgbKeyframe({ time: 0, color: Color.brightWhite })],
-    }),
-    axisScale: 1,
-    axisOffset: 0,
-    axisScrollSpeed: 0,
-    gradientAlongAngle: new EditRgbGradient({
       keyframes: [
-        new EditRgbKeyframe({ time: 0.0, color: Color.white }),
-        new EditRgbKeyframe({ time: 0.2, color: Color.brightWhite }),
-        new EditRgbKeyframe({ time: 0.4, color: Color.white }),
-        new EditRgbKeyframe({ time: 0.5, color: Color.white }),
-        new EditRgbKeyframe({ time: 0.7, color: Color.brightWhite }),
-        new EditRgbKeyframe({ time: 0.9, color: Color.white }),
+        new EditRgbKeyframe({ time: 0.3, color: Color.brightRed }),
+        new EditRgbKeyframe({ time: 0.6, color: Color.brightPurple }),
+        new EditRgbKeyframe({ time: 0.9, color: Color.brightBlue }),
       ],
     }),
-    angleScrollSpeed: 5,
-    fade: 0.1,
-    overallGradientColorType: NormalsColorOverrideTypeValues.faceToRainbowWheel,
-    overallGradientColorVar: 0.3,
+    axisScrollSpeed: -2,
+    axisOffset: 0,
+    gradientAlongAngle: new EditRgbGradient({
+      keyframes: [new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite })],
+    }),
+    angleScrollSpeed: 10,
+    fade: 0.5,
   }),
-  redGreenSpinning: new EditAnimationNormals({
+  redGreenAlarm: new EditAnimationNormals({
     duration: 2,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
@@ -335,7 +472,7 @@ export const PrebuildAnimations = {
     overallGradientColorType: NormalsColorOverrideTypeValues.faceToGradient,
     overallGradientColorVar: 0,
   }),
-  upDownRainbowWithSpinning: new EditAnimationNormals({
+  rainbowAlarm: new EditAnimationNormals({
     duration: 2,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
@@ -371,7 +508,7 @@ export const PrebuildAnimations = {
     overallGradientColorType: NormalsColorOverrideTypeValues.none,
   }),
   spiralUp: new EditAnimationNormals({
-    duration: 2,
+    duration: 4,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
       keyframes: [
@@ -385,12 +522,6 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 0.45, color: Color.brightWhite }),
         new EditRgbKeyframe({ time: 0.55, color: Color.brightWhite }),
         new EditRgbKeyframe({ time: 0.8, color: Color.black }),
-        // new EditRgbKeyframe({ time: 0, color: new Color(1, 0, 0) }),
-        // new EditRgbKeyframe({ time: 0.2, color: new Color(1, 1, 0) }),
-        // new EditRgbKeyframe({ time: 0.4, color: new Color(0, 1, 0) }),
-        // new EditRgbKeyframe({ time: 0.6, color: new Color(0, 1, 1) }),
-        // new EditRgbKeyframe({ time: 0.8, color: new Color(0, 0, 1) }),
-        // new EditRgbKeyframe({ time: 1, color: new Color(1, 0, 1) }),
       ],
     }),
     axisScale: 1,
@@ -406,6 +537,40 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 6,
     fade: 0.2,
     overallGradientColorType: NormalsColorOverrideTypeValues.faceToRainbowWheel,
+    overallGradientColorVar: 0.1,
+  }),
+  rainbowUp: new EditAnimationNormals({
+    duration: 4,
+    animFlags: AnimationFlagsValues.none,
+    gradient: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
+      ],
+    }),
+    gradientAlongAxis: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0, color: new Color(1, 0, 0) }),
+        new EditRgbKeyframe({ time: 0.2, color: new Color(1, 1, 0) }),
+        new EditRgbKeyframe({ time: 0.4, color: new Color(0, 1, 0) }),
+        new EditRgbKeyframe({ time: 0.6, color: new Color(0, 1, 1) }),
+        new EditRgbKeyframe({ time: 0.8, color: new Color(0, 0, 1) }),
+        new EditRgbKeyframe({ time: 1, color: new Color(1, 0, 1) }),
+      ],
+    }),
+    axisScale: 1,
+    axisOffset: 0.8,
+    axisScrollSpeed: -2.2,
+    gradientAlongAngle: new EditRgbGradient({
+      keyframes: [
+        new EditRgbKeyframe({ time: 0.0, color: Color.white }),
+        new EditRgbKeyframe({ time: 0.4, color: Color.brightWhite }),
+        new EditRgbKeyframe({ time: 0.8, color: Color.white }),
+      ],
+    }),
+    angleScrollSpeed: 6,
+    fade: 0.2,
+    overallGradientColorType: NormalsColorOverrideTypeValues.none,
     overallGradientColorVar: 0.1,
   }),
   noise: new EditAnimationNoise({
@@ -478,7 +643,7 @@ export const PrebuildAnimations = {
     overallGradientColorVar: 0.6,
   }),
   rainbow_noise: new EditAnimationNoise({
-    duration: 2,
+    duration: 5,
     animFlags: AnimationFlagsValues.none,
     gradient: new EditRgbGradient({
       keyframes: [
@@ -501,7 +666,7 @@ export const PrebuildAnimations = {
     blinkFrequency: 50,
     blinkFrequencyVar: 0,
     blinkDuration: 2,
-    fade: 0.5,
+    fade: 0.1,
     overallGradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
     overallGradientColorVar: 0,
   }),

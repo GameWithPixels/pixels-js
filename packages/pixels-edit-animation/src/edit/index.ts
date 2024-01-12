@@ -9,6 +9,7 @@ export { default as EditActionMakeWebRequest } from "./EditActionMakeWebRequest"
 export { default as EditActionPlayAnimation } from "./EditActionPlayAnimation";
 export { default as EditActionPlayAudioClip } from "./EditActionPlayAudioClip";
 export { default as EditAnimation } from "./EditAnimation";
+export { default as EditAnimationCycle } from "./EditAnimationCycle";
 export { default as EditAnimationGradient } from "./EditAnimationGradient";
 export { default as EditAnimationGradientPattern } from "./EditAnimationGradientPattern";
 export { default as EditAnimationKeyframed } from "./EditAnimationKeyframed";

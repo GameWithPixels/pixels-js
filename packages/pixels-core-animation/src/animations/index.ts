@@ -2,6 +2,7 @@
 export * from "./AnimationType";
 export * from "./AnimationFlags";
 export { default as AnimationBits } from "./AnimationBits";
+export { default as AnimationCycle } from "./AnimationCycle";
 export { default as AnimationGradient } from "./AnimationGradient";
 export { default as AnimationGradientPattern } from "./AnimationGradientPattern";
 export { default as AnimationKeyframed } from "./AnimationKeyframed";
