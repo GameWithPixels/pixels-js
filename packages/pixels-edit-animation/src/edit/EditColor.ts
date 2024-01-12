@@ -2,6 +2,7 @@ import {
   Constants,
   Color,
   GammaUtils,
+  ColorUtils,
 } from "@systemic-games/pixels-core-animation";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
@@ -15,13 +16,17 @@ export default class EditColor {
   @observable
   color: Color; // Used when type is "rgb"
 
-  constructor(colorOrMode: Color | Exclude<ColorMode, "rgb"> = Color.black) {
+  constructor(
+    colorOrMode:
+      | Readonly<ColorUtils.IColor>
+      | Exclude<ColorMode, "rgb"> = Color.black
+  ) {
     if (typeof colorOrMode === "string") {
       this.mode = colorOrMode;
       this.color = new Color();
     } else {
       this.mode = "rgb";
-      this.color = colorOrMode.duplicate();
+      this.color = new Color(colorOrMode);
     }
   }
 

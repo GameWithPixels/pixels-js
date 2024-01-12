@@ -43,7 +43,7 @@ export default class EditActionPlayAnimation extends EditAction {
   intensity?: number;
 
   @observable
-  color?: EditColor;
+  colors?: EditColor[];
 
   constructor(opt?: {
     animation?: EditAnimation;
@@ -52,7 +52,7 @@ export default class EditActionPlayAnimation extends EditAction {
     duration?: number;
     fade?: number;
     intensity?: number;
-    color?: EditColor;
+    colors?: EditColor[];
   }) {
     super();
     this.animation = opt?.animation;
@@ -61,7 +61,7 @@ export default class EditActionPlayAnimation extends EditAction {
     this.duration = opt?.duration;
     this.fade = opt?.fade;
     this.intensity = opt?.intensity;
-    this.color = opt?.color;
+    this.colors = opt?.colors ? [...opt.colors] : undefined;
   }
 
   toAction(editSet: EditDataSet, _set: DataSet, _actionId: number): Action {
