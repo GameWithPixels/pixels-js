@@ -122,7 +122,9 @@ export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) => {
     const middleware = getDefaultMiddleware({
+      immutableCheck: { warnAfter: 200 },
       serializableCheck: {
+        warnAfter: 200,
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     });
