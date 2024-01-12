@@ -54,6 +54,7 @@ class SceneRenderer {
   private readonly _lights: THREE.Light[];
   private _speed = 1;
   private _rotateX = true;
+  private _animUpdate?: UpdateCallback;
   private _dispose?: () => void;
 
   get speed(): number {
@@ -83,13 +84,7 @@ class SceneRenderer {
     this._lights?.forEach((l) => l.dispose());
   }
 
-  setup(
-    gl: ExpoWebGLRenderingContext,
-    opt?: {
-      animationInstances?: AnimationInstance[];
-      pedestalStyle?: PedestalStyle;
-    }
-  ): void {
+  setup(gl: ExpoWebGLRenderingContext, pedestalStyle?: PedestalStyle): void {
     try {
       // Dispose resources from previous setup
       this._dispose?.();
@@ -127,12 +122,11 @@ class SceneRenderer {
 
       // Props
       const staging = new THREE.Object3D();
-      const update: UpdateCallback[] = [];
-      if (opt?.pedestalStyle) {
+      if (pedestalStyle) {
         this._root.add(staging);
 
         // Magic ring
-        const color = opt.pedestalStyle.color ?? 0x6667ab;
+        const color = pedestalStyle.color ?? 0x6667ab;
         addPedestal(staging, color, cameraDist / 40);
         camera.position.z *= 2;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -141,31 +135,6 @@ class SceneRenderer {
         // if (Platform.OS === "ios") {
         //   update.push(...addSparks(staging, dieSize));
         // }
-      }
-
-      if (opt?.animationInstances?.length) {
-        const animations = opt.animationInstances;
-        let lastTime = 0;
-        let endTime = 0;
-        let animIndex = -1;
-        update.push((args: UpdateArgs) => {
-          // Switch to next animation after 1 second delay
-          if (animIndex < 0 || args.time > endTime + 1000) {
-            animIndex = (animIndex + 1) % animations.length;
-            const anim = animations[animIndex];
-            anim.start(args.time);
-            endTime = anim.startTime + anim.duration;
-          }
-          // Limit animation to 30 FPS
-          if (args.time - lastTime > 33) {
-            if (args.time <= endTime) {
-              renderAnimation(this._die3d, animations[animIndex], args);
-            } else {
-              this._die3d.clearLEDs();
-            }
-            lastTime = args.time;
-          }
-        });
       }
 
       // update.push(({ time }: UpdateArgs) => {
@@ -201,7 +170,7 @@ class SceneRenderer {
         renderer.dispose();
       };
 
-      this._renderLoop = this._createRenderLoopFunc(renderScene, update);
+      this._renderLoop = this._createRenderLoopFunc(renderScene);
     } catch (error) {
       console.error("Error while setting up ThreeJS scene graph", error);
     }
@@ -216,10 +185,35 @@ class SceneRenderer {
     this._shouldRender = false;
   }
 
-  private _createRenderLoopFunc(
-    renderScene: () => void,
-    update: UpdateCallback[]
-  ): () => void {
+  setAnimations(animations?: AnimationInstance[]): void {
+    if (animations?.length) {
+      let lastTime = 0;
+      let endTime = 0;
+      let animIndex = -1;
+      this._animUpdate = (args: UpdateArgs) => {
+        // Switch to next animation after 1 second delay
+        if (animIndex < 0 || args.time > endTime + 1000) {
+          animIndex = (animIndex + 1) % animations.length;
+          const anim = animations[animIndex];
+          anim.start(args.time);
+          endTime = anim.startTime + anim.duration;
+        }
+        // Limit animation to 30 FPS
+        if (args.time - lastTime > 33) {
+          if (args.time <= endTime) {
+            renderAnimation(this._die3d, animations[animIndex], args);
+          } else {
+            this._die3d.clearLEDs();
+          }
+          lastTime = args.time;
+        }
+      };
+    } else {
+      this._animUpdate = undefined;
+    }
+  }
+
+  private _createRenderLoopFunc(renderScene: () => void): () => void {
     // Create render function
     let lastTime = Date.now();
 
@@ -241,11 +235,12 @@ class SceneRenderer {
         rot.y = (rot.y - r / 5000) % PI2;
         lastTime = time;
 
-        // Update animations
-        const args = { time, deltaTime } as const;
-        update.forEach((update) => update(args));
-
         try {
+          // Update animations
+          const args = { time, deltaTime } as const;
+          this._animUpdate?.(args);
+
+          // Render
           renderScene();
           requestAnimationFrame(renderLoop);
         } catch (error) {
@@ -288,10 +283,12 @@ class SceneRenderer {
 function setRendererProps(
   renderer: SceneRenderer,
   speed: number | undefined,
-  hasPedestal: boolean
+  hasPedestal: boolean,
+  animationInstances?: AnimationInstance[]
 ): void {
   renderer.speed = (speed ?? 1) * (hasPedestal ? 0.5 : 1);
   renderer.rotateX = !hasPedestal;
+  renderer.setAnimations(animationInstances);
 }
 
 export interface PedestalStyle {
@@ -346,33 +343,44 @@ export function DieRenderer({
     };
   }, [colorway, dieType, showBoundary]);
 
+  // Animations
+  const animationInstances = React.useMemo(
+    () =>
+      animationsData
+        ? animationsData.animations.map((a) =>
+            a.createInstance(animationsData.bits)
+          )
+        : undefined,
+    [animationsData]
+  );
+
   // Setup renderer
-  const initArgsRef = React.useRef({ paused, speed, pedestalStyle });
+  const initArgsRef = React.useRef({
+    paused,
+    speed,
+    pedestalStyle,
+    animationInstances,
+  });
   initArgsRef.current.paused = paused;
   initArgsRef.current.speed = speed;
   initArgsRef.current.pedestalStyle = !pedestal
     ? undefined
     : pedestalStyle ?? {};
-  const onContextCreate = React.useCallback(
-    (gl: ExpoWebGLRenderingContext) => {
-      const renderer = rendererRef.current;
-      if (renderer) {
-        const { paused, speed, pedestalStyle } = initArgsRef.current;
-        const animationInstances = animationsData
-          ? animationsData.animations.map((a) =>
-              a.createInstance(animationsData.bits)
-            )
-          : undefined;
-        renderer.setup(gl, { animationInstances, pedestalStyle });
-        if (!paused) {
-          renderer.start();
-        }
-        // TODO props are set again on each render
-        setRendererProps(renderer, speed, !!pedestalStyle);
+  initArgsRef.current.animationInstances = animationInstances;
+
+  const onContextCreate = React.useCallback((gl: ExpoWebGLRenderingContext) => {
+    const renderer = rendererRef.current;
+    if (renderer) {
+      const { paused, speed, pedestalStyle, animationInstances } =
+        initArgsRef.current;
+      renderer.setup(gl, pedestalStyle);
+      if (!paused) {
+        renderer.start();
       }
-    },
-    [animationsData]
-  );
+      // TODO props are set again on each render
+      setRendererProps(renderer, speed, !!pedestalStyle, animationInstances);
+    }
+  }, []);
 
   // Pause/resume renderer
   React.useEffect(() => {
@@ -389,7 +397,8 @@ export function DieRenderer({
     setRendererProps(
       rendererRef.current,
       speed,
-      !!initArgsRef.current.pedestalStyle
+      !!initArgsRef.current.pedestalStyle,
+      animationInstances
     );
   }
 

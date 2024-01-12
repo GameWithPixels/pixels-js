@@ -99,7 +99,7 @@ export function colorComponentToByte(c: number): number {
 /**
  * @category Color
  */
-export function colorToString({ r, g, b }: IColor): string {
+export function colorToString({ r, g, b }: Readonly<IColor>): string {
   return colorBytesToString(
     colorComponentToByte(r),
     colorComponentToByte(g),

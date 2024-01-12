@@ -8,8 +8,6 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 
-import { PickDieBottomSheet } from "./components/PickDieBottomSheet";
-
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -19,6 +17,7 @@ import {
 } from "~/components/AnimatedProfileSearchbar";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
+import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
@@ -68,7 +67,7 @@ function PageHeader({
         onShowMenu={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
-        <Text variant="labelLarge" style={{ alignSelf: "center" }}>
+        <Text variant="labelLarge" style={AppStyles.selfCentered}>
           View Modes
         </Text>
         <View

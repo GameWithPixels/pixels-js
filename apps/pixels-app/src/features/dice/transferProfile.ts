@@ -11,6 +11,7 @@ import {
 import { setPairedDieProfile } from "../store/pairedDiceSlice";
 
 import { store } from "~/app/store";
+import { applyProfileOverrides } from "~/features/profiles";
 import { AppDarkTheme } from "~/themes";
 
 export function transferProfile(
@@ -22,32 +23,7 @@ export function transferProfile(
       .toString(16)
       .padStart(8)}`
   );
-
-  // Modify a copy of the profile to remove handling rules
-  const modified = profile.duplicate();
-  modified.rules = modified.rules.filter(
-    (r) => r.condition.type !== "handling"
-  );
-  for (const rule of modified.rules) {
-    console.log("  - Rule of type " + rule.condition.type);
-    for (const action of rule.actions) {
-      if (action.type === "playAnimation") {
-        const act = action as Profiles.ActionPlayAnimation;
-        if (act.animation && act.duration !== undefined) {
-          const anim = act.animation.duplicate();
-          anim.duration = act.duration;
-          act.animation = anim;
-        }
-        const anim = act.animation;
-        console.log(
-          anim
-            ? `      Play anim ${anim.name} of type ${anim.type} with a duration of ${anim.duration}`
-            : "      No animation!"
-        );
-      }
-    }
-  }
-
+  const modified = applyProfileOverrides(profile);
   const ds = createDataSetForProfile(modified);
   // TODO update when getting confirmation from the die in usePairedPixels
   store.dispatch(

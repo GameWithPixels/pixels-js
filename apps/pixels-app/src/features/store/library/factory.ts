@@ -359,7 +359,7 @@ export function createFactoryAnimations(): Profiles.Animation[] {
       uuid: rolledUuid,
       count: 1,
       duration: 3,
-      color: new Profiles.Color("face"),
+      color: new Profiles.FaceColor("face"),
       faces: Constants.faceMaskAll,
     })
   );
@@ -407,7 +407,7 @@ export function createFactoryAnimations(): Profiles.Animation[] {
         uuid: rollingUuids[i],
         count: 1,
         duration: 0.1,
-        color: new Profiles.Color("face"),
+        color: new Profiles.FaceColor("face"),
         faces: topFace,
         dieType,
       })

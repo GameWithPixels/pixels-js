@@ -59,7 +59,7 @@ function PageHeader({
         onShowMenu={() => setVisible(true)}
         onDismiss={() => setVisible(false)}
       >
-        <Text variant="labelLarge" style={{ alignSelf: "center" }}>
+        <Text variant="labelLarge" style={AppStyles.selfCentered}>
           View Modes
         </Text>
         <View

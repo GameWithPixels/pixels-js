@@ -3,12 +3,12 @@ import {
   Action,
   ActionPlayAnimation,
   Constants,
+  Color,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAction from "./EditAction";
 import EditAnimation from "./EditAnimation";
-import EditColor from "./EditColor";
 import EditDataSet from "./EditDataSet";
 import { name, observable, range, widget } from "./decorators";
 
@@ -43,7 +43,7 @@ export default class EditActionPlayAnimation extends EditAction {
   intensity?: number;
 
   @observable
-  colors?: EditColor[];
+  colors: Color[];
 
   constructor(opt?: {
     animation?: EditAnimation;
@@ -52,7 +52,7 @@ export default class EditActionPlayAnimation extends EditAction {
     duration?: number;
     fade?: number;
     intensity?: number;
-    colors?: EditColor[];
+    colors?: Color[];
   }) {
     super();
     this.animation = opt?.animation;
@@ -61,7 +61,7 @@ export default class EditActionPlayAnimation extends EditAction {
     this.duration = opt?.duration;
     this.fade = opt?.fade;
     this.intensity = opt?.intensity;
-    this.colors = opt?.colors ? [...opt.colors] : undefined;
+    this.colors = opt?.colors ? opt.colors : [];
   }
 
   toAction(editSet: EditDataSet, _set: DataSet, _actionId: number): Action {
@@ -75,7 +75,10 @@ export default class EditActionPlayAnimation extends EditAction {
   }
 
   duplicate(): EditAction {
-    return new EditActionPlayAnimation(this);
+    return new EditActionPlayAnimation({
+      ...this,
+      colors: this.colors.map((c) => c.duplicate()),
+    });
   }
 
   replaceAnimation(

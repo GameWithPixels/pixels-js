@@ -126,7 +126,7 @@ function CreateProfilePage({
         )}
         rightElement={() => (
           <Button
-            disabled={!selectedProfile && !profileName.trim().length}
+            disabled={!selectedProfile || !profileName.trim().length}
             sentry-label="create-profile"
             onPress={createProfile}
           >

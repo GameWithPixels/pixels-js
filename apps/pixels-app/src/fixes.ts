@@ -15,6 +15,7 @@ export function fixForScrollViewPadding(padding: number): void {
   console.log("Need this log for padding to work" + padding);
 }
 
+// https://github.com/gorhom/react-native-bottom-sheet/issues/372#issuecomment-808793366
 export const androidBottomSheetSliderFix = {
   activeOffsetY: Platform.OS === "android" ? [-1, 1] : undefined,
   failOffsetX: Platform.OS === "android" ? [-5, 5] : undefined,

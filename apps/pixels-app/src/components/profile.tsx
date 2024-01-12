@@ -27,6 +27,7 @@ import { darken, getBorderColor, getTextColorStyle } from "./colors";
 
 import { useAppSelector } from "~/app/hooks";
 import {
+  applyProfileOverrides,
   groupAndSortProfiles,
   ProfilesGrouping,
   SortMode,
@@ -231,7 +232,9 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
               r.actions.some((a) => a.type === "playAnimation")
           ),
         });
-        const dataSet = createDataSetForProfile(rolledProfile).toDataSet();
+        const dataSet = createDataSetForProfile(
+          applyProfileOverrides(rolledProfile)
+        ).toDataSet();
         return {
           animations: dataSet.animations,
           bits: dataSet.animationBits,

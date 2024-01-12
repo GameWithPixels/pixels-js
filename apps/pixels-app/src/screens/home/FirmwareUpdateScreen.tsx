@@ -24,6 +24,7 @@ import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { useBottomSheetPadding, useDfuBundle, useForceUpdate } from "~/hooks";
 import { FirmwareUpdateScreenProps } from "~/navigation";
+import { AppStyles } from "~/styles";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
@@ -243,7 +244,7 @@ function FirmwareUpdatePage({
             <AnimatedText
               entering={FadeIn.duration(300).delay(200)}
               variant="bodyLarge"
-              style={{ alignSelf: "center" }}
+              style={AppStyles.selfCentered}
             >
               {`Your${
                 targetStatuses.filter((t) => t.state === "unknown").length

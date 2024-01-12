@@ -25,7 +25,7 @@ export default class AnimationBits {
 
   getColor(colorIndex: number): Color {
     if (colorIndex === Constants.paletteColorFromFace) {
-      return Color.blue;
+      return Color.blue; // TODO
     } else if (colorIndex === Constants.paletteColorFromRandom) {
       return Color.black;
     } else {

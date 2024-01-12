@@ -22,6 +22,7 @@ export function FacesGrid({
   onToggleFace?: (face: number) => void;
 } & ViewProps) {
   const faces = React.useMemo(() => DiceUtils.getDieFaces(dieType), [dieType]);
+  const withPercent = Math.floor(100 / (props.numColumns ?? 5));
   return (
     <View
       style={[
@@ -29,18 +30,22 @@ export function FacesGrid({
           flexDirection: "row",
           flexWrap: "wrap",
           justifyContent: "flex-start",
-          rowGap: 10,
+          rowGap: 5,
         },
         style,
       ]}
       {...props}
     >
       {faces.map((f) => (
-        <View key={f} style={{ width: "25%", alignItems: "center" }}>
+        <View
+          key={f}
+          style={{ width: `${withPercent}%`, alignItems: "center" }}
+        >
           <DieFaceButton
             face={f}
             selected={selected?.includes(f)}
             disabled={unavailable?.includes(f)}
+            style={{ width: "90%" }}
             onPress={() => onToggleFace?.(f)}
           />
         </View>

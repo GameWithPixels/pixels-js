@@ -10,7 +10,7 @@ import { View, StyleSheet, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
 import { ActionTypeIcon } from "~/components/actions";
-import { getFacesAsText } from "~/features/profiles";
+import { applyActionOverrides, getFacesAsText } from "~/features/profiles";
 import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import { AppStyles } from "~/styles";
 
@@ -125,13 +125,17 @@ export const ActionDieRenderer = observer(function ActionDieRenderer({
   const animationsData = React.useMemo(
     () =>
       computed(() => {
-        const animation = action.collectAnimations()[0];
-        if (animation) {
-          const dataSet = createDataSetForAnimation(animation).toDataSet();
-          return {
-            animations: dataSet.animations,
-            bits: dataSet.animationBits,
-          };
+        if (action.type === "playAnimation") {
+          const anim = applyActionOverrides(
+            action as Profiles.ActionPlayAnimation
+          );
+          if (anim) {
+            const dataSet = createDataSetForAnimation(anim).toDataSet();
+            return {
+              animations: dataSet.animations,
+              bits: dataSet.animationBits,
+            };
+          }
         }
       }),
     [action]

@@ -12,7 +12,6 @@ import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { AnimationsGrid } from "~/components/animation";
-import { androidBottomSheetSliderFix } from "~/fixes";
 import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -81,7 +80,6 @@ export function PickAnimationBottomSheet({
           {...props}
         />
       )}
-      {...androidBottomSheetSliderFix}
     >
       <ThemeProvider theme={theme}>
         <BottomSheetScrollView

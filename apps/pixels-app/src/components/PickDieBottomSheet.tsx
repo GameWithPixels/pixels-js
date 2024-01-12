@@ -20,6 +20,7 @@ import { getDieTypeLabel } from "~/features/profiles";
 import { notEmpty } from "~/features/utils";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PickDieBottomSheet({
@@ -88,7 +89,7 @@ export function PickDieBottomSheet({
             gap: 20,
           }}
         >
-          <Text variant="titleMedium" style={{ alignSelf: "center" }}>
+          <Text variant="titleMedium" style={AppStyles.selfCentered}>
             Select a {dieType ? getDieTypeLabel(dieType) : "Die"}
           </Text>
           <BottomSheetScrollView

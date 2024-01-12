@@ -14,9 +14,9 @@ export default class EditRgbKeyframe {
   time: number;
 
   @observable
-  color: Color;
+  color: Readonly<Color>;
 
-  constructor(opt?: { time?: number; color?: Color }) {
+  constructor(opt?: { time?: number; color?: Readonly<Color> }) {
     this.time = opt?.time ?? 0;
     this.color = opt?.color ?? Color.black;
   }
@@ -37,9 +37,6 @@ export default class EditRgbKeyframe {
   }
 
   duplicate(): EditRgbKeyframe {
-    return new EditRgbKeyframe({
-      time: this.time,
-      color: this.color.duplicate(),
-    });
+    return new EditRgbKeyframe(this);
   }
 }

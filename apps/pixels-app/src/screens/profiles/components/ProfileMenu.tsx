@@ -63,7 +63,7 @@ export function ProfileMenu({
           onEditAdvancedRules();
         }}
       />
-      <Divider />
+      {/* <Divider />
       <Menu.Item
         title="Share"
         trailingIcon={({ size, color }) => (
@@ -73,7 +73,7 @@ export function ProfileMenu({
         onPress={() => {
           props.onDismiss?.();
         }}
-      />
+      /> */}
       {onDelete && (
         <>
           <Divider />
