@@ -34,9 +34,6 @@ export default class EditProfile extends Editable {
   @observable
   lastUsed?: Date;
 
-  @observable
-  isModified = false; // Not serialized
-
   constructor(opt?: {
     uuid?: string;
     name?: string;
