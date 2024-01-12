@@ -18,10 +18,10 @@ export default class EditColor {
   constructor(colorOrMode: Color | Exclude<ColorMode, "rgb"> = Color.black) {
     if (typeof colorOrMode === "string") {
       this.mode = colorOrMode;
-      this.color = Color.black;
+      this.color = new Color();
     } else {
       this.mode = "rgb";
-      this.color = colorOrMode;
+      this.color = colorOrMode.duplicate();
     }
   }
 
@@ -50,7 +50,7 @@ export default class EditColor {
 
   duplicate(): EditColor {
     return this.mode === "rgb"
-      ? new EditColor(this.color.duplicate())
+      ? new EditColor(this.color)
       : new EditColor(this.mode);
   }
 }
