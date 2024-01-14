@@ -64,7 +64,12 @@ export default class EditAnimationGradientPattern extends EditAnimation {
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationGradientPattern({ ...this, uuid });
+    return new EditAnimationGradientPattern({
+      ...this,
+      uuid,
+      pattern: this.pattern?.duplicate(),
+      gradient: this.gradient?.duplicate(),
+    });
   }
 
   collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {

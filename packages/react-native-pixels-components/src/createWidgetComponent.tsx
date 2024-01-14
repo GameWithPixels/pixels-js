@@ -143,7 +143,7 @@ export function createWidgetComponent(
           <BaseVStack {...props}>
             <Text variant="titleMedium">{widgetData.displayName}</Text>
             <ColorSelector
-              color={widgetData.getValue().color}
+              color={widgetData.getValue().color ?? Color.black}
               onColorSelect={autoUpdate}
             />
           </BaseVStack>

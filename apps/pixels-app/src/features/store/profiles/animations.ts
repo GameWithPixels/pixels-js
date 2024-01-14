@@ -165,5 +165,9 @@ function updateAnimBase(
 function updateColor(color: Profiles.FaceColor, colorData: string): void {
   const newColor = Serializable.toColor(colorData);
   color.mode = newColor.mode;
-  color.color.assign(newColor.color);
+  if (!newColor.color) {
+    color.color = undefined;
+  } else if (!color.color?.equals(newColor.color)) {
+    color.color = newColor.color;
+  }
 }

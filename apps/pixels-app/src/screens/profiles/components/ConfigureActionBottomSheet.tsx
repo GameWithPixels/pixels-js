@@ -382,7 +382,7 @@ const PlayAnimationColor = observer(function PlayAnimationColor({
   defaultColor,
 }: {
   action: Profiles.ActionPlayAnimation;
-  defaultColor: Profiles.Color;
+  defaultColor?: Profiles.Color;
 }) {
   const selectedColor = action.colors[0] ?? defaultColor;
   const [colorPickerVisible, setColorPickerVisible] = React.useState(false);

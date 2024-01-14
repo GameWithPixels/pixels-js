@@ -61,7 +61,7 @@ export default class EditActionPlayAnimation extends EditAction {
     this.duration = opt?.duration;
     this.fade = opt?.fade;
     this.intensity = opt?.intensity;
-    this.colors = opt?.colors ? opt.colors : [];
+    this.colors = opt?.colors ?? [];
   }
 
   toAction(editSet: EditDataSet, _set: DataSet, _actionId: number): Action {

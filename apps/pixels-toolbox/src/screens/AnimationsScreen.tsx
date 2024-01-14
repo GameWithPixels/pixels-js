@@ -190,7 +190,7 @@ function getPropValueString(
 
   const entry = Object.entries(editAnim).find((e) => e[0] === propertyKey);
   if (entry) {
-    if (entry[1] instanceof EditColor) {
+    if (entry[1] instanceof EditColor && entry[1].color) {
       return colorToString(entry[1].color);
     } else if (entry[1] instanceof EditRgbGradient) {
       return keyframesToString(entry[1].keyframes);
