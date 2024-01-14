@@ -41,13 +41,17 @@ function getActionText(action: Profiles.Action): string {
     case "speakText": {
       const act = action as Profiles.ActionSpeakText;
       return act.text.length
-        ? `Speak "${act.text}" at volume ${act.volume}%`
+        ? `Speak "${act.text}"${
+            act.pitch !== 1 ? ` with pitch ${act.pitch}%` : ""
+          }${act.rate !== 1 ? ` with rate ${act.rate}%` : ""}`
         : "No text to speak";
     }
     case "makeWebRequest": {
       const act = action as Profiles.ActionMakeWebRequest;
       return act.url.length
-        ? `Send request to "${act.url}" with parameters "${act.value}"`
+        ? `Send request to "${act.url}"${
+            act.value?.length ? `with value "${act.value}"` : ""
+          }`
         : "No URL entered";
     }
     default:

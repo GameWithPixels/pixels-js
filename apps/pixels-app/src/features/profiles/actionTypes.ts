@@ -2,7 +2,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 export const actionTypes = (
   Object.keys(Profiles.ActionTypeValues) as Profiles.ActionType[]
-).filter((t) => t !== "none");
+).filter((t) => t !== "none" && t !== "playAudioClip");
 
 export const connectionFlags = Object.keys(
   Profiles.ConnectionFlagsValues

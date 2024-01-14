@@ -40,10 +40,7 @@ function EditRulePage({
                 ? "Play an animation when die turns on (typically when the charger's lid is removed)."
                 : ""}
           </Text>
-          <Text variant="bodyMedium" style={AppStyles.selfCentered}>
-            Web Request and Speak Text to be added soon!
-          </Text>
-          {actionTypes.slice(0, 1).map((at) => (
+          {actionTypes.map((at) => (
             <EditActionCard
               key={at}
               profileUuid={profileUuid}

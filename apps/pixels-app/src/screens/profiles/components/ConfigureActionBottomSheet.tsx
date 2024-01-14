@@ -588,15 +588,25 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         value={action.text}
         onChangeText={(t) => runInAction(() => (action.text = t))}
       />
-      <Text variant="titleMedium">Volume</Text>
+      <Text variant="titleMedium">Voice Pitch</Text>
       <SliderWithValue
-        unit="%"
-        value={action.volume}
-        minimumValue={1}
-        maximumValue={100}
-        step={1}
+        value={action.pitch}
+        minimumValue={0}
+        maximumValue={2}
+        step={0.01}
+        fractionDigits={2}
         sentry-label="change-volume"
-        onValueChange={(v) => runInAction(() => (action.volume = v))}
+        onValueChange={(v) => runInAction(() => (action.pitch = v))}
+      />
+      <Text variant="titleMedium">Voice Rate</Text>
+      <SliderWithValue
+        value={action.rate}
+        minimumValue={0}
+        maximumValue={2}
+        step={0.01}
+        fractionDigits={2}
+        sentry-label="change-volume"
+        onValueChange={(v) => runInAction(() => (action.rate = v))}
       />
     </>
   );
@@ -607,14 +617,19 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
 }: {
   action: Profiles.ActionMakeWebRequest;
 }) {
+  const { colors } = useTheme();
   return (
     <>
-      <Text variant="titleMedium">URL</Text>
+      <Text variant="titleMedium">Send request to URL</Text>
       <TextInput
         value={action.url}
         onChangeText={(t) => runInAction(() => (action.url = t))}
       />
       <Text variant="titleMedium">Parameters</Text>
+      <Text
+        style={{ color: colors.onSurfaceDisabled }}
+      >{`value1={die name}&value2={your value}&value3={profile name}`}</Text>
+      <Text variant="titleMedium">Value</Text>
       <TextInput
         value={action.value}
         onChangeText={(t) => runInAction(() => (action.value = t))}
