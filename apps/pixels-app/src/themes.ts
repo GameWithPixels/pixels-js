@@ -10,6 +10,7 @@ import {
   MD3LightTheme,
   MD3Theme,
 } from "react-native-paper";
+import Toast from "react-native-root-toast";
 
 import { makeTransparent } from "./components/colors";
 import { RootScreenName } from "./navigation";
@@ -122,4 +123,12 @@ export const Colors = {
   grey700: "#616161",
   grey800: "#424242",
   grey900: "#212121",
+} as const;
+
+export const ToastSettings = {
+  duration: Toast.durations.SHORT,
+  position: -100,
+  opacity: 1.0,
+  backgroundColor: AppDarkTheme.colors.elevation.level3,
+  textColor: AppDarkTheme.colors.onSurface,
 } as const;

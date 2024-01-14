@@ -64,6 +64,7 @@ function SupportPage({
     </View>
   );
 }
+
 export function SupportScreen({ navigation }: SupportScreenProps) {
   return (
     <AppBackground>

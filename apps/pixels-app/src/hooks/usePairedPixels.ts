@@ -10,6 +10,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import * as Speech from "expo-speech";
 import React from "react";
+import Toast from "react-native-root-toast";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
@@ -27,6 +28,7 @@ import {
   notEmpty,
   unsigned32ToHex,
 } from "~/features/utils";
+import { ToastSettings } from "~/themes";
 
 function stableFilterPixels(
   pairedDice: readonly PairedDie[],
@@ -84,6 +86,10 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
                 `Post request to ${action.url} returned with status ${status}`
               )
           );
+          Toast.show(
+            `Playing Web Request action!\nURL: ${action.url}\nPixel: ${pixel.name}, profile: ${profile.name}, value: ${action.value}`,
+            ToastSettings
+          );
         } else {
           console.log(
             "Running web request actions is disabled in development builds"
@@ -98,6 +104,10 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
           }" and settings=${JSON.stringify(settings)}`
         );
         if (action.text?.trim()?.length) {
+          Toast.show(
+            `Playing Text to Speak action.\nText: ${action.text}\nPitch: ${action.pitch}, rate: ${action.rate}`,
+            ToastSettings
+          );
           Speech.speak(action.text, settings);
         } else {
           console.log("No text to speak");

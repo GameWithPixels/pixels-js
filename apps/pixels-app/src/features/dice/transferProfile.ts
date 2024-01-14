@@ -12,7 +12,7 @@ import { setPairedDieProfile } from "../store/pairedDiceSlice";
 
 import { store } from "~/app/store";
 import { applyProfileOverrides } from "~/features/profiles";
-import { AppDarkTheme } from "~/themes";
+import { ToastSettings } from "~/themes";
 
 export function transferProfile(
   pixel: Pixel,
@@ -59,13 +59,10 @@ export function transferProfile(
     .transferDataSet(data)
     .then(() => {
       blinkDie(pixel);
-      Toast.show(`\nProfile "${profile.name}" activated on ${pixel.name}\n`, {
-        duration: Toast.durations.SHORT,
-        position: -100,
-        opacity: 1.0,
-        backgroundColor: AppDarkTheme.colors.elevation.level3,
-        textColor: AppDarkTheme.colors.onSurface,
-      });
+      Toast.show(
+        `\nProfile "${profile.name}" activated on ${pixel.name}\n`,
+        ToastSettings
+      );
     })
     .catch((e) => {
       console.log(`Error while transferring profile: ${e}`);
