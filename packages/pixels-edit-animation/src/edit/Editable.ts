@@ -17,4 +17,6 @@ export default abstract class Editable {
     this.name = opt?.name ?? "";
     this._uuid = opt?.uuid ?? "";
   }
+
+  abstract duplicate(uuid?: string): Editable;
 }

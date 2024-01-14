@@ -58,4 +58,12 @@ export default class EditPattern extends Editable {
       });
     });
   }
+
+  duplicate(uuid?: string): EditPattern {
+    return new EditPattern({
+      ...this,
+      uuid,
+      gradients: this.gradients.map((g) => g.duplicate()),
+    });
+  }
 }

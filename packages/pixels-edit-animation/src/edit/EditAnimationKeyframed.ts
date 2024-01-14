@@ -37,7 +37,11 @@ export default class EditAnimationKeyframed extends EditAnimation {
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationKeyframed({ ...this, uuid });
+    return new EditAnimationKeyframed({
+      ...this,
+      uuid,
+      pattern: this.pattern?.duplicate(),
+    });
   }
 
   collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {

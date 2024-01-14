@@ -92,6 +92,11 @@ export default class EditAnimationNoise extends EditAnimation {
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationNoise({ ...this, uuid });
+    return new EditAnimationNoise({
+      ...this,
+      uuid,
+      gradient: this.gradient?.duplicate(),
+      blinkGradient: this.blinkGradient?.duplicate(),
+    });
   }
 }

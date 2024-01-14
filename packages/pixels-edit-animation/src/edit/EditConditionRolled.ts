@@ -20,7 +20,7 @@ export default class EditConditionRolled extends EditCondition {
 
   constructor(opt?: { faces?: number[] }) {
     super();
-    this.faces = opt?.faces ? [...opt.faces] : [];
+    this.faces = opt?.faces ?? [];
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {
@@ -30,7 +30,9 @@ export default class EditConditionRolled extends EditCondition {
   }
 
   duplicate(): EditCondition {
-    return new EditConditionRolled(this);
+    return new EditConditionRolled({
+      faces: [...this.faces],
+    });
   }
 
   static toFaceMask(faces: number[]): number {

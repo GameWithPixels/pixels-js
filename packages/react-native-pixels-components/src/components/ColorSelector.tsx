@@ -33,7 +33,7 @@ function ColorButton(props: BaseButtonProps) {
  * Props for customizing elements and behavior of a ColorSelection or GradientColorSelection component.
  */
 interface ColorSelectorProps extends BaseFlexProps {
-  color: ColorUtils.IColor;
+  color: Readonly<ColorUtils.IColor>;
   onColorSelect?: (value: string) => void;
 }
 

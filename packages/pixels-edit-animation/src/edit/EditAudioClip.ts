@@ -9,4 +9,11 @@ export default class EditAudioClip extends Editable {
     super(opt);
     this.localId = opt?.localId ?? 0;
   }
+
+  duplicate(uuid?: string): EditAudioClip {
+    return new EditAudioClip({
+      ...this,
+      uuid,
+    });
+  }
 }

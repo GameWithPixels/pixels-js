@@ -53,6 +53,10 @@ export default class EditAnimationGradient extends EditAnimation {
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationGradient({ ...this, uuid });
+    return new EditAnimationGradient({
+      ...this,
+      uuid,
+      gradient: this.gradient?.duplicate(),
+    });
   }
 }

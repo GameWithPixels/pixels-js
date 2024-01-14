@@ -2,7 +2,6 @@ import {
   Constants,
   Color,
   GammaUtils,
-  ColorUtils,
 } from "@systemic-games/pixels-core-animation";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
@@ -14,26 +13,21 @@ export default class EditColor {
   mode: ColorMode;
 
   @observable
-  color: Color; // Used when type is "rgb"
+  color?: Color; // Used when type is "rgb"
 
-  constructor(
-    colorOrMode:
-      | Readonly<ColorUtils.IColor>
-      | Exclude<ColorMode, "rgb"> = Color.black
-  ) {
+  constructor(colorOrMode?: Color | Exclude<ColorMode, "rgb">) {
     if (typeof colorOrMode === "string") {
       this.mode = colorOrMode;
-      this.color = new Color();
     } else {
       this.mode = "rgb";
-      this.color = new Color(colorOrMode);
+      this.color = colorOrMode ?? Color.black.duplicate();
     }
   }
 
   toColorIndex(refPalette: Color[]): number {
     switch (this.mode) {
       case "rgb":
-        return EditColor.toColorIndex(refPalette, this.color);
+        return EditColor.toColorIndex(refPalette, this.color ?? Color.black);
       case "face":
         return Constants.paletteColorFromFace;
       case "random":

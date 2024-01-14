@@ -15,7 +15,7 @@ export function fromColor(color: EditColor): string {
   const mode = color.mode;
   switch (mode) {
     case "rgb":
-      return ColorUtils.colorToString(color.color).toString();
+      return ColorUtils.colorToString(color.color ?? Color.black).toString();
     case "face":
     case "random":
       return mode;

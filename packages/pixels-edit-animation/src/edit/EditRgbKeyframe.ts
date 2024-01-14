@@ -14,11 +14,11 @@ export default class EditRgbKeyframe {
   time: number;
 
   @observable
-  color: Readonly<Color>;
+  color: Color;
 
-  constructor(opt?: { time?: number; color?: Readonly<Color> }) {
+  constructor(opt?: { time?: number; color?: Color }) {
     this.time = opt?.time ?? 0;
-    this.color = opt?.color ?? Color.black;
+    this.color = opt?.color ?? Color.black.duplicate();
   }
 
   toRgbKeyframe(_editSet: EditDataSet, bits: AnimationBits): RgbKeyframe {
@@ -37,6 +37,9 @@ export default class EditRgbKeyframe {
   }
 
   duplicate(): EditRgbKeyframe {
-    return new EditRgbKeyframe(this);
+    return new EditRgbKeyframe({
+      ...this,
+      color: this.color.duplicate(),
+    });
   }
 }
