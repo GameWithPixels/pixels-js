@@ -2,6 +2,7 @@ import {
   DataSet,
   Action,
   ActionMakeWebRequest,
+  ActionTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -31,6 +32,7 @@ export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {
     return safeAssign(new ActionMakeWebRequest(), {
+      type: ActionTypeValues.playAudioClip, // TODO fix for FW compatibility
       actionId,
     });
   }
