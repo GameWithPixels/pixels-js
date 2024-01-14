@@ -1,5 +1,5 @@
 import React from "react";
-import { Searchbar } from "react-native-paper";
+import { Searchbar, useTheme } from "react-native-paper";
 import Animated, {
   SharedValue,
   useAnimatedStyle,
@@ -26,12 +26,16 @@ export function AnimatedProfileSearchbar({
       opacity: v,
     };
   }, [headerHeight, positionY]);
+  const { colors } = useTheme();
   return (
     <Animated.View style={[animStyle, { overflow: "hidden", gap: 10 }]}>
       <Searchbar
         placeholder="Filter by die type, name or description"
+        numberOfLines={1}
+        placeholderTextColor={colors.onSurfaceDisabled}
         onChangeText={setFilter}
         value={filter}
+        inputStyle={{ minHeight: 0 }}
       />
     </Animated.View>
   );

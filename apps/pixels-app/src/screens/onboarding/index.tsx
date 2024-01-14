@@ -760,7 +760,8 @@ function ReadySlide({
           }}
         >
           Your Pixels {dice} light{pixelsCount <= 1 ? "s" : ""} up accordingly
-          to the settings of {pixelsCount <= 1 ? " its " : " their "} Profile.
+          to the settings of {pixelsCount <= 1 ? "its" : "their"} Profile.
+          {"\n"}
           With the app you may customize your {dice} Profile or create new ones.
         </Text>
       </View>
