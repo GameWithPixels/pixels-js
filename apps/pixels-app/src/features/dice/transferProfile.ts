@@ -24,6 +24,28 @@ export function transferProfile(
       .padStart(8)}`
   );
   const modified = applyProfileOverrides(profile);
+  console.log(`Transferring profile: ${profile.name} - ${profile.uuid}`);
+  for (const rule of modified.rules) {
+    console.log(" - Rule of type " + rule.condition.type);
+    for (const action of rule.actions) {
+      if (action instanceof Profiles.ActionPlayAnimation) {
+        const anim = action.animation;
+        console.log(
+          anim
+            ? `     * Play anim ${anim.name} of type ${anim.type} with a duration of ${anim.duration}`
+            : "     * No animation!"
+        );
+      } else if (action instanceof Profiles.ActionMakeWebRequest) {
+        console.log(
+          `     * Web request to "${action.url}" with value "${action.value}"`
+        );
+      } else if (action instanceof Profiles.ActionSpeakText) {
+        console.log(
+          `     * Web request to "${action.text}" with pitch ${action.pitch} and rate ${action.rate}`
+        );
+      }
+    }
+  }
   const ds = createDataSetForProfile(modified);
   // TODO update when getting confirmation from the die in usePairedPixels
   store.dispatch(

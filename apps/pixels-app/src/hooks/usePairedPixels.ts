@@ -5,11 +5,14 @@ import {
   Pixel,
   PixelInfo,
   PixelStatus,
+  Profiles,
   ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
+import * as Speech from "expo-speech";
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { store } from "~/app/store";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
   addPairedDie,
@@ -17,7 +20,13 @@ import {
   removePairedDie,
   setPairedDieName,
 } from "~/features/store/pairedDiceSlice";
-import { notEmpty, areArraysEqual, unsigned32ToHex } from "~/features/utils";
+import { readProfile } from "~/features/store/profiles";
+import {
+  areArraysEqual,
+  httpPost,
+  notEmpty,
+  unsigned32ToHex,
+} from "~/features/utils";
 
 function stableFilterPixels(
   pairedDice: readonly PairedDie[],
@@ -53,6 +62,59 @@ function disconnect(pixel: Pixel) {
   pixel
     .disconnect()
     .catch((e: Error) => pixelLog(pixel, `Disconnection error: ${e}`));
+}
+
+function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
+  return (actionId: number) => {
+    const state = store.getState();
+    const profileUuid = state.pairedDice.dice.find(
+      (d) => d.pixelId === pixel.pixelId
+    )?.profileUuid;
+    const profile = profileUuid && readProfile(profileUuid, state.library);
+    if (profile) {
+      const action = profile.getRemoteAction(actionId);
+      if (action instanceof Profiles.ActionMakeWebRequest) {
+        console.log(
+          `Running remote action for web request with id=${actionId} at URL "${action.url}" with value "${action.value}"`
+        );
+        if (!__DEV__) {
+          httpPost(action.url, pixel.name, action.value, profile.name).then(
+            (status) =>
+              console.log(
+                `Post request to ${action.url} returned with status ${status}`
+              )
+          );
+        } else {
+          console.log(
+            "Running web request actions is disabled in development builds"
+          );
+        }
+      }
+      if (action instanceof Profiles.ActionSpeakText) {
+        const settings = { pitch: action.pitch, rate: action.rate } as const;
+        console.log(
+          `Running remote action for speak text with id=${actionId} with text "${
+            action.text
+          }" and settings=${JSON.stringify(settings)}`
+        );
+        if (action.text?.trim()?.length) {
+          Speech.speak(action.text, settings);
+        } else {
+          console.log("No text to speak");
+        }
+      } else {
+        console.warn(
+          `Ignoring running action with id ${actionId} for profile ${
+            profile.name
+          } because ${
+            action
+              ? "the action is not a web request"
+              : "there is no such action"
+          }`
+        );
+      }
+    }
+  };
 }
 
 // TODO this hook works if only used once in the app
@@ -113,11 +175,16 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
           // );
         };
         pixel.addEventListener("profileHash", onProfileHash);
+        // Web request handling
+        const onRemoteAction = createRemoteActionListener(pixel);
+        pixel.addEventListener("remoteAction", onRemoteAction);
+        // Store our disposer
         activePixelsRef.current.set(pixel.pixelId, () => {
           pixel.removeEventListener("status", onStatus);
           pixel.removeEventListener("roll", onRoll);
           pixel.removePropertyListener("name", onRename);
           pixel.removeEventListener("profileHash", onProfileHash);
+          pixel.removeEventListener("remoteAction", onRemoteAction);
           // Disconnect
           disconnect(pixel);
         });

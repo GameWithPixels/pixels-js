@@ -8,17 +8,9 @@ export function applyProfileOverrides(
     (r) => r.condition.type !== "handling"
   );
   for (const rule of modified.rules) {
-    // console.log("  - Rule of type " + rule.condition.type);
     for (const action of rule.actions) {
-      if (action.type === "playAnimation") {
-        const act = action as Profiles.ActionPlayAnimation;
-        act.animation = applyActionOverrides(act);
-        // const anim = act.animation;
-        // console.log(
-        //   anim
-        //     ? `      Play anim ${anim.name} of type ${anim.type} with a duration of ${anim.duration}`
-        //     : "      No animation!"
-        // );
+      if (action instanceof Profiles.ActionPlayAnimation) {
+        action.animation = applyActionOverrides(action);
       }
     }
   }

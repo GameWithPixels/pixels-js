@@ -355,7 +355,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
         <PageHeader mode="arrow-left" onGoBack={onGoBack}>
           {getConditionTypeLabel("rolled")}
         </PageHeader>
-        {/* <View
+        <View
           style={{
             flexDirection: "row",
             justifyContent: "flex-start",
@@ -371,7 +371,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
                 <View
                   key={t}
                   style={{
-                    width: "25%",
+                    width: `${100 / actionTypes.length}%`,
                     justifyContent: "center",
                     borderColor: index !== i ? colors.outline : "transparent",
                     borderWidth: 1,
@@ -407,18 +407,12 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
               )
             );
           })}
-        </View> */}
+        </View>
         <Text variant="bodySmall" style={styles.description}>
           {getActionTypeDescription(actionTypes[index]) +
             " " +
             getConditionTypeDescription("rolled") +
             "."}
-        </Text>
-        <Text
-          variant="bodyMedium"
-          style={{ alignSelf: "center", marginBottom: 10 }}
-        >
-          Web Request and Speak Text to be added soon!
         </Text>
         {/* Use for Gesture Handler ScrollView for nested scroll views to work */}
         <GHScrollView
