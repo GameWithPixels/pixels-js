@@ -2,6 +2,7 @@ import {
   DataSet,
   Action,
   ActionSpeakText,
+  ActionTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -19,16 +20,21 @@ export default class EditActionSpeakText extends EditActionRunOnDevice {
   text: string;
 
   @observable
-  volume: number;
+  pitch: number;
+
+  @observable
+  rate: number;
 
   constructor(opt?: { text?: string; volume?: number }) {
     super();
     this.text = opt?.text ?? "";
-    this.volume = opt?.volume ?? 100;
+    this.pitch = opt?.volume ?? 1;
+    this.rate = opt?.volume ?? 1;
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {
     return safeAssign(new ActionSpeakText(), {
+      type: ActionTypeValues.playAudioClip,
       actionId,
     });
   }
