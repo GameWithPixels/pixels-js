@@ -27,6 +27,7 @@ const pages = [
   "Dice Software Information",
   "Check for Update",
   "Reset App Settings",
+  "Speech",
 ] as const;
 
 type PageName = (typeof pages)[number];
@@ -108,6 +109,9 @@ function SettingsMenuPage({
         break;
       case "Reset App Settings":
         showConfirmReset();
+        break;
+      case "Speech":
+        navigation.navigate("speech");
         break;
     }
   };
