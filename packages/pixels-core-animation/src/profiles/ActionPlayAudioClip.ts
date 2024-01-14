@@ -11,6 +11,9 @@ export default class ActionPlayAudioClip implements Action {
   @serializable(1)
   type: number = ActionTypeValues.playAudioClip;
 
+  @serializable(1)
+  readonly _unused = 0;
+
   @serializable(2)
   actionId = 0;
 }
