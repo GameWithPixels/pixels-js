@@ -39,8 +39,10 @@ const EditProfileDescription = observer(function EditProfileDescription({
     <TextInput
       mode="outlined"
       multiline
+      dense
       maxLength={200}
       style={{ backgroundColor: colors.elevation.level0 }}
+      contentStyle={{ marginVertical: 10 }}
       value={profile.description}
       onChangeText={(t) => runInAction(() => (profile.description = t))}
       placeholder="This profile has no description"
