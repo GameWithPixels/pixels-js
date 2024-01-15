@@ -24,7 +24,7 @@ export default class EditColor {
     }
   }
 
-  toColorIndex(refPalette: Color[]): number {
+  toColorIndex(refPalette: Readonly<Color>[]): number {
     switch (this.mode) {
       case "rgb":
         return EditColor.toColorIndex(refPalette, this.color ?? Color.black);
@@ -37,7 +37,10 @@ export default class EditColor {
     }
   }
 
-  static toColorIndex(refPalette: Color[], color: Color): number {
+  static toColorIndex(
+    refPalette: Readonly<Color>[],
+    color: Readonly<Color>
+  ): number {
     const colorGamma = GammaUtils.gamma(color);
     let colorIndex = refPalette.findIndex((c) => colorGamma.equals(c));
     if (colorIndex < 0) {

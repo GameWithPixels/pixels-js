@@ -36,11 +36,13 @@ import EditRgbKeyframe from "./edit/EditRgbKeyframe";
 import EditRule from "./edit/EditRule";
 import * as Json from "./jsonTypes";
 
-function toRgbColor(color?: Json.RgbColor): Color {
+function toRgbColor(color?: Readonly<Json.RgbColor>): Color {
   return Color.fromBytes(color?.r ?? 0, color?.g ?? 0, color?.b ?? 0);
 }
 
-function toKeyframes(keyframes?: Json.Keyframe[]): EditRgbKeyframe[] {
+function toKeyframes(
+  keyframes?: readonly Readonly<Json.Keyframe>[]
+): EditRgbKeyframe[] {
   return (
     keyframes?.map(
       (k) => new EditRgbKeyframe({ time: k.time, color: toRgbColor(k.color) })
@@ -48,7 +50,9 @@ function toKeyframes(keyframes?: Json.Keyframe[]): EditRgbKeyframe[] {
   );
 }
 
-function toGradients(gradients?: Json.Gradient[]): EditRgbGradient[] {
+function toGradients(
+  gradients?: readonly Readonly<Json.Gradient>[]
+): EditRgbGradient[] {
   return (
     gradients?.map(
       (g) => new EditRgbGradient({ keyframes: toKeyframes(g.keyframes) })
@@ -56,7 +60,7 @@ function toGradients(gradients?: Json.Gradient[]): EditRgbGradient[] {
   );
 }
 
-function toColor(color?: Json.Color): EditColor {
+function toColor(color?: Readonly<Json.Color>): EditColor {
   if (color) {
     switch (color.type) {
       case ColorModeValues.rgb:
@@ -73,22 +77,26 @@ function toColor(color?: Json.Color): EditColor {
   }
 }
 
-export function toPattern(pattern: Json.Pattern): EditPattern {
+export function toPattern(pattern: Readonly<Json.Pattern>): EditPattern {
   return new EditPattern({
     name: pattern.name,
     gradients: toGradients(pattern.gradients),
   });
 }
 
-function toPatterns(patterns?: Json.Pattern[]): EditPattern[] {
+function toPatterns(
+  patterns?: readonly Readonly<Json.Pattern>[]
+): EditPattern[] {
   return patterns?.map(toPattern) ?? [];
 }
 
-function toAudioClips(audioClips?: Json.AudioClip[]): EditAudioClip[] {
+function toAudioClips(
+  audioClips?: readonly Readonly<Json.AudioClip>[]
+): EditAudioClip[] {
   return audioClips?.map((ac) => new EditAudioClip(ac)) ?? [];
 }
 
-function toCondition(condition: Json.Condition): EditCondition {
+function toCondition(condition: Readonly<Json.Condition>): EditCondition {
   if (condition.data) {
     const data = condition.data;
     // TODO make those creations and assignments in a more generic way
@@ -122,9 +130,9 @@ function toCondition(condition: Json.Condition): EditCondition {
 }
 
 function toActions(
-  animations: EditAnimation[],
-  audioClips: EditAudioClip[],
-  actions: Json.Action[]
+  animations: readonly EditAnimation[],
+  audioClips: readonly EditAudioClip[],
+  actions: readonly Readonly<Json.Action>[]
 ): EditAction[] {
   const validActions = actions?.filter(
     (act): act is Required<Json.Action> => !!act.type && !!act.data
@@ -154,9 +162,9 @@ function toActions(
 }
 
 export function toRules(
-  animations: EditAnimation[],
-  audioClips: EditAudioClip[],
-  rules?: Json.Rule[]
+  animations: readonly EditAnimation[],
+  audioClips: readonly EditAudioClip[],
+  rules?: readonly Readonly<Json.Rule>[]
 ): EditRule[] {
   const validRules = rules?.filter(
     (r): r is Required<Json.Rule> => !!r.condition && !!r.actions
@@ -173,9 +181,9 @@ export function toRules(
 }
 
 export function toProfile(
-  profile: Json.Profile,
-  animations: EditAnimation[],
-  audioClips: EditAudioClip[]
+  profile: Readonly<Json.Profile>,
+  animations: readonly EditAnimation[],
+  audioClips: readonly EditAudioClip[]
 ): EditProfile {
   return new EditProfile({
     name: profile.name ?? undefined,
@@ -185,8 +193,8 @@ export function toProfile(
 }
 
 export function toAnimation(
-  anim: Required<Json.Animation>,
-  patterns: EditPattern[]
+  anim: Readonly<Required<Json.Animation>>,
+  patterns: readonly EditPattern[]
 ): EditAnimation {
   const data = anim.data;
   switch (anim.type) {
@@ -242,7 +250,7 @@ export function toAnimation(
   }
 }
 
-export function loadAppDataSet(jsonData: Json.DataSet): AppDataSet {
+export function loadAppDataSet(jsonData: Readonly<Json.DataSet>): AppDataSet {
   const patterns = toPatterns(jsonData.patterns);
   const validAnimations = jsonData?.animations?.filter(
     (anim): anim is Required<Json.Animation> => !!anim.type && !!anim.data
