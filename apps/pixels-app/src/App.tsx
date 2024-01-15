@@ -13,14 +13,13 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { LogBox, Platform, StyleSheet, View, ViewStyle } from "react-native";
+import { LogBox, Platform, StyleSheet, ViewStyle } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   configureFonts,
   MD3LightTheme,
   MD3Theme,
   PaperProvider,
-  Text,
   useTheme,
 } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
@@ -29,7 +28,8 @@ import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import * as Sentry from "sentry-expo";
 
-import { AppTasks } from "./AppTasks";
+import { AnimatedSplashScreen } from "./app/AnimatedSplashScreen";
+import { AppInit } from "./app/AppInit";
 import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
@@ -43,7 +43,6 @@ import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
-import { AppStyles } from "./styles";
 import { AppDarkTheme, PixelThemes } from "./themes";
 
 import DiceBagIcon from "#/icons/navigation/dice-bag";
@@ -199,8 +198,10 @@ function updateThemesFonts() {
   }
 }
 
-// Let fonts time to load before hiding splash screen
-SplashScreen.preventAutoHideAsync();
+// We'll hide the splash screen when everything has loaded
+SplashScreen.preventAutoHideAsync().catch(() => {
+  //reloading the app might trigger some race conditions, ignore them
+});
 
 function App() {
   // Instrument React Navigation
@@ -216,12 +217,6 @@ function App() {
     "LTInternet-Bold": require("#/fonts/LTInternet-Bold.ttf"),
   });
 
-  const onLayoutRootView = React.useCallback(async () => {
-    if (fontsLoaded || fontError) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
-
   if (!fontsLoaded && !fontError) {
     return null;
   }
@@ -232,42 +227,36 @@ function App() {
     // TODO enable with reanimated 3.6
     // <React.StrictMode>
     <Sentry.Native.TouchEventBoundary>
-      <View style={AppStyles.flex} onLayout={onLayoutRootView}>
-        <ReduxProvider store={store}>
-          <SafeAreaProvider>
-            <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-              <PaperProvider theme={AppDarkTheme}>
-                <ErrorBoundary FallbackComponent={ErrorFallback}>
-                  <NavigationContainer
-                    ref={navigation}
-                    theme={AppDarkTheme}
-                    onReady={onReady}
-                  >
-                    <RootSiblingParent>
-                      <ActionSheetProvider>
-                        <BottomSheetModalProvider>
-                          <StatusBar style="light" />
-                          <PersistGate
-                            loading={
-                              <View style={AppStyles.centeredFlex}>
-                                <Text>Loading...</Text>
-                              </View>
-                            }
-                            persistor={persistor}
-                          >
-                            <AppTasks />
-                            <AppPage />
-                          </PersistGate>
-                        </BottomSheetModalProvider>
-                      </ActionSheetProvider>
-                    </RootSiblingParent>
-                  </NavigationContainer>
-                </ErrorBoundary>
-              </PaperProvider>
-            </GestureHandlerRootView>
-          </SafeAreaProvider>
-        </ReduxProvider>
-      </View>
+      <ReduxProvider store={store}>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+            <PaperProvider theme={AppDarkTheme}>
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <NavigationContainer
+                  ref={navigation}
+                  theme={AppDarkTheme}
+                  onReady={onReady}
+                >
+                  <StatusBar style="light" />
+                  <PersistGate persistor={persistor}>
+                    <AppInit>
+                      <AnimatedSplashScreen>
+                        <RootSiblingParent>
+                          <ActionSheetProvider>
+                            <BottomSheetModalProvider>
+                              <AppPage />
+                            </BottomSheetModalProvider>
+                          </ActionSheetProvider>
+                        </RootSiblingParent>
+                      </AnimatedSplashScreen>
+                    </AppInit>
+                  </PersistGate>
+                </NavigationContainer>
+              </ErrorBoundary>
+            </PaperProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
+      </ReduxProvider>
     </Sentry.Native.TouchEventBoundary>
     // </React.StrictMode>
   );

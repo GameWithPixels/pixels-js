@@ -53,8 +53,8 @@ export function Banner({
             )}
             size={20}
             sentry-label={
-              "hide-banner-" + title?.toLocaleLowerCase().replace(" ", "-") ??
-              "unnamed"
+              "hide-banner-" +
+              (title?.toLocaleLowerCase().replace(" ", "-") ?? "unnamed")
             }
             style={{ position: "absolute", right: -5, top: -5 }}
             onPress={onDismiss}
