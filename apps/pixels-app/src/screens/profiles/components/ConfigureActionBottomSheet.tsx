@@ -16,7 +16,7 @@ import * as Clipboard from "expo-clipboard";
 import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 import {
   Button,
   Text,
@@ -35,6 +35,7 @@ import {
   SliderWithValueProps,
 } from "~/components/SliderWithTitle";
 import { GradientButton } from "~/components/buttons";
+import { buildActionURL } from "~/features/profiles";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
@@ -615,8 +616,10 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
 
 const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   action,
+  profileName,
 }: {
   action: Profiles.ActionMakeWebRequest;
+  profileName: string;
 }) {
   const { colors } = useTheme();
   return (
@@ -626,15 +629,21 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
         value={action.url}
         onChangeText={(t) => runInAction(() => (action.url = t))}
       />
-      <Text variant="titleMedium">Parameters</Text>
-      <Text
-        style={{ color: colors.onSurfaceDisabled }}
-      >{`value1={die name}&value2={your value}&value3={profile name}`}</Text>
       <Text variant="titleMedium">Value</Text>
       <TextInput
         value={action.value}
         onChangeText={(t) => runInAction(() => (action.value = t))}
       />
+      <Text style={{ color: colors.onSurfaceDisabled, marginTop: 10 }}>
+        The request will look like this:
+      </Text>
+      <Text style={{ color: colors.onSurfaceDisabled }}>
+        {buildActionURL(action, { name: profileName }, { name: "$dieName" })}
+      </Text>
+      <Text style={{ color: colors.onSurfaceDisabled }}>
+        Where "$dieName" is replaced by the name of the die that triggered this
+        action.
+      </Text>
     </>
   );
 });
@@ -644,6 +653,7 @@ export const ConfigureActionBottomSheet = observer(
     condition,
     action,
     dieType,
+    profileName,
     unavailableFaces,
     visible,
     onDismiss,
@@ -651,6 +661,7 @@ export const ConfigureActionBottomSheet = observer(
     condition: Profiles.Condition;
     action: Profiles.Action;
     dieType: PixelDieType;
+    profileName: string;
     unavailableFaces?: number[];
     visible?: boolean;
     onDismiss: () => void;
@@ -666,6 +677,7 @@ export const ConfigureActionBottomSheet = observer(
     }, [visible]);
 
     const theme = useTheme();
+    const { colors } = theme;
     const paddingBottom = useBottomSheetPadding(15);
     return (
       <BottomSheetModal
@@ -673,7 +685,7 @@ export const ConfigureActionBottomSheet = observer(
         enableDynamicSizing
         onDismiss={onDismiss}
         onChange={onChange}
-        keyboardBehavior={Platform.OS === "ios" ? "interactive" : "fillParent"}
+        keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
         backgroundStyle={getBottomSheetBackgroundStyle()}
@@ -701,7 +713,7 @@ export const ConfigureActionBottomSheet = observer(
             <Text
               style={{
                 alignSelf: "center",
-                color: theme.colors.onSurfaceDisabled,
+                color: colors.onSurfaceDisabled,
               }}
             >
               Slide down to close
@@ -720,7 +732,10 @@ export const ConfigureActionBottomSheet = observer(
             ) : action instanceof Profiles.ActionSpeakText ? (
               <ConfigureSpeakText action={action} />
             ) : action instanceof Profiles.ActionMakeWebRequest ? (
-              <ConfigureMakeWebRequest action={action} />
+              <ConfigureMakeWebRequest
+                action={action}
+                profileName={profileName}
+              />
             ) : null}
             {condition instanceof Profiles.ConditionRolling ? (
               <ConfigureRollingCondition condition={condition} />

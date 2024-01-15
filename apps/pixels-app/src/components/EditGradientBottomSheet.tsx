@@ -60,6 +60,7 @@ export function EditGradientBottomSheet({
   }, [visible]);
   const paddingBottom = useBottomSheetPadding();
   const theme = useTheme();
+  const { colors } = theme;
   const borderRadius = getBorderRadius(theme.roundness);
   return (
     <BottomSheetModal
@@ -89,7 +90,9 @@ export function EditGradientBottomSheet({
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
             Edit Gradient
           </Text>
-          <Text style={AppStyles.selfCentered}>
+          <Text
+            style={{ alignSelf: "center", color: colors.onSurfaceDisabled }}
+          >
             Tap on circle to modify color
           </Text>
           <View
@@ -118,8 +121,8 @@ export function EditGradientBottomSheet({
                     borderWidth: 2,
                     borderColor:
                       selectedKeyframe === i
-                        ? theme.colors.primary
-                        : theme.colors.onSurface,
+                        ? colors.primary
+                        : colors.onSurface,
                   }}
                   onPress={() => setSelectedKeyframe(i)}
                 >

@@ -40,10 +40,10 @@ function SpeechPage({
         }}
       >
         <PaperText variant="titleLarge">Speech</PaperText>
+        <Button mode="contained-tonal" onPress={() => Speech.speak("Hello")}>
+          Speak Hello
+        </Button>
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <Button mode="contained-tonal" onPress={() => Speech.speak("Hello")}>
-            Speak Hello
-          </Button>
           <Text>Voices:</Text>
           {voices ? (
             <Text>

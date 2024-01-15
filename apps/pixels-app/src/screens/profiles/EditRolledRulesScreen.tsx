@@ -490,6 +490,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
       </Animated.View>
       <ConfigureActionBottomSheet
         dieType={profile.dieType}
+        profileName={profile.name}
         condition={configureRule?.condition ?? defaultCondition}
         action={configureRule?.actions[0] ?? defaultAction}
         unavailableFaces={getRolledFaces(
