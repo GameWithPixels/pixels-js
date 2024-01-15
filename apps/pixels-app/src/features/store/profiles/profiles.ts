@@ -173,7 +173,10 @@ function updateAction(
         const colorsCount = data.colors.length;
         action.colors.length = colorsCount;
         for (let i = 0; i < colorsCount; ++i) {
-          action.colors[i] = new Profiles.Color(data.colors[i]);
+          const newColor = new Profiles.Color(data.colors[i]);
+          if (!action.colors[i]?.equals(newColor)) {
+            action.colors[i] = newColor;
+          }
         }
       }
       break;
