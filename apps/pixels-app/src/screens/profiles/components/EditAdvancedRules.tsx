@@ -3,7 +3,7 @@ import React from "react";
 import { EditRuleCallback, RulesSection } from "./RulesSection";
 
 import { SlideInView } from "~/components/SlideInView";
-import { connectionFlags, batteryFlags } from "~/features/profiles";
+import { EditorAnimationFlags } from "~/features/profiles";
 
 export function EditAdvancedRules({
   profileUuid,
@@ -18,13 +18,13 @@ export function EditAdvancedRules({
         profileUuid={profileUuid}
         onEditRule={onEditRule}
         conditionType="connection"
-        flags={connectionFlags}
+        flags={EditorAnimationFlags.connection}
       />
       <RulesSection
         profileUuid={profileUuid}
         onEditRule={onEditRule}
         conditionType="battery"
-        flags={batteryFlags}
+        flags={EditorAnimationFlags.battery}
       />
     </SlideInView>
   );

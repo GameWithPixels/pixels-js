@@ -41,21 +41,24 @@ import templatesReducer, {
   templatesAdapter,
 } from "~/features/store/library/templatesSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
+import { getTimeStringMs } from "~/features/utils";
 
-const MyStorage = {
-  setItem: (key: string, value: string) => {
-    console.log("STORAGE SET ITEM: " + key);
-    return AsyncStorage.setItem(key, value);
-  },
-  getItem: (key: string) => {
-    console.log("STORAGE GET ITEM: " + key);
-    return AsyncStorage.getItem(key);
-  },
-  removeItem: (key: string) => {
-    console.log("STORAGE REMOVE ITEM: " + key);
-    return AsyncStorage.removeItem(key);
-  },
-};
+const MyStorage = !__DEV__
+  ? AsyncStorage
+  : {
+      setItem: (key: string, value: string) => {
+        console.log(`[${getTimeStringMs()}] Storage Write => ${key}`);
+        return AsyncStorage.setItem(key, value);
+      },
+      getItem: (key: string) => {
+        console.log(`[${getTimeStringMs()}] Storage Read => ${key}`);
+        return AsyncStorage.getItem(key);
+      },
+      removeItem: (key: string) => {
+        console.log(`[${getTimeStringMs()}] Storage Delete => ${key}`);
+        return AsyncStorage.removeItem(key);
+      },
+    };
 
 function persist<S, A extends Action = Action>(
   key: string,

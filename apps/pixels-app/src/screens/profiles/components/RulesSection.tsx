@@ -23,7 +23,7 @@ export function RulesSection({
 }: {
   profileUuid: string;
   conditionType: Profiles.ConditionType;
-  flags: string[];
+  flags: Readonly<string[]>;
   onEditRule: EditRuleCallback;
 }) {
   return (

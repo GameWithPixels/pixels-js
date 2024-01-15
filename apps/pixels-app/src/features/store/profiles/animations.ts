@@ -32,10 +32,8 @@ export function readAnimation(
   library: LibraryState,
   newInstance = false
 ): Profiles.Animation {
-  console.log("readAnimation => " + uuid);
-  const anim = newInstance
-    ? create(uuid, library, newInstance)
-    : loadedAnimations.get(uuid) ?? create(uuid, library, newInstance);
+  const existing = !newInstance && loadedAnimations.get(uuid);
+  const anim = existing ? existing : create(uuid, library, newInstance);
   runInAction(() => updateAnimation(anim, library));
   return anim;
 }
@@ -79,72 +77,78 @@ function updateAnimation(
   const uuid = anim.uuid;
   const flashesData = library.animations.flashes.entities[uuid];
   if (flashesData) {
-    const flashes = anim as Profiles.AnimationFlashes;
-    updateAnimBase(flashes, flashesData);
-    updateColor(flashes.color, flashesData.color);
-    flashes.count = flashesData.count;
-    flashes.fade = flashesData.fade;
-    flashes.faces = flashesData.faces;
-    return;
+    if (anim instanceof Profiles.AnimationFlashes) {
+      updateAnimBase(anim, flashesData);
+      updateColor(anim.color, flashesData.color);
+      anim.count = flashesData.count;
+      anim.fade = flashesData.fade;
+      anim.faces = flashesData.faces;
+      return;
+    }
   }
   const rainbowData = library.animations.rainbow.entities[uuid];
   if (rainbowData) {
-    const rainbow = anim as Profiles.AnimationRainbow;
-    updateAnimBase(rainbow, rainbowData);
-    rainbow.count = rainbowData.count;
-    rainbow.cycles = rainbowData.cycles;
-    rainbow.fade = rainbowData.fade;
-    rainbow.intensity = rainbowData.intensity;
-    rainbow.faces = rainbowData.faces;
-    return;
+    if (anim instanceof Profiles.AnimationRainbow) {
+      updateAnimBase(anim, rainbowData);
+      anim.count = rainbowData.count;
+      anim.cycles = rainbowData.cycles;
+      anim.fade = rainbowData.fade;
+      anim.intensity = rainbowData.intensity;
+      anim.faces = rainbowData.faces;
+      return;
+    }
   }
   const patternData = library.animations.pattern.entities[uuid];
   if (patternData) {
-    const pattern = anim as Profiles.AnimationPattern;
-    updateAnimBase(pattern, patternData);
-    pattern.pattern = patternData.patternUuid
-      ? readPattern(patternData.patternUuid, library)
-      : undefined;
-    return;
+    if (anim instanceof Profiles.AnimationPattern) {
+      updateAnimBase(anim, patternData);
+      anim.pattern = patternData.patternUuid
+        ? readPattern(patternData.patternUuid, library)
+        : undefined;
+      return;
+    }
   }
   const gradientPatternData = library.animations.gradientPattern.entities[uuid];
   if (gradientPatternData) {
-    const gradientPattern = anim as Profiles.AnimationGradientPattern;
-    updateAnimBase(gradientPattern, gradientPatternData);
-    gradientPattern.pattern = gradientPatternData.patternUuid
-      ? readPattern(gradientPatternData.patternUuid, library)
-      : undefined;
-    gradientPattern.gradient = gradientPatternData.gradientUuid
-      ? readGradient(gradientPatternData.gradientUuid, library)
-      : undefined;
-    gradientPattern.overrideWithFace = gradientPatternData.overrideWithFace;
-    return;
+    if (anim instanceof Profiles.AnimationGradientPattern) {
+      updateAnimBase(anim, gradientPatternData);
+      anim.pattern = gradientPatternData.patternUuid
+        ? readPattern(gradientPatternData.patternUuid, library)
+        : undefined;
+      anim.gradient = gradientPatternData.gradientUuid
+        ? readGradient(gradientPatternData.gradientUuid, library)
+        : undefined;
+      anim.overrideWithFace = gradientPatternData.overrideWithFace;
+      return;
+    }
   }
   const gradientData = library.animations.gradient.entities[uuid];
   if (gradientData) {
-    const gradient = anim as Profiles.AnimationGradient;
-    updateAnimBase(gradient, gradientData);
-    gradient.gradient = gradientData.gradientUuid
-      ? readGradient(gradientData.gradientUuid, library)
-      : undefined;
-    gradient.faces = gradientData.faces;
-    return;
+    if (anim instanceof Profiles.AnimationGradient) {
+      updateAnimBase(anim, gradientData);
+      anim.gradient = gradientData.gradientUuid
+        ? readGradient(gradientData.gradientUuid, library)
+        : undefined;
+      anim.faces = gradientData.faces;
+      return;
+    }
   }
   const noiseData = library.animations.noise.entities[uuid];
   if (noiseData) {
-    const noise = anim as Profiles.AnimationNoise;
-    updateAnimBase(noise, noiseData);
-    noise.gradient = noiseData.gradientUuid
-      ? readGradient(noiseData.gradientUuid, library)
-      : undefined;
-    noise.blinkDuration = noiseData.blinkDuration;
-    noise.blinkGradient = noiseData.blinkGradientUuid
-      ? readGradient(noiseData.blinkGradientUuid, library)
-      : undefined;
-    noise.blinkCount = noiseData.blinkCount;
-    noise.fade = noiseData.fade;
-    noise.faces = noiseData.faces;
-    return;
+    if (anim instanceof Profiles.AnimationNoise) {
+      updateAnimBase(anim, noiseData);
+      anim.gradient = noiseData.gradientUuid
+        ? readGradient(noiseData.gradientUuid, library)
+        : undefined;
+      anim.blinkDuration = noiseData.blinkDuration;
+      anim.blinkGradient = noiseData.blinkGradientUuid
+        ? readGradient(noiseData.blinkGradientUuid, library)
+        : undefined;
+      anim.blinkCount = noiseData.blinkCount;
+      anim.fade = noiseData.fade;
+      anim.faces = noiseData.faces;
+      return;
+    }
   }
   throw new Error(`Animation ${uuid} not found`);
 }

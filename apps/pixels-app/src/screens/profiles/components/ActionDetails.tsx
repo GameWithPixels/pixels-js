@@ -19,64 +19,47 @@ function getCountAsText(count: number) {
 }
 
 function getActionText(action: Profiles.Action): string {
-  switch (action.type) {
-    case "playAnimation": {
-      const act = action as Profiles.ActionPlayAnimation;
-      let msg = act.animation?.name
-        ? `Play "${act.animation.name}" ${getCountAsText(act.loopCount)}`
-        : "No animation selected";
-      if (act.duration !== undefined) {
-        msg += ` for ${act.duration.toFixed(1)}s`;
-      }
-      return msg;
+  if (action instanceof Profiles.ActionPlayAnimation) {
+    let msg = action.animation?.name
+      ? `Play "${action.animation.name}" ${getCountAsText(action.loopCount)}`
+      : "No animation selected";
+    if (action.duration !== undefined) {
+      msg += ` for ${action.duration.toFixed(1)}s`;
     }
-    case "playAudioClip": {
-      const act = action as Profiles.ActionPlayAudioClip;
-      return act.clip?.name
-        ? `Play "${act.clip.name}" ${getCountAsText(act.loopCount)} at volume ${
-            act.volume
-          }%`
-        : "No clip selected";
-    }
-    case "speakText": {
-      const act = action as Profiles.ActionSpeakText;
-      return act.text.length
-        ? `Speak "${act.text}"${
-            act.pitch !== 1 ? ` with pitch ${act.pitch}%` : ""
-          }${act.rate !== 1 ? ` with rate ${act.rate}%` : ""}`
-        : "No text to speak";
-    }
-    case "makeWebRequest": {
-      const act = action as Profiles.ActionMakeWebRequest;
-      return act.url.length
-        ? `Send request to "${act.url}"${
-            act.value?.length ? `with value "${act.value}"` : ""
-          }`
-        : "No URL entered";
-    }
-    default:
-      return "Unknown action";
+    return msg;
+  } else if (action instanceof Profiles.ActionPlayAudioClip) {
+    return action.clip?.name
+      ? `Play "${action.clip.name}" ${getCountAsText(
+          action.loopCount
+        )} at volume ${action.volume}%`
+      : "No clip selected";
+  } else if (action instanceof Profiles.ActionSpeakText) {
+    return action.text.length
+      ? `Speak "${action.text}"${
+          action.pitch !== 1 ? ` with pitch ${action.pitch}%` : ""
+        }${action.rate !== 1 ? ` with rate ${action.rate}%` : ""}`
+      : "No text to speak";
+  } else if (action instanceof Profiles.ActionMakeWebRequest) {
+    return action.url.length
+      ? `Send request to "${action.url}"${
+          action.value?.length ? `with value "${action.value}"` : ""
+        }`
+      : "No URL entered";
+  } else {
+    throw new Error(`Unknown action type ${action.type}`);
   }
 }
 
 function getConditionText(condition: Profiles.Condition): string | undefined {
-  switch (condition.type) {
-    case "rolled": {
-      const faces = (condition as Profiles.ConditionRolled).faces;
-      return `On face${faces.length > 1 ? "s" : ""} ${getFacesAsText(faces)}`;
-    }
-    case "rolling":
-      return `Recheck after ${(
-        condition as Profiles.ConditionRolling
-      ).recheckAfter.toFixed(1)}s`;
-    case "idle":
-      return `Period of ${(condition as Profiles.ConditionIdle).period.toFixed(
-        1
-      )}s`;
-    case "battery":
-      return `Recheck after ${(
-        condition as Profiles.ConditionBattery
-      ).recheckAfter.toFixed(0)}s`;
+  if (condition instanceof Profiles.ConditionRolled) {
+    const faces = condition.faces;
+    return `On face${faces.length > 1 ? "s" : ""} ${getFacesAsText(faces)}`;
+  } else if (condition instanceof Profiles.ConditionRolling) {
+    return `Recheck after ${condition.recheckAfter.toFixed(1)}s`;
+  } else if (condition instanceof Profiles.ConditionIdle) {
+    return `Period of ${condition.period.toFixed(1)}s`;
+  } else if (condition instanceof Profiles.ConditionBattery) {
+    return `Recheck after ${condition.recheckAfter.toFixed(0)}s`;
   }
 }
 
@@ -129,10 +112,8 @@ export const ActionDieRenderer = observer(function ActionDieRenderer({
   const animationsData = React.useMemo(
     () =>
       computed(() => {
-        if (action.type === "playAnimation") {
-          const anim = applyActionOverrides(
-            action as Profiles.ActionPlayAnimation
-          );
+        if (action instanceof Profiles.ActionPlayAnimation) {
+          const anim = applyActionOverrides(action);
           if (anim) {
             const dataSet = createDataSetForAnimation(anim).toDataSet();
             return {

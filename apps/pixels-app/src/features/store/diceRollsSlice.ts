@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { getTimeStringMs } from "~/features/utils";
+
 export interface DieRolls {
   pixelId: number;
   rolls: number[];
@@ -19,6 +21,14 @@ const initialState: DiceRollsState = {
   dice: [],
 };
 
+function log(
+  action: "addDieRoll" | "setProfileTransfer" | "clearProfileTransfer"
+) {
+  if (__DEV__) {
+    console.log(`[${getTimeStringMs()}] Store Write ${action}`);
+  }
+}
+
 // Redux slice that stores information about paired dice rolls
 const DiceRollsSlice = createSlice({
   name: "DiceRolls",
@@ -31,7 +41,7 @@ const DiceRollsSlice = createSlice({
       state,
       action: PayloadAction<{ pixelId: number; roll: number }>
     ) {
-      console.log("STORE addDieRoll");
+      log("addDieRoll");
       const pair = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
@@ -51,12 +61,12 @@ const DiceRollsSlice = createSlice({
         profileUuid: string;
       }>
     ) {
-      console.log("STORE setProfileTransfer");
+      log("setProfileTransfer");
       const { pixelId, profileUuid } = action.payload;
       state.transfer = { pixelId, profileUuid };
     },
     clearProfileTransfer(state) {
-      console.log("STORE clearProfileTransfer");
+      log("clearProfileTransfer");
       state.transfer = undefined;
     },
   },

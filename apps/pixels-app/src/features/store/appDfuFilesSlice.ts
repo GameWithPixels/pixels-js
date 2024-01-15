@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { getTimeStringMs } from "~/features/utils";
+
 export interface DfuPathnamesBundle {
   readonly timestamp: number;
   readonly firmware: string;
@@ -13,15 +15,23 @@ export interface DfuFilesState {
   };
 }
 
+function log(action: "setDfuFileError" | "setDfuFilesBundle") {
+  if (__DEV__) {
+    console.log(`[${getTimeStringMs()}] Store Write ${action}`);
+  }
+}
+
 // Redux slice that stores app settings
 const dfuFilesSlice = createSlice({
   name: "dfuFiles",
   initialState: { latest: {} } as DfuFilesState,
   reducers: {
     setDfuFileError(state, action: PayloadAction<string>) {
+      log("setDfuFileError");
       state.latest = { error: action.payload };
     },
     setDfuFilesBundle(state, action: PayloadAction<DfuPathnamesBundle>) {
+      log("setDfuFilesBundle");
       state.latest = {
         bundle: {
           timestamp: action.payload.timestamp,

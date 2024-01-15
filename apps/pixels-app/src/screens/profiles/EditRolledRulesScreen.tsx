@@ -51,7 +51,7 @@ import { getActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
 import {
-  actionTypes,
+  EditorActionTypes,
   getActionTypeDescription,
   getConditionTypeDescription,
   getConditionTypeLabel,
@@ -130,8 +130,11 @@ function RolledConditionCard({
   dieType: PixelDieType;
   onDelete?: () => void;
 } & Omit<TouchableRippleProps, "children">) {
-  const cond = rule.condition as Profiles.ConditionRolled;
   const action = rule.actions.find((a) => a.type === type);
+  const faces =
+    rule.condition instanceof Profiles.ConditionRolled
+      ? rule.condition.faces
+      : [];
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const color =
@@ -151,8 +154,8 @@ function RolledConditionCard({
             variant="bodyLarge"
           >
             {`When rolled face is${
-              cond.faces.length > 1 ? " one of" : ""
-            } ${getFacesAsText(cond.faces)}`}
+              faces.length > 1 ? " one of" : ""
+            } ${getFacesAsText(faces)}`}
           </Text>
           <Pressable
             sentry-label="remove-rolled-rule"
@@ -271,7 +274,7 @@ function getRolledFaces(
       (r) => r !== excludedRule && r.actions.find((a) => a.type === actionType)
     )
     .flatMap(
-      (r) => (r.condition as Profiles.ConditionRolled).faces as number[]
+      (r) => ((r.condition as Profiles.ConditionRolled).faces ?? []) as number[]
     );
 }
 
@@ -304,7 +307,10 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
     () => [...DiceUtils.getDieFaces(profile.dieType)].reverse(),
     [profile.dieType]
   );
-  const unavailableFaces = getRolledFaces(rolledRules, actionTypes[index]);
+  const unavailableFaces = getRolledFaces(
+    rolledRules,
+    EditorActionTypes[index]
+  );
   const availableFaces = dieFaces.filter((f) => !unavailableFaces?.includes(f));
   const availCount = availableFaces.length;
 
@@ -346,8 +352,8 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
     React.useRef<InnerScrollViewHandle>(null),
   ];
   assert(
-    scrollViewRefs.length >= actionTypes.length,
-    `Number of scroll view refs must be at least ${actionTypes.length}`
+    scrollViewRefs.length >= EditorActionTypes.length,
+    `Number of scroll view refs must be at least ${EditorActionTypes.length}`
   );
   return (
     <>
@@ -362,7 +368,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
             marginHorizontal: 10,
           }}
         >
-          {actionTypes.map((t, i) => {
+          {EditorActionTypes.map((t, i) => {
             const Icon = getActionTypeIcon(t);
             return (
               Icon && (
@@ -371,19 +377,20 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
                 <View
                   key={t}
                   style={{
-                    width: `${100 / actionTypes.length}%`,
+                    width: `${100 / EditorActionTypes.length}%`,
                     justifyContent: "center",
                     borderColor: index !== i ? colors.outline : "transparent",
                     borderWidth: 1,
                     borderLeftWidth: i > 0 ? 1 : 0,
-                    borderRightWidth: i === actionTypes.length - 1 ? 1 : 0,
+                    borderRightWidth:
+                      i === EditorActionTypes.length - 1 ? 1 : 0,
                     borderRadius,
                     borderTopLeftRadius: i === 0 ? borderRadius : 0,
                     borderBottomLeftRadius: i === 0 ? borderRadius : 0,
                     borderTopRightRadius:
-                      i === actionTypes.length - 1 ? borderRadius : 0,
+                      i === EditorActionTypes.length - 1 ? borderRadius : 0,
                     borderBottomRightRadius:
-                      i === actionTypes.length - 1 ? borderRadius : 0,
+                      i === EditorActionTypes.length - 1 ? borderRadius : 0,
                     overflow: "hidden",
                   }}
                 >
@@ -394,9 +401,9 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
                       borderTopLeftRadius: i === 0 ? borderRadius : 0,
                       borderBottomLeftRadius: i === 0 ? borderRadius : 0,
                       borderTopRightRadius:
-                        i === actionTypes.length - 1 ? borderRadius : 0,
+                        i === EditorActionTypes.length - 1 ? borderRadius : 0,
                       borderBottomRightRadius:
-                        i === actionTypes.length - 1 ? borderRadius : 0,
+                        i === EditorActionTypes.length - 1 ? borderRadius : 0,
                     }}
                     outline={index !== i}
                     icon={Icon}
@@ -409,7 +416,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
           })}
         </View>
         <Text variant="bodySmall" style={styles.description}>
-          {getActionTypeDescription(actionTypes[index]) +
+          {getActionTypeDescription(EditorActionTypes[index]) +
             " " +
             getConditionTypeDescription("rolled") +
             "."}
@@ -424,11 +431,11 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
           }
           scrollEventThrottle={100}
         >
-          {actionTypes.map((t, i) => {
+          {EditorActionTypes.map((t, i) => {
             const actionRules = rolledRules
               .filter(
                 (r) =>
-                  (r.condition as Profiles.ConditionRolled).faces.length &&
+                  (r.condition as Profiles.ConditionRolled).faces?.length &&
                   r.actions.find((a) => a.type === t)
               )
               .sort(rolledConditionComparator);
@@ -472,7 +479,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
             cancelAnimation(bounceSv);
             const newRule = createObservableRolledRule(
               [availableFaces[0]],
-              actionTypes[index]
+              EditorActionTypes[index]
             );
             runInAction(() => {
               profile.rules.push(newRule);
@@ -487,7 +494,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
         action={configureRule?.actions[0] ?? defaultAction}
         unavailableFaces={getRolledFaces(
           rolledRules,
-          actionTypes[index],
+          EditorActionTypes[index],
           configureRule
         )}
         visible={!!configureRule}

@@ -1,3 +1,5 @@
+import { getTimeStringMs } from "~/features/utils";
+
 export function log(
   action: "add" | "update" | "remove" | "reset",
   type:
@@ -10,5 +12,11 @@ export function log(
   uuid: string,
   message?: string
 ) {
-  console.log(`STORE WRITE ${action} ${type}: ${uuid} ${message ?? ""}`);
+  if (__DEV__) {
+    console.log(
+      `[${getTimeStringMs()}] Store Write ${action} ${type}: ${uuid} ${
+        message ?? ""
+      }`
+    );
+  }
 }

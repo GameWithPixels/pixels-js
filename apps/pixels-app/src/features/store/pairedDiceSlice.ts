@@ -6,6 +6,8 @@ import {
 
 import { getFactoryProfileUuid } from "./library/factory";
 
+import { getTimeStringMs } from "~/features/utils";
+
 export interface PairedDie {
   systemId: string;
   address: number;
@@ -25,7 +27,7 @@ const initialState: PairedDiceState = {
   dice: [],
 };
 
-function storeLog(
+function log(
   action:
     | "addPairedDie"
     | "removePairedDie"
@@ -35,7 +37,13 @@ function storeLog(
     | "setPairedDieProfile",
   payload?: any
 ) {
-  console.log("STORE " + action + " " + JSON.stringify(payload));
+  if (__DEV__) {
+    console.log(
+      `[${getTimeStringMs()}] Store Write ${action}, payload: ${JSON.stringify(
+        payload
+      )}`
+    );
+  }
 }
 
 // Redux slice that stores information about paired dice
@@ -44,7 +52,7 @@ const PairedDiceSlice = createSlice({
   initialState,
   reducers: {
     resetPairedDice(state) {
-      storeLog("resetPairedDice");
+      log("resetPairedDice");
       state.dice = [];
     },
     addPairedDie(
@@ -58,7 +66,7 @@ const PairedDiceSlice = createSlice({
         colorway: PixelColorway;
       }>
     ) {
-      storeLog("addPairedDie", action.payload);
+      log("addPairedDie", action.payload);
       const index = state.dice.findIndex(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
@@ -81,7 +89,7 @@ const PairedDiceSlice = createSlice({
       }
     },
     removePairedDie(state, action: PayloadAction<number>) {
-      storeLog("removePairedDie", action.payload);
+      log("removePairedDie", action.payload);
       const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload
       );
@@ -96,7 +104,7 @@ const PairedDiceSlice = createSlice({
         name: string;
       }>
     ) {
-      storeLog("setPairedDieName", action.payload);
+      log("setPairedDieName", action.payload);
       const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
@@ -111,7 +119,7 @@ const PairedDiceSlice = createSlice({
         profileUuid: string;
       }>
     ) {
-      storeLog("setPairedDieProfile", action.payload);
+      log("setPairedDieProfile", action.payload);
       const pairedDie = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );

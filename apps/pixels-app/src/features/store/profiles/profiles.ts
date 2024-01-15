@@ -33,9 +33,8 @@ export function readProfile(
   library: LibraryState,
   newInstance = false
 ): Profiles.Profile {
-  const profile = newInstance
-    ? create(uuid, newInstance)
-    : loadedProfiles.get(uuid) ?? create(uuid, newInstance);
+  const existing = !newInstance && loadedProfiles.get(uuid);
+  const profile = existing ? existing : create(uuid, newInstance);
   runInAction(() => updateProfile(profile, library));
   return profile;
 }
@@ -98,10 +97,9 @@ function updateCondition(
 ): void {
   switch (type) {
     case "helloGoodbye":
-      {
-        const cond = condition as Profiles.ConditionHelloGoodbye;
+      if (condition instanceof Profiles.ConditionHelloGoodbye) {
         const data = conditionSetData[type][index];
-        cond.flags = combineFlags(
+        condition.flags = combineFlags(
           keysToValues(data.flags, Profiles.HelloGoodbyeFlagsValues)
         );
       }
@@ -109,49 +107,44 @@ function updateCondition(
     case "handling":
       break;
     case "rolling":
-      {
-        const cond = condition as Profiles.ConditionRolling;
+      if (condition instanceof Profiles.ConditionRolling) {
         const data = conditionSetData[type][index];
-        cond.recheckAfter = data.recheckAfter;
+        condition.recheckAfter = data.recheckAfter;
       }
       break;
     case "rolled":
-      {
-        const cond = condition as Profiles.ConditionRolled;
+      if (condition instanceof Profiles.ConditionRolled) {
         const data = conditionSetData[type][index];
         const facesCount = data.faces.length;
-        cond.faces.length = facesCount;
+        condition.faces.length = facesCount;
         for (let j = 0; j < facesCount; ++j) {
-          cond.faces[j] = data.faces[j];
+          condition.faces[j] = data.faces[j];
         }
       }
       break;
     case "crooked":
       break;
     case "connection":
-      {
-        const cond = condition as Profiles.ConditionConnection;
+      if (condition instanceof Profiles.ConditionConnection) {
         const data = conditionSetData[type][index];
-        cond.flags = combineFlags(
+        condition.flags = combineFlags(
           keysToValues(data.flags, Profiles.ConnectionFlagsValues)
         );
       }
       break;
     case "battery":
-      {
-        const cond = condition as Profiles.ConditionBattery;
+      if (condition instanceof Profiles.ConditionBattery) {
         const data = conditionSetData[type][index];
-        cond.flags = combineFlags(
+        condition.flags = combineFlags(
           keysToValues(data.flags, Profiles.BatteryFlagsValues)
         );
-        cond.recheckAfter = data.recheckAfter;
+        condition.recheckAfter = data.recheckAfter;
       }
       break;
     case "idle":
-      {
-        const cond = condition as Profiles.ConditionIdle;
+      if (condition instanceof Profiles.ConditionIdle) {
         const data = conditionSetData[type][index];
-        cond.period = data.period;
+        condition.period = data.period;
       }
       break;
     default:
@@ -167,46 +160,42 @@ function updateAction(
 ): void {
   switch (type) {
     case "playAnimation":
-      {
-        const act = action as Profiles.ActionPlayAnimation;
+      if (action instanceof Profiles.ActionPlayAnimation) {
         const data = actionSetData[type][index];
-        act.animation = data.animationUuid
+        action.animation = data.animationUuid
           ? readAnimation(data.animationUuid, library)
           : undefined;
-        act.face = data.face;
-        act.loopCount = data.loopCount;
-        act.duration = data.duration;
-        act.fade = data.fade;
-        act.intensity = data.intensity;
+        action.face = data.face;
+        action.loopCount = data.loopCount;
+        action.duration = data.duration;
+        action.fade = data.fade;
+        action.intensity = data.intensity;
         const colorsCount = data.colors.length;
-        act.colors.length = colorsCount;
+        action.colors.length = colorsCount;
         for (let i = 0; i < colorsCount; ++i) {
-          act.colors[i] = new Profiles.Color(data.colors[i]);
+          action.colors[i] = new Profiles.Color(data.colors[i]);
         }
       }
       break;
     case "playAudioClip":
-      {
-        const act = action as Profiles.ActionPlayAudioClip;
+      if (action instanceof Profiles.ActionPlayAudioClip) {
         const data = actionSetData[type][index];
-        act.clip = data.clipUuid
+        action.clip = data.clipUuid
           ? readAudioClip(data.clipUuid, library)
           : undefined;
       }
       break;
     case "makeWebRequest":
-      {
-        const act = action as Profiles.ActionMakeWebRequest;
+      if (action instanceof Profiles.ActionMakeWebRequest) {
         const data = actionSetData[type][index];
-        act.url = data.url;
-        act.value = data.value;
+        action.url = data.url;
+        action.value = data.value;
       }
       break;
     case "speakText":
-      {
-        const act = action as Profiles.ActionSpeakText;
+      if (action instanceof Profiles.ActionSpeakText) {
         const data = actionSetData[type][index];
-        act.text = data.text;
+        action.text = data.text;
       }
       break;
     default:
