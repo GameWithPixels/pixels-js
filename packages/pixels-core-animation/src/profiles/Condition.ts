@@ -5,5 +5,5 @@
  */
 export default interface Condition {
   /** See {@link ConditionTypeValues} for possible values. */
-  type: number;
+  readonly type: number;
 }

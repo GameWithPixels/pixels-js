@@ -46,7 +46,7 @@ export function gamma32(color32: number): number {
 /**
  * @category Color Gamma
  */
-export function gamma(color: Color): Color {
+export function gamma(color: Readonly<Color>): Color {
   const r = gamma8(color.rByte);
   const g = gamma8(color.gByte);
   const b = gamma8(color.bByte);
@@ -75,7 +75,7 @@ export function reverseGamma8(gamma: number): number {
 /**
  * @category Color Gamma
  */
-export function reverseGamma(color: Color): Color {
+export function reverseGamma(color: Readonly<Color>): Color {
   const r = reverseGamma8(color.rByte);
   const g = reverseGamma8(color.gByte);
   const b = reverseGamma8(color.bByte);
