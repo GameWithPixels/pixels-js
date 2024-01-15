@@ -92,13 +92,12 @@ function CreateProfilePage({
     React.useState<Readonly<Profiles.Profile>>();
 
   const createProfile = () => {
-    if (selectedProfile) {
-      const newProfile = selectedProfile.duplicate(generateUuid());
+    const profile = selectedProfile ?? profiles[0];
+    if (profile) {
+      const newProfile = profile.duplicate(generateUuid());
       newProfile.name = profileName.trim();
       newProfile.description =
-        selectedProfile === blankProfile
-          ? ""
-          : `Based on ${selectedProfile.name}`;
+        profile === blankProfile ? "" : `Based on ${profile.name}`;
       newProfile.dieType = dieType;
       addProfile(newProfile);
       navigation.pop();
@@ -126,7 +125,7 @@ function CreateProfilePage({
         )}
         rightElement={() => (
           <Button
-            disabled={!selectedProfile || !profileName.trim().length}
+            disabled={!profileName.trim().length}
             sentry-label="create-profile"
             onPress={createProfile}
           >
@@ -167,7 +166,7 @@ function CreateProfilePage({
         />
         <ProfilesGrid
           profiles={profiles}
-          selected={selectedProfile}
+          selected={selectedProfile ?? profiles[0]}
           onSelectProfile={setSelectedProfile}
         />
       </GHScrollView>
