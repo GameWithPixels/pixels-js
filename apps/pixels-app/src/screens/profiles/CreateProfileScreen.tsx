@@ -15,7 +15,7 @@ import { ProfilesGrid } from "~/components/profile";
 import {
   FactoryProfile,
   getProfileDieTypeLabel,
-  profileDieTypes,
+  ProfileDieTypes,
 } from "~/features/profiles";
 import { generateUuid } from "~/features/utils";
 import {
@@ -44,7 +44,7 @@ function DieTypesSelector({
         gap: 10,
       }}
     >
-      {profileDieTypes.map((dieType) => (
+      {ProfileDieTypes.map((dieType) => (
         <GradientChip
           key={dieType}
           outline={dieType !== selected}

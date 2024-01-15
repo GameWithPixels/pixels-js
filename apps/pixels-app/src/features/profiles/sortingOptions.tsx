@@ -3,7 +3,7 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 import { getProfileDieTypeLabel } from "./descriptions";
-import { profileDieTypes } from "./dieTypes";
+import { ProfileDieTypes } from "./dieTypes";
 
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
@@ -401,12 +401,10 @@ export function groupAndSortProfiles(
       case "none":
         return [{ title: defaultTitle, values: sort(profiles) }];
       case "dieType":
-        return profileDieTypes
-          .map((dieType) => ({
-            title: getProfileDieTypeLabel(dieType),
-            values: sort(profiles.filter((p) => p.dieType === dieType)),
-          }))
-          .filter((group) => group.values.length > 0);
+        return ProfileDieTypes.map((dieType) => ({
+          title: getProfileDieTypeLabel(dieType),
+          values: sort(profiles.filter((p) => p.dieType === dieType)),
+        })).filter((group) => group.values.length > 0);
       case "creationDate":
         return sortGroupedByTime(
           groupByTime(

@@ -232,9 +232,10 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   dieType?: PixelDieType;
 }) {
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
+  // TODO Several animation types may have those keys
   const color = (action.animation as Partial<Profiles.AnimationFlashes>)?.color;
-  const keyframes = (action.animation as Profiles.AnimationGradient)?.gradient
-    ?.keyframes;
+  const keyframes = (action.animation as Partial<Profiles.AnimationGradient>)
+    ?.gradient?.keyframes;
   const repeatCount = (action.animation as Partial<Profiles.AnimationFlashes>)
     ?.count;
   const fading = (action.animation as Partial<Profiles.AnimationFlashes>)?.fade;
@@ -259,7 +260,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         visible={animPickerVisible}
         onSelectAnimation={(anim) => {
           runInAction(() => {
-            action.animation = anim as Profiles.Animation;
+            action.animation = anim as Profiles.Animation; // TODO This cast removes readonly
             // Clear overrides
             action.duration = undefined;
             action.fade = undefined;
@@ -583,7 +584,7 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
 }) {
   return (
     <>
-      <Text variant="titleMedium">Text to Read</Text>
+      <Text variant="titleMedium">Text to Speak</Text>
       <TextInput
         value={action.text}
         onChangeText={(t) => runInAction(() => (action.text = t))}
@@ -705,41 +706,28 @@ export const ConfigureActionBottomSheet = observer(
             >
               Slide down to close
             </Text>
-            {condition.type === "rolled" && (
+            {condition instanceof Profiles.ConditionRolled && (
               <ConfigureRolledCondition
-                condition={condition as Profiles.ConditionRolled}
+                condition={condition}
                 dieType={dieType}
                 unavailableFaces={unavailableFaces}
               />
             )}
-            {action.type === "playAnimation" ? (
-              <ConfigurePlayAnimation
-                action={action as Profiles.ActionPlayAnimation}
-                dieType={dieType}
-              />
-            ) : action.type === "playAudioClip" ? (
-              <ConfigurePlayAudioClip
-                action={action as Profiles.ActionPlayAudioClip}
-              />
-            ) : action.type === "speakText" ? (
-              <ConfigureSpeakText action={action as Profiles.ActionSpeakText} />
-            ) : action.type === "makeWebRequest" ? (
-              <ConfigureMakeWebRequest
-                action={action as Profiles.ActionMakeWebRequest}
-              />
+            {action instanceof Profiles.ActionPlayAnimation ? (
+              <ConfigurePlayAnimation action={action} dieType={dieType} />
+            ) : action instanceof Profiles.ActionPlayAudioClip ? (
+              <ConfigurePlayAudioClip action={action} />
+            ) : action instanceof Profiles.ActionSpeakText ? (
+              <ConfigureSpeakText action={action} />
+            ) : action instanceof Profiles.ActionMakeWebRequest ? (
+              <ConfigureMakeWebRequest action={action} />
             ) : null}
-            {condition.type === "rolling" ? (
-              <ConfigureRollingCondition
-                condition={condition as Profiles.ConditionRolling}
-              />
-            ) : condition.type === "idle" ? (
-              <ConfigureIdleCondition
-                condition={condition as Profiles.ConditionIdle}
-              />
-            ) : condition.type === "battery" ? (
-              <ConfigureBatteryCondition
-                condition={condition as Profiles.ConditionBattery}
-              />
+            {condition instanceof Profiles.ConditionRolling ? (
+              <ConfigureRollingCondition condition={condition} />
+            ) : condition instanceof Profiles.ConditionIdle ? (
+              <ConfigureIdleCondition condition={condition} />
+            ) : condition instanceof Profiles.ConditionBattery ? (
+              <ConfigureBatteryCondition condition={condition} />
             ) : null}
           </BottomSheetScrollView>
         </ThemeProvider>

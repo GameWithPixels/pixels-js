@@ -9,6 +9,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
 import { FactoryProfile } from "~/features/profiles";
 import { Library } from "~/features/store";
+import { log } from "~/features/store/library/log";
 import { readProfile } from "~/features/store/profiles";
 
 const editableProfiles = new Map<
@@ -55,6 +56,12 @@ export function useCommitEditableProfile(): {
         editableProfiles.delete(profileUuid);
         appDispatch(Library.Profiles.update(Serializable.fromProfile(profile)));
         // Update original profile
+        log(
+          "update",
+          "profile",
+          profile.uuid,
+          `=> ${profile.dieType}, "${profile.name}"`
+        );
         readProfile(profileUuid, store.getState().library);
       }
     },

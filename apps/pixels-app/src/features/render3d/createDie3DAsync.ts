@@ -88,9 +88,14 @@ async function loadTextureAsync(
       textures.set(key, "loading");
       try {
         // Load texture
-        console.log(`loadTextureAsync(): Loading texture ${textureName}`);
+        const start = Date.now();
         const obj = await loadAsync(
           await ensureAssetReadableAsync(virtualAssetModule, textureName)
+        );
+        console.log(
+          `loadMaterialAsync(): Texture for ${textureName} loaded in ${
+            Date.now() - start
+          }ms`
         );
         if (!obj) {
           throw new CreateDie3DError(
@@ -144,7 +149,6 @@ async function loadMaterialAsync(
   // Our load function
   const loadMatAsync = async (): Promise<THREE.MeshPhysicalMaterial> => {
     const start = Date.now();
-
     const material = new THREE.MeshPhysicalMaterial();
     material.color.setRGB(1, 1, 1);
     if (pd6) {
@@ -306,7 +310,6 @@ async function loadMaterialAsync(
       materials.set(key, "loading");
       try {
         // Load material
-        console.log(`loadMaterialAsync(): Loading material for ${key}`);
         const material = await loadMatAsync();
         materials.set(key, material);
         materialLoadEvent.emit("done", { result: material, key });
@@ -367,9 +370,6 @@ async function loadAssetsAsync(
   const lights = gltf.scene.children.filter(
     (obj) => (obj as THREE.Light).isLight
   ) as THREE.Light[];
-  console.log(
-    `loadAssetsAsync(): Found ${lights.length} light(s) for ${dieType}`
-  );
 
   // Fix lights
   lights.forEach((l, i) => {
@@ -467,7 +467,7 @@ async function loadAssetsAsync(
   const size = aabb.getSize(new THREE.Vector3());
 
   console.log(
-    `loadAssetsAsync(): Mesh for ${dieType} loaded in ${Date.now() - start}ms`
+    `loadAssetsAsync(): Assets for ${dieType} loaded in ${Date.now() - start}ms`
   );
 
   return {

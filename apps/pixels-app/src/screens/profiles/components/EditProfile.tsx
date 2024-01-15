@@ -22,7 +22,11 @@ import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
 import { ProfileDieRenderer } from "~/components/profile";
 import { transferProfile } from "~/features/dice";
-import { getConditionTypeLabel, helloGoodbyeFlags } from "~/features/profiles";
+import {
+  EditorAnimationFlags,
+  EditorRollRulesTypes,
+  getConditionTypeLabel,
+} from "~/features/profiles";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
 import { useEditableProfile } from "~/hooks";
 
@@ -148,7 +152,7 @@ export function EditProfile({
             </Banner>
           )}
           <SectionTitle>Roll Rules</SectionTitle>
-          {(["rolled", "rolling"] as Profiles.ConditionType[]).map((ct) => (
+          {EditorRollRulesTypes.map((ct) => (
             <RuleCard
               key={ct}
               profileUuid={profileUuid}
@@ -164,7 +168,7 @@ export function EditProfile({
             profileUuid={profileUuid}
             onEditRule={onEditRule}
             conditionType="helloGoodbye"
-            flags={helloGoodbyeFlags}
+            flags={EditorAnimationFlags.helloGoodbye}
           />
           <SectionTitle>Profile Usage</SectionTitle>
           <View style={{ paddingLeft: 10, paddingVertical: 10, gap: 10 }}>

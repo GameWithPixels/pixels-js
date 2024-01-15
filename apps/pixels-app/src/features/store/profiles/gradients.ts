@@ -54,6 +54,5 @@ function updateGradient(
     };
     gradientCache.keyframesCache = cache;
     gradient.keyframes = cache.keyframes;
-    console.log("updateGradient => " + gradient.keyframes.length);
   }
 }
