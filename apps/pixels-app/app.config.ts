@@ -37,6 +37,9 @@ const config = {
           "Allow $(PRODUCT_NAME) to use Bluetooth to connect to Pixels dice",
         NSBluetoothAlwaysUsageDescription:
           "Allow $(PRODUCT_NAME) to use Bluetooth to connect to Pixels dice",
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true,
+        },
       },
     },
     android: {
