@@ -3,6 +3,7 @@ import {
   AnimationInstance,
   AnimationPreset,
   GammaUtils,
+  VirtualDie,
 } from "@systemic-games/pixels-core-animation";
 import { Die3D } from "@systemic-games/pixels-three";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
@@ -215,7 +216,7 @@ export function DieRenderer({ renderData }: DieRendererProps) {
     if (animations && animationBits) {
       const anims = Array.isArray(animations) ? animations : [animations];
       animInstanceRef.current = anims.map((a) =>
-        a.createInstance(animationBits)
+        a.createInstance(animationBits, new VirtualDie("d20"))
       );
     } else {
       animInstanceRef.current = [];

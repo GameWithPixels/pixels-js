@@ -4,6 +4,7 @@ import AnimationBits from "./AnimationBits";
 import AnimationInstanceNoise from "./AnimationInstanceNoise";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import VirtualDie from "../VirtualDie";
 
 /**
  * @category Animation Runtime Color Override type
@@ -16,6 +17,10 @@ export const NoiseColorOverrideTypeValues = {
   faceToRainbowWheel: enumValue(),
 } as const;
 
+/**
+ * The names for the "enum" type {@link NoiseColorOverrideTypeValues}.
+ * @category Animation
+ */
 export type NoiseColorOverrideType = keyof typeof NoiseColorOverrideTypeValues;
 
 /**
@@ -50,12 +55,12 @@ export default class AnimationNoise implements AnimationPreset {
   fade = 0; // 0 - 255
 
   @serializable(1)
-  overallGradientColorType: number = NoiseColorOverrideTypeValues.none;
+  overallGradientColorType = NoiseColorOverrideTypeValues.none;
 
   @serializable(2)
   overallGradientColorVar = 0; // 0 - 1000
 
-  createInstance(bits: AnimationBits): AnimationInstanceNoise {
-    return new AnimationInstanceNoise(this, bits);
+  createInstance(bits: AnimationBits, die: VirtualDie): AnimationInstanceNoise {
+    return new AnimationInstanceNoise(this, bits, die);
   }
 }

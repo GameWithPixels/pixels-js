@@ -7,10 +7,12 @@ export { default as AnimationGradient } from "./AnimationGradient";
 export { default as AnimationGradientPattern } from "./AnimationGradientPattern";
 export { default as AnimationKeyframed } from "./AnimationKeyframed";
 export { default as AnimationNoise } from "./AnimationNoise";
+export * from "./AnimationNoise";
 export type { default as AnimationPreset } from "./AnimationPreset";
 export { default as AnimationRainbow } from "./AnimationRainbow";
 export { default as AnimationSimple } from "./AnimationSimple";
 export { default as AnimationNormals } from "./AnimationNormals";
+export * from "./AnimationNormals";
 export { default as RgbKeyframe } from "./RgbKeyframe";
 export { default as RgbTrack } from "./RgbTrack";
 export { default as SimpleKeyframe } from "./SimpleKeyframe";
@@ -25,3 +27,6 @@ export { default as AnimationInstanceNoise } from "./AnimationInstanceNoise";
 export { default as AnimationInstanceRainbow } from "./AnimationInstanceRainbow";
 export { default as AnimationInstanceSimple } from "./AnimationInstanceSimple";
 export { default as AnimationInstanceNormals } from "./AnimationInstanceNormals";
+
+// Die
+export { default as VirtualDie } from "../VirtualDie";

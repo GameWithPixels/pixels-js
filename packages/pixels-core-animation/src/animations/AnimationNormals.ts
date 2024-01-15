@@ -4,6 +4,7 @@ import AnimationBits from "./AnimationBits";
 import AnimationInstanceNormals from "./AnimationInstanceNormals";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import VirtualDie from "../VirtualDie";
 
 /**
  * @category Animation Runtime Color Override type
@@ -15,6 +16,10 @@ export const NormalsColorOverrideTypeValues = {
   faceToRainbowWheel: enumValue(),
 } as const;
 
+/**
+ * The names for the "enum" type {@link NormalsColorOverrideTypeValues}.
+ * @category Animation
+ */
 export type NormalsColorOverrideType =
   keyof typeof NormalsColorOverrideTypeValues;
 
@@ -32,7 +37,7 @@ export default class AnimationNormals implements AnimationPreset {
   duration = 0; // In milliseconds
 
   @serializable(2)
-  gradient = 0; // 0 - 1, over duration of the animation
+  gradientOverTime = 0; // 0 - 1, over duration of the animation
 
   @serializable(2)
   gradientAlongAxis = 0; // 0 = top, 1 = bottom
@@ -56,12 +61,15 @@ export default class AnimationNormals implements AnimationPreset {
   fade = 0; // 0 - 255
 
   @serializable(1)
-  overallGradientColorType: number = NormalsColorOverrideTypeValues.none;
+  mainGradientColorType: number = NormalsColorOverrideTypeValues.none;
 
   @serializable(2)
-  overallGradientColorVar = 0; // 0 - 1000
+  mainGradientColorVar = 0; // 0 - 1000
 
-  createInstance(bits: AnimationBits): AnimationInstanceNormals {
-    return new AnimationInstanceNormals(this, bits);
+  createInstance(
+    bits: AnimationBits,
+    die: VirtualDie
+  ): AnimationInstanceNormals {
+    return new AnimationInstanceNormals(this, bits, die);
   }
 }
