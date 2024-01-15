@@ -26,6 +26,7 @@ import animationsFlashesReducer from "~/features/store/library/animations/flashe
 import animationsGradientPatternReducer from "~/features/store/library/animations/gradientPatternSlice";
 import animationsGradientReducer from "~/features/store/library/animations/gradientSlice";
 import animationsNoiseReducer from "~/features/store/library/animations/noiseSlice";
+import animationsNormalsReducer from "~/features/store/library/animations/normalsSlice";
 import animationsPatternReducer from "~/features/store/library/animations/patternSlice";
 import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
 import gradientsReducer, {
@@ -109,6 +110,7 @@ const rootReducer = combineReducers({
       ),
       gradient: persistAnim("gradient", animationsGradientReducer),
       noise: persistAnim("noise", animationsNoiseReducer),
+      normals: persistAnim("normals", animationsNormalsReducer),
       pattern: persistAnim("pattern", animationsPatternReducer),
       rainbow: persistAnim("rainbow", animationsRainbowReducer),
     }),

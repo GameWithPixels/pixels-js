@@ -5,9 +5,9 @@ import RgbKeyframe from "./RgbKeyframe";
 import RgbTrack from "./RgbTrack";
 import SimpleKeyframe from "./SimpleKeyframe";
 import Track from "./Track";
+import VirtualDie from "../VirtualDie";
 import { align32bits } from "../align32bits";
-import Color from "../color/Color";
-import * as Color32Utils from "../color/color32Utils";
+import { Color, Color32Utils } from "../color";
 
 /**
  * @category Animation
@@ -19,15 +19,15 @@ export default class AnimationBits {
   readonly keyframes: SimpleKeyframe[] = [];
   readonly tracks: Track[] = [];
 
-  getColor32(colorIndex: number): number {
-    return Color32Utils.toColor32(this.getColor(colorIndex));
+  getColor32(colorIndex: number, die: Readonly<VirtualDie>): number {
+    return Color32Utils.toColor32(this.getColor(colorIndex, die));
   }
 
-  getColor(colorIndex: number): Color {
+  getColor(colorIndex: number, die: Readonly<VirtualDie>): Color {
     if (colorIndex === Constants.paletteColorFromFace) {
-      return Color.blue; // TODO
+      return new Color(Color32Utils.faceWheel(die.currentFace, die.ledCount));
     } else if (colorIndex === Constants.paletteColorFromRandom) {
-      return Color.black;
+      return Color.black; // Not implemented
     } else {
       return this.getArrayItem(this.palette, colorIndex, "color");
     }

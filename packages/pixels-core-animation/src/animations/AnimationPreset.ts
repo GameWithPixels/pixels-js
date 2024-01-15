@@ -1,5 +1,6 @@
 import AnimationBits from "./AnimationBits";
 import AnimationInstance from "./AnimationInstance";
+import VirtualDie from "../VirtualDie";
 
 /**
  * Common interface for all animation types.
@@ -15,5 +16,5 @@ export default interface AnimationPreset {
   /** Animation duration in milliseconds. */
   duration: number;
 
-  createInstance(bits: AnimationBits): AnimationInstance;
+  createInstance(bits: AnimationBits, die: VirtualDie): AnimationInstance;
 }

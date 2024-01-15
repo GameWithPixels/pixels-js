@@ -1,10 +1,7 @@
 import { AnimationFlagsValues } from "./AnimationFlags";
 import AnimationInstance from "./AnimationInstance";
 import AnimationRainbow from "./AnimationRainbow";
-import { Constants } from "./Constants";
-import * as Color32Utils from "../color/color32Utils";
-import * as GammaUtils from "../color/gammaUtils";
-import { getFaceIndex } from "../faceUtils";
+import { Color32Utils } from "../color";
 
 /**
  * @category Animation Instance
@@ -16,8 +13,10 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
     const preset = this.preset;
+    const ledCount = this.die.ledCount;
 
     // Compute color
+    let color = 0;
     const fadeTime = (preset.duration * preset.fade) / (255 * 2);
     const time = ms - this.startTime;
 
@@ -35,45 +34,26 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
     // Fill the indices and colors for the anim controller to know how to update LEDs
     let retCount = 0;
     if (preset.animFlags & AnimationFlagsValues.traveling) {
-      for (let i = 0; i < Constants.maxLEDsCount; ++i) {
+      for (let i = 0; i < ledCount; ++i) {
         if ((preset.faceMask & (1 << i)) !== 0) {
-          retIndices[retCount] = getFaceIndex(i);
-          retColors32[retCount] = GammaUtils.gamma32(
-            Color32Utils.rainbowWheel(
-              (wheelPos + (i * 256) / Constants.maxLEDsCount) % 256,
-              intensity
-            )
+          retIndices[retCount] = i;
+          retColors32[retCount] = Color32Utils.rainbowWheel(
+            (wheelPos + (i * 256 * preset.cyclesTimes10) / (ledCount * 10)) %
+              256,
+            intensity
           );
           retCount++;
         }
       }
     } else {
       // All LEDs same color
-      const color = GammaUtils.gamma32(
-        Color32Utils.rainbowWheel(wheelPos, intensity)
-      );
-
-      for (let i = 0; i < Constants.maxLEDsCount; ++i) {
-        if ((preset.faceMask & (1 << i)) !== 0) {
-          retIndices[retCount] = i;
-          retColors32[retCount] = color;
-          retCount++;
-        }
-      }
+      color = Color32Utils.rainbowWheel(wheelPos, intensity);
+      retCount = this.setColor(color, preset.faceMask, retIndices, retColors32);
     }
-
     return retCount;
   }
 
   stop(retIndices: number[]): number {
-    const preset = this.preset;
-    let retCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
-      if ((preset.faceMask & (1 << i)) !== 0) {
-        retIndices[retCount] = i;
-        retCount++;
-      }
-    }
-    return retCount;
+    return this.setIndices(this.preset.faceMask, retIndices);
   }
 }

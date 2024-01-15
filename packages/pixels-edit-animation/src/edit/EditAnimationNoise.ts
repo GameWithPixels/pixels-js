@@ -2,8 +2,8 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationNoise,
+  NoiseColorOverrideTypeValues,
 } from "@systemic-games/pixels-core-animation";
-import { NoiseColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNoise";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAnimation, { EditAnimationParams } from "./EditAnimation";
@@ -118,5 +118,12 @@ export default class EditAnimationNoise extends EditAnimation {
       gradient: this.gradient?.duplicate(),
       blinkGradient: this.blinkGradient?.duplicate(),
     });
+  }
+
+  collectGradients(): EditRgbGradient[] {
+    const gradients = [];
+    this.gradient && gradients.push(this.gradient);
+    this.blinkGradient && gradients.push(this.blinkGradient);
+    return gradients;
   }
 }

@@ -1,9 +1,6 @@
 import AnimationCycle from "./AnimationCycle";
 import AnimationInstance from "./AnimationInstance";
-import { Constants } from "./Constants";
-import * as Color32Utils from "../color/color32Utils";
-import * as GammaUtils from "../color/gammaUtils";
-import { getFaceIndex } from "../faceUtils";
+import { Color32Utils } from "../color";
 
 /**
  * @category Animation Instance
@@ -15,60 +12,46 @@ export default class AnimationInstanceCycle extends AnimationInstance {
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
     const preset = this.preset;
-
-    // Compute color
-    const fadeTime = (preset.duration * preset.fade) / (255 * 2);
+    const ledCount = this.die.ledCount;
     const time = ms - this.startTime;
+    const fadeTime = (preset.duration * preset.fade) / (255 * 2);
 
-    const wheelPos = ((time * preset.count * 255) / preset.duration) % 256;
-
-    let intensity = 255;
+    let intensity = preset.intensity;
     if (time <= fadeTime) {
       // Ramp up
-      intensity = (time * 255) / fadeTime;
+      intensity = (time * preset.intensity) / fadeTime;
     } else if (time >= preset.duration - fadeTime) {
       // Ramp down
-      intensity = ((preset.duration - time) * 255) / fadeTime;
+      intensity = ((preset.duration - time) * preset.intensity) / fadeTime;
     }
 
+    // Figure out the color from the gradient
+    const gradient = this.bits.getRgbTrack(preset.gradientTrackOffset);
+    const gradientTime = (time * preset.count * 1000) / preset.duration;
+
+    // Fill the indices and colors for the anim controller to know how to update leds
     let retCount = 0;
-    if (preset.animFlags) {
-      // Fill the indices and colors for the anim controller to know how to update LEDs
-      for (let i = 0; i < Constants.maxLEDsCount; ++i) {
-        if ((preset.faceMask & (1 << i)) !== 0) {
-          retIndices[retCount] = getFaceIndex(i);
-          retColors32[retCount] = GammaUtils.gamma32(
-            Color32Utils.rainbowWheel(
-              (wheelPos + (i * 256) / Constants.maxLEDsCount) % 256,
-              intensity
-            )
-          );
-          retCount++;
-        }
-      }
-    } else {
-      // All LEDs same color
-      const color = GammaUtils.gamma32(
-        Color32Utils.rainbowWheel(wheelPos, intensity)
-      );
-
-      // Fill the indices and colors for the anim controller to know how to update LEDs
-      for (let i = 0; i < Constants.maxLEDsCount; ++i) {
-        if ((preset.faceMask & (1 << i)) !== 0) {
-          retIndices[retCount] = i;
-          retColors32[retCount] = color;
-          retCount++;
-        }
+    for (let i = 0; i < ledCount; ++i) {
+      if ((preset.faceMask & (1 << i)) !== 0) {
+        retIndices[retCount] = i;
+        const faceTime =
+          (gradientTime + (i * 1000 * preset.cyclesTimes10) / (ledCount * 10)) %
+          1000;
+        retColors32[retCount] = Color32Utils.modulateColor(
+          gradient.evaluateColor(faceTime, this.bits, this.die),
+          intensity
+        );
+        retCount++;
       }
     }
-
     return retCount;
   }
 
   stop(retIndices: number[]): number {
+    const ledCount = this.die.ledCount;
     const preset = this.preset;
     let retCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
+    for (let i = 0; i < ledCount; ++i) {
       if ((preset.faceMask & (1 << i)) !== 0) {
         retIndices[retCount] = i;
         retCount++;

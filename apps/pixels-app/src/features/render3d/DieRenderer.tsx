@@ -6,6 +6,7 @@ import {
   GammaUtils,
   PixelColorway,
   PixelDieType,
+  VirtualDie,
 } from "@systemic-games/react-native-pixels-connect";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
@@ -348,10 +349,10 @@ export function DieRenderer({
     () =>
       animationsData
         ? animationsData.animations.map((a) =>
-            a.createInstance(animationsData.bits)
+            a.createInstance(animationsData.bits, new VirtualDie(dieType))
           )
         : undefined,
-    [animationsData]
+    [animationsData, dieType]
   );
 
   // Setup renderer

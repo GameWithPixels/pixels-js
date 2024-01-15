@@ -5,6 +5,7 @@ import * as Flashes from "./flashesSlice";
 import * as GradientPattern from "./gradientPatternSlice";
 import * as Gradient from "./gradientSlice";
 import * as Noise from "./noiseSlice";
+import * as Normals from "./normalsSlice";
 import * as Pattern from "./patternSlice";
 import * as Rainbow from "./rainbowSlice";
 
@@ -32,6 +33,8 @@ export function add({
       return Gradient.add(data as Serializable.AnimationGradientData);
     case "noise":
       return Noise.add(data as Serializable.AnimationNoiseData);
+    case "normals":
+      return Normals.add(data as Serializable.AnimationNormalsData);
     default:
       assertNever(type, `Unsupported animation type ${type}`);
   }

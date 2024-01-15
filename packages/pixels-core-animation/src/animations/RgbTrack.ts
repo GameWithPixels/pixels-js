@@ -3,7 +3,8 @@ import { assert, serializable } from "@systemic-games/pixels-core-utils";
 import AnimationBits from "./AnimationBits";
 import { Constants } from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
-import * as Color32Utils from "../color/color32Utils";
+import VirtualDie from "../VirtualDie";
+import { Color32Utils } from "../color";
 
 /**
  * Represents of a series of RGB keyframes which together make
@@ -52,15 +53,17 @@ export default class RgbTrack {
    * The returned colors are the color of the track for the given time.
    * Values outside the track's range are clamped to first or last keyframe
    * value.
-   * @param bits The animation bits with the RGB keyframes data and color palette.
    * @param time The time at which to evaluate the track.
+   * @param bits The animation bits with the RGB keyframes data and color palette.
+   * @param die The virtual die on which the animation is running.
    * @param retIndices Array of LED indices to be updated.
    * @param retColors32 Array of 32 bits colors to be updated.
    * @returns The number of LED indices that have been set in the returned arrays.
    */
   evaluate(
-    bits: AnimationBits,
     time: number,
+    bits: AnimationBits,
+    die: VirtualDie,
     retIndices: number[],
     retColors32: number[]
   ): number {
@@ -68,7 +71,7 @@ export default class RgbTrack {
       return 0;
     }
 
-    const color = this.evaluateColor(bits, time);
+    const color = this.evaluateColor(time, bits, die);
 
     // Fill the return arrays
     let currentCount = 0;
@@ -86,11 +89,12 @@ export default class RgbTrack {
    * Evaluate an animation track's color for a given time, in milliseconds.
    * Values outside the track's range are clamped to first or last keyframe
    * value.
-   * @param bits The animation bits with the RGB keyframes data and color palette.
    * @param time The time at which to evaluate the track.
+   * @param bits The animation bits with the RGB keyframes data and color palette.
+   * @param die The virtual die on which the animation is running.
    * @returns The modulated color.
    */
-  evaluateColor(bits: AnimationBits, time: number): number {
+  evaluateColor(time: number, bits: AnimationBits, die: VirtualDie): number {
     if (this.keyFrameCount === 0) {
       return 0;
     }
@@ -107,19 +111,19 @@ export default class RgbTrack {
     let color = 0;
     if (nextIndex === 0) {
       // The first keyframe is already after the requested time, clamp to first value
-      color = this.getKeyframe(bits, nextIndex).getColor(bits);
+      color = this.getKeyframe(bits, nextIndex).getColor(bits, die);
     } else if (nextIndex === this.keyFrameCount) {
       // The last keyframe is still before the requested time, clamp to the last value
-      color = this.getKeyframe(bits, nextIndex - 1).getColor(bits);
+      color = this.getKeyframe(bits, nextIndex - 1).getColor(bits, die);
     } else {
       // Grab the prev and next keyframes
       const nextKeyframe = this.getKeyframe(bits, nextIndex);
       const nextKeyframeTime = nextKeyframe.time;
-      const nextKeyframeColor = nextKeyframe.getColor(bits);
+      const nextKeyframeColor = nextKeyframe.getColor(bits, die);
 
       const prevKeyframe = this.getKeyframe(bits, nextIndex - 1);
       const prevKeyframeTime = prevKeyframe.time;
-      const prevKeyframeColor = prevKeyframe.getColor(bits);
+      const prevKeyframeColor = prevKeyframe.getColor(bits, die);
 
       // Compute the interpolation parameter
       color = Color32Utils.interpolateColors(

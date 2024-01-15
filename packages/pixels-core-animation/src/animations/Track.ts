@@ -3,7 +3,7 @@ import { assert, serializable } from "@systemic-games/pixels-core-utils";
 import AnimationBits from "./AnimationBits";
 import { Constants } from "./Constants";
 import SimpleKeyframe from "./SimpleKeyframe";
-import * as Color32Utils from "../color/color32Utils";
+import { Color32Utils } from "../color";
 
 /**
  * Represents of a series of RGB keyframes which together make
@@ -64,6 +64,7 @@ export default class Track {
     bits: AnimationBits,
     color: number,
     time: number,
+    ledCount: number,
     retIndices: number[],
     retColors32: number[]
   ): number {
@@ -78,7 +79,7 @@ export default class Track {
 
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
+    for (let i = 0; i < ledCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         retColors32[currentCount] = modColor;

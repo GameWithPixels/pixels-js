@@ -5,18 +5,83 @@ import {
   combineFlags,
 } from "@systemic-games/pixels-core-utils";
 
-const d20FaceIndices = [
-  17, 1, 19, 13, 3, 10, 8, 5, 15, 7, 9, 11, 14, 4, 12, 0, 18, 2, 16, 6,
-];
+import { PixelDieType } from "./PixelDieType";
 
-/**
- * Returns the face index (also the LED index) for a given die face value.
- * @param faceValue A face value.
- * @returns The corresponding face index.
- * @category Face Utils
- */
-export function getFaceIndex(faceValue: number): number {
-  return d20FaceIndices[Math.floor(faceValue)];
+export function getFaceForLEDIndex(
+  dieType: PixelDieType,
+  ledIndex: number
+): number {
+  switch (dieType) {
+    case "d6pipped":
+      //  0   --1--   ----2----   ------3------   ---------4--------  ----------5----------- // Face index
+      //  0   0   1   0   1   2   0   1   2   3    0   1   2   3   4   0   1   2   3   4   5 // Led index in face
+      //  0,	5,	6,	7,	8,	9,	1,	2,	3,	4,	10,	11,	12,	13,	14,	15,	16,	17,	18,	19, 20,
+      if (ledIndex === 0) {
+        return 0;
+      } else if (ledIndex <= 4) {
+        return 3;
+      } else if (ledIndex <= 6) {
+        return 1;
+      } else if (ledIndex <= 9) {
+        return 2;
+      } else if (ledIndex <= 14) {
+        return 4;
+      } else {
+        return 5;
+      }
+    default:
+      return ledIndex;
+  }
+}
+
+export function getTopFace(dieType: PixelDieType): number {
+  switch (dieType) {
+    case "d20":
+      return 19;
+    case "d12":
+      return 11;
+    case "d10":
+    case "d00":
+      return 0;
+    case "d8":
+      return 7;
+    default:
+      return 5;
+  }
+}
+
+export function getFaceCount(dieType: PixelDieType): number {
+  switch (dieType) {
+    case "d20":
+      return 20;
+    case "d12":
+      return 12;
+    case "d10":
+    case "d00":
+      return 10;
+    case "d8":
+      return 8;
+    default:
+      return 6;
+  }
+}
+
+export function getLEDCount(dieType: PixelDieType): number {
+  switch (dieType) {
+    case "d20":
+      return 20;
+    case "d12":
+      return 12;
+    case "d10":
+    case "d00":
+      return 10;
+    case "d8":
+      return 8;
+    case "d6pipped":
+      return 21;
+    default:
+      return 6;
+  }
 }
 
 function getFaceMaskPd6(faceValue: number): number {
@@ -40,7 +105,7 @@ function getFaceMaskPd6(faceValue: number): number {
  */
 export function getFaceMask(
   faceValueOrFaceList: number | number[],
-  dieType: string // TODO PixelDieType
+  dieType: PixelDieType
 ): number {
   if (typeof faceValueOrFaceList === "number") {
     switch (dieType) {

@@ -15,7 +15,10 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
   start(startTime: number): void {
     super.start(startTime);
     if (this.preset.overrideWithFace) {
-      this._rgb = this.animationBits.getColor32(Constants.paletteColorFromFace);
+      this._rgb = this.bits.getColor32(
+        Constants.paletteColorFromFace,
+        this.die
+      );
     }
   }
 
@@ -24,19 +27,19 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
   /// based on the different tracks of this animation.
   /// </summary>
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
-    const time = ms - this.startTime;
     const preset = this.preset;
-
+    const ledCount = this.die.ledCount;
+    const time = ms - this.startTime;
     const trackTime = (time * 1000) / preset.duration;
 
     // Figure out the color from the gradient
-    const gradient = this.animationBits.getRgbTrack(preset.gradientTrackOffset);
+    const gradient = this.bits.getRgbTrack(preset.gradientTrackOffset);
 
     let gradientColor = 0;
     if (preset.overrideWithFace) {
       gradientColor = this._rgb;
     } else {
-      gradientColor = gradient.evaluateColor(this.animationBits, trackTime);
+      gradientColor = gradient.evaluateColor(trackTime, this.bits, this.die);
     }
 
     // Each track will append its led indices and colors into the return array
@@ -46,11 +49,12 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
     const indices: number[] = [];
     const colors32: number[] = [];
     for (let i = 0; i < preset.trackCount; ++i) {
-      const track = this.animationBits.getTrack(preset.tracksOffset + i);
+      const track = this.bits.getTrack(preset.tracksOffset + i);
       const count = track.evaluate(
-        this.animationBits,
+        this.bits,
         gradientColor,
         trackTime,
+        ledCount,
         indices,
         colors32
       );
@@ -71,7 +75,7 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
     let totalCount = 0;
     const indices: number[] = [];
     for (let i = 0; i < preset.trackCount; ++i) {
-      const track = this.animationBits.getRgbTrack(preset.tracksOffset + i);
+      const track = this.bits.getRgbTrack(preset.tracksOffset + i);
       const count = track.extractLEDIndices(indices);
       for (let j = 0; j < count; ++j) {
         retIndices[totalCount + j] = indices[j];

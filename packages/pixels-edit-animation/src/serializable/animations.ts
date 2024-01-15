@@ -1,6 +1,8 @@
 import {
   AnimationCategory,
   AnimationFlags,
+  NoiseColorOverrideType,
+  NormalsColorOverrideType,
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 
@@ -14,6 +16,7 @@ export interface AnimationSetData {
   gradient: AnimationGradientData[];
   noise: AnimationNoiseData[];
   normals: AnimationNormalsData[];
+  cycle: AnimationCycleData[];
 }
 
 export interface AnimationData extends UniqueNamedData {
@@ -55,14 +58,34 @@ export interface AnimationGradientData extends AnimationData {
 
 export interface AnimationNoiseData extends AnimationData {
   gradientUuid?: string;
-  faces: number;
-  blinkDuration: number;
   blinkGradientUuid?: string;
-  blinkCount: number;
+  blinkFrequency: number;
+  blinkFrequencyVar: number;
+  blinkDuration: number;
   fade: number;
+  mainGradientColorType: NoiseColorOverrideType;
+  mainGradientColorVar: number;
 }
 
 export interface AnimationNormalsData extends AnimationData {
+  gradientUuid?: string;
+  gradientAlongAxisUuid?: string;
+  axisScrollSpeed: number;
+  axisScale: number;
+  axisOffset: number;
+  gradientAlongAngleUuid?: string;
+  angleScrollSpeed: number;
+  fade: number;
+  mainGradientColorType: NormalsColorOverrideType;
+  mainGradientColorVar: number;
+}
+
+export interface AnimationCycleData extends AnimationData {
+  count: number;
+  cycles: number;
+  fade: number;
+  intensity: number;
+  faces: number;
   gradientUuid?: string;
 }
 
@@ -79,5 +102,6 @@ export function createAnimationSetData(): AnimationSetData {
     gradientPattern: [],
     noise: [],
     normals: [],
+    cycle: [],
   };
 }

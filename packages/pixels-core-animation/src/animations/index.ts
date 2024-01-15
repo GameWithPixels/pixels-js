@@ -2,6 +2,8 @@
 export * from "./AnimationType";
 export * from "./AnimationFlags";
 export * from "./AnimationCategory";
+export * from "./NoiseColorOverrideType";
+export * from "./NormalsColorOverrideType";
 export { default as AnimationBits } from "./AnimationBits";
 export { default as AnimationCycle } from "./AnimationCycle";
 export { default as AnimationGradient } from "./AnimationGradient";
@@ -26,3 +28,6 @@ export { default as AnimationInstanceNoise } from "./AnimationInstanceNoise";
 export { default as AnimationInstanceRainbow } from "./AnimationInstanceRainbow";
 export { default as AnimationInstanceSimple } from "./AnimationInstanceSimple";
 export { default as AnimationInstanceNormals } from "./AnimationInstanceNormals";
+
+// Die
+export { default as VirtualDie } from "../VirtualDie";

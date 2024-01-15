@@ -7,6 +7,7 @@ import {
   Mutable,
 } from "@systemic-games/pixels-core-utils";
 import {
+  Constants,
   createDataSetForAnimation,
   createDataSetForProfile,
   EditActionPlayAnimation,
@@ -20,7 +21,6 @@ import {
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
-  getPixel,
   Pixel,
   PixelColorway,
   PixelRollState,
@@ -39,7 +39,7 @@ import {
   ScannedPixelNotifierMutableProps,
   PixelInfo,
   PixelBatteryControllerMode,
-  Constants,
+  getPixelOrThrow,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -346,7 +346,7 @@ class PixelDispatcher
       address: scannedPixel.address,
       timestamp: scannedPixel.timestamp,
     };
-    this._pixel = getPixel(scannedPixel.systemId);
+    this._pixel = getPixelOrThrow(scannedPixel.systemId);
     Static.instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
@@ -671,13 +671,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.fixedRainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.fixedRainbow,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -691,13 +687,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.fixedRainbowD4,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.fixedRainbowD4,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -712,17 +704,13 @@ class PixelDispatcher
                 flags: FaceCompareFlagsValues.less,
                 face: 21,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: new EditAnimationRainbow({
-                      duration: 1,
-                      faces: 0xffff,
-                      count: 1,
-                    }),
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: new EditAnimationRainbow({
+                  duration: 1,
+                  faces: 0xffff,
+                  count: 1,
+                }),
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -736,13 +724,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.pink_worm,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.pink_worm,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -756,13 +740,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.rainbow,
+              })
             )
           );
           profile.rules.push(
@@ -772,15 +752,11 @@ class PixelDispatcher
                   FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
                 face: 1,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spiralUp,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.spiralUp,
+                face: Constants.currentFaceIndex,
+                loopCount: 1,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -794,13 +770,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.rainbow,
+              })
             )
           );
           profile.rules.push(
@@ -810,15 +782,11 @@ class PixelDispatcher
                   FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
                 face: 1,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.waterfall,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.waterfall,
+                face: Constants.currentFaceIndex,
+                loopCount: 1,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -832,13 +800,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.rainbow,
+              })
             )
           );
           profile.rules.push(
@@ -848,15 +812,11 @@ class PixelDispatcher
                   FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
                 face: 1,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.waterfallRedGreen,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.waterfallRedGreen,
+                face: Constants.currentFaceIndex,
+                loopCount: 1,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -870,13 +830,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.rainbow,
+              })
             )
           );
           profile.rules.push(
@@ -886,15 +842,11 @@ class PixelDispatcher
                   FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
                 face: 1,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.noise,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.noise,
+                face: Constants.currentFaceIndex,
+                loopCount: 1,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -908,13 +860,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.rainbow,
+              })
             )
           );
           profile.rules.push(
@@ -924,15 +872,11 @@ class PixelDispatcher
                   FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
                 face: 1,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spinning_rainbow,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.spinning_rainbow,
+                face: Constants.currentFaceIndex,
+                loopCount: 1,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -946,13 +890,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.rainbow,
+              })
             )
           );
           profile.rules.push(
@@ -962,15 +902,11 @@ class PixelDispatcher
                   FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
                 face: 1,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spiralUp,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.spiralUp,
+                face: Constants.currentFaceIndex,
+                loopCount: 1,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -984,13 +920,9 @@ class PixelDispatcher
               new EditConditionHelloGoodbye({
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.rainbow,
+              })
             )
           );
           profile.rules.push(
@@ -1000,15 +932,11 @@ class PixelDispatcher
                   FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
                 face: 1,
               }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spiralUp,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
+              new EditActionPlayAnimation({
+                animation: PrebuildAnimations.spiralUp,
+                face: Constants.currentFaceIndex,
+                loopCount: 1,
+              })
             )
           );
           dataSet = createDataSetForProfile(profile).toDataSet();
@@ -1031,8 +959,8 @@ class PixelDispatcher
     const av = !isDiff
       ? "none"
       : bundle.date > this.firmwareDate
-      ? "upgrade"
-      : "downgrade";
+        ? "upgrade"
+        : "downgrade";
     if (this._hasAvailableDFU !== av) {
       this._hasAvailableDFU = av;
       this._evEmitter.emit("hasAvailableDFU", av);

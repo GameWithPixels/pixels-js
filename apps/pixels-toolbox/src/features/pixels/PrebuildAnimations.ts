@@ -1,7 +1,6 @@
-import { NoiseColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNoise";
-import { NormalsColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNormals";
 import {
   AnimationFlagsValues,
+  Color,
   EditAnimationCycle,
   EditAnimationNoise,
   EditAnimationNormals,
@@ -9,8 +8,9 @@ import {
   EditRgbGradient,
   EditRgbKeyframe,
   getFaceMask,
+  NoiseColorOverrideTypeValues,
+  NormalsColorOverrideTypeValues,
 } from "@systemic-games/pixels-edit-animation";
-import { Color } from "@systemic-games/react-native-pixels-connect";
 
 export const PrebuildAnimations = {
   rainbow: new EditAnimationRainbow({
@@ -200,8 +200,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
     fade: 0.1,
-    overallGradientColorType: NormalsColorOverrideTypeValues.faceToRainbowWheel,
-    overallGradientColorVar: 0.1,
+    mainGradientColorType: NormalsColorOverrideTypeValues.faceToRainbowWheel,
+    mainGradientColorVar: 0.1,
   }),
   waterfallRedGreen: new EditAnimationNormals({
     duration: 2,
@@ -231,8 +231,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
     fade: 0.1,
-    overallGradientColorType: NormalsColorOverrideTypeValues.faceToGradient,
-    overallGradientColorVar: 0.2,
+    mainGradientColorType: NormalsColorOverrideTypeValues.faceToGradient,
+    mainGradientColorVar: 0.2,
   }),
   waterfallRainbow: new EditAnimationNormals({
     duration: 2,
@@ -265,8 +265,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
     fade: 0.5,
-    overallGradientColorType: NormalsColorOverrideTypeValues.none,
-    overallGradientColorVar: 0,
+    mainGradientColorType: NormalsColorOverrideTypeValues.none,
+    mainGradientColorVar: 0,
   }),
   spinning_rainbow: new EditAnimationNormals({
     duration: 5,
@@ -469,8 +469,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 5,
     fade: 0.2,
-    overallGradientColorType: NormalsColorOverrideTypeValues.faceToGradient,
-    overallGradientColorVar: 0,
+    mainGradientColorType: NormalsColorOverrideTypeValues.faceToGradient,
+    mainGradientColorVar: 0,
   }),
   rainbowAlarm: new EditAnimationNormals({
     duration: 2,
@@ -505,7 +505,7 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 5,
     fade: 0.1,
-    overallGradientColorType: NormalsColorOverrideTypeValues.none,
+    mainGradientColorType: NormalsColorOverrideTypeValues.none,
   }),
   spiralUp: new EditAnimationNormals({
     duration: 4,
@@ -536,8 +536,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 6,
     fade: 0.2,
-    overallGradientColorType: NormalsColorOverrideTypeValues.faceToRainbowWheel,
-    overallGradientColorVar: 0.1,
+    mainGradientColorType: NormalsColorOverrideTypeValues.faceToRainbowWheel,
+    mainGradientColorVar: 0.1,
   }),
   rainbowUp: new EditAnimationNormals({
     duration: 4,
@@ -570,8 +570,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 6,
     fade: 0.2,
-    overallGradientColorType: NormalsColorOverrideTypeValues.none,
-    overallGradientColorVar: 0.1,
+    mainGradientColorType: NormalsColorOverrideTypeValues.none,
+    mainGradientColorVar: 0.1,
   }),
   noise: new EditAnimationNoise({
     duration: 2,
@@ -596,8 +596,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 2,
     fade: 0.5,
-    overallGradientColorType: NoiseColorOverrideTypeValues.faceToRainbowWheel,
-    overallGradientColorVar: 0.1,
+    mainGradientColorType: NoiseColorOverrideTypeValues.faceToRainbowWheel,
+    mainGradientColorVar: 0.1,
   }),
   noise_blue_slow: new EditAnimationNoise({
     duration: 10,
@@ -639,8 +639,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 1,
     blinkDuration: 3,
     fade: 0.1,
-    overallGradientColorType: NoiseColorOverrideTypeValues.faceToGradient,
-    overallGradientColorVar: 0.6,
+    mainGradientColorType: NoiseColorOverrideTypeValues.faceToGradient,
+    mainGradientColorVar: 0.6,
   }),
   rainbow_noise: new EditAnimationNoise({
     duration: 5,
@@ -667,8 +667,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 2,
     fade: 0.1,
-    overallGradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
-    overallGradientColorVar: 0,
+    mainGradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
+    mainGradientColorVar: 0,
   }),
   white_blue_noise: new EditAnimationNoise({
     duration: 5,
@@ -690,7 +690,7 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 5,
     fade: 0.1,
-    overallGradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
-    overallGradientColorVar: 0.5,
+    mainGradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
+    mainGradientColorVar: 0.5,
   }),
 } as const;

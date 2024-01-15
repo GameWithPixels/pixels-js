@@ -6,7 +6,7 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
-import EditAnimation from "./EditAnimation";
+import EditAnimation, { EditAnimationParams } from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
@@ -49,24 +49,22 @@ export default class EditAnimationCycle extends EditAnimation {
   @observable
   gradient?: EditRgbGradient;
 
-  constructor(opt?: {
-    uuid?: string;
-    name?: string;
-    duration?: number;
-    animFlags?: number;
-    faces?: number;
-    count?: number;
-    fade?: number;
-    intensity?: number;
-    cycles?: number;
-    gradient?: EditRgbGradient;
-  }) {
+  constructor(
+    opt?: EditAnimationParams & {
+      count?: number;
+      cycles?: number;
+      fade?: number;
+      intensity?: number;
+      faces?: number;
+      gradient?: EditRgbGradient;
+    }
+  ) {
     super(opt);
-    this.faces = opt?.faces ?? Constants.faceMaskAll;
     this.count = opt?.count ?? 1;
+    this.cycles = opt?.cycles ?? 1;
     this.fade = opt?.fade ?? 0;
     this.intensity = opt?.intensity ?? 0.5;
-    this.cycles = opt?.cycles ?? 1;
+    this.faces = opt?.faces ?? Constants.faceMaskAll;
     this.gradient = opt?.gradient;
   }
 
@@ -91,6 +89,14 @@ export default class EditAnimationCycle extends EditAnimation {
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationCycle({ ...this, uuid });
+    return new EditAnimationCycle({
+      ...this,
+      uuid,
+      gradient: this.gradient?.duplicate(),
+    });
+  }
+
+  collectGradients(): EditRgbGradient[] {
+    return this.gradient ? [this.gradient] : [];
   }
 }
