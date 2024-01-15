@@ -1,46 +1,35 @@
-import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { Alert, AppState } from "react-native";
+import { useStore } from "react-redux";
 
-import { checkForAppUpdateAsync, installAppUpdateAsync } from "./app/updates";
+import { RootState } from "./store";
+import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
 import { useAppSelector, useAppDispatch } from "~/app/hooks";
-import { createDefaultProfiles } from "~/features/profiles";
 import { Library } from "~/features/store";
 
-// TODO show splash screen until library is loaded
-// TODO is there a better way to do this?
-export function AppTasks() {
+export function AppInit({ children }: React.PropsWithChildren) {
   const appDispatch = useAppDispatch();
+  const store = useStore<RootState>();
+  const [initialized, setInitialized] = React.useState(false);
 
   // Library defaults
-  const hasTemplates = useAppSelector(
-    (state) => state.library.templates.ids.length > 0
-  );
-  const library = useAppSelector((state) => state.library);
   React.useEffect(() => {
-    if (!hasTemplates) {
-      Library.dispatchReset(appDispatch);
-    } else if (!library.profiles.ids.length) {
-      console.log("!!! Creating default profiles !!!");
-      const { profiles, animations, gradients, patterns } =
-        createDefaultProfiles("d20", library);
-      for (const gradient of gradients) {
-        appDispatch(Library.Gradients.add(Serializable.fromGradient(gradient)));
+    if (!initialized) {
+      // Init sequence
+      const hasTemplates = store.getState().library.templates.ids.length > 0;
+      if (!hasTemplates) {
+        console.warn("Resetting library");
+        Library.dispatchReset(appDispatch);
       }
-      for (const pattern of patterns) {
-        appDispatch(Library.Patterns.add(Serializable.fromPattern(pattern)));
+      const library = store.getState().library;
+      if (!library.profiles.ids.length) {
+        console.warn("Creating default profiles");
+        Library.createDefault(appDispatch, library);
       }
-      for (const animation of animations) {
-        appDispatch(
-          Library.Animations.add(Serializable.fromAnimation(animation))
-        );
-      }
-      for (const profile of profiles) {
-        appDispatch(Library.Profiles.add(Serializable.fromProfile(profile)));
-      }
+      setInitialized(true);
     }
-  }, [appDispatch, hasTemplates, library]);
+  }, [appDispatch, initialized, store]);
 
   // Monitor app state
   const [active, setActive] = React.useState(true);
@@ -82,5 +71,5 @@ export function AppTasks() {
     }
   }, [appDispatch, hasUpdate]);
 
-  return null;
+  return !initialized ? null : <>{children}</>;
 }
