@@ -10,12 +10,12 @@ export default class AnimationInstanceSimple extends AnimationInstance {
   private _rgb = 0;
 
   get preset(): AnimationSimple {
-    return this.animationPreset as AnimationSimple;
+    return this.preset as AnimationSimple;
   }
 
   start(startTime: number): void {
     super.start(startTime);
-    this._rgb = this.animationBits.getColor32(this.preset.colorIndex);
+    this._rgb = this.bits.getColor32(this.preset.colorIndex, this.die);
   }
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
@@ -66,14 +66,6 @@ export default class AnimationInstanceSimple extends AnimationInstance {
   }
 
   stop(retIndices: number[]): number {
-    const preset = this.preset;
-    let retCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
-      if ((preset.faceMask & (1 << i)) !== 0) {
-        retIndices[retCount] = i;
-        retCount++;
-      }
-    }
-    return retCount;
+    return this.setIndices(this.preset.faceMask, retIndices);
   }
 }

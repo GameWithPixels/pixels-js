@@ -69,6 +69,13 @@ export function getBlue(color32: number): number {
   return color32 & 0xff;
 }
 
+export function mulColors(a: number, b: number): number {
+  const red = (getRed(a) * getRed(b)) / 255;
+  const green = (getGreen(a) * getGreen(b)) / 255;
+  const blue = (getBlue(a) * getBlue(b)) / 255;
+  return toColor32(red, green, blue);
+}
+
 /// <summary>
 /// Combines the two colors by selecting the highest value for each component.
 /// </summary>
@@ -184,7 +191,7 @@ export function modulateColor(color32: number, intensity: number): number {
 /**
  * @category Color32
  */
-export function rainbowWheel(position: number, intensity: number): number {
+export function rainbowWheel(position: number, intensity = 255): number {
   if (position < 85) {
     return toColor32(
       (position * 3 * intensity) / 255,
@@ -206,4 +213,8 @@ export function rainbowWheel(position: number, intensity: number): number {
       ((255 - position * 3) * intensity) / 255
     );
   }
+}
+
+export function faceWheel(face: number, count: number): number {
+  return rainbowWheel((face * 256) / count);
 }

@@ -4,6 +4,7 @@ import AnimationBits from "./AnimationBits";
 import AnimationInstanceGradient from "./AnimationInstanceGradient";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import VirtualDie from "../VirtualDie";
 
 /**
  * @category Animation
@@ -24,7 +25,10 @@ export default class AnimationGradient implements AnimationPreset {
   @serializable(2, { padding: 2 })
   gradientTrackOffset = 0;
 
-  createInstance(bits: AnimationBits): AnimationInstanceGradient {
-    return new AnimationInstanceGradient(this, bits);
+  createInstance(
+    bits: AnimationBits,
+    die: VirtualDie
+  ): AnimationInstanceGradient {
+    return new AnimationInstanceGradient(this, bits, die);
   }
 }

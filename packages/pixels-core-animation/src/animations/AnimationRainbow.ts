@@ -4,6 +4,7 @@ import AnimationBits from "./AnimationBits";
 import AnimationInstanceRainbow from "./AnimationInstanceRainbow";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import VirtualDie from "../VirtualDie";
 
 /**
  * @category Animation
@@ -33,7 +34,10 @@ export default class AnimationRainbow implements AnimationPreset {
   @serializable(1)
   cyclesTimes10 = 10;
 
-  createInstance(bits: AnimationBits): AnimationInstanceRainbow {
-    return new AnimationInstanceRainbow(this, bits);
+  createInstance(
+    bits: AnimationBits,
+    die: VirtualDie
+  ): AnimationInstanceRainbow {
+    return new AnimationInstanceRainbow(this, bits, die);
   }
 }

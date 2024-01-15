@@ -3,7 +3,7 @@
  */
 export const Constants = {
   /** Maximum number of LED on a die. */
-  maxLEDsCount: 20,
+  maxLEDsCount: 22,
 
   /** Magic number for picking a color based on the current face. */
   paletteColorFromFace: 127,

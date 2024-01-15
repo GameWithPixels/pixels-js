@@ -4,6 +4,7 @@ import AnimationBits from "./AnimationBits";
 import AnimationInstanceGradientPattern from "./AnimationInstanceGradientPattern";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import VirtualDie from "../VirtualDie";
 
 /**
  * @category Animation
@@ -30,7 +31,10 @@ export default class AnimationGradientPattern implements AnimationPreset {
   @serializable(1, { padding: 1 })
   overrideWithFace = false;
 
-  createInstance(bits: AnimationBits): AnimationInstanceGradientPattern {
-    return new AnimationInstanceGradientPattern(this, bits);
+  createInstance(
+    bits: AnimationBits,
+    die: VirtualDie
+  ): AnimationInstanceGradientPattern {
+    return new AnimationInstanceGradientPattern(this, bits, die);
   }
 }

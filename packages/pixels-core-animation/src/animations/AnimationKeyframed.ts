@@ -4,6 +4,7 @@ import AnimationBits from "./AnimationBits";
 import AnimationInstanceKeyframed from "./AnimationInstanceKeyframed";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import VirtualDie from "../VirtualDie";
 
 /**
  * @category Animation
@@ -24,7 +25,10 @@ export default class AnimationKeyframed implements AnimationPreset {
   @serializable(2)
   trackCount = 0;
 
-  createInstance(bits: AnimationBits): AnimationInstanceKeyframed {
-    return new AnimationInstanceKeyframed(this, bits);
+  createInstance(
+    bits: AnimationBits,
+    die: VirtualDie
+  ): AnimationInstanceKeyframed {
+    return new AnimationInstanceKeyframed(this, bits, die);
   }
 }

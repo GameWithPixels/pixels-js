@@ -1,7 +1,6 @@
-import { NoiseColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNoise";
-import { NormalsColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNormals";
 import {
   AnimationFlagsValues,
+  Color,
   EditAnimationCycle,
   EditAnimationNoise,
   EditAnimationNormals,
@@ -9,8 +8,9 @@ import {
   EditRgbGradient,
   EditRgbKeyframe,
   getFaceMask,
+  NoiseColorOverrideTypeValues,
+  NormalsColorOverrideTypeValues,
 } from "@systemic-games/pixels-edit-animation";
-import { Color } from "@systemic-games/react-native-pixels-connect";
 
 export const PrebuildAnimations = {
   rainbow: new EditAnimationRainbow({
