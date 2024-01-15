@@ -100,7 +100,9 @@
   "expo": {
     "install": {
       "exclude": [
-        "react-native-reanimated"
+        "react-native-reanimated",
+        "@react-native-community/slider",
+        "expo-speech"
       ]
     }
   },
