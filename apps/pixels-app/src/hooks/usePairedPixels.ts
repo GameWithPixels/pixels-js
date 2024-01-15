@@ -14,6 +14,7 @@ import Toast from "react-native-root-toast";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
+import { buildActionURL } from "~/features/profiles";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
   addPairedDie,
@@ -22,12 +23,7 @@ import {
   setPairedDieName,
 } from "~/features/store/pairedDiceSlice";
 import { readProfile } from "~/features/store/profiles";
-import {
-  areArraysEqual,
-  httpPost,
-  notEmpty,
-  unsigned32ToHex,
-} from "~/features/utils";
+import { areArraysEqual, notEmpty, unsigned32ToHex } from "~/features/utils";
 import { ToastSettings } from "~/themes";
 
 function stableFilterPixels(
@@ -79,24 +75,36 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
         console.log(
           `Running remote action for web request with id=${actionId} at URL "${action.url}" with value "${action.value}"`
         );
-        if (!__DEV__) {
-          httpPost(action.url, pixel.name, action.value, profile.name).then(
-            (status) =>
+        if (__DEV__) {
+          const url = buildActionURL(action, profile, pixel);
+          const toastMsg = `\n\nURL: ${url}\n\n`;
+          fetch(url, { method: "POST" })
+            .then(({ status }) => {
               console.log(
-                `Post request to ${action.url} returned with status ${status}`
-              )
-          );
-          Toast.show(
-            `Playing Web Request action!\nURL: ${action.url}\nPixel: ${pixel.name}, profile: ${profile.name}, value: ${action.value}`,
-            ToastSettings
-          );
+                `Action web request to ${action.url} returned with status ${status}`
+              );
+              Toast.show(
+                `Web Request Send for ${pixel.name}!${toastMsg}Status: ${status}`,
+                ToastSettings
+              );
+            })
+            .catch((e: Error) => {
+              console.log(
+                `Action web request to ${action.url} failed with error ${e.message}`
+              );
+              Toast.show(
+                `Failed Sending Web Request for ${
+                  pixel.name
+                }!${toastMsg}Error: ${e.message ?? "Unknown"}`,
+                { ...ToastSettings, duration: Toast.durations.LONG }
+              );
+            });
         } else {
           console.log(
             "Running web request actions is disabled in development builds"
           );
         }
-      }
-      if (action instanceof Profiles.ActionSpeakText) {
+      } else if (action instanceof Profiles.ActionSpeakText) {
         const settings = { pitch: action.pitch, rate: action.rate } as const;
         console.log(
           `Running remote action for speak text with id=${actionId} with text "${

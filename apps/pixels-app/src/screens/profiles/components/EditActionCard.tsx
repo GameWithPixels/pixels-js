@@ -177,6 +177,7 @@ export const EditActionCard = observer(function EditActionCard({
       </AnimatedTouchableRipple>
       <ConfigureActionBottomSheet
         dieType={profile.dieType}
+        profileName={profile.name}
         condition={condition}
         action={action}
         visible={configureVisible}
