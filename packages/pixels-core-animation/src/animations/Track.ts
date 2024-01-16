@@ -64,6 +64,7 @@ export default class Track {
     bits: AnimationBits,
     color: number,
     time: number,
+    ledCount: number,
     retIndices: number[],
     retColors32: number[]
   ): number {
@@ -78,7 +79,6 @@ export default class Track {
 
     // Fill the return arrays
     let currentCount = 0;
-    const ledCount = retIndices.length;
     for (let i = 0; i < ledCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;

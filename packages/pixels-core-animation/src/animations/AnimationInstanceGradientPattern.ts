@@ -28,6 +28,7 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
   /// </summary>
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
     const preset = this.preset;
+    const ledCount = this.die.ledCount;
     const time = ms - this.startTime;
     const trackTime = (time * 1000) / preset.duration;
 
@@ -53,6 +54,7 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
         this.bits,
         gradientColor,
         trackTime,
+        ledCount,
         indices,
         colors32
       );
