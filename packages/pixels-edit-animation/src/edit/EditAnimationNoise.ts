@@ -121,7 +121,7 @@ export default class EditAnimationNoise extends EditAnimation {
   }
 
   collectGradients(): EditRgbGradient[] {
-    const gradients: EditRgbGradient[] = [];
+    const gradients = [];
     this.gradient && gradients.push(this.gradient);
     this.blinkGradient && gradients.push(this.blinkGradient);
     return gradients;

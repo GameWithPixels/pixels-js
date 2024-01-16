@@ -156,7 +156,7 @@ export default class EditAnimationNormals extends EditAnimation {
   }
 
   collectGradients(): EditRgbGradient[] {
-    const gradients: EditRgbGradient[] = [];
+    const gradients = [];
     this.gradient && gradients.push(this.gradient);
     this.gradientAlongAxis && gradients.push(this.gradientAlongAxis);
     this.gradientAlongAngle && gradients.push(this.gradientAlongAngle);

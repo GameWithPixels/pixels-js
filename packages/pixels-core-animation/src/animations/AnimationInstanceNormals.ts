@@ -39,13 +39,13 @@ const _asinTable = [
 // out: 0 => -pi, 255 => pi
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function asin8(x: number): number {
-  return _asinTable[x]; // 0-255 in, 0-255 out
+  return _asinTable[x & 0xff]; // 0-255 in, 0-255 out
 }
 
 // in: 0 => -1, 255 => +1
 // out: 0 => -pi, 255 => pi
 function acos8(x: number): number {
-  return 64 + _asinTable[x]; // 0-255 in, 0-255 out
+  return 64 + _asinTable[x & 0xff]; // 0-255 in, 0-255 out
 }
 
 /**
@@ -101,6 +101,7 @@ export default class AnimationInstanceNormals extends AnimationInstance {
         break;
       case NormalsColorOverrideTypeValues.none:
       default:
+        this.baseColorParam = 0;
         break;
     }
   }
