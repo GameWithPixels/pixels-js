@@ -1,6 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
+import * as Cycle from "./cycleSlice";
 import * as Flashes from "./flashesSlice";
 import * as GradientPattern from "./gradientPatternSlice";
 import * as Gradient from "./gradientSlice";
@@ -9,7 +10,16 @@ import * as Normals from "./normalsSlice";
 import * as Pattern from "./patternSlice";
 import * as Rainbow from "./rainbowSlice";
 
-export { Flashes, Rainbow, Pattern, GradientPattern, Gradient, Noise };
+export {
+  Cycle,
+  Flashes,
+  Rainbow,
+  Pattern,
+  GradientPattern,
+  Gradient,
+  Noise,
+  Normals,
+};
 
 export function add({
   type,
@@ -35,6 +45,8 @@ export function add({
       return Noise.add(data as Serializable.AnimationNoiseData);
     case "normals":
       return Normals.add(data as Serializable.AnimationNormalsData);
+    case "cycle":
+      return Cycle.add(data as Serializable.AnimationCycleData);
     default:
       assertNever(type, `Unsupported animation type ${type}`);
   }

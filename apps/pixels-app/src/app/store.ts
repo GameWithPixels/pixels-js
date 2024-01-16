@@ -22,6 +22,7 @@ import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer from "~/features/store/appSettingsSlice";
 import appUpdateReducer from "~/features/store/appUpdateSlice";
 import diceRollsReducer from "~/features/store/diceRollsSlice";
+import animationsCycleReducer from "~/features/store/library/animations/cycleSlice";
 import animationsFlashesReducer from "~/features/store/library/animations/flashesSlice";
 import animationsGradientPatternReducer from "~/features/store/library/animations/gradientPatternSlice";
 import animationsGradientReducer from "~/features/store/library/animations/gradientSlice";
@@ -103,6 +104,7 @@ const rootReducer = combineReducers({
     profiles: persist("library/profiles", profilesReducer),
     templates: persist("library/templates", templatesReducer),
     animations: combineReducers({
+      cycle: persistAnim("cycles", animationsCycleReducer),
       flashes: persistAnim("flashes", animationsFlashesReducer),
       gradientPattern: persistAnim(
         "gradientPattern",
