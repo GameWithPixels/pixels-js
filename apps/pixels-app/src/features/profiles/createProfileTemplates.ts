@@ -38,6 +38,7 @@ export function createProfileTemplates(
       uuid: generateUuid(),
       name: "Colorful",
       description: "This profile lights up a different color for every face.",
+      dieType,
       rules: [
         new Profiles.Rule(
           new Profiles.ConditionRolled({
@@ -71,6 +72,7 @@ export function createProfileTemplates(
       uuid: generateUuid(),
       name: "Flashy",
       description: "Most of the animations in this profile have flashes!",
+      dieType,
       rules: [
         new Profiles.Rule(
           new Profiles.ConditionRolled({
@@ -105,6 +107,7 @@ export function createProfileTemplates(
       name: "Speak Numbers",
       description:
         "This profile has your phone say the rolled numbers out loud (when the app is open)",
+      dieType,
       rules: [
         new Profiles.Rule(
           new Profiles.ConditionRolled({
