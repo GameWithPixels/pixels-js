@@ -39,9 +39,6 @@ import patternsReducer, {
 import profilesReducer, {
   profilesAdapter,
 } from "~/features/store/library/profilesSlice";
-import templatesReducer, {
-  templatesAdapter,
-} from "~/features/store/library/templatesSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
 import { getTimeStringMs } from "~/features/utils";
 
@@ -102,7 +99,6 @@ const rootReducer = combineReducers({
   // Library data
   library: combineReducers({
     profiles: persist("library/profiles", profilesReducer),
-    templates: persist("library/templates", templatesReducer),
     animations: combineReducers({
       cycle: persistAnim("cycles", animationsCycleReducer),
       flashes: persistAnim("flashes", animationsFlashesReducer),
@@ -154,10 +150,6 @@ export type LibraryState = RootState["library"];
 
 export const profilesSelectors = profilesAdapter.getSelectors<RootState>(
   (state) => state.library.profiles
-);
-
-export const templatesSelectors = templatesAdapter.getSelectors<RootState>(
-  (state) => state.library.templates
 );
 
 // export const animationsSelectors = animationsAdapter.getSelectors<RootState>(

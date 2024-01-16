@@ -18,16 +18,6 @@ export function useProfilesList(): Readonly<Profiles.Profile>[] {
   );
 }
 
-// TODO no need to be observable
-export function useTemplatesList(): Readonly<Profiles.Profile>[] {
-  const library = useAppSelector((state) => state.library);
-  return React.useMemo(
-    () =>
-      library.templates.ids.map((uuid) => readProfile(uuid as string, library)),
-    [library]
-  );
-}
-
 export function useEditProfilesList(): {
   addProfile: (profile: Profiles.Profile) => void;
   removeProfile: (profileUuid: string) => void;

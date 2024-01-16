@@ -40,9 +40,7 @@ export function readProfile(
 }
 
 function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
-  const profileData =
-    library.profiles.entities[profile.uuid] ??
-    library.templates.entities[profile.uuid];
+  const profileData = library.profiles.entities[profile.uuid];
   assert(profileData, `Profile ${profile.uuid} not found`);
   profile.name = profileData.name;
   profile.description = profileData.description;

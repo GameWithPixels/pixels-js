@@ -6,13 +6,16 @@ import React from "react";
 import { View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Button, Text, TextInput } from "react-native-paper";
+import { useStore } from "react-redux";
 
+import { RootState } from "~/app/store";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { GradientChip } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
 import {
+  createProfileTemplates,
   FactoryProfile,
   getProfileDieTypeLabel,
   ProfileDieTypes,
@@ -22,7 +25,6 @@ import {
   useBottomSheetPadding,
   useEditProfilesList,
   useProfilesList,
-  useTemplatesList,
 } from "~/hooks";
 import { CreateProfileScreenProps } from "~/navigation";
 
@@ -64,41 +66,44 @@ function CreateProfilePage({
   navigation: CreateProfileScreenProps["navigation"];
 }) {
   const allProfiles = useProfilesList();
-  const allTemplates = useTemplatesList();
   const { addProfile } = useEditProfilesList();
   const [dieType, setDieType] = React.useState<PixelDieType>("d20");
   const [profileName, setProfileName] = React.useState("");
   const [tab, setTab] = React.useState(tabsNames[0]);
+  const [selectedProfile, setSelectedProfile] =
+    React.useState<Readonly<Profiles.Profile>>();
 
-  const blankProfile = React.useMemo(
-    () =>
-      FactoryProfile.addAdvancedRules(
-        new Profiles.Profile({
-          name: "Blank",
-          description: "An empty profile",
-          dieType,
-        })
-      ) as Readonly<Profiles.Profile>,
-    [dieType]
+  const store = useStore<RootState>();
+  const templates = React.useMemo(
+    () => [
+      new Profiles.Profile({
+        uuid: generateUuid(),
+        name: "Blank",
+        description: "An empty profile",
+        dieType,
+      }),
+      ...createProfileTemplates(dieType, store.getState().library),
+    ],
+    [dieType, store]
   );
   const profiles = React.useMemo(
     () =>
-      (tab === "Templates" ? [blankProfile].concat(allTemplates) : allProfiles)
+      (tab === "Templates" ? templates : allProfiles)
         .filter((p) => !p.dieType || p.dieType === dieType)
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [allProfiles, allTemplates, blankProfile, dieType, tab]
+    [allProfiles, dieType, tab, templates]
   );
-  const [selectedProfile, setSelectedProfile] =
-    React.useState<Readonly<Profiles.Profile>>();
 
   const createProfile = () => {
     const profile = selectedProfile ?? profiles[0];
     if (profile) {
       const newProfile = profile.duplicate(generateUuid());
       newProfile.name = profileName.trim();
-      newProfile.description =
-        profile === blankProfile ? "" : `Based on ${profile.name}`;
+      newProfile.description = `Based on ${profile.name}`;
       newProfile.dieType = dieType;
+      if (tab === "Templates") {
+        FactoryProfile.addAdvancedRules(newProfile);
+      }
       addProfile(newProfile);
       navigation.pop();
       navigation.navigate("editProfileStack", {
@@ -154,7 +159,7 @@ function CreateProfilePage({
           }}
         />
         <Text variant="titleMedium" style={{ marginTop: 10 }}>
-          Select a Template or an existing Profile to base your new Profile on:
+          Select a template or an existing Profile to base your new Profile on:
         </Text>
         <TabsHeaders
           names={tabsNames}

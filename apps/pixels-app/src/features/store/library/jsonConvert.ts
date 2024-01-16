@@ -366,13 +366,12 @@ export function jsonConvert(dataSet: Json.DataSet): LibraryData {
     patterns
   );
   const { audioClips, audioClipsUuidsMap } = toAudioClips(dataSet.audioClips);
-  const templates =
+  const profiles =
     dataSet.behaviors?.map((p) =>
       toProfile(p, animationUuids, audioClipsUuidsMap)
     ) ?? [];
   return {
-    profiles: [],
-    templates,
+    profiles,
     animations,
     patterns,
     gradients,
