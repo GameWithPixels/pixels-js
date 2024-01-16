@@ -113,6 +113,13 @@ export function getFactoryProfileUuid(dieType: PixelDieType): string {
   return profilesUuids[dieTypesStable.indexOf(dieType)] ?? profilesUuids[0];
 }
 
+export function getFactoryProfileDieType(uuid: string): PixelDieType {
+  return (
+    dieTypesStable[(profilesUuids as readonly string[]).indexOf(uuid)] ??
+    "unknown"
+  );
+}
+
 export function isFactoryProfileUuid(uuid: string): boolean {
   return profilesUuids.includes(uuid as any);
 }
@@ -161,7 +168,9 @@ function addFactoryBaseRules(
   const getAnim = (name: FactoryAnimationName) => {
     const uuid = getFactoryAnimationUuid(name, profile.dieType);
     const anim = getAnimation(uuid);
-    assert(anim, `Missing factory animation ${uuid} for ${profile.dieType}`);
+    if (!anim) {
+      console.warn(`Missing factory animation ${uuid} for ${profile.dieType}`);
+    }
     return anim;
   };
 
@@ -214,10 +223,11 @@ export function addFactoryAdvancedRules(
   const getAnim = (name: FactoryAnimationName) => {
     const uuid = getFactoryAnimationUuid(name, profile.dieType);
     const anim = getAnimation(uuid);
-    assert(
-      anim,
-      `Missing factory animation ${uuid} for ${profile.dieType} (advanced rules)`
-    );
+    if (!anim) {
+      console.warn(
+        `Missing factory animation ${uuid} for ${profile.dieType} (advanced rules)`
+      );
+    }
     return anim;
   };
 
@@ -324,27 +334,21 @@ export function addFactoryAdvancedRules(
   return profile;
 }
 
-export function createFactoryProfiles(
-  animations: Profiles.Animation[]
-): Profiles.Profile[] {
-  const profiles: Profiles.Profile[] = [];
-
-  for (let i = 0; i < dieTypesStable.length; ++i) {
-    const dieType = dieTypesStable[i];
-    const profile = new Profiles.Profile({
-      uuid: profilesUuids[i],
-      name: "Factory Profile",
-      description: "Simple default profile",
-      dieType,
-    });
-    const getAnimation = (uuid: string) =>
-      animations.find((a) => a.uuid === uuid);
-    addFactoryBaseRules(profile, getAnimation);
-    addFactoryAdvancedRules(profile, getAnimation);
-    profiles.push(profile);
-  }
-
-  return profiles;
+export function createFactoryProfile(
+  dieType: PixelDieType,
+  getAnimation: (uuid: string) => Profiles.Animation | undefined
+): Profiles.Profile {
+  const uuid =
+    profilesUuids[dieTypesStable.indexOf(dieType)] ?? profilesUuids[0];
+  const profile = new Profiles.Profile({
+    uuid,
+    name: "Factory Profile",
+    description: "Simple default profile",
+    dieType,
+  });
+  addFactoryBaseRules(profile, getAnimation);
+  addFactoryAdvancedRules(profile, getAnimation);
+  return profile;
 }
 
 export function createFactoryAnimations(): Profiles.Animation[] {

@@ -8,8 +8,10 @@ import {
   getFactoryProfileUuid,
   isFactoryProfileUuid,
   addFactoryAdvancedRules,
+  createFactoryProfile,
+  getFactoryProfileDieType,
 } from "~/features/store/library/factory";
-import { readAnimation, readProfile } from "~/features/store/profiles";
+import { readAnimation } from "~/features/store/profiles";
 
 function fixDieType(dieType?: PixelDieType): PixelDieType {
   // TODO Assumes D20 for unknown die type
@@ -22,15 +24,17 @@ export const FactoryProfile = {
   },
 
   get(dieType: PixelDieType): Readonly<Profiles.Profile> {
-    const profileUuid = getFactoryProfileUuid(fixDieType(dieType));
-    return readProfile(profileUuid, store.getState().library);
+    const library = store.getState().library;
+    return createFactoryProfile(fixDieType(dieType), (uuid) =>
+      readAnimation(uuid, library)
+    );
   },
 
   getByUuid(profileUuid: string): Readonly<Profiles.Profile> | undefined {
-    if (FactoryProfile.isFactory(profileUuid)) {
-      return readProfile(profileUuid, store.getState().library);
+    const dieType = getFactoryProfileDieType(profileUuid);
+    if (dieType !== "unknown") {
+      return FactoryProfile.get(dieType);
     }
-    return undefined;
   },
 
   isFactory(uuid: string): boolean {

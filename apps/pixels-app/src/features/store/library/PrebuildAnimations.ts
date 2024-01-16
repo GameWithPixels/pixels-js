@@ -108,6 +108,15 @@ export const PrebuildAnimations = {
     intensity: 0.1,
   }),
 
+  rainbowPulses: new Profiles.AnimationRainbow({
+    uuid: "67f49656-8646-4983-aec9-345f5aee170f",
+    name: "Rainbow Pulses",
+    category: "colorful",
+    fade: 1,
+    cycles: 2,
+    duration: 2,
+  }),
+
   cycle_fire: new AnimCycle({
     uuid: "0d44ed15-4f78-4833-9986-cc569a9e6325",
     name: "Cycle Fire",
@@ -851,6 +860,34 @@ export const PrebuildAnimations = {
     blinkDuration: 5,
     fade: 0.1,
     gradientColorType: NoiseType.randomFromGradient,
+    gradientColorVar: 0.5,
+  }),
+
+  shortNoise: new AnimNoise({
+    uuid: "b8c15cc3-c762-43b3-915a-64367fcf1cf1",
+    name: "Short Noise",
+    category: "flashy",
+    duration: 1,
+    gradient: new Profiles.RgbGradient({
+      uuid: "0ccd88d9-eb40-43b7-82df-707e8cd2e8a0",
+      keyframes: [
+        new RgbKf({ time: 0, color: new Col(1, 1, 1) }),
+        new RgbKf({ time: 1, color: new Col(1, 1, 1) }),
+      ],
+    }),
+    blinkGradient: new Profiles.RgbGradient({
+      uuid: "c533d28f-a6ff-47a3-b36e-b601fbeefe50",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Col.black }),
+        new RgbKf({ time: 0.1, color: new Col(0.5, 0.5, 0.5) }),
+        new RgbKf({ time: 1, color: new Col(0.1, 0.1, 0.1) }),
+      ],
+    }),
+    blinkFrequency: 10,
+    blinkFrequencyVar: 5,
+    blinkDuration: 5,
+    fade: 0.1,
+    gradientColorType: NoiseType.none,
     gradientColorVar: 0.5,
   }),
 } as const;

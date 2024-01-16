@@ -1,4 +1,3 @@
-import { assert } from "@systemic-games/pixels-core-utils";
 import {
   Profiles,
   Serializable,
@@ -6,7 +5,7 @@ import {
 
 import { LibraryData } from "./LibraryData";
 import { PrebuildAnimations } from "./PrebuildAnimations";
-import { createFactoryAnimations, createFactoryProfiles } from "./factory";
+import { createFactoryAnimations } from "./factory";
 import { jsonConvert } from "./jsonConvert";
 
 import StandardProfilesJson from "#/profiles/standard-profiles.json";
@@ -36,62 +35,61 @@ function pushAnim(anim: Profiles.Animation, library: LibraryData) {
 export function createDefault(): LibraryData {
   // Get standard profiles from JSON
   const library = jsonConvert(StandardProfilesJson);
-  // Add factory profiles and animations
+
+  // Add factory animations
   const animations = createFactoryAnimations();
-  const factoryProfiles = createFactoryProfiles(animations);
   for (const anim of animations) {
     pushAnim(anim, library);
   }
-  for (const p of factoryProfiles) {
-    const data = Serializable.fromProfile(p);
-    library.templates.push(data);
-  }
-  assert(
-    !library.profiles.length,
-    "There should be no profiles, only templates"
-  );
+
   // Add prebuild animations
   const prebuildAnimations = Object.values(PrebuildAnimations);
   for (const anim of prebuildAnimations) {
     pushAnim(anim, library);
   }
-  // Check
+
+  // Checks
   if (__DEV__) {
-    for (const profile of library.profiles) {
-      if (!profile.uuid?.length) {
-        console.error("Profile without uuid: " + profile.name);
-      }
-      if (!profile.name?.length) {
-        console.warn("Profile without name: " + profile.uuid);
-      }
+    if (library.profiles.length) {
+      console.error("Profile found in default library");
     }
-    for (const template of library.templates) {
-      if (!template.uuid?.length) {
-        console.error("Template without uuid: " + template.name);
+    const check = (
+      entityType: string,
+      entities: { uuid: string; name?: string }[],
+      skipName = false
+    ) => {
+      for (const e of entities) {
+        if (!e.uuid?.length) {
+          console.error(`Missing uuid for ${entityType} ${e.name}`);
+        }
+        if (!skipName && !e.name?.length) {
+          console.error(`Missing name for ${entityType} ${e.name}`);
+        }
       }
-      if (!template.name?.length) {
-        console.warn("Template without name: " + template.uuid);
-      }
+    };
+    check("profile", library.profiles);
+    for (const e of Object.entries(library.animations)) {
+      check(e[0], e[1]);
     }
-    for (const anim of Object.values(library.animations).flat()) {
-      if (!anim.uuid?.length) {
-        console.error("Animation without uuid: " + anim.name);
-      }
-      if (!anim.name?.length) {
-        console.warn("Animation without name: " + anim.uuid);
-      }
-    }
-    for (const pattern of library.patterns) {
-      if (!pattern.uuid?.length) {
-        console.error("Pattern without uuid: " + pattern.name);
-      }
-      if (!pattern.name?.length) {
-        console.warn("Pattern without name: " + pattern.uuid);
-      }
-    }
-    for (const gradient of library.gradients) {
-      if (!gradient.uuid?.length) {
-        console.error("Gradient without uuid");
+    check("patterns", library.patterns);
+    check("gradients", library.gradients, true);
+
+    // Check that uuids are unique
+    const allUuids = library.profiles
+      .map((p) => p.uuid)
+      .concat(
+        Object.values(library.animations)
+          .flat()
+          .map((a) => a.uuid)
+      )
+      .concat(library.patterns.map((p) => p.uuid))
+      .concat(library.gradients.map((g) => g.uuid));
+    if (new Set(allUuids).size !== allUuids.length) {
+      console.error("Duplicated UUID in library");
+      for (const uuid of allUuids) {
+        if (allUuids.filter((u) => u === uuid).length > 1) {
+          console.log("Duplicate: " + uuid);
+        }
       }
     }
   }

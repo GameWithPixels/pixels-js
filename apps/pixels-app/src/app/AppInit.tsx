@@ -17,15 +17,14 @@ export function AppInit({ children }: React.PropsWithChildren) {
   React.useEffect(() => {
     if (!initialized) {
       // Init sequence
-      const hasTemplates = store.getState().library.templates.ids.length > 0;
-      if (!hasTemplates) {
+      const hasStuff = store.getState().library.gradients.ids.length > 0;
+      if (!hasStuff) {
         console.warn("Resetting library");
         Library.dispatchReset(appDispatch);
-      }
-      const library = store.getState().library;
-      if (!library.profiles.ids.length) {
-        console.warn("Creating default profiles");
-        Library.dispatchAddDefaultProfiles(appDispatch, library);
+        Library.dispatchAddDefaultProfiles(
+          appDispatch,
+          store.getState().library
+        );
       }
       setInitialized(true);
     }

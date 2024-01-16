@@ -1,6 +1,7 @@
 export * from "./applyOverrides";
 export * from "./buildURL";
 export * from "./createDefaultProfiles";
+export * from "./createProfileTemplates";
 export * from "./descriptions";
 export * from "./dieTypes";
 export * from "./EditorActionTypes";
