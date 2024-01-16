@@ -13,7 +13,7 @@ import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 function idToString(targetId: DfuTargetId): string {
   return typeof targetId === "number"
     ? targetId.toString(16).match(/.{2}/g)?.join(":") ?? ""
-    : `{${targetId}}`;
+    : `${targetId}`;
 }
 
 export function isDfuDone(dfuState: DfuState): boolean {

@@ -1,4 +1,4 @@
-import { Color, ColorUtils } from "@systemic-games/pixels-core-animation";
+import { Color, ColorUtils } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { RadioButton, useTheme } from "react-native-paper";

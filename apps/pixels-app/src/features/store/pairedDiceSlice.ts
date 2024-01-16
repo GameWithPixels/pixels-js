@@ -9,11 +9,11 @@ import { getFactoryProfileUuid } from "./library/factory";
 import { getTimeStringMs } from "~/features/utils";
 
 export interface PairedDie {
+  isPaired: boolean; // Move unpaired dice to a separate list
   systemId: string;
   address: number;
   pixelId: number;
   name: string;
-  isPaired: boolean; // Move unpaired dice to a separate list
   dieType: PixelDieType;
   colorway: PixelColorway;
   profileUuid: string;
@@ -70,22 +70,22 @@ const PairedDiceSlice = createSlice({
       const index = state.dice.findIndex(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
+      const { systemId, address, pixelId, name, dieType, colorway } =
+        action.payload;
+      const dieInfo = {
+        isPaired: true,
+        systemId,
+        address,
+        pixelId,
+        name,
+        dieType,
+        colorway,
+        profileUuid: getFactoryProfileUuid(dieType),
+      };
       if (index !== -1) {
-        state.dice[index].name = action.payload.name;
-        state.dice[index].isPaired = true;
+        state.dice[index] = dieInfo;
       } else {
-        const { systemId, address, pixelId, name, dieType, colorway } =
-          action.payload;
-        state.dice.push({
-          systemId,
-          address,
-          pixelId,
-          name,
-          dieType,
-          colorway,
-          isPaired: true,
-          profileUuid: getFactoryProfileUuid(dieType),
-        });
+        state.dice.push(dieInfo);
       }
     },
     removePairedDie(state, action: PayloadAction<number>) {
