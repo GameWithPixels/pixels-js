@@ -89,7 +89,7 @@ function CreateProfilePage({
   const profiles = React.useMemo(
     () =>
       (tab === "Templates" ? templates : allProfiles)
-        .filter((p) => !p.dieType || p.dieType === dieType)
+        .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
         .sort((a, b) => a.name.localeCompare(b.name)),
     [allProfiles, dieType, tab, templates]
   );
