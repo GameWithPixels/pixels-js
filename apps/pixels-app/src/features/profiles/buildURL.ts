@@ -2,8 +2,10 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 export function buildActionURL(
   action: Profiles.ActionMakeWebRequest,
-  profile: { name: string },
-  pixel?: { name: string }
+  opt?: {
+    profileName?: string;
+    pixelName?: string;
+  }
 ): string {
   function build(url: string, value1: string, value2: string, value3: string) {
     url = url.trim();
@@ -14,8 +16,8 @@ export function buildActionURL(
   }
   return build(
     encodeURI(action.url),
-    encodeURI(pixel?.name ?? ""),
+    encodeURI(opt?.pixelName ?? ""),
     encodeURI(action.value ?? ""),
-    encodeURI(profile.name ?? "")
+    encodeURI(opt?.profileName ?? "")
   );
 }

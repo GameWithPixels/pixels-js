@@ -41,7 +41,7 @@ export function transferProfile(
         );
       } else if (action instanceof Profiles.ActionSpeakText) {
         console.log(
-          `     * Web request to "${action.text}" with pitch ${action.pitch} and rate ${action.rate}`
+          `     * Speak "${action.text}" with pitch ${action.pitch} and rate ${action.rate}`
         );
       }
     }
