@@ -25,7 +25,7 @@ export function AppInit({ children }: React.PropsWithChildren) {
       const library = store.getState().library;
       if (!library.profiles.ids.length) {
         console.warn("Creating default profiles");
-        Library.createDefault(appDispatch, library);
+        Library.dispatchAddDefaultProfiles(appDispatch, library);
       }
       setInitialized(true);
     }

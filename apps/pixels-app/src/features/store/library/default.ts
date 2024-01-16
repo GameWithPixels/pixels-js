@@ -1,31 +1,28 @@
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
-import * as Animations from "./animations";
-import * as Gradients from "./gradientsSlice";
-import { loadDefault } from "./loadDefault";
-import * as Patterns from "./patternsSlice";
-import * as Profiles from "./profilesSlice";
-import * as Templates from "./templatesSlice";
+import { createDefault } from "./createDefault";
+import * as Library from "./library";
 
 import { AppDispatch, LibraryState } from "~/app/store";
 import { createDefaultProfiles } from "~/features/profiles";
-import { Library } from "~/features/store";
 
 export function dispatchReset(appDispatch: AppDispatch): void {
-  const library = loadDefault();
-  appDispatch(Profiles.reset(library));
-  appDispatch(Templates.reset(library));
-  appDispatch(Animations.Flashes.reset(library));
-  appDispatch(Animations.Rainbow.reset(library));
-  appDispatch(Animations.Pattern.reset(library));
-  appDispatch(Animations.GradientPattern.reset(library));
-  appDispatch(Animations.Gradient.reset(library));
-  appDispatch(Animations.Noise.reset(library));
-  appDispatch(Gradients.reset(library));
-  appDispatch(Patterns.reset(library));
+  const library = createDefault();
+  appDispatch(Library.Profiles.reset(library));
+  appDispatch(Library.Templates.reset(library));
+  appDispatch(Library.Animations.Cycle.reset(library));
+  appDispatch(Library.Animations.Flashes.reset(library));
+  appDispatch(Library.Animations.Rainbow.reset(library));
+  appDispatch(Library.Animations.Pattern.reset(library));
+  appDispatch(Library.Animations.GradientPattern.reset(library));
+  appDispatch(Library.Animations.Gradient.reset(library));
+  appDispatch(Library.Animations.Noise.reset(library));
+  appDispatch(Library.Animations.Normals.reset(library));
+  appDispatch(Library.Gradients.reset(library));
+  appDispatch(Library.Patterns.reset(library));
 }
 
-export function createDefault(
+export function dispatchAddDefaultProfiles(
   appDispatch: AppDispatch,
   library: LibraryState
 ): void {

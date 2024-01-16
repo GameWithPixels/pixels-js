@@ -88,7 +88,7 @@ function SettingsMenuPage({
     appDispatch(resetRollsHistory());
     appDispatch(resetAppUpdate());
     Library.dispatchReset(appDispatch);
-    Library.createDefault(appDispatch, store.getState().library);
+    Library.dispatchAddDefaultProfiles(appDispatch, store.getState().library);
     navigation.navigate("onboarding");
   });
   const openPage = (page: PageName) => {

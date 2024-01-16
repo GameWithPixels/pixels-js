@@ -69,6 +69,14 @@ function createAnimation(
   if (noiseData) {
     return new Profiles.AnimationNoise({ uuid });
   }
+  const normalsData = library.animations.normals.entities[uuid];
+  if (normalsData) {
+    return new Profiles.AnimationNormals({ uuid });
+  }
+  const cycleData = library.animations.cycle.entities[uuid];
+  if (cycleData) {
+    return new Profiles.AnimationCycle({ uuid });
+  }
   throw new Error(`Animation ${uuid} not found`);
 }
 
@@ -176,6 +184,21 @@ function updateAnimation(
       anim.mainGradientColorType =
         NormalsColorOverrideTypeValues[normalsData.mainGradientColorType];
       anim.mainGradientColorVar = normalsData.mainGradientColorVar;
+      return;
+    }
+  }
+  const cycleData = library.animations.cycle.entities[uuid];
+  if (cycleData) {
+    if (anim instanceof Profiles.AnimationCycle) {
+      updateAnimBase(anim, cycleData);
+      anim.gradient = cycleData.gradientUuid
+        ? readGradient(cycleData.gradientUuid, library)
+        : undefined;
+      anim.count = cycleData.count;
+      anim.cycles = cycleData.cycles;
+      anim.fade = cycleData.fade;
+      anim.intensity = cycleData.intensity;
+      anim.faces = cycleData.faces;
       return;
     }
   }
