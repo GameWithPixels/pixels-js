@@ -357,6 +357,7 @@ export function createFactoryAnimations(): Profiles.Animation[] {
     new Profiles.AnimationFlashes({
       name: "Face Colored Blink",
       uuid: rolledUuid,
+      category: "uniform",
       count: 1,
       duration: 3,
       color: new Profiles.FaceColor("face"),

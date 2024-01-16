@@ -20,6 +20,7 @@ export const PrebuildAnimations = {
   rainbow: new AnimRainbow({
     uuid: "6c1b35a7-1dfd-43b3-84d4-f4b5074aa279",
     name: "Rainbow",
+    category: "colorful",
     duration: 5,
     animFlags: travelingWithLedIndices,
     count: 4,
@@ -27,9 +28,11 @@ export const PrebuildAnimations = {
     intensity: 1,
     cycles: 1,
   }),
+
   rainbow_as: new AnimRainbow({
     uuid: "45cb423b-443d-49f7-a2cd-2795ee7e44af",
     name: "Rainbow Aurora",
+    category: "colorful",
     duration: 5,
     animFlags: travelingWithLedIndices,
     count: 4,
@@ -37,9 +40,11 @@ export const PrebuildAnimations = {
     intensity: 0.2,
     cycles: 1,
   }),
+
   rainbow_fast: new AnimRainbow({
     uuid: "f5299da4-ab0c-482d-ba10-ac13e6ac2bb3",
     name: "Rainbow Fast",
+    category: "flashy",
     duration: 3,
     animFlags: travelingWithLedIndices,
     count: 9,
@@ -47,42 +52,52 @@ export const PrebuildAnimations = {
     intensity: 1,
     cycles: 3,
   }),
+
   rainbowAllFaces: new AnimRainbow({
     uuid: "1aa50313-d186-43a9-b93d-68da5efa7cc2",
     name: "Rainbow All Faces",
+    category: "colorful",
     duration: 5,
     count: 4,
     intensity: 1,
     fade: 0.1,
   }),
+
   rainbowAllFaces_as: new AnimRainbow({
     uuid: "24435508-a485-4c4e-b676-f7882029dbda",
     name: "Rainbow All Faces Aurora",
+    category: "colorful",
     duration: 5,
     count: 4,
     intensity: 0.2,
     fade: 0.1,
   }),
+
   rainbowAllFaces_fast: new AnimRainbow({
     uuid: "18a95b8a-ad0e-4f47-80b3-953e8c06d4d7",
     name: "Rainbow All Faces Fast",
+    category: "flashy",
     duration: 3,
     count: 9,
     intensity: 1,
     fade: 0.1,
   }),
+
   fixedRainbow: new AnimRainbow({
     uuid: "391a31f9-38d5-4ceb-abaf-4e8e40d5e8e0",
     name: "Fixed Rainbow",
+    category: "colorful",
     duration: 5,
     animFlags: travelingWithLedIndices,
     count: 0,
     fade: 0.1,
     cycles: 2,
   }),
+
   fixedRainbowD4: new AnimRainbow({
     uuid: "6d91261e-ab23-47a9-bd7b-a9a7f98a4ea0",
     name: "Fixed Rainbow D4",
+    category: "colorful",
     dieType: "d4",
     duration: 10,
     faces: getFaceMask([1, 4, 5, 6], "d6"),
@@ -92,9 +107,11 @@ export const PrebuildAnimations = {
     cycles: 3.67,
     intensity: 0.1,
   }),
+
   cycle_fire: new AnimCycle({
     uuid: "0d44ed15-4f78-4833-9986-cc569a9e6325",
     name: "Cycle Fire",
+    category: "animated",
     duration: 3,
     animFlags: ledIndices,
     count: 5,
@@ -113,9 +130,11 @@ export const PrebuildAnimations = {
       ],
     }),
   }),
+
   cycle_water: new AnimCycle({
     uuid: "64b0edf8-fd2a-4cbd-895f-a037daaaa8d7",
     name: "Cycle Water",
+    category: "animated",
     duration: 3,
     animFlags: ledIndices,
     count: 6,
@@ -133,9 +152,11 @@ export const PrebuildAnimations = {
       ],
     }),
   }),
+
   cycle_magic: new AnimCycle({
     uuid: "7d1d627f-df35-408d-a3f3-a13c2f7546b9",
     name: "Cycle Magic",
+    category: "animated",
     duration: 3,
     animFlags: ledIndices,
     count: 5,
@@ -153,9 +174,11 @@ export const PrebuildAnimations = {
       ],
     }),
   }),
+
   red_blue_worm: new AnimCycle({
     uuid: "e778287e-4649-4eb0-bba3-5454550686e6",
     name: "Red Blue Worm",
+    category: "animated",
     duration: 5,
     animFlags: ledIndices,
     count: 6,
@@ -172,9 +195,11 @@ export const PrebuildAnimations = {
       ],
     }),
   }),
+
   green_red_worm: new AnimCycle({
     uuid: "336daf1b-3497-4838-a73b-fd6d80093cab",
     name: "Green Red Worm",
+    category: "animated",
     duration: 5,
     animFlags: ledIndices,
     count: 6,
@@ -191,9 +216,11 @@ export const PrebuildAnimations = {
       ],
     }),
   }),
+
   pink_worm: new AnimCycle({
     uuid: "24dd6ece-614e-4855-8446-fca6cdd5f960",
     name: "Pink Worm",
+    category: "animated",
     duration: 5,
     animFlags: ledIndices,
     count: 6,
@@ -210,9 +237,11 @@ export const PrebuildAnimations = {
       ],
     }),
   }),
+
   waterfall: new AnimNormals({
     uuid: "ab516f76-fe89-48a6-8b11-35f997d31197",
     name: "Waterfall",
+    category: "animated",
     duration: 2,
     gradient: new Profiles.RgbGradient({
       uuid: "f66670ba-4003-40fb-b200-35fb8b26d1c3",
@@ -241,9 +270,11 @@ export const PrebuildAnimations = {
     mainGradientColorType: NormalsType.faceToRainbowWheel,
     mainGradientColorVar: 0.1,
   }),
+
   waterfallRedGreen: new AnimNormals({
     uuid: "3ac00114-1867-4b8f-97d5-86783521c48b",
     name: "Waterfall Red Green",
+    category: "animated",
     duration: 2,
     gradient: new Profiles.RgbGradient({
       uuid: "b6357964-3c51-4c6e-8192-754ba1154526",
@@ -276,9 +307,11 @@ export const PrebuildAnimations = {
     mainGradientColorType: NormalsType.faceToGradient,
     mainGradientColorVar: 0.2,
   }),
+
   waterfallRainbow: new AnimNormals({
     uuid: "971ddd9f-a37d-4649-b03a-909fae9a966a",
     name: "Waterfall Rainbow",
+    category: "animated",
     duration: 2,
     gradient: new Profiles.RgbGradient({
       uuid: "63ce8f0d-7db4-4880-ad10-34d103a3d7e7",
@@ -312,9 +345,11 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 0,
     fade: 0.5,
   }),
+
   spinning_rainbow: new AnimNormals({
     uuid: "c7a041f3-f9e1-448c-94d3-a7f019ced0c4",
     name: "Spinning Rainbow",
+    category: "animated",
     duration: 5,
     gradient: new Profiles.RgbGradient({
       uuid: "52d758f7-2152-4b9a-bce4-5754fc6b2192",
@@ -347,9 +382,11 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 10,
   }),
+
   spinning_rainbow_as: new AnimNormals({
     uuid: "d0e73d74-333e-4634-b30e-e078b376d789",
     name: "Spinning Rainbow Aurora",
+    category: "animated",
     duration: 5,
     gradient: new Profiles.RgbGradient({
       uuid: "89de8ff5-8d6f-4739-8d7f-3098b8da8fa4",
@@ -382,9 +419,11 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 10,
   }),
+
   white_rose: new AnimNormals({
     uuid: "c43226ad-2b96-451c-9e12-896cb14b3920",
     name: "White Rose",
+    category: "uniform",
     duration: 5,
     gradient: new Profiles.RgbGradient({
       uuid: "ba0b68a3-cb80-4e2e-8efd-d16d71897614",
@@ -415,9 +454,11 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
   }),
+
   fire_violet: new AnimNormals({
     uuid: "b39f9e2d-1709-4a8a-9014-7e86e6940b49",
     name: "Fire Violet",
+    category: "animated",
     duration: 5,
     gradient: new Profiles.RgbGradient({
       uuid: "7337d9f5-bc77-4fdc-a427-36cf242ba037",
@@ -448,9 +489,11 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
   }),
+
   quickGreen: new AnimNormals({
     uuid: "f1defafe-5e44-4da2-9f71-bc37a8f55331",
     name: "Quick Green",
+    category: "uniform",
     duration: 1,
     gradient: new Profiles.RgbGradient({
       uuid: "d7e59ec1-f788-443c-8ebe-cb14a2f020f2",
@@ -478,9 +521,11 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 10,
     fade: 0.5,
   }),
+
   quickRed: new AnimNormals({
     uuid: "a09df89c-af86-4f62-87a4-a77930ccbc2a",
     name: "Quick Red",
+    category: "uniform",
     duration: 1,
     gradient: new Profiles.RgbGradient({
       uuid: "bf2268f1-2249-4bb4-a997-c1fde932ef26",
@@ -508,9 +553,11 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 10,
     fade: 0.5,
   }),
+
   redGreenAlarm: new AnimNormals({
     uuid: "0488c178-ecbb-4929-a633-e5b5ec27e39c",
     name: "Red Green Alarm",
+    category: "uniform",
     duration: 2,
     gradient: new Profiles.RgbGradient({
       uuid: "79aa20f2-9e6c-4071-a063-3d66cd7e8075",
@@ -543,9 +590,11 @@ export const PrebuildAnimations = {
     fade: 0.2,
     mainGradientColorType: NormalsType.faceToGradient,
   }),
+
   rainbowAlarm: new AnimNormals({
     uuid: "0477be62-73c9-4591-a2fe-d8db52f2712a",
     name: "Rainbow Alarm",
+    category: "animated",
     duration: 2,
     gradient: new Profiles.RgbGradient({
       uuid: "5db313d4-9c68-40be-97bf-c6c9f2c760bd",
@@ -581,9 +630,11 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 5,
     fade: 0.1,
   }),
+
   spiralUp: new AnimNormals({
     uuid: "b28682d0-fffd-4a07-b723-dbb127309c23",
     name: "Spiral Up",
+    category: "animated",
     duration: 4,
     gradient: new Profiles.RgbGradient({
       uuid: "f6bb8290-bf81-49ca-adf8-7d5908e9c4d0",
@@ -617,9 +668,11 @@ export const PrebuildAnimations = {
     mainGradientColorType: NormalsType.faceToRainbowWheel,
     mainGradientColorVar: 0.1,
   }),
+
   rainbowUp: new AnimNormals({
     uuid: "261b9bc7-9017-4950-b18d-1e95958664c1",
     name: "Rainbow Up",
+    category: "animated",
     duration: 4,
     gradient: new Profiles.RgbGradient({
       uuid: "7df591a7-b3a0-4a63-8e99-79402c896af3",
@@ -655,7 +708,11 @@ export const PrebuildAnimations = {
     mainGradientColorType: NormalsType.none,
     mainGradientColorVar: 0.1,
   }),
+
   noise: new AnimNoise({
+    uuid: "61785d78-a642-461f-8dc1-1f0fb2dddd29",
+    name: "Noise",
+    category: "flashy",
     duration: 2,
     gradient: new Profiles.RgbGradient({
       uuid: "7aa5f0c4-f558-4adc-ad55-b1b765f9a727",
@@ -682,7 +739,11 @@ export const PrebuildAnimations = {
     mainGradientColorType: NoiseType.faceToRainbowWheel,
     mainGradientColorVar: 0.1,
   }),
+
   noise_blue_slow: new AnimNoise({
+    uuid: "fc4e54c4-3b42-4f8c-85a8-e4fa5179304f",
+    name: "Noise Blue Slow",
+    category: "flashy",
     duration: 10,
     gradient: new Profiles.RgbGradient({
       uuid: "6c10a7bb-8f33-4df5-aa3b-84761f4dcdc1",
@@ -703,7 +764,11 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 3,
   }),
+
   red_blue_noise: new AnimNoise({
+    uuid: "8257f66b-9428-489f-a48b-09f1ca4fc380",
+    name: "Red Blue Noise",
+    category: "flashy",
     duration: 2,
     gradient: new Profiles.RgbGradient({
       uuid: "ed743093-c662-44ec-bf82-5d912e0277db",
@@ -727,7 +792,11 @@ export const PrebuildAnimations = {
     mainGradientColorType: NoiseType.faceToGradient,
     mainGradientColorVar: 0.6,
   }),
+
   rainbow_noise: new AnimNoise({
+    uuid: "ee66f25b-b7fb-45a7-9a17-59db258327e5",
+    name: "Rainbow Noise",
+    category: "flashy",
     duration: 5,
     gradient: new Profiles.RgbGradient({
       uuid: "ba250e94-a36e-4246-afe4-ede300490d4a",
@@ -756,7 +825,11 @@ export const PrebuildAnimations = {
     mainGradientColorType: NoiseType.randomFromGradient,
     mainGradientColorVar: 0,
   }),
+
   white_blue_noise: new AnimNoise({
+    uuid: "900f5b09-b44a-49cc-bc2c-0eeaaac0b74a",
+    name: "White Blue Noise",
+    category: "flashy",
     duration: 5,
     gradient: new Profiles.RgbGradient({
       uuid: "41c1334a-0d87-4049-a8d7-818f9ca1c663",

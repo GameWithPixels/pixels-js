@@ -36,6 +36,10 @@ function pushAnim(anim: Profiles.Animation, library: LibraryData) {
 export function createDefault(): LibraryData {
   // Get standard profiles from JSON
   const library = jsonConvert(StandardProfilesJson);
+  // Add a quote to identify those old animations
+  for (const anim of Object.values(library.animations).flat()) {
+    anim.name += "'";
+  }
   // Add factory profiles and animations
   const animations = createFactoryAnimations();
   const factoryProfiles = createFactoryProfiles(animations);
@@ -54,6 +58,46 @@ export function createDefault(): LibraryData {
   const prebuildAnimations = Object.values(PrebuildAnimations);
   for (const anim of prebuildAnimations) {
     pushAnim(anim, library);
+  }
+  // Check
+  if (__DEV__) {
+    for (const profile of library.profiles) {
+      if (!profile.uuid?.length) {
+        console.error("Profile without uuid: " + profile.name);
+      }
+      if (!profile.name?.length) {
+        console.warn("Profile without name: " + profile.uuid);
+      }
+    }
+    for (const template of library.templates) {
+      if (!template.uuid?.length) {
+        console.error("Template without uuid: " + template.name);
+      }
+      if (!template.name?.length) {
+        console.warn("Template without name: " + template.uuid);
+      }
+    }
+    for (const anim of Object.values(library.animations).flat()) {
+      if (!anim.uuid?.length) {
+        console.error("Animation without uuid: " + anim.name);
+      }
+      if (!anim.name?.length) {
+        console.warn("Animation without name: " + anim.uuid);
+      }
+    }
+    for (const pattern of library.patterns) {
+      if (!pattern.uuid?.length) {
+        console.error("Pattern without uuid: " + pattern.name);
+      }
+      if (!pattern.name?.length) {
+        console.warn("Pattern without name: " + pattern.uuid);
+      }
+    }
+    for (const gradient of library.gradients) {
+      if (!gradient.uuid?.length) {
+        console.error("Gradient without uuid");
+      }
+    }
   }
   return library;
 }
