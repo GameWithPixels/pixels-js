@@ -152,8 +152,6 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
     for (const pixel of pixels) {
       if (!isActive(pixel.pixelId)) {
         pixelLog(pixel, "Die has become active");
-        pixel.logMessages = true;
-        pixel.logger = console.log;
         // Add event listeners
         const onStatus = (status: PixelStatus) => {
           if (status === "disconnected") {
