@@ -128,9 +128,11 @@ export default class AnimationInstanceNormals extends AnimationInstance {
     const gradientTime = (time * 1000) / preset.duration;
 
     // Figure out the color from the gradient
-    const gradient = this.bits.getRgbTrack(preset.gradientOverTime);
-    const axisGradient = this.bits.getRgbTrack(preset.gradientAlongAxis);
-    const angleGradient = this.bits.getRgbTrack(preset.gradientAlongAngle);
+    const gradient = this.bits.getRgbTrack(preset.gradientTrackOffset);
+    const axisGradient = this.bits.getRgbTrack(preset.axisGradientTrackOffset);
+    const angleGradient = this.bits.getRgbTrack(
+      preset.angleGradientTrackOffset
+    );
     for (let i = 0; i < ledCount; ++i) {
       const face = getFaceForLEDIndex(this.die.dieType, i);
 

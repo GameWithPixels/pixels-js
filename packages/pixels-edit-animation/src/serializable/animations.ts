@@ -63,21 +63,21 @@ export interface AnimationNoiseData extends AnimationData {
   blinkFrequencyVar: number;
   blinkDuration: number;
   fade: number;
-  mainGradientColorType: NoiseColorOverrideType;
-  mainGradientColorVar: number;
+  gradientColorType: NoiseColorOverrideType;
+  gradientColorVar: number;
 }
 
 export interface AnimationNormalsData extends AnimationData {
   gradientUuid?: string;
-  gradientAlongAxisUuid?: string;
+  axisGradientUuid?: string;
   axisScrollSpeed: number;
   axisScale: number;
   axisOffset: number;
-  gradientAlongAngleUuid?: string;
+  angleGradientUuid?: string;
   angleScrollSpeed: number;
   fade: number;
-  mainGradientColorType: NormalsColorOverrideType;
-  mainGradientColorVar: number;
+  gradientColorType: NormalsColorOverrideType;
+  gradientColorVar: number;
 }
 
 export interface AnimationCycleData extends AnimationData {
