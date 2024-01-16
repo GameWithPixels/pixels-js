@@ -77,7 +77,7 @@ export function createDefaultProfiles(
             ),
           ],
         }),
-        getAnim
+        (uuid) => readAnimation(uuid, library, true)
       ),
     ],
     animations,
