@@ -310,7 +310,7 @@ export function toAnimation<T extends keyof AnimationSetData>(
         animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
         blinkGradient: checkGetGradient(animData.blinkGradientUuid),
-        mainGradientColorType:
+        gradientColorType:
           NoiseColorOverrideTypeValues[animData.gradientColorType],
       });
     }

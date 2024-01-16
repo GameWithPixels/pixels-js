@@ -69,8 +69,8 @@ export default class EditAnimationNoise extends EditAnimation {
       blinkFrequencyVar?: number;
       blinkDuration?: number;
       fade?: number;
-      mainGradientColorType?: number;
-      mainGradientColorVar?: number;
+      gradientColorType?: number;
+      gradientColorVar?: number;
     }
   ) {
     super(opt);
@@ -81,8 +81,8 @@ export default class EditAnimationNoise extends EditAnimation {
     this.blinkDuration = opt?.blinkDuration ?? 0.1;
     this.fade = opt?.fade ?? 0;
     this.gradientColorType =
-      opt?.mainGradientColorType ?? NoiseColorOverrideTypeValues.none;
-    this.gradientColorVar = opt?.mainGradientColorVar ?? 0;
+      opt?.gradientColorType ?? NoiseColorOverrideTypeValues.none;
+    this.gradientColorVar = opt?.gradientColorVar ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {

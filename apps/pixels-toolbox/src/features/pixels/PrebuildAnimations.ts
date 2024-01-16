@@ -596,8 +596,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 2,
     fade: 0.5,
-    mainGradientColorType: NoiseColorOverrideTypeValues.faceToRainbowWheel,
-    mainGradientColorVar: 0.1,
+    gradientColorType: NoiseColorOverrideTypeValues.faceToRainbowWheel,
+    gradientColorVar: 0.1,
   }),
   noise_blue_slow: new EditAnimationNoise({
     duration: 10,
@@ -639,8 +639,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 1,
     blinkDuration: 3,
     fade: 0.1,
-    mainGradientColorType: NoiseColorOverrideTypeValues.faceToGradient,
-    mainGradientColorVar: 0.6,
+    gradientColorType: NoiseColorOverrideTypeValues.faceToGradient,
+    gradientColorVar: 0.6,
   }),
   rainbow_noise: new EditAnimationNoise({
     duration: 5,
@@ -667,8 +667,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 2,
     fade: 0.1,
-    mainGradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
-    mainGradientColorVar: 0,
+    gradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
+    gradientColorVar: 0,
   }),
   white_blue_noise: new EditAnimationNoise({
     duration: 5,
@@ -690,7 +690,7 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 5,
     fade: 0.1,
-    mainGradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
-    mainGradientColorVar: 0.5,
+    gradientColorType: NoiseColorOverrideTypeValues.randomFromGradient,
+    gradientColorVar: 0.5,
   }),
 } as const;
