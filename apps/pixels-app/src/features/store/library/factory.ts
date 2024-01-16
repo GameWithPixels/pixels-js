@@ -25,7 +25,7 @@ const dieTypesStable: readonly PixelDieType[] = [
 
 const rolledUuid = "39ea1031-aa66-429e-b9e1-25c6f6994b17";
 const helloUuid = "1ab1bf75-dcf7-4302-979b-764323ce5037";
-const connectedUuid = "1bcf17ca-0f7e-4c87-80eb-e8a0c09541b7";
+const connectionUuid = "1bcf17ca-0f7e-4c87-80eb-e8a0c09541b7";
 const batteryLowUuid = "f042e65f-2fc2-4789-8e3e-9b580333bde6";
 const batteryBadChargingUuid = "ede414a7-f6bd-4c24-a7fd-6fd88c83519f";
 
@@ -117,7 +117,7 @@ export function isFactoryProfileUuid(uuid: string): boolean {
   return profilesUuids.includes(uuid as any);
 }
 
-export type FactoryAnimationName =
+type FactoryAnimationName =
   | "hello"
   | "rolling"
   | "rolled"
@@ -128,7 +128,7 @@ export type FactoryAnimationName =
   | "batteryBadCharging"
   | "batteryError";
 
-export function getFactoryAnimationUuid(
+function getFactoryAnimationUuid(
   name: FactoryAnimationName,
   dieType: PixelDieType
 ): string {
@@ -140,7 +140,7 @@ export function getFactoryAnimationUuid(
     case "rolled":
       return rolledUuid;
     case "connection":
-      return connectedUuid;
+      return connectionUuid;
     case "batteryLow":
       return batteryLowUuid;
     case "batteryCharging":
@@ -156,8 +156,15 @@ export function getFactoryAnimationUuid(
 
 function addFactoryBaseRules(
   profile: Profiles.Profile,
-  getAnimation: (name: FactoryAnimationName) => Profiles.Animation
+  getAnimation: (uuid: string) => Profiles.Animation | undefined
 ): void {
+  const getAnim = (name: FactoryAnimationName) => {
+    const uuid = getFactoryAnimationUuid(name, profile.dieType);
+    const anim = getAnimation(uuid);
+    assert(anim, `Missing factory animation ${uuid} for ${profile.dieType}`);
+    return anim;
+  };
+
   // Hello
   profile.rules.push(
     new Profiles.Rule(
@@ -165,7 +172,7 @@ function addFactoryBaseRules(
         flags: Profiles.HelloGoodbyeFlagsValues.hello,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("hello"),
+        animation: getAnim("hello"),
         face: Constants.currentFaceIndex,
         loopCount: 1,
       })
@@ -177,7 +184,7 @@ function addFactoryBaseRules(
     new Profiles.Rule(
       new Profiles.ConditionRolling({ recheckAfter: 0.5 }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("rolling"),
+        animation: getAnim("rolling"),
         face: Constants.currentFaceIndex,
         loopCount: 1,
       })
@@ -191,7 +198,7 @@ function addFactoryBaseRules(
         faces: DiceUtils.getDieFaces(profile.dieType),
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("rolled"),
+        animation: getAnim("rolled"),
         face: Constants.currentFaceIndex,
         loopCount: 1,
       })
@@ -201,9 +208,18 @@ function addFactoryBaseRules(
 
 export function addFactoryAdvancedRules(
   profile: Profiles.Profile,
-  getAnimation: (name: FactoryAnimationName) => Profiles.Animation
+  getAnimation: (uuid: string) => Profiles.Animation | undefined
 ): Profiles.Profile {
   const topFace = DiceUtils.getTopFace(profile.dieType);
+  const getAnim = (name: FactoryAnimationName) => {
+    const uuid = getFactoryAnimationUuid(name, profile.dieType);
+    const anim = getAnimation(uuid);
+    assert(
+      anim,
+      `Missing factory animation ${uuid} for ${profile.dieType} (advanced rules)`
+    );
+    return anim;
+  };
 
   // Connection
   profile.rules.push(
@@ -212,7 +228,7 @@ export function addFactoryAdvancedRules(
         flags: Profiles.ConnectionFlagsValues.connected,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("connection"),
+        animation: getAnim("connection"),
         face: Constants.currentFaceIndex,
         loopCount: 1,
       })
@@ -224,7 +240,7 @@ export function addFactoryAdvancedRules(
         flags: Profiles.ConnectionFlagsValues.disconnected,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("connection"),
+        animation: getAnim("connection"),
         face: Constants.currentFaceIndex,
         loopCount: 1,
       })
@@ -239,7 +255,7 @@ export function addFactoryAdvancedRules(
         recheckAfter: 30,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("batteryLow"),
+        animation: getAnim("batteryLow"),
         face: Constants.currentFaceIndex,
         loopCount: 1,
       })
@@ -254,7 +270,7 @@ export function addFactoryAdvancedRules(
         recheckAfter: 5,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("batteryCharging"),
+        animation: getAnim("batteryCharging"),
         face: topFace,
         loopCount: 1,
       })
@@ -269,7 +285,7 @@ export function addFactoryAdvancedRules(
         recheckAfter: 5,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("batteryDone"),
+        animation: getAnim("batteryDone"),
         face: topFace,
         loopCount: 1,
       })
@@ -283,7 +299,7 @@ export function addFactoryAdvancedRules(
         flags: Profiles.BatteryFlagsValues.badCharging,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("batteryBadCharging"),
+        animation: getAnim("batteryBadCharging"),
         face: topFace,
         loopCount: 1,
       })
@@ -298,7 +314,7 @@ export function addFactoryAdvancedRules(
         recheckAfter: 1.5,
       }),
       new Profiles.ActionPlayAnimation({
-        animation: getAnimation("batteryError"),
+        animation: getAnim("batteryError"),
         face: topFace,
         loopCount: 1,
       })
@@ -321,12 +337,8 @@ export function createFactoryProfiles(
       description: "Simple default profile",
       dieType,
     });
-    const getAnimation = (name: FactoryAnimationName) => {
-      const uuid = getFactoryAnimationUuid(name, dieType);
-      const a = animations.find((a) => a.uuid === uuid);
-      assert(a, `Missing factory animation ${uuid} of type ${name}`);
-      return a;
-    };
+    const getAnimation = (uuid: string) =>
+      animations.find((a) => a.uuid === uuid);
     addFactoryBaseRules(profile, getAnimation);
     addFactoryAdvancedRules(profile, getAnimation);
     profiles.push(profile);
@@ -370,7 +382,7 @@ export function createFactoryAnimations(): Profiles.Animation[] {
   animations.push(
     new Profiles.AnimationFlashes({
       name: "Connection",
-      uuid: connectedUuid,
+      uuid: connectionUuid,
       count: 2,
       duration: 1,
       color: Color.blue,

@@ -7,9 +7,7 @@ import { store } from "~/app/store";
 import {
   getFactoryProfileUuid,
   isFactoryProfileUuid,
-  getFactoryAnimationUuid,
   addFactoryAdvancedRules,
-  type FactoryAnimationName,
 } from "~/features/store/library/factory";
 import { readAnimation, readProfile } from "~/features/store/profiles";
 
@@ -40,13 +38,8 @@ export const FactoryProfile = {
   },
 
   addAdvancedRules(profile: Profiles.Profile): Profiles.Profile {
-    const dieType = fixDieType(profile.dieType);
     const library = store.getState().library;
-    const getAnimation = (name: FactoryAnimationName) => {
-      const uuid = getFactoryAnimationUuid(name, dieType);
-      return readAnimation(uuid, library);
-    };
-    addFactoryAdvancedRules(profile, getAnimation);
+    addFactoryAdvancedRules(profile, (uuid) => readAnimation(uuid, library));
     return profile;
   },
 } as const;
