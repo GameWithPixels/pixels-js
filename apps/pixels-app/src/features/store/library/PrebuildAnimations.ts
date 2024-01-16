@@ -111,7 +111,7 @@ export const PrebuildAnimations = {
   cycle_fire: new AnimCycle({
     uuid: "0d44ed15-4f78-4833-9986-cc569a9e6325",
     name: "Cycle Fire",
-    category: "animated",
+    category: "flashy",
     duration: 3,
     animFlags: ledIndices,
     count: 5,
@@ -134,7 +134,7 @@ export const PrebuildAnimations = {
   cycle_water: new AnimCycle({
     uuid: "64b0edf8-fd2a-4cbd-895f-a037daaaa8d7",
     name: "Cycle Water",
-    category: "animated",
+    category: "flashy",
     duration: 3,
     animFlags: ledIndices,
     count: 6,
@@ -156,7 +156,7 @@ export const PrebuildAnimations = {
   cycle_magic: new AnimCycle({
     uuid: "7d1d627f-df35-408d-a3f3-a13c2f7546b9",
     name: "Cycle Magic",
-    category: "animated",
+    category: "flashy",
     duration: 3,
     animFlags: ledIndices,
     count: 5,
