@@ -1,4 +1,4 @@
-import { ColorUtils } from "@systemic-games/pixels-core-animation";
+import { ColorUtils } from "@systemic-games/react-native-pixels-connect";
 
 /**
  * 2D point.

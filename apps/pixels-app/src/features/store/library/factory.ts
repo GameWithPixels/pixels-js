@@ -202,7 +202,7 @@ function addFactoryBaseRules(
 export function addFactoryAdvancedRules(
   profile: Profiles.Profile,
   getAnimation: (name: FactoryAnimationName) => Profiles.Animation
-): void {
+): Profiles.Profile {
   const topFace = DiceUtils.getTopFace(profile.dieType);
 
   // Connection
@@ -304,6 +304,8 @@ export function addFactoryAdvancedRules(
       })
     )
   );
+
+  return profile;
 }
 
 export function createFactoryProfiles(

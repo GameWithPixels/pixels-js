@@ -245,7 +245,7 @@ class SceneRenderer {
           renderScene();
           requestAnimationFrame(renderLoop);
         } catch (error) {
-          console.error(error);
+          console.error((error as Error).message ?? JSON.stringify(error));
           console.warn(
             "Error rendering Die3D, stop rendering to avoid further errors"
           );

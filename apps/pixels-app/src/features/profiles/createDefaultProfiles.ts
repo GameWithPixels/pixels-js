@@ -6,6 +6,7 @@ import {
   Serializable,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { addFactoryAdvancedRules } from "../store/library/factory";
 import { readAnimation } from "../store/profiles";
 
 import { LibraryState } from "~/app/store";
@@ -50,31 +51,34 @@ export function createDefaultProfiles(
   ];
   return {
     profiles: [
-      new Profiles.Profile({
-        uuid: generateUuid(),
-        name: "Simple",
-        description: "A simple profile",
-        dieType,
-        rules: [
-          new Profiles.Rule(
-            new Profiles.ConditionRolled({
-              faces: DiceUtils.getDieFaces(dieType),
-            }),
-            new Profiles.ActionPlayAnimation({
-              animation: getAnim("Waterfall"),
-              face: Constants.currentFaceIndex,
-            })
-          ),
-          new Profiles.Rule(
-            new Profiles.ConditionRolling({ recheckAfter: 8 }),
-            new Profiles.ActionPlayAnimation({
-              animation: getAnim("Rainbow Pulses"),
-              face: Constants.currentFaceIndex,
-              duration: 5,
-            })
-          ),
-        ],
-      }),
+      addFactoryAdvancedRules(
+        new Profiles.Profile({
+          uuid: generateUuid(),
+          name: "Simple",
+          description: "A simple profile",
+          dieType,
+          rules: [
+            new Profiles.Rule(
+              new Profiles.ConditionRolled({
+                faces: DiceUtils.getDieFaces(dieType),
+              }),
+              new Profiles.ActionPlayAnimation({
+                animation: getAnim("Waterfall"),
+                face: Constants.currentFaceIndex,
+              })
+            ),
+            new Profiles.Rule(
+              new Profiles.ConditionRolling({ recheckAfter: 8 }),
+              new Profiles.ActionPlayAnimation({
+                animation: getAnim("Rainbow Pulses"),
+                face: Constants.currentFaceIndex,
+                duration: 5,
+              })
+            ),
+          ],
+        }),
+        getAnim
+      ),
     ],
     animations,
     patterns: [],

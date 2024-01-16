@@ -99,7 +99,7 @@ const Header = observer(function Header({
           onEndEditing={() => {
             const name = editedName.trim();
             if (name.length) {
-              runInAction(() => (profile.name = editedName));
+              runInAction(() => (profile.name = name));
             }
             setRenameVisible(false);
           }}
