@@ -58,11 +58,11 @@ export function createProfileTemplates(
           })
         ),
         new Profiles.Rule(
-          new Profiles.ConditionRolling({ recheckAfter: 8 }),
+          new Profiles.ConditionRolling({ recheckAfter: 1 }),
           new Profiles.ActionPlayAnimation({
             animation: getAnim("Face Up"),
             face: Constants.currentFaceIndex,
-            duration: 5,
+            duration: 0.5,
           })
         ),
       ],
@@ -91,11 +91,11 @@ export function createProfileTemplates(
           })
         ),
         new Profiles.Rule(
-          new Profiles.ConditionRolling({ recheckAfter: 8 }),
+          new Profiles.ConditionRolling({ recheckAfter: 1 }),
           new Profiles.ActionPlayAnimation({
             animation: getAnim("Short Noise"),
             face: Constants.currentFaceIndex,
-            duration: 5,
+            duration: 0.5,
           })
         ),
       ],
@@ -127,11 +127,11 @@ export function createProfileTemplates(
             )
         ),
         new Profiles.Rule(
-          new Profiles.ConditionRolling({ recheckAfter: 8 }),
+          new Profiles.ConditionRolling({ recheckAfter: 1 }),
           new Profiles.ActionPlayAnimation({
             animation: getAnim("Rainbow Pulses"),
             face: Constants.currentFaceIndex,
-            duration: 5,
+            duration: 0.5,
           })
         ),
       ],
