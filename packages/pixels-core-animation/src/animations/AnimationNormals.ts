@@ -21,13 +21,13 @@ export default class AnimationNormals implements AnimationPreset {
   duration = 0; // In milliseconds
 
   @serializable(2)
-  gradientOverTime = 0; // 0 - 1, over duration of the animation
+  gradientTrackOffset = 0; // 0 - 1, over duration of the animation
 
   @serializable(2)
-  gradientAlongAxis = 0; // 0 = top, 1 = bottom
+  axisGradientTrackOffset = 0; // 0 = top, 1 = bottom
 
   @serializable(2)
-  gradientAlongAngle = 0; // 0 = -pi, 1 = pi
+  angleGradientTrackOffset = 0; // 0 = -pi, 1 = pi
 
   @serializable(2, { numberFormat: "signed" })
   axisScaleTimes1000 = 0;

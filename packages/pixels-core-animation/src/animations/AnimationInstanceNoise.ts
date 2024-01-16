@@ -62,10 +62,7 @@ export default class AnimationInstanceNoise extends AnimationInstance {
       startTime +
       this.blinkInterValMinMs +
       (randomUInt32() % this.blinkInterValDeltaMs);
-    this.baseColorParam = computeBaseParam(
-      preset.overallGradientColorType,
-      this.die
-    );
+    this.baseColorParam = computeBaseParam(preset.gradientColorType, this.die);
   }
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
@@ -105,7 +102,7 @@ export default class AnimationInstanceNoise extends AnimationInstance {
       this.blinkStartTimes[newLed] = ms;
 
       let gradientColor = 0;
-      switch (preset.overallGradientColorType) {
+      switch (preset.gradientColorType) {
         case NoiseColorOverrideTypeValues.randomFromGradient:
           // Ignore instance gradient parameter, each blink gets a random value
           gradientColor = gradientOverall.evaluateColor(
@@ -119,8 +116,8 @@ export default class AnimationInstanceNoise extends AnimationInstance {
             // use the current face (set at start()) + variance
             const variance =
               Math.floor(
-                randomUInt32() % Math.max(1, 2 * preset.overallGradientColorVar)
-              ) - preset.overallGradientColorVar;
+                randomUInt32() % Math.max(1, 2 * preset.gradientColorVar)
+              ) - preset.gradientColorVar;
             let param = this.baseColorParam + variance;
             if (param < 0) {
               param = 0;
@@ -139,8 +136,8 @@ export default class AnimationInstanceNoise extends AnimationInstance {
             // use the current face (set at start()) + variance
             const variance =
               Math.floor(
-                randomUInt32() % Math.max(1, 2 * preset.overallGradientColorVar)
-              ) - preset.overallGradientColorVar;
+                randomUInt32() % Math.max(1, 2 * preset.gradientColorVar)
+              ) - preset.gradientColorVar;
             const param = this.baseColorParam + (variance * 255) / 1000;
             gradientColor = Color32Utils.rainbowWheel(param);
           }

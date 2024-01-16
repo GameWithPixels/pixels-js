@@ -157,9 +157,9 @@ function updateAnimation(
       anim.blinkFrequencyVar = noiseData.blinkFrequencyVar;
       anim.blinkDuration = noiseData.blinkDuration;
       anim.fade = noiseData.fade;
-      anim.mainGradientColorType =
-        NoiseColorOverrideTypeValues[noiseData.mainGradientColorType];
-      anim.mainGradientColorVar = noiseData.mainGradientColorVar;
+      anim.gradientColorType =
+        NoiseColorOverrideTypeValues[noiseData.gradientColorType];
+      anim.gradientColorVar = noiseData.gradientColorVar;
       return;
     }
   }
@@ -170,20 +170,20 @@ function updateAnimation(
       anim.gradient = normalsData.gradientUuid
         ? readGradient(normalsData.gradientUuid, library)
         : undefined;
-      anim.gradientAlongAxis = normalsData.gradientAlongAxisUuid
-        ? readGradient(normalsData.gradientAlongAxisUuid, library)
+      anim.axisGradient = normalsData.axisGradientUuid
+        ? readGradient(normalsData.axisGradientUuid, library)
         : undefined;
       anim.axisScrollSpeed = normalsData.axisScrollSpeed;
       anim.axisScale = normalsData.axisScale;
       anim.axisOffset = normalsData.axisOffset;
-      anim.gradientAlongAngle = normalsData.gradientAlongAngleUuid
-        ? readGradient(normalsData.gradientAlongAngleUuid, library)
+      anim.angleGradient = normalsData.angleGradientUuid
+        ? readGradient(normalsData.angleGradientUuid, library)
         : undefined;
       anim.axisScrollSpeed = normalsData.axisScrollSpeed;
       anim.fade = normalsData.fade;
-      anim.mainGradientColorType =
-        NormalsColorOverrideTypeValues[normalsData.mainGradientColorType];
-      anim.mainGradientColorVar = normalsData.mainGradientColorVar;
+      anim.gradientColorType =
+        NormalsColorOverrideTypeValues[normalsData.gradientColorType];
+      anim.gradientColorVar = normalsData.gradientColorVar;
       return;
     }
   }

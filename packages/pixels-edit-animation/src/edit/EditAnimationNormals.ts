@@ -23,7 +23,7 @@ export default class EditAnimationNormals extends EditAnimation {
   @widget("gradient")
   @name("Gradient Along Axis")
   @observable
-  gradientAlongAxis?: EditRgbGradient;
+  axisGradient?: EditRgbGradient;
 
   @widget("slider")
   @range(-10, 10)
@@ -46,7 +46,7 @@ export default class EditAnimationNormals extends EditAnimation {
   @widget("gradient")
   @name("Gradient Along Angle")
   @observable
-  gradientAlongAngle?: EditRgbGradient;
+  angleGradient?: EditRgbGradient;
 
   @widget("slider")
   @range(-10, 10)
@@ -64,13 +64,13 @@ export default class EditAnimationNormals extends EditAnimation {
   @name("Override color based on face")
   @values(NormalsColorOverrideTypeValues)
   @observable
-  mainGradientColorType: number;
+  gradientColorType: number;
 
   @widget("slider")
   @range(0, 1)
   @name("Override color variance")
   @observable
-  mainGradientColorVar: number;
+  gradientColorVar: number;
 
   constructor(
     opt?: EditAnimationParams & {
@@ -82,22 +82,22 @@ export default class EditAnimationNormals extends EditAnimation {
       gradientAlongAngle?: EditRgbGradient;
       angleScrollSpeed?: number;
       fade?: number;
-      mainGradientColorType?: number;
-      mainGradientColorVar?: number;
+      gradientColorType?: number;
+      gradientColorVar?: number;
     }
   ) {
     super(opt);
     this.gradient = opt?.gradient;
-    this.gradientAlongAxis = opt?.gradientAlongAxis;
+    this.axisGradient = opt?.gradientAlongAxis;
     this.axisScale = opt?.axisScale ?? 1;
     this.axisOffset = opt?.axisOffset ?? 0;
     this.axisScrollSpeed = opt?.axisScrollSpeed ?? 0;
-    this.gradientAlongAngle = opt?.gradientAlongAngle;
+    this.angleGradient = opt?.gradientAlongAngle;
     this.angleScrollSpeed = opt?.angleScrollSpeed ?? 0;
     this.fade = opt?.fade ?? 0;
-    this.mainGradientColorType =
-      opt?.mainGradientColorType ?? NormalsColorOverrideTypeValues.none;
-    this.mainGradientColorVar = opt?.mainGradientColorVar ?? 0;
+    this.gradientColorType =
+      opt?.gradientColorType ?? NormalsColorOverrideTypeValues.none;
+    this.gradientColorVar = opt?.gradientColorVar ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -110,19 +110,16 @@ export default class EditAnimationNormals extends EditAnimation {
     }
 
     const gradientAlongAxis = bits.rgbTracks.length;
-    if (this.gradientAlongAxis) {
+    if (this.axisGradient) {
       bits.rgbTracks.push(
-        new EditRgbTrack({ gradient: this.gradientAlongAxis }).toTrack(
-          editSet,
-          bits
-        )
+        new EditRgbTrack({ gradient: this.axisGradient }).toTrack(editSet, bits)
       );
     }
 
     const gradientAlongAngle = bits.rgbTracks.length;
-    if (this.gradientAlongAngle) {
+    if (this.angleGradient) {
       bits.rgbTracks.push(
-        new EditRgbTrack({ gradient: this.gradientAlongAngle }).toTrack(
+        new EditRgbTrack({ gradient: this.angleGradient }).toTrack(
           editSet,
           bits
         )
@@ -132,16 +129,16 @@ export default class EditAnimationNormals extends EditAnimation {
     return safeAssign(new AnimationNormals(), {
       animFlags: this.animFlags,
       duration: this.duration * 1000,
-      gradientOverTime,
-      gradientAlongAxis,
-      gradientAlongAngle,
+      gradientTrackOffset: gradientOverTime,
+      axisGradientTrackOffset: gradientAlongAxis,
+      angleGradientTrackOffset: gradientAlongAngle,
       axisScaleTimes1000: this.axisScale * 1000,
       axisOffsetTimes1000: this.axisOffset * 1000,
       axisScrollSpeedTimes1000: this.axisScrollSpeed * 1000,
       angleScrollSpeedTimes1000: this.angleScrollSpeed * 1000,
       fade: this.fade * 255,
-      mainGradientColorType: this.mainGradientColorType,
-      mainGradientColorVar: this.mainGradientColorVar * 1000,
+      mainGradientColorType: this.gradientColorType,
+      mainGradientColorVar: this.gradientColorVar * 1000,
     });
   }
 
@@ -150,16 +147,16 @@ export default class EditAnimationNormals extends EditAnimation {
       ...this,
       uuid,
       gradient: this.gradient?.duplicate(),
-      gradientAlongAxis: this.gradientAlongAxis?.duplicate(),
-      gradientAlongAngle: this.gradientAlongAngle?.duplicate(),
+      gradientAlongAxis: this.axisGradient?.duplicate(),
+      gradientAlongAngle: this.angleGradient?.duplicate(),
     });
   }
 
   collectGradients(): EditRgbGradient[] {
     const gradients = [];
     this.gradient && gradients.push(this.gradient);
-    this.gradientAlongAxis && gradients.push(this.gradientAlongAxis);
-    this.gradientAlongAngle && gradients.push(this.gradientAlongAngle);
+    this.axisGradient && gradients.push(this.axisGradient);
+    this.angleGradient && gradients.push(this.angleGradient);
     return gradients;
   }
 }

@@ -39,10 +39,10 @@ export default class AnimationNoise implements AnimationPreset {
   fade = 0; // 0 - 255
 
   @serializable(1)
-  overallGradientColorType = NoiseColorOverrideTypeValues.none;
+  gradientColorType = NoiseColorOverrideTypeValues.none;
 
   @serializable(2)
-  overallGradientColorVar = 0; // 0 - 1000
+  gradientColorVar = 0; // 0 - 1000
 
   createInstance(bits: AnimationBits, die: VirtualDie): AnimationInstanceNoise {
     return new AnimationInstanceNoise(this, bits, die);

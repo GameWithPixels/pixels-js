@@ -267,8 +267,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
     fade: 0.1,
-    mainGradientColorType: NormalsType.faceToRainbowWheel,
-    mainGradientColorVar: 0.1,
+    gradientColorType: NormalsType.faceToRainbowWheel,
+    gradientColorVar: 0.1,
   }),
 
   waterfallRedGreen: new AnimNormals({
@@ -304,8 +304,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 0,
     fade: 0.1,
-    mainGradientColorType: NormalsType.faceToGradient,
-    mainGradientColorVar: 0.2,
+    gradientColorType: NormalsType.faceToGradient,
+    gradientColorVar: 0.2,
   }),
 
   waterfallRainbow: new AnimNormals({
@@ -588,7 +588,7 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 5,
     fade: 0.2,
-    mainGradientColorType: NormalsType.faceToGradient,
+    gradientColorType: NormalsType.faceToGradient,
   }),
 
   rainbowAlarm: new AnimNormals({
@@ -665,8 +665,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 6,
     fade: 0.2,
-    mainGradientColorType: NormalsType.faceToRainbowWheel,
-    mainGradientColorVar: 0.1,
+    gradientColorType: NormalsType.faceToRainbowWheel,
+    gradientColorVar: 0.1,
   }),
 
   rainbowUp: new AnimNormals({
@@ -705,8 +705,8 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 6,
     fade: 0.2,
-    mainGradientColorType: NormalsType.none,
-    mainGradientColorVar: 0.1,
+    gradientColorType: NormalsType.none,
+    gradientColorVar: 0.1,
   }),
 
   noise: new AnimNoise({
@@ -736,8 +736,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 2,
     fade: 0.5,
-    mainGradientColorType: NoiseType.faceToRainbowWheel,
-    mainGradientColorVar: 0.1,
+    gradientColorType: NoiseType.faceToRainbowWheel,
+    gradientColorVar: 0.1,
   }),
 
   noise_blue_slow: new AnimNoise({
@@ -789,8 +789,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 1,
     blinkDuration: 3,
     fade: 0.1,
-    mainGradientColorType: NoiseType.faceToGradient,
-    mainGradientColorVar: 0.6,
+    gradientColorType: NoiseType.faceToGradient,
+    gradientColorVar: 0.6,
   }),
 
   rainbow_noise: new AnimNoise({
@@ -822,8 +822,8 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 2,
     fade: 0.1,
-    mainGradientColorType: NoiseType.randomFromGradient,
-    mainGradientColorVar: 0,
+    gradientColorType: NoiseType.randomFromGradient,
+    gradientColorVar: 0,
   }),
 
   white_blue_noise: new AnimNoise({
@@ -850,7 +850,7 @@ export const PrebuildAnimations = {
     blinkFrequencyVar: 0,
     blinkDuration: 5,
     fade: 0.1,
-    mainGradientColorType: NoiseType.randomFromGradient,
-    mainGradientColorVar: 0.5,
+    gradientColorType: NoiseType.randomFromGradient,
+    gradientColorVar: 0.5,
   }),
 } as const;

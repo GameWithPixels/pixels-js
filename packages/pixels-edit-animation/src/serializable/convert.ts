@@ -310,8 +310,8 @@ export function toAnimation<T extends keyof AnimationSetData>(
         animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
         blinkGradient: checkGetGradient(animData.blinkGradientUuid),
-        mainGradientColorType:
-          NoiseColorOverrideTypeValues[animData.mainGradientColorType],
+        gradientColorType:
+          NoiseColorOverrideTypeValues[animData.gradientColorType],
       });
     }
     case "normals": {
@@ -320,10 +320,10 @@ export function toAnimation<T extends keyof AnimationSetData>(
         ...animData,
         animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
-        gradientAlongAxis: checkGetGradient(animData.gradientAlongAxisUuid),
-        gradientAlongAngle: checkGetGradient(animData.gradientAlongAngleUuid),
-        mainGradientColorType:
-          NormalsColorOverrideTypeValues[animData.mainGradientColorType],
+        gradientAlongAxis: checkGetGradient(animData.axisGradientUuid),
+        gradientAlongAngle: checkGetGradient(animData.angleGradientUuid),
+        gradientColorType:
+          NormalsColorOverrideTypeValues[animData.gradientColorType],
       });
     }
     case "cycle": {
@@ -652,11 +652,11 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           blinkFrequencyVar: anim.blinkFrequencyVar,
           blinkDuration: anim.blinkDuration,
           fade: anim.fade,
-          mainGradientColorType: valuesToKeys(
-            [anim.mainGradientColorType],
+          gradientColorType: valuesToKeys(
+            [anim.gradientColorType],
             NoiseColorOverrideTypeValues
           )[0],
-          mainGradientColorVar: anim.mainGradientColorVar,
+          gradientColorVar: anim.gradientColorVar,
         },
       };
     }
@@ -672,18 +672,18 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           category: anim.category,
           dieType: anim.dieType,
           gradientUuid: anim.gradient?.uuid,
-          gradientAlongAxisUuid: anim.gradientAlongAxis?.uuid,
+          axisGradientUuid: anim.axisGradient?.uuid,
           axisScrollSpeed: anim.axisScrollSpeed,
           axisScale: anim.axisScale,
           axisOffset: anim.axisOffset,
-          gradientAlongAngleUuid: anim.gradientAlongAngle?.uuid,
+          angleGradientUuid: anim.angleGradient?.uuid,
           angleScrollSpeed: anim.angleScrollSpeed,
           fade: anim.fade,
-          mainGradientColorType: valuesToKeys(
-            [anim.mainGradientColorType],
+          gradientColorType: valuesToKeys(
+            [anim.gradientColorType],
             NormalsColorOverrideTypeValues
           )[0],
-          mainGradientColorVar: anim.mainGradientColorVar,
+          gradientColorVar: anim.gradientColorVar,
         },
       };
     }

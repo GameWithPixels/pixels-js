@@ -53,13 +53,13 @@ export default class EditAnimationNoise extends EditAnimation {
   @name("Override color based on face")
   @values(NoiseColorOverrideTypeValues)
   @observable
-  mainGradientColorType: number;
+  gradientColorType: number;
 
   @widget("slider")
   @range(0, 1)
   @name("Override color variance")
   @observable
-  mainGradientColorVar: number;
+  gradientColorVar: number;
 
   constructor(
     opt?: EditAnimationParams & {
@@ -69,8 +69,8 @@ export default class EditAnimationNoise extends EditAnimation {
       blinkFrequencyVar?: number;
       blinkDuration?: number;
       fade?: number;
-      mainGradientColorType?: number;
-      mainGradientColorVar?: number;
+      gradientColorType?: number;
+      gradientColorVar?: number;
     }
   ) {
     super(opt);
@@ -80,9 +80,9 @@ export default class EditAnimationNoise extends EditAnimation {
     this.blinkFrequencyVar = opt?.blinkFrequencyVar ?? 0;
     this.blinkDuration = opt?.blinkDuration ?? 0.1;
     this.fade = opt?.fade ?? 0;
-    this.mainGradientColorType =
-      opt?.mainGradientColorType ?? NoiseColorOverrideTypeValues.none;
-    this.mainGradientColorVar = opt?.mainGradientColorVar ?? 0;
+    this.gradientColorType =
+      opt?.gradientColorType ?? NoiseColorOverrideTypeValues.none;
+    this.gradientColorVar = opt?.gradientColorVar ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -106,8 +106,8 @@ export default class EditAnimationNoise extends EditAnimation {
       blinkFrequencyVarTimes1000: this.blinkFrequencyVar * 1000,
       blinkDuration: this.blinkDuration * 255,
       fade: this.fade * 255,
-      overallGradientColorType: this.mainGradientColorType,
-      overallGradientColorVar: this.mainGradientColorVar * 1000,
+      gradientColorType: this.gradientColorType,
+      gradientColorVar: this.gradientColorVar * 1000,
     });
   }
 
