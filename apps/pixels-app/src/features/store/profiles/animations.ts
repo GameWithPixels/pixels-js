@@ -1,5 +1,7 @@
 import { combineFlags, keysToValues } from "@systemic-games/pixels-core-utils";
 import {
+  NoiseColorOverrideTypeValues,
+  NormalsColorOverrideTypeValues,
   Profiles,
   Serializable,
 } from "@systemic-games/react-native-pixels-connect";
@@ -140,13 +142,40 @@ function updateAnimation(
       anim.gradient = noiseData.gradientUuid
         ? readGradient(noiseData.gradientUuid, library)
         : undefined;
-      anim.blinkDuration = noiseData.blinkDuration;
       anim.blinkGradient = noiseData.blinkGradientUuid
         ? readGradient(noiseData.blinkGradientUuid, library)
         : undefined;
-      anim.blinkCount = noiseData.blinkCount;
+      anim.blinkFrequency = noiseData.blinkFrequency;
+      anim.blinkFrequencyVar = noiseData.blinkFrequencyVar;
+      anim.blinkDuration = noiseData.blinkDuration;
       anim.fade = noiseData.fade;
-      anim.faces = noiseData.faces;
+      anim.mainGradientColorType =
+        NoiseColorOverrideTypeValues[noiseData.mainGradientColorType];
+      anim.mainGradientColorVar = noiseData.mainGradientColorVar;
+      return;
+    }
+  }
+  const normalsData = library.animations.normals.entities[uuid];
+  if (normalsData) {
+    if (anim instanceof Profiles.AnimationNormals) {
+      updateAnimBase(anim, normalsData);
+      anim.gradient = normalsData.gradientUuid
+        ? readGradient(normalsData.gradientUuid, library)
+        : undefined;
+      anim.gradientAlongAxis = normalsData.gradientAlongAxisUuid
+        ? readGradient(normalsData.gradientAlongAxisUuid, library)
+        : undefined;
+      anim.axisScrollSpeed = normalsData.axisScrollSpeed;
+      anim.axisScale = normalsData.axisScale;
+      anim.axisOffset = normalsData.axisOffset;
+      anim.gradientAlongAngle = normalsData.gradientAlongAngleUuid
+        ? readGradient(normalsData.gradientAlongAngleUuid, library)
+        : undefined;
+      anim.axisScrollSpeed = normalsData.axisScrollSpeed;
+      anim.fade = normalsData.fade;
+      anim.mainGradientColorType =
+        NormalsColorOverrideTypeValues[normalsData.mainGradientColorType];
+      anim.mainGradientColorVar = normalsData.mainGradientColorVar;
       return;
     }
   }

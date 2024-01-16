@@ -14,6 +14,7 @@ export const AnimationTypeValues = {
   noise: enumValue(),
   cycle: enumValue(),
   name: enumValue(),
+  normals: enumValue(),
 } as const;
 
 /**

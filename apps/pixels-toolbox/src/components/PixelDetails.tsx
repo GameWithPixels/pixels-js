@@ -17,6 +17,7 @@ import {
   PixelRollStateValues,
   usePixelStatus,
   usePixelValue,
+  PixelDieTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
@@ -49,7 +50,9 @@ import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
-import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import PixelDispatcher, {
+  ProfileTypes,
+} from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
@@ -334,7 +337,7 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
 }
 
 async function playKeyframes(pixelDispatcher: PixelDispatcher) {
-  const pattern = await createPatternFromImage(PatternImages.rainbowFalls);
+  const pattern = await createPatternFromImage(PatternImages.acceleration);
   const keyframesCount = pattern.gradients.map((g) => g.keyframes.length);
   console.log(
     `Extracted ${keyframesCount.reduce(
@@ -379,6 +382,24 @@ function BottomButtons({
     hide: hideDischarge,
   } = useVisibility();
 
+  const {
+    visible: uploadProfileMenuVisible,
+    show: showUploadProfileMenu,
+    hide: hideUploadProfileMenu,
+  } = useVisibility();
+
+  const {
+    visible: playAnimMenuVisible,
+    show: showPlayAnimMenu,
+    hide: hidePlayAnimMenu,
+  } = useVisibility();
+
+  const {
+    visible: setDieTypeMenuVisible,
+    show: showSetDieTypeMenu,
+    hide: hideSetDieTypeMenu,
+  } = useVisibility();
+
   const { t } = useTranslation();
   return (
     <>
@@ -393,28 +414,71 @@ function BottomButtons({
               <Button onPress={() => pd.dispatch("blinkId")}>
                 {t("blinkId")}
               </Button>
-              <Button onPress={() => pd.dispatch("uploadProfile")}>
-                {t("setUserProfile")}
-              </Button>
-              <Button
-                onPress={() =>
-                  pd.dispatch("playAnimation", PrebuildAnimations.rainbow)
+              <Menu
+                visible={uploadProfileMenuVisible}
+                onDismiss={hideUploadProfileMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showUploadProfileMenu}>
+                    {t("setProfile")}
+                  </Button>
                 }
               >
-                {t("rainbow")}
-              </Button>
-              <Button
-                onPress={() =>
-                  pd.dispatch("playAnimation", PrebuildAnimations.fixedRainbow)
+                {ProfileTypes.map((profile) => (
+                  <Menu.Item
+                    key={profile}
+                    title={profile}
+                    onPress={() => {
+                      pd.dispatch("uploadProfile", profile);
+                      hideUploadProfileMenu();
+                    }}
+                  />
+                ))}
+              </Menu>
+
+              <Menu
+                visible={playAnimMenuVisible}
+                onDismiss={hidePlayAnimMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showPlayAnimMenu}>
+                    {t("playAnimation")}
+                  </Button>
                 }
               >
-                {t("fixedRainbow")}
-              </Button>
-              <Button
-                onPress={() => pd.dispatch("uploadProfile", "fixedRainbowD4")}
+                {Object.entries(PrebuildAnimations).map(([animName, anim]) => (
+                  <Menu.Item
+                    key={animName}
+                    title={animName}
+                    onPress={() => {
+                      pd.dispatch("playAnimation", anim);
+                    }}
+                  />
+                ))}
+              </Menu>
+              <Menu
+                visible={setDieTypeMenuVisible}
+                onDismiss={hideSetDieTypeMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showSetDieTypeMenu}>
+                    {t("setDieType")}
+                  </Button>
+                }
               >
-                {t("setFixedRainbowProfileD4")}
-              </Button>
+                {Object.entries(PixelDieTypeValues).map(
+                  ([dieTypeName, dieType]) => (
+                    <Menu.Item
+                      key={dieTypeName}
+                      title={dieTypeName}
+                      onPress={() => {
+                        pd.dispatch("setDieType", dieType as number);
+                        hideSetDieTypeMenu();
+                      }}
+                    />
+                  )
+                )}
+              </Menu>
               <Button
                 onPress={() =>
                   playKeyframes(pd).catch((error) =>
@@ -463,27 +527,6 @@ function BottomButtons({
                 ))}
               </Menu>
               <Button onPress={() => pd.dispatch("blink")}>{t("blink")}</Button>
-              <Button onPress={() => pd.dispatch("reprogramDefaultBehavior")}>
-                {t("setMinimalProfile")}
-              </Button>
-              <Button
-                onPress={() =>
-                  pd.dispatch(
-                    "playAnimation",
-                    PrebuildAnimations.rainbowAllFaces
-                  )
-                }
-              >
-                {t("rainbowAllFaces")}
-              </Button>
-              <Button
-                onPress={() => pd.dispatch("uploadProfile", "fixedRainbow")}
-              >
-                {t("setFixedRainbowProfile")}
-              </Button>
-              <Button onPress={() => pd.dispatch("playProfileAnimation", 0)}>
-                {t("playProfileAnim")}
-              </Button>
               <Button onPress={() => pd.dispatch("calibrate")}>
                 {t("calibrate")}
               </Button>

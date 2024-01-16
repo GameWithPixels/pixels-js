@@ -1,7 +1,7 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
 
 import AnimationBits from "./AnimationBits";
-import AnimationInstanceRainbow from "./AnimationInstanceRainbow";
+import AnimationInstanceCycle from "./AnimationInstanceCycle";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
 import VirtualDie from "../VirtualDie";
@@ -9,9 +9,9 @@ import VirtualDie from "../VirtualDie";
 /**
  * @category Animation
  */
-export default class AnimationRainbow implements AnimationPreset {
+export default class AnimationCycle implements AnimationPreset {
   @serializable(1)
-  readonly type: number = AnimationTypeValues.rainbow;
+  readonly type: number = AnimationTypeValues.cycle;
 
   @serializable(1)
   animFlags = 0;
@@ -34,10 +34,10 @@ export default class AnimationRainbow implements AnimationPreset {
   @serializable(1)
   cyclesTimes10 = 10;
 
-  createInstance(
-    bits: AnimationBits,
-    die: VirtualDie
-  ): AnimationInstanceRainbow {
-    return new AnimationInstanceRainbow(this, bits, die);
+  @serializable(2)
+  gradientTrackOffset = 0;
+
+  createInstance(bits: AnimationBits, die: VirtualDie): AnimationInstanceCycle {
+    return new AnimationInstanceCycle(this, bits, die);
   }
 }
