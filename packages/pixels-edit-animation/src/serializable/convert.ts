@@ -507,6 +507,8 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
               const act = action as EditActionSpeakText;
               actions[actType].push({
                 text: act.text,
+                pitch: act.pitch,
+                rate: act.rate,
               });
             }
             break;

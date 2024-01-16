@@ -54,6 +54,8 @@ export interface ProfileData extends UniqueNamedData {
     }[];
     speakText: {
       text: string;
+      pitch: number;
+      rate: number;
     }[];
   };
   rules: {
