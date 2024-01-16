@@ -1,5 +1,6 @@
 import { ScrollView, View } from "react-native";
 import {
+  Divider,
   Switch,
   Text as PaperText,
   TextProps,
@@ -45,25 +46,31 @@ function FirmwareInfoPage({
           <>
             <PaperText variant="titleLarge">Available Dice Software</PaperText>
             <View style={{ marginLeft: 10, gap: 10 }}>
-              <Text>Date: {date?.toLocaleDateString()}</Text>
-              <Text>Time: {date?.toLocaleTimeString()}</Text>
+              <Text>Date: {date.toUTCString()}</Text>
+              <Text>Timestamp: {date.getTime()}</Text>
               <Text>Firmware: {dfuBundle.firmware ? "yes" : "no"}</Text>
               <Text>Bootloader: {dfuBundle.bootloader ? "yes" : "no"}</Text>
             </View>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-            >
-              <Switch
-                value={updateBootloader}
-                onValueChange={(v) => {
-                  appDispatch(setUpdateBootloader(v));
-                }}
-                trackColor={{
-                  false: colors.onSurfaceDisabled,
-                  true: colors.primary,
-                }}
-              />
-              <Text>Also Update Bootloader</Text>
+            <Divider style={{ marginVertical: 5 }} />
+            <View style={{ gap: 10 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+              >
+                <Switch
+                  value={updateBootloader}
+                  onValueChange={(v) => {
+                    appDispatch(setUpdateBootloader(v));
+                  }}
+                  trackColor={{
+                    false: colors.onSurfaceDisabled,
+                    true: colors.primary,
+                  }}
+                />
+                <Text>Also Update Bootloader</Text>
+              </View>
+              <PaperText>
+                Don't turn this setting on unless you know what you're doing ;)
+              </PaperText>
             </View>
           </>
         ) : error ? (
