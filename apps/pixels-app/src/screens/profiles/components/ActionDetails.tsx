@@ -36,8 +36,14 @@ function getActionText(action: Profiles.Action): string {
   } else if (action instanceof Profiles.ActionSpeakText) {
     return action.text.length
       ? `Speak "${action.text}"${
-          action.pitch !== 1 ? ` with pitch ${action.pitch}%` : ""
-        }${action.rate !== 1 ? ` with rate ${action.rate}%` : ""}`
+          action.pitch !== 1
+            ? ` with pitch of ${(100 * action.pitch).toFixed(0)}%`
+            : ""
+        }${
+          action.rate !== 1
+            ? ` with rate of ${(100 * action.rate).toFixed(0)}%`
+            : ""
+        }`
       : "No text to speak";
   } else if (action instanceof Profiles.ActionMakeWebRequest) {
     return action.url.length

@@ -16,7 +16,7 @@ import * as Clipboard from "expo-clipboard";
 import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import {
   Button,
   Text,
@@ -24,6 +24,7 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
@@ -34,8 +35,9 @@ import {
   SliderWithValue,
   SliderWithValueProps,
 } from "~/components/SliderWithTitle";
-import { GradientButton } from "~/components/buttons";
+import { GradientButton, OutlineButton } from "~/components/buttons";
 import { buildActionURL } from "~/features/profiles";
+import { playRemoteAction } from "~/features/profiles/playRemoteAction";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
@@ -583,6 +585,7 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
 }: {
   action: Profiles.ActionSpeakText;
 }) {
+  const { colors } = useTheme();
   return (
     <>
       <Text variant="titleMedium">Text to Speak</Text>
@@ -610,6 +613,14 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         sentry-label="change-volume"
         onValueChange={(v) => runInAction(() => (action.rate = v))}
       />
+      <OutlineButton onPress={() => playRemoteAction(action)}>
+        Test Speech
+      </OutlineButton>
+      {Platform.OS === "android" && (
+        <Text style={{ color: colors.onSurfaceDisabled }}>
+          This feature only works if you have Google Play on your device.
+        </Text>
+      )}
     </>
   );
 });
@@ -621,6 +632,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   action: Profiles.ActionMakeWebRequest;
   profileName: string;
 }) {
+  const urlOpt = { profileName, pixelName: "pixel" } as const;
   const { colors } = useTheme();
   return (
     <>
@@ -638,12 +650,15 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
         The request will look like this:
       </Text>
       <Text style={{ color: colors.onSurfaceDisabled }}>
-        {buildActionURL(action, { name: profileName }, { name: "$dieName" })}
+        {buildActionURL(action, urlOpt)}
       </Text>
       <Text style={{ color: colors.onSurfaceDisabled }}>
-        Where "$dieName" is replaced by the name of the die that triggered this
-        action.
+        Where "{urlOpt.pixelName}" is replaced by the name of the die that
+        triggered this action.
       </Text>
+      <OutlineButton onPress={() => playRemoteAction(action, urlOpt)}>
+        Test Web Request
+      </OutlineButton>
     </>
   );
 });
@@ -699,53 +714,55 @@ export const ConfigureActionBottomSheet = observer(
         )}
         {...androidBottomSheetSliderFix}
       >
-        <ThemeProvider theme={theme}>
-          <BottomSheetScrollView
-            contentContainerStyle={{
-              paddingHorizontal: 20,
-              paddingBottom,
-              gap: 5,
-            }}
-          >
-            <Text variant="titleMedium" style={AppStyles.selfCentered}>
-              Configure Rule Action
-            </Text>
-            <Text
-              style={{
-                alignSelf: "center",
-                color: colors.onSurfaceDisabled,
+        <RootSiblingParent>
+          <ThemeProvider theme={theme}>
+            <BottomSheetScrollView
+              contentContainerStyle={{
+                paddingHorizontal: 20,
+                paddingBottom,
+                gap: 5,
               }}
             >
-              Slide down to close
-            </Text>
-            {condition instanceof Profiles.ConditionRolled && (
-              <ConfigureRolledCondition
-                condition={condition}
-                dieType={dieType}
-                unavailableFaces={unavailableFaces}
-              />
-            )}
-            {action instanceof Profiles.ActionPlayAnimation ? (
-              <ConfigurePlayAnimation action={action} dieType={dieType} />
-            ) : action instanceof Profiles.ActionPlayAudioClip ? (
-              <ConfigurePlayAudioClip action={action} />
-            ) : action instanceof Profiles.ActionSpeakText ? (
-              <ConfigureSpeakText action={action} />
-            ) : action instanceof Profiles.ActionMakeWebRequest ? (
-              <ConfigureMakeWebRequest
-                action={action}
-                profileName={profileName}
-              />
-            ) : null}
-            {condition instanceof Profiles.ConditionRolling ? (
-              <ConfigureRollingCondition condition={condition} />
-            ) : condition instanceof Profiles.ConditionIdle ? (
-              <ConfigureIdleCondition condition={condition} />
-            ) : condition instanceof Profiles.ConditionBattery ? (
-              <ConfigureBatteryCondition condition={condition} />
-            ) : null}
-          </BottomSheetScrollView>
-        </ThemeProvider>
+              <Text variant="titleMedium" style={AppStyles.selfCentered}>
+                Configure Rule Action
+              </Text>
+              <Text
+                style={{
+                  alignSelf: "center",
+                  color: colors.onSurfaceDisabled,
+                }}
+              >
+                Slide down to close
+              </Text>
+              {condition instanceof Profiles.ConditionRolled && (
+                <ConfigureRolledCondition
+                  condition={condition}
+                  dieType={dieType}
+                  unavailableFaces={unavailableFaces}
+                />
+              )}
+              {action instanceof Profiles.ActionPlayAnimation ? (
+                <ConfigurePlayAnimation action={action} dieType={dieType} />
+              ) : action instanceof Profiles.ActionPlayAudioClip ? (
+                <ConfigurePlayAudioClip action={action} />
+              ) : action instanceof Profiles.ActionSpeakText ? (
+                <ConfigureSpeakText action={action} />
+              ) : action instanceof Profiles.ActionMakeWebRequest ? (
+                <ConfigureMakeWebRequest
+                  action={action}
+                  profileName={profileName}
+                />
+              ) : null}
+              {condition instanceof Profiles.ConditionRolling ? (
+                <ConfigureRollingCondition condition={condition} />
+              ) : condition instanceof Profiles.ConditionIdle ? (
+                <ConfigureIdleCondition condition={condition} />
+              ) : condition instanceof Profiles.ConditionBattery ? (
+                <ConfigureBatteryCondition condition={condition} />
+              ) : null}
+            </BottomSheetScrollView>
+          </ThemeProvider>
+        </RootSiblingParent>
       </BottomSheetModal>
     );
   }

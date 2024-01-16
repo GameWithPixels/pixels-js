@@ -197,6 +197,8 @@ function updateAction(
       if (action instanceof Profiles.ActionSpeakText) {
         const data = actionSetData[type][index];
         action.text = data.text;
+        action.pitch = data.pitch;
+        action.rate = data.rate;
       }
       break;
     default:

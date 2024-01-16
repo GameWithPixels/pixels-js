@@ -8,13 +8,11 @@ import {
   Profiles,
   ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
-import * as Speech from "expo-speech";
 import React from "react";
-import Toast from "react-native-root-toast";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
-import { buildActionURL } from "~/features/profiles";
+import { playRemoteAction } from "~/features/profiles/playRemoteAction";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
   addPairedDie,
@@ -24,7 +22,6 @@ import {
 } from "~/features/store/pairedDiceSlice";
 import { readProfile } from "~/features/store/profiles";
 import { areArraysEqual, notEmpty, unsigned32ToHex } from "~/features/utils";
-import { ToastSettings } from "~/themes";
 
 function stableFilterPixels(
   pairedDice: readonly PairedDie[],
@@ -71,49 +68,14 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
     const profile = profileUuid && readProfile(profileUuid, state.library);
     if (profile) {
       const action = profile.getRemoteAction(actionId);
-      if (action instanceof Profiles.ActionMakeWebRequest) {
+      if (action instanceof Profiles.ActionRunOnDevice) {
         console.log(
-          `Running remote action for web request with id=${actionId} at URL "${action.url}" with value "${action.value}"`
+          `Got remote action with id ${actionId} of type "${action.type}`
         );
-        const url = buildActionURL(action, profile, pixel);
-        const toastMsg = `\n\nURL: ${url}\n\n`;
-        fetch(url, { method: "POST" })
-          .then(({ status }) => {
-            console.log(
-              `Action web request to ${action.url} returned with status ${status}`
-            );
-            Toast.show(
-              `Web Request Send for ${pixel.name}!${toastMsg}Status: ${status}`,
-              ToastSettings
-            );
-          })
-          .catch((e: Error) => {
-            console.log(
-              `Action web request to ${action.url} failed with error ${e.message}`
-            );
-            Toast.show(
-              `Failed Sending Web Request for ${pixel.name}!${toastMsg}Error: ${
-                e.message ?? "Unknown"
-              }`,
-              { ...ToastSettings, duration: Toast.durations.LONG }
-            );
-          });
-      } else if (action instanceof Profiles.ActionSpeakText) {
-        const settings = { pitch: action.pitch, rate: action.rate } as const;
-        console.log(
-          `Running remote action for speak text with id=${actionId} with text "${
-            action.text
-          }" and settings=${JSON.stringify(settings)}`
-        );
-        if (action.text?.trim()?.length) {
-          Toast.show(
-            `Playing Text to Speak action.\nText: ${action.text}\nPitch: ${action.pitch}, rate: ${action.rate}`,
-            ToastSettings
-          );
-          Speech.speak(action.text, settings);
-        } else {
-          console.log("No text to speak");
-        }
+        playRemoteAction(action, {
+          profileName: profile.name,
+          pixelName: pixel.name,
+        });
       } else {
         console.warn(
           `Ignoring running action with id ${actionId} for profile ${
