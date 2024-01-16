@@ -36,10 +36,6 @@ function pushAnim(anim: Profiles.Animation, library: LibraryData) {
 export function createDefault(): LibraryData {
   // Get standard profiles from JSON
   const library = jsonConvert(StandardProfilesJson);
-  // Add a quote to identify those old animations
-  for (const anim of Object.values(library.animations).flat()) {
-    anim.name += "'";
-  }
   // Add factory profiles and animations
   const animations = createFactoryAnimations();
   const factoryProfiles = createFactoryProfiles(animations);
