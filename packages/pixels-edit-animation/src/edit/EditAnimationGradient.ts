@@ -59,4 +59,8 @@ export default class EditAnimationGradient extends EditAnimation {
       gradient: this.gradient?.duplicate(),
     });
   }
+
+  collectGradients(): EditRgbGradient[] {
+    return this.gradient ? [this.gradient] : [];
+  }
 }

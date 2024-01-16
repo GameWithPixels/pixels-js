@@ -73,10 +73,10 @@ export default class EditAnimationGradientPattern extends EditAnimation {
   }
 
   collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {
-    if (this.pattern) {
-      return { grayscale: [this.pattern] };
-    } else {
-      return {};
-    }
+    return this.pattern ? { grayscale: [this.pattern] } : {};
+  }
+
+  collectGradients(): EditRgbGradient[] {
+    return this.gradient ? [this.gradient] : [];
   }
 }

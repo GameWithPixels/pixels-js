@@ -11,6 +11,7 @@ import {
 
 import EditDataSet from "./EditDataSet";
 import EditPattern from "./EditPattern";
+import EditRgbGradient from "./EditRgbGradient";
 import Editable from "./Editable";
 import { widget, range, unit, name, observable, values } from "./decorators";
 
@@ -69,5 +70,9 @@ export default abstract class EditAnimation extends Editable {
 
   collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {
     return {};
+  }
+
+  collectGradients(): EditRgbGradient[] {
+    return [];
   }
 }

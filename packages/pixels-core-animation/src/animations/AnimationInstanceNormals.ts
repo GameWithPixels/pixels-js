@@ -1,8 +1,7 @@
 import AnimationInstance from "./AnimationInstance";
-import AnimationNormals, {
-  NormalsColorOverrideTypeValues,
-} from "./AnimationNormals";
+import AnimationNormals from "./AnimationNormals";
 import { Constants } from "./Constants";
+import { NormalsColorOverrideTypeValues } from "./NormalsColorOverrideType";
 import {
   Vec3,
   vec3,
@@ -59,7 +58,7 @@ export default class AnimationInstanceNormals extends AnimationInstance {
   private baseColorParam = 0;
 
   get preset(): AnimationNormals {
-    return this.preset as AnimationNormals;
+    return this.animationPreset as AnimationNormals;
   }
 
   start(startTime: number): void {
@@ -251,7 +250,6 @@ export default class AnimationInstanceNormals extends AnimationInstance {
         intensity
       );
     }
-
     return ledCount;
   }
 

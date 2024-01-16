@@ -6,7 +6,7 @@ import AnimationKeyframed from "./AnimationKeyframed";
  */
 export default class AnimationInstanceKeyframed extends AnimationInstance {
   get preset(): AnimationKeyframed {
-    return this.preset as AnimationKeyframed;
+    return this.animationPreset as AnimationKeyframed;
   }
 
   /// <summary>

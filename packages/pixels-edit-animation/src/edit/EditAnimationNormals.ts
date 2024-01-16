@@ -2,8 +2,8 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationNormals,
+  NormalsColorOverrideTypeValues,
 } from "@systemic-games/pixels-core-animation";
-import { NormalsColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNormals";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAnimation, { EditAnimationParams } from "./EditAnimation";
@@ -146,6 +146,20 @@ export default class EditAnimationNormals extends EditAnimation {
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationNormals({ ...this, uuid });
+    return new EditAnimationNormals({
+      ...this,
+      uuid,
+      gradient: this.gradient?.duplicate(),
+      gradientAlongAxis: this.gradientAlongAxis?.duplicate(),
+      gradientAlongAngle: this.gradientAlongAngle?.duplicate(),
+    });
+  }
+
+  collectGradients(): EditRgbGradient[] {
+    const gradients: EditRgbGradient[] = [];
+    this.gradient && gradients.push(this.gradient);
+    this.gradientAlongAxis && gradients.push(this.gradientAlongAxis);
+    this.gradientAlongAngle && gradients.push(this.gradientAlongAngle);
+    return gradients;
   }
 }

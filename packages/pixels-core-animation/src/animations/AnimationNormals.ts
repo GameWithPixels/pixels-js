@@ -1,27 +1,11 @@
-import { enumValue, serializable } from "@systemic-games/pixels-core-utils";
+import { serializable } from "@systemic-games/pixels-core-utils";
 
 import AnimationBits from "./AnimationBits";
 import AnimationInstanceNormals from "./AnimationInstanceNormals";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import { NormalsColorOverrideTypeValues } from "./NormalsColorOverrideType";
 import VirtualDie from "../VirtualDie";
-
-/**
- * @category Animation Runtime Color Override type
- * @enum
- */
-export const NormalsColorOverrideTypeValues = {
-  none: enumValue(0),
-  faceToGradient: enumValue(),
-  faceToRainbowWheel: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link NormalsColorOverrideTypeValues}.
- * @category Animation
- */
-export type NormalsColorOverrideType =
-  keyof typeof NormalsColorOverrideTypeValues;
 
 /**
  * @category Animation

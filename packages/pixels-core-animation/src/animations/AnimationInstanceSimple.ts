@@ -9,7 +9,7 @@ export default class AnimationInstanceSimple extends AnimationInstance {
   private _rgb = 0;
 
   get preset(): AnimationSimple {
-    return this.preset as AnimationSimple;
+    return this.animationPreset as AnimationSimple;
   }
 
   start(startTime: number): void {

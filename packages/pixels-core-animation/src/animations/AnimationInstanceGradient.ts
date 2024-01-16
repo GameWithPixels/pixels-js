@@ -6,7 +6,7 @@ import AnimationInstance from "./AnimationInstance";
  */
 export default class AnimationInstanceGradient extends AnimationInstance {
   get preset(): AnimationGradient {
-    return this.preset as AnimationGradient;
+    return this.animationPreset as AnimationGradient;
   }
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {

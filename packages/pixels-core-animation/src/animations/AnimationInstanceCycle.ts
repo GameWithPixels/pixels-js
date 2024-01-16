@@ -7,7 +7,7 @@ import { Color32Utils } from "../color";
  */
 export default class AnimationInstanceCycle extends AnimationInstance {
   get preset(): AnimationCycle {
-    return this.preset as AnimationCycle;
+    return this.animationPreset as AnimationCycle;
   }
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
@@ -44,7 +44,6 @@ export default class AnimationInstanceCycle extends AnimationInstance {
         retCount++;
       }
     }
-
     return retCount;
   }
 

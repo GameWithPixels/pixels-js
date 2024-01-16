@@ -29,6 +29,7 @@ import {
   AnimationSetData,
   AnimationFlashesData,
   AnimationNormalsData,
+  AnimationCycleData,
 } from "./animations";
 import { fromColor, toColor } from "./color";
 import { GradientData } from "./gradient";
@@ -44,6 +45,7 @@ import {
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditAnimation,
+  EditAnimationCycle,
   EditAnimationGradient,
   EditAnimationGradientPattern,
   EditAnimationKeyframed,
@@ -322,6 +324,14 @@ export function toAnimation<T extends keyof AnimationSetData>(
         gradientAlongAngle: checkGetGradient(animData.gradientAlongAngleUuid),
         mainGradientColorType:
           NormalsColorOverrideTypeValues[animData.mainGradientColorType],
+      });
+    }
+    case "cycle": {
+      const animData = data as AnimationCycleData;
+      return new EditAnimationCycle({
+        ...animData,
+        animFlags,
+        gradient: checkGetGradient(animData.gradientUuid),
       });
     }
     default:
@@ -677,7 +687,26 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
         },
       };
     }
-    case "cycle":
+    case "cycle": {
+      const anim = animation as EditAnimationCycle;
+      return {
+        type,
+        data: {
+          uuid: anim.uuid,
+          name: anim.name,
+          duration: anim.duration,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
+          count: anim.count,
+          cycles: anim.cycles,
+          fade: anim.fade,
+          intensity: anim.intensity,
+          faces: anim.faces,
+          gradientUuid: anim.gradient?.uuid,
+        },
+      };
+    }
     case "name":
       throw Error(`Unsupported animation type: ${type}`);
     default:

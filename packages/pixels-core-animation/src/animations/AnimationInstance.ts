@@ -19,7 +19,7 @@ export default abstract class AnimationInstance {
     return this._animationPreset.duration;
   }
 
-  protected get preset(): AnimationPreset {
+  protected get animationPreset(): AnimationPreset {
     return this._animationPreset;
   }
 

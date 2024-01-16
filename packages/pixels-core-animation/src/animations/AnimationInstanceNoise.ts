@@ -1,6 +1,7 @@
 import AnimationInstance from "./AnimationInstance";
-import AnimationNoise, { NoiseColorOverrideTypeValues } from "./AnimationNoise";
+import AnimationNoise from "./AnimationNoise";
 import { Constants } from "./Constants";
+import { NoiseColorOverrideTypeValues } from "./NoiseColorOverrideType";
 import VirtualDie from "../VirtualDie";
 import { Color32Utils } from "../color";
 import { randomUInt32 } from "../randomUInt32";
@@ -25,7 +26,7 @@ function computeBaseParam(type: number, virtualDie: VirtualDie): number {
  */
 export default class AnimationInstanceNoise extends AnimationInstance {
   get preset(): AnimationNoise {
-    return this.preset as AnimationNoise;
+    return this.animationPreset as AnimationNoise;
   }
 
   private nextBlinkTime = 0;
@@ -196,7 +197,6 @@ export default class AnimationInstanceNoise extends AnimationInstance {
       }
       // Else skip
     }
-
     return retCount;
   }
 

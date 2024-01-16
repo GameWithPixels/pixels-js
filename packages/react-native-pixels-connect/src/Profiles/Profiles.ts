@@ -30,6 +30,7 @@ export {
   EditActionPlayAudioClip as ActionPlayAudioClip,
   EditActionSpeakText as ActionSpeakText,
   EditAnimation as Animation,
+  EditAnimationCycle as AnimationCycle,
   EditAnimationGradient as AnimationGradient,
   EditAnimationKeyframed as AnimationPattern,
   EditAnimationGradientPattern as AnimationGradientPattern,

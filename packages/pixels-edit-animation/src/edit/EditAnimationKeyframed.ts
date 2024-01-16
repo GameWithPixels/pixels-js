@@ -45,10 +45,6 @@ export default class EditAnimationKeyframed extends EditAnimation {
   }
 
   collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {
-    if (this.pattern) {
-      return { rgb: [this.pattern] };
-    } else {
-      return {};
-    }
+    return this.pattern ? { rgb: [this.pattern] } : {};
   }
 }

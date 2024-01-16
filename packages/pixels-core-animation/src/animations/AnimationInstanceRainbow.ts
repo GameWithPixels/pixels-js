@@ -8,7 +8,7 @@ import { Color32Utils } from "../color";
  */
 export default class AnimationInstanceRainbow extends AnimationInstance {
   get preset(): AnimationRainbow {
-    return this.preset as AnimationRainbow;
+    return this.animationPreset as AnimationRainbow;
   }
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
@@ -50,7 +50,6 @@ export default class AnimationInstanceRainbow extends AnimationInstance {
       color = Color32Utils.rainbowWheel(wheelPos, intensity);
       retCount = this.setColor(color, preset.faceMask, retIndices, retColors32);
     }
-
     return retCount;
   }
 

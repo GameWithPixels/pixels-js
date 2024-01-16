@@ -9,7 +9,7 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
   private _rgb = 0;
 
   get preset(): AnimationGradientPattern {
-    return this.preset as AnimationGradientPattern;
+    return this.animationPreset as AnimationGradientPattern;
   }
 
   start(startTime: number): void {
