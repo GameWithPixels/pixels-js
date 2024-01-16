@@ -15,7 +15,7 @@ export function playRemoteAction(
 ): void {
   if (action instanceof Profiles.ActionMakeWebRequest) {
     const url = buildActionURL(action, opt);
-    console.log(`Play Web Request to URL ${url}`);
+    console.log(`Play Web Request: ${url}`);
     const toastMsg = `\n\nURL: ${url}\n\n`;
     const forPixelMsg = opt?.pixelName ? " for " + opt.pixelName : "";
     fetch(url, { method: "POST" })
@@ -40,7 +40,7 @@ export function playRemoteAction(
         );
       });
   } else if (action instanceof Profiles.ActionSpeakText) {
-    console.log(`Play Speak Text "${action.text}`);
+    console.log(`Play Speak Text: ${action.text}`);
     if (action.text?.trim()?.length) {
       Toast.show(
         `Playing Text to Speak action.\nText: ${action.text}`,
