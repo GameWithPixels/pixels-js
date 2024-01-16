@@ -5,9 +5,12 @@ import {
   combineFlags,
 } from "@systemic-games/pixels-core-utils";
 
-import { DieType } from "./DieType";
+import { PixelDieType } from "./PixelDieType";
 
-export function getFaceForLEDIndex(dieType: DieType, ledIndex: number): number {
+export function getFaceForLEDIndex(
+  dieType: PixelDieType,
+  ledIndex: number
+): number {
   switch (dieType) {
     case "d6pipped":
       //  0   --1--   ----2----   ------3------   ---------4--------  ----------5----------- // Face index
@@ -31,7 +34,7 @@ export function getFaceForLEDIndex(dieType: DieType, ledIndex: number): number {
   }
 }
 
-export function getTopFace(dieType: DieType): number {
+export function getTopFace(dieType: PixelDieType): number {
   switch (dieType) {
     case "d20":
       return 19;
@@ -47,7 +50,7 @@ export function getTopFace(dieType: DieType): number {
   }
 }
 
-export function getFaceCount(dieType: DieType): number {
+export function getFaceCount(dieType: PixelDieType): number {
   switch (dieType) {
     case "d20":
       return 20;
@@ -63,7 +66,7 @@ export function getFaceCount(dieType: DieType): number {
   }
 }
 
-export function getLEDCount(dieType: DieType): number {
+export function getLEDCount(dieType: PixelDieType): number {
   switch (dieType) {
     case "d20":
       return 20;
@@ -102,7 +105,7 @@ function getFaceMaskPd6(faceValue: number): number {
  */
 export function getFaceMask(
   faceValueOrFaceList: number | number[],
-  dieType: DieType
+  dieType: PixelDieType
 ): number {
   if (typeof faceValueOrFaceList === "number") {
     switch (dieType) {

@@ -10,7 +10,7 @@ import EditAnimation, { EditAnimationParams } from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
-import { widget, name, observable, range } from "./decorators";
+import { widget, name, observable, range, values } from "./decorators";
 
 export default class EditAnimationNormals extends EditAnimation {
   readonly type = "normals";
@@ -62,6 +62,7 @@ export default class EditAnimationNormals extends EditAnimation {
 
   @widget("toggle")
   @name("Override color based on face")
+  @values(NormalsColorOverrideTypeValues)
   @observable
   mainGradientColorType: number;
 

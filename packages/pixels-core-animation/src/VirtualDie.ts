@@ -1,10 +1,10 @@
-import { DieType } from "./DieType";
+import { PixelDieType } from "./PixelDieType";
 import { getLEDCount, getFaceCount, getTopFace } from "./faceUtils";
 
 export default class VirtualDie {
   private _currentFace: number;
 
-  readonly dieType: DieType;
+  readonly dieType: PixelDieType;
   readonly ledCount: number;
   readonly faceCount: number;
   readonly topFace: number;
@@ -13,7 +13,7 @@ export default class VirtualDie {
     return this._currentFace;
   }
 
-  constructor(dieType: DieType = "d20") {
+  constructor(dieType: PixelDieType = "d20") {
     this.dieType = dieType;
     this._currentFace = 0;
     this.ledCount = getLEDCount(dieType);

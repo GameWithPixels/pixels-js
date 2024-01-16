@@ -1,4 +1,4 @@
-import { DieType } from "./DieType";
+import { PixelDieType } from "./PixelDieType";
 import { Vec3 } from "./Vec3";
 
 const twentySidedNormals = [
@@ -72,7 +72,9 @@ const sixSidedNormals = [
   { xTimes1000: 1000, yTimes1000: 0, zTimes1000: 0 },
 ] as const;
 
-export function getBaseNormals(dieType: DieType): readonly Readonly<Vec3>[] {
+export function getBaseNormals(
+  dieType: PixelDieType
+): readonly Readonly<Vec3>[] {
   switch (dieType) {
     case "d20":
       return twentySidedNormals;
