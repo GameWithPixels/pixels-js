@@ -67,9 +67,10 @@ function TextInput({
         value={value}
         onChangeText={onChangeText}
         style={{
+          flex: 1,
           flexGrow: 1,
-          minHeight: 56, // MD3_MIN_HEIGHT,
-          paddingHorizontal: 16, // MD3_INPUT_PADDING_HORIZONTAL,
+          paddingVertical: 16, // MD3_MIN_HEIGHT = 56,
+          paddingHorizontal: 16, // MD3_INPUT_PADDING_HORIZONTAL
           color: colors.onSurfaceVariant,
           backgroundColor: colors.elevation.level0,
           borderWidth: 1,
