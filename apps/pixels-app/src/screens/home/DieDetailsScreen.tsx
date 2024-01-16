@@ -32,12 +32,6 @@ import {
 import { DieDetailsScreenProps } from "~/navigation";
 import { Colors } from "~/themes";
 
-export function generateRollStats(pixel: Pixel): number[] {
-  return Array(pixel.dieFaceCount)
-    .fill(0)
-    .map(() => 10 + Math.round(15 * Math.random()));
-}
-
 function SectionTitle({ children }: React.PropsWithChildren) {
   return (
     <Text variant="titleMedium" style={{ paddingTop: 8, marginBottom: -2 }}>
@@ -107,8 +101,8 @@ export function DieStats({
   const [viewType, setViewType] = React.useState<"session" | "lifetime">(
     "session"
   );
-  const sessionValues = React.useMemo(() => generateRollStats(pixel), [pixel]);
-  const lifetimeValues = React.useMemo(() => generateRollStats(pixel), [pixel]);
+  const sessionValues = React.useMemo(() => [1, 2, 3, 4, 5], []);
+  const lifetimeValues = React.useMemo(() => [1, 2, 3, 4, 5], []);
   const values = viewType === "session" ? sessionValues : lifetimeValues;
   const isSession = viewType === "session";
   const [viewMode, setViewMode] = React.useState<StatsViewMode>("bars");

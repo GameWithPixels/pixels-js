@@ -235,7 +235,6 @@ export function getRollStateLabel(state?: PixelRollState): string {
     case "onFace":
       return "On Face";
     case "handling":
-      return "Handling";
     case "rolling":
       return "Rolling";
     case "crooked":

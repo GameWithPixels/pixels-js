@@ -1,4 +1,4 @@
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -21,7 +21,6 @@ import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
 import { ProfileDieRenderer } from "~/components/profile";
-import { transferProfile } from "~/features/dice";
 import {
   EditorAnimationFlags,
   EditorRollRulesTypes,
@@ -68,6 +67,7 @@ function TransferProfileButton({ onPress }: { onPress: () => void }) {
   const profileUuid = useAppSelector(
     (state) => state.diceRolls.transfer?.profileUuid
   );
+  const { colors } = useTheme();
   return (
     <View>
       <GradientButton
@@ -82,6 +82,9 @@ function TransferProfileButton({ onPress }: { onPress: () => void }) {
           style={{ position: "absolute", alignSelf: "center", top: 5 }}
         />
       )}
+      <Text style={{ marginVertical: 5, color: colors.onSurfaceDisabled }}>
+        Activating this profile will also save your changes.
+      </Text>
     </View>
   );
 }
@@ -89,15 +92,15 @@ function TransferProfileButton({ onPress }: { onPress: () => void }) {
 export function EditProfile({
   profileUuid,
   unnamed,
-  showActionButtons,
   onEditRule,
+  onTransfer,
   style,
   ...props
 }: {
   profileUuid: string;
   unnamed?: boolean;
-  showActionButtons?: boolean;
   onEditRule: EditRuleCallback;
+  onTransfer?: (pixel: Pixel) => void;
 } & ViewProps) {
   const appDispatch = useAppDispatch();
   const showHelp = useAppSelector((state) => state.appSettings.showProfileHelp);
@@ -116,7 +119,7 @@ export function EditProfile({
         <View style={{ width: "70%", aspectRatio: 1.4, alignSelf: "center" }}>
           <ProfileDieRenderer profile={profile} pedestal />
         </View>
-        {showActionButtons && (
+        {onTransfer && (
           <View
             style={{
               flexDirection: "row",
@@ -182,7 +185,7 @@ export function EditProfile({
         visible={pickDieVisible}
         onDismiss={(pixel) => {
           if (pixel) {
-            transferProfile(pixel, profile);
+            onTransfer?.(pixel);
           }
           setPickDieVisible(false);
         }}

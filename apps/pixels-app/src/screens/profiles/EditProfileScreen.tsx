@@ -14,11 +14,13 @@ import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
+import { transferProfile } from "~/features/dice";
 import {
   useCommitEditableProfile,
   useConfirmActionSheet,
   useEditableProfile,
   useEditProfilesList,
+  useProfile,
 } from "~/hooks";
 import { EditProfileScreenProps } from "~/navigation";
 
@@ -51,11 +53,9 @@ const Header = observer(function Header({
     onDiscardChanges
   );
 
-  const initialLastChanged = React.useMemo(
-    () => profile.lastChanged,
-    [profile]
-  );
-  const isModified = profile.lastChanged !== initialLastChanged;
+  const initialLastChanged = useProfile(profile.uuid).lastChanged;
+  const isModified =
+    profile.lastChanged.getTime() !== initialLastChanged.getTime();
 
   return (
     <PageHeader
@@ -195,9 +195,12 @@ function EditProfilePage({
         automaticallyAdjustKeyboardInsets
       >
         <EditProfile
-          showActionButtons
           profileUuid={profileUuid}
           onEditRule={editRule}
+          onTransfer={(pixel) => {
+            commitProfile(profileUuid);
+            transferProfile(pixel, profile);
+          }}
         />
       </GHScrollView>
     </View>
