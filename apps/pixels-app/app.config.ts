@@ -9,7 +9,7 @@ const config = {
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
     runtimeVersion: "49.2", // Major is Expo version, minor is native code revision
-    version: "2.0.11", // Version number must have 3 parts
+    version: "2.0.12", // Version number must have 3 parts
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
@@ -29,7 +29,7 @@ const config = {
       bundleIdentifier: prod
         ? "com.systemic-games.pixels"
         : "com.systemicgames.pixelsappdev",
-      buildNumber: "2011",
+      buildNumber: "2012",
       supportsTablet: false,
       infoPlist: {
         // NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
@@ -46,20 +46,19 @@ const config = {
       package: prod
         ? "com.SystemicGames.Pixels"
         : "com.systemicgames.pixelsappdev",
-      versionCode: 2011,
+      versionCode: 2012,
       adaptiveIcon: {
         foregroundImage: prod
           ? "./assets/images/adaptive-icon.png"
           : "./assets/images/adaptive-icon-dev.png",
         backgroundColor: "#222222",
       },
-      // permissions: ["android.permission.CAMERA"],
+      blockedPermissions: ["android.permission.SYSTEM_ALERT_WINDOW"],
     },
     plugins: [
       "./withAndroidPermissions",
       "./withAsyncStorageDbSize",
       "expo-localization",
-      //"react-native-vision-camera",
       "sentry-expo",
       [
         "expo-build-properties",
