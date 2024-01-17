@@ -32,7 +32,7 @@ const config = {
       buildNumber: "2009",
       supportsTablet: false,
       infoPlist: {
-        NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
+        // NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
         NSBluetoothPeripheralUsageDescription:
           "Allow $(PRODUCT_NAME) to use Bluetooth to connect to Pixels dice",
         NSBluetoothAlwaysUsageDescription:
@@ -53,7 +53,7 @@ const config = {
           : "./assets/images/adaptive-icon-dev.png",
         backgroundColor: "#222222",
       },
-      permissions: ["android.permission.CAMERA"],
+      // permissions: ["android.permission.CAMERA"],
     },
     plugins: [
       "./withAndroidPermissions",
