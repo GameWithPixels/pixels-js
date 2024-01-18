@@ -66,7 +66,10 @@ export function ProfilePicker({
             />
           </>
         ) : (
-          <Text variant="bodyMedium" style={{ marginTop: 10 }}>
+          <Text
+            variant="bodyLarge"
+            style={{ marginTop: 10, marginHorizontal: 10 }}
+          >
             There are no profile
             {dieType ? ` for ${getDieTypeLabel(dieType)}'s` : ""}, try creating
             a new one.
