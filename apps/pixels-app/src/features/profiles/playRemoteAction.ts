@@ -30,11 +30,11 @@ export function playRemoteAction(
       })
       .catch((e: Error) => {
         console.log(
-          `Action web request to ${url} failed with error ${e.message}`
+          `Action web request to ${url} failed with error ${e.message ?? e}`
         );
         Toast.show(
           `Failed Sending Web Request${forPixelMsg}!${toastMsg}Error: ${
-            e.message ?? "Unknown"
+            e.message ?? e
           }`,
           { ...ToastSettings, duration: Toast.durations.LONG }
         );

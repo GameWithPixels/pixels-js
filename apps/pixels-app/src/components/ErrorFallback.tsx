@@ -24,7 +24,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
         variant="bodyLarge"
         style={{ color: colors.error, marginVertical: 30 }}
       >
-        {error.message}
+        {error.message ?? error}
       </Text>
       <Button
         mode="contained-tonal"
