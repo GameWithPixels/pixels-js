@@ -4,7 +4,7 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import { Color, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import {
@@ -37,14 +37,12 @@ export function EditGradientBottomSheet({
     () =>
       keyframes.filter(
         (kf) =>
-          (kf.time !== 0 && kf.time !== 1) ||
-          !kf.color.equals(Profiles.Color.black)
+          (kf.time !== 0 && kf.time !== 1) || !kf.color.equals(Color.black)
       ),
     [keyframes]
   );
   const [selectedKeyframe, setSelectedKeyframe] = React.useState(0);
-  const color =
-    filteredKeyframes[selectedKeyframe]?.color ?? Profiles.Color.black;
+  const color = filteredKeyframes[selectedKeyframe]?.color ?? Color.black;
 
   // Reset selected keyframe when sheet is opened
   React.useEffect(() => setSelectedKeyframe(0), [visible]);
@@ -140,7 +138,7 @@ export function EditGradientBottomSheet({
                 const newKeyframes = [...keyframes];
                 newKeyframes[i] = {
                   ...newKeyframes[i],
-                  color: new Profiles.Color(c),
+                  color: new Color(c),
                 };
                 onChangeKeyframes(newKeyframes);
               }

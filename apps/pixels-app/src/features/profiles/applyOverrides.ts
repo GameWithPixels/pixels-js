@@ -18,9 +18,9 @@ export function applyProfileOverrides(
 }
 
 export function applyActionOverrides(
-  act: Readonly<Profiles.ActionPlayAnimation>
+  action: Readonly<Profiles.ActionPlayAnimation>
 ): Profiles.Animation | undefined {
-  const originalAnim = act.animation;
+  const originalAnim = action.animation;
   if (originalAnim) {
     let anim = originalAnim;
     const getAnim = () => {
@@ -29,30 +29,35 @@ export function applyActionOverrides(
       }
       return anim!;
     };
-    if (act.duration !== undefined) {
-      getAnim().duration = act.duration;
+    if (action.duration !== undefined) {
+      getAnim().duration = action.duration;
     }
-    if (act.fade !== undefined) {
+    if (action.fade !== undefined) {
       const anim = getAnim();
-      if ("fade" in anim) {
-        anim.fade = act.fade;
+      if ("fade" in anim && typeof anim.fade === "number") {
+        (anim.fade as number) = action.fade;
       }
     }
-    if (act.intensity !== undefined) {
+    if (action.intensity !== undefined) {
       const anim = getAnim();
-      if ("intensity" in anim) {
-        anim.intensity = act.intensity;
+      if ("intensity" in anim && typeof anim.intensity === "number") {
+        (anim.intensity as number) = action.intensity;
       }
     }
-    if (act.colors.length) {
+    if (action.colors.length) {
       const anim = getAnim();
-      if ("color" in anim) {
-        anim.color = act.colors[0].duplicate();
-      } else if ("gradient" in anim) {
-        const gradient = anim.gradient as Profiles.RgbGradient;
-        if (gradient.keyframes.length === act.colors.length) {
+      if ("color" in anim && anim.color instanceof Profiles.FaceColor) {
+        (anim.color as Profiles.FaceColor) = new Profiles.FaceColor(
+          action.colors[0].duplicate()
+        );
+      } else if (
+        "gradient" in anim &&
+        anim.gradient instanceof Profiles.RgbGradient
+      ) {
+        const gradient = anim.gradient;
+        if (gradient.keyframes.length === action.colors.length) {
           anim.gradient = new Profiles.RgbGradient({
-            keyframes: act.colors.map((c, i) => {
+            keyframes: action.colors.map((c, i) => {
               const kf = gradient.keyframes[i].duplicate();
               kf.color = c.duplicate();
               return kf;
