@@ -82,7 +82,7 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
             profile.name
           } because ${
             action
-              ? "the action is not a web request"
+              ? "the action is not a web oncerequest"
               : "there is no such action"
           }`
         );
@@ -91,11 +91,12 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
   };
 }
 
-// TODO this hook works if only used once in the app
+// TODO this hook works if only used  in the app
 export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   pixels: readonly Pixel[];
   availablePixels: readonly ScannedPixelNotifier[];
-  missingDice: readonly Readonly<PairedDie>[];
+  missingDice: readonly Readonly<Readonly<PairedDie>>[];
+  allDisconnected: boolean;
   pairDie: (pixel: PixelInfo) => void;
   unpairDie: (pixel: PixelInfo) => void;
 } {
@@ -106,6 +107,10 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
   const lastPixelsRef = React.useRef<readonly Pixel[]>([]);
   lastPixelsRef.current = stableFilterPixels(pairedDice, lastPixelsRef.current);
   const pixels = lastPixelsRef.current;
+  const [allDisconnected, setAllDisconnected] = React.useState(
+    pixels.every((p) => p.status === "disconnected")
+  );
+
   const activePixelsRef = React.useRef(new Map<number, () => void>());
   React.useEffect(() => {
     const isActive = (pixelId: number) =>
@@ -116,6 +121,9 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
         pixelLog(pixel, "Die has become active");
         // Add event listeners
         const onStatus = (status: PixelStatus) => {
+          setAllDisconnected(
+            lastPixelsRef.current.every((p) => p.status === "disconnected")
+          );
           if (status === "disconnected") {
             // TODO Delay reconnecting because our previous call to connect() might still be cleaning up
             scheduleConnect(pixel, 1000, isActive);
@@ -235,7 +243,14 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
     },
     [appDispatch]
   );
-  return { pixels, availablePixels, missingDice, pairDie, unpairDie };
+  return {
+    pixels,
+    availablePixels,
+    missingDice,
+    allDisconnected,
+    pairDie,
+    unpairDie,
+  };
 }
 
 export function usePairedPixel(pixelId: number): Pixel {

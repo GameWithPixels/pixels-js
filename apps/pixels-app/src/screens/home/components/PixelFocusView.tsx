@@ -221,16 +221,19 @@ export function PixelFocusView({
   const showNewPixelsAppBanner = useAppSelector(
     (state) => state.appSettings.showNewPixelsAppBanner
   );
+  const wasBannerInitiallyVisible = React.useState(showNewPixelsAppBanner)[0];
 
   const disabled = status !== "ready";
   return (
     <>
       <View {...props} style={[{ gap: 10 }, style]}>
-        <NewPixelAppBanner
-          visible={showNewPixelsAppBanner}
-          collapsedMarginBottom={-10}
-          onHide={() => appDispatch(setShowNewPixelsAppBanner(false))}
-        />
+        {wasBannerInitiallyVisible && (
+          <NewPixelAppBanner
+            visible={showNewPixelsAppBanner}
+            collapsedMarginBottom={-10}
+            onHide={() => appDispatch(setShowNewPixelsAppBanner(false))}
+          />
+        )}
         <Pressable
           sentry-label="header-bar-select"
           style={{

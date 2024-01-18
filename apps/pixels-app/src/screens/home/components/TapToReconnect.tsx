@@ -28,13 +28,13 @@ function getMissingDiceText(
 export function TapToReconnect({
   scannerStatus,
   missingDice,
-  hasConnectedDie,
+  allDisconnected,
   onPress,
   ...props
 }: {
   scannerStatus: PixelScannerStatus;
   missingDice: readonly { name: string }[];
-  hasConnectedDie: boolean;
+  allDisconnected?: boolean;
   onPress: () => void;
 } & ViewProps) {
   // Reconnect animation
@@ -56,7 +56,7 @@ export function TapToReconnect({
 
   return (
     <View {...props}>
-      {hasConnectedDie ? (
+      {!allDisconnected ? (
         <Text style={{ marginLeft: 8 }}>{getMissingDiceText(missingDice)}</Text>
       ) : (
         <Card style={{ width: "100%", marginBottom: 10 }}>
