@@ -10,6 +10,7 @@ import { EditProfile } from "./components/EditProfile";
 import { ProfileMenu } from "./components/ProfileMenu";
 import { RuleIndex } from "./components/RuleCard";
 
+import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
@@ -56,6 +57,11 @@ const Header = observer(function Header({
   const initialLastChanged = useProfile(profile.uuid).lastChanged;
   const isModified =
     profile.lastChanged.getTime() !== initialLastChanged.getTime();
+  const inUse = useAppSelector((state) =>
+    state.pairedDice.dice.some(
+      (d) => d.isPaired && d.profileUuid === profile.uuid
+    )
+  );
 
   return (
     <PageHeader
@@ -132,7 +138,8 @@ const Header = observer(function Header({
               setRenameVisible(true);
             }}
             onEditAdvancedRules={onEditAdvancedRules}
-            onDelete={onDeleteProfile}
+            onDelete={inUse ? undefined : onDeleteProfile}
+            inUse={inUse}
           />
         </Pressable>
       )}

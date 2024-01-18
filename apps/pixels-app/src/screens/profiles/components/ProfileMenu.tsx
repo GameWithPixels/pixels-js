@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Divider, Menu, MenuProps } from "react-native-paper";
+import { Divider, Menu, MenuProps, Text, useTheme } from "react-native-paper";
 
 import { AppStyles } from "~/styles";
 
@@ -7,12 +7,15 @@ export function ProfileMenu({
   onRename,
   onEditAdvancedRules,
   onDelete,
+  inUse,
   ...props
 }: {
   onRename?: () => void;
   onEditAdvancedRules: () => void;
   onDelete?: () => void;
+  inUse?: boolean;
 } & Omit<MenuProps, "children" | "theme" | "contentStyle">) {
+  const { colors } = useTheme();
   return (
     <Menu contentStyle={{ width: 230 }} {...props}>
       {onRename ? (
@@ -74,10 +77,11 @@ export function ProfileMenu({
           props.onDismiss?.();
         }}
       /> */}
-      {onDelete && (
+      {(onDelete ?? inUse) && (
         <>
           <Divider />
           <Menu.Item
+            disabled={inUse}
             title="Delete"
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
@@ -89,9 +93,20 @@ export function ProfileMenu({
             contentStyle={AppStyles.menuItemWithIcon}
             onPress={() => {
               props.onDismiss?.();
-              onDelete();
+              onDelete?.();
             }}
           />
+          {inUse && (
+            <Text
+              style={{
+                marginTop: -10,
+                marginHorizontal: 16,
+                color: colors.onSurfaceDisabled,
+              }}
+            >
+              Profile is activated
+            </Text>
+          )}
         </>
       )}
     </Menu>
