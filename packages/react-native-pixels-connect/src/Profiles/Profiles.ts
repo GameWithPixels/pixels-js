@@ -21,7 +21,6 @@ export {
   type NoiseColorOverrideType,
   NormalsColorOverrideTypeValues,
   type NormalsColorOverrideType,
-  Color,
   Editable,
   EditAction as Action,
   EditActionRunOnDevice as ActionRunOnDevice,

@@ -5,6 +5,7 @@ import {
   keysToValues,
 } from "@systemic-games/pixels-core-utils";
 import {
+  Color,
   Profiles,
   Serializable,
 } from "@systemic-games/react-native-pixels-connect";
@@ -171,7 +172,7 @@ function updateAction(
         const colorsCount = data.colors.length;
         action.colors.length = colorsCount;
         for (let i = 0; i < colorsCount; ++i) {
-          const newColor = new Profiles.Color(data.colors[i]);
+          const newColor = new Color(data.colors[i]);
           if (!action.colors[i]?.equals(newColor)) {
             action.colors[i] = newColor;
           }

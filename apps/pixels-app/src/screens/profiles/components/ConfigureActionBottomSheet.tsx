@@ -8,6 +8,7 @@ import {
 import { assert } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
+  Color,
   DiceUtils,
   PixelDieType,
   Profiles,
@@ -387,7 +388,7 @@ const PlayAnimationColor = observer(function PlayAnimationColor({
   defaultColor,
 }: {
   action: Profiles.ActionPlayAnimation;
-  defaultColor?: Profiles.Color;
+  defaultColor?: Color;
 }) {
   const selectedColor = action.colors[0] ?? defaultColor;
   const [colorPickerVisible, setColorPickerVisible] = React.useState(false);
@@ -445,7 +446,7 @@ const PlayAnimationColor = observer(function PlayAnimationColor({
         onSelectColor={(color) => {
           runInAction(() => {
             action.colors.length = 1;
-            action.colors[0] = new Profiles.Color(color);
+            action.colors[0] = new Color(color);
           });
           setColorPickerVisible(false);
         }}
