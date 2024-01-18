@@ -8,6 +8,8 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { listToText } from "~/features/utils";
+
 export function getConditionTypeLabel(type: Profiles.ConditionType): string {
   switch (type) {
     case "none":
@@ -205,8 +207,14 @@ export function getFacesAsText(faces: number[]): string {
     return faces[0]?.toString() ?? "?";
   } else {
     const sorted = [...faces].sort((a, b) => a - b).reverse();
-    const last = sorted.pop();
-    return `${sorted.join(", ")} and ${last}`;
+    if (
+      sorted.length > 2 &&
+      sorted.every((v, i) => i === 0 || v + 1 === sorted[i - 1])
+    ) {
+      return `${sorted[0]} to ${sorted[sorted.length - 1]}`;
+    } else {
+      return listToText(sorted.map(String));
+    }
   }
 }
 
