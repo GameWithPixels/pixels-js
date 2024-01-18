@@ -190,8 +190,14 @@ function DiceListPage({
   const [scannedPixels, scannerStatus] = usePixelsScanner(
     !!scanTimeout || showPairDice
   );
-  const { pixels, missingDice, availablePixels, pairDie, unpairDie } =
-    usePairedPixels(scannedPixels);
+  const {
+    pixels,
+    missingDice,
+    availablePixels,
+    allDisconnected,
+    pairDie,
+    unpairDie,
+  } = usePairedPixels(scannedPixels);
 
   // Pairing
   useFocusEffect(
@@ -315,7 +321,7 @@ function DiceListPage({
             <TapToReconnect
               scannerStatus={scannerStatus}
               missingDice={missingDice}
-              hasConnectedDie={pixels.some((p) => p.status !== "disconnected")}
+              allDisconnected={allDisconnected}
               onPress={tryReconnectDice}
             />
           )}
