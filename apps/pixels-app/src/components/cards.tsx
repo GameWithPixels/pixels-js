@@ -1,5 +1,5 @@
 import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
+import { Pixel, PixelInfo } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Text, TextProps, useTheme } from "react-native-paper";
@@ -11,22 +11,33 @@ import { getTextColorStyle, makeTransparent } from "./colors";
 import { BatteryIcon, RssiIcon } from "./icons";
 import { ProfileDieRenderer } from "./profile";
 
-import { DieRendererProps } from "~/features/render3d/DieRenderer";
+import { getCompatibleDiceTypes } from "~/features/profiles";
+import {
+  DieRendererProps,
+  DieRendererWithFocus,
+} from "~/features/render3d/DieRenderer";
 import { useActiveProfile } from "~/hooks";
 
-export function PixelDieRenderer({
+export const PixelDieRenderer = React.memo(function PixelDieRenderer({
   pixel,
   speed,
-}: { pixel: Pixel } & Pick<DieRendererProps, "speed">) {
+}: { pixel: Pick<PixelInfo, "pixelId" | "dieType" | "colorway"> } & Pick<
+  DieRendererProps,
+  "speed"
+>) {
   const activeProfile = useActiveProfile(pixel);
-  return (
+  return getCompatibleDiceTypes(activeProfile.dieType).includes(
+    pixel.dieType
+  ) ? (
     <ProfileDieRenderer
       profile={activeProfile}
       colorway={pixel.colorway}
       speed={speed}
     />
+  ) : (
+    <DieRendererWithFocus dieType={pixel.dieType} colorway={pixel.colorway} />
   );
-}
+});
 
 function PixelRollState({
   pixel,

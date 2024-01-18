@@ -17,7 +17,7 @@ export async function checkForAppUpdateAsync(
         return { id, createdAt };
       }
     } catch (e) {
-      const error = (e as Error)?.message ?? JSON.stringify(e);
+      const error = (e as Error)?.message ?? String(e);
       if (!isErrorNoUpdatePublished(error)) {
         return { error };
       }
