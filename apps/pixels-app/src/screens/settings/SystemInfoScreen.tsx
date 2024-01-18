@@ -60,7 +60,16 @@ function SystemInfoPage({
           </Text>
           <Text>Pixel Ratio: {PixelRatio.get()}</Text>
           <Text>Font Scale: {PixelRatio.getFontScale()}</Text>
-          <Text>Locales: {locales.map((l) => l.languageCode).join(", ")}</Text>
+          <Text>
+            Locales:{" "}
+            {
+              // Got a bug report "undefined is not a function"
+              // for the line of code calling map() on locales (Expo 49)
+              "map" in locales
+                ? locales.map((l) => l.languageCode).join(", ")
+                : JSON.stringify(locales)
+            }
+          </Text>
         </View>
       </ScrollView>
     </View>
