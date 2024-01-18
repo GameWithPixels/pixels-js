@@ -52,7 +52,7 @@ export function ProfileMenu({
       )}
       <Divider />
       <Menu.Item
-        title="Edit Advanced Rules"
+        title="Advanced Settings"
         trailingIcon={({ size, color }) => (
           <MaterialCommunityIcons
             name="cog-outline"

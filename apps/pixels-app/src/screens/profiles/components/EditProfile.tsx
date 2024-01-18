@@ -16,7 +16,6 @@ import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
-import { ProfileUsage as ProfileUsageStatic } from "~/components/ProfileUsage";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
@@ -29,8 +28,6 @@ import {
 } from "~/features/profiles";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
 import { useEditableProfile } from "~/hooks";
-
-const ProfileUsage = observer(ProfileUsageStatic);
 
 const EditProfileDescription = observer(function EditProfileDescription({
   profile,
@@ -59,9 +56,13 @@ function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   const diceNames = useAppSelector((state) => state.pairedDice.dice)
     .filter((d) => d.isPaired && d.profileUuid === profileUuid)
     .map((d) => d.name);
-  return diceNames.length ? (
-    <Text>Currently applied to: {diceNames.join(", ")}</Text>
-  ) : null;
+  return (
+    <Text>
+      {diceNames.length
+        ? `Currently applied to: ${diceNames.join(", ")}`
+        : "Profile not in use."}
+    </Text>
+  );
 }
 
 function TransferProfileButton({ onPress }: { onPress: () => void }) {
@@ -175,9 +176,8 @@ export function EditProfile({
             flags={EditorAnimationFlags.helloGoodbye}
           />
           <SectionTitle>Profile Usage</SectionTitle>
-          <View style={{ paddingLeft: 10, paddingVertical: 10, gap: 10 }}>
-            {!unnamed && <ProfileDiceNames profileUuid={profileUuid} />}
-            <ProfileUsage profile={profile} />
+          <View style={{ paddingLeft: 10, paddingBottom: 10 }}>
+            <ProfileDiceNames profileUuid={profileUuid} />
           </View>
         </SlideInView>
       </SlideInView>
