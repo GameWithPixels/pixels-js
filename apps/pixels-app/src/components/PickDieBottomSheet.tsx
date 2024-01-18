@@ -17,18 +17,18 @@ import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TouchableCard } from "~/components/TouchableCard";
 import { DieWireframe } from "~/components/icons";
 import { getDieTypeLabel } from "~/features/profiles";
-import { notEmpty } from "~/features/utils";
+import { listToText, notEmpty } from "~/features/utils";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PickDieBottomSheet({
-  dieType,
+  dieTypes,
   visible,
   onDismiss,
 }: {
-  dieType?: PixelDieType;
+  dieTypes?: readonly PixelDieType[];
   visible: boolean;
   onDismiss: (pixel?: Pixel) => void;
 }) {
@@ -45,21 +45,24 @@ export function PickDieBottomSheet({
   const pairedDice = useAppSelector((state) => state.pairedDice.dice).filter(
     (d) => d.isPaired
   );
-  // TODO update on dice connect/disconnect
   const pixels = React.useMemo(
     () =>
       pairedDice
         .map((d) => getPixel(d.pixelId))
         .filter(notEmpty)
-        .filter((p) => p.isReady && (!dieType || p.dieType === dieType)),
-    [dieType, pairedDice]
+        .filter(
+          (p) => p.isReady && (!dieTypes || dieTypes.includes(p.dieType))
+        ),
+    [dieTypes, pairedDice]
   );
   const hasPairedDiceType = React.useMemo(
-    () => pairedDice.some((p) => !dieType || p.dieType === dieType),
-    [dieType, pairedDice]
+    () => pairedDice.some((p) => !dieTypes || dieTypes.includes(p.dieType)),
+    [dieTypes, pairedDice]
   );
 
-  const dieTypeStr = dieType ? getDieTypeLabel(dieType) + " " : "";
+  const dieTypesStrSpace = !dieTypes?.length
+    ? ""
+    : listToText(dieTypes.map(getDieTypeLabel)) + " ";
 
   const paddingBottom = useBottomSheetPadding(0);
   const theme = useTheme();
@@ -90,7 +93,8 @@ export function PickDieBottomSheet({
           }}
         >
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
-            Select a {dieType ? getDieTypeLabel(dieType) : "Die"}
+            Select a{" "}
+            {dieTypes ? listToText(dieTypes.map(getDieTypeLabel), "or") : "Die"}
           </Text>
           <BottomSheetScrollView
             contentContainerStyle={{ paddingHorizontal: 10, gap: 20 }}
@@ -107,13 +111,13 @@ export function PickDieBottomSheet({
               </TouchableCard>
             ))}
             {pixels.length > 0 ? (
-              <Text>{`Only connected ${dieTypeStr}dice are listed.`}</Text>
+              <Text>{`Only connected ${dieTypesStrSpace}dice are listed.`}</Text>
             ) : (
               <Text variant="bodyLarge">
                 {hasPairedDiceType
-                  ? `No connected ${dieTypeStr}die.`
+                  ? `No connected ${dieTypesStrSpace}die.`
                   : `You don't have any paired ${
-                      pairedDice.length ? dieTypeStr : ""
+                      pairedDice.length ? dieTypesStrSpace : ""
                     }die.`}
               </Text>
             )}

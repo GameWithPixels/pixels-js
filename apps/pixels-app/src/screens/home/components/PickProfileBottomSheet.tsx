@@ -8,20 +8,6 @@ import { ProfilePicker } from "~/components/ProfilePicker";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
-// export function PickProfileBottomSheet({
-//   dieType,
-//   selected,
-//   visible,
-//   onDismiss,
-// }: {
-//   dieType: PixelDieType;
-//   selected?: Profiles.Profile;
-//   visible: boolean;
-//   onDismiss?: (profile: Profiles.Profile) => void;
-// }) {
-//   return <></>;
-// }
-
 export function PickProfileBottomSheet({
   pixel,
   profile,

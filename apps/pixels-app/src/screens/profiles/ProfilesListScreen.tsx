@@ -26,6 +26,7 @@ import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import { transferProfile } from "~/features/dice";
 import {
+  getCompatibleDiceTypes,
   getProfilesGroupingLabel,
   getSortModeIcon,
   getSortModeLabel,
@@ -233,7 +234,11 @@ function ProfilesListPage({
         onPress={() => navigation.navigate("createProfile")}
       />
       <PickDieBottomSheet
-        dieType={profileToActivate?.dieType}
+        dieTypes={
+          profileToActivate
+            ? getCompatibleDiceTypes(profileToActivate.dieType)
+            : undefined
+        }
         visible={!!profileToActivate}
         onDismiss={(pixel) => {
           if (pixel && profileToActivate) {

@@ -24,6 +24,7 @@ import { ProfileDieRenderer } from "~/components/profile";
 import {
   EditorAnimationFlags,
   EditorRollRulesTypes,
+  getCompatibleDiceTypes,
   getConditionTypeLabel,
 } from "~/features/profiles";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
@@ -181,7 +182,7 @@ export function EditProfile({
         </SlideInView>
       </SlideInView>
       <PickDieBottomSheet
-        dieType={profile.dieType}
+        dieTypes={getCompatibleDiceTypes(profile.dieType)}
         visible={pickDieVisible}
         onDismiss={(pixel) => {
           if (pixel) {
