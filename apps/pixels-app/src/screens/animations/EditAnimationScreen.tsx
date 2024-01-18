@@ -165,6 +165,7 @@ function EditAnimationPage({
             />
             <Text>Traveling Order</Text>
           </View>
+          {/* TODO check if animation is in use */}
           <OutlineButton
             style={{
               minWidth: "50%",
@@ -173,7 +174,7 @@ function EditAnimationPage({
             }}
             onPress={() => showConfirmDelete()}
           >
-            Delete Animation
+            Delete
           </OutlineButton>
         </ScrollView>
       </View>

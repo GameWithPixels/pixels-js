@@ -1,5 +1,4 @@
 import {
-  assert,
   assertNever,
   combineFlags,
   keysToValues,
@@ -16,7 +15,7 @@ import { readAudioClip } from "./audioClips";
 import { log } from "./log";
 
 import { LibraryState } from "~/app/store";
-import { makeObservable } from "~/features/utils";
+import { logError, makeObservable } from "~/features/utils";
 
 const loadedProfiles = new Map<string, Profiles.Profile>();
 
@@ -36,13 +35,20 @@ export function readProfile(
 ): Profiles.Profile {
   const existing = !newInstance && loadedProfiles.get(uuid);
   const profile = existing ? existing : create(uuid, newInstance);
-  runInAction(() => updateProfile(profile, library));
+  const profileData = library.profiles.entities[profile.uuid];
+  if (profileData) {
+    runInAction(() => updateProfile(profile, profileData, library));
+  } else {
+    logError(`Profile ${profile.uuid} not found in library`);
+  }
   return profile;
 }
 
-function updateProfile(profile: Profiles.Profile, library: LibraryState): void {
-  const profileData = library.profiles.entities[profile.uuid];
-  assert(profileData, `Profile ${profile.uuid} not found`);
+function updateProfile(
+  profile: Profiles.Profile,
+  profileData: Serializable.ProfileData,
+  library: LibraryState
+): void {
   profile.name = profileData.name;
   profile.description = profileData.description;
   profile.dieType = profileData.dieType;
