@@ -1,3 +1,4 @@
+import * as Updates from "expo-updates";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import {
@@ -89,6 +90,12 @@ function CheckForUpdatePage({
         >
           {appUpdate.manifest ? "Update Now" : "Check Again"}
         </Button>
+        {!Updates.isEmbeddedLaunch && Updates.createdAt && (
+          <>
+            <Text style={{ marginTop: 20 }}>Installed update:</Text>
+            <Text>{Updates.createdAt.toUTCString()}</Text>
+          </>
+        )}
       </ScrollView>
     </View>
   );
