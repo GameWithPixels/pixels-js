@@ -404,13 +404,15 @@ function ScanSlide({
         source={require("#/temp/dice-row.jpg")}
       />
       {scannerStatus !== "scanning" ? (
-        <Animated.View
+        <Animated.ScrollView
           key="stopped"
           exiting={FadeOut.duration(300)}
           style={{
             flexGrow: 1,
             flexShrink: 1,
             marginVertical: 10,
+          }}
+          contentContainerStyle={{
             alignItems: "center",
             gap: 40,
           }}
@@ -451,7 +453,7 @@ function ScanSlide({
           >
             Continue
           </GradientButton>
-        </Animated.View>
+        </Animated.ScrollView>
       ) : (
         <Animated.View
           key="scanning"
