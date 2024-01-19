@@ -207,7 +207,8 @@ const styles = StyleSheet.create({
   bottomView: {
     marginTop: -20,
     paddingTop: 20,
-    paddingHorizontal: 10,
+    paddingLeft: 10,
+    paddingRight: 5,
     borderWidth: 1,
     borderTopWidth: 0,
     borderTopLeftRadius: 0,

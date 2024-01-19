@@ -106,7 +106,7 @@ export function createProfileTemplates(
       uuid: generateUuid(),
       name: "Speak Numbers",
       description:
-        "This profile has your phone say the rolled numbers out loud (when the app is open)",
+        "This profile has your device say the rolled numbers out loud (when the app is open)",
       dieType,
       rules: [
         new Profiles.Rule(

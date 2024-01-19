@@ -192,6 +192,7 @@ function RolledConditionCard({
             <>
               <View
                 style={{
+                  flex: 1,
                   flexGrow: 1,
                   marginVertical: type === "playAnimation" ? 5 : 10,
                   justifyContent: "space-evenly",
@@ -555,8 +556,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: -20,
     paddingTop: 20,
-    paddingLeft: 20,
-    paddingRight: 10,
+    paddingLeft: 10,
+    paddingRight: 5,
     alignItems: "stretch",
     borderWidth: 1,
     borderTopWidth: 0,

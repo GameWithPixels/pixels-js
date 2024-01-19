@@ -139,7 +139,9 @@ function ProfileActions({
     <View
       style={{
         flexDirection: "row",
+        marginLeft: -5,
         marginRight: 20,
+        marginVertical: 5,
         justifyContent: "space-around",
       }}
     >

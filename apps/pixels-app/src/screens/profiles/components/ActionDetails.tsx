@@ -12,45 +12,133 @@ import { Text } from "react-native-paper";
 import { ActionTypeIcon } from "~/components/actions";
 import { applyActionOverrides, getFacesAsText } from "~/features/profiles";
 import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
+import { listToText } from "~/features/utils";
 import { AppStyles } from "~/styles";
 
-function getCountAsText(count: number) {
+function getCountAsText(count: number): string {
   return count === 1 ? "once" : count === 2 ? "twice" : `${count} times`;
+}
+
+function toPercentText(value: number): string {
+  return (100 * value).toFixed() + "%";
+}
+
+function getAnimationActionText(action: Profiles.ActionPlayAnimation): string {
+  if (action.animation) {
+    const parts = [`Play "${action.animation.name}"`];
+    if (action.loopCount > 1) {
+      parts[0] += ` ${getCountAsText(action.loopCount)}`;
+    }
+    if (action.duration !== undefined) {
+      parts[0] += ` for ${action.duration.toFixed(1)}s`;
+    }
+    if (action.fade !== undefined) {
+      parts.push(`with fading of ${toPercentText(action.fade)}`);
+    }
+    if (action.intensity !== undefined) {
+      parts.push(`with intensity of ${toPercentText(action.intensity)}`);
+    }
+    if (action.colors.length) {
+      parts.push(
+        `with ${
+          action.colors.length === 1 ? "a custom color" : "custom colors"
+        }`
+      );
+    }
+    return listToText(parts);
+  } else {
+    return "No animation selected";
+  }
+}
+
+function getAudioClipActionText(action: Profiles.ActionPlayAudioClip): string {
+  if (action.clip) {
+    let msg = `Play "${action.clip.name}"`;
+    if (action.loopCount > 1) {
+      msg += ` ${getCountAsText(action.loopCount)}`;
+    }
+    if (action.volume !== 1) {
+      msg += ` at volume ${toPercentText(action.volume)}`;
+    }
+    return msg;
+  } else {
+    return "No clip selected";
+  }
+}
+
+function getShortText(text: string, maxLength = 25, variance = 7): string {
+  text = text.trim();
+  if (text.length <= maxLength) {
+    return text;
+  } else {
+    const re = /\W/g;
+    let lastIndex = 0;
+    let lastIndexCheck = 0;
+    let m;
+    while ((m = re.exec(text))) {
+      const index = re.lastIndex - m.length;
+      if (index > maxLength + variance) {
+        break;
+      }
+      if (index - 1 > lastIndexCheck) {
+        console.log(index);
+        lastIndex = index;
+      }
+      lastIndexCheck = index;
+    }
+    return (
+      text.slice(0, lastIndex > maxLength - variance ? lastIndex : maxLength) +
+      "..."
+    );
+  }
+}
+
+function getUrlShortText(url: string): string {
+  url = url.trim();
+  const httpSep = url.indexOf("://");
+  const start = httpSep >= 0 ? httpSep + 3 : 0;
+  const end = url.indexOf("/", start);
+  return url.slice(start, end > 0 ? end : undefined);
+}
+
+function getSpeakActionText(action: Profiles.ActionSpeakText): string {
+  if (action.text.length) {
+    const parts = [`Speak "${getShortText(action.text)}"`];
+    if (action.pitch !== 1) {
+      parts.push(`with pitch of ${toPercentText(action.pitch)}`);
+    }
+    if (action.rate !== 1) {
+      parts.push(`with rate of ${toPercentText(action.rate)}`);
+    }
+    return listToText(parts);
+  } else {
+    return "No text entered";
+  }
+}
+
+function getWebRequestActionText(
+  action: Profiles.ActionMakeWebRequest
+): string {
+  if (action.url.length) {
+    let msg = `Send request to "${getUrlShortText(action.url)}"`;
+    if (action.value?.length) {
+      msg += ` and with value "${action.value}"`;
+    }
+    return msg;
+  } else {
+    return "No URL entered";
+  }
 }
 
 function getActionText(action: Profiles.Action): string {
   if (action instanceof Profiles.ActionPlayAnimation) {
-    let msg = action.animation?.name
-      ? `Play "${action.animation.name}" ${getCountAsText(action.loopCount)}`
-      : "No animation selected";
-    if (action.duration !== undefined) {
-      msg += ` for ${action.duration.toFixed(1)}s`;
-    }
-    return msg;
+    return getAnimationActionText(action);
   } else if (action instanceof Profiles.ActionPlayAudioClip) {
-    return action.clip?.name
-      ? `Play "${action.clip.name}" ${getCountAsText(
-          action.loopCount
-        )} at volume ${action.volume}%`
-      : "No clip selected";
+    return getAudioClipActionText(action);
   } else if (action instanceof Profiles.ActionSpeakText) {
-    return action.text.length
-      ? `Speak "${action.text}"${
-          action.pitch !== 1
-            ? ` with pitch of ${(100 * action.pitch).toFixed(0)}%`
-            : ""
-        }${
-          action.rate !== 1
-            ? ` with rate of ${(100 * action.rate).toFixed(0)}%`
-            : ""
-        }`
-      : "No text to speak";
+    return getSpeakActionText(action);
   } else if (action instanceof Profiles.ActionMakeWebRequest) {
-    return action.url.length
-      ? `Send request to "${action.url}"${
-          action.value?.length ? `with value "${action.value}"` : ""
-        }`
-      : "No URL entered";
+    return getWebRequestActionText(action);
   } else {
     throw new Error(`Unknown action type ${action.type}`);
   }
@@ -183,6 +271,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   ruleTextStyle: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
@@ -194,6 +283,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   animationDetails: {
+    flex: 1,
     flexGrow: 1,
     justifyContent: "space-between",
     gap: 5,

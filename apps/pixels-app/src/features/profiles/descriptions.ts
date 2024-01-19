@@ -107,11 +107,11 @@ export function getActionTypeDescription(type: Profiles.ActionType): string {
     case "playAnimation":
       return "Play an animation on the Pixel LEDs";
     case "playAudioClip":
-      return "Play a sound file on your phone";
+      return "Play a sound file on your device";
     case "makeWebRequest":
-      return "Send a web request";
+      return "Send a web request trough your device";
     case "speakText":
-      return "Speak a text on your phone";
+      return "Speak a text on your device";
     default:
       assertNever(type);
   }
