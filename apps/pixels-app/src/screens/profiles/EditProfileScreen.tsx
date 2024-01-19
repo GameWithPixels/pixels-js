@@ -30,14 +30,14 @@ const Header = observer(function Header({
   noDiscard,
   onCommitChanges,
   onDiscardChanges,
-  onEditAdvancedRules,
+  onAdvancedOptions,
   onDeleteProfile,
 }: {
   profile: Profiles.Profile;
   noDiscard?: boolean;
   onCommitChanges: () => void;
   onDiscardChanges: () => void;
-  onEditAdvancedRules: () => void;
+  onAdvancedOptions: () => void;
   onDeleteProfile?: () => void;
 }) {
   const [renameVisible, setRenameVisible] = React.useState(false);
@@ -57,10 +57,11 @@ const Header = observer(function Header({
   const initialLastChanged = useProfile(profile.uuid).lastChanged;
   const isModified =
     profile.lastChanged.getTime() !== initialLastChanged.getTime();
-  const inUse = useAppSelector((state) =>
-    state.pairedDice.dice.some(
-      (d) => d.isPaired && d.profileUuid === profile.uuid
-    )
+  const activatedDiceCount = useAppSelector(
+    (state) =>
+      state.pairedDice.dice.filter(
+        (d) => d.isPaired && d.profileUuid === profile.uuid
+      ).length
   );
 
   return (
@@ -137,9 +138,9 @@ const Header = observer(function Header({
               setEditedName(profile.name);
               setRenameVisible(true);
             }}
-            onEditAdvancedRules={onEditAdvancedRules}
-            onDelete={inUse ? undefined : onDeleteProfile}
-            inUse={inUse}
+            onAdvancedOptions={onAdvancedOptions}
+            onDelete={onDeleteProfile}
+            activatedDiceCount={activatedDiceCount}
           />
         </Pressable>
       )}
@@ -191,8 +192,8 @@ function EditProfilePage({
         noDiscard={noDiscard}
         onCommitChanges={commitChanges}
         onDiscardChanges={discardChanges}
-        onEditAdvancedRules={() =>
-          navigation.navigate("editAdvancedRules", { profileUuid })
+        onAdvancedOptions={() =>
+          navigation.navigate("editAdvancedSettings", { profileUuid })
         }
         onDeleteProfile={showConfirmDelete}
       />

@@ -67,8 +67,8 @@ function EditDieProfilePage({
             visible={actionsMenuVisible}
             anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
             onDismiss={() => setActionsMenuVisible(false)}
-            onEditAdvancedRules={() =>
-              navigation.navigate("editAdvancedRules", { profileUuid })
+            onAdvancedOptions={() =>
+              navigation.navigate("editAdvancedSettings", { profileUuid })
             }
           />
         </Pressable>

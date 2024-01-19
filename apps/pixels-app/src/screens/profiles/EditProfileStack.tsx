@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { PaperProvider } from "react-native-paper";
 
-import { EditAdvancedRulesScreen } from "./EditAdvancedRulesScreen";
+import { EditAdvancedSettingsScreen } from "./EditAdvancedSettingsScreen";
 import { EditProfileScreen } from "./EditProfileScreen";
 import { EditRollRuleScreen } from "./EditRolledRulesScreen";
 import { EditRuleScreen } from "./EditRuleScreen";
@@ -27,8 +27,8 @@ export function EditProfilesStack(/* props: EditProfileStackProps */) {
             options={getStackNavigationOptions("slide-from-bottom")}
           />
           <Stack.Screen
-            name="editAdvancedRules"
-            component={EditAdvancedRulesScreen}
+            name="editAdvancedSettings"
+            component={EditAdvancedSettingsScreen}
           />
           <Stack.Screen name="editRule" component={EditRuleScreen} />
           <Stack.Screen name="editRollRules" component={EditRollRuleScreen} />

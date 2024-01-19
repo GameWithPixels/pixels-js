@@ -9,11 +9,11 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { ProfileUsage as ProfileUsageStatic } from "~/components/ProfileUsage";
 import { useEditableProfile } from "~/hooks";
-import { EditAdvancedRulesScreenProps } from "~/navigation";
+import { EditAdvancedSettingsScreenProps } from "~/navigation";
 
 const ProfileUsage = observer(ProfileUsageStatic);
 
-function EditAdvancedRulesPage({
+function EditAdvancedSettingsPage({
   profileUuid,
   onEditRule,
   onGoBack,
@@ -47,15 +47,15 @@ function EditAdvancedRulesPage({
   );
 }
 
-export function EditAdvancedRulesScreen({
+export function EditAdvancedSettingsScreen({
   route: {
     params: { profileUuid },
   },
   navigation,
-}: EditAdvancedRulesScreenProps) {
+}: EditAdvancedSettingsScreenProps) {
   return (
     <AppBackground>
-      <EditAdvancedRulesPage
+      <EditAdvancedSettingsPage
         profileUuid={profileUuid}
         onEditRule={(ruleIndex) => navigation.navigate("editRule", ruleIndex)}
         onGoBack={() => navigation.goBack()}

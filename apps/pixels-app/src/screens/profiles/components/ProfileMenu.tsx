@@ -5,15 +5,15 @@ import { AppStyles } from "~/styles";
 
 export function ProfileMenu({
   onRename,
-  onEditAdvancedRules,
+  onAdvancedOptions,
   onDelete,
-  inUse,
+  activatedDiceCount,
   ...props
 }: {
   onRename?: () => void;
-  onEditAdvancedRules: () => void;
+  onAdvancedOptions: () => void;
   onDelete?: () => void;
-  inUse?: boolean;
+  activatedDiceCount?: number;
 } & Omit<MenuProps, "children" | "theme" | "contentStyle">) {
   const { colors } = useTheme();
   return (
@@ -63,7 +63,7 @@ export function ProfileMenu({
         contentStyle={AppStyles.menuItemWithIcon}
         onPress={() => {
           props.onDismiss?.();
-          onEditAdvancedRules();
+          onAdvancedOptions();
         }}
       />
       {/* <Divider />
@@ -77,11 +77,11 @@ export function ProfileMenu({
           props.onDismiss?.();
         }}
       /> */}
-      {(onDelete ?? inUse) && (
+      {onDelete && (
         <>
           <Divider />
           <Menu.Item
-            disabled={inUse}
+            disabled={!!activatedDiceCount}
             title="Delete"
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
@@ -96,7 +96,7 @@ export function ProfileMenu({
               onDelete?.();
             }}
           />
-          {inUse && (
+          {!!activatedDiceCount && (
             <Text
               style={{
                 marginTop: -10,
