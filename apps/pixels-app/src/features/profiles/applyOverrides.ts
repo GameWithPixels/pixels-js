@@ -32,6 +32,12 @@ export function applyActionOverrides(
     if (action.duration !== undefined) {
       getAnim().duration = action.duration;
     }
+    if (action.loopCount !== undefined) {
+      const anim = getAnim();
+      if ("count" in anim && typeof anim.count === "number") {
+        (anim.count as number) = action.loopCount;
+      }
+    }
     if (action.fade !== undefined) {
       const anim = getAnim();
       if ("fade" in anim && typeof anim.fade === "number") {
@@ -67,5 +73,20 @@ export function applyActionOverrides(
       }
     }
     return anim;
+  }
+}
+
+function overrideGradient(
+  gradient: Profiles.RgbGradient | undefined,
+  colors: import("@systemic-games/react-native-pixels-connect").Color[]
+) {
+  if (gradient && gradient.keyframes.length === colors.length) {
+    return new Profiles.RgbGradient({
+      keyframes: colors.map((c, i) => {
+        const kf = gradient.keyframes[i].duplicate();
+        kf.color = c.duplicate();
+        return kf;
+      }),
+    });
   }
 }
