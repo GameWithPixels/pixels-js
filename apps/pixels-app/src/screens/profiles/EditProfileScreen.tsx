@@ -181,8 +181,9 @@ function EditProfilePage({
   );
 
   const showConfirmDelete = useConfirmActionSheet("Delete", () => {
-    removeProfile(profileUuid);
+    // First leave the page so it won't try accessing the profile that's being deleted
     goBack();
+    removeProfile(profileUuid);
   });
 
   return (
