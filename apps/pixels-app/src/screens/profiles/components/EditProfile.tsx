@@ -153,7 +153,7 @@ export function EditProfile({
               A Profile is composed of rules that dictate what action to take on
               rolls and others dice events.{"\n\n"}
               Tap on the Activate button above to apply a Profile to one of your
-              dice.
+              die.
             </Banner>
           )}
           <SectionTitle>Roll Rules</SectionTitle>

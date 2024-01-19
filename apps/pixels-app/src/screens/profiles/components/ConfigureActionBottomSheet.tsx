@@ -64,7 +64,7 @@ function TextInput({
       }}
     >
       <BottomSheetTextInput
-        maxLength={100}
+        maxLength={200}
         value={value}
         onChangeText={onChangeText}
         style={{
@@ -312,7 +312,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
           minimumValue={0}
           maximumValue={1}
           step={0.01}
-          fractionDigits={2}
+          percentage
           value={action.fade ?? fading}
           isDefault={action.fade === undefined}
           onValueChange={(v) => (action.fade = v)}
@@ -325,7 +325,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
           minimumValue={0}
           maximumValue={1}
           step={0.01}
-          fractionDigits={2}
+          percentage
           value={action.intensity ?? intensity}
           isDefault={action.intensity === undefined}
           onValueChange={(v) => (action.intensity = v)}
@@ -399,7 +399,7 @@ const PlayAnimationColor = observer(function PlayAnimationColor({
       <Text variant="titleMedium">Color</Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableRipple
-          disabled={!action.colors}
+          disabled={!action.colors.length}
           sentry-label="reset-color"
           style={{ padding: 10, paddingRight: 20, zIndex: 1 }} // Render on top of scaled slider
           onPress={() => runInAction(() => (action.colors.length = 0))}
@@ -407,7 +407,11 @@ const PlayAnimationColor = observer(function PlayAnimationColor({
           <MaterialCommunityIcons
             name="refresh"
             size={20}
-            color={!action.colors ? colors.onSurfaceDisabled : colors.onSurface}
+            color={
+              !action.colors.length
+                ? colors.onSurfaceDisabled
+                : colors.onSurface
+            }
           />
         </TouchableRipple>
         <TouchableRipple
@@ -571,11 +575,11 @@ const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
       </GradientButton>
       <Text variant="titleMedium">Volume</Text>
       <SliderWithValue
-        unit="%"
         value={action.volume}
-        minimumValue={1}
-        maximumValue={100}
-        step={1}
+        minimumValue={0}
+        maximumValue={1}
+        step={0.01}
+        percentage
         onValueChange={(v) => runInAction(() => (action.volume = v))}
       />
     </>
@@ -601,7 +605,7 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         minimumValue={0}
         maximumValue={2}
         step={0.01}
-        fractionDigits={2}
+        percentage
         sentry-label="change-volume"
         onValueChange={(v) => runInAction(() => (action.pitch = v))}
       />
@@ -611,7 +615,7 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         minimumValue={0}
         maximumValue={2}
         step={0.01}
-        fractionDigits={2}
+        percentage
         sentry-label="change-volume"
         onValueChange={(v) => runInAction(() => (action.rate = v))}
       />

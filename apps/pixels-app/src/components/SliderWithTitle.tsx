@@ -81,11 +81,13 @@ export function SliderWithTitle({
 export interface SliderWithValueProps extends SliderProps {
   unit?: string;
   fractionDigits?: number;
+  percentage?: boolean;
 }
 
 export function SliderWithValue({
   unit,
   fractionDigits,
+  percentage,
   ...props
 }: SliderWithValueProps) {
   const { colors, roundness } = useTheme();
@@ -113,7 +115,11 @@ export function SliderWithValue({
           borderRadius,
         }}
       >
-        <Text>{(props.value ?? 0).toFixed(fractionDigits) + (unit ?? "")}</Text>
+        <Text>
+          {percentage
+            ? ((props.value ?? 0) * 100).toFixed() + "%"
+            : (props.value ?? 0).toFixed(fractionDigits) + (unit ?? "")}
+        </Text>
       </View>
     </View>
   );

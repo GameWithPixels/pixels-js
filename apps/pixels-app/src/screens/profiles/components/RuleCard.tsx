@@ -49,26 +49,30 @@ const RuleSummary = observer(function RuleSummary({
       ))}
     </>
   ) : (
-    <Text style={{ color: colors.onSurfaceDisabled }}>No action</Text>
+    <Text style={{ color: colors.onSurfaceDisabled }}>No action selected</Text>
   );
 });
 
 const RolledRulesSummary = observer(function RolledRulesSummary({
   rules,
+  maxRules,
   colors,
 }: {
   rules: Profiles.Rule[];
+  maxRules?: number;
   colors: MD3Theme["colors"];
 }) {
   return rules.length ? (
     <>
-      {rules.slice(0, 4).map((r) => (
+      {rules.slice(0, maxRules).map((r) => (
         <RuleSummary key={r.uuid} rule={r} colors={colors} />
       ))}
-      {rules.length > 4 && <Text style={AppStyles.greyedOut}>And more...</Text>}
+      {maxRules && rules.length > maxRules && (
+        <Text style={AppStyles.greyedOut}>And more...</Text>
+      )}
     </>
   ) : (
-    <Text style={{ color: colors.onSurfaceDisabled }}>No action</Text>
+    <Text style={{ color: colors.onSurfaceDisabled }}>No action selected</Text>
   );
 });
 
@@ -115,11 +119,11 @@ export const RuleCard = observer(function RuleCard({
             borderColor: colors.outline,
           }}
         >
-          {conditionType === "rolled" ? (
-            <RolledRulesSummary rules={rules} colors={colors} />
-          ) : (
-            <RuleSummary rule={rules[0]} colors={colors} />
-          )}
+          <RolledRulesSummary
+            rules={rules}
+            colors={colors}
+            maxRules={conditionType === "rolled" ? 4 : 2}
+          />
         </View>
       </>
     </TouchableRipple>
@@ -153,7 +157,7 @@ const styles = StyleSheet.create({
   bottomView: {
     marginTop: -5,
     paddingTop: 15,
-    paddingLeft: 20,
+    paddingLeft: 10,
     paddingVertical: 10,
     borderWidth: 1,
     borderTopWidth: 0,
