@@ -8,6 +8,7 @@ const ledIndices = Profiles.AnimationFlagsValues.useLedIndices;
 const travelingWithLedIndices =
   Profiles.AnimationFlagsValues.traveling | ledIndices;
 
+const AnimFlash = Profiles.AnimationFlashes;
 const AnimRainbow = Profiles.AnimationRainbow;
 const AnimCycle = Profiles.AnimationCycle;
 const AnimNormals = Profiles.AnimationNormals;
@@ -889,5 +890,14 @@ export const PrebuildAnimations = {
     fade: 0.1,
     gradientColorType: NoiseType.none,
     gradientColorVar: 0.5,
+  }),
+
+  blueFlash: new AnimFlash({
+    uuid: "5cc7bcb8-1d89-4a1f-b3a0-ad7661c0564e",
+    name: "Slow Blue Flash",
+    category: "uniform",
+    duration: 2,
+    color: Color.blue,
+    fade: 0.5,
   }),
 } as const;
