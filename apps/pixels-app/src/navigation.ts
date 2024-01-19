@@ -47,7 +47,7 @@ export type SettingsStackProps = NativeStackScreenProps<
 
 // Edit profile sub screens
 export type EditProfileSubStackParamList = {
-  editAdvancedRules: { profileUuid: string };
+  editAdvancedSettings: { profileUuid: string };
   editRule: RuleIndex;
   editRollRules: { profileUuid: string };
 };
@@ -62,9 +62,9 @@ export type EditRollRulesScreenProps = NativeStackScreenProps<
   "editRollRules"
 >;
 
-export type EditAdvancedRulesScreenProps = NativeStackScreenProps<
+export type EditAdvancedSettingsScreenProps = NativeStackScreenProps<
   EditProfileSubStackParamList,
-  "editAdvancedRules"
+  "editAdvancedSettings"
 >;
 
 // Home screens

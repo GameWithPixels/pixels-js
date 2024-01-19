@@ -4,7 +4,7 @@ import React from "react";
 import { PaperProvider } from "react-native-paper";
 
 import { EditDieProfileScreen } from "./EditDieProfileScreen";
-import { EditAdvancedRulesScreen } from "../profiles/EditAdvancedRulesScreen";
+import { EditAdvancedSettingsScreen } from "../profiles/EditAdvancedSettingsScreen";
 import { EditRollRuleScreen } from "../profiles/EditRolledRulesScreen";
 import { EditRuleScreen } from "../profiles/EditRuleScreen";
 
@@ -27,8 +27,8 @@ export function EditDieProfileStack(/* props: EditDieProfileStackProps */) {
             options={getStackNavigationOptions("slide-from-bottom")}
           />
           <Stack.Screen
-            name="editAdvancedRules"
-            component={EditAdvancedRulesScreen}
+            name="editAdvancedSettings"
+            component={EditAdvancedSettingsScreen}
           />
           <Stack.Screen name="editRule" component={EditRuleScreen} />
           <Stack.Screen name="editRollRules" component={EditRollRuleScreen} />
