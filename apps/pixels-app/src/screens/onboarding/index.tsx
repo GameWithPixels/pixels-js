@@ -670,7 +670,7 @@ function UpdateDiceSlide({
     [dfuBundle, scannedPixels]
   );
   return (
-    <Slide title="Update Dice Software">
+    <Slide title="Update Dice Firmware">
       <LightUpYourGameImage marginVertical={40} />
       {step === "wait" ? (
         <Animated.View
@@ -678,7 +678,7 @@ function UpdateDiceSlide({
           exiting={FadeOut.duration(300)}
           style={{ flexGrow: 1, flexShrink: 1, alignItems: "center", gap: 40 }}
         >
-          <Text>We have a software update for your dice!</Text>
+          <Text>We have a firmware update for your dice!</Text>
           <Text>
             We recommend to keep all dice up-to-date to ensure that they stay
             compatible with the app.

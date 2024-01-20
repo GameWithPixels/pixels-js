@@ -26,7 +26,7 @@ const pages = [
   "Support",
   "Privacy Policy",
   "App & System Information",
-  "Dice Software Information",
+  "Dice Firmware Information",
   "Check for Update",
   "Reset App Settings",
   "Speech",
@@ -105,7 +105,7 @@ function SettingsMenuPage({
       case "App & System Information":
         navigation.navigate("systemInfo");
         break;
-      case "Dice Software Information":
+      case "Dice Firmware Information":
         navigation.navigate("firmwareInfo");
         break;
       case "Check for Update":
