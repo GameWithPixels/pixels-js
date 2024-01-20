@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { Text as PaperText, TextProps } from "react-native-paper";
+import { useReducedMotion } from "react-native-reanimated";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
@@ -25,6 +26,7 @@ function SystemInfoPage({
 }) {
   const locales = useLocales();
   const window = useWindowDimensions();
+  const reduceMotionEnabled = useReducedMotion();
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>
@@ -60,6 +62,7 @@ function SystemInfoPage({
           </Text>
           <Text>Pixel Ratio: {PixelRatio.get()}</Text>
           <Text>Font Scale: {PixelRatio.getFontScale()}</Text>
+          <Text>Reduced Motion: {reduceMotionEnabled ? "yes" : "no"}</Text>
           <Text>
             Locales:{" "}
             {
