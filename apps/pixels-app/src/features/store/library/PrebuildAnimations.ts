@@ -567,8 +567,8 @@ export const PrebuildAnimations = {
       uuid: "d7e59ec1-f788-443c-8ebe-cb14a2f020f2",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.1, color: Color.brightBlue }),
-        new RgbKf({ time: 0.9, color: Color.brightCyan }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.9, color: Color.brightWhite }),
         new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
@@ -601,8 +601,8 @@ export const PrebuildAnimations = {
       uuid: "bf2268f1-2249-4bb4-a997-c1fde932ef26",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.1, color: Color.brightMagenta }),
-        new RgbKf({ time: 0.9, color: Color.brightRed }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.9, color: Color.brightWhite }),
         new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
