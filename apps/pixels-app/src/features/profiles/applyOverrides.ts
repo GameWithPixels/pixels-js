@@ -1,5 +1,10 @@
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
+import {
+  getAnimationGradient,
+  setAnimationGradient,
+} from "~/features/store/library";
+
 export function applyProfileOverrides(
   profile: Readonly<Profiles.Profile>
 ): Profiles.Profile {
@@ -56,37 +61,22 @@ export function applyActionOverrides(
         (anim.color as Profiles.FaceColor) = new Profiles.FaceColor(
           action.colors[0].duplicate()
         );
-      } else if (
-        "gradient" in anim &&
-        anim.gradient instanceof Profiles.RgbGradient
-      ) {
-        const gradient = anim.gradient;
-        if (gradient.keyframes.length === action.colors.length) {
-          anim.gradient = new Profiles.RgbGradient({
-            keyframes: action.colors.map((c, i) => {
-              const kf = gradient.keyframes[i].duplicate();
-              kf.color = c.duplicate();
-              return kf;
-            }),
-          });
+      } else {
+        const gradient = getAnimationGradient(anim);
+        if (gradient && gradient.keyframes.length === action.colors.length) {
+          setAnimationGradient(
+            anim,
+            new Profiles.RgbGradient({
+              keyframes: action.colors.map((c, i) => {
+                const kf = gradient.keyframes[i].duplicate();
+                kf.color = c.duplicate();
+                return kf;
+              }),
+            })
+          );
         }
       }
     }
     return anim;
-  }
-}
-
-function overrideGradient(
-  gradient: Profiles.RgbGradient | undefined,
-  colors: import("@systemic-games/react-native-pixels-connect").Color[]
-) {
-  if (gradient && gradient.keyframes.length === colors.length) {
-    return new Profiles.RgbGradient({
-      keyframes: colors.map((c, i) => {
-        const kf = gradient.keyframes[i].duplicate();
-        kf.color = c.duplicate();
-        return kf;
-      }),
-    });
   }
 }

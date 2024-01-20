@@ -4,7 +4,7 @@ import { createDefault } from "./createDefault";
 import * as Library from "./library";
 
 import { AppDispatch, LibraryState } from "~/app/store";
-import { createDefaultProfiles } from "~/features/profiles";
+import { createDefaultProfiles } from "~/features/profiles/createDefaultProfiles";
 
 export function dispatchReset(appDispatch: AppDispatch): void {
   const library = createDefault();
