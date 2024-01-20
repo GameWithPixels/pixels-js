@@ -84,7 +84,7 @@ export const PrebuildAnimations = {
     cycles: 1,
   }),
 
-  rainbow_as: new AnimRainbow({
+  rainbowAurora: new AnimRainbow({
     uuid: "45cb423b-443d-49f7-a2cd-2795ee7e44af",
     name: "Rainbow Aurora",
     category: "colorful",
@@ -96,7 +96,7 @@ export const PrebuildAnimations = {
     cycles: 1,
   }),
 
-  rainbow_fast: new AnimRainbow({
+  rainbowFast: new AnimRainbow({
     uuid: "f5299da4-ab0c-482d-ba10-ac13e6ac2bb3",
     name: "Rainbow Fast",
     category: "flashy",
@@ -118,7 +118,7 @@ export const PrebuildAnimations = {
     fade: 0.1,
   }),
 
-  rainbowAllFaces_as: new AnimRainbow({
+  rainbowAllFacesAurora: new AnimRainbow({
     uuid: "24435508-a485-4c4e-b676-f7882029dbda",
     name: "Rainbow All Faces Aurora",
     category: "colorful",
@@ -128,7 +128,7 @@ export const PrebuildAnimations = {
     fade: 0.1,
   }),
 
-  rainbowAllFaces_fast: new AnimRainbow({
+  rainbowAllFacesFast: new AnimRainbow({
     uuid: "18a95b8a-ad0e-4f47-80b3-953e8c06d4d7",
     name: "Rainbow All Faces Fast",
     category: "flashy",
@@ -172,7 +172,7 @@ export const PrebuildAnimations = {
     duration: 2,
   }),
 
-  cycle_fire: new AnimCycle({
+  cycleFire: new AnimCycle({
     uuid: "0d44ed15-4f78-4833-9986-cc569a9e6325",
     name: "Cycle Fire",
     category: "flashy",
@@ -185,17 +185,17 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "16b37bdc-741d-4766-9e33-51c3bf4c2e46",
       keyframes: [
-        new RgbKf({ time: 0.0, color: new Color(1.0, 0.5, 0) }),
-        new RgbKf({ time: 0.1, color: new Color(1.0, 0.8, 0) }),
+        new RgbKf({ time: 0.0, color: new Color(1, 0.5, 0) }),
+        new RgbKf({ time: 0.1, color: new Color(1, 0.8, 0) }),
         new RgbKf({ time: 0.2, color: Color.black }),
-        new RgbKf({ time: 0.3, color: new Color(1.0, 0.8, 0.7) }),
-        new RgbKf({ time: 0.5, color: new Color(1.0, 0.8, 0) }),
-        new RgbKf({ time: 0.8, color: new Color(1.0, 0.5, 0) }),
+        new RgbKf({ time: 0.3, color: new Color(1, 0.8, 0.7) }),
+        new RgbKf({ time: 0.5, color: new Color(1, 0.8, 0) }),
+        new RgbKf({ time: 0.8, color: new Color(1, 0.5, 0) }),
       ],
     }),
   }),
 
-  cycle_water: new AnimCycle({
+  cycleWater: new AnimCycle({
     uuid: "64b0edf8-fd2a-4cbd-895f-a037daaaa8d7",
     name: "Cycle Water",
     category: "flashy",
@@ -208,16 +208,16 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "471c4265-d651-4adf-92d7-19d28c4e0a5d",
       keyframes: [
-        new RgbKf({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
-        new RgbKf({ time: 0.1, color: new Color(0.3, 0.3, 1.0) }),
-        new RgbKf({ time: 0.3, color: new Color(0.7, 0.7, 1.0) }),
-        new RgbKf({ time: 0.5, color: new Color(0.5, 0.5, 1.0) }),
-        new RgbKf({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: new Color(0.3, 0.3, 1) }),
+        new RgbKf({ time: 0.3, color: new Color(0.7, 0.7, 1) }),
+        new RgbKf({ time: 0.5, color: new Color(0.5, 0.5, 1) }),
+        new RgbKf({ time: 0.8, color: Color.black }),
       ],
     }),
   }),
 
-  cycle_magic: new AnimCycle({
+  cycleMagic: new AnimCycle({
     uuid: "7d1d627f-df35-408d-a3f3-a13c2f7546b9",
     name: "Cycle Magic",
     category: "flashy",
@@ -230,16 +230,16 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "823c1e94-d3f0-4f3e-81d1-27a43578cf01",
       keyframes: [
-        new RgbKf({ time: 0.0, color: new Color(0, 0, 1) }),
+        new RgbKf({ time: 0.0, color: Color.brightBlue }),
         new RgbKf({ time: 0.4, color: new Color(0, 0.8, 1) }),
         new RgbKf({ time: 0.5, color: new Color(0.5, 0, 1) }),
         new RgbKf({ time: 0.7, color: new Color(0.8, 0, 1) }),
-        new RgbKf({ time: 1.0, color: new Color(0, 0, 1) }),
+        new RgbKf({ time: 1.0, color: Color.brightBlue }),
       ],
     }),
   }),
 
-  red_blue_worm: new AnimCycle({
+  redBlueWorm: new AnimCycle({
     uuid: "e778287e-4649-4eb0-bba3-5454550686e6",
     name: "Red Blue Worm",
     category: "animated",
@@ -252,15 +252,15 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "01089264-ddab-43dc-836d-71797d2159bb",
       keyframes: [
-        new RgbKf({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
-        new RgbKf({ time: 0.05, color: new Color(1.0, 0.0, 0.0) }),
-        new RgbKf({ time: 0.1, color: new Color(0.3, 0.3, 1.0) }),
-        new RgbKf({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.05, color: Color.brightRed }),
+        new RgbKf({ time: 0.1, color: new Color(0.3, 0.3, 1) }),
+        new RgbKf({ time: 0.8, color: Color.black }),
       ],
     }),
   }),
 
-  green_red_worm: new AnimCycle({
+  greenRedWorm: new AnimCycle({
     uuid: "336daf1b-3497-4838-a73b-fd6d80093cab",
     name: "Green Red Worm",
     category: "animated",
@@ -273,15 +273,15 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "d234ae71-2970-4c93-92b5-fe9ad1417031",
       keyframes: [
-        new RgbKf({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
-        new RgbKf({ time: 0.05, color: new Color(0.0, 1.0, 0.0) }),
-        new RgbKf({ time: 0.1, color: new Color(1.0, 0.3, 0.3) }),
-        new RgbKf({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.05, color: Color.brightGreen }),
+        new RgbKf({ time: 0.1, color: new Color(1, 0.3, 0.3) }),
+        new RgbKf({ time: 0.8, color: Color.black }),
       ],
     }),
   }),
 
-  pink_worm: new AnimCycle({
+  pinkWorm: new AnimCycle({
     uuid: "24dd6ece-614e-4855-8446-fca6cdd5f960",
     name: "Pink Worm",
     category: "animated",
@@ -294,10 +294,10 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "f25a7250-2a9b-440f-ae31-ccc728423ade",
       keyframes: [
-        new RgbKf({ time: 0.0, color: new Color(0.0, 0.0, 0.0) }),
+        new RgbKf({ time: 0.0, color: Color.black }),
         new RgbKf({ time: 0.05, color: Color.brightWhite }),
-        new RgbKf({ time: 0.15, color: new Color(1.0, 0.5, 0.5) }),
-        new RgbKf({ time: 0.8, color: new Color(0.0, 0.0, 0.0) }),
+        new RgbKf({ time: 0.15, color: new Color(1, 0.5, 0.5) }),
+        new RgbKf({ time: 0.8, color: Color.black }),
       ],
     }),
   }),
@@ -343,9 +343,11 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "b6357964-3c51-4c6e-8192-754ba1154526",
       keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
         new RgbKf({ time: 0.1, color: Color.brightRed }),
         new RgbKf({ time: 0.5, color: Color.brightYellow }),
         new RgbKf({ time: 0.9, color: Color.brightGreen }),
+        new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
     gradientAlongAxis: new Profiles.RgbGradient({
@@ -388,12 +390,12 @@ export const PrebuildAnimations = {
     gradientAlongAxis: new Profiles.RgbGradient({
       uuid: "97cf792e-43ba-455c-8a13-e4ea40c661c6",
       keyframes: [
-        new RgbKf({ time: 0, color: new Color(1, 0, 0) }),
-        new RgbKf({ time: 0.2, color: new Color(1, 1, 0) }),
-        new RgbKf({ time: 0.4, color: new Color(0, 1, 0) }),
-        new RgbKf({ time: 0.6, color: new Color(0, 1, 1) }),
-        new RgbKf({ time: 0.8, color: new Color(0, 0, 1) }),
-        new RgbKf({ time: 1, color: new Color(1, 0, 1) }),
+        new RgbKf({ time: 0, color: Color.brightRed }),
+        new RgbKf({ time: 0.2, color: Color.brightYellow }),
+        new RgbKf({ time: 0.4, color: Color.brightGreen }),
+        new RgbKf({ time: 0.6, color: Color.brightCyan }),
+        new RgbKf({ time: 0.8, color: Color.brightBlue }),
+        new RgbKf({ time: 1, color: Color.brightMagenta }),
       ],
     }),
     axisScale: 2,
@@ -410,7 +412,7 @@ export const PrebuildAnimations = {
     fade: 0.5,
   }),
 
-  spinning_rainbow: new AnimNormals({
+  spinningRainbow: new AnimNormals({
     uuid: "c7a041f3-f9e1-448c-94d3-a7f019ced0c4",
     name: "Spinning Rainbow",
     category: "animated",
@@ -447,7 +449,7 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 10,
   }),
 
-  spinning_rainbow_as: new AnimNormals({
+  spinningRainbowAurora: new AnimNormals({
     uuid: "d0e73d74-333e-4634-b30e-e078b376d789",
     name: "Spinning Rainbow Aurora",
     category: "animated",
@@ -456,8 +458,8 @@ export const PrebuildAnimations = {
       uuid: "89de8ff5-8d6f-4739-8d7f-3098b8da8fa4",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.1, color: new Color(0.7, 0.7, 0.7) }),
-        new RgbKf({ time: 0.9, color: new Color(0.7, 0.7, 0.7) }),
+        new RgbKf({ time: 0.1, color: Color.white }),
+        new RgbKf({ time: 0.9, color: Color.white }),
         new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
@@ -484,7 +486,7 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 10,
   }),
 
-  white_rose: new AnimNormals({
+  whiteRose: new AnimNormals({
     uuid: "c43226ad-2b96-451c-9e12-896cb14b3920",
     name: "White Rose",
     category: "uniform",
@@ -519,7 +521,7 @@ export const PrebuildAnimations = {
     angleScrollSpeed: 0,
   }),
 
-  fire_violet: new AnimNormals({
+  fireViolet: new AnimNormals({
     uuid: "b39f9e2d-1709-4a8a-9014-7e86e6940b49",
     name: "Fire Violet",
     category: "animated",
@@ -536,10 +538,12 @@ export const PrebuildAnimations = {
     gradientAlongAxis: new Profiles.RgbGradient({
       uuid: "9b87c453-9a8e-488c-bee7-a2b4e1e15280",
       keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
         new RgbKf({ time: 0.3, color: new Color(0.5, 0.2, 1) }),
         new RgbKf({ time: 0.5, color: new Color(1, 0.5, 0) }),
         new RgbKf({ time: 0.8, color: new Color(1, 0.8, 0.5) }),
         new RgbKf({ time: 0.92, color: new Color(1, 0.8, 0.5) }),
+        new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
     axisScrollSpeed: 0,
@@ -571,9 +575,11 @@ export const PrebuildAnimations = {
     gradientAlongAxis: new Profiles.RgbGradient({
       uuid: "34bf5368-5092-421b-80bf-1757e9013ee3",
       keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
         new RgbKf({ time: 0.3, color: Color.brightGreen }),
         new RgbKf({ time: 0.6, color: Color.brightCyan }),
         new RgbKf({ time: 0.9, color: Color.blue }),
+        new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
     axisScrollSpeed: -2,
@@ -603,9 +609,11 @@ export const PrebuildAnimations = {
     gradientAlongAxis: new Profiles.RgbGradient({
       uuid: "23dcedbe-a58e-4f40-9640-b84e600bca57",
       keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
         new RgbKf({ time: 0.3, color: Color.brightRed }),
         new RgbKf({ time: 0.6, color: Color.brightPurple }),
         new RgbKf({ time: 0.9, color: Color.brightBlue }),
+        new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
     axisScrollSpeed: -2,
@@ -672,12 +680,12 @@ export const PrebuildAnimations = {
       keyframes: [
         // new RgbKf({ time: 0, color: Col.brightWhite }),
         // new RgbKf({ time: 1, color: Col.brightWhite }),
-        new RgbKf({ time: 0, color: new Color(1, 0, 0) }),
-        new RgbKf({ time: 0.2, color: new Color(1, 1, 0) }),
-        new RgbKf({ time: 0.4, color: new Color(0, 1, 0) }),
-        new RgbKf({ time: 0.6, color: new Color(0, 1, 1) }),
-        new RgbKf({ time: 0.8, color: new Color(0, 0, 1) }),
-        new RgbKf({ time: 1, color: new Color(1, 0, 1) }),
+        new RgbKf({ time: 0, color: Color.brightRed }),
+        new RgbKf({ time: 0.2, color: Color.brightYellow }),
+        new RgbKf({ time: 0.4, color: Color.brightGreen }),
+        new RgbKf({ time: 0.6, color: Color.brightCyan }),
+        new RgbKf({ time: 0.8, color: Color.brightBlue }),
+        new RgbKf({ time: 1, color: Color.brightMagenta }),
       ],
     }),
     axisScale: 2,
@@ -748,12 +756,12 @@ export const PrebuildAnimations = {
     gradientAlongAxis: new Profiles.RgbGradient({
       uuid: "82ec56ec-402b-4d6d-bdb0-dbed8848944c",
       keyframes: [
-        new RgbKf({ time: 0, color: new Color(1, 0, 0) }),
-        new RgbKf({ time: 0.2, color: new Color(1, 1, 0) }),
-        new RgbKf({ time: 0.4, color: new Color(0, 1, 0) }),
-        new RgbKf({ time: 0.6, color: new Color(0, 1, 1) }),
-        new RgbKf({ time: 0.8, color: new Color(0, 0, 1) }),
-        new RgbKf({ time: 1, color: new Color(1, 0, 1) }),
+        new RgbKf({ time: 0, color: Color.brightRed }),
+        new RgbKf({ time: 0.2, color: Color.brightYellow }),
+        new RgbKf({ time: 0.4, color: Color.brightGreen }),
+        new RgbKf({ time: 0.6, color: Color.brightCyan }),
+        new RgbKf({ time: 0.8, color: Color.brightBlue }),
+        new RgbKf({ time: 1, color: Color.brightMagenta }),
       ],
     }),
     axisScale: 1,
@@ -791,9 +799,9 @@ export const PrebuildAnimations = {
       uuid: "fbf33718-46a5-40ba-a421-bfa9dade3ace",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.1, color: new Color(1, 1, 1) }),
-        new RgbKf({ time: 0.2, color: new Color(0.5, 0.5, 0.5) }),
-        new RgbKf({ time: 1, color: new Color(0.1, 0.1, 0.1) }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.2, color: Color.mediumWhite }),
+        new RgbKf({ time: 1, color: Color.faintWhite }),
       ],
     }),
     blinkFrequency: 50,
@@ -804,7 +812,7 @@ export const PrebuildAnimations = {
     gradientColorVar: 0.1,
   }),
 
-  noise_blue_slow: new AnimNoise({
+  noiseBlueSlow: new AnimNoise({
     uuid: "fc4e54c4-3b42-4f8c-85a8-e4fa5179304f",
     name: "Noise Blue Slow",
     category: "flashy",
@@ -829,7 +837,7 @@ export const PrebuildAnimations = {
     blinkDuration: 3,
   }),
 
-  red_blue_noise: new AnimNoise({
+  redBlueNoise: new AnimNoise({
     uuid: "8257f66b-9428-489f-a48b-09f1ca4fc380",
     name: "Red Blue Noise",
     category: "flashy",
@@ -857,7 +865,7 @@ export const PrebuildAnimations = {
     gradientColorVar: 0.6,
   }),
 
-  rainbow_noise: new AnimNoise({
+  rainbowNoise: new AnimNoise({
     uuid: "ee66f25b-b7fb-45a7-9a17-59db258327e5",
     name: "Rainbow Noise",
     category: "flashy",
@@ -865,21 +873,21 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "ba250e94-a36e-4246-afe4-ede300490d4a",
       keyframes: [
-        new RgbKf({ time: 0, color: new Color(1, 0, 0) }),
-        new RgbKf({ time: 0.2, color: new Color(1, 1, 0) }),
-        new RgbKf({ time: 0.4, color: new Color(0, 1, 0) }),
-        new RgbKf({ time: 0.6, color: new Color(0, 1, 1) }),
-        new RgbKf({ time: 0.8, color: new Color(0, 0, 1) }),
-        new RgbKf({ time: 1, color: new Color(1, 0, 1) }),
+        new RgbKf({ time: 0, color: Color.brightRed }),
+        new RgbKf({ time: 0.2, color: Color.brightYellow }),
+        new RgbKf({ time: 0.4, color: Color.brightGreen }),
+        new RgbKf({ time: 0.6, color: Color.brightCyan }),
+        new RgbKf({ time: 0.8, color: Color.brightBlue }),
+        new RgbKf({ time: 1, color: Color.brightMagenta }),
       ],
     }),
     blinkGradient: new Profiles.RgbGradient({
       uuid: "8e331458-611a-4fc8-8683-2a224f3386b2",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.1, color: new Color(1, 1, 1) }),
-        new RgbKf({ time: 0.2, color: new Color(0.5, 0.5, 0.5) }),
-        new RgbKf({ time: 1, color: new Color(0.1, 0.1, 0.1) }),
+        new RgbKf({ time: 0.1, color: Color.white }),
+        new RgbKf({ time: 0.2, color: Color.mediumWhite }),
+        new RgbKf({ time: 1, color: Color.faintWhite }),
       ],
     }),
     blinkFrequency: 50,
@@ -890,7 +898,7 @@ export const PrebuildAnimations = {
     gradientColorVar: 0,
   }),
 
-  white_blue_noise: new AnimNoise({
+  whiteBlueNoise: new AnimNoise({
     uuid: "900f5b09-b44a-49cc-bc2c-0eeaaac0b74a",
     name: "White Blue Noise",
     category: "flashy",
@@ -898,16 +906,16 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "41c1334a-0d87-4049-a8d7-818f9ca1c663",
       keyframes: [
-        new RgbKf({ time: 0, color: new Color(0, 1, 1) }),
-        new RgbKf({ time: 1, color: new Color(1, 1, 1) }),
+        new RgbKf({ time: 0, color: Color.brightCyan }),
+        new RgbKf({ time: 1, color: Color.white }),
       ],
     }),
     blinkGradient: new Profiles.RgbGradient({
       uuid: "b5580224-cf51-4756-a120-021af2edd4ee",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.1, color: new Color(0.5, 0.5, 0.5) }),
-        new RgbKf({ time: 1, color: new Color(0.1, 0.1, 0.1) }),
+        new RgbKf({ time: 0.1, color: Color.mediumWhite }),
+        new RgbKf({ time: 1, color: Color.faintWhite }),
       ],
     }),
     blinkFrequency: 10,
@@ -926,16 +934,16 @@ export const PrebuildAnimations = {
     gradient: new Profiles.RgbGradient({
       uuid: "0ccd88d9-eb40-43b7-82df-707e8cd2e8a0",
       keyframes: [
-        new RgbKf({ time: 0, color: new Color(1, 1, 1) }),
-        new RgbKf({ time: 1, color: new Color(1, 1, 1) }),
+        new RgbKf({ time: 0, color: Color.white }),
+        new RgbKf({ time: 1, color: Color.white }),
       ],
     }),
     blinkGradient: new Profiles.RgbGradient({
       uuid: "c533d28f-a6ff-47a3-b36e-b601fbeefe50",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.1, color: new Color(0.5, 0.5, 0.5) }),
-        new RgbKf({ time: 1, color: new Color(0.1, 0.1, 0.1) }),
+        new RgbKf({ time: 0.1, color: Color.mediumWhite }),
+        new RgbKf({ time: 1, color: Color.faintWhite }),
       ],
     }),
     blinkFrequency: 10,
