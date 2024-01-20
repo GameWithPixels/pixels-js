@@ -256,7 +256,7 @@ function DieDetailsPage({
               onAction={() => navigation.replace("firmwareUpdate", { pixelId })}
               onDismiss={() => setFirmwareUpdateVisible(false)}
             >
-              A software update is available for your die.
+              A firmware update is available for your die.
             </Banner>
           )}
           <DieStatus pixel={pixel} style={{ marginTop: 10 }} />

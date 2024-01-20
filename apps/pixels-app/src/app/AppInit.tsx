@@ -56,7 +56,8 @@ export function AppInit({ children }: React.PropsWithChildren) {
       // Inform user
       Alert.alert(
         "App Update Available",
-        "An update is available, would you like to install it now?",
+        "An update is available, would you like to install it now?\n" +
+          "You can always install it later from the More tab.",
         [
           {
             text: "Yes",

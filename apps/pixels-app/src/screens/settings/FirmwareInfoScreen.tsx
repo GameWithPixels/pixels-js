@@ -33,7 +33,7 @@ function FirmwareInfoPage({
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>
-        Dice Software Information
+        Dice Firmware Information
       </PageHeader>
       <ScrollView
         contentContainerStyle={{
@@ -44,7 +44,7 @@ function FirmwareInfoPage({
       >
         {dfuBundle ? (
           <>
-            <PaperText variant="titleLarge">Available Dice Software</PaperText>
+            <PaperText variant="titleLarge">Available Dice Firmware</PaperText>
             <View style={{ marginLeft: 10, gap: 10 }}>
               <Text>Date: {date.toUTCString()}</Text>
               <Text>Timestamp: {date.getTime()}</Text>
