@@ -39,6 +39,7 @@ import {
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import { buildActionURL } from "~/features/profiles";
 import { playRemoteAction } from "~/features/profiles/playRemoteAction";
+import { getAnimationGradient } from "~/features/store/library";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
@@ -239,8 +240,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
   // TODO Several animation types may have those keys
   const color = (action.animation as Partial<Profiles.AnimationFlashes>)?.color;
-  const keyframes = (action.animation as Partial<Profiles.AnimationGradient>)
-    ?.gradient?.keyframes;
+  const keyframes = getAnimationGradient(action.animation)?.keyframes;
   const repeatCount = (action.animation as Partial<Profiles.AnimationFlashes>)
     ?.count;
   const fading = (action.animation as Partial<Profiles.AnimationFlashes>)?.fade;
