@@ -287,8 +287,16 @@ export const Central = {
         _addListener("bluetoothState", ({ state }: BleBluetoothStateEvent) => {
           if (state === "ready") {
             resolve();
+          } else if (
+            state === "off" ||
+            state === "resetting" ||
+            state === "unknown"
+          ) {
+            console.log(`[BLE] Bluetooth state ${state}`);
+            reject(new Errors.BluetoothTurnedOffError(state));
           } else {
-            reject(new Errors.BluetoothPermissionsDeniedError()); // TODO it could be that Bluetooth is off
+            console.log("[BLE] Bluetooth permissions denied");
+            reject(new Errors.BluetoothPermissionsDeniedError());
           }
         });
         BluetoothLE.bleInitialize().catch(reject);
@@ -349,7 +357,7 @@ export const Central = {
       _scanResultSubs = undefined;
       // Need specific error code
       throw (error as Error)?.message === "BT le scanner not available"
-        ? new Errors.BluetoothTurnedOffError()
+        ? new Errors.BluetoothTurnedOffError("off")
         : new Errors.BluetoothLEError(
             `Failed to start scan: ${errToStr(error)})`
           );
@@ -371,8 +379,11 @@ export const Central = {
       console.log("[BLE] Stopping scan");
       _scanResultSubs?.remove();
       _scanResultSubs = undefined;
-      await BluetoothLE.stopScan();
-      _notifyScanStatus(false);
+      try {
+        await BluetoothLE.stopScan();
+      } finally {
+        _notifyScanStatus(false);
+      }
     }
   },
 

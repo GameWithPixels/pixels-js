@@ -100,9 +100,9 @@ public final class Serializer {
     public static WritableMap toJS(@Nullable BluetoothDevice device) {
         WritableMap map = Arguments.createMap();
         if (device != null) {
-            map.putString("systemId", String.valueOf(Utils.getDeviceSystemId(device)));
+            map.putString("systemId", Long.toHexString(Utils.addressToNumber(device.getAddress())));
             // 48 bits Bluetooth MAC address fits into the 52 bits mantissa of a double
-            map.putDouble("address", addressToNumber(device.getAddress()));
+            map.putDouble("address", Utils.addressToNumber(device.getAddress()));
             String name = device.getName();
             map.putString("name", name != null ? name : "");
         }
@@ -113,8 +113,8 @@ public final class Serializer {
     public static WritableMap toJS(@Nullable Peripheral peripheral) {
         WritableMap map = Arguments.createMap();
         if (peripheral != null) {
-            map.putString("systemId", String.valueOf(peripheral.getSystemId()));
-            map.putDouble("address", addressToNumber(peripheral.getAddress()));
+            map.putString("systemId", Long.toHexString(Utils.addressToNumber(peripheral.getAddress())));
+            map.putDouble("address", Utils.addressToNumber(peripheral.getAddress()));
             String name = peripheral.getName();
             map.putString("name", name != null ? name : "");
         }
@@ -300,14 +300,5 @@ public final class Serializer {
             }
         }
         return arr;
-    }
-
-    @NonNull
-    private static long addressToNumber(String address) {
-        try {
-            return Long.parseLong(address.replace(":", ""), 16);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 }

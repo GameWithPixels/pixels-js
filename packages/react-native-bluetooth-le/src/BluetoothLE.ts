@@ -79,6 +79,8 @@ export interface NativeBluetoothLE extends NativeModule {
   ): Promise<ConnectionStatus>;
   // Getting name also works on non-connected devices
   getPeripheralName(deviceSystemId: string): Promise<string>;
+  // Getting address also works on non-connected devices. Android only.
+  getPeripheralAddress(deviceSystemId: string): Promise<number>;
   getPeripheralMtu(deviceSystemId: string): Promise<number>;
   requestPeripheralMtu(deviceSystemId: string, mtu: number): Promise<number>;
   readPeripheralRssi(deviceSystemId: string): Promise<number>;

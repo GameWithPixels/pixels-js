@@ -21,8 +21,8 @@ export class BluetoothPermissionsDeniedError extends BluetoothLEError {
 }
 
 export class BluetoothTurnedOffError extends BluetoothLEError {
-  constructor() {
-    super("Bluetooth is turned off or not available");
+  constructor(state: "off" | "resetting" | "unknown") {
+    super(`Bluetooth unavailable, state is ${state}`);
     this.name = "BluetoothTurnedOffError";
   }
 }

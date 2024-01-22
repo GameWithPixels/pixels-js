@@ -1,7 +1,9 @@
 package com.systemic.reactnativebluetoothle;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
@@ -17,6 +19,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.systemic.bluetoothle.BluetoothState;
 import com.systemic.bluetoothle.Peripheral;
 import com.systemic.bluetoothle.Scanner;
 
@@ -40,8 +43,8 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     private final static String UNKNOWN_DEVICE = "UNKNOWN_DEVICE"; // ????
     private final static String UNKNOWN_PERIPHERAL = "UNKNOWN_PERIPHERAL";
 
-    final HashMap<Integer, BluetoothDevice> _devices = new HashMap<>(16);
-    final HashMap<Integer, Peripheral> _peripherals = new HashMap<>(16);
+    final HashMap<Long, BluetoothDevice> _devices = new HashMap<>(16);
+    final HashMap<Long, Peripheral> _peripherals = new HashMap<>(16);
 
     BluetoothLEModule(ReactApplicationContext context) {
         super(context);
@@ -101,7 +104,31 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
         sendEvent(event, params);
     }
 
-    void sendConnectionEvent(int peripheralId, @NonNull BleConnectionEvent connectionEvent, @DisconnectionReason int reason) {
+    void sendBluetoothStateEvent(BluetoothStateEvent state) {
+        sendEvent(BleEvent.BluetoothState, "state", state.getName());
+    }
+
+    boolean checkBluetoothPermission() {
+        Context context = getReactApplicationContext();
+        return (
+            context.checkCallingOrSelfPermission(android.Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED ||
+            context.checkCallingOrSelfPermission(android.Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED ||
+            context.checkCallingOrSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            context.checkCallingOrSelfPermission(android.Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED ||
+            context.checkCallingOrSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        );
+    }
+
+    BluetoothStateEvent getBluetoothStateEvent() {
+        if (checkBluetoothPermission()) {
+            final int state = BluetoothState.getState(getReactApplicationContext());
+            return BluetoothStateEvent.fromInt(state);
+        } else {
+            return BluetoothStateEvent.Unauthorized;
+        }
+    }
+
+    void sendConnectionEvent(long peripheralId, @NonNull BleConnectionEvent connectionEvent, @DisconnectionReason int reason) {
         Peripheral peripheral = _peripherals.get(peripheralId);
         if (peripheral != null) {
             sendEvent(BleEvent.ConnectionEvent,
@@ -109,12 +136,12 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
         }
     }
 
-    int getPeripheralId(String deviceSystemId) {
+    long getPeripheralId(String deviceSystemId) {
         if (deviceSystemId == null) {
             return 0;
         }
         try {
-            return Integer.parseInt(deviceSystemId);
+            return Long.parseLong(deviceSystemId, 16);
         } catch (NumberFormatException e) {
             return 0;
         }
@@ -139,7 +166,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     @Nullable
     Peripheral getPeripheralForRequest(String deviceSystemId, @NonNull Promise promise, boolean allowUnknown) {
         if (checkDeviceSystemIdForRequest(deviceSystemId, promise)) {
-            int peripheralId = getPeripheralId(deviceSystemId);
+            long peripheralId = getPeripheralId(deviceSystemId);
             Peripheral peripheral = _peripherals.get(peripheralId);
             if (peripheral == null) {
                 if (allowUnknown) {
@@ -206,14 +233,29 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void bleInitialize(Promise promise) {
         // TODO request permissions
-        sendEvent(BleEvent.BluetoothState, "state", "ready");
+        BluetoothState.startMonitoring(getReactApplicationContext(), new BluetoothState.StateCallback() {
+            public void onStateChanged(int state) {
+                if (checkBluetoothPermission()) {
+                    sendBluetoothStateEvent(BluetoothStateEvent.fromInt(state));
+                } else {
+                    sendBluetoothStateEvent(BluetoothStateEvent.Unauthorized);
+                }
+            }
+        });
+        sendBluetoothStateEvent(getBluetoothStateEvent());
         promise.resolve(null);
     }
 
     @ReactMethod
     public void bleShutdown(Promise promise) {
         // TODO disconnect all peripherals + make a call to bleInitialize() wait on this one to complete
+        BluetoothState.stopMonitoring();
         promise.resolve(null);
+    }
+
+    @ReactMethod
+    public void getBluetoothState(Promise promise) {
+        promise.resolve(getBluetoothStateEvent().getName());
     }
 
     @ReactMethod
@@ -223,7 +265,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
                 new Scanner.ScannerCallback() {
                     public void onScanResult(ScanResult scanResult) {
                         BluetoothDevice device = scanResult.getDevice();
-                        _devices.put(Utils.getDeviceSystemId(device), device);
+                        _devices.put(Utils.addressToNumber(device.getAddress()), device);
                         sendEvent(BleEvent.ScanResult,
                             Serializer.toJS(device, scanResult));
                     }
@@ -270,7 +312,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
             if (!checkDeviceSystemIdForRequest(deviceSystemId, promise)) {
                 return;
             }
-            int peripheralId = getPeripheralId(deviceSystemId);
+            long peripheralId = getPeripheralId(deviceSystemId);
             Peripheral peripheral = _peripherals.get(peripheralId);
             if (peripheral == null) {
                 final BluetoothDevice device = _devices.get(peripheralId);
@@ -308,7 +350,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
             if (peripheral != null) {
                 promise.resolve(Serializer.toJS(peripheral));
             } else {
-                promise.reject(UNKNOWN_PERIPHERAL, String.valueOf(peripheralId));
+                promise.reject(UNKNOWN_PERIPHERAL, Long.toHexString(peripheralId));
             }
         } catch (Exception ex) {
             processExceptionForRequest("createPeripheral", ex, promise);
@@ -318,7 +360,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void releasePeripheral(String deviceSystemId) {
         try {
-            int peripheralId = getPeripheralId(deviceSystemId);
+            long peripheralId = getPeripheralId(deviceSystemId);
             Peripheral peripheral = _peripherals.get(peripheralId);
             if (peripheral != null) {
                 _peripherals.remove(peripheralId);
@@ -371,17 +413,24 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getPeripheralName(String deviceSystemId, @NonNull Promise promise) {
         try {
-            if (checkDeviceSystemIdForRequest(deviceSystemId, promise)) {
-                int peripheralId = getPeripheralId(deviceSystemId);
-                final BluetoothDevice device = _devices.get(peripheralId);
-                if (device != null) {
-                    promise.resolve(device.getName());
-                } else {
-                    promise.reject(UNKNOWN_DEVICE, "No known device with system id " + deviceSystemId);
-                }
+            Peripheral peripheral = getPeripheralForRequest(deviceSystemId, promise);
+            if (peripheral != null) {
+                promise.resolve(peripheral.getName());
             }
         } catch (Exception ex) {
             processExceptionForRequest("getPeripheralName", ex, promise);
+        }
+    }
+
+    @ReactMethod
+    public void getPeripheralAddress(String deviceSystemId, @NonNull Promise promise) {
+        try {
+            Peripheral peripheral = getPeripheralForRequest(deviceSystemId, promise);
+            if (peripheral != null) {
+                promise.resolve(peripheral.getAddress());
+            }
+        } catch (Exception ex) {
+            processExceptionForRequest("getPeripheralAddress", ex, promise);
         }
     }
 
@@ -593,7 +642,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
                 instanceIndex,
                 (device, data) -> {
                     // Make sure peripheral is still valid
-                    Peripheral p = _peripherals.get(peripheral.getSystemId());
+                    Peripheral p = _peripherals.get(Utils.addressToNumber(peripheral.getAddress()));
                     if (p != null) {
                         UUID serv = UUID.fromString(serviceUuid); // TODO we should get this info from the callback
                         UUID charac = UUID.fromString(characteristicUuid);
