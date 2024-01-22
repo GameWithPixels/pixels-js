@@ -40,8 +40,7 @@ import android.bluetooth.*;
 import android.content.Context;
 import android.os.Handler;
 import androidx.annotation.NonNull;
-
-import com.systemic.reactnativebluetoothle.Utils;
+import androidx.annotation.Nullable;
 
 import no.nordicsemi.android.ble.*;
 import no.nordicsemi.android.ble.callback.*;
@@ -73,11 +72,11 @@ import no.nordicsemi.android.ble.annotation.WriteType;
  * A service contains characteristics for which data may be read or written.
  *
  * It relies on Nordic's Android-BLE-Library library for most of the work.
- * @see <a href="https://github.com/NordicSemiconductor/Android-BLE-Library">Nordic Android-BLE-Library</a>
+ * @see https://github.com/NordicSemiconductor/Android-BLE-Library
  */
 public final class Peripheral
 {
-	private static final String TAG = "SystemicGames";
+    private static final String TAG = "SystemicGames";
 
     /**
      * @brief Interface for most BLE request callbacks.
@@ -175,7 +174,7 @@ public final class Peripheral
 
         private GattCallback _callback;
 
-        public ClientManager(@NonNull Context context, ConnectionObserver connectionObserver)
+        public ClientManager(@NonNull final Context context, @Nullable final ConnectionObserver connectionObserver)
         {
             // Use main thread looper (dispatcher)
             super(context);
@@ -208,7 +207,7 @@ public final class Peripheral
         }
 
         public ReadRequest readCharacteristic(final BluetoothGattCharacteristic characteristic)
-        {
+        {   
 		    return super.readCharacteristic(characteristic);
         }
 
@@ -266,7 +265,7 @@ public final class Peripheral
      * @param bluetoothAddress The address of a Bluetooth device.
      * @return A BluetoothDevice or null if there is none for the given address.
      */
-    public static BluetoothDevice getDeviceFromAddress(final Context context, final long bluetoothAddress)
+    public static BluetoothDevice getDeviceFromAddress(final @NonNull Context context, final long bluetoothAddress)
     {
         // Get the Bluetooth Manager
         BluetoothManager bluetoothManager
@@ -294,14 +293,13 @@ public final class Peripheral
      * @param device The Android Bluetooth device object for the BLE peripheral.
      * @param connectionObserver The callback for notifying of changes of the connection status of the peripheral.
      */
-    public Peripheral(@NonNull final Context context, @NonNull final BluetoothDevice device, @NonNull final ConnectionObserver connectionObserver)
+    public Peripheral(@NonNull final Context context, @Nullable final BluetoothDevice device, @NonNull final ConnectionObserver connectionObserver)
     {
         Log.v(TAG, "==> createPeripheral");
 
         // Check arguments
         Objects.requireNonNull(context);
         Objects.requireNonNull(device);
-        Objects.requireNonNull(connectionObserver);
 
         // Store device
         _device = device;
@@ -340,8 +338,7 @@ public final class Peripheral
                 {
                     if (uuidStr.length() > 0)
                     {
-                        UUID uuid = UUID.fromString(uuidStr);
-                        services.add(uuid);
+                        services.add(UUID.fromString(uuidStr));
                     }
                 }
                 catch (IllegalArgumentException e)
@@ -400,11 +397,11 @@ public final class Peripheral
     //! \name Getters valid even when not connected
     //! @{
 
-    public int getSystemId()
-    {
-        return Utils.getDeviceSystemId(_device);
-    }
-
+    /**
+     * @brief Gets the Bluetooth MAC address of the peripheral.
+     *
+     * @return A MAC address as a string (with semi-colons).
+     */
     public String getAddress()
     {
         return _device.getAddress();
@@ -565,7 +562,7 @@ public final class Peripheral
     /**
      * @brief Gets the standard BLE properties of the specified service's characteristic.
      *
-     * @see <a href="https://developer.android.com/reference/android/bluetooth/BluetoothGattCharacteristic#PROPERTY_BROADCAST>BluetoothGattCharacteristic#PROPERTY_BROADCAST</a>,
+     * @see https://developer.android.com/reference/android/bluetooth/BluetoothGattCharacteristic#PROPERTY_BROADCAST,
      * PROPERTY_READ, PROPERTY_NOTIFY, etc.
      *
      * @param serviceUuid The service UUID.

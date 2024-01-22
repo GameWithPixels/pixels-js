@@ -19,7 +19,7 @@ import no.nordicsemi.android.support.v18.scanner.*;
  *       as JSON string rather than a complex object.
  *
  * It relies on Nordic's Android-Scanner-Compat-Library library for most of the work.
- * @see <a href="https://github.com/NordicSemiconductor/Android-Scanner-Compat-Library">Android-Scanner-Compat-Library</a>
+ * @see https://github.com/NordicSemiconductor/Android-Scanner-Compat-Library
  */
 public final class Scanner
 {
@@ -156,25 +156,6 @@ public final class Scanner
                 callback.onScanFailed(errorToString(errorCode));
             }
 
-            @NonNull
-            private String errorToString(final int errorCode)
-            {
-                switch (errorCode)
-                {
-                    case ScanCallback.SCAN_FAILED_ALREADY_STARTED:
-                        return "Already started";
-                    case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
-                        return "Application registration failed";
-                    case ScanCallback.SCAN_FAILED_INTERNAL_ERROR:
-                        return "Internal error";
-                    case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED:
-                        return "Feature unsupported";
-                    case ScanCallback.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
-                        return "Out of hardware resources";
-                }
-                return "Unknown error";
-            }
-
             private void NotifyScanResult(@NonNull final ScanResult scanResult)
             {
                 BluetoothDevice device = scanResult.getDevice();
@@ -187,5 +168,24 @@ public final class Scanner
                 }
             }
         };
+    }
+
+    @NonNull
+    private static String errorToString(final int errorCode)
+    {
+        switch (errorCode)
+        {
+            case ScanCallback.SCAN_FAILED_ALREADY_STARTED:
+                return "Already started";
+            case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
+                return "Application registration failed";
+            case ScanCallback.SCAN_FAILED_INTERNAL_ERROR:
+                return "Internal error";
+            case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED:
+                return "Feature unsupported";
+            case ScanCallback.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
+                return "Out of hardware resources";
+        }
+        return "Unknown error";
     }
 }
