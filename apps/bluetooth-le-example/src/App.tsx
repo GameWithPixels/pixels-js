@@ -2,22 +2,23 @@ import {
   Central,
   ConnectionStatus,
   PeripheralConnectionEvent,
-  ScanStatusEvent,
   ScannedPeripheral,
   ScannedPeripheralEvent,
+  ScanStatusEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import * as React from "react";
 import {
+  Platform,
   Pressable,
+  PressableProps,
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  View,
-  Text as RNText,
-  useColorScheme,
-  TextProps,
-  PressableProps,
   Switch,
+  Text as RNText,
+  TextProps,
+  useColorScheme,
+  View,
 } from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
@@ -86,9 +87,11 @@ export default function App() {
   // Keep last error to display it
   const [lastError, setLastError] = React.useState<Error>();
   // Scanning status
-  const [isScanning, setIsScanning] = React.useState(false);
+  const [isScanning, setIsScanning] = React.useState(true); // Start scanning immediately
   // Whether to only scan for Pixels
   const [onlyPixels, setOnlyPixels] = React.useState(false);
+  // Auto start scanning
+  const [autoStart, setAutoStart] = React.useState(true);
   // List of scanned peripherals
   const [scannedPeripherals, setScannedPeripherals] = React.useState<
     (ScannedPeripheral & { ledCount?: number })[]
@@ -119,32 +122,46 @@ export default function App() {
   );
 
   // Get latest known connection status for given peripheral
-  const getConnectionStatus = React.useCallback(
-    (peripheral: ScannedPeripheral): ConnectionStatus =>
-      connectionStatuses.find(
-        (s) => s.peripheral.systemId === peripheral.systemId
-      )?.connectionStatus ?? "disconnected",
-    [connectionStatuses]
-  );
+  const getConnectionStatus = (
+    peripheral: ScannedPeripheral
+  ): ConnectionStatus =>
+    connectionStatuses.find(
+      (s) => s.peripheral.systemId === peripheral.systemId
+    )?.connectionStatus ?? "disconnected";
 
-  // Initialize/shutdown Central
-  React.useEffect(() => {
+  // Scan function
+  const scan = React.useCallback((onlyPixels: boolean) => {
     // Clear any pending error
     setLastError(undefined);
-    // Initialize Central
-    Central.initialize();
-    // Start scanning immediately
-    setIsScanning(true);
-    return () => {
-      // Stop Central
-      Central.shutdown();
-    };
-  }, []);
+    // Start scanning
+    const services = onlyPixels ? [pixelServiceUuid] : [];
+    Central.startScanning(services).catch((e) => {
+      setLastError(e);
+    });
+  }, []); // Stable identity
+
+  // Update scan when "onlyPixels" changes
+  const changeOnlyPixels = (onlyPixels: boolean) => {
+    setOnlyPixels(onlyPixels);
+    if (onlyPixels) {
+      // Keep only Pixels
+      setScannedPeripherals((peripherals) =>
+        peripherals.filter(
+          (p) => p.advertisementData.services?.includes(pixelServiceUuid)
+        )
+      );
+    }
+    if (isScanning) {
+      scan(onlyPixels);
+    }
+  };
 
   // Register/un-register listeners
   React.useEffect(() => {
-    const scanStatusListener = (ev: ScanStatusEvent) =>
+    const scanStatusListener = (ev: ScanStatusEvent) => {
+      console.log(`Scan status changed to ${ev.scanning}`);
       setIsScanning(ev.scanning);
+    };
     const peripheralListener = (ev: ScannedPeripheralEvent) => {
       // Only show connectable peripherals with a name
       if (
@@ -172,26 +189,27 @@ export default function App() {
     };
   }, [updatePeripherals]);
 
-  // Start/stop scanning
+  // Initialize/shutdown Central
   React.useEffect(() => {
-    if (onlyPixels) {
-      // Keep only Pixels
-      setScannedPeripherals((peripherals) =>
-        peripherals.filter((p) =>
-          p.advertisementData.services?.includes(pixelServiceUuid)
-        )
-      );
+    // Clear any pending error
+    setLastError(undefined);
+    // Initialize Central
+    Central.initialize();
+    // Reset scanning state
+    setIsScanning(Central.isScanning);
+    return () => {
+      // Stop Central
+      Central.shutdown();
+    };
+  }, []);
+
+  // Update scanning when "onlyPixels" changes
+  React.useEffect(() => {
+    if (autoStart) {
+      setAutoStart(false);
+      scan(onlyPixels);
     }
-    if (isScanning) {
-      // Clear any pending error
-      setLastError(undefined);
-      // Start scanning
-      const services = onlyPixels ? [pixelServiceUuid] : [];
-      Central.startScanning(services).catch(setLastError);
-    } else {
-      Central.stopScanning();
-    }
-  }, [isScanning, onlyPixels]);
+  }, [autoStart, onlyPixels, scan]);
 
   // Peripheral connection status changed callback
   const connectionStatusCallback = React.useCallback(
@@ -241,11 +259,21 @@ export default function App() {
     <SafeAreaView style={[styles.containerMain, backgroundStyle]}>
       <Text style={styles.textTitle}>React Native</Text>
       <Text style={styles.textTitle}>Bluetooth LE Example</Text>
+      {Platform.OS === "android" && (
+        <Text>
+          On Android, scanning fails silently if started more than 5 times in
+          the last 30 seconds.
+        </Text>
+      )}
       {lastError && (
         <Text style={styles.textError}>Error! {lastError.message}</Text>
       )}
       <View style={styles.containerHorizontal}>
-        <Button onPress={() => setIsScanning((b) => !b)}>
+        <Button
+          onPress={() =>
+            isScanning ? Central.stopScanning() : scan(onlyPixels)
+          }
+        >
           {isScanning ? "Stop Scanning" : "Start Scan"}
         </Button>
         <Button
@@ -263,10 +291,7 @@ export default function App() {
       </View>
       <View style={styles.containerHorizontal}>
         <Text>Scan Only For Pixels Dice</Text>
-        <Switch
-          onValueChange={() => setOnlyPixels((b) => !b)}
-          value={onlyPixels}
-        />
+        <Switch onValueChange={changeOnlyPixels} value={onlyPixels} />
       </View>
       <ScrollView
         style={styles.fullWidth}
