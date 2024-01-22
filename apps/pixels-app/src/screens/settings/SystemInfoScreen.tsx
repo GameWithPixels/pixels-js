@@ -1,6 +1,8 @@
 import * as Application from "expo-application";
 import { useLocales } from "expo-localization";
+import * as Speech from "expo-speech";
 import * as Updates from "expo-updates";
+import React from "react";
 import {
   PixelRatio,
   Platform,
@@ -8,7 +10,11 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { Text as PaperText, TextProps } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Text as PaperText,
+  TextProps,
+} from "react-native-paper";
 import { useReducedMotion } from "react-native-reanimated";
 
 import { AppBackground } from "~/components/AppBackground";
@@ -27,6 +33,12 @@ function SystemInfoPage({
   const locales = useLocales();
   const window = useWindowDimensions();
   const reduceMotionEnabled = useReducedMotion();
+  const [voices, setVoices] = React.useState<Speech.Voice[]>();
+  React.useEffect(() => {
+    const getVoices = async () =>
+      setVoices(await Speech.getAvailableVoicesAsync());
+    getVoices();
+  }, []);
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>
@@ -73,6 +85,10 @@ function SystemInfoPage({
                 : JSON.stringify(locales)
             }
           </Text>
+          <View style={{ flexDirection: "row", gap: 3 }}>
+            <Text>Voices:</Text>
+            {voices ? <Text>{voices.length}</Text> : <ActivityIndicator />}
+          </View>
         </View>
       </ScrollView>
     </View>

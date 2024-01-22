@@ -181,7 +181,6 @@ export type SettingsStackParamList = {
   support: undefined;
   turnOnDice: undefined;
   checkForUpdate: undefined;
-  speech: undefined;
 };
 
 export type SettingsMenuScreenProps = CompositeScreenProps<
@@ -212,11 +211,6 @@ export type TurnOnDiceScreenProps = NativeStackScreenProps<
 export type CheckForUpdateScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "checkForUpdate"
->;
-
-export type SpeechScreenProps = NativeStackScreenProps<
-  SettingsStackParamList,
-  "speech"
 >;
 
 export function getStackNavigationOptions(

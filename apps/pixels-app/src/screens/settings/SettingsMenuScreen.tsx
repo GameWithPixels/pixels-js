@@ -1,6 +1,5 @@
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import React from "react";
-import { Linking, ScrollView, View, Text as RnText } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useStore } from "react-redux";
 
@@ -16,7 +15,6 @@ import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { useConfirmActionSheet } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
 
 const pages = [
   // "Audio Clips",
@@ -32,8 +30,6 @@ const pages = [
   "Dice Firmware Information",
   "Check for Update",
   "Reset App Settings",
-  "Speech",
-  "Bottom Sheet",
 ] as const;
 
 type PageName = (typeof pages)[number];
@@ -118,65 +114,32 @@ function SettingsMenuPage({
       case "Reset App Settings":
         showConfirmReset();
         break;
-      case "Speech":
-        navigation.navigate("speech");
-        break;
-      case "Bottom Sheet":
-        sheetRef.current?.present();
-        break;
     }
   };
-  const sheetRef = React.useRef<BottomSheetModal>(null);
   return (
-    <>
-      <ScrollView
-        style={{ height: "100%" }}
-        contentContainerStyle={{
-          paddingVertical: 20,
-          paddingHorizontal: 10,
-          gap: 20,
-        }}
-      >
-        <MenuSection
-          title="Help"
-          start={0}
-          end={3}
-          supPagesCount={2}
-          openPage={openPage}
-        />
-        <MenuSection
-          title="Settings"
-          start={3}
-          end={7}
-          supPagesCount={3}
-          openPage={openPage}
-        />
-        <MenuSection
-          title="Testing"
-          start={7}
-          supPagesCount={3}
-          openPage={openPage}
-        />
-      </ScrollView>
-      {/* For testing */}
-      <BottomSheetModal
-        ref={sheetRef}
-        stackBehavior="push"
-        snapPoints={["50%"]}
-        backgroundStyle={getBottomSheetBackgroundStyle()}
-        onDismiss={() => sheetRef.current?.dismiss()}
-      >
-        <BottomSheetView
-          style={{
-            flexGrow: 1,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <RnText style={{ color: "grey", fontSize: 30 }}>All good! 🎉</RnText>
-        </BottomSheetView>
-      </BottomSheetModal>
-    </>
+    <ScrollView
+      style={{ height: "100%" }}
+      contentContainerStyle={{
+        paddingVertical: 20,
+        paddingHorizontal: 10,
+        gap: 20,
+      }}
+    >
+      <MenuSection
+        title="Help"
+        start={0}
+        end={3}
+        supPagesCount={2}
+        openPage={openPage}
+      />
+      <MenuSection
+        title="Settings"
+        start={3}
+        end={7}
+        supPagesCount={3}
+        openPage={openPage}
+      />
+    </ScrollView>
   );
 }
 
