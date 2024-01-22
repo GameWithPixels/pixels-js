@@ -67,8 +67,7 @@ const config = {
         "expo-build-properties",
         {
           android: {
-            kotlinVersion: "1.7.0",
-            flipper: "0.182.0",
+            // flipper: "0.182.0",
             usesCleartextTraffic: true,
           },
         },
