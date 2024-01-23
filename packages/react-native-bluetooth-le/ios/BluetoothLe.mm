@@ -287,13 +287,6 @@ RCT_EXPORT_METHOD(stopScan:(RCTPromiseResolveBlock)resolve
     resolve(nil);
 }
 
-RCT_EXPORT_METHOD(getDeviceFromAddress:(nonnull NSNumber *)bluetoothAddress
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-{
-    rejectWithError(SGBleNotImplementedError, reject);
-}
-
 RCT_EXPORT_METHOD(createPeripheral:(NSString *)deviceSystemId
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)

@@ -65,7 +65,6 @@ export interface NativeBluetoothLE extends NativeModule {
   bleShutdown(): Promise<void>;
   startScan(requiredServicesUuids?: string): Promise<void>;
   stopScan(): Promise<void>;
-  getDeviceFromAddress(bluetoothAddress: number): Promise<Device>; // getPeripheralFromAddress??
   createPeripheral(deviceSystemId: string): Promise<Device>;
   releasePeripheral(deviceSystemId: string): Promise<void>;
   connectPeripheral(

@@ -21,5 +21,5 @@ export interface PeripheralInfo {
   >;
 }
 
-// Keep list of peripherals in a separate file so it is not reloaded by Fast Refresh after a change in Central
+// Keep list of peripherals in a separate file so it is not reset by Fast Refresh after a change in Central
 export const CentralPeripheralsMap: Map<string, PeripheralInfo> = new Map();
