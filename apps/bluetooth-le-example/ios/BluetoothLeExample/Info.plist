@@ -52,8 +52,8 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>$(PRODUCT_NAME) needs access to your Camera.</string>
+	<string>$(PRODUCT_NAME) needs access to Bluetooth to connect to your devices.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>$(PRODUCT_NAME) needs access to your Camera.</string>
+	<string>$(PRODUCT_NAME) needs access to Bluetooth to connect to your devices.</string>
 </dict>
 </plist>
