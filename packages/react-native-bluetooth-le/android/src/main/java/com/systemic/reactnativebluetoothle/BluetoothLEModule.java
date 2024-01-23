@@ -40,7 +40,6 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     private final static String INTERNAL_ERROR = "INTERNAL_ERROR";
     private final static String INVALID_ARGUMENT = "INVALID_ARGUMENT";
     private final static String INVALID_REQUEST = "INVALID_REQUEST";
-    private final static String UNKNOWN_DEVICE = "UNKNOWN_DEVICE"; // ????
     private final static String UNKNOWN_PERIPHERAL = "UNKNOWN_PERIPHERAL";
 
     final HashMap<Long, BluetoothDevice> _devices = new HashMap<>(16);
@@ -290,22 +289,6 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
         }
     }
 
-    // 48 bits Bluetooth MAC address fits into the 52 bits mantissa of a double
-    @ReactMethod
-    public void getDeviceFromAddress(double bluetoothAddress, Promise promise) {
-        try {
-            BluetoothDevice device = Peripheral.getDeviceFromAddress(
-                getReactApplicationContext(), (long) bluetoothAddress);
-            if (device != null) {
-                promise.resolve(Serializer.toJS(device));
-            } else {
-                promise.reject(UNKNOWN_DEVICE, "No known device with bluetooth address " + String.valueOf(bluetoothAddress));
-            }
-        } catch (Exception ex) {
-            processExceptionForRequest("getDeviceFromAddress", ex, promise);
-        }
-    }
-
     @ReactMethod
     public void createPeripheral(String deviceSystemId, @NonNull Promise promise) {
         try {
@@ -314,8 +297,15 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
             }
             long peripheralId = getPeripheralId(deviceSystemId);
             Peripheral peripheral = _peripherals.get(peripheralId);
-            if (peripheral == null) {
-                final BluetoothDevice device = _devices.get(peripheralId);
+            if (peripheral == null && peripheralId != 0) {
+                BluetoothDevice device = _devices.get(peripheralId);
+                if (device == null) {
+                    device = Scanner.getDeviceFromAddress(
+                        getReactApplicationContext(), peripheralId);
+                    if (device != null) {
+                        _devices.put(peripheralId, device);
+                    }
+                }
                 if (device != null) {
                     peripheral = new Peripheral(getReactApplicationContext(), device, new ConnectionObserver() {
                         public void onDeviceConnecting(@NonNull BluetoothDevice device) {

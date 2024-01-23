@@ -259,36 +259,11 @@ public final class Peripheral
     private UUID[] _requiredServices;
 
     /**
-     * @brief Gets the BluetoothDevice object for the given Bluetooth address.
-     *
-     * @param context The application context.
-     * @param bluetoothAddress The address of a Bluetooth device.
-     * @return A BluetoothDevice or null if there is none for the given address.
-     */
-    public static BluetoothDevice getDeviceFromAddress(final @NonNull Context context, final long bluetoothAddress)
-    {
-        // Get the Bluetooth Manager
-        BluetoothManager bluetoothManager
-            = (BluetoothManager)context.getSystemService(Context.BLUETOOTH_SERVICE);
-
-        // Convert the Bluetooth address to a string
-        StringBuilder sb = new StringBuilder();
-        for (int shift = 40; shift >= 0; shift -= 8)
-        {
-            if (sb.length() > 0) sb.append(":");
-            sb.append(String.format("%02X", (bluetoothAddress >> shift) & 0xFF));
-        }
-
-        // Returns the Bluetooth device
-        return bluetoothManager.getAdapter().getRemoteDevice(sb.toString());
-    }
-
-    /**
      * @brief Initializes a peripheral for the given Android BluetoothDevice object
      *        and with a connection observer.
      *
      * BluetoothDevice may be retrieved either with from a scan using the Scanner class
-     * or with their Bluetooth address using the getDeviceFromAddress() static method.
+     * or with their Bluetooth address using Scanner.getDeviceFromAddress() static method.
      *
      * @param device The Android Bluetooth device object for the BLE peripheral.
      * @param connectionObserver The callback for notifying of changes of the connection status of the peripheral.

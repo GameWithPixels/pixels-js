@@ -3,9 +3,12 @@ package com.systemic.bluetoothle;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
 import android.os.ParcelUuid;
 import android.util.Log;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 
 import androidx.annotation.NonNull;
 
@@ -124,6 +127,40 @@ public final class Scanner
                 _scanCallback = null;
             }
         }
+    }
+
+    /**
+     * @brief Gets the BluetoothDevice object for the given Bluetooth address.
+     *
+     * @param context The application context.
+     * @param bluetoothAddress The address of a Bluetooth device.
+     * @return A BluetoothDevice or null if there is none for the given address.
+     */
+    public static BluetoothDevice getDeviceFromAddress(final @NonNull Context context, final long bluetoothAddress)
+    {
+        // Get the Bluetooth Manager and default adapter
+        BluetoothManager bluetoothManager
+            = (BluetoothManager)context.getSystemService(Context.BLUETOOTH_SERVICE);
+        if (bluetoothManager == null)
+        {
+            return null;
+        }
+        BluetoothAdapter adapter = bluetoothManager.getAdapter();
+        if (adapter == null)
+        {
+            return null;
+        }
+
+        // Convert the Bluetooth address to a string
+        StringBuilder sb = new StringBuilder();
+        for (int shift = 40; shift >= 0; shift -= 8)
+        {
+            if (sb.length() > 0) sb.append(":");
+            sb.append(String.format("%02X", (bluetoothAddress >> shift) & 0xFF));
+        }
+
+        // Returns the Bluetooth device
+        return adapter.getRemoteDevice(sb.toString());
     }
 
     /**
