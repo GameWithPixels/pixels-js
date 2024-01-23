@@ -129,9 +129,11 @@ export function getFavoriteIcon(favorite = true) {
 export function DieWireframe({
   dieType,
   size,
+  disabled,
 }: {
   dieType: PixelDieType;
   size?: number;
+  disabled?: boolean;
 }) {
   const getImage = () => {
     switch (dieType) {
@@ -165,7 +167,9 @@ export function DieWireframe({
         width: size,
         height: size,
         borderRadius: size,
-        backgroundColor: colors.onBackground,
+        backgroundColor: disabled
+          ? colors.onSurfaceDisabled
+          : colors.onBackground,
       }}
     >
       <Image contentFit="cover" style={{ flex: 1 }} source={getImage()} />

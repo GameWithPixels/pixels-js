@@ -16,6 +16,7 @@ import { useAppSelector } from "~/app/hooks";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TouchableCard } from "~/components/TouchableCard";
 import { DieWireframe } from "~/components/icons";
+import { PairedPixel } from "~/features/dice/PairedPixel";
 import { getDieTypeLabel } from "~/features/profiles";
 import { listToText, notEmpty } from "~/features/utils";
 import { useBottomSheetPadding } from "~/hooks";
@@ -43,22 +44,23 @@ export function PickDieBottomSheet({
   }, [visible]);
 
   const pairedDice = useAppSelector((state) => state.pairedDice.dice).filter(
-    (d) => d.isPaired
+    (d) => d.isPaired && (!dieTypes || dieTypes.includes(d.dieType))
   );
   const pixels = React.useMemo(
     () =>
       pairedDice
         .map((d) => getPixel(d.pixelId))
         .filter(notEmpty)
-        .filter(
-          (p) => p.isReady && (!dieTypes || dieTypes.includes(p.dieType))
-        ),
-    [dieTypes, pairedDice]
+        .filter((p) => p.isReady),
+    [pairedDice]
   );
-  const hasPairedDiceType = React.useMemo(
-    () => pairedDice.some((p) => !dieTypes || dieTypes.includes(p.dieType)),
-    [dieTypes, pairedDice]
-  );
+
+  const getSelector = (pairedPixel: PairedPixel) => () => {
+    const pixel = getPixel(pairedPixel.pixelId);
+    if (pixel) {
+      return () => onDismiss(pixel);
+    }
+  };
 
   const dieTypesStrSpace = !dieTypes?.length
     ? ""
@@ -97,28 +99,33 @@ export function PickDieBottomSheet({
             {dieTypes ? listToText(dieTypes.map(getDieTypeLabel), "or") : "Die"}
           </Text>
           <BottomSheetScrollView
-            contentContainerStyle={{ paddingHorizontal: 10, gap: 20 }}
+            contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
           >
-            {pixels.map((p) => (
-              <TouchableCard
-                key={p.pixelId}
-                row
-                contentStyle={{ padding: 10, gap: 10 }}
-                onPress={() => onDismiss(p)}
-              >
-                <DieWireframe size={40} dieType={p.dieType} />
-                <DieStaticInfo pixel={p} />
-              </TouchableCard>
-            ))}
+            {pairedDice.map((d) => {
+              const disabled = !pixels.some((p) => d.pixelId === p.pixelId);
+              return (
+                <TouchableCard
+                  key={d.pixelId}
+                  row
+                  contentStyle={{ padding: 10, gap: 10 }}
+                  onPress={getSelector(d)}
+                >
+                  <DieWireframe
+                    size={40}
+                    dieType={d.dieType}
+                    disabled={disabled}
+                  />
+                  <DieStaticInfo pixel={d} disabled={disabled} />
+                </TouchableCard>
+              );
+            })}
             {pixels.length > 0 ? (
-              <Text>{`Only connected ${dieTypesStrSpace}dice are listed.`}</Text>
+              <Text
+                style={{ marginTop: 10 }}
+              >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>
             ) : (
               <Text variant="bodyLarge">
-                {hasPairedDiceType
-                  ? `No connected ${dieTypesStrSpace}die.`
-                  : `You don't have any paired ${
-                      pairedDice.length ? dieTypesStrSpace : ""
-                    }die.`}
+                {`You don't have any paired ${dieTypesStrSpace}die.`}
               </Text>
             )}
           </BottomSheetScrollView>

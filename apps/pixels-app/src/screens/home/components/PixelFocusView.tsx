@@ -20,17 +20,19 @@ import { PixelStatusCard } from "./PixelStatusCard";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
+import { PixelDieRenderer } from "~/components/DieRenderer";
 import { NewPixelAppBanner } from "~/components/banners";
-import { PixelDieRenderer } from "~/components/cards";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
 import { blinkDie, transferProfile } from "~/features/dice";
+import { PairedPixel } from "~/features/dice/PairedPixel";
 import { FactoryProfile, getPixelStatusLabel } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
 import {
   useActiveProfile,
   useConfirmActionSheet,
   useHasFirmwareUpdate,
+  usePairedPixel,
 } from "~/hooks";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
@@ -60,26 +62,27 @@ const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
 });
 
 export function PixelFocusViewHeader({
-  pixel,
+  pairedPixel,
   onUnpair,
   onFirmwareUpdate,
 }: {
-  pixel: Pixel;
+  pairedPixel: PairedPixel;
   onUnpair: () => void;
   onFirmwareUpdate: () => void;
 }) {
+  const pixel = usePairedPixel(pairedPixel);
   const status = usePixelStatus(pixel);
   const [pixelName] = usePixelValue(pixel, "name");
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const disabled = status !== "ready";
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
-    pixel.sendMessage("clearSettings");
+    pixel?.sendMessage("clearSettings");
   });
   const showConfirmTurnOff = useConfirmActionSheet(
     "Turn Die Off",
     () => {
-      pixel.turnOff();
+      pixel?.turnOff();
     },
     {
       message:
@@ -164,12 +167,22 @@ export function PixelFocusViewHeader({
   );
 }
 
-function RollingDie({ pixel, disabled }: { pixel: Pixel; disabled: boolean }) {
+function RollingDie({
+  pairedPixel,
+  disabled,
+}: {
+  pairedPixel: PairedPixel;
+  disabled: boolean;
+}) {
+  const pixel = usePairedPixel(pairedPixel);
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
   return (
-    <PixelDieRenderer pixel={pixel} speed={disabled ? 0 : rolling ? 10 : 1} />
+    <PixelDieRenderer
+      pixel={pairedPixel}
+      speed={disabled ? 0 : rolling ? 10 : 1}
+    />
   );
 }
 
@@ -197,24 +210,27 @@ function PixelProfile({ ...props }: Omit<ProfileCardProps, "row">) {
 }
 
 export function PixelFocusView({
-  pixel,
+  pairedPixel,
   onEditProfile,
   onShowDetails,
   style,
   ...props
 }: {
-  pixel: Pixel;
+  pairedPixel: PairedPixel;
   onEditProfile: () => void;
   onShowDetails: () => void;
 } & Omit<ViewProps, "children">) {
   const appDispatch = useAppDispatch();
 
+  const pixel = usePairedPixel(pairedPixel);
   const status = usePixelStatus(pixel);
-  React.useEffect(() => {
-    // Blink when die is selected
-    blinkDie(pixel);
-  }, [pixel]);
-  const activeProfile = useActiveProfile(pixel);
+  React.useEffect(
+    () =>
+      // Blink when die is selected
+      blinkDie(pixel),
+    [pixel]
+  );
+  const activeProfile = useActiveProfile(pairedPixel);
   const transferring = useAppSelector((state) => !!state.diceRolls.transfer);
   const [pickProfile, setPickProfile] = React.useState(false);
 
@@ -243,7 +259,7 @@ export function PixelFocusView({
           }}
           onPress={() => blinkDie(pixel)}
         >
-          <RollingDie pixel={pixel} disabled={disabled} />
+          <RollingDie pairedPixel={pairedPixel} disabled={disabled} />
         </Pressable>
         <View
           style={{
@@ -254,13 +270,11 @@ export function PixelFocusView({
           }}
         >
           <PixelRollCard
-            pixel={pixel}
-            disabled={disabled}
+            pairedPixel={pairedPixel}
             style={{ flex: 1, flexGrow: 1 }}
           />
           <PixelStatusCard
-            pixel={pixel}
-            disabled={disabled}
+            pairedPixel={pairedPixel}
             onPress={onShowDetails}
             style={{ flex: 1, flexGrow: 1 }}
           />
@@ -269,26 +283,28 @@ export function PixelFocusView({
         <PixelProfile
           profile={activeProfile}
           transferring={transferring}
-          onPress={() => setPickProfile(true)}
+          onPress={() => pixel && setPickProfile(true)}
         />
         <Text variant="titleMedium">Available Dice</Text>
       </View>
-      <PickProfileBottomSheet
-        pixel={pixel}
-        profile={activeProfile}
-        onSelectProfile={(profile) => {
-          if (!transferring) {
-            setPickProfile(false);
-            transferProfile(pixel, profile);
-          } else {
-            console.log(
-              "Dropping profile transfer because one is already in progress"
-            );
-          }
-        }}
-        visible={pickProfile}
-        onDismiss={() => setPickProfile(false)}
-      />
+      {pixel && (
+        <PickProfileBottomSheet
+          pixel={pixel}
+          profile={activeProfile}
+          onSelectProfile={(profile) => {
+            if (!transferring) {
+              setPickProfile(false);
+              transferProfile(pixel, profile);
+            } else {
+              console.log(
+                "Dropping profile transfer because one is already in progress"
+              );
+            }
+          }}
+          visible={pickProfile}
+          onDismiss={() => setPickProfile(false)}
+        />
+      )}
     </>
   );
 }

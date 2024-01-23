@@ -1,43 +1,17 @@
 import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
-import { Pixel, PixelInfo } from "@systemic-games/react-native-pixels-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Text, TextProps, useTheme } from "react-native-paper";
+import { Text, TextProps } from "react-native-paper";
 
+import { PixelDieRenderer } from "./DieRenderer";
 import { PixelBattery } from "./PixelBattery";
 import { PixelRssi } from "./PixelRssi";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
-import { getTextColorStyle, makeTransparent } from "./colors";
 import { BatteryIcon, RssiIcon } from "./icons";
-import { ProfileDieRenderer } from "./profile";
 
-import { getCompatibleDiceTypes } from "~/features/profiles";
-import {
-  DieRendererProps,
-  DieRendererWithFocus,
-} from "~/features/render3d/DieRenderer";
-import { useActiveProfile } from "~/hooks";
-
-export const PixelDieRenderer = React.memo(function PixelDieRenderer({
-  pixel,
-  speed,
-}: { pixel: Pick<PixelInfo, "pixelId" | "dieType" | "colorway"> } & Pick<
-  DieRendererProps,
-  "speed"
->) {
-  const activeProfile = useActiveProfile(pixel);
-  return getCompatibleDiceTypes(activeProfile.dieType).includes(
-    pixel.dieType
-  ) ? (
-    <ProfileDieRenderer
-      profile={activeProfile}
-      colorway={pixel.colorway}
-      speed={speed}
-    />
-  ) : (
-    <DieRendererWithFocus dieType={pixel.dieType} colorway={pixel.colorway} />
-  );
-});
+import { PairedPixel } from "~/features/dice/PairedPixel";
+import { useActiveProfile, usePairedPixel } from "~/hooks";
 
 function PixelRollState({
   pixel,
@@ -51,17 +25,13 @@ function PixelRollState({
   return (
     <Text {...props}>
       Die is{" "}
-      {rolling
-        ? "rolling"
-        : rollState?.state === "onFace"
-          ? `on face ${rollState.face}`
-          : "not moving"}
+      {rolling ? "rolling" : `on face ${rollState?.face ?? pixel.currentFace}`}
     </Text>
   );
 }
 
 export function PixelVCard({
-  pixel,
+  pairedPixel,
   dieIconRatio = 0.5,
   infoIconsRatio = 0.1,
   miniCards,
@@ -69,21 +39,19 @@ export function PixelVCard({
   onLayout,
   ...props
 }: {
-  pixel: Pixel;
+  pairedPixel: PairedPixel;
   selected?: boolean;
   dieIconRatio?: number;
   infoIconsRatio?: number;
   miniCards?: boolean;
 } & Omit<TouchableCardProps, "children">) {
+  const pixel = usePairedPixel(pairedPixel);
   const status = usePixelStatus(pixel);
-  const [pixelName] = usePixelValue(pixel, "name");
-  const disabled = status !== "ready";
+  const [thePixelName] = usePixelValue(pixel, "name");
+  const pixelName = thePixelName ?? pairedPixel.name;
+  const disabled = !pixel || status !== "ready";
   const [containerSize, setContainerSize] = React.useState(0);
-  const { colors } = useTheme();
-  const textStyle =
-    pixelName === "+"
-      ? { color: makeTransparent(colors.onPrimary, 0.8) }
-      : getTextColorStyle(colors, disabled);
+  const dieRenderWidth = containerSize * dieIconRatio;
   return (
     <TouchableCard
       contentStyle={[
@@ -99,7 +67,7 @@ export function PixelVCard({
       }}
       {...props}
     >
-      {!miniCards && (
+      {!miniCards && !disabled && (
         <View
           style={{
             alignSelf: "flex-end",
@@ -112,57 +80,42 @@ export function PixelVCard({
           <BatteryIcon
             value={pixel.batteryLevel}
             size={infoIconsRatio * containerSize}
-            disabled={disabled}
           />
-          <RssiIcon
-            value={pixel.rssi}
-            size={infoIconsRatio * containerSize}
-            disabled={disabled}
-          />
+          <RssiIcon value={pixel.rssi} size={infoIconsRatio * containerSize} />
         </View>
       )}
-      {pixelName !== "+" && (
-        <View
-          style={{
-            width: dieIconRatio * containerSize,
-            aspectRatio: 1,
-          }}
-        >
-          <PixelDieRenderer pixel={pixel} />
-        </View>
-      )}
-      <Text
-        style={textStyle}
-        variant={
-          pixelName === "+"
-            ? "displayLarge"
-            : miniCards
-              ? "labelSmall"
-              : "titleMedium"
-        }
-      >
-        {status === "ready" || status === "disconnected" ? pixelName : status}
+      <View style={{ width: dieRenderWidth, aspectRatio: 1 }}>
+        {/* Assign a key based on size to prevent reusing the same view if size changes */}
+        <PixelDieRenderer key={dieRenderWidth} pixel={pairedPixel} />
+      </View>
+      <Text variant={miniCards ? "labelSmall" : "titleMedium"}>
+        {status && status !== "ready" && status !== "disconnected"
+          ? status
+          : pixelName}
       </Text>
-      {!miniCards && <PixelRollState pixel={pixel} style={textStyle} />}
+      {!miniCards && !disabled && <PixelRollState pixel={pixel} />}
     </TouchableCard>
   );
 }
 
 export function PixelHCard({
-  pixel,
+  pairedPixel,
   ...props
 }: {
-  pixel: Pixel;
+  pairedPixel: PairedPixel;
 } & Omit<TouchableCardProps, "children">) {
+  const pixel = usePairedPixel(pairedPixel);
   const status = usePixelStatus(pixel);
-  const [pixelName] = usePixelValue(pixel, "name");
-  const activeProfile = useActiveProfile(pixel);
-  const disabled = status !== "ready";
-  const textStyle = getTextColorStyle(useTheme().colors, disabled);
+  const [thePixelName] = usePixelValue(pixel, "name");
+  const pixelName = thePixelName ?? pairedPixel.name;
+  const activeProfile = useActiveProfile(pairedPixel);
+  const disabled = !pixel || status !== "ready";
+  const dieRenderWidth = 70;
   return (
     <TouchableCard row {...props}>
       <View style={{ width: 70, aspectRatio: 1, padding: 5 }}>
-        <PixelDieRenderer pixel={pixel} />
+        {/* Assign a key based on size to prevent reusing the same view if size changes */}
+        <PixelDieRenderer key={dieRenderWidth} pixel={pairedPixel} />
       </View>
       <View
         style={{
@@ -171,23 +124,23 @@ export function PixelHCard({
           justifyContent: "space-evenly",
         }}
       >
-        <Text variant="bodyLarge" style={textStyle}>
-          {pixelName}
-        </Text>
-        <Text style={textStyle}>{activeProfile?.name ?? "No Profile!"}</Text>
-        <PixelRollState pixel={pixel} style={textStyle} />
+        <Text variant="bodyLarge">{pixelName}</Text>
+        <Text>{activeProfile?.name ?? "No Profile!"}</Text>
+        {!disabled && <PixelRollState pixel={pixel} />}
       </View>
-      <View
-        style={{
-          flexDirection: "row",
-          marginRight: 10,
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <PixelRssi pixel={pixel} size={22} disabled={disabled} />
-        <PixelBattery pixel={pixel} size={22} disabled={disabled} />
-      </View>
+      {!disabled && (
+        <View
+          style={{
+            flexDirection: "row",
+            marginRight: 10,
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <PixelRssi pixel={pixel} size={22} />
+          <PixelBattery pixel={pixel} size={22} />
+        </View>
+      )}
     </TouchableCard>
   );
 }

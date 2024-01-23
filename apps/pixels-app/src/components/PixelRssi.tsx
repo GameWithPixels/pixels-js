@@ -12,7 +12,7 @@ export function PixelRssi({
 }: {
   pixel: Pixel;
   size: number;
-  disabled: boolean;
+  disabled?: boolean;
 }) {
   const [rssi] = usePixelValue(pixel, "rssi");
   return <RssiIcon value={rssi} size={size} disabled={disabled} />;

@@ -1,7 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   PixelStatus,
-  Pixel,
   usePixelValue,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -18,9 +17,9 @@ import Animated, {
 import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
-import { getTextColorStyle } from "~/components/colors";
+import { PairedPixel } from "~/features/dice/PairedPixel";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
-import { usePixelDataTransfer } from "~/hooks";
+import { usePairedPixel, usePixelDataTransfer } from "~/hooks";
 
 function AnimatedConnectionIcon({
   size,
@@ -94,29 +93,23 @@ function AnimatedChargingIcon({
   );
 }
 
-function PixelStatusDetails({
-  pixel,
-  disabled,
-}: {
-  pixel: Pixel;
-  disabled?: boolean;
-}) {
+function PixelStatusDetails({ pairedPixel }: { pairedPixel: PairedPixel }) {
+  const pixel = usePairedPixel(pairedPixel);
   const [battery] = usePixelValue(pixel, "battery");
   const needCharging = (battery?.level ?? 100) < 10;
   const transferProgress = usePixelDataTransfer(pixel);
   const transferring = transferProgress >= 0 && transferProgress < 100;
   const { colors } = useTheme();
-  const textStyle = getTextColorStyle(colors, disabled);
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <Text style={textStyle}>
+      <Text>
         {transferring
           ? `Activating Profile: ${transferProgress}%`
           : battery?.isCharging
             ? "Charging..."
             : needCharging
               ? "Need charging!"
-              : getDieTypeAndColorwayLabel(pixel)}
+              : getDieTypeAndColorwayLabel(pairedPixel)}
       </Text>
       {!transferring && battery?.isCharging ? (
         <AnimatedChargingIcon size={16} color={colors.onSurface} />
@@ -134,13 +127,12 @@ function PixelStatusDetails({
 }
 
 export function PixelStatusCard({
-  pixel,
-  disabled,
+  pairedPixel,
   ...props
 }: {
-  pixel: Pixel;
-  disabled: boolean;
+  pairedPixel: PairedPixel;
 } & Omit<TouchableCardProps, "contentStyle">) {
+  const pixel = usePairedPixel(pairedPixel);
   const status = usePixelStatus(pixel);
   const { colors } = useTheme();
   return (
@@ -151,22 +143,26 @@ export function PixelStatusCard({
         paddingBottom: 0,
         alignItems: "flex-start",
         justifyContent: "space-around",
-        gap: 5,
+        gap: 10,
       }}
       {...props}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Text>Status:</Text>
+        <Text>Status</Text>
         <PixelConnectionStatus
           status={status}
           size={20}
           color={colors.onSurface}
         />
         <View style={{ flexGrow: 1 }} />
-        <PixelRssi pixel={pixel} size={16} disabled={disabled} />
-        <PixelBattery pixel={pixel} size={16} disabled={disabled} />
+        {pixel && status === "ready" && (
+          <>
+            <PixelRssi pixel={pixel} size={16} />
+            <PixelBattery pixel={pixel} size={16} />
+          </>
+        )}
       </View>
-      <PixelStatusDetails pixel={pixel} disabled={disabled} />
+      <PixelStatusDetails pairedPixel={pairedPixel} />
       <Text
         variant="labelSmall"
         style={{ alignSelf: "flex-end", color: colors.onSurfaceDisabled }}

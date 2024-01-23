@@ -15,11 +15,11 @@ import { RuleCard } from "./RuleCard";
 import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { ProfileDieRenderer } from "~/components/DieRenderer";
 import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
 import { SlideInView } from "~/components/SlideInView";
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
-import { ProfileDieRenderer } from "~/components/profile";
 import {
   EditorAnimationFlags,
   EditorRollRulesTypes,
