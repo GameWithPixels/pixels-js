@@ -13,6 +13,7 @@ class GetPixelError extends Error {
     this.name = "GetPixelError";
   }
 }
+
 /**
  * Returns a Pixel instance for the corresponding scanned Pixel instance of Pixel id.
  * The same instance is returned when called multiple times for the same Pixel.
@@ -21,7 +22,7 @@ class GetPixelError extends Error {
  * @param logFunc Optional function used to log Pixel connection and messaging activity.
  * @param logMessages Optional boolean to request logging messaging activity using the
  *                    passed logger function.
- * @returns A {@link Pixel} instance.
+ * @returns A {@link Pixel} instance or undefined.
  */
 export function getPixel(id: string | number): Pixel | undefined {
   if (typeof id === "number" ? id !== 0 : id?.length > 0) {
@@ -43,10 +44,16 @@ export function getPixel(id: string | number): Pixel | undefined {
   }
 }
 
+/**
+ * Calls {@link getPixel} and throws an error if the Pixel instance cannot be found.
+ * @param id Identify which Pixel to use.
+ *           It can be either the system id as a string or the Pixel id as a number.
+ * @returns A {@link Pixel} instance.
+ */
 export function getPixelOrThrow(id: string | number): Pixel {
   const pixel = getPixel(id);
   if (!pixel) {
-    throw new GetPixelError(`No scanned Pixel with ${id}`);
+    throw new GetPixelError(`No scanned Pixels die with ${id}`);
   }
   return pixel;
 }
