@@ -37,7 +37,7 @@
     {
         _startScanSync = [NSObject new];
         _stateUpdateHandler = stateUpdateHandler;
-        _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:sgBleGetSerialQueue()];
+        _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:sgBleGetSerialQueue() options:@{ CBCentralManagerOptionShowPowerAlertKey: @NO }];
         _peripherals = [NSMutableDictionary<NSUUID *,CBPeripheral *> new];
         _peripheralsConnectionEventHandlers = [NSMutableDictionary<CBPeripheral *, SGBleConnectionEventHandler> new];
     }
@@ -59,6 +59,7 @@
 // Returns nil if not found
 - (CBPeripheral *)peripheralForIdentifier:(NSUUID *)identifier;
 {
+    // Note: we could use CBCentralManager.retrievePeripheralsWithIdentifiers which only returns scanned peripherals
     @synchronized(_peripherals)
     {
         return _peripherals[identifier];

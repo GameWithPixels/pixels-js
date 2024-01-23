@@ -42,4 +42,10 @@ extern NSError *SGBleRequestCanceledError;
  */
 extern NSError *SGBleDisconnectedError;
 
+/**
+ * @brief No know peripheral for the given identifier.
+ * @ingroup Apple_Objective-C
+ */
+extern NSError *SGBleUnknownPeripheralError;
+
 #endif /* SGBleErrors_h */

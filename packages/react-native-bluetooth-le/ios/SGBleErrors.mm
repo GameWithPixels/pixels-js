@@ -26,3 +26,7 @@ NSError *SGBleRequestCanceledError = [NSError errorWithDomain:errorDomain
 NSError *SGBleDisconnectedError = [NSError errorWithDomain:errorDomain
                                                       code:SGBleErrorPeripheralDisconnected
                                                   userInfo:@{ NSLocalizedDescriptionKey: @"Peripheral disconnected" }];
+
+NSError *SGBleUnknownPeripheralError = [NSError errorWithDomain:errorDomain
+                                                           code:SGBleErrorPeripheralDisconnected
+                                                       userInfo:@{ NSLocalizedDescriptionKey: @"Unknown peripheral" }];
