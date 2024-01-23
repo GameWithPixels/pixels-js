@@ -1,11 +1,8 @@
 import { Fontisto, MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
-import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
-import { Profile } from "@systemic-games/react-native-pixels-connect/src/Profiles";
 import { LinearGradient } from "expo-linear-gradient";
-import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { useWindowDimensions, View, ViewProps } from "react-native";
@@ -20,6 +17,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { ProfileDieRenderer } from "./DieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
 import { Chip, GradientChip } from "./buttons";
@@ -27,15 +25,10 @@ import { darken, getBorderColor, getTextColorStyle } from "./colors";
 
 import { useAppSelector } from "~/app/hooks";
 import {
-  applyProfileOverrides,
   groupAndSortProfiles,
   ProfilesGrouping,
   SortMode,
 } from "~/features/profiles";
-import {
-  DieRendererProps,
-  DieRendererWithFocus,
-} from "~/features/render3d/DieRenderer";
 
 const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
   profile,
@@ -212,46 +205,6 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
         <ActionTypeIcon type="makeWebRequest" size={16} color={iconColor} />
       )}
     </View>
-  );
-});
-
-export const ProfileDieRenderer = observer(function ProfileDieRenderer({
-  profile,
-  colorway = "onyxBlack",
-  pedestal,
-  speed,
-}: {
-  profile: Readonly<Profiles.Profile>;
-} & Pick<DieRendererProps, "pedestal" | "speed"> &
-  Partial<Pick<DieRendererProps, "colorway">>) {
-  const animationsData = React.useMemo(
-    () =>
-      computed(() => {
-        const rolledProfile = new Profiles.Profile({
-          rules: profile.rules.filter(
-            (r) =>
-              r.condition.type === "rolled" &&
-              r.actions.some((a) => a.type === "playAnimation")
-          ),
-        });
-        const dataSet = createDataSetForProfile(
-          applyProfileOverrides(rolledProfile)
-        ).toDataSet();
-        return {
-          animations: dataSet.animations,
-          bits: dataSet.animationBits,
-        };
-      }),
-    [profile]
-  ).get();
-  return (
-    <DieRendererWithFocus
-      dieType={profile.dieType}
-      colorway={colorway}
-      animationsData={animationsData}
-      pedestal={pedestal}
-      speed={speed}
-    />
   );
 });
 

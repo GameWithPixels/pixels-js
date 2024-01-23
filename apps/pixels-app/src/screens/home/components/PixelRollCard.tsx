@@ -1,7 +1,4 @@
-import {
-  Pixel,
-  usePixelValue,
-} from "@systemic-games/react-native-pixels-connect";
+import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Text, TextProps, useTheme } from "react-native-paper";
@@ -18,13 +15,13 @@ import Animated, {
 import { useAppSelector } from "~/app/hooks";
 import { Card, CardProps } from "~/components/Card";
 import { AnimatedText } from "~/components/animated";
-import {
-  getTextColorStyle,
-  getIconColor,
-  makeTransparent,
-} from "~/components/colors";
+import { makeTransparent } from "~/components/colors";
+import { PairedPixel } from "~/features/dice/PairedPixel";
+import { usePairedPixel } from "~/hooks";
 
-function useLastRolls(pixelId: number): { key: number; roll: number }[] {
+function useLastRolls({
+  pixelId,
+}: Pick<PairedPixel, "pixelId">): { key: number; roll: number }[] {
   const rolls = useAppSelector(
     (state) => state.diceRolls.dice.find((d) => d.pixelId === pixelId)?.rolls
   );
@@ -41,11 +38,12 @@ function useLastRolls(pixelId: number): { key: number; roll: number }[] {
 }
 
 function PixelRollState({
-  pixel,
+  pairedPixel,
   ...props
 }: {
-  pixel: Pixel;
+  pairedPixel: PairedPixel;
 } & Omit<TextProps<string>, "children">) {
+  const pixel = usePairedPixel(pairedPixel);
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
@@ -95,16 +93,13 @@ function AnimatedDieIcon({
 }
 
 export function PixelRollCard({
-  pixel,
-  disabled,
+  pairedPixel,
   ...props
 }: {
-  pixel: Pixel;
-  disabled: boolean;
+  pairedPixel: PairedPixel;
 } & Omit<CardProps, "contentStyle">) {
-  const lastRolls = useLastRolls(pixel.pixelId);
+  const lastRolls = useLastRolls(pairedPixel);
   const { colors } = useTheme();
-  const textStyle = getTextColorStyle(colors, disabled);
   return (
     <Card
       contentStyle={{
@@ -117,11 +112,7 @@ export function PixelRollCard({
     >
       {lastRolls.some(({ roll }) => roll >= 0) ? (
         <>
-          <PixelRollState
-            pixel={pixel}
-            variant="labelSmall"
-            style={textStyle}
-          />
+          <PixelRollState pairedPixel={pairedPixel} variant="labelSmall" />
           <View
             style={{
               flexDirection: "row",
@@ -138,7 +129,7 @@ export function PixelRollCard({
                     key={key}
                     value={roll}
                     size={15 + 4 * i}
-                    color={getIconColor(colors, disabled)}
+                    color={colors.onSurface}
                     backgroundColor={makeTransparent(
                       colors.primary,
                       (i + 1) * 0.1

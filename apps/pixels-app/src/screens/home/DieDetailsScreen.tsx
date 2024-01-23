@@ -214,13 +214,12 @@ function DieAdvancedInfo({
 }
 
 function DieDetailsPage({
-  pixelId,
+  pixel,
   navigation,
 }: {
-  pixelId: number;
+  pixel: Pixel;
   navigation: DieDetailsScreenProps["navigation"];
 }) {
-  const pixel = usePairedPixel(pixelId);
   React.useEffect(() => {
     if (!pixel) {
       navigation.goBack();
@@ -253,7 +252,9 @@ function DieDetailsPage({
               visible={firmwareUpdateVisible}
               title="Update Available!"
               actionText="Update Now"
-              onAction={() => navigation.replace("firmwareUpdate", { pixelId })}
+              onAction={() =>
+                navigation.replace("firmwareUpdate", { pixelId: pixel.pixelId })
+              }
               onDismiss={() => setFirmwareUpdateVisible(false)}
             >
               A firmware update is available for your die.
@@ -276,9 +277,10 @@ export function DieDetailsScreen({
   },
   navigation,
 }: DieDetailsScreenProps) {
+  const pixel = usePairedPixel(pixelId);
   return (
     <AppBackground>
-      <DieDetailsPage pixelId={pixelId} navigation={navigation} />
+      {pixel && <DieDetailsPage pixel={pixel} navigation={navigation} />}
     </AppBackground>
   );
 }

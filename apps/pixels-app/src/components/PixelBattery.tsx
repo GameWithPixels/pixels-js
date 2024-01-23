@@ -12,7 +12,7 @@ export function PixelBattery({
 }: {
   pixel: Pixel;
   size: number;
-  disabled: boolean;
+  disabled?: boolean;
 }) {
   const [battery] = usePixelValue(pixel, "battery");
   return <BatteryIcon value={battery?.level} size={size} disabled={disabled} />;

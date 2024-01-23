@@ -1,13 +1,14 @@
 import { range } from "@systemic-games/pixels-core-utils";
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { View, ViewProps } from "react-native";
 
 import { AddDieButton } from "./buttons";
 import { PixelHCard, PixelVCard } from "./cards";
 
+import { PairedPixel } from "~/features/dice/PairedPixel";
+
 function isSelected(
-  pixel: Pixel,
-  selection?: Pixel | readonly Pixel[]
+  pixel: PairedPixel,
+  selection?: PairedPixel | readonly PairedPixel[]
 ): boolean {
   return Array.isArray(selection)
     ? selection.includes(pixel)
@@ -15,9 +16,9 @@ function isSelected(
 }
 
 function isPreviousItemSelected(
-  pixel: Pixel,
-  pixels: readonly Pixel[],
-  selection?: Pixel | readonly Pixel[]
+  pixel: PairedPixel,
+  pixels: readonly PairedPixel[],
+  selection?: PairedPixel | readonly PairedPixel[]
 ): boolean {
   if (!Array.isArray(selection)) {
     return false;
@@ -27,9 +28,9 @@ function isPreviousItemSelected(
 }
 
 function isNextItemSelected(
-  pixel: Pixel,
-  pixels: readonly Pixel[],
-  selection?: Pixel | readonly Pixel[]
+  pixel: PairedPixel,
+  pixels: readonly PairedPixel[],
+  selection?: PairedPixel | readonly PairedPixel[]
 ): boolean {
   if (!Array.isArray(selection)) {
     return false;
@@ -39,9 +40,9 @@ function isNextItemSelected(
 }
 
 export interface DiceListProps {
-  pixels: readonly Pixel[];
-  selection?: Pixel | readonly Pixel[];
-  onSelectDie?: (pixel: Pixel) => void;
+  pixels: readonly PairedPixel[];
+  selection?: PairedPixel | readonly PairedPixel[];
+  onSelectDie?: (pixel: PairedPixel) => void;
   onPressNewDie?: () => void;
 }
 
@@ -65,7 +66,7 @@ export function DiceList({
             noBottomBorder={!selected && nextSelected}
             squaredTopBorder={i > 0}
             squaredBottomBorder={i < pixels.length - 1}
-            pixel={p}
+            pairedPixel={p}
             selected={selected}
             onPress={() => onSelectDie?.(p)}
           />
@@ -96,7 +97,7 @@ export function DiceColumn({
       {pixels.map((p) => (
         <PixelVCard
           key={p.systemId}
-          pixel={p}
+          pairedPixel={p}
           miniCards={miniCards}
           selected={isSelected(p, selection)}
           onPress={() => onSelectDie?.(p)}
@@ -125,7 +126,7 @@ export function DiceGrid({
 }: {
   numColumns?: number;
   miniCards?: boolean;
-  selected?: Pixel;
+  selected?: PairedPixel;
 } & DiceListProps &
   ViewProps) {
   return (

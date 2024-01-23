@@ -1,4 +1,7 @@
-import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
+import {
+  Pixel,
+  usePixelValue,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
@@ -16,13 +19,12 @@ import { useActiveProfile, usePairedPixel } from "~/hooks";
 import { EditDieProfileScreenProps } from "~/navigation";
 
 function EditDieProfilePage({
-  pixelId,
+  pixel,
   navigation,
 }: {
-  pixelId: number;
+  pixel: Pixel;
   navigation: EditDieProfileScreenProps["navigation"];
 }) {
-  const pixel = usePairedPixel(pixelId);
   const [pixelName] = usePixelValue(pixel, "name");
   const activeProfile = useActiveProfile(pixel);
   const editRule = React.useCallback(
@@ -90,9 +92,10 @@ export function EditDieProfileScreen({
   },
   navigation,
 }: EditDieProfileScreenProps) {
+  const pixel = usePairedPixel(pixelId);
   return (
     <AppBackground>
-      <EditDieProfilePage pixelId={pixelId} navigation={navigation} />
+      {pixel && <EditDieProfilePage pixel={pixel} navigation={navigation} />}
     </AppBackground>
   );
 }
