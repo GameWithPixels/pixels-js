@@ -158,16 +158,15 @@ RCT_EXPORT_MODULE();
         CBPeripheral *peripheral = [_central peripheralForIdentifier:uuid];
         if (!peripheral && reject)
         {
-            // No known peripheral for this id
-            rejectWithError(SGBleInvalidParameterError, reject);
+            rejectWithError(SGBleUnknownPeripheralError, reject);
         }
         return peripheral;
     }
-    else
+    else if (reject)
     {
         rejectWithError(SGBleInvalidParameterError, reject);
-        return nil;
     }
+    return nil;
 }
 
 - (SGBlePeripheralQueue *)getSGBlePeripheralQueue:(NSString *)deviceSystemId rejecter:(RCTPromiseRejectBlock)reject
@@ -182,8 +181,7 @@ RCT_EXPORT_MODULE();
         }
         else if (reject)
         {
-            // No known peripheral for this id
-            rejectWithError(SGBleInvalidStateError, reject);
+            rejectWithError(SGBleInvalidParameterError, reject);
         }
     }
     return nil;

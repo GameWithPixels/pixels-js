@@ -6,11 +6,7 @@
 #ifndef SGBleTypes_h
 #define SGBleTypes_h
 
-#import <Foundation/Foundation.h>
-
-// Forward declarations
-@class CBPeripheral;
-@class CBCharacteristic;
+// Forward declaration
 @class SGBlePeripheralQueue;
 
 /**
@@ -46,6 +42,9 @@
  * @image html native-apple.svg "Classes diagram"
  */
 
+#import <Foundation/Foundation.h>
+#import <CoreBluetooth/CoreBluetooth.h>
+
 /**
  * @brief Peripheral connection events.
  * @ingroup Apple_Objective-C
@@ -54,19 +53,19 @@ typedef NS_ENUM(NSInteger, SGBleConnectionEvent)
 {
     /// Raised at the beginning of the connect sequence and is followed either by Connected or FailedToConnect.
     SGBleConnectionEventConnecting,
-    
+
     /// Raised once the peripheral is connected, just before services are being discovered.
     SGBleConnectionEventConnected,
-    
+
     /// Raised when the peripheral fails to connect, the reason of failure is also given.
     SGBleConnectionEventFailedToConnect,
-    
+
     /// Raised after a Connected event, once the required services have been discovered.
     SGBleConnectionEventReady,
-    
+
     /// Raised at the beginning of a user initiated disconnect.
     SGBleConnectionEventDisconnecting,
-    
+
     /// Raised when the peripheral is disconnected, the reason for the disconnection is also given.
     SGBleConnectionEventDisconnected,
 };
@@ -79,22 +78,22 @@ typedef NS_ENUM(NSInteger, SGBleConnectionEventReason)
 {
     /// The disconnect happened for an unknown reason.
     SGBleConnectionEventReasonUnknown = -1,
-    
+
     /// The disconnect was initiated by user.
     SGBleConnectionEventReasonSuccess = 0,
-    
+
     /// Connection attempt canceled by user.
     SGBleConnectionEventReasonCanceled,
-    
+
     /// Peripheral doesn't have all required services.
     SGBleConnectionEventReasonNotSupported,
-    
+
     /// Peripheral didn't responded in time.
     SGBleConnectionEventReasonTimeout,
-    
+
     /// Peripheral was disconnected while in "auto connect" mode.
     SGBleConnectionEventReasonLinkLoss,
-    
+
     /// The local device Bluetooth adapter is off.
     SGBleConnectionEventReasonAdapterOff,
 };

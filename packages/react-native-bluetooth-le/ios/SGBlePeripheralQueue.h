@@ -55,11 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
     
     // Last RSSI
     int _rssi;
-    
+
     // Requests
     SGBleRequest *_runningRequest; // Accessed only from queue
     NSMutableArray<SGBleRequest *> *_pendingRequests; // Always synchronize access to this list
-    
+
     // Read notifications
     SGBleCharacteristicValueEventHandler _valueReadHandler;
     NSMapTable<CBCharacteristic *, SGBleCharacteristicValueEventHandler> *_valueChangedHandlers;
