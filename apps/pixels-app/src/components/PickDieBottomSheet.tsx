@@ -16,8 +16,8 @@ import { useAppSelector } from "~/app/hooks";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TouchableCard } from "~/components/TouchableCard";
 import { DieWireframe } from "~/components/icons";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import { getDieTypeLabel } from "~/features/profiles";
+import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { listToText, notEmpty } from "~/features/utils";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
@@ -55,8 +55,8 @@ export function PickDieBottomSheet({
     [pairedDice]
   );
 
-  const getSelector = (pairedPixel: PairedPixel) => () => {
-    const pixel = getPixel(pairedPixel.pixelId);
+  const getSelector = (pairedDie: PairedDie) => () => {
+    const pixel = getPixel(pairedDie.pixelId);
     if (pixel) {
       return () => onDismiss(pixel);
     }

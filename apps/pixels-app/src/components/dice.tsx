@@ -4,11 +4,11 @@ import { View, ViewProps } from "react-native";
 import { AddDieButton } from "./buttons";
 import { PixelHCard, PixelVCard } from "./cards";
 
-import { PairedPixel } from "~/features/dice/PairedPixel";
+import { PairedDie } from "~/features/store/pairedDiceSlice";
 
 function isSelected(
-  pixel: PairedPixel,
-  selection?: PairedPixel | readonly PairedPixel[]
+  pixel: PairedDie,
+  selection?: PairedDie | readonly PairedDie[]
 ): boolean {
   return Array.isArray(selection)
     ? selection.includes(pixel)
@@ -16,38 +16,38 @@ function isSelected(
 }
 
 function isPreviousItemSelected(
-  pixel: PairedPixel,
-  pixels: readonly PairedPixel[],
-  selection?: PairedPixel | readonly PairedPixel[]
+  die: PairedDie,
+  dice: readonly PairedDie[],
+  selection?: PairedDie | readonly PairedDie[]
 ): boolean {
   if (!Array.isArray(selection)) {
     return false;
   }
-  const prev = pixels[pixels.indexOf(pixel) - 1];
+  const prev = dice[dice.indexOf(die) - 1];
   return !!prev && selection.includes(prev);
 }
 
 function isNextItemSelected(
-  pixel: PairedPixel,
-  pixels: readonly PairedPixel[],
-  selection?: PairedPixel | readonly PairedPixel[]
+  die: PairedDie,
+  dice: readonly PairedDie[],
+  selection?: PairedDie | readonly PairedDie[]
 ): boolean {
   if (!Array.isArray(selection)) {
     return false;
   }
-  const prev = pixels[pixels.indexOf(pixel) + 1];
+  const prev = dice[dice.indexOf(die) + 1];
   return !!prev && selection.includes(prev);
 }
 
 export interface DiceListProps {
-  pixels: readonly PairedPixel[];
-  selection?: PairedPixel | readonly PairedPixel[];
-  onSelectDie?: (pixel: PairedPixel) => void;
+  dice: readonly PairedDie[];
+  selection?: PairedDie | readonly PairedDie[];
+  onSelectDie?: (pixel: PairedDie) => void;
   onPressNewDie?: () => void;
 }
 
 export function DiceList({
-  pixels,
+  dice,
   selection,
   onSelectDie,
   onPressNewDie,
@@ -55,18 +55,18 @@ export function DiceList({
 }: DiceListProps & ViewProps) {
   return (
     <View {...props}>
-      {pixels.map((p, i) => {
+      {dice.map((p, i) => {
         const selected = isSelected(p, selection);
-        const prevSelected = isPreviousItemSelected(p, pixels, selection);
-        const nextSelected = isNextItemSelected(p, pixels, selection);
+        const prevSelected = isPreviousItemSelected(p, dice, selection);
+        const nextSelected = isNextItemSelected(p, dice, selection);
         return (
           <PixelHCard
             key={p.systemId}
             noTopBorder={i > 0 && (!selected || prevSelected)}
             noBottomBorder={!selected && nextSelected}
             squaredTopBorder={i > 0}
-            squaredBottomBorder={i < pixels.length - 1}
-            pairedPixel={p}
+            squaredBottomBorder={i < dice.length - 1}
+            pairedDie={p}
             selected={selected}
             onPress={() => onSelectDie?.(p)}
           />
@@ -75,7 +75,7 @@ export function DiceList({
       {onPressNewDie && (
         <AddDieButton
           sentry-label="new-die-from-list"
-          style={{ marginTop: pixels.length ? 20 : 0 }}
+          style={{ marginTop: dice.length ? 20 : 0 }}
           onPress={onPressNewDie}
         />
       )}
@@ -84,7 +84,7 @@ export function DiceList({
 }
 
 export function DiceColumn({
-  pixels,
+  dice,
   miniCards,
   selection,
   onSelectDie,
@@ -94,10 +94,10 @@ export function DiceColumn({
 } & DiceListProps) {
   return (
     <View style={{ flex: 1, gap: 10 }}>
-      {pixels.map((p) => (
+      {dice.map((p) => (
         <PixelVCard
           key={p.systemId}
-          pairedPixel={p}
+          pairedDie={p}
           miniCards={miniCards}
           selected={isSelected(p, selection)}
           onPress={() => onSelectDie?.(p)}
@@ -115,7 +115,7 @@ export function DiceColumn({
 }
 
 export function DiceGrid({
-  pixels,
+  dice,
   numColumns = 2,
   miniCards,
   selection,
@@ -126,7 +126,7 @@ export function DiceGrid({
 }: {
   numColumns?: number;
   miniCards?: boolean;
-  selected?: PairedPixel;
+  selected?: PairedDie;
 } & DiceListProps &
   ViewProps) {
   return (
@@ -143,12 +143,12 @@ export function DiceGrid({
       {range(numColumns).map((col) => (
         <DiceColumn
           key={col}
-          pixels={pixels.filter((_, i) => i % numColumns === col)}
+          dice={dice.filter((_, i) => i % numColumns === col)}
           miniCards={miniCards}
           selection={selection}
           onSelectDie={onSelectDie}
           onPressNewDie={
-            col === pixels.length % numColumns ? onPressNewDie : undefined
+            col === dice.length % numColumns ? onPressNewDie : undefined
           }
         />
       ))}

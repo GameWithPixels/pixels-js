@@ -593,8 +593,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Adds the given listener function to the end of the listeners array
-   * for the event with the given name.
+   * Register a listener function to be invoked on raising the event
+   * identified by the given event name.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
    * @param eventName The name of the event.
@@ -608,8 +608,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Removes the specified listener function from the listener array
-   * for the event with the given name.
+   * Unregister a listener from receiving events identified by
+   * the given event name.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
    * @param eventName The name of the event.
@@ -623,7 +623,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Register a listener to be invoked on receiving raw messages of a given type.
+   * Register a listener function to be invoked on receiving raw messages
+   * of a given type from the Pixel.
    * @param msgType The type of message to watch for.
    * @param listener The callback function.
    */
@@ -635,7 +636,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Unregister a listener invoked on receiving raw messages of a given type.
+   * Unregister a listener from receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
    * @param listener The callback function to unregister.
    */

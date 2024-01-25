@@ -1,4 +1,3 @@
-import { assert } from "@systemic-games/pixels-core-utils";
 import {
   getPixel,
   Pixel,
@@ -11,7 +10,6 @@ import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import { playRemoteAction } from "~/features/profiles/playRemoteAction";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
@@ -92,18 +90,18 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
 }
 
 // TODO this hook works if only used  in the app
-export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
-  pairedPixels: readonly PairedPixel[];
+export function __usePairedPixels__(scannedPixels?: ScannedPixelNotifier[]): {
+  pairedPixels: readonly PairedDie[];
   availablePixels: readonly ScannedPixelNotifier[];
-  pairDie: (pixel: PairedPixel) => void;
-  unpairDie: (pixel: Pick<PairedPixel, "pixelId">) => void;
+  pairDie: (pixel: PairedDie) => void;
+  unpairDie: (pixel: Pick<PairedDie, "pixelId">) => void;
 } {
   const appDispatch = useAppDispatch();
 
   // Paired dice
   const pairedDice = useAppSelector((state) => state.pairedDice.dice);
   const pairedPixels = React.useMemo(
-    () =>
+    (): PairedDie[] =>
       pairedDice.map((d) => ({
         systemId: d.systemId,
         pixelId: d.pixelId,
@@ -218,7 +216,7 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
     addressesRef.current.set(pixelId, address);
   }
   const pairDie = React.useCallback(
-    (pixel: PairedPixel) =>
+    (pixel: PairedDie) =>
       appDispatch(
         addPairedDie({
           systemId: pixel.systemId,
@@ -243,19 +241,4 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
     pairDie,
     unpairDie,
   };
-}
-
-export function usePairedPixel(
-  pixelOrPixelId: Pick<PairedPixel, "pixelId"> | number
-): Pixel | undefined {
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
-  const pixelId =
-    typeof pixelOrPixelId === "number"
-      ? pixelOrPixelId
-      : pixelOrPixelId.pixelId;
-  assert(
-    pairedDice.find((d) => d.pixelId === pixelId)?.isPaired,
-    `Pixel ${unsigned32ToHex(pixelId)} not paired`
-  );
-  return getPixel(pixelId);
 }

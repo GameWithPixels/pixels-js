@@ -45,6 +45,9 @@ export function useScannedPixels(
           case "update":
             retItems[op.index] = op.scannedPixel;
             break;
+          case "remove":
+            retItems.splice(op.index, 1);
+            break;
           default:
             assertNever(t);
         }

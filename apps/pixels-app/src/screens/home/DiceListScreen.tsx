@@ -24,7 +24,6 @@ import {
 } from "~/components/SortBottomSheet";
 import { AnimatedGradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import {
   DiceGrouping,
   DiceGroupingList,
@@ -38,7 +37,7 @@ import {
   setDiceGrouping,
   setDiceSortMode,
 } from "~/features/store/appSettingsSlice";
-import { usePairedPixels, usePixelsScanner } from "~/hooks";
+import { PairedDie, removePairedDie } from "~/features/store/pairedDiceSlice";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -176,6 +175,34 @@ function NoPairedDie({
   );
 }
 
+function useUnpairActionSheet(pairedDie?: PairedDie): () => void {
+  const appDispatch = useAppDispatch();
+  const { showActionSheetWithOptions } = useActionSheet();
+
+  const { colors } = useTheme();
+  const unpairDieWithConfirmation = React.useCallback(
+    () =>
+      showActionSheetWithOptions(
+        {
+          options: [`Unpair ${pairedDie?.name}`, "Keep Die"],
+          destructiveButtonIndex: 0,
+          cancelButtonIndex: 1,
+          destructiveColor: colors.error,
+          containerStyle: { backgroundColor: colors.background },
+          textStyle: { color: colors.onBackground },
+        },
+        (selectedIndex?: number) => {
+          if (pairedDie && selectedIndex === 0) {
+            appDispatch(removePairedDie(pairedDie.pixelId));
+          }
+        }
+      ),
+    [appDispatch, colors, pairedDie, showActionSheetWithOptions]
+  );
+
+  return unpairDieWithConfirmation;
+}
+
 function DiceListPage({
   navigation,
 }: {
@@ -187,20 +214,22 @@ function DiceListPage({
   const [showPairDice, setShowPairDice] = React.useState(false);
 
   // Dice
-  const [scannedPixels, scannerStatus] = usePixelsScanner(
-    !!scanTimeout || showPairDice
-  );
-  const { pairedPixels, availablePixels, pairDie, unpairDie } =
-    usePairedPixels(scannedPixels);
+  // const [scannedPixels, scannerStatus] = usePixelsScanner(
+  //   !!scanTimeout || showPairDice
+  // );
+  // const { pairedPixels, availablePixels, pairDie, unpairDie } =
+  //   usePairedPixels(scannedPixels);
+  const pairedDice = useAppSelector((state) => state.pairedDice).dice;
+  //const pairedPixels = usePairedPixels(pairedDice.map((d) => d.pixelId));
 
   // Pairing
-  const hasPairedPixels = pairedPixels.length > 0;
+  const hasPairedDice = pairedDice.length > 0;
   useFocusEffect(
     React.useCallback(() => {
-      if (!hasPairedPixels) {
+      if (!hasPairedDice) {
         setShowPairDice(true);
       }
-    }, [hasPairedPixels])
+    }, [hasPairedDice])
   );
 
   // Reconnect
@@ -217,10 +246,10 @@ function DiceListPage({
   // Scan for missing dice on showing page
   useFocusEffect(
     React.useCallback(() => {
-      if (pairedPixels.some((p) => !getPixel(p.pixelId))) {
+      if (pairedDice.some((p) => !getPixel(p.pixelId))) {
         tryReconnectDice();
       }
-    }, [pairedPixels, tryReconnectDice])
+    }, [pairedDice, tryReconnectDice])
   );
   // Stop scanning on leaving page
   useFocusEffect(
@@ -236,61 +265,46 @@ function DiceListPage({
   );
 
   // Selection
-  const [selectedPixel, setSelectedPixel] = React.useState<PairedPixel>();
+  const [selectedDie, setSelectedDie] = React.useState<PairedDie>();
   React.useEffect(() => {
-    if (!pairedPixels.length) {
+    if (!pairedDice.length) {
       // Unselect Pixel
-      setSelectedPixel(undefined);
-    } else if (!selectedPixel || !pairedPixels.includes(selectedPixel)) {
+      setSelectedDie(undefined);
+    } else if (
+      !selectedDie ||
+      !pairedDice.some((d) => d.pixelId === selectedDie.pixelId)
+    ) {
       // Select first Pixel
-      setSelectedPixel(pairedPixels[0]);
-    } else if (!getPixel(selectedPixel.pixelId)) {
+      setSelectedDie(pairedDice[0]);
+    } else if (!getPixel(selectedDie.pixelId)) {
       // Selected Pixel hasn't been seen so far
       tryReconnectDice();
     }
-  }, [pairedPixels, selectedPixel, tryReconnectDice]);
+  }, [pairedDice, selectedDie, tryReconnectDice]);
 
   // View Mode
   const [viewMode, setViewMode] = React.useState<DiceViewMode>("focus");
   const isFocus = viewMode === "focus";
-  const showDetails = (pixel: PairedPixel) => {
-    setSelectedPixel(pixel);
+  const showDetails = (pairedDie: PairedDie) => {
+    setSelectedDie(pairedDie);
     if (!isFocus) {
-      navigation.navigate("dieDetails", { pixelId: pixel.pixelId });
+      navigation.navigate("dieDetails", { pixelId: pairedDie.pixelId });
     }
   };
 
-  const { colors } = useTheme();
-
   // Unpair
-  const { showActionSheetWithOptions } = useActionSheet();
-  const unpairDieWithConfirmation = () =>
-    showActionSheetWithOptions(
-      {
-        options: [`Unpair ${selectedPixel?.name}`, "Keep Die"],
-        destructiveButtonIndex: 0,
-        cancelButtonIndex: 1,
-        destructiveColor: colors.error,
-        containerStyle: { backgroundColor: colors.background },
-        textStyle: { color: colors.onBackground },
-      },
-      (selectedIndex?: number) => {
-        if (selectedPixel && selectedIndex === 0) {
-          unpairDie(selectedPixel);
-        }
-      }
-    );
+  const showUnpairActionSheet = useUnpairActionSheet(selectedDie);
 
   return (
     <>
       <View style={{ height: "100%" }}>
-        {isFocus && selectedPixel && (
+        {isFocus && selectedDie && (
           <PixelFocusViewHeader
-            pairedPixel={selectedPixel}
-            onUnpair={unpairDieWithConfirmation}
+            pairedDie={selectedDie}
+            onUnpair={showUnpairActionSheet}
             onFirmwareUpdate={() =>
               navigation.navigate("firmwareUpdate", {
-                pixelId: selectedPixel?.pixelId,
+                pixelId: selectedDie?.pixelId,
               })
             }
           />
@@ -302,43 +316,43 @@ function DiceListPage({
             gap: 10,
           }}
         >
-          {isFocus && selectedPixel ? (
+          {isFocus && selectedDie ? (
             <PixelFocusView
-              pairedPixel={selectedPixel}
+              pairedDie={selectedDie}
               onEditProfile={() =>
                 navigation.navigate("editDieProfileStack", {
                   screen: "editDieProfile",
                   params: {
-                    pixelId: selectedPixel.pixelId,
+                    pixelId: selectedDie.pixelId,
                   },
                 })
               }
               onShowDetails={() =>
                 navigation.navigate("dieDetails", {
-                  pixelId: selectedPixel.pixelId,
+                  pixelId: selectedDie.pixelId,
                 })
               }
             />
           ) : (
             <View style={{ marginTop: 30 }} />
           )}
-          {pairedPixels.length === 0 ? (
+          {!pairedDice.length ? (
             <NoPairedDie
               showPairDice={showPairDice}
               onPairDice={() => setShowPairDice(true)}
             />
           ) : viewMode === "list" ? (
             <DiceList
-              pixels={pairedPixels}
+              dice={pairedDice}
               onSelectDie={showDetails}
               onPressNewDie={() => setShowPairDice(true)}
             />
           ) : (
             <DiceGrid
-              selection={isFocus ? selectedPixel : undefined}
+              selection={isFocus ? selectedDie : undefined}
               numColumns={isFocus ? 4 : 2}
               miniCards={isFocus}
-              pixels={pairedPixels}
+              dice={pairedDice}
               onSelectDie={showDetails}
               onPressNewDie={() => setShowPairDice(true)}
             />
@@ -350,12 +364,8 @@ function DiceListPage({
         onSelectViewMode={(vm) => setViewMode(vm)}
       />
       <PairDiceBottomSheet
-        availablePixels={availablePixels}
         visible={showPairDice}
-        onDismiss={(scannedPixels) => {
-          scannedPixels?.forEach(pairDie);
-          setShowPairDice(false);
-        }}
+        onDismiss={() => setShowPairDice(false)}
       />
     </>
   );

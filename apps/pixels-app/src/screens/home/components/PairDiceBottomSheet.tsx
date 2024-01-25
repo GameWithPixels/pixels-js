@@ -14,27 +14,30 @@ import {
 } from "react-native-paper";
 import { FadeIn } from "react-native-reanimated";
 
+import { useAppDispatch } from "~/app/hooks";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
-import { useBottomSheetPadding } from "~/hooks";
+import { addPairedDie } from "~/features/store/pairedDiceSlice";
+import { useAvailablePixels, useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PairDiceBottomSheet({
-  availablePixels,
   visible,
   onDismiss,
 }: {
-  availablePixels: readonly ScannedPixel[];
   visible: boolean;
-  onDismiss: (pixels?: ScannedPixel[]) => void;
+  onDismiss?: (pixels?: ScannedPixel[]) => void;
 }) {
+  const appDispatch = useAppDispatch();
+  const [selection, setSelection] = React.useState<ScannedPixel[]>([]);
+  const availablePixels = useAvailablePixels();
+
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
-  const [selection, setSelection] = React.useState<ScannedPixel[]>([]);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
@@ -52,6 +55,22 @@ export function PairDiceBottomSheet({
       setShowNoDie(false);
     }
   }, [visible]);
+
+  const onPairDice = () => {
+    for (const pixel of selection) {
+      appDispatch(
+        addPairedDie({
+          systemId: pixel.systemId,
+          address: pixel.address,
+          pixelId: pixel.pixelId,
+          name: pixel.name,
+          dieType: pixel.dieType,
+          colorway: pixel.colorway,
+        })
+      );
+    }
+    onDismiss?.(selection);
+  };
 
   const paddingBottom = useBottomSheetPadding(0);
   const theme = useTheme();
@@ -137,7 +156,7 @@ export function PairDiceBottomSheet({
             disabled={!selection.length}
             sentry-label="pair-dice"
             style={{ marginBottom: 20 }}
-            onPress={() => onDismiss(selection)}
+            onPress={onPairDice}
           >
             {!selection.length
               ? "No Die Selected"
