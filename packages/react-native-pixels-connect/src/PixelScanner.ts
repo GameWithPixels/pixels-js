@@ -301,9 +301,14 @@ export class PixelScanner {
 
   private _notify(now: number): void {
     this._lastUpdate.setTime(now);
-    const updates = [...this._pendingUpdates];
-    this._pendingUpdates.length = 0;
-    this._userListener?.(this, updates);
+    if (this._pendingUpdates.length) {
+      const updates = [...this._pendingUpdates];
+      this._pendingUpdates.length = 0;
+      this._userListener?.(this, updates);
+    } else {
+      // This shouldn't happen
+      console.log("PixelScanner: no update to notify");
+    }
   }
 
   private _pruneUnavailable(): void {
@@ -321,7 +326,9 @@ export class PixelScanner {
         });
       }
     }
-    this._notify(now);
+    if (this._pendingUpdates.length) {
+      this._notify(now);
+    }
   }
 
   private _emulateScan(): void {

@@ -10,7 +10,6 @@ export * from "./usePixelsCentral";
 export * from "./useProfile";
 export * from "./useProfilesList";
 export * from "./useFilteredProfiles";
-export * from "./usePixelsScanner";
 export * from "./useHasFirmwareUpdate";
 export * from "./useBottomSheetPadding";
 export * from "./useDfuBundle";

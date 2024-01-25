@@ -6,8 +6,13 @@ import { PixelsCentral } from "~/features/dice/PixelsCentral";
 import { PixelsCentralContext } from "~/hooks";
 
 export function AppPixels({ children }: React.PropsWithChildren) {
-  const pairedDice = useAppSelector((state) => state.pairedDice);
   const pixelsCentral = React.useMemo(() => new PixelsCentral(), []);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
+  React.useEffect(() => {
+    for (const die of pairedDice) {
+      pixelsCentral.monitorPixel(die.pixelId);
+    }
+  }, [pairedDice, pixelsCentral]);
   return (
     <PixelsCentralContext.Provider value={pixelsCentral}>
       {children}

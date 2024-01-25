@@ -8,38 +8,50 @@ import {
   Pixel,
   PixelScanner,
   PixelScannerListOp,
+  PixelScannerStatus,
   ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { unsigned32ToHex } from "../utils";
+import { logError, unsigned32ToHex } from "~/features/utils";
+
+function pixelLog(pixel: Pick<Pixel, "pixelId">, message: string) {
+  console.log(`Pixel ${unsigned32ToHex(pixel.pixelId)}: ${message}`);
+}
 
 export interface PixelsCentralEventMap {
-  availableListChanged: ScannedPixelNotifier[];
-  pairedPixelFound: Pixel;
-  foundPixelUnpaired: Pixel;
+  scannerStatusChanged: PixelScannerStatus;
+  availablePixelsChanged: ScannedPixelNotifier[];
+  monitoredPixelsChanged: Pixel[];
 }
 
 export class PixelsCentral {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelsCentralEventMap>();
   private readonly _scanner = new PixelScanner();
+  private _scannerStatus: PixelScannerStatus = "stopped";
   private readonly _scannedPixels: ScannedPixelNotifier[] = [];
-  private readonly _pixels: Pixel[] = [];
-  private readonly _pairedPixelsIds = new Set<number>();
+  private readonly _monitoredPixelsIds = new Set<number>();
+  private readonly _monitoredPixels: Pixel[] = [];
   private _stopTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  get isScanning(): boolean {
-    return this._scanner.isScanning;
+  constructor() {
+    this._scanner.minNotifyInterval = 200;
+    this._scanner.keepAliveDuration = 5000;
+    this._scanner.scanListener = this._scanListener.bind(this);
+  }
+
+  get scannerStatus(): PixelScannerStatus {
+    return this._scannerStatus;
   }
 
   get availablePixels(): ScannedPixelNotifier[] {
     return this._scannedPixels.filter(
-      (p) => !this._pairedPixelsIds.has(p.pixelId)
+      (p) => !this._monitoredPixelsIds.has(p.pixelId)
     );
   }
 
-  get pairedPixels(): Pixel[] {
-    return this._pixels.filter((p) => this._pairedPixelsIds.has(p.pixelId));
+  get monitoredPixels(): Pixel[] {
+    return [...this._monitoredPixels];
   }
 
   /**
@@ -73,41 +85,58 @@ export class PixelsCentral {
   }
 
   startScanning(duration = 0): void {
-    const scanner = this._scanner;
-    scanner.minNotifyInterval = 200;
-    scanner.keepAliveDuration = 1000;
-    scanner.scanListener = this._scanListener;
-    scanner.start();
-    if (duration > 0) {
-      if (this._stopTimeoutId) {
-        clearTimeout(this._stopTimeoutId);
-      }
-      this._stopTimeoutId = setTimeout(() => {
-        this._stopTimeoutId = undefined;
-        scanner.stop();
-      }, duration);
-    }
+    this._scanner
+      .start()
+      .then(() => {
+        this._updateStatus("started");
+        if (duration > 0) {
+          if (this._stopTimeoutId) {
+            clearTimeout(this._stopTimeoutId);
+          }
+          this._stopTimeoutId = setTimeout(() => {
+            this._stopTimeoutId = undefined;
+            this._scanner.stop();
+          }, duration);
+        }
+      })
+      .catch((e) => {
+        this._updateStatus(e);
+      });
   }
 
   stopScanning(): void {
-    this._scanner.stop();
+    this._scanner
+      .stop()
+      .then(() => {
+        this._updateStatus("stopped");
+      })
+      .catch((e) => {
+        this._updateStatus(e);
+      });
   }
 
-  addPairedPixel(pixelId: number): void {
-    if (this._pairedPixelsIds.add(pixelId)) {
-      const pixel = this._pixels.find((p) => p.pixelId === pixelId);
+  monitorPixel(pixelId: number): void {
+    if (this._monitoredPixelsIds.add(pixelId)) {
+      const pixel = getPixel(pixelId);
       if (pixel) {
-        this._evEmitter.emit("pairedPixelFound", pixel);
+        this._autoConnect(pixel);
       }
     }
   }
 
-  removePairedPixel(pixelId: number): void {
-    if (this._pairedPixelsIds.delete(pixelId)) {
-      const pixel = this._pixels.find((p) => p.pixelId === pixelId);
-      if (pixel) {
-        this._evEmitter.emit("foundPixelUnpaired", pixel);
-      }
+  unmonitorPixel(pixelId: number): void {
+    if (this._monitoredPixelsIds.delete(pixelId)) {
+      // const pixel = this._pixels.find((p) => p.pixelId === pixelId);
+      // if (pixel) {
+      //   this._evEmitter.emit("foundPixelUnpaired", pixel);
+      // }
+    }
+  }
+
+  private _updateStatus(status: PixelScannerStatus): void {
+    if (this._scannerStatus !== status) {
+      this._scannerStatus = status;
+      this._evEmitter.emit("scannerStatusChanged", status);
     }
   }
 
@@ -120,16 +149,21 @@ export class PixelsCentral {
           this._scannedPixels.length = 0;
           break;
         case "add": {
+          console.log(
+            "PixelsCentral: add " +
+              op.scannedPixel.name +
+              " - " +
+              unsigned32ToHex(op.scannedPixel.pixelId)
+          );
           const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
           this._scannedPixels.push(notifier);
           const pixel = getPixel(notifier.pixelId);
           if (pixel) {
-            this._pixels.push(pixel);
-            if (this._pairedPixelsIds.has(pixel.pixelId)) {
-              this._evEmitter.emit("pairedPixelFound", pixel);
+            if (this._monitoredPixelsIds.has(pixel.pixelId)) {
+              this._autoConnect(pixel);
             }
           } else {
-            console.error(
+            logError(
               `PixelsCentral: no Pixel instance for ${unsigned32ToHex(
                 notifier.pixelId
               )} after getting scanned`
@@ -141,6 +175,12 @@ export class PixelsCentral {
           {
             const sp = this._scannedPixels[op.index];
             if (sp) {
+              console.log(
+                "PixelsCentral: update " +
+                  sp.name +
+                  " - " +
+                  unsigned32ToHex(sp.pixelId)
+              );
               sp.updateProperties(op.scannedPixel);
             } else {
               console.error(
@@ -151,6 +191,10 @@ export class PixelsCentral {
           break;
         case "remove":
           if (this._scannedPixels[op.index]) {
+            console.log(
+              "PixelsCentral: remove " +
+                unsigned32ToHex(this._scannedPixels[op.index].pixelId)
+            );
             this._scannedPixels.splice(op.index, 1);
           } else {
             console.error(
@@ -164,7 +208,17 @@ export class PixelsCentral {
     }
     const available = this.availablePixels;
     if (availableCount !== available.length) {
-      this._evEmitter.emit("availableListChanged", available);
+      this._evEmitter.emit("availablePixelsChanged", this.availablePixels);
+    }
+  }
+
+  private _autoConnect(pixel: Pixel): void {
+    if (!this._monitoredPixels.includes(pixel)) {
+      this._monitoredPixels.push(pixel);
+      pixel.connect().catch((e: Error) => {
+        pixelLog(pixel, `Connection error, ${e}`);
+      });
+      this._evEmitter.emit("monitoredPixelsChanged", this.monitoredPixels);
     }
   }
 }

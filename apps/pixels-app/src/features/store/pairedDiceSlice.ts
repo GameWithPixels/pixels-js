@@ -1,13 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  PixelColorway,
-  PixelDieType,
-} from "@systemic-games/react-native-pixels-connect";
 
 import { getFactoryProfileUuid } from "./library/factory";
-import { PairedDie } from "../../app/PairedDie";
 
-import { getTimeStringMs, unsigned32ToHex } from "~/features/utils";
+import { PairedDie } from "~/app/PairedDie";
+import { getTimeStringMs, logError, unsigned32ToHex } from "~/features/utils";
 
 export interface PairedDiceState {
   paired: PairedDie[];
@@ -51,14 +47,12 @@ const PairedDiceSlice = createSlice({
 
     addPairedDie(
       state,
-      action: PayloadAction<{
-        systemId: string;
-        address: number;
-        pixelId: number;
-        name: string;
-        dieType: PixelDieType;
-        colorway: PixelColorway;
-      }>
+      action: PayloadAction<
+        Pick<
+          PairedDie,
+          "systemId" | "pixelId" | "name" | "dieType" | "colorway"
+        >
+      >
     ) {
       log("addPairedDie", action.payload);
       const index = state.paired.findIndex(
@@ -68,7 +62,7 @@ const PairedDiceSlice = createSlice({
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
       const { systemId, pixelId, name, dieType, colorway } = action.payload;
-      const dieInfo = {
+      const die = {
         systemId,
         pixelId,
         name,
@@ -82,9 +76,9 @@ const PairedDiceSlice = createSlice({
               : getFactoryProfileUuid(dieType),
       };
       if (index >= 0) {
-        state.paired[index] = dieInfo;
+        state.paired[index] = die;
       } else {
-        state.paired.push(dieInfo);
+        state.paired.push(die);
       }
       if (uIndex >= 0) {
         state.unpaired.splice(uIndex, 1);
@@ -107,7 +101,7 @@ const PairedDiceSlice = createSlice({
           state.unpaired.push(state.paired[index]);
         }
       } else {
-        reportError(
+        logError(
           `PairedDiceSlice.removePairedDie: no paired die with pixelId ${unsigned32ToHex(
             action.payload
           )}`

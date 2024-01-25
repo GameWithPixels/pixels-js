@@ -209,19 +209,8 @@ function DiceListPage({
 }: {
   navigation: DiceListScreenProps["navigation"];
 }) {
-  // TODO keeping this value in a state generates unnecessary re-renders
-  const [scanTimeout, setScanTimeout] =
-    React.useState<ReturnType<typeof setTimeout>>();
   const [showPairDice, setShowPairDice] = React.useState(false);
-
-  // Dice
-  // const [scannedPixels, scannerStatus] = usePixelsScanner(
-  //   !!scanTimeout || showPairDice
-  // );
-  // const { pairedPixels, availablePixels, pairDie, unpairDie } =
-  //   usePairedPixels(scannedPixels);
   const pairedDice = useAppSelector((state) => state.pairedDice).paired;
-  //const pairedPixels = usePairedPixels(pairedDice.map((d) => d.pixelId));
 
   // Pairing
   const hasPairedDice = pairedDice.length > 0;
@@ -235,13 +224,13 @@ function DiceListPage({
 
   // Reconnect
   const tryReconnectDice = React.useCallback(() => {
-    // Set a timeout to stop scanning in 10s
-    setScanTimeout((id) => {
-      if (id) {
-        clearTimeout(id);
-      }
-      return setTimeout(() => setScanTimeout(undefined), 10000);
-    });
+    // // Set a timeout to stop scanning in 10s
+    // setScanTimeout((id) => {
+    //   if (id) {
+    //     clearTimeout(id);
+    //   }
+    //   return setTimeout(() => setScanTimeout(undefined), 10000);
+    // });
   }, []);
 
   // Scan for missing dice on showing page
@@ -253,17 +242,17 @@ function DiceListPage({
     }, [pairedDice, tryReconnectDice])
   );
   // Stop scanning on leaving page
-  useFocusEffect(
-    React.useCallback(() => {
-      return () =>
-        setScanTimeout((id) => {
-          if (id) {
-            clearTimeout(id);
-          }
-          return undefined;
-        });
-    }, [])
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     return () =>
+  //       setScanTimeout((id) => {
+  //         if (id) {
+  //           clearTimeout(id);
+  //         }
+  //         return undefined;
+  //       });
+  //   }, [])
+  // );
 
   // Selection
   const [selectedDie, setSelectedDie] = React.useState<PairedDie>();

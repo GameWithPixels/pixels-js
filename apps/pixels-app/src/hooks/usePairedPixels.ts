@@ -219,7 +219,7 @@ export function __usePairedPixels__(scannedPixels?: ScannedPixelNotifier[]): {
       appDispatch(
         addPairedDie({
           systemId: pixel.systemId,
-          address: addressesRef.current.get(pixel.pixelId) ?? 0,
+          // address: addressesRef.current.get(pixel.pixelId) ?? 0,
           pixelId: pixel.pixelId,
           name: pixel.name,
           dieType: pixel.dieType,
