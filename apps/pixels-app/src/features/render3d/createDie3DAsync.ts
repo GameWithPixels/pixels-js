@@ -5,6 +5,7 @@ import {
 import {
   PixelDieType,
   PixelColorway,
+  DiceUtils,
 } from "@systemic-games/react-native-pixels-connect";
 import { Asset } from "expo-asset";
 import { loadAsync, THREE } from "expo-three";
@@ -421,16 +422,25 @@ async function loadAssetsAsync(
   // }
 
   // Get their names
-  const meshNames: string[] = Array(faceMeshes.length);
+  const faceNames: string[] = Array(DiceUtils.getFaceCount(dieType));
+  if (dieType !== "d6pipped" && faceMeshes.length !== faceNames.length) {
+    throw new CreateDie3DError(
+      `Unexpected number of faces ${faceMeshes.length} instead of ${faceNames.length} for ${dieType}/${colorway}`
+    );
+  }
   faceMeshes.forEach((faceMesh, i) => {
     // Get face index
     const indexAsString = faceMesh.name
       .toLowerCase()
+      .split("face")[1]
       .replace("_", "")
       .replace(".", "")
-      .split("face")[1]
       .replace("mesh", "");
-    const indexFromName = indexAsString?.length ? Number(indexAsString) : NaN;
+    // TODO pipped dice
+    const isPipped = indexAsString.includes("led");
+    const indexFromName = indexAsString?.length
+      ? Number(isPipped ? indexAsString.substring(0, 1) : indexAsString)
+      : NaN;
     let index = isNaN(indexFromName) ? i : indexFromName;
     if (dieType === "d00") {
       index /= 10;
@@ -442,17 +452,17 @@ async function loadAssetsAsync(
         `loadAssetsAsync(): Face index not found in name, using node index ${index}`
       );
     }
-    if (isNaN(index) || index < 0 || index >= meshNames.length) {
+    if (isNaN(index) || index < 0 || index >= faceNames.length) {
       throw new CreateDie3DError(
-        `Out of bound face index ${index} of ${dieType}/${colorway}`
+        `Out of bound face index ${index} for face ${faceMesh.name} of ${dieType}/${colorway}`
       );
     }
-    if (meshNames[index]) {
+    if (!isPipped && faceNames[index]) {
       throw new CreateDie3DError(
-        `extractMeshesGeometry(): Duplicate face index: ${index} of ${dieType}/${colorway}`
+        `Duplicate face index ${index} for ${dieType}/${colorway}`
       );
     }
-    meshNames[index] = faceMesh.name;
+    faceNames[index] = faceMesh.name;
   });
 
   // Update materials
@@ -470,12 +480,7 @@ async function loadAssetsAsync(
     `loadAssetsAsync(): Assets for ${dieType} loaded in ${Date.now() - start}ms`
   );
 
-  return {
-    root,
-    faceNames: meshNames,
-    size,
-    lights,
-  };
+  return { root, faceNames, size, lights };
 }
 
 export interface DieSceneObjects {
