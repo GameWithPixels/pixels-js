@@ -4,15 +4,13 @@ import { View, ViewProps } from "react-native";
 import { AddDieButton } from "./buttons";
 import { PixelHCard, PixelVCard } from "./cards";
 
-import { PairedDie } from "~/features/store/pairedDiceSlice";
+import { PairedDie } from "~/app/PairedDie";
 
 function isSelected(
-  pixel: PairedDie,
+  die: PairedDie,
   selection?: PairedDie | readonly PairedDie[]
 ): boolean {
-  return Array.isArray(selection)
-    ? selection.includes(pixel)
-    : selection === pixel;
+  return Array.isArray(selection) ? selection.includes(die) : selection === die;
 }
 
 function isPreviousItemSelected(
@@ -42,7 +40,7 @@ function isNextItemSelected(
 export interface DiceListProps {
   dice: readonly PairedDie[];
   selection?: PairedDie | readonly PairedDie[];
-  onSelectDie?: (pixel: PairedDie) => void;
+  onSelectDie?: (pairedDie: PairedDie) => void;
   onPressNewDie?: () => void;
 }
 

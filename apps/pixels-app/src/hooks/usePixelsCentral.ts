@@ -5,9 +5,9 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { PixelsCentral } from "~/features/dice/PixelsCentral";
-import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { unsigned32ToHex } from "~/features/utils";
 
 export const PixelsCentralContext = React.createContext<PixelsCentral>(
@@ -31,12 +31,12 @@ export function useAvailablePixels(): ScannedPixelNotifier[] {
 export function usePairedPixel(
   pixelOrPixelId: Pick<PairedDie, "pixelId"> | number
 ): Pixel | undefined {
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
   const pixelId =
     typeof pixelOrPixelId === "number"
       ? pixelOrPixelId
       : pixelOrPixelId.pixelId;
-  if (!pairedDice.find((d) => d.pixelId === pixelId)?.isPaired) {
+  if (!pairedDice.some((d) => d.pixelId === pixelId)) {
     reportError(`Pixel ${unsigned32ToHex(pixelId)} not paired`);
   }
   return getPixel(pixelId);

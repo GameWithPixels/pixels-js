@@ -557,7 +557,7 @@ async function updateDiceAsync(
     const status = statuses[i++];
     try {
       await updateFirmware({
-        target: status.scannedPixel,
+        systemId: status.scannedPixel.systemId,
         bootloaderPath: updateBootloader ? dfuBundle.bootloader : undefined,
         firmwarePath: dfuBundle.firmware,
         dfuStateCallback: (state: DfuState) =>

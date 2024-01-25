@@ -8,7 +8,6 @@ import {
   getDfuTargetId,
   startDfu,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 
 function idToString(targetId: DfuTargetId): string {
   return typeof targetId === "number"
@@ -22,19 +21,15 @@ export function isDfuDone(dfuState: DfuState): boolean {
   );
 }
 
-export type DfuTarget =
-  | DfuTargetId
-  | Pick<ScannedPixel, "systemId" | "address">;
-
 export async function updateFirmware({
-  target,
+  systemId,
   bootloaderPath,
   firmwarePath,
   dfuStateCallback,
   dfuProgressCallback,
   isBootloaderMacAddress,
 }: {
-  target: DfuTarget;
+  systemId: string;
   bootloaderPath?: string;
   firmwarePath?: string;
   dfuStateCallback?: (state: DfuState) => void;
@@ -46,7 +41,7 @@ export async function updateFirmware({
   let bootloaderSkipped = false;
 
   // Get target id
-  const targetId = typeof target === "object" ? getDfuTargetId(target) : target;
+  const targetId = getDfuTargetId({ systemId });
 
   // Prepare DFU options
   const dfuCount = (hasBootloader ? 1 : 0) + (hasFirmware ? 1 : 0);

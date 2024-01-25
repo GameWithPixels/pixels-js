@@ -69,8 +69,8 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
   profile: Readonly<Profiles.Profile>;
   iconColor: string;
 }) {
-  const diceNames = useAppSelector((state) => state.pairedDice.dice)
-    .filter((d) => d.isPaired && d.profileUuid === profile.uuid)
+  const diceNames = useAppSelector((state) => state.pairedDice.paired)
+    .filter((d) => d.profileUuid === profile.uuid)
     .map((d) => d.name);
   return (
     <View

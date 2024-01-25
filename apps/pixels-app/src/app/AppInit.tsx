@@ -6,9 +6,7 @@ import { RootState } from "./store";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
 import { useAppSelector, useAppDispatch } from "~/app/hooks";
-import { PixelsCentral } from "~/features/dice/PixelsCentral";
 import { Library } from "~/features/store";
-import { PixelsCentralContext } from "~/hooks/usePixelsCentral";
 
 export function AppInit({ children }: React.PropsWithChildren) {
   const appDispatch = useAppDispatch();
@@ -73,10 +71,5 @@ export function AppInit({ children }: React.PropsWithChildren) {
     }
   }, [appDispatch, hasUpdate]);
 
-  const pixelsCentral = React.useMemo(() => new PixelsCentral(), []);
-  return !initialized ? null : (
-    <PixelsCentralContext.Provider value={pixelsCentral}>
-      {children}
-    </PixelsCentralContext.Provider>
-  );
+  return !initialized ? null : <>{children}</>;
 }

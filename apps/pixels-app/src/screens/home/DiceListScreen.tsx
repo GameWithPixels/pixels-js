@@ -15,6 +15,7 @@ import {
 import FocusIcon from "#/icons/home/focus";
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
+import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderBar } from "~/components/HeaderBar";
@@ -37,7 +38,7 @@ import {
   setDiceGrouping,
   setDiceSortMode,
 } from "~/features/store/appSettingsSlice";
-import { PairedDie, removePairedDie } from "~/features/store/pairedDiceSlice";
+import { removePairedDie } from "~/features/store/pairedDiceSlice";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -219,7 +220,7 @@ function DiceListPage({
   // );
   // const { pairedPixels, availablePixels, pairDie, unpairDie } =
   //   usePairedPixels(scannedPixels);
-  const pairedDice = useAppSelector((state) => state.pairedDice).dice;
+  const pairedDice = useAppSelector((state) => state.pairedDice).paired;
   //const pairedPixels = usePairedPixels(pairedDice.map((d) => d.pixelId));
 
   // Pairing

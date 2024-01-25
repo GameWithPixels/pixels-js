@@ -10,7 +10,7 @@ import { PixelRssi } from "./PixelRssi";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, RssiIcon } from "./icons";
 
-import { PairedDie } from "~/features/store/pairedDiceSlice";
+import { PairedDie } from "~/app/PairedDie";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 
 function PixelRollState({

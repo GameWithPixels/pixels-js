@@ -13,6 +13,7 @@ import {
 } from "react-native-paper";
 import { FadeIn, FadeOut } from "react-native-reanimated";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
@@ -21,7 +22,6 @@ import { AnimatedGradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
-import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { useBottomSheetPadding, useDfuBundle, useForceUpdate } from "~/hooks";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -85,7 +85,7 @@ async function updateDiceAsync(
     const targetStatus = statuses[i++];
     try {
       await updateFirmware({
-        target: targetStatus.pairedDie,
+        systemId: targetStatus.pairedDie.systemId,
         bootloaderPath: updateBootloader ? dfuBundle.bootloader : undefined,
         firmwarePath: dfuBundle.firmware,
         dfuStateCallback: (state: DfuState) =>
@@ -156,30 +156,28 @@ function FirmwareUpdatePage({
   }, [forceUpdate]);
 
   // Get list of paired dice
-  const allPairedDice = useAppSelector((state) => state.pairedDice.dice);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
 
   // Build DFU statuses
   const [dfuBundle, error] = useDfuBundle();
   const targetStatusesRef = React.useRef(new Map<number, TargetDfuStatus>());
   const targetStatuses = React.useMemo(
     () =>
-      allPairedDice
-        .filter((d) => d.isPaired)
-        .map((d) => {
-          const target =
-            targetStatusesRef.current.get(d.pixelId) ??
-            makeAutoObservable({
-              pairedDie: d,
-              state: getInitialDfuState(
-                getPixel(d.pixelId),
-                dfuBundle?.timestamp
-              ),
-              progress: 0,
-            } as TargetDfuStatus);
-          targetStatusesRef.current.set(d.pixelId, target);
-          return target;
-        }),
-    [allPairedDice, dfuBundle?.timestamp]
+      pairedDice.map((d) => {
+        const target =
+          targetStatusesRef.current.get(d.pixelId) ??
+          makeAutoObservable({
+            pairedDie: d,
+            state: getInitialDfuState(
+              getPixel(d.pixelId),
+              dfuBundle?.timestamp
+            ),
+            progress: 0,
+          } as TargetDfuStatus);
+        targetStatusesRef.current.set(d.pixelId, target);
+        return target;
+      }),
+    [pairedDice, dfuBundle?.timestamp]
   );
   const [selection, setSelection] = React.useState<TargetDfuStatus[]>(() => {
     const targetStatus = targetStatusesRef.current.get(pixelId ?? 0);

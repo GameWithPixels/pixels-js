@@ -11,6 +11,8 @@ import {
   ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { unsigned32ToHex } from "../utils";
+
 export interface PixelsCentralEventMap {
   availableListChanged: ScannedPixelNotifier[];
   pairedPixelFound: Pixel;
@@ -128,9 +130,9 @@ export class PixelsCentral {
             }
           } else {
             console.error(
-              `PixelsCentral: no Pixel instance for ${notifier.pixelId
-                .toString(16)
-                .padStart(8, "0")} after getting scanned`
+              `PixelsCentral: no Pixel instance for ${unsigned32ToHex(
+                notifier.pixelId
+              )} after getting scanned`
             );
           }
           break;

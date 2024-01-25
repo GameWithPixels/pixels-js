@@ -14,11 +14,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { PairedDie } from "~/app/PairedDie";
 import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
-import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { usePairedPixel, usePixelDataTransfer } from "~/hooks";
 
 function AnimatedConnectionIcon({

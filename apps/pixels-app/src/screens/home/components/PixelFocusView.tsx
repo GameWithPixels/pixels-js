@@ -18,6 +18,7 @@ import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
 import { PixelRollCard } from "./PixelRollCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PixelDieRenderer } from "~/components/DieRenderer";
@@ -27,7 +28,6 @@ import { ProfileCard, ProfileCardProps } from "~/components/profile";
 import { blinkDie, transferProfile } from "~/features/dice";
 import { FactoryProfile, getPixelStatusLabel } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
-import { PairedDie } from "~/features/store/pairedDiceSlice";
 import {
   useActiveProfile,
   useConfirmActionSheet,

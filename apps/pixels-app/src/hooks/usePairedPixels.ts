@@ -8,13 +8,13 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
 import { playRemoteAction } from "~/features/profiles/playRemoteAction";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
   addPairedDie,
-  PairedDie,
   removePairedDie,
   setPairedDieName,
 } from "~/features/store/pairedDiceSlice";
@@ -25,9 +25,7 @@ function stableFilterPixels(
   pairedDice: readonly PairedDie[],
   lastPixels: readonly Pixel[]
 ): readonly Pixel[] {
-  const newPixels = pairedDice
-    .map((d) => (d.isPaired ? getPixel(d.pixelId) : undefined))
-    .filter(notEmpty);
+  const newPixels = pairedDice.map((d) => getPixel(d.pixelId)).filter(notEmpty);
   return areArraysEqual(newPixels, lastPixels) ? lastPixels : newPixels;
 }
 
@@ -60,7 +58,7 @@ function disconnect(pixel: Pixel) {
 function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
   return (actionId: number) => {
     const state = store.getState();
-    const profileUuid = state.pairedDice.dice.find(
+    const profileUuid = state.pairedDice.paired.find(
       (d) => d.pixelId === pixel.pixelId
     )?.profileUuid;
     const profile = profileUuid && readProfile(profileUuid, state.library);
@@ -99,15 +97,16 @@ export function __usePairedPixels__(scannedPixels?: ScannedPixelNotifier[]): {
   const appDispatch = useAppDispatch();
 
   // Paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
   const pairedPixels = React.useMemo(
-    (): PairedDie[] =>
+    () =>
       pairedDice.map((d) => ({
         systemId: d.systemId,
         pixelId: d.pixelId,
         name: d.name,
         dieType: d.dieType,
         colorway: d.colorway,
+        profileUuid: d.profileUuid,
       })),
     [pairedDice]
   );
@@ -182,7 +181,7 @@ export function __usePairedPixels__(scannedPixels?: ScannedPixelNotifier[]): {
     // Remove unpaired Pixels
     const entries = Array.from(activePixelsRef.current.entries());
     for (const [pixelId, dispose] of entries) {
-      if (!pairedDice.find((d) => d.pixelId === pixelId)?.isPaired) {
+      if (!pairedDice.some((d) => d.pixelId === pixelId)) {
         pixelLog({ pixelId }, "Die has become inactive");
         activePixelsRef.current.delete(pixelId);
         // Remove event listeners and disconnect

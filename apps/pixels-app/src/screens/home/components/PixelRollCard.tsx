@@ -12,11 +12,11 @@ import Animated, {
   FadeOut,
 } from "react-native-reanimated";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { Card, CardProps } from "~/components/Card";
 import { AnimatedText } from "~/components/animated";
 import { makeTransparent } from "~/components/colors";
-import { PairedDie } from "~/features/store/pairedDiceSlice";
 import { usePairedPixel } from "~/hooks";
 
 function useLastRolls({
