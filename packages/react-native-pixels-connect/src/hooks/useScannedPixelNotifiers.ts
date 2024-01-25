@@ -53,11 +53,26 @@ export function useScannedPixelNotifiers(
             break;
           }
           case "update":
+            {
+              const sp = retItems[op.index];
+              if (sp) {
+                sp.updateProperties(op.scannedPixel);
+              } else {
+                console.error(
+                  "useScannedPixelNotifiers: index out of range on update operation"
+                );
+              }
+            }
+            break;
+          case "remove":
+            if (retItems === items && items[op.index]) {
+              retItems = [...items];
+            }
             if (retItems[op.index]) {
-              retItems[op.index].updateProperties(op.scannedPixel);
+              retItems.splice(op.index, 1);
             } else {
               console.error(
-                "useScannedPixelNotifiers: index out of range on update operation"
+                "useScannedPixelNotifiers: index out of range on remove operation"
               );
             }
             break;

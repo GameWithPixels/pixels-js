@@ -17,6 +17,7 @@ import { ScannedPixel } from "./ScannedPixel";
 export type PixelScannerListOp =
   | { type: "add"; scannedPixel: ScannedPixel }
   | { type: "update"; scannedPixel: ScannedPixel; index: number }
+  | { type: "remove"; index: number }
   | { type: "clear" };
 
 /**
@@ -64,6 +65,8 @@ export class PixelScanner {
   private _scanFilter: PixelScannerFilter;
   private _minNotifyInterval = 0;
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
+  private _keepAliveDuration = 0;
+  private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdate = new Date();
   private readonly _pendingUpdates: PixelScannerListOp[] = [];
 
@@ -120,6 +123,31 @@ export class PixelScanner {
     }
   }
 
+  /**
+   * The approximate duration in milliseconds for which a Scanned Pixel should
+   * be considered available since the last received advertisement.
+   * A value of 0 keep the Pixels forever.
+   * @remarks Prefer values above 500ms.
+   */
+  get keepAliveDuration(): number {
+    return this._keepAliveDuration;
+  }
+  set keepAliveDuration(duration: number) {
+    if (this._keepAliveDuration !== duration) {
+      this._keepAliveDuration = duration;
+      if (this._pruneTimeoutId) {
+        clearInterval(this._pruneTimeoutId);
+        this._pruneTimeoutId = undefined;
+      }
+      if (this._keepAliveDuration > 0) {
+        this._pruneTimeoutId = setInterval(
+          () => this._pruneUnavailable(),
+          Math.max(250, this._keepAliveDuration / 2)
+        );
+      }
+    }
+  }
+
   /** Number of scanned Pixels to emulate, only use in DEV mode! */
   get __dev__emulatedPixelsCount(): number {
     return this._emulatedCount;
@@ -136,6 +164,13 @@ export class PixelScanner {
    */
   get scannedPixels(): ScannedPixel[] {
     return [...this._pixels];
+  }
+
+  /**
+   * Indicates whether this scanner instance is currently scanning for Pixels.
+   */
+  get isScanning(): boolean {
+    return !!this._scannerListener;
   }
 
   /**
@@ -266,19 +301,47 @@ export class PixelScanner {
 
   private _notify(now: number): void {
     this._lastUpdate.setTime(now);
-    const updates = [...this._pendingUpdates];
-    this._pendingUpdates.length = 0;
-    this._userListener?.(this, updates);
+    if (this._pendingUpdates.length) {
+      const updates = [...this._pendingUpdates];
+      this._pendingUpdates.length = 0;
+      this._userListener?.(this, updates);
+    } else {
+      // This shouldn't happen
+      console.log("PixelScanner: no update to notify");
+    }
+  }
+
+  private _pruneUnavailable(): void {
+    const now = Date.now();
+    const expired = this._pixels.filter(
+      (p) => now - p.timestamp.getTime() > this._keepAliveDuration
+    );
+    if (expired.length) {
+      for (const sp of expired.reverse()) {
+        const index = this._pixels.indexOf(sp);
+        this._pixels.splice(index, 1);
+        this._pendingUpdates.push({
+          type: "remove",
+          index,
+        });
+      }
+    }
+    if (this._pendingUpdates.length) {
+      this._notify(now);
+    }
   }
 
   private _emulateScan(): void {
     // Around 5 scan events per Pixel per second
-    this._emulatorTimeoutId = setTimeout(() => {
-      this._emulateScan();
-      for (let i = 1; i <= this._emulatedCount; ++i) {
-        this._scannerListener?.(PixelScanner._generateScannedPixel(i));
-      }
-    }, 150 + 100 * Math.random());
+    this._emulatorTimeoutId = setTimeout(
+      () => {
+        this._emulateScan();
+        for (let i = 1; i <= this._emulatedCount; ++i) {
+          this._scannerListener?.(PixelScanner._generateScannedPixel(i));
+        }
+      },
+      150 + 100 * Math.random()
+    );
   }
 
   private static readonly _maxColorway = Math.max(

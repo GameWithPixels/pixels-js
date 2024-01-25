@@ -13,7 +13,7 @@ export type PixelScannerDispatchAction = "start" | "stop" | "clear";
  * Status of the scanner or the last error.
  * @remarks The scanner is considered stopped when there is an error.
  */
-export type PixelScannerStatus = "scanning" | "stopped" | Error;
+export type PixelScannerStatus = "started" | "stopped" | Error;
 
 /**
  * Available options for {@link usePixelScanner}.
@@ -118,7 +118,7 @@ export function usePixelScanner<T>(
       dispatchAsync()
         .then(() => {
           if (action !== "clear") {
-            setStatus(action === "start" ? "scanning" : "stopped");
+            setStatus(action === "start" ? "started" : "stopped");
           }
         })
         .catch(setStatus);
