@@ -1,4 +1,4 @@
-import { PixelDieType, DiceUtils } from "@systemic-games/pixels-core-connect";
+import { DiceUtils } from "@systemic-games/pixels-core-connect";
 import {
   DataSet,
   createDataSetForProfile,
@@ -23,6 +23,7 @@ import {
   AnimationFlagsValues,
   getFaceMask,
   BatteryStateFlagsValues,
+  PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
 export function getDefaultProfile(dieType: PixelDieType): DataSet {

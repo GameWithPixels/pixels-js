@@ -3,6 +3,8 @@ import {
   Color32Utils,
   DataSet,
   Constants as AnimConstants,
+  PixelDieType,
+  PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
@@ -53,8 +55,6 @@ import {
   MessageTypeValues,
   PowerOperation,
   PixelPowerOperationValues,
-  PixelDieType,
-  PixelDieTypeValues,
   LegacyIAmADie,
   VersionInfoChunk,
 } from "./Messages";

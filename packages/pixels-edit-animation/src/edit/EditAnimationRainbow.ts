@@ -1,8 +1,10 @@
 import {
   AnimationBits,
+  AnimationCategory,
   AnimationPreset,
   AnimationRainbow,
   Constants,
+  PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -45,8 +47,10 @@ export default class EditAnimationRainbow extends EditAnimation {
   constructor(opt?: {
     uuid?: string;
     name?: string;
-    duration?: number;
     animFlags?: number;
+    duration?: number;
+    category?: AnimationCategory;
+    dieType?: PixelDieType;
     faces?: number;
     count?: number;
     fade?: number;

@@ -739,7 +739,7 @@ class PixelDispatcher
               {
                 actions: [
                   new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.pink_worm,
+                    animation: PrebuildAnimations.pinkWorm,
                   }),
                 ],
               }
@@ -927,7 +927,7 @@ class PixelDispatcher
               {
                 actions: [
                   new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spinning_rainbow,
+                    animation: PrebuildAnimations.spinningRainbow,
                     face: Constants.currentFaceIndex,
                     loopCount: 1,
                   }),

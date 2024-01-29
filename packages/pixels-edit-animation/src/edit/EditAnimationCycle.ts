@@ -3,6 +3,8 @@ import {
   AnimationPreset,
   AnimationCycle,
   Constants,
+  AnimationCategory,
+  PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -52,8 +54,10 @@ export default class EditAnimationCycle extends EditAnimation {
   constructor(opt?: {
     uuid?: string;
     name?: string;
-    duration?: number;
     animFlags?: number;
+    duration?: number;
+    category?: AnimationCategory;
+    dieType?: PixelDieType;
     faces?: number;
     count?: number;
     fade?: number;

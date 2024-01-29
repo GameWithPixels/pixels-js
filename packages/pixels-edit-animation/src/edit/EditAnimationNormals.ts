@@ -2,8 +2,10 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationNormals,
+  AnimationCategory,
+  PixelDieType,
+  NormalsColorOverrideTypeValues,
 } from "@systemic-games/pixels-core-animation";
-import { NormalsColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNormals";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAnimation from "./EditAnimation";
@@ -23,7 +25,7 @@ export default class EditAnimationNormals extends EditAnimation {
   @widget("gradient")
   @name("Gradient Along Axis")
   @observable
-  gradientAlongAxis?: EditRgbGradient;
+  axisGradient?: EditRgbGradient;
 
   @widget("slider")
   @range(-10, 10)
@@ -46,7 +48,7 @@ export default class EditAnimationNormals extends EditAnimation {
   @widget("gradient")
   @name("Gradient Along Angle")
   @observable
-  gradientAlongAngle?: EditRgbGradient;
+  angleGradient?: EditRgbGradient;
 
   @widget("slider")
   @range(-10, 10)
@@ -63,42 +65,44 @@ export default class EditAnimationNormals extends EditAnimation {
   @widget("toggle")
   @name("Override color based on face")
   @observable
-  overallGradientColorType: number;
+  gradientColorType: number;
 
   @widget("slider")
   @range(0, 1)
   @name("Override color variance")
   @observable
-  overallGradientColorVar: number;
+  gradientColorVar: number;
 
   constructor(opt?: {
     uuid?: string;
     name?: string;
-    duration?: number;
     animFlags?: number;
+    duration?: number;
+    category?: AnimationCategory;
+    dieType?: PixelDieType;
     gradient?: EditRgbGradient;
-    gradientAlongAxis?: EditRgbGradient;
+    axisGradient?: EditRgbGradient;
     axisScale?: number;
     axisOffset?: number;
     axisScrollSpeed?: number;
-    gradientAlongAngle?: EditRgbGradient;
+    angleGradient?: EditRgbGradient;
     angleScrollSpeed?: number;
     fade?: number;
-    overallGradientColorType?: number;
-    overallGradientColorVar?: number;
+    gradientColorType?: number;
+    gradientColorVar?: number;
   }) {
     super(opt);
     this.gradient = opt?.gradient;
-    this.gradientAlongAxis = opt?.gradientAlongAxis;
+    this.axisGradient = opt?.axisGradient;
     this.axisScale = opt?.axisScale ?? 1;
     this.axisOffset = opt?.axisOffset ?? 0;
     this.axisScrollSpeed = opt?.axisScrollSpeed ?? 0;
-    this.gradientAlongAngle = opt?.gradientAlongAngle;
+    this.angleGradient = opt?.angleGradient;
     this.angleScrollSpeed = opt?.angleScrollSpeed ?? 0;
     this.fade = opt?.fade ?? 0;
-    this.overallGradientColorType =
-      opt?.overallGradientColorType ?? NormalsColorOverrideTypeValues.none;
-    this.overallGradientColorVar = opt?.overallGradientColorVar ?? 0;
+    this.gradientColorType =
+      opt?.gradientColorType ?? NormalsColorOverrideTypeValues.none;
+    this.gradientColorVar = opt?.gradientColorVar ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -111,19 +115,16 @@ export default class EditAnimationNormals extends EditAnimation {
     }
 
     const axisGradientTrackOffset = bits.rgbTracks.length;
-    if (this.gradientAlongAxis) {
+    if (this.axisGradient) {
       bits.rgbTracks.push(
-        new EditRgbTrack({ gradient: this.gradientAlongAxis }).toTrack(
-          editSet,
-          bits
-        )
+        new EditRgbTrack({ gradient: this.axisGradient }).toTrack(editSet, bits)
       );
     }
 
     const angleGradientTrackOffset = bits.rgbTracks.length;
-    if (this.gradientAlongAngle) {
+    if (this.angleGradient) {
       bits.rgbTracks.push(
-        new EditRgbTrack({ gradient: this.gradientAlongAngle }).toTrack(
+        new EditRgbTrack({ gradient: this.angleGradient }).toTrack(
           editSet,
           bits
         )
@@ -141,8 +142,8 @@ export default class EditAnimationNormals extends EditAnimation {
       axisScrollSpeedTimes1000: this.axisScrollSpeed * 1000,
       angleScrollSpeedTimes1000: this.angleScrollSpeed * 1000,
       fade: this.fade * 255,
-      overallGradientColorType: this.overallGradientColorType,
-      overallGradientColorVar: this.overallGradientColorVar * 1000,
+      overallGradientColorType: this.gradientColorType,
+      overallGradientColorVar: this.gradientColorVar * 1000,
     });
   }
 

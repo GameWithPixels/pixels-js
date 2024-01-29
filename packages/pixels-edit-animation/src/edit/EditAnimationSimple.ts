@@ -4,6 +4,8 @@ import {
   AnimationSimple,
   Constants,
   Color,
+  AnimationCategory,
+  PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -40,8 +42,10 @@ export default class EditAnimationSimple extends EditAnimation {
   constructor(opt?: {
     uuid?: string;
     name?: string;
-    duration?: number;
     animFlags?: number;
+    duration?: number;
+    category?: AnimationCategory;
+    dieType?: PixelDieType;
     faces?: number;
     color?: EditColor | Color;
     count?: number;
@@ -50,7 +54,7 @@ export default class EditAnimationSimple extends EditAnimation {
     super(opt);
     const color = opt?.color ?? Color.blue;
     this.faces = opt?.faces ?? Constants.faceMaskAll;
-    this.color = color instanceof Color ? new EditColor(color) : color;
+    this.color = color instanceof EditColor ? color : new EditColor(color);
     this.count = opt?.count ?? 1;
     this.fade = opt?.fade ?? 0;
   }

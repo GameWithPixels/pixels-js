@@ -122,7 +122,7 @@ export const SwipeablePixelsList = React.memo(function ({
             dispatchAll("playAnimation", PrebuildAnimations.rainbow);
             break;
           case 7:
-            dispatchAll("playAnimation", PrebuildAnimations.cycle_fire);
+            dispatchAll("playAnimation", PrebuildAnimations.cycleFire);
             break;
           case 8:
             dispatchAll("playAnimation", PrebuildAnimations.noise);

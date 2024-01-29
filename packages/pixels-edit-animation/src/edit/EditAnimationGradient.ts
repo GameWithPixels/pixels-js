@@ -3,6 +3,8 @@ import {
   AnimationPreset,
   AnimationGradient,
   Constants,
+  AnimationCategory,
+  PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -28,8 +30,10 @@ export default class EditAnimationGradient extends EditAnimation {
   constructor(opt?: {
     uuid?: string;
     name?: string;
-    duration?: number;
     animFlags?: number;
+    duration?: number;
+    category?: AnimationCategory;
+    dieType?: PixelDieType;
     faces?: number;
     gradient?: EditRgbGradient;
   }) {

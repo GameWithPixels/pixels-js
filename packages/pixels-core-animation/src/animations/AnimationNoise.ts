@@ -1,22 +1,10 @@
-import { enumValue, serializable } from "@systemic-games/pixels-core-utils";
+import { serializable } from "@systemic-games/pixels-core-utils";
 
 import AnimationBits from "./AnimationBits";
 import AnimationInstanceNoise from "./AnimationInstanceNoise";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
-
-/**
- * @category Animation Runtime Color Override type
- * @enum
- */
-export const NoiseColorOverrideTypeValues = {
-  none: enumValue(0),
-  randomFromGradient: enumValue(),
-  faceToGradient: enumValue(),
-  faceToRainbowWheel: enumValue(),
-} as const;
-
-export type NoiseColorOverrideType = keyof typeof NoiseColorOverrideTypeValues;
+import { NoiseColorOverrideTypeValues } from "./NoiseColorOverrideType";
 
 /**
  * @category Animation

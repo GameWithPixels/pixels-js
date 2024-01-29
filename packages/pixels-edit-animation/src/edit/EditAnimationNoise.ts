@@ -2,8 +2,10 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationNoise,
+  AnimationCategory,
+  PixelDieType,
+  NoiseColorOverrideTypeValues,
 } from "@systemic-games/pixels-core-animation";
-import { NoiseColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNoise";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAnimation from "./EditAnimation";
@@ -52,27 +54,29 @@ export default class EditAnimationNoise extends EditAnimation {
   @widget("toggle")
   @name("Override color based on face")
   @observable
-  overallGradientColorType: number;
+  gradientColorType: number;
 
   @widget("slider")
   @range(0, 1)
   @name("Override color variance")
   @observable
-  overallGradientColorVar: number;
+  gradientColorVar: number;
 
   constructor(opt?: {
     uuid?: string;
     name?: string;
-    duration?: number;
     animFlags?: number;
+    duration?: number;
+    category?: AnimationCategory;
+    dieType?: PixelDieType;
     gradient?: EditRgbGradient;
     blinkGradient?: EditRgbGradient;
     blinkFrequency?: number;
     blinkFrequencyVar?: number;
     blinkDuration?: number;
     fade?: number;
-    overallGradientColorType?: number;
-    overallGradientColorVar?: number;
+    gradientColorType?: number;
+    gradientColorVar?: number;
   }) {
     super(opt);
     this.gradient = opt?.gradient;
@@ -81,9 +85,9 @@ export default class EditAnimationNoise extends EditAnimation {
     this.blinkFrequencyVar = opt?.blinkFrequencyVar ?? 0;
     this.blinkDuration = opt?.blinkDuration ?? 0.1;
     this.fade = opt?.fade ?? 0;
-    this.overallGradientColorType =
-      opt?.overallGradientColorType ?? NoiseColorOverrideTypeValues.none;
-    this.overallGradientColorVar = opt?.overallGradientColorVar ?? 0;
+    this.gradientColorType =
+      opt?.gradientColorType ?? NoiseColorOverrideTypeValues.none;
+    this.gradientColorVar = opt?.gradientColorVar ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -107,8 +111,8 @@ export default class EditAnimationNoise extends EditAnimation {
       blinkFrequencyVarTimes1000: this.blinkFrequencyVar * 1000,
       blinkDuration: this.blinkDuration * 255,
       fade: this.fade * 255,
-      overallGradientColorType: this.overallGradientColorType,
-      overallGradientColorVar: this.overallGradientColorVar * 1000,
+      overallGradientColorType: this.gradientColorType,
+      overallGradientColorVar: this.gradientColorVar * 1000,
     });
   }
 

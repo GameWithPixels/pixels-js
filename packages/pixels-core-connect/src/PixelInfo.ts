@@ -1,4 +1,6 @@
-import { PixelColorway, PixelDieType, PixelRollState } from "./Messages";
+import { PixelDieType } from "@systemic-games/pixels-core-animation";
+
+import { PixelColorway, PixelRollState } from "./Messages";
 
 /**
  * Common accessible values for all Pixel implementations.

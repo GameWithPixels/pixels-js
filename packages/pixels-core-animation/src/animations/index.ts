@@ -1,6 +1,9 @@
 // Animations
 export * from "./AnimationType";
 export * from "./AnimationFlags";
+export * from "./AnimationCategory";
+export * from "./NoiseColorOverrideType";
+export * from "./NormalsColorOverrideType";
 export { default as AnimationBits } from "./AnimationBits";
 export { default as AnimationCycle } from "./AnimationCycle";
 export { default as AnimationGradient } from "./AnimationGradient";

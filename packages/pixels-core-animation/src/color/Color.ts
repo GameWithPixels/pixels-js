@@ -136,36 +136,37 @@ export default class Color implements IColor {
   }
 
   // Black is LED off
-  static black = new Color(0, 0, 0);
+  static readonly black = Object.freeze(new Color(0, 0, 0));
 
   // Bright colors
-  static brightRed = new Color(1, 0, 0);
-  static brightGreen = new Color(0, 1, 0);
-  static brightBlue = new Color(0, 0, 1);
-  static brightWhite = new Color(1, 1, 1);
-  static brightCyan = new Color(0, 1, 1);
-  static brightMagenta = new Color(1, 0, 1);
-  static brightYellow = new Color(1, 0.922, 0.016);
-  static brightOrange = new Color(1, 0.647, 0);
-  static brightPurple = new Color(0.5, 0, 1);
+  static readonly brightRed = Object.freeze(new Color(1, 0, 0));
+  static readonly brightGreen = Object.freeze(new Color(0, 1, 0));
+  static readonly brightBlue = Object.freeze(new Color(0, 0, 1));
+  static readonly brightWhite = Object.freeze(new Color(1, 1, 1));
+  static readonly brightCyan = Object.freeze(new Color(0, 1, 1));
+  static readonly brightMagenta = Object.freeze(new Color(1, 0, 1));
+  static readonly brightYellow = Object.freeze(new Color(1, 1, 0));
+  static readonly brightOrange = Object.freeze(new Color(1, 0.647, 0));
+  static readonly brightPurple = Object.freeze(new Color(0.5, 0, 1));
+  static readonly red = Object.freeze(new Color(0.7, 0, 0));
+  static readonly green = Object.freeze(new Color(0, 0.7, 0));
+  static readonly blue = Object.freeze(new Color(0, 0, 0.7));
+  static readonly white = Object.freeze(new Color(0.7, 0.7, 0.7));
+  static readonly cyan = Object.freeze(new Color(0, 0.7, 0.7));
+  static readonly magenta = Object.freeze(new Color(0.7, 0, 0.7));
+  static readonly yellow = Object.freeze(new Color(0.7, 0.6, 0.01));
+  static readonly orange = Object.freeze(new Color(0.7, 0.453, 0));
 
-  // Moderately bright colors
-  static red = new Color(0.7, 0, 0);
-  static green = new Color(0, 0.7, 0);
-  static blue = new Color(0, 0, 0.7);
-  static white = new Color(0.7, 0.7, 0.7);
-  static cyan = new Color(0, 0.7, 0.7);
-  static magenta = new Color(0.7, 0, 0.7);
-  static yellow = new Color(0.7, 0.6, 0.01);
-  static orange = new Color(0.7, 0.453, 0);
+  static readonly mediumWhite = Object.freeze(new Color(0.5, 0.5, 0.5));
+  static readonly faintWhite = Object.freeze(new Color(0.1, 0.1, 0.1));
 
   // Dimmed colors
-  static dimRed = new Color(0.35, 0, 0);
-  static dimGreen = new Color(0, 0.35, 0);
-  static dimBlue = new Color(0, 0, 0.35);
-  static dimWhite = new Color(0.35, 0.35, 0.35);
-  static dimCyan = new Color(0, 0.35, 0.35);
-  static dimMagenta = new Color(0.35, 0, 0.35);
-  static dimYellow = new Color(0.35, 0.3, 0.005);
-  static dimOrange = new Color(0.35, 0.226, 0);
+  static readonly dimRed = Object.freeze(new Color(0.35, 0, 0));
+  static readonly dimGreen = Object.freeze(new Color(0, 0.35, 0));
+  static readonly dimBlue = Object.freeze(new Color(0, 0, 0.35));
+  static readonly dimWhite = Object.freeze(new Color(0.35, 0.35, 0.35));
+  static readonly dimCyan = Object.freeze(new Color(0, 0.35, 0.35));
+  static readonly dimMagenta = Object.freeze(new Color(0.35, 0, 0.35));
+  static readonly dimYellow = Object.freeze(new Color(0.35, 0.3, 0.005));
+  static readonly dimOrange = Object.freeze(new Color(0.35, 0.226, 0));
 }
