@@ -66,17 +66,17 @@ const config = {
         },
       ],
     ],
-    hooks: {
-      postPublish: [
-        {
-          file: "sentry-expo/upload-sourcemaps",
-          config: {
-            organization: "systemic-games",
-            project: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
-          },
-        },
-      ],
-    },
+    // hooks: {
+    //   postPublish: [
+    //     {
+    //       file: "sentry-expo/upload-sourcemaps",
+    //       config: {
+    //         organization: "systemic-games",
+    //         project: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
+    //       },
+    //     },
+    //   ],
+    // },
     extra: {
       eas: {
         projectId: prod
