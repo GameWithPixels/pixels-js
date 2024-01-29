@@ -16,8 +16,15 @@ export type ConnectionEventReason =
   | "host" // The local device initiated disconnection.
   | "peripheral"; // The remote device initiated graceful disconnection.
 
+export type BluetoothState =
+  | "unknown"
+  | "off"
+  | "resetting"
+  | "unauthorized"
+  | "ready";
+
 export interface BleBluetoothStateEvent {
-  state: "unknown" | "off" | "resetting" | "unauthorized" | "ready";
+  readonly state: BluetoothState;
 }
 
 export interface ScanResult {

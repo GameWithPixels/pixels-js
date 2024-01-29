@@ -69,9 +69,9 @@ export type DfuState =
  */
 export interface DfuStateEvent {
   /** Identifier of the target device. */
-  targetId: DfuTargetId;
+  readonly targetId: DfuTargetId;
   /** New state of the DFU operations. */
-  state: DfuState;
+  readonly state: DfuState;
 }
 
 /**
@@ -80,17 +80,17 @@ export interface DfuStateEvent {
  */
 export interface DfuProgressEvent {
   /** Identifier of the target device. */
-  targetId: DfuTargetId;
+  readonly targetId: DfuTargetId;
   /** Upload progress in percent. */
-  percent: number;
+  readonly percent: number;
   /** Current part being uploaded. */
-  part: number;
+  readonly part: number;
   /** Total number of parts to upload. */
-  partsTotal: number;
+  readonly partsTotal: number;
   /** Upload speed in bytes per second. */
-  speed: number;
+  readonly speed: number;
   /** Average upload speed in bytes per second. */
-  averageSpeed: number;
+  readonly averageSpeed: number;
 }
 
 /**
@@ -100,8 +100,8 @@ export interface DfuProgressEvent {
  * @category Pixels
  */
 export interface DfuEventMap {
-  state: DfuStateEvent;
-  progress: DfuProgressEvent;
+  readonly state: DfuStateEvent;
+  readonly progress: DfuProgressEvent;
 }
 
 // Native event emitter

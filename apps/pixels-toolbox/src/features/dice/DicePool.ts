@@ -3,7 +3,10 @@ import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { ListChangeEvent, ListChangeOperation } from "./ListChangeEvent";
 
 export interface DicePoolEventMap {
-  diceListChange: ListChangeEvent<{ label: string; pixel: Pixel }>;
+  diceListChange: ListChangeEvent<{
+    readonly label: string;
+    readonly pixel: Pixel;
+  }>;
 }
 
 export interface DicePool extends EventTarget {

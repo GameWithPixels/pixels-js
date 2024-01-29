@@ -6,10 +6,10 @@ export class BluetoothLEError extends Error {
   }
 }
 
-export class CentralNotReadyError extends BluetoothLEError {
+export class CentralNotInitializedError extends BluetoothLEError {
   constructor() {
-    super("Central not ready");
-    this.name = "CentralNotReadyError";
+    super("Central not initialized");
+    this.name = "CentralNotInitializedError";
   }
 }
 
@@ -20,10 +20,10 @@ export class BluetoothPermissionsDeniedError extends BluetoothLEError {
   }
 }
 
-export class BluetoothTurnedOffError extends BluetoothLEError {
+export class BluetoothUnavailableError extends BluetoothLEError {
   constructor(state: "off" | "resetting" | "unknown") {
     super(`Bluetooth unavailable, state is ${state}`);
-    this.name = "BluetoothTurnedOffError";
+    this.name = "BluetoothUnavailableError";
   }
 }
 

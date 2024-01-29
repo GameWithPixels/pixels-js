@@ -1,41 +1,24 @@
 import { PixelDieTypeValues } from "@systemic-games/pixels-core-animation";
 import {
+  PixelBleUuids,
   DiceUtils,
   PixelColorwayValues,
   PixelRollStateValues,
-  PixelBleUuids,
 } from "@systemic-games/pixels-core-connect";
-import {
-  assert,
-  createTypedEventEmitter,
-  getValueKeyName,
-  SequentialPromiseQueue,
-} from "@systemic-games/pixels-core-utils";
-import {
-  Central,
-  ScannedPeripheralEvent,
-} from "@systemic-games/react-native-bluetooth-le";
+import { assert, getValueKeyName } from "@systemic-games/pixels-core-utils";
+import { ScannedPeripheral } from "@systemic-games/react-native-bluetooth-le";
 
 import { ScannedPixel } from "./ScannedPixel";
 import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
 import SequentialDataReader from "./SequentialDataReader";
 
-// Execution queue
-const _queue = new SequentialPromiseQueue();
-
-// Track the number of started scans
-let _scanCount = 0;
-
-// The listener given by the user of the scanner
-const _scanEvEmitter = createTypedEventEmitter<{
-  scannedPixel: ScannedPixel;
-}>();
-
-// Callback given to Central for scan events
-function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
-  const advData = ev.peripheral.advertisementData;
+// Function processing scan events from Central and returning a ScannedPixel
+export function getScannedPixel(
+  peripheral: ScannedPeripheral
+): ScannedPixel | undefined {
+  const advData = peripheral.advertisementData;
   if (!advData.services?.includes(PixelBleUuids.service)) {
-    // We got an event from another scan (since Central scanning is global)
+    // Not a Pixel
     return;
   }
 
@@ -109,7 +92,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
     }
 
     if (pixelId) {
-      const systemId = ev.peripheral.systemId;
+      const systemId = peripheral.systemId;
       const colorway =
         getValueKeyName(colorwayValue, PixelColorwayValues) ?? "unknown";
       const dieType = dieTypeValue
@@ -120,8 +103,8 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       const scannedPixel = {
         systemId,
         pixelId,
-        address: ev.peripheral.address,
-        name: ev.peripheral.name,
+        address: peripheral.address,
+        name: peripheral.name,
         ledCount,
         colorway,
         dieType,
@@ -134,90 +117,20 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
         timestamp: new Date(),
       };
       ScannedPixelsRegistry.register(scannedPixel);
-      _scanEvEmitter.emit("scannedPixel", scannedPixel);
+      return scannedPixel;
     } else {
       console.error(
-        `Pixel ${ev.peripheral.name}: Received invalid advertising data`
+        `Pixel ${peripheral.name}: Received invalid advertising data`
       );
     }
   } else if (!hasServiceData) {
     // After a reboot we may receive a onetime advertisement payload without the manufacturer data
     console.error(
       `Pixel ${
-        ev.peripheral.name
+        peripheral.name
       }: Received unsupported advertising data (manufacturerData: ${
         manufacturerData?.data.length ?? -1
       }, serviceData: ${serviceData?.data.length ?? -1})`
     );
   }
 }
-
-/**
- * Global object for scanning for Pixels using Bluetooth.
- */
-export const MainScanner = {
-  /** Gets whether a Pixels scan is running. */
-  isScanning(): boolean {
-    return _scanCount > 0 && Central.isScanning();
-  },
-
-  /** Gets a copy of the ordered list of scanned Pixels. */
-  scannedPixels(): ScannedPixel[] {
-    return ScannedPixelsRegistry.getAll();
-  },
-
-  /**
-   * Hook the given callback to Pixels scan events and starts scanning for Pixel
-   * over Bluetooth.
-   * @param listener A callback for scan events.
-   * @returns A promise.
-   * @remarks On Android, BLE scanning will fail without error when started more
-   * than 5 times over the last 30 seconds.
-   */
-  addListener(listener: (scannedPixel: ScannedPixel) => void): Promise<void> {
-    return _queue.run(async () => {
-      _scanEvEmitter.addListener("scannedPixel", listener);
-      if (!_scanCount) {
-        // Subscribe to scan events
-        Central.addListener("scannedPeripheral", _onScannedPeripheral);
-      }
-      _scanCount += 1;
-      // Scan for Pixels
-      try {
-        await Central.startScanning(PixelBleUuids.service);
-      } catch (e) {
-        _scanEvEmitter.removeListener("scannedPixel", listener);
-        if (_scanCount) {
-          _scanCount -= 1;
-          if (!_scanCount) {
-            Central.removeListener("scannedPeripheral", _onScannedPeripheral);
-          }
-        }
-        throw e;
-      }
-    });
-  },
-
-  /**
-   * Unhook the given callback to Pixels scan events and starts scanning for Pixel
-   * over Bluetooth.
-   * @param listener The same callback that was given to a previous call to {@link MainScanner.addListener}.
-   * @returns A promise.
-   */
-  removeListener(
-    listener: (scannedPixel: ScannedPixel) => void
-  ): Promise<void> {
-    return _queue.run(async () => {
-      _scanEvEmitter.removeListener("scannedPixel", listener);
-      if (_scanCount) {
-        _scanCount -= 1;
-        if (!_scanCount) {
-          // Stop listening to scan events
-          Central.removeListener("scannedPeripheral", _onScannedPeripheral);
-          // And stop the scan
-          await Central.stopScanning();
-        }
-      }
-    });
-  },
-} as const;

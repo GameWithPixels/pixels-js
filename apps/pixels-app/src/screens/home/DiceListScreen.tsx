@@ -18,6 +18,7 @@ import ListIcon from "#/icons/items-view/list";
 import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
+import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { HeaderBar } from "~/components/HeaderBar";
 import {
   SortBottomSheet,
@@ -39,6 +40,7 @@ import {
   setDiceSortMode,
 } from "~/features/store/appSettingsSlice";
 import { removePairedDie } from "~/features/store/pairedDiceSlice";
+import { useScanner } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -223,20 +225,17 @@ function DiceListPage({
   );
 
   // Reconnect
+  const { scannerStatus, startScan } = useScanner();
   const tryReconnectDice = React.useCallback(() => {
-    // // Set a timeout to stop scanning in 10s
-    // setScanTimeout((id) => {
-    //   if (id) {
-    //     clearTimeout(id);
-    //   }
-    //   return setTimeout(() => setScanTimeout(undefined), 10000);
-    // });
-  }, []);
+    console.log(">>>>> START SCAN DICE LIST");
+    startScan(10000);
+  }, [startScan]);
 
   // Scan for missing dice on showing page
   useFocusEffect(
     React.useCallback(() => {
       if (pairedDice.some((p) => !getPixel(p.pixelId))) {
+        console.log(">>>>> START SCAN DICE LIST useFocusEffect");
         tryReconnectDice();
       }
     }, [pairedDice, tryReconnectDice])
@@ -306,6 +305,7 @@ function DiceListPage({
             gap: 10,
           }}
         >
+          <BluetoothStateWarning />
           {isFocus && selectedDie ? (
             <PixelFocusView
               pairedDie={selectedDie}

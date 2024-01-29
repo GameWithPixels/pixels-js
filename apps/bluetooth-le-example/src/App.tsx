@@ -3,7 +3,7 @@ import {
   ConnectionStatus,
   PeripheralConnectionEvent,
   ScannedPeripheral,
-  ScannedPeripheralEvent,
+  ScanResultEvent,
   ScanStatusEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import * as React from "react";
@@ -135,7 +135,7 @@ export default function App() {
     setLastError(undefined);
     // Start scanning
     const services = onlyPixels ? [pixelServiceUuid] : [];
-    Central.startScanning(services).catch((e) => {
+    Central.startScan(services).catch((e) => {
       setLastError(e);
     });
   }, []); // Stable identity
@@ -159,10 +159,10 @@ export default function App() {
   // Register/un-register listeners
   React.useEffect(() => {
     const scanStatusListener = (ev: ScanStatusEvent) => {
-      console.log(`Scan status changed to ${ev.scanning}`);
-      setIsScanning(ev.scanning);
+      console.log(`Scan status ${JSON.stringify(ev)}`);
+      setIsScanning(ev.status === "started");
     };
-    const peripheralListener = (ev: ScannedPeripheralEvent) => {
+    const peripheralListener = (ev: ScanResultEvent) => {
       // Only show connectable peripherals with a name
       if (
         ev.peripheral.name.length &&
@@ -270,9 +270,7 @@ export default function App() {
       )}
       <View style={styles.containerHorizontal}>
         <Button
-          onPress={() =>
-            isScanning ? Central.stopScanning() : scan(onlyPixels)
-          }
+          onPress={() => (isScanning ? Central.stopScan() : scan(onlyPixels))}
         >
           {isScanning ? "Stop Scanning" : "Start Scan"}
         </Button>

@@ -1,17 +1,25 @@
-import { Central, ScannedPeripheral, ScannedPeripheralEvent } from "./Central";
+import { Central, ScannedPeripheral, ScanResultEvent } from "./Central";
 
-let _listener: ((p: ScannedPeripheralEvent) => void) | undefined;
+let _listener: ((p: ScanResultEvent) => void) | undefined;
 
 export const BleScanner = {
   async start(
     services: string | string[],
     onScannedPeripheral: (p: ScannedPeripheral) => void
   ): Promise<void> {
-    const listener = (ev: ScannedPeripheralEvent) =>
+    const listener = (ev: ScanResultEvent) =>
       onScannedPeripheral(ev.peripheral);
 
     // Scan
-    await Central.startScanning(services);
+    await Central.startScan(services);
+
+    // Watch for stop scan event to remove listener
+    Central.addListener("scanStatus", ({ scanning }) => {
+      if (!scanning && _listener) {
+        Central.removeListener("scannedPeripheral", _listener);
+        _listener = undefined;
+      }
+    });
 
     // Subscribe to scan events
     Central.addListener("scannedPeripheral", listener);
@@ -20,12 +28,8 @@ export const BleScanner = {
 
   async stop(): Promise<void> {
     if (_listener) {
-      const listener = _listener;
-      _listener = undefined;
-      Central.removeListener("scannedPeripheral", listener);
-
       // Stop listening to stop scan events
-      await Central.stopScanning();
+      await Central.stopScan();
     }
   },
 };

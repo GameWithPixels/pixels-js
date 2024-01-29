@@ -34,9 +34,6 @@ export interface PixelScannerOptions {
    * @default true.
    **/
   autoStart?: boolean;
-
-  /** Number of scanned Pixels to emulate, only use in DEV mode! */
-  __dev__emulatedPixelsCount?: number;
 }
 
 /**
@@ -93,12 +90,10 @@ export function usePixelScanner<T>(
   // Options default values
   const minNotifyInterval = opt?.minUpdateInterval ?? 200;
   const scanFilter = opt?.scanFilter;
-  const emulatedCount = opt?.__dev__emulatedPixelsCount ?? 0;
   React.useEffect(() => {
     scanner.minNotifyInterval = minNotifyInterval;
     scanner.scanFilter = scanFilter;
-    scanner.__dev__emulatedPixelsCount = emulatedCount;
-  }, [emulatedCount, minNotifyInterval, scanFilter, scanner]);
+  }, [minNotifyInterval, scanFilter, scanner]);
 
   // The returned dispatcher (stable)
   const dispatch = React.useCallback(

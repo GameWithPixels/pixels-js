@@ -106,8 +106,8 @@ export type PixelStatus =
  * @category Pixels
  */
 export interface RollEvent {
-  state: PixelRollState;
-  face: number;
+  readonly state: PixelRollState;
+  readonly face: number;
 }
 
 /**
@@ -116,8 +116,8 @@ export interface RollEvent {
  * @category Pixels
  */
 export interface BatteryEvent {
-  level: number; // Percentage
-  isCharging: boolean;
+  readonly level: number; // Percentage
+  readonly isCharging: boolean;
 }
 
 /**
@@ -126,9 +126,9 @@ export interface BatteryEvent {
  * @category Pixels
  */
 export interface UserMessageEvent {
-  message: string;
-  withCancel: boolean;
-  response: (okCancel: boolean) => Promise<void>;
+  readonly message: string;
+  readonly withCancel: boolean;
+  readonly response: (okCancel: boolean) => Promise<void>;
 }
 
 /**
@@ -159,9 +159,9 @@ export interface PixelEventMap {
   remoteAction: number; // Remote action id
   /** Data transfer. */
   dataTransfer: {
-    progress: number;
-    // bytesSend: number;
-    // totalBytes: number;
+    readonly progress: number;
+    // readonly bytesSend: number;
+    // readonly totalBytes: number;
   };
   /** Profile data hash */
   profileHash: number;

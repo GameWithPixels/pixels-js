@@ -9,7 +9,7 @@ import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   BluetoothPermissionsDeniedError,
-  BluetoothTurnedOffError,
+  BluetoothUnavailableError,
   getPixel,
   PixelDieType,
   PixelInfo,
@@ -64,8 +64,8 @@ import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { getNativeErrorMessage } from "~/features/utils";
 import {
-  useAppMonitoredPixels,
-  useAppPixelsScanner,
+  useActivePixels,
+  useScanner,
   useDfuBundle,
   usePixelsCentral,
 } from "~/hooks";
@@ -388,29 +388,36 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
   const appDispatch = useAppDispatch();
 
   // Monitor all scanned dice so that they are automatically connected
-  const { availablePixels, scannerStatus, startScan, stopScan } =
-    useAppPixelsScanner();
+  const { availablePixels, scannerStatus, startScan, stopScan } = useScanner();
   const central = usePixelsCentral();
   React.useEffect(
-    () => availablePixels.forEach((p) => central.monitorPixel(p.pixelId)),
+    () => availablePixels.forEach((p) => central.watch(p.pixelId)),
     [availablePixels, central]
   );
 
   // List of monitored pixels
-  const pixels = useAppMonitoredPixels();
+  const pixels = useActivePixels();
   const diceCount = pixels.length;
-  const pairDice = () => {
-    for (const p of pixels) {
-      appDispatch(
-        addPairedDie({
-          systemId: p.systemId,
-          pixelId: p.pixelId,
-          name: p.name,
-          dieType: p.dieType,
-          colorway: p.colorway,
-        })
-      );
+
+  // On leaving page
+  const leavePage = (action: "pair" | "skip") => {
+    stopScan();
+    if (action === "skip") {
+      central.setWatchedDice([]);
+    } else {
+      for (const p of pixels) {
+        appDispatch(
+          addPairedDie({
+            systemId: p.systemId,
+            pixelId: p.pixelId,
+            name: p.name,
+            dieType: p.dieType,
+            colorway: p.colorway,
+          })
+        );
+      }
     }
+    onNext();
   };
 
   const [showHelp, setShowHelp] = React.useState(false);
@@ -468,7 +475,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
                 ? "❌ The Pixels app does not have Bluetooth access and is unable " +
                   "to connect to your dice. Please grant permissions through your " +
                   "device settings and tap the Continue button."
-                : scannerStatus instanceof BluetoothTurnedOffError
+                : scannerStatus instanceof BluetoothUnavailableError
                   ? "❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
                     "through your device settings and grant the Pixels app access. " +
                     "Then tap the Continue button."
@@ -482,7 +489,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
               alignItems: "flex-start",
               alignSelf: "center",
             }}
-            onPress={startScan}
+            onPress={() => startScan()}
           >
             Continue
           </GradientButton>
@@ -553,19 +560,12 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
       {!diceCount ? (
         <SkipButton
           sentry-label="skip-pairing"
-          onPress={() => {
-            stopScan();
-            onNext();
-          }}
+          onPress={() => leavePage("skip")}
         />
       ) : (
         <AnimatedGradientButton
           entering={FadeIn.duration(300).delay(200)}
-          onPress={() => {
-            stopScan();
-            pairDice();
-            onNext();
-          }}
+          onPress={() => leavePage("skip")}
         >
           {diceCount === 1 ? "Pair My Die" : `Pair These ${diceCount} Dice`}
         </AnimatedGradientButton>
@@ -678,7 +678,7 @@ function UpdateDiceSlide({
   onNext: () => void;
 }) {
   // List of monitored pixels
-  const pixels = useAppMonitoredPixels();
+  const pixels = useActivePixels();
 
   // DFU related data
   const updateBootloader = useAppSelector(
@@ -816,7 +816,7 @@ function OnboardingPage({
 
   // Stop on leaving page (that's mostly for dev fast reload
   // as the normal user workflow will always stop scanning)
-  const { stopScan } = useAppPixelsScanner();
+  const { stopScan } = useScanner();
   React.useEffect(() => {
     return () => stopScan();
     // eslint-disable-next-line react-hooks/exhaustive-deps
