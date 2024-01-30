@@ -26,9 +26,58 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
-export function getDefaultProfile(dieType: PixelDieType): DataSet {
-  const profile = new EditProfile();
-  profile.name = "default";
+export function setProfileDefaultRollingRules(
+  profile: EditProfile,
+  dieType: PixelDieType
+) {
+  // Rolling
+  profile.rules.push(
+    new EditRule(new EditConditionRolling({ recheckAfter: 0.5 }), {
+      actions: [
+        new EditActionPlayAnimation({
+          animation: new EditAnimationSimple({
+            count: 1,
+            duration: 0.1,
+            fade: 0.5,
+            color: new EditColor("face"),
+            faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
+          }),
+          face: Constants.currentFaceIndex,
+          loopCount: 1,
+        }),
+      ],
+    })
+  );
+  // OnFace
+  profile.rules.push(
+    new EditRule(
+      new EditConditionFaceCompare({
+        flags: FaceCompareFlagsValues.equal | FaceCompareFlagsValues.greater,
+        face: 0,
+      }),
+      {
+        actions: [
+          new EditActionPlayAnimation({
+            animation: new EditAnimationSimple({
+              count: 1,
+              duration: 3,
+              fade: 0.5,
+              color: new EditColor("face"),
+              faces: Constants.faceMaskAll,
+            }),
+            face: Constants.currentFaceIndex,
+            loopCount: 1,
+          }),
+        ],
+      }
+    )
+  );
+}
+
+export function setProfileDefaultAdvancedRules(
+  profile: EditProfile,
+  dieType: PixelDieType
+) {
   // Hello
   profile.rules.push(
     new EditRule(
@@ -78,49 +127,6 @@ export function getDefaultProfile(dieType: PixelDieType): DataSet {
       }
     )
   );
-
-  // Rolling
-  profile.rules.push(
-    new EditRule(new EditConditionRolling({ recheckAfter: 0.5 }), {
-      actions: [
-        new EditActionPlayAnimation({
-          animation: new EditAnimationSimple({
-            count: 1,
-            duration: 0.1,
-            color: new EditColor("face"),
-            faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
-          }),
-          face: Constants.currentFaceIndex,
-          loopCount: 1,
-        }),
-      ],
-    })
-  );
-
-  // OnFace
-  profile.rules.push(
-    new EditRule(
-      new EditConditionFaceCompare({
-        flags: FaceCompareFlagsValues.equal | FaceCompareFlagsValues.greater,
-        face: 0,
-      }),
-      {
-        actions: [
-          new EditActionPlayAnimation({
-            animation: new EditAnimationSimple({
-              count: 1,
-              duration: 3,
-              color: new EditColor("face"),
-              faces: Constants.faceMaskAll,
-            }),
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          }),
-        ],
-      }
-    )
-  );
-
   // Low Batt
   profile.rules.push(
     new EditRule(
@@ -239,7 +245,23 @@ export function getDefaultProfile(dieType: PixelDieType): DataSet {
       }
     )
   );
+}
 
+export function getDefaultProfile(dieType: PixelDieType): EditProfile {
+  const profile = new EditProfile();
+  profile.name = "default";
+
+  // Add simplest rolling rules
+  setProfileDefaultRollingRules(profile, dieType);
+
+  // Add advanced rules
+  setProfileDefaultAdvancedRules(profile, dieType);
+
+  return profile;
+}
+
+export function getDefaultDataset(dieType: PixelDieType): DataSet {
+  const profile = getDefaultProfile(dieType);
   const dataSet: DataSet = createDataSetForProfile(profile).toDataSet();
   return dataSet;
 }

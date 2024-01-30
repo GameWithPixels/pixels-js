@@ -9,13 +9,7 @@ import {
 import {
   createDataSetForAnimation,
   createDataSetForProfile,
-  EditActionPlayAnimation,
   EditAnimation,
-  EditAnimationRainbow,
-  EditConditionFaceCompare,
-  EditConditionHelloGoodbye,
-  EditProfile,
-  EditRule,
 } from "@systemic-games/pixels-edit-animation";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -27,7 +21,6 @@ import {
   PixelStatus,
   PixelInfoNotifier,
   ScannedPixelNotifier,
-  FaceCompareFlagsValues,
   DataSet,
   MessageOrType,
   getMessageType,
@@ -35,16 +28,15 @@ import {
   MessageTypeValues,
   ScannedPixel,
   PixelDieType,
-  HelloGoodbyeFlagsValues,
   ScannedPixelNotifierMutableProps,
   PixelInfo,
   PixelBatteryControllerMode,
-  Constants,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
 import { PixelDispatcherStatic as Static } from "./PixelDispatcherStatic";
 import { PrebuildAnimations } from "./PrebuildAnimations";
+import { ProfileType, createProfile } from "./PrebuildProfiles";
 import { TelemetryData, toTelemetryData } from "./TelemetryData";
 import {
   pixelBlinkId,
@@ -56,7 +48,6 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "./extensions";
-import { getDefaultProfile } from "./getDefaultProfile";
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
@@ -64,22 +55,6 @@ import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 
-export const ProfileTypes = [
-  "default",
-  "tiny",
-  "fixedRainbow",
-  "fixedRainbowD4",
-  "normals",
-  "video",
-  "waterfall",
-  "waterfallRedGreen",
-  "noise",
-  "spin",
-  "spiral",
-  "redGreenSpinning",
-] as const;
-
-export type ProfileType = (typeof ProfileTypes)[number];
 /**
  * Action map for {@link PixelDispatcher} class.
  * This is the list of supported actions where the property name
@@ -658,365 +633,8 @@ class PixelDispatcher
     try {
       this._isUpdatingProfile = true;
       notifyProgress(0);
-      let dataSet: DataSet;
-      switch (type) {
-        case "default":
-          dataSet = getDefaultProfile(this._pixel.dieType);
-          break;
-        case "fixedRainbow": {
-          const profile = new EditProfile();
-          profile.name = "fixedRainbow";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.fixedRainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "fixedRainbowD4": {
-          const profile = new EditProfile();
-          profile.name = "fixedRainbowD4";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.fixedRainbowD4,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "tiny": {
-          const profile = new EditProfile();
-          profile.name = "test";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags: FaceCompareFlagsValues.less,
-                face: 21,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: new EditAnimationRainbow({
-                      duration: 1,
-                      faces: 0xffff,
-                      count: 1,
-                    }),
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "normals": {
-          const profile = new EditProfile();
-          profile.name = "normals";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.pinkWorm,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "video": {
-          const profile = new EditProfile();
-          profile.name = "video";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags:
-                  FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
-                face: 1,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spiralUp,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "waterfall": {
-          const profile = new EditProfile();
-          profile.name = "video";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags:
-                  FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
-                face: 1,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.waterfall,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "waterfallRedGreen": {
-          const profile = new EditProfile();
-          profile.name = "video";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags:
-                  FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
-                face: 1,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.waterfallRedGreen,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "noise": {
-          const profile = new EditProfile();
-          profile.name = "video";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags:
-                  FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
-                face: 1,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.noise,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "spin": {
-          const profile = new EditProfile();
-          profile.name = "video";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags:
-                  FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
-                face: 1,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spinningRainbow,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "spiral": {
-          const profile = new EditProfile();
-          profile.name = "video";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags:
-                  FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
-                face: 1,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spiralUp,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        case "redGreenSpinning": {
-          const profile = new EditProfile();
-          profile.name = "video";
-          profile.rules.push(
-            new EditRule(
-              new EditConditionHelloGoodbye({
-                flags: HelloGoodbyeFlagsValues.hello,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.rainbow,
-                  }),
-                ],
-              }
-            )
-          );
-          profile.rules.push(
-            new EditRule(
-              new EditConditionFaceCompare({
-                flags:
-                  FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal,
-                face: 1,
-              }),
-              {
-                actions: [
-                  new EditActionPlayAnimation({
-                    animation: PrebuildAnimations.spiralUp,
-                    face: Constants.currentFaceIndex,
-                    loopCount: 1,
-                  }),
-                ],
-              }
-            )
-          );
-          dataSet = createDataSetForProfile(profile).toDataSet();
-          break;
-        }
-        default:
-          assertNever(type, `Unknown profile ${type}`);
-      }
+      const profile = createProfile(type, this.dieType);
+      const dataSet: DataSet = createDataSetForProfile(profile).toDataSet();
       await this._pixel.transferDataSet(dataSet, notifyProgress);
     } finally {
       this._isUpdatingProfile = false;

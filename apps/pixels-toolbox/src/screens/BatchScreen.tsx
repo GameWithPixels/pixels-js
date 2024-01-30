@@ -23,7 +23,7 @@ import { AppPage } from "~/components/AppPage";
 import { PatternImages } from "~/features/PatternImages";
 import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
-import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
+import { getDefaultDataset } from "~/features/pixels/getDefaultProfile";
 
 const patternsCache = new Map<string | number, EditPattern>();
 
@@ -85,7 +85,7 @@ async function blink(pixel: Pixel): Promise<void> {
 }
 
 async function uploadProfile(pixel: Pixel): Promise<void> {
-  await pixel.transferDataSet(getDefaultProfile(pixel.dieType));
+  await pixel.transferDataSet(getDefaultDataset(pixel.dieType));
 }
 
 async function testAnimation(pixel: Pixel): Promise<void> {

@@ -41,7 +41,7 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
-import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
+import { getDefaultDataset } from "~/features/pixels/getDefaultProfile";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import {
@@ -985,7 +985,7 @@ export function PrepareDie({
         // Update profile
         await ValidationTests.updateProfile(
           pixel,
-          getDefaultProfile(settings.dieType),
+          getDefaultDataset(settings.dieType),
           setProgress
         );
       }, [pixel, settings.dieType]),
