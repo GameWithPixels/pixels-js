@@ -50,10 +50,9 @@ import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
-import PixelDispatcher, {
-  ProfileTypes,
-} from "~/features/pixels/PixelDispatcher";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
+import { ProfileTypes } from "~/features/pixels/PrebuildProfiles";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { useAppBackgroundState } from "~/hooks/useAppBackgroundState";
