@@ -103,6 +103,8 @@ export function getConditionTypeDisplayName(
       return { name: "Battery Event...", order: 6 };
     case "idle":
       return { name: "Pixel is idle for...", order: 7 };
+    case "rolled":
+      return { name: "Pixel roll is one of...", order: 8 };
     default:
       assertNever(conditionType, `Unknown condition type: ${conditionType}`);
   }

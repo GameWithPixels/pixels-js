@@ -20,6 +20,7 @@ import {
   getActionTypeDisplayName,
   getAnimationTypeDisplayName,
   getConditionTypeDisplayName,
+  EditConditionRolled,
 } from "@systemic-games/pixels-edit-animation";
 
 export function getActionTitle(
@@ -170,6 +171,18 @@ export function getConditionDescription(condition: EditCondition): string {
 
       case "rolling":
         return "Die is rolling";
+
+      case "rolled": {
+        const faces = (condition as EditConditionRolled).faces;
+        return (
+          "Die roll is " +
+          (faces.length === 0
+            ? "?"
+            : faces.length === 1
+            ? faces[0].toString()
+            : "one of " + faces.join(", "))
+        );
+      }
 
       default:
         assertNever(type, `Unknown type: ${type}`);

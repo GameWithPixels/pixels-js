@@ -56,6 +56,7 @@ import {
   EditConditionHandling,
   EditConditionHelloGoodbye,
   EditConditionIdle,
+  EditConditionRolled,
   EditConditionRolling,
   EditPattern,
   EditProfile,
@@ -179,6 +180,19 @@ export function toProfile(
             `No data for ${condType} condition at index ${index}`
           );
           condition = new EditConditionIdle(condData);
+        }
+        break;
+      case "rolled":
+        {
+          const condData = data.conditions.rolled[index];
+          assert(
+            condData,
+            `No data for ${condType} condition at index ${index}`
+          );
+          condition = new EditConditionRolled({
+            ...condData,
+            faces: condData.faces,
+          });
         }
         break;
       default:
@@ -413,6 +427,13 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
           conditions[condType].push({
             period: cond.period,
           });
+        }
+        break;
+      case "rolled":
+        {
+          condIndex = conditions[condType].length;
+          const cond = r.condition as EditConditionRolled;
+          conditions[condType].push({ faces: [...cond.faces] });
         }
         break;
       default:

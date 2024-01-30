@@ -45,6 +45,9 @@ export interface ProfileData extends UniqueNamedData {
     idle: {
       period: number;
     }[];
+    rolled: {
+      faces: number[];
+    }[];
   };
   actions: {
     playAnimation: {
@@ -120,6 +123,7 @@ export function createConditionSetData(): ConditionSetData {
     connectionState: [],
     batteryState: [],
     idle: [],
+    rolled: [],
   };
 }
 

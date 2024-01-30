@@ -269,6 +269,8 @@ function toCondition(
       });
     case "idle":
       return register(type, { period: data?.period ?? 10 });
+    case "rolled":
+      throw new Error(`Unsupported condition type: ${type}`);
     default:
       assertNever(type, `Unsupported condition type: ${type}`);
   }

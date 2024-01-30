@@ -28,6 +28,7 @@ export { default as EditConditionHandling } from "./EditConditionHandling";
 export { default as EditConditionHelloGoodbye } from "./EditConditionHelloGoodbye";
 export { default as EditConditionIdle } from "./EditConditionIdle";
 export { default as EditConditionRolling } from "./EditConditionRolling";
+export { default as EditConditionRolled } from "./EditConditionRolled";
 export { default as EditDataSet } from "./EditDataSet";
 export { default as EditPattern } from "./EditPattern";
 export { default as EditProfile } from "./EditProfile";

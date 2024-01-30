@@ -14,6 +14,7 @@ export const ConditionTypeValues = {
   connectionState: enumValue(),
   batteryState: enumValue(),
   idle: enumValue(),
+  rolled: enumValue(),
 } as const;
 
 /**
