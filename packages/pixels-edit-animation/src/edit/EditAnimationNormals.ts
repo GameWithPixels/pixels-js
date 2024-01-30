@@ -75,11 +75,11 @@ export default class EditAnimationNormals extends EditAnimation {
   constructor(
     opt?: EditAnimationParams & {
       gradient?: EditRgbGradient;
-      gradientAlongAxis?: EditRgbGradient;
+      axisGradient?: EditRgbGradient;
       axisScrollSpeed?: number;
       axisScale?: number;
       axisOffset?: number;
-      gradientAlongAngle?: EditRgbGradient;
+      angleGradient?: EditRgbGradient;
       angleScrollSpeed?: number;
       fade?: number;
       gradientColorType?: number;
@@ -88,11 +88,11 @@ export default class EditAnimationNormals extends EditAnimation {
   ) {
     super(opt);
     this.gradient = opt?.gradient;
-    this.axisGradient = opt?.gradientAlongAxis;
+    this.axisGradient = opt?.axisGradient;
     this.axisScale = opt?.axisScale ?? 1;
     this.axisOffset = opt?.axisOffset ?? 0;
     this.axisScrollSpeed = opt?.axisScrollSpeed ?? 0;
-    this.angleGradient = opt?.gradientAlongAngle;
+    this.angleGradient = opt?.angleGradient;
     this.angleScrollSpeed = opt?.angleScrollSpeed ?? 0;
     this.fade = opt?.fade ?? 0;
     this.gradientColorType =
@@ -109,14 +109,14 @@ export default class EditAnimationNormals extends EditAnimation {
       );
     }
 
-    const gradientAlongAxis = bits.rgbTracks.length;
+    const axisGradientTrackOffset = bits.rgbTracks.length;
     if (this.axisGradient) {
       bits.rgbTracks.push(
         new EditRgbTrack({ gradient: this.axisGradient }).toTrack(editSet, bits)
       );
     }
 
-    const gradientAlongAngle = bits.rgbTracks.length;
+    const angleGradientTrackOffset = bits.rgbTracks.length;
     if (this.angleGradient) {
       bits.rgbTracks.push(
         new EditRgbTrack({ gradient: this.angleGradient }).toTrack(
@@ -130,8 +130,8 @@ export default class EditAnimationNormals extends EditAnimation {
       animFlags: this.animFlags,
       duration: this.duration * 1000,
       gradientTrackOffset: gradientOverTime,
-      axisGradientTrackOffset: gradientAlongAxis,
-      angleGradientTrackOffset: gradientAlongAngle,
+      axisGradientTrackOffset,
+      angleGradientTrackOffset,
       axisScaleTimes1000: this.axisScale * 1000,
       axisOffsetTimes1000: this.axisOffset * 1000,
       axisScrollSpeedTimes1000: this.axisScrollSpeed * 1000,
@@ -147,8 +147,8 @@ export default class EditAnimationNormals extends EditAnimation {
       ...this,
       uuid,
       gradient: this.gradient?.duplicate(),
-      gradientAlongAxis: this.axisGradient?.duplicate(),
-      gradientAlongAngle: this.angleGradient?.duplicate(),
+      axisGradient: this.axisGradient?.duplicate(),
+      angleGradient: this.angleGradient?.duplicate(),
     });
   }
 

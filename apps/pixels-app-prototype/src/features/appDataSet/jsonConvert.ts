@@ -307,6 +307,7 @@ function toActions(
           animationUuid: animationUuidsMap.get(data.animationIndex ?? -1),
           face: (data.faceIndex ?? 0) + 1,
           loopCount: data.loopCount ?? 1,
+          colors: [],
         });
       case "playAudioClip":
         return register("playAudioClip", {

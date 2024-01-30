@@ -182,7 +182,7 @@ export const PrebuildAnimations = {
     gradient: new EditRgbGradient({
       keyframes: [new EditRgbKeyframe({ time: 0.0, color: Color.black })],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.black }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
@@ -192,7 +192,7 @@ export const PrebuildAnimations = {
     axisScale: 2,
     axisOffset: -0.5,
     axisScrollSpeed: 2,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
         new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
@@ -213,7 +213,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 0.9, color: Color.brightGreen }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.black }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
@@ -223,7 +223,7 @@ export const PrebuildAnimations = {
     axisScale: 2,
     axisOffset: -0.5,
     axisScrollSpeed: 2,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
         new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
@@ -244,7 +244,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0, color: new Color(1, 0, 0) }),
         new EditRgbKeyframe({ time: 0.2, color: new Color(1, 1, 0) }),
@@ -257,7 +257,7 @@ export const PrebuildAnimations = {
     axisScale: 2,
     axisOffset: -0.5,
     axisScrollSpeed: 2,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
         new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
@@ -279,7 +279,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.black }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
@@ -287,7 +287,7 @@ export const PrebuildAnimations = {
       ],
     }),
     axisScrollSpeed: 0,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         // new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite}),
         // new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite}),
@@ -310,7 +310,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.black }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
@@ -318,7 +318,7 @@ export const PrebuildAnimations = {
       ],
     }),
     axisScrollSpeed: 0,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         // new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite}),
         // new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite}),
@@ -341,7 +341,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: new Color(1, 0, 0.2) }),
         new EditRgbKeyframe({ time: 0.5, color: new Color(1, 0.5, 0.5) }),
@@ -350,7 +350,7 @@ export const PrebuildAnimations = {
       ],
     }),
     axisScrollSpeed: 0,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
@@ -370,7 +370,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.3, color: new Color(0.5, 0.2, 1) }),
         new EditRgbKeyframe({ time: 0.5, color: new Color(1, 0.5, 0) }),
@@ -379,7 +379,7 @@ export const PrebuildAnimations = {
       ],
     }),
     axisScrollSpeed: 0,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.brightWhite }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
@@ -399,7 +399,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.3, color: Color.brightGreen }),
         new EditRgbKeyframe({ time: 0.6, color: Color.brightCyan }),
@@ -408,7 +408,7 @@ export const PrebuildAnimations = {
     }),
     axisScrollSpeed: -2,
     axisOffset: 0,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite })],
     }),
     angleScrollSpeed: 10,
@@ -425,7 +425,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.black }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.3, color: Color.brightRed }),
         new EditRgbKeyframe({ time: 0.6, color: Color.brightPurple }),
@@ -434,7 +434,7 @@ export const PrebuildAnimations = {
     }),
     axisScrollSpeed: -2,
     axisOffset: 0,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite })],
     }),
     angleScrollSpeed: 10,
@@ -451,13 +451,13 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.brightGreen }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [new EditRgbKeyframe({ time: 0, color: Color.brightWhite })],
     }),
     axisScale: 1,
     axisOffset: 0,
     axisScrollSpeed: 0,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.white }),
         new EditRgbKeyframe({ time: 0.2, color: Color.brightWhite }),
@@ -481,7 +481,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         // new EditRgbKeyframe({ time: 0, color: Color.brightWhite }),
         // new EditRgbKeyframe({ time: 1, color: Color.brightWhite }),
@@ -496,7 +496,7 @@ export const PrebuildAnimations = {
     axisScale: 2,
     axisOffset: -0.5,
     axisScrollSpeed: 2,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.black }),
         new EditRgbKeyframe({ time: 0.5, color: Color.brightWhite }),
@@ -516,7 +516,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.2, color: Color.black }),
         new EditRgbKeyframe({ time: 0.45, color: Color.brightWhite }),
@@ -527,7 +527,7 @@ export const PrebuildAnimations = {
     axisScale: 1,
     axisOffset: 1.1,
     axisScrollSpeed: -2.2,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.black }),
         new EditRgbKeyframe({ time: 0.4, color: Color.brightWhite }),
@@ -548,7 +548,7 @@ export const PrebuildAnimations = {
         new EditRgbKeyframe({ time: 1.0, color: Color.brightWhite }),
       ],
     }),
-    gradientAlongAxis: new EditRgbGradient({
+    axisGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0, color: new Color(1, 0, 0) }),
         new EditRgbKeyframe({ time: 0.2, color: new Color(1, 1, 0) }),
@@ -561,7 +561,7 @@ export const PrebuildAnimations = {
     axisScale: 1,
     axisOffset: 0.8,
     axisScrollSpeed: -2.2,
-    gradientAlongAngle: new EditRgbGradient({
+    angleGradient: new EditRgbGradient({
       keyframes: [
         new EditRgbKeyframe({ time: 0.0, color: Color.white }),
         new EditRgbKeyframe({ time: 0.4, color: Color.brightWhite }),

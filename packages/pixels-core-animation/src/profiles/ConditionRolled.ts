@@ -7,7 +7,7 @@ import { ConditionTypeValues } from "./ConditionType";
  * Condition that triggers when the Pixel has landed on a face.
  * @category Profile Condition
  */
-export default class ConditionFaceCompare implements Condition {
+export default class ConditionRolled implements Condition {
   @serializable(1, { padding: 3 })
   type: number = ConditionTypeValues.rolled;
 
