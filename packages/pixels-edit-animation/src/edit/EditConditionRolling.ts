@@ -13,14 +13,14 @@ export default class EditConditionRolling extends EditCondition {
   readonly type = "rolling";
 
   @widget("slider")
-  @range(0.5, 5, 0.1)
+  @range(0.1, 5, 0.1)
   @unit("s")
   @observable
   recheckAfter: number;
 
   constructor(opt?: { recheckAfter?: number }) {
     super();
-    this.recheckAfter = opt?.recheckAfter ?? 1;
+    this.recheckAfter = opt?.recheckAfter ?? 0.5;
   }
 
   toCondition(_editSet: EditDataSet, _set: DataSet): Condition {

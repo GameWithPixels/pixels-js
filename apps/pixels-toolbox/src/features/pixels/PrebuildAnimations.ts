@@ -291,6 +291,38 @@ export const PrebuildAnimations = {
     gradientColorVar: 0.1,
   }),
 
+  waterfallTopHalf: new AnimNormals({
+    uuid: "ebfc1dd5-ec82-45ac-a653-db2fbb96e5c1",
+    name: "Fast Waterfall Top Half",
+    category: "animated",
+    duration: 0.5,
+    gradient: new EditRgbGradient({
+      uuid: "a605f556-2021-4e6a-ac46-f727c757d190",
+      keyframes: [new RgbKf({ time: 0.0, color: Color.black })],
+    }),
+    axisGradient: new EditRgbGradient({
+      uuid: "",
+      keyframes: [
+        new RgbKf({ time: 0.2, color: Color.black }),
+        new RgbKf({ time: 1, color: Color.brightWhite }),
+      ],
+    }),
+    axisScale: 1,
+    axisOffset: 0,
+    axisScrollSpeed: 0,
+    angleGradient: new EditRgbGradient({
+      uuid: "f683f7ea-9efb-4fc8-8b22-953293fdd192",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.brightWhite }),
+      ],
+    }),
+    angleScrollSpeed: 0,
+    fade: 0.5,
+    gradientColorType: NormalsType.faceToRainbowWheel,
+    gradientColorVar: 0.1,
+  }),
+
   waterfallRedGreen: new AnimNormals({
     uuid: "3ac00114-1867-4b8f-97d5-86783521c48b",
     name: "Waterfall Red Green",
