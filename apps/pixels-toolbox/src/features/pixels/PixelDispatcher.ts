@@ -31,6 +31,8 @@ import {
   PixelInfo,
   PixelBatteryControllerMode,
   getPixelOrThrow,
+  Constants,
+  PixelColorwayValues,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -81,6 +83,7 @@ export interface PixelDispatcherActionMap {
   queueDFU: undefined;
   dequeueDFU: undefined;
   setDieType: number;
+  setDesignAndColor: PixelColorway;
 }
 
 /** List of possible DFU actions. */
@@ -497,6 +500,16 @@ class PixelDispatcher
           ),
           action
         );
+        break;
+      case "setDesignAndColor":
+        {
+          const value = PixelColorwayValues[params as PixelColorway];
+          this._guard(
+            pixelStoreValue(this._pixel, PixelValueStoreType.Colorway, value),
+            action
+          );
+          this._pixel._updateColorway(params as PixelColorway);
+        }
         break;
       default:
         assertNever(action, `Unknown action ${action}`);
