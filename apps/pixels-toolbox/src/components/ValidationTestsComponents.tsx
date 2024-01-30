@@ -224,6 +224,7 @@ async function scanForPixelWithTimeout(
   // Setup scanner
   const scanner = new PixelScanner();
   scanner.scanFilter = (pixel: ScannedPixel) => pixel.pixelId === pixelId;
+  scanner.minNotifyInterval = 0;
 
   // Wait until we find our Pixel or timeout
   const scannedPixel = await withPromise<ScannedPixel>(
@@ -243,7 +244,7 @@ async function scanForPixelWithTimeout(
         timeout
       );
       // Setup our scan listener
-      scanner.addListener("availablePixels", ({ scannedPixels }) => {
+      scanner.addListener("scannedPixels", ({ scannedPixels }) => {
         const scannedPixel = scannedPixels[0];
         if (scannedPixel) {
           clearTimeout(timeoutId);

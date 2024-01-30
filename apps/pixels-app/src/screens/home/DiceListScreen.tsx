@@ -40,7 +40,7 @@ import {
   setDiceSortMode,
 } from "~/features/store/appSettingsSlice";
 import { removePairedDie } from "~/features/store/pairedDiceSlice";
-import { useScanner } from "~/hooks";
+import { usePixelScanner } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -225,7 +225,7 @@ function DiceListPage({
   );
 
   // Reconnect
-  const { scannerStatus, startScan } = useScanner();
+  const { scannerStatus, startScan } = usePixelScanner();
   const tryReconnectDice = React.useCallback(() => {
     startScan(10000);
   }, [startScan]);

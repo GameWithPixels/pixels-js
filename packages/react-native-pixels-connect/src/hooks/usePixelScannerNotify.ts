@@ -16,7 +16,7 @@ export type PixelScannerDispatchAction = "start" | "stop" | "clear";
 export type PixelScannerStatus = "started" | "stopped" | Error;
 
 /**
- * Available options for {@link usePixelScanner}.
+ * Available options for {@link usePixelScannerNotify}.
  */
 export interface PixelScannerOptions {
   /** Optional filter to only keep certain Pixels in the list. */
@@ -54,7 +54,7 @@ export interface PixelScannerOptions {
  * @remarks This hook is reserved for advanced usage. There are simpler hooks such as
  *          {@link useScannedPixels} or {@link useScannedPixelNotifiers}.
  */
-export function usePixelScanner<T>(
+export function usePixelScannerNotify<T>(
   updateItems: (items: T[], ops: PixelScannerListOperation[]) => T[],
   opt?: PixelScannerOptions
 ): [T[], (action: PixelScannerDispatchAction) => void, PixelScannerStatus] {

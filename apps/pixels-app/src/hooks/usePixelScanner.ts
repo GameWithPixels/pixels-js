@@ -6,7 +6,7 @@ import React from "react";
 
 import { PixelsCentralContext } from "./usePixelsCentral";
 
-export function useScanner(): {
+export function usePixelScanner(): {
   availablePixels: ScannedPixelNotifier[];
   scannerStatus: ScanStatus;
   startScan: (duration?: number) => void;

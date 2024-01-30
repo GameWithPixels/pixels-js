@@ -65,7 +65,7 @@ import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { getNativeErrorMessage } from "~/features/utils";
 import {
   useActivePixels,
-  useScanner,
+  usePixelScanner,
   useDfuBundle,
   usePixelsCentral,
 } from "~/hooks";
@@ -388,7 +388,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
   const appDispatch = useAppDispatch();
 
   // Monitor all scanned dice so that they are automatically connected
-  const { availablePixels, scannerStatus, startScan, stopScan } = useScanner();
+  const { availablePixels, scannerStatus, startScan, stopScan } = usePixelScanner();
   const central = usePixelsCentral();
   React.useEffect(
     () => availablePixels.forEach((p) => central.watch(p.pixelId)),
@@ -816,7 +816,7 @@ function OnboardingPage({
 
   // Stop on leaving page (that's mostly for dev fast reload
   // as the normal user workflow will always stop scanning)
-  const { stopScan } = useScanner();
+  const { stopScan } = usePixelScanner();
   React.useEffect(() => {
     return () => stopScan();
     // eslint-disable-next-line react-hooks/exhaustive-deps

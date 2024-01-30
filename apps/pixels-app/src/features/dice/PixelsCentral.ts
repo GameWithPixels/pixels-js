@@ -16,7 +16,7 @@ import {
   ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { logError, unsigned32ToHex } from "~/features/utils";
+import { getTimeStringMs, logError, unsigned32ToHex } from "~/features/utils";
 
 function pixelLog(pixel: Pick<Pixel, "pixelId">, message: string) {
   console.log(`Pixel ${unsigned32ToHex(pixel.pixelId)}: ${message}`);
@@ -54,7 +54,7 @@ export class PixelsCentral {
   }
 
   get availablePixels(): ScannedPixelNotifier[] {
-    return this._scannedPixels.filter((p) => !this._watched.has(p.pixelId));
+    return this._scannedPixels.filter((sp) => !this._watched.has(sp.pixelId));
   }
 
   // Pixels ids of all Pixels that are being watched
@@ -76,38 +76,14 @@ export class PixelsCentral {
   constructor() {
     this._scanner.minNotifyInterval = 200;
     this._scanner.keepAliveDuration = 5000;
+    this._scanner.clearOnStart = true;
     this._scanner.addListener(
-      "scanListOperations",
-      this._scanListener.bind(this)
+      "scannerStatus",
+      this._scanStatusListener.bind(this)
     );
-    // // TODO move this to Scanner class
-    // const listener = ({ state }: { state: BluetoothState }) => {
-    //   try {
-    //     this._evEmitter.emit("bluetoothState", state);
-    //   } finally {
-    //     switch (state) {
-    //       case "unknown":
-    //       case "off":
-    //       case "resetting":
-    //         // Scan aborted
-    //         this._updateStatus(new BluetoothUnavailableError(state));
-    //         break;
-    //       case "unauthorized":
-    //         this._updateStatus(new BluetoothPermissionsDeniedError());
-    //         break;
-    //       case "ready":
-    //         if (typeof this._scannerStatus !== "string") {
-    //           // Reset scan error when BLE is ready
-    //           this._updateStatus("stopped");
-    //         }
-    //         break;
-    //       default:
-    //         assertNever(state);
-    //     }
-    //   }
-    // };
-    // Central.addListener("bluetoothState", listener);
-    // this._dispose = () => Central.removeListener("bluetoothState", listener);
+    this._scanner.addListener("scanListOperations", ({ ops }) =>
+      this._scanListListener({ ops })
+    );
   }
 
   dispose(): void {
@@ -205,16 +181,19 @@ export class PixelsCentral {
     }
   }
 
-  private _updateStatus(status: ScanStatus): void {
+  private _scanStatusListener({ status }: { status: ScanStatus }): void {
+    console.log(`PixelsCentral: scan status ${status}`);
     if (this._scannerStatus !== status) {
       this._scannerStatus = status;
       this._evEmitter.emit("scannerStatus", status);
     }
   }
 
-  private _scanListener({ ops }: { ops: PixelScannerListOperation[] }) {
+  private _scanListListener({ ops }: { ops: PixelScannerListOperation[] }) {
+    console.log(`PixelsCentral: scan list operations ${ops.length}`);
     const availableCount = this.availablePixels.length;
     for (const op of ops) {
+      console.log("PixelsCentral: operation => " + op.type);
       const t = op.type;
       switch (t) {
         case "cleared":
@@ -223,14 +202,13 @@ export class PixelsCentral {
           break;
         case "scanned": {
           console.log(
-            "PixelsCentral: scanned " +
-              op.scannedPixel.name +
-              " - " +
-              unsigned32ToHex(op.scannedPixel.pixelId)
+            `[${getTimeStringMs()}] PixelsCentral: scanned ${
+              op.scannedPixel.name
+            } - ${unsigned32ToHex(op.scannedPixel.pixelId)}`
           );
           const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
           if (
-            this._scannedPixels.every((p) => p.pixelId !== notifier.pixelId)
+            this._scannedPixels.every((sp) => sp.pixelId !== notifier.pixelId)
           ) {
             this._scannedPixels.push(notifier);
             const pixel = getPixel(notifier.pixelId);
@@ -248,18 +226,20 @@ export class PixelsCentral {
         }
         case "removed": {
           const index = this._scannedPixels.findIndex(
-            (p) => p.pixelId === op.pixelId
+            (sp) => sp.pixelId === op.pixelId
+          );
+          console.log(
+            `[${getTimeStringMs()}] PixelsCentral: removing ${unsigned32ToHex(
+              op.pixelId
+            )} at index ${index}`
           );
           if (index >= 0) {
             console.log(
-              "PixelsCentral: removed " +
-                unsigned32ToHex(this._scannedPixels[index].pixelId)
+              `[${getTimeStringMs()}] PixelsCentral: removed ${unsigned32ToHex(
+                op.pixelId
+              )}`
             );
             this._scannedPixels.splice(index, 1);
-          } else {
-            console.error(
-              "PixelsCentral: index out of range on remove operation"
-            );
           }
           break;
         }
@@ -269,7 +249,7 @@ export class PixelsCentral {
     }
     const available = this.availablePixels;
     if (availableCount !== available.length) {
-      this._evEmitter.emit("availablePixels", this.availablePixels);
+      this._evEmitter.emit("availablePixels", available);
     }
   }
 

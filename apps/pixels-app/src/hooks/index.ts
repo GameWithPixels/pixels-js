@@ -15,4 +15,4 @@ export * from "./usePixelDataTransfer";
 export * from "./usePixelsCentral";
 export * from "./useProfile";
 export * from "./useProfilesList";
-export * from "./useScanner";
+export * from "./usePixelScanner";

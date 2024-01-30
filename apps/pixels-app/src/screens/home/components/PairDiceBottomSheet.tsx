@@ -20,7 +20,7 @@ import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
-import { useScanner, useBottomSheetPadding } from "~/hooks";
+import { usePixelScanner, useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -126,7 +126,8 @@ export function PairDiceBottomSheet({
   onDismiss?: (pixels?: ScannedPixel[]) => void;
 }) {
   const appDispatch = useAppDispatch();
-  const { availablePixels, scannerStatus, startScan, stopScan } = useScanner();
+  const { availablePixels, scannerStatus, startScan, stopScan } =
+    usePixelScanner();
 
   React.useEffect(() => {
     if (visible) {
@@ -136,10 +137,17 @@ export function PairDiceBottomSheet({
     }
   }, [startScan, visible]);
 
+  const dismiss = React.useCallback(
+    (pixels?: ScannedPixel[]) => {
+      stopScan();
+      onDismiss?.(pixels);
+    },
+    [onDismiss, stopScan]
+  );
+
   const pairDice = React.useCallback(
     (pixels: ScannedPixel[]) => {
       console.log(">>>>> STOP SCAN SHEET");
-      stopScan();
       for (const pixel of pixels) {
         appDispatch(
           addPairedDie({
@@ -151,9 +159,9 @@ export function PairDiceBottomSheet({
           })
         );
       }
-      onDismiss?.(pixels);
+      dismiss(pixels);
     },
-    [appDispatch, onDismiss, stopScan]
+    [appDispatch, dismiss]
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
@@ -172,7 +180,7 @@ export function PairDiceBottomSheet({
     <BottomSheetModal
       ref={sheetRef}
       snapPoints={["50%"]}
-      onDismiss={onDismiss}
+      onDismiss={dismiss}
       onChange={onChange}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (

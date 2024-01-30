@@ -1,4 +1,4 @@
 export * from "./useBluetoothState";
-export * from "./usePixelScanner";
+export * from "./usePixelScannerNotify";
 export * from "./useScannedPixelNotifiers";
 export * from "./useScannedPixels";

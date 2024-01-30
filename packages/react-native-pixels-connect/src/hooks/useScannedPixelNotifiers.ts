@@ -2,11 +2,11 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import {
-  usePixelScanner,
+  usePixelScannerNotify,
   PixelScannerOptions,
   PixelScannerDispatchAction,
   PixelScannerStatus,
-} from "./usePixelScanner";
+} from "./usePixelScannerNotify";
 import { PixelScannerListOperation } from "../PixelScanner";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
@@ -62,9 +62,7 @@ export function useScannedPixelNotifiers(
               if (retItems === items) {
                 retItems = [...items];
               }
-              if (retItems[index]) {
-                retItems.splice(index, 1);
-              }
+              retItems.splice(index, 1);
             }
             break;
           }
@@ -77,5 +75,5 @@ export function useScannedPixelNotifiers(
     []
   );
 
-  return usePixelScanner(mapItems, opt);
+  return usePixelScannerNotify(mapItems, opt);
 }

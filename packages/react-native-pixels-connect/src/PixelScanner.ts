@@ -4,6 +4,7 @@ import {
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
 import {
+  BluetoothState,
   Central,
   ScanEvent,
   ScanStatus,
@@ -27,7 +28,7 @@ export type PixelScannerListOperation =
  */
 interface PixelScannerEventMap {
   scannerStatus: { readonly status: ScanStatus };
-  availablePixels: { readonly scannedPixels: ScannedPixel[] };
+  scannedPixels: { readonly scannedPixels: ScannedPixel[] };
   scanListOperations: { readonly ops: PixelScannerListOperation[] };
 }
 
@@ -65,12 +66,15 @@ export class PixelScanner {
   private _scanStatus: ScanStatus = "unavailable";
   private _scanTimeoutId?: ReturnType<typeof setTimeout>;
   private _scanFilter: PixelScannerFilter;
-  private _minNotifyInterval = 0;
+  private _clearOnStart = true;
+  private _autoResume = true;
+  private _minNotifyInterval = 200;
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
-  private _keepAliveDuration = 0;
+  private _keepAliveDuration = 5000;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdate = new Date();
   private readonly _touched = new Set<number>();
+  private _bluetoothStateListener?: (ev: { state: BluetoothState }) => void;
 
   /**
    * Indicates whether this scanner instance is currently scanning for Pixels.
@@ -100,9 +104,34 @@ export class PixelScanner {
   }
 
   /**
-   * The minimum time interval in milliseconds between two user notifications
+   * If true, the list of scanned Pixels is cleared when the scanner starts.
+   * @default true.
+   */
+  get clearOnStart(): boolean {
+    return this._clearOnStart;
+  }
+  set clearOnStart(value: boolean) {
+    this._clearOnStart = value;
+  }
+
+  get autoResume(): boolean {
+    return this._autoResume;
+  }
+  set autoResume(value: boolean) {
+    this._autoResume = value;
+    if (!value) {
+      this._clearAutoResume();
+    } else {
+      this._activateAutoResume();
+    }
+  }
+
+  /**
+   * The minimum time interval in milliseconds between two "scanListOperations"
+   * notifications.
    * (calls to {@link PixelScanner.scanListener}).
    * A value of 0 will generate a notification on every scan event.
+   * @default 200.
    */
   get minNotifyInterval(): number {
     return this._minNotifyInterval;
@@ -124,10 +153,12 @@ export class PixelScanner {
   }
 
   /**
-   * The approximate duration in milliseconds for which a Scanned Pixel should
+   * The duration in milliseconds for which a Scanned Pixel should
    * be considered available since the last received advertisement.
    * A value of 0 keeps the dice forever.
-   * @remarks Prefer values above 500ms.
+   * @remarks Removed Scanned Pixels are notified with respect to
+   *          the value of {@link minNotifyInterval}.
+   * @default 5000.
    */
   get keepAliveDuration(): number {
     return this._keepAliveDuration;
@@ -135,16 +166,7 @@ export class PixelScanner {
   set keepAliveDuration(duration: number) {
     if (this._keepAliveDuration !== duration) {
       this._keepAliveDuration = duration;
-      if (this._pruneTimeoutId) {
-        clearInterval(this._pruneTimeoutId);
-        this._pruneTimeoutId = undefined;
-      }
-      if (this._keepAliveDuration > 0) {
-        this._pruneTimeoutId = setInterval(
-          () => this._pruneUnavailable(),
-          Math.max(250, this._keepAliveDuration / 2)
-        );
-      }
+      this._pruneOutdated();
     }
   }
 
@@ -165,44 +187,66 @@ export class PixelScanner {
   /**
    * Starts a Bluetooth scan for Pixels and update the list as advertisement
    * packets are being received.
+   * If the instance is already scanning it will just notify of pending list
+   * operations or clear the list if {@link clearOnStart} is true.
+   * @param duration The duration in milliseconds for which the scan should run.
    * @returns A promise.
+   * @remarks Calls to the async methods of this class are queued
+   *          and executed in order.
    * @remarks On Android, BLE scanning will fail without error when started more
-   * than 5 times over the last 30 seconds.
+   *          than 5 times over the last 30 seconds.
    */
   async start(duration = 0): Promise<void> {
     return PixelScanner._queue.run(async () => {
-      // Timeout
-      if (this._scanTimeoutId) {
+      if (duration >= 0 && this._scanTimeoutId) {
         clearTimeout(this._scanTimeoutId);
         this._scanTimeoutId = undefined;
       }
       if (duration > 0) {
-        this._scanTimeoutId = setTimeout(() => this.stop(), duration);
+        this._scanTimeoutId = setTimeout(
+          () =>
+            this.stop().catch((e) =>
+              console.log(`PixelScanner: error stopping scan on timeout: ${e}`)
+            ),
+          duration
+        );
+      }
+      if (this._clearOnStart) {
+        this._pixels.length = 0;
+        this._notify(Date.now(), "clear");
+      } else {
+        this._pruneOutdated();
+        this._notify(Date.now());
+      }
+      if (this._autoResume) {
+        this._activateAutoResume();
       }
       // Start scanning
-      await Central.startScan(PixelBleUuids.service, (ev) => {
-        if (ev.type === "peripheral") {
-          const pixel = getScannedPixel(ev.peripheral);
-          if (pixel) {
-            this._processScannedPixel(pixel);
+      if (this._scanStatus !== "scanning") {
+        await Central.startScan(PixelBleUuids.service, (ev) => {
+          if (ev.type === "peripheral") {
+            const pixel = getScannedPixel(ev.peripheral);
+            if (pixel) {
+              this._processScannedPixel(pixel);
+            }
+          } else {
+            this._processScanStatus(ev);
           }
-        } else {
-          this._processScanStatus(ev);
-        }
-      });
+        });
+      }
     });
   }
 
   /**
    * Stops scanning for Pixels.
    * @returns A promise.
+   * @remarks Calls to the async methods of this class are queued
+   *          and executed in order.
    */
   async stop(): Promise<void> {
     return PixelScanner._queue.run(async () => {
-      if (this._scanTimeoutId) {
-        clearTimeout(this._scanTimeoutId);
-        this._scanTimeoutId = undefined;
-      }
+      this._clearAutoResume();
+      this._clearTimeouts(true);
       if (this._scanStatus === "starting" || this._scanStatus === "scanning") {
         await Central.stopScan();
       }
@@ -212,20 +256,93 @@ export class PixelScanner {
   /**
    * Clears the list of scanned Pixels.
    * @returns A promise.
+   * @remarks Calls to the async methods of this class are queued
+   *          and executed in order.
    */
   async clear(): Promise<void> {
     return PixelScanner._queue.run(async () => {
-      // Always notify a "clear" even if the list is already empty as
-      // some consumer logic might depend on getting the notification
-      // even in the case of an empty list
-      this._pixels.length = 0;
-      this._notify(Date.now(), { type: "cleared" });
+      this._notify(Date.now(), "clear");
     });
+  }
+
+  private _activateAutoResume(): void {
+    if (!this._bluetoothStateListener) {
+      this._bluetoothStateListener = ({ state }: { state: BluetoothState }) => {
+        if (state === "ready") {
+          this.start(-1).catch((e) =>
+            console.log(`PixelScanner: error resuming scan: ${e}`)
+          );
+        }
+      };
+      Central.addListener("bluetoothState", this._bluetoothStateListener);
+    }
+  }
+
+  private _clearAutoResume(): void {
+    if (this._bluetoothStateListener) {
+      Central.removeListener("bluetoothState", this._bluetoothStateListener);
+      this._bluetoothStateListener = undefined;
+    }
+  }
+
+  private _clearTimeouts(clearScanTimeout = true): void {
+    if (this._notifyTimeoutId) {
+      clearTimeout(this._notifyTimeoutId);
+      this._notifyTimeoutId = undefined;
+    }
+    if (this._pruneTimeoutId) {
+      clearInterval(this._pruneTimeoutId);
+      this._pruneTimeoutId = undefined;
+    }
+    if (clearScanTimeout && this._scanTimeoutId) {
+      clearTimeout(this._scanTimeoutId);
+      this._scanTimeoutId = undefined;
+    }
+  }
+
+  private _processScanStatus({
+    status,
+  }: Extract<ScanEvent, { type: "status" }>): void {
+    // Clear timeouts
+    this._clearTimeouts(
+      !this._bluetoothStateListener &&
+        (status === "available" || status === "unavailable")
+    );
+
+    switch (status) {
+      case "starting":
+        // Clear pending operations on start (there shouldn't be any)
+        if (this._touched.size) {
+          console.warn(
+            `PixelScanner: dropping ${this._touched.size} pending operation(s) on start`
+          );
+          this._touched.clear();
+        }
+        break;
+      case "scanning":
+        // Ensure that first scanned Pixel will be immediately notified
+        this._lastUpdate.setTime(0);
+        break;
+      case "available":
+      case "unavailable":
+        // Flush pending operations on stop
+        this._notify(Date.now());
+    }
+
+    // Update status
+    if (this._scanStatus !== status) {
+      this._scanStatus = status;
+      try {
+        this._evEmitter.emit("scannerStatus", { status });
+      } catch (e) {
+        console.error(`PixelScanner: error in scan listener ${e}`);
+      }
+    }
   }
 
   private _processScannedPixel(sp: ScannedPixel): void {
     if (!this._scanFilter || this._scanFilter(sp)) {
-      // Do we already have seen this Pixel?
+      // Have we already seen this Pixel?
       const index = this._pixels.findIndex((p) => p.pixelId === sp.pixelId);
       if (index < 0) {
         // New entry
@@ -237,38 +354,9 @@ export class PixelScanner {
       // Store the operation for later notification
       this._touched.add(sp.pixelId);
       this._scheduleNotify();
-    }
-  }
-
-  private _processScanStatus(ev: Extract<ScanEvent, { type: "status" }>): void {
-    // Cancel any scheduled user notification
-    if (this._notifyTimeoutId) {
-      clearTimeout(this._notifyTimeoutId);
-    }
-    this._notifyTimeoutId = undefined;
-
-    // Clear pending operations on start (there shouldn't be any)
-    if (ev.status === "starting" && this._touched.size) {
-      console.log(
-        `PixelScanner: dropping pending ${this._touched.size} operations on start`
-      );
-      this._touched.clear();
-    }
-
-    // Flush pending operations
-    this._notify(Date.now());
-
-    // Update status
-    this._updateStatus(ev.status);
-  }
-
-  private _updateStatus(status: ScanStatus): void {
-    if (this._scanStatus !== status) {
-      this._scanStatus = status;
-      try {
-        this._evEmitter.emit("scannerStatus", { status });
-      } catch (e) {
-        console.error(`PixelScanner: error in scan listener ${e}`);
+      // Start pruning if needed
+      if (this._keepAliveDuration > 0 && !this._pruneTimeoutId) {
+        this._pruneOutdated();
       }
     }
   }
@@ -280,10 +368,6 @@ export class PixelScanner {
     const nextUpdate = this._lastUpdate.getTime() + this._minNotifyInterval;
     if (now >= nextUpdate) {
       // Yes, notify immediately
-      if (this._notifyTimeoutId) {
-        clearTimeout(this._notifyTimeoutId);
-      }
-      this._notifyTimeoutId = undefined;
       this._notify(now);
     } else if (!this._notifyTimeoutId) {
       // Otherwise schedule the notification for later if not already done
@@ -294,10 +378,20 @@ export class PixelScanner {
     }
   }
 
-  private _notify(now: number, op?: PixelScannerListOperation): void {
+  private _notify(now: number, operation?: "clear"): void {
+    if (this._notifyTimeoutId) {
+      clearTimeout(this._notifyTimeoutId);
+      this._notifyTimeoutId = undefined;
+    }
     this._lastUpdate.setTime(now);
-    if (this._touched.size || op) {
-      const ops: PixelScannerListOperation[] = [];
+    const ops: PixelScannerListOperation[] = [];
+    if (operation === "clear") {
+      // Always notify a "clear" even if the list is already empty as
+      // some consumer logic might depend on getting the notification
+      // even in the case of an empty list
+      this._pixels.length = 0;
+      ops.push({ type: "cleared" });
+    } else if (this._touched.size) {
       for (const pixelId of this._touched) {
         const sp = this._pixels.find((sp) => sp.pixelId === pixelId);
         ops.push(
@@ -309,9 +403,9 @@ export class PixelScanner {
             : { type: "removed", pixelId }
         );
       }
-      if (op) {
-        ops.push(op);
-      }
+    }
+    this._touched.clear();
+    if (ops.length) {
       try {
         this._evEmitter.emit("scanListOperations", { ops });
       } catch (e) {
@@ -319,23 +413,50 @@ export class PixelScanner {
           `PixelScanner: Uncaught error in "availableListOperations" event listener: ${e}`
         );
       }
+      try {
+        const scannedPixels = this.scannedPixels;
+        this._evEmitter.emit("scannedPixels", { scannedPixels });
+      } catch (e) {
+        console.error(
+          `PixelScanner: Uncaught error in "scannedPixels" event listener: ${e}`
+        );
+      }
     }
   }
 
-  private _pruneUnavailable(): void {
-    const now = Date.now();
-    const expired = this._pixels.filter(
-      (p) => now - p.timestamp.getTime() > this._keepAliveDuration
-    );
-    if (expired.length) {
-      for (const sp of expired.reverse()) {
-        const index = this._pixels.indexOf(sp);
-        this._pixels.splice(index, 1);
-        this._touched.add(index);
-      }
+  private _pruneOutdated(): void {
+    if (this._pruneTimeoutId) {
+      clearInterval(this._pruneTimeoutId);
+      this._pruneTimeoutId = undefined;
     }
-    if (this._touched.size) {
-      this._scheduleNotify();
+    if (this._keepAliveDuration > 0) {
+      const now = Date.now();
+      // Find expired advertisements
+      const expired = this._pixels.filter(
+        (p) => now - p.timestamp.getTime() > this._keepAliveDuration
+      );
+      if (expired.length) {
+        // And remove them
+        for (const sp of expired.reverse()) {
+          const index = this._pixels.indexOf(sp);
+          this._pixels.splice(index, 1);
+          this._touched.add(sp.pixelId);
+        }
+        this._scheduleNotify();
+      }
+      // Schedule next pruning
+      if (this._pixels.length) {
+        const older = this._pixels.reduce(
+          (prev, curr) => Math.min(prev, curr.timestamp.getTime()),
+          now
+        );
+        if (older < now) {
+          this._pruneTimeoutId = setInterval(
+            () => this._pruneOutdated(),
+            older + this._keepAliveDuration - now
+          );
+        }
+      }
     }
   }
 }

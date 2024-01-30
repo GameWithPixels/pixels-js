@@ -2,11 +2,11 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import {
-  usePixelScanner,
+  usePixelScannerNotify,
   PixelScannerOptions,
   PixelScannerDispatchAction,
   PixelScannerStatus,
-} from "./usePixelScanner";
+} from "./usePixelScannerNotify";
 import { PixelScannerListOperation } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
 
@@ -63,5 +63,5 @@ export function useScannedPixels(
     },
     []
   );
-  return usePixelScanner(passthrough, opt);
+  return usePixelScannerNotify(passthrough, opt);
 }
