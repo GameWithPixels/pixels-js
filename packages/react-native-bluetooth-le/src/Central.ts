@@ -53,7 +53,8 @@ export interface BluetoothStateEvent {
   readonly state: BluetoothState;
 }
 
-export type ScanStatus = "unavailable" | "available" | "starting" | "scanning";
+export type ScanStatus = "stopped" | "starting" | "scanning";
+export type ScanStoppedReason = "canceled" | Exclude<BluetoothState, "ready">;
 
 // A scanned peripheral is BLE device and its advertisement data
 export interface ScannedPeripheral extends Device {
@@ -68,7 +69,7 @@ export type ScanEvent =
   | {
       readonly type: "status";
       readonly status: ScanStatus;
-      readonly bluetoothState: BluetoothState;
+      readonly reason?: ScanStoppedReason;
     };
 
 export interface PeripheralConnectionEvent {
@@ -113,7 +114,7 @@ let _bleInit = false;
 let _bluetoothState: BluetoothState = "unknown";
 
 // Scan status
-let _scanStatus: ScanStatus = "unavailable";
+let _scanStatus: ScanStatus = "stopped";
 
 // Scan callback
 let _scanCallback: ((ev: ScanEvent) => void) | undefined;
@@ -154,11 +155,14 @@ function _updateBluetoothState(state: BluetoothState): void {
     }
   }
   if (state !== "ready") {
-    _updateScanStatus("unavailable");
+    _updateScanStatus("stopped", "canceled");
   }
 }
 
-function _updateScanStatus(status: ScanStatus): void {
+function _updateScanStatus(
+  status: ScanStatus,
+  reason?: ScanStoppedReason
+): void {
   console.log(`[BLE] Update scan status to ${status} (was ${_scanStatus})`);
 
   const callback = _scanCallback;
@@ -174,7 +178,12 @@ function _updateScanStatus(status: ScanStatus): void {
   // Update status and notify
   _scanStatus = status;
   try {
-    callback?.({ type: "status", status, bluetoothState: _bluetoothState });
+    if (status === "stopped") {
+      reason ??= "canceled";
+    } else {
+      reason = undefined;
+    }
+    callback?.({ type: "status", status, reason });
   } catch (e) {
     console.error(
       `[BLE] Uncaught error in Scan callback for status: ${errToStr(e)}`
@@ -314,7 +323,7 @@ export const Central = {
     _valueChangedSubs?.remove();
     _valueChangedSubs = undefined;
     // Keep Bluetooth state unchanged
-    _updateScanStatus("unavailable"); // This will unsubscribes from native scan result
+    _updateScanStatus("stopped"); // This will unsubscribes from native scan result
     BluetoothLE.stopScan().catch(() => {}); // Ignore any error
     peripheralsMap.clear();
     console.log("[BLE] Central has shutdown");
@@ -363,7 +372,7 @@ export const Central = {
 
     // Notify ongoing scan that's its being stopped
     if (_scanStatus === "starting" || _scanStatus === "scanning") {
-      _updateScanStatus("available");
+      _updateScanStatus("stopped");
     }
 
     // Notify new scan is starting
@@ -408,7 +417,8 @@ export const Central = {
           // Scan failed to start, Android only
           console.warn(`[BLE] Scan failed: ${ev}`);
           _updateScanStatus(
-            _bluetoothState === "ready" ? "available" : "unavailable"
+            "stopped",
+            _bluetoothState === "ready" ? "unknown" : _bluetoothState
           );
         } else {
           // Forward event
@@ -489,11 +499,8 @@ export const Central = {
     _scanResultSubs = undefined;
     // Stop scan
     console.log("[BLE] Stopping scan");
-    try {
-      await BluetoothLE.stopScan();
-    } finally {
-      _updateScanStatus("available");
-    }
+    _updateScanStatus("stopped");
+    await BluetoothLE.stopScan();
   },
 
   async connectPeripheral(

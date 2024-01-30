@@ -26,8 +26,8 @@ export type PixelScannerListOperation =
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  */
-interface PixelScannerEventMap {
-  scannerStatus: { readonly status: ScanStatus };
+export interface PixelScannerEventMap {
+  scannerStatus: Omit<Extract<ScanEvent, { type: "status" }>, "type">;
   scannedPixels: { readonly scannedPixels: ScannedPixel[] };
   scanListOperations: { readonly ops: PixelScannerListOperation[] };
 }
@@ -63,7 +63,7 @@ export class PixelScanner {
   // Instance internal data
   private readonly _pixels: ScannedPixel[] = [];
   private readonly _evEmitter = createTypedEventEmitter<PixelScannerEventMap>();
-  private _scanStatus: ScanStatus = "unavailable";
+  private _scanStatus: ScanStatus = "stopped";
   private _scanTimeoutId?: ReturnType<typeof setTimeout>;
   private _scanFilter: PixelScannerFilter;
   private _clearOnStart = true;
@@ -302,12 +302,10 @@ export class PixelScanner {
 
   private _processScanStatus({
     status,
+    reason,
   }: Extract<ScanEvent, { type: "status" }>): void {
     // Clear timeouts
-    this._clearTimeouts(
-      !this._bluetoothStateListener &&
-        (status === "available" || status === "unavailable")
-    );
+    this._clearTimeouts(!this._bluetoothStateListener && status === "stopped");
 
     switch (status) {
       case "starting":
@@ -323,8 +321,7 @@ export class PixelScanner {
         // Ensure that first scanned Pixel will be immediately notified
         this._lastUpdate.setTime(0);
         break;
-      case "available":
-      case "unavailable":
+      case "stopped":
         // Flush pending operations on stop
         this._notify(Date.now());
     }
@@ -333,7 +330,7 @@ export class PixelScanner {
     if (this._scanStatus !== status) {
       this._scanStatus = status;
       try {
-        this._evEmitter.emit("scannerStatus", { status });
+        this._evEmitter.emit("scannerStatus", { status, reason });
       } catch (e) {
         console.error(`PixelScanner: error in scan listener ${e}`);
       }

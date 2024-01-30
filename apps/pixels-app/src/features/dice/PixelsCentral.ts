@@ -4,7 +4,6 @@ import {
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 import {
-  PixelScannerListOperation,
   BluetoothState,
   Central,
   getPixel,
@@ -14,6 +13,7 @@ import {
   PixelStatus,
   ScannedPixelNotifier,
   ScanStatus,
+  PixelScannerEventMap,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { getTimeStringMs, logError, unsigned32ToHex } from "~/features/utils";
@@ -38,7 +38,7 @@ export class PixelsCentral {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelsCentralEventMap>();
   private readonly _scanner = new PixelScanner();
-  private _scannerStatus: ScanStatus = "unavailable";
+  private _scannerStatus: ScanStatus = "stopped";
   private readonly _scannedPixels: ScannedPixelNotifier[] = [];
   private readonly _watched = new Map<
     number,
@@ -181,7 +181,10 @@ export class PixelsCentral {
     }
   }
 
-  private _scanStatusListener({ status }: { status: ScanStatus }): void {
+  private _scanStatusListener({
+    status,
+    reason,
+  }: PixelScannerEventMap["scannerStatus"]): void {
     console.log(`PixelsCentral: scan status ${status}`);
     if (this._scannerStatus !== status) {
       this._scannerStatus = status;
@@ -189,7 +192,9 @@ export class PixelsCentral {
     }
   }
 
-  private _scanListListener({ ops }: { ops: PixelScannerListOperation[] }) {
+  private _scanListListener({
+    ops,
+  }: PixelScannerEventMap["scanListOperations"]) {
     console.log(`PixelsCentral: scan list operations ${ops.length}`);
     const availableCount = this.availablePixels.length;
     for (const op of ops) {
