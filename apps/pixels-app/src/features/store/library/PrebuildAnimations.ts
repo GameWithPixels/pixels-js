@@ -163,7 +163,7 @@ export const PrebuildAnimations = {
     intensity: 0.1,
   }),
 
-  rainbowPulses: new Profiles.AnimationRainbow({
+  rainbowPulses: new AnimRainbow({
     uuid: "67f49656-8646-4983-aec9-345f5aee170f",
     name: "Rainbow Pulses",
     category: "colorful",
