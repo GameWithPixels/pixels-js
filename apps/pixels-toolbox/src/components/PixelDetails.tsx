@@ -18,6 +18,8 @@ import {
   usePixelStatus,
   usePixelValue,
   PixelDieTypeValues,
+  PixelColorwayValues,
+  PixelColorway,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
@@ -400,6 +402,12 @@ function BottomButtons({
     hide: hideSetDieTypeMenu,
   } = useVisibility();
 
+  const {
+    visible: setDieColorwayMenuVisible,
+    show: showSetDieColorwayMenu,
+    hide: hideSetDieColorwayMenu,
+  } = useVisibility();
+
   const { t } = useTranslation();
   return (
     <>
@@ -474,6 +482,32 @@ function BottomButtons({
                       onPress={() => {
                         pd.dispatch("setDieType", dieType as number);
                         hideSetDieTypeMenu();
+                      }}
+                    />
+                  )
+                )}
+              </Menu>
+              <Menu
+                visible={setDieColorwayMenuVisible}
+                onDismiss={hideSetDieColorwayMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showSetDieColorwayMenu}>
+                    {t("setDieColorway")}
+                  </Button>
+                }
+              >
+                {Object.entries(PixelColorwayValues).map(
+                  ([dieColorwayName, _]) => (
+                    <Menu.Item
+                      key={dieColorwayName}
+                      title={dieColorwayName}
+                      onPress={() => {
+                        pd.dispatch(
+                          "setDesignAndColor",
+                          dieColorwayName as PixelColorway
+                        );
+                        hideSetDieColorwayMenu();
                       }}
                     />
                   )
