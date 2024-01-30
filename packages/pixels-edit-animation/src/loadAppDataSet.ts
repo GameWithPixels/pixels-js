@@ -108,7 +108,7 @@ function toCondition(condition: Readonly<Json.Condition>): EditCondition {
         return new EditConditionHandling();
       case ConditionTypeValues.rolling:
         return safeAssign(new EditConditionRolling(), data);
-      case ConditionTypeValues.rolled:
+      case ConditionTypeValues.faceCompare:
         return safeAssign(new EditConditionFaceCompare(), {
           ...data,
           face: data.faceIndex && data.faceIndex + 1,

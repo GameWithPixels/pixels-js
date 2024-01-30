@@ -320,8 +320,8 @@ export function toAnimation<T extends keyof AnimationSetData>(
         ...animData,
         animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
-        gradientAlongAxis: checkGetGradient(animData.axisGradientUuid),
-        gradientAlongAngle: checkGetGradient(animData.angleGradientUuid),
+        axisGradient: checkGetGradient(animData.axisGradientUuid),
+        angleGradient: checkGetGradient(animData.angleGradientUuid),
         gradientColorType:
           NormalsColorOverrideTypeValues[animData.gradientColorType],
       });
