@@ -243,13 +243,13 @@ async function scanForPixelWithTimeout(
         timeout
       );
       // Setup our scan listener
-      scanner.scanListener = () => {
-        const scannedPixel = scanner.scannedPixels[0];
+      scanner.addListener("availablePixels", ({ scannedPixels }) => {
+        const scannedPixel = scannedPixels[0];
         if (scannedPixel) {
           clearTimeout(timeoutId);
           resolve(scannedPixel);
         }
-      };
+      });
       // Start scanning
       console.log(`Scanning for Pixel with id ${pixelId.toString(16)}`);
       scanner.start();

@@ -3,10 +3,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import {
-  ScannedPixel,
-  useBluetoothState,
-} from "@systemic-games/react-native-pixels-connect";
+import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import {
@@ -132,16 +129,17 @@ export function PairDiceBottomSheet({
   const { availablePixels, scannerStatus, startScan, stopScan } = useScanner();
 
   React.useEffect(() => {
-    if (visible && scannerStatus === "stopped") {
+    if (visible) {
       console.log(">>>>> START SCAN SHEET");
+      // Start scanning for dice
       startScan();
-    } else if (!visible) {
-      stopScan();
     }
-  }, [scannerStatus, startScan, stopScan, visible]);
+  }, [startScan, visible]);
 
   const pairDice = React.useCallback(
     (pixels: ScannedPixel[]) => {
+      console.log(">>>>> STOP SCAN SHEET");
+      stopScan();
       for (const pixel of pixels) {
         appDispatch(
           addPairedDie({
@@ -155,7 +153,7 @@ export function PairDiceBottomSheet({
       }
       onDismiss?.(pixels);
     },
-    [appDispatch, onDismiss]
+    [appDispatch, onDismiss, stopScan]
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
@@ -199,7 +197,7 @@ export function PairDiceBottomSheet({
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
             Select Pixels Dice to Pair
           </Text>
-          {visible && scannerStatus === "started" ? (
+          {visible && scannerStatus === "scanning" ? (
             <SelectPixels pixels={availablePixels} onPairDice={pairDice} />
           ) : (
             <Text>{String(scannerStatus)}</Text>

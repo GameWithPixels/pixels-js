@@ -7,7 +7,7 @@ import {
   PixelScannerDispatchAction,
   PixelScannerStatus,
 } from "./usePixelScanner";
-import { PixelScannerListOp } from "../PixelScanner";
+import { PixelScannerListOperation } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
@@ -29,25 +29,32 @@ export function useScannedPixels(
   PixelScannerStatus,
 ] {
   const passthrough = React.useCallback(
-    (items: ScannedPixel[], ops: PixelScannerListOp[]) => {
+    (items: ScannedPixel[], ops: PixelScannerListOperation[]) => {
       // Create new list to trigger a React re-render
       const retItems = [...items];
       // Apply updates
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "clear":
+          case "cleared":
             retItems.length = 0;
             break;
-          case "add":
-            retItems.push(op.scannedPixel);
+          case "scanned": {
+            const index = retItems.findIndex(
+              (sp) => sp.pixelId === op.scannedPixel.pixelId
+            );
+            if (index < 0) {
+              retItems.push(op.scannedPixel);
+            } else {
+              retItems[index] = op.scannedPixel;
+            }
             break;
-          case "update":
-            retItems[op.index] = op.scannedPixel;
+          }
+          case "removed": {
+            const index = retItems.findIndex((sp) => sp.pixelId === op.pixelId);
+            retItems.splice(index, 1);
             break;
-          case "remove":
-            retItems.splice(op.index, 1);
-            break;
+          }
           default:
             assertNever(t);
         }

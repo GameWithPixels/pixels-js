@@ -1,9 +1,13 @@
 import { PixelBleUuids } from "@systemic-games/pixels-core-connect";
 import {
-  assertNever,
+  createTypedEventEmitter,
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
-import { Central, ScanEvent } from "@systemic-games/react-native-bluetooth-le";
+import {
+  Central,
+  ScanEvent,
+  ScanStatus,
+} from "@systemic-games/react-native-bluetooth-le";
 
 import { ScannedPixel } from "./ScannedPixel";
 import { getScannedPixel } from "./getScannedPixel";
@@ -11,21 +15,21 @@ import { getScannedPixel } from "./getScannedPixel";
 /**
  * The different possible operations on a {@link PixelScanner} list.
  */
-export type PixelScannerListOp =
-  | { type: "add"; scannedPixel: ScannedPixel }
-  | { type: "update"; scannedPixel: ScannedPixel; index: number }
-  | { type: "remove"; index: number }
-  | { type: "clear" };
+export type PixelScannerListOperation =
+  | { readonly type: "cleared" }
+  | { readonly type: "scanned"; readonly scannedPixel: ScannedPixel }
+  | { readonly type: "removed"; readonly pixelId: number };
 
 /**
- * Type for a callback listening to {@link PixelScanner} scan events.
- * The 'ops' argument is a list of of operations on the scanner's list
- * of Pixels.
+ * Event map for {@link PixelScanner} class.
+ * This is the list of supported events where the property name
+ * is the event name and the property type the event data type.
  */
-export type PixelScannerListener =
-  | ((scanner: PixelScanner, ops: PixelScannerListOp[]) => void)
-  | null
-  | undefined;
+interface PixelScannerEventMap {
+  scannerStatus: { readonly status: ScanStatus };
+  availablePixels: { readonly scannedPixels: ScannedPixel[] };
+  scanListOperations: { readonly ops: PixelScannerListOperation[] };
+}
 
 /**
  * Type for a callback filtering {@link ScannedPixel}, used by {@link PixelScanner}.
@@ -34,8 +38,6 @@ export type PixelScannerFilter =
   | ((scannedPixel: ScannedPixel) => boolean)
   | null
   | undefined;
-
-export type PixelScannerStatus = "scanning" | "stopped" | "unavailable";
 
 /**
  * Represents a list of scanned Pixels that is updated when scanning.
@@ -59,26 +61,30 @@ export class PixelScanner {
 
   // Instance internal data
   private readonly _pixels: ScannedPixel[] = [];
-  private _scanStatus: PixelScannerStatus = "stopped";
+  private readonly _evEmitter = createTypedEventEmitter<PixelScannerEventMap>();
+  private _scanStatus: ScanStatus = "unavailable";
   private _scanTimeoutId?: ReturnType<typeof setTimeout>;
-  private _userListener: PixelScannerListener;
   private _scanFilter: PixelScannerFilter;
   private _minNotifyInterval = 0;
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
   private _keepAliveDuration = 0;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdate = new Date();
-  private readonly _pendingOps: PixelScannerListOp[] = [];
+  private readonly _touched = new Set<number>();
 
   /**
-   * An optional listener called on getting scan events.
-   * Calls will be delayed according to {@link PixelScanner.minNotifyInterval} value.
+   * Indicates whether this scanner instance is currently scanning for Pixels.
    */
-  get scanListener(): PixelScannerListener {
-    return this._userListener;
+  get scanStatus(): ScanStatus {
+    return this._scanStatus;
   }
-  set scanListener(listener: PixelScannerListener) {
-    this._userListener = listener;
+
+  /**
+   * A copy of the list of scanned Pixels since the last call to {@link PixelScanner.clear}.
+   * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
+   */
+  get scannedPixels(): ScannedPixel[] {
+    return [...this._pixels];
   }
 
   /**
@@ -142,19 +148,18 @@ export class PixelScanner {
     }
   }
 
-  /**
-   * A copy of the list of scanned Pixels since the last call to {@link PixelScanner.clear}.
-   * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
-   */
-  get scannedPixels(): ScannedPixel[] {
-    return [...this._pixels];
+  addListener<T extends keyof PixelScannerEventMap>(
+    name: T,
+    listener: (ev: PixelScannerEventMap[T]) => void
+  ) {
+    return this._evEmitter.addListener(name, listener);
   }
 
-  /**
-   * Indicates whether this scanner instance is currently scanning for Pixels.
-   */
-  get scanStatus(): PixelScannerStatus {
-    return this._scanStatus;
+  removeListener<T extends keyof PixelScannerEventMap>(
+    name: T,
+    listener: (ev: PixelScannerEventMap[T]) => void
+  ) {
+    return this._evEmitter.removeListener(name, listener);
   }
 
   /**
@@ -198,7 +203,7 @@ export class PixelScanner {
         clearTimeout(this._scanTimeoutId);
         this._scanTimeoutId = undefined;
       }
-      if (this._scanStatus !== "stopped") {
+      if (this._scanStatus === "starting" || this._scanStatus === "scanning") {
         await Central.stopScan();
       }
     });
@@ -214,8 +219,7 @@ export class PixelScanner {
       // some consumer logic might depend on getting the notification
       // even in the case of an empty list
       this._pixels.length = 0;
-      this._pendingOps.push({ type: "clear" });
-      this._notify(Date.now());
+      this._notify(Date.now(), { type: "cleared" });
     });
   }
 
@@ -230,70 +234,42 @@ export class PixelScanner {
         // Replace previous entry
         this._pixels[index] = sp;
       }
-      // Remove any older update for the same Pixel
-      // but keep insertion and re-ordering updates
-      const prevUpdateIndex = this._pendingOps.findIndex(
-        (e) => e.type === "update" && e.scannedPixel.pixelId === sp.pixelId
-      );
-      if (prevUpdateIndex >= 0) {
-        this._pendingOps.splice(prevUpdateIndex, 1);
-      }
-      // Queue update
-      this._pendingOps.push(
-        index < 0
-          ? {
-              type: "add",
-              scannedPixel: sp,
-            }
-          : {
-              type: "update",
-              scannedPixel: sp,
-              index,
-            }
-      );
+      // Store the operation for later notification
+      this._touched.add(sp.pixelId);
       this._scheduleNotify();
     }
   }
 
   private _processScanStatus(ev: Extract<ScanEvent, { type: "status" }>): void {
-    switch (ev.status) {
-      case "starting":
-        break;
-      case "started":
-        this._updateStatus("scanning");
-        // Reset pending operations
-        this._lastUpdate.setTime(0);
-        if (this._pendingOps.length) {
-          this._pendingOps.length = 0;
-          console.log("PixelScanner: found pending operations on start");
-        }
-        break;
-      case "stopped":
-        // Cancel any scheduled user notification
-        if (this._notifyTimeoutId) {
-          clearTimeout(this._notifyTimeoutId);
-        }
-        this._notifyTimeoutId = undefined;
-        // Flush pending operations
-        if (this._pendingOps.length) {
-          this._notify(Date.now());
-        }
-        this._updateStatus(
-          ev.reason && ev.reason !== "canceled" ? "unavailable" : "stopped"
-        );
-        break;
-      default:
-        assertNever(
-          ev.status,
-          `PixelScanner: unexpected scan status ${ev.status}`
-        );
+    // Cancel any scheduled user notification
+    if (this._notifyTimeoutId) {
+      clearTimeout(this._notifyTimeoutId);
     }
+    this._notifyTimeoutId = undefined;
+
+    // Clear pending operations on start (there shouldn't be any)
+    if (ev.status === "starting" && this._touched.size) {
+      console.log(
+        `PixelScanner: dropping pending ${this._touched.size} operations on start`
+      );
+      this._touched.clear();
+    }
+
+    // Flush pending operations
+    this._notify(Date.now());
+
+    // Update status
+    this._updateStatus(ev.status);
   }
 
-  private _updateStatus(status: PixelScannerStatus): void {
+  private _updateStatus(status: ScanStatus): void {
     if (this._scanStatus !== status) {
       this._scanStatus = status;
-      // TODO notify status change
+      try {
+        this._evEmitter.emit("scannerStatus", { status });
+      } catch (e) {
+        console.error(`PixelScanner: error in scan listener ${e}`);
+      }
     }
   }
 
@@ -318,19 +294,31 @@ export class PixelScanner {
     }
   }
 
-  private _notify(now: number): void {
+  private _notify(now: number, op?: PixelScannerListOperation): void {
     this._lastUpdate.setTime(now);
-    if (this._pendingOps.length) {
-      const updates = [...this._pendingOps];
-      this._pendingOps.length = 0;
-      try {
-        this._userListener?.(this, updates);
-      } catch (e) {
-        console.error(`PixelScanner: error in scan listener ${e}`);
+    if (this._touched.size || op) {
+      const ops: PixelScannerListOperation[] = [];
+      for (const pixelId of this._touched) {
+        const sp = this._pixels.find((sp) => sp.pixelId === pixelId);
+        ops.push(
+          sp
+            ? {
+                type: "scanned",
+                scannedPixel: sp,
+              }
+            : { type: "removed", pixelId }
+        );
       }
-    } else {
-      // This shouldn't happen
-      console.log("PixelScanner: no operation to notify");
+      if (op) {
+        ops.push(op);
+      }
+      try {
+        this._evEmitter.emit("scanListOperations", { ops });
+      } catch (e) {
+        console.error(
+          `PixelScanner: Uncaught error in "availableListOperations" event listener: ${e}`
+        );
+      }
     }
   }
 
@@ -343,13 +331,10 @@ export class PixelScanner {
       for (const sp of expired.reverse()) {
         const index = this._pixels.indexOf(sp);
         this._pixels.splice(index, 1);
-        this._pendingOps.push({
-          type: "remove",
-          index,
-        });
+        this._touched.add(index);
       }
     }
-    if (this._pendingOps.length) {
+    if (this._touched.size) {
       this._scheduleNotify();
     }
   }

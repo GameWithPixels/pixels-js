@@ -227,7 +227,6 @@ function DiceListPage({
   // Reconnect
   const { scannerStatus, startScan } = useScanner();
   const tryReconnectDice = React.useCallback(() => {
-    console.log(">>>>> START SCAN DICE LIST");
     startScan(10000);
   }, [startScan]);
 
@@ -267,6 +266,7 @@ function DiceListPage({
       setSelectedDie(pairedDice[0]);
     } else if (!getPixel(selectedDie.pixelId)) {
       // Selected Pixel hasn't been seen so far
+      console.log(">>>>> START SCAN DICE LIST missing dice");
       tryReconnectDice();
     }
   }, [pairedDice, selectedDie, tryReconnectDice]);

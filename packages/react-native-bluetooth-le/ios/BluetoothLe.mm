@@ -237,29 +237,31 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(bleInitialize:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
-    __weak BluetoothLe *weakSelf = self;
-    _central = [[SGBleCentralManagerDelegate alloc] initWithStateUpdateHandler:^(CBManagerState state) {
-        BluetoothLe *self = weakSelf;
-        // Check if instance still exist and has listeners
-        if (self && self->_hasListeners)
-        {
-            [self sendEventWithName:bluetoothStateEventName body:@{
-                @"state": toString(state),
-            }];
-        }
-    }];
-    _central.peripheralDiscoveryHandler = ^(CBPeripheral *peripheral, NSDictionary<NSString *,id> *advertisementData, NSNumber *rssi) {
-        BluetoothLe *self = weakSelf;
-        // Check if instance still exist and has listeners
-        if (self && self->_hasListeners)
-        {
-            [self sendEventWithName:scanResultEventName body:@{
-                @"device": peripheralToDict(peripheral),
-                @"advertisementData": advertisementToDict(advertisementData, rssi),
-            }];
-        }
-    };
-    
+    if (!_central)
+    {
+        __weak BluetoothLe *weakSelf = self;
+        _central = [[SGBleCentralManagerDelegate alloc] initWithStateUpdateHandler:^(CBManagerState state) {
+            BluetoothLe *self = weakSelf;
+            // Check if instance still exist and has listeners
+            if (self && self->_hasListeners)
+            {
+                [self sendEventWithName:bluetoothStateEventName body:@{
+                    @"state": toString(state),
+                }];
+            }
+        }];
+        _central.peripheralDiscoveryHandler = ^(CBPeripheral *peripheral, NSDictionary<NSString *,id> *advertisementData, NSNumber *rssi) {
+            BluetoothLe *self = weakSelf;
+            // Check if instance still exist and has listeners
+            if (self && self->_hasListeners)
+            {
+                [self sendEventWithName:scanResultEventName body:@{
+                    @"device": peripheralToDict(peripheral),
+                    @"advertisementData": advertisementToDict(advertisementData, rssi),
+                }];
+            }
+        };
+    }
     resolve(nil);
 }
 

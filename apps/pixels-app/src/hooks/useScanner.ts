@@ -1,6 +1,6 @@
 import {
   ScannedPixelNotifier,
-  PixelScannerStatus,
+  ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
@@ -8,12 +8,12 @@ import { PixelsCentralContext } from "./usePixelsCentral";
 
 export function useScanner(): {
   availablePixels: ScannedPixelNotifier[];
-  scannerStatus: PixelScannerStatus;
+  scannerStatus: ScanStatus;
   startScan: (duration?: number) => void;
   stopScan: () => void;
 } {
   const central = React.useContext(PixelsCentralContext);
-  const [scannerStatus, setScannerStatus] = React.useState<PixelScannerStatus>(
+  const [scannerStatus, setScannerStatus] = React.useState(
     central.scannerStatus
   );
   const [availablePixels, setAvailablePixels] = React.useState(

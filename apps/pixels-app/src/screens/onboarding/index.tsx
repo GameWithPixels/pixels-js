@@ -423,7 +423,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
   const [showHelp, setShowHelp] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
   React.useEffect(() => {
-    if (scannerStatus === "started") {
+    if (scannerStatus === "scanning") {
       const id = setTimeout(() => setShowHelp(true), 3000);
       return () => clearTimeout(id);
     } else {
@@ -443,7 +443,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
         }}
         source={require("#/temp/dice-row.jpg")}
       />
-      {scannerStatus !== "started" ? (
+      {scannerStatus !== "starting" && scannerStatus !== "scanning" ? (
         <Animated.ScrollView
           key="stopped"
           exiting={FadeOut.duration(300)}
@@ -466,7 +466,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
             size={30}
             color={colors.onSurface}
           />
-          <Text>
+          {/* <Text>
             {scannerStatus === "stopped"
               ? "Please ensure you have Bluetooth turned on and grant permissions " +
                 "through your device settings. Tap the Continue button to allow " +
@@ -482,7 +482,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
                   : `❌ Got an unexpected error: ${getNativeErrorMessage(
                       scannerStatus
                     )}`}
-          </Text>
+          </Text> */}
           <GradientButton
             style={{
               marginTop: 20,

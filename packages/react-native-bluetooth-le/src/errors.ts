@@ -13,6 +13,13 @@ export class CentralNotInitializedError extends BluetoothLEError {
   }
 }
 
+export class ScanCancelledError extends BluetoothLEError {
+  constructor() {
+    super("Scan cancelled");
+    this.name = "ScanCancelledError";
+  }
+}
+
 export class BluetoothPermissionsDeniedError extends BluetoothLEError {
   constructor() {
     super("Bluetooth permissions denied");

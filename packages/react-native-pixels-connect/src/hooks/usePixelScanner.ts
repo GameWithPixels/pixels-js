@@ -1,7 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
-import { PixelScanner, PixelScannerListOp } from "../PixelScanner";
+import { PixelScanner, PixelScannerListOperation } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
@@ -55,7 +55,7 @@ export interface PixelScannerOptions {
  *          {@link useScannedPixels} or {@link useScannedPixelNotifiers}.
  */
 export function usePixelScanner<T>(
-  updateItems: (items: T[], ops: PixelScannerListOp[]) => T[],
+  updateItems: (items: T[], ops: PixelScannerListOperation[]) => T[],
   opt?: PixelScannerOptions
 ): [T[], (action: PixelScannerDispatchAction) => void, PixelScannerStatus] {
   const [status, setStatus] = React.useState<PixelScannerStatus>("stopped");
@@ -76,7 +76,7 @@ export function usePixelScanner<T>(
 
   // Hook updateItems to scan events
   React.useEffect(() => {
-    scanner.scanListener = (_: PixelScanner, ops: PixelScannerListOp[]) => {
+    scanner.addListener("scanListOperations", ({ ops }) => {
       // Note: we don't do setItems(items => updateItems(items, ...))
       // because that would run updateItems() callback while rendering the component
       // hosting this hook, and thus preventing the callback from modifying other
@@ -84,7 +84,7 @@ export function usePixelScanner<T>(
       // a different component" warning)
       itemsRef.current = updateItems(itemsRef.current, ops);
       setItems(itemsRef.current);
-    };
+    });
   }, [scanner, updateItems]);
 
   // Options default values
