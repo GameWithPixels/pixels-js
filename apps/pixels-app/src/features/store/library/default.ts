@@ -17,6 +17,7 @@ export function dispatchReset(appDispatch: AppDispatch): void {
   appDispatch(Library.Animations.Gradient.reset(library));
   appDispatch(Library.Animations.Noise.reset(library));
   appDispatch(Library.Animations.Normals.reset(library));
+  appDispatch(Library.Animations.Sequence.reset(library));
   appDispatch(Library.Gradients.reset(library));
   appDispatch(Library.Patterns.reset(library));
 }
