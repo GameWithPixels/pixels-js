@@ -20,6 +20,7 @@ import {
   PixelDieTypeValues,
   PixelColorwayValues,
   PixelColorway,
+  PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
@@ -487,18 +488,18 @@ function BottomButtons({
                   </Button>
                 }
               >
-                {Object.entries(PixelDieTypeValues).map(
-                  ([dieTypeName, dieType]) => (
+                {(Object.keys(PixelDieTypeValues) as PixelDieType[])
+                  .filter((dt) => dt !== "unknown")
+                  .map((dieType) => (
                     <Menu.Item
-                      key={dieTypeName}
-                      title={dieTypeName}
+                      key={dieType}
+                      title={dieType}
                       onPress={() => {
-                        pd.dispatch("setDieType", dieType as number);
+                        pd.dispatch("setDieType", dieType);
                         hideSetDieTypeMenu();
                       }}
                     />
-                  )
-                )}
+                  ))}
               </Menu>
               <Menu
                 visible={setDieColorwayMenuVisible}
@@ -510,21 +511,18 @@ function BottomButtons({
                   </Button>
                 }
               >
-                {Object.entries(PixelColorwayValues).map(
-                  ([dieColorwayName, _]) => (
+                {(Object.keys(PixelColorwayValues) as PixelColorway[])
+                  .filter((dt) => dt !== "unknown")
+                  .map((colorway) => (
                     <Menu.Item
-                      key={dieColorwayName}
-                      title={dieColorwayName}
+                      key={colorway}
+                      title={colorway}
                       onPress={() => {
-                        pd.dispatch(
-                          "setDesignAndColor",
-                          dieColorwayName as PixelColorway
-                        );
+                        pd.dispatch("setColorway", colorway);
                         hideSetDieColorwayMenu();
                       }}
                     />
-                  )
-                )}
+                  ))}
               </Menu>
               <Button
                 onPress={() =>
