@@ -4,6 +4,7 @@ import {
   EditConditionRolled,
   EditProfile,
   EditRule,
+  EditAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
   Constants,
@@ -11,7 +12,10 @@ import {
   DiceUtils,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { PrebuildAnimations } from "./PrebuildAnimations";
+import {
+  PrebuildAnimations,
+  PrebuildAnimationsExt,
+} from "./PrebuildAnimations";
 import {
   setProfileDefaultRollingRules,
   setProfileDefaultAdvancedRules,
@@ -20,15 +24,16 @@ import {
 export const ProfileTypes = [
   "default",
   "waterfall",
-  "tiny",
+  "fountain",
+  "spinning",
+  "spiral",
+  "noise",
   "fixedRainbow",
   "fixedRainbowD4",
   "normals",
   "video",
   "waterfallRedGreen",
-  "noise",
   "spin",
-  "spiral",
   "redGreenSpinning",
 ] as const;
 
@@ -40,51 +45,109 @@ export function createProfile(
 ): EditProfile {
   const profile = new EditProfile();
   setProfileDefaultAdvancedRules(profile, dieType);
+
+  const pushRollingAnimRule = function (
+    anim: EditAnimation,
+    count: number = 1
+  ) {
+    profile.rules.push(
+      new EditRule(new EditConditionRolling({ recheckAfter: 0.2 }), {
+        actions: [
+          new EditActionPlayAnimation({
+            animation: anim,
+            face: Constants.currentFaceIndex,
+            loopCount: count,
+          }),
+        ],
+      })
+    );
+  };
+
+  const pushRolledAnimNonTopFaceRule = function (
+    anim: EditAnimation,
+    count: number = 1
+  ) {
+    // All face except top one get a waterfall colored based on the face
+    profile.rules.push(
+      new EditRule(
+        new EditConditionRolled({
+          faces: DiceUtils.getDieFaces(dieType).filter(
+            (face) => face !== DiceUtils.getTopFace(dieType)
+          ),
+        }),
+        {
+          actions: [
+            new EditActionPlayAnimation({
+              animation: anim,
+              face: Constants.currentFaceIndex,
+              loopCount: count,
+            }),
+          ],
+        }
+      )
+    );
+  };
+
+  const pushRolledAnimTopFaceRule = function (
+    anim: EditAnimation,
+    count: number = 1
+  ) {
+    // All face except top one get a waterfall colored based on the face
+    profile.rules.push(
+      new EditRule(
+        new EditConditionRolled({
+          faces: [DiceUtils.getTopFace(dieType)],
+        }),
+        {
+          actions: [
+            new EditActionPlayAnimation({
+              animation: anim,
+              face: Constants.currentFaceIndex,
+              loopCount: count,
+            }),
+          ],
+        }
+      )
+    );
+  };
+
   switch (type) {
     case "default":
       setProfileDefaultRollingRules(profile, dieType);
       break;
     case "waterfall": {
       profile.name = "waterfall";
-      // Rolling
-      profile.rules.push(
-        new EditRule(
-          new EditConditionRolling({ recheckAfter: 0.2 }),
-          new EditActionPlayAnimation({
-            animation: PrebuildAnimations.waterfallTopHalf,
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          })
-        )
-      );
-      // All face except top one get a waterfall colored based on the face
-      profile.rules.push(
-        new EditRule(
-          new EditConditionRolled({
-            faces: DiceUtils.getDieFaces(dieType).filter(
-              (face) => face !== DiceUtils.getTopFace(dieType)
-            ),
-          }),
-          new EditActionPlayAnimation({
-            animation: PrebuildAnimations.waterfall,
-            face: Constants.currentFaceIndex,
-            loopCount: 1,
-          })
-        )
-      );
-      // Top face gets special waterfall
-      profile.rules.push(
-        new EditRule(
-          new EditConditionRolled({
-            faces: [DiceUtils.getTopFace(dieType)],
-          }),
-          new EditActionPlayAnimation({
-            animation: PrebuildAnimations.waterfallRainbow,
-            face: Constants.currentFaceIndex,
-            loopCount: 3,
-          })
-        )
-      );
+      pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimations.waterfall);
+      pushRolledAnimTopFaceRule(PrebuildAnimations.waterfallRainbow, 3);
+      break;
+    }
+    case "fountain": {
+      profile.name = "fountain";
+      pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimations.fountain);
+      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.rainbowFountainX3, 1);
+      break;
+    }
+    case "spinning": {
+      profile.name = "spinning";
+      pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimations.spinning);
+      pushRolledAnimTopFaceRule(PrebuildAnimations.spinningRainbow, 1);
+      break;
+    }
+    case "spiral": {
+      profile.name = "spinning";
+      pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.spiralUpDown);
+      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.spiralUpDownRainbow, 1);
+      break;
+    }
+    case "noise": {
+      profile.name = "noise";
+      pushRollingAnimRule(PrebuildAnimations.shortNoise);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimations.noise);
+      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.noiseRainbowX2, 1);
       break;
     }
     default:

@@ -15,6 +15,7 @@ export const AnimationTypeValues = {
   cycle: enumValue(),
   name: enumValue(),
   normals: enumValue(),
+  sequence: enumValue(),
 } as const;
 
 /**
