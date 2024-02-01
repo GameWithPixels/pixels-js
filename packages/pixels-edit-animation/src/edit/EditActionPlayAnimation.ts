@@ -95,6 +95,6 @@ export default class EditActionPlayAnimation extends EditAction {
   }
 
   collectAnimations(): EditAnimation[] {
-    return this.animation ? [this.animation] : [];
+    return this.animation ? this.animation.collectAnimations() : [];
   }
 }

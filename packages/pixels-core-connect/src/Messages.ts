@@ -819,6 +819,8 @@ export class TransferTestAnimationSet implements PixelMessage {
   @serializable(2)
   trackCount = 0;
   @serializable(2)
+  animationCount = 0;
+  @serializable(2)
   animationSize = 0;
   @serializable(4)
   hash = 0;
