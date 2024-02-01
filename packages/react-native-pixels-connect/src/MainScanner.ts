@@ -60,7 +60,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
     let batteryLevel: number;
     let isCharging = false;
     let rollStateValue: number;
-    let currentFace: number;
+    let faceIndex: number;
 
     // Create a Scanned Pixel object with some default values
     const manufBuffer = new Uint8Array(manufacturerData.data);
@@ -85,7 +85,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       colorwayValue = designAndColor & 0xf;
       dieTypeValue = (designAndColor >> 4) & 0xf;
       rollStateValue = manufReader.readU8();
-      currentFace = DiceUtils.faceFromIndex(manufReader.readU8(), ledCount);
+      faceIndex = manufReader.readU8();
       const battery = manufReader.readU8();
       // MSB is battery charging
       batteryLevel = battery & 0x7f;
@@ -102,7 +102,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
 
       pixelId = manufReader.readU32();
       rollStateValue = manufReader.readU8();
-      currentFace = DiceUtils.faceFromIndex(manufReader.readU8(), ledCount);
+      faceIndex = manufReader.readU8();
       batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
 
       firmwareDate = new Date();
@@ -117,6 +117,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
         : DiceUtils.estimateDieType(ledCount);
       const rollState =
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
+      const currentFace = DiceUtils.faceFromIndex(faceIndex, dieType);
       const scannedPixel = {
         systemId,
         pixelId,
