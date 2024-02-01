@@ -37,7 +37,7 @@ export async function pixelBlinkId(
 ): Promise<void> {
   const blinkMsg = safeAssign(new BlinkId(), {
     brightness: opt?.brightness ? opt?.brightness : 0x10,
-    loop: opt?.loop ?? false,
+    loopCount: opt?.loop ? 0xff : 1,
   });
   await pixel.sendAndWaitForResponse(blinkMsg, "blinkIdAck");
 }
@@ -149,12 +149,12 @@ export async function pixelPlayProfileAnimation(
   pixel: Pixel,
   animationIndex: number,
   remapToFace = 0,
-  loop = false
+  loopCount = 1
 ): Promise<void> {
   const playAnim = safeAssign(new PlayProfileAnimation(), {
     animationIndex,
     remapToFace,
-    loop,
+    loopCount,
   });
   await pixel.sendMessage(playAnim);
 }

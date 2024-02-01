@@ -552,13 +552,33 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
+          assert(pixel, "No Pixel instance");
+          // Try to connect with a few attempts
+          await repeatConnect(
+            abortSignal,
+            t,
+            (timeout) => pixel.connect(timeout),
+            () => pixel.disconnect()
+          );
+          // Make sure we don't have any animation playing
+          await pixelStopAllAnimations(pixel);
+        },
+        [pixel, t]
+      ),
+      createTaskStatusContainer(t("connect"))
+    )
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          assert(pixel, "No Pixel instance");
           if (
             dieType &&
             dieType !== "unknown" &&
             dieType !== settings.dieType
           ) {
-            const update = await withTimeout<boolean>(
+            const update = await withTimeoutAndDisconnect<boolean>(
               abortSignal,
+              pixel,
               testTimeout,
               (abortSignal) =>
                 withPromise<boolean>(
@@ -579,7 +599,7 @@ export function ConnectPixel({
             }
           }
         },
-        [dieType, settings.dieType, t]
+        [dieType, pixel, settings.dieType, t]
       ),
       createTaskStatusContainer({
         title: t("checkDieType"),
@@ -599,24 +619,6 @@ export function ConnectPixel({
           </>
         ),
       })
-    )
-    .withTask(
-      React.useCallback(
-        async (abortSignal) => {
-          assert(pixel, "No Pixel instance");
-          // Try to connect with a few attempts
-          await repeatConnect(
-            abortSignal,
-            t,
-            (timeout) => pixel.connect(timeout),
-            () => pixel.disconnect()
-          );
-          // Make sure we don't have any animation playing
-          await pixelStopAllAnimations(pixel);
-        },
-        [pixel, t]
-      ),
-      createTaskStatusContainer(t("connect"))
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
