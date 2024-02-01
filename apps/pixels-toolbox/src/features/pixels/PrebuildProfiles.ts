@@ -172,7 +172,7 @@ export function createProfile(
           new EditConditionRolled({
             faces: DiceUtils.getDieFaces(dieType).filter(
               (face) =>
-                DiceUtils.indexFromFace(face, DiceUtils.getFaceCount(dieType)) <
+                DiceUtils.indexFromFace(face, dieType) <
                 DiceUtils.getFaceCount(dieType) / 2
             ),
           }),
@@ -188,10 +188,7 @@ export function createProfile(
           new EditConditionRolled({
             faces: DiceUtils.getDieFaces(dieType).filter(
               (face) =>
-                DiceUtils.indexFromFace(
-                  face,
-                  DiceUtils.getFaceCount(dieType)
-                ) >=
+                DiceUtils.indexFromFace(face, dieType) >=
                 DiceUtils.getFaceCount(dieType) / 2
             ),
           }),
@@ -212,7 +209,7 @@ export function createProfile(
           new EditConditionRolled({
             faces: DiceUtils.getDieFaces(dieType).filter(
               (face) =>
-                DiceUtils.indexFromFace(face, DiceUtils.getFaceCount(dieType)) <
+                DiceUtils.indexFromFace(face, dieType) <
                 DiceUtils.getFaceCount(dieType) / 3
             ),
           }),
@@ -227,12 +224,9 @@ export function createProfile(
           new EditConditionRolled({
             faces: DiceUtils.getDieFaces(dieType).filter(
               (face) =>
-                DiceUtils.indexFromFace(
-                  face,
-                  DiceUtils.getFaceCount(dieType)
-                ) >=
+                DiceUtils.indexFromFace(face, dieType) >=
                   DiceUtils.getFaceCount(dieType) / 3 &&
-                DiceUtils.indexFromFace(face, DiceUtils.getFaceCount(dieType)) <
+                DiceUtils.indexFromFace(face, dieType) <
                   (2 * DiceUtils.getFaceCount(dieType)) / 3
             ),
           }),
@@ -247,10 +241,7 @@ export function createProfile(
           new EditConditionRolled({
             faces: DiceUtils.getDieFaces(dieType).filter(
               (face) =>
-                DiceUtils.indexFromFace(
-                  face,
-                  DiceUtils.getFaceCount(dieType)
-                ) >=
+                DiceUtils.indexFromFace(face, dieType) >=
                   (2 * DiceUtils.getFaceCount(dieType)) / 3 &&
                 face !== DiceUtils.getTopFace(dieType)
             ),
