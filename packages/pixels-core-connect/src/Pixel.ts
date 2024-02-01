@@ -460,28 +460,51 @@ export class Pixel extends PixelInfoNotifier {
       if (info.name) {
         this._updateName(info.name);
       }
+      // LED count
+      if (info.ledCount && info.ledCount > 0 && !this.ledCount) {
+        this._updateLedCount(info.ledCount);
+      }
       // Colorway
-      if (info.colorway) {
+      if (
+        info.colorway &&
+        info.colorway !== "unknown" &&
+        this.colorway === "unknown"
+      ) {
         this._updateColorway(info.colorway);
       }
+      // Die type
+      if (
+        info.dieType &&
+        info.dieType !== "unknown" &&
+        this.dieType === "unknown"
+      ) {
+        this._updateDieType(info.dieType);
+      }
       // Firmware data
-      if (info.firmwareDate) {
+      if (info.firmwareDate && info.firmwareDate.getTime() > 0) {
         this._updateFirmwareDate(info.firmwareDate.getTime());
       }
       // RSSI
-      if (info.rssi !== undefined) {
+      if (info.rssi !== undefined && info.rssi < 0) {
         this._updateRssi(info.rssi);
       }
       // Battery
-      this._updateBatteryInfo({
-        level: info.batteryLevel,
-        isCharging: info.isCharging,
-      });
+      if ((info.batteryLevel ?? 0) >= 0 && (info.batteryLevel ?? 0) <= 100) {
+        this._updateBatteryInfo({
+          level: info.batteryLevel,
+          isCharging: info.isCharging,
+        });
+      }
       // Roll
-      this._updateRollInfo({
-        state: info.rollState,
-        face: info.currentFace,
-      });
+      if (
+        info.currentFace === undefined ||
+        DiceUtils.getDieFaces(this.dieType).includes(info.currentFace)
+      ) {
+        this._updateRollInfo({
+          state: info.rollState,
+          face: info.currentFace,
+        });
+      }
     }
   }
 
@@ -1179,23 +1202,27 @@ export class Pixel extends PixelInfoNotifier {
       // This should never happen
       throw new PixelConnectError(this, "Got an empty Pixel id");
     }
-    if (this._info.pixelId && this._info.pixelId !== pixelId) {
+    if (!this._info.pixelId) {
+      this._info.pixelId = pixelId;
+      this.emitPropertyEvent("pixelId");
+    } else if (this._info.pixelId !== pixelId) {
       throw new PixelConnectIdMismatchError(this, pixelId);
     }
 
     const setProperties = (
       info: Omit<LegacyIAmADie, "type" | "dataSetHash" | "availableFlashSize">
     ): void => {
-      this._info.ledCount = info.ledCount;
-      this._info.colorway =
-        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown";
-      this._info.dieType =
+      this._updateLedCount(info.ledCount);
+      this._updateColorway(
+        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown"
+      );
+      const dieType =
         getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown";
-      if (this.dieType === "unknown") {
+      if (dieType === "unknown") {
         // Try to guess the die type
         this._info.dieType = DiceUtils.estimateDieType(this.ledCount);
       }
-      this._info.pixelId = info.pixelId;
+      this._updateDieType(dieType);
       this._updateFirmwareDate(1000 * info.buildTimestamp);
       this._updateBatteryInfo({
         level: info.batteryLevelPercent,
@@ -1258,11 +1285,24 @@ export class Pixel extends PixelInfoNotifier {
     }
   }
 
-  // TODO private
-  _updateColorway(colorway: PixelColorway) {
+  private _updateLedCount(ledCount: number) {
+    if (this._info.ledCount !== ledCount) {
+      this._info.ledCount = ledCount;
+      this.emitPropertyEvent("ledCount");
+    }
+  }
+
+  private _updateColorway(colorway: PixelColorway) {
     if (this._info.colorway !== colorway) {
       this._info.colorway = colorway;
       this.emitPropertyEvent("colorway");
+    }
+  }
+
+  private _updateDieType(dieType: PixelDieType) {
+    if (this._info.dieType !== dieType) {
+      this._info.dieType = dieType;
+      this.emitPropertyEvent("dieType");
     }
   }
 
