@@ -88,8 +88,19 @@ export const DiceUtils = {
     }
   },
 
-  indexFromFace(face: number, faceCount: number): number {
-    return face - (faceCount === 10 ? 0 : 1);
+  indexFromFace(face: number, dieType: PixelDieType): number {
+    switch (dieType) {
+      case "d4":
+        if (face === 2 || face === 3) return face;
+        if (face === 4) return 5;
+        return 1;
+      case "d10":
+        return face;
+      case "d00":
+        return Math.floor(face / 10);
+      default:
+        return face - 1;
+    }
   },
 
   getDieFaces(dieType: PixelDieType): number[] {
