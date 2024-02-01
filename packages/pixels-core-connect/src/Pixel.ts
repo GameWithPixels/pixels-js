@@ -882,7 +882,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param opt.duration Total duration of the animation in milliseconds.
    * @param opt.fade Amount of in and out fading, 0: sharp transition, 1: maximum fading.
    * @param opt.faceMask Select which faces to light up.
-   * @param opt.loop Whether to indefinitely loop the animation.
+   * @param opt.loop How many times to loop the animation.
    * @returns A promise that resolves once the die has confirmed receiving the message.
    */
   async blink(
@@ -892,7 +892,7 @@ export class Pixel extends PixelInfoNotifier {
       duration?: number;
       fade?: number;
       faceMask?: number;
-      loop?: boolean;
+      loopCount?: number;
     }
   ): Promise<void> {
     const blinkMsg = safeAssign(new Blink(), {
@@ -901,7 +901,7 @@ export class Pixel extends PixelInfoNotifier {
       duration: opt?.duration ?? 1000,
       fade: 255 * (opt?.fade ?? 0),
       faceMask: opt?.faceMask ?? AnimConstants.faceMaskAll,
-      loop: opt?.loop ?? false,
+      loopCount: opt?.loopCount ?? 1,
     });
     await this.sendAndWaitForResponse(blinkMsg, "blinkAck");
   }
