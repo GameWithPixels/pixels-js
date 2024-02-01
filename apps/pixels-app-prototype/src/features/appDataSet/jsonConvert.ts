@@ -179,6 +179,7 @@ function toAnimationsAndGradients(
           case "name":
           case "noise":
           case "normals":
+          case "sequence":
             throw Error(`Unsupported animation type: ${type}`);
           default:
             assertNever(type, `Unsupported animation type: ${type}`);

@@ -35,6 +35,8 @@ export function getAnimationTypeDisplayName(
       return { name: "Noise", order: 5 };
     case "normals":
       return { name: "Normals", order: 6 };
+    case "sequence":
+      return { name: "Sequence", order: 7 };
     case "cycle":
     case "name":
       throw new Error(

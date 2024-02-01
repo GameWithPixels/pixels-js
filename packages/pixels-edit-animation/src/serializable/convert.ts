@@ -30,6 +30,7 @@ import {
   AnimationFlashesData,
   AnimationNormalsData,
   AnimationCycleData,
+  AnimationSequenceData,
 } from "./animations";
 import { fromColor, toColor } from "./color";
 import { GradientData } from "./gradient";
@@ -52,6 +53,7 @@ import {
   EditAnimationNoise,
   EditAnimationNormals,
   EditAnimationRainbow,
+  EditAnimationSequence,
   EditAnimationSimple,
   EditAudioClip,
   EditCondition,
@@ -332,6 +334,14 @@ export function toAnimation<T extends keyof AnimationSetData>(
         ...animData,
         animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
+      });
+    }
+    case "sequence": {
+      const animData = data as AnimationSequenceData;
+      return new EditAnimationSequence([], {
+        ...animData,
+        animFlags,
+        // TODO Get animations
       });
     }
     default:
@@ -706,6 +716,24 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           intensity: anim.intensity,
           faces: anim.faces,
           gradientUuid: anim.gradient?.uuid,
+        },
+      };
+    }
+    case "sequence": {
+      const anim = animation as EditAnimationSequence;
+      return {
+        type,
+        data: {
+          uuid: anim.uuid,
+          name: anim.name,
+          duration: anim.duration,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
+          animations: anim.animations.map((i) => ({
+            uuid: i.animation.uuid,
+            delay: i.delay,
+          })),
         },
       };
     }

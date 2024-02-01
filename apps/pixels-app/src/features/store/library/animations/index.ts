@@ -9,6 +9,7 @@ import * as Noise from "./noiseSlice";
 import * as Normals from "./normalsSlice";
 import * as Pattern from "./patternSlice";
 import * as Rainbow from "./rainbowSlice";
+import * as Sequence from "./sequenceSlice";
 
 export {
   Cycle,
@@ -19,6 +20,7 @@ export {
   Gradient,
   Noise,
   Normals,
+  Sequence,
 };
 
 export function add({
@@ -47,6 +49,8 @@ export function add({
       return Normals.add(data as Serializable.AnimationNormalsData);
     case "cycle":
       return Cycle.add(data as Serializable.AnimationCycleData);
+    case "sequence":
+      return Sequence.add(data as Serializable.AnimationSequenceData);
     default:
       assertNever(type, `Unsupported animation type ${type}`);
   }

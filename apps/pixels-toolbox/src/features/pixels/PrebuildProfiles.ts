@@ -51,15 +51,14 @@ export function createProfile(
     count: number = 1
   ) {
     profile.rules.push(
-      new EditRule(new EditConditionRolling({ recheckAfter: 0.2 }), {
-        actions: [
-          new EditActionPlayAnimation({
-            animation: anim,
-            face: Constants.currentFaceIndex,
-            loopCount: count,
-          }),
-        ],
-      })
+      new EditRule(
+        new EditConditionRolling({ recheckAfter: 0.2 }),
+        new EditActionPlayAnimation({
+          animation: anim,
+          face: Constants.currentFaceIndex,
+          loopCount: count,
+        })
+      )
     );
   };
 
@@ -75,15 +74,11 @@ export function createProfile(
             (face) => face !== DiceUtils.getTopFace(dieType)
           ),
         }),
-        {
-          actions: [
-            new EditActionPlayAnimation({
-              animation: anim,
-              face: Constants.currentFaceIndex,
-              loopCount: count,
-            }),
-          ],
-        }
+        new EditActionPlayAnimation({
+          animation: anim,
+          face: Constants.currentFaceIndex,
+          loopCount: count,
+        })
       )
     );
   };
@@ -98,15 +93,11 @@ export function createProfile(
         new EditConditionRolled({
           faces: [DiceUtils.getTopFace(dieType)],
         }),
-        {
-          actions: [
-            new EditActionPlayAnimation({
-              animation: anim,
-              face: Constants.currentFaceIndex,
-              loopCount: count,
-            }),
-          ],
-        }
+        new EditActionPlayAnimation({
+          animation: anim,
+          face: Constants.currentFaceIndex,
+          loopCount: count,
+        })
       )
     );
   };

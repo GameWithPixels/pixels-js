@@ -17,6 +17,7 @@ export interface AnimationSetData {
   noise: AnimationNoiseData[];
   normals: AnimationNormalsData[];
   cycle: AnimationCycleData[];
+  sequence: AnimationSequenceData[];
 }
 
 export interface AnimationData extends UniqueNamedData {
@@ -89,6 +90,13 @@ export interface AnimationCycleData extends AnimationData {
   gradientUuid?: string;
 }
 
+export interface AnimationSequenceData extends AnimationData {
+  animations: {
+    uuid: string;
+    delay: number;
+  }[];
+}
+
 //
 // Helpers
 //
@@ -103,5 +111,6 @@ export function createAnimationSetData(): AnimationSetData {
     noise: [],
     normals: [],
     cycle: [],
+    sequence: [],
   };
 }
