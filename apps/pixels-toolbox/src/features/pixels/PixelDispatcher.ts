@@ -21,7 +21,6 @@ import {
   PixelStatus,
   PixelInfoNotifier,
   ScannedPixelNotifier,
-  DataSet,
   MessageOrType,
   getMessageType,
   Telemetry,
@@ -31,8 +30,8 @@ import {
   ScannedPixelNotifierMutableProps,
   PixelInfo,
   PixelBatteryControllerMode,
-  Constants,
   PixelColorwayValues,
+  PixelDieTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -82,8 +81,8 @@ export interface PixelDispatcherActionMap {
   resetAllSettings: undefined;
   queueDFU: undefined;
   dequeueDFU: undefined;
-  setDieType: number;
-  setDesignAndColor: PixelColorway;
+  setDieType: PixelDieType;
+  setColorway: PixelColorway;
 }
 
 /** List of possible DFU actions. */
@@ -492,23 +491,27 @@ class PixelDispatcher
         this._dequeueDFU();
         break;
       case "setDieType":
-        this._guard(
-          pixelStoreValue(
-            this._pixel,
-            PixelValueStoreType.DieType,
-            params as number
-          ),
-          action
-        );
-        break;
-      case "setDesignAndColor":
-        {
-          const value = PixelColorwayValues[params as PixelColorway];
+        if ((params ?? 0) > 0 && PixelDieTypeValues[params as PixelDieType]) {
           this._guard(
-            pixelStoreValue(this._pixel, PixelValueStoreType.Colorway, value),
+            pixelStoreValue(
+              this._pixel,
+              PixelValueStoreType.DieType,
+              PixelDieTypeValues[params as PixelDieType]
+            ),
             action
           );
-          this._pixel._updateColorway(params as PixelColorway);
+        }
+        break;
+      case "setColorway":
+        if ((params ?? 0) > 0 && PixelColorwayValues[params as PixelColorway]) {
+          this._guard(
+            pixelStoreValue(
+              this._pixel,
+              PixelValueStoreType.Colorway,
+              PixelColorwayValues[params as PixelColorway]
+            ),
+            action
+          );
         }
         break;
       default:
@@ -647,7 +650,7 @@ class PixelDispatcher
       this._isUpdatingProfile = true;
       notifyProgress(0);
       const profile = createProfile(type, this.dieType);
-      const dataSet: DataSet = createDataSetForProfile(profile).toDataSet();
+      const dataSet = createDataSetForProfile(profile).toDataSet();
       await this._pixel.transferDataSet(dataSet, notifyProgress);
     } finally {
       this._isUpdatingProfile = false;
