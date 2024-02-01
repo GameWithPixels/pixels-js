@@ -8,6 +8,7 @@ export interface AnimationSetData {
   gradient: AnimationGradientData[];
   noise: AnimationNoiseData[];
   normals: AnimationNormalsData[];
+  sequence: AnimationSequenceData[];
 }
 
 export interface AnimationData extends UniqueNamedData {
@@ -48,15 +49,33 @@ export interface AnimationGradientData extends AnimationData {
 
 export interface AnimationNoiseData extends AnimationData {
   gradientUuid?: string;
-  faces: number;
-  blinkDuration: number;
   blinkGradientUuid?: string;
-  blinkCount: number;
+  blinkFrequency: number;
+  blinkFrequencyVar: number;
+  blinkDuration: number;
   fade: number;
+  gradientColorType: number;
+  gradientColorVar: number;
 }
 
 export interface AnimationNormalsData extends AnimationData {
   gradientUuid?: string;
+  axisGradientUuid?: string;
+  axisScrollSpeed: number;
+  axisScale: number;
+  axisOffset: number;
+  angleGradientUuid?: string;
+  angleScrollSpeed: number;
+  fade: number;
+  gradientColorType: number;
+  gradientColorVar: number;
+}
+
+export interface AnimationSequenceData extends AnimationData {
+  animations: {
+    uuid: string;
+    delay: number;
+  }[];
 }
 
 //
@@ -72,5 +91,6 @@ export function createAnimationSetData(): AnimationSetData {
     gradient: [],
     noise: [],
     normals: [],
+    sequence: [],
   };
 }

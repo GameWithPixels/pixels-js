@@ -45,6 +45,7 @@ import {
   EditAnimationNoise,
   EditAnimationNormals,
   EditAnimationRainbow,
+  EditAnimationSequence,
   EditAnimationSimple,
   EditAudioClip,
   EditColor,
@@ -303,6 +304,15 @@ export function toAnimation<T extends keyof AnimationSetData>(
       return new EditAnimationNormals({
         ...animData,
         gradient: checkGetGradient(animData.gradientUuid),
+        axisGradient: checkGetGradient(animData.axisGradientUuid),
+        angleGradient: checkGetGradient(animData.angleGradientUuid),
+      });
+    }
+    case "sequence": {
+      const animData = data as AnimationNormalsData;
+      return new EditAnimationNormals({
+        ...animData,
+        // TODO Get animations
       });
     }
     default:
@@ -618,8 +628,13 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           duration: anim.duration,
           animFlags: anim.animFlags,
           gradientUuid: anim.gradient?.uuid,
-          blinkDuration: anim.blinkDuration,
           blinkGradientUuid: anim.blinkGradient?.uuid,
+          blinkFrequency: anim.blinkFrequency,
+          blinkFrequencyVar: anim.blinkFrequencyVar,
+          blinkDuration: anim.blinkDuration,
+          fade: anim.fade,
+          gradientColorType: anim.gradientColorType,
+          gradientColorVar: anim.gradientColorVar,
         },
       };
     }
@@ -633,6 +648,31 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           duration: anim.duration,
           animFlags: anim.animFlags,
           gradientUuid: anim.gradient?.uuid,
+          axisGradientUuid: anim.axisGradient?.uuid,
+          axisScrollSpeed: anim.axisScrollSpeed,
+          axisScale: anim.axisScale,
+          axisOffset: anim.axisOffset,
+          angleGradientUuid: anim.angleGradient?.uuid,
+          angleScrollSpeed: anim.angleScrollSpeed,
+          fade: anim.fade,
+          gradientColorType: anim.gradientColorType,
+          gradientColorVar: anim.gradientColorVar,
+        },
+      };
+    }
+    case "sequence": {
+      const anim = animation as EditAnimationSequence;
+      return {
+        type,
+        data: {
+          uuid: anim.uuid,
+          name: anim.name,
+          duration: anim.duration,
+          animFlags: anim.animFlags,
+          animations: anim.animations.map((i) => ({
+            uuid: i.animation.uuid,
+            delay: i.delay,
+          })),
         },
       };
     }
