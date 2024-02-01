@@ -924,7 +924,6 @@ export function StoreSettings({
                   PixelValueStoreType.Colorway,
                   value
                 );
-                pixel._updateColorway(colorway);
               }
             }
           ),
