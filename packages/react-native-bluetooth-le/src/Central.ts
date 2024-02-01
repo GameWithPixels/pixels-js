@@ -13,7 +13,6 @@ import {
 import {
   PeripheralInfo,
   CentralPeripheralsMap as peripheralsMap,
-  PeripheralState,
 } from "./CentralPeripheralsMap";
 import { Constants } from "./Constants";
 import * as Errors from "./errors";
@@ -227,23 +226,26 @@ export const Central = {
                   ` with reason ${reason}`
               );
             }
-            let newState: PeripheralState;
             switch (connectionStatus) {
               case "connecting":
-              case "disconnected":
               case "disconnecting":
-                newState = connectionStatus;
+                pInf.state = connectionStatus;
+                break;
+              case "disconnected":
+                if (pInf.state !== "disconnecting") {
+                  console.log(
+                    `[BLE ${pInf.scannedPeripheral.name}] Unexpected disconnection, last known state is ${pInf.state})`
+                  );
+                }
+                pInf.state = connectionStatus;
                 break;
               case "failedToConnect":
-                newState = "disconnected";
+                pInf.state = "disconnected";
                 break;
               case "connected":
               case "ready":
-                newState = "connecting";
+                pInf.state = "connecting";
                 break;
-            }
-            if (pInf.state !== newState) {
-              pInf.state = newState;
             }
             if (connectionStatus !== "ready") {
               // The ready status is notified once the MTU has been changed
