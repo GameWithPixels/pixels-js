@@ -960,9 +960,9 @@ export class Blink implements PixelMessage {
   @serializable(1)
   fade = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 /**
@@ -1314,9 +1314,9 @@ export class PlayInstantAnimation implements PixelMessage {
   @serializable(1)
   faceIndex = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 /**
@@ -1389,9 +1389,9 @@ export class BlinkId implements PixelMessage {
   @serializable(1)
   brightness = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 /**
@@ -1427,9 +1427,9 @@ export class PlayProfileAnimation implements PixelMessage {
   @serializable(1)
   remapToFace = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 // Returns the list of message classes defined in this file.
