@@ -16,6 +16,7 @@ import { useErrorHandler } from "react-error-boundary";
 import { useTranslation, type TFunction } from "react-i18next";
 import { ScrollView, TextStyle, View } from "react-native";
 import {
+  Banner,
   Button,
   ButtonProps,
   Card,
@@ -32,6 +33,7 @@ import {
 } from "react-native-vision-camera";
 
 import { AppStyles } from "~/AppStyles";
+import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
@@ -51,6 +53,7 @@ import {
   UpdateFirmwareStatus,
   getPixelThroughDispatcher,
 } from "~/components/ValidationTestsComponents";
+import { useAppDfuFilesBundles } from "~/features/hooks/useAppDfuFilesBundles";
 import {
   FactoryDfuBundleFiles,
   useFactoryDfuFilesBundle,
@@ -137,10 +140,12 @@ function LargeTonalButton({
 function SelectSequencePage({
   dfuFilesBundle,
   dfuBundleError,
+  userSelected,
   onSelectSequence,
 }: {
   dfuFilesBundle?: FactoryDfuBundleFiles;
   dfuBundleError?: Error;
+  userSelected?: boolean;
   onSelectSequence: (sequence: ValidationSequence) => void;
 }) {
   const fwDateLabel = React.useMemo(() => {
@@ -167,6 +172,16 @@ function SelectSequencePage({
               dfuBundleError.message}
           </Text>
         </BaseVStack>
+      ) : userSelected ? (
+        <Banner visible icon="alert-rhombus-outline" elevation={3}>
+          {t("diceUpdatedWithUserSelectedFirmwareWarning")}
+          {"\n\n"}
+          {t("selection")}
+          {t("colonSeparator")}
+          {dfuFilesBundle?.date
+            ? toLocaleDateTimeString(dfuFilesBundle.date)
+            : t("loadingFirmwareFiles")}
+        </Banner>
       ) : (
         <BaseVStack alignItems="center" marginVertical={-10}>
           <Text variant="titleSmall">
@@ -679,16 +694,33 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
-  const [dfuFilesBundle, dfuBundleError] = useFactoryDfuFilesBundle();
+  const [factoryFilesBundle, factoryBundleError] = useFactoryDfuFilesBundle();
+  const [selectedDfuFilesBundle, _, selectedDfuBundleError] =
+    useAppDfuFilesBundles();
   const [sequence, setSequence] = React.useState<ValidationSequence>();
   const [dieType, setDieType] = React.useState<PixelDieType>();
   const [pixelId, setPixelId] = React.useState(0);
+
+  const userSelected =
+    useAppSelector((state) => state.validationSettings.userSelectedFirmware) &&
+    !!selectedDfuFilesBundle?.firmware;
+  const dfuFilesBundle: FactoryDfuBundleFiles | undefined = userSelected
+    ? {
+        firmware: selectedDfuFilesBundle.firmware,
+        bootloader: selectedDfuFilesBundle.bootloader,
+        date: selectedDfuFilesBundle.date,
+      }
+    : factoryFilesBundle;
+  const dfuBundleError = userSelected
+    ? selectedDfuBundleError
+    : factoryBundleError;
 
   return !sequence || !dfuFilesBundle ? (
     <SelectSequencePage
       onSelectSequence={setSequence}
       dfuFilesBundle={dfuFilesBundle}
       dfuBundleError={dfuBundleError}
+      userSelected={userSelected}
     />
   ) : !dieType ? (
     <SelectDieTypePage
