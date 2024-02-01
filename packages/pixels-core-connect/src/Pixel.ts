@@ -400,7 +400,7 @@ export class Pixel extends PixelInfoNotifier {
       const msg = msgOrType as RollState;
       this._updateRollInfo({
         state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
-        face: msg.faceIndex + (this.ledCount === 10 ? 0 : 1),
+        faceIndex: msg.faceIndex,
       });
     };
     this.addMessageListener("rollState", rollStateListener);
@@ -1231,7 +1231,7 @@ export class Pixel extends PixelInfoNotifier {
       this._updateRollInfo({
         state:
           getValueKeyName(info.rollState, PixelRollStateValues) ?? "unknown",
-        face: info.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
+        faceIndex: info.currentFaceIndex,
       });
     };
 
@@ -1346,18 +1346,11 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   private _updateRollInfo(
-    info: Partial<{ state: PixelRollState; face: number }>
+    info: Partial<{ state: PixelRollState; faceIndex: number; face: number }>
   ) {
-    if (info.face !== undefined) {
-      info.face = this._fixDieFace(info.face);
-      if (info.face === undefined) {
-        console.log(
-          this._tagLogString(
-            `/!\\ Dropping ${this.dieType} roll event for face ${info.face}`
-          )
-        );
-        return;
-      }
+    // Convert face index to face value
+    if (info.faceIndex !== undefined) {
+      info.face = DiceUtils.faceFromIndex(info.faceIndex, this.dieType);
     }
     const stateChanged =
       info.state !== undefined && this._info.rollState !== info.state;
@@ -1378,20 +1371,6 @@ export class Pixel extends PixelInfoNotifier {
         this._evEmitter.emit("roll", info.face);
       }
     }
-  }
-
-  // TODO Temporary - Fix face value for d4 and d00
-  private _fixDieFace(face: number): number | undefined {
-    switch (this.dieType) {
-      case "d4":
-        if (face === 1) return 1;
-        if (face === 3 || face === 4) return face - 1;
-        if (face === 6) return 4;
-        return undefined;
-      case "d00":
-        return face * 10;
-    }
-    return face;
   }
 
   // Callback on notify characteristic value change

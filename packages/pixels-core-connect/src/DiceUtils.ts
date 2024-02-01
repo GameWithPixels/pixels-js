@@ -73,8 +73,19 @@ export const DiceUtils = {
     }
   },
 
-  faceFromIndex(faceIndex: number, ledCount: number): number {
-    return faceIndex + (ledCount === 10 ? 0 : 1);
+  faceFromIndex(faceIndex: number, dieType: PixelDieType): number {
+    switch (dieType) {
+      case "d4":
+        if (faceIndex === 2 || faceIndex === 3) return faceIndex;
+        if (faceIndex === 5) return 4;
+        return 1;
+      case "d10":
+        return faceIndex;
+      case "d00":
+        return faceIndex * 10;
+      default:
+        return faceIndex + 1;
+    }
   },
 
   getDieFaces(dieType: PixelDieType): number[] {
