@@ -52,7 +52,10 @@ import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import { useAppBackgroundState } from "~/features/hooks/useAppBackgroundState";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
+import {
+  PrebuildAnimations,
+  PrebuildAnimationsExt,
+} from "~/features/pixels/PrebuildAnimations";
 import { ProfileTypes } from "~/features/pixels/PrebuildProfiles";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
@@ -445,6 +448,17 @@ function BottomButtons({
                   </Button>
                 }
               >
+                {Object.entries(PrebuildAnimationsExt).map(
+                  ([animName, anim]) => (
+                    <Menu.Item
+                      key={animName}
+                      title={animName}
+                      onPress={() => {
+                        pd.dispatch("playAnimation", anim);
+                      }}
+                    />
+                  )
+                )}
                 {Object.entries(PrebuildAnimations).map(([animName, anim]) => (
                   <Menu.Item
                     key={animName}

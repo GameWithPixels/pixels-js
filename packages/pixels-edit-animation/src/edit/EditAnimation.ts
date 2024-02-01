@@ -65,6 +65,10 @@ export default abstract class EditAnimation extends Editable {
 
   abstract duplicate(uuid?: string): EditAnimation;
 
+  collectAnimations(): EditAnimation[] {
+    return [this];
+  }
+
   collectPatterns(): { rgb?: EditPattern[]; grayscale?: EditPattern[] } {
     return {};
   }

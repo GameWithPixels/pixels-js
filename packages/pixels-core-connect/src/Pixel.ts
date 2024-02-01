@@ -946,15 +946,20 @@ export class Pixel extends PixelInfoNotifier {
     progressCallback?.(0);
 
     // Prepare the Pixel
-    const data = dataSet.toSingleAnimationByteArray();
+    const data = dataSet.toAnimationsByteArray();
     const hash = DataSet.computeHash(data);
+
     const prepareDie = safeAssign(new TransferTestAnimationSet(), {
       paletteSize: dataSet.animationBits.getPaletteSize(),
       rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
       rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
       keyFrameCount: dataSet.animationBits.getKeyframeCount(),
       trackCount: dataSet.animationBits.getTrackCount(),
-      animationSize: byteSizeOf(dataSet.animations[0]),
+      animationCount: dataSet.animations.length,
+      animationSize: dataSet.animations.reduce(
+        (acc, anim) => acc + byteSizeOf(anim),
+        0
+      ),
       hash,
     });
 
