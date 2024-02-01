@@ -8,7 +8,7 @@ import { toLocaleDateTimeString } from "../features/toLocaleDateTimeString";
 import { useAppSelector } from "~/app/hooks";
 
 export interface FactoryDfuBundleFiles {
-  readonly bootloader: DfuFileInfo;
+  readonly bootloader?: DfuFileInfo;
   readonly firmware: DfuFileInfo;
   readonly date: Date;
 }
