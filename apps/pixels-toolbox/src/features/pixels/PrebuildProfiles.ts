@@ -5,6 +5,9 @@ import {
   EditProfile,
   EditRule,
   EditAnimation,
+  EditAnimationSimple,
+  EditAnimationNormals,
+  EditColor,
 } from "@systemic-games/pixels-edit-animation";
 import {
   Constants,
@@ -28,13 +31,11 @@ export const ProfileTypes = [
   "spinning",
   "spiral",
   "noise",
-  "fixedRainbow",
-  "fixedRainbowD4",
-  "normals",
-  "video",
-  "waterfallRedGreen",
-  "spin",
-  "redGreenSpinning",
+  "flashy",
+  "highLow",
+  "worm",
+  "rose",
+  "fire",
 ] as const;
 
 export type ProfileType = (typeof ProfileTypes)[number];
@@ -139,6 +140,164 @@ export function createProfile(
       pushRollingAnimRule(PrebuildAnimations.shortNoise);
       pushRolledAnimNonTopFaceRule(PrebuildAnimations.noise);
       pushRolledAnimTopFaceRule(PrebuildAnimationsExt.noiseRainbowX2, 1);
+      break;
+    }
+    case "flashy": {
+      profile.name = "flashy";
+      pushRollingAnimRule(
+        new EditAnimationSimple({
+          ...PrebuildAnimations.whiteFlash,
+          color: new EditColor("face"),
+          count: 1,
+          duration: 0.5,
+        })
+      );
+      pushRolledAnimNonTopFaceRule(
+        new EditAnimationSimple({
+          ...PrebuildAnimations.whiteFlash,
+          color: new EditColor("face"),
+          count: 5,
+          duration: 1,
+        })
+      );
+      pushRolledAnimTopFaceRule(PrebuildAnimations.rainbowAllFacesFast, 2);
+      break;
+    }
+    case "highLow": {
+      profile.name = "High Low";
+      pushRollingAnimRule(PrebuildAnimations.blueFlash);
+      // Bottom half
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolled({
+            faces: DiceUtils.getDieFaces(dieType).filter(
+              (face) =>
+                DiceUtils.indexFromFace(face, DiceUtils.getFaceCount(dieType)) <
+                DiceUtils.getFaceCount(dieType) / 2
+            ),
+          }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimationsExt.overlappingQuickReds,
+            face: Constants.currentFaceIndex,
+          })
+        )
+      );
+      // Top half
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolled({
+            faces: DiceUtils.getDieFaces(dieType).filter(
+              (face) =>
+                DiceUtils.indexFromFace(
+                  face,
+                  DiceUtils.getFaceCount(dieType)
+                ) >=
+                DiceUtils.getFaceCount(dieType) / 2
+            ),
+          }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimationsExt.overlappingQuickGreens,
+            face: Constants.currentFaceIndex,
+          })
+        )
+      );
+
+      break;
+    }
+    case "worm": {
+      profile.name = "Worm";
+      pushRollingAnimRule(PrebuildAnimations.blueFlash);
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolled({
+            faces: DiceUtils.getDieFaces(dieType).filter(
+              (face) =>
+                DiceUtils.indexFromFace(face, DiceUtils.getFaceCount(dieType)) <
+                DiceUtils.getFaceCount(dieType) / 3
+            ),
+          }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimations.redBlueWorm,
+            face: Constants.currentFaceIndex,
+          })
+        )
+      );
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolled({
+            faces: DiceUtils.getDieFaces(dieType).filter(
+              (face) =>
+                DiceUtils.indexFromFace(
+                  face,
+                  DiceUtils.getFaceCount(dieType)
+                ) >=
+                  DiceUtils.getFaceCount(dieType) / 3 &&
+                DiceUtils.indexFromFace(face, DiceUtils.getFaceCount(dieType)) <
+                  (2 * DiceUtils.getFaceCount(dieType)) / 3
+            ),
+          }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimations.pinkWorm,
+            face: Constants.currentFaceIndex,
+          })
+        )
+      );
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolled({
+            faces: DiceUtils.getDieFaces(dieType).filter(
+              (face) =>
+                DiceUtils.indexFromFace(
+                  face,
+                  DiceUtils.getFaceCount(dieType)
+                ) >=
+                  (2 * DiceUtils.getFaceCount(dieType)) / 3 &&
+                face !== DiceUtils.getTopFace(dieType)
+            ),
+          }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimations.greenBlueWorm,
+            face: Constants.currentFaceIndex,
+          })
+        )
+      );
+      pushRolledAnimTopFaceRule(PrebuildAnimations.rainbowFast, 1);
+      break;
+    }
+    case "rose": {
+      profile.name = "Rose";
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolling({ recheckAfter: 1 }),
+          new EditActionPlayAnimation({
+            animation: new EditAnimationNormals({
+              ...PrebuildAnimations.whiteRose,
+              duration: 2,
+            }),
+            face: DiceUtils.getTopFace(dieType),
+            loopCount: 1,
+          })
+        )
+      );
+      pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.roseToCurrentFace);
+      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.roseToCurrentFace);
+      break;
+    }
+    case "fire": {
+      profile.name = "Fire";
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolling({ recheckAfter: 1 }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimationsExt.animatedFire,
+            //              face: DiceUtils.getTopFace(dieType),
+            face: Constants.currentFaceIndex,
+            loopCount: 1,
+          })
+        )
+      );
+      pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.animatedFire);
+      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.animatedFire);
       break;
     }
     default:

@@ -210,7 +210,7 @@ export const PrebuildAnimations = {
     }),
   }),
 
-  greenRedWorm: new AnimCycle({
+  greenBlueWorm: new AnimCycle({
     uuid: "336daf1b-3497-4838-a73b-fd6d80093cab",
     name: "Green Red Worm",
     category: "animated",
@@ -225,7 +225,7 @@ export const PrebuildAnimations = {
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
         new RgbKf({ time: 0.05, color: Color.brightGreen }),
-        new RgbKf({ time: 0.1, color: new Color(1, 0.3, 0.3) }),
+        new RgbKf({ time: 0.1, color: new Color(0.3, 0.3, 1) }),
         new RgbKf({ time: 0.8, color: Color.black }),
       ],
     }),
@@ -638,6 +638,74 @@ export const PrebuildAnimations = {
     fade: 0.5,
   }),
 
+  reverseQuickRed: new AnimNormals({
+    uuid: "f255a082-13ca-48ab-bed0-38292d797f25",
+    name: "Quick Red",
+    category: "uniform",
+    duration: 1,
+    gradient: new EditRgbGradient({
+      uuid: "e3510dd7-a139-4adf-8778-8528d8adceaf",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.9, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    axisGradient: new EditRgbGradient({
+      uuid: "373e27b9-fc88-40b8-9e8c-b261009aa8d2",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightBlue }),
+        new RgbKf({ time: 0.4, color: Color.brightPurple }),
+        new RgbKf({ time: 0.7, color: Color.brightRed }),
+        new RgbKf({ time: 1.0, color: Color.brightRed }),
+      ],
+    }),
+    axisScrollSpeed: 2,
+    axisOffset: -1,
+    angleGradient: new EditRgbGradient({
+      uuid: "1ff81af9-234c-471c-a3fe-acc11e54011b",
+      keyframes: [new RgbKf({ time: 0.5, color: Color.brightWhite })],
+    }),
+    angleScrollSpeed: 10,
+    fade: 0.5,
+  }),
+
+  reverseQuickGreen: new AnimNormals({
+    uuid: "769c3fbd-d7fb-4a3d-9eda-1731e6565fa4",
+    name: "Quick Red",
+    category: "uniform",
+    duration: 1,
+    gradient: new EditRgbGradient({
+      uuid: "fc298ee4-fdb8-4c43-93d6-e4d5a7c9898a",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.9, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    axisGradient: new EditRgbGradient({
+      uuid: "a59b63cd-5059-4f6a-aa0d-383a96b24a0e",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightBlue }),
+        new RgbKf({ time: 0.4, color: Color.brightCyan }),
+        new RgbKf({ time: 0.7, color: Color.brightGreen }),
+        new RgbKf({ time: 1.0, color: Color.brightGreen }),
+      ],
+    }),
+    axisScrollSpeed: 2,
+    axisOffset: -1,
+    angleGradient: new EditRgbGradient({
+      uuid: "0172e98f-3cf2-4775-aca9-3e36a0f1ae55",
+      keyframes: [new RgbKf({ time: 0.5, color: Color.brightWhite })],
+    }),
+    angleScrollSpeed: 10,
+    fade: 0.5,
+  }),
+
   redGreenAlarm: new AnimNormals({
     uuid: "0488c178-ecbb-4929-a633-e5b5ec27e39c",
     name: "Red Green Alarm",
@@ -999,7 +1067,7 @@ export const PrebuildAnimations = {
     uuid: "5cc7bcb8-1d89-4a1f-b3a0-ad7661c0564e",
     name: "Slow Blue Flash",
     category: "uniform",
-    duration: 2,
+    duration: 1,
     color: Color.blue,
     fade: 0.5,
   }),
@@ -1179,6 +1247,29 @@ export const PrebuildAnimations = {
     blinkDuration: 2,
     fade: 1,
   }),
+  whiteNoise: new AnimNoise({
+    uuid: "b4b43aea-42c9-477b-ae1e-0aa0ec52cbc3",
+    name: "Noise",
+    category: "flashy",
+    duration: 1.5,
+    gradient: new EditRgbGradient({
+      uuid: "ae91c67f-199c-4819-8050-3d5d30fb9ce7",
+      keyframes: [new RgbKf({ time: 0.0, color: Color.brightWhite })],
+    }),
+    blinkGradient: new EditRgbGradient({
+      uuid: "f8a1b8dc-6f01-4e59-992a-ca9fed13f045",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.2, color: Color.mediumWhite }),
+        new RgbKf({ time: 1, color: Color.faintWhite }),
+      ],
+    }),
+    blinkFrequency: 50,
+    blinkFrequencyVar: 0,
+    blinkDuration: 1,
+    fade: 0.5,
+  }),
 } as const;
 
 export const PrebuildAnimationsExt = {
@@ -1283,6 +1374,59 @@ export const PrebuildAnimationsExt = {
       name: "Fire",
       category: "animated",
       duration: 7,
+    }
+  ),
+  overlappingQuickReds: new AnimSequence(
+    [
+      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickRed, 0),
+      new EditAnimationSequenceItem(
+        new AnimNoise({
+          ...PrebuildAnimations.whiteNoise,
+          gradient: new EditRgbGradient({
+            uuid: "281f771a-4595-4d92-853c-1ca1c56178ec",
+            keyframes: [new RgbKf({ time: 0.0, color: Color.brightRed })],
+          }),
+        }),
+        0.5
+      ),
+    ],
+    {
+      uuid: "2e0a5f5b-edb9-45e3-9c62-58db4d06d073",
+      name: "Overlapping Quick Red",
+      category: "animated",
+      duration: 2.5,
+    }
+  ),
+  overlappingQuickGreens: new AnimSequence(
+    [
+      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickGreen, 0),
+      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickGreen, 0.8),
+      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickGreen, 1.6),
+    ],
+    {
+      uuid: "b9843f94-0d51-4833-9ddb-c4b3d111b043",
+      name: "Overlapping Quick Green",
+      category: "animated",
+      duration: 2.5,
+    }
+  ),
+  roseToCurrentFace: new AnimSequence(
+    [
+      new EditAnimationSequenceItem(
+        new AnimFlash({
+          ...PrebuildAnimations.whiteFlash,
+          duration: 1.2,
+          fade: 1,
+        }),
+        0
+      ),
+      new EditAnimationSequenceItem(PrebuildAnimations.whiteRose, 0.8),
+    ],
+    {
+      uuid: "41f5a334-16b8-4167-a69f-bbbefccf4e42",
+      name: "White Rose",
+      category: "animated",
+      duration: 2.5,
     }
   ),
 } as const;
