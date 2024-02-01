@@ -192,9 +192,8 @@ export async function withBlink<T = void>(
   pixel: Pixel,
   blinkColor: Color,
   promise: () => Promise<T>,
-  options?: {
+  opt?: {
     faceMask?: number;
-    blinkDuration?: number;
   }
 ): Promise<T> {
   let status: "init" | "blink" | "cancel" = "init";
@@ -204,12 +203,12 @@ export async function withBlink<T = void>(
     }
     if (!abortSignal.aborted && status !== "cancel") {
       status = "blink";
-      const duration = options?.blinkDuration ?? 1000;
+      // Blink for as long as we can
       await pixel.blink(blinkColor, {
-        count: 1,
-        duration,
-        faceMask: options?.faceMask,
-        loop: true,
+        count: 65,
+        duration: 65 * 1000,
+        faceMask: opt?.faceMask,
+        loopCount: 0xff,
       });
     }
   };
@@ -230,7 +229,7 @@ export async function withSolidColor<T = void>(
   pixel: Pixel,
   color: Color,
   promise: () => Promise<T>,
-  options?: {
+  opt?: {
     faceMask?: number;
   }
 ): Promise<T> {
@@ -244,7 +243,7 @@ export async function withSolidColor<T = void>(
       status = "blink";
       await pixel.blink(color, {
         duration,
-        faceMask: options?.faceMask,
+        faceMask: opt?.faceMask,
       });
       await delay(duration / 2, abortSignal);
     }
