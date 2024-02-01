@@ -258,6 +258,9 @@ i18n
             "Factory Validation will update firmware if on-board firmware is older than {{date}}.",
           loadingFirmwareFiles: "Loading firmware files...",
           errorLoadingFirmwareFiles: "Error loading firmware files",
+          diceUpdatedWithUserSelectedFirmwareWarning:
+            "Dice will be updated with the firmware selected in the Scanner Page!",
+          selection: "Selection",
           invalidLedCountWithValue: "Invalid LED count: {{value}}",
           invalidAccelerometerValue: "Invalid accelerometer value: {{value}}",
           outOfRangeBatteryVoltage: "Out of range battery voltage: {{value}}v",
@@ -269,6 +272,7 @@ i18n
             "Timeout waiting for face {{face}}. Face up: {{rollFace}}, roll state: {{rollState}}",
           disconnectedFromPixel: "Disconnected from Pixel",
           timedOutWithValue: "Timed out after {{value}}s",
+          selectProfile: "Select Profile",
 
           // Carton label
           cartonLabel: "Carton Label",

@@ -1,8 +1,10 @@
 import { assert, assertNever, delay } from "@systemic-games/pixels-core-utils";
+import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import {
   BaseBoxProps,
   BaseHStack,
   BaseVStack,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import {
   DfuCommunicationError,
@@ -23,10 +25,12 @@ import {
 import { Audio, AVPlaybackSource } from "expo-av";
 import React from "react";
 import { useTranslation, TFunction } from "react-i18next";
-import { Button, Text } from "react-native-paper";
+import { View } from "react-native";
+import { Button, Menu, Text } from "react-native-paper";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
@@ -35,13 +39,18 @@ import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
+  createProfile,
+  ProfileType,
+  ProfileTypes,
+} from "~/features/pixels/PrebuildProfiles";
+import {
   pixelClearSettings,
   pixelStopAllAnimations,
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
-import { getDefaultDataset } from "~/features/pixels/getDefaultProfile";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
+import { setFactoryProfile } from "~/features/store/validationSettingsSlice";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import {
   TaskCanceledError,
@@ -412,7 +421,7 @@ export function UpdateFirmware({
           ) {
             onFirmwareUpdate?.("updating");
             // Prepare for updating firmware
-            const blPath = settings.dfuFilesBundle.bootloader.pathname;
+            const blPath = settings.dfuFilesBundle.bootloader?.pathname;
             const fwPath = settings.dfuFilesBundle.firmware.pathname;
             const updateFW = async (blAddr?: number) => {
               let dfuState: DfuState | undefined;
@@ -980,17 +989,91 @@ export function PrepareDie({
 }: ValidationTestProps & PrintingProp) {
   const { t } = useTranslation();
 
+  const appDispatch = useAppDispatch();
+  const profile: ProfileType =
+    useAppSelector((state) => state.validationSettings.factoryProfile) ??
+    "default";
+  const setProfile = React.useCallback(
+    (p: ProfileType) => appDispatch(setFactoryProfile(p)),
+    [appDispatch]
+  );
+
+  const [resolveSelectProfilePromise, setResolveSelectProfilePromise] =
+    React.useState<() => void>();
+  const {
+    visible: profileMenuVisible,
+    show: showProfileMenu,
+    hide: hideProfileMenu,
+  } = useVisibility();
+
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          withTimeoutAndDisconnect(
+            abortSignal,
+            pixel,
+            60 * 60 * 1000, // 1h timeout
+            (abortSignal) =>
+              withPromise(
+                abortSignal,
+                "selectProfile",
+                (resolve) => setResolveSelectProfilePromise(() => resolve),
+                () => setResolveSelectProfilePromise(undefined)
+              )
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        title: t("selectProfile"),
+        children: (
+          <BaseHStack w="100%" flex={1} gap={20}>
+            <View style={{ flex: 1 }}>
+              <Menu
+                visible={profileMenuVisible}
+                onDismiss={hideProfileMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button mode="outlined" onPress={showProfileMenu}>
+                    {profile}
+                  </Button>
+                }
+              >
+                {ProfileTypes.map((p) => (
+                  <Menu.Item
+                    key={p}
+                    title={p}
+                    onPress={() => {
+                      setProfile(p);
+                      hideProfileMenu();
+                    }}
+                  />
+                ))}
+              </Menu>
+            </View>
+            <Button
+              mode="contained-tonal"
+              onPress={resolveSelectProfilePromise}
+            >
+              {t("ok")}
+            </Button>
+          </BaseHStack>
+        ),
+      })
+    )
+    .withTask(
       React.useCallback(async () => {
+        console.log(`Programming profile: ${profile}`);
         // Update profile
         await ValidationTests.updateProfile(
           pixel,
-          getDefaultDataset(settings.dieType),
+          createDataSetForProfile(
+            createProfile(profile, settings.dieType)
+          ).toDataSet(),
           setProgress
         );
-      }, [pixel, settings.dieType]),
+      }, [pixel, profile, settings.dieType]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
