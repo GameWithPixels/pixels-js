@@ -1,54 +1,50 @@
 import React from "react";
 
-import DfuFilesBundle from "../features/dfu/DfuFilesBundle";
-import { DfuFileInfo } from "../features/dfu/getDfuFileInfo";
-import { unzipFactoryDfuFilesAsync } from "../features/dfu/unzip";
-import { toLocaleDateTimeString } from "../features/toLocaleDateTimeString";
+import { useAppDfuFilesBundles } from "./useAppDfuFilesBundles";
 
 import { useAppSelector } from "~/app/hooks";
+import { FactoryDfuFilesBundle } from "~/components/ValidationTestsComponents";
+import { selectCustomFirmwareAndProfile } from "~/features/store/validationSelectors";
 
-export interface FactoryDfuBundleFiles {
-  readonly bootloader?: DfuFileInfo;
-  readonly firmware: DfuFileInfo;
-  readonly date: Date;
-}
+const bootloaderError = new Error(
+  "Validation DFU bootloader file not found or problematic"
+);
+const firmwareError = new Error(
+  "Validation DFU firmware file not found or problematic"
+);
 
 export function useFactoryDfuFilesBundle(): [
-  FactoryDfuBundleFiles | undefined,
-  Error | undefined
+  FactoryDfuFilesBundle | undefined,
+  boolean | undefined,
+  Error | undefined,
 ] {
-  const dfuBundles = useAppSelector((state) => state.dfuBundles);
-  const [dfuBundle, setDfuBundle] = React.useState<FactoryDfuBundleFiles>();
-  const [error, setError] = React.useState<Error>();
-  React.useEffect(() => {
-    const task = async () => {
-      setError(undefined);
-      // Get the DFU files bundles from the zip file
-      const dfuBundle = DfuFilesBundle.create({
-        pathnames: await unzipFactoryDfuFilesAsync(),
-      });
-      if (!dfuBundle.bootloader) {
-        throw new Error(
-          "Validation DFU bootloader file not found or problematic"
-        );
-      }
-      if (!dfuBundle.firmware) {
-        throw new Error(
-          "Validation DFU firmware file not found or problematic"
-        );
-      }
-      console.log(
-        "Validation DFU files loaded, firmware/bootloader build date is",
-        toLocaleDateTimeString(dfuBundle.date)
-      );
-      setDfuBundle({
-        bootloader: dfuBundle.bootloader,
-        firmware: dfuBundle.firmware,
-        date: dfuBundle.date,
-      });
-    };
-    task().catch(setError);
-  }, [dfuBundles]);
-
-  return [dfuBundle, error];
+  const [selectedBundle, availableBundles, bundlesError] =
+    useAppDfuFilesBundles();
+  const useCustomFirmware = useAppSelector(selectCustomFirmwareAndProfile);
+  const pickedBundle = useCustomFirmware
+    ? selectedBundle
+    : availableBundles.find((b) => b.kind === "factory");
+  const pickError =
+    !useCustomFirmware && availableBundles.length && !pickedBundle?.bootloader
+      ? bootloaderError
+      : pickedBundle && !pickedBundle.firmware
+        ? firmwareError
+        : undefined;
+  const factoryBundle = React.useMemo(
+    () =>
+      pickedBundle?.firmware && !pickError
+        ? {
+            firmware: pickedBundle.firmware,
+            bootloader: pickedBundle.bootloader,
+            date: pickedBundle.date,
+            isFactory: pickedBundle.kind === "factory",
+          }
+        : undefined,
+    [pickError, pickedBundle]
+  );
+  return [
+    factoryBundle,
+    pickedBundle?.kind === "factory",
+    bundlesError ?? pickError,
+  ];
 }

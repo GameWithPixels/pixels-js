@@ -7,8 +7,8 @@ import {
 import { ProfileType } from "~/features/pixels/PrebuildProfiles";
 
 export interface ValidationSettingsState {
-  userSelectedFirmware: boolean;
-  factoryProfile?: ProfileType;
+  customFirmwareAndProfile: boolean; // Select with selectCustomFirmwareAndProfile
+  profileName?: ProfileType; // Select with selectProfileName
   boxShipment: {
     asn: string;
     dieType: PixelDieType;
@@ -17,7 +17,7 @@ export interface ValidationSettingsState {
 }
 
 const initialState: ValidationSettingsState = {
-  userSelectedFirmware: true,
+  customFirmwareAndProfile: true,
   boxShipment: {
     asn: "",
     dieType: "unknown",
@@ -30,11 +30,11 @@ const validationSettingsSlice = createSlice({
   name: "validationSettings",
   initialState,
   reducers: {
-    setUserSelectedFirmware(state, action: PayloadAction<boolean>) {
-      state.userSelectedFirmware = action.payload;
+    setCustomFirmwareAndProfile(state, action: PayloadAction<boolean>) {
+      state.customFirmwareAndProfile = action.payload;
     },
     setFactoryProfile(state, action: PayloadAction<ProfileType>) {
-      state.factoryProfile = action.payload;
+      state.profileName = action.payload;
     },
     setBoxShipmentAsn(state, action: PayloadAction<string>) {
       state.boxShipment.asn = action.payload;
@@ -49,7 +49,7 @@ const validationSettingsSlice = createSlice({
 });
 
 export const {
-  setUserSelectedFirmware,
+  setCustomFirmwareAndProfile,
   setFactoryProfile,
   setBoxShipmentAsn,
   setBoxShipmentDieType,

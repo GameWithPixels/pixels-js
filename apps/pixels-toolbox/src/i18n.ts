@@ -258,7 +258,7 @@ i18n
             "Factory Validation will update firmware if on-board firmware is older than {{date}}.",
           loadingFirmwareFiles: "Loading firmware files...",
           errorLoadingFirmwareFiles: "Error loading firmware files",
-          diceUpdatedWithUserSelectedFirmwareWarning:
+          diceUpdatedWithCustomFirmwareWarning:
             "Dice will be updated with the firmware selected in the Scanner Page!",
           selection: "Selection",
           invalidLedCountWithValue: "Invalid LED count: {{value}}",
