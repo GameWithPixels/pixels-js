@@ -17,6 +17,7 @@ export { default as EditAnimationRainbow } from "./EditAnimationRainbow";
 export { default as EditAnimationSimple } from "./EditAnimationSimple";
 export { default as EditAnimationNormals } from "./EditAnimationNormals";
 export { default as EditAnimationSequence } from "./EditAnimationSequence";
+export { default as EditAnimationSequenceItem } from "./EditAnimationSequenceItem";
 export { default as EditAudioClip } from "./EditAudioClip";
 export { default as EditColor } from "./EditColor";
 export { default as EditCondition } from "./EditCondition";

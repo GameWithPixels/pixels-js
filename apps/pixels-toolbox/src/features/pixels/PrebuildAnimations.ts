@@ -7,8 +7,8 @@ import {
   EditAnimationSequence,
   EditRgbGradient,
   EditRgbKeyframe,
+  EditAnimationSequenceItem,
 } from "@systemic-games/pixels-edit-animation";
-import EditAnimationSequenceItem from "@systemic-games/pixels-edit-animation/src/edit/EditAnimationSequenceItem";
 import {
   AnimationFlagsValues,
   Color,
