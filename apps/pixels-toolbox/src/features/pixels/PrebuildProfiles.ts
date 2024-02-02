@@ -36,6 +36,8 @@ export const ProfileTypes = [
   "worm",
   "rose",
   "fire",
+  "magic",
+  "water",
 ] as const;
 
 export type ProfileType = (typeof ProfileTypes)[number];
@@ -320,6 +322,42 @@ export function createProfile(
       );
       pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.animatedFire);
       pushRolledAnimTopFaceRule(PrebuildAnimationsExt.animatedFire);
+      break;
+    }
+    case "magic": {
+      profile.name = "Magic";
+      profile.rules.push(
+        new EditRule(new EditConditionRolling({ recheckAfter: 1 }), {
+          actions: [
+            new EditActionPlayAnimation({
+              animation: PrebuildAnimationsExt.doubleSpinningMagic,
+              //face: DiceUtils.getTopFace(dieType),
+              face: Constants.currentFaceIndex,
+              loopCount: 1,
+            }),
+          ],
+        })
+      );
+      pushRolledAnimNonTopFaceRule(PrebuildAnimations.cycleMagic);
+      pushRolledAnimTopFaceRule(PrebuildAnimations.cycleMagic);
+      break;
+    }
+    case "water": {
+      profile.name = "Water";
+      profile.rules.push(
+        new EditRule(new EditConditionRolling({ recheckAfter: 1 }), {
+          actions: [
+            new EditActionPlayAnimation({
+              animation: PrebuildAnimations.waterBaseLayer,
+              face: DiceUtils.getTopFace(dieType),
+              //face: Constants.currentFaceIndex,
+              loopCount: 1,
+            }),
+          ],
+        })
+      );
+      pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.waterSplash);
+      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.waterSplash);
       break;
     }
     default:
