@@ -1,3 +1,4 @@
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   EditActionPlayAnimation,
   EditConditionRolling,
@@ -20,8 +21,8 @@ import {
   PrebuildAnimationsExt,
 } from "./PrebuildAnimations";
 import {
-  setProfileDefaultRollingRules,
   setProfileDefaultAdvancedRules,
+  setProfileDefaultRollingRules,
 } from "./getDefaultProfile";
 
 export const ProfileTypes = [
@@ -328,7 +329,7 @@ export function createProfile(
       break;
     }
     default:
-      break;
+      assertNever(type);
   }
   return profile;
 }
