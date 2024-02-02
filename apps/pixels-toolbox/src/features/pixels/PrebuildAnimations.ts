@@ -181,9 +181,9 @@ export const PrebuildAnimations = {
       uuid: "823c1e94-d3f0-4f3e-81d1-27a43578cf01",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.brightBlue }),
-        new RgbKf({ time: 0.4, color: new Color(0, 0.8, 1) }),
-        new RgbKf({ time: 0.5, color: new Color(0.5, 0, 1) }),
-        new RgbKf({ time: 0.7, color: new Color(0.8, 0, 1) }),
+        new RgbKf({ time: 0.4, color: Color.fromString("e5a8f5") }),
+        new RgbKf({ time: 0.5, color: Color.fromString("5e3097") }),
+        new RgbKf({ time: 0.7, color: Color.fromString("9f63a9") }),
         new RgbKf({ time: 1.0, color: Color.brightBlue }),
       ],
     }),
@@ -247,6 +247,28 @@ export const PrebuildAnimations = {
         new RgbKf({ time: 0.0, color: Color.black }),
         new RgbKf({ time: 0.05, color: Color.brightWhite }),
         new RgbKf({ time: 0.15, color: new Color(1, 0.5, 0.5) }),
+        new RgbKf({ time: 0.8, color: Color.black }),
+      ],
+    }),
+  }),
+
+  waterWorm: new AnimCycle({
+    uuid: "6b3d50eb-f357-47ee-91f6-4ee5ff154a27",
+    name: "Water Worm",
+    category: "animated",
+    duration: 2,
+    animFlags: ledIndices,
+    count: 2,
+    fade: 0.5,
+    intensity: 1,
+    cycles: 0.8,
+    gradient: new EditRgbGradient({
+      uuid: "879cf3fa-528f-4c7c-a538-2ecdc8c7a64a",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.05, color: Color.fromString("0945ee") }),
+        new RgbKf({ time: 0.15, color: Color.fromString("a2cffc") }),
+        new RgbKf({ time: 0.25, color: Color.fromString("09aaed") }),
         new RgbKf({ time: 0.8, color: Color.black }),
       ],
     }),
@@ -1270,6 +1292,129 @@ export const PrebuildAnimations = {
     blinkDuration: 1,
     fade: 0.5,
   }),
+  spinningMagic: new AnimNormals({
+    uuid: "67d2a675-4331-4c8d-89b4-e2af001e2212",
+    name: "Spinning Rainbow",
+    category: "animated",
+    duration: 2,
+    gradient: new EditRgbGradient({
+      uuid: "7d58de45-5468-4ded-a5a2-1dd742eca7a0",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.9, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    axisGradient: new EditRgbGradient({
+      uuid: "cecfa111-17c9-42ad-8f6e-733e15d7c037",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.4, color: Color.brightWhite }),
+        new RgbKf({ time: 0.5, color: Color.brightWhite }),
+        new RgbKf({ time: 0.6, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    axisScrollSpeed: 0,
+    angleGradient: new EditRgbGradient({
+      uuid: "91964753-6cee-48e4-bfe2-476e74521fb1",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.fromString("5e3097") }),
+        new RgbKf({ time: 0.4, color: Color.black }),
+        new RgbKf({ time: 0.5, color: Color.fromString("e5a8f5") }),
+        //new RgbKf({ time: 0.5, color: Color.brightPurple }),
+        new RgbKf({ time: 0.6, color: Color.black }),
+        new RgbKf({ time: 1.0, color: Color.fromString("5e3097") }),
+      ],
+    }),
+    angleScrollSpeed: 3,
+  }),
+  counterSpinningMagic: new AnimNormals({
+    uuid: "befad69b-6b16-4a43-8ffe-243c7e0014d0",
+    name: "Spinning Rainbow",
+    category: "animated",
+    duration: 2,
+    gradient: new EditRgbGradient({
+      uuid: "5274a481-1d8d-473d-9d2f-bba5ffd62130",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.9, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    axisGradient: new EditRgbGradient({
+      uuid: "e666c7b7-3096-4f42-aacd-a9b00ea1a59f",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.4, color: Color.brightWhite }),
+        new RgbKf({ time: 0.5, color: Color.brightWhite }),
+        new RgbKf({ time: 0.6, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    axisScrollSpeed: 0,
+    angleGradient: new EditRgbGradient({
+      uuid: "08517c9a-d86c-4f80-9696-e1d381a7faef",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.fromString("5e3097") }),
+        new RgbKf({ time: 0.45, color: Color.black }),
+        new RgbKf({ time: 0.5, color: Color.fromString("9f63a9") }),
+        // new RgbKf({ time: 0.5, color: new Color(0.5, 0, 1) }),
+        // new RgbKf({ time: 0.7, color: new Color(0.8, 0, 1) }),
+        new RgbKf({ time: 0.55, color: Color.black }),
+        new RgbKf({ time: 1.0, color: Color.fromString("5e3097") }),
+      ],
+    }),
+    angleScrollSpeed: 5.1415,
+  }),
+  waterBaseLayer: new AnimNormals({
+    uuid: "c6b97f93-97af-4719-a16d-85d9e9c1b71f",
+    name: "Fire Violet",
+    category: "animated",
+    duration: 4.5,
+    gradient: new EditRgbGradient({
+      uuid: "0a0cfff0-928d-4137-a67a-9f5709152890",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.7, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.black }),
+      ],
+    }),
+    axisGradient: new EditRgbGradient({
+      uuid: "b1f4f033-c785-4e54-8c7c-256dee06f52d",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.white }),
+        new RgbKf({ time: 0.1, color: Color.brightWhite }),
+        new RgbKf({ time: 0.2, color: Color.white }),
+        new RgbKf({ time: 0.3, color: Color.brightWhite }),
+        new RgbKf({ time: 0.4, color: Color.white }),
+        new RgbKf({ time: 0.5, color: Color.brightWhite }),
+        new RgbKf({ time: 0.6, color: Color.white }),
+        new RgbKf({ time: 0.7, color: Color.brightWhite }),
+        new RgbKf({ time: 0.8, color: Color.white }),
+        new RgbKf({ time: 0.9, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.white }),
+      ],
+    }),
+    axisScrollSpeed: 2,
+    axisOffset: -1,
+    axisScale: 1,
+    angleGradient: new EditRgbGradient({
+      uuid: "c4aed08c-1c79-48e8-b759-f030f278f679",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.fromString("09aaed") }),
+        new RgbKf({ time: 0.1, color: Color.fromString("0945ee") }),
+        new RgbKf({ time: 0.3, color: Color.fromString("09aaed") }),
+        new RgbKf({ time: 0.5, color: Color.fromString("a2cffc") }),
+        new RgbKf({ time: 0.8, color: Color.fromString("0945ee") }),
+        new RgbKf({ time: 1.0, color: Color.fromString("09aaed") }),
+      ],
+    }),
+    angleScrollSpeed: -1,
+  }),
 } as const;
 
 export const PrebuildAnimationsExt = {
@@ -1415,16 +1560,47 @@ export const PrebuildAnimationsExt = {
       new EditAnimationSequenceItem(
         new AnimFlash({
           ...PrebuildAnimations.whiteFlash,
-          duration: 1.2,
+          duration: 1.4,
           fade: 1,
         }),
         0
       ),
-      new EditAnimationSequenceItem(PrebuildAnimations.whiteRose, 0.8),
+      new EditAnimationSequenceItem(PrebuildAnimations.whiteRose, 0.5),
     ],
     {
       uuid: "41f5a334-16b8-4167-a69f-bbbefccf4e42",
       name: "White Rose",
+      category: "animated",
+      duration: 2.5,
+    }
+  ),
+  doubleSpinningMagic: new AnimSequence(
+    [
+      new EditAnimationSequenceItem(PrebuildAnimations.spinningMagic, 0),
+      //new EditAnimationSequenceItem(PrebuildAnimations.counterSpinningMagic, 0),
+    ],
+    {
+      uuid: "b19d3448-2ec6-430f-80a6-22ea02de97b9",
+      name: "Spinning Magic",
+      category: "animated",
+      duration: 2.5,
+    }
+  ),
+  waterSplash: new AnimSequence(
+    [
+      new EditAnimationSequenceItem(PrebuildAnimations.waterWorm, 0),
+      new EditAnimationSequenceItem(
+        new EditAnimationSimple({
+          ...PrebuildAnimations.whiteFlash,
+          duration: 2,
+          color: Color.fromString("a2cffc"),
+        }),
+        1
+      ),
+    ],
+    {
+      uuid: "c570147c-bb62-450f-b3f7-60ed78a3e3ea",
+      name: "Water Splash",
       category: "animated",
       duration: 2.5,
     }
