@@ -36,8 +36,8 @@ import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
+import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
-import { FactoryDfuBundleFiles } from "~/features/hooks/useFactoryDfuFilesBundle";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   createProfile,
@@ -51,6 +51,10 @@ import {
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
+import {
+  selectCustomFirmwareAndProfile,
+  selectProfileName,
+} from "~/features/store/validationSelectors";
 import { setFactoryProfile } from "~/features/store/validationSettingsSlice";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import {
@@ -326,10 +330,16 @@ function MessageYesNo({
   );
 }
 
+export interface FactoryDfuFilesBundle {
+  readonly bootloader?: DfuFileInfo;
+  readonly firmware: DfuFileInfo;
+  readonly date: Date;
+}
+
 export interface ValidationTestsSettings {
-  sequence: ValidationSequence;
-  dieType: PixelDieType;
-  dfuFilesBundle: FactoryDfuBundleFiles;
+  readonly sequence: ValidationSequence;
+  readonly dieType: PixelDieType;
+  readonly dfuFilesBundle: FactoryDfuFilesBundle;
 }
 
 export interface ValidationTestProps extends TaskComponentProps {
@@ -406,6 +416,10 @@ export function UpdateFirmware({
         const dfuTarget = scannedPixel;
         try {
           // Use firmware date from scanned data as it is the most up-to-date
+          console.log(
+            "Validation firmware build timestamp is",
+            toLocaleDateTimeString(settings.dfuFilesBundle.date)
+          );
           console.log(
             "On device firmware build timestamp is",
             toLocaleDateTimeString(dfuTarget.firmwareDate)
@@ -989,9 +1003,8 @@ export function PrepareDie({
   const { t } = useTranslation();
 
   const appDispatch = useAppDispatch();
-  const profile: ProfileType =
-    useAppSelector((state) => state.validationSettings.factoryProfile) ??
-    "default";
+  const selectProfile = useAppSelector(selectCustomFirmwareAndProfile);
+  const profile = useAppSelector(selectProfileName);
   const setProfile = React.useCallback(
     (p: ProfileType) => appDispatch(setFactoryProfile(p)),
     [appDispatch]
@@ -1059,7 +1072,8 @@ export function PrepareDie({
             </Button>
           </BaseHStack>
         ),
-      })
+      }),
+      { skip: !selectProfile }
     )
     .withTask(
       React.useCallback(async () => {
