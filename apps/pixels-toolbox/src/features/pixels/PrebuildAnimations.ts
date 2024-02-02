@@ -20,12 +20,13 @@ import {
 const ledIndices = AnimationFlagsValues.useLedIndices;
 const travelingWithLedIndices = AnimationFlagsValues.traveling | ledIndices;
 
-const AnimFlash = EditAnimationSimple;
+const AnimFlashes = EditAnimationSimple;
 const AnimRainbow = EditAnimationRainbow;
 const AnimCycle = EditAnimationCycle;
 const AnimNormals = EditAnimationNormals;
 const AnimNoise = EditAnimationNoise;
 const AnimSequence = EditAnimationSequence;
+const SequenceItem = EditAnimationSequenceItem;
 const RgbKf = EditRgbKeyframe;
 const NoiseType = NoiseColorOverrideTypeValues;
 const NormalsType = NormalsColorOverrideTypeValues;
@@ -181,9 +182,9 @@ export const PrebuildAnimations = {
       uuid: "823c1e94-d3f0-4f3e-81d1-27a43578cf01",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.brightBlue }),
-        new RgbKf({ time: 0.4, color: Color.fromString("e5a8f5") }),
-        new RgbKf({ time: 0.5, color: Color.fromString("5e3097") }),
-        new RgbKf({ time: 0.7, color: Color.fromString("9f63a9") }),
+        new RgbKf({ time: 0.4, color: Color.fromString("#e5a8f5") }),
+        new RgbKf({ time: 0.5, color: Color.fromString("#5e3097") }),
+        new RgbKf({ time: 0.7, color: Color.fromString("#9f63a9") }),
         new RgbKf({ time: 1.0, color: Color.brightBlue }),
       ],
     }),
@@ -266,9 +267,9 @@ export const PrebuildAnimations = {
       uuid: "879cf3fa-528f-4c7c-a538-2ecdc8c7a64a",
       keyframes: [
         new RgbKf({ time: 0.0, color: Color.black }),
-        new RgbKf({ time: 0.05, color: Color.fromString("0945ee") }),
-        new RgbKf({ time: 0.15, color: Color.fromString("a2cffc") }),
-        new RgbKf({ time: 0.25, color: Color.fromString("09aaed") }),
+        new RgbKf({ time: 0.05, color: Color.fromString("#0945ee") }),
+        new RgbKf({ time: 0.15, color: Color.fromString("#a2cffc") }),
+        new RgbKf({ time: 0.25, color: Color.fromString("#09aaed") }),
         new RgbKf({ time: 0.8, color: Color.black }),
       ],
     }),
@@ -662,7 +663,7 @@ export const PrebuildAnimations = {
 
   reverseQuickRed: new AnimNormals({
     uuid: "f255a082-13ca-48ab-bed0-38292d797f25",
-    name: "Quick Red",
+    name: "Reverse Quick Red",
     category: "uniform",
     duration: 1,
     gradient: new EditRgbGradient({
@@ -696,7 +697,7 @@ export const PrebuildAnimations = {
 
   reverseQuickGreen: new AnimNormals({
     uuid: "769c3fbd-d7fb-4a3d-9eda-1731e6565fa4",
-    name: "Quick Red",
+    name: "Reverse Quick Green",
     category: "uniform",
     duration: 1,
     gradient: new EditRgbGradient({
@@ -994,7 +995,7 @@ export const PrebuildAnimations = {
 
   noiseRainbow: new AnimNoise({
     uuid: "fb06e79f-d01d-4597-a104-76169eca1200",
-    name: "Noise",
+    name: "Noise Rainbow",
     category: "flashy",
     duration: 2,
     gradient: new EditRgbGradient({
@@ -1056,7 +1057,7 @@ export const PrebuildAnimations = {
 
   shortNoise: new AnimNoise({
     uuid: "5575de5a-2059-48c1-a08a-99ecc19b775c",
-    name: "Noise",
+    name: "Short Noise",
     category: "flashy",
     duration: 1,
     gradient: new EditRgbGradient({
@@ -1085,14 +1086,15 @@ export const PrebuildAnimations = {
     gradientColorVar: 0.1,
   }),
 
-  blueFlash: new AnimFlash({
+  blueFlash: new AnimFlashes({
     uuid: "5cc7bcb8-1d89-4a1f-b3a0-ad7661c0564e",
-    name: "Slow Blue Flash",
+    name: "Blue Flash",
     category: "uniform",
     duration: 1,
     color: Color.blue,
     fade: 0.5,
   }),
+
   fountain: new AnimNormals({
     uuid: "c30e296b-422a-4713-9bb4-85c2fcee56d8",
     name: "Fountain",
@@ -1133,9 +1135,10 @@ export const PrebuildAnimations = {
     gradientColorType: NormalsType.faceToRainbowWheel,
     gradientColorVar: 0.1,
   }),
+
   rainbowFountain: new AnimNormals({
     uuid: "42613ce9-12fb-4973-8e38-cc0765d980f1",
-    name: "Fountain",
+    name: "Rainbow Fountain",
     category: "animated",
     duration: 2,
     gradient: new EditRgbGradient({
@@ -1173,7 +1176,8 @@ export const PrebuildAnimations = {
     gradientColorType: NormalsType.faceToRainbowWheel,
     gradientColorVar: 0.5,
   }),
-  whiteFlash: new AnimFlash({
+
+  whiteFlash: new AnimFlashes({
     uuid: "066b1705-99be-4c0a-af64-313f47ccefa3",
     name: "White Flash",
     category: "uniform",
@@ -1182,9 +1186,10 @@ export const PrebuildAnimations = {
     count: 1,
     fade: 0.5,
   }),
-  alternating_white_1_d20: new AnimFlash({
+
+  alternatingWhite1_d20: new AnimFlashes({
     uuid: "1e891121-49ef-4ffd-b4a5-f8093c11a0d4",
-    name: "Alternate_1",
+    name: "Alternate White 1",
     category: "uniform",
     duration: 3,
     color: Color.brightWhite,
@@ -1193,9 +1198,10 @@ export const PrebuildAnimations = {
     faces: getFaceMask([2, 14, 8, 1, 3, 17, 5, 15, 9, 11], "d20"),
     dieType: "d20",
   }),
-  alternating_white_2_d20: new AnimFlash({
+
+  alternatingWhite2_d20: new AnimFlashes({
     uuid: "8de9d84a-2185-42e2-b130-7d3d662ac5c8",
-    name: "Alternate_2",
+    name: "Alternate White 2",
     category: "uniform",
     duration: 3,
     color: Color.brightWhite,
@@ -1204,9 +1210,10 @@ export const PrebuildAnimations = {
     faces: getFaceMask([4, 6, 7, 10, 12, 13, 16, 18, 19, 20], "d20"),
     dieType: "d20",
   }),
+
   fireBaseLayer: new AnimNormals({
     uuid: "483b590a-f011-47f1-b569-a922833b34a4",
-    name: "Fire Violet",
+    name: "Fire Base Layer",
     category: "animated",
     duration: 4.5,
     gradient: new EditRgbGradient({
@@ -1221,11 +1228,11 @@ export const PrebuildAnimations = {
     axisGradient: new EditRgbGradient({
       uuid: "26ba6f64-eec7-440d-ab79-b846666bc852",
       keyframes: [
-        new RgbKf({ time: 0.0, color: Color.fromString("fce7b3") }),
-        new RgbKf({ time: 0.1, color: Color.fromString("fad068") }),
-        new RgbKf({ time: 0.3, color: Color.fromString("f1a204") }),
-        new RgbKf({ time: 0.5, color: Color.fromString("fd6d01") }),
-        new RgbKf({ time: 0.8, color: Color.fromString("fd0001") }),
+        new RgbKf({ time: 0.0, color: Color.fromString("#fce7b3") }),
+        new RgbKf({ time: 0.1, color: Color.fromString("#fad068") }),
+        new RgbKf({ time: 0.3, color: Color.fromString("#f1a204") }),
+        new RgbKf({ time: 0.5, color: Color.fromString("#fd6d01") }),
+        new RgbKf({ time: 0.8, color: Color.fromString("#fd0001") }),
         new RgbKf({ time: 1.0, color: Color.black }),
       ],
     }),
@@ -1243,17 +1250,18 @@ export const PrebuildAnimations = {
     }),
     angleScrollSpeed: 5,
   }),
+
   fireNoiseLayer: new AnimNoise({
     uuid: "14f1e54a-cf90-4ac8-a1f8-082940838185",
-    name: "Noise",
+    name: "Fire Noise Layer",
     category: "flashy",
     duration: 5.5,
     gradient: new EditRgbGradient({
       uuid: "0e27bd1b-b978-4c2a-96dc-087c4a104c00",
       keyframes: [
-        new RgbKf({ time: 0.1, color: Color.fromString("fad068") }),
-        new RgbKf({ time: 0.3, color: Color.fromString("f1a204") }),
-        new RgbKf({ time: 0.7, color: Color.fromString("fd6d01") }),
+        new RgbKf({ time: 0.1, color: Color.fromString("#fad068") }),
+        new RgbKf({ time: 0.3, color: Color.fromString("#f1a204") }),
+        new RgbKf({ time: 0.7, color: Color.fromString("#fd6d01") }),
       ],
     }),
     blinkGradient: new EditRgbGradient({
@@ -1269,9 +1277,10 @@ export const PrebuildAnimations = {
     blinkDuration: 2,
     fade: 1,
   }),
+
   whiteNoise: new AnimNoise({
     uuid: "b4b43aea-42c9-477b-ae1e-0aa0ec52cbc3",
-    name: "Noise",
+    name: "White Noise",
     category: "flashy",
     duration: 1.5,
     gradient: new EditRgbGradient({
@@ -1292,9 +1301,10 @@ export const PrebuildAnimations = {
     blinkDuration: 1,
     fade: 0.5,
   }),
+
   spinningMagic: new AnimNormals({
     uuid: "67d2a675-4331-4c8d-89b4-e2af001e2212",
-    name: "Spinning Rainbow",
+    name: "Spinning Magic",
     category: "animated",
     duration: 2,
     gradient: new EditRgbGradient({
@@ -1320,19 +1330,20 @@ export const PrebuildAnimations = {
     angleGradient: new EditRgbGradient({
       uuid: "91964753-6cee-48e4-bfe2-476e74521fb1",
       keyframes: [
-        new RgbKf({ time: 0.0, color: Color.fromString("5e3097") }),
+        new RgbKf({ time: 0.0, color: Color.fromString("#5e3097") }),
         new RgbKf({ time: 0.4, color: Color.black }),
-        new RgbKf({ time: 0.5, color: Color.fromString("e5a8f5") }),
+        new RgbKf({ time: 0.5, color: Color.fromString("#e5a8f5") }),
         //new RgbKf({ time: 0.5, color: Color.brightPurple }),
         new RgbKf({ time: 0.6, color: Color.black }),
-        new RgbKf({ time: 1.0, color: Color.fromString("5e3097") }),
+        new RgbKf({ time: 1.0, color: Color.fromString("#5e3097") }),
       ],
     }),
     angleScrollSpeed: 3,
   }),
+
   counterSpinningMagic: new AnimNormals({
     uuid: "befad69b-6b16-4a43-8ffe-243c7e0014d0",
-    name: "Spinning Rainbow",
+    name: "Counter Spinning Magic",
     category: "animated",
     duration: 2,
     gradient: new EditRgbGradient({
@@ -1358,20 +1369,21 @@ export const PrebuildAnimations = {
     angleGradient: new EditRgbGradient({
       uuid: "08517c9a-d86c-4f80-9696-e1d381a7faef",
       keyframes: [
-        new RgbKf({ time: 0.0, color: Color.fromString("5e3097") }),
+        new RgbKf({ time: 0.0, color: Color.fromString("#5e3097") }),
         new RgbKf({ time: 0.45, color: Color.black }),
-        new RgbKf({ time: 0.5, color: Color.fromString("9f63a9") }),
+        new RgbKf({ time: 0.5, color: Color.fromString("#9f63a9") }),
         // new RgbKf({ time: 0.5, color: new Color(0.5, 0, 1) }),
         // new RgbKf({ time: 0.7, color: new Color(0.8, 0, 1) }),
         new RgbKf({ time: 0.55, color: Color.black }),
-        new RgbKf({ time: 1.0, color: Color.fromString("5e3097") }),
+        new RgbKf({ time: 1.0, color: Color.fromString("#5e3097") }),
       ],
     }),
     angleScrollSpeed: 5.1415,
   }),
+
   waterBaseLayer: new AnimNormals({
     uuid: "c6b97f93-97af-4719-a16d-85d9e9c1b71f",
-    name: "Fire Violet",
+    name: "Water Base Layer",
     category: "animated",
     duration: 4.5,
     gradient: new EditRgbGradient({
@@ -1405,12 +1417,12 @@ export const PrebuildAnimations = {
     angleGradient: new EditRgbGradient({
       uuid: "c4aed08c-1c79-48e8-b759-f030f278f679",
       keyframes: [
-        new RgbKf({ time: 0.0, color: Color.fromString("09aaed") }),
-        new RgbKf({ time: 0.1, color: Color.fromString("0945ee") }),
-        new RgbKf({ time: 0.3, color: Color.fromString("09aaed") }),
-        new RgbKf({ time: 0.5, color: Color.fromString("a2cffc") }),
-        new RgbKf({ time: 0.8, color: Color.fromString("0945ee") }),
-        new RgbKf({ time: 1.0, color: Color.fromString("09aaed") }),
+        new RgbKf({ time: 0.0, color: Color.fromString("#09aaed") }),
+        new RgbKf({ time: 0.1, color: Color.fromString("#0945ee") }),
+        new RgbKf({ time: 0.3, color: Color.fromString("#09aaed") }),
+        new RgbKf({ time: 0.5, color: Color.fromString("#a2cffc") }),
+        new RgbKf({ time: 0.8, color: Color.fromString("#0945ee") }),
+        new RgbKf({ time: 1.0, color: Color.fromString("#09aaed") }),
       ],
     }),
     angleScrollSpeed: -1,
@@ -1420,9 +1432,9 @@ export const PrebuildAnimations = {
 export const PrebuildAnimationsExt = {
   rainbowFountainX3: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.rainbowFountain, 0),
-      new EditAnimationSequenceItem(PrebuildAnimations.rainbowFountain, 1.4),
-      new EditAnimationSequenceItem(PrebuildAnimations.rainbowFountain, 2.8),
+      new SequenceItem(PrebuildAnimations.rainbowFountain, 0),
+      new SequenceItem(PrebuildAnimations.rainbowFountain, 1.4),
+      new SequenceItem(PrebuildAnimations.rainbowFountain, 2.8),
     ],
     {
       uuid: "c9b03465-706a-436d-8ba8-760ee5dee678",
@@ -1431,10 +1443,11 @@ export const PrebuildAnimationsExt = {
       duration: 7,
     }
   ),
+
   spiralUpDown: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.spiralUp, 0),
-      new EditAnimationSequenceItem(PrebuildAnimations.spiralDown, 0.7),
+      new SequenceItem(PrebuildAnimations.spiralUp, 0),
+      new SequenceItem(PrebuildAnimations.spiralDown, 0.7),
     ],
     {
       uuid: "a8e9267a-fccf-4e6d-8fb1-3d9dddc32c5b",
@@ -1443,42 +1456,44 @@ export const PrebuildAnimationsExt = {
       duration: 7,
     }
   ),
+
   spiralUpDownRainbow: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.rainbowUp, 0),
-      new EditAnimationSequenceItem(PrebuildAnimations.rainbowDown, 1.2),
+      new SequenceItem(PrebuildAnimations.rainbowUp, 0),
+      new SequenceItem(PrebuildAnimations.rainbowDown, 1.2),
     ],
     {
       uuid: "5e768705-fbf0-4f20-81b3-035f259d86ed",
-      name: "Spiral Up and Down",
+      name: "Spiral Up and Down Rainbow",
       category: "animated",
       duration: 7,
     }
   ),
-  alternating_white_d20: new AnimSequence(
+
+  alternatingWhite_d20: new AnimSequence(
     [
-      new EditAnimationSequenceItem(
-        new EditAnimationSimple({
+      new SequenceItem(
+        new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
           color: new Color(1, 0.6, 0),
         }),
         0
       ),
-      new EditAnimationSequenceItem(
-        new EditAnimationSimple({
-          ...PrebuildAnimations.alternating_white_1_d20,
+      new SequenceItem(
+        new AnimFlashes({
+          ...PrebuildAnimations.alternatingWhite1_d20,
           color: new Color(1, 0.6, 0),
         }),
         0.15
       ),
-      new EditAnimationSequenceItem(
-        new EditAnimationSimple({
-          ...PrebuildAnimations.alternating_white_2_d20,
+      new SequenceItem(
+        new AnimFlashes({
+          ...PrebuildAnimations.alternatingWhite2_d20,
           color: new Color(1, 0, 0),
         }),
         0.15 +
-          PrebuildAnimations.alternating_white_1_d20.duration /
-            (2 * PrebuildAnimations.alternating_white_1_d20.count)
+          PrebuildAnimations.alternatingWhite1_d20.duration /
+            (2 * PrebuildAnimations.alternatingWhite1_d20.count)
       ),
     ],
     {
@@ -1489,30 +1504,32 @@ export const PrebuildAnimationsExt = {
       dieType: "d20",
     }
   ),
+
   noiseRainbowX2: new AnimSequence(
     [
-      new EditAnimationSequenceItem(
-        new EditAnimationSimple({
+      new SequenceItem(
+        new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
           color: Color.brightGreen,
           duration: 1,
         }),
         0
       ),
-      new EditAnimationSequenceItem(PrebuildAnimations.noiseRainbow, 0),
-      new EditAnimationSequenceItem(PrebuildAnimations.noiseRainbow, 2),
+      new SequenceItem(PrebuildAnimations.noiseRainbow, 0),
+      new SequenceItem(PrebuildAnimations.noiseRainbow, 2),
     ],
     {
       uuid: "38c8e25b-aef0-4adb-bf0f-0f2c49ab84da",
-      name: "Rainbow Noise X3",
+      name: "Noise Rainbow X2",
       category: "animated",
       duration: 7,
     }
   ),
-  animatedFire: new AnimSequence(
+
+  fire: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.fireBaseLayer, 0),
-      new EditAnimationSequenceItem(PrebuildAnimations.fireNoiseLayer, 0),
+      new SequenceItem(PrebuildAnimations.fireBaseLayer, 0),
+      new SequenceItem(PrebuildAnimations.fireNoiseLayer, 0),
     ],
     {
       uuid: "25eaa157-d59c-41ab-8770-251e06643028",
@@ -1521,10 +1538,11 @@ export const PrebuildAnimationsExt = {
       duration: 7,
     }
   ),
+
   overlappingQuickReds: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickRed, 0),
-      new EditAnimationSequenceItem(
+      new SequenceItem(PrebuildAnimations.reverseQuickRed, 0),
+      new SequenceItem(
         new AnimNoise({
           ...PrebuildAnimations.whiteNoise,
           gradient: new EditRgbGradient({
@@ -1537,63 +1555,67 @@ export const PrebuildAnimationsExt = {
     ],
     {
       uuid: "2e0a5f5b-edb9-45e3-9c62-58db4d06d073",
-      name: "Overlapping Quick Red",
+      name: "Overlapping Quick Reds",
       category: "animated",
       duration: 2.5,
     }
   ),
+
   overlappingQuickGreens: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickGreen, 0),
-      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickGreen, 0.8),
-      new EditAnimationSequenceItem(PrebuildAnimations.reverseQuickGreen, 1.6),
+      new SequenceItem(PrebuildAnimations.reverseQuickGreen, 0),
+      new SequenceItem(PrebuildAnimations.reverseQuickGreen, 0.8),
+      new SequenceItem(PrebuildAnimations.reverseQuickGreen, 1.6),
     ],
     {
       uuid: "b9843f94-0d51-4833-9ddb-c4b3d111b043",
-      name: "Overlapping Quick Green",
+      name: "Overlapping Quick Greens",
       category: "animated",
       duration: 2.5,
     }
   ),
+
   roseToCurrentFace: new AnimSequence(
     [
-      new EditAnimationSequenceItem(
-        new AnimFlash({
+      new SequenceItem(
+        new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
           duration: 1.4,
           fade: 1,
         }),
         0
       ),
-      new EditAnimationSequenceItem(PrebuildAnimations.whiteRose, 0.5),
+      new SequenceItem(PrebuildAnimations.whiteRose, 0.5),
     ],
     {
       uuid: "41f5a334-16b8-4167-a69f-bbbefccf4e42",
-      name: "White Rose",
+      name: "Rose to Current Face",
       category: "animated",
       duration: 2.5,
     }
   ),
+
   doubleSpinningMagic: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.spinningMagic, 0),
-      //new EditAnimationSequenceItem(PrebuildAnimations.counterSpinningMagic, 0),
+      new SequenceItem(PrebuildAnimations.spinningMagic, 0),
+      //new SequenceItem(PrebuildAnimations.counterSpinningMagic, 0),
     ],
     {
       uuid: "b19d3448-2ec6-430f-80a6-22ea02de97b9",
-      name: "Spinning Magic",
+      name: "Double Spinning Magic",
       category: "animated",
       duration: 2.5,
     }
   ),
+
   waterSplash: new AnimSequence(
     [
-      new EditAnimationSequenceItem(PrebuildAnimations.waterWorm, 0),
-      new EditAnimationSequenceItem(
-        new EditAnimationSimple({
+      new SequenceItem(PrebuildAnimations.waterWorm, 0),
+      new SequenceItem(
+        new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
           duration: 2,
-          color: Color.fromString("a2cffc"),
+          color: Color.fromString("#a2cffc"),
         }),
         1
       ),

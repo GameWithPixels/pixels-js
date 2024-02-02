@@ -4,11 +4,11 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { ProfileType } from "~/features/pixels/PrebuildProfiles";
+import { PrebuildProfileName } from "~/features/pixels/PrebuildProfiles";
 
 export interface ValidationSettingsState {
   customFirmwareAndProfile: boolean; // Select with selectCustomFirmwareAndProfile
-  profileName?: ProfileType; // Select with selectProfileName
+  profileName?: PrebuildProfileName; // Select with selectProfileName
   boxShipment: {
     asn: string;
     dieType: PixelDieType;
@@ -33,7 +33,7 @@ const validationSettingsSlice = createSlice({
     setCustomFirmwareAndProfile(state, action: PayloadAction<boolean>) {
       state.customFirmwareAndProfile = action.payload;
     },
-    setFactoryProfile(state, action: PayloadAction<ProfileType>) {
+    setFactoryProfile(state, action: PayloadAction<PrebuildProfileName>) {
       state.profileName = action.payload;
     },
     setBoxShipmentAsn(state, action: PayloadAction<string>) {

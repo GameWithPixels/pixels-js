@@ -41,8 +41,8 @@ import { updateFirmware } from "~/features/dfu/updateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
   createProfile,
-  ProfileType,
-  ProfileTypes,
+  PrebuildProfileName,
+  PrebuildProfilesNames,
 } from "~/features/pixels/PrebuildProfiles";
 import {
   pixelClearSettings,
@@ -1007,7 +1007,7 @@ export function PrepareDie({
   const selectProfile = useAppSelector(selectCustomFirmwareAndProfile);
   const profile = useAppSelector(selectProfileName);
   const setProfile = React.useCallback(
-    (p: ProfileType) => appDispatch(setFactoryProfile(p)),
+    (p: PrebuildProfileName) => appDispatch(setFactoryProfile(p)),
     [appDispatch]
   );
 
@@ -1053,7 +1053,7 @@ export function PrepareDie({
                   </Button>
                 }
               >
-                {ProfileTypes.map((p) => (
+                {PrebuildProfilesNames.map((p) => (
                   <Menu.Item
                     key={p}
                     title={p}

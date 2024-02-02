@@ -37,7 +37,7 @@ import RNFS from "react-native-fs";
 
 import { PixelDispatcherStatic as Static } from "./PixelDispatcherStatic";
 import { PrebuildAnimations } from "./PrebuildAnimations";
-import { ProfileType, createProfile } from "./PrebuildProfiles";
+import { PrebuildProfileName, createProfile } from "./PrebuildProfiles";
 import { TelemetryData, toTelemetryData } from "./TelemetryData";
 import {
   pixelBlinkId,
@@ -76,7 +76,7 @@ export interface PixelDispatcherActionMap {
   discharge: number;
   setChargerMode: PixelBatteryControllerMode;
   rename: string;
-  uploadProfile: ProfileType;
+  uploadProfile: PrebuildProfileName;
   reprogramDefaultBehavior: undefined;
   resetAllSettings: undefined;
   queueDFU: undefined;
@@ -474,7 +474,7 @@ class PixelDispatcher
         break;
       case "uploadProfile":
         this._guard(
-          this._uploadProfile((params as ProfileType) ?? "default"),
+          this._uploadProfile((params as PrebuildProfileName) ?? "default"),
           action
         );
         break;
@@ -642,7 +642,7 @@ class PixelDispatcher
     await pixelSetBatteryControllerMode(this._pixel, mode);
   }
 
-  private async _uploadProfile(type: ProfileType): Promise<void> {
+  private async _uploadProfile(type: PrebuildProfileName): Promise<void> {
     const notifyProgress = (p?: number) => {
       this._evEmitter.emit("profileUploadProgress", p);
     };
