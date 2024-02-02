@@ -33,7 +33,6 @@ import {
 } from "react-native-vision-camera";
 
 import { AppStyles } from "~/AppStyles";
-import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
@@ -52,6 +51,7 @@ import {
   LabelPrinting,
   UpdateFirmwareStatus,
   getPixelThroughDispatcher,
+  FactoryDfuFilesBundle,
 } from "~/components/ValidationTestsComponents";
 import { PrintStatus } from "~/features/print";
 import {
@@ -70,17 +70,13 @@ import {
   ValidationSequence,
   ValidationSequences,
 } from "~/features/validation";
-import { useAppDfuFilesBundles } from "~/hooks/useAppDfuFilesBundles";
-import {
-  FactoryDfuBundleFiles,
-  useFactoryDfuFilesBundle,
-} from "~/hooks/useFactoryDfuFilesBundle";
+import { useFactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
 import { usePixelIdDecoderFrameProcessor } from "~/hooks/usePixelIdDecoderFrameProcessor";
 import { capitalize } from "~/i18n";
 
 function getTestingMessage(
   t: TFunction<"translation", undefined>,
-  settings: ValidationTestsSettings
+  settings: Pick<ValidationTestsSettings, "dieType" | "sequence">
 ): string {
   return t("testingDieTypeWithSequence", {
     dieType: t(settings.dieType),
@@ -139,13 +135,13 @@ function LargeTonalButton({
 
 function SelectSequencePage({
   dfuFilesBundle,
-  dfuBundleError,
-  userSelected,
+  dfuFilesError,
+  isFactoryDfuBundle,
   onSelectSequence,
 }: {
-  dfuFilesBundle?: FactoryDfuBundleFiles;
-  dfuBundleError?: Error;
-  userSelected?: boolean;
+  dfuFilesBundle?: FactoryDfuFilesBundle;
+  dfuFilesError?: Error;
+  isFactoryDfuBundle?: boolean;
   onSelectSequence: (sequence: ValidationSequence) => void;
 }) {
   const fwDateLabel = React.useMemo(() => {
@@ -164,17 +160,17 @@ function SelectSequencePage({
       gap={30}
       justifyContent="space-around"
     >
-      {dfuBundleError ? (
+      {dfuFilesError ? (
         <BaseVStack padding={20} backgroundColor={colors.errorContainer}>
           <Text style={{ color: colors.onErrorContainer }}>
             {t("errorLoadingFirmwareFiles") +
               t("colonSeparator") +
-              dfuBundleError.message}
+              dfuFilesError.message}
           </Text>
         </BaseVStack>
-      ) : userSelected ? (
+      ) : dfuFilesBundle && !isFactoryDfuBundle ? (
         <Banner visible icon="alert-rhombus-outline" elevation={3}>
-          {t("diceUpdatedWithUserSelectedFirmwareWarning")}
+          {t("diceUpdatedWithCustomFirmwareWarning")}
           {"\n\n"}
           {t("selection")}
           {t("colonSeparator")}
@@ -194,7 +190,7 @@ function SelectSequencePage({
       {ValidationSequences.map((s) => (
         <LargeTonalButton
           key={s}
-          disabled={!!dfuBundleError || !dfuFilesBundle}
+          disabled={!!dfuFilesError || !dfuFilesBundle}
           onPress={() => onSelectSequence(s)}
         >
           {t(s === "firmwareUpdate" ? s : "validate" + capitalize(s))}
@@ -264,7 +260,7 @@ function DecodePixelIdPage({
   onBack,
 }: {
   onDecodedPixelId: (pixelId: number) => void;
-  settings: ValidationTestsSettings;
+  settings: Pick<ValidationTestsSettings, "dieType" | "sequence">;
   onBack?: () => void;
 }) {
   const { colors } = useTheme();
@@ -694,33 +690,19 @@ function RunTestsPage({
 }
 
 function ValidationPage() {
-  const [factoryFilesBundle, factoryBundleError] = useFactoryDfuFilesBundle();
-  const [selectedDfuFilesBundle, _, selectedDfuBundleError] =
-    useAppDfuFilesBundles();
   const [sequence, setSequence] = React.useState<ValidationSequence>();
   const [dieType, setDieType] = React.useState<PixelDieType>();
   const [pixelId, setPixelId] = React.useState(0);
 
-  const userSelected =
-    useAppSelector((state) => state.validationSettings.userSelectedFirmware) &&
-    !!selectedDfuFilesBundle?.firmware;
-  const dfuFilesBundle: FactoryDfuBundleFiles | undefined = userSelected
-    ? {
-        firmware: selectedDfuFilesBundle.firmware,
-        bootloader: selectedDfuFilesBundle.bootloader,
-        date: selectedDfuFilesBundle.date,
-      }
-    : factoryFilesBundle;
-  const dfuBundleError = userSelected
-    ? selectedDfuBundleError
-    : factoryBundleError;
+  const [dfuFilesBundle, isFactoryDfuBundle, dfuFilesError] =
+    useFactoryDfuFilesBundle();
 
   return !sequence || !dfuFilesBundle ? (
     <SelectSequencePage
       onSelectSequence={setSequence}
       dfuFilesBundle={dfuFilesBundle}
-      dfuBundleError={dfuBundleError}
-      userSelected={userSelected}
+      dfuFilesError={dfuFilesError}
+      isFactoryDfuBundle={isFactoryDfuBundle}
     />
   ) : !dieType ? (
     <SelectDieTypePage
@@ -730,7 +712,7 @@ function ValidationPage() {
     />
   ) : !pixelId ? (
     <DecodePixelIdPage
-      settings={{ sequence, dieType, dfuFilesBundle }}
+      settings={{ sequence, dieType }}
       onDecodedPixelId={(pixelId) => {
         console.log("Decoded PixelId:", pixelId);
         setPixelId(pixelId);

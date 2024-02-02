@@ -29,7 +29,8 @@ import {
   setThemeMode,
   ThemeMode,
 } from "~/features/store/appSettingsSlice";
-import { setUserSelectedFirmware } from "~/features/store/validationSettingsSlice";
+import { selectCustomFirmwareAndProfile } from "~/features/store/validationSelectors";
+import { setCustomFirmwareAndProfile } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
 import { AppRootPageName } from "~/navigation";
 
@@ -145,18 +146,16 @@ function PageRadio({
   );
 }
 
-function UseLatestFirmware() {
+function CustomFirmwareAndProfile() {
   const appDispatch = useAppDispatch();
-  const latest = useAppSelector(
-    (state) => state.validationSettings.userSelectedFirmware
-  );
+  const customFw = useAppSelector(selectCustomFirmwareAndProfile);
   return (
     <BaseHStack alignItems="center" justifyContent="space-between">
-      <Text>Use Custom Firmware</Text>
+      <Text>Select Firmware & Profile</Text>
       <Switch
-        value={latest}
+        value={customFw}
         onValueChange={(v) => {
-          appDispatch(setUserSelectedFirmware(v));
+          appDispatch(setCustomFirmwareAndProfile(v));
         }}
       />
     </BaseHStack>
@@ -174,7 +173,7 @@ function ValidationCard() {
           <PageRadio label="Validation" page="Validation" />
           <PageRadio label="Carton Label" page="CartonLabel" />
         </BaseHStack>
-        <UseLatestFirmware />
+        <CustomFirmwareAndProfile />
       </Card.Content>
     </Card>
   );
