@@ -59,7 +59,7 @@ import {
   PrebuildAnimations,
   PrebuildAnimationsExt,
 } from "~/features/pixels/PrebuildAnimations";
-import { ProfileTypes } from "~/features/pixels/PrebuildProfiles";
+import { PrebuildProfilesNames } from "~/features/pixels/PrebuildProfiles";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { capitalize } from "~/i18n";
@@ -435,7 +435,7 @@ function BottomButtons({
                   </Button>
                 }
               >
-                {ProfileTypes.map((profile) => (
+                {PrebuildProfilesNames.map((profile) => (
                   <Menu.Item
                     key={profile}
                     title={profile}

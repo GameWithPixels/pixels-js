@@ -25,7 +25,7 @@ import {
   setProfileDefaultAdvancedRules,
 } from "./getDefaultProfile";
 
-export const ProfileTypes = [
+export const PrebuildProfilesNames = [
   "default",
   "waterfall",
   "fountain",
@@ -41,10 +41,10 @@ export const ProfileTypes = [
   "water",
 ] as const;
 
-export type ProfileType = (typeof ProfileTypes)[number];
+export type PrebuildProfileName = (typeof PrebuildProfilesNames)[number];
 
 export function createProfile(
-  type: ProfileType,
+  name: PrebuildProfileName,
   dieType: PixelDieType
 ): EditProfile {
   const profile = new EditProfile();
@@ -115,7 +115,7 @@ export function createProfile(
     );
   };
 
-  switch (type) {
+  switch (name) {
     case "default":
       setProfileDefaultRollingRules(profile, dieType);
       break;
@@ -313,7 +313,7 @@ export function createProfile(
         new EditRule(new EditConditionRolling({ recheckAfter: 1 }), {
           actions: [
             new EditActionPlayAnimation({
-              animation: PrebuildAnimationsExt.animatedFire,
+              animation: PrebuildAnimationsExt.fire,
               //              face: DiceUtils.getTopFace(dieType),
               face: Constants.currentFaceIndex,
               loopCount: 1,
@@ -321,8 +321,8 @@ export function createProfile(
           ],
         })
       );
-      pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.animatedFire);
-      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.animatedFire);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.fire);
+      pushRolledAnimTopFaceRule(PrebuildAnimationsExt.fire);
       break;
     }
     case "magic": {
@@ -362,7 +362,7 @@ export function createProfile(
       break;
     }
     default:
-      assertNever(type);
+      assertNever(name);
   }
   return profile;
 }
