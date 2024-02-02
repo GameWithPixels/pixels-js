@@ -4,8 +4,6 @@ import {
   Color,
   ConnectionStateFlagsValues,
   Constants,
-  createDataSetForProfile,
-  DataSet,
   EditActionPlayAnimation,
   EditAnimationRainbow,
   EditAnimationSimple,
@@ -227,10 +225,4 @@ export function getDefaultProfile(dieType: PixelDieType): EditProfile {
   setProfileDefaultAdvancedRules(profile, dieType);
 
   return profile;
-}
-
-export function getDefaultDataset(dieType: PixelDieType): DataSet {
-  const profile = getDefaultProfile(dieType);
-  const dataSet: DataSet = createDataSetForProfile(profile).toDataSet();
-  return dataSet;
 }
