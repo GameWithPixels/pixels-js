@@ -39,8 +39,11 @@ export function useAppDfuFilesBundles(): [
         }
         // Store pathnames and selection
         const allBundles = factory.concat(others);
+        const getTime = (b: DfuFilesBundle) =>
+          b.date.getTime() +
+          (b.firmware?.comment !== "sdk17" ? -Date.now() : 0); // Make sdk17 FW top choice
         const selected = allBundles.indexOf(
-          allBundles.reduce((a, b) => (a.date >= b.date ? a : b))
+          allBundles.reduce((a, b) => (getTime(a) >= getTime(b) ? a : b))
         );
         dispatch(
           resetEmbeddedDfuBundles({
