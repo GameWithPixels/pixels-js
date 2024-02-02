@@ -1,3 +1,4 @@
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   EditActionPlayAnimation,
   EditConditionRolling,
@@ -361,7 +362,7 @@ export function createProfile(
       break;
     }
     default:
-      break;
+      assertNever(type);
   }
   return profile;
 }

@@ -3,6 +3,7 @@ import { Pixel } from "@systemic-games/pixels-core-connect";
 import { delay } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForAnimation,
+  createDataSetForProfile,
   EditAnimationKeyframed,
   EditPattern,
 } from "@systemic-games/pixels-edit-animation";
@@ -23,7 +24,7 @@ import { AppPage } from "~/components/AppPage";
 import { PatternImages } from "~/features/PatternImages";
 import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
-import { getDefaultDataset } from "~/features/pixels/getDefaultProfile";
+import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
 
 const patternsCache = new Map<string | number, EditPattern>();
 
@@ -85,7 +86,10 @@ async function blink(pixel: Pixel): Promise<void> {
 }
 
 async function uploadProfile(pixel: Pixel): Promise<void> {
-  await pixel.transferDataSet(getDefaultDataset(pixel.dieType));
+  const dataSet = createDataSetForProfile(
+    getDefaultProfile(pixel.dieType)
+  ).toDataSet();
+  await pixel.transferDataSet(dataSet);
 }
 
 async function testAnimation(pixel: Pixel): Promise<void> {
