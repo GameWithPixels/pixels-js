@@ -471,7 +471,7 @@ export const Central = {
         ? "off"
         : unauthorized
           ? "unauthorized"
-          : "resetting"; // We don't really know whats going on
+          : "resetting"; // Fallback state, we don't really know whats going on
       _updateBluetoothState(bleState);
     }
 
@@ -545,7 +545,7 @@ export const Central = {
       // TODO handle case when another connection request for the same device is already under way
       const sysId = _getSystemId(peripheral);
       if (!(await BluetoothLE.createPeripheral(sysId))) {
-        throw new Errors.ConnectError(name, "nativeError");
+        throw new Errors.ConnectError(name, "createFailed");
       }
 
       try {
@@ -566,8 +566,8 @@ export const Central = {
         let mtu = 0;
         try {
           mtu = await BluetoothLE.requestPeripheralMtu(sysId, Constants.maxMtu);
-        } catch (error: any) {
-          if (error.code === "ERROR_GATT_INVALID_PDU") {
+        } catch (error) {
+          if (getNativeErrorCode(error) === "ERROR_GATT_INVALID_PDU") {
             // MTU has already been set in this session
             try {
               mtu = await BluetoothLE.getPeripheralMtu(sysId);
@@ -646,7 +646,11 @@ export const Central = {
               )}`
             );
           }
-          throw error;
+          if (getNativeErrorCode(error) === "ERROR_BLUETOOTH_DISABLED") {
+            throw new Errors.ConnectError(name, "bluetoothUnavailable");
+          } else {
+            throw error;
+          }
         }
       }
     } catch (error) {

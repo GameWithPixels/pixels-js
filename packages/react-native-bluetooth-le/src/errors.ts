@@ -52,18 +52,32 @@ export class UnknownPeripheralError extends BluetoothLEError {
   }
 }
 
+export type ConnectErrorType =
+  | "createFailed"
+  | "inUse"
+  | "disconnected"
+  | "timeout"
+  | "bluetoothUnavailable";
+
+function getErrorMessage(name: string, type: ConnectErrorType): string {
+  switch (type) {
+    case "createFailed":
+      return `Failed to create native peripheral for ${name}`;
+    case "inUse":
+      return `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`;
+    case "disconnected":
+      return `Got disconnected while connecting to peripheral ${name}`;
+    case "timeout":
+      return `Connection timeout for peripheral ${name}`;
+    case "bluetoothUnavailable":
+      return `Bluetooth unavailable while connecting to peripheral ${name}`;
+  }
+}
+
 export class ConnectError extends BluetoothLEError {
-  readonly type: "nativeError" | "inUse" | "disconnected" | "timeout";
+  readonly type: ConnectErrorType;
   constructor(name: string, type: ConnectError["type"]) {
-    super(
-      type === "nativeError"
-        ? `Failed to create native peripheral for ${name}`
-        : type === "inUse"
-          ? `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`
-          : type === "disconnected"
-            ? `Got disconnected while connecting to peripheral ${name}`
-            : `Connection timeout for peripheral ${name}`
-    );
+    super(getErrorMessage(name, type));
     this.name = "ConnectError";
     this.type = type;
   }
