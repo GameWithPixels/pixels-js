@@ -54,7 +54,10 @@ export interface BluetoothStateEvent {
 }
 
 export type ScanStatus = "stopped" | "starting" | "scanning";
-export type ScanStoppedReason = "canceled" | Exclude<BluetoothState, "ready">;
+export type ScanStoppedReason =
+  | "canceled"
+  | "error"
+  | Exclude<BluetoothState, "ready">;
 
 // A scanned peripheral is BLE device and its advertisement data
 export interface ScannedPeripheral extends Device {
@@ -413,13 +416,10 @@ export const Central = {
     _scanResultSubs = _nativeEmitter.addListener(
       "scanResult",
       (ev: BleScanResultEvent) => {
-        if (typeof ev === "string") {
+        if ("error" in ev) {
           // Scan failed to start, Android only
-          console.warn(`[BLE] Scan failed: ${ev}`);
-          _updateScanStatus(
-            "stopped",
-            _bluetoothState === "ready" ? "unknown" : _bluetoothState
-          );
+          console.warn(`[BLE] Scan failed: ${ev.error}`);
+          _updateScanStatus("stopped", "error");
         } else {
           // Forward event
           const peripheral = {
