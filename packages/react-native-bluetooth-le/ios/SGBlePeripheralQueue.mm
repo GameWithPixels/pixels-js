@@ -108,7 +108,8 @@
                         else if (!disconnecting)
                         {
                             // We got disconnected but not because we asked for it
-                            reason = SGBleConnectionEventReasonLinkLoss;
+                            reason = strongSelf->_centralDelegate.isBluetoothOn ?
+                                SGBleConnectionEventReasonLinkLoss : SGBleConnectionEventReasonAdapterOff;
                         }
                         
                         // We were connecting, we need to have an error
