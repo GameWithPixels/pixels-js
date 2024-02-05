@@ -330,7 +330,7 @@ export const PixelChipModelValues = {
 export type PixelChipModel = keyof typeof PixelChipModelValues;
 
 /**
- * Available combinations of Pixel designs and colors.
+ * Available Pixels dice colorways.
  * @enum
  * @category Message
  */
