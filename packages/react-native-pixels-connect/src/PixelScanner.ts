@@ -6,6 +6,7 @@ import {
 import {
   BluetoothState,
   Central,
+  ScanError,
   ScanEvent,
   ScanStatus,
 } from "@systemic-games/react-native-bluetooth-le";
@@ -22,6 +23,14 @@ export type PixelScannerListOperation =
   | { readonly type: "removed"; readonly pixelId: number };
 
 /**
+ * Event data for the "scanStatus" event of {@link PixelScannerEventMap}.
+ */
+export interface PixelScannerStatusEvent {
+  readonly scanStatus: ScanStatus;
+  readonly stopReason?: ScanError;
+}
+
+/**
  * Event map for {@link PixelScanner} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
@@ -29,6 +38,7 @@ export type PixelScannerListOperation =
 export interface PixelScannerEventMap {
   isAvailable: boolean; // Property change event
   isScanning: boolean; // Property change event
+  scanStatus: PixelScannerStatusEvent;
   scannedPixels: ScannedPixel[]; // Property change event
   scanListOperations: { readonly ops: PixelScannerListOperation[] };
 }
@@ -67,8 +77,8 @@ export class PixelScanner {
   private _scanStatus: ScanStatus = "stopped";
   private _scanTimeoutId?: ReturnType<typeof setTimeout>;
   private _scanFilter: PixelScannerFilter;
-  private _clearOnStart = true;
-  private _autoResume = true;
+  private _clearOnStop = false;
+  private _autoResume = false;
   private _minNotifyInterval = 200;
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
   private _keepAliveDuration = 5000;
@@ -114,20 +124,20 @@ export class PixelScanner {
   }
 
   /**
-   * Whether the list of scanned Pixels is cleared when the scanner starts.
-   * @default true.
+   * Whether the list of scanned Pixels is cleared when the scanner stops.
+   * @default false.
    */
-  get clearOnStart(): boolean {
-    return this._clearOnStart;
+  get clearOnStop(): boolean {
+    return this._clearOnStop;
   }
-  set clearOnStart(value: boolean) {
-    this._clearOnStart = value;
+  set clearOnStop(value: boolean) {
+    this._clearOnStop = value;
   }
 
   /**
    * When a successful scan gets interrupted because of the Bluetooth state,
    * indicates wether to automatically restart scanning when Bluetooth becomes available
-   * @default true.
+   * @default false.
    */
   get autoResume(): boolean {
     return this._autoResume;
@@ -200,7 +210,7 @@ export class PixelScanner {
       ++this._isAvailableEvCounter;
       if (!this._isAvailableCallback) {
         this._isAvailableCallback = ({ state }: { state: BluetoothState }) =>
-          this._evEmitter.emit("isAvailable", state === "ready");
+          this._emitEvent("isAvailable", state === "ready");
         Central.addListener("bluetoothState", this._isAvailableCallback);
       }
     }
@@ -227,7 +237,7 @@ export class PixelScanner {
    * Starts a Bluetooth scan for Pixels and update the list as advertisement
    * packets are being received.
    * If the instance is already scanning it will just notify of pending list
-   * operations or clear the list if {@link clearOnStart} is true.
+   * operations or clear the list if {@link clearOnStop} is true.
    * @param opt.duration The duration in milliseconds for which the scan should run. Default: 0.
    * @param opt.overrideContinuous Whether a scan with a specified duration can override
    *                               an ongoing continuous scan. Default: false.
@@ -257,13 +267,8 @@ export class PixelScanner {
           duration
         );
       }
-      if (this._clearOnStart) {
-        this._pixels.length = 0;
-        this._notify(Date.now(), "clear");
-      } else {
-        this._pruneOutdated();
-        this._notify(Date.now());
-      }
+      this._pruneOutdated();
+      this._notify(Date.now());
       // Start scanning
       if (!this.isScanning) {
         await Central.startScan(
@@ -287,6 +292,10 @@ export class PixelScanner {
     return PixelScanner._queue.run(async () => {
       this._clearAutoResume();
       this._clearTimeouts(true);
+      if (this._clearOnStop) {
+        this._pixels.length = 0;
+        this._notify(Date.now(), "clear");
+      }
       if (this.isScanning) {
         await Central.stopScan();
       }
@@ -303,6 +312,19 @@ export class PixelScanner {
     return PixelScanner._queue.run(async () => {
       this._notify(Date.now(), "clear");
     });
+  }
+
+  private _emitEvent<T extends keyof PixelScannerEventMap>(
+    name: T,
+    ev: PixelScannerEventMap[T]
+  ): void {
+    try {
+      this._evEmitter.emit(name, ev);
+    } catch (e) {
+      console.error(
+        `PixelScanner: Uncaught error in "${name}" event listener: ${e}`
+      );
+    }
   }
 
   private _activateAutoResume(): void {
@@ -363,6 +385,7 @@ export class PixelScanner {
 
   private _processScanStatus({
     scanStatus,
+    stopReason,
   }: Extract<ScanEvent, { type: "status" }>): void {
     // Clear timeouts (keep scan timeout if auto-resume is active)
     this._clearTimeouts(!this._autoResumeCallback && scanStatus === "stopped");
@@ -389,14 +412,9 @@ export class PixelScanner {
     // Update status
     const wasScanning = this.isScanning;
     this._scanStatus = scanStatus;
+    this._emitEvent("scanStatus", { scanStatus, stopReason });
     if (wasScanning !== this.isScanning) {
-      try {
-        this._evEmitter.emit("isScanning", this.isScanning);
-      } catch (e) {
-        console.log(
-          `PixelScanner: Uncaught error in "isScanning" event listener: ${e}`
-        );
-      }
+      this._emitEvent("isScanning", this.isScanning);
     }
   }
 
@@ -466,20 +484,8 @@ export class PixelScanner {
     }
     this._touched.clear();
     if (ops.length) {
-      try {
-        this._evEmitter.emit("scanListOperations", { ops });
-      } catch (e) {
-        console.error(
-          `PixelScanner: Uncaught error in "availableListOperations" event listener: ${e}`
-        );
-      }
-      try {
-        this._evEmitter.emit("scannedPixels", this.scannedPixels);
-      } catch (e) {
-        console.error(
-          `PixelScanner: Uncaught error in "scannedPixels" event listener: ${e}`
-        );
-      }
+      this._emitEvent("scanListOperations", { ops });
+      this._emitEvent("scannedPixels", this.scannedPixels);
     }
   }
 
