@@ -383,13 +383,15 @@
         if (((request.type == SGBleRequestTypeConnect) && connectState)
             || ((request.type == SGBleRequestTypeDisconnect) && disconnectState))
         {
-            // Connect or disconnect return immediately a success if peripheral already
+            // Connect or disconnect requests return immediately a success if peripheral already
             // in desired state or transitionning to it
             [self qReportRequestResult:nil forRequestType:request.type];
         }
         else
         {
-            NSError *error = [request execute];
+            NSError *error =
+                _centralDelegate.centralManager.state == CBManagerStatePoweredOn ?
+                [request execute] : SGBleBluetoothStateError;
             if (error)
             {
                 [self qReportRequestResult:error forRequestType:request.type];
