@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -51,6 +51,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { NavigationRoot } from "~/components/NavigationRoot";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TurnOnDiceHelp } from "~/components/TunOnDiceHelp";
+import { AnimatedText } from "~/components/animated";
 import {
   AnimatedGradientButton,
   GradientButton,
@@ -62,7 +63,6 @@ import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
-import { getNativeErrorMessage } from "~/features/utils";
 import {
   useActivePixels,
   usePixelScanner,
@@ -136,6 +136,18 @@ function Text({ style, ...props }: Omit<TextProps<never>, "variant">) {
   return (
     <PaperText
       variant="bodyLarge"
+      style={[{ textAlign: "center" }, style]}
+      {...props}
+    />
+  );
+}
+
+function FadeInOutText({ style, ...props }: Omit<TextProps<never>, "variant">) {
+  return (
+    <AnimatedText
+      variant="bodyLarge"
+      entering={FadeIn.duration(300)}
+      exiting={FadeOut.duration(300)}
       style={[{ textAlign: "center" }, style]}
       {...props}
     />
@@ -388,7 +400,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
   const appDispatch = useAppDispatch();
 
   // Monitor all scanned dice so that they are automatically connected
-  const { availablePixels, isScanning, startScan, stopScan } =
+  const { availablePixels, isScanning, lastScanError, startScan, stopScan } =
     usePixelScanner();
   const central = usePixelsCentral();
   React.useEffect(
@@ -462,28 +474,47 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
             To customize your Pixels Dice the app needs to establish a Bluetooth
             connection.
           </Text>
-          <MaterialCommunityIcons
-            name="bluetooth"
-            size={30}
-            color={colors.onSurface}
-          />
-          {/* <Text>
-            {scannerStatus === "stopped"
-              ? "Please ensure you have Bluetooth turned on and grant permissions " +
+          {!lastScanError ? (
+            <MaterialCommunityIcons
+              name="bluetooth"
+              size={40}
+              color={colors.onSurface}
+            />
+          ) : (
+            <MaterialIcons
+              name={
+                lastScanError instanceof BluetoothPermissionsDeniedError
+                  ? "block"
+                  : "bluetooth-disabled"
+              }
+              size={40}
+              color="red"
+            />
+          )}
+          {!lastScanError ? (
+            <FadeInOutText key="no-error">
+              {"Please ensure you have Bluetooth turned on and grant permissions " +
                 "through your device settings. Tap the Continue button to allow " +
-                "the app to request access."
-              : scannerStatus instanceof BluetoothPermissionsDeniedError
-                ? "❌ The Pixels app does not have Bluetooth access and is unable " +
-                  "to connect to your dice. Please grant permissions through your " +
-                  "device settings and tap the Continue button."
-                : scannerStatus instanceof BluetoothUnavailableError
-                  ? "❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
-                    "through your device settings and grant the Pixels app access. " +
-                    "Then tap the Continue button."
-                  : `❌ Got an unexpected error: ${getNativeErrorMessage(
-                      scannerStatus
-                    )}`}
-          </Text> */}
+                "the app to request access."}
+            </FadeInOutText>
+          ) : lastScanError instanceof BluetoothPermissionsDeniedError ? (
+            <FadeInOutText key="permissions-denied">
+              {"❌ The Pixels app does not have Bluetooth access and is unable " +
+                "to connect to your dice. Please grant permissions through your " +
+                "device settings and tap the Continue button."}
+            </FadeInOutText>
+          ) : lastScanError instanceof BluetoothUnavailableError ? (
+            <FadeInOutText key="bluetooth-unavailable">
+              {"❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
+                "through your device settings and grant the Pixels app access. " +
+                "Then tap the Continue button."}
+            </FadeInOutText>
+          ) : (
+            <FadeInOutText key="unexpected-error">
+              {"❌ Got an unexpected error while trying to scan for Bluetooth devices: " +
+                lastScanError.message}
+            </FadeInOutText>
+          )}
           <GradientButton
             style={{
               marginTop: 20,

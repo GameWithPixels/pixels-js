@@ -13,6 +13,8 @@ import {
   PixelStatus,
   ScannedPixelNotifier,
   PixelScannerEventMap,
+  PixelScannerStatusEvent,
+  ScanError,
 } from "@systemic-games/react-native-pixels-connect";
 
 function pixelLog(pixel: Pick<PixelInfo, "name">, message: string) {
@@ -22,6 +24,7 @@ function pixelLog(pixel: Pick<PixelInfo, "name">, message: string) {
 export interface PixelsCentralEventMap {
   bluetoothState: BluetoothState;
   isScanning: boolean;
+  lastError: ScanError;
   availablePixels: ScannedPixelNotifier[];
   activePixels: Pixel[];
   dieRoll: { pixel: Pixel; roll: number };
@@ -35,6 +38,7 @@ export class PixelsCentral {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelsCentralEventMap>();
   private readonly _scanner = new PixelScanner();
+  private _lastError?: ScanError;
   private readonly _scannedPixels: ScannedPixelNotifier[] = [];
   private readonly _watched = new Map<
     number,
@@ -44,6 +48,10 @@ export class PixelsCentral {
 
   get bluetoothState(): BluetoothState {
     return Central.getBluetoothState();
+  }
+
+  get lastError(): ScanError | undefined {
+    return this._lastError;
   }
 
   get isScanning(): boolean {
@@ -95,15 +103,23 @@ export class PixelsCentral {
       }
     };
     const onScanning = (isScanning: boolean) =>
-      this._evEmitter.emit("isScanning", isScanning);
+      this._emitEvent("isScanning", isScanning);
+    const onStatus = ({ scanStatus, stopReason }: PixelScannerStatusEvent) => {
+      this._lastError = scanStatus === "stopped" ? stopReason : undefined;
+      if (this._lastError) {
+        this._emitEvent("lastError", this._lastError);
+      }
+    };
     const onScanOps = ({ ops }: PixelScannerEventMap["scanListOperations"]) =>
       this._scanListListener({ ops });
     this._scanner.addListener("isAvailable", onAvailable);
     this._scanner.addListener("isScanning", onScanning);
+    this._scanner.addListener("scanStatus", onStatus);
     this._scanner.addListener("scanListOperations", onScanOps);
     this._dispose = () => {
       this._scanner.removeListener("isAvailable", onAvailable);
       this._scanner.removeListener("isScanning", onScanning);
+      this._scanner.removeListener("scanStatus", onStatus);
       this._scanner.removeListener("scanListOperations", onScanOps);
     };
   }
@@ -187,7 +203,7 @@ export class PixelsCentral {
       this._watched.delete(pixelId);
       if (typeof entry === "object") {
         entry.unwatch();
-        this._evEmitter.emit("activePixels", this.activePixels);
+        this._emitEvent("activePixels", this.activePixels);
       }
     }
   }
@@ -200,6 +216,19 @@ export class PixelsCentral {
     }
     for (const id of pixelIds) {
       this.watch(id);
+    }
+  }
+
+  private _emitEvent<T extends keyof PixelsCentralEventMap>(
+    name: T,
+    ev: PixelsCentralEventMap[T]
+  ): void {
+    try {
+      this._evEmitter.emit(name, ev);
+    } catch (e) {
+      console.log(
+        `PixelCentral: Uncaught error in "${name}" event listener: ${e}`
+      );
     }
   }
 
@@ -239,7 +268,7 @@ export class PixelsCentral {
     }
     const available = this.availablePixels;
     if (availableCount !== available.length) {
-      this._evEmitter.emit("availablePixels", available);
+      this._emitEvent("availablePixels", available);
     }
   }
 
@@ -265,16 +294,16 @@ export class PixelsCentral {
       };
       pixel.addEventListener("status", onStatus);
       const onRoll = (roll: number) =>
-        this._evEmitter.emit("dieRoll", { pixel, roll });
+        this._emitEvent("dieRoll", { pixel, roll });
       pixel.addEventListener("roll", onRoll);
       const onRename = ({ name }: PixelInfo) =>
-        this._evEmitter.emit("dieRename", { pixel, name });
+        this._emitEvent("dieRename", { pixel, name });
       pixel.addPropertyListener("name", onRename);
       const onProfileHash = (hash: number) =>
-        this._evEmitter.emit("dieProfile", { pixel, hash });
+        this._emitEvent("dieProfile", { pixel, hash });
       pixel.addEventListener("profileHash", onProfileHash);
       const onRemoteAction = (actionId: number) =>
-        this._evEmitter.emit("dieRemoteAction", { pixel, actionId });
+        this._emitEvent("dieRemoteAction", { pixel, actionId });
       pixel.addEventListener("remoteAction", onRemoteAction);
 
       // Callback to unsubscribe from all event listeners
@@ -297,7 +326,7 @@ export class PixelsCentral {
       connect();
 
       // Notify we've got a new monitored Pixel
-      this._evEmitter.emit("activePixels", this.activePixels);
+      this._emitEvent("activePixels", this.activePixels);
     }
 
     return this._watched.get(pixelId) !== "watched";
