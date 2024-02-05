@@ -389,8 +389,7 @@
         }
         else
         {
-            NSError *error =
-                _centralDelegate.centralManager.state == CBManagerStatePoweredOn ?
+            NSError *error = _centralDelegate.isBluetoothOn ?
                 [request execute] : SGBleBluetoothStateError;
             if (error)
             {

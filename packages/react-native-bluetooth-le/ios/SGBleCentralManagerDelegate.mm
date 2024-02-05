@@ -108,7 +108,7 @@
     {
         _stateUpdateHandler(central.state);
     }
-    if (central.state != CBManagerStatePoweredOn)
+    if (!self.isBluetoothOn)
     {
         // Notify all peripherals disconnected
         NSArray<CBPeripheral *> *peripherals = nil;
