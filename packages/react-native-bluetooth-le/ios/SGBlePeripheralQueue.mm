@@ -15,6 +15,11 @@
     return _peripheral;
 }
 
+- (bool)isReady
+{
+    return _isReady;
+}
+
 - (int)rssi
 {
     return _rssi;
@@ -53,7 +58,7 @@
         SGBleConnectionEventHandler handler =
         ^(CBPeripheral *peripheral, SGBleConnectionEvent connectionEvent, NSError *error)
         {
-            // Be sure to not use self directly (or implictly by referencing a property)
+            // Be sure to not use self directly (or implicitly by referencing a property)
             // otherwise it creates a strong reference to itself and prevents the instance's deallocation
             SGBlePeripheralQueue *strongSelf = weakSelf;
             if (strongSelf)
@@ -207,7 +212,7 @@
     SGBleRequestExecuteHandler block = ^{
         if (!characteristic || !valueReadHandler)
         {
-            NSLog(@">> ReadValueForCharacteristic -> invalid parameters");
+            NSLog(@">> ReadValueForCharacteristic -> invalid parameter");
             return SGBleInvalidParameterError;
         }
         
@@ -437,7 +442,7 @@
                         reason:(SGBleConnectionEventReason)reason
 {
     NSLog(@">> Notifying connection event: %ld, reason: %ld", (long)connectionEvent, (long)reason);
-    self.isReady = connectionEvent == SGBleConnectionEventReady;
+    _isReady = connectionEvent == SGBleConnectionEventReady;
     if (_connectionEventHandler)
     {
         _connectionEventHandler(self, connectionEvent, reason);
