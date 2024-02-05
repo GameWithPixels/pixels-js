@@ -95,7 +95,6 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       central.removeEventListener("dieRename", onRename);
       central.removeEventListener("dieProfile", onProfile);
       central.removeEventListener("dieRemoteAction", onRemoteAction);
-      // Remove all watched dice on unmount
       central.setWatchedDice([]);
     };
   }, [appDispatch, central, store]);
@@ -106,6 +105,9 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     () => central.setWatchedDice(pairedDice.map((d) => d.pixelId)),
     [pairedDice, central]
   );
+
+  // Immediately start scanning for paired dice
+  React.useEffect(() => central.startScan("paired"), [central]);
 
   return (
     <PixelsCentralContext.Provider value={central}>

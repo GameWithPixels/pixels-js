@@ -126,12 +126,11 @@ export function PairDiceBottomSheet({
   onDismiss?: (pixels?: ScannedPixel[]) => void;
 }) {
   const appDispatch = useAppDispatch();
-  const { availablePixels, scannerStatus, startScan, stopScan } =
+  const { availablePixels, isScanning, startScan, stopScan } =
     usePixelScanner();
 
   React.useEffect(() => {
     if (visible) {
-      console.log(">>>>> START SCAN SHEET");
       // Start scanning for dice
       startScan();
     }
@@ -147,7 +146,6 @@ export function PairDiceBottomSheet({
 
   const pairDice = React.useCallback(
     (pixels: ScannedPixel[]) => {
-      console.log(">>>>> STOP SCAN SHEET");
       for (const pixel of pixels) {
         appDispatch(
           addPairedDie({
@@ -205,10 +203,10 @@ export function PairDiceBottomSheet({
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
             Select Pixels Dice to Pair
           </Text>
-          {visible && scannerStatus === "scanning" ? (
+          {visible && isScanning ? (
             <SelectPixels pixels={availablePixels} onPairDice={pairDice} />
           ) : (
-            <Text>{String(scannerStatus)}</Text>
+            <Text>{isScanning ? "Scanning" : "Stopped"}</Text>
           )}
         </View>
       </ThemeProvider>

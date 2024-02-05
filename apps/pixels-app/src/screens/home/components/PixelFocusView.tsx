@@ -211,14 +211,16 @@ function PixelProfile({ ...props }: Omit<ProfileCardProps, "row">) {
 
 export function PixelFocusView({
   pairedDie,
-  onEditProfile,
+  onPress,
   onShowDetails,
+  onEditProfile,
   style,
   ...props
 }: {
   pairedDie: PairedDie;
-  onEditProfile: () => void;
+  onPress: () => void;
   onShowDetails: () => void;
+  onEditProfile: () => void;
 } & Omit<ViewProps, "children">) {
   const appDispatch = useAppDispatch();
 
@@ -257,7 +259,10 @@ export function PixelFocusView({
             aspectRatio: 1,
             alignSelf: "center",
           }}
-          onPress={() => blinkDie(pixel)}
+          onPress={() => {
+            blinkDie(pixel);
+            onPress?.();
+          }}
         >
           <RollingDie pairedDie={pairedDie} disabled={disabled} />
         </Pressable>

@@ -388,7 +388,8 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
   const appDispatch = useAppDispatch();
 
   // Monitor all scanned dice so that they are automatically connected
-  const { availablePixels, scannerStatus, startScan, stopScan } = usePixelScanner();
+  const { availablePixels, isScanning, startScan, stopScan } =
+    usePixelScanner();
   const central = usePixelsCentral();
   React.useEffect(
     () => availablePixels.forEach((p) => central.watch(p.pixelId)),
@@ -423,13 +424,13 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
   const [showHelp, setShowHelp] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
   React.useEffect(() => {
-    if (scannerStatus === "scanning") {
+    if (isScanning) {
       const id = setTimeout(() => setShowHelp(true), 3000);
       return () => clearTimeout(id);
     } else {
       setShowHelp(false);
     }
-  }, [scannerStatus]);
+  }, [isScanning]);
 
   const { colors } = useTheme();
   return (
@@ -443,7 +444,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
         }}
         source={require("#/temp/dice-row.jpg")}
       />
-      {scannerStatus !== "starting" && scannerStatus !== "scanning" ? (
+      {!isScanning ? (
         <Animated.ScrollView
           key="stopped"
           exiting={FadeOut.duration(300)}

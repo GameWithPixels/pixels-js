@@ -27,8 +27,9 @@ export type PixelScannerListOperation =
  * is the event name and the property type the event data type.
  */
 export interface PixelScannerEventMap {
-  scannerStatus: Omit<Extract<ScanEvent, { type: "status" }>, "type">;
-  scannedPixels: { readonly scannedPixels: ScannedPixel[] };
+  isAvailable: boolean; // Property change event
+  isScanning: boolean; // Property change event
+  scannedPixels: ScannedPixel[]; // Property change event
   scanListOperations: { readonly ops: PixelScannerListOperation[] };
 }
 
@@ -74,13 +75,22 @@ export class PixelScanner {
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdate = new Date();
   private readonly _touched = new Set<number>();
-  private _bluetoothStateListener?: (ev: { state: BluetoothState }) => void;
+  private _autoResumeCallback?: (ev: { state: BluetoothState }) => void;
+  private _isAvailableEvCounter = 0;
+  private _isAvailableCallback?: (ev: { state: BluetoothState }) => void;
 
   /**
-   * Indicates whether this scanner instance is currently scanning for Pixels.
+   * Whether a scan may be started.
    */
-  get scanStatus(): ScanStatus {
-    return this._scanStatus;
+  get isAvailable(): boolean {
+    return Central.getBluetoothState() === "ready";
+  }
+
+  /**
+   * Whether this instance is scanning.
+   */
+  get isScanning(): boolean {
+    return this._scanStatus !== "stopped";
   }
 
   /**
@@ -104,7 +114,7 @@ export class PixelScanner {
   }
 
   /**
-   * If true, the list of scanned Pixels is cleared when the scanner starts.
+   * Whether the list of scanned Pixels is cleared when the scanner starts.
    * @default true.
    */
   get clearOnStart(): boolean {
@@ -114,6 +124,11 @@ export class PixelScanner {
     this._clearOnStart = value;
   }
 
+  /**
+   * When a successful scan gets interrupted because of the Bluetooth state,
+   * indicates wether to automatically restart scanning when Bluetooth becomes available
+   * @default true.
+   */
   get autoResume(): boolean {
     return this._autoResume;
   }
@@ -121,7 +136,7 @@ export class PixelScanner {
     this._autoResume = value;
     if (!value) {
       this._clearAutoResume();
-    } else {
+    } else if (this.isScanning) {
       this._activateAutoResume();
     }
   }
@@ -170,10 +185,25 @@ export class PixelScanner {
     }
   }
 
+  /**
+   * Whether the scanner is currently scanning for Pixels for a specified duration.
+   */
+  get hasTimeout(): boolean {
+    return !!this._scanTimeoutId;
+  }
+
   addListener<T extends keyof PixelScannerEventMap>(
     name: T,
     listener: (ev: PixelScannerEventMap[T]) => void
   ) {
+    if (name === "isAvailable") {
+      ++this._isAvailableEvCounter;
+      if (!this._isAvailableCallback) {
+        this._isAvailableCallback = ({ state }: { state: BluetoothState }) =>
+          this._evEmitter.emit("isAvailable", state === "ready");
+        Central.addListener("bluetoothState", this._isAvailableCallback);
+      }
+    }
     return this._evEmitter.addListener(name, listener);
   }
 
@@ -181,6 +211,15 @@ export class PixelScanner {
     name: T,
     listener: (ev: PixelScannerEventMap[T]) => void
   ) {
+    if (name === "isAvailable") {
+      if (this._isAvailableEvCounter) {
+        --this._isAvailableEvCounter;
+      }
+      if (!this._isAvailableEvCounter && this._isAvailableCallback) {
+        Central.removeListener("bluetoothState", this._isAvailableCallback);
+        this._isAvailableCallback = undefined;
+      }
+    }
     return this._evEmitter.removeListener(name, listener);
   }
 
@@ -189,24 +228,31 @@ export class PixelScanner {
    * packets are being received.
    * If the instance is already scanning it will just notify of pending list
    * operations or clear the list if {@link clearOnStart} is true.
-   * @param duration The duration in milliseconds for which the scan should run.
+   * @param opt.duration The duration in milliseconds for which the scan should run. Default: 0.
+   * @param opt.overrideContinuous Whether a scan with a specified duration can override
+   *                               an ongoing continuous scan. Default: false.
    * @returns A promise.
    * @remarks Calls to the async methods of this class are queued
    *          and executed in order.
    * @remarks On Android, BLE scanning will fail without error when started more
    *          than 5 times over the last 30 seconds.
    */
-  async start(duration = 0): Promise<void> {
+  async start(opt?: {
+    duration?: number;
+    overrideContinuous?: boolean;
+  }): Promise<void> {
     return PixelScanner._queue.run(async () => {
-      if (duration >= 0 && this._scanTimeoutId) {
+      const continuous = this.isScanning && !this._scanTimeoutId;
+      if (this._scanTimeoutId) {
         clearTimeout(this._scanTimeoutId);
         this._scanTimeoutId = undefined;
       }
-      if (duration > 0) {
+      const duration = opt?.duration ?? 0;
+      if (duration > 0 && (!continuous || !!opt?.overrideContinuous)) {
         this._scanTimeoutId = setTimeout(
           () =>
             this.stop().catch((e) =>
-              console.log(`PixelScanner: error stopping scan on timeout: ${e}`)
+              console.log(`PixelScanner: Error stopping scan on timeout: ${e}`)
             ),
           duration
         );
@@ -218,21 +264,15 @@ export class PixelScanner {
         this._pruneOutdated();
         this._notify(Date.now());
       }
-      if (this._autoResume) {
-        this._activateAutoResume();
-      }
       // Start scanning
-      if (this._scanStatus !== "scanning") {
-        await Central.startScan(PixelBleUuids.service, (ev) => {
-          if (ev.type === "peripheral") {
-            const pixel = getScannedPixel(ev.peripheral);
-            if (pixel) {
-              this._processScannedPixel(pixel);
-            }
-          } else {
-            this._processScanStatus(ev);
-          }
-        });
+      if (!this.isScanning) {
+        await Central.startScan(
+          PixelBleUuids.service,
+          this._processScanEvents.bind(this)
+        );
+        if (this._autoResume) {
+          this._activateAutoResume();
+        }
       }
     });
   }
@@ -247,7 +287,7 @@ export class PixelScanner {
     return PixelScanner._queue.run(async () => {
       this._clearAutoResume();
       this._clearTimeouts(true);
-      if (this._scanStatus === "starting" || this._scanStatus === "scanning") {
+      if (this.isScanning) {
         await Central.stopScan();
       }
     });
@@ -266,22 +306,32 @@ export class PixelScanner {
   }
 
   private _activateAutoResume(): void {
-    if (!this._bluetoothStateListener) {
-      this._bluetoothStateListener = ({ state }: { state: BluetoothState }) => {
+    if (!this._autoResumeCallback) {
+      this._autoResumeCallback = ({ state }: { state: BluetoothState }) => {
         if (state === "ready") {
-          this.start(-1).catch((e) =>
-            console.log(`PixelScanner: error resuming scan: ${e}`)
-          );
+          PixelScanner._queue
+            .run(async () => {
+              if (!this.isScanning && this._autoResumeCallback) {
+                console.log("PixelScanner: Auto resuming scan");
+                await Central.startScan(
+                  PixelBleUuids.service,
+                  this._processScanEvents.bind(this)
+                );
+              }
+            })
+            .catch((e) =>
+              console.log(`PixelScanner: Error resuming scan: ${e}`)
+            );
         }
       };
-      Central.addListener("bluetoothState", this._bluetoothStateListener);
+      Central.addListener("bluetoothState", this._autoResumeCallback);
     }
   }
 
   private _clearAutoResume(): void {
-    if (this._bluetoothStateListener) {
-      Central.removeListener("bluetoothState", this._bluetoothStateListener);
-      this._bluetoothStateListener = undefined;
+    if (this._autoResumeCallback) {
+      Central.removeListener("bluetoothState", this._autoResumeCallback);
+      this._autoResumeCallback = undefined;
     }
   }
 
@@ -300,14 +350,24 @@ export class PixelScanner {
     }
   }
 
-  private _processScanStatus({
-    status,
-    reason,
-  }: Extract<ScanEvent, { type: "status" }>): void {
-    // Clear timeouts
-    this._clearTimeouts(!this._bluetoothStateListener && status === "stopped");
+  private _processScanEvents(ev: ScanEvent): void {
+    if (ev.type === "peripheral") {
+      const pixel = getScannedPixel(ev.peripheral);
+      if (pixel) {
+        this._processScannedPixel(pixel);
+      }
+    } else {
+      this._processScanStatus(ev);
+    }
+  }
 
-    switch (status) {
+  private _processScanStatus({
+    scanStatus,
+  }: Extract<ScanEvent, { type: "status" }>): void {
+    // Clear timeouts (keep scan timeout if auto-resume is active)
+    this._clearTimeouts(!this._autoResumeCallback && scanStatus === "stopped");
+
+    switch (scanStatus) {
       case "starting":
         // Clear pending operations on start (there shouldn't be any)
         if (this._touched.size) {
@@ -327,12 +387,15 @@ export class PixelScanner {
     }
 
     // Update status
-    if (this._scanStatus !== status) {
-      this._scanStatus = status;
+    const wasScanning = this.isScanning;
+    this._scanStatus = scanStatus;
+    if (wasScanning !== this.isScanning) {
       try {
-        this._evEmitter.emit("scannerStatus", { status, reason });
+        this._evEmitter.emit("isScanning", this.isScanning);
       } catch (e) {
-        console.error(`PixelScanner: error in scan listener ${e}`);
+        console.log(
+          `PixelScanner: Uncaught error in "isScanning" event listener: ${e}`
+        );
       }
     }
   }
@@ -411,8 +474,7 @@ export class PixelScanner {
         );
       }
       try {
-        const scannedPixels = this.scannedPixels;
-        this._evEmitter.emit("scannedPixels", { scannedPixels });
+        this._evEmitter.emit("scannedPixels", this.scannedPixels);
       } catch (e) {
         console.error(
           `PixelScanner: Uncaught error in "scannedPixels" event listener: ${e}`

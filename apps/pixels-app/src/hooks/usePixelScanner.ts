@@ -1,44 +1,45 @@
-import {
-  ScannedPixelNotifier,
-  ScanStatus,
-} from "@systemic-games/react-native-pixels-connect";
+import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { usePixelsCentral } from "./usePixelsCentral";
 
 export function usePixelScanner(): {
   availablePixels: ScannedPixelNotifier[];
-  scannerStatus: ScanStatus;
-  startScan: (duration?: number) => void;
+  isScanning: boolean;
+  startScan: () => void;
   stopScan: () => void;
 } {
   const central = usePixelsCentral();
-  const [scannerStatus, setScannerStatus] = React.useState(
-    central.scannerStatus
-  );
+  const [isScanning, setIsScanning] = React.useState(central.isScanning);
   const [availablePixels, setAvailablePixels] = React.useState(
     central.availablePixels
   );
   React.useEffect(() => {
-    central.addEventListener("scannerStatus", setScannerStatus);
+    central.addEventListener("isScanning", setIsScanning);
     central.addEventListener("availablePixels", setAvailablePixels);
     return () => {
-      central.removeEventListener("scannerStatus", setScannerStatus);
+      central.removeEventListener("isScanning", setIsScanning);
       central.removeEventListener("availablePixels", setAvailablePixels);
       // Stop scanning on unmount
       central.stopScan();
     };
   }, [central]);
-  const startStop = React.useMemo(
-    () => ({
-      startScan: (duration?: number) => central.startScan(duration),
-      stopScan: () => central.stopScan(),
-    }),
+  const startScan = React.useCallback(
+    () => central.startScan("discovery"),
     [central]
   );
+  const stopScan = React.useCallback(() => central.stopScan(), [central]);
   return {
     availablePixels,
-    scannerStatus,
-    ...startStop,
+    isScanning,
+    startScan,
+    stopScan,
   };
+}
+
+export function usePairedDiceScanner(): () => void {
+  const central = usePixelsCentral();
+  // Don't stop scanning on unmount to not interfere with other scans
+  // It will automatically stop after a little while anyways
+  return React.useCallback(() => central.startScan("paired"), [central]);
 }

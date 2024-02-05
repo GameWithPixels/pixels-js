@@ -114,7 +114,7 @@ export default function App() {
           ) {
             updatePeripherals(ev.peripheral);
           }
-        } else if (ev.status !== "starting" && ev.status !== "scanning") {
+        } else if (ev.scanStatus !== "stopped") {
           setIsScanning(false);
         }
       }).catch((error) => {
