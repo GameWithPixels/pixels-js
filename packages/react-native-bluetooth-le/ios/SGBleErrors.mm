@@ -1,5 +1,4 @@
 #import "SGBleErrors.h"
-#import "SGBleTypes.h"
 
 static NSErrorDomain errorDomain = [NSString stringWithFormat:@"%@.sgBLE.errorDomain", [[NSBundle mainBundle] bundleIdentifier]];
 
@@ -15,9 +14,9 @@ NSError *SGBleInvalidParameterError = [NSError errorWithDomain:errorDomain
                                                           code:SGBleErrorInvalidParameter
                                                       userInfo:@{ NSLocalizedDescriptionKey: @"Invalid parameter" }];
 
-NSError *SGBleInvalidStateError = [NSError errorWithDomain:errorDomain
-                                                      code:SGBleErrorInvalidState
-                                                  userInfo:@{ NSLocalizedDescriptionKey: @"Invalid state" }];
+NSError *SGBleBluetoothStateError = [NSError errorWithDomain:errorDomain
+                                                        code:SGBleErrorBluetoothState
+                                                    userInfo:@{ NSLocalizedDescriptionKey: @"Bluetooth not in powered on state" }];
 
 NSError *SGBleRequestCanceledError = [NSError errorWithDomain:errorDomain
                                                          code:SGBleErrorRequestCanceled

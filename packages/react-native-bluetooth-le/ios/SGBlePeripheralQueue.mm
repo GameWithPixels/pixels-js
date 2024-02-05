@@ -108,7 +108,8 @@
                         else if (!disconnecting)
                         {
                             // We got disconnected but not because we asked for it
-                            reason = SGBleConnectionEventReasonLinkLoss;
+                            reason = strongSelf->_centralDelegate.isBluetoothOn ?
+                                SGBleConnectionEventReasonLinkLoss : SGBleConnectionEventReasonAdapterOff;
                         }
                         
                         // We were connecting, we need to have an error
@@ -383,13 +384,14 @@
         if (((request.type == SGBleRequestTypeConnect) && connectState)
             || ((request.type == SGBleRequestTypeDisconnect) && disconnectState))
         {
-            // Connect or disconnect return immediately a success if peripheral already
+            // Connect or disconnect requests return immediately a success if peripheral already
             // in desired state or transitionning to it
             [self qReportRequestResult:nil forRequestType:request.type];
         }
         else
         {
-            NSError *error = [request execute];
+            NSError *error = _centralDelegate.isBluetoothOn ?
+                [request execute] : SGBleBluetoothStateError;
             if (error)
             {
                 [self qReportRequestResult:error forRequestType:request.type];

@@ -1,5 +1,6 @@
 #import "SGBleCentralManagerDelegate.h"
 #import "SGBleUtils.h"
+#import "SGBleErrors.h"
 
 @implementation SGBleCentralManagerDelegate
 
@@ -106,6 +107,22 @@
     if (_stateUpdateHandler)
     {
         _stateUpdateHandler(central.state);
+    }
+    if (!self.isBluetoothOn)
+    {
+        // Notify all peripherals disconnected
+        NSArray<CBPeripheral *> *peripherals = nil;
+        @synchronized (_peripheralsConnectionEventHandlers)
+        {
+            peripherals = _peripheralsConnectionEventHandlers.allKeys;
+        }
+        if (peripherals)
+        {
+            for (CBPeripheral *peripheral in peripherals)
+            {
+                [self raiseConnectionEventForPeripheral:peripheral connectionEvent:SGBleConnectionEventDisconnected error:SGBleBluetoothStateError];
+            }
+        }
     }
 }
 

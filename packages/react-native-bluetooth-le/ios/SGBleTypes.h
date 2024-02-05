@@ -99,31 +99,6 @@ typedef NS_ENUM(NSInteger, SGBleConnectionEventReason)
 };
 
 /**
- * @brief Error codes.
- * @ingroup Apple_Objective-C
- */
-typedef NS_ENUM(NSInteger, SGBleError)
-{
-    /// Application out of memory.
-    SGBleErrorOutOfMemory,
-    
-    /// Call not implemented.
-    SGBleErrorNotImplemented,
-    
-    /// Peripheral request has one or more invalid parameters.
-    SGBleErrorInvalidParameter,
-    
-    /// Bluetooth or peripheral not in proper state to execute request.
-    SGBleErrorInvalidState,
-    
-    /// Peripheral request got canceled.
-    SGBleErrorRequestCanceled,
-    
-    /// Peripheral got disconnected while executing request.
-    SGBleErrorPeripheralDisconnected,
-};
-
-/**
  * @brief Peripheral discovery handler.
  * @ingroup Apple_Objective-C
  */

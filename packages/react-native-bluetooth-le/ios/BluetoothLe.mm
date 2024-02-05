@@ -271,7 +271,7 @@ RCT_EXPORT_METHOD(startScan:(NSString *)requiredServicesUuids
 {
     if (!_central.isBluetoothOn)
     {
-        rejectWithError(SGBleInvalidStateError, reject);
+        rejectWithError(SGBleBluetoothStateError, reject);
     }
     else
     {
