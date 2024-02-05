@@ -6,6 +6,7 @@ import {
 import {
   BluetoothState,
   Central,
+  ScanError,
   ScanEvent,
   ScanStatus,
 } from "@systemic-games/react-native-bluetooth-le";
@@ -22,6 +23,14 @@ export type PixelScannerListOperation =
   | { readonly type: "removed"; readonly pixelId: number };
 
 /**
+ * Event data for the "scanStatus" event of {@link PixelScannerEventMap}.
+ */
+export interface PixelScannerStatusEvent {
+  readonly scanStatus: ScanStatus;
+  readonly stopReason?: ScanError;
+}
+
+/**
  * Event map for {@link PixelScanner} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
@@ -29,6 +38,7 @@ export type PixelScannerListOperation =
 export interface PixelScannerEventMap {
   isAvailable: boolean; // Property change event
   isScanning: boolean; // Property change event
+  scanStatus: PixelScannerStatusEvent;
   scannedPixels: ScannedPixel[]; // Property change event
   scanListOperations: { readonly ops: PixelScannerListOperation[] };
 }
@@ -200,7 +210,7 @@ export class PixelScanner {
       ++this._isAvailableEvCounter;
       if (!this._isAvailableCallback) {
         this._isAvailableCallback = ({ state }: { state: BluetoothState }) =>
-          this._evEmitter.emit("isAvailable", state === "ready");
+          this._emitEvent("isAvailable", state === "ready");
         Central.addListener("bluetoothState", this._isAvailableCallback);
       }
     }
@@ -305,6 +315,19 @@ export class PixelScanner {
     });
   }
 
+  private _emitEvent<T extends keyof PixelScannerEventMap>(
+    name: T,
+    ev: PixelScannerEventMap[T]
+  ): void {
+    try {
+      this._evEmitter.emit(name, ev);
+    } catch (e) {
+      console.log(
+        `PixelScanner: Uncaught error in "${name}" event listener: ${e}`
+      );
+    }
+  }
+
   private _activateAutoResume(): void {
     if (!this._autoResumeCallback) {
       this._autoResumeCallback = ({ state }: { state: BluetoothState }) => {
@@ -363,6 +386,7 @@ export class PixelScanner {
 
   private _processScanStatus({
     scanStatus,
+    stopReason,
   }: Extract<ScanEvent, { type: "status" }>): void {
     // Clear timeouts (keep scan timeout if auto-resume is active)
     this._clearTimeouts(!this._autoResumeCallback && scanStatus === "stopped");
@@ -389,14 +413,9 @@ export class PixelScanner {
     // Update status
     const wasScanning = this.isScanning;
     this._scanStatus = scanStatus;
+    this._emitEvent("scanStatus", { scanStatus, stopReason });
     if (wasScanning !== this.isScanning) {
-      try {
-        this._evEmitter.emit("isScanning", this.isScanning);
-      } catch (e) {
-        console.log(
-          `PixelScanner: Uncaught error in "isScanning" event listener: ${e}`
-        );
-      }
+      this._emitEvent("isScanning", this.isScanning);
     }
   }
 
@@ -466,20 +485,8 @@ export class PixelScanner {
     }
     this._touched.clear();
     if (ops.length) {
-      try {
-        this._evEmitter.emit("scanListOperations", { ops });
-      } catch (e) {
-        console.error(
-          `PixelScanner: Uncaught error in "availableListOperations" event listener: ${e}`
-        );
-      }
-      try {
-        this._evEmitter.emit("scannedPixels", this.scannedPixels);
-      } catch (e) {
-        console.error(
-          `PixelScanner: Uncaught error in "scannedPixels" event listener: ${e}`
-        );
-      }
+      this._emitEvent("scanListOperations", { ops });
+      this._emitEvent("scannedPixels", this.scannedPixels);
     }
   }
 
