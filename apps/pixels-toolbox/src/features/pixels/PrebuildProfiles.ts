@@ -27,6 +27,7 @@ import {
 
 export const PrebuildProfilesNames = [
   "default",
+  "empty",
   "waterfall",
   "fountain",
   "spinning",
@@ -118,6 +119,8 @@ export function createProfile(
   switch (name) {
     case "default":
       setProfileDefaultRollingRules(profile, dieType);
+      break;
+    case "empty":
       break;
     case "waterfall": {
       profile.name = "waterfall";
