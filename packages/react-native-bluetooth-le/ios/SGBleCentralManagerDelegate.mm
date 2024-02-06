@@ -116,12 +116,9 @@
         {
             peripherals = _peripheralsConnectionEventHandlers.allKeys;
         }
-        if (peripherals)
+        for (CBPeripheral *peripheral in peripherals)
         {
-            for (CBPeripheral *peripheral in peripherals)
-            {
-                [self raiseConnectionEventForPeripheral:peripheral connectionEvent:SGBleConnectionEventDisconnected error:SGBleBluetoothStateError];
-            }
+            [self raiseConnectionEventForPeripheral:peripheral connectionEvent:SGBleConnectionEventDisconnected error:SGBleBluetoothStateError];
         }
     }
 }

@@ -80,9 +80,8 @@
                         }
                         else
                         {
-                            // This shouldn't happen
-                            NSLog(@">> PeripheralConnectionEvent => connected, but not running a connection request => disconnecting");
-                            [strongSelf internalDisconnect:SGBleConnectionEventReasonUnknown];
+                            // Most likely another piece of code has connected to this peripheral
+                            NSLog(@">> PeripheralConnectionEvent => connected, but not running a connection request");
                         }
                         break;
                     }
@@ -108,8 +107,18 @@
                         else if (!disconnecting)
                         {
                             // We got disconnected but not because we asked for it
-                            reason = strongSelf->_centralDelegate.isBluetoothOn ?
-                                SGBleConnectionEventReasonLinkLoss : SGBleConnectionEventReasonAdapterOff;
+                            if (error.domain == CBErrorDomain && error.code == CBErrorConnectionTimeout)
+                            {
+                               reason = SGBleConnectionEventReasonLinkLoss;
+                            }
+                            else if (error.domain == SGBleErrorDomain && error.code == SGBleErrorBluetoothState)
+                            {
+                                reason = SGBleConnectionEventReasonAdapterOff;
+                            }
+                            else if (error)
+                            {
+                                reason = SGBleConnectionEventReasonUnknown;
+                            }
                         }
                         
                         // We were connecting, we need to have an error
