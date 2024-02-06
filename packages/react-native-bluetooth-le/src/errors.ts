@@ -13,24 +13,10 @@ export class CentralNotInitializedError extends BluetoothLEError {
   }
 }
 
-export class ScanStartError extends BluetoothLEError {
-  constructor() {
-    super("Error starting scan");
-    this.name = "ScanStartError";
-  }
-}
-
 export abstract class ScanError extends BluetoothLEError {
   constructor(message: string) {
     super(message);
     this.name = "ScanError";
-  }
-}
-
-export class ScanUnspecifiedStartError extends ScanError {
-  constructor() {
-    super("Unspecified error on starting scan");
-    this.name = "UnspecifiedScanStartError";
   }
 }
 
@@ -52,6 +38,13 @@ export class BluetoothUnavailableError extends ScanError {
   constructor(state: "off" | "resetting" | "unknown") {
     super(`Bluetooth unavailable, state is ${state}`);
     this.name = "BluetoothUnavailableError";
+  }
+}
+
+export class ScanUnspecifiedStartError extends ScanError {
+  constructor() {
+    super("Unspecified error on starting scan");
+    this.name = "UnspecifiedScanStartError";
   }
 }
 

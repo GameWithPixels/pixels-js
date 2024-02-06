@@ -77,8 +77,8 @@ export class PixelScanner {
   private _scanStatus: ScanStatus = "stopped";
   private _scanTimeoutId?: ReturnType<typeof setTimeout>;
   private _scanFilter: PixelScannerFilter;
-  private _clearOnStart = true;
-  private _autoResume = true;
+  private _clearOnStop = false;
+  private _autoResume = false;
   private _minNotifyInterval = 200;
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
   private _keepAliveDuration = 5000;
@@ -124,20 +124,20 @@ export class PixelScanner {
   }
 
   /**
-   * Whether the list of scanned Pixels is cleared when the scanner starts.
-   * @default true.
+   * Whether the list of scanned Pixels is cleared when the scanner stops.
+   * @default false.
    */
-  get clearOnStart(): boolean {
-    return this._clearOnStart;
+  get clearOnStop(): boolean {
+    return this._clearOnStop;
   }
-  set clearOnStart(value: boolean) {
-    this._clearOnStart = value;
+  set clearOnStop(value: boolean) {
+    this._clearOnStop = value;
   }
 
   /**
    * When a successful scan gets interrupted because of the Bluetooth state,
    * indicates wether to automatically restart scanning when Bluetooth becomes available
-   * @default true.
+   * @default false.
    */
   get autoResume(): boolean {
     return this._autoResume;
@@ -237,7 +237,7 @@ export class PixelScanner {
    * Starts a Bluetooth scan for Pixels and update the list as advertisement
    * packets are being received.
    * If the instance is already scanning it will just notify of pending list
-   * operations or clear the list if {@link clearOnStart} is true.
+   * operations or clear the list if {@link clearOnStop} is true.
    * @param opt.duration The duration in milliseconds for which the scan should run. Default: 0.
    * @param opt.overrideContinuous Whether a scan with a specified duration can override
    *                               an ongoing continuous scan. Default: false.
@@ -267,13 +267,8 @@ export class PixelScanner {
           duration
         );
       }
-      if (this._clearOnStart) {
-        this._pixels.length = 0;
-        this._notify(Date.now(), "clear");
-      } else {
-        this._pruneOutdated();
-        this._notify(Date.now());
-      }
+      this._pruneOutdated();
+      this._notify(Date.now());
       // Start scanning
       if (!this.isScanning) {
         await Central.startScan(
@@ -297,6 +292,10 @@ export class PixelScanner {
     return PixelScanner._queue.run(async () => {
       this._clearAutoResume();
       this._clearTimeouts(true);
+      if (this._clearOnStop) {
+        this._pixels.length = 0;
+        this._notify(Date.now(), "clear");
+      }
       if (this.isScanning) {
         await Central.stopScan();
       }
@@ -322,7 +321,7 @@ export class PixelScanner {
     try {
       this._evEmitter.emit(name, ev);
     } catch (e) {
-      console.log(
+      console.error(
         `PixelScanner: Uncaught error in "${name}" event listener: ${e}`
       );
     }
