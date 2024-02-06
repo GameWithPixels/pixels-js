@@ -49,6 +49,7 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "./extensions";
+import { getDefaultName } from "./getDefaultName";
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
@@ -428,13 +429,16 @@ class PixelDispatcher
         this._guard(this._disconnect(), action);
         break;
       case "reportRssi":
-        this._guard(this._reportRssi(), action);
+        this._guard(this._pixel.reportRssi(true), action);
         break;
       case "blink":
-        this._guard(this._blink(), action);
+        this._guard(this._pixel.blink(Color.dimOrange), action);
         break;
       case "blinkId":
-        this._guard(this._blinkId(), action);
+        this._guard(
+          pixelBlinkId(this._pixel, { brightness: 0x04, loop: true }),
+          action
+        );
         break;
       case "playAnimation":
         this._guard(
@@ -444,33 +448,44 @@ class PixelDispatcher
         );
         break;
       case "playProfileAnimation":
-        this._guard(this._playProfileAnimation(params as number) ?? 0, action);
+        this._guard(
+          pixelPlayProfileAnimation(this.pixel, (params as number) ?? 0),
+          action
+        );
         break;
       case "playMultiAnimations":
         this._guard(this._playMultiAnimations(), action);
         break;
       case "calibrate":
-        this._guard(this._calibrate(), action);
+        this._guard(this._pixel.startCalibration(), action);
         break;
       case "exitValidation":
-        this._guard(this._exitValidationMode(), action);
+        // Exit validation mode, don't wait for response as die will restart
+        this._guard(this._pixel.sendMessage("exitValidation", true), action);
         break;
       case "turnOff":
         this._guard(this._pixel.turnOff(), action);
         break;
       case "discharge":
-        this._guard(this._discharge((params as number) ?? 50), action);
+        this._guard(
+          pixelDischarge(this._pixel, (params as number) ?? 50),
+          action
+        );
         break;
       case "setChargerMode":
         this._guard(
-          this._setChargerMode(
+          pixelSetBatteryControllerMode(
+            this._pixel,
             (params as PixelBatteryControllerMode) ?? "default"
           ),
           action
         );
         break;
       case "rename":
-        this._guard(this._pixel.rename((params as string) ?? "Pixel"), action);
+        this._guard(
+          this._pixel.rename((params as string) ?? getDefaultName(this._pixel)),
+          action
+        );
         break;
       case "uploadProfile":
         this._guard(
@@ -479,10 +494,10 @@ class PixelDispatcher
         );
         break;
       case "reprogramDefaultBehavior":
-        this._guard(this._reprogramDefaultBehavior(), action);
+        this._guard(pixelReprogramDefaultBehavior(this._pixel), action);
         break;
       case "resetAllSettings":
-        this._guard(this._resetAllSettings(), action);
+        this._guard(pixelResetAllSettings(this._pixel), action);
         break;
       case "queueDFU":
         this._queueDFU();
@@ -592,18 +607,6 @@ class PixelDispatcher
     await this._pixel.disconnect();
   }
 
-  private async _reportRssi(): Promise<void> {
-    await this._pixel.reportRssi(true);
-  }
-
-  private async _blink(): Promise<void> {
-    await this._pixel.blink(Color.dimOrange);
-  }
-
-  private async _blinkId(): Promise<void> {
-    await pixelBlinkId(this._pixel, { brightness: 0x04, loop: true });
-  }
-
   private async _playAnimation(anim: EditAnimation): Promise<void> {
     this._evEmitter.emit("profileUploadProgress", 0);
     const editDataSet = createDataSetForAnimation(anim);
@@ -616,30 +619,12 @@ class PixelDispatcher
     }
   }
 
-  private async _playProfileAnimation(animIndex: number): Promise<void> {
-    await pixelPlayProfileAnimation(this.pixel, animIndex);
-  }
-
   private async _playMultiAnimations(): Promise<void> {
     await this._playAnimation(PrebuildAnimations.rainbowAllFaces);
     await delay(6000);
     await this._playAnimation(PrebuildAnimations.rainbow);
     await delay(6000);
     await this._playAnimation(PrebuildAnimations.noise);
-  }
-
-  private async _calibrate(): Promise<void> {
-    await this._pixel.startCalibration();
-  }
-
-  private async _discharge(current: number): Promise<void> {
-    await pixelDischarge(this._pixel, current);
-  }
-
-  private async _setChargerMode(
-    mode: PixelBatteryControllerMode
-  ): Promise<void> {
-    await pixelSetBatteryControllerMode(this._pixel, mode);
   }
 
   private async _uploadProfile(type: PrebuildProfileName): Promise<void> {
@@ -679,19 +664,6 @@ class PixelDispatcher
     if (serializedBundle) {
       return DfuFilesBundle.create(serializedBundle);
     }
-  }
-
-  private async _exitValidationMode(): Promise<void> {
-    // Exit validation mode, don't wait for response as die will restart
-    await this._pixel.sendMessage("exitValidation", true);
-  }
-
-  private async _reprogramDefaultBehavior(): Promise<void> {
-    await pixelReprogramDefaultBehavior(this._pixel);
-  }
-
-  private async _resetAllSettings(): Promise<void> {
-    await pixelResetAllSettings(this._pixel);
   }
 
   //

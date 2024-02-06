@@ -159,16 +159,6 @@ export async function pixelPlayProfileAnimation(
   await pixel.sendMessage(playAnim);
 }
 
-/**
- * Requests the Pixel to clear internal settings.
- * @param pixel The Pixel instance to use.
- * @returns A promise that resolves once the clear has been confirmed.
- */
-export async function pixelClearSettings(pixel: Pixel): Promise<void> {
-  log(pixel, "Clearing settings");
-  await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
-}
-
 /* List of codes for the store values' types. */
 export const PixelValueStoreType = {
   DieType: 1,

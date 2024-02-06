@@ -150,6 +150,10 @@ i18n
           sendingAsPrintStatus: "Sending label to printer...",
           doneAsPrintStatus: "Print successful!",
           playKeyframes: "Play Keyframes",
+          setProfile: "Set Profile",
+          playAnimation: "Play Animation",
+          setDieType: "Set Die Type",
+          setDieColorway: "Set Colorway",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -166,6 +170,7 @@ i18n
           playProfileAnim: "Play Profile Anim",
           playProfileAnimation: "Play Profile Animation",
           updateProfile: "Update Profile",
+          resetProfile: "Reset Profile",
           updateBootloaderAndFirmware: "Update Bootloader & Firmware",
           updateAvailableGoToSettings:
             "Update available, go to Settings page to install.",
@@ -300,14 +305,6 @@ i18n
           next: "下一个",
           yes: "是",
           no: "否",
-          d4: "D4",
-          d6pipped: "Pipped D6",
-          d6fudge: "Fudge D6",
-          d8: "D8",
-          d10: "D10",
-          d00: "D00",
-          d12: "D12",
-          d20: "D20",
           colonSeparator: "：",
           commaSeparator: "，",
           // Connection statuses

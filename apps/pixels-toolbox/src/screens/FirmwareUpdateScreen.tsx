@@ -97,7 +97,6 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   useFocusEffect(
     React.useCallback(() => {
       if (!dfuTarget) {
-        console.log("### START SCAN");
         BleScanner.start("", (sp: ScannedPeripheral) => {
           if (sp.name.length) {
             const arr = pendingScans.current;
@@ -110,7 +109,6 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
           }
         }).catch(showBoundary);
         return () => {
-          console.log("### STOP SCAN");
           BleScanner.stop().catch(showBoundary);
         };
       }
