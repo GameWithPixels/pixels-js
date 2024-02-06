@@ -224,13 +224,13 @@ function DiceListPage({
   );
 
   // Reconnect
-  const scanForPairedDice = usePairedDiceScanner();
+  const { startScan } = usePairedDiceScanner();
 
   // Scan for missing dice on showing page
   useFocusEffect(
     React.useCallback(() => {
-      scanForPairedDice();
-    }, [scanForPairedDice])
+      startScan();
+    }, [startScan])
   );
 
   // Selection
@@ -253,7 +253,7 @@ function DiceListPage({
   const isFocus = viewMode === "focus";
   const selectAndShowDetails = (pairedDie: PairedDie, showDetails = true) => {
     setSelectedDie(pairedDie);
-    scanForPairedDice(pairedDie.pixelId);
+    startScan({ pixelId: pairedDie.pixelId });
     if (showDetails) {
       navigation.navigate("dieDetails", { pixelId: pairedDie.pixelId });
     }
@@ -287,7 +287,7 @@ function DiceListPage({
           {isFocus && selectedDie ? (
             <PixelFocusView
               pairedDie={selectedDie}
-              onPress={scanForPairedDice}
+              onPress={startScan}
               onShowDetails={() => selectAndShowDetails(selectedDie)}
               onEditProfile={() =>
                 navigation.navigate("editDieProfileStack", {

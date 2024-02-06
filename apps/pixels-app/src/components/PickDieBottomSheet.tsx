@@ -12,14 +12,13 @@ import React from "react";
 import { View } from "react-native";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
-import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TouchableCard } from "~/components/TouchableCard";
 import { DieWireframe } from "~/components/icons";
 import { getDieTypeLabel } from "~/features/profiles";
 import { listToText, notEmpty } from "~/features/utils";
-import { useBottomSheetPadding } from "~/hooks";
+import { useBottomSheetPadding, usePairedDiceScanner } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -33,15 +32,23 @@ export function PickDieBottomSheet({
   visible: boolean;
   onDismiss: (pixel?: Pixel) => void;
 }) {
+  const { startScan, stopScan } = usePairedDiceScanner();
+
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
+      startScan({ noTimeout: true });
     } else {
       sheetRef.current?.dismiss();
     }
-  }, [visible]);
+  }, [startScan, visible]);
+
+  const dismiss = (pixel?: Pixel) => {
+    stopScan();
+    onDismiss(pixel);
+  };
 
   const pairedDice = useAppSelector((state) => state.pairedDice.paired).filter(
     (d) => !dieTypes || dieTypes.includes(d.dieType)
@@ -55,13 +62,6 @@ export function PickDieBottomSheet({
     [pairedDice]
   );
 
-  const getSelector = (pairedDie: PairedDie) => () => {
-    const pixel = getPixel(pairedDie.pixelId);
-    if (pixel) {
-      return () => onDismiss(pixel);
-    }
-  };
-
   const dieTypesStrSpace = !dieTypes?.length
     ? ""
     : listToText(dieTypes.map(getDieTypeLabel)) + " ";
@@ -72,7 +72,7 @@ export function PickDieBottomSheet({
     <BottomSheetModal
       ref={sheetRef}
       snapPoints={["50%"]}
-      onDismiss={onDismiss}
+      onDismiss={dismiss}
       onChange={onChange}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
@@ -102,13 +102,14 @@ export function PickDieBottomSheet({
             contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
           >
             {pairedDice.map((d) => {
-              const disabled = !pixels.some((p) => d.pixelId === p.pixelId);
+              const pixel = pixels.find((p) => d.pixelId === p.pixelId);
+              const disabled = !pixel;
               return (
                 <TouchableCard
                   key={d.pixelId}
                   row
                   contentStyle={{ padding: 10, gap: 10 }}
-                  onPress={getSelector(d)}
+                  onPress={() => dismiss(pixel)}
                 >
                   <DieWireframe
                     size={40}
@@ -119,7 +120,7 @@ export function PickDieBottomSheet({
                 </TouchableCard>
               );
             })}
-            {pixels.length > 0 ? (
+            {pairedDice.length > 0 ? (
               <Text
                 style={{ marginTop: 10 }}
               >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>

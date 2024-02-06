@@ -30,10 +30,7 @@ export function usePixelScanner(): {
       // TODO stop scanning on unmount if this particular scan is still active
     };
   }, [central]);
-  const startScan = React.useCallback(
-    () => central.startScan("discovery"),
-    [central]
-  );
+  const startScan = React.useCallback(() => central.startScan(), [central]);
   const stopScan = React.useCallback(() => central.stopScan(), [central]);
   return {
     availablePixels,
@@ -44,12 +41,29 @@ export function usePixelScanner(): {
   };
 }
 
-export function usePairedDiceScanner(): (pixelId?: number) => void {
+export function usePairedDiceScanner(): {
+  startScan: (opt?: { pixelId?: number; noTimeout?: boolean }) => void;
+  stopScan: () => void;
+} {
   const central = usePixelsCentral();
   // Don't stop scanning on unmount to not interfere with other scans
   // It will automatically stop after a little while anyways
-  return React.useCallback(
-    (pixelId?: number) => central.startScan(pixelId ?? "paired"),
+  const startScan = React.useCallback(
+    (opt?: { pixelId?: number; noTimeout?: boolean }) => {
+      if (central.hasMissingPixels) {
+        central.startScan({
+          pixelId: opt?.pixelId,
+          timeout: !opt?.noTimeout,
+        });
+      } else {
+        console.log("No missing pixels, skip scan");
+      }
+    },
     [central]
   );
+  const stopScan = React.useCallback(() => central.stopScan(), [central]);
+  return {
+    startScan,
+    stopScan,
+  };
 }

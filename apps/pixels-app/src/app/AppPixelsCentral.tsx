@@ -107,7 +107,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   );
 
   // Immediately start scanning for paired dice
-  React.useEffect(() => central.startScan("paired"), [central]);
+  React.useEffect(() => central.startScan({ timeout: true }), [central]);
 
   return (
     <PixelsCentralContext.Provider value={central}>

@@ -80,6 +80,15 @@ export class PixelsCentral {
     return pixels;
   }
 
+  get hasMissingPixels(): boolean {
+    for (const entry of this._watched.values()) {
+      if (entry === "watched") {
+        return true;
+      }
+    }
+    return false;
+  }
+
   constructor() {
     this._scanner.minNotifyInterval = 200;
     this._scanner.keepAliveDuration = 5000;
@@ -152,31 +161,18 @@ export class PixelsCentral {
     this._evEmitter.removeListener(eventName, listener);
   }
 
-  // In "paired" mode scan will stop after 6 seconds or when all paired Pixels are found.
-  // In "discovery" mode scan won't stop until explicitly stopped (even if another call
-  // to startScan in "discovery" mode is made)
-  startScan(modeOrPixelId: number | "paired" | "discovery"): void {
-    // For "paired" scan, only start scan if we're missing some Pixel
-    // instances and if we're not already scanning
-    if (
-      modeOrPixelId === "discovery" ||
-      (modeOrPixelId === "paired" && this._hasMissingPixels()) ||
-      (typeof modeOrPixelId === "number" &&
-        this._watched.get(modeOrPixelId) === "watched")
-    ) {
-      if (modeOrPixelId === "discovery" && !this._scanner.isScanning) {
-        // Clear list now as when starting a new scan there might be
-        // a small delay before it sends the "cleared" event
-        this._scannedPixels.length = 0;
-      }
-      if (typeof modeOrPixelId === "number") {
-        this._scanner.scanFilter = (sp) => sp.pixelId === modeOrPixelId;
+  startScan(opt?: { timeout?: boolean; pixelId?: number }): void {
+    console.log("PixelsCentral: Start scanning => " + JSON.stringify(opt));
+    const pixelId = opt?.pixelId;
+    if (!pixelId || this._watched.get(pixelId) === "watched") {
+      if (pixelId) {
+        this._scanner.scanFilter = (sp) => sp.pixelId === pixelId;
       } else {
         this._scanner.scanFilter = undefined;
       }
       // Start scanning
       this._scanner
-        .start(modeOrPixelId === "discovery" ? undefined : { duration: 6000 })
+        .start(opt?.timeout ? { duration: 6000 } : undefined)
         .catch((e) => {
           console.log(`PixelsCentral: Scan start error ${e}`);
         });
@@ -237,15 +233,6 @@ export class PixelsCentral {
         `PixelCentral: Uncaught error in "${name}" event listener: ${e}`
       );
     }
-  }
-
-  _hasMissingPixels(): boolean {
-    for (const entry of this._watched.values()) {
-      if (entry === "watched") {
-        return true;
-      }
-    }
-    return false;
   }
 
   private _scanListListener({

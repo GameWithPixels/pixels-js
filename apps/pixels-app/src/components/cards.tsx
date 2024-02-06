@@ -13,7 +13,7 @@ import { BatteryIcon, RssiIcon } from "./icons";
 import { PairedDie } from "~/app/PairedDie";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 
-function PixelRollState({
+export function PixelRollState({
   pixel,
   ...props
 }: {
