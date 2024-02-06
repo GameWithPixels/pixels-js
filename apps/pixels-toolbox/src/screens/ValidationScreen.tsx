@@ -6,6 +6,7 @@ import {
   getBorderRadius,
 } from "@systemic-games/react-native-base-components";
 import {
+  DiceUtils,
   Pixel,
   PixelDieType,
   ScannedPixel,
@@ -358,7 +359,11 @@ function DecodePixelIdPage({
 
   return showScanList ? (
     <BaseBox w="100%" h="100%">
-      <ScannedPixelsList onSelect={onSelect} onClose={onClose} />
+      <ScannedPixelsList
+        ledCount={DiceUtils.getLEDCount(settings.dieType)}
+        onSelect={onSelect}
+        onClose={onClose}
+      />
     </BaseBox>
   ) : (
     <BaseVStack w="100%" h="100%" alignItems="center" justifyContent="center">

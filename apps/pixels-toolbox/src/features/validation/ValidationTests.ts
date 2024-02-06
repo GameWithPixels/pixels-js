@@ -231,7 +231,7 @@ export const ValidationTests = {
             DiceUtils.getTopFace(pixel.dieType),
             pixel.dieType
           ),
-        };
+        } as const;
         await withBlink(
           abortSignal,
           pixel,
@@ -300,7 +300,7 @@ export const ValidationTests = {
         // Blink face
         const options = {
           faceMask: getFaceMask(face, pixel.dieType),
-        };
+        } as const;
         await withBlink(
           abortSignal,
           pixel,
@@ -411,12 +411,14 @@ export const ValidationTests = {
     }
   },
 
-  async renameDie(_pixel: Pixel, _name?: string): Promise<void> {
+  async renameDie(pixel: Pixel, name?: string): Promise<void> {
     const _unused = getRandomDieNameAsync;
     // Disabled until we have a good list of names
-    // const newName = name ?? (await getRandomDieNameAsync());
-    // console.log("Setting die name to " + newName);
-    // await pixel.rename(newName);
+    // name ??= await getRandomDieNameAsync();
+    if (name) {
+      console.log("Setting die name to " + name);
+      await pixel.rename(name);
+    }
   },
 
   async exitValidationMode(pixel: Pixel): Promise<void> {
