@@ -45,11 +45,12 @@ import {
   PrebuildProfilesNames,
 } from "~/features/pixels/PrebuildProfiles";
 import {
-  pixelClearSettings,
+  pixelResetAllSettings,
   pixelStopAllAnimations,
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
+import { getDefaultName } from "~/features/pixels/getDefaultName";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
 import {
   selectCustomFirmwareAndProfile,
@@ -683,7 +684,7 @@ export function CheckBoard({
     .withTask(
       React.useCallback(async () => {
         if (firmwareUpdated) {
-          await pixelClearSettings(pixel);
+          await pixelResetAllSettings(pixel);
         }
       }, [pixel, firmwareUpdated]),
       createTaskStatusContainer(t("clearSettings"))
@@ -740,7 +741,7 @@ export function WaitCharging({
         }
       }, [pixel, t]),
       createTaskStatusContainer(t("batteryLevel")),
-      { skip: settings.sequence !== "dieFinal" }
+      { skip: !notCharging || settings.sequence !== "dieFinal" }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -1094,7 +1095,7 @@ export function PrepareDie({
     )
     .withTask(
       React.useCallback(async () => {
-        await ValidationTests.renameDie(pixel);
+        await ValidationTests.renameDie(pixel, getDefaultName(pixel));
         // Start printing ahead of time
         printLabel(pixel, settings.dieType, onPrintStatus);
       }, [onPrintStatus, pixel, settings.dieType]),
