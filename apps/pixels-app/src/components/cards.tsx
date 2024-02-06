@@ -1,34 +1,18 @@
 import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Text, TextProps } from "react-native-paper";
+import { Text } from "react-native-paper";
 
 import { PixelDieRenderer } from "./DieRenderer";
 import { PixelBattery } from "./PixelBattery";
+import { PixelRollState } from "./PixelRollState";
 import { PixelRssi } from "./PixelRssi";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, RssiIcon } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
+import { getPixelStatusLabel } from "~/features/profiles";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
-
-export function PixelRollState({
-  pixel,
-  ...props
-}: {
-  pixel: Pixel;
-} & Omit<TextProps<string>, "children">) {
-  const [rollState] = usePixelValue(pixel, "rollState");
-  const rolling =
-    rollState?.state === "rolling" || rollState?.state === "handling";
-  return (
-    <Text {...props}>
-      Die is{" "}
-      {rolling ? "rolling" : `on face ${rollState?.face ?? pixel.currentFace}`}
-    </Text>
-  );
-}
 
 export function PixelVCard({
   pairedDie,
@@ -47,9 +31,10 @@ export function PixelVCard({
 } & Omit<TouchableCardProps, "children">) {
   const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
+  const isReady = pixel && status === "ready";
   const [thePixelName] = usePixelValue(pixel, "name");
   const pixelName = thePixelName ?? pairedDie.name;
-  const disabled = !pixel || status !== "ready";
+  const activeProfile = useActiveProfile(pairedDie);
   const [containerSize, setContainerSize] = React.useState(0);
   const dieRenderWidth = containerSize * dieIconRatio;
   return (
@@ -67,10 +52,12 @@ export function PixelVCard({
       }}
       {...props}
     >
-      {!miniCards && !disabled && (
+      {!miniCards && isReady && (
         <View
           style={{
-            alignSelf: "flex-end",
+            position: "absolute",
+            top: 5,
+            right: 5,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "flex-end",
@@ -88,12 +75,23 @@ export function PixelVCard({
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
         <PixelDieRenderer key={dieRenderWidth} pixel={pairedDie} />
       </View>
-      <Text variant={miniCards ? "labelSmall" : "titleMedium"}>
-        {status && status !== "ready" && status !== "disconnected"
-          ? status
-          : pixelName}
-      </Text>
-      {!miniCards && !disabled && <PixelRollState pixel={pixel} />}
+      {miniCards ? (
+        <Text variant="labelSmall">
+          {status && status !== "ready" && status !== "disconnected"
+            ? getPixelStatusLabel(status)
+            : pixelName}
+        </Text>
+      ) : (
+        <>
+          <Text variant="titleMedium">{pixelName}</Text>
+          <Text>{activeProfile?.name ?? "No Profile!"}</Text>
+          {isReady ? (
+            <PixelRollState pixel={pixel} />
+          ) : (
+            <Text>{getPixelStatusLabel(status)}</Text>
+          )}
+        </>
+      )}
     </TouchableCard>
   );
 }
@@ -106,10 +104,10 @@ export function PixelHCard({
 } & Omit<TouchableCardProps, "children">) {
   const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
+  const isReady = pixel && status === "ready";
   const [thePixelName] = usePixelValue(pixel, "name");
   const pixelName = thePixelName ?? pairedDie.name;
   const activeProfile = useActiveProfile(pairedDie);
-  const disabled = !pixel || status !== "ready";
   const dieRenderWidth = 70;
   return (
     <TouchableCard row {...props}>
@@ -120,15 +118,20 @@ export function PixelHCard({
       <View
         style={{
           flexGrow: 1,
+          alignSelf: "stretch",
           marginHorizontal: 10,
-          justifyContent: "space-evenly",
+          justifyContent: "space-around",
         }}
       >
         <Text variant="bodyLarge">{pixelName}</Text>
         <Text>{activeProfile?.name ?? "No Profile!"}</Text>
-        {!disabled && <PixelRollState pixel={pixel} />}
+        {isReady ? (
+          <PixelRollState pixel={pixel} />
+        ) : (
+          <Text>{getPixelStatusLabel(status)}</Text>
+        )}
       </View>
-      {!disabled && (
+      {isReady && (
         <View
           style={{
             flexDirection: "row",
