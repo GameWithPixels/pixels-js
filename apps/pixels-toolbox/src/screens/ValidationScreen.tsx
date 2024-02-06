@@ -456,6 +456,8 @@ function RunTestsPage({
   // Keep screen on
   useKeepAwake();
 
+  const noPrint = true;
+
   const { t } = useTranslation();
 
   const [pixel, setPixel] = React.useState<Pixel>();
@@ -572,7 +574,7 @@ function RunTestsPage({
           {...p}
           settings={settings}
           pixel={getPixel()}
-          onPrintStatus={setPrintStatus}
+          onPrintStatus={noPrint ? undefined : setPrintStatus}
         />
       )),
       skipIfNotDieFinal
@@ -604,7 +606,7 @@ function RunTestsPage({
           onPrintStatus={setPrintStatus}
         />
       )),
-      skipIfNotDieFinal
+      { skip: skipIfNotDieFinal.skip || noPrint }
     );
 
   // Get result
