@@ -21,6 +21,7 @@ import {
   PixelColorwayValues,
   PixelColorway,
   PixelDieType,
+  DiceUtils,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
@@ -321,11 +322,15 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
           </TextEntry>
           <TextEntry title={t("rollState")}>
-            {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
-            {t(
-              getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
-                "unknown"
-            )}
+            {telemetry
+              ? `${t(
+                  getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
+                    "unknown"
+                )}, ${DiceUtils.faceFromIndex(
+                  telemetry.faceIndex,
+                  pixel.dieType
+                )} (index: ${telemetry.faceIndex})`
+              : "unknown"}
           </TextEntry>
           <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
         </>
