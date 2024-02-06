@@ -27,9 +27,7 @@ export function usePixelScanner(): {
       central.removeEventListener("isScanning", setIsScanning);
       central.removeEventListener("lastError", setLastScanError);
       central.removeEventListener("availablePixels", setAvailablePixels);
-      // Stop scanning on unmount
-      console.log(">>>>> STOP SCAN UNMOUNT");
-      central.stopScan();
+      // TODO stop scanning on unmount if this particular scan is still active
     };
   }, [central]);
   const startScan = React.useCallback(
@@ -46,9 +44,12 @@ export function usePixelScanner(): {
   };
 }
 
-export function usePairedDiceScanner(): () => void {
+export function usePairedDiceScanner(): (pixelId?: number) => void {
   const central = usePixelsCentral();
   // Don't stop scanning on unmount to not interfere with other scans
   // It will automatically stop after a little while anyways
-  return React.useCallback(() => central.startScan("paired"), [central]);
+  return React.useCallback(
+    (pixelId?: number) => central.startScan(pixelId ?? "paired"),
+    [central]
+  );
 }

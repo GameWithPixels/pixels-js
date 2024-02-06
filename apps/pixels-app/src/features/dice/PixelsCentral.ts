@@ -17,6 +17,8 @@ import {
   ScanError,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { unsigned32ToHex } from "../utils";
+
 function pixelLog(pixel: Pick<PixelInfo, "name">, message: string) {
   console.log(`[Pixel ${pixel.name}]: ${message}`);
 }
@@ -78,20 +80,11 @@ export class PixelsCentral {
     return pixels;
   }
 
-  get missingPixelsCount(): number {
-    let count = 0;
-    for (const entry of this._watched.values()) {
-      if (typeof entry !== "object") {
-        ++count;
-      }
-    }
-    return count;
-  }
-
   constructor() {
     this._scanner.minNotifyInterval = 200;
     this._scanner.keepAliveDuration = 5000;
-    this._scanner.clearOnStart = true;
+    this._scanner.clearOnStop = true;
+    this._scanner.autoResume = true;
     const onAvailable = (isAvailable: boolean) => {
       if (isAvailable) {
         for (const activeIds of this.watchedPixelsIds) {
@@ -162,18 +155,28 @@ export class PixelsCentral {
   // In "paired" mode scan will stop after 6 seconds or when all paired Pixels are found.
   // In "discovery" mode scan won't stop until explicitly stopped (even if another call
   // to startScan in "discovery" mode is made)
-  startScan(mode: "paired" | "discovery"): void {
+  startScan(modeOrPixelId: number | "paired" | "discovery"): void {
     // For "paired" scan, only start scan if we're missing some Pixel
     // instances and if we're not already scanning
-    if (mode === "discovery" || this.missingPixelsCount) {
-      if (mode === "discovery" && !this._scanner.isScanning) {
+    if (
+      modeOrPixelId === "discovery" ||
+      (modeOrPixelId === "paired" && this._hasMissingPixels()) ||
+      (typeof modeOrPixelId === "number" &&
+        this._watched.get(modeOrPixelId) === "watched")
+    ) {
+      if (modeOrPixelId === "discovery" && !this._scanner.isScanning) {
         // Clear list now as when starting a new scan there might be
         // a small delay before it sends the "cleared" event
         this._scannedPixels.length = 0;
       }
+      if (typeof modeOrPixelId === "number") {
+        this._scanner.scanFilter = (sp) => sp.pixelId === modeOrPixelId;
+      } else {
+        this._scanner.scanFilter = undefined;
+      }
       // Start scanning
       this._scanner
-        .start(mode === "paired" ? { duration: 6000 } : undefined)
+        .start(modeOrPixelId === "discovery" ? undefined : { duration: 6000 })
         .catch((e) => {
           console.log(`PixelsCentral: Scan start error ${e}`);
         });
@@ -192,6 +195,7 @@ export class PixelsCentral {
 
   watch(pixelId: number): void {
     if (!this._watched.has(pixelId)) {
+      console.log(`PixelsCentral: Watching Pixel ${unsigned32ToHex(pixelId)}`);
       this._watched.set(pixelId, "watched");
       this._autoConnect(pixelId);
     }
@@ -200,6 +204,9 @@ export class PixelsCentral {
   unwatch(pixelId: number): void {
     const entry = this._watched.get(pixelId);
     if (entry) {
+      console.log(
+        `PixelsCentral: Un-watching Pixel ${unsigned32ToHex(pixelId)}`
+      );
       this._watched.delete(pixelId);
       if (typeof entry === "object") {
         entry.unwatch();
@@ -226,10 +233,19 @@ export class PixelsCentral {
     try {
       this._evEmitter.emit(name, ev);
     } catch (e) {
-      console.log(
+      console.error(
         `PixelCentral: Uncaught error in "${name}" event listener: ${e}`
       );
     }
+  }
+
+  _hasMissingPixels(): boolean {
+    for (const entry of this._watched.values()) {
+      if (entry === "watched") {
+        return true;
+      }
+    }
+    return false;
   }
 
   private _scanListListener({

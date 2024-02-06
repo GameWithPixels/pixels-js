@@ -11,6 +11,7 @@ import {
   BluetoothPermissionsDeniedError,
   BluetoothUnavailableError,
   getPixel,
+  Pixel,
   PixelDieType,
   PixelInfo,
 } from "@systemic-games/react-native-pixels-connect";
@@ -396,7 +397,7 @@ function HelpTurnOnDiceModal({
   );
 }
 
-function ScanSlide({ onNext }: { onNext: () => void }) {
+function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
   const appDispatch = useAppDispatch();
 
   // Monitor all scanned dice so that they are automatically connected
@@ -417,6 +418,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
     stopScan();
     if (action === "skip") {
       central.setWatchedDice([]);
+      onNext([]);
     } else {
       for (const p of pixels) {
         appDispatch(
@@ -429,9 +431,15 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
           })
         );
       }
+      onNext(pixels);
     }
-    onNext();
   };
+
+  // Stop on leaving page (that's for fast reload
+  // as the normal user workflow will always stop scanning)
+  React.useEffect(() => {
+    return () => stopScan();
+  }, [stopScan]);
 
   const [showHelp, setShowHelp] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
@@ -597,7 +605,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
       ) : (
         <AnimatedGradientButton
           entering={FadeIn.duration(300).delay(200)}
-          onPress={() => leavePage("skip")}
+          onPress={() => leavePage("pair")}
         >
           {diceCount === 1 ? "Pair My Die" : `Pair These ${diceCount} Dice`}
         </AnimatedGradientButton>
@@ -691,7 +699,7 @@ const StatusText = observer(function StatusText({
   return (
     <Text>
       {toUpdateCount
-        ? `Remaining dice to update: ${toUpdateCount}.`
+        ? `Remaining dice to update: ${toUpdateCount}`
         : erroredCount
           ? ""
           : (statuses.length <= 1 ? "Your die is" : "All your dice are") +
@@ -846,19 +854,8 @@ function OnboardingPage({
 }) {
   const appDispatch = useAppDispatch();
 
-  // Stop on leaving page (that's mostly for dev fast reload
-  // as the normal user workflow will always stop scanning)
-  const { stopScan } = usePixelScanner();
-  React.useEffect(() => {
-    return () => stopScan();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-
   // DFU files
-  const [bundle] = useDfuBundle();
+  const [bundle] = useDfuBundle(); // TODO handle error
 
   // Page scrolling
   const [index, setIndex] = React.useState(0);
@@ -875,6 +872,13 @@ function OnboardingPage({
     )
   );
 
+  const shouldUpdate = (pixels: Pixel[]) =>
+    pixels.some((d) => shouldUpdateFirmware(getPixel(d.pixelId), bundle));
+  const leave = () => {
+    appDispatch(setShowOnboarding(false));
+    navigation.navigate("home");
+  };
+
   return (
     <>
       <ScrollView
@@ -890,21 +894,9 @@ function OnboardingPage({
         <WelcomeSlide onNext={() => scrollTo(1)} />
         <HealthSlide onNext={() => scrollTo(2)} />
         {/* <SettingsSlide onNext={() => scrollTo(3)} /> */}
-        <ScanSlide
-          onNext={() => {
-            const updateDice = pairedDice.some((d) =>
-              shouldUpdateFirmware(getPixel(d.pixelId), bundle)
-            );
-            scrollTo(updateDice ? 3 : 4);
-          }}
-        />
+        <ScanSlide onNext={(pxs) => scrollTo(shouldUpdate(pxs) ? 3 : 4)} />
         <UpdateDiceSlide dfuBundle={bundle} onNext={() => scrollTo(4)} />
-        <ReadySlide
-          onDone={() => {
-            appDispatch(setShowOnboarding(false));
-            navigation.navigate("home");
-          }}
-        />
+        <ReadySlide onDone={leave} />
       </ScrollView>
       {/* Bottom page indicator */}
       <View

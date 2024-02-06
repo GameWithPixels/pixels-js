@@ -253,7 +253,7 @@ function DiceListPage({
   const isFocus = viewMode === "focus";
   const selectAndShowDetails = (pairedDie: PairedDie, showDetails = true) => {
     setSelectedDie(pairedDie);
-    scanForPairedDice();
+    scanForPairedDice(pairedDie.pixelId);
     if (showDetails) {
       navigation.navigate("dieDetails", { pixelId: pairedDie.pixelId });
     }
