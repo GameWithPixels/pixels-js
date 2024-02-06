@@ -8,10 +8,10 @@ const buildNumber = 2014;
 
 const config = {
   expo: {
-    name: prod ? "Pixels" : "Dev Pixels",
+    name: prod ? "Pixels" : "Pixels Dev",
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "49.2", // Major is Expo version, minor is native code revision
+    runtimeVersion: "49.3", // Major is Expo version, minor is native code revision
     version,
     platforms: ["ios", "android"],
     orientation: "portrait",
