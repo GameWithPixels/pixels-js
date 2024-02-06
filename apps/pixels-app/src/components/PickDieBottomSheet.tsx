@@ -4,24 +4,68 @@ import {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import {
-  getPixel,
   Pixel,
   PixelDieType,
+  usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
+import { PixelRollState } from "./PixelRollState";
+import { TouchableCard } from "./TouchableCard";
+import { getTextColorStyle } from "./colors";
+import { DieWireframe } from "./icons";
+
+import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
-import { DieStaticInfo } from "~/components/ScannedDieStatus";
-import { TouchableCard } from "~/components/TouchableCard";
-import { DieWireframe } from "~/components/icons";
-import { getDieTypeLabel } from "~/features/profiles";
-import { listToText, notEmpty } from "~/features/utils";
-import { useBottomSheetPadding, usePairedDiceScanner } from "~/hooks";
+import { getDieTypeLabel, getPixelStatusLabel } from "~/features/profiles";
+import { listToText } from "~/features/utils";
+import {
+  useActivePixel,
+  useBottomSheetPadding,
+  usePairedDiceScanner,
+} from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
+
+function PairedDieCard({
+  pairedDie,
+  onSelect,
+}: {
+  pairedDie: PairedDie;
+  onSelect?: (pixel: Pixel) => void;
+}) {
+  const pixel = useActivePixel(pairedDie.pixelId);
+  const status = usePixelStatus(pixel);
+  const disabled = status !== "ready";
+  const { colors } = useTheme();
+  const textColor = getTextColorStyle(colors, disabled);
+  return (
+    <TouchableCard
+      row
+      disabled={disabled}
+      contentStyle={{ padding: 10 }}
+      onPress={() => pixel && onSelect?.(pixel)}
+    >
+      <DieWireframe size={40} dieType={pairedDie.dieType} disabled={disabled} />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "space-between",
+          marginHorizontal: 10, // Using padding on the contentStyle moves the views to the right on touch
+        }}
+      >
+        <Text variant="bodyLarge" style={textColor}>
+          {pairedDie.name}
+        </Text>
+        {pixel && !disabled && <PixelRollState pixel={pixel} />}
+      </View>
+      <Text style={textColor}>{getPixelStatusLabel(status)}</Text>
+    </TouchableCard>
+  );
+}
 
 export function PickDieBottomSheet({
   dieTypes,
@@ -52,14 +96,6 @@ export function PickDieBottomSheet({
 
   const pairedDice = useAppSelector((state) => state.pairedDice.paired).filter(
     (d) => !dieTypes || dieTypes.includes(d.dieType)
-  );
-  const pixels = React.useMemo(
-    () =>
-      pairedDice
-        .map((d) => getPixel(d.pixelId))
-        .filter(notEmpty)
-        .filter((p) => p.isReady),
-    [pairedDice]
   );
 
   const dieTypesStrSpace = !dieTypes?.length
@@ -101,26 +137,10 @@ export function PickDieBottomSheet({
           <BottomSheetScrollView
             contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
           >
-            {pairedDice.map((d) => {
-              const pixel = pixels.find((p) => d.pixelId === p.pixelId);
-              const disabled = !pixel;
-              return (
-                <TouchableCard
-                  key={d.pixelId}
-                  row
-                  contentStyle={{ padding: 10, gap: 10 }}
-                  onPress={() => dismiss(pixel)}
-                >
-                  <DieWireframe
-                    size={40}
-                    dieType={d.dieType}
-                    disabled={disabled}
-                  />
-                  <DieStaticInfo pixel={d} disabled={disabled} />
-                </TouchableCard>
-              );
-            })}
-            {pairedDice.length > 0 ? (
+            {pairedDice.map((d) => (
+              <PairedDieCard key={d.pixelId} pairedDie={d} onSelect={dismiss} />
+            ))}
+            {pairedDice.length ? (
               <Text
                 style={{ marginTop: 10 }}
               >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>

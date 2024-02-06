@@ -7,6 +7,7 @@ import { getTextColorStyle } from "./colors";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 
 export function DieStaticInfo({
+  children,
   pixel,
   disabled,
   style,
@@ -14,7 +15,7 @@ export function DieStaticInfo({
 }: {
   pixel: Pick<PixelInfo, "name" | "dieType" | "colorway">;
   disabled?: boolean;
-} & Omit<ViewProps, "children">) {
+} & ViewProps) {
   const { colors } = useTheme();
   const textColor = getTextColorStyle(colors, disabled);
   return (
@@ -26,6 +27,7 @@ export function DieStaticInfo({
         {pixel.name}
       </Text>
       <Text style={textColor}>{getDieTypeAndColorwayLabel(pixel)}</Text>
+      {children}
     </View>
   );
 }
