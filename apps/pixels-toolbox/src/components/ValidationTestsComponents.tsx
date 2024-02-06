@@ -662,6 +662,7 @@ export function CheckBoard({
 }) {
   const { t } = useTranslation();
 
+  const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "CheckBoard")
     .withTask(
       React.useCallback(
@@ -689,6 +690,22 @@ export function CheckBoard({
         }
       }, [pixel, firmwareUpdated]),
       createTaskStatusContainer(t("clearSettings"))
+    )
+    .withTask(
+      React.useCallback(async () => {
+        // Set empty profile
+        await ValidationTests.updateProfile(
+          pixel,
+          createDataSetForProfile(
+            createProfile("empty", settings.dieType)
+          ).toDataSet(),
+          setProgress
+        );
+      }, [pixel, settings.dieType]),
+      createTaskStatusContainer({
+        title: t("resetProfile"),
+        children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
+      })
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -1001,7 +1018,7 @@ export function PrepareDie({
   settings,
   pixel,
   onPrintStatus,
-}: ValidationTestProps & PrintingProp) {
+}: ValidationTestProps & Partial<PrintingProp>) {
   const { t } = useTranslation();
 
   const appDispatch = useAppDispatch();
@@ -1098,7 +1115,9 @@ export function PrepareDie({
       React.useCallback(async () => {
         await ValidationTests.renameDie(pixel, getDefaultName(pixel));
         // Start printing ahead of time
-        printLabel(pixel, settings.dieType, onPrintStatus);
+        if (onPrintStatus) {
+          printLabel(pixel, settings.dieType, onPrintStatus);
+        }
       }, [onPrintStatus, pixel, settings.dieType]),
       createTaskStatusContainer(t("setDieName"))
     )
@@ -1216,7 +1235,7 @@ export function LabelPrinting({
             "labelPrinting",
             (resolve) => setResolvePrintOkPromise(() => resolve)
           );
-          if (!printOk) {
+          if (!printOk && onPrintStatus) {
             console.log("Reprinting label");
             onPrintStatus(undefined);
             setReset(true);
