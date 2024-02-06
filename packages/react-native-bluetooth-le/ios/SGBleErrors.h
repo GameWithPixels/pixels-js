@@ -34,6 +34,12 @@ typedef NS_ENUM(NSInteger, SGBleError)
 };
 
 /**
+ * @brief This library error domain.
+ * @ingroup Apple_Objective-C
+ */
+extern NSErrorDomain SGBleErrorDomain;
+
+/**
  * @brief Application out of memory.
  * @ingroup Apple_Objective-C
  */
