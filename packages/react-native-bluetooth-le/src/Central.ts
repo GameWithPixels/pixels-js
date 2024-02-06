@@ -449,7 +449,6 @@ export const Central = {
     });
 
     // Start scan
-    console.log("[BLE] Starting scan");
     try {
       await BluetoothLE.startScan(requiredServices);
     } catch (e) {
@@ -497,7 +496,6 @@ export const Central = {
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
     // Stop scan
-    console.log("[BLE] Stopping scan");
     _updateScanStatus("stopped");
     await BluetoothLE.stopScan();
   },
