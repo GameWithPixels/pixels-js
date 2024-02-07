@@ -506,7 +506,7 @@ class PixelDispatcher
         this._dequeueDFU();
         break;
       case "setDieType":
-        if ((params ?? 0) > 0 && PixelDieTypeValues[params as PixelDieType]) {
+        if (PixelDieTypeValues[params as PixelDieType]) {
           this._guard(
             pixelStoreValue(
               this._pixel,
@@ -518,7 +518,7 @@ class PixelDispatcher
         }
         break;
       case "setColorway":
-        if ((params ?? 0) > 0 && PixelColorwayValues[params as PixelColorway]) {
+        if (PixelColorwayValues[params as PixelColorway]) {
           this._guard(
             pixelStoreValue(
               this._pixel,
