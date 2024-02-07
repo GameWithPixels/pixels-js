@@ -5,6 +5,8 @@ import {
   combineFlags,
 } from "@systemic-games/pixels-core-utils";
 
+import { PixelDieType } from "./PixelDieType";
+
 const d20FaceIndices = [
   17, 1, 19, 13, 3, 10, 8, 5, 15, 7, 9, 11, 14, 4, 12, 0, 18, 2, 16, 6,
 ];
@@ -40,11 +42,12 @@ function getFaceMaskPd6(faceValue: number): number {
  */
 export function getFaceMask(
   faceValueOrFaceList: number | number[],
-  dieType: string // TODO PixelDieType
+  dieType: PixelDieType
 ): number {
   if (typeof faceValueOrFaceList === "number") {
     switch (dieType) {
       case "d4":
+        // TODO fix for D4 rolling as D6
         switch (faceValueOrFaceList) {
           case 1:
             break;
@@ -52,11 +55,10 @@ export function getFaceMask(
           case 3:
             ++faceValueOrFaceList;
             break;
+          default:
           case 4:
             faceValueOrFaceList = 6;
             break;
-          default:
-            return 0;
         }
         break;
       case "d6pipped":
