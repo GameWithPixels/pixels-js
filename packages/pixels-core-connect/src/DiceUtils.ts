@@ -75,8 +75,10 @@ export const DiceUtils = {
 
   faceFromIndex(faceIndex: number, dieType: PixelDieType): number {
     switch (dieType) {
+      // TODO fix for D4 rolling as D6
       case "d4":
-        if (faceIndex === 2 || faceIndex === 3) return faceIndex;
+        if (faceIndex === 2) return 2;
+        if (faceIndex === 3) return 3;
         if (faceIndex === 5) return 4;
         return 1;
       case "d10":
@@ -91,9 +93,11 @@ export const DiceUtils = {
   indexFromFace(face: number, dieType: PixelDieType): number {
     switch (dieType) {
       case "d4":
-        if (face === 2 || face === 3) return face;
+        // TODO fix for D4 rolling as D6
+        if (face === 2) return 2;
+        if (face === 3) return 3;
         if (face === 4) return 5;
-        return 1;
+        return 0;
       case "d10":
         return face;
       case "d00":

@@ -146,9 +146,9 @@ function get24BitsTimestamp(): number {
 }
 
 // List of faces to test, last face is the one with the copper counter weight
-function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
+function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
   let faces: number[];
-  switch (pixel.dieType) {
+  switch (dieType) {
     case "d4":
       faces = [2, 3, 4];
       break;
@@ -173,9 +173,7 @@ function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
       faces = [5, 10, 20];
       break;
     default:
-      throw new Error(
-        `Unsupported die type ${pixel.dieType} (${pixel.ledCount} LEDs)`
-      );
+      throw new Error(`Unsupported die type ${dieType}`);
   }
   assert(faces.length === 3, "getFaceUp: Need 3 faces");
   switch (step) {
@@ -728,11 +726,12 @@ export function WaitCharging({
         async (abortSignal) =>
           ValidationTests.waitCharging(
             pixel,
+            settings.dieType,
             !notCharging,
             notCharging ? Color.dimGreen : Color.dimOrange,
             abortSignal
           ),
-        [notCharging, pixel]
+        [notCharging, pixel, settings.dieType]
       ),
       createTaskStatusContainer({
         children: (
@@ -834,6 +833,7 @@ export function CheckLEDs({
 export function WaitFaceUp({
   action,
   onTaskStatus,
+  settings,
   pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
@@ -844,11 +844,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "1"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "1"),
             Color.dimMagenta,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeBlinkingFaceUp"))
     )
@@ -858,11 +859,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "2"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "2"),
             Color.dimYellow,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -872,11 +874,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "3"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "3"),
             Color.dimCyan,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -1095,6 +1098,14 @@ export function PrepareDie({
       { skip: !selectProfile }
     )
     .withTask(
+      React.useCallback(
+        // Note: renaming die also reset profile to default
+        async () => ValidationTests.renameDie(pixel, getDefaultName(pixel)),
+        [pixel]
+      ),
+      createTaskStatusContainer(t("setDieName"))
+    )
+    .withTask(
       React.useCallback(async () => {
         console.log(`Programming profile: ${profile}`);
         // Update profile
@@ -1105,21 +1116,15 @@ export function PrepareDie({
           ).toDataSet(),
           setProgress
         );
-      }, [pixel, profile, settings.dieType]),
-      createTaskStatusContainer({
-        title: t("updateProfile"),
-        children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
-      })
-    )
-    .withTask(
-      React.useCallback(async () => {
-        await ValidationTests.renameDie(pixel, getDefaultName(pixel));
         // Start printing ahead of time
         if (onPrintStatus) {
           printLabel(pixel, settings.dieType, onPrintStatus);
         }
-      }, [onPrintStatus, pixel, settings.dieType]),
-      createTaskStatusContainer(t("setDieName"))
+      }, [onPrintStatus, pixel, profile, settings.dieType]),
+      createTaskStatusContainer({
+        title: t("updateProfile"),
+        children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
+      })
     )
     .withTask(
       React.useCallback(

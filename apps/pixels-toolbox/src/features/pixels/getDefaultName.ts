@@ -1,6 +1,5 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
-  PixelColorway,
   PixelDieType,
   PixelInfo,
 } from "@systemic-games/react-native-pixels-connect";
@@ -14,9 +13,9 @@ function dieTypeStr(dieType: PixelDieType): string {
     case "d6":
       return "D6";
     case "d6fudge":
-      return "FD6";
+      return "Fudge";
     case "d6pipped":
-      return "PD6";
+      return "Pipped";
     case "d8":
       return "D8";
     case "d10":
@@ -32,34 +31,8 @@ function dieTypeStr(dieType: PixelDieType): string {
   }
 }
 
-function colorwayInitials(colorway: PixelColorway): string {
-  switch (colorway) {
-    case "unknown":
-    case "custom":
-      return "";
-    case "onyxBlack":
-      return "OB";
-    case "hematiteGrey":
-      return "HG";
-    case "midnightGalaxy":
-      return "MG";
-    case "auroraSky":
-      return "AS";
-    case "clear":
-      return "CL";
-    default:
-      assertNever(colorway);
-  }
-}
-
 export function getDefaultName({
   dieType,
-  colorway,
-}: Pick<PixelInfo, "dieType" | "colorway">): string {
-  let name = `Pixels ${dieTypeStr(dieType)}`;
-  const initials = colorwayInitials(colorway);
-  if (initials.length > 0) {
-    name += ` ${initials}`;
-  }
-  return name;
+}: Pick<PixelInfo, "dieType">): string {
+  return `Pixels ${dieTypeStr(dieType)}`;
 }
