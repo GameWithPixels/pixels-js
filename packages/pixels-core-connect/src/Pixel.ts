@@ -1292,6 +1292,19 @@ export class Pixel extends PixelInfoNotifier {
   private _updateRollInfo(
     info: Partial<{ state: PixelRollState; faceIndex: number; face: number }>
   ) {
+    // TODO fix for D4 rolling as D6
+    if (this.dieType === "d4" && info.state && info.faceIndex) {
+      if (info.faceIndex === 1 || info.faceIndex === 4) {
+        info.faceIndex = DiceUtils.indexFromFace(
+          this.currentFace > 0 ? this.currentFace : 1,
+          "d4"
+        );
+        if (info.state === "crooked" || info.state === "onFace") {
+          info.state = "crooked";
+        }
+      }
+    }
+
     // Convert face index to face value
     if (info.faceIndex !== undefined) {
       info.face = DiceUtils.faceFromIndex(info.faceIndex, this.dieType);
