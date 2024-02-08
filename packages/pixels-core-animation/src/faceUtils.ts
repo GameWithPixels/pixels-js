@@ -130,6 +130,7 @@ export function getFaceMask(
         ++faceValueOrFaceList;
         break;
       case "d00":
+        // TODO fix for D00 rolling as D10
         faceValueOrFaceList = 1 + Math.round(faceValueOrFaceList / 10);
         break;
     }
