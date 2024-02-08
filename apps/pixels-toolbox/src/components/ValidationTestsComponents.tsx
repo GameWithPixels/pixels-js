@@ -813,7 +813,7 @@ export function CheckLEDs({
       createTaskStatusContainer({
         children: (
           <MessageYesNo
-            message={t("areAllLEDsWhiteWithCount", {
+            message={t("areAllLEDsWhite", {
               count: pixel.ledCount,
             })}
             hideButtons={!resolvePromise}
