@@ -51,6 +51,13 @@ export function createProfile(
   const profile = new EditProfile();
   setProfileDefaultAdvancedRules(profile, dieType);
 
+  // TODO fix for D4 rolling as D6
+  const fixD4FaceCount = (count: number): number =>
+    dieType === "d4" ? 6 : count;
+  const mapFace = (face: number): number =>
+    DiceUtils.mapFaceForAnimation(face, dieType);
+  const mapFaces = (faces: number[]): number[] => faces.map(mapFace);
+
   const pushRollingAnimRule = function (
     anim: EditAnimation,
     count: number = 1
@@ -76,8 +83,10 @@ export function createProfile(
     profile.rules.push(
       new EditRule(
         new EditConditionRolled({
-          faces: DiceUtils.getDieFaces(dieType).filter(
-            (face) => face !== DiceUtils.getTopFace(dieType)
+          faces: mapFaces(
+            DiceUtils.getDieFaces(dieType).filter(
+              (face) => face !== DiceUtils.getTopFace(dieType)
+            )
           ),
         }),
         {
@@ -101,7 +110,7 @@ export function createProfile(
     profile.rules.push(
       new EditRule(
         new EditConditionRolled({
-          faces: [DiceUtils.getTopFace(dieType)],
+          faces: [mapFace(DiceUtils.getTopFace(dieType))],
         }),
         {
           actions: [
@@ -185,10 +194,12 @@ export function createProfile(
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
-            faces: DiceUtils.getDieFaces(dieType).filter(
-              (face) =>
-                DiceUtils.indexFromFace(face, dieType) <
-                DiceUtils.getFaceCount(dieType) / 2
+            faces: mapFaces(
+              DiceUtils.getDieFaces(dieType).filter(
+                (face) =>
+                  DiceUtils.indexFromFace(face, dieType) <
+                  fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 2
+              )
             ),
           }),
           {
@@ -205,10 +216,12 @@ export function createProfile(
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
-            faces: DiceUtils.getDieFaces(dieType).filter(
-              (face) =>
-                DiceUtils.indexFromFace(face, dieType) >=
-                DiceUtils.getFaceCount(dieType) / 2
+            faces: mapFaces(
+              DiceUtils.getDieFaces(dieType).filter(
+                (face) =>
+                  DiceUtils.indexFromFace(face, dieType) >=
+                  fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 2
+              )
             ),
           }),
           {
@@ -230,10 +243,12 @@ export function createProfile(
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
-            faces: DiceUtils.getDieFaces(dieType).filter(
-              (face) =>
-                DiceUtils.indexFromFace(face, dieType) <
-                DiceUtils.getFaceCount(dieType) / 3
+            faces: mapFaces(
+              DiceUtils.getDieFaces(dieType).filter(
+                (face) =>
+                  DiceUtils.indexFromFace(face, dieType) <
+                  fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 3
+              )
             ),
           }),
           {
@@ -249,12 +264,14 @@ export function createProfile(
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
-            faces: DiceUtils.getDieFaces(dieType).filter(
-              (face) =>
-                DiceUtils.indexFromFace(face, dieType) >=
-                  DiceUtils.getFaceCount(dieType) / 3 &&
-                DiceUtils.indexFromFace(face, dieType) <
-                  (2 * DiceUtils.getFaceCount(dieType)) / 3
+            faces: mapFaces(
+              DiceUtils.getDieFaces(dieType).filter(
+                (face) =>
+                  DiceUtils.indexFromFace(face, dieType) >=
+                    fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 3 &&
+                  DiceUtils.indexFromFace(face, dieType) <
+                    (2 * fixD4FaceCount(DiceUtils.getFaceCount(dieType))) / 3
+              )
             ),
           }),
           {
@@ -270,11 +287,13 @@ export function createProfile(
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
-            faces: DiceUtils.getDieFaces(dieType).filter(
-              (face) =>
-                DiceUtils.indexFromFace(face, dieType) >=
-                  (2 * DiceUtils.getFaceCount(dieType)) / 3 &&
-                face !== DiceUtils.getTopFace(dieType)
+            faces: mapFaces(
+              DiceUtils.getDieFaces(dieType).filter(
+                (face) =>
+                  DiceUtils.indexFromFace(face, dieType) >=
+                    (2 * fixD4FaceCount(DiceUtils.getFaceCount(dieType))) / 3 &&
+                  face !== DiceUtils.getTopFace(dieType)
+              )
             ),
           }),
           {
@@ -300,7 +319,7 @@ export function createProfile(
                 ...PrebuildAnimations.whiteRose,
                 duration: 2,
               }),
-              face: DiceUtils.getTopFace(dieType),
+              face: mapFace(DiceUtils.getTopFace(dieType)),
               loopCount: 1,
             }),
           ],
@@ -317,7 +336,7 @@ export function createProfile(
           actions: [
             new EditActionPlayAnimation({
               animation: PrebuildAnimationsExt.fire,
-              //              face: DiceUtils.getTopFace(dieType),
+              // face: fixD4Face(DiceUtils.getTopFace(dieType)),
               face: Constants.currentFaceIndex,
               loopCount: 1,
             }),
@@ -335,7 +354,7 @@ export function createProfile(
           actions: [
             new EditActionPlayAnimation({
               animation: PrebuildAnimationsExt.doubleSpinningMagic,
-              //face: DiceUtils.getTopFace(dieType),
+              //face: fixD4Face(DiceUtils.getTopFace(dieType)),
               face: Constants.currentFaceIndex,
               loopCount: 1,
             }),
@@ -353,7 +372,7 @@ export function createProfile(
           actions: [
             new EditActionPlayAnimation({
               animation: PrebuildAnimations.waterBaseLayer,
-              face: DiceUtils.getTopFace(dieType),
+              face: mapFace(DiceUtils.getTopFace(dieType)),
               //face: Constants.currentFaceIndex,
               loopCount: 1,
             }),

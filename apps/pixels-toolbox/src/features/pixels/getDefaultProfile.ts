@@ -76,6 +76,9 @@ export function setProfileDefaultAdvancedRules(
   profile: EditProfile,
   dieType: PixelDieType
 ) {
+  const mapFace = (face: number): number =>
+    DiceUtils.mapFaceForAnimation(face, dieType);
+
   // Hello
   profile.rules.push(
     new EditRule(
@@ -167,7 +170,7 @@ export function setProfileDefaultAdvancedRules(
               fade: 0.5,
               faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
             }),
-            face: DiceUtils.getTopFace(dieType),
+            face: mapFace(DiceUtils.getTopFace(dieType)),
             loopCount: 1,
           }),
         ],
@@ -192,7 +195,7 @@ export function setProfileDefaultAdvancedRules(
               fade: 0.5,
               faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
             }),
-            face: DiceUtils.getTopFace(dieType),
+            face: mapFace(DiceUtils.getTopFace(dieType)),
             loopCount: 1,
           }),
         ],
@@ -216,7 +219,7 @@ export function setProfileDefaultAdvancedRules(
               fade: 0.5,
               faces: Constants.faceMaskAll,
             }),
-            face: DiceUtils.getTopFace(dieType),
+            face: mapFace(DiceUtils.getTopFace(dieType)),
             loopCount: 1,
           }),
         ],
@@ -241,7 +244,7 @@ export function setProfileDefaultAdvancedRules(
               fade: 0.5,
               faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
             }),
-            face: DiceUtils.getTopFace(dieType),
+            face: mapFace(DiceUtils.getTopFace(dieType)),
             loopCount: 1,
           }),
         ],
