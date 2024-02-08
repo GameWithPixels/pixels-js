@@ -30,8 +30,9 @@ export abstract class PixelInfoNotifier<
 {
   static MutablePropsList: readonly (keyof PixelInfo)[] = [
     "name",
-    "firmwareDate",
     "colorway",
+    "dieType",
+    "firmwareDate",
     "rssi",
     "batteryLevel",
     "isCharging",
