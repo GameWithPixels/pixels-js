@@ -70,21 +70,21 @@ class PixelsDispatcher {
   private async _playSetAnimations2(pixels: PixelDispatcher[]): Promise<void> {
     pixels.forEach((p) => {
       if (p.dieType === "d20") {
-        p.dispatch("playAnimation", PrebuildAnimations.rainbow_as);
+        p.dispatch("playAnimation", PrebuildAnimations.rainbowAurora);
       }
     });
     await delay(100);
 
     pixels.forEach((p) => {
       if (p.dieType === "d8") {
-        p.dispatch("playAnimation", PrebuildAnimations.rainbowAllFaces_as);
+        p.dispatch("playAnimation", PrebuildAnimations.rainbowAllFacesAurora);
       }
     });
     await delay(100);
 
     pixels.forEach((p) => {
       if (p.dieType === "d6") {
-        p.dispatch("playAnimation", PrebuildAnimations.rainbowAllFaces_as);
+        p.dispatch("playAnimation", PrebuildAnimations.rainbowAllFacesAurora);
       }
     });
     await delay(5000);
@@ -109,11 +109,11 @@ class PixelsDispatcher {
     ) as PixelDispatcher;
     sortedPixels[5] = pixels.find((p) => p.dieType === "d4") as PixelDispatcher;
 
-    d20Pixel.dispatch("playAnimation", PrebuildAnimations.rainbow_as);
+    d20Pixel.dispatch("playAnimation", PrebuildAnimations.rainbowAurora);
     for (let i = 0; i < 6; i += 1) {
       sortedPixels[i].dispatch(
         "playAnimation",
-        PrebuildAnimations.rainbowAllFaces_as
+        PrebuildAnimations.rainbowAllFacesAurora
       );
       await delay(100);
     }
@@ -140,7 +140,7 @@ class PixelsDispatcher {
     sortedPixels[6] = pixels.find((p) => p.dieType === "d4") as PixelDispatcher;
 
     for (let i = 0; i < 7; i += 1) {
-      sortedPixels[i].dispatch("playAnimation", PrebuildAnimations.cycle_fire);
+      sortedPixels[i].dispatch("playAnimation", PrebuildAnimations.cycleFire);
       await delay(100);
     }
     await delay(5000);

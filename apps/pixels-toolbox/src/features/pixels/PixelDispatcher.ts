@@ -725,7 +725,7 @@ class PixelDispatcher
                 flags: HelloGoodbyeFlagsValues.hello,
               }),
               new EditActionPlayAnimation({
-                animation: PrebuildAnimations.pink_worm,
+                animation: PrebuildAnimations.pinkWorm,
               })
             )
           );
@@ -873,7 +873,7 @@ class PixelDispatcher
                 face: 1,
               }),
               new EditActionPlayAnimation({
-                animation: PrebuildAnimations.spinning_rainbow,
+                animation: PrebuildAnimations.spinningRainbow,
                 face: Constants.currentFaceIndex,
                 loopCount: 1,
               })
