@@ -234,19 +234,21 @@ function DiceListPage({
   );
 
   // Selection
-  const [selectedDie, setSelectedDie] = React.useState<PairedDie>();
+  const [lastSelectedDie, setSelectedDie] = React.useState<PairedDie>();
+  // We don't want to show a Pixel that no longer exists
+  const selectedDie = !pairedDice.length
+    ? // Nothing to select
+      undefined
+    : pairedDice.some((d) => d.pixelId === lastSelectedDie?.pixelId)
+      ? lastSelectedDie
+      : // Select first Pixel
+        pairedDice[0];
+  // Update state to match selectedDie
   React.useEffect(() => {
-    if (!pairedDice.length) {
-      // Unselect Pixel
-      setSelectedDie(undefined);
-    } else if (
-      !selectedDie ||
-      !pairedDice.some((d) => d.pixelId === selectedDie.pixelId)
-    ) {
-      // Select first Pixel
-      setSelectedDie(pairedDice[0]);
-    }
-  }, [pairedDice, selectedDie]);
+    // TODO this triggers an unneeded re-render and is kind of a hack anyways
+    setSelectedDie(selectedDie);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDie !== lastSelectedDie]);
 
   // View Mode
   const [viewMode, setViewMode] = React.useState<DiceViewMode>("focus");
@@ -292,9 +294,7 @@ function DiceListPage({
               onEditProfile={() =>
                 navigation.navigate("editDieProfileStack", {
                   screen: "editDieProfile",
-                  params: {
-                    pixelId: selectedDie.pixelId,
-                  },
+                  params: { pixelId: selectedDie.pixelId },
                 })
               }
             />
