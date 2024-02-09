@@ -653,14 +653,17 @@ export function CheckBoard({
   onTaskStatus,
   settings,
   pixel,
-  firmwareUpdated,
-}: ValidationTestProps & {
-  firmwareUpdated: boolean;
-}) {
+}: ValidationTestProps) {
   const { t } = useTranslation();
 
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "CheckBoard")
+    .withTask(
+      React.useCallback(async () => {
+        await pixelResetAllSettings(pixel);
+      }, [pixel]),
+      createTaskStatusContainer(t("clearSettings"))
+    )
     .withTask(
       React.useCallback(
         () => ValidationTests.checkAccelerationValid(pixel),
@@ -679,14 +682,6 @@ export function CheckBoard({
       React.useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
       createTaskStatusContainer(t("rssi")),
       { skip: isBoard(settings.sequence) }
-    )
-    .withTask(
-      React.useCallback(async () => {
-        if (firmwareUpdated) {
-          await pixelResetAllSettings(pixel);
-        }
-      }, [pixel, firmwareUpdated]),
-      createTaskStatusContainer(t("clearSettings"))
     )
     .withTask(
       React.useCallback(async () => {
