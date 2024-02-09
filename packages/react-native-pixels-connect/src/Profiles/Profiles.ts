@@ -36,6 +36,8 @@ export {
   EditAnimationNoise as AnimationNoise,
   EditAnimationNormals as AnimationNormals,
   EditAnimationRainbow as AnimationRainbow,
+  EditAnimationSequence as AnimationSequence,
+  EditAnimationSequenceItem as AnimationSequenceItem,
   EditAnimationSimple as AnimationFlashes,
   EditAudioClip as AudioClip,
   EditColor as FaceColor,

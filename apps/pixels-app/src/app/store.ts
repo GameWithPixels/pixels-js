@@ -16,7 +16,6 @@ import {
   REGISTER,
   REHYDRATE,
 } from "redux-persist";
-// import autoMergeLevel1 from "redux-persist/lib/stateReconciler/autoMergeLevel1";
 
 import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer from "~/features/store/appSettingsSlice";
@@ -30,6 +29,7 @@ import animationsNoiseReducer from "~/features/store/library/animations/noiseSli
 import animationsNormalsReducer from "~/features/store/library/animations/normalsSlice";
 import animationsPatternReducer from "~/features/store/library/animations/patternSlice";
 import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
+import animationsSequenceReducer from "~/features/store/library/animations/sequenceSlice";
 import gradientsReducer, {
   gradientsAdapter,
 } from "~/features/store/library/gradientsSlice";
@@ -111,6 +111,7 @@ const rootReducer = combineReducers({
       normals: persistAnim("normals", animationsNormalsReducer),
       pattern: persistAnim("pattern", animationsPatternReducer),
       rainbow: persistAnim("rainbow", animationsRainbowReducer),
+      sequence: persistAnim("sequence", animationsSequenceReducer),
     }),
     patterns: persist("library/patterns", patternsReducer),
     gradients: persist("library/gradients", gradientsReducer),

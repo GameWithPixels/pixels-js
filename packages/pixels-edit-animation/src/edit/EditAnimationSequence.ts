@@ -2,12 +2,10 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationSequence,
-  AnimationCategory,
-  PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
-import EditAnimation from "./EditAnimation";
+import EditAnimation, { EditAnimationParams } from "./EditAnimation";
 import EditAnimationSequenceItem from "./EditAnimationSequenceItem";
 import EditDataSet from "./EditDataSet";
 import { observable } from "./decorators";
@@ -19,18 +17,12 @@ export default class EditAnimationSequence extends EditAnimation {
   animations: EditAnimationSequenceItem[];
 
   constructor(
-    animations: EditAnimationSequenceItem[],
-    opt?: {
-      uuid?: string;
-      name?: string;
-      animFlags?: number;
-      duration?: number;
-      category?: AnimationCategory;
-      dieType?: PixelDieType;
+    opt?: EditAnimationParams & {
+      animations?: EditAnimationSequenceItem[];
     }
   ) {
     super(opt);
-    this.animations = animations;
+    this.animations = opt?.animations ?? [];
   }
 
   toAnimation(editSet: EditDataSet, _: AnimationBits): AnimationPreset {
@@ -70,7 +62,11 @@ export default class EditAnimationSequence extends EditAnimation {
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationSequence(this.animations, { ...this, uuid });
+    return new EditAnimationSequence({
+      ...this,
+      uuid,
+      animations: this.animations.map((a) => a.duplicate()),
+    });
   }
 
   collectAnimations(): EditAnimation[] {

@@ -54,6 +54,7 @@ import {
   EditAnimationNormals,
   EditAnimationRainbow,
   EditAnimationSequence,
+  EditAnimationSequenceItem,
   EditAnimationSimple,
   EditAudioClip,
   EditCondition,
@@ -239,10 +240,18 @@ export function toProfile(
 export function toAnimation<T extends keyof AnimationSetData>(
   type: T,
   data: Readonly<AnimationSetData[T][number]>,
+  getAnimation: (uuid: string) => EditAnimation | undefined,
   getPattern: (uuid: string) => EditPattern | undefined,
   getGradient: (uuid: string) => EditRgbGradient | undefined,
   allowMissingDependency = false
 ): EditAnimation {
+  const checkGetAnim = (uuid: string): EditAnimation => {
+    const anim = getAnimation(uuid);
+    if (!anim) {
+      throw new Error(`toAnimation(): No animation with uuid ${uuid}`);
+    }
+    return anim;
+  };
   const checkGetPattern = (uuid?: string): EditPattern | undefined => {
     if (uuid) {
       const pattern = getPattern(uuid);
@@ -338,10 +347,12 @@ export function toAnimation<T extends keyof AnimationSetData>(
     }
     case "sequence": {
       const animData = data as AnimationSequenceData;
-      return new EditAnimationSequence([], {
+      return new EditAnimationSequence({
         ...animData,
         animFlags,
-        // TODO Get animations
+        animations: animData.animations.map(
+          (a) => new EditAnimationSequenceItem(checkGetAnim(a.uuid), a.delay)
+        ),
       });
     }
     default:

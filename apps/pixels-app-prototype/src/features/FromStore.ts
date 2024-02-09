@@ -21,6 +21,9 @@ function deserializeAnimation<T extends keyof Serializable.AnimationSetData>(
   return Serializable.toAnimation(
     type,
     data,
+    () => {
+      throw new Error("Deserializing a animation sequence is not supported");
+    },
     (patternUuid) => {
       let pattern = patternsMap.get(patternUuid);
       if (!pattern) {

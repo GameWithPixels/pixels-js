@@ -77,6 +77,10 @@ function createAnimation(
   if (cycleData) {
     return new Profiles.AnimationCycle({ uuid });
   }
+  const sequenceData = library.animations.sequence.entities[uuid];
+  if (sequenceData) {
+    return new Profiles.AnimationSequence({ uuid });
+  }
   throw new Error(`Animation ${uuid} not found`);
 }
 
@@ -179,7 +183,7 @@ function updateAnimation(
       anim.angleGradient = normalsData.angleGradientUuid
         ? readGradient(normalsData.angleGradientUuid, library)
         : undefined;
-      anim.axisScrollSpeed = normalsData.axisScrollSpeed;
+      anim.angleScrollSpeed = normalsData.angleScrollSpeed;
       anim.fade = normalsData.fade;
       anim.gradientColorType =
         NormalsColorOverrideTypeValues[normalsData.gradientColorType];
@@ -202,7 +206,28 @@ function updateAnimation(
       return;
     }
   }
-  throw new Error(`Animation ${uuid} not found`);
+  const sequenceData = library.animations.sequence.entities[uuid];
+  if (sequenceData) {
+    if (anim instanceof Profiles.AnimationSequence) {
+      updateAnimBase(anim, sequenceData);
+      const animCount = sequenceData.animations.length;
+      anim.animations.length = animCount;
+      for (let i = 0; i < animCount; ++i) {
+        const { uuid, delay } = sequenceData.animations[i];
+        if (!anim.animations[i]) {
+          anim.animations[i] = makeObservable(
+            new Profiles.AnimationSequenceItem(new Profiles.AnimationFlashes())
+          );
+        }
+        anim.animations[i].delay = delay;
+        if (anim.animations[i].animation?.uuid !== uuid) {
+          anim.animations[i].animation = readAnimation(uuid, library);
+        }
+      }
+      return;
+    }
+  }
+  throw new Error(`Animation ${uuid} not found or of wrong type`);
 }
 
 function updateAnimBase(

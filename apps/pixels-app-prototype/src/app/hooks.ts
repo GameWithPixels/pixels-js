@@ -168,6 +168,11 @@ export function useAppAnimations(): Readonly<EditAnimation>[] {
                 Serializable.toAnimation(
                   entry[0] as keyof Serializable.AnimationSetData,
                   animData,
+                  () => {
+                    throw new Error(
+                      "Retrieving a child animation is not supported"
+                    );
+                  },
                   (patternUuid) =>
                     patterns.find((p) => p.uuid === patternUuid) as EditPattern, // TODO readonly
                   (gradientUuid) =>
