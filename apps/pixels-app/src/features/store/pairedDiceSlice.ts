@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { getFactoryProfileUuid } from "./library/factory";
+import { FactoryProfile } from "../profiles";
 
 import { PairedDie } from "~/app/PairedDie";
 import { getTimeStringMs, logError, unsigned32ToHex } from "~/features/utils";
@@ -73,7 +73,7 @@ const PairedDiceSlice = createSlice({
             ? state.paired[uIndex].profileUuid
             : uIndex >= 0
               ? state.unpaired[uIndex].profileUuid
-              : getFactoryProfileUuid(dieType),
+              : FactoryProfile.getUuid(dieType),
       };
       if (index >= 0) {
         state.paired[index] = die;

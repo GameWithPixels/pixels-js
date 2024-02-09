@@ -70,9 +70,9 @@ export function ProfilePicker({
             variant="bodyLarge"
             style={{ marginTop: 10, marginHorizontal: 10 }}
           >
-            There are no profile
-            {dieType ? ` for ${getDieTypeLabel(dieType)}'s` : ""}, try creating
-            a new one.
+            There is no existing profile
+            {dieType ? ` for ${getDieTypeLabel(dieType)}'s` : ""}, go in the
+            Profiles tab to create one.
           </Text>
         )}
       </Animated.ScrollView>

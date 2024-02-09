@@ -1,4 +1,5 @@
 import {
+  DefaultRulesAnimations,
   PrebuildAnimations,
   PrebuildAnimationsExt,
 } from "@systemic-games/pixels-edit-animation";
@@ -8,7 +9,6 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 import { LibraryData } from "./LibraryData";
-import { createFactoryAnimations } from "./factory";
 import { jsonConvert } from "./jsonConvert";
 
 import StandardProfilesJson from "#/profiles/standard-profiles.json";
@@ -19,9 +19,11 @@ export function createDefault(): LibraryData {
 
   // Get prebuild animations
   const prebuildAnimations = [
-    ...createFactoryAnimations(),
     ...Object.values(PrebuildAnimations),
     ...Object.values(PrebuildAnimationsExt),
+    ...Object.values(DefaultRulesAnimations)
+      .map((v) => (v instanceof Profiles.Animation ? v : Object.values(v)))
+      .flat(),
   ];
 
   // Collect gradients, patterns, and animations

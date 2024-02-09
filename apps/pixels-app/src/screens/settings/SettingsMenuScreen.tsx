@@ -1,10 +1,8 @@
 import React from "react";
 import { Linking, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
-import { useStore } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
-import { RootState } from "~/app/store";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
 import { Library } from "~/features/store";
@@ -81,14 +79,12 @@ function SettingsMenuPage({
   navigation: SettingsMenuScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-  const store = useStore<RootState>();
   const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
     appDispatch(resetAppSettings());
     appDispatch(resetPairedDice());
     appDispatch(resetRollsHistory());
     appDispatch(resetAppUpdate());
     Library.dispatchReset(appDispatch);
-    Library.dispatchAddDefaultProfiles(appDispatch, store.getState().library);
     navigation.navigate("onboarding");
   });
   const openPage = (page: PageName) => {
