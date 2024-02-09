@@ -45,7 +45,7 @@ export const AnimationDieRenderer = observer(function ActionDieRenderer({
       computed(() => {
         const dataSet = createDataSetForAnimation(animation).toDataSet();
         return {
-          animations: dataSet.animations,
+          animations: dataSet.animations.slice(0, 1),
           bits: dataSet.animationBits,
         };
       }),

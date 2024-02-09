@@ -1,4 +1,8 @@
-import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
+import {
+  ActionPlayAnimation,
+  ActionTypeValues,
+  createDataSetForProfile,
+} from "@systemic-games/pixels-edit-animation";
 import {
   PixelInfo,
   Profiles,
@@ -15,6 +19,7 @@ import {
   DieRendererProps,
   DieRendererWithFocus,
 } from "~/features/render3d/DieRenderer";
+import { notEmpty } from "~/features/utils";
 import { useActiveProfile } from "~/hooks";
 
 export const ProfileDieRenderer = observer(function ProfileDieRenderer({
@@ -40,7 +45,14 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
           applyProfileOverrides(rolledProfile)
         ).toDataSet();
         return {
-          animations: dataSet.animations,
+          // Only play animations triggered by action
+          animations: dataSet.actions
+            .map((a) =>
+              a.type === ActionTypeValues.playAnimation
+                ? dataSet.animations[(a as ActionPlayAnimation).animIndex]
+                : undefined
+            )
+            .filter(notEmpty),
           bits: dataSet.animationBits,
         };
       }),
