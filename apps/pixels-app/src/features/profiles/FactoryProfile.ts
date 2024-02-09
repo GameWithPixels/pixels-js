@@ -35,7 +35,7 @@ export const FactoryProfile = {
 
   getByUuid(profileUuid: string): Readonly<Profiles.Profile> | undefined {
     const dieType = profilesUuidsReverse[profileUuid];
-    if (dieType && dieType !== "unknown") {
+    if (dieType) {
       return FactoryProfile.get(dieType);
     }
   },
