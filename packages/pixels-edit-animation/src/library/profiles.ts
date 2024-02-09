@@ -12,6 +12,7 @@ import {
 } from "./getDefaultProfile";
 import {
   EditActionPlayAnimation,
+  EditActionSpeakText,
   EditAnimation,
   EditConditionRolled,
   EditConditionRolling,
@@ -22,6 +23,7 @@ import {
 export const PrebuildProfilesNames = [
   "default",
   "empty",
+  "speak",
   "waterfall",
   "fountain",
   "spinning",
@@ -116,10 +118,34 @@ export function createProfile(
     case "default":
       profile.name = "Default";
       setProfileDefaultRollingRules(profile, dieType);
+      profile.description = "The default profile for all dice.";
       break;
 
     case "empty":
       profile.name = "Empty";
+      profile.description = "An empty profile to start fresh.";
+      break;
+
+    case "speak":
+      profile.name = "Speak Numbers";
+      profile.description =
+        "This profile has your device say the rolled numbers out loud (when the app is open)";
+      setProfileDefaultRollingRules(profile, dieType);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimations.noise);
+      pushRolledAnimTopFaceRule(PrebuildAnimations.noiseRainbow);
+      profile.rules.push(
+        ...DiceUtils.getDieFaces(dieType).map(
+          (f) =>
+            new EditRule(
+              new EditConditionRolled({
+                faces: [f],
+              }),
+              new EditActionSpeakText({
+                text: f.toString(),
+              })
+            )
+        )
+      );
       break;
 
     case "waterfall": {
