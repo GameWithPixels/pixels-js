@@ -1,7 +1,7 @@
 import { assert, assertNever, delay } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForProfile,
-  createProfile,
+  createLibraryProfile,
   PrebuildProfileName,
   PrebuildProfilesNames,
 } from "@systemic-games/pixels-edit-animation";
@@ -690,7 +690,7 @@ export function CheckBoard({
         await ValidationTests.updateProfile(
           pixel,
           createDataSetForProfile(
-            createProfile("empty", settings.dieType)
+            createLibraryProfile("empty", settings.dieType)
           ).toDataSet(),
           setProgress
         );
@@ -1107,7 +1107,7 @@ export function PrepareDie({
         await ValidationTests.updateProfile(
           pixel,
           createDataSetForProfile(
-            createProfile(profile, settings.dieType)
+            createLibraryProfile(profile, settings.dieType)
           ).toDataSet(),
           setProgress
         );

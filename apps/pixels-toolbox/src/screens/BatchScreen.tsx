@@ -4,9 +4,9 @@ import { delay } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForAnimation,
   createDataSetForProfile,
+  createLibraryProfile,
   EditAnimationKeyframed,
   EditPattern,
-  getDefaultProfile,
 } from "@systemic-games/pixels-edit-animation";
 import {
   BaseHStack,
@@ -87,7 +87,7 @@ async function blink(pixel: Pixel): Promise<void> {
 
 async function uploadProfile(pixel: Pixel): Promise<void> {
   const dataSet = createDataSetForProfile(
-    getDefaultProfile(pixel.dieType)
+    createLibraryProfile("default", pixel.dieType)
   ).toDataSet();
   await pixel.transferDataSet(dataSet);
 }
