@@ -4,6 +4,14 @@ import {
   Color,
   ConnectionStateFlagsValues,
   Constants,
+  DiceUtils,
+  FaceCompareFlagsValues,
+  getFaceMask,
+  HelloGoodbyeFlagsValues,
+  PixelDieType,
+} from "@systemic-games/pixels-core-animation";
+
+import {
   EditActionPlayAnimation,
   EditAnimationRainbow,
   EditAnimationSimple,
@@ -15,12 +23,7 @@ import {
   EditConditionRolling,
   EditProfile,
   EditRule,
-  FaceCompareFlagsValues,
-  getFaceMask,
-  HelloGoodbyeFlagsValues,
-  PixelDieType,
-} from "@systemic-games/pixels-edit-animation";
-import { DiceUtils } from "@systemic-games/react-native-pixels-connect";
+} from "../edit";
 
 export function setProfileDefaultRollingRules(
   profile: EditProfile,

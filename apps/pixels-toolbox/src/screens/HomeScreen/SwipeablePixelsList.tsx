@@ -1,4 +1,5 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
+import { PrebuildAnimations } from "@systemic-games/pixels-edit-animation";
 import {
   BaseBoxProps,
   BaseHStack,
@@ -20,7 +21,6 @@ import PixelDispatcher, {
   PixelDispatcherActionMap,
 } from "~/features/pixels/PixelDispatcher";
 import PixelsDispatcher from "~/features/pixels/PixelsDispatcher";
-import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
 import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
 
 interface SwipeablePixelsListProps

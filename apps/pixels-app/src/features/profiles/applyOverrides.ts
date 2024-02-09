@@ -3,7 +3,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import {
   getAnimationGradient,
   setAnimationGradient,
-} from "~/features/store/library";
+} from "~/features/store/library/animationGradient";
 
 export function applyProfileOverrides(
   profile: Readonly<Profiles.Profile>

@@ -1,21 +1,22 @@
 import {
-  EditAnimationCycle,
-  EditAnimationNoise,
-  EditAnimationNormals,
-  EditAnimationRainbow,
-  EditAnimationSimple,
-  EditAnimationSequence,
-  EditRgbGradient,
-  EditRgbKeyframe,
-  EditAnimationSequenceItem,
-} from "@systemic-games/pixels-edit-animation";
-import {
   AnimationFlagsValues,
   Color,
   getFaceMask,
   NoiseColorOverrideTypeValues,
   NormalsColorOverrideTypeValues,
-} from "@systemic-games/react-native-pixels-connect";
+} from "@systemic-games/pixels-core-animation";
+
+import {
+  EditAnimationCycle,
+  EditAnimationNoise,
+  EditAnimationNormals,
+  EditAnimationRainbow,
+  EditAnimationSequence,
+  EditAnimationSequenceItem,
+  EditAnimationSimple,
+  EditRgbGradient,
+  EditRgbKeyframe,
+} from "../edit";
 
 const ledIndices = AnimationFlagsValues.useLedIndices;
 const travelingWithLedIndices = AnimationFlagsValues.traveling | ledIndices;

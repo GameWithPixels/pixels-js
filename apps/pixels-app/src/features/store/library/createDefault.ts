@@ -1,10 +1,10 @@
+import { PrebuildAnimations } from "@systemic-games/pixels-edit-animation";
 import {
   Profiles,
   Serializable,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { LibraryData } from "./LibraryData";
-import { PrebuildAnimations } from "./PrebuildAnimations";
 import { createFactoryAnimations } from "./factory";
 import { jsonConvert } from "./jsonConvert";
 

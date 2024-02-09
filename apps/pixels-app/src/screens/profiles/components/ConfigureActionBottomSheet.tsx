@@ -39,7 +39,7 @@ import {
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import { buildActionURL } from "~/features/profiles";
 import { playRemoteAction } from "~/features/profiles/playRemoteAction";
-import { getAnimationGradient } from "~/features/store/library";
+import { getAnimationGradient } from "~/features/store/library/animationGradient";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";

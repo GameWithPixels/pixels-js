@@ -1,29 +1,26 @@
-import { assertNever } from "@systemic-games/pixels-core-utils";
-import {
-  EditActionPlayAnimation,
-  EditConditionRolling,
-  EditConditionRolled,
-  EditProfile,
-  EditRule,
-  EditAnimation,
-  EditAnimationSimple,
-  EditAnimationNormals,
-  EditColor,
-} from "@systemic-games/pixels-edit-animation";
 import {
   Constants,
-  PixelDieType,
   DiceUtils,
-} from "@systemic-games/react-native-pixels-connect";
+  PixelDieType,
+} from "@systemic-games/pixels-core-animation";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 
-import {
-  PrebuildAnimations,
-  PrebuildAnimationsExt,
-} from "./PrebuildAnimations";
+import { PrebuildAnimations, PrebuildAnimationsExt } from "./animations";
 import {
   setProfileDefaultAdvancedRules,
   setProfileDefaultRollingRules,
 } from "./getDefaultProfile";
+import {
+  EditActionPlayAnimation,
+  EditAnimation,
+  EditAnimationNormals,
+  EditAnimationSimple,
+  EditColor,
+  EditConditionRolled,
+  EditConditionRolling,
+  EditProfile,
+  EditRule,
+} from "../edit";
 
 export const PrebuildProfilesNames = [
   "default",
