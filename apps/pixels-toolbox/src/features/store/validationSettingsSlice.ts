@@ -1,10 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PrebuildProfileName } from "@systemic-games/pixels-edit-animation";
 import {
   PixelColorway,
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
-
-import { PrebuildProfileName } from "~/features/pixels/PrebuildProfiles";
 
 export interface ValidationSettingsState {
   customFirmwareAndProfile: boolean; // Select with selectCustomFirmwareAndProfile

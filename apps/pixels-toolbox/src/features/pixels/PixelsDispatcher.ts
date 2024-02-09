@@ -1,7 +1,7 @@
 import { delay } from "@systemic-games/pixels-core-utils";
+import { PrebuildAnimations } from "@systemic-games/pixels-edit-animation";
 
 import PixelDispatcher from "./PixelDispatcher";
-import { PrebuildAnimations } from "./PrebuildAnimations";
 
 class PixelsDispatcher {
   private async _playSetAnimations1(pixels: PixelDispatcher[]): Promise<void> {

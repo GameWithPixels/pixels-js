@@ -5,6 +5,7 @@ import {
   Constants as AnimConstants,
   PixelDieType,
   PixelDieTypeValues,
+  DiceUtils,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
@@ -19,7 +20,6 @@ import {
 import { EventEmitter } from "events";
 
 import { Constants } from "./Constants";
-import { DiceUtils } from "./DiceUtils";
 import {
   MessageType,
   MessageOrType,

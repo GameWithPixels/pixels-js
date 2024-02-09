@@ -1,7 +1,9 @@
-import { PixelDieTypeValues } from "@systemic-games/pixels-core-animation";
+import {
+  DiceUtils,
+  PixelDieTypeValues,
+} from "@systemic-games/pixels-core-animation";
 import {
   PixelBleUuids,
-  DiceUtils,
   PixelColorwayValues,
   PixelRollStateValues,
 } from "@systemic-games/pixels-core-connect";

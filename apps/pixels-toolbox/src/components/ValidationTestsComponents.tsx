@@ -1,5 +1,10 @@
 import { assert, assertNever, delay } from "@systemic-games/pixels-core-utils";
-import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
+import {
+  createDataSetForProfile,
+  createProfile,
+  PrebuildProfileName,
+  PrebuildProfilesNames,
+} from "@systemic-games/pixels-edit-animation";
 import {
   BaseBoxProps,
   BaseHStack,
@@ -39,11 +44,6 @@ import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import {
-  createProfile,
-  PrebuildProfileName,
-  PrebuildProfilesNames,
-} from "~/features/pixels/PrebuildProfiles";
 import {
   pixelResetAllSettings,
   pixelStopAllAnimations,

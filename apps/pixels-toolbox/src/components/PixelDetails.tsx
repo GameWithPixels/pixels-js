@@ -1,7 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import { getValueKeyName, range } from "@systemic-games/pixels-core-utils";
-import { EditAnimationKeyframed } from "@systemic-games/pixels-edit-animation";
+import {
+  EditAnimationKeyframed,
+  PrebuildAnimations,
+  PrebuildAnimationsExt,
+  PrebuildProfilesNames,
+} from "@systemic-games/pixels-edit-animation";
 import {
   BaseHStack,
   BaseVStack,
@@ -55,11 +60,6 @@ import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import {
-  PrebuildAnimations,
-  PrebuildAnimationsExt,
-} from "~/features/pixels/PrebuildAnimations";
-import { PrebuildProfilesNames } from "~/features/pixels/PrebuildProfiles";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { useAppBackgroundState } from "~/hooks/useAppBackgroundState";

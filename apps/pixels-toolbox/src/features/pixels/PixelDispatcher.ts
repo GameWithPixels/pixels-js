@@ -9,7 +9,10 @@ import {
 import {
   createDataSetForAnimation,
   createDataSetForProfile,
+  createProfile,
   EditAnimation,
+  PrebuildAnimations,
+  PrebuildProfileName,
 } from "@systemic-games/pixels-edit-animation";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -36,8 +39,6 @@ import {
 import RNFS from "react-native-fs";
 
 import { PixelDispatcherStatic as Static } from "./PixelDispatcherStatic";
-import { PrebuildAnimations } from "./PrebuildAnimations";
-import { PrebuildProfileName, createProfile } from "./PrebuildProfiles";
 import { TelemetryData, toTelemetryData } from "./TelemetryData";
 import {
   pixelBlinkId,
