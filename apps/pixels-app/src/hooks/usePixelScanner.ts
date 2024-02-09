@@ -56,7 +56,7 @@ export function usePairedDiceScanner(): {
           timeout: !opt?.noTimeout,
         });
       } else {
-        console.log("No missing pixels, skip scan");
+        console.log("No missing pixels, skipping scan");
       }
     },
     [central]

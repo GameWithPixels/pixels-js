@@ -35,6 +35,7 @@ import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
+import { usePairedDiceScanner } from "./hooks";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -107,6 +108,13 @@ function AppPage() {
   const showOnboarding = useAppSelector(
     (state) => state.appSettings.showOnboarding
   );
+
+  // Immediately start scanning for paired dice
+  const { startScan } = usePairedDiceScanner();
+  React.useEffect(() => {
+    startScan();
+  }, [startScan]);
+
   const theme = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
