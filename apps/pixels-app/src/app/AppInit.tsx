@@ -21,10 +21,6 @@ export function AppInit({ children }: React.PropsWithChildren) {
       if (!hasStuff) {
         console.warn("Resetting library");
         Library.dispatchReset(appDispatch);
-        Library.dispatchAddDefaultProfiles(
-          appDispatch,
-          store.getState().library
-        );
       }
       setInitialized(true);
     }

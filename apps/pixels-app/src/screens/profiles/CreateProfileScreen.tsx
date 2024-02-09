@@ -16,7 +16,6 @@ import { GradientChip } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
 import {
   createProfileTemplates,
-  FactoryProfile,
   getProfileDieTypeLabel,
   ProfileDieTypes,
 } from "~/features/profiles";
@@ -93,9 +92,6 @@ function CreateProfilePage({
       newProfile.name = profileName.trim();
       newProfile.description = `Based on ${profile.name}`;
       newProfile.dieType = dieType;
-      if (tab === "Templates") {
-        FactoryProfile.addAdvancedRules(newProfile);
-      }
       addProfile(newProfile);
       navigation.pop();
       navigation.navigate("editProfileStack", {
