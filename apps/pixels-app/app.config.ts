@@ -3,8 +3,8 @@ const prod =
   !process.env.SYSTEMIC_PX_DEV &&
   process.env.EAS_BUILD_PROFILE !== "development";
 
-const version = "2.0.14"; // Version number must have 3 parts
-const buildNumber = 2014;
+const version = "2.1.0"; // Version number must have 3 parts
+const buildNumber = 2100;
 
 const config = {
   expo: {
