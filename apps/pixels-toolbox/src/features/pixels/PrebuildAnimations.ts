@@ -213,7 +213,7 @@ export const PrebuildAnimations = {
 
   greenBlueWorm: new AnimCycle({
     uuid: "336daf1b-3497-4838-a73b-fd6d80093cab",
-    name: "Green Red Worm",
+    name: "Green Blue Worm",
     category: "animated",
     duration: 5,
     animFlags: ledIndices,
@@ -310,7 +310,7 @@ export const PrebuildAnimations = {
 
   waterfallTopHalf: new AnimNormals({
     uuid: "ebfc1dd5-ec82-45ac-a653-db2fbb96e5c1",
-    name: "Fast Waterfall Top Half",
+    name: "Waterfall Top Half",
     category: "animated",
     duration: 0.5,
     gradient: new EditRgbGradient({
@@ -419,7 +419,7 @@ export const PrebuildAnimations = {
 
   spinning: new AnimNormals({
     uuid: "e655e6e1-32c3-407b-a154-15ceef54c9f3",
-    name: "Spinning Rainbow",
+    name: "Spinning",
     category: "animated",
     duration: 3,
     gradient: new EditRgbGradient({
@@ -464,9 +464,9 @@ export const PrebuildAnimations = {
     axisGradient: new EditRgbGradient({
       uuid: "784e8a01-8784-4e7c-b3b8-b98fc0b91c45",
       keyframes: [
-        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.0, color: Color.white }),
         new RgbKf({ time: 0.5, color: Color.brightWhite }),
-        new RgbKf({ time: 1.0, color: Color.black }),
+        new RgbKf({ time: 1.0, color: Color.white }),
       ],
     }),
     axisScrollSpeed: 0,
@@ -924,7 +924,7 @@ export const PrebuildAnimations = {
 
   rainbowDown: new AnimNormals({
     uuid: "de34bb09-b533-4bc9-b68a-ac65a773124f",
-    name: "Rainbow Up",
+    name: "Rainbow Down",
     category: "animated",
     duration: 3,
     gradient: new EditRgbGradient({
