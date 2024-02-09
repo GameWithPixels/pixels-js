@@ -22,6 +22,7 @@ import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
+import { CreateProfileBanner } from "~/components/banners";
 import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import { transferProfile } from "~/features/dice";
@@ -182,6 +183,14 @@ function ProfilesListPage({
   const [filter, setFilter] = React.useState("");
   const filteredProfiles = useFilteredProfiles(profiles, filter);
 
+  const [wasBannerInitiallyVisible, setWasBannerInitiallyVisible] =
+    React.useState(!profiles.length);
+  React.useEffect(() => {
+    if (!profiles.length) {
+      setWasBannerInitiallyVisible(true);
+    }
+  }, [profiles.length]);
+
   React.useEffect(() => {
     aref.current?.scrollTo({ y: initialPosition, animated: false });
   }, [aref, initialPosition]);
@@ -208,6 +217,12 @@ function ProfilesListPage({
             headerHeight={searchbarHeight}
           />
         </View>
+        {wasBannerInitiallyVisible && (
+          <CreateProfileBanner
+            visible={!profiles.length}
+            collapsedMarginBottom={-10}
+          />
+        )}
         {viewMode === "grid" ? (
           <ProfilesGrid
             profiles={filteredProfiles}
