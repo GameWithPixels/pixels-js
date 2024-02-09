@@ -15,7 +15,7 @@ export type PixelSessionConnectionStatus =
  * @category PixelSession
  */
 export interface PixelSessionConnectionEvent {
-  pixelSystemId: string;
+  systemId: string;
   connectionStatus: PixelSessionConnectionStatus;
   // TODO add reason
 }
@@ -26,23 +26,23 @@ export interface PixelSessionConnectionEvent {
  * @category PixelSession
  */
 export abstract class PixelSession {
-  protected readonly _pixelSystemId: string;
+  protected readonly _systemId: string;
   protected _connStatusCb?: (ev: PixelSessionConnectionEvent) => void;
   private _lastConnStatus: PixelSessionConnectionStatus;
 
   /**
    * Instantiates a session with a Pixel.
    * No attempt is made to connect to the die at this point.
-   * @param deviceSystemId The Pixel system id.
+   * @param systemId The peripheral system id (as assigned by the OS).
    */
-  constructor(deviceSystemId: string) {
-    this._pixelSystemId = deviceSystemId;
+  constructor(systemId: string) {
+    this._systemId = systemId;
     this._lastConnStatus = "disconnected";
   }
 
-  /** Gets the Pixel system id. */
-  get pixelSystemId(): string {
-    return this._pixelSystemId;
+  /** Gets the peripheral system id (as assigned by the OS). */
+  get systemId(): string {
+    return this._systemId;
   }
 
   /**
@@ -98,7 +98,7 @@ export abstract class PixelSession {
     if (this._lastConnStatus !== connectionStatus) {
       this._lastConnStatus = connectionStatus;
       this._connStatusCb?.({
-        pixelSystemId: this._pixelSystemId,
+        systemId: this._systemId,
         connectionStatus,
       });
     }

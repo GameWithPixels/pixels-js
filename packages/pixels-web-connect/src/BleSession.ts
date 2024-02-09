@@ -56,12 +56,12 @@ export default class BleSession extends PixelSession {
   private _notify?: BluetoothRemoteGATTCharacteristic;
   private _write?: BluetoothRemoteGATTCharacteristic;
 
-  constructor(deviceSystemId: string) {
-    super(deviceSystemId);
-    const device = PixelsDevices.getKnownDevice(deviceSystemId);
+  constructor(systemId: string) {
+    super(systemId);
+    const device = PixelsDevices.getKnownDevice(systemId);
     if (!device) {
       throw new BleSessionError(
-        `No known Bluetooth device with system id: ${deviceSystemId}`
+        `No known Bluetooth device with system id: ${systemId}`
       );
     }
     this._device = device;
