@@ -12,6 +12,7 @@ import React from "react";
 import { View } from "react-native";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
+import { BluetoothStateWarning } from "./BluetoothWarning";
 import { PixelRollState } from "./PixelRollState";
 import { TouchableCard } from "./TouchableCard";
 import { getTextColorStyle } from "./colors";
@@ -134,22 +135,28 @@ export function PickDieBottomSheet({
             Select a{" "}
             {dieTypes ? listToText(dieTypes.map(getDieTypeLabel), "or") : "Die"}
           </Text>
-          <BottomSheetScrollView
-            contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
-          >
-            {pairedDice.map((d) => (
-              <PairedDieCard key={d.pixelId} pairedDie={d} onSelect={dismiss} />
-            ))}
-            {pairedDice.length ? (
-              <Text
-                style={{ marginTop: 10 }}
-              >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>
-            ) : (
-              <Text variant="bodyLarge">
-                {`You don't have any paired ${dieTypesStrSpace}die.`}
-              </Text>
-            )}
-          </BottomSheetScrollView>
+          <BluetoothStateWarning>
+            <BottomSheetScrollView
+              contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
+            >
+              {pairedDice.map((d) => (
+                <PairedDieCard
+                  key={d.pixelId}
+                  pairedDie={d}
+                  onSelect={dismiss}
+                />
+              ))}
+              {pairedDice.length ? (
+                <Text
+                  style={{ marginTop: 10 }}
+                >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>
+              ) : (
+                <Text variant="bodyLarge">
+                  {`You don't have any paired ${dieTypesStrSpace}die.`}
+                </Text>
+              )}
+            </BottomSheetScrollView>
+          </BluetoothStateWarning>
         </View>
       </ThemeProvider>
     </BottomSheetModal>
