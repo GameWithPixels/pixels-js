@@ -7,9 +7,11 @@ import {
   ThunkAction,
 } from "@reduxjs/toolkit";
 import {
+  createMigrate,
   FLUSH,
   PAUSE,
   PERSIST,
+  PersistedState,
   persistReducer,
   persistStore,
   PURGE,
@@ -59,16 +61,26 @@ const MyStorage = !__DEV__
       },
     };
 
+const migrations = {
+  2: (state: PersistedState) => {
+    if (state?._persist?.version === 1) {
+      console.warn("Migrating from version 1, clearing state");
+      return { _persist: state._persist };
+    }
+  },
+} as const;
+
 function persist<S, A extends Action = Action>(
   key: string,
   reducer: Reducer<S, A>
 ) {
   return persistReducer(
     {
-      version: 1,
+      version: 2,
       storage: MyStorage,
       key,
-      // debug: true,
+      debug: __DEV__,
+      migrate: createMigrate(migrations, { debug: __DEV__ }),
       // blacklist: [...blacklist] as string[],
       // stateReconciler: (
       //   inbound: RootState,
