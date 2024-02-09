@@ -14,6 +14,7 @@ import {
   EditAnimationSequence,
   EditAnimationSequenceItem,
   EditAnimationSimple,
+  EditColor,
   EditRgbGradient,
   EditRgbKeyframe,
 } from "../edit";
@@ -319,7 +320,7 @@ export const PrebuildAnimations = {
       keyframes: [new RgbKf({ time: 0.0, color: Color.black })],
     }),
     axisGradient: new EditRgbGradient({
-      uuid: "",
+      uuid: "baa08d00-3e00-4ba8-8746-c971b158e52a",
       keyframes: [
         new RgbKf({ time: 0.2, color: Color.black }),
         new RgbKf({ time: 1, color: Color.brightWhite }),
@@ -1188,6 +1189,16 @@ export const PrebuildAnimations = {
     fade: 0.5,
   }),
 
+  coloredFlash: new AnimFlashes({
+    uuid: "4e1dd558-2266-4c4d-9a26-05aacee66801",
+    name: "Colored Flash",
+    category: "uniform",
+    duration: 0.5,
+    color: new EditColor("face"),
+    count: 1,
+    fade: 0.5,
+  }),
+
   alternatingWhite1_d20: new AnimFlashes({
     uuid: "1e891121-49ef-4ffd-b4a5-f8093c11a0d4",
     name: "Alternate White 1",
@@ -1431,51 +1442,52 @@ export const PrebuildAnimations = {
 } as const;
 
 export const PrebuildAnimationsExt = {
-  rainbowFountainX3: new AnimSequence(
-    [
+  rainbowFountainX3: new AnimSequence({
+    uuid: "c9b03465-706a-436d-8ba8-760ee5dee678",
+    name: "Rainbow Fountain X3",
+    category: "animated",
+    duration: 7,
+    animations: [
       new SequenceItem(PrebuildAnimations.rainbowFountain, 0),
       new SequenceItem(PrebuildAnimations.rainbowFountain, 1.4),
       new SequenceItem(PrebuildAnimations.rainbowFountain, 2.8),
     ],
-    {
-      uuid: "c9b03465-706a-436d-8ba8-760ee5dee678",
-      name: "Rainbow Fountain X3",
-      category: "animated",
-      duration: 7,
-    }
-  ),
+  }),
 
-  spiralUpDown: new AnimSequence(
-    [
+  spiralUpDown: new AnimSequence({
+    uuid: "a8e9267a-fccf-4e6d-8fb1-3d9dddc32c5b",
+    name: "Spiral Up and Down",
+    category: "animated",
+    duration: 7,
+    animations: [
       new SequenceItem(PrebuildAnimations.spiralUp, 0),
       new SequenceItem(PrebuildAnimations.spiralDown, 0.7),
     ],
-    {
-      uuid: "a8e9267a-fccf-4e6d-8fb1-3d9dddc32c5b",
-      name: "Spiral Up and Down",
-      category: "animated",
-      duration: 7,
-    }
-  ),
+  }),
 
-  spiralUpDownRainbow: new AnimSequence(
-    [
+  spiralUpDownRainbow: new AnimSequence({
+    uuid: "5e768705-fbf0-4f20-81b3-035f259d86ed",
+    name: "Spiral Up and Down Rainbow",
+    category: "animated",
+    duration: 7,
+    animations: [
       new SequenceItem(PrebuildAnimations.rainbowUp, 0),
       new SequenceItem(PrebuildAnimations.rainbowDown, 1.2),
     ],
-    {
-      uuid: "5e768705-fbf0-4f20-81b3-035f259d86ed",
-      name: "Spiral Up and Down Rainbow",
-      category: "animated",
-      duration: 7,
-    }
-  ),
+  }),
 
-  alternatingWhite_d20: new AnimSequence(
-    [
+  alternatingWhite_d20: new AnimSequence({
+    uuid: "12bd0c13-d2c3-4837-87e5-2f7931e42d17",
+    name: "Alternating White",
+    category: "animated",
+    duration: 7,
+    dieType: "d20",
+    animations: [
       new SequenceItem(
         new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
+          uuid: "aa25f26b-f9cd-4ee5-9072-f09da1032a10",
+          name: "Red Flash",
           color: new Color(1, 0.6, 0),
         }),
         0
@@ -1483,6 +1495,8 @@ export const PrebuildAnimationsExt = {
       new SequenceItem(
         new AnimFlashes({
           ...PrebuildAnimations.alternatingWhite1_d20,
+          uuid: "67953296-8061-46e9-9c49-96342bd7c295",
+          name: "Alternate Red 1",
           color: new Color(1, 0.6, 0),
         }),
         0.15
@@ -1490,6 +1504,8 @@ export const PrebuildAnimationsExt = {
       new SequenceItem(
         new AnimFlashes({
           ...PrebuildAnimations.alternatingWhite2_d20,
+          uuid: "0b887a00-2654-4f60-aa4a-673629e4b875",
+          name: "Alternate Red 2",
           color: new Color(1, 0, 0),
         }),
         0.15 +
@@ -1497,20 +1513,19 @@ export const PrebuildAnimationsExt = {
             (2 * PrebuildAnimations.alternatingWhite1_d20.count)
       ),
     ],
-    {
-      uuid: "12bd0c13-d2c3-4837-87e5-2f7931e42d17",
-      name: "Alternating White",
-      category: "animated",
-      duration: 7,
-      dieType: "d20",
-    }
-  ),
+  }),
 
-  noiseRainbowX2: new AnimSequence(
-    [
+  noiseRainbowX2: new AnimSequence({
+    uuid: "38c8e25b-aef0-4adb-bf0f-0f2c49ab84da",
+    name: "Noise Rainbow X2",
+    category: "flashy",
+    duration: 7,
+    animations: [
       new SequenceItem(
         new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
+          uuid: "56d23423-6941-4e61-baac-f336e371896d",
+          name: "Green Flash",
           color: Color.brightGreen,
           duration: 1,
         }),
@@ -1519,33 +1534,31 @@ export const PrebuildAnimationsExt = {
       new SequenceItem(PrebuildAnimations.noiseRainbow, 0),
       new SequenceItem(PrebuildAnimations.noiseRainbow, 2),
     ],
-    {
-      uuid: "38c8e25b-aef0-4adb-bf0f-0f2c49ab84da",
-      name: "Noise Rainbow X2",
-      category: "animated",
-      duration: 7,
-    }
-  ),
+  }),
 
-  fire: new AnimSequence(
-    [
+  fire: new AnimSequence({
+    uuid: "25eaa157-d59c-41ab-8770-251e06643028",
+    name: "Fire",
+    category: "animated",
+    duration: 7,
+    animations: [
       new SequenceItem(PrebuildAnimations.fireBaseLayer, 0),
       new SequenceItem(PrebuildAnimations.fireNoiseLayer, 0),
     ],
-    {
-      uuid: "25eaa157-d59c-41ab-8770-251e06643028",
-      name: "Fire",
-      category: "animated",
-      duration: 7,
-    }
-  ),
+  }),
 
-  overlappingQuickReds: new AnimSequence(
-    [
+  overlappingQuickReds: new AnimSequence({
+    uuid: "2e0a5f5b-edb9-45e3-9c62-58db4d06d073",
+    name: "Overlapping Quick Reds",
+    category: "animated",
+    duration: 2.5,
+    animations: [
       new SequenceItem(PrebuildAnimations.reverseQuickRed, 0),
       new SequenceItem(
         new AnimNoise({
           ...PrebuildAnimations.whiteNoise,
+          uuid: "5a229f05-25d9-4bd1-98e9-080f01fe5002",
+          name: "Red Noise",
           gradient: new EditRgbGradient({
             uuid: "281f771a-4595-4d92-853c-1ca1c56178ec",
             keyframes: [new RgbKf({ time: 0.0, color: Color.brightRed })],
@@ -1554,33 +1567,31 @@ export const PrebuildAnimationsExt = {
         0.5
       ),
     ],
-    {
-      uuid: "2e0a5f5b-edb9-45e3-9c62-58db4d06d073",
-      name: "Overlapping Quick Reds",
-      category: "animated",
-      duration: 2.5,
-    }
-  ),
+  }),
 
-  overlappingQuickGreens: new AnimSequence(
-    [
+  overlappingQuickGreens: new AnimSequence({
+    uuid: "b9843f94-0d51-4833-9ddb-c4b3d111b043",
+    name: "Overlapping Quick Greens",
+    category: "animated",
+    duration: 2.5,
+    animations: [
       new SequenceItem(PrebuildAnimations.reverseQuickGreen, 0),
       new SequenceItem(PrebuildAnimations.reverseQuickGreen, 0.8),
       new SequenceItem(PrebuildAnimations.reverseQuickGreen, 1.6),
     ],
-    {
-      uuid: "b9843f94-0d51-4833-9ddb-c4b3d111b043",
-      name: "Overlapping Quick Greens",
-      category: "animated",
-      duration: 2.5,
-    }
-  ),
+  }),
 
-  roseToCurrentFace: new AnimSequence(
-    [
+  roseToCurrentFace: new AnimSequence({
+    uuid: "41f5a334-16b8-4167-a69f-bbbefccf4e42",
+    name: "Rose to Current Face",
+    category: "animated",
+    duration: 2.5,
+    animations: [
       new SequenceItem(
         new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
+          uuid: "fd8befb3-aa06-412f-8114-7e14cd06cd47",
+          name: "Long White Flash",
           duration: 1.4,
           fade: 1,
         }),
@@ -1588,44 +1599,36 @@ export const PrebuildAnimationsExt = {
       ),
       new SequenceItem(PrebuildAnimations.whiteRose, 0.5),
     ],
-    {
-      uuid: "41f5a334-16b8-4167-a69f-bbbefccf4e42",
-      name: "Rose to Current Face",
-      category: "animated",
-      duration: 2.5,
-    }
-  ),
+  }),
 
-  doubleSpinningMagic: new AnimSequence(
-    [
+  doubleSpinningMagic: new AnimSequence({
+    uuid: "b19d3448-2ec6-430f-80a6-22ea02de97b9",
+    name: "Double Spinning Magic",
+    category: "animated",
+    duration: 2.5,
+    animations: [
       new SequenceItem(PrebuildAnimations.spinningMagic, 0),
       //new SequenceItem(PrebuildAnimations.counterSpinningMagic, 0),
     ],
-    {
-      uuid: "b19d3448-2ec6-430f-80a6-22ea02de97b9",
-      name: "Double Spinning Magic",
-      category: "animated",
-      duration: 2.5,
-    }
-  ),
+  }),
 
-  waterSplash: new AnimSequence(
-    [
+  waterSplash: new AnimSequence({
+    uuid: "c570147c-bb62-450f-b3f7-60ed78a3e3ea",
+    name: "Water Splash",
+    category: "animated",
+    duration: 2.5,
+    animations: [
       new SequenceItem(PrebuildAnimations.waterWorm, 0),
       new SequenceItem(
         new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
+          uuid: "83313332-6d9c-48b7-a2e6-190751183d85",
+          name: "Long Blue Flash",
           duration: 2,
           color: Color.fromString("#a2cffc"),
         }),
         1
       ),
     ],
-    {
-      uuid: "c570147c-bb62-450f-b3f7-60ed78a3e3ea",
-      name: "Water Splash",
-      category: "animated",
-      duration: 2.5,
-    }
-  ),
+  }),
 } as const;

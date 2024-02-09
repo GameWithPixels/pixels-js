@@ -13,9 +13,6 @@ import {
 import {
   EditActionPlayAnimation,
   EditAnimation,
-  EditAnimationNormals,
-  EditAnimationSimple,
-  EditColor,
   EditConditionRolled,
   EditConditionRolling,
   EditProfile,
@@ -73,7 +70,8 @@ export function createProfile(
 
   const pushRolledAnimNonTopFaceRule = function (
     anim: EditAnimation,
-    count: number = 1
+    count: number = 1,
+    duration?: number
   ) {
     // All face except top one get a waterfall colored based on the face
     profile.rules.push(
@@ -89,6 +87,7 @@ export function createProfile(
           animation: anim,
           face: Constants.currentFaceIndex,
           loopCount: count,
+          duration,
         })
       )
     );
@@ -165,22 +164,8 @@ export function createProfile(
 
     case "flashy": {
       profile.name = "Flashy";
-      pushRollingAnimRule(
-        new EditAnimationSimple({
-          ...PrebuildAnimations.whiteFlash,
-          color: new EditColor("face"),
-          count: 1,
-          duration: 0.5,
-        })
-      );
-      pushRolledAnimNonTopFaceRule(
-        new EditAnimationSimple({
-          ...PrebuildAnimations.whiteFlash,
-          color: new EditColor("face"),
-          count: 5,
-          duration: 1,
-        })
-      );
+      pushRollingAnimRule(PrebuildAnimations.coloredFlash);
+      pushRolledAnimNonTopFaceRule(PrebuildAnimations.coloredFlash, 5, 1);
       pushRolledAnimTopFaceRule(PrebuildAnimations.rainbowAllFacesFast, 2);
       break;
     }
@@ -295,12 +280,10 @@ export function createProfile(
         new EditRule(
           new EditConditionRolling({ recheckAfter: 1 }),
           new EditActionPlayAnimation({
-            animation: new EditAnimationNormals({
-              ...PrebuildAnimations.whiteRose,
-              duration: 2,
-            }),
+            animation: PrebuildAnimations.whiteRose,
             face: mapFace(DiceUtils.getTopFace(dieType)),
             loopCount: 1,
+            duration: 2,
           })
         )
       );
