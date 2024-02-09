@@ -237,9 +237,12 @@ function HealthSlide({ onNext }: { onNext: () => void }) {
         <View style={{ flex: 1, flexDirection: "row", gap: 10 }}>
           <Text>⚠️</Text>
           <View style={{ flex: 1, gap: 20 }}>
-            <Text style={{ textTransform: "uppercase" }}>
+            <PaperText
+              variant="bodyLarge"
+              style={{ textTransform: "uppercase" }}
+            >
               Photosensitive / Epilepsy Warning
-            </Text>
+            </PaperText>
             <PaperText>
               Some individuals may experience epileptic seizures or blackouts
               when exposed to certain light patterns or flashing lights. If you
