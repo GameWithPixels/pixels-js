@@ -35,7 +35,7 @@ import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
-import { usePairedDiceScanner } from "./hooks";
+import { usePairedDiceScanner, usePixelsCentral } from "./hooks";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -114,6 +114,16 @@ function AppPage() {
   React.useEffect(() => {
     startScan();
   }, [startScan]);
+  const central = usePixelsCentral();
+  React.useEffect(() => {
+    const isAvailable = (available: boolean) => {
+      if (available) {
+        startScan();
+      }
+    };
+    central.addEventListener("isAvailable", isAvailable);
+    return () => central.removeEventListener("isAvailable", isAvailable);
+  }, [central, startScan]);
 
   const theme = useTheme();
   return (

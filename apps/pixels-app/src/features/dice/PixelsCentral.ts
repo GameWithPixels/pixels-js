@@ -4,8 +4,6 @@ import {
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 import {
-  BluetoothState,
-  Central,
   getPixel,
   Pixel,
   PixelInfo,
@@ -20,11 +18,11 @@ import {
 import { unsigned32ToHex } from "../utils";
 
 function pixelLog(pixel: Pick<PixelInfo, "name">, message: string) {
-  console.log(`[Pixel ${pixel.name}]: ${message}`);
+  console.log(`[PixelsCentral ${pixel.name}]: ${message}`);
 }
 
 export interface PixelsCentralEventMap {
-  bluetoothState: BluetoothState;
+  isAvailable: boolean;
   isScanning: boolean;
   lastError: ScanError;
   availablePixels: ScannedPixelNotifier[];
@@ -47,10 +45,6 @@ export class PixelsCentral {
     "watched" | { pixel: Pixel; connect: () => void; unwatch: () => void }
   >();
   private _dispose: () => void;
-
-  get bluetoothState(): BluetoothState {
-    return Central.getBluetoothState();
-  }
 
   get lastError(): ScanError | undefined {
     return this._lastError;
@@ -96,13 +90,15 @@ export class PixelsCentral {
     this._scanner.autoResume = true;
     const onAvailable = (isAvailable: boolean) => {
       if (isAvailable) {
-        for (const activeIds of this.watchedPixelsIds) {
-          const entry = this._watched.get(activeIds);
+        console.log("PixelsCentral: Scanner is available");
+        for (const pixelId of this.watchedPixelsIds) {
+          const entry = this._watched.get(pixelId);
           if (typeof entry === "object") {
             entry.connect();
           }
         }
       }
+      this._emitEvent("isAvailable", isAvailable);
     };
     const onScanning = (isScanning: boolean) =>
       this._emitEvent("isScanning", isScanning);
@@ -282,7 +278,7 @@ export class PixelsCentral {
         pixelLog(pixel, "Connecting...");
         if (this._watched.has(pixel.pixelId)) {
           pixel.connect().catch((e: Error) => {
-            pixelLog(pixel, `Connection error, ${e}`);
+            pixelLog(pixel, `Connection error => ${e}`);
           });
         }
       };
@@ -317,7 +313,7 @@ export class PixelsCentral {
         pixel.removeEventListener("remoteAction", onRemoteAction);
         // Catch errors on disconnect
         pixel.disconnect().catch((e: Error) => {
-          pixelLog(pixel, `Disconnection error, ${e}`);
+          pixelLog(pixel, `Disconnection error => ${e}`);
         });
       };
 
