@@ -15,6 +15,7 @@ import {
 import { FadeIn } from "react-native-reanimated";
 
 import { useAppDispatch } from "~/app/hooks";
+import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
@@ -126,8 +127,7 @@ export function PairDiceBottomSheet({
   onDismiss?: (pixels?: ScannedPixel[]) => void;
 }) {
   const appDispatch = useAppDispatch();
-  const { availablePixels, isScanning, startScan, stopScan } =
-    usePixelScanner();
+  const { availablePixels, startScan, stopScan } = usePixelScanner();
 
   React.useEffect(() => {
     if (visible) {
@@ -203,10 +203,10 @@ export function PairDiceBottomSheet({
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
             Select Pixels Dice to Pair
           </Text>
-          {visible && isScanning ? (
-            <SelectPixels pixels={availablePixels} onPairDice={pairDice} />
-          ) : (
-            <Text>{isScanning ? "Scanning" : "Stopped"}</Text>
+          {visible && (
+            <BluetoothStateWarning>
+              <SelectPixels pixels={availablePixels} onPairDice={pairDice} />
+            </BluetoothStateWarning>
           )}
         </View>
       </ThemeProvider>
