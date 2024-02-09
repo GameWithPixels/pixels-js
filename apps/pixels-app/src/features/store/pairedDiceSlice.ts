@@ -91,21 +91,21 @@ const PairedDiceSlice = createSlice({
         ({ pixelId }) => pixelId === action.payload
       );
       if (index >= 0) {
+        const pairedDie = state.paired[index];
         state.paired.splice(index, 1);
         const uIndex = state.unpaired.findIndex(
           ({ pixelId }) => pixelId === action.payload
         );
         if (uIndex >= 0) {
-          state.unpaired[uIndex] = state.paired[index];
+          logError(
+            `PairedDiceSlice.removePairedDie: die was both paired and unpaired, pixelId is ${unsigned32ToHex(
+              action.payload
+            )}`
+          );
+          state.unpaired[uIndex] = pairedDie;
         } else {
-          state.unpaired.push(state.paired[index]);
+          state.unpaired.push(pairedDie);
         }
-      } else {
-        logError(
-          `PairedDiceSlice.removePairedDie: no paired die with pixelId ${unsigned32ToHex(
-            action.payload
-          )}`
-        );
       }
     },
 
