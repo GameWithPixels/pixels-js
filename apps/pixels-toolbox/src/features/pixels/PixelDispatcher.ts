@@ -9,7 +9,7 @@ import {
 import {
   createDataSetForAnimation,
   createDataSetForProfile,
-  createProfile,
+  createLibraryProfile,
   EditAnimation,
   PrebuildAnimations,
   PrebuildProfileName,
@@ -635,7 +635,7 @@ class PixelDispatcher
     try {
       this._isUpdatingProfile = true;
       notifyProgress(0);
-      const profile = createProfile(type, this.dieType);
+      const profile = createLibraryProfile(type, this.dieType);
       const dataSet = createDataSetForProfile(profile).toDataSet();
       await this._pixel.transferDataSet(dataSet, notifyProgress);
     } finally {

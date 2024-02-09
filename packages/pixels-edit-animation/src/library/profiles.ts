@@ -7,9 +7,9 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { PrebuildAnimations, PrebuildAnimationsExt } from "./animations";
 import {
-  setProfileDefaultAdvancedRules,
-  setProfileDefaultRollingRules,
-} from "./getDefaultProfile";
+  addDefaultAdvancedRules,
+  addDefaultRollingRules,
+} from "./defaultRules";
 import {
   EditActionPlayAnimation,
   EditActionSpeakText,
@@ -40,12 +40,13 @@ export const PrebuildProfilesNames = [
 
 export type PrebuildProfileName = (typeof PrebuildProfilesNames)[number];
 
-export function createProfile(
+export function createLibraryProfile(
   name: PrebuildProfileName,
-  dieType: PixelDieType
+  dieType: PixelDieType,
+  uuid?: string
 ): EditProfile {
-  const profile = new EditProfile();
-  setProfileDefaultAdvancedRules(profile, dieType);
+  const profile = new EditProfile({ uuid, dieType });
+  addDefaultAdvancedRules(profile, dieType);
 
   // TODO fix for D4 rolling as D6
   const fixD4FaceCount = (count: number): number =>
@@ -75,7 +76,7 @@ export function createProfile(
     count: number = 1,
     duration?: number
   ) {
-    // All face except top one get a waterfall colored based on the face
+    // All faces except top one get a waterfall colored based on the face
     profile.rules.push(
       new EditRule(
         new EditConditionRolled({
@@ -117,8 +118,8 @@ export function createProfile(
   switch (name) {
     case "default":
       profile.name = "Default";
-      setProfileDefaultRollingRules(profile, dieType);
       profile.description = "The default profile for all dice.";
+      addDefaultRollingRules(profile, dieType);
       break;
 
     case "empty":
@@ -130,7 +131,7 @@ export function createProfile(
       profile.name = "Speak Numbers";
       profile.description =
         "This profile has your device say the rolled numbers out loud (when the app is open)";
-      setProfileDefaultRollingRules(profile, dieType);
+      addDefaultRollingRules(profile, dieType);
       pushRolledAnimNonTopFaceRule(PrebuildAnimations.noise);
       pushRolledAnimTopFaceRule(PrebuildAnimations.noiseRainbow);
       profile.rules.push(
