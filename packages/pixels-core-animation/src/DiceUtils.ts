@@ -86,6 +86,8 @@ export const DiceUtils = {
         return faceIndex;
       case "d00":
         return faceIndex * 10;
+      case "unknown":
+        return faceIndex;
       default:
         return faceIndex + 1;
     }
@@ -103,6 +105,8 @@ export const DiceUtils = {
         return face;
       case "d00":
         return Math.floor(face / 10);
+      case "unknown":
+        return face;
       default:
         return face - 1;
     }
