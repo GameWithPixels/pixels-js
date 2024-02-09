@@ -10,10 +10,8 @@ function addAnimations(
   dataSet: EditDataSet,
   animations: Readonly<EditAnimation>[]
 ) {
-  animations.forEach((animation) => {
-    animation.collectAnimations().forEach((anim) => {
-      dataSet.animations.push(anim);
-    });
+  animations.forEach((anim) => {
+    dataSet.animations.push(...anim.collectAnimations());
   });
 
   // Add the single animation we need
@@ -42,9 +40,7 @@ export function createDataSetForAnimation(
   const dataSet = new EditDataSet();
 
   // Add the single animation we need
-  animation.collectAnimations().forEach((anim) => {
-    dataSet.animations.push(anim);
-  });
+  dataSet.animations.push(...animation.collectAnimations());
 
   // Include all patterns used by the animations
   const { rgb, grayscale } = animation.collectPatterns();
