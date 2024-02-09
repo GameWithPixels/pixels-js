@@ -524,12 +524,7 @@ function RunTestsPage({
     )
     .withTask(
       ...useTaskComponent("CheckBoard", cancel, (p) => (
-        <CheckBoard
-          {...p}
-          settings={settings}
-          pixel={getPixel()}
-          firmwareUpdated={firmwareUpdateStatus === "success"}
-        />
+        <CheckBoard {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfFwUpdate
     )
