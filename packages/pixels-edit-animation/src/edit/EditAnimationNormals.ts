@@ -89,9 +89,9 @@ export default class EditAnimationNormals extends EditAnimation {
     super(opt);
     this.gradient = opt?.gradient;
     this.axisGradient = opt?.axisGradient;
+    this.axisScrollSpeed = opt?.axisScrollSpeed ?? 0;
     this.axisScale = opt?.axisScale ?? 1;
     this.axisOffset = opt?.axisOffset ?? 0;
-    this.axisScrollSpeed = opt?.axisScrollSpeed ?? 0;
     this.angleGradient = opt?.angleGradient;
     this.angleScrollSpeed = opt?.angleScrollSpeed ?? 0;
     this.fade = opt?.fade ?? 0;
