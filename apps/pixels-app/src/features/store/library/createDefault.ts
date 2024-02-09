@@ -1,4 +1,7 @@
-import { PrebuildAnimations } from "@systemic-games/pixels-edit-animation";
+import {
+  PrebuildAnimations,
+  PrebuildAnimationsExt,
+} from "@systemic-games/pixels-edit-animation";
 import {
   Profiles,
   Serializable,
@@ -10,42 +13,42 @@ import { jsonConvert } from "./jsonConvert";
 
 import StandardProfilesJson from "#/profiles/standard-profiles.json";
 
-function pushAnim(anim: Profiles.Animation, library: LibraryData) {
-  const { rgb, grayscale } = anim.collectPatterns();
-  if (rgb?.length) {
-    for (const pattern of rgb) {
-      const data = Serializable.fromPattern(pattern);
-      library.patterns.push(data);
-    }
-  }
-  if (grayscale?.length) {
-    for (const pattern of grayscale) {
-      const data = Serializable.fromPattern(pattern);
-      library.patterns.push(data);
-    }
-  }
-  for (const gradient of anim.collectGradients()) {
-    const data = Serializable.fromGradient(gradient);
-    library.gradients.push(data);
-  }
-  const data = Serializable.fromAnimation(anim);
-  library.animations[data.type].push(data.data as any); // TODO typing
-}
-
 export function createDefault(): LibraryData {
   // Get standard profiles from JSON
   const library = jsonConvert(StandardProfilesJson);
 
-  // Add factory animations
-  const animations = createFactoryAnimations();
+  // Get prebuild animations
+  const prebuildAnimations = [
+    ...createFactoryAnimations(),
+    ...Object.values(PrebuildAnimations),
+    ...Object.values(PrebuildAnimationsExt),
+  ];
+
+  // Collect gradients, patterns, and animations
+  const gradients = new Set<Profiles.RgbGradient>();
+  const patterns = new Set<Profiles.Pattern>();
+  const animations = new Set<Profiles.Animation>(
+    prebuildAnimations.flatMap((a) => a.collectAnimations())
+  );
   for (const anim of animations) {
-    pushAnim(anim, library);
+    const { rgb, grayscale } = anim.collectPatterns();
+    rgb?.forEach((p) => patterns.add(p));
+    grayscale?.forEach((p) => patterns.add(p));
+    anim.collectGradients().forEach((g) => gradients.add(g));
   }
 
-  // Add prebuild animations
-  const prebuildAnimations = Object.values(PrebuildAnimations);
-  for (const anim of prebuildAnimations) {
-    pushAnim(anim, library);
+  // Add patterns, gradients, and animations to library
+  for (const pattern of patterns) {
+    const data = Serializable.fromPattern(pattern);
+    library.patterns.push(data);
+  }
+  for (const gradient of gradients) {
+    const data = Serializable.fromGradient(gradient);
+    library.gradients.push(data);
+  }
+  for (const anim of animations) {
+    const data = Serializable.fromAnimation(anim);
+    library.animations[data.type].push(data.data as any); // TODO typing
   }
 
   // Checks

@@ -75,15 +75,7 @@ function CreateProfilePage({
 
   const store = useStore<RootState>();
   const templates = React.useMemo(
-    () => [
-      new Profiles.Profile({
-        uuid: generateUuid(),
-        name: "Blank",
-        description: "An empty profile",
-        dieType,
-      }),
-      ...createProfileTemplates(dieType, store.getState().library),
-    ],
+    () => createProfileTemplates(dieType, store.getState().library),
     [dieType, store]
   );
   const profiles = React.useMemo(

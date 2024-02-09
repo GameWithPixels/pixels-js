@@ -162,7 +162,6 @@ export class PixelsCentral {
   }
 
   startScan(opt?: { timeout?: boolean; pixelId?: number }): void {
-    console.log("PixelsCentral: Start scanning => " + JSON.stringify(opt));
     const pixelId = opt?.pixelId;
     if (!pixelId || this._watched.get(pixelId) === "watched") {
       if (pixelId) {
