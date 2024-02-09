@@ -96,16 +96,20 @@ export function PixelFocusViewHeader({
       textInputRef.current?.focus();
     }
   }, [renameVisible]);
+  React.useEffect(() => {
+    if (disabled) {
+      setRenameVisible(false);
+    }
+  }, [disabled]);
+
   const { width: windowWidth } = useWindowDimensions();
-  const { colors, fonts } = useTheme();
+  const { colors } = useTheme();
   const color = actionsMenuVisible
     ? colors.onSurfaceDisabled
     : colors.onSurface;
   return (
     <View>
-      {!pixel ? (
-        <View style={{ height: 10 + fonts.titleLarge.lineHeight }} />
-      ) : !renameVisible ? (
+      {!pixel || !renameVisible ? (
         <Pressable
           sentry-label="actions-menu"
           style={{
