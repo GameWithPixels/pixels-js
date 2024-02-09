@@ -73,7 +73,7 @@ export function NewPixelAppBanner({
 }: {
   visible?: boolean;
   collapsedMarginBottom?: number;
-  onHide: () => void;
+  onHide?: () => void;
 } & Pick<BannerProps, "visible" | "collapsedMarginBottom"> &
   ViewProps) {
   return (
@@ -88,6 +88,30 @@ export function NewPixelAppBanner({
     >
       We rebuilt it from scratch to make it more fun to use. Expect frequent
       updates with new features in the coming months.
+    </Banner>
+  );
+}
+
+export function CreateProfileBanner({
+  visible,
+  collapsedMarginBottom,
+  ...props
+}: {
+  visible?: boolean;
+  collapsedMarginBottom?: number;
+} & Pick<BannerProps, "visible" | "collapsedMarginBottom"> &
+  ViewProps) {
+  return (
+    <Banner
+      title="Create a Profile!"
+      visible={visible}
+      collapsedMarginBottom={collapsedMarginBottom}
+      {...props}
+    >
+      Try out the new profile templates 🎉
+      {"\n"}
+      {"\n"}
+      To get started tap on the (+) button at the bottom of the page.
     </Banner>
   );
 }
