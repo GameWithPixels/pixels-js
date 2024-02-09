@@ -157,7 +157,7 @@ function _updateScanStatus(
 ): void {
   console.log(
     `[BLE] Update scan status to ${scanStatus}${
-      reason ? ` with reason ${reason}` : ""
+      reason ? ` with reason being ${reason}` : ""
     } (was ${_scanStatus})`
   );
 
@@ -223,7 +223,7 @@ export const Central = {
             if (reason !== "success") {
               console.log(
                 `[BLE ${device.name}] Got connection status ${connectionStatus}` +
-                  ` with reason ${reason}`
+                  ` with reason being ${reason}`
               );
             }
             switch (connectionStatus) {

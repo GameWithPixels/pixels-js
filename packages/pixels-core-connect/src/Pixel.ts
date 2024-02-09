@@ -339,7 +339,7 @@ export class Pixel extends PixelInfoNotifier {
     this._session = session;
     this._status = "disconnected"; // TODO use the getLastConnectionStatus()
     this._info = {
-      systemId: session.pixelSystemId,
+      systemId: session.systemId,
       pixelId: info?.pixelId ?? 0,
       name: "",
       ledCount: info?.ledCount ?? 0,
