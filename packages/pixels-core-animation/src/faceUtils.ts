@@ -36,6 +36,8 @@ export function getFaceForLEDIndex(
 
 export function getTopFace(dieType: PixelDieType): number {
   switch (dieType) {
+    case "unknown":
+      return 0;
     case "d20":
       return 19;
     case "d12":
@@ -52,6 +54,8 @@ export function getTopFace(dieType: PixelDieType): number {
 
 export function getFaceCount(dieType: PixelDieType): number {
   switch (dieType) {
+    case "unknown":
+      return 0;
     case "d20":
       return 20;
     case "d12":
@@ -68,6 +72,8 @@ export function getFaceCount(dieType: PixelDieType): number {
 
 export function getLEDCount(dieType: PixelDieType): number {
   switch (dieType) {
+    case "unknown":
+      return 0;
     case "d20":
       return 20;
     case "d12":
@@ -127,6 +133,7 @@ export function getFaceMask(
       case "d6pipped":
         return getFaceMaskPd6(faceValueOrFaceList);
       case "d10":
+      case "unknown":
         ++faceValueOrFaceList;
         break;
       case "d00":
@@ -139,7 +146,7 @@ export function getFaceMask(
     const n = faceValueOrFaceList;
     assert(
       n > 0 && n <= 32,
-      `getFaceMask: Face value is out of range [1, 32], got ${n}`
+      `getFaceMask: Face value is out of range [1, 32], got ${n} for type ${dieType}`
     );
     return (1 << (n - 1)) >>> 0;
   } else {
