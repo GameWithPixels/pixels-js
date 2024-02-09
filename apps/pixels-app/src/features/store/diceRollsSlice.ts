@@ -42,11 +42,12 @@ const DiceRollsSlice = createSlice({
       action: PayloadAction<{ pixelId: number; roll: number }>
     ) {
       log("addDieRoll");
-      const pair = state.dice.find(
+      const die = state.dice.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
-      if (pair) {
-        pair.rolls.push(action.payload.roll);
+      // TODO check that is paired
+      if (die) {
+        die.rolls.push(action.payload.roll);
       } else {
         state.dice.push({
           pixelId: action.payload.pixelId,
