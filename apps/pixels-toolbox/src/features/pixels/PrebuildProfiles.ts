@@ -127,47 +127,56 @@ export function createProfile(
 
   switch (name) {
     case "default":
+      profile.name = "Default";
       setProfileDefaultRollingRules(profile, dieType);
       break;
+
     case "empty":
+      profile.name = "Empty";
       break;
+
     case "waterfall": {
-      profile.name = "waterfall";
+      profile.name = "Waterfall";
       pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
       pushRolledAnimNonTopFaceRule(PrebuildAnimations.waterfall);
       pushRolledAnimTopFaceRule(PrebuildAnimations.waterfallRainbow, 3);
       break;
     }
+
     case "fountain": {
-      profile.name = "fountain";
+      profile.name = "Fountain";
       pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
       pushRolledAnimNonTopFaceRule(PrebuildAnimations.fountain);
       pushRolledAnimTopFaceRule(PrebuildAnimationsExt.rainbowFountainX3, 1);
       break;
     }
+
     case "spinning": {
-      profile.name = "spinning";
+      profile.name = "Spinning";
       pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
       pushRolledAnimNonTopFaceRule(PrebuildAnimations.spinning);
       pushRolledAnimTopFaceRule(PrebuildAnimations.spinningRainbow, 1);
       break;
     }
+
     case "spiral": {
-      profile.name = "spinning";
+      profile.name = "Spiral";
       pushRollingAnimRule(PrebuildAnimations.waterfallTopHalf);
       pushRolledAnimNonTopFaceRule(PrebuildAnimationsExt.spiralUpDown);
       pushRolledAnimTopFaceRule(PrebuildAnimationsExt.spiralUpDownRainbow, 1);
       break;
     }
+
     case "noise": {
-      profile.name = "noise";
+      profile.name = "Noise";
       pushRollingAnimRule(PrebuildAnimations.shortNoise);
       pushRolledAnimNonTopFaceRule(PrebuildAnimations.noise);
       pushRolledAnimTopFaceRule(PrebuildAnimationsExt.noiseRainbowX2, 1);
       break;
     }
+
     case "flashy": {
-      profile.name = "flashy";
+      profile.name = "Flashy";
       pushRollingAnimRule(
         new EditAnimationSimple({
           ...PrebuildAnimations.whiteFlash,
@@ -187,6 +196,7 @@ export function createProfile(
       pushRolledAnimTopFaceRule(PrebuildAnimations.rainbowAllFacesFast, 2);
       break;
     }
+
     case "highLow": {
       profile.name = "High Low";
       pushRollingAnimRule(PrebuildAnimations.blueFlash);
@@ -237,6 +247,7 @@ export function createProfile(
 
       break;
     }
+
     case "worm": {
       profile.name = "Worm";
       pushRollingAnimRule(PrebuildAnimations.blueFlash);
@@ -309,6 +320,7 @@ export function createProfile(
       pushRolledAnimTopFaceRule(PrebuildAnimations.rainbowFast, 1);
       break;
     }
+
     case "rose": {
       profile.name = "Rose";
       profile.rules.push(
@@ -329,6 +341,7 @@ export function createProfile(
       pushRolledAnimTopFaceRule(PrebuildAnimationsExt.roseToCurrentFace);
       break;
     }
+
     case "fire": {
       profile.name = "Fire";
       profile.rules.push(
@@ -347,6 +360,7 @@ export function createProfile(
       pushRolledAnimTopFaceRule(PrebuildAnimationsExt.fire);
       break;
     }
+
     case "magic": {
       profile.name = "Magic";
       profile.rules.push(
@@ -365,6 +379,7 @@ export function createProfile(
       pushRolledAnimTopFaceRule(PrebuildAnimations.cycleMagic);
       break;
     }
+
     case "water": {
       profile.name = "Water";
       profile.rules.push(
@@ -386,5 +401,6 @@ export function createProfile(
     default:
       assertNever(name);
   }
+
   return profile;
 }
