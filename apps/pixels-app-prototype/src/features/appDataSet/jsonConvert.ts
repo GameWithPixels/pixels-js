@@ -6,6 +6,7 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import {
   ActionTypeValues,
+  AnimationCategoryValues,
   AnimationTypeValues,
   BatteryStateFlagsValues,
   Color32Utils,
@@ -14,9 +15,9 @@ import {
   ConditionTypeValues,
   ConnectionStateFlagsValues,
   Constants,
-  FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
   Json,
+  PixelDieTypeValues,
   Serializable,
 } from "@systemic-games/pixels-edit-animation";
 import { fromByteArray } from "base64-js";
@@ -117,14 +118,21 @@ function toAnimationsAndGradients(
       }
       const data = anim.data;
       if (data) {
+        const anim = {
+          uuid: generateUuid(),
+          name: data.name ?? "",
+          duration: data.duration ?? 1,
+          category:
+            getValueKeyName(data.category, AnimationCategoryValues) ?? "system",
+          dieType:
+            getValueKeyName(data.dieType, PixelDieTypeValues) ?? "unknown",
+        } as const;
         switch (type) {
           case "none":
             throw new Error(`Invalid animation type: ${type}`);
           case "simple":
             push("flashes", animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+              ...anim,
               animFlags: [],
               faces: data.faces ?? Constants.faceMaskAll,
               color: toColor(data.color),
@@ -134,9 +142,7 @@ function toAnimationsAndGradients(
             break;
           case "rainbow":
             push(type, animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+              ...anim,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
@@ -147,9 +153,7 @@ function toAnimationsAndGradients(
             break;
           case "gradient":
             push(type, animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+              ...anim,
               animFlags: [],
               faces: data.faces ?? Constants.faceMaskAll,
               gradientUuid: register(data.gradient?.keyframes),
@@ -157,18 +161,14 @@ function toAnimationsAndGradients(
             break;
           case "keyframed":
             push("pattern", animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+              ...anim,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
             });
             break;
           case "gradientPattern":
             push(type, animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+              ...anim,
               animFlags: [],
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
               gradientUuid: register(data.gradient?.keyframes),
@@ -244,9 +244,12 @@ function toCondition(
     case "rolling":
       return register(type, { recheckAfter: data?.recheckAfter ?? 0 });
     case "rolled":
-      return register(type, {
-        flags: valuesToKeys(bitsToFlags(data?.flags), FaceCompareFlagsValues),
-        face: (data?.faceIndex ?? 0) + 1,
+    case "faceCompare":
+      return register("rolled", {
+        faces: Serializable.fromFaceCompare(
+          data?.flags ?? 0,
+          (data?.faceIndex ?? 0) + 1
+        ),
       });
     case "crooked":
       return { type, index: -1 };
@@ -304,12 +307,10 @@ function toActions(
           face: (data.faceIndex ?? 0) + 1,
           loopCount: data.loopCount ?? 1,
         });
-      case "runOnDevice":
-        // The only remote type is this JSON format is "play audio clip"
+      case "playAudioClip":
         return register("playAudioClip", {
           clipUuid: audioClipsUuidsMap.get(data.audioClipIndex ?? -1),
         });
-      case "playAudioClip":
       case "speakText":
       case "makeWebRequest":
         throw new Error(`Unsupported action type: ${type}`);
@@ -318,6 +319,8 @@ function toActions(
     }
   });
 }
+
+const defaultCreationTime = new Date(2024, 0, 1).getTime();
 
 function toProfile(
   profile: Json.Profile,
@@ -334,8 +337,11 @@ function toProfile(
     uuid: generateUuid(),
     name: profile.name ?? "",
     description: profile.description ?? "",
-    group: "",
-    favorite: false,
+    dieType: "d20",
+    hash: 0,
+    creationDate: defaultCreationTime,
+    lastChanged: defaultCreationTime,
+    lastUsed: 0,
     conditions,
     actions,
     rules: filteredRules.map((r) => ({
@@ -350,7 +356,15 @@ function toProfile(
   };
 }
 
-export function jsonConvert(dataSet: Json.DataSet): Serializable.LibraryData {
+export interface LibraryData {
+  profiles: Serializable.ProfileData[];
+  animations: Serializable.AnimationSetData;
+  patterns: Serializable.PatternData[];
+  gradients: Serializable.GradientData[];
+  audioClips: Serializable.AudioClipData[];
+}
+
+export function jsonConvert(dataSet: Json.DataSet): LibraryData {
   const patterns = dataSet.patterns?.map(toPattern) ?? [];
   const { animations, animationUuidsMap, gradients } = toAnimationsAndGradients(
     dataSet.animations,

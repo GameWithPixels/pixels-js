@@ -4,6 +4,8 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { getFactoryProfileUuid } from "./profiles";
+
 export interface PairedDie {
   systemId: string;
   address: number;
@@ -70,7 +72,7 @@ const PairedDiceSlice = createSlice({
           dieType,
           colorway,
           isPaired: true,
-          profileUuid: "factory" + dieType,
+          profileUuid: getFactoryProfileUuid(dieType),
         });
       }
     },

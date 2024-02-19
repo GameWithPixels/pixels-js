@@ -14,8 +14,8 @@ import { GradientChip } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
 import { getProfileDieTypeLabel } from "~/descriptions";
 import { dieTypes, profileDieTypes } from "~/dieTypes";
+import { FactoryProfile } from "~/features/FactoryProfile";
 import generateUuid from "~/features/generateUuid";
-import { addDefaultAdvancedRules } from "~/features/getFactoryProfile";
 import {
   useBottomSheetPadding,
   useEditProfilesList,
@@ -25,7 +25,7 @@ import { CreateProfileScreenProps } from "~/navigation";
 
 const blankProfiles: readonly Readonly<Profiles.Profile>[] = dieTypes.map(
   (dieType) =>
-    addDefaultAdvancedRules(
+    FactoryProfile.addAdvancedRules(
       new Profiles.Profile({
         name: "Blank",
         description: "An empty profile",

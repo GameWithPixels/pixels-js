@@ -1,10 +1,13 @@
 import {
+  assert,
   assertNever,
   bitsToFlags,
   getValueKeyName,
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
 import {
+  AnimationCategoryValues,
+  AnimationFlags,
   BatteryStateFlagsValues,
   Color32Utils,
   ColorModeValues,
@@ -13,11 +16,23 @@ import {
   Constants,
   HelloGoodbyeFlagsValues,
   Json,
+  PixelDieTypeValues,
   Serializable,
 } from "@systemic-games/pixels-edit-animation";
 import { fromByteArray } from "base64-js";
 
 import generateUuid from "~/features/generateUuid";
+
+const regexExp =
+  /^[0-9A-F]{8}-[0-9A-F]{4}-[5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
+function checkUuid(uuid?: string): string {
+  if (__DEV__) {
+    assert(uuid?.length === 36, `Invalid uuid length: ${uuid}`);
+    assert(!regexExp.test(uuid), `Invalid uuid: ${uuid}`);
+  }
+  return uuid!;
+}
 
 function toKeyframesBase64(keyframes?: Readonly<Json.Keyframe[]>): string {
   const array = new Uint8Array(8 * (keyframes?.length ?? 0));
@@ -69,7 +84,7 @@ function toPattern(pattern: Readonly<Json.Pattern>): Serializable.PatternData {
       keyframes: toKeyframesBase64(g.keyframes),
     })) ?? [];
   return {
-    uuid: generateUuid(),
+    uuid: checkUuid(pattern.uuid),
     name: pattern.name ?? "",
     gradients,
   };
@@ -80,48 +95,55 @@ function toAnimationsAndGradients(
   patterns: Readonly<Serializable.PatternData[]>
 ): {
   animations: Serializable.AnimationSetData;
-  animationUuidsMap: Map<number, string>;
+  animationUuids: string[];
   gradients: Serializable.GradientData[];
 } {
   const gradients: Serializable.GradientData[] = [];
-  const animMap = new Map<number, string>(); // Maps animation index to uuid
+  const animationUuids: string[] = []; // Maps animation index to uuid
   const animSet = Serializable.createAnimationSetData();
-  function register(keyframes?: Json.Keyframe[]): string | undefined {
-    if (keyframes?.length) {
-      const uuid = generateUuid();
+  function register(gradient?: Json.Gradient): string | undefined {
+    if (gradient?.keyframes?.length) {
       gradients.push({
-        uuid,
-        keyframes: toKeyframesBase64(keyframes),
+        uuid: checkUuid(gradient.uuid),
+        keyframes: toKeyframesBase64(gradient.keyframes),
       });
-      return uuid;
+      return gradient.uuid;
     }
   }
   function push<T extends keyof Serializable.AnimationSetData>(
     type: T,
-    index: number,
     value: NonNullable<Serializable.AnimationSetData[T]>[number]
   ) {
-    animMap.set(index, value.uuid);
-    const arr = animSet[type] as (typeof value)[];
-    arr.push(value);
+    animationUuids.push(value.uuid);
+    if (!value.name.startsWith("(discard)")) {
+      const arr = animSet[type] as (typeof value)[];
+      arr.push(value);
+    }
   }
   if (animations) {
-    animations.forEach((anim, animIndex) => {
+    for (const anim of animations) {
       const type = getValueKeyName(anim.type, Json.AnimationTypeValues);
       if (!type) {
         throw new Error(`Unsupported animation type: ${anim.type}`);
       }
       const data = anim.data;
       if (data) {
+        const anim = {
+          uuid: checkUuid(data.uuid),
+          name: data.name ?? "",
+          duration: data.duration ?? 1,
+          animFlags: [] as AnimationFlags[],
+          category:
+            getValueKeyName(data.category, AnimationCategoryValues) ?? "system",
+          dieType:
+            getValueKeyName(data.dieType, PixelDieTypeValues) ?? "unknown",
+        } as const;
         switch (type) {
           case "none":
             throw new Error(`Invalid animation type: ${type}`);
           case "simple":
-            push("flashes", animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
-              animFlags: [],
+            push("flashes", {
+              ...anim,
               faces: data.faces ?? Constants.faceMaskAll,
               color: toColor(data.color),
               count: data.count ?? 1,
@@ -129,10 +151,8 @@ function toAnimationsAndGradients(
             });
             break;
           case "rainbow":
-            push(type, animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+            push(type, {
+              ...anim,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               faces: data.faces ?? Constants.faceMaskAll,
               count: data.count ?? 1,
@@ -142,42 +162,34 @@ function toAnimationsAndGradients(
             });
             break;
           case "keyframed":
-            push("pattern", animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
+            push("pattern", {
+              ...anim,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
             });
             break;
           case "gradientPattern":
-            push(type, animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
-              animFlags: [],
+            push(type, {
+              ...anim,
               patternUuid: patterns[data.patternIndex ?? -1]?.uuid,
-              gradientUuid: register(data.gradient?.keyframes),
+              gradientUuid: register(data.gradient),
               overrideWithFace: data.overrideWithFace ?? false,
             });
             break;
           case "gradient":
-            push(type, animIndex, {
-              uuid: generateUuid(),
-              name: data.name ?? "",
-              duration: data.duration ?? 1,
-              animFlags: [],
+            push(type, {
+              ...anim,
               faces: data.faces ?? Constants.faceMaskAll,
-              gradientUuid: register(data.gradient?.keyframes),
+              gradientUuid: register(data.gradient),
             });
             break;
           default:
             assertNever(type, `Unsupported animation type: ${type}`);
         }
       }
-    });
+    }
   }
-  return { animations: animSet, animationUuidsMap: animMap, gradients };
+  return { animations: animSet, animationUuids, gradients };
 }
 
 function toAudioClips(audioClips?: Readonly<Json.AudioClip[]>): {
@@ -265,7 +277,7 @@ function toCondition(
 
 function toActions(
   actions: Readonly<Json.Action[]>,
-  animationUuidsMap: Readonly<Map<number, string>>,
+  animationUuids: Readonly<string[]>,
   audioClipsUuidsMap: Readonly<Map<number, string>>,
   inOutActionSet: Serializable.ActionSetData
 ): Serializable.RuleData["actions"][number][] {
@@ -294,7 +306,7 @@ function toActions(
         throw new Error(`Invalid action type: ${type}`);
       case "playAnimation":
         return register(type, {
-          animationUuid: animationUuidsMap.get(data.animationIndex ?? -1),
+          animationUuid: animationUuids[data.animationIndex ?? -1],
           face: (data.faceIndex ?? 0) + 1,
           loopCount: data.loopCount ?? 1,
         });
@@ -312,7 +324,7 @@ const defaultCreationTime = new Date(2023, 0, 1).getTime();
 
 function toProfile(
   profile: Json.Profile,
-  animationUuidsMap: Readonly<Map<number, string>>,
+  animationUuids: Readonly<string[]>,
   audioClipsUuidsMap: Readonly<Map<number, string>>
 ): Serializable.ProfileData {
   const conditions = Serializable.createConditionSetData();
@@ -322,7 +334,7 @@ function toProfile(
       (r): r is Required<Json.Rule> => !!r.condition && !!r.actions
     ) ?? [];
   return {
-    uuid: generateUuid(),
+    uuid: checkUuid(profile.uuid),
     name: profile.name ?? "",
     description: profile.description ?? "",
     dieType: "d20",
@@ -336,7 +348,7 @@ function toProfile(
       condition: toCondition(r.condition, conditions),
       actions: toActions(
         r.actions,
-        animationUuidsMap,
+        animationUuids,
         audioClipsUuidsMap,
         actions
       ),
@@ -346,14 +358,14 @@ function toProfile(
 
 export function jsonConvert(dataSet: Json.DataSet): Serializable.LibraryData {
   const patterns = dataSet.patterns?.map(toPattern) ?? [];
-  const { animations, animationUuidsMap, gradients } = toAnimationsAndGradients(
+  const { animations, animationUuids, gradients } = toAnimationsAndGradients(
     dataSet.animations,
     patterns
   );
   const { audioClips, audioClipsUuidsMap } = toAudioClips(dataSet.audioClips);
   const profiles =
     dataSet.behaviors?.map((p) =>
-      toProfile(p, animationUuidsMap, audioClipsUuidsMap)
+      toProfile(p, animationUuids, audioClipsUuidsMap)
     ) ?? [];
   return {
     profiles,
