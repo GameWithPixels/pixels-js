@@ -1,9 +1,9 @@
-import { PixelDieType } from "@systemic-games/pixels-core-connect";
 import {
   DataSet,
   Json,
   createDataSetForProfile,
   loadAppDataSet,
+  PixelDieType,
 } from "@systemic-games/pixels-edit-animation";
 
 function getFirstProfileDataSet(jsonData: Json.DataSet): DataSet {

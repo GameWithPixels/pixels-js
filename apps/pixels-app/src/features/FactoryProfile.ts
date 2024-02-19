@@ -1,5 +1,7 @@
-import { PixelDieType } from "@systemic-games/pixels-core-connect";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 
 import { store } from "~/app/store";
 import {
