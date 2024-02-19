@@ -1,8 +1,6 @@
 import {
   Central,
-  ScanStatusEvent,
   ScannedPeripheral,
-  ScannedPeripheralEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import {
   DfuError,
@@ -92,35 +90,13 @@ export default function App() {
     };
   }, []);
 
-  // Register/un-register listeners
-  React.useEffect(() => {
-    const scanStatusListener = (ev: ScanStatusEvent) =>
-      setIsScanning(ev.scanning);
-    const peripheralListener = (ev: ScannedPeripheralEvent) => {
-      // Only show connectable peripherals with a name
-      if (
-        ev.peripheral.name.length &&
-        ev.peripheral.advertisementData.isConnectable
-      ) {
-        updatePeripherals(ev.peripheral);
-      }
-    };
-    Central.addListener("scanStatus", scanStatusListener);
-    Central.addListener("scannedPeripheral", peripheralListener);
-    return () => {
-      // Unregister listeners
-      Central.removeListener("scanStatus", scanStatusListener);
-      Central.removeListener("scannedPeripheral", peripheralListener);
-    };
-  }, [updatePeripherals]);
-
   // Start/stop scanning
   React.useEffect(() => {
     if (onlyPixels) {
       // Keep only Pixels
       setScannedPeripherals((peripherals) =>
-        peripherals.filter((p) =>
-          p.advertisementData.services?.includes(pixelServiceUuid)
+        peripherals.filter(
+          (p) => p.advertisementData.services?.includes(pixelServiceUuid)
         )
       );
     }
@@ -129,14 +105,26 @@ export default function App() {
       setLastError(undefined);
       // Start scanning
       const services = onlyPixels ? [pixelServiceUuid] : [];
-      Central.startScanning(services).catch((error) => {
+      Central.startScan(services, (ev) => {
+        if (ev.type === "peripheral") {
+          // Only show connectable peripherals with a name
+          if (
+            ev.peripheral.name.length &&
+            ev.peripheral.advertisementData.isConnectable
+          ) {
+            updatePeripherals(ev.peripheral);
+          }
+        } else if (ev.status !== "starting" && ev.status !== "scanning") {
+          setIsScanning(false);
+        }
+      }).catch((error) => {
         setIsScanning(false);
         setLastError(error);
       });
     } else {
-      Central.stopScanning();
+      Central.stopScan();
     }
-  }, [isScanning, onlyPixels]);
+  }, [isScanning, onlyPixels, updatePeripherals]);
 
   // DFU
   const [dfuFile, setDFUFile] = React.useState<{
@@ -246,8 +234,8 @@ export default function App() {
             const dfuStatus = !isDfuQueued
               ? "none"
               : currentDFU !== p.systemId
-              ? `pending${dfuFile ? "" : " (no file selected)"}`
-              : `${state} ${state === "uploading" ? `${progress}%` : ""}`;
+                ? `pending${dfuFile ? "" : " (no file selected)"}`
+                : `${state} ${state === "uploading" ? `${progress}%` : ""}`;
             return (
               <View key={p.systemId} style={styles.frame}>
                 <Text style={styles.textHeader}>

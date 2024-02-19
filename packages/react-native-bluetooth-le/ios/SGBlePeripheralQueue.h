@@ -52,7 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray<CBUUID *> *_requiredServices;
     NSUInteger _discoveringServicesCounter;
     SGBleConnectionEventReason _disconnectReason;
-    
+    bool _isReady;
+
     // Last RSSI
     int _rssi;
 
@@ -67,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Property getters
 - (CBPeripheral *)peripheral;
+- (bool)isReady;
 - (int)rssi;
 //! @endcond
 
@@ -78,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * @brief Indicates whether the peripheral is connected and has discovered its services.
  */
-@property(assign) bool isReady;
+@property(readonly, getter=isReady) bool isReady;
 
 /**
  * @brief Gets the last read value of the Received Signal Strength Indicator (RSSI).

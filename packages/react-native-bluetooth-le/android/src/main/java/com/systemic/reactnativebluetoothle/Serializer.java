@@ -182,12 +182,11 @@ public final class Serializer {
 
     @NonNull
     public static String toJS(@DisconnectionReason int reason) {
-        // TODO which reason do we get when Bluetooth is turned off?
         switch (reason) {
             case ConnectionObserver.REASON_SUCCESS:
                 return "success";
             case ConnectionObserver.REASON_TERMINATE_LOCAL_HOST:
-                return "host";
+                return "host"; // We get this reason when Bluetooth is turned off
             case ConnectionObserver.REASON_TERMINATE_PEER_USER:
                 return "peripheral";
             case ConnectionObserver.REASON_LINK_LOSS:

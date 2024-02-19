@@ -1,3 +1,5 @@
+import { BluetoothState } from "./events";
+
 /** Base class for errors thrown by this package. */
 export class BluetoothLEError extends Error {
   constructor(message?: string) {
@@ -6,24 +8,40 @@ export class BluetoothLEError extends Error {
   }
 }
 
-export class CentralNotReadyError extends BluetoothLEError {
+export class CentralNotInitializedError extends BluetoothLEError {
   constructor() {
-    super("Central not ready");
-    this.name = "CentralNotReadyError";
+    super("Central not initialized");
+    this.name = "CentralNotInitializedError";
   }
 }
 
-export class BluetoothPermissionsDeniedError extends BluetoothLEError {
+export abstract class ScanError extends BluetoothLEError {
+  readonly bluetoothState: BluetoothState;
+  constructor(message: string, bluetoothState: BluetoothState) {
+    super(message);
+    this.name = "ScanError";
+    this.bluetoothState = bluetoothState;
+  }
+}
+
+export class ScanCancelledError extends ScanError {
   constructor() {
-    super("Bluetooth permissions denied");
+    super("Scan cancelled", "ready");
+    this.name = "ScanCancelledError";
+  }
+}
+
+export class BluetoothPermissionsDeniedError extends ScanError {
+  constructor() {
+    super("Bluetooth permissions denied", "unauthorized");
     this.name = "BluetoothPermissionsDeniedError";
   }
 }
 
-export class BluetoothTurnedOffError extends BluetoothLEError {
+export class BluetoothUnavailableError extends ScanError {
   constructor(state: "off" | "resetting" | "unknown") {
-    super(`Bluetooth unavailable, state is ${state}`);
-    this.name = "BluetoothTurnedOffError";
+    super(`Bluetooth unavailable, state is ${state}`, state);
+    this.name = "BluetoothUnavailableError";
   }
 }
 
@@ -34,18 +52,32 @@ export class UnknownPeripheralError extends BluetoothLEError {
   }
 }
 
+export type ConnectErrorType =
+  | "createFailed"
+  | "inUse"
+  | "disconnected"
+  | "timeout"
+  | "bluetoothUnavailable";
+
+function getErrorMessage(name: string, type: ConnectErrorType): string {
+  switch (type) {
+    case "createFailed":
+      return `Failed to create native peripheral for ${name}`;
+    case "inUse":
+      return `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`;
+    case "disconnected":
+      return `Got disconnected while connecting to peripheral ${name}`;
+    case "timeout":
+      return `Connection timeout for peripheral ${name}`;
+    case "bluetoothUnavailable":
+      return `Bluetooth unavailable while connecting to peripheral ${name}`;
+  }
+}
+
 export class ConnectError extends BluetoothLEError {
-  readonly type: "nativeError" | "inUse" | "disconnected" | "timeout";
+  readonly type: ConnectErrorType;
   constructor(name: string, type: ConnectError["type"]) {
-    super(
-      type === "nativeError"
-        ? `Failed to create native peripheral for ${name}`
-        : type === "inUse"
-          ? `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`
-          : type === "disconnected"
-            ? `Got disconnected while connecting to peripheral ${name}`
-            : `Connection timeout for peripheral ${name}`
-    );
+    super(getErrorMessage(name, type));
     this.name = "ConnectError";
     this.type = type;
   }
