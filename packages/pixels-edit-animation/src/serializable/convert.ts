@@ -7,6 +7,8 @@ import {
   DataSet,
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
+  NoiseColorOverrideTypeValues,
+  NormalsColorOverrideTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
@@ -26,6 +28,7 @@ import {
   AnimationRainbowData,
   AnimationSetData,
   AnimationFlashesData,
+  AnimationNormalsData,
 } from "./animations";
 import { fromColor, toColor } from "./color";
 import { GradientData } from "./gradient";
@@ -45,6 +48,7 @@ import {
   EditAnimationGradientPattern,
   EditAnimationKeyframed,
   EditAnimationNoise,
+  EditAnimationNormals,
   EditAnimationRainbow,
   EditAnimationSimple,
   EditAudioClip,
@@ -304,6 +308,20 @@ export function toAnimation<T extends keyof AnimationSetData>(
         animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
         blinkGradient: checkGetGradient(animData.blinkGradientUuid),
+        mainGradientColorType:
+          NoiseColorOverrideTypeValues[animData.mainGradientColorType],
+      });
+    }
+    case "normals": {
+      const animData = data as AnimationNormalsData;
+      return new EditAnimationNormals({
+        ...animData,
+        animFlags,
+        gradient: checkGetGradient(animData.gradientUuid),
+        gradientAlongAxis: checkGetGradient(animData.gradientAlongAxisUuid),
+        gradientAlongAngle: checkGetGradient(animData.gradientAlongAngleUuid),
+        mainGradientColorType:
+          NormalsColorOverrideTypeValues[animData.mainGradientColorType],
       });
     }
     default:
@@ -618,12 +636,44 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           animFlags,
           category: anim.category,
           dieType: anim.dieType,
-          faces: anim.faces,
           gradientUuid: anim.gradient?.uuid,
-          blinkDuration: anim.blinkDuration,
           blinkGradientUuid: anim.blinkGradient?.uuid,
-          blinkCount: anim.blinkCount,
+          blinkFrequency: anim.blinkFrequency,
+          blinkFrequencyVar: anim.blinkFrequencyVar,
+          blinkDuration: anim.blinkDuration,
           fade: anim.fade,
+          mainGradientColorType: valuesToKeys(
+            [anim.mainGradientColorType],
+            NoiseColorOverrideTypeValues
+          )[0],
+          mainGradientColorVar: anim.mainGradientColorVar,
+        },
+      };
+    }
+    case "normals": {
+      const anim = animation as EditAnimationNormals;
+      return {
+        type,
+        data: {
+          uuid: anim.uuid,
+          name: anim.name,
+          duration: anim.duration,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
+          gradientUuid: anim.gradient?.uuid,
+          gradientAlongAxisUuid: anim.gradientAlongAxis?.uuid,
+          axisScrollSpeed: anim.axisScrollSpeed,
+          axisScale: anim.axisScale,
+          axisOffset: anim.axisOffset,
+          gradientAlongAngleUuid: anim.gradientAlongAngle?.uuid,
+          angleScrollSpeed: anim.angleScrollSpeed,
+          fade: anim.fade,
+          mainGradientColorType: valuesToKeys(
+            [anim.mainGradientColorType],
+            NormalsColorOverrideTypeValues
+          )[0],
+          mainGradientColorVar: anim.mainGradientColorVar,
         },
       };
     }

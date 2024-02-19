@@ -1,9 +1,22 @@
-import { serializable } from "@systemic-games/pixels-core-utils";
+import { enumValue, serializable } from "@systemic-games/pixels-core-utils";
 
 import AnimationBits from "./AnimationBits";
-import AnimationInstanceGradient from "./AnimationInstanceGradient";
+import AnimationInstanceNoise from "./AnimationInstanceNoise";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+
+/**
+ * @category Animation Runtime Color Override type
+ * @enum
+ */
+export const NoiseColorOverrideTypeValues = {
+  none: enumValue(0),
+  randomFromGradient: enumValue(),
+  faceToGradient: enumValue(),
+  faceToRainbowWheel: enumValue(),
+} as const;
+
+export type NoiseColorOverrideType = keyof typeof NoiseColorOverrideTypeValues;
 
 /**
  * @category Animation
@@ -25,18 +38,24 @@ export default class AnimationNoise implements AnimationPreset {
   blinkTrackOffset = 0; // Offset into a global buffer of tracks
 
   @serializable(2)
-  blinkCount = 0;
+  blinkFrequencyTimes1000 = 0; // per seconds, i.e. 1000 == 1 Hz
 
-  @serializable(1)
+  @serializable(2)
+  blinkFrequencyVarTimes1000 = 0;
+
+  @serializable(2)
   blinkDuration = 0;
 
   @serializable(1)
-  fade = 0;
+  fade = 0; // 0 - 255
 
-  @serializable(4)
-  faceMask = 0;
+  @serializable(1)
+  overallGradientColorType: number = NoiseColorOverrideTypeValues.none;
 
-  createInstance(bits: AnimationBits): AnimationInstanceGradient {
-    return new AnimationInstanceGradient(this, bits);
+  @serializable(2)
+  overallGradientColorVar = 0; // 0 - 1000
+
+  createInstance(bits: AnimationBits): AnimationInstanceNoise {
+    return new AnimationInstanceNoise(this, bits);
   }
 }

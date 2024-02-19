@@ -154,8 +154,7 @@ export default class Color implements IColor {
   static readonly brightMagenta = Object.freeze(new Color(1, 0, 1));
   static readonly brightYellow = Object.freeze(new Color(1, 0.922, 0.016));
   static readonly brightOrange = Object.freeze(new Color(1, 0.647, 0));
-
-  // Moderately bright colors
+  static readonly brightPurple = Object.freeze(new Color(0.5, 0, 1));
   static readonly red = Object.freeze(new Color(0.7, 0, 0));
   static readonly green = Object.freeze(new Color(0, 0.7, 0));
   static readonly blue = Object.freeze(new Color(0, 0, 0.7));
