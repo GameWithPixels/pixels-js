@@ -4,7 +4,6 @@ export * from "./color";
 export * from "./convert";
 export * from "./gradient";
 export * from "./keyframes";
-export * from "./library";
 export * from "./pattern";
 export * from "./profile";
 export * from "./unique";

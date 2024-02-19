@@ -7,11 +7,6 @@ import {
 import { UniqueNamedData } from "./unique";
 
 export interface AnimationSetData {
-  // TODO add animations indices list
-  // all: {
-  //   type: Exclude<keyof AnimationSetData, "all">;
-  //   index: number;
-  // }[];
   flashes: AnimationFlashesData[];
   rainbow: AnimationRainbowData[];
   pattern: AnimationPatternData[];
