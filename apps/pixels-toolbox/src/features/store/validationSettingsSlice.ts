@@ -7,8 +7,9 @@ import {
 import { PrebuildProfileName } from "~/features/pixels/PrebuildProfiles";
 
 export interface ValidationSettingsState {
-  customFirmwareAndProfile: boolean; // Select with selectCustomFirmwareAndProfile
+  customFirmwareAndProfile?: boolean; // Select with selectCustomFirmwareAndProfile
   profileName?: PrebuildProfileName; // Select with selectProfileName
+  skipPrintLabel?: boolean; // Select with selectSkipPrintLabel
   boxShipment: {
     asn: string;
     dieType: PixelDieType;
@@ -17,7 +18,6 @@ export interface ValidationSettingsState {
 }
 
 const initialState: ValidationSettingsState = {
-  customFirmwareAndProfile: true,
   boxShipment: {
     asn: "",
     dieType: "unknown",
@@ -36,6 +36,9 @@ const validationSettingsSlice = createSlice({
     setFactoryProfile(state, action: PayloadAction<PrebuildProfileName>) {
       state.profileName = action.payload;
     },
+    setSkipPrintLabel(state, action: PayloadAction<boolean>) {
+      state.skipPrintLabel = action.payload;
+    },
     setBoxShipmentAsn(state, action: PayloadAction<string>) {
       state.boxShipment.asn = action.payload;
     },
@@ -51,6 +54,7 @@ const validationSettingsSlice = createSlice({
 export const {
   setCustomFirmwareAndProfile,
   setFactoryProfile,
+  setSkipPrintLabel,
   setBoxShipmentAsn,
   setBoxShipmentDieType,
   setBoxShipmentDieColorway,

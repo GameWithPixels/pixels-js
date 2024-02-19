@@ -2,13 +2,19 @@ import { RootState } from "~/app/store";
 import { PrebuildProfileName } from "~/features/pixels/PrebuildProfiles";
 
 export function selectCustomFirmwareAndProfile(state: RootState): boolean {
-  return state.validationSettings.customFirmwareAndProfile;
+  return (
+    __DEV__ && (state.validationSettings.customFirmwareAndProfile ?? false)
+  );
 }
 
 export function selectProfileName(state: RootState): PrebuildProfileName {
   return (
-    (state.validationSettings.customFirmwareAndProfile
+    (__DEV__ && state.validationSettings.customFirmwareAndProfile
       ? state.validationSettings.profileName
       : undefined) ?? "default"
   );
+}
+
+export function selectSkipPrintLabel(state: RootState): boolean {
+  return __DEV__ && (state.validationSettings.skipPrintLabel ?? false);
 }
