@@ -17,7 +17,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ActionDetailsCard } from "./ActionDetails";
-import { ConfigureActionModal } from "./ConfigureActionModal";
+import { ConfigureActionBottomSheet } from "./ConfigureActionBottomSheet";
 import { RuleIndex } from "./RuleCard";
 
 import { Card } from "~/components/Card";
@@ -174,7 +174,7 @@ export const EditActionCard = observer(function EditActionCard({
           </Animated.View>
         </>
       </AnimatedTouchableRipple>
-      <ConfigureActionModal
+      <ConfigureActionBottomSheet
         dieType={profile.dieType}
         condition={condition}
         action={action}

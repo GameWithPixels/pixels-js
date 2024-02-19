@@ -70,6 +70,10 @@ export function getConditionFlagLabel(flagName: string): string {
     return "When Die Turns On";
   } else if (l === 1) {
     return flagName.toUpperCase();
+  } else if (flagName === "done") {
+    return "Finished Charging";
+  } else if (flagName === "low") {
+    return "Low Battery";
   } else if (flagName === "badCharging") {
     return "Bad Charging";
   } else {

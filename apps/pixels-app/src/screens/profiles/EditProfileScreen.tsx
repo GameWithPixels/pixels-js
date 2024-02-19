@@ -2,13 +2,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import {
-  Platform,
-  Pressable,
-  TextInput as RNTextInput,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { Platform, Pressable, View, useWindowDimensions } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
 
@@ -28,117 +22,94 @@ import {
 } from "~/hooks";
 import { EditProfileScreenProps } from "~/navigation";
 
-interface HeaderTextInputHandle {
-  focusEditName: () => void;
-}
+const Header = observer(function Header({
+  profile,
+  onCommitChanges,
+  onDiscardChanges,
+  onEditAdvancedRules,
+  onDeleteProfile,
+}: {
+  profile: Profiles.Profile;
+  onCommitChanges: () => void;
+  onDiscardChanges?: () => void;
+  confirmDiscard?: () => void;
+  onEditAdvancedRules: () => void;
+  onDeleteProfile?: () => void;
+}) {
+  const [renameVisible, setRenameVisible] = React.useState(false);
+  const [editedName, setEditedName] = React.useState("");
+  const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
+  const { width: windowWidth } = useWindowDimensions();
+  const { colors } = useTheme();
+  const color = actionsMenuVisible
+    ? colors.onSurfaceDisabled
+    : colors.onSurface;
 
-const Header = observer(
-  React.forwardRef(function Header(
-    {
-      profile,
-      onCommitChanges,
-      onDiscardChanges,
-      onEditAdvancedRules,
-      onDeleteProfile,
-    }: {
-      profile: Profiles.Profile;
-      onCommitChanges: () => void;
-      onDiscardChanges?: () => void;
-      confirmDiscard?: () => void;
-      onEditAdvancedRules: () => void;
-      onDeleteProfile?: () => void;
-    },
-    ref: React.ForwardedRef<HeaderTextInputHandle>
-  ) {
-    const [renameVisible, setRenameVisible] = React.useState(false);
-    const [editedName, setEditedName] = React.useState("");
-    const textInputRef = React.useRef<RNTextInput>(null);
-    React.useEffect(() => {
-      if (renameVisible && textInputRef.current) {
-        textInputRef.current?.focus();
+  return (
+    <PageHeader
+      leftElement={
+        onDiscardChanges
+          ? () => <Button onPress={onDiscardChanges}>Cancel</Button>
+          : undefined
       }
-    }, [renameVisible]);
-
-    React.useImperativeHandle(
-      ref,
-      () => ({
-        focusEditName: () => setRenameVisible(true),
-      }),
-      []
-    );
-
-    const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
-    const { width: windowWidth } = useWindowDimensions();
-    const { colors } = useTheme();
-    const color = actionsMenuVisible
-      ? colors.onSurfaceDisabled
-      : colors.onSurface;
-
-    return (
-      <PageHeader
-        leftElement={
-          onDiscardChanges
-            ? () => <Button onPress={onDiscardChanges}>Cancel</Button>
-            : undefined
-        }
-        rightElement={
-          !onDiscardChanges || profile.isModified
-            ? () => <Button onPress={onCommitChanges}>Done</Button>
-            : undefined
-        }
-      >
-        {renameVisible ? (
-          <TextInput
-            ref={textInputRef}
-            mode="flat"
-            dense
-            selectTextOnFocus={Platform.OS !== "android"} // keyboard not appearing on Android
-            style={{ marginHorizontal: 60, textAlign: "center" }}
-            value={editedName}
-            onChangeText={setEditedName}
-            onEndEditing={() => {
-              const name = editedName.trim();
-              if (name.length) {
-                runInAction(() => (profile.name = editedName));
-              }
-              setRenameVisible(false);
-            }}
+      rightElement={
+        !onDiscardChanges || profile.isModified
+          ? () => <Button onPress={onCommitChanges}>Done</Button>
+          : undefined
+      }
+    >
+      {renameVisible ? (
+        <TextInput
+          mode="flat"
+          dense
+          autoFocus
+          maxLength={20}
+          selectTextOnFocus={Platform.OS !== "android"} // keyboard not appearing on Android
+          style={{ marginHorizontal: 60, textAlign: "center" }}
+          value={editedName}
+          onChangeText={setEditedName}
+          onEndEditing={() => {
+            const name = editedName.trim();
+            if (name.length) {
+              runInAction(() => (profile.name = editedName));
+            }
+            setRenameVisible(false);
+          }}
+        />
+      ) : (
+        <Pressable
+          onPress={() => setActionsMenuVisible(true)}
+          style={{
+            alignSelf: "center",
+            flexDirection: "row",
+            alignItems: "flex-end",
+          }}
+        >
+          <Text variant="bodyLarge" style={{ paddingHorizontal: 5, color }}>
+            {profile.name}
+          </Text>
+          <ChevronDownIcon
+            size={18}
+            color={color}
+            backgroundColor={makeTransparent(colors.onBackground, 0.2)}
+            style={{ marginBottom: 3 }}
           />
-        ) : (
-          <Pressable
-            onPress={() => setActionsMenuVisible(true)}
-            style={{
-              alignSelf: "center",
-              flexDirection: "row",
-              alignItems: "flex-end",
+          <ProfileMenu
+            visible={actionsMenuVisible}
+            anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
+            onDismiss={() => setActionsMenuVisible(false)}
+            onRename={() => {
+              setEditedName(profile.name);
+              setRenameVisible(true);
             }}
-          >
-            <Text variant="bodyLarge" style={{ paddingHorizontal: 5, color }}>
-              {profile.name}
-            </Text>
-            <ChevronDownIcon
-              size={18}
-              color={color}
-              backgroundColor={makeTransparent(colors.onBackground, 0.2)}
-              style={{ marginBottom: 3 }}
-            />
-            <ProfileMenu
-              visible={actionsMenuVisible}
-              anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
-              onDismiss={() => setActionsMenuVisible(false)}
-              onRename={() => {
-                setEditedName(profile.name);
-                setRenameVisible(true);
-              }}
-              onEditAdvancedRules={onEditAdvancedRules}
-              onDelete={onDeleteProfile}
-            />
-          </Pressable>
-        )}
-      </PageHeader>
-    );
-  })
-);
+            onEditAdvancedRules={onEditAdvancedRules}
+            onDelete={onDeleteProfile}
+          />
+        </Pressable>
+      )}
+    </PageHeader>
+  );
+});
 
 function EditProfilePage({
   profileUuid,

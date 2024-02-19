@@ -671,6 +671,7 @@ export function FloatingAddButton({
       }}
     >
       <AddNewIcon
+        disabled={disabled}
         color1={colors.primary}
         color2={colors.secondary}
         size={60}

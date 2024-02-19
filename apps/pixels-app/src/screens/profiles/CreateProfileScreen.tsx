@@ -122,6 +122,7 @@ function CreateProfilePage({
       <TextInput
         mode="outlined"
         dense
+        maxLength={20}
         style={{ marginHorizontal: 10 }}
         value={profileName}
         onChangeText={setProfileName}

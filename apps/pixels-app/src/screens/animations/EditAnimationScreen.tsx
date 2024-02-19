@@ -50,6 +50,7 @@ const EditAnimationName = observer(function EditAnimationName({
     <TextInput
       mode="outlined"
       dense
+      maxLength={20}
       style={{ backgroundColor: colors.elevation.level0 }}
       value={animation.name}
       onChangeText={(t) => runInAction(() => (animation.name = t))}

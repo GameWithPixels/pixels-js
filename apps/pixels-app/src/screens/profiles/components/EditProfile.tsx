@@ -40,6 +40,7 @@ const EditProfileDescription = observer(function EditProfileDescription({
     <TextInput
       mode="outlined"
       multiline
+      maxLength={200}
       style={{ backgroundColor: colors.elevation.level0 }}
       value={profile.description}
       onChangeText={(t) => runInAction(() => (profile.description = t))}

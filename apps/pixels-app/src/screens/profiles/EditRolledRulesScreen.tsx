@@ -37,7 +37,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionDetails, ActionDieRenderer } from "./components/ActionDetails";
-import { ConfigureActionModal } from "./components/ConfigureActionModal";
+import { ConfigureActionBottomSheet } from "./components/ConfigureActionBottomSheet";
 
 import { actionTypes } from "~/actionTypes";
 import { AppBackground } from "~/components/AppBackground";
@@ -102,7 +102,7 @@ const InnerScrollView = React.forwardRef(function InnerScrollView(
       style={{ width, height: "100%", flex: 1 }}
       contentContainerStyle={{
         paddingHorizontal: 10,
-        paddingBottom: 90,
+        paddingBottom: 60,
       }}
       {...props}
     >
@@ -448,7 +448,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
           setConfigureRule(newRule);
         }}
       />
-      <ConfigureActionModal
+      <ConfigureActionBottomSheet
         dieType={profile.dieType}
         condition={configureRule?.condition ?? defaultCondition}
         action={configureRule?.actions[0] ?? defaultAction}

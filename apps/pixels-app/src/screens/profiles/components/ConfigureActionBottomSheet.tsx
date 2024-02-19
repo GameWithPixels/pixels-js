@@ -2,7 +2,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetScrollView,
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
@@ -25,81 +24,14 @@ import {
   useTheme,
 } from "react-native-paper";
 
+import { PickAnimationBottomSheet } from "./PickAnimationBottomSheet";
+
 import { FacesGrid } from "~/components/FacesGrid";
 import { SliderWithValue } from "~/components/SliderWithTitle";
-import { AnimationsGrid } from "~/components/animation";
 import { GradientButton } from "~/components/buttons";
 import { TrailingSpaceFix } from "~/fixes";
-import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
+import { useBottomSheetPadding } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
-
-function PickAnimationModal({
-  animation,
-  dieType,
-  onSelectAnimation,
-  visible,
-  onDismiss,
-}: {
-  animation?: Readonly<Profiles.Animation>;
-  dieType?: PixelDieType;
-  onSelectAnimation?: (animation: Readonly<Profiles.Animation>) => void;
-  onDismiss: () => void;
-  visible: boolean;
-}) {
-  const animations = useAnimationsList();
-  const sortedAnimations = React.useMemo(
-    () => [...animations].sort((a, b) => a.name.localeCompare(b.name)),
-    [animations]
-  );
-  const sheetRef = React.useRef<BottomSheetModal>(null);
-  React.useEffect(() => {
-    if (visible) {
-      sheetRef.current?.present();
-    } else {
-      sheetRef.current?.dismiss();
-    }
-  }, [visible]);
-  const paddingBottom = useBottomSheetPadding();
-  const theme = useTheme();
-  return (
-    <BottomSheetModal
-      ref={sheetRef}
-      stackBehavior="push"
-      snapPoints={["92%"]}
-      activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
-      failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      onDismiss={onDismiss}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
-    >
-      <ThemeProvider theme={theme}>
-        <BottomSheetScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingBottom,
-            gap: 10,
-          }}
-        >
-          <Text variant="titleMedium">Select Animation</Text>
-          <AnimationsGrid
-            animations={sortedAnimations}
-            dieType={dieType}
-            numColumns={2}
-            selected={animation}
-            onSelectAnimation={onSelectAnimation}
-          />
-        </BottomSheetScrollView>
-      </ThemeProvider>
-    </BottomSheetModal>
-  );
-}
 
 function TextInput({
   value,
@@ -120,6 +52,7 @@ function TextInput({
       }}
     >
       <BottomSheetTextInput
+        maxLength={100}
         value={value}
         onChangeText={onChangeText}
         style={{
@@ -296,7 +229,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       >
         {action.animation?.name ?? "Select Animation"}
       </GradientButton>
-      <PickAnimationModal
+      <PickAnimationBottomSheet
         animation={action.animation}
         dieType={dieType}
         onSelectAnimation={(anim) => {
@@ -417,98 +350,100 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   );
 });
 
-export const ConfigureActionModal = observer(function ConfigureActionModal({
-  condition,
-  action,
-  dieType,
-  unavailableFaces,
-  visible,
-  onDismiss,
-}: {
-  condition: Profiles.Condition;
-  action: Profiles.Action;
-  dieType: PixelDieType;
-  unavailableFaces?: number[];
-  visible?: boolean;
-  onDismiss: () => void;
-}) {
-  const sheetRef = React.useRef<BottomSheetModal>(null);
-  React.useEffect(() => {
-    if (visible) {
-      sheetRef.current?.present();
-    } else {
-      sheetRef.current?.dismiss();
-    }
-  }, [visible]);
+export const ConfigureActionBottomSheet = observer(
+  function ConfigureActionBottomSheet({
+    condition,
+    action,
+    dieType,
+    unavailableFaces,
+    visible,
+    onDismiss,
+  }: {
+    condition: Profiles.Condition;
+    action: Profiles.Action;
+    dieType: PixelDieType;
+    unavailableFaces?: number[];
+    visible?: boolean;
+    onDismiss: () => void;
+  }) {
+    const sheetRef = React.useRef<BottomSheetModal>(null);
+    React.useEffect(() => {
+      if (visible) {
+        sheetRef.current?.present();
+      } else {
+        sheetRef.current?.dismiss();
+      }
+    }, [visible]);
 
-  const theme = useTheme();
-  const paddingBottom = useBottomSheetPadding();
-  return (
-    <BottomSheetModal
-      ref={sheetRef}
-      enableDynamicSizing
-      onDismiss={onDismiss}
-      activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
-      failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
-      keyboardBehavior={Platform.OS === "ios" ? "interactive" : "fillParent"}
-      keyboardBlurBehavior="restore"
-      android_keyboardInputMode="adjustResize"
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
-    >
-      <ThemeProvider theme={theme}>
-        <BottomSheetView
-          style={{
-            paddingHorizontal: 20,
-            paddingBottom,
-            gap: 10,
-          }}
-        >
-          {condition.type === "rolled" && (
-            <ConfigureRolledCondition
-              condition={condition as Profiles.ConditionRolled}
-              dieType={dieType}
-              unavailableFaces={unavailableFaces}
-            />
-          )}
-          {action.type === "playAnimation" ? (
-            <ConfigurePlayAnimation
-              action={action as Profiles.ActionPlayAnimation}
-              dieType={dieType}
-            />
-          ) : action.type === "playAudioClip" ? (
-            <ConfigurePlayAudioClip
-              action={action as Profiles.ActionPlayAudioClip}
-            />
-          ) : action.type === "speakText" ? (
-            <ConfigureSpeakText action={action as Profiles.ActionSpeakText} />
-          ) : action.type === "makeWebRequest" ? (
-            <ConfigureMakeWebRequest
-              action={action as Profiles.ActionMakeWebRequest}
-            />
-          ) : null}
-          {condition.type === "rolling" ? (
-            <ConfigureRollingCondition
-              condition={condition as Profiles.ConditionRolling}
-            />
-          ) : condition.type === "idle" ? (
-            <ConfigureIdleCondition
-              condition={condition as Profiles.ConditionIdle}
-            />
-          ) : condition.type === "battery" ? (
-            <ConfigureBatteryCondition
-              condition={condition as Profiles.ConditionBattery}
-            />
-          ) : null}
-        </BottomSheetView>
-      </ThemeProvider>
-    </BottomSheetModal>
-  );
-});
+    const theme = useTheme();
+    const paddingBottom = useBottomSheetPadding();
+    return (
+      <BottomSheetModal
+        ref={sheetRef}
+        enableDynamicSizing
+        onDismiss={onDismiss}
+        activeOffsetY={Platform.OS === "android" ? [-1, 1] : undefined} // For the slider
+        failOffsetX={Platform.OS === "android" ? [-5, 5] : undefined} // For the slider
+        keyboardBehavior={Platform.OS === "ios" ? "interactive" : "fillParent"}
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        backgroundStyle={getBottomSheetBackgroundStyle()}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            appearsOnIndex={0}
+            disappearsOnIndex={-1}
+            pressBehavior="close"
+            {...props}
+          />
+        )}
+      >
+        <ThemeProvider theme={theme}>
+          <BottomSheetView
+            style={{
+              paddingHorizontal: 20,
+              paddingBottom,
+              gap: 10,
+            }}
+          >
+            {condition.type === "rolled" && (
+              <ConfigureRolledCondition
+                condition={condition as Profiles.ConditionRolled}
+                dieType={dieType}
+                unavailableFaces={unavailableFaces}
+              />
+            )}
+            {action.type === "playAnimation" ? (
+              <ConfigurePlayAnimation
+                action={action as Profiles.ActionPlayAnimation}
+                dieType={dieType}
+              />
+            ) : action.type === "playAudioClip" ? (
+              <ConfigurePlayAudioClip
+                action={action as Profiles.ActionPlayAudioClip}
+              />
+            ) : action.type === "speakText" ? (
+              <ConfigureSpeakText action={action as Profiles.ActionSpeakText} />
+            ) : action.type === "makeWebRequest" ? (
+              <ConfigureMakeWebRequest
+                action={action as Profiles.ActionMakeWebRequest}
+              />
+            ) : null}
+            {condition.type === "rolling" ? (
+              <ConfigureRollingCondition
+                condition={condition as Profiles.ConditionRolling}
+              />
+            ) : condition.type === "idle" ? (
+              <ConfigureIdleCondition
+                condition={condition as Profiles.ConditionIdle}
+              />
+            ) : condition.type === "battery" ? (
+              <ConfigureBatteryCondition
+                condition={condition as Profiles.ConditionBattery}
+              />
+            ) : null}
+          </BottomSheetView>
+        </ThemeProvider>
+      </BottomSheetModal>
+    );
+  }
+);

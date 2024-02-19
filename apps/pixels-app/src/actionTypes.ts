@@ -8,9 +8,9 @@ export const connectionFlags = Object.keys(
   Profiles.ConnectionFlagsValues
 ) as Profiles.ConnectionFlags[];
 
-export const batteryFlags = Object.keys(
-  Profiles.BatteryFlagsValues
-) as Profiles.BatteryFlags[];
+export const batteryFlags = (
+  Object.keys(Profiles.BatteryFlagsValues) as Profiles.BatteryFlags[]
+).filter((t) => t !== "ok");
 
 export const helloGoodbyeFlags = (
   Object.keys(Profiles.HelloGoodbyeFlagsValues) as Profiles.HelloGoodbyeFlags[]
