@@ -32,7 +32,7 @@ export interface ScanResult {
   readonly advertisementData: AdvertisementData;
 }
 
-export type BleScanResultEvent = ScanResult | string;
+export type BleScanResultEvent = ScanResult | { error: string };
 
 export interface BleConnectionEvent {
   readonly device: Device;

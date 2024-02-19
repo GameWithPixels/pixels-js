@@ -24,6 +24,7 @@ import {
   BleEventMap,
   BleScanResultEvent,
   BluetoothState,
+  ConnectionEventReason,
 } from "./events";
 import { getNativeErrorCode } from "./getNativeErrorCode";
 import { requestPermissions } from "./requestPermissions";
@@ -54,7 +55,11 @@ export interface BluetoothStateEvent {
 }
 
 export type ScanStatus = "stopped" | "starting" | "scanning";
-export type ScanStoppedReason = "canceled" | Exclude<BluetoothState, "ready">;
+export type ScanStoppedReason =
+  | "success"
+  | "canceled"
+  | "error"
+  | Exclude<BluetoothState, "ready">;
 
 // A scanned peripheral is BLE device and its advertisement data
 export interface ScannedPeripheral extends Device {
@@ -68,13 +73,14 @@ export type ScanEvent =
     }
   | {
       readonly type: "status";
-      readonly status: ScanStatus;
-      readonly reason?: ScanStoppedReason;
+      readonly scanStatus: ScanStatus;
+      readonly reason: ScanStoppedReason;
     };
 
 export interface PeripheralConnectionEvent {
   readonly peripheral: ScannedPeripheral;
   readonly connectionStatus: ConnectionStatus;
+  readonly reason: ConnectionEventReason;
 }
 
 export interface PeripheralCharacteristicValueChangedEvent {
@@ -108,7 +114,7 @@ let _scanResultSubs: EmitterSubscription | undefined;
 const _evEmitter = createTypedEventEmitter<CentralEventMap>();
 
 // Track if we have initialized
-let _bleInit = false;
+let _initPromise: Promise<void> | undefined;
 
 // Bluetooth state
 let _bluetoothState: BluetoothState = "unknown";
@@ -144,7 +150,7 @@ function _addNativeListener<T extends keyof BleEventMap>(
 function _updateBluetoothState(state: BluetoothState): void {
   if (_bluetoothState !== state) {
     try {
-      console.log(`[BLE] Bluetooth state ${state}`);
+      console.log(`[BLE] Bluetooth state is ${state}`);
       _bluetoothState = state;
       _evEmitter.emit("bluetoothState", { state });
     } catch (error) {
@@ -160,38 +166,38 @@ function _updateBluetoothState(state: BluetoothState): void {
 }
 
 function _updateScanStatus(
-  status: ScanStatus,
+  scanStatus: ScanStatus,
   reason?: ScanStoppedReason
 ): void {
-  console.log(`[BLE] Update scan status to ${status} (was ${_scanStatus})`);
+  console.log(`[BLE] Update scan status to ${scanStatus} (was ${_scanStatus})`);
 
   const callback = _scanCallback;
-  const statusChanged = _scanStatus !== status;
+  const statusChanged = _scanStatus !== scanStatus;
 
   // Remove native listener and callback if scan is not running
-  if (status !== "starting" && status !== "scanning") {
+  if (scanStatus === "stopped") {
     _scanCallback = undefined;
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
   }
 
   // Update status and notify
-  _scanStatus = status;
+  _scanStatus = scanStatus;
   try {
-    if (status === "stopped") {
+    if (scanStatus === "stopped") {
       reason ??= "canceled";
     } else {
-      reason = undefined;
+      reason = "success";
     }
-    callback?.({ type: "status", status, reason });
+    callback?.({ type: "status", scanStatus, reason });
   } catch (e) {
     console.error(
-      `[BLE] Uncaught error in Scan callback for status: ${errToStr(e)}`
+      `[BLE] Uncaught error in startScan callback for status: ${errToStr(e)}`
     );
   }
   if (statusChanged) {
     try {
-      _evEmitter.emit("scanStatus", { status });
+      _evEmitter.emit("scanStatus", { status: scanStatus });
     } catch (e) {
       console.error(
         `[BLE] Uncaught error in "scanStatus" event listener: ${errToStr(e)}`
@@ -230,6 +236,9 @@ export const Central = {
       _connStatusSubs = _addNativeListener(
         "connectionEvent",
         (ev: BleConnectionEvent) => {
+          console.log(
+            `[BLE ${ev.device.name}] Got connection status ${ev.connectionStatus} with reason ${ev.reason}`
+          );
           try {
             // Forward event
             const pInf = peripheralsMap.get(ev.device.systemId);
@@ -258,6 +267,7 @@ export const Central = {
                   cb({
                     peripheral: pInf.scannedPeripheral,
                     connectionStatus: ev.connectionStatus,
+                    reason: ev.reason ?? "success",
                   });
                 }
               }
@@ -364,8 +374,12 @@ export const Central = {
     services: string | string[],
     scanCallback: (ev: ScanEvent) => void
   ): Promise<void> {
+    if (!_nativeEmitter) {
+      throw new Errors.CentralNotInitializedError();
+    }
+
     // The init sequence relies on the value of scanCallback changing
-    // for every new scan to track if this scan is still active.
+    // for every new scan to track if the given scan is still active.
     if (_scanCallback === scanCallback) {
       scanCallback = (ev: ScanEvent) => scanCallback(ev);
     }
@@ -379,25 +393,35 @@ export const Central = {
     _scanCallback = scanCallback;
     _updateScanStatus("starting");
 
-    if (!_nativeEmitter) {
-      throw new Errors.CentralNotInitializedError();
-    }
-
-    // Ask for permissions on Android
+    // Ask for permissions, Android only
     if (!(await requestPermissions())) {
       _updateBluetoothState("unauthorized");
       throw new Errors.BluetoothPermissionsDeniedError();
     }
 
     // Initialize native Bluetooth only on first scan
-    // so we don't ask for permissions too early
-    if (!_bleInit) {
-      // Might be called several times if multiple scans are started
-      // but that's properly handled by the native code
-      console.log("[BLE] Initializing native Bluetooth");
-      await BluetoothLE.bleInitialize();
-      _bleInit = true;
+    // so we don't ask for user permissions before that
+    if (!_initPromise) {
+      console.log("[BLE] Waiting on Bluetooth to be ready");
+      _initPromise = new Promise<void>((resolve, reject) => {
+        if (!_nativeEmitter) {
+          reject(new Errors.CentralNotInitializedError());
+        } else {
+          _nativeEmitter.addListener(
+            "bluetoothState",
+            ({ state }: BleBluetoothStateEvent) => {
+              if (state === "ready") {
+                resolve();
+              } else {
+                reject(_scanErrorFromBluetoothState());
+              }
+            }
+          );
+          BluetoothLE.bleInitialize().catch(reject);
+        }
+      });
     }
+    await _initPromise;
 
     // Check if we got canceled while initializing
     if (_scanCallback !== scanCallback) {
@@ -413,13 +437,10 @@ export const Central = {
     _scanResultSubs = _nativeEmitter.addListener(
       "scanResult",
       (ev: BleScanResultEvent) => {
-        if (typeof ev === "string") {
+        if ("error" in ev) {
           // Scan failed to start, Android only
-          console.warn(`[BLE] Scan failed: ${ev}`);
-          _updateScanStatus(
-            "stopped",
-            _bluetoothState === "ready" ? "unknown" : _bluetoothState
-          );
+          console.warn(`[BLE] Scan failed: ${ev.error}`);
+          _updateScanStatus("stopped", "error");
         } else {
           // Forward event
           const peripheral = {
@@ -427,6 +448,7 @@ export const Central = {
             advertisementData: ev.advertisementData,
           };
           const pInf = peripheralsMap.get(ev.device.systemId);
+          // TODO requiredServices should come from native event
           if (pInf) {
             pInf.scannedPeripheral = peripheral;
             pInf.requiredServices = requiredServices;
@@ -462,16 +484,21 @@ export const Central = {
       // Failed to start scan, Android only
       const message = (e as Error)?.message;
       console.log(`[BLE] Error starting scan: ${message ?? String(e)}`);
-      // Check what error we got, they are not documented...
+      // iOS error thrown by the native code
+      const notPoweredOn = message === "Bluetooth not in powered on state";
+      // Check what error we got from Android, they are not documented...
       const unavailable =
         message === "BT le scanner not available" ||
         message === "BT Adapter is not turned ON";
       const unauthorized = message.startsWith("Need android.permission");
-      const bleState: BluetoothState = unavailable
-        ? "off"
-        : unauthorized
-          ? "unauthorized"
-          : "resetting"; // Fallback state, we don't really know whats going on
+      // Infer state from error
+      const bleState: BluetoothState = notPoweredOn
+        ? _bluetoothState // State is already updated on iOS
+        : unavailable
+          ? "off"
+          : unauthorized
+            ? "unauthorized"
+            : "resetting"; // Fallback state, we don't really know whats going on
       _updateBluetoothState(bleState);
     }
 
@@ -532,7 +559,7 @@ export const Central = {
       timeoutMs > 0 &&
       setTimeout(() => {
         // Disconnect on timeout
-        console.log(`[BLE ${name}] Connection timeout after ${timeoutMs}ms`);
+        console.log(`[BLE ${name}] Connection timed-out after ${timeoutMs}ms`);
         hasTimedOut = true;
         Central.disconnectPeripheral(peripheral).catch((e) =>
           console.warn(
@@ -627,6 +654,7 @@ export const Central = {
             cb({
               connectionStatus: "ready",
               peripheral: pInf.scannedPeripheral,
+              reason: "success",
             });
           }
         } else {

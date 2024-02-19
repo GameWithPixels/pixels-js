@@ -153,8 +153,8 @@ export default function App() {
             );
           }
         } else {
-          console.log(`Scan status ${ev.status}`);
-          setIsScanning(ev.status === "scanning");
+          console.log(`Scan status ${ev.scanStatus}`);
+          setIsScanning(ev.scanStatus === "scanning");
         }
       }).catch((e) => {
         setLastError(e);

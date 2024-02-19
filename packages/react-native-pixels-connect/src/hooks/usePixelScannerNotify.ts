@@ -1,7 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
-import { PixelScanner, PixelScannerListOp } from "../PixelScanner";
+import { PixelScanner, PixelScannerListOperation } from "../PixelScanner";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
@@ -16,7 +16,7 @@ export type PixelScannerDispatchAction = "start" | "stop" | "clear";
 export type PixelScannerStatus = "started" | "stopped" | Error;
 
 /**
- * Available options for {@link usePixelScanner}.
+ * Available options for {@link usePixelScannerNotify}.
  */
 export interface PixelScannerOptions {
   /** Optional filter to only keep certain Pixels in the list. */
@@ -34,9 +34,6 @@ export interface PixelScannerOptions {
    * @default true.
    **/
   autoStart?: boolean;
-
-  /** Number of scanned Pixels to emulate, only use in DEV mode! */
-  __dev__emulatedPixelsCount?: number;
 }
 
 /**
@@ -57,8 +54,8 @@ export interface PixelScannerOptions {
  * @remarks This hook is reserved for advanced usage. There are simpler hooks such as
  *          {@link useScannedPixels} or {@link useScannedPixelNotifiers}.
  */
-export function usePixelScanner<T>(
-  updateItems: (items: T[], ops: PixelScannerListOp[]) => T[],
+export function usePixelScannerNotify<T>(
+  updateItems: (items: T[], ops: PixelScannerListOperation[]) => T[],
   opt?: PixelScannerOptions
 ): [T[], (action: PixelScannerDispatchAction) => void, PixelScannerStatus] {
   const [status, setStatus] = React.useState<PixelScannerStatus>("stopped");
@@ -79,7 +76,7 @@ export function usePixelScanner<T>(
 
   // Hook updateItems to scan events
   React.useEffect(() => {
-    scanner.scanListener = (_: PixelScanner, ops: PixelScannerListOp[]) => {
+    scanner.addListener("scanListOperations", ({ ops }) => {
       // Note: we don't do setItems(items => updateItems(items, ...))
       // because that would run updateItems() callback while rendering the component
       // hosting this hook, and thus preventing the callback from modifying other
@@ -87,18 +84,16 @@ export function usePixelScanner<T>(
       // a different component" warning)
       itemsRef.current = updateItems(itemsRef.current, ops);
       setItems(itemsRef.current);
-    };
+    });
   }, [scanner, updateItems]);
 
   // Options default values
   const minNotifyInterval = opt?.minUpdateInterval ?? 200;
   const scanFilter = opt?.scanFilter;
-  const emulatedCount = opt?.__dev__emulatedPixelsCount ?? 0;
   React.useEffect(() => {
     scanner.minNotifyInterval = minNotifyInterval;
     scanner.scanFilter = scanFilter;
-    scanner.__dev__emulatedPixelsCount = emulatedCount;
-  }, [emulatedCount, minNotifyInterval, scanFilter, scanner]);
+  }, [minNotifyInterval, scanFilter, scanner]);
 
   // The returned dispatcher (stable)
   const dispatch = React.useCallback(

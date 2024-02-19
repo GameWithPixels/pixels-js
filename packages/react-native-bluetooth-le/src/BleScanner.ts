@@ -10,7 +10,7 @@ export const BleScanner = {
     await Central.startScan(services, (ev) => {
       if (ev.type === "peripheral") {
         onScannedPeripheral(ev.peripheral);
-      } else if (ev.status !== "starting" && ev.status !== "scanning") {
+      } else if (ev.scanStatus === "stopped") {
         _scanning = false;
       }
     });

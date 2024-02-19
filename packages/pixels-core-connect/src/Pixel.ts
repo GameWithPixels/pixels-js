@@ -106,8 +106,8 @@ export type PixelStatus =
  * @category Pixels
  */
 export interface RollEvent {
-  state: PixelRollState;
-  face: number;
+  readonly state: PixelRollState;
+  readonly face: number;
 }
 
 /**
@@ -116,8 +116,8 @@ export interface RollEvent {
  * @category Pixels
  */
 export interface BatteryEvent {
-  level: number; // Percentage
-  isCharging: boolean;
+  readonly level: number; // Percentage
+  readonly isCharging: boolean;
 }
 
 /**
@@ -126,9 +126,9 @@ export interface BatteryEvent {
  * @category Pixels
  */
 export interface UserMessageEvent {
-  message: string;
-  withCancel: boolean;
-  response: (okCancel: boolean) => Promise<void>;
+  readonly message: string;
+  readonly withCancel: boolean;
+  readonly response: (okCancel: boolean) => Promise<void>;
 }
 
 /**
@@ -159,9 +159,9 @@ export interface PixelEventMap {
   remoteAction: number; // Remote action id
   /** Data transfer. */
   dataTransfer: {
-    progress: number;
-    // bytesSend: number;
-    // totalBytes: number;
+    readonly progress: number;
+    // readonly bytesSend: number;
+    // readonly totalBytes: number;
   };
   /** Profile data hash */
   profileHash: number;
@@ -593,8 +593,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Adds the given listener function to the end of the listeners array
-   * for the event with the given name.
+   * Register a listener function to be invoked on raising the event
+   * identified by the given event name.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
    * @param eventName The name of the event.
@@ -608,8 +608,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Removes the specified listener function from the listener array
-   * for the event with the given name.
+   * Unregister a listener from receiving events identified by
+   * the given event name.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
    * @param eventName The name of the event.
@@ -623,7 +623,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Register a listener to be invoked on receiving raw messages of a given type.
+   * Register a listener function to be invoked on receiving raw messages
+   * of a given type from the Pixel.
    * @param msgType The type of message to watch for.
    * @param listener The callback function.
    */
@@ -635,7 +636,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Unregister a listener invoked on receiving raw messages of a given type.
+   * Unregister a listener from receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
    * @param listener The callback function to unregister.
    */
