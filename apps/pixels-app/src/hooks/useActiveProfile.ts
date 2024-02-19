@@ -13,7 +13,7 @@ export function useActiveProfile(
 ): Readonly<Profiles.Profile> {
   const profileUuid = useAppSelector(
     (state) =>
-      state.pairedDice.dice.find((d) => d.pixelId === pixel.pixelId)
+      state.pairedDice.paired.find((d) => d.pixelId === pixel.pixelId)
         ?.profileUuid
   );
   // const setActiveProfile = (profile: Readonly<Profiles.Profile>) =>

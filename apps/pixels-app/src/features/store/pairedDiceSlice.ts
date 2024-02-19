@@ -1,30 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  PixelColorway,
-  PixelDieType,
-} from "@systemic-games/react-native-pixels-connect";
 
 import { getFactoryProfileUuid } from "./library/factory";
 
-import { getTimeStringMs } from "~/features/utils";
-
-export interface PairedDie {
-  isPaired: boolean; // Move unpaired dice to a separate list
-  systemId: string;
-  address: number;
-  pixelId: number;
-  name: string;
-  dieType: PixelDieType;
-  colorway: PixelColorway;
-  profileUuid: string;
-}
+import { PairedDie } from "~/app/PairedDie";
+import { getTimeStringMs, logError, unsigned32ToHex } from "~/features/utils";
 
 export interface PairedDiceState {
-  dice: PairedDie[];
+  paired: PairedDie[];
+  unpaired: PairedDie[];
 }
 
 const initialState: PairedDiceState = {
-  dice: [],
+  paired: [],
+  unpaired: [],
 };
 
 function log(
@@ -53,50 +41,74 @@ const PairedDiceSlice = createSlice({
   reducers: {
     resetPairedDice(state) {
       log("resetPairedDice");
-      state.dice = [];
+      state.paired = [];
+      state.unpaired = [];
     },
+
     addPairedDie(
       state,
-      action: PayloadAction<{
-        systemId: string;
-        address: number;
-        pixelId: number;
-        name: string;
-        dieType: PixelDieType;
-        colorway: PixelColorway;
-      }>
+      action: PayloadAction<
+        Pick<
+          PairedDie,
+          "systemId" | "pixelId" | "name" | "dieType" | "colorway"
+        >
+      >
     ) {
       log("addPairedDie", action.payload);
-      const index = state.dice.findIndex(
+      const index = state.paired.findIndex(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
-      const { systemId, address, pixelId, name, dieType, colorway } =
-        action.payload;
-      const dieInfo = {
-        isPaired: true,
+      const uIndex = state.unpaired.findIndex(
+        ({ pixelId }) => pixelId === action.payload.pixelId
+      );
+      const { systemId, pixelId, name, dieType, colorway } = action.payload;
+      const die = {
         systemId,
-        address,
         pixelId,
         name,
         dieType,
         colorway,
-        profileUuid: getFactoryProfileUuid(dieType),
+        profileUuid:
+          index >= 0
+            ? state.paired[uIndex].profileUuid
+            : uIndex >= 0
+              ? state.unpaired[uIndex].profileUuid
+              : getFactoryProfileUuid(dieType),
       };
-      if (index !== -1) {
-        state.dice[index] = dieInfo;
+      if (index >= 0) {
+        state.paired[index] = die;
       } else {
-        state.dice.push(dieInfo);
+        state.paired.push(die);
+      }
+      if (uIndex >= 0) {
+        state.unpaired.splice(uIndex, 1);
       }
     },
+
     removePairedDie(state, action: PayloadAction<number>) {
       log("removePairedDie", action.payload);
-      const pairedDie = state.dice.find(
+      const index = state.paired.findIndex(
         ({ pixelId }) => pixelId === action.payload
       );
-      if (pairedDie) {
-        pairedDie.isPaired = false;
+      if (index >= 0) {
+        state.paired.splice(index, 1);
+        const uIndex = state.unpaired.findIndex(
+          ({ pixelId }) => pixelId === action.payload
+        );
+        if (uIndex >= 0) {
+          state.unpaired[uIndex] = state.paired[index];
+        } else {
+          state.unpaired.push(state.paired[index]);
+        }
+      } else {
+        logError(
+          `PairedDiceSlice.removePairedDie: no paired die with pixelId ${unsigned32ToHex(
+            action.payload
+          )}`
+        );
       }
     },
+
     setPairedDieName(
       state,
       action: PayloadAction<{
@@ -105,13 +117,14 @@ const PairedDiceSlice = createSlice({
       }>
     ) {
       log("setPairedDieName", action.payload);
-      const pairedDie = state.dice.find(
+      const pairedDie = state.paired.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
       if (pairedDie) {
         pairedDie.name = action.payload.name;
       }
     },
+
     setPairedDieProfile(
       state,
       action: PayloadAction<{
@@ -120,7 +133,7 @@ const PairedDiceSlice = createSlice({
       }>
     ) {
       log("setPairedDieProfile", action.payload);
-      const pairedDie = state.dice.find(
+      const pairedDie = state.paired.find(
         ({ pixelId }) => pixelId === action.payload.pixelId
       );
       if (pairedDie) {

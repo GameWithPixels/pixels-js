@@ -18,6 +18,7 @@ import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
 import { PixelRollCard } from "./PixelRollCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PixelDieRenderer } from "~/components/DieRenderer";
@@ -25,7 +26,6 @@ import { NewPixelAppBanner } from "~/components/banners";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
 import { blinkDie, transferProfile } from "~/features/dice";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import { FactoryProfile, getPixelStatusLabel } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
 import {
@@ -62,15 +62,15 @@ const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
 });
 
 export function PixelFocusViewHeader({
-  pairedPixel,
+  pairedDie,
   onUnpair,
   onFirmwareUpdate,
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
   onUnpair: () => void;
   onFirmwareUpdate: () => void;
 }) {
-  const pixel = usePairedPixel(pairedPixel);
+  const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const [pixelName] = usePixelValue(pixel, "name");
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
@@ -168,19 +168,19 @@ export function PixelFocusViewHeader({
 }
 
 function RollingDie({
-  pairedPixel,
+  pairedDie,
   disabled,
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
   disabled: boolean;
 }) {
-  const pixel = usePairedPixel(pairedPixel);
+  const pixel = usePairedPixel(pairedDie);
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
   return (
     <PixelDieRenderer
-      pixel={pairedPixel}
+      pixel={pairedDie}
       speed={disabled ? 0 : rolling ? 10 : 1}
     />
   );
@@ -210,19 +210,19 @@ function PixelProfile({ ...props }: Omit<ProfileCardProps, "row">) {
 }
 
 export function PixelFocusView({
-  pairedPixel,
+  pairedDie,
   onEditProfile,
   onShowDetails,
   style,
   ...props
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
   onEditProfile: () => void;
   onShowDetails: () => void;
 } & Omit<ViewProps, "children">) {
   const appDispatch = useAppDispatch();
 
-  const pixel = usePairedPixel(pairedPixel);
+  const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   React.useEffect(
     () =>
@@ -230,7 +230,7 @@ export function PixelFocusView({
       blinkDie(pixel),
     [pixel]
   );
-  const activeProfile = useActiveProfile(pairedPixel);
+  const activeProfile = useActiveProfile(pairedDie);
   const transferring = useAppSelector((state) => !!state.diceRolls.transfer);
   const [pickProfile, setPickProfile] = React.useState(false);
 
@@ -259,7 +259,7 @@ export function PixelFocusView({
           }}
           onPress={() => blinkDie(pixel)}
         >
-          <RollingDie pairedPixel={pairedPixel} disabled={disabled} />
+          <RollingDie pairedDie={pairedDie} disabled={disabled} />
         </Pressable>
         <View
           style={{
@@ -270,11 +270,11 @@ export function PixelFocusView({
           }}
         >
           <PixelRollCard
-            pairedPixel={pairedPixel}
+            pairedDie={pairedDie}
             style={{ flex: 1, flexGrow: 1 }}
           />
           <PixelStatusCard
-            pairedPixel={pairedPixel}
+            pairedDie={pairedDie}
             onPress={onShowDetails}
             style={{ flex: 1, flexGrow: 1 }}
           />

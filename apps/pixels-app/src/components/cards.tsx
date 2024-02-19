@@ -10,7 +10,7 @@ import { PixelRssi } from "./PixelRssi";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { BatteryIcon, RssiIcon } from "./icons";
 
-import { PairedPixel } from "~/features/dice/PairedPixel";
+import { PairedDie } from "~/app/PairedDie";
 import { useActiveProfile, usePairedPixel } from "~/hooks";
 
 function PixelRollState({
@@ -31,7 +31,7 @@ function PixelRollState({
 }
 
 export function PixelVCard({
-  pairedPixel,
+  pairedDie,
   dieIconRatio = 0.5,
   infoIconsRatio = 0.1,
   miniCards,
@@ -39,16 +39,16 @@ export function PixelVCard({
   onLayout,
   ...props
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
   selected?: boolean;
   dieIconRatio?: number;
   infoIconsRatio?: number;
   miniCards?: boolean;
 } & Omit<TouchableCardProps, "children">) {
-  const pixel = usePairedPixel(pairedPixel);
+  const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const [thePixelName] = usePixelValue(pixel, "name");
-  const pixelName = thePixelName ?? pairedPixel.name;
+  const pixelName = thePixelName ?? pairedDie.name;
   const disabled = !pixel || status !== "ready";
   const [containerSize, setContainerSize] = React.useState(0);
   const dieRenderWidth = containerSize * dieIconRatio;
@@ -86,7 +86,7 @@ export function PixelVCard({
       )}
       <View style={{ width: dieRenderWidth, aspectRatio: 1 }}>
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
-        <PixelDieRenderer key={dieRenderWidth} pixel={pairedPixel} />
+        <PixelDieRenderer key={dieRenderWidth} pixel={pairedDie} />
       </View>
       <Text variant={miniCards ? "labelSmall" : "titleMedium"}>
         {status && status !== "ready" && status !== "disconnected"
@@ -99,23 +99,23 @@ export function PixelVCard({
 }
 
 export function PixelHCard({
-  pairedPixel,
+  pairedDie,
   ...props
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
 } & Omit<TouchableCardProps, "children">) {
-  const pixel = usePairedPixel(pairedPixel);
+  const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const [thePixelName] = usePixelValue(pixel, "name");
-  const pixelName = thePixelName ?? pairedPixel.name;
-  const activeProfile = useActiveProfile(pairedPixel);
+  const pixelName = thePixelName ?? pairedDie.name;
+  const activeProfile = useActiveProfile(pairedDie);
   const disabled = !pixel || status !== "ready";
   const dieRenderWidth = 70;
   return (
     <TouchableCard row {...props}>
       <View style={{ width: 70, aspectRatio: 1, padding: 5 }}>
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
-        <PixelDieRenderer key={dieRenderWidth} pixel={pairedPixel} />
+        <PixelDieRenderer key={dieRenderWidth} pixel={pairedDie} />
       </View>
       <View
         style={{

@@ -12,16 +12,16 @@ import Animated, {
   FadeOut,
 } from "react-native-reanimated";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { Card, CardProps } from "~/components/Card";
 import { AnimatedText } from "~/components/animated";
 import { makeTransparent } from "~/components/colors";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import { usePairedPixel } from "~/hooks";
 
 function useLastRolls({
   pixelId,
-}: Pick<PairedPixel, "pixelId">): { key: number; roll: number }[] {
+}: Pick<PairedDie, "pixelId">): { key: number; roll: number }[] {
   const rolls = useAppSelector(
     (state) => state.diceRolls.dice.find((d) => d.pixelId === pixelId)?.rolls
   );
@@ -38,12 +38,12 @@ function useLastRolls({
 }
 
 function PixelRollState({
-  pairedPixel,
+  pairedDie,
   ...props
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
 } & Omit<TextProps<string>, "children">) {
-  const pixel = usePairedPixel(pairedPixel);
+  const pixel = usePairedPixel(pairedDie);
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
@@ -93,12 +93,12 @@ function AnimatedDieIcon({
 }
 
 export function PixelRollCard({
-  pairedPixel,
+  pairedDie,
   ...props
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
 } & Omit<CardProps, "contentStyle">) {
-  const lastRolls = useLastRolls(pairedPixel);
+  const lastRolls = useLastRolls(pairedDie);
   const { colors } = useTheme();
   return (
     <Card
@@ -112,7 +112,7 @@ export function PixelRollCard({
     >
       {lastRolls.some(({ roll }) => roll >= 0) ? (
         <>
-          <PixelRollState pairedPixel={pairedPixel} variant="labelSmall" />
+          <PixelRollState pairedDie={pairedDie} variant="labelSmall" />
           <View
             style={{
               flexDirection: "row",

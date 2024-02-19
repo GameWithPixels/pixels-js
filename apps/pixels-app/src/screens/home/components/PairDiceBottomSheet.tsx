@@ -14,44 +14,71 @@ import {
 } from "react-native-paper";
 import { FadeIn } from "react-native-reanimated";
 
+import { useAppDispatch } from "~/app/hooks";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
-import { useBottomSheetPadding } from "~/hooks";
+import { addPairedDie } from "~/features/store/pairedDiceSlice";
+import { useAppPixelsScanner, useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
+import { withAnimated } from "~/withAnimated";
+
+const AnimatedSelectionButton = withAnimated(SelectionButton);
 
 export function PairDiceBottomSheet({
-  availablePixels,
   visible,
   onDismiss,
 }: {
-  availablePixels: readonly ScannedPixel[];
   visible: boolean;
-  onDismiss: (pixels?: ScannedPixel[]) => void;
+  onDismiss?: (pixels?: ScannedPixel[]) => void;
 }) {
+  const appDispatch = useAppDispatch();
+  const [selection, setSelection] = React.useState<ScannedPixel[]>([]);
+  const { availablePixels, scannerStatus, startScan, stopScan } =
+    useAppPixelsScanner();
+  const dieCount = availablePixels.length;
+  const noAvailableDie = dieCount === 0;
+
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
-  const [selection, setSelection] = React.useState<ScannedPixel[]>([]);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
+      startScan();
     } else {
       sheetRef.current?.dismiss();
       setSelection([]);
+      stopScan();
     }
-  }, [visible]);
+  }, [startScan, stopScan, visible]);
+
   const [showNoDie, setShowNoDie] = React.useState(false);
   React.useEffect(() => {
-    if (visible) {
+    if (visible && noAvailableDie) {
       const id = setTimeout(() => setShowNoDie(true), 3000);
       return () => clearTimeout(id);
     } else {
       setShowNoDie(false);
     }
-  }, [visible]);
+  }, [visible, noAvailableDie]);
+
+  const onPairDice = () => {
+    for (const pixel of selection) {
+      appDispatch(
+        addPairedDie({
+          systemId: pixel.systemId,
+          pixelId: pixel.pixelId,
+          name: pixel.name,
+          dieType: pixel.dieType,
+          colorway: pixel.colorway,
+        })
+      );
+    }
+    onDismiss?.(selection);
+  };
 
   const paddingBottom = useBottomSheetPadding(0);
   const theme = useTheme();
@@ -95,15 +122,15 @@ export function PairDiceBottomSheet({
               }}
             >
               <Text variant="titleSmall">
-                {availablePixels.length
-                  ? `${availablePixels.length} available Pixels ${
-                      availablePixels.length <= 1 ? "die" : "dice"
+                {dieCount
+                  ? `${dieCount} available Pixels ${
+                      dieCount <= 1 ? "die" : "dice"
                     }, scanning for more...`
                   : "Looking for Pixels dice..."}
               </Text>
               <ActivityIndicator />
             </View>
-            {showNoDie && availablePixels.length === 0 && (
+            {showNoDie && dieCount === 0 && (
               <AnimatedText
                 entering={FadeIn.duration(300)}
                 style={{ marginLeft: 10 }}
@@ -114,13 +141,14 @@ export function PairDiceBottomSheet({
               </AnimatedText>
             )}
             {availablePixels.map((sp, i) => (
-              <SelectionButton
+              <AnimatedSelectionButton
                 key={sp.pixelId}
                 icon={() => <DieWireframe dieType={sp.dieType} size={40} />}
                 selected={selection.includes(sp)}
                 noTopBorder={i > 0}
                 squaredTopBorder={i > 0}
-                squaredBottomBorder={i < availablePixels.length - 1}
+                squaredBottomBorder={i < dieCount - 1}
+                entering={FadeIn.duration(300)}
                 onPress={() => {
                   setSelection((selected) =>
                     selected.includes(sp)
@@ -130,14 +158,14 @@ export function PairDiceBottomSheet({
                 }}
               >
                 <DieStaticInfo pixel={sp} />
-              </SelectionButton>
+              </AnimatedSelectionButton>
             ))}
           </BottomSheetScrollView>
           <GradientButton
             disabled={!selection.length}
             sentry-label="pair-dice"
             style={{ marginBottom: 20 }}
-            onPress={() => onDismiss(selection)}
+            onPress={onPairDice}
           >
             {!selection.length
               ? "No Die Selected"

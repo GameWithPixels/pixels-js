@@ -59,9 +59,8 @@ const Header = observer(function Header({
     profile.lastChanged.getTime() !== initialLastChanged.getTime();
   const activatedDiceCount = useAppSelector(
     (state) =>
-      state.pairedDice.dice.filter(
-        (d) => d.isPaired && d.profileUuid === profile.uuid
-      ).length
+      state.pairedDice.paired.filter((d) => d.profileUuid === profile.uuid)
+        .length
   );
 
   return (

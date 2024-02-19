@@ -30,6 +30,7 @@ import * as Sentry from "sentry-expo";
 
 import { AnimatedSplashScreen } from "./app/AnimatedSplashScreen";
 import { AppInit } from "./app/AppInit";
+import { AppPixels } from "./app/AppPixels";
 import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
@@ -240,15 +241,17 @@ function App() {
                   <StatusBar style="light" />
                   <PersistGate persistor={persistor}>
                     <AppInit>
-                      <AnimatedSplashScreen>
-                        <RootSiblingParent>
-                          <ActionSheetProvider>
-                            <BottomSheetModalProvider>
-                              <AppPage />
-                            </BottomSheetModalProvider>
-                          </ActionSheetProvider>
-                        </RootSiblingParent>
-                      </AnimatedSplashScreen>
+                      <AppPixels>
+                        <AnimatedSplashScreen>
+                          <RootSiblingParent>
+                            <ActionSheetProvider>
+                              <BottomSheetModalProvider>
+                                <AppPage />
+                              </BottomSheetModalProvider>
+                            </ActionSheetProvider>
+                          </RootSiblingParent>
+                        </AnimatedSplashScreen>
+                      </AppPixels>
                     </AppInit>
                   </PersistGate>
                 </NavigationContainer>

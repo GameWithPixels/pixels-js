@@ -1,4 +1,3 @@
-import { assert } from "@systemic-games/pixels-core-utils";
 import {
   getPixel,
   Pixel,
@@ -9,14 +8,13 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { store } from "~/app/store";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import { playRemoteAction } from "~/features/profiles/playRemoteAction";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import {
   addPairedDie,
-  PairedDie,
   removePairedDie,
   setPairedDieName,
 } from "~/features/store/pairedDiceSlice";
@@ -27,9 +25,7 @@ function stableFilterPixels(
   pairedDice: readonly PairedDie[],
   lastPixels: readonly Pixel[]
 ): readonly Pixel[] {
-  const newPixels = pairedDice
-    .map((d) => (d.isPaired ? getPixel(d.pixelId) : undefined))
-    .filter(notEmpty);
+  const newPixels = pairedDice.map((d) => getPixel(d.pixelId)).filter(notEmpty);
   return areArraysEqual(newPixels, lastPixels) ? lastPixels : newPixels;
 }
 
@@ -62,7 +58,7 @@ function disconnect(pixel: Pixel) {
 function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
   return (actionId: number) => {
     const state = store.getState();
-    const profileUuid = state.pairedDice.dice.find(
+    const profileUuid = state.pairedDice.paired.find(
       (d) => d.pixelId === pixel.pixelId
     )?.profileUuid;
     const profile = profileUuid && readProfile(profileUuid, state.library);
@@ -92,16 +88,16 @@ function createRemoteActionListener(pixel: Pixel): (actionId: number) => void {
 }
 
 // TODO this hook works if only used  in the app
-export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
-  pairedPixels: readonly PairedPixel[];
+export function __usePairedPixels__(scannedPixels?: ScannedPixelNotifier[]): {
+  pairedPixels: readonly PairedDie[];
   availablePixels: readonly ScannedPixelNotifier[];
-  pairDie: (pixel: PairedPixel) => void;
-  unpairDie: (pixel: Pick<PairedPixel, "pixelId">) => void;
+  pairDie: (pixel: PairedDie) => void;
+  unpairDie: (pixel: Pick<PairedDie, "pixelId">) => void;
 } {
   const appDispatch = useAppDispatch();
 
   // Paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
   const pairedPixels = React.useMemo(
     () =>
       pairedDice.map((d) => ({
@@ -110,6 +106,7 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
         name: d.name,
         dieType: d.dieType,
         colorway: d.colorway,
+        profileUuid: d.profileUuid,
       })),
     [pairedDice]
   );
@@ -184,7 +181,7 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
     // Remove unpaired Pixels
     const entries = Array.from(activePixelsRef.current.entries());
     for (const [pixelId, dispose] of entries) {
-      if (!pairedDice.find((d) => d.pixelId === pixelId)?.isPaired) {
+      if (!pairedDice.some((d) => d.pixelId === pixelId)) {
         pixelLog({ pixelId }, "Die has become inactive");
         activePixelsRef.current.delete(pixelId);
         // Remove event listeners and disconnect
@@ -218,11 +215,11 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
     addressesRef.current.set(pixelId, address);
   }
   const pairDie = React.useCallback(
-    (pixel: PairedPixel) =>
+    (pixel: PairedDie) =>
       appDispatch(
         addPairedDie({
           systemId: pixel.systemId,
-          address: addressesRef.current.get(pixel.pixelId) ?? 0,
+          // address: addressesRef.current.get(pixel.pixelId) ?? 0,
           pixelId: pixel.pixelId,
           name: pixel.name,
           dieType: pixel.dieType,
@@ -243,19 +240,4 @@ export function usePairedPixels(scannedPixels?: ScannedPixelNotifier[]): {
     pairDie,
     unpairDie,
   };
-}
-
-export function usePairedPixel(
-  pixelOrPixelId: Pick<PairedPixel, "pixelId"> | number
-): Pixel | undefined {
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice);
-  const pixelId =
-    typeof pixelOrPixelId === "number"
-      ? pixelOrPixelId
-      : pixelOrPixelId.pixelId;
-  assert(
-    pairedDice.find((d) => d.pixelId === pixelId)?.isPaired,
-    `Pixel ${unsigned32ToHex(pixelId)} not paired`
-  );
-  return getPixel(pixelId);
 }

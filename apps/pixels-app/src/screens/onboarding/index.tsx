@@ -11,12 +11,8 @@ import {
   BluetoothPermissionsDeniedError,
   BluetoothTurnedOffError,
   getPixel,
-  Pixel,
   PixelDieType,
   PixelInfo,
-  PixelScannerStatus,
-  ScannedPixel,
-  useScannedPixelNotifiers,
 } from "@systemic-games/react-native-pixels-connect";
 import { Image, ImageProps } from "expo-image";
 import { makeAutoObservable, runInAction } from "mobx";
@@ -67,7 +63,12 @@ import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { getNativeErrorMessage } from "~/features/utils";
-import { useDfuBundle } from "~/hooks";
+import {
+  useAppMonitoredPixels,
+  useAppPixelsScanner,
+  useDfuBundle,
+  usePixelsCentral,
+} from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { OnboardingScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -75,6 +76,19 @@ import { getBottomSheetBackgroundStyle } from "~/themes";
 
 function diceStr(count: number): string {
   return count <= 1 ? "die" : "dice";
+}
+
+// function connectPixel(sp: Pick<PixelInfo, "pixelId">): Pixel | undefined {
+//   const pixel = getPixel(sp.pixelId);
+//   pixel?.connect().catch((e: Error) => console.log(`Connection error: ${e}`));
+//   return pixel;
+// }
+
+function shouldUpdateFirmware(
+  pixel?: Pick<PixelInfo, "firmwareDate">,
+  bundle?: { readonly timestamp: number }
+) {
+  return bundle && pixel && pixel.firmwareDate.getTime() < bundle.timestamp;
 }
 
 function LightUpYourGameImage({
@@ -370,27 +384,46 @@ function HelpTurnOnDiceModal({
   );
 }
 
-function ScanSlide({
-  pixels,
-  scannerStatus,
-  onStartScan,
-  onNext,
-}: {
-  pixels: readonly Pixel[];
-  scannerStatus: PixelScannerStatus;
-  onStartScan: () => void;
-  onNext: () => void;
-}) {
+function ScanSlide({ onNext }: { onNext: () => void }) {
+  const appDispatch = useAppDispatch();
+
+  // Monitor all scanned dice so that they are automatically connected
+  const { availablePixels, scannerStatus, startScan, stopScan } =
+    useAppPixelsScanner();
+  const central = usePixelsCentral();
+  React.useEffect(
+    () => availablePixels.forEach((p) => central.monitorPixel(p.pixelId)),
+    [availablePixels, central]
+  );
+
+  // List of monitored pixels
+  const pixels = useAppMonitoredPixels();
+  const diceCount = pixels.length;
+  const pairDice = () => {
+    for (const p of pixels) {
+      appDispatch(
+        addPairedDie({
+          systemId: p.systemId,
+          pixelId: p.pixelId,
+          name: p.name,
+          dieType: p.dieType,
+          colorway: p.colorway,
+        })
+      );
+    }
+  };
+
   const [showHelp, setShowHelp] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
   React.useEffect(() => {
-    if (scannerStatus === "scanning") {
+    if (scannerStatus === "started") {
       const id = setTimeout(() => setShowHelp(true), 3000);
       return () => clearTimeout(id);
     } else {
       setShowHelp(false);
     }
   }, [scannerStatus]);
+
   const { colors } = useTheme();
   return (
     <Slide title="Pair Your Dice">
@@ -403,7 +436,7 @@ function ScanSlide({
         }}
         source={require("#/temp/dice-row.jpg")}
       />
-      {scannerStatus !== "scanning" ? (
+      {scannerStatus !== "started" ? (
         <Animated.ScrollView
           key="stopped"
           exiting={FadeOut.duration(300)}
@@ -449,7 +482,7 @@ function ScanSlide({
               alignItems: "flex-start",
               alignSelf: "center",
             }}
-            onPress={onStartScan}
+            onPress={startScan}
           >
             Continue
           </GradientButton>
@@ -462,20 +495,20 @@ function ScanSlide({
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
             <Text>
-              {pixels.length
-                ? `We have found ${pixels.length} Pixels ${diceStr(
-                    pixels.length
+              {diceCount
+                ? `We have found ${diceCount} Pixels ${diceStr(
+                    diceCount
                   )} so far:`
                 : "Looking for Pixels dice..."}
             </Text>
-            {!pixels.length && <ActivityIndicator />}
+            {!diceCount && <ActivityIndicator />}
           </View>
           <ScrollView contentContainerStyle={{ paddingBottom: 10, gap: 20 }}>
             <View
               style={{
                 paddingHorizontal: 10,
-                paddingTop: pixels.length ? 20 : 0,
-                paddingBottom: pixels.length ? 10 : 0,
+                paddingTop: diceCount ? 20 : 0,
+                paddingBottom: diceCount ? 10 : 0,
                 gap: 20,
               }}
             >
@@ -494,7 +527,7 @@ function ScanSlide({
                 entering={FadeIn.duration(300)}
                 layout={CurvedTransition.easingY(Easing.linear).duration(300)}
               >
-                {pixels.length ? (
+                {diceCount ? (
                   <SmallText>Don't see all your dice?</SmallText>
                 ) : (
                   <Text style={{ textAlign: "auto" }}>
@@ -517,16 +550,24 @@ function ScanSlide({
           </ScrollView>
         </Animated.View>
       )}
-      {!pixels.length ? (
-        <SkipButton sentry-label="skip-pairing" onPress={onNext} />
+      {!diceCount ? (
+        <SkipButton
+          sentry-label="skip-pairing"
+          onPress={() => {
+            stopScan();
+            onNext();
+          }}
+        />
       ) : (
         <AnimatedGradientButton
           entering={FadeIn.duration(300).delay(200)}
-          onPress={onNext}
+          onPress={() => {
+            stopScan();
+            pairDice();
+            onNext();
+          }}
         >
-          {pixels.length === 1
-            ? "Pair My Die"
-            : `Pair These ${pixels.length} Dice`}
+          {diceCount === 1 ? "Pair My Die" : `Pair These ${diceCount} Dice`}
         </AnimatedGradientButton>
       )}
       <HelpTurnOnDiceModal
@@ -537,8 +578,8 @@ function ScanSlide({
   );
 }
 
-interface TargetDfuStatus {
-  scannedPixel: ScannedPixel;
+interface TargetDfuStatus
+  extends Pick<PixelInfo, "systemId" | "name" | "firmwareDate"> {
   state: DfuState | "pending";
   progress: number;
 }
@@ -557,7 +598,7 @@ async function updateDiceAsync(
     const status = statuses[i++];
     try {
       await updateFirmware({
-        target: status.scannedPixel,
+        systemId: status.systemId,
         bootloaderPath: updateBootloader ? dfuBundle.bootloader : undefined,
         firmwarePath: dfuBundle.firmware,
         dfuStateCallback: (state: DfuState) =>
@@ -566,26 +607,7 @@ async function updateDiceAsync(
           runInAction(() => (status.progress = progress)),
       });
     } catch (e) {
-      console.log(`DFU error with ${status.scannedPixel.name}: ${e}`);
-    }
-  }
-}
-
-function appendNewDiceStatuses(
-  statuses: TargetDfuStatus[],
-  scannedPixels: readonly ScannedPixel[],
-  dfuBundle?: DfuPathnamesBundle
-) {
-  for (const sp of scannedPixels) {
-    const i = statuses.findIndex((s) => s.scannedPixel === sp);
-    if (i < 0 && !isPixelUpToDate(sp, dfuBundle)) {
-      statuses.push(
-        makeAutoObservable({
-          scannedPixel: sp,
-          state: "pending",
-          progress: 0,
-        })
-      );
+      console.log(`DFU error with ${status.name}: ${e}`);
     }
   }
 }
@@ -649,26 +671,42 @@ const StatusText = observer(function StatusText({
 });
 
 function UpdateDiceSlide({
-  scannedPixels,
   dfuBundle,
   onNext,
 }: {
-  scannedPixels: readonly ScannedPixel[];
   dfuBundle?: DfuPathnamesBundle;
   onNext: () => void;
 }) {
+  // List of monitored pixels
+  const pixels = useAppMonitoredPixels();
+
+  // DFU related data
   const updateBootloader = useAppSelector(
     (state) => state.appSettings.updateBootloader
   );
   const [step, setStep] = React.useState<"wait" | "update" | "done">("wait");
   const statusesRef = React.useRef<TargetDfuStatus[]>([]);
-  React.useEffect(
-    () =>
-      // Note: this only works properly if the DFU bundle stays the same
-      // and Pixels are not removed (which is true for our use case)
-      appendNewDiceStatuses(statusesRef.current, scannedPixels, dfuBundle),
-    [dfuBundle, scannedPixels]
-  );
+
+  // Initialize DFU status
+  React.useEffect(() => {
+    for (const p of pixels) {
+      const index = statusesRef.current.findIndex(
+        (s) => s.systemId === p.systemId
+      );
+      if (index < 0 && shouldUpdateFirmware(p, dfuBundle)) {
+        statusesRef.current.push(
+          makeAutoObservable({
+            systemId: p.systemId,
+            name: p.name,
+            firmwareDate: p.firmwareDate,
+            state: "pending",
+            progress: 0,
+          })
+        );
+      }
+    }
+  }, [dfuBundle, pixels]);
+
   return (
     <Slide title="Update Dice Firmware">
       <LightUpYourGameImage marginVertical={40} />
@@ -714,13 +752,13 @@ function UpdateDiceSlide({
         >
           <StatusText statuses={statusesRef.current} />
           <ScrollView contentContainerStyle={{ paddingVertical: 10, gap: 20 }}>
-            {scannedPixels.map((sp, i) => (
+            {pixels.map((p, i) => (
               <AnimatedPixelDfuCard
-                key={sp.pixelId}
+                key={p.pixelId}
                 entering={FadeIn.duration(300).delay(200 + i * 100)}
-                scannedPixel={sp}
+                scannedPixel={p}
                 dfuStatus={statusesRef.current.find(
-                  (s) => s.scannedPixel === sp
+                  (s) => s.systemId === p.systemId
                 )}
               />
             ))}
@@ -742,15 +780,10 @@ function UpdateDiceSlide({
   );
 }
 
-function ReadySlide({
-  pixelsCount,
-  onDone,
-}: {
-  pixelsCount: number;
-  onDone: () => void;
-}) {
-  const { fonts } = useTheme();
+function ReadySlide({ onDone }: { onDone: () => void }) {
+  const pixelsCount = useAppSelector((state) => state.pairedDice.paired.length);
   const dice = diceStr(pixelsCount);
+  const { fonts } = useTheme();
   return (
     <Slide title="You are all set!">
       <View style={{ flexGrow: 1, justifyContent: "space-evenly" }}>
@@ -774,19 +807,6 @@ function ReadySlide({
   );
 }
 
-function connectPixel(sp: ScannedPixel): Pixel | undefined {
-  const pixel = getPixel(sp.pixelId);
-  pixel?.connect().catch((e: Error) => console.log(`Connection error: ${e}`));
-  return pixel;
-}
-
-function isPixelUpToDate(
-  pixel: PixelInfo,
-  bundle?: { readonly timestamp: number }
-) {
-  return !bundle || pixel.firmwareDate.getTime() >= bundle.timestamp;
-}
-
 function OnboardingPage({
   navigation,
 }: {
@@ -794,22 +814,16 @@ function OnboardingPage({
 }) {
   const appDispatch = useAppDispatch();
 
-  const [scannedPixels, scannerDispatch, scannerStatus] =
-    useScannedPixelNotifiers({
-      autoStart: false,
-    });
-  const pixels = React.useMemo(
-    () => scannedPixels.map(connectPixel).filter((p): p is Pixel => !!p),
-    [scannedPixels]
-  );
-
-  // Stop scanning on leaving scan page
+  // Stop on leaving page (that's mostly for dev fast reload
+  // as the normal user workflow will always stop scanning)
+  const { stopScan } = useAppPixelsScanner();
   React.useEffect(() => {
-    return () => {
-      scannerDispatch("stop");
-      scannerDispatch("clear");
-    };
-  }, [scannerDispatch]);
+    return () => stopScan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Paired dice
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
 
   // DFU files
   const [bundle] = useDfuBundle();
@@ -845,39 +859,15 @@ function OnboardingPage({
         <HealthSlide onNext={() => scrollTo(2)} />
         {/* <SettingsSlide onNext={() => scrollTo(3)} /> */}
         <ScanSlide
-          pixels={pixels}
-          scannerStatus={scannerStatus}
-          onStartScan={() => {
-            scannerDispatch("clear");
-            scannerDispatch("start");
-          }}
           onNext={() => {
-            scannerDispatch("stop");
-            for (const p of pixels) {
-              appDispatch(
-                addPairedDie({
-                  systemId: p.systemId,
-                  address:
-                    scannedPixels.find((sp) => sp.pixelId === p.pixelId)
-                      ?.address ?? 0,
-                  pixelId: p.pixelId,
-                  name: p.name,
-                  dieType: p.dieType,
-                  colorway: p.colorway,
-                })
-              );
-            }
-            const updateDice = pixels.some((p) => !isPixelUpToDate(p, bundle));
+            const updateDice = pairedDice.some((d) =>
+              shouldUpdateFirmware(getPixel(d.pixelId), bundle)
+            );
             scrollTo(updateDice ? 3 : 4);
           }}
         />
-        <UpdateDiceSlide
-          scannedPixels={scannedPixels}
-          dfuBundle={bundle}
-          onNext={() => scrollTo(4)}
-        />
+        <UpdateDiceSlide dfuBundle={bundle} onNext={() => scrollTo(4)} />
         <ReadySlide
-          pixelsCount={pixels.length}
           onDone={() => {
             appDispatch(setShowOnboarding(false));
             navigation.navigate("home");

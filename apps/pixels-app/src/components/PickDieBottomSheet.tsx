@@ -12,11 +12,11 @@ import React from "react";
 import { View } from "react-native";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TouchableCard } from "~/components/TouchableCard";
 import { DieWireframe } from "~/components/icons";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import { getDieTypeLabel } from "~/features/profiles";
 import { listToText, notEmpty } from "~/features/utils";
 import { useBottomSheetPadding } from "~/hooks";
@@ -43,8 +43,8 @@ export function PickDieBottomSheet({
     }
   }, [visible]);
 
-  const pairedDice = useAppSelector((state) => state.pairedDice.dice).filter(
-    (d) => d.isPaired && (!dieTypes || dieTypes.includes(d.dieType))
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired).filter(
+    (d) => !dieTypes || dieTypes.includes(d.dieType)
   );
   const pixels = React.useMemo(
     () =>
@@ -55,8 +55,8 @@ export function PickDieBottomSheet({
     [pairedDice]
   );
 
-  const getSelector = (pairedPixel: PairedPixel) => () => {
-    const pixel = getPixel(pairedPixel.pixelId);
+  const getSelector = (pairedDie: PairedDie) => () => {
+    const pixel = getPixel(pairedDie.pixelId);
     if (pixel) {
       return () => onDismiss(pixel);
     }

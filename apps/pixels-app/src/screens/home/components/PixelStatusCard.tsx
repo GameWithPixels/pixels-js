@@ -14,10 +14,10 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { PairedDie } from "~/app/PairedDie";
 import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
-import { PairedPixel } from "~/features/dice/PairedPixel";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 import { usePairedPixel, usePixelDataTransfer } from "~/hooks";
 
@@ -93,8 +93,8 @@ function AnimatedChargingIcon({
   );
 }
 
-function PixelStatusDetails({ pairedPixel }: { pairedPixel: PairedPixel }) {
-  const pixel = usePairedPixel(pairedPixel);
+function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
+  const pixel = usePairedPixel(pairedDie);
   const [battery] = usePixelValue(pixel, "battery");
   const needCharging = (battery?.level ?? 100) < 10;
   const transferProgress = usePixelDataTransfer(pixel);
@@ -109,7 +109,7 @@ function PixelStatusDetails({ pairedPixel }: { pairedPixel: PairedPixel }) {
             ? "Charging..."
             : needCharging
               ? "Need charging!"
-              : getDieTypeAndColorwayLabel(pairedPixel)}
+              : getDieTypeAndColorwayLabel(pairedDie)}
       </Text>
       {!transferring && battery?.isCharging ? (
         <AnimatedChargingIcon size={16} color={colors.onSurface} />
@@ -127,12 +127,12 @@ function PixelStatusDetails({ pairedPixel }: { pairedPixel: PairedPixel }) {
 }
 
 export function PixelStatusCard({
-  pairedPixel,
+  pairedDie,
   ...props
 }: {
-  pairedPixel: PairedPixel;
+  pairedDie: PairedDie;
 } & Omit<TouchableCardProps, "contentStyle">) {
-  const pixel = usePairedPixel(pairedPixel);
+  const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const { colors } = useTheme();
   return (
@@ -162,7 +162,7 @@ export function PixelStatusCard({
           </>
         )}
       </View>
-      <PixelStatusDetails pairedPixel={pairedPixel} />
+      <PixelStatusDetails pairedDie={pairedDie} />
       <Text
         variant="labelSmall"
         style={{ alignSelf: "flex-end", color: colors.onSurfaceDisabled }}

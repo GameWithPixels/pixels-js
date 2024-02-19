@@ -14,7 +14,7 @@ function filterScannedPixels(scannedPixels: readonly ScannedPixelNotifier[]) {
   return scannedPixels.filter((p) => p.timestamp.getTime() >= expired);
 }
 
-export function usePixelsScanner(
+export function usePixelsScanner___(
   scan?: boolean
 ): [ScannedPixelNotifier[], PixelScannerStatus] {
   const [scannedPixels, scannerDispatch, scannerStatus] =
