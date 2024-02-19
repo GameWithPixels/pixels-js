@@ -258,6 +258,7 @@ export function PixelFocusView({
         )}
         <Pressable
           sentry-label="header-bar-select"
+          disabled={disabled}
           style={{
             width: "60%",
             aspectRatio: 1,
