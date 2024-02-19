@@ -34,6 +34,7 @@ import {
 } from "react-native-vision-camera";
 
 import { AppStyles } from "~/AppStyles";
+import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
@@ -55,6 +56,7 @@ import {
   FactoryDfuFilesBundle,
 } from "~/components/ValidationTestsComponents";
 import { PrintStatus } from "~/features/print";
+import { selectSkipPrintLabel } from "~/features/store/validationSelectors";
 import {
   getTaskResult,
   getTaskResultEmoji,
@@ -456,9 +458,9 @@ function RunTestsPage({
   // Keep screen on
   useKeepAwake();
 
-  const noPrint = true;
-
   const { t } = useTranslation();
+
+  const skipPrint = useAppSelector(selectSkipPrintLabel);
 
   const [pixel, setPixel] = React.useState<Pixel>();
   const [ledCount, setLedCount] = React.useState(0);
@@ -569,7 +571,7 @@ function RunTestsPage({
           {...p}
           settings={settings}
           pixel={getPixel()}
-          onPrintStatus={noPrint ? undefined : setPrintStatus}
+          onPrintStatus={skipPrint ? undefined : setPrintStatus}
         />
       )),
       skipIfNotDieFinal
@@ -601,7 +603,7 @@ function RunTestsPage({
           onPrintStatus={setPrintStatus}
         />
       )),
-      { skip: skipIfNotDieFinal.skip || noPrint }
+      { skip: skipIfNotDieFinal.skip || skipPrint }
     );
 
   // Get result

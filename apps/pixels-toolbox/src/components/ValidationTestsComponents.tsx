@@ -657,6 +657,7 @@ export function CheckBoard({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
+  const setEmptyProfile = useAppSelector(selectCustomFirmwareAndProfile);
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "CheckBoard")
     .withTask(
@@ -698,7 +699,8 @@ export function CheckBoard({
       createTaskStatusContainer({
         title: t("resetProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
-      })
+      }),
+      { skip: setEmptyProfile }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);

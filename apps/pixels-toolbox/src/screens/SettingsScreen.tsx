@@ -30,7 +30,10 @@ import {
   ThemeMode,
 } from "~/features/store/appSettingsSlice";
 import { selectCustomFirmwareAndProfile } from "~/features/store/validationSelectors";
-import { setCustomFirmwareAndProfile } from "~/features/store/validationSettingsSlice";
+import {
+  setCustomFirmwareAndProfile,
+  setSkipPrintLabel,
+} from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
 import { AppRootPageName } from "~/navigation";
 
@@ -146,20 +149,34 @@ function PageRadio({
   );
 }
 
-function CustomFirmwareAndProfile() {
+function DevOptions() {
   const appDispatch = useAppDispatch();
   const customFw = useAppSelector(selectCustomFirmwareAndProfile);
-  return (
-    <BaseHStack alignItems="center" justifyContent="space-between">
-      <Text>Select Firmware & Profile</Text>
-      <Switch
-        value={customFw}
-        onValueChange={(v) => {
-          appDispatch(setCustomFirmwareAndProfile(v));
-        }}
-      />
-    </BaseHStack>
+  const skipPrint = useAppSelector(
+    (state) => state.validationSettings.skipPrintLabel
   );
+  return __DEV__ ? (
+    <>
+      <BaseHStack alignItems="center" justifyContent="space-between">
+        <Text>Select Firmware & Profile</Text>
+        <Switch
+          value={customFw}
+          onValueChange={(v) => {
+            appDispatch(setCustomFirmwareAndProfile(v));
+          }}
+        />
+      </BaseHStack>
+      <BaseHStack alignItems="center" justifyContent="space-between">
+        <Text>Skip Printing Label</Text>
+        <Switch
+          value={skipPrint}
+          onValueChange={(v) => {
+            appDispatch(setSkipPrintLabel(v));
+          }}
+        />
+      </BaseHStack>
+    </>
+  ) : null;
 }
 
 function ValidationCard() {
@@ -173,7 +190,7 @@ function ValidationCard() {
           <PageRadio label="Validation" page="Validation" />
           <PageRadio label="Carton Label" page="CartonLabel" />
         </BaseHStack>
-        <CustomFirmwareAndProfile />
+        <DevOptions />
       </Card.Content>
     </Card>
   );
