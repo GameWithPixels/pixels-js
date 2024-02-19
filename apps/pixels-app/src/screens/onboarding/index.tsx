@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -9,8 +9,9 @@ import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   BluetoothPermissionsDeniedError,
-  BluetoothTurnedOffError,
+  BluetoothUnavailableError,
   getPixel,
+  Pixel,
   PixelDieType,
   PixelInfo,
 } from "@systemic-games/react-native-pixels-connect";
@@ -51,6 +52,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { NavigationRoot } from "~/components/NavigationRoot";
 import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { TurnOnDiceHelp } from "~/components/TunOnDiceHelp";
+import { AnimatedText } from "~/components/animated";
 import {
   AnimatedGradientButton,
   GradientButton,
@@ -62,10 +64,9 @@ import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
-import { getNativeErrorMessage } from "~/features/utils";
 import {
-  useAppMonitoredPixels,
-  useAppPixelsScanner,
+  useActivePixels,
+  usePixelScanner,
   useDfuBundle,
   usePixelsCentral,
 } from "~/hooks";
@@ -136,6 +137,18 @@ function Text({ style, ...props }: Omit<TextProps<never>, "variant">) {
   return (
     <PaperText
       variant="bodyLarge"
+      style={[{ textAlign: "center" }, style]}
+      {...props}
+    />
+  );
+}
+
+function FadeInOutText({ style, ...props }: Omit<TextProps<never>, "variant">) {
+  return (
+    <AnimatedText
+      variant="bodyLarge"
+      entering={FadeIn.duration(300)}
+      exiting={FadeOut.duration(300)}
       style={[{ textAlign: "center" }, style]}
       {...props}
     />
@@ -384,45 +397,60 @@ function HelpTurnOnDiceModal({
   );
 }
 
-function ScanSlide({ onNext }: { onNext: () => void }) {
+function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
   const appDispatch = useAppDispatch();
 
   // Monitor all scanned dice so that they are automatically connected
-  const { availablePixels, scannerStatus, startScan, stopScan } =
-    useAppPixelsScanner();
+  const { availablePixels, isScanning, lastScanError, startScan, stopScan } =
+    usePixelScanner();
   const central = usePixelsCentral();
   React.useEffect(
-    () => availablePixels.forEach((p) => central.monitorPixel(p.pixelId)),
+    () => availablePixels.forEach((p) => central.watch(p.pixelId)),
     [availablePixels, central]
   );
 
   // List of monitored pixels
-  const pixels = useAppMonitoredPixels();
+  const pixels = useActivePixels();
   const diceCount = pixels.length;
-  const pairDice = () => {
-    for (const p of pixels) {
-      appDispatch(
-        addPairedDie({
-          systemId: p.systemId,
-          pixelId: p.pixelId,
-          name: p.name,
-          dieType: p.dieType,
-          colorway: p.colorway,
-        })
-      );
+
+  // On leaving page
+  const leavePage = (action: "pair" | "skip") => {
+    stopScan();
+    if (action === "skip") {
+      central.setWatchedDice([]);
+      onNext([]);
+    } else {
+      for (const p of pixels) {
+        appDispatch(
+          addPairedDie({
+            systemId: p.systemId,
+            pixelId: p.pixelId,
+            name: p.name,
+            dieType: p.dieType,
+            colorway: p.colorway,
+          })
+        );
+      }
+      onNext(pixels);
     }
   };
+
+  // Stop on leaving page (that's for fast reload
+  // as the normal user workflow will always stop scanning)
+  React.useEffect(() => {
+    return () => stopScan();
+  }, [stopScan]);
 
   const [showHelp, setShowHelp] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
   React.useEffect(() => {
-    if (scannerStatus === "started") {
+    if (isScanning) {
       const id = setTimeout(() => setShowHelp(true), 3000);
       return () => clearTimeout(id);
     } else {
       setShowHelp(false);
     }
-  }, [scannerStatus]);
+  }, [isScanning]);
 
   const { colors } = useTheme();
   return (
@@ -436,7 +464,7 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
         }}
         source={require("#/temp/dice-row.jpg")}
       />
-      {scannerStatus !== "started" ? (
+      {!isScanning ? (
         <Animated.ScrollView
           key="stopped"
           exiting={FadeOut.duration(300)}
@@ -454,35 +482,54 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
             To customize your Pixels Dice the app needs to establish a Bluetooth
             connection.
           </Text>
-          <MaterialCommunityIcons
-            name="bluetooth"
-            size={30}
-            color={colors.onSurface}
-          />
-          <Text>
-            {scannerStatus === "stopped"
-              ? "Please ensure you have Bluetooth turned on and grant permissions " +
+          {!lastScanError ? (
+            <MaterialCommunityIcons
+              name="bluetooth"
+              size={40}
+              color={colors.onSurface}
+            />
+          ) : (
+            <MaterialIcons
+              name={
+                lastScanError instanceof BluetoothPermissionsDeniedError
+                  ? "block"
+                  : "bluetooth-disabled"
+              }
+              size={40}
+              color="red"
+            />
+          )}
+          {!lastScanError ? (
+            <FadeInOutText key="no-error">
+              {"Please ensure you have Bluetooth turned on and grant permissions " +
                 "through your device settings. Tap the Continue button to allow " +
-                "the app to request access."
-              : scannerStatus instanceof BluetoothPermissionsDeniedError
-                ? "❌ The Pixels app does not have Bluetooth access and is unable " +
-                  "to connect to your dice. Please grant permissions through your " +
-                  "device settings and tap the Continue button."
-                : scannerStatus instanceof BluetoothTurnedOffError
-                  ? "❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
-                    "through your device settings and grant the Pixels app access. " +
-                    "Then tap the Continue button."
-                  : `❌ Got an unexpected error: ${getNativeErrorMessage(
-                      scannerStatus
-                    )}`}
-          </Text>
+                "the app to request access."}
+            </FadeInOutText>
+          ) : lastScanError instanceof BluetoothPermissionsDeniedError ? (
+            <FadeInOutText key="permissions-denied">
+              {"❌ The Pixels app does not have Bluetooth access and is unable " +
+                "to connect to your dice. Please grant permissions through your " +
+                "device settings and tap the Continue button."}
+            </FadeInOutText>
+          ) : lastScanError instanceof BluetoothUnavailableError ? (
+            <FadeInOutText key="bluetooth-unavailable">
+              {"❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
+                "through your device settings and grant the Pixels app access. " +
+                "Then tap the Continue button."}
+            </FadeInOutText>
+          ) : (
+            <FadeInOutText key="unexpected-error">
+              {"❌ Got an unexpected error while trying to scan for Bluetooth devices: " +
+                lastScanError.message}
+            </FadeInOutText>
+          )}
           <GradientButton
             style={{
               marginTop: 20,
               alignItems: "flex-start",
               alignSelf: "center",
             }}
-            onPress={startScan}
+            onPress={() => startScan()}
           >
             Continue
           </GradientButton>
@@ -553,19 +600,12 @@ function ScanSlide({ onNext }: { onNext: () => void }) {
       {!diceCount ? (
         <SkipButton
           sentry-label="skip-pairing"
-          onPress={() => {
-            stopScan();
-            onNext();
-          }}
+          onPress={() => leavePage("skip")}
         />
       ) : (
         <AnimatedGradientButton
           entering={FadeIn.duration(300).delay(200)}
-          onPress={() => {
-            stopScan();
-            pairDice();
-            onNext();
-          }}
+          onPress={() => leavePage("pair")}
         >
           {diceCount === 1 ? "Pair My Die" : `Pair These ${diceCount} Dice`}
         </AnimatedGradientButton>
@@ -659,7 +699,7 @@ const StatusText = observer(function StatusText({
   return (
     <Text>
       {toUpdateCount
-        ? `Remaining dice to update: ${toUpdateCount}.`
+        ? `Remaining dice to update: ${toUpdateCount}`
         : erroredCount
           ? ""
           : (statuses.length <= 1 ? "Your die is" : "All your dice are") +
@@ -678,7 +718,7 @@ function UpdateDiceSlide({
   onNext: () => void;
 }) {
   // List of monitored pixels
-  const pixels = useAppMonitoredPixels();
+  const pixels = useActivePixels();
 
   // DFU related data
   const updateBootloader = useAppSelector(
@@ -814,19 +854,8 @@ function OnboardingPage({
 }) {
   const appDispatch = useAppDispatch();
 
-  // Stop on leaving page (that's mostly for dev fast reload
-  // as the normal user workflow will always stop scanning)
-  const { stopScan } = useAppPixelsScanner();
-  React.useEffect(() => {
-    return () => stopScan();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-
   // DFU files
-  const [bundle] = useDfuBundle();
+  const [bundle] = useDfuBundle(); // TODO handle error
 
   // Page scrolling
   const [index, setIndex] = React.useState(0);
@@ -843,6 +872,13 @@ function OnboardingPage({
     )
   );
 
+  const shouldUpdate = (pixels: Pixel[]) =>
+    pixels.some((d) => shouldUpdateFirmware(getPixel(d.pixelId), bundle));
+  const leave = () => {
+    appDispatch(setShowOnboarding(false));
+    navigation.navigate("home");
+  };
+
   return (
     <>
       <ScrollView
@@ -858,21 +894,9 @@ function OnboardingPage({
         <WelcomeSlide onNext={() => scrollTo(1)} />
         <HealthSlide onNext={() => scrollTo(2)} />
         {/* <SettingsSlide onNext={() => scrollTo(3)} /> */}
-        <ScanSlide
-          onNext={() => {
-            const updateDice = pairedDice.some((d) =>
-              shouldUpdateFirmware(getPixel(d.pixelId), bundle)
-            );
-            scrollTo(updateDice ? 3 : 4);
-          }}
-        />
+        <ScanSlide onNext={(pxs) => scrollTo(shouldUpdate(pxs) ? 3 : 4)} />
         <UpdateDiceSlide dfuBundle={bundle} onNext={() => scrollTo(4)} />
-        <ReadySlide
-          onDone={() => {
-            appDispatch(setShowOnboarding(false));
-            navigation.navigate("home");
-          }}
-        />
+        <ReadySlide onDone={leave} />
       </ScrollView>
       {/* Bottom page indicator */}
       <View

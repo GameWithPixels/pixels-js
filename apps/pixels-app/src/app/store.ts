@@ -46,15 +46,15 @@ const MyStorage = !__DEV__
   ? AsyncStorage
   : {
       setItem: (key: string, value: string) => {
-        console.log(`[${getTimeStringMs()}] Storage Write => ${key}`);
+        console.log(`[${getTimeStringMs()}] AsyncStorage Write => ${key}`);
         return AsyncStorage.setItem(key, value);
       },
       getItem: (key: string) => {
-        console.log(`[${getTimeStringMs()}] Storage Read => ${key}`);
+        console.log(`[${getTimeStringMs()}] AsyncStorage Read => ${key}`);
         return AsyncStorage.getItem(key);
       },
       removeItem: (key: string) => {
-        console.log(`[${getTimeStringMs()}] Storage Delete => ${key}`);
+        console.log(`[${getTimeStringMs()}] AsyncStorage Delete => ${key}`);
         return AsyncStorage.removeItem(key);
       },
     };

@@ -4,54 +4,131 @@ import {
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 import {
+  BluetoothState,
+  Central,
   getPixel,
   Pixel,
+  PixelInfo,
   PixelScanner,
-  PixelScannerListOp,
-  PixelScannerStatus,
+  PixelStatus,
   ScannedPixelNotifier,
+  PixelScannerEventMap,
+  PixelScannerStatusEvent,
+  ScanError,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { logError, unsigned32ToHex } from "~/features/utils";
+import { unsigned32ToHex } from "../utils";
 
-function pixelLog(pixel: Pick<Pixel, "pixelId">, message: string) {
-  console.log(`Pixel ${unsigned32ToHex(pixel.pixelId)}: ${message}`);
+function pixelLog(pixel: Pick<PixelInfo, "name">, message: string) {
+  console.log(`[Pixel ${pixel.name}]: ${message}`);
 }
 
 export interface PixelsCentralEventMap {
-  scannerStatusChanged: PixelScannerStatus;
-  availablePixelsChanged: ScannedPixelNotifier[];
-  monitoredPixelsChanged: Pixel[];
+  bluetoothState: BluetoothState;
+  isScanning: boolean;
+  lastError: ScanError;
+  availablePixels: ScannedPixelNotifier[];
+  activePixels: Pixel[];
+  dieRoll: { pixel: Pixel; roll: number };
+  dieRename: { pixel: Pixel; name: string };
+  dieProfile: { pixel: Pixel; hash: number };
+  dieRemoteAction: { pixel: Pixel; actionId: number };
 }
 
+// Watched Pixels are promoted to active whenever they are found (= scanned)
 export class PixelsCentral {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelsCentralEventMap>();
   private readonly _scanner = new PixelScanner();
-  private _scannerStatus: PixelScannerStatus = "stopped";
+  private _lastError?: ScanError;
   private readonly _scannedPixels: ScannedPixelNotifier[] = [];
-  private readonly _monitoredPixelsIds = new Set<number>();
-  private readonly _monitoredPixels: Pixel[] = [];
-  private _stopTimeoutId: ReturnType<typeof setTimeout> | undefined;
+  private readonly _watched = new Map<
+    number,
+    "watched" | { pixel: Pixel; connect: () => void; unwatch: () => void }
+  >();
+  private _dispose: () => void;
+
+  get bluetoothState(): BluetoothState {
+    return Central.getBluetoothState();
+  }
+
+  get lastError(): ScanError | undefined {
+    return this._lastError;
+  }
+
+  get isScanning(): boolean {
+    return this._scanner.isScanning;
+  }
+
+  get availablePixels(): ScannedPixelNotifier[] {
+    return this._scannedPixels.filter((sp) => !this._watched.has(sp.pixelId));
+  }
+
+  // Pixels ids of all Pixels that are being watched
+  get watchedPixelsIds(): number[] {
+    return [...this._watched.keys()];
+  }
+
+  // Only includes Pixels that are being watched and have been found
+  get activePixels(): Pixel[] {
+    const pixels: Pixel[] = [];
+    for (const entry of this._watched.values()) {
+      if (typeof entry === "object") {
+        pixels.push(entry.pixel);
+      }
+    }
+    return pixels;
+  }
+
+  get hasMissingPixels(): boolean {
+    for (const entry of this._watched.values()) {
+      if (entry === "watched") {
+        return true;
+      }
+    }
+    return false;
+  }
 
   constructor() {
     this._scanner.minNotifyInterval = 200;
     this._scanner.keepAliveDuration = 5000;
-    this._scanner.scanListener = this._scanListener.bind(this);
+    this._scanner.clearOnStop = true;
+    this._scanner.autoResume = true;
+    const onAvailable = (isAvailable: boolean) => {
+      if (isAvailable) {
+        for (const activeIds of this.watchedPixelsIds) {
+          const entry = this._watched.get(activeIds);
+          if (typeof entry === "object") {
+            entry.connect();
+          }
+        }
+      }
+    };
+    const onScanning = (isScanning: boolean) =>
+      this._emitEvent("isScanning", isScanning);
+    const onStatus = ({ scanStatus, stopReason }: PixelScannerStatusEvent) => {
+      this._lastError = scanStatus === "stopped" ? stopReason : undefined;
+      if (this._lastError) {
+        this._emitEvent("lastError", this._lastError);
+      }
+    };
+    const onScanOps = ({ ops }: PixelScannerEventMap["scanListOperations"]) =>
+      this._scanListListener({ ops });
+    this._scanner.addListener("isAvailable", onAvailable);
+    this._scanner.addListener("isScanning", onScanning);
+    this._scanner.addListener("scanStatus", onStatus);
+    this._scanner.addListener("scanListOperations", onScanOps);
+    this._dispose = () => {
+      this._scanner.removeListener("isAvailable", onAvailable);
+      this._scanner.removeListener("isScanning", onScanning);
+      this._scanner.removeListener("scanStatus", onStatus);
+      this._scanner.removeListener("scanListOperations", onScanOps);
+    };
   }
 
-  get scannerStatus(): PixelScannerStatus {
-    return this._scannerStatus;
-  }
-
-  get availablePixels(): ScannedPixelNotifier[] {
-    return this._scannedPixels.filter(
-      (p) => !this._monitoredPixelsIds.has(p.pixelId)
-    );
-  }
-
-  get monitoredPixels(): Pixel[] {
-    return [...this._monitoredPixels];
+  dispose(): void {
+    this._dispose();
+    this.setWatchedDice([]);
   }
 
   /**
@@ -84,141 +161,177 @@ export class PixelsCentral {
     this._evEmitter.removeListener(eventName, listener);
   }
 
-  startScanning(duration = 0): void {
-    this._scanner
-      .start()
-      .then(() => {
-        this._updateStatus("started");
-        if (duration > 0) {
-          if (this._stopTimeoutId) {
-            clearTimeout(this._stopTimeoutId);
-          }
-          this._stopTimeoutId = setTimeout(() => {
-            this._stopTimeoutId = undefined;
-            this._scanner.stop();
-          }, duration);
-        }
-      })
-      .catch((e) => {
-        this._updateStatus(e);
-      });
+  startScan(opt?: { timeout?: boolean; pixelId?: number }): void {
+    console.log("PixelsCentral: Start scanning => " + JSON.stringify(opt));
+    const pixelId = opt?.pixelId;
+    if (!pixelId || this._watched.get(pixelId) === "watched") {
+      if (pixelId) {
+        this._scanner.scanFilter = (sp) => sp.pixelId === pixelId;
+      } else {
+        this._scanner.scanFilter = undefined;
+      }
+      // Start scanning
+      this._scanner
+        .start(opt?.timeout ? { duration: 6000 } : undefined)
+        .catch((e) => {
+          console.log(`PixelsCentral: Scan start error ${e}`);
+        });
+    }
   }
 
-  stopScanning(): void {
-    this._scanner
-      .stop()
-      .then(() => {
-        this._updateStatus("stopped");
-      })
-      .catch((e) => {
-        this._updateStatus(e);
-      });
+  stopScan(): void {
+    this._scanner.stop().catch((e) => {
+      console.log(`PixelsCentral: Scan stop error ${e}`);
+    });
   }
 
-  monitorPixel(pixelId: number): void {
-    if (this._monitoredPixelsIds.add(pixelId)) {
-      const pixel = getPixel(pixelId);
-      if (pixel) {
-        this._autoConnect(pixel);
+  isWatched(pixelId: number): boolean {
+    return this._watched.has(pixelId);
+  }
+
+  watch(pixelId: number): void {
+    if (!this._watched.has(pixelId)) {
+      console.log(`PixelsCentral: Watching Pixel ${unsigned32ToHex(pixelId)}`);
+      this._watched.set(pixelId, "watched");
+      this._autoConnect(pixelId);
+    }
+  }
+
+  unwatch(pixelId: number): void {
+    const entry = this._watched.get(pixelId);
+    if (entry) {
+      console.log(
+        `PixelsCentral: Un-watching Pixel ${unsigned32ToHex(pixelId)}`
+      );
+      this._watched.delete(pixelId);
+      if (typeof entry === "object") {
+        entry.unwatch();
+        this._emitEvent("activePixels", this.activePixels);
       }
     }
   }
 
-  unmonitorPixel(pixelId: number): void {
-    if (this._monitoredPixelsIds.delete(pixelId)) {
-      // const pixel = this._pixels.find((p) => p.pixelId === pixelId);
-      // if (pixel) {
-      //   this._evEmitter.emit("foundPixelUnpaired", pixel);
-      // }
+  setWatchedDice(pixelIds: readonly number[]): void {
+    for (const id of this.watchedPixelsIds) {
+      if (!pixelIds.includes(id)) {
+        this.unwatch(id);
+      }
+    }
+    for (const id of pixelIds) {
+      this.watch(id);
     }
   }
 
-  private _updateStatus(status: PixelScannerStatus): void {
-    if (this._scannerStatus !== status) {
-      this._scannerStatus = status;
-      this._evEmitter.emit("scannerStatusChanged", status);
+  private _emitEvent<T extends keyof PixelsCentralEventMap>(
+    name: T,
+    ev: PixelsCentralEventMap[T]
+  ): void {
+    try {
+      this._evEmitter.emit(name, ev);
+    } catch (e) {
+      console.error(
+        `PixelCentral: Uncaught error in "${name}" event listener: ${e}`
+      );
     }
   }
 
-  private _scanListener(scanner: PixelScanner, ops: PixelScannerListOp[]) {
+  private _scanListListener({
+    ops,
+  }: PixelScannerEventMap["scanListOperations"]) {
     const availableCount = this.availablePixels.length;
     for (const op of ops) {
       const t = op.type;
       switch (t) {
-        case "clear":
+        case "cleared":
           this._scannedPixels.length = 0;
           break;
-        case "add": {
-          console.log(
-            "PixelsCentral: add " +
-              op.scannedPixel.name +
-              " - " +
-              unsigned32ToHex(op.scannedPixel.pixelId)
-          );
+        case "scanned": {
           const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
-          this._scannedPixels.push(notifier);
-          const pixel = getPixel(notifier.pixelId);
-          if (pixel) {
-            if (this._monitoredPixelsIds.has(pixel.pixelId)) {
-              this._autoConnect(pixel);
-            }
-          } else {
-            logError(
-              `PixelsCentral: no Pixel instance for ${unsigned32ToHex(
-                notifier.pixelId
-              )} after getting scanned`
-            );
+          if (
+            this._scannedPixels.every((sp) => sp.pixelId !== notifier.pixelId)
+          ) {
+            this._scannedPixels.push(notifier);
+            // Connect to our die if paired
+            this._autoConnect(notifier.pixelId);
           }
           break;
         }
-        case "update":
-          {
-            const sp = this._scannedPixels[op.index];
-            if (sp) {
-              console.log(
-                "PixelsCentral: update " +
-                  sp.name +
-                  " - " +
-                  unsigned32ToHex(sp.pixelId)
-              );
-              sp.updateProperties(op.scannedPixel);
-            } else {
-              console.error(
-                "PixelsCentral: index out of range on update operation"
-              );
-            }
+        case "removed": {
+          const index = this._scannedPixels.findIndex(
+            (sp) => sp.pixelId === op.pixelId
+          );
+          if (index >= 0) {
+            this._scannedPixels.splice(index, 1);
           }
           break;
-        case "remove":
-          if (this._scannedPixels[op.index]) {
-            console.log(
-              "PixelsCentral: remove " +
-                unsigned32ToHex(this._scannedPixels[op.index].pixelId)
-            );
-            this._scannedPixels.splice(op.index, 1);
-          } else {
-            console.error(
-              "PixelsCentral: index out of range on remove operation"
-            );
-          }
-          break;
+        }
         default:
           assertNever(t);
       }
     }
     const available = this.availablePixels;
     if (availableCount !== available.length) {
-      this._evEmitter.emit("availablePixelsChanged", this.availablePixels);
+      this._emitEvent("availablePixels", available);
     }
   }
 
-  private _autoConnect(pixel: Pixel): void {
-    if (!this._monitoredPixels.includes(pixel)) {
-      this._monitoredPixels.push(pixel);
-      pixel.connect().catch((e: Error) => {
-        pixelLog(pixel, `Connection error, ${e}`);
-      });
-      this._evEmitter.emit("monitoredPixelsChanged", this.monitoredPixels);
+  private _autoConnect(pixelId: number): boolean {
+    const pixel = getPixel(pixelId);
+    if (pixel && this._watched.get(pixelId) === "watched") {
+      // Connection function that catches errors
+      const connect = () => {
+        pixelLog(pixel, "Connecting...");
+        if (this._watched.has(pixel.pixelId)) {
+          pixel.connect().catch((e: Error) => {
+            pixelLog(pixel, `Connection error, ${e}`);
+          });
+        }
+      };
+
+      // Add event listeners
+      const onStatus = (status: PixelStatus) => {
+        if (status === "disconnected") {
+          // TODO Delay reconnecting because our previous call to connect() might still be cleaning up
+          setTimeout(connect, 2000);
+        }
+      };
+      pixel.addEventListener("status", onStatus);
+      const onRoll = (roll: number) =>
+        this._emitEvent("dieRoll", { pixel, roll });
+      pixel.addEventListener("roll", onRoll);
+      const onRename = ({ name }: PixelInfo) =>
+        this._emitEvent("dieRename", { pixel, name });
+      pixel.addPropertyListener("name", onRename);
+      const onProfileHash = (hash: number) =>
+        this._emitEvent("dieProfile", { pixel, hash });
+      pixel.addEventListener("profileHash", onProfileHash);
+      const onRemoteAction = (actionId: number) =>
+        this._emitEvent("dieRemoteAction", { pixel, actionId });
+      pixel.addEventListener("remoteAction", onRemoteAction);
+
+      // Callback to unsubscribe from all event listeners
+      const unwatch = () => {
+        pixel.removeEventListener("status", onStatus);
+        pixel.removeEventListener("roll", onRoll);
+        pixel.removePropertyListener("name", onRename);
+        pixel.removeEventListener("profileHash", onProfileHash);
+        pixel.removeEventListener("remoteAction", onRemoteAction);
+        // Catch errors on disconnect
+        pixel.disconnect().catch((e: Error) => {
+          pixelLog(pixel, `Disconnection error, ${e}`);
+        });
+      };
+
+      // Keep track of Pixels we're connecting to
+      this._watched.set(pixel.pixelId, { pixel, connect, unwatch });
+
+      // Connect to die
+      connect();
+
+      // Notify we've got a new monitored Pixel
+      this._emitEvent("activePixels", this.activePixels);
     }
+
+    return this._watched.get(pixelId) !== "watched";
   }
 }

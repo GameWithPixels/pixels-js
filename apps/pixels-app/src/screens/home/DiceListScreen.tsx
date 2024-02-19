@@ -1,6 +1,5 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import { getPixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { Card, Divider, IconButton, Text, useTheme } from "react-native-paper";
@@ -18,6 +17,7 @@ import ListIcon from "#/icons/items-view/list";
 import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
+import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { HeaderBar } from "~/components/HeaderBar";
 import {
   SortBottomSheet,
@@ -39,6 +39,7 @@ import {
   setDiceSortMode,
 } from "~/features/store/appSettingsSlice";
 import { removePairedDie } from "~/features/store/pairedDiceSlice";
+import { usePairedDiceScanner } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -223,36 +224,14 @@ function DiceListPage({
   );
 
   // Reconnect
-  const tryReconnectDice = React.useCallback(() => {
-    // // Set a timeout to stop scanning in 10s
-    // setScanTimeout((id) => {
-    //   if (id) {
-    //     clearTimeout(id);
-    //   }
-    //   return setTimeout(() => setScanTimeout(undefined), 10000);
-    // });
-  }, []);
+  const { startScan } = usePairedDiceScanner();
 
   // Scan for missing dice on showing page
   useFocusEffect(
     React.useCallback(() => {
-      if (pairedDice.some((p) => !getPixel(p.pixelId))) {
-        tryReconnectDice();
-      }
-    }, [pairedDice, tryReconnectDice])
+      startScan();
+    }, [startScan])
   );
-  // Stop scanning on leaving page
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     return () =>
-  //       setScanTimeout((id) => {
-  //         if (id) {
-  //           clearTimeout(id);
-  //         }
-  //         return undefined;
-  //       });
-  //   }, [])
-  // );
 
   // Selection
   const [selectedDie, setSelectedDie] = React.useState<PairedDie>();
@@ -266,18 +245,16 @@ function DiceListPage({
     ) {
       // Select first Pixel
       setSelectedDie(pairedDice[0]);
-    } else if (!getPixel(selectedDie.pixelId)) {
-      // Selected Pixel hasn't been seen so far
-      tryReconnectDice();
     }
-  }, [pairedDice, selectedDie, tryReconnectDice]);
+  }, [pairedDice, selectedDie]);
 
   // View Mode
   const [viewMode, setViewMode] = React.useState<DiceViewMode>("focus");
   const isFocus = viewMode === "focus";
-  const showDetails = (pairedDie: PairedDie) => {
+  const selectAndShowDetails = (pairedDie: PairedDie, showDetails = true) => {
     setSelectedDie(pairedDie);
-    if (!isFocus) {
+    startScan({ pixelId: pairedDie.pixelId });
+    if (showDetails) {
       navigation.navigate("dieDetails", { pixelId: pairedDie.pixelId });
     }
   };
@@ -306,20 +283,18 @@ function DiceListPage({
             gap: 10,
           }}
         >
+          <BluetoothStateWarning />
           {isFocus && selectedDie ? (
             <PixelFocusView
               pairedDie={selectedDie}
+              onPress={startScan}
+              onShowDetails={() => selectAndShowDetails(selectedDie)}
               onEditProfile={() =>
                 navigation.navigate("editDieProfileStack", {
                   screen: "editDieProfile",
                   params: {
                     pixelId: selectedDie.pixelId,
                   },
-                })
-              }
-              onShowDetails={() =>
-                navigation.navigate("dieDetails", {
-                  pixelId: selectedDie.pixelId,
                 })
               }
             />
@@ -334,7 +309,7 @@ function DiceListPage({
           ) : viewMode === "list" ? (
             <DiceList
               dice={pairedDice}
-              onSelectDie={showDetails}
+              onSelectDie={selectAndShowDetails}
               onPressNewDie={() => setShowPairDice(true)}
             />
           ) : (
@@ -343,7 +318,7 @@ function DiceListPage({
               numColumns={isFocus ? 4 : 2}
               miniCards={isFocus}
               dice={pairedDice}
-              onSelectDie={showDetails}
+              onSelectDie={(d) => selectAndShowDetails(d, !isFocus)}
               onPressNewDie={() => setShowPairDice(true)}
             />
           )}

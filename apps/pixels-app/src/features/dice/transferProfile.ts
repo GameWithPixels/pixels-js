@@ -47,7 +47,7 @@ export function transferProfile(
     }
   }
   const ds = createDataSetForProfile(modified);
-  // TODO update when getting confirmation from the die in usePairedPixels
+  // TODO update when getting confirmation from the die in AppPixelsCentral
   store.dispatch(
     setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
   );
