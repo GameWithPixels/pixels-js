@@ -17,3 +17,5 @@ export * from "./hooks/useScannedPixelNotifiers";
 export * from "@systemic-games/pixels-core-connect";
 export * from "@systemic-games/pixels-core-animation";
 export * from "@systemic-games/pixels-react";
+
+export { Serializable } from "@systemic-games/pixels-edit-animation";
