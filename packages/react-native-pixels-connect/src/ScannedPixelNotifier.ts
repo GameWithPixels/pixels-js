@@ -121,23 +121,26 @@ export class ScannedPixelNotifier<
         props.timestamp !== undefined &&
         this.timestamp.getTime() !== props.timestamp.getTime()
       ) {
-        this._data.timestamp = props.timestamp;
+        this._data.timestamp.setTime(props.timestamp.getTime());
         this.emitPropertyEvent("timestamp");
       }
+      // Other props
       for (const prop of ScannedPixelNotifier.ExtendedMutablePropsList) {
-        if (
-          prop === "firmwareDate" &&
-          props.firmwareDate &&
-          this.firmwareDate.getTime() !== props.firmwareDate.getTime()
-        ) {
-          this._data.firmwareDate = props.firmwareDate;
-          this.emitPropertyEvent("firmwareDate");
+        if (prop === "firmwareDate") {
+          if (
+            props.firmwareDate &&
+            this.firmwareDate.getTime() !== props.firmwareDate.getTime()
+          ) {
+            this._data.firmwareDate.setTime(props.firmwareDate.getTime());
+            this.emitPropertyEvent("firmwareDate");
+          }
         } else {
           const value = props[prop];
-          if (value !== undefined)
+          if (value !== undefined && this._data[prop] !== value) {
             // @ts-ignore TypeScript doesn't recognize that the prop is same on both side
             this._data[prop] = value;
-          this.emitPropertyEvent(prop);
+            this.emitPropertyEvent(prop);
+          }
         }
       }
     }
