@@ -333,5 +333,15 @@ export function getDfuTargetId({
   systemId: string;
   address?: number;
 }): DfuTargetId {
-  return Platform.OS === "ios" || !address ? systemId : address;
+  if (Platform.OS !== "android") {
+    return systemId;
+  }
+  if (address) {
+    return address;
+  }
+  const mac = parseInt(systemId, 16);
+  if (isNaN(mac)) {
+    throw new Error(`getDfuTargetId: Invalid systemId: ${systemId}`);
+  }
+  return mac;
 }
