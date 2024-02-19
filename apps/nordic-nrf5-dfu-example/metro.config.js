@@ -1,3 +1,4 @@
+const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
 const findWorkspaceRoot = require("find-yarn-workspace-root");
 const path = require("path");
 
@@ -5,7 +6,7 @@ const path = require("path");
 const projectRoot = __dirname;
 const workspaceRoot = findWorkspaceRoot(__dirname);
 
-module.exports = {
+const config = {
   projectRoot,
   watchFolders: [workspaceRoot],
   resolver: {
@@ -24,3 +25,5 @@ module.exports = {
     }),
   },
 };
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);

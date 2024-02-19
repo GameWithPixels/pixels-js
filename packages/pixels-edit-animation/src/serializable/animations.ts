@@ -1,20 +1,33 @@
+import {
+  AnimationCategory,
+  AnimationFlags,
+  NoiseColorOverrideType,
+  NormalsColorOverrideType,
+  PixelDieType,
+} from "@systemic-games/pixels-core-animation";
+
 import { UniqueNamedData } from "./unique";
 
 export interface AnimationSetData {
-  simple: AnimationSimpleData[];
+  flashes: AnimationFlashesData[];
   rainbow: AnimationRainbowData[];
-  keyframed: AnimationKeyframedData[];
+  pattern: AnimationPatternData[];
   gradientPattern: AnimationGradientPatternData[];
   gradient: AnimationGradientData[];
   noise: AnimationNoiseData[];
   normals: AnimationNormalsData[];
+  cycle: AnimationCycleData[];
+  sequence: AnimationSequenceData[];
 }
 
 export interface AnimationData extends UniqueNamedData {
   duration: number;
+  animFlags: AnimationFlags[];
+  category: AnimationCategory;
+  dieType: PixelDieType;
 }
 
-export interface AnimationSimpleData extends AnimationData {
+export interface AnimationFlashesData extends AnimationData {
   faces: number;
   color: string;
   count: number;
@@ -25,14 +38,12 @@ export interface AnimationRainbowData extends AnimationData {
   faces: number;
   count: number;
   fade: number;
-  animFlags: number;
   intensity: number;
   cycles: number;
 }
 
-export interface AnimationKeyframedData extends AnimationData {
+export interface AnimationPatternData extends AnimationData {
   patternUuid?: string;
-  animFlags: number;
 }
 
 export interface AnimationGradientPatternData extends AnimationData {
@@ -48,15 +59,42 @@ export interface AnimationGradientData extends AnimationData {
 
 export interface AnimationNoiseData extends AnimationData {
   gradientUuid?: string;
-  faces: number;
-  blinkDuration: number;
   blinkGradientUuid?: string;
-  blinkCount: number;
+  blinkFrequency: number;
+  blinkFrequencyVar: number;
+  blinkDuration: number;
   fade: number;
+  gradientColorType: NoiseColorOverrideType;
+  gradientColorVar: number;
 }
 
 export interface AnimationNormalsData extends AnimationData {
   gradientUuid?: string;
+  axisGradientUuid?: string;
+  axisScrollSpeed: number;
+  axisScale: number;
+  axisOffset: number;
+  angleGradientUuid?: string;
+  angleScrollSpeed: number;
+  fade: number;
+  gradientColorType: NormalsColorOverrideType;
+  gradientColorVar: number;
+}
+
+export interface AnimationCycleData extends AnimationData {
+  count: number;
+  cycles: number;
+  fade: number;
+  intensity: number;
+  faces: number;
+  gradientUuid?: string;
+}
+
+export interface AnimationSequenceData extends AnimationData {
+  animations: {
+    uuid: string;
+    delay: number;
+  }[];
 }
 
 //
@@ -65,12 +103,14 @@ export interface AnimationNormalsData extends AnimationData {
 
 export function createAnimationSetData(): AnimationSetData {
   return {
-    simple: [],
+    flashes: [],
     rainbow: [],
-    keyframed: [],
-    gradientPattern: [],
     gradient: [],
+    pattern: [],
+    gradientPattern: [],
     noise: [],
     normals: [],
+    cycle: [],
+    sequence: [],
   };
 }

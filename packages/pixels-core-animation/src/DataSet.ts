@@ -23,7 +23,6 @@ import Rule from "./profiles/Rule";
  */
 export default class DataSet {
   private readonly _animationBits: AnimationBits;
-  private readonly _animations: AnimationPreset[] = [];
   private readonly _conditions: Condition[] = [];
   private readonly _actions: Action[] = [];
   private readonly _rules: Rule[] = [];
@@ -34,7 +33,7 @@ export default class DataSet {
   }
 
   get animations(): AnimationPreset[] {
-    return this._animations;
+    return this._animationBits.animations;
   }
 
   get conditions(): Condition[] {
@@ -64,8 +63,8 @@ export default class DataSet {
     // TODO what if some array of size 0?
     return (
       this._animationBits.computeDataSize() +
-      align32bits(this._animations.length * 2) + // offsets are 16 bits
-      byteSizeOf(this._animations) + // animations data
+      align32bits(this.animations.length * 2) + // offsets are 16 bits
+      byteSizeOf(this.animations) + // animations data
       align32bits(this._conditions.length * 2) + // offsets are 16 bits
       byteSizeOf(this._conditions) + // conditions data
       align32bits(this._actions.length * 2) + // offsets are 16 bits
@@ -76,15 +75,16 @@ export default class DataSet {
   }
 
   toSingleAnimationByteArray(): Uint8Array {
-    assert(this._animations.length === 1, "Need exactly one animation");
+    assert(this.animations.length === 1, "Need exactly one animation");
     assert(
-      this._animationBits.palette.length <= 127,
-      "Palette has more than 127 colors: " + this._animationBits.palette.length
+      this._animationBits.getPaletteSize() <= 127,
+      "Palette has more than 127 colors: " +
+        this._animationBits.getPaletteSize()
     );
 
     // Compute size of animation bits + animation
     const size =
-      this._animationBits.computeDataSize() + byteSizeOf(this._animations[0]);
+      this._animationBits.computeDataSize() + byteSizeOf(this.animations[0]);
 
     // Copy animation bits
     const [dataView, byteOffset] = this._animationBits.serialize(
@@ -92,23 +92,24 @@ export default class DataSet {
     );
 
     // Copy animation
-    serialize(this._animations[0], { dataView, byteOffset });
+    serialize(this.animations[0], { dataView, byteOffset });
 
     return new Uint8Array(dataView.buffer);
   }
 
   toAnimationsByteArray(): Uint8Array {
-    assert(this._animations.length > 0, "No animations");
+    assert(this.animations.length > 0, "No animations");
     assert(
-      this._animationBits.palette.length <= 127,
-      "Palette has more than 127 colors: " + this._animationBits.palette.length
+      this._animationBits.getPaletteSize() <= 127,
+      "Palette has more than 127 colors: " +
+        this._animationBits.getPaletteSize()
     );
 
     // Compute size of animation bits + animations
     const size =
       this._animationBits.computeDataSize() +
-      align32bits(this._animations.length * 2) + // offsets are 16 bits
-      byteSizeOf(this._animations); // animations data
+      align32bits(this.animations.length * 2) + // offsets are 16 bits
+      byteSizeOf(this.animations); // animations data
 
     // Copy animation bits
     let [dataView, byteOffset] = this._animationBits.serialize(
@@ -117,16 +118,16 @@ export default class DataSet {
 
     // Copy animations, offsets first
     let animOffset = 0;
-    this._animations.forEach((anim, i) => {
+    this.animations.forEach((anim, i) => {
       dataView.setUint16(byteOffset + 2 * i, animOffset, true);
       animOffset += byteSizeOf(anim);
     });
 
     // Round up to nearest multiple of 4
-    byteOffset += align32bits(this._animations.length * 2);
+    byteOffset += align32bits(this.animations.length * 2);
 
     // Then animations
-    [dataView, byteOffset] = serialize(this._animations, {
+    [dataView, byteOffset] = serialize(this.animations, {
       dataView,
       byteOffset,
     });
@@ -142,8 +143,9 @@ export default class DataSet {
 
   serialize(dataView: DataView, byteOffset = 0): [DataView, number] {
     assert(
-      this._animationBits.palette.length <= 127,
-      "Palette has more than 127 colors: " + this._animationBits.palette.length
+      this._animationBits.getPaletteSize() <= 127,
+      "Palette has more than 127 colors: " +
+        this._animationBits.getPaletteSize()
     );
 
     // Copy animation bits
@@ -152,17 +154,17 @@ export default class DataSet {
     // Copy animations, offsets first
     let animOffset = 0;
     // TODO what if there are 0 animations?
-    this._animations.forEach((anim, i) => {
+    this.animations.forEach((anim, i) => {
       // TODO first index is always 0!
       dataView.setUint16(byteOffset + 2 * i, animOffset, true);
       animOffset += byteSizeOf(anim);
     });
 
     // Round up to nearest multiple of 4
-    byteOffset += align32bits(this._animations.length * 2);
+    byteOffset += align32bits(this.animations.length * 2);
 
     // Then animations
-    [dataView, byteOffset] = serialize(this._animations, {
+    [dataView, byteOffset] = serialize(this.animations, {
       dataView,
       byteOffset,
     });

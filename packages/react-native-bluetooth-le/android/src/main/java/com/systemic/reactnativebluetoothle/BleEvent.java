@@ -1,5 +1,7 @@
 package com.systemic.reactnativebluetoothle;
 
+import androidx.annotation.NonNull;
+
 public enum BleEvent {
     /**
      * Raised after initializing the module.
@@ -23,10 +25,11 @@ public enum BleEvent {
 
     private String _name;
 
-    BleEvent(String name) {
+    BleEvent(@NonNull String name) {
         _name = name;
     }
 
+    @NonNull
     public String getName() {
         return _name;
     }

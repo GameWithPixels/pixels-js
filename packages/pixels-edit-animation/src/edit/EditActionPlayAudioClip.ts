@@ -12,17 +12,28 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, widget } from "./decorators";
 
 export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
-  readonly type = "runOnDevice";
-  readonly remoteType = "playAudioClip";
+  readonly type = "playAudioClip";
 
   @widget("audioClip")
   @name("Audio Clip")
   @observable
   clip?: EditAudioClip;
 
-  constructor(opt?: { clip?: EditAudioClip }) {
+  @observable
+  volume: number;
+
+  @observable
+  loopCount: number;
+
+  constructor(opt?: {
+    clip?: EditAudioClip;
+    volume?: number;
+    loopCount?: number;
+  }) {
     super();
     this.clip = opt?.clip;
+    this.volume = opt?.volume ?? 100;
+    this.loopCount = opt?.loopCount ?? 1;
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {

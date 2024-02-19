@@ -2,7 +2,6 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { ActionType } from "./ActionType";
 import { ConditionType } from "./ConditionType";
-import { RemoteActionType } from "./RemoteActionType";
 import { AnimationType } from "../animations/AnimationType";
 
 /**
@@ -36,6 +35,8 @@ export function getAnimationTypeDisplayName(
       return { name: "Noise", order: 5 };
     case "normals":
       return { name: "Normals", order: 6 };
+    case "sequence":
+      return { name: "Sequence", order: 7 };
     case "cycle":
     case "name":
       throw new Error(
@@ -50,29 +51,19 @@ export function getAnimationTypeDisplayName(
  * @category Profile
  */
 export function getActionTypeDisplayName(
-  actionType: ActionType,
-  actionRemoteType: RemoteActionType = "none"
+  actionType: ActionType
 ): NameAndOrder | undefined {
   switch (actionType) {
     case "none":
       return;
     case "playAnimation":
       return { name: "Trigger Pattern", order: 0 };
-    case "runOnDevice":
-      switch (actionRemoteType) {
-        case "none":
-          return;
-        case "playAudioClip":
-          return { name: "Play Audio Clip", order: 1 };
-        case "makeWebRequest":
-          return { name: "Make Web Request", order: 2 };
-        default:
-          assertNever(
-            actionRemoteType,
-            `Unknown action remote type: ${actionRemoteType}`
-          );
-      }
-      break;
+    case "playAudioClip":
+      return { name: "Play Audio Clip", order: 1 };
+    case "makeWebRequest":
+      return { name: "Make Web Request", order: 2 };
+    case "speakText":
+      return { name: "Speak Text", order: 3 };
     default:
       assertNever(actionType, `Unknown action type: ${actionType}`);
   }
@@ -97,12 +88,14 @@ export function getConditionTypeDisplayName(
       return { name: "Pixel roll is...", order: 3 };
     case "crooked":
       return { name: "Pixel is crooked", order: 4 };
-    case "connectionState":
+    case "connection":
       return { name: "Bluetooth Event...", order: 5 };
-    case "batteryState":
+    case "battery":
       return { name: "Battery Event...", order: 6 };
     case "idle":
       return { name: "Pixel is idle for...", order: 7 };
+    case "rolled":
+      return { name: "Pixel roll is one of...", order: 8 };
     default:
       assertNever(conditionType, `Unknown condition type: ${conditionType}`);
   }

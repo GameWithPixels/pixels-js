@@ -2,15 +2,15 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationNoise,
+  NoiseColorOverrideTypeValues,
 } from "@systemic-games/pixels-core-animation";
-import { NoiseColorOverrideTypeValues } from "@systemic-games/pixels-core-animation/src/animations/AnimationNoise";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
-import EditAnimation from "./EditAnimation";
+import EditAnimation, { EditAnimationParams } from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import EditRgbGradient from "./EditRgbGradient";
 import EditRgbTrack from "./EditRgbTrack";
-import { widget, range, name, observable } from "./decorators";
+import { widget, range, name, observable, values } from "./decorators";
 
 export default class EditAnimationNoise extends EditAnimation {
   readonly type = "noise";
@@ -51,29 +51,28 @@ export default class EditAnimationNoise extends EditAnimation {
 
   @widget("toggle")
   @name("Override color based on face")
+  @values(NoiseColorOverrideTypeValues)
   @observable
-  overallGradientColorType: number;
+  gradientColorType: number;
 
   @widget("slider")
   @range(0, 1)
   @name("Override color variance")
   @observable
-  overallGradientColorVar: number;
+  gradientColorVar: number;
 
-  constructor(opt?: {
-    uuid?: string;
-    name?: string;
-    duration?: number;
-    animFlags?: number;
-    gradient?: EditRgbGradient;
-    blinkGradient?: EditRgbGradient;
-    blinkFrequency?: number;
-    blinkFrequencyVar?: number;
-    blinkDuration?: number;
-    fade?: number;
-    overallGradientColorType?: number;
-    overallGradientColorVar?: number;
-  }) {
+  constructor(
+    opt?: EditAnimationParams & {
+      gradient?: EditRgbGradient;
+      blinkGradient?: EditRgbGradient;
+      blinkFrequency?: number;
+      blinkFrequencyVar?: number;
+      blinkDuration?: number;
+      fade?: number;
+      gradientColorType?: number;
+      gradientColorVar?: number;
+    }
+  ) {
     super(opt);
     this.gradient = opt?.gradient;
     this.blinkGradient = opt?.blinkGradient;
@@ -81,9 +80,9 @@ export default class EditAnimationNoise extends EditAnimation {
     this.blinkFrequencyVar = opt?.blinkFrequencyVar ?? 0;
     this.blinkDuration = opt?.blinkDuration ?? 0.1;
     this.fade = opt?.fade ?? 0;
-    this.overallGradientColorType =
-      opt?.overallGradientColorType ?? NoiseColorOverrideTypeValues.none;
-    this.overallGradientColorVar = opt?.overallGradientColorVar ?? 0;
+    this.gradientColorType =
+      opt?.gradientColorType ?? NoiseColorOverrideTypeValues.none;
+    this.gradientColorVar = opt?.gradientColorVar ?? 0;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -107,12 +106,24 @@ export default class EditAnimationNoise extends EditAnimation {
       blinkFrequencyVarTimes1000: this.blinkFrequencyVar * 1000,
       blinkDuration: this.blinkDuration * 255,
       fade: this.fade * 255,
-      overallGradientColorType: this.overallGradientColorType,
-      overallGradientColorVar: this.overallGradientColorVar * 1000,
+      gradientColorType: this.gradientColorType,
+      gradientColorVar: this.gradientColorVar * 1000,
     });
   }
 
   duplicate(uuid?: string): EditAnimation {
-    return new EditAnimationNoise({ ...this, uuid });
+    return new EditAnimationNoise({
+      ...this,
+      uuid,
+      gradient: this.gradient?.duplicate(),
+      blinkGradient: this.blinkGradient?.duplicate(),
+    });
+  }
+
+  collectGradients(): EditRgbGradient[] {
+    const gradients = [];
+    this.gradient && gradients.push(this.gradient);
+    this.blinkGradient && gradients.push(this.blinkGradient);
+    return gradients;
   }
 }

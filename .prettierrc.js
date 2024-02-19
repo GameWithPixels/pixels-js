@@ -1,3 +1,4 @@
 module.exports = {
-  endOfLine: "auto"
+  endOfLine: "auto",
+  trailingComma: "es5",
 }

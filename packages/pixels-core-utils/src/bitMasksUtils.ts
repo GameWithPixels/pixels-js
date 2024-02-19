@@ -7,7 +7,8 @@ import { assert } from "./assert";
  */
 export function bitsToIndices(value?: number): number[] {
   const indices: number[] = [];
-  if (value) {
+  value = Math.floor(value ?? 0);
+  if (value > 0) {
     // Convert value to binary format: we use a string because of the limitations
     // with JS bits operators (ex: 0x80000000 >> 1 => -1073741824 )
     let bits = value.toString(2);

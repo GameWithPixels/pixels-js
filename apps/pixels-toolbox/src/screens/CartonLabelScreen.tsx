@@ -23,13 +23,14 @@ import {
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ColorwayImage } from "~/components/ColorwayImage";
+import { Colorways } from "~/features/pixels/colorways";
 import { printCartonLabelAsync, PrintStatus } from "~/features/print";
 import {
   setBoxShipmentAsn,
   setBoxShipmentDieColorway,
   setBoxShipmentDieType,
 } from "~/features/store/validationSettingsSlice";
-import { ValidationColorways, ValidationDieTypes } from "~/features/validation";
+import { ValidationDieTypes } from "~/features/validation";
 
 function DieTypeColumn({
   values,
@@ -154,9 +155,7 @@ export function CartonLabelPage() {
               <ColorwayColumn
                 key={col}
                 selected={colorway}
-                values={ValidationColorways.filter(
-                  (_, i) => i % numColumns === col
-                )}
+                values={Colorways.filter((_, i) => i % numColumns === col)}
                 onSelect={(c) => appDispatch(setBoxShipmentDieColorway(c))}
               />
             ))}

@@ -1,9 +1,10 @@
+import { PixelDieType } from "@systemic-games/pixels-core-animation";
 import {
   createTypedEventEmitter,
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 
-import { PixelRollState, PixelColorway, PixelDieType } from "./Messages";
+import { PixelRollState, PixelColorway } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 
 /**
@@ -23,14 +24,17 @@ export type PixelInfoNotifierMutableProps = Pick<
  * @category Pixels
  */
 export abstract class PixelInfoNotifier<
-  MutableProps extends PixelInfoNotifierMutableProps = PixelInfoNotifierMutableProps,
-  Type extends PixelInfo = PixelInfo
+  MutableProps extends
+    PixelInfoNotifierMutableProps = PixelInfoNotifierMutableProps,
+  Type extends PixelInfo = PixelInfo,
 > implements PixelInfo
 {
   static MutablePropsList: readonly (keyof PixelInfo)[] = [
     "name",
-    "firmwareDate",
+    "ledCount",
     "colorway",
+    "dieType",
+    "firmwareDate",
     "rssi",
     "batteryLevel",
     "isCharging",

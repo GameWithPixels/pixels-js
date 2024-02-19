@@ -8,15 +8,18 @@ import EditDataSet from "./EditDataSet";
 import { observable } from "./decorators";
 
 export default class EditRule {
+  readonly uuid: string;
+
   @observable
   condition: EditCondition;
 
   @observable
   actions: EditAction[];
 
-  constructor(condition: EditCondition, opt?: { actions?: EditAction[] }) {
+  constructor(condition: EditCondition, actions?: EditAction[] | EditAction) {
+    this.uuid = Math.random().toString(); // TODO until we have real UUIDs for rules
     this.condition = condition;
-    this.actions = opt?.actions ?? [];
+    this.actions = !actions ? [] : Array.isArray(actions) ? actions : [actions];
   }
 
   toRule(editSet: EditDataSet, set: DataSet, ruleId: number): Rule {
@@ -43,9 +46,10 @@ export default class EditRule {
   }
 
   duplicate(): EditRule {
-    return new EditRule(this.condition?.duplicate(), {
-      actions: this.actions.map((action) => action.duplicate()),
-    });
+    return new EditRule(
+      this.condition?.duplicate(),
+      this.actions.map((action) => action.duplicate())
+    );
   }
 
   replaceAnimation(

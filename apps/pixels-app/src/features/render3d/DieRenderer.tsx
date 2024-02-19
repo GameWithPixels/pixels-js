@@ -1,38 +1,99 @@
+import { useFocusEffect } from "@react-navigation/native";
 import {
   AnimationBits,
   AnimationInstance,
   AnimationPreset,
+  Constants,
   GammaUtils,
-} from "@systemic-games/pixels-core-animation";
-import { Die3D } from "@systemic-games/pixels-three";
-import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
+  PixelColorway,
+  PixelDieType,
+  VirtualDie,
+} from "@systemic-games/react-native-pixels-connect";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 import { Text } from "react-native-paper";
 
+import { UpdateArgs, UpdateCallback } from "./UpdateCallback";
 import { createDie3DAsync } from "./createDie3DAsync";
+import { addPedestal } from "./pedestal";
 
-import { AppStyles } from "~/AppStyles";
+import Die3D from "~/pixels-three/Die3D";
+
+const animIndices: number[] = Array(Constants.maxLEDsCount);
+const animColors: number[] = Array(Constants.maxLEDsCount);
+
+function renderAnimation(
+  die3d: Die3D,
+  anim: AnimationInstance,
+  { time }: UpdateArgs
+): void {
+  animIndices.fill(0);
+  animColors.fill(0);
+  // Get LEDs colors
+  const count = anim.updateLEDs(time, animIndices, animColors);
+  // Light up die
+  const c = new THREE.Color();
+  for (let i = 0; i < count; ++i) {
+    const colorValue = animColors[i];
+    c.setRGB(
+      GammaUtils.reverseGamma8((colorValue >> 16) & 0xff) / 255,
+      GammaUtils.reverseGamma8((colorValue >> 8) & 0xff) / 255,
+      GammaUtils.reverseGamma8(colorValue & 0xff) / 255
+    );
+    die3d.setLEDColor(animIndices[i], c);
+  }
+}
 
 class SceneRenderer {
+  private _shouldRender = false;
+  private _renderLoop?: () => void;
+  // Resources
+  private readonly _root = new THREE.Object3D();
   private readonly _die3d: Die3D;
-  private readonly _getAnimInstances: () => AnimationInstance[];
-  private _renderScene?: () => void;
+  private readonly _envMap?: THREE.Texture;
+  private readonly _lights: THREE.Light[];
+  private _speed = 1;
+  private _rotateX = true;
+  private _animUpdate?: UpdateCallback;
   private _dispose?: () => void;
 
-  constructor(die3d: Die3D, getAnimInstances: () => AnimationInstance[]) {
+  get speed(): number {
+    return this._speed;
+  }
+  set speed(value: number) {
+    this._speed = value;
+  }
+
+  get rotateX(): boolean {
+    return this._rotateX;
+  }
+  set rotateX(value: boolean) {
+    this._rotateX = value;
+  }
+
+  constructor(die3d: Die3D, lights: THREE.Light[], envMap?: THREE.Texture) {
     this._die3d = die3d;
-    this._getAnimInstances = getAnimInstances;
+    this._envMap = envMap;
+    this._lights = lights;
   }
 
-  shutdown() {
+  dispose() {
+    this._root.clear(); // Dispose all children?
     this._dispose?.();
+    this._die3d.dispose();
+    this._lights?.forEach((l) => l.dispose());
   }
 
-  setup(gl: ExpoWebGLRenderingContext): void {
+  setup(gl: ExpoWebGLRenderingContext, pedestalStyle?: PedestalStyle): void {
     try {
+      // Dispose resources from previous setup
+      this._dispose?.();
+
+      // Cleanup scene
+      this._root.clear();
+
       // Renderer
       const renderer = new Renderer({ gl, alpha: true });
       // set size of buffer to be equal to drawing buffer width
@@ -40,119 +101,154 @@ class SceneRenderer {
 
       // Camera
       const ratio = gl.drawingBufferWidth / gl.drawingBufferHeight;
-      const camera = new THREE.PerspectiveCamera(15, ratio, 0.1, 800);
-      camera.position.set(16.4, 76.5, -62);
-      camera.lookAt(new THREE.Vector3(0, 0.6, 0));
+      const camera = new THREE.PerspectiveCamera(15, ratio, 0.1, 100);
+      const dieSize = Math.max(
+        this._die3d.size.x,
+        this._die3d.size.y,
+        this._die3d.size.z
+      );
+      const cameraDist = dieSize * this._getDieSizeRatio();
+      camera.position.set(0, cameraDist, cameraDist);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
 
       // Scene
       const scene = new THREE.Scene();
+      scene.environment = this._envMap ?? null;
 
       // Place die in scene
-      scene.add(this._die3d);
+      this._root.add(this._die3d);
+      scene.add(this._root);
 
       // Light setup
-      const whiteLight = new THREE.PointLight(0xfdfdfd, 1.5, 100);
-      whiteLight.position.set(9, 27, -15);
-      scene.add(whiteLight);
+      this._lights?.forEach((l) => scene.add(l));
 
-      // const blueLight = new THREE.PointLight(0x0090ff, 1, 100);
-      // blueLight.position.set(-14, -6, -19);
-      // scene.add(blueLight);
+      // Props
+      const staging = new THREE.Object3D();
+      if (pedestalStyle) {
+        this._root.add(staging);
 
-      // const redLight = new THREE.PointLight(0xff4962, 1, 100);
-      // redLight.position.set(31, -11, -4);
-      // scene.add(redLight);
+        // Magic ring
+        const color = pedestalStyle.color ?? 0x6667ab;
+        addPedestal(staging, color, cameraDist / 40);
+        camera.position.z *= 2;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-      const alreadyRendering = this._renderScene;
-      this._dispose?.();
+        // Sparks
+        // if (Platform.OS === "ios") {
+        //   update.push(...addSparks(staging, dieSize));
+        // }
+      }
 
-      this._renderScene = () => {
+      // update.push(({ time }: UpdateArgs) => {
+      //   // Light random LED
+      //   const ledIndex = Math.floor(Math.random() * this._die3d.faceCount);
+      //   this._die3d.setLEDColor(
+      //     ledIndex,
+      //     new THREE.Color(Math.random(), Math.random(), Math.random())
+      //   );
+      // });
+
+      // Render
+      const renderScene = () => {
         renderer.render(scene, camera);
         gl.endFrameEXP();
       };
+
+      // Dispose resources
       this._dispose = () => {
-        whiteLight.dispose();
-        this._renderScene = undefined;
+        this.stop();
+        scene.clear();
+        staging.traverse((o) => {
+          const mesh = o as THREE.Mesh;
+          if (mesh.isMesh) {
+            mesh.geometry.dispose();
+            if (Array.isArray(mesh.material)) {
+              mesh.material.forEach((m) => m.dispose());
+            } else {
+              mesh.material.dispose();
+            }
+          }
+        });
+        renderer.dispose();
       };
 
-      if (!alreadyRendering) {
-        this._setupRenderLoop();
-      }
+      this._renderLoop = this._createRenderLoopFunc(renderScene);
     } catch (error) {
       console.error("Error while setting up ThreeJS scene graph", error);
     }
   }
 
-  private _setupRenderLoop() {
-    // Create render function
-    let lastTime = Date.now();
-    let lastAnims: AnimationInstance[] = [];
-    let animIndex = 0;
+  start() {
+    this._shouldRender = true;
+    this._renderLoop?.();
+  }
 
-    const frameRender = () => {
-      if (this._renderScene) {
-        try {
-          const time = Date.now();
+  stop() {
+    this._shouldRender = false;
+  }
 
-          // Rotate die
-          this._die3d.rotation.y -= (time - lastTime) / 5000;
-          lastTime = time;
-
-          // Update animation
-          const anims = this._getAnimInstances();
-          let changed = lastAnims !== anims;
-          if (changed) {
-            lastAnims = anims;
-            animIndex = 0;
-            // Turn all LEDs off
+  setAnimations(animations?: AnimationInstance[]): void {
+    if (animations?.length) {
+      let lastTime = 0;
+      let endTime = 0;
+      let animIndex = -1;
+      this._animUpdate = (args: UpdateArgs) => {
+        // Switch to next animation after 1 second delay
+        if (animIndex < 0 || args.time > endTime + 1000) {
+          animIndex = (animIndex + 1) % animations.length;
+          const anim = animations[animIndex];
+          anim.start(args.time);
+          endTime = anim.startTime + anim.duration;
+        }
+        // Limit animation to 30 FPS
+        if (args.time - lastTime > 33) {
+          if (args.time <= endTime) {
+            renderAnimation(this._die3d, animations[animIndex], args);
+          } else {
             this._die3d.clearLEDs();
           }
-
-          if (anims?.length) {
-            if (
-              !changed &&
-              anims[animIndex].startTime + anims[animIndex].duration < time
-            ) {
-              // Switch to next animation
-              animIndex = (animIndex + 1) % anims.length;
-              changed = true;
-            }
-            const anim = anims[animIndex];
-            if (changed) {
-              // Start animation
-              anim.start(time);
-            }
-            // Get LEDs colors
-            const indices: number[] = Array(20).fill(0);
-            const colors: number[] = Array(20).fill(0);
-            const count = anim.updateLEDs(time, indices, colors);
-            // Light up die
-            const c = new THREE.Color();
-            for (let i = 0; i < count; ++i) {
-              const colorValue = colors[i];
-              c.setRGB(
-                GammaUtils.reverseGamma8((colorValue >> 16) & 0xff) / 255,
-                GammaUtils.reverseGamma8((colorValue >> 8) & 0xff) / 255,
-                GammaUtils.reverseGamma8(colorValue & 0xff) / 255
-              );
-              this._die3d.setLEDColor(indices[i], c);
-            }
-          }
-        } catch (error) {
-          console.error(error);
-          console.warn(
-            `Error while animating LEDs for Die3D, stop rendering to avoid further errors`
-          );
-          // Cleanup
-          this._dispose?.();
+          lastTime = args.time;
         }
+      };
+    } else {
+      this._animUpdate = undefined;
+    }
+  }
+
+  private _createRenderLoopFunc(renderScene: () => void): () => void {
+    // Create render function
+    let lastTime = Date.now();
+
+    // Add some random initial rotation to the die
+    const PI2 = Math.PI * 2;
+    this._root.rotation.y += Math.random() * PI2;
+
+    const renderLoop = () => {
+      if (this._shouldRender) {
+        const time = Date.now();
+        const deltaTime = time - lastTime;
+
+        // Rotate dice
+        const r = this._speed * deltaTime;
+        const rot = this._root.rotation;
+        if (this._rotateX) {
+          rot.x = (rot.x - r / 10000) % PI2;
+        }
+        rot.y = (rot.y - r / 5000) % PI2;
+        lastTime = time;
+
         try {
-          this._renderScene?.();
-          requestAnimationFrame(frameRender);
-        } catch (error) {
-          console.error(error);
+          // Update animations
+          const args = { time, deltaTime } as const;
+          this._animUpdate?.(args);
+
+          // Render
+          renderScene();
+          requestAnimationFrame(renderLoop);
+        } catch (e) {
+          console.error(String(e));
           console.warn(
-            `Error rendering Die3D, stop rendering to avoid further errors`
+            "Error rendering Die3D, stop rendering to avoid further errors"
           );
           // Cleanup
           this._dispose?.();
@@ -160,80 +256,174 @@ class SceneRenderer {
       }
     };
 
-    // Render
-    frameRender();
+    return renderLoop;
+  }
+
+  private _getDieSizeRatio() {
+    switch (this._die3d.dieType) {
+      case "d4":
+        return 2.7;
+      case "d6":
+      case "d6pipped":
+      case "d6fudge":
+        return 4.86;
+      case "d8":
+        return 2.38;
+      case "d10":
+      case "d00":
+        return 2.57;
+      case "d12":
+        return 2;
+      case "d20":
+        return 2.84;
+      default:
+        return 2.5;
+    }
   }
 }
 
-/**
- * Die animation data to be rendered with a {@link DieRenderer} component.
- */
-export interface DieRenderData {
-  animations: AnimationPreset | AnimationPreset[];
-  animationBits: AnimationBits;
-  dieType?: PixelDieType;
+function setRendererProps(
+  renderer: SceneRenderer,
+  speed: number | undefined,
+  hasPedestal: boolean,
+  animationInstances?: AnimationInstance[]
+): void {
+  renderer.speed = (speed ?? 1) * (hasPedestal ? 0.5 : 1);
+  renderer.rotateX = !hasPedestal;
+  renderer.setAnimations(animationInstances);
 }
 
-/**
- * Props for {@link DieRenderer}.
- */
+export interface PedestalStyle {
+  color?: string;
+}
+
 export interface DieRendererProps {
-  renderData?: DieRenderData; // The optional animation(s) to play on the die.
+  dieType: PixelDieType;
+  colorway: PixelColorway;
+  paused?: boolean;
+  speed?: number;
+  animationsData?: {
+    animations: AnimationPreset[];
+    bits: AnimationBits;
+  };
+  pedestal?: boolean;
+  pedestalStyle?: PedestalStyle;
 }
 
 /**
  * Component that renders a D20 in 3D.
  * See {@link DieRendererProps} for the supported props.
  */
-export function DieRenderer({ renderData }: DieRendererProps) {
-  const errorHandler = useErrorHandler();
+export function DieRenderer({
+  dieType,
+  colorway,
+  paused,
+  speed,
+  pedestal,
+  pedestalStyle,
+  animationsData,
+}: DieRendererProps) {
+  const { showBoundary } = useErrorBoundary();
 
   const [loaded, setLoaded] = React.useState(false);
   const rendererRef = React.useRef<SceneRenderer>();
-
   // Load die 3d object
   React.useEffect(() => {
-    createDie3DAsync(renderData?.dieType ?? "d20")
-      .then((die3d) => {
-        setLoaded(true);
-        rendererRef.current = new SceneRenderer(
-          die3d,
-          () => animInstanceRef.current
-        );
-      })
-      .catch(errorHandler);
-    return () => {
-      rendererRef.current?.shutdown();
-    };
-  }, [errorHandler, renderData?.dieType]);
-
-  // Create an instance to play the animation
-  const animInstanceRef = React.useRef<AnimationInstance[]>([]);
-  const animations = renderData?.animations;
-  const animationBits = renderData?.animationBits;
-  React.useEffect(() => {
-    if (animations && animationBits) {
-      const anims = Array.isArray(animations) ? animations : [animations];
-      animInstanceRef.current = anims.map((a) =>
-        a.createInstance(animationBits)
+    const task = async () => {
+      setLoaded(false);
+      const { die3d, envMap, lights } = await createDie3DAsync(
+        dieType,
+        colorway
       );
-    } else {
-      animInstanceRef.current = [];
-    }
-  }, [animations, animationBits]);
+      rendererRef.current = new SceneRenderer(die3d, lights, envMap);
+      setLoaded(true);
+    };
+    task().catch(showBoundary);
+    return () => {
+      rendererRef.current?.dispose();
+      rendererRef.current = undefined;
+    };
+  }, [colorway, dieType, showBoundary]);
 
-  const onContextCreate = React.useCallback(
-    (gl: ExpoWebGLRenderingContext) => rendererRef.current?.setup(gl),
-    []
+  // Animations
+  const animationInstances = React.useMemo(
+    () =>
+      animationsData
+        ? animationsData.animations.map((a) =>
+            a.createInstance(animationsData.bits, new VirtualDie(dieType))
+          )
+        : undefined,
+    [animationsData, dieType]
   );
+
+  // Setup renderer
+  const initArgsRef = React.useRef({
+    paused,
+    speed,
+    pedestalStyle,
+    animationInstances,
+  });
+  initArgsRef.current.paused = paused;
+  initArgsRef.current.speed = speed;
+  initArgsRef.current.pedestalStyle = !pedestal
+    ? undefined
+    : pedestalStyle ?? {};
+  initArgsRef.current.animationInstances = animationInstances;
+
+  const onContextCreate = React.useCallback((gl: ExpoWebGLRenderingContext) => {
+    const renderer = rendererRef.current;
+    if (renderer) {
+      const { paused, speed, pedestalStyle, animationInstances } =
+        initArgsRef.current;
+      renderer.setup(gl, pedestalStyle);
+      if (!paused) {
+        renderer.start();
+      }
+      // TODO props are set again on each render
+      setRendererProps(renderer, speed, !!pedestalStyle, animationInstances);
+    }
+  }, []);
+
+  // Pause/resume renderer
+  React.useEffect(() => {
+    if (!paused) {
+      rendererRef.current?.start();
+      return () => {
+        rendererRef.current?.stop();
+      };
+    }
+  }, [paused]);
+
+  // Update rendering parameters, it's just prop => no need to use an effect
+  if (rendererRef.current) {
+    setRendererProps(
+      rendererRef.current,
+      speed,
+      !!initArgsRef.current.pedestalStyle,
+      animationInstances
+    );
+  }
 
   return (
     <>
       {!loaded ? (
-        <Text style={AppStyles.selfCentered}>Loading...</Text>
+        <Text style={{ alignSelf: "center" }}>Loading...</Text>
       ) : (
-        <GLView onContextCreate={onContextCreate} style={AppStyles.flex} />
+        <GLView onContextCreate={onContextCreate} style={{ flex: 1 }} />
       )}
     </>
   );
+}
+
+export function DieRendererWithFocus({
+  ...props
+}: Omit<DieRendererProps, "paused">) {
+  const [paused, setPaused] = React.useState(false);
+  useFocusEffect(
+    React.useCallback(() => {
+      setPaused(false);
+      return () => setPaused(true);
+    }, [])
+  );
+  return <DieRenderer {...props} paused={paused} />;
 }

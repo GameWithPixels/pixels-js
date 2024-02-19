@@ -1,7 +1,6 @@
 import AnimationInstance from "./AnimationInstance";
 import AnimationSimple from "./AnimationSimple";
-import { Constants } from "./Constants";
-import * as Color32Utils from "../color/color32Utils";
+import { Color32Utils } from "../color";
 
 /**
  * @category Animation Instance
@@ -15,7 +14,7 @@ export default class AnimationInstanceSimple extends AnimationInstance {
 
   start(startTime: number): void {
     super.start(startTime);
-    this._rgb = this.animationBits.getColor32(this.preset.colorIndex);
+    this._rgb = this.bits.getColor32(this.preset.colorIndex, this.die);
   }
 
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
@@ -54,26 +53,10 @@ export default class AnimationInstanceSimple extends AnimationInstance {
     }
 
     // Fill the indices and colors for the anim controller to know how to update LEDs
-    let retCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
-      if ((preset.faceMask & (1 << i)) !== 0) {
-        retIndices[retCount] = i;
-        retColors32[retCount] = color;
-        retCount++;
-      }
-    }
-    return retCount;
+    return this.setColor(color, preset.faceMask, retIndices, retColors32);
   }
 
   stop(retIndices: number[]): number {
-    const preset = this.preset;
-    let retCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
-      if ((preset.faceMask & (1 << i)) !== 0) {
-        retIndices[retCount] = i;
-        retCount++;
-      }
-    }
-    return retCount;
+    return this.setIndices(this.preset.faceMask, retIndices);
   }
 }

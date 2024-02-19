@@ -8,21 +8,7 @@ module.exports = function (api) {
       },
     },
     plugins: [
-      [
-        "babel-plugin-root-import",
-        {
-          paths: [
-            {
-              rootPathSuffix: "./src",
-              rootPathPrefix: "~",
-            },
-            {
-              rootPathSuffix: "./assets",
-              rootPathPrefix: "!",
-            },
-          ],
-        },
-      ],
+      // react-native-reanimated/plugin has to be listed last.
       "react-native-reanimated/plugin",
     ],
   };

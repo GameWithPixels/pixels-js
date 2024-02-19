@@ -4,6 +4,7 @@ import AnimationBits from "./AnimationBits";
 import AnimationInstanceSimple from "./AnimationInstanceSimple";
 import AnimationPreset from "./AnimationPreset";
 import { AnimationTypeValues } from "./AnimationType";
+import VirtualDie from "../VirtualDie";
 
 /**
  * @category Animation
@@ -30,7 +31,10 @@ export default class AnimationSimple implements AnimationPreset {
   @serializable(1)
   fade = 0;
 
-  createInstance(bits: AnimationBits): AnimationInstanceSimple {
-    return new AnimationInstanceSimple(this, bits);
+  createInstance(
+    bits: AnimationBits,
+    die: VirtualDie
+  ): AnimationInstanceSimple {
+    return new AnimationInstanceSimple(this, bits, die);
   }
 }

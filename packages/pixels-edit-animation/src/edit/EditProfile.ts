@@ -1,7 +1,8 @@
 import {
+  ActionType,
   DataSet,
+  PixelDieType,
   Profile,
-  RemoteActionType,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -19,31 +20,43 @@ export default class EditProfile extends Editable {
   @observable
   rules: EditRule[];
 
-  get hasSound(): boolean {
-    return this._hasAnyRemoteActionOfType("playAudioClip");
-  }
+  @observable
+  dieType: PixelDieType;
 
-  get hasWebRequest(): boolean {
-    return this._hasAnyRemoteActionOfType("makeWebRequest");
-  }
+  // TODO The properties below should be moved to a separate class
+
+  @observable
+  creationDate: Date;
+
+  @observable
+  lastChanged: Date;
+
+  @observable
+  lastUsed?: Date;
 
   constructor(opt?: {
     uuid?: string;
     name?: string;
     description?: string;
     rules?: EditRule[];
+    dieType?: PixelDieType;
+    creationDate?: Date;
+    lastChanged?: Date;
+    lastUsed?: Date;
   }) {
     super(opt);
     this.description = opt?.description ?? "";
     this.rules = opt?.rules ?? [];
+    this.dieType = opt?.dieType ?? "d20";
+    this.creationDate = opt?.creationDate ?? new Date();
+    this.lastChanged = opt?.lastChanged ?? new Date();
+    this.lastUsed = opt?.lastUsed;
   }
 
   getRemoteAction(actionId: number): EditActionRunOnDevice | undefined {
     const ruleId = actionId >> 8;
     const action = this.rules[ruleId]?.actions[actionId & 0xff];
-    return action instanceof EditActionRunOnDevice
-      ? (action as EditActionRunOnDevice)
-      : undefined;
+    return action instanceof EditActionRunOnDevice ? action : undefined;
   }
 
   toProfile(editSet: EditDataSet, set: DataSet): Profile {
@@ -61,7 +74,15 @@ export default class EditProfile extends Editable {
   }
 
   duplicate(uuid?: string): EditProfile {
-    return new EditProfile({ ...this, uuid });
+    const now = new Date();
+    return new EditProfile({
+      ...this,
+      uuid,
+      rules: this.rules.map((r) => r.duplicate()),
+      creationDate: now,
+      lastChanged: now,
+      lastUsed: undefined,
+    });
   }
 
   collectAnimations(): EditAnimation[] {
@@ -78,13 +99,7 @@ export default class EditProfile extends Editable {
     return animations;
   }
 
-  private _hasAnyRemoteActionOfType(remoteType: RemoteActionType): boolean {
-    return !!this.rules.find(
-      (r) =>
-        !!r.actions.find(
-          (a) =>
-            a instanceof EditActionRunOnDevice && a.remoteType === remoteType
-        )
-    );
+  hasActionOfType(type: ActionType): boolean {
+    return this.rules.some((r) => r.actions.some((a) => a.type === type));
   }
 }

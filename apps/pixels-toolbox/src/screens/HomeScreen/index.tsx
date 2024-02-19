@@ -15,13 +15,13 @@ import { SwipeablePixelsList } from "./SwipeablePixelsList";
 import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
 import { PrintDieLabelModal } from "~/components/PrintDieLabelModal";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
   useAppDfuFilesBundles,
   NoDfuFileLoadedError,
-} from "~/features/hooks/useAppDfuFilesBundles";
-import { usePrintDieLabel } from "~/features/hooks/usePrintDieLabel";
-import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
+} from "~/hooks/useAppDfuFilesBundles";
+import { usePrintDieLabel } from "~/hooks/usePrintDieLabel";
 import { HomeScreenProps } from "~/navigation";
 
 function DfuBundleSelection({

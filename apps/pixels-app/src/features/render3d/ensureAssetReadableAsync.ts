@@ -26,15 +26,13 @@ export async function ensureAssetReadableAsync(
     throw new Error("ensureAssetReadable(): Empty asset filename");
   }
   const asset = Asset.fromModule(virtualAssetModule);
-  // Check if we are running on Android and if the asset has a scheme
+  // Check if we are running on Android and if the asset as a scheme
   if (
     Platform.OS !== "android" ||
     !asset.localUri ||
     asset.localUri.includes("://")
   ) {
-    if (!asset.localUri) {
-      await asset.downloadAsync();
-    }
+    // Nothing special to do
     return asset;
   } else {
     // Have issues with sub-directories in cache on device (it works on simulator)

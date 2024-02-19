@@ -1,7 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import { getValueKeyName, range } from "@systemic-games/pixels-core-utils";
-import { EditAnimationKeyframed } from "@systemic-games/pixels-edit-animation";
+import {
+  EditAnimationKeyframed,
+  PrebuildAnimations,
+  PrebuildAnimationsExt,
+  PrebuildProfilesNames,
+} from "@systemic-games/pixels-edit-animation";
 import {
   BaseHStack,
   BaseVStack,
@@ -18,6 +23,10 @@ import {
   usePixelStatus,
   usePixelValue,
   PixelDieTypeValues,
+  PixelColorwayValues,
+  PixelColorway,
+  PixelDieType,
+  DiceUtils,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
@@ -50,13 +59,10 @@ import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
-import { useAppBackgroundState } from "~/features/hooks/useAppBackgroundState";
-import PixelDispatcher, {
-  ProfileTypes,
-} from "~/features/pixels/PixelDispatcher";
-import { PrebuildAnimations } from "~/features/pixels/PrebuildAnimations";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
+import { useAppBackgroundState } from "~/hooks/useAppBackgroundState";
 import { capitalize } from "~/i18n";
 
 interface TextEntryBaseProps extends React.PropsWithChildren {
@@ -316,11 +322,15 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
           </TextEntry>
           <TextEntry title={t("rollState")}>
-            {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
-            {t(
-              getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
-                "unknown"
-            )}
+            {telemetry
+              ? `${t(
+                  getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
+                    "unknown"
+                )}, ${DiceUtils.faceFromIndex(
+                  telemetry.faceIndex,
+                  pixel.dieType
+                )} (index: ${telemetry.faceIndex})`
+              : "unknown"}
           </TextEntry>
           <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
         </>
@@ -400,6 +410,12 @@ function BottomButtons({
     hide: hideSetDieTypeMenu,
   } = useVisibility();
 
+  const {
+    visible: setDieColorwayMenuVisible,
+    show: showSetDieColorwayMenu,
+    hide: hideSetDieColorwayMenu,
+  } = useVisibility();
+
   const { t } = useTranslation();
   return (
     <>
@@ -424,7 +440,7 @@ function BottomButtons({
                   </Button>
                 }
               >
-                {ProfileTypes.map((profile) => (
+                {PrebuildProfilesNames.map((profile) => (
                   <Menu.Item
                     key={profile}
                     title={profile}
@@ -446,6 +462,17 @@ function BottomButtons({
                   </Button>
                 }
               >
+                {Object.entries(PrebuildAnimationsExt).map(
+                  ([animName, anim]) => (
+                    <Menu.Item
+                      key={animName}
+                      title={animName}
+                      onPress={() => {
+                        pd.dispatch("playAnimation", anim);
+                      }}
+                    />
+                  )
+                )}
                 {Object.entries(PrebuildAnimations).map(([animName, anim]) => (
                   <Menu.Item
                     key={animName}
@@ -466,18 +493,41 @@ function BottomButtons({
                   </Button>
                 }
               >
-                {Object.entries(PixelDieTypeValues).map(
-                  ([dieTypeName, dieType]) => (
+                {(Object.keys(PixelDieTypeValues) as PixelDieType[])
+                  .filter((dt) => dt !== "unknown")
+                  .map((dieType) => (
                     <Menu.Item
-                      key={dieTypeName}
-                      title={dieTypeName}
+                      key={dieType}
+                      title={dieType}
                       onPress={() => {
-                        pd.dispatch("setDieType", dieType as number);
+                        pd.dispatch("setDieType", dieType);
                         hideSetDieTypeMenu();
                       }}
                     />
-                  )
-                )}
+                  ))}
+              </Menu>
+              <Menu
+                visible={setDieColorwayMenuVisible}
+                onDismiss={hideSetDieColorwayMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showSetDieColorwayMenu}>
+                    {t("setDieColorway")}
+                  </Button>
+                }
+              >
+                {(Object.keys(PixelColorwayValues) as PixelColorway[])
+                  .filter((dt) => dt !== "unknown")
+                  .map((colorway) => (
+                    <Menu.Item
+                      key={colorway}
+                      title={colorway}
+                      onPress={() => {
+                        pd.dispatch("setColorway", colorway);
+                        hideSetDieColorwayMenu();
+                      }}
+                    />
+                  ))}
               </Menu>
               <Button
                 onPress={() =>

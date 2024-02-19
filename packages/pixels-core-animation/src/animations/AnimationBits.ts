@@ -1,33 +1,36 @@
 import { byteSizeOf, serialize } from "@systemic-games/pixels-core-utils";
 
+import AnimationPreset from "./AnimationPreset";
 import { Constants } from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 import RgbTrack from "./RgbTrack";
 import SimpleKeyframe from "./SimpleKeyframe";
 import Track from "./Track";
+import VirtualDie from "../VirtualDie";
 import { align32bits } from "../align32bits";
-import Color from "../color/Color";
-import * as Color32Utils from "../color/color32Utils";
+import { Color, Color32Utils } from "../color";
 
 /**
  * @category Animation
  */
 export default class AnimationBits {
-  readonly palette: Color[] = [];
-  readonly rgbKeyframes: RgbKeyframe[] = [];
-  readonly rgbTracks: RgbTrack[] = [];
-  readonly keyframes: SimpleKeyframe[] = [];
-  readonly tracks: Track[] = [];
+  // TODO should be private
+  readonly palette: Readonly<Color>[] = [];
+  readonly rgbKeyframes: Readonly<RgbKeyframe>[] = [];
+  readonly rgbTracks: Readonly<RgbTrack>[] = [];
+  readonly keyframes: Readonly<SimpleKeyframe>[] = [];
+  readonly tracks: Readonly<Track>[] = [];
+  readonly animations: Readonly<AnimationPreset>[] = [];
 
-  getColor32(colorIndex: number): number {
-    return Color32Utils.toColor32(this.getColor(colorIndex));
+  getColor32(colorIndex: number, die: Readonly<VirtualDie>): number {
+    return Color32Utils.toColor32(this.getColor(colorIndex, die));
   }
 
-  getColor(colorIndex: number): Color {
+  getColor(colorIndex: number, die: Readonly<VirtualDie>): Color {
     if (colorIndex === Constants.paletteColorFromFace) {
-      return Color.blue;
+      return new Color(Color32Utils.faceWheel(die.currentFace, die.ledCount));
     } else if (colorIndex === Constants.paletteColorFromRandom) {
-      return Color.black;
+      return Color.black; // Not implemented
     } else {
       return this.getArrayItem(this.palette, colorIndex, "color");
     }
@@ -37,7 +40,7 @@ export default class AnimationBits {
     return this.palette.length * 3;
   }
 
-  getRgbKeyframe(keyframeIndex: number): RgbKeyframe {
+  getRgbKeyframe(keyframeIndex: number): Readonly<RgbKeyframe> {
     return this.getArrayItem(this.rgbKeyframes, keyframeIndex, "rgb keyframe");
   }
 
@@ -45,7 +48,7 @@ export default class AnimationBits {
     return this.rgbKeyframes.length;
   }
 
-  getKeyframe(keyframeIndex: number): SimpleKeyframe {
+  getKeyframe(keyframeIndex: number): Readonly<SimpleKeyframe> {
     return this.getArrayItem(this.keyframes, keyframeIndex, "keyframe");
   }
 
@@ -53,7 +56,7 @@ export default class AnimationBits {
     return this.keyframes.length;
   }
 
-  getRgbTrack(trackIndex: number): RgbTrack {
+  getRgbTrack(trackIndex: number): Readonly<RgbTrack> {
     return this.getArrayItem(this.rgbTracks, trackIndex, "rgb track");
   }
 
@@ -61,12 +64,20 @@ export default class AnimationBits {
     return this.rgbTracks.length;
   }
 
-  getTrack(trackIndex: number): Track {
+  getTrack(trackIndex: number): Readonly<Track> {
     return this.getArrayItem(this.tracks, trackIndex, "track");
   }
 
   getTrackCount(): number {
     return this.tracks.length;
+  }
+
+  getAnimation(animIndex: number): Readonly<AnimationPreset> {
+    return this.getArrayItem(this.animations, animIndex, "animation");
+  }
+
+  getAnimationCount(): number {
+    return this.animations.length;
   }
 
   computeDataSize(): number {

@@ -5,5 +5,4 @@ export interface UniqueData {
 
 export interface UniqueNamedData extends UniqueData {
   name: string;
-  description?: string;
 }

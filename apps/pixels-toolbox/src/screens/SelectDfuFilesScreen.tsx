@@ -14,12 +14,12 @@ import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
 import { AppPage } from "~/components/AppPage";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
-import { useAppDfuFilesBundles } from "~/features/hooks/useAppDfuFilesBundles";
 import {
   addImportedDfuBundle,
   setSelectedDfuBundle,
 } from "~/features/store/dfuBundlesSlice";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
+import { useAppDfuFilesBundles } from "~/hooks/useAppDfuFilesBundles";
 import { SelectDfuFilesScreenProps } from "~/navigation";
 
 async function importDfuFile() {
@@ -27,11 +27,11 @@ async function importDfuFile() {
     type: "application/zip",
     copyToCacheDirectory: true,
   });
-  if (file.type === "success") {
-    const pathname = FileSystem.cacheDirectory + file.name;
+  if (file.assets?.length) {
+    const pathname = FileSystem.cacheDirectory + file.assets[0].name;
     await FileSystem.deleteAsync(pathname, { idempotent: true });
     await FileSystem.moveAsync({
-      from: file.uri,
+      from: file.assets[0].uri,
       to: pathname,
     });
     store.dispatch(addImportedDfuBundle([pathname]));

@@ -15,6 +15,11 @@
     return _peripheral;
 }
 
+- (bool)isReady
+{
+    return _isReady;
+}
+
 - (int)rssi
 {
     return _rssi;
@@ -53,7 +58,7 @@
         SGBleConnectionEventHandler handler =
         ^(CBPeripheral *peripheral, SGBleConnectionEvent connectionEvent, NSError *error)
         {
-            // Be sure to not use self directly (or implictly by referencing a property)
+            // Be sure to not use self directly (or implicitly by referencing a property)
             // otherwise it creates a strong reference to itself and prevents the instance's deallocation
             SGBlePeripheralQueue *strongSelf = weakSelf;
             if (strongSelf)
@@ -75,9 +80,8 @@
                         }
                         else
                         {
-                            // This shouldn't happen
-                            NSLog(@">> PeripheralConnectionEvent => connected, but not running a connection request => disconnecting");
-                            [strongSelf internalDisconnect:SGBleConnectionEventReasonUnknown];
+                            // Most likely another piece of code has connected to this peripheral
+                            NSLog(@">> PeripheralConnectionEvent => connected, but not running a connection request");
                         }
                         break;
                     }
@@ -103,7 +107,18 @@
                         else if (!disconnecting)
                         {
                             // We got disconnected but not because we asked for it
-                            reason = SGBleConnectionEventReasonLinkLoss;
+                            if (error.domain == CBErrorDomain && error.code == CBErrorConnectionTimeout)
+                            {
+                               reason = SGBleConnectionEventReasonLinkLoss;
+                            }
+                            else if (error.domain == SGBleErrorDomain && error.code == SGBleErrorBluetoothState)
+                            {
+                                reason = SGBleConnectionEventReasonAdapterOff;
+                            }
+                            else if (error)
+                            {
+                                reason = SGBleConnectionEventReasonUnknown;
+                            }
                         }
                         
                         // We were connecting, we need to have an error
@@ -207,7 +222,7 @@
     SGBleRequestExecuteHandler block = ^{
         if (!characteristic || !valueReadHandler)
         {
-            NSLog(@">> ReadValueForCharacteristic -> invalid parameters");
+            NSLog(@">> ReadValueForCharacteristic -> invalid parameter");
             return SGBleInvalidParameterError;
         }
         
@@ -378,13 +393,14 @@
         if (((request.type == SGBleRequestTypeConnect) && connectState)
             || ((request.type == SGBleRequestTypeDisconnect) && disconnectState))
         {
-            // Connect or disconnect return immediately a success if peripheral already
+            // Connect or disconnect requests return immediately a success if peripheral already
             // in desired state or transitionning to it
             [self qReportRequestResult:nil forRequestType:request.type];
         }
         else
         {
-            NSError *error = [request execute];
+            NSError *error = _centralDelegate.isBluetoothOn ?
+                [request execute] : SGBleBluetoothStateError;
             if (error)
             {
                 [self qReportRequestResult:error forRequestType:request.type];
@@ -437,7 +453,7 @@
                         reason:(SGBleConnectionEventReason)reason
 {
     NSLog(@">> Notifying connection event: %ld, reason: %ld", (long)connectionEvent, (long)reason);
-    self.isReady = connectionEvent == SGBleConnectionEventReady;
+    _isReady = connectionEvent == SGBleConnectionEventReady;
     if (_connectionEventHandler)
     {
         _connectionEventHandler(self, connectionEvent, reason);

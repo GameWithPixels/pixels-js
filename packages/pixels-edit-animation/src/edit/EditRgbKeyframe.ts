@@ -18,7 +18,7 @@ export default class EditRgbKeyframe {
 
   constructor(opt?: { time?: number; color?: Color }) {
     this.time = opt?.time ?? 0;
-    this.color = opt?.color ?? Color.black;
+    this.color = opt?.color ?? Color.black.duplicate();
   }
 
   toRgbKeyframe(_editSet: EditDataSet, bits: AnimationBits): RgbKeyframe {
@@ -38,7 +38,7 @@ export default class EditRgbKeyframe {
 
   duplicate(): EditRgbKeyframe {
     return new EditRgbKeyframe({
-      time: this.time,
+      ...this,
       color: this.color.duplicate(),
     });
   }

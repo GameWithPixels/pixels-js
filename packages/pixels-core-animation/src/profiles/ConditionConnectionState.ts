@@ -25,7 +25,7 @@ export type ConnectionStateFlags = keyof typeof ConnectionStateFlagsValues;
  */
 export default class ConditionConnectionState implements Condition {
   @serializable(1)
-  type: number = ConditionTypeValues.connectionState;
+  type: number = ConditionTypeValues.connection;
 
   @serializable(1, { padding: 2 })
   flags: number = 0;

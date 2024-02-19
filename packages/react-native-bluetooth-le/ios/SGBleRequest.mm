@@ -30,7 +30,10 @@
 
 - (void)notifyResult:(NSError *)error
 {
-    _completionHandler(error);
+    if (_completionHandler)
+    {
+        _completionHandler(error);
+    }
 }
 
 + (NSString *)requestTypeToString:(SGBleRequestType)type

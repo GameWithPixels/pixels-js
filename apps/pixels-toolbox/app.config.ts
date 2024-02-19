@@ -8,8 +8,8 @@ const config = {
     name: prod ? "Pixels Toolbox" : "Dev Toolbox",
     slug: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "48.9", // Major is Expo version, minor is native code revision
-    version: "5.16.0", // Version number must have 3 parts
+    runtimeVersion: "49.0", // Major is Expo version, minor is native code revision
+    version: "6.0.0", // Version number must have 3 parts
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
@@ -60,8 +60,7 @@ const config = {
         "expo-build-properties",
         {
           android: {
-            kotlinVersion: "1.7.0",
-            flipper: "0.182.0",
+            // flipper: "0.182.0",
           },
         },
       ],

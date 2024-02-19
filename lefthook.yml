@@ -4,8 +4,14 @@ pre-commit:
     lint:
       glob: "*.{js,ts,jsx,tsx}"
       run: yarn eslint --max-warnings 0 {staged_files}
+      skip:
+        - merge
+        - rebase
     types:
       run: yarn types
+      skip:
+        - merge
+        - rebase
 commit-msg:
   parallel: true
   commands:

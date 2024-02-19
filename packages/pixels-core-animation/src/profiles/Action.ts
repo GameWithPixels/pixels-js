@@ -6,5 +6,5 @@
  */
 export default interface Action {
   /** See {@link ActionTypeValues} for possible values. */
-  type: number;
+  readonly type: number;
 }

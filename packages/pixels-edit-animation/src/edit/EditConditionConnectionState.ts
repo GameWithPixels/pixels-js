@@ -11,13 +11,17 @@ import EditDataSet from "./EditDataSet";
 import { name, observable, values, widget } from "./decorators";
 
 export default class EditConditionConnectionState extends EditCondition {
-  readonly type = "connectionState";
+  readonly type = "connection";
 
   @widget("bitField")
   @name("Connection Event")
   @values(ConnectionStateFlagsValues)
   @observable
   flags: number;
+
+  get flagName(): string | undefined {
+    return this.getFlagName(this.flags, ConnectionStateFlagsValues);
+  }
 
   constructor(opt?: { flags?: number }) {
     super();

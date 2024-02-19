@@ -29,7 +29,7 @@ export type BatteryStateFlags = keyof typeof BatteryStateFlagsValues;
  */
 export default class ConditionBatteryState implements Condition {
   @serializable(1)
-  type: number = ConditionTypeValues.batteryState;
+  type: number = ConditionTypeValues.battery;
 
   @serializable(1)
   flags: number = 0;

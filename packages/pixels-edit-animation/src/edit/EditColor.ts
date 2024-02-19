@@ -13,22 +13,21 @@ export default class EditColor {
   mode: ColorMode;
 
   @observable
-  color: Color; // Used when type is "rgb"
+  color?: Color; // Used when type is "rgb"
 
-  constructor(colorOrMode: Color | Exclude<ColorMode, "rgb"> = Color.black) {
+  constructor(colorOrMode?: Color | Exclude<ColorMode, "rgb">) {
     if (typeof colorOrMode === "string") {
       this.mode = colorOrMode;
-      this.color = Color.black;
     } else {
       this.mode = "rgb";
-      this.color = colorOrMode;
+      this.color = colorOrMode ?? Color.black.duplicate();
     }
   }
 
-  toColorIndex(refPalette: Color[]): number {
+  toColorIndex(refPalette: Readonly<Color>[]): number {
     switch (this.mode) {
       case "rgb":
-        return EditColor.toColorIndex(refPalette, this.color);
+        return EditColor.toColorIndex(refPalette, this.color ?? Color.black);
       case "face":
         return Constants.paletteColorFromFace;
       case "random":
@@ -38,7 +37,10 @@ export default class EditColor {
     }
   }
 
-  static toColorIndex(refPalette: Color[], color: Color): number {
+  static toColorIndex(
+    refPalette: Readonly<Color>[],
+    color: Readonly<Color>
+  ): number {
     const colorGamma = GammaUtils.gamma(color);
     let colorIndex = refPalette.findIndex((c) => colorGamma.equals(c));
     if (colorIndex < 0) {
@@ -50,7 +52,7 @@ export default class EditColor {
 
   duplicate(): EditColor {
     return this.mode === "rgb"
-      ? new EditColor(this.color.duplicate())
+      ? new EditColor(this.color)
       : new EditColor(this.mode);
   }
 }

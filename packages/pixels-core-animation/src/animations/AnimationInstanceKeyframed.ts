@@ -1,6 +1,5 @@
 import AnimationInstance from "./AnimationInstance";
 import AnimationKeyframed from "./AnimationKeyframed";
-import { getFaceIndex } from "../faceUtils";
 
 /**
  * @category Animation Instance
@@ -15,9 +14,8 @@ export default class AnimationInstanceKeyframed extends AnimationInstance {
   /// based on the different tracks of this animation.
   /// </summary>
   updateLEDs(ms: number, retIndices: number[], retColors32: number[]): number {
-    const time = ms - this.startTime;
     const preset = this.preset;
-
+    const time = ms - this.startTime;
     const trackTime = (time * 1000) / preset.duration;
 
     // Each track will append its led indices and colors into the return array
@@ -27,20 +25,16 @@ export default class AnimationInstanceKeyframed extends AnimationInstance {
     const indices: number[] = [];
     const colors32: number[] = [];
     for (let i = 0; i < preset.trackCount; ++i) {
-      const track = this.animationBits.getRgbTrack(preset.tracksOffset + i);
+      const track = this.bits.getRgbTrack(preset.tracksOffset + i);
       const count = track.evaluate(
-        this.animationBits,
         trackTime,
+        this.bits,
+        this.die,
         indices,
         colors32
       );
       for (let j = 0; j < count; ++j) {
-        if (preset.animFlags !== 0) {
-          // Use reverse lookup so that the indices are actually led Indices, not face indices
-          retIndices[totalCount + j] = getFaceIndex(indices[j]);
-        } else {
-          retIndices[totalCount + j] = indices[j];
-        }
+        retIndices[totalCount + j] = indices[j];
         retColors32[totalCount + j] = colors32[j];
       }
       totalCount += count;
@@ -56,7 +50,7 @@ export default class AnimationInstanceKeyframed extends AnimationInstance {
     let totalCount = 0;
     const indices: number[] = [];
     for (let i = 0; i < preset.trackCount; ++i) {
-      const track = this.animationBits.getRgbTrack(preset.tracksOffset + i);
+      const track = this.bits.getRgbTrack(preset.tracksOffset + i);
       const count = track.extractLEDIndices(indices);
       for (let j = 0; j < count; ++j) {
         retIndices[totalCount + j] = indices[j];

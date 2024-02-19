@@ -7,7 +7,7 @@ import { observable } from "./decorators";
 
 export default class EditRgbTrack {
   @observable
-  ledIndices: number[] = [];
+  ledIndices: number[];
 
   @observable
   gradient: EditRgbGradient;
@@ -26,8 +26,9 @@ export default class EditRgbTrack {
     return this.gradient.lastTime;
   }
 
-  constructor(opt?: { gradient?: EditRgbGradient }) {
+  constructor(opt?: { gradient?: EditRgbGradient; ledIndices?: number[] }) {
     this.gradient = opt?.gradient ?? new EditRgbGradient();
+    this.ledIndices = opt?.ledIndices ?? [];
   }
 
   toTrack(editSet: EditDataSet, bits: AnimationBits): RgbTrack {

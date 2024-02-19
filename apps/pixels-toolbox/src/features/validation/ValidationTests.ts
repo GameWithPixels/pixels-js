@@ -14,6 +14,7 @@ import {
   RollEvent,
   PixelBatteryControllerStateValues,
   DiceUtils,
+  PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
 import {
@@ -144,6 +145,20 @@ function isBatteryCharging(state: number): "yes" | "no" | "unknown" {
   }
 }
 
+function mapFace(
+  face: number,
+  dieType: PixelDieType,
+  programmedDieType: PixelDieType
+): number {
+  if (programmedDieType === "d6" && dieType === "d4") {
+    const index = DiceUtils.indexFromFace(face, programmedDieType);
+    face = DiceUtils.faceFromIndex(index, dieType);
+  } else if (programmedDieType === "d10" && dieType === "d00") {
+    face *= 10;
+  }
+  return face;
+}
+
 export const testTimeout = 30000; // 30s;
 export const shortTimeout = 3000; // 3s;
 
@@ -215,6 +230,7 @@ export const ValidationTests = {
 
   waitCharging: async (
     pixel: Pixel,
+    dieType: PixelDieType,
     shouldBeCharging: boolean,
     blinkColor: Color,
     abortSignal: AbortSignal,
@@ -226,12 +242,7 @@ export const ValidationTests = {
       timeout,
       async (abortSignal) => {
         // Blink face
-        const options = {
-          faceMask: getFaceMask(
-            DiceUtils.getTopFace(pixel.dieType),
-            pixel.dieType
-          ),
-        };
+        const faceMask = getFaceMask(DiceUtils.getTopFace(dieType), dieType);
         await withBlink(
           abortSignal,
           pixel,
@@ -277,7 +288,7 @@ export const ValidationTests = {
               }
             }
           },
-          options
+          { faceMask }
         );
       }
     );
@@ -285,22 +296,28 @@ export const ValidationTests = {
 
   async waitFaceUp(
     pixel: Pixel,
+    dieType: PixelDieType,
     face: number,
     blinkColor: Color,
     abortSignal: AbortSignal,
     holdDelay = 1000, // Number of ms to wait before validating the face up
     timeout = testTimeout
   ): Promise<void> {
-    console.log(`Waiting on face up: ${face}`);
+    console.log(
+      `Waiting on face ${face} for ${dieType}${
+        dieType !== pixel.dieType ? ` (programmed as ${pixel.dieType})` : ""
+      }`
+    );
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,
       timeout,
       async (abortSignal) => {
         // Blink face
-        const options = {
-          faceMask: getFaceMask(face, pixel.dieType),
-        };
+        const faceMask = getFaceMask(face, dieType);
+        console.log(
+          `!!! Blinking face: ${face} mask: ${faceMask} dieType: ${dieType} pixel.dieType: ${pixel.dieType}`
+        );
         await withBlink(
           abortSignal,
           pixel,
@@ -319,12 +336,18 @@ export const ValidationTests = {
                   function setHoldTimeout() {
                     console.log(`Waiting ${holdDelay}ms before validating`);
                     holdTimeout = setTimeout(() => {
-                      console.log(`Validating face up: ${pixel.currentFace}`);
+                      const face = mapFace(
+                        pixel.currentFace,
+                        dieType,
+                        pixel.dieType
+                      );
+                      console.log(`Validating face up: ${face}`);
                       resolve();
                     }, holdDelay);
                   }
                   // Roll listener that checks if the required face is up
                   rollListener = ({ state, face: currentFace }: RollEvent) => {
+                    currentFace = mapFace(currentFace, dieType, pixel.dieType);
                     lastMsg = { state, face: currentFace };
                     if (state === "onFace" && currentFace === face) {
                       // Required face is up, start hold timer
@@ -345,7 +368,7 @@ export const ValidationTests = {
                   // Check current face
                   if (
                     pixel.rollState === "onFace" &&
-                    pixel.currentFace === face
+                    face === mapFace(pixel.currentFace, dieType, pixel.dieType)
                   ) {
                     // Required face is already up, start hold timer
                     console.log(`Die already on face ${face}`);
@@ -366,7 +389,7 @@ export const ValidationTests = {
               }
             }
           },
-          options
+          { faceMask }
         );
       }
     );
@@ -411,12 +434,14 @@ export const ValidationTests = {
     }
   },
 
-  async renameDie(_pixel: Pixel, _name?: string): Promise<void> {
+  async renameDie(pixel: Pixel, name?: string): Promise<void> {
     const _unused = getRandomDieNameAsync;
     // Disabled until we have a good list of names
-    // const newName = name ?? (await getRandomDieNameAsync());
-    // console.log("Setting die name to " + newName);
-    // await pixel.rename(newName);
+    // name ??= await getRandomDieNameAsync();
+    if (name) {
+      console.log("Setting die name to " + name);
+      await pixel.rename(name);
+    }
   },
 
   async exitValidationMode(pixel: Pixel): Promise<void> {

@@ -1,6 +1,5 @@
 import { assertNever, bitsToFlags } from "@systemic-games/pixels-core-utils";
 import {
-  RemoteActionType,
   ActionType,
   AnimationType,
   BatteryStateFlagsValues,
@@ -20,13 +19,11 @@ import {
   getActionTypeDisplayName,
   getAnimationTypeDisplayName,
   getConditionTypeDisplayName,
+  EditConditionRolled,
 } from "@systemic-games/pixels-edit-animation";
 
-export function getActionTitle(
-  actionType: ActionType,
-  actionRemoteType: RemoteActionType = "none"
-): string {
-  const title = getActionTypeDisplayName(actionType, actionRemoteType)?.name;
+export function getActionTitle(actionType: ActionType): string {
+  const title = getActionTypeDisplayName(actionType)?.name;
   if (!title) {
     throw new Error(`getActionTitle(): unsupported action type: ${actionType}`);
   }
@@ -86,7 +83,7 @@ export function getConditionDescription(condition: EditCondition): string {
       case "handling":
         return "die is picked up";
 
-      case "batteryState":
+      case "battery":
         return (
           "Battery is " +
           bitsToFlags((condition as EditConditionBatteryState).flags)
@@ -107,7 +104,7 @@ export function getConditionDescription(condition: EditCondition): string {
             .join(" or ")
         );
 
-      case "connectionState":
+      case "connection":
         return (
           " Die is " +
           bitsToFlags((condition as EditConditionConnectionState).flags).map(
@@ -170,6 +167,18 @@ export function getConditionDescription(condition: EditCondition): string {
 
       case "rolling":
         return "Die is rolling";
+
+      case "rolled": {
+        const faces = (condition as EditConditionRolled).faces;
+        return (
+          "Die roll is " +
+          (faces.length === 0
+            ? "?"
+            : faces.length === 1
+              ? faces[0].toString()
+              : "one of " + faces.join(", "))
+        );
+      }
 
       default:
         assertNever(type, `Unknown type: ${type}`);

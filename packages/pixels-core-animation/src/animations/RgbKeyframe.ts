@@ -1,6 +1,7 @@
 import { serializable } from "@systemic-games/pixels-core-utils";
 
 import AnimationBits from "./AnimationBits";
+import VirtualDie from "../VirtualDie";
 
 /**
  * Stores a single keyframe of an LED animation.
@@ -32,8 +33,8 @@ export default class RgbKeyframe {
    * @param bits The animation bits with the color palette.
    * @returns The 32 bits color for the instance color index.
    */
-  getColor(bits: AnimationBits): number {
-    return bits.getColor32(this.colorIndex);
+  getColor(bits: AnimationBits, die: VirtualDie): number {
+    return bits.getColor32(this.colorIndex, die);
   }
 
   /**

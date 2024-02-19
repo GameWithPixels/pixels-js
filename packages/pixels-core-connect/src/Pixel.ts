@@ -3,6 +3,9 @@ import {
   Color32Utils,
   DataSet,
   Constants as AnimConstants,
+  PixelDieType,
+  PixelDieTypeValues,
+  DiceUtils,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
@@ -17,7 +20,6 @@ import {
 import { EventEmitter } from "events";
 
 import { Constants } from "./Constants";
-import { DiceUtils } from "./DiceUtils";
 import {
   MessageType,
   MessageOrType,
@@ -53,8 +55,6 @@ import {
   MessageTypeValues,
   PowerOperation,
   PixelPowerOperationValues,
-  PixelDieType,
-  PixelDieTypeValues,
   LegacyIAmADie,
   VersionInfoChunk,
 } from "./Messages";
@@ -106,8 +106,8 @@ export type PixelStatus =
  * @category Pixels
  */
 export interface RollEvent {
-  state: PixelRollState;
-  face: number;
+  readonly state: PixelRollState;
+  readonly face: number;
 }
 
 /**
@@ -116,8 +116,8 @@ export interface RollEvent {
  * @category Pixels
  */
 export interface BatteryEvent {
-  level: number; // Percentage
-  isCharging: boolean;
+  readonly level: number; // Percentage
+  readonly isCharging: boolean;
 }
 
 /**
@@ -126,9 +126,9 @@ export interface BatteryEvent {
  * @category Pixels
  */
 export interface UserMessageEvent {
-  message: string;
-  withCancel: boolean;
-  response: (okCancel: boolean) => Promise<void>;
+  readonly message: string;
+  readonly withCancel: boolean;
+  readonly response: (okCancel: boolean) => Promise<void>;
 }
 
 /**
@@ -157,6 +157,14 @@ export interface PixelEventMap {
   userMessage: UserMessageEvent;
   /** Remote action request. */
   remoteAction: number; // Remote action id
+  /** Data transfer. */
+  dataTransfer: {
+    readonly progress: number;
+    // readonly bytesSend: number;
+    // readonly totalBytes: number;
+  };
+  /** Profile data hash */
+  profileHash: number;
 }
 
 /**
@@ -317,24 +325,37 @@ export class Pixel extends PixelInfoNotifier {
    * Instantiates a Pixel.
    * @param session The session used to communicate with the Pixel.
    */
-  constructor(session: PixelSession) {
+  constructor(
+    session: PixelSession,
+    // Static values
+    info?: Partial<
+      Pick<
+        PixelInfo,
+        "pixelId" | "ledCount" | "dieType" | "colorway" | "firmwareDate"
+      >
+    >
+  ) {
     super();
     this._session = session;
     this._status = "disconnected"; // TODO use the getLastConnectionStatus()
     this._info = {
-      systemId: session.pixelSystemId,
-      pixelId: 0,
+      systemId: session.systemId,
+      pixelId: info?.pixelId ?? 0,
       name: "",
-      ledCount: 0,
-      colorway: "unknown",
-      dieType: "unknown",
-      firmwareDate: new Date(),
+      ledCount: info?.ledCount ?? 0,
+      colorway: info?.colorway ?? "unknown",
+      dieType: info?.dieType ?? "unknown",
+      firmwareDate: info?.firmwareDate ?? new Date(0),
       rssi: 0,
       batteryLevel: 0,
       isCharging: false,
       rollState: "unknown",
       currentFace: 0,
     };
+    if (this._info.ledCount && this._info.dieType === "unknown") {
+      // Try to guess the die type if we got "unknown" from the info
+      this._info.dieType = DiceUtils.estimateDieType(this._info.ledCount);
+    }
     this._versions = {
       firmwareVersion: 0,
       settingsVersion: 0,
@@ -379,7 +400,7 @@ export class Pixel extends PixelInfoNotifier {
       const msg = msgOrType as RollState;
       this._updateRollInfo({
         state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
-        face: msg.faceIndex + (this.ledCount === 10 ? 0 : 1),
+        faceIndex: msg.faceIndex,
       });
     };
     this.addMessageListener("rollState", rollStateListener);
@@ -439,28 +460,51 @@ export class Pixel extends PixelInfoNotifier {
       if (info.name) {
         this._updateName(info.name);
       }
+      // LED count
+      if (info.ledCount && info.ledCount > 0 && !this.ledCount) {
+        this._updateLedCount(info.ledCount);
+      }
       // Colorway
-      if (info.colorway) {
+      if (
+        info.colorway &&
+        info.colorway !== "unknown" &&
+        this.colorway === "unknown"
+      ) {
         this._updateColorway(info.colorway);
       }
+      // Die type
+      if (
+        info.dieType &&
+        info.dieType !== "unknown" &&
+        this.dieType === "unknown"
+      ) {
+        this._updateDieType(info.dieType);
+      }
       // Firmware data
-      if (info.firmwareDate) {
+      if (info.firmwareDate && info.firmwareDate.getTime() > 0) {
         this._updateFirmwareDate(info.firmwareDate.getTime());
       }
       // RSSI
-      if (info.rssi !== undefined) {
+      if (info.rssi !== undefined && info.rssi < 0) {
         this._updateRssi(info.rssi);
       }
       // Battery
-      this._updateBatteryInfo({
-        level: info.batteryLevel,
-        isCharging: info.isCharging,
-      });
+      if ((info.batteryLevel ?? 0) >= 0 && (info.batteryLevel ?? 0) <= 100) {
+        this._updateBatteryInfo({
+          level: info.batteryLevel,
+          isCharging: info.isCharging,
+        });
+      }
       // Roll
-      this._updateRollInfo({
-        state: info.rollState,
-        face: info.currentFace,
-      });
+      if (
+        info.currentFace === undefined ||
+        DiceUtils.getDieFaces(this.dieType).includes(info.currentFace)
+      ) {
+        this._updateRollInfo({
+          state: info.rollState,
+          face: info.currentFace,
+        });
+      }
     }
   }
 
@@ -572,8 +616,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Adds the given listener function to the end of the listeners array
-   * for the event with the given name.
+   * Register a listener function to be invoked on raising the event
+   * identified by the given event name.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
    * @param eventName The name of the event.
@@ -587,8 +631,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Removes the specified listener function from the listener array
-   * for the event with the given name.
+   * Unregister a listener from receiving events identified by
+   * the given event name.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
    * @param eventName The name of the event.
@@ -602,7 +646,8 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Register a listener to be invoked on receiving raw messages of a given type.
+   * Register a listener function to be invoked on receiving raw messages
+   * of a given type from the Pixel.
    * @param msgType The type of message to watch for.
    * @param listener The callback function.
    */
@@ -614,7 +659,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Unregister a listener invoked on receiving raw messages of a given type.
+   * Unregister a listener from receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
    * @param listener The callback function to unregister.
    */
@@ -764,6 +809,9 @@ export class Pixel extends PixelInfoNotifier {
    * @returns A promise that resolves once the die has confirmed being renamed.
    */
   async rename(name: string): Promise<void> {
+    // Remove leading and trailing spaces
+    name = name?.trim() ?? "";
+    // Skip sending message if name is empty or unchanged
     if (name.length && name !== this.name) {
       await this.sendAndWaitForResponse(
         safeAssign(new SetName(), { name }),
@@ -834,7 +882,7 @@ export class Pixel extends PixelInfoNotifier {
    * @param opt.duration Total duration of the animation in milliseconds.
    * @param opt.fade Amount of in and out fading, 0: sharp transition, 1: maximum fading.
    * @param opt.faceMask Select which faces to light up.
-   * @param opt.loop Whether to indefinitely loop the animation.
+   * @param opt.loop How many times to loop the animation.
    * @returns A promise that resolves once the die has confirmed receiving the message.
    */
   async blink(
@@ -844,7 +892,7 @@ export class Pixel extends PixelInfoNotifier {
       duration?: number;
       fade?: number;
       faceMask?: number;
-      loop?: boolean;
+      loopCount?: number;
     }
   ): Promise<void> {
     const blinkMsg = safeAssign(new Blink(), {
@@ -853,7 +901,7 @@ export class Pixel extends PixelInfoNotifier {
       duration: opt?.duration ?? 1000,
       fade: 255 * (opt?.fade ?? 0),
       faceMask: opt?.faceMask ?? AnimConstants.faceMaskAll,
-      loop: opt?.loop ?? false,
+      loopCount: opt?.loopCount ?? 1,
     });
     await this.sendAndWaitForResponse(blinkMsg, "blinkAck");
   }
@@ -869,63 +917,84 @@ export class Pixel extends PixelInfoNotifier {
     dataSet: DataSet,
     progressCallback?: (progress: number) => void
   ): Promise<void> {
-    // Notify that we're starting
-    progressCallback?.(0);
+    const notifyProgress = (progress: number) => {
+      try {
+        this._evEmitter.emit("dataTransfer", { progress });
+        progressCallback?.(progress);
+      } catch (error) {
+        console.log(
+          this._tagLogString(`Error in transfer progress callback: ${error}`)
+        );
+      }
+    };
+    try {
+      // Notify that we're starting
+      notifyProgress(0);
 
-    const transferMsg = safeAssign(new TransferAnimationSet(), {
-      paletteSize: dataSet.animationBits.getPaletteSize(),
-      rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-      rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-      keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-      trackCount: dataSet.animationBits.getTrackCount(),
-      animationCount: dataSet.animations.length,
-      animationSize: dataSet.animations.reduce(
-        (acc, anim) => acc + byteSizeOf(anim),
-        0
-      ),
-      conditionCount: dataSet.conditions.length,
-      conditionSize: dataSet.conditions.reduce(
-        (acc, cond) => acc + byteSizeOf(cond),
-        0
-      ),
-      actionCount: dataSet.actions.length,
-      actionSize: dataSet.actions.reduce(
-        (acc, action) => acc + byteSizeOf(action),
-        0
-      ),
-      ruleCount: dataSet.rules.length,
-    });
+      const transferMsg = safeAssign(new TransferAnimationSet(), {
+        paletteSize: dataSet.animationBits.getPaletteSize(),
+        rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
+        rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
+        keyFrameCount: dataSet.animationBits.getKeyframeCount(),
+        trackCount: dataSet.animationBits.getTrackCount(),
+        animationCount: dataSet.animations.length,
+        animationSize: dataSet.animations.reduce(
+          (acc, anim) => acc + byteSizeOf(anim),
+          0
+        ),
+        conditionCount: dataSet.conditions.length,
+        conditionSize: dataSet.conditions.reduce(
+          (acc, cond) => acc + byteSizeOf(cond),
+          0
+        ),
+        actionCount: dataSet.actions.length,
+        actionSize: dataSet.actions.reduce(
+          (acc, action) => acc + byteSizeOf(action),
+          0
+        ),
+        ruleCount: dataSet.rules.length,
+      });
 
-    const transferAck = await this.sendAndWaitForTypedResponse(
-      transferMsg,
-      TransferAnimationSetAck
-    );
-    if (transferAck.result) {
-      // Upload data
-      const data = dataSet.toByteArray();
-      assert(
-        data.length === dataSet.computeDataSetByteSize(),
-        "Incorrect computation of computeDataSetByteSize()"
+      const transferAck = await this.sendAndWaitForTypedResponse(
+        transferMsg,
+        TransferAnimationSetAck
       );
-      const hash = DataSet.computeHash(data);
-      const hashStr = (hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
-      this._log(
-        "Ready to receive dataset, " +
-          `byte array should be ${data.length} bytes ` +
-          `and hash 0x${hashStr}`
-      );
+      if (transferAck.result) {
+        // Upload data
+        const data = dataSet.toByteArray();
+        assert(
+          data.length === dataSet.computeDataSetByteSize(),
+          "Incorrect computation of computeDataSetByteSize()"
+        );
+        const hash = DataSet.computeHash(data);
+        const hashStr = (hash >>> 0)
+          .toString(16)
+          .toUpperCase()
+          .padStart(8, "0");
+        this._log(
+          "Ready to receive dataset, " +
+            `byte array should be ${data.length} bytes ` +
+            `and hash 0x${hashStr}`
+        );
 
-      await this.uploadBulkDataWithAck(
-        "transferAnimationSetFinished",
-        data,
-        progressCallback
-      );
-    } else {
-      const dataSize = dataSet.computeDataSetByteSize();
-      throw new PixelError(
-        this,
-        `Not enough memory to transfer ${dataSize} bytes`
-      );
+        await this.uploadBulkDataWithAck(
+          "transferAnimationSetFinished",
+          data,
+          notifyProgress
+        );
+
+        // Notify profile hash
+        this._evEmitter.emit("profileHash", hash);
+      } else {
+        const dataSize = dataSet.computeDataSetByteSize();
+        throw new PixelError(
+          this,
+          `Not enough memory to transfer ${dataSize} bytes`
+        );
+      }
+    } catch (error) {
+      notifyProgress(-1);
+      throw error;
     }
   }
 
@@ -946,15 +1015,20 @@ export class Pixel extends PixelInfoNotifier {
     progressCallback?.(0);
 
     // Prepare the Pixel
-    const data = dataSet.toSingleAnimationByteArray();
+    const data = dataSet.toAnimationsByteArray();
     const hash = DataSet.computeHash(data);
+
     const prepareDie = safeAssign(new TransferTestAnimationSet(), {
       paletteSize: dataSet.animationBits.getPaletteSize(),
       rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
       rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
       keyFrameCount: dataSet.animationBits.getKeyframeCount(),
       trackCount: dataSet.animationBits.getTrackCount(),
-      animationSize: byteSizeOf(dataSet.animations[0]),
+      animationCount: dataSet.animations.length,
+      animationSize: dataSet.animations.reduce(
+        (acc, anim) => acc + byteSizeOf(anim),
+        0
+      ),
       hash,
     });
 
@@ -1096,7 +1170,7 @@ export class Pixel extends PixelInfoNotifier {
       this._logFunc(
         this._tagLogString(
           `${[...new Uint8Array(arr)]
-            .map((b) => b.toString(16).padStart(2, "0"))
+            .map((b) => (b >>> 0).toString(16).padStart(2, "0"))
             .join(":")}`
         )
       );
@@ -1128,19 +1202,28 @@ export class Pixel extends PixelInfoNotifier {
       // This should never happen
       throw new PixelConnectError(this, "Got an empty Pixel id");
     }
-    if (this._info.pixelId && this._info.pixelId !== pixelId) {
+    if (!this._info.pixelId) {
+      this._info.pixelId = pixelId;
+      this.emitPropertyEvent("pixelId");
+    } else if (this._info.pixelId !== pixelId) {
       throw new PixelConnectIdMismatchError(this, pixelId);
     }
 
     const setProperties = (
       info: Omit<LegacyIAmADie, "type" | "dataSetHash" | "availableFlashSize">
     ): void => {
-      this._info.ledCount = info.ledCount;
-      this._info.colorway =
-        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown";
-      this._info.dieType =
+      this._updateLedCount(info.ledCount);
+      this._updateColorway(
+        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown"
+      );
+      const dieType =
         getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown";
-      this._info.pixelId = info.pixelId;
+      this._updateDieType(
+        dieType !== "unknown"
+          ? dieType
+          : // Try to guess the die type if we got "unknown" from the message
+            DiceUtils.estimateDieType(this.ledCount)
+      );
       this._updateFirmwareDate(1000 * info.buildTimestamp);
       this._updateBatteryInfo({
         level: info.batteryLevelPercent,
@@ -1149,7 +1232,7 @@ export class Pixel extends PixelInfoNotifier {
       this._updateRollInfo({
         state:
           getValueKeyName(info.rollState, PixelRollStateValues) ?? "unknown",
-        face: info.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
+        faceIndex: info.currentFaceIndex,
       });
     };
 
@@ -1180,6 +1263,12 @@ export class Pixel extends PixelInfoNotifier {
       // Update name
       this._updateName(iAmADie.dieName.name);
     }
+
+    // Notify profile hash
+    const profileDataHash =
+      (iAmADie as LegacyIAmADie).dataSetHash ??
+      (iAmADie as IAmADie).settingsInfo.profileDataHash;
+    this._evEmitter.emit("profileHash", profileDataHash);
   }
 
   private _updateStatus(status: PixelStatus): void {
@@ -1197,11 +1286,24 @@ export class Pixel extends PixelInfoNotifier {
     }
   }
 
-  // TODO private
-  _updateColorway(colorway: PixelColorway) {
+  private _updateLedCount(ledCount: number) {
+    if (this._info.ledCount !== ledCount) {
+      this._info.ledCount = ledCount;
+      this.emitPropertyEvent("ledCount");
+    }
+  }
+
+  private _updateColorway(colorway: PixelColorway) {
     if (this._info.colorway !== colorway) {
       this._info.colorway = colorway;
       this.emitPropertyEvent("colorway");
+    }
+  }
+
+  private _updateDieType(dieType: PixelDieType) {
+    if (this._info.dieType !== dieType) {
+      this._info.dieType = dieType;
+      this.emitPropertyEvent("dieType");
     }
   }
 
@@ -1245,18 +1347,24 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   private _updateRollInfo(
-    info: Partial<{ state: PixelRollState; face: number }>
+    info: Partial<{ state: PixelRollState; faceIndex: number; face: number }>
   ) {
-    if (info.face !== undefined) {
-      info.face = this._fixDieFace(info.face);
-      if (info.face === undefined) {
-        console.log(
-          this._tagLogString(
-            `/!\\ Dropping ${this.dieType} roll event for face ${info.face}`
-          )
+    // TODO fix for D4 rolling as D6
+    if (this.dieType === "d4" && info.state && info.faceIndex) {
+      if (info.faceIndex === 1 || info.faceIndex === 4) {
+        info.faceIndex = DiceUtils.indexFromFace(
+          this.currentFace > 0 ? this.currentFace : 1,
+          "d4"
         );
-        return;
+        if (info.state === "crooked" || info.state === "onFace") {
+          info.state = "crooked";
+        }
       }
+    }
+
+    // Convert face index to face value
+    if (info.faceIndex !== undefined) {
+      info.face = DiceUtils.faceFromIndex(info.faceIndex, this.dieType);
     }
     const stateChanged =
       info.state !== undefined && this._info.rollState !== info.state;
@@ -1277,20 +1385,6 @@ export class Pixel extends PixelInfoNotifier {
         this._evEmitter.emit("roll", info.face);
       }
     }
-  }
-
-  // TODO Temporary - Fix face value for d4 and d00
-  private _fixDieFace(face: number): number | undefined {
-    switch (this.dieType) {
-      case "d4":
-        if (face === 1) return 1;
-        if (face === 3 || face === 4) return face - 1;
-        if (face === 6) return 4;
-        return undefined;
-      case "d00":
-        return face * 10;
-    }
-    return face;
   }
 
   // Callback on notify characteristic value change

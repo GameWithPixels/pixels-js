@@ -1,4 +1,7 @@
-import { Constants as AnimConstants } from "@systemic-games/pixels-core-animation";
+import {
+  Constants as AnimConstants,
+  PixelDieTypeValues,
+} from "@systemic-games/pixels-core-animation";
 import {
   assert,
   enumValue,
@@ -190,8 +193,8 @@ export function getMessageTypeValue(
   return typeof msgOrTypeOrClass === "function"
     ? _getMessageTypeValue(msgOrTypeOrClass)
     : typeof msgOrTypeOrClass === "string"
-    ? _checkGetMessageTypeValue(msgOrTypeOrClass)
-    : msgOrTypeOrClass.type;
+      ? _checkGetMessageTypeValue(msgOrTypeOrClass)
+      : msgOrTypeOrClass.type;
 }
 
 /**
@@ -327,7 +330,7 @@ export const PixelChipModelValues = {
 export type PixelChipModel = keyof typeof PixelChipModelValues;
 
 /**
- * Available combinations of Pixel designs and colors.
+ * Available Pixels dice colorways.
  * @enum
  * @category Message
  */
@@ -346,30 +349,6 @@ export const PixelColorwayValues = {
  * @category Message
  */
 export type PixelColorway = keyof typeof PixelColorwayValues;
-
-/**
- * The different types of dice.
- * @enum
- * @category Message
- */
-export const PixelDieTypeValues = {
-  unknown: enumValue(0),
-  d4: enumValue(),
-  d6: enumValue(),
-  d8: enumValue(),
-  d10: enumValue(),
-  d00: enumValue(),
-  d12: enumValue(),
-  d20: enumValue(),
-  d6pipped: enumValue(),
-  d6fudge: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelDieTypeValues}.
- * @category Message
- */
-export type PixelDieType = keyof typeof PixelDieTypeValues;
 
 export interface MessageChunk {
   // On initialization: size of serializable object
@@ -840,6 +819,8 @@ export class TransferTestAnimationSet implements PixelMessage {
   @serializable(2)
   trackCount = 0;
   @serializable(2)
+  animationCount = 0;
+  @serializable(2)
   animationSize = 0;
   @serializable(4)
   hash = 0;
@@ -979,9 +960,9 @@ export class Blink implements PixelMessage {
   @serializable(1)
   fade = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 /**
@@ -1333,9 +1314,9 @@ export class PlayInstantAnimation implements PixelMessage {
   @serializable(1)
   faceIndex = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 /**
@@ -1408,9 +1389,9 @@ export class BlinkId implements PixelMessage {
   @serializable(1)
   brightness = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 /**
@@ -1446,9 +1427,9 @@ export class PlayProfileAnimation implements PixelMessage {
   @serializable(1)
   remapToFace = 0;
 
-  /** Whether to indefinitely loop the animation. */
+  /** How many time to loop the animation. */
   @serializable(1)
-  loop = false;
+  loopCount = 1;
 }
 
 // Returns the list of message classes defined in this file.

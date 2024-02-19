@@ -1,5 +1,7 @@
 package com.systemic.reactnativebluetoothle;
 
+import androidx.annotation.NonNull;
+
 public enum BleConnectionEvent {
     /**
      * Raised at the beginning of the connect sequence and is followed either by Connected or FailedToConnect.
@@ -33,10 +35,11 @@ public enum BleConnectionEvent {
 
     private String _name;
 
-    BleConnectionEvent(String name) {
+    BleConnectionEvent(@NonNull String name) {
         _name = name;
     }
 
+    @NonNull
     public String getName() {
         return _name;
     }

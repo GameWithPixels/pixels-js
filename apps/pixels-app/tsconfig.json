@@ -3,28 +3,32 @@
   "compilerOptions": {
     "outDir": "./dist",
     "experimentalDecorators": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
       "@systemic-games/*": [
-        "./../../../packages/*/src"
+        "./../../packages/*/src"
       ],
       "~/*": [
-        "*"
+        "src/*"
       ],
-      "!/*": [
-        "../assets/*"
-      ]
+      "#/*": [
+        "assets/*"
+      ],
     }
   },
   "files": [
     "assets/profiles/standard-profiles.json",
   ],
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "assets/icons/**/*",
   ],
   "references": [
     {
       "path": "./../../packages/react-native-pixels-components"
+    },
+    {
+      "path": "./../../packages/react-native-nordic-nrf5-dfu"
     },
     {
       "path": "./../../packages/react-native-pixels-connect"

@@ -1,8 +1,5 @@
 import { BaseVStack } from "@systemic-games/react-native-base-components";
-import {
-  PixelColorway,
-  PixelColorwayValues,
-} from "@systemic-games/react-native-pixels-connect";
+import { PixelColorway } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 import {
@@ -16,6 +13,7 @@ import {
 import { ColorwayImage } from "./ColorwayImage";
 
 import { useModalStyle, AppStyles } from "~/AppStyles";
+import { Colorways } from "~/features/pixels/colorways";
 
 export function SelectColorwayModal({
   visible,
@@ -28,9 +26,6 @@ export function SelectColorwayModal({
   // Values for UI
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
-  const colors = (Object.keys(PixelColorwayValues) as [PixelColorway]).filter(
-    (c) => c !== "unknown" && c !== "custom"
-  );
   return (
     <Portal>
       <Modal visible={visible} contentContainerStyle={modalStyle} {...props}>
@@ -48,7 +43,7 @@ export function SelectColorwayModal({
               justifyContent: "space-around",
             }}
             numColumns={2}
-            data={colors}
+            data={Colorways}
             renderItem={({ item: c }) => (
               <TouchableRipple onPress={() => onSelect?.(c)}>
                 <ColorwayImage colorway={c} />

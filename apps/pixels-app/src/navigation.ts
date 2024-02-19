@@ -1,78 +1,241 @@
-import { StackScreenProps } from "@react-navigation/stack";
-import { EditRule } from "@systemic-games/pixels-edit-animation";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import {
+  CompositeScreenProps,
+  NavigatorScreenParams,
+} from "@react-navigation/native";
+import {
+  NativeStackNavigationOptions,
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack";
+import { assertNever } from "@systemic-games/pixels-core-utils";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
-//
-// Main screens stack
-//
-export type RootStackParamList = {
-  HomeNav: undefined;
-  ProfilesNav: undefined;
-  AnimationsNav: undefined;
-  Settings: undefined;
+import { RuleIndex } from "./screens/profiles/components/RuleCard";
+
+// Root screens
+export type BottomTabParamList = {
+  onboarding: undefined;
+  home: undefined;
+  profiles: undefined;
+  animations: undefined;
+  settings: undefined;
 };
 
-//
-// Home screen stack
-//
-export type HomeScreenStackParamList = {
-  Home: undefined;
-  PixelDetails: { pixelId: number };
-  PixelAdvancedSettings: { pixelId: number };
+export type RootScreenName = keyof BottomTabParamList;
+
+export type OnboardingScreenProps = NativeStackScreenProps<
+  BottomTabParamList,
+  "onboarding"
+>;
+
+export type HomeStackProps = NativeStackScreenProps<BottomTabParamList, "home">;
+
+export type ProfilesStackProps = NativeStackScreenProps<
+  BottomTabParamList,
+  "profiles"
+>;
+
+export type AnimationsStackProps = NativeStackScreenProps<
+  BottomTabParamList,
+  "animations"
+>;
+
+export type SettingsStackProps = NativeStackScreenProps<
+  BottomTabParamList,
+  "settings"
+>;
+
+// Edit profile sub screens
+export type EditProfileSubStackParamList = {
+  editAdvancedSettings: { profileUuid: string };
+  editRule: RuleIndex;
+  editRollRules: { profileUuid: string };
 };
 
-export type HomeScreenProps = StackScreenProps<
-  HomeScreenStackParamList,
-  "Home"
+export type EditRuleScreenProps = NativeStackScreenProps<
+  EditProfileSubStackParamList,
+  "editRule"
 >;
 
-export type PixelDetailScreenProps = StackScreenProps<
-  HomeScreenStackParamList,
-  "PixelDetails"
+export type EditRollRulesScreenProps = NativeStackScreenProps<
+  EditProfileSubStackParamList,
+  "editRollRules"
 >;
 
-export type PixelAdvancedSettingsScreenProps = StackScreenProps<
-  HomeScreenStackParamList,
-  "PixelAdvancedSettings"
+export type EditAdvancedSettingsScreenProps = NativeStackScreenProps<
+  EditProfileSubStackParamList,
+  "editAdvancedSettings"
 >;
 
-//
-// Animation screen stack
-//
-export type AnimationsScreenStackParamList = {
-  AnimationsList: undefined;
-  AnimationEdit: { animationUuid: string };
+// Home screens
+export type HomeStackParamList = {
+  diceList: undefined;
+  firmwareUpdate: { pixelId?: number };
+  dieDetails: { pixelId: number };
+  editDieProfileStack: NavigatorScreenParams<EditDieProfileStackParamList>;
 };
 
-export type AnimationsListScreenProps = StackScreenProps<
-  AnimationsScreenStackParamList,
-  "AnimationsList"
+export type DiceListScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "diceList"
 >;
 
-export type AnimationEditScreenProps = StackScreenProps<
-  AnimationsScreenStackParamList,
-  "AnimationEdit"
+export type FirmwareUpdateScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "firmwareUpdate"
 >;
 
-//
-// Profiles screen stack
-//
-export type ProfilesScreenStackParamList = {
-  ProfilesList: undefined;
-  ProfileEdit: { profileUuid: string };
-  RuleEdit: { observableRule: EditRule }; // At the moment it's just easier to pass an observable EditRule object rather than a serializable one
+export type DieDetailsScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "dieDetails"
+>;
+
+export type EditDieProfileStackProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "editDieProfileStack"
+>;
+
+// Edit Die Profile screens
+export type EditDieProfileStackParamList = {
+  editDieProfile: {
+    pixelId: number;
+  };
+} & EditProfileSubStackParamList;
+
+export type EditDieProfileScreenProps = NativeStackScreenProps<
+  EditDieProfileStackParamList,
+  "editDieProfile"
+>;
+
+// Profiles screens
+export type ProfilesStackParamList = {
+  profilesList: undefined;
+  createProfile: undefined;
+  editProfileStack: NavigatorScreenParams<EditProfileStackParamList>;
 };
 
-export type ProfilesListScreenProps = StackScreenProps<
-  ProfilesScreenStackParamList,
-  "ProfilesList"
+export type ProfilesListScreenProps = NativeStackScreenProps<
+  ProfilesStackParamList,
+  "profilesList"
 >;
 
-export type ProfileEditScreenProps = StackScreenProps<
-  ProfilesScreenStackParamList,
-  "ProfileEdit"
+export type CreateProfileScreenProps = NativeStackScreenProps<
+  ProfilesStackParamList,
+  "createProfile"
 >;
 
-export type RuleEditScreenProps = StackScreenProps<
-  ProfilesScreenStackParamList,
-  "RuleEdit"
+export type EditProfileStackProps = NativeStackScreenProps<
+  ProfilesStackParamList,
+  "editProfileStack"
 >;
+
+// Edit Profile screens
+export type EditProfileStackParamList = {
+  editProfile: {
+    profileUuid: string;
+    noDiscard?: boolean;
+  };
+} & EditProfileSubStackParamList;
+
+export type EditProfileScreenProps = NativeStackScreenProps<
+  EditProfileStackParamList,
+  "editProfile"
+>;
+
+// Animations screens
+export type AnimationsStackParamList = {
+  animationsList: undefined;
+  createAnimation: undefined;
+  editAnimation: { animationUuid: string };
+  pickColorDesign: {
+    pattern?: Readonly<Profiles.Pattern>;
+    onSelectPattern?: (pattern: Readonly<Profiles.Pattern>) => void;
+  };
+};
+
+export type AnimationsListScreenProps = NativeStackScreenProps<
+  AnimationsStackParamList,
+  "animationsList"
+>;
+
+export type CreateAnimationScreenProps = NativeStackScreenProps<
+  AnimationsStackParamList,
+  "createAnimation"
+>;
+
+export type EditAnimationScreenProps = NativeStackScreenProps<
+  AnimationsStackParamList,
+  "editAnimation"
+>;
+
+export type PickColorDesignScreenProps = NativeStackScreenProps<
+  AnimationsStackParamList,
+  "pickColorDesign"
+>;
+
+// Settings screens
+export type SettingsStackParamList = {
+  settingsMenu: undefined;
+  systemInfo: undefined;
+  firmwareInfo: undefined;
+  support: undefined;
+  turnOnDice: undefined;
+  checkForUpdate: undefined;
+};
+
+export type SettingsMenuScreenProps = CompositeScreenProps<
+  NativeStackScreenProps<SettingsStackParamList, "settingsMenu">,
+  BottomTabScreenProps<BottomTabParamList, "settings">
+>;
+
+export type SettingsInfoScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "systemInfo"
+>;
+
+export type FirmwareInfoScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "firmwareInfo"
+>;
+
+export type SupportScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "support"
+>;
+
+export type TurnOnDiceScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "turnOnDice"
+>;
+
+export type CheckForUpdateScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "checkForUpdate"
+>;
+
+export function getStackNavigationOptions(
+  mode?: "default" | "slide-from-bottom" | "bottom-sheet"
+): NativeStackNavigationOptions {
+  const config = {
+    headerShown: false,
+    gestureEnabled: true,
+  } as const;
+  switch (mode) {
+    case undefined:
+    case "default":
+      return config;
+    case "slide-from-bottom":
+      return {
+        ...config,
+        animation: "slide_from_bottom",
+      };
+    case "bottom-sheet":
+      return {
+        ...config,
+        animation: "slide_from_bottom",
+        presentation: "modal",
+      };
+    default:
+      assertNever(mode);
+  }
+}

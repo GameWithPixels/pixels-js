@@ -1,4 +1,4 @@
-// Learn more https://docs.expo.dev/guides/monorepos
+// Learn more https://docs.expo.io/guides/customizing-metro
 const { getDefaultConfig } = require("expo/metro-config");
 const findWorkspaceRoot = require("find-yarn-workspace-root");
 const path = require("path");
@@ -8,6 +8,9 @@ const projectRoot = __dirname;
 const workspaceRoot = findWorkspaceRoot(__dirname);
 
 const config = getDefaultConfig(projectRoot);
+
+// Let Metro know we have assets with the following extensions
+config.resolver.assetExts.push("zip");
 
 // 1. Watch all files within the monorepo
 config.watchFolders = [workspaceRoot];

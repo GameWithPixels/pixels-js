@@ -150,6 +150,10 @@ i18n
           sendingAsPrintStatus: "Sending label to printer...",
           doneAsPrintStatus: "Print successful!",
           playKeyframes: "Play Keyframes",
+          setProfile: "Set Profile",
+          playAnimation: "Play Animation",
+          setDieType: "Set Die Type",
+          setDieColorway: "Set Colorway",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -166,6 +170,7 @@ i18n
           playProfileAnim: "Play Profile Anim",
           playProfileAnimation: "Play Profile Animation",
           updateProfile: "Update Profile",
+          resetProfile: "Reset Profile",
           updateBootloaderAndFirmware: "Update Bootloader & Firmware",
           updateAvailableGoToSettings:
             "Update available, go to Settings page to install.",
@@ -212,7 +217,7 @@ i18n
           removeFromChargerWithCoilOrDie: "Remove {{coilOrDie}} from charger",
           placeOnChargerWithCoilOrDie: "Place {{coilOrDie}} on charger",
           checkLEDs: "Check LEDs",
-          areAllLEDsWhiteWithCount: "Are all {{count}} LEDs fully white?",
+          areAllLEDsWhite: "Are all LEDs fully white?",
           waitForShutdown: "Wait For Shutdown",
           turningOff: "Turning Off",
           waitingDeviceDisconnect: "Waiting For Device To Disconnect",
@@ -258,6 +263,9 @@ i18n
             "Factory Validation will update firmware if on-board firmware is older than {{date}}.",
           loadingFirmwareFiles: "Loading firmware files...",
           errorLoadingFirmwareFiles: "Error loading firmware files",
+          diceUpdatedWithCustomFirmwareWarning:
+            "Dice will be updated with the firmware selected in the Scanner Page!",
+          selection: "Selection",
           invalidLedCountWithValue: "Invalid LED count: {{value}}",
           invalidAccelerometerValue: "Invalid accelerometer value: {{value}}",
           outOfRangeBatteryVoltage: "Out of range battery voltage: {{value}}v",
@@ -269,6 +277,7 @@ i18n
             "Timeout waiting for face {{face}}. Face up: {{rollFace}}, roll state: {{rollState}}",
           disconnectedFromPixel: "Disconnected from Pixel",
           timedOutWithValue: "Timed out after {{value}}s",
+          selectProfile: "Select Profile",
 
           // Carton label
           cartonLabel: "Carton Label",
@@ -296,14 +305,6 @@ i18n
           next: "下一个",
           yes: "是",
           no: "否",
-          d4: "D4",
-          d6pipped: "Pipped D6",
-          d6fudge: "Fudge D6",
-          d8: "D8",
-          d10: "D10",
-          d00: "D00",
-          d12: "D12",
-          d20: "D20",
           colonSeparator: "：",
           commaSeparator: "，",
           // Connection statuses
@@ -443,7 +444,7 @@ i18n
           removeFromChargerWithCoilOrDie: "从充电器上移开{{coilOrDie}} ",
           placeOnChargerWithCoilOrDie: "把{{coilOrDie}}放在充电器上",
           checkLEDs: "检查LED",
-          areAllLEDsWhiteWithCount: "{{count}}LED是否都显示白色？",
+          areAllLEDsWhite: "是否所有的LED灯都显示白色？",
           waitForShutdown: "等待关机",
           turningOff: "关闭中",
           waitingDeviceDisconnect: "等待设备断开连接",

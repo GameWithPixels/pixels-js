@@ -2,11 +2,12 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import {
-  usePixelScanner,
+  usePixelScannerNotify,
   PixelScannerOptions,
   PixelScannerDispatchAction,
-} from "./usePixelScanner";
-import { PixelScannerListOp } from "../PixelScanner";
+  PixelScannerStatus,
+} from "./usePixelScannerNotify";
+import { PixelScannerListOperation } from "../PixelScanner";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
 /**
@@ -18,7 +19,7 @@ import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
  * - The list of {@link ScannedPixelNotifier}. The list itself is not modified when
  *   existing items are updated.
  * - A stable reducer like function to dispatch actions to the scanner.
- * - The last encountered error.
+ * - The scan status or the last error.
  * @remarks {@link ScannedPixelNotifier} instances are kept globally, for a given Pixel
  *          the same instance is returned and updated by all scanners.
  */
@@ -27,10 +28,10 @@ export function useScannedPixelNotifiers(
 ): [
   ScannedPixelNotifier[],
   (action: PixelScannerDispatchAction) => void,
-  Error?
+  PixelScannerStatus,
 ] {
   const mapItems = React.useCallback(
-    (items: ScannedPixelNotifier[], ops: PixelScannerListOp[]) => {
+    (items: ScannedPixelNotifier[], ops: PixelScannerListOperation[]) => {
       // We only want to create a React re-render when items are added
       // or removed but not when they are modified
       let retItems = items;
@@ -38,28 +39,33 @@ export function useScannedPixelNotifiers(
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "clear":
+          case "cleared":
             retItems = [];
             break;
-          case "add": {
+          case "scanned": {
             // The same instance will always be returned for a given Pixel id
             const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
-            if (retItems === items) {
-              retItems = [...items, notifier];
-            } else {
+            const index = retItems.findIndex(
+              (sp) => sp.pixelId === op.scannedPixel.pixelId
+            );
+            if (index < 0) {
+              if (retItems === items) {
+                retItems = [...items];
+              }
               retItems.push(notifier);
             }
             break;
           }
-          case "update":
-            if (retItems[op.index]) {
-              retItems[op.index].updateProperties(op.scannedPixel);
-            } else {
-              console.error(
-                "useScannedPixelNotifiers: index out of range on update operation"
-              );
+          case "removed": {
+            const index = retItems.findIndex((sp) => sp.pixelId === op.pixelId);
+            if (index >= 0) {
+              if (retItems === items) {
+                retItems = [...items];
+              }
+              retItems.splice(index, 1);
             }
             break;
+          }
           default:
             assertNever(t);
         }
@@ -69,5 +75,5 @@ export function useScannedPixelNotifiers(
     []
   );
 
-  return usePixelScanner(mapItems, opt);
+  return usePixelScannerNotify(mapItems, opt);
 }

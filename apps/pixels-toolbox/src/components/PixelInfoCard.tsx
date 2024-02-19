@@ -1,16 +1,41 @@
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   BaseBox,
   BaseHStack,
 } from "@systemic-games/react-native-base-components";
-import { PixelInfoNotifier } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelColorway,
+  PixelInfoNotifier,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { TFunction, useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Card, Text } from "react-native-paper";
 
 import { AppStyles } from "~/AppStyles";
-import { useForceUpdate } from "~/features/hooks/useForceUpdate";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
+import { useForceUpdate } from "~/hooks/useForceUpdate";
+
+function getColorwayInitials(colorway: PixelColorway): string | undefined {
+  switch (colorway) {
+    case "onyxBlack":
+      return "OB";
+    case "hematiteGrey":
+      return "HG";
+    case "midnightGalaxy":
+      return "MG";
+    case "auroraSky":
+      return "AS";
+    case "clear":
+      return "CL";
+    case "custom":
+      return "CS";
+    case "unknown":
+      return undefined;
+    default:
+      assertNever(colorway);
+  }
+}
 
 interface PixelAndTranslation {
   pixel: PixelInfoNotifier;
@@ -18,17 +43,29 @@ interface PixelAndTranslation {
 }
 
 function PixelName({ pixel }: Omit<PixelAndTranslation, "t">) {
+  const [initials, setInitials] = React.useState(
+    getColorwayInitials(pixel.colorway)
+  );
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
     pixel.addPropertyListener("name", listener);
+    const onColorwayChange = () =>
+      setInitials(getColorwayInitials(pixel.colorway));
+    pixel.addPropertyListener("colorway", onColorwayChange);
     return () => {
       pixel.removePropertyListener("name", listener);
+      pixel.removePropertyListener("colorway", onColorwayChange);
     };
   }, [pixel, forceUpdate]);
   return (
-    <BaseBox flexDir="row" justifyContent="center">
+    <BaseBox flexDir="row" alignItems="center" justifyContent="center" gap={20}>
       <Text variant="headlineMedium">{pixel.name}</Text>
+      {initials && (
+        <Text style={{ position: "absolute", right: 0 }} variant="titleSmall">
+          ({initials})
+        </Text>
+      )}
     </BaseBox>
   );
 }

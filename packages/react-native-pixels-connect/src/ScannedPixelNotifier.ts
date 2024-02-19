@@ -1,6 +1,6 @@
+import { PixelDieType } from "@systemic-games/pixels-core-animation";
 import {
   PixelColorway,
-  PixelDieType,
   PixelInfoNotifier,
   PixelInfoNotifierMutableProps,
   PixelRollState,
@@ -21,8 +21,9 @@ export type ScannedPixelNotifierMutableProps = PixelInfoNotifierMutableProps &
  * Wraps a {@link ScannedPixel} to raise events on mutable property changes.
  */
 export class ScannedPixelNotifier<
-    MutableProps extends ScannedPixelNotifierMutableProps = ScannedPixelNotifierMutableProps,
-    Type extends ScannedPixel = ScannedPixel
+    MutableProps extends
+      ScannedPixelNotifierMutableProps = ScannedPixelNotifierMutableProps,
+    Type extends ScannedPixel = ScannedPixel,
   >
   extends PixelInfoNotifier<MutableProps, Type>
   implements ScannedPixel

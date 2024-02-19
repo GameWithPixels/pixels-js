@@ -16,6 +16,7 @@ import {
   Modal,
   Portal,
   RadioButton,
+  Switch,
   Text,
   Title,
 } from "react-native-paper";
@@ -28,6 +29,8 @@ import {
   setThemeMode,
   ThemeMode,
 } from "~/features/store/appSettingsSlice";
+import { selectCustomFirmwareAndProfile } from "~/features/store/validationSelectors";
+import { setCustomFirmwareAndProfile } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
 import { AppRootPageName } from "~/navigation";
 
@@ -143,6 +146,22 @@ function PageRadio({
   );
 }
 
+function CustomFirmwareAndProfile() {
+  const appDispatch = useAppDispatch();
+  const customFw = useAppSelector(selectCustomFirmwareAndProfile);
+  return (
+    <BaseHStack alignItems="center" justifyContent="space-between">
+      <Text>Select Firmware & Profile</Text>
+      <Switch
+        value={customFw}
+        onValueChange={(v) => {
+          appDispatch(setCustomFirmwareAndProfile(v));
+        }}
+      />
+    </BaseHStack>
+  );
+}
+
 function ValidationCard() {
   return (
     <Card>
@@ -154,6 +173,7 @@ function ValidationCard() {
           <PageRadio label="Validation" page="Validation" />
           <PageRadio label="Carton Label" page="CartonLabel" />
         </BaseHStack>
+        <CustomFirmwareAndProfile />
       </Card.Content>
     </Card>
   );
@@ -198,7 +218,7 @@ function EasCard() {
           "Failed to download manifest from URL"
         )
       ) {
-        // Unfortunately we ge this error is there is no published update yet
+        // We get this error is there is no published update for this build
         setUpdateStatus("Up-To-Date (no update)");
       } else {
         setUpdateError(error, "check");

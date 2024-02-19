@@ -149,7 +149,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
 ): [
   UsePixelValueNamesMap[T] | undefined,
   (action: "start" | "stop") => void,
-  Error?
+  Error?,
 ] {
   type ValueType = UsePixelValueNamesMap[T];
   const [lastError, setLastError] = React.useState<Error>();
@@ -219,9 +219,14 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
               // Time left before the value can be updated
               const timeLeft =
                 minInterval - (Date.now() - stateRef.current.lastTime);
-              // Immediately update the value if we have a roll or if we are
-              // passed the given refresh interval
-              if (rollState.state === "onFace" || timeLeft <= 0) {
+              // Immediately update the value if we have a state change,
+              // or the state is onFace (we don't to miss any of those)
+              // or if we are passed the given refresh interval
+              if (
+                timeLeft <= 0 ||
+                rollState.state === "onFace" ||
+                (prevValue as any)?.state !== rollState.state
+              ) {
                 stateRef.current.lastTime = now;
                 clearTimeout(stateRef.current.timeoutId);
                 stateRef.current.timeoutId = undefined;
@@ -279,6 +284,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           // Request Pixel to send RSSI
           pixel.reportRssi(true, minInterval).catch(setLastError);
           return () => {
+            pixel.removeEventListener("rssi", onRssi);
             pixel.reportRssi(false).catch(() => {});
           };
         }

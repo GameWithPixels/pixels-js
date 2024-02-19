@@ -8,7 +8,9 @@ import { enumValue } from "@systemic-games/pixels-core-utils";
 export const ActionTypeValues = {
   none: enumValue(0),
   playAnimation: enumValue(),
-  runOnDevice: enumValue(),
+  playAudioClip: enumValue(),
+  makeWebRequest: enumValue(),
+  speakText: enumValue(),
 } as const;
 
 /**

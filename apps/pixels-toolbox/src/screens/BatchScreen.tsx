@@ -3,6 +3,8 @@ import { Pixel } from "@systemic-games/pixels-core-connect";
 import { delay } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForAnimation,
+  createDataSetForProfile,
+  createLibraryProfile,
   EditAnimationKeyframed,
   EditPattern,
 } from "@systemic-games/pixels-edit-animation";
@@ -12,7 +14,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   Color,
-  getPixel,
+  getPixelOrThrow,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -22,8 +24,7 @@ import { Button, Divider, Switch, Text } from "react-native-paper";
 import { AppPage } from "~/components/AppPage";
 import { PatternImages } from "~/features/PatternImages";
 import { createPatternFromImage } from "~/features/createPatternFromImage";
-import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
-import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
+import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
 
 const patternsCache = new Map<string | number, EditPattern>();
 
@@ -85,7 +86,10 @@ async function blink(pixel: Pixel): Promise<void> {
 }
 
 async function uploadProfile(pixel: Pixel): Promise<void> {
-  await pixel.transferDataSet(getDefaultProfile(pixel.dieType));
+  const dataSet = createDataSetForProfile(
+    createLibraryProfile("default", pixel.dieType)
+  ).toDataSet();
+  await pixel.transferDataSet(dataSet);
 }
 
 async function testAnimation(pixel: Pixel): Promise<void> {
@@ -106,7 +110,7 @@ async function testAnimation(pixel: Pixel): Promise<void> {
 
 function BatchPage() {
   // Scanned Pixels
-  const [scannedPixels, scanDispatch, scanError] =
+  const [scannedPixels, scanDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
   const [pixels, setPixels] = React.useState<Pixel[]>([]);
   const [stayConnected, setStayConnected] = React.useState(false);
@@ -150,7 +154,7 @@ function BatchPage() {
     const pixelsToUse = pixels.concat(
       scannedPixels
         .filter((sp) => !pixels.find((p) => p.pixelId === sp.pixelId))
-        .map((sp) => getPixel(sp.systemId))
+        .map((sp) => getPixelOrThrow(sp.systemId))
     );
     forAllPixels(
       pixelsToUse,
@@ -188,7 +192,9 @@ function BatchPage() {
   );
   return (
     <BaseVStack flex={1} w="100%" gap={10} alignItems="center">
-      {scanError && <Text>{`Scan error! ${scanError}`}</Text>}
+      {!(typeof scanStatus === "string") && (
+        <Text>{`Scan error! ${scanStatus}`}</Text>
+      )}
       {!batchOp ? (
         <>
           <Text variant="titleMedium">Scanning for dice...</Text>

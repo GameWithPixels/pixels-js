@@ -9,6 +9,8 @@ import {
   Pixel,
   PixelBatteryControllerMode,
   PixelBatteryControllerModeValues,
+  PixelColorwayValues,
+  PixelDieTypeValues,
   PlayProfileAnimation,
   SetBatteryControllerMode,
   StoreValue,
@@ -35,7 +37,7 @@ export async function pixelBlinkId(
 ): Promise<void> {
   const blinkMsg = safeAssign(new BlinkId(), {
     brightness: opt?.brightness ? opt?.brightness : 0x10,
-    loop: opt?.loop ?? false,
+    loopCount: opt?.loop ? 0xff : 1,
   });
   await pixel.sendAndWaitForResponse(blinkMsg, "blinkIdAck");
 }
@@ -147,24 +149,14 @@ export async function pixelPlayProfileAnimation(
   pixel: Pixel,
   animationIndex: number,
   remapToFace = 0,
-  loop = false
+  loopCount = 1
 ): Promise<void> {
   const playAnim = safeAssign(new PlayProfileAnimation(), {
     animationIndex,
     remapToFace,
-    loop,
+    loopCount,
   });
   await pixel.sendMessage(playAnim);
-}
-
-/**
- * Requests the Pixel to clear internal settings.
- * @param pixel The Pixel instance to use.
- * @returns A promise that resolves once the clear has been confirmed.
- */
-export async function pixelClearSettings(pixel: Pixel): Promise<void> {
-  log(pixel, "Clearing settings");
-  await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
 }
 
 /* List of codes for the store values' types. */
@@ -190,19 +182,45 @@ export async function pixelStoreValue(
   assert(valueType > 0 && valueType <= 0xff);
   assert(value >= 0 && value <= 0xffffff);
   // Build value to send
-  value = ((valueType << 24) | value) >>> 0;
+  const storeValue = ((valueType << 24) | value) >>> 0;
   // And send it to die
   const ack = (await pixel.sendAndWaitForResponse(
-    safeAssign(new StoreValue(), { value }),
+    safeAssign(new StoreValue(), { value: storeValue }),
     "storeValueAck"
   )) as StoreValueAck;
   // Check result
   const result =
     getValueKeyName(ack.result, StoreValueResultValues) ?? "unknownError";
-  const valHex = "0x" + value.toString(16);
+  const valHex = "0x" + storeValue.toString(16);
   log(
     pixel,
     `Store value ${valHex} of type ${valueType} => ${result} (${ack.result}), index: ${ack.index}`
   );
+  // Update Pixel instance
+  if (result === "success") {
+    switch (valueType) {
+      case PixelValueStoreType.DieType: {
+        const dieType = getValueKeyName(value, PixelDieTypeValues) ?? "unknown";
+        log(pixel, `Updating die type to ${dieType}`);
+        //@ts-expect-error Private function
+        pixel._updateDieType(
+          // Pass function parameter on next line to have TS check typing
+          dieType
+        );
+        break;
+      }
+      case PixelValueStoreType.Colorway: {
+        const colorway =
+          getValueKeyName(value, PixelColorwayValues) ?? "unknown";
+        log(pixel, `Updating colorway to ${colorway}`);
+        //@ts-expect-error Private function
+        pixel._updateColorway(
+          // Pass function parameter on next line to have TS check typing
+          colorway
+        );
+        break;
+      }
+    }
+  }
   return result;
 }

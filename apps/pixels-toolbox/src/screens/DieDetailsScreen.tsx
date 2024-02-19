@@ -1,25 +1,25 @@
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 
 import { AppPage } from "~/components/AppPage";
 import { PixelDetails } from "~/components/PixelDetails";
-import { usePrintDieLabel } from "~/features/hooks/usePrintDieLabel";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { usePrintDieLabel } from "~/hooks/usePrintDieLabel";
 import { DieDetailsScreenProps } from "~/navigation";
 
 export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {
-  const errorHandler = useErrorHandler();
+  const { showBoundary } = useErrorBoundary();
   const { pixelId } = route.params;
   const pixelDispatcher = PixelDispatcher.findDispatcher(pixelId);
   React.useEffect(() => {
     if (!pixelDispatcher) {
-      errorHandler(
+      showBoundary(
         new Error(
           `Unknown given Pixel Id: ${pixelId.toString(16).padStart(8, "0")}`
         )
       );
     }
-  }, [errorHandler, pixelDispatcher, pixelId]);
+  }, [pixelDispatcher, pixelId, showBoundary]);
   const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
   const { printDieLabel } = usePrintDieLabel();
   return (

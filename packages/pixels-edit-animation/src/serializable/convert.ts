@@ -1,10 +1,14 @@
 import {
+  AnimationFlagsValues,
   BatteryStateFlagsValues,
   Color,
   ColorUtils,
   ConnectionStateFlagsValues,
+  DataSet,
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
+  NoiseColorOverrideTypeValues,
+  NormalsColorOverrideTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
@@ -12,42 +16,47 @@ import {
   bitsToFlags,
   combineFlags,
   keysToValues,
+  range,
   valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
-import { fromByteArray, toByteArray } from "base64-js";
 
 import {
   AnimationGradientData,
   AnimationGradientPatternData,
-  AnimationKeyframedData,
+  AnimationPatternData,
   AnimationNoiseData,
   AnimationRainbowData,
   AnimationSetData,
-  AnimationSimpleData,
+  AnimationFlashesData,
   AnimationNormalsData,
+  AnimationCycleData,
+  AnimationSequenceData,
 } from "./animations";
+import { fromColor, toColor } from "./color";
 import { GradientData } from "./gradient";
+import { toKeyframes, fromKeyframes } from "./keyframes";
 import { PatternData } from "./pattern";
 import {
-  ActionSetData,
   ProfileData,
   createActionSetData,
   createConditionSetData,
 } from "./profile";
+import { createDataSetForProfile } from "../createDataSet";
 import {
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
-  EditActionRunOnDevice,
   EditAnimation,
+  EditAnimationCycle,
   EditAnimationGradient,
   EditAnimationGradientPattern,
   EditAnimationKeyframed,
   EditAnimationNoise,
   EditAnimationNormals,
   EditAnimationRainbow,
+  EditAnimationSequence,
+  EditAnimationSequenceItem,
   EditAnimationSimple,
   EditAudioClip,
-  EditColor,
   EditCondition,
   EditConditionBatteryState,
   EditConditionConnectionState,
@@ -56,14 +65,15 @@ import {
   EditConditionHandling,
   EditConditionHelloGoodbye,
   EditConditionIdle,
+  EditConditionRolled,
   EditConditionRolling,
   EditPattern,
   EditProfile,
   EditRgbGradient,
-  EditRgbKeyframe,
   EditRule,
 } from "../edit";
 import EditActionMakeWebRequest from "../edit/EditActionMakeWebRequest";
+import EditActionSpeakText from "../edit/EditActionSpeakText";
 
 export function toProfile(
   data: Readonly<ProfileData>,
@@ -123,27 +133,25 @@ export function toProfile(
           condition = new EditConditionRolling(condData);
         }
         break;
-      case "faceCompare":
+      case "rolled":
         {
-          const condData = data.conditions.faceCompare[index];
+          const condData = data.conditions.rolled[index];
           assert(
             condData,
             `No data for ${condType} condition at index ${index}`
           );
-          condition = new EditConditionFaceCompare({
+          condition = new EditConditionRolled({
             ...condData,
-            flags: combineFlags(
-              keysToValues(condData.flags, FaceCompareFlagsValues)
-            ),
+            faces: condData.faces,
           });
         }
         break;
       case "crooked":
         condition = new EditConditionCrooked();
         break;
-      case "connectionState":
+      case "connection":
         {
-          const condData = data.conditions.connectionState[index];
+          const condData = data.conditions.connection[index];
           assert(
             condData,
             `No data for ${condType} condition at index ${index}`
@@ -156,9 +164,9 @@ export function toProfile(
           });
         }
         break;
-      case "batteryState":
+      case "battery":
         {
-          const condData = data.conditions.batteryState[index];
+          const condData = data.conditions.battery[index];
           assert(
             condData,
             `No data for ${condType} condition at index ${index}`
@@ -193,6 +201,7 @@ export function toProfile(
           return new EditActionPlayAnimation({
             ...actData,
             animation: checkGetAnimation(actData.animationUuid),
+            colors: actData.colors.map((c) => new Color(c)),
           });
         }
         case "playAudioClip": {
@@ -208,22 +217,41 @@ export function toProfile(
           assert(actData, `No data for ${actType} action at index ${a.index}`);
           return new EditActionMakeWebRequest(actData);
         }
+        case "speakText": {
+          const actData = data.actions.speakText[a.index];
+          assert(actData, `No data for ${actType} action at index ${a.index}`);
+          return new EditActionSpeakText(actData);
+        }
         default:
           assertNever(actType, `Unsupported action type: ${actType}`);
       }
     });
-    return new EditRule(condition, { actions });
+    return new EditRule(condition, actions);
   });
-  return new EditProfile({ ...data, rules });
+  return new EditProfile({
+    ...data,
+    rules,
+    creationDate: new Date(data.creationDate),
+    lastChanged: new Date(data.lastChanged),
+    lastUsed: data.lastUsed ? new Date(data.lastUsed) : undefined,
+  });
 }
 
 export function toAnimation<T extends keyof AnimationSetData>(
   type: T,
   data: Readonly<AnimationSetData[T][number]>,
+  getAnimation: (uuid: string) => EditAnimation | undefined,
   getPattern: (uuid: string) => EditPattern | undefined,
   getGradient: (uuid: string) => EditRgbGradient | undefined,
   allowMissingDependency = false
 ): EditAnimation {
+  const checkGetAnim = (uuid: string): EditAnimation => {
+    const anim = getAnimation(uuid);
+    if (!anim) {
+      throw new Error(`toAnimation(): No animation with uuid ${uuid}`);
+    }
+    return anim;
+  };
   const checkGetPattern = (uuid?: string): EditPattern | undefined => {
     if (uuid) {
       const pattern = getPattern(uuid);
@@ -242,22 +270,30 @@ export function toAnimation<T extends keyof AnimationSetData>(
       return gradient;
     }
   };
+  const animFlags = combineFlags(
+    keysToValues(data.animFlags, AnimationFlagsValues)
+  );
   switch (type) {
-    case "simple": {
-      const animData = data as AnimationSimpleData;
+    case "flashes": {
+      const animData = data as AnimationFlashesData;
       return new EditAnimationSimple({
         ...animData,
+        animFlags,
         color: toColor(animData.color),
       });
     }
     case "rainbow": {
       const animData = data as AnimationRainbowData;
-      return new EditAnimationRainbow(animData);
+      return new EditAnimationRainbow({
+        ...animData,
+        animFlags,
+      });
     }
-    case "keyframed": {
-      const animData = data as AnimationKeyframedData;
+    case "pattern": {
+      const animData = data as AnimationPatternData;
       return new EditAnimationKeyframed({
         ...animData,
+        animFlags,
         pattern: checkGetPattern(animData.patternUuid),
       });
     }
@@ -265,6 +301,7 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationGradientPatternData;
       return new EditAnimationGradientPattern({
         ...animData,
+        animFlags,
         pattern: checkGetPattern(animData.patternUuid),
         gradient: checkGetGradient(animData.gradientUuid),
       });
@@ -273,6 +310,7 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationGradientData;
       return new EditAnimationGradient({
         ...animData,
+        animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
       });
     }
@@ -280,15 +318,41 @@ export function toAnimation<T extends keyof AnimationSetData>(
       const animData = data as AnimationNoiseData;
       return new EditAnimationNoise({
         ...animData,
+        animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
         blinkGradient: checkGetGradient(animData.blinkGradientUuid),
+        gradientColorType:
+          NoiseColorOverrideTypeValues[animData.gradientColorType],
       });
     }
     case "normals": {
       const animData = data as AnimationNormalsData;
       return new EditAnimationNormals({
         ...animData,
+        animFlags,
         gradient: checkGetGradient(animData.gradientUuid),
+        axisGradient: checkGetGradient(animData.axisGradientUuid),
+        angleGradient: checkGetGradient(animData.angleGradientUuid),
+        gradientColorType:
+          NormalsColorOverrideTypeValues[animData.gradientColorType],
+      });
+    }
+    case "cycle": {
+      const animData = data as AnimationCycleData;
+      return new EditAnimationCycle({
+        ...animData,
+        animFlags,
+        gradient: checkGetGradient(animData.gradientUuid),
+      });
+    }
+    case "sequence": {
+      const animData = data as AnimationSequenceData;
+      return new EditAnimationSequence({
+        ...animData,
+        animFlags,
+        animations: animData.animations.map(
+          (a) => new EditAnimationSequenceItem(checkGetAnim(a.uuid), a.delay)
+        ),
       });
     }
     default:
@@ -312,27 +376,23 @@ export function toGradient(data: Readonly<GradientData>): EditRgbGradient {
   });
 }
 
-export function toKeyframes(base64: string): EditRgbKeyframe[] {
-  const dataView = new DataView(toByteArray(base64).buffer);
-  const keyframes: EditRgbKeyframe[] = [];
-  let byteOffset = 0;
-  const lengthMinus8 = dataView.byteLength - 8;
-  while (byteOffset <= lengthMinus8) {
-    const time = dataView.getFloat32(byteOffset);
-    byteOffset += 4;
-    const color = new Color(dataView.getUint32(byteOffset));
-    byteOffset += 4;
-    keyframes.push(new EditRgbKeyframe({ time, color }));
-  }
-  return keyframes;
-}
-
-export function toColor(data: string): EditColor {
-  if (data === "face" || data === "random") {
-    return new EditColor(data);
-  } else {
-    return new EditColor(new Color(data));
-  }
+// undefined means "all faces"
+export function fromFaceCompare(flags: number, face: number): number[] {
+  const isEq = flags & FaceCompareFlagsValues.equal ? 1 : 0;
+  const lessOrEqual =
+    FaceCompareFlagsValues.less | FaceCompareFlagsValues.equal;
+  const greaterOrEqual =
+    FaceCompareFlagsValues.greater | FaceCompareFlagsValues.equal;
+  return !flags || face <= 0
+    ? []
+    : (face === 20 && (flags & lessOrEqual) === lessOrEqual) ||
+        (face === 1 && (flags & greaterOrEqual) === greaterOrEqual)
+      ? range(1, 21)
+      : flags & FaceCompareFlagsValues.less
+        ? range(1, face + isEq)
+        : flags & FaceCompareFlagsValues.greater
+          ? range(face + 1 - isEq, 21)
+          : [face];
 }
 
 export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
@@ -370,18 +430,21 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
         break;
       case "faceCompare":
         {
-          condIndex = conditions[condType].length;
+          condIndex = conditions["rolled"].length;
           const cond = r.condition as EditConditionFaceCompare;
-          conditions[condType].push({
-            flags: valuesToKeys(
-              bitsToFlags(cond.flags),
-              FaceCompareFlagsValues
-            ),
-            face: cond.face,
+          conditions["rolled"].push({
+            faces: fromFaceCompare(cond.flags, cond.face),
           });
         }
         break;
-      case "connectionState":
+      case "rolled":
+        {
+          condIndex = conditions[condType].length;
+          const cond = r.condition as EditConditionRolled;
+          conditions[condType].push({ faces: [...cond.faces] });
+        }
+        break;
+      case "connection":
         {
           condIndex = conditions[condType].length;
           const cond = r.condition as EditConditionConnectionState;
@@ -393,7 +456,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
           });
         }
         break;
-      case "batteryState":
+      case "battery":
         {
           condIndex = conditions[condType].length;
           const cond = r.condition as EditConditionBatteryState;
@@ -420,88 +483,82 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     }
     return {
       condition: {
-        type: condType,
+        type: condType === "faceCompare" ? "rolled" : condType,
         index: condIndex,
       },
       actions: r.actions.map((action) => {
         const actType = action.type;
-        let retActType: keyof ActionSetData;
+        if (actType === "none") {
+          throw new Error(`Invalid action type: ${actType}`);
+        }
         switch (actType) {
-          case "none":
-            throw new Error(`Invalid action type: ${actType}`);
           case "playAnimation":
             {
-              retActType = actType;
               const act = action as EditActionPlayAnimation;
               actions[actType].push({
                 animationUuid: act.animation?.uuid,
                 face: act.face,
                 loopCount: act.loopCount,
+                duration: act.duration,
+                fade: act.fade,
+                intensity: act.intensity,
+                colors: act.colors.map(ColorUtils.colorToString),
               });
             }
             break;
-          case "runOnDevice": {
-            const remoteType = (action as EditActionRunOnDevice).remoteType;
-            switch (remoteType) {
-              case "none":
-                throw new Error(`Invalid remote action type: ${remoteType}`);
-              case "playAudioClip":
-                {
-                  retActType = remoteType;
-                  const act = action as EditActionPlayAudioClip;
-                  actions[retActType].push({
-                    clipUuid: act.clip?.uuid,
-                  });
-                }
-                break;
-              case "makeWebRequest": {
-                retActType = remoteType;
-                const act = action as EditActionMakeWebRequest;
-                actions[retActType].push({
-                  url: act.url,
-                  value: act.value,
-                });
-                break;
-              }
-              default:
-                assertNever(
-                  remoteType,
-                  `Unsupported remote action type: ${remoteType}`
-                );
+          case "playAudioClip":
+            {
+              const act = action as EditActionPlayAudioClip;
+              actions[actType].push({
+                clipUuid: act.clip?.uuid,
+              });
             }
             break;
-          }
+          case "makeWebRequest":
+            {
+              const act = action as EditActionMakeWebRequest;
+              actions[actType].push({
+                url: act.url,
+                value: act.value,
+              });
+            }
+            break;
+          case "speakText":
+            {
+              const act = action as EditActionSpeakText;
+              actions[actType].push({
+                text: act.text,
+                pitch: act.pitch,
+                rate: act.rate,
+              });
+            }
+            break;
           default:
             assertNever(actType, `Unsupported action type: ${actType}`);
         }
         return {
-          type: retActType,
-          index: actions[retActType].length - 1,
+          type: actType,
+          index: actions[actType].length - 1,
         };
       }),
     };
   });
+  // Compute hash
+  const data = createDataSetForProfile(profile).toDataSet();
+  const hash = DataSet.computeHash(data.toByteArray());
   return {
     uuid: profile.uuid,
     name: profile.name,
     description: profile.description,
+    dieType: profile.dieType,
+    hash,
+    creationDate: profile.creationDate.getTime(),
+    lastChanged: profile.lastChanged.getTime(),
+    lastUsed: profile.lastUsed?.getTime() ?? 0,
     conditions,
     actions,
     rules,
   };
-}
-
-function fromColor(color: EditColor): string {
-  const mode = color.mode;
-  switch (mode) {
-    case "rgb":
-      return ColorUtils.colorToString(color.color).toString();
-    case "face":
-    case "random":
-      return mode;
-    default:
-      assertNever(mode, `Unsupported color mode: ${mode}`);
-  }
 }
 
 export function fromAnimation(animation: Readonly<EditAnimation>): {
@@ -509,18 +566,24 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
   data: AnimationSetData[keyof AnimationSetData][number];
 } {
   const type = animation.type;
+  const animFlags = valuesToKeys(
+    bitsToFlags(animation.animFlags),
+    AnimationFlagsValues
+  );
   switch (type) {
     case "none":
       throw new Error(`Invalid animation type: ${type}`);
     case "simple": {
       const anim = animation as EditAnimationSimple;
       return {
-        type,
+        type: "flashes",
         data: {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
           faces: anim.faces,
           color: fromColor(anim.color),
           count: anim.count,
@@ -536,7 +599,9 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
           faces: anim.faces,
           count: anim.count,
           fade: anim.fade,
@@ -548,12 +613,14 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
     case "keyframed": {
       const anim = animation as EditAnimationKeyframed;
       return {
-        type,
+        type: "pattern",
         data: {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
           patternUuid: anim.pattern?.uuid,
         },
       };
@@ -566,7 +633,9 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
           patternUuid: anim.pattern?.uuid,
           gradientUuid: anim.gradient?.uuid,
           overrideWithFace: anim.overrideWithFace,
@@ -581,7 +650,9 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
           faces: anim.faces,
           gradientUuid: anim.gradient?.uuid,
         },
@@ -595,10 +666,20 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
           gradientUuid: anim.gradient?.uuid,
-          blinkDuration: anim.blinkDuration,
           blinkGradientUuid: anim.blinkGradient?.uuid,
+          blinkFrequency: anim.blinkFrequency,
+          blinkFrequencyVar: anim.blinkFrequencyVar,
+          blinkDuration: anim.blinkDuration,
+          fade: anim.fade,
+          gradientColorType: valuesToKeys(
+            [anim.gradientColorType],
+            NoiseColorOverrideTypeValues
+          )[0],
+          gradientColorVar: anim.gradientColorVar,
         },
       };
     }
@@ -610,12 +691,63 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           uuid: anim.uuid,
           name: anim.name,
           duration: anim.duration,
-          animFlags: anim.animFlags,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
+          gradientUuid: anim.gradient?.uuid,
+          axisGradientUuid: anim.axisGradient?.uuid,
+          axisScrollSpeed: anim.axisScrollSpeed,
+          axisScale: anim.axisScale,
+          axisOffset: anim.axisOffset,
+          angleGradientUuid: anim.angleGradient?.uuid,
+          angleScrollSpeed: anim.angleScrollSpeed,
+          fade: anim.fade,
+          gradientColorType: valuesToKeys(
+            [anim.gradientColorType],
+            NormalsColorOverrideTypeValues
+          )[0],
+          gradientColorVar: anim.gradientColorVar,
+        },
+      };
+    }
+    case "cycle": {
+      const anim = animation as EditAnimationCycle;
+      return {
+        type,
+        data: {
+          uuid: anim.uuid,
+          name: anim.name,
+          duration: anim.duration,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
+          count: anim.count,
+          cycles: anim.cycles,
+          fade: anim.fade,
+          intensity: anim.intensity,
+          faces: anim.faces,
           gradientUuid: anim.gradient?.uuid,
         },
       };
     }
-    case "cycle":
+    case "sequence": {
+      const anim = animation as EditAnimationSequence;
+      return {
+        type,
+        data: {
+          uuid: anim.uuid,
+          name: anim.name,
+          duration: anim.duration,
+          animFlags,
+          category: anim.category,
+          dieType: anim.dieType,
+          animations: anim.animations.map((i) => ({
+            uuid: i.animation.uuid,
+            delay: i.delay,
+          })),
+        },
+      };
+    }
     case "name":
       throw Error(`Unsupported animation type: ${type}`);
     default:
@@ -623,22 +755,9 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
   }
 }
 
-function toKeyframesBase64(keyframes?: Readonly<EditRgbKeyframe[]>): string {
-  const array = new Uint8Array(8 * (keyframes?.length ?? 0));
-  const dataView = new DataView(array.buffer);
-  let byteOffset = 0;
-  keyframes?.forEach((kf) => {
-    dataView.setFloat32(byteOffset, kf.time ?? 0);
-    byteOffset += 4;
-    dataView.setUint32(byteOffset, kf.color.toColor32());
-    byteOffset += 4;
-  });
-  return fromByteArray(array);
-}
-
 export function fromPattern(pattern: Readonly<EditPattern>): PatternData {
   const gradients = pattern.gradients.map((g) => ({
-    keyframes: toKeyframesBase64(g.keyframes),
+    keyframes: fromKeyframes(g.keyframes),
   }));
   return { uuid: pattern.uuid, name: pattern.name, gradients };
 }
@@ -646,6 +765,6 @@ export function fromPattern(pattern: Readonly<EditPattern>): PatternData {
 export function fromGradient(
   gradient: Readonly<EditRgbGradient>
 ): GradientData {
-  const keyframes = toKeyframesBase64(gradient.keyframes);
+  const keyframes = fromKeyframes(gradient.keyframes);
   return { uuid: gradient.uuid, keyframes };
 }

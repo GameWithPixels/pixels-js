@@ -3,13 +3,16 @@ const prod =
   !process.env.SYSTEMIC_PX_DEV &&
   process.env.EAS_BUILD_PROFILE !== "development";
 
+const version = "2.1.1"; // Version number must have 3 parts
+const buildNumber = 2101;
+
 const config = {
   expo: {
-    name: prod ? "Pixels Beta" : "Dev Pixels Beta",
+    name: prod ? "Pixels" : "Pixels Dev",
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "48.0",
-    version: "1.0.0",
+    runtimeVersion: "49.3", // Major is Expo version, minor is native code revision
+    version,
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
@@ -26,43 +29,73 @@ const config = {
     },
     assetBundlePatterns: ["assets/**/*"],
     ios: {
-      supportsTablet: true,
-      infoPlist: {
-        NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
-        NSBluetoothPeripheralUsageDescription:
-          "Allow $(PRODUCT_NAME) to use Bluetooth",
-        NSBluetoothAlwaysUsageDescription:
-          "Allow $(PRODUCT_NAME) to use Bluetooth",
-      },
       bundleIdentifier: prod
-        ? "com.systemicgames.pixelsapp"
+        ? "com.systemic-games.pixels"
         : "com.systemicgames.pixelsappdev",
+      buildNumber: String(buildNumber),
+      supportsTablet: false,
+      infoPlist: {
+        // NSCameraUsageDescription: "Allow $(PRODUCT_NAME) to access your camera",
+        NSBluetoothPeripheralUsageDescription:
+          "Allow $(PRODUCT_NAME) to use Bluetooth to connect to Pixels dice",
+        NSBluetoothAlwaysUsageDescription:
+          "Allow $(PRODUCT_NAME) to use Bluetooth to connect to Pixels dice",
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true,
+        },
+      },
     },
     android: {
+      package: prod
+        ? "com.SystemicGames.Pixels"
+        : "com.systemicgames.pixelsappdev",
+      versionCode: buildNumber,
       adaptiveIcon: {
         foregroundImage: prod
           ? "./assets/images/adaptive-icon.png"
           : "./assets/images/adaptive-icon-dev.png",
         backgroundColor: "#222222",
       },
-      package: prod
-        ? "com.systemicgames.pixelsapp"
-        : "com.systemicgames.pixelsappdev",
-      permissions: ["android.permission.CAMERA"],
+      blockedPermissions: ["android.permission.SYSTEM_ALERT_WINDOW"],
     },
     plugins: [
       "./withAndroidPermissions",
-      "react-native-vision-camera",
+      "./withAsyncStorageDbSize",
+      "expo-localization",
+      "sentry-expo",
       [
         "expo-build-properties",
         {
           android: {
-            kotlinVersion: "1.7.0",
-            flipper: "0.182.0",
+            // flipper: "0.182.0",
+            usesCleartextTraffic: true,
           },
         },
       ],
     ],
+    // Getting an error with Expo 49
+    // TypeError: [android.gradleProperties]: withAndroidGradlePropertiesBaseMod: nextMod is not a function
+    // mods: {
+    //   android: {
+    //     gradleProperties: [
+    //       {
+    //         key: "AsyncStorage_db_size_in_MB",
+    //         value: "50",
+    //       },
+    //     ],
+    //   },
+    // },
+    hooks: {
+      postPublish: [
+        {
+          file: "sentry-expo/upload-sourcemaps",
+          config: {
+            organization: "systemic-games",
+            project: prod ? "pixels-app" : "pixels-app-dev",
+          },
+        },
+      ],
+    },
     extra: {
       eas: {
         projectId: prod
@@ -71,6 +104,9 @@ const config = {
       },
     },
     jsEngine: "hermes",
+    experiments: {
+      tsconfigPaths: true,
+    },
   },
 };
 

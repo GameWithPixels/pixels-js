@@ -1,11 +1,16 @@
+import React from "react";
 import { FallbackProps } from "react-error-boundary";
-import { View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as Sentry from "sentry-expo";
 
 export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+  React.useEffect(() => {
+    Sentry.Native.captureException(error);
+  }, [error]);
   const { colors } = useTheme();
   return (
-    <View
+    <SafeAreaView
       style={{
         backgroundColor: colors.errorContainer,
         padding: 20,
@@ -22,12 +27,12 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
         {error.message}
       </Text>
       <Button
-        mode="outlined"
+        mode="contained-tonal"
         textColor={colors.error}
         onPress={resetErrorBoundary}
       >
         Continue
       </Button>
-    </View>
+    </SafeAreaView>
   );
 }

@@ -6,7 +6,7 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
-import EditAnimation from "./EditAnimation";
+import EditAnimation, { EditAnimationParams } from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 import { widget, range, name, observable } from "./decorators";
 
@@ -42,17 +42,15 @@ export default class EditAnimationRainbow extends EditAnimation {
   @observable
   faces: number;
 
-  constructor(opt?: {
-    uuid?: string;
-    name?: string;
-    duration?: number;
-    animFlags?: number;
-    faces?: number;
-    count?: number;
-    fade?: number;
-    intensity?: number;
-    cycles?: number;
-  }) {
+  constructor(
+    opt?: EditAnimationParams & {
+      faces?: number;
+      count?: number;
+      fade?: number;
+      intensity?: number;
+      cycles?: number;
+    }
+  ) {
     super(opt);
     this.faces = opt?.faces ?? Constants.faceMaskAll;
     this.count = opt?.count ?? 1;

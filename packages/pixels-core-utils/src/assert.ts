@@ -13,6 +13,6 @@ export class AssertionError extends Error {
  */
 export function assert(value: unknown, msg?: string): asserts value {
   if (!value) {
-    throw new AssertionError(msg ?? `Asserted failed with value ${value}`);
+    throw new AssertionError(msg ?? `Assertion failed with value ${value}`);
   }
 }

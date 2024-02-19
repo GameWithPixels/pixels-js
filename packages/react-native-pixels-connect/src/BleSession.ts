@@ -22,8 +22,8 @@ export default class BleSession extends PixelSession {
     return this._name;
   }
 
-  constructor(deviceSystemId: string, name?: string) {
-    super(deviceSystemId);
+  constructor(systemId: string, name?: string) {
+    super(systemId);
     this._name = name;
     this._centralConnStatusCb = (ev: PeripheralConnectionEvent) => {
       this._notifyConnectionEvent(ev.connectionStatus);
@@ -33,25 +33,28 @@ export default class BleSession extends PixelSession {
   async connect(): Promise<void> {
     try {
       // Update name
-      this._name = await Central.getPeripheralName(this.pixelSystemId);
+      const name = await Central.getPeripheralName(this.systemId);
+      if (name) {
+        // We may get null if Bluetooth is off
+        this._name = name;
+      }
     } catch (error) {
-      console.log(`Error getting Pixel name: ${error}`);
+      console.log(
+        `Error getting Pixel name (which was ${this._name}): ${error}`
+      );
     }
 
     // And connect
-    await Central.connectPeripheral(this.pixelSystemId, {
+    await Central.connectPeripheral(this.systemId, {
       connectionStatusCallback: this._centralConnStatusCb,
     });
   }
 
   async disconnect(): Promise<void> {
-    await Central.disconnectPeripheral(this.pixelSystemId);
+    await Central.disconnectPeripheral(this.systemId);
   }
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {
-    // if (!this._notify) {
-    //   throw new Error("Not connected");
-    // }
     const internalListener = (
       ev: PeripheralCharacteristicValueChangedEvent
     ) => {
@@ -61,7 +64,7 @@ export default class BleSession extends PixelSession {
     };
 
     await Central.subscribeCharacteristic(
-      this.pixelSystemId,
+      this.systemId,
       PixelBleUuids.service,
       PixelBleUuids.notifyCharacteristic,
       internalListener
@@ -69,7 +72,7 @@ export default class BleSession extends PixelSession {
 
     return () => {
       Central.unsubscribeCharacteristic(
-        this.pixelSystemId,
+        this.systemId,
         PixelBleUuids.service,
         PixelBleUuids.notifyCharacteristic
       ).catch(() => {});
@@ -82,11 +85,8 @@ export default class BleSession extends PixelSession {
     withoutResponse?: boolean,
     timeoutMs?: number // TODO default should be Constants.defaultRequestTimeout
   ): Promise<void> {
-    // if (!this._write) {
-    //   throw new Error("Not connected");
-    // }
     await Central.writeCharacteristic(
-      this.pixelSystemId,
+      this.systemId,
       PixelBleUuids.service,
       PixelBleUuids.writeCharacteristic,
       data,

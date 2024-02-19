@@ -37,8 +37,8 @@ import standardProfilesJson from "!/profiles/standard-profiles.json";
 import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
-import { useErrorWithHandler } from "~/features/hooks/useErrorWithHandler";
-import { useForceUpdate } from "~/features/hooks/useForceUpdate";
+import { useErrorWithHandler } from "~/hooks/useErrorWithHandler";
+import { useForceUpdate } from "~/hooks/useForceUpdate";
 
 // function test() {
 //   try {
@@ -190,7 +190,7 @@ function getPropValueString(
 
   const entry = Object.entries(editAnim).find((e) => e[0] === propertyKey);
   if (entry) {
-    if (entry[1] instanceof EditColor) {
+    if (entry[1] instanceof EditColor && entry[1].color) {
       return colorToString(entry[1].color);
     } else if (entry[1] instanceof EditRgbGradient) {
       return keyframesToString(entry[1].keyframes);

@@ -6,7 +6,14 @@ import {
   EditRule,
 } from "./edit";
 
-function addAnimations(dataSet: EditDataSet, animations: EditAnimation[]) {
+function addAnimations(
+  dataSet: EditDataSet,
+  animations: Readonly<EditAnimation>[]
+) {
+  animations.forEach((anim) => {
+    dataSet.animations.push(...anim.collectAnimations());
+  });
+
   // Add the single animation we need
   dataSet.animations.push(...animations);
 
@@ -27,13 +34,13 @@ function addAnimations(dataSet: EditDataSet, animations: EditAnimation[]) {
 }
 
 export function createDataSetForAnimation(
-  animation: EditAnimation
+  animation: Readonly<EditAnimation>
 ): EditDataSet {
   // The EditDataSet that will only contain the given animation and its patterns
   const dataSet = new EditDataSet();
 
   // Add the single animation we need
-  dataSet.animations.push(animation);
+  dataSet.animations.push(...animation.collectAnimations());
 
   // Include all patterns used by the animations
   const { rgb, grayscale } = animation.collectPatterns();
@@ -48,7 +55,7 @@ export function createDataSetForAnimation(
 }
 
 export function createDataSetForAnimations(
-  animations: EditAnimation[]
+  animations: Readonly<EditAnimation>[]
 ): EditDataSet {
   // The EditDataSet that will only contain the given animation and its patterns
   const dataSet = new EditDataSet();
@@ -60,8 +67,8 @@ export function createDataSetForAnimations(
 }
 
 export function createDataSetForProfile(
-  profile: EditProfile,
-  defaultProfile?: EditProfile
+  profile: Readonly<EditProfile>,
+  defaultProfile?: Readonly<EditProfile>
 ): EditDataSet {
   // The EditDataSet that will only contain the animations and their patterns
   // for the given profile

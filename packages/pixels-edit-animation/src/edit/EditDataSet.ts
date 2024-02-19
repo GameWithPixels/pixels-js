@@ -5,16 +5,16 @@ import EditPattern from "./EditPattern";
 import EditProfile from "./EditProfile";
 
 export default class EditDataSet {
-  readonly patterns: EditPattern[];
-  readonly rgbPatterns: EditPattern[];
-  readonly animations: EditAnimation[];
-  readonly profile: EditProfile;
+  readonly patterns: Readonly<EditPattern>[];
+  readonly rgbPatterns: Readonly<EditPattern>[];
+  readonly animations: Readonly<EditAnimation>[];
+  readonly profile: Readonly<EditProfile>;
 
   constructor(opt?: {
-    patterns?: EditPattern[];
-    rgbPatterns?: EditPattern[];
-    animations?: EditAnimation[];
-    profile?: EditProfile;
+    patterns?: Readonly<EditPattern>[];
+    rgbPatterns?: Readonly<EditPattern>[];
+    animations?: Readonly<EditAnimation>[];
+    profile?: Readonly<EditProfile>;
   }) {
     this.patterns = opt?.patterns ?? [];
     this.rgbPatterns = opt?.rgbPatterns ?? [];
@@ -22,7 +22,7 @@ export default class EditDataSet {
     this.profile = opt?.profile ?? new EditProfile();
   }
 
-  getPatternTrackOffset(pattern: EditPattern): number {
+  getPatternTrackOffset(pattern: Readonly<EditPattern>): number {
     let ret = 0;
     for (let i = 0; i < this.patterns.length; ++i) {
       if (this.patterns[i] === pattern) {
@@ -34,7 +34,7 @@ export default class EditDataSet {
     return -1;
   }
 
-  getPatternRGBTrackOffset(pattern?: EditPattern): number {
+  getPatternRGBTrackOffset(pattern?: Readonly<EditPattern>): number {
     let ret = 0;
     if (pattern) {
       for (let i = 0; i < this.rgbPatterns.length; ++i) {

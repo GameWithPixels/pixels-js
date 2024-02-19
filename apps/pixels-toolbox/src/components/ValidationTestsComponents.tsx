@@ -1,8 +1,15 @@
 import { assert, assertNever, delay } from "@systemic-games/pixels-core-utils";
 import {
+  createDataSetForProfile,
+  createLibraryProfile,
+  PrebuildProfileName,
+  PrebuildProfilesNames,
+} from "@systemic-games/pixels-edit-animation";
+import {
   BaseBoxProps,
   BaseHStack,
   BaseVStack,
+  useVisibility,
 } from "@systemic-games/react-native-base-components";
 import {
   DfuCommunicationError,
@@ -23,26 +30,33 @@ import {
 import { Audio, AVPlaybackSource } from "expo-av";
 import React from "react";
 import { useTranslation, TFunction } from "react-i18next";
-import { Button, Text } from "react-native-paper";
+import { View } from "react-native";
+import { Button, Menu, Text } from "react-native-paper";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
+import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
-import { FactoryDfuBundleFiles } from "~/features/hooks/useFactoryDfuFilesBundle";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
-  pixelClearSettings,
+  pixelResetAllSettings,
   pixelStopAllAnimations,
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
-import { getDefaultProfile } from "~/features/pixels/getDefaultProfile";
+import { getDefaultName } from "~/features/pixels/getDefaultName";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
+import {
+  selectCustomFirmwareAndProfile,
+  selectProfileName,
+} from "~/features/store/validationSelectors";
+import { setFactoryProfile } from "~/features/store/validationSettingsSlice";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import {
   TaskCanceledError,
@@ -132,9 +146,9 @@ function get24BitsTimestamp(): number {
 }
 
 // List of faces to test, last face is the one with the copper counter weight
-function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
+function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
   let faces: number[];
-  switch (pixel.dieType) {
+  switch (dieType) {
     case "d4":
       faces = [2, 3, 4];
       break;
@@ -159,9 +173,7 @@ function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
       faces = [5, 10, 20];
       break;
     default:
-      throw new Error(
-        `Unsupported die type ${pixel.dieType} (${pixel.ledCount} LEDs)`
-      );
+      throw new Error(`Unsupported die type ${dieType}`);
   }
   assert(faces.length === 3, "getFaceUp: Need 3 faces");
   switch (step) {
@@ -224,6 +236,7 @@ async function scanForPixelWithTimeout(
   // Setup scanner
   const scanner = new PixelScanner();
   scanner.scanFilter = (pixel: ScannedPixel) => pixel.pixelId === pixelId;
+  scanner.minNotifyInterval = 0;
 
   // Wait until we find our Pixel or timeout
   const scannedPixel = await withPromise<ScannedPixel>(
@@ -243,13 +256,13 @@ async function scanForPixelWithTimeout(
         timeout
       );
       // Setup our scan listener
-      scanner.scanListener = () => {
-        const scannedPixel = scanner.scannedPixels[0];
+      scanner.addListener("scannedPixels", (scannedPixels) => {
+        const scannedPixel = scannedPixels[0];
         if (scannedPixel) {
           clearTimeout(timeoutId);
           resolve(scannedPixel);
         }
-      };
+      });
       // Start scanning
       console.log(`Scanning for Pixel with id ${pixelId.toString(16)}`);
       scanner.start();
@@ -317,10 +330,16 @@ function MessageYesNo({
   );
 }
 
+export interface FactoryDfuFilesBundle {
+  readonly bootloader?: DfuFileInfo;
+  readonly firmware: DfuFileInfo;
+  readonly date: Date;
+}
+
 export interface ValidationTestsSettings {
-  sequence: ValidationSequence;
-  dieType: PixelDieType;
-  dfuFilesBundle: FactoryDfuBundleFiles;
+  readonly sequence: ValidationSequence;
+  readonly dieType: PixelDieType;
+  readonly dfuFilesBundle: FactoryDfuFilesBundle;
 }
 
 export interface ValidationTestProps extends TaskComponentProps {
@@ -398,6 +417,10 @@ export function UpdateFirmware({
         try {
           // Use firmware date from scanned data as it is the most up-to-date
           console.log(
+            "Validation firmware build timestamp is",
+            toLocaleDateTimeString(settings.dfuFilesBundle.date)
+          );
+          console.log(
             "On device firmware build timestamp is",
             toLocaleDateTimeString(dfuTarget.firmwareDate)
           );
@@ -411,7 +434,7 @@ export function UpdateFirmware({
           ) {
             onFirmwareUpdate?.("updating");
             // Prepare for updating firmware
-            const blPath = settings.dfuFilesBundle.bootloader.pathname;
+            const blPath = settings.dfuFilesBundle.bootloader?.pathname;
             const fwPath = settings.dfuFilesBundle.firmware.pathname;
             const updateFW = async (blAddr?: number) => {
               let dfuState: DfuState | undefined;
@@ -552,13 +575,33 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
+          assert(pixel, "No Pixel instance");
+          // Try to connect with a few attempts
+          await repeatConnect(
+            abortSignal,
+            t,
+            (timeout) => pixel.connect(timeout),
+            () => pixel.disconnect()
+          );
+          // Make sure we don't have any animation playing
+          await pixelStopAllAnimations(pixel);
+        },
+        [pixel, t]
+      ),
+      createTaskStatusContainer(t("connect"))
+    )
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          assert(pixel, "No Pixel instance");
           if (
             dieType &&
             dieType !== "unknown" &&
             dieType !== settings.dieType
           ) {
-            const update = await withTimeout<boolean>(
+            const update = await withTimeoutAndDisconnect<boolean>(
               abortSignal,
+              pixel,
               testTimeout,
               (abortSignal) =>
                 withPromise<boolean>(
@@ -579,7 +622,7 @@ export function ConnectPixel({
             }
           }
         },
-        [dieType, settings.dieType, t]
+        [dieType, pixel, settings.dieType, t]
       ),
       createTaskStatusContainer({
         title: t("checkDieType"),
@@ -600,24 +643,6 @@ export function ConnectPixel({
         ),
       })
     )
-    .withTask(
-      React.useCallback(
-        async (abortSignal) => {
-          assert(pixel, "No Pixel instance");
-          // Try to connect with a few attempts
-          await repeatConnect(
-            abortSignal,
-            t,
-            (timeout) => pixel.connect(timeout),
-            () => pixel.disconnect()
-          );
-          // Make sure we don't have any animation playing
-          await pixelStopAllAnimations(pixel);
-        },
-        [pixel, t]
-      ),
-      createTaskStatusContainer(t("connect"))
-    )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
@@ -629,13 +654,17 @@ export function CheckBoard({
   onTaskStatus,
   settings,
   pixel,
-  firmwareUpdated,
-}: ValidationTestProps & {
-  firmwareUpdated: boolean;
-}) {
+}: ValidationTestProps) {
   const { t } = useTranslation();
 
+  const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "CheckBoard")
+    .withTask(
+      React.useCallback(async () => {
+        await pixelResetAllSettings(pixel);
+      }, [pixel]),
+      createTaskStatusContainer(t("clearSettings"))
+    )
     .withTask(
       React.useCallback(
         () => ValidationTests.checkAccelerationValid(pixel),
@@ -657,11 +686,19 @@ export function CheckBoard({
     )
     .withTask(
       React.useCallback(async () => {
-        if (firmwareUpdated) {
-          await pixelClearSettings(pixel);
-        }
-      }, [pixel, firmwareUpdated]),
-      createTaskStatusContainer(t("clearSettings"))
+        // Set empty profile
+        await ValidationTests.updateProfile(
+          pixel,
+          createDataSetForProfile(
+            createLibraryProfile("empty", settings.dieType)
+          ).toDataSet(),
+          setProgress
+        );
+      }, [pixel, settings.dieType]),
+      createTaskStatusContainer({
+        title: t("resetProfile"),
+        children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
+      })
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -684,11 +721,12 @@ export function WaitCharging({
         async (abortSignal) =>
           ValidationTests.waitCharging(
             pixel,
+            settings.dieType,
             !notCharging,
             notCharging ? Color.dimGreen : Color.dimOrange,
             abortSignal
           ),
-        [notCharging, pixel]
+        [notCharging, pixel, settings.dieType]
       ),
       createTaskStatusContainer({
         children: (
@@ -715,7 +753,7 @@ export function WaitCharging({
         }
       }, [pixel, t]),
       createTaskStatusContainer(t("batteryLevel")),
-      { skip: settings.sequence !== "dieFinal" }
+      { skip: !notCharging || settings.sequence !== "dieFinal" }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -771,7 +809,7 @@ export function CheckLEDs({
       createTaskStatusContainer({
         children: (
           <MessageYesNo
-            message={t("areAllLEDsWhiteWithCount", {
+            message={t("areAllLEDsWhite", {
               count: pixel.ledCount,
             })}
             hideButtons={!resolvePromise}
@@ -790,6 +828,7 @@ export function CheckLEDs({
 export function WaitFaceUp({
   action,
   onTaskStatus,
+  settings,
   pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
@@ -800,11 +839,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "1"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "1"),
             Color.dimMagenta,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeBlinkingFaceUp"))
     )
@@ -814,11 +854,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "2"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "2"),
             Color.dimYellow,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -828,11 +869,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "3"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "3"),
             Color.dimCyan,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -923,7 +965,6 @@ export function StoreSettings({
                   PixelValueStoreType.Colorway,
                   value
                 );
-                pixel._updateColorway(colorway);
               }
             }
           ),
@@ -975,32 +1016,110 @@ export function PrepareDie({
   settings,
   pixel,
   onPrintStatus,
-}: ValidationTestProps & PrintingProp) {
+}: ValidationTestProps & Partial<PrintingProp>) {
   const { t } = useTranslation();
+
+  const appDispatch = useAppDispatch();
+  const selectProfile = useAppSelector(selectCustomFirmwareAndProfile);
+  const profile = useAppSelector(selectProfileName);
+  const setProfile = React.useCallback(
+    (p: PrebuildProfileName) => appDispatch(setFactoryProfile(p)),
+    [appDispatch]
+  );
+
+  const [resolveSelectProfilePromise, setResolveSelectProfilePromise] =
+    React.useState<() => void>();
+  const {
+    visible: profileMenuVisible,
+    show: showProfileMenu,
+    hide: hideProfileMenu,
+  } = useVisibility();
 
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          withTimeoutAndDisconnect(
+            abortSignal,
+            pixel,
+            60 * 60 * 1000, // 1h timeout
+            (abortSignal) =>
+              withPromise(
+                abortSignal,
+                "selectProfile",
+                (resolve) => setResolveSelectProfilePromise(() => resolve),
+                () => setResolveSelectProfilePromise(undefined)
+              )
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        title: t("selectProfile"),
+        children: (
+          <BaseHStack w="100%" flex={1} gap={20}>
+            <View style={{ flex: 1 }}>
+              <Menu
+                visible={profileMenuVisible}
+                onDismiss={hideProfileMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button mode="outlined" onPress={showProfileMenu}>
+                    {profile}
+                  </Button>
+                }
+              >
+                {PrebuildProfilesNames.map((p) => (
+                  <Menu.Item
+                    key={p}
+                    title={p}
+                    onPress={() => {
+                      setProfile(p);
+                      hideProfileMenu();
+                    }}
+                  />
+                ))}
+              </Menu>
+            </View>
+            <Button
+              mode="contained-tonal"
+              onPress={resolveSelectProfilePromise}
+            >
+              {t("ok")}
+            </Button>
+          </BaseHStack>
+        ),
+      }),
+      { skip: !selectProfile }
+    )
+    .withTask(
+      React.useCallback(
+        // Note: renaming die also reset profile to default
+        async () => ValidationTests.renameDie(pixel, getDefaultName(pixel)),
+        [pixel]
+      ),
+      createTaskStatusContainer(t("setDieName"))
+    )
+    .withTask(
       React.useCallback(async () => {
+        console.log(`Programming profile: ${profile}`);
         // Update profile
         await ValidationTests.updateProfile(
           pixel,
-          getDefaultProfile(settings.dieType),
+          createDataSetForProfile(
+            createLibraryProfile(profile, settings.dieType)
+          ).toDataSet(),
           setProgress
         );
-      }, [pixel, settings.dieType]),
+        // Start printing ahead of time
+        if (onPrintStatus) {
+          printLabel(pixel, settings.dieType, onPrintStatus);
+        }
+      }, [onPrintStatus, pixel, profile, settings.dieType]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
       })
-    )
-    .withTask(
-      React.useCallback(async () => {
-        await ValidationTests.renameDie(pixel);
-        // Start printing ahead of time
-        printLabel(pixel, settings.dieType, onPrintStatus);
-      }, [onPrintStatus, pixel, settings.dieType]),
-      createTaskStatusContainer(t("setDieName"))
     )
     .withTask(
       React.useCallback(
@@ -1116,7 +1235,7 @@ export function LabelPrinting({
             "labelPrinting",
             (resolve) => setResolvePrintOkPromise(() => resolve)
           );
-          if (!printOk) {
+          if (!printOk && onPrintStatus) {
             console.log("Reprinting label");
             onPrintStatus(undefined);
             setReset(true);

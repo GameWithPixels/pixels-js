@@ -72,6 +72,13 @@ export function rgbToHsv({ r, g, b }: IColor): IColorHsv {
   }
 }
 
+export function shiftHue({ r, g, b }: IColor, shift: number): IColor {
+  const hsv = rgbToHsv({ r, g, b });
+  hsv.h = (hsv.h + shift) % 1;
+  const out = hsvToRgb(hsv);
+  return out;
+}
+
 function colorByteToHex(byte: number): string {
   return byte.toString(16).padStart(2, "0");
 }
@@ -99,7 +106,7 @@ export function colorComponentToByte(c: number): number {
 /**
  * @category Color
  */
-export function colorToString({ r, g, b }: IColor): string {
+export function colorToString({ r, g, b }: Readonly<IColor>): string {
   return colorBytesToString(
     colorComponentToByte(r),
     colorComponentToByte(g),

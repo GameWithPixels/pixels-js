@@ -1,10 +1,9 @@
 import * as FileSystem from "expo-file-system";
 
-import { loadFileFromModuleAsync } from "../files/loadFileFromModuleAsync";
-
 import factoryDfuFiles from "!/dfu/factory-dfu-files.zip";
 import otherDfuFiles from "!/dfu/other-dfu-files.zip";
 import Pathname from "~/features/files/Pathname";
+import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
 import { unzipFileAsync } from "~/features/files/unzipFileAsync";
 
 export const cacheDirectory = FileSystem.cacheDirectory + "unzippedDfuFiles/";

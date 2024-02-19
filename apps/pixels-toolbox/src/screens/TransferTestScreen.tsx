@@ -14,7 +14,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import FileSystem, { StorageAccessFramework } from "expo-file-system";
 import React from "react";
-import { useErrorHandler } from "react-error-boundary";
+import { useErrorBoundary } from "react-error-boundary";
 import {
   FlatList,
   Platform,
@@ -30,10 +30,10 @@ import { LineChart } from "~/components/LineChart";
 import { PixelInfoCard } from "~/components/PixelInfoCard";
 import Pathname from "~/features/files/Pathname";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
-import { useFocusScannedPixelNotifiers } from "~/features/hooks/useFocusScannedPixelNotifiers";
 import { pixelTransferTest } from "~/features/pixels/extensions";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
+import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
 
 function PixelListItem({
   pixel,
@@ -56,7 +56,7 @@ function SelectPixel({
   onSelect: (pixel: PixelInfoNotifier) => void;
 }) {
   // Scanning
-  const [scannedPixels, scannerDispatch, lastError] =
+  const [scannedPixels, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -92,7 +92,9 @@ function SelectPixel({
   return (
     <>
       <Text>Select Pixel:</Text>
-      {lastError && <Text style={AppStyles.bold}>{`${lastError}`}</Text>}
+      {!(typeof scanStatus === "string") && (
+        <Text style={AppStyles.bold}>{String(scanStatus)}</Text>
+      )}
       <FlatList
         style={AppStyles.fullWidth}
         contentContainerStyle={AppStyles.listContentContainer}
@@ -145,7 +147,7 @@ class DataRate {
 }
 
 function SendData({ pixel }: { pixel: Pixel }) {
-  const errorHandler = useErrorHandler();
+  const { showBoundary } = useErrorBoundary();
   const status = usePixelStatus(pixel);
   const [transferring, setTransferring] = React.useState(false);
   const [transferSize, settTransferSize] = React.useState<number>(10000);
@@ -166,9 +168,9 @@ function SendData({ pixel }: { pixel: Pixel }) {
       setPoints(dataRate.points);
       setTransferredBytes(bytesCount);
     })
-      .catch(errorHandler)
+      .catch(showBoundary)
       .finally(() => setTransferring(false));
-  }, [dataRate, errorHandler, pixel, transferSize]);
+  }, [dataRate, pixel, showBoundary, transferSize]);
 
   // Export to CSV file
   const exportCsv = React.useCallback(() => {
@@ -195,8 +197,8 @@ function SendData({ pixel }: { pixel: Pixel }) {
         }
       }
     };
-    promise().catch(errorHandler);
-  }, [dataRate, errorHandler, pixel.name]);
+    promise().catch(showBoundary);
+  }, [dataRate.points, pixel.name, showBoundary]);
 
   // UI
   const progress = transferredBytes / transferSize;

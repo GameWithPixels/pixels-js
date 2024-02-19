@@ -27,6 +27,7 @@ export function BaseButton({
   children,
   color,
   _text,
+  style,
   ...props
 }: BaseButtonProps) {
   const { colors, roundness } = useTheme();
@@ -54,7 +55,7 @@ export function BaseButton({
   return (
     <TouchableRipple
       rippleColor={colors.surface}
-      style={[
+      style={(state) => [
         {
           backgroundColor: color ?? colors.secondaryContainer,
           borderRadius,
@@ -65,7 +66,7 @@ export function BaseButton({
           justifyContent: "center",
         },
         expandShorthandStyle(props),
-        props.style,
+        typeof style === "function" ? style(state) : style,
       ]}
       {...props}
     >

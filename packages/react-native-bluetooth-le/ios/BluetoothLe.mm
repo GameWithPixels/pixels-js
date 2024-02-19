@@ -158,16 +158,15 @@ RCT_EXPORT_MODULE();
         CBPeripheral *peripheral = [_central peripheralForIdentifier:uuid];
         if (!peripheral && reject)
         {
-            // No known peripheral for this id
-            rejectWithError(SGBleInvalidParameterError, reject);
+            rejectWithError(SGBleUnknownPeripheralError, reject);
         }
         return peripheral;
     }
-    else
+    else if (reject)
     {
         rejectWithError(SGBleInvalidParameterError, reject);
-        return nil;
     }
+    return nil;
 }
 
 - (SGBlePeripheralQueue *)getSGBlePeripheralQueue:(NSString *)deviceSystemId rejecter:(RCTPromiseRejectBlock)reject
@@ -182,8 +181,7 @@ RCT_EXPORT_MODULE();
         }
         else if (reject)
         {
-            // No known peripheral for this id
-            rejectWithError(SGBleInvalidStateError, reject);
+            rejectWithError(SGBleInvalidParameterError, reject);
         }
     }
     return nil;
@@ -239,29 +237,31 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(bleInitialize:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
-    __weak BluetoothLe *weakSelf = self;
-    _central = [[SGBleCentralManagerDelegate alloc] initWithStateUpdateHandler:^(CBManagerState state) {
-        BluetoothLe *self = weakSelf;
-        // Check if instance still exist and has listeners
-        if (self && self->_hasListeners)
-        {
-            [self sendEventWithName:bluetoothStateEventName body:@{
-                @"state": toString(state),
-            }];
-        }
-    }];
-    _central.peripheralDiscoveryHandler = ^(CBPeripheral *peripheral, NSDictionary<NSString *,id> *advertisementData, NSNumber *rssi) {
-        BluetoothLe *self = weakSelf;
-        // Check if instance still exist and has listeners
-        if (self && self->_hasListeners)
-        {
-            [self sendEventWithName:scanResultEventName body:@{
-                @"device": peripheralToDict(peripheral),
-                @"advertisementData": advertisementToDict(advertisementData, rssi),
-            }];
-        }
-    };
-    
+    if (!_central)
+    {
+        __weak BluetoothLe *weakSelf = self;
+        _central = [[SGBleCentralManagerDelegate alloc] initWithStateUpdateHandler:^(CBManagerState state) {
+            BluetoothLe *self = weakSelf;
+            // Check if instance still exist and has listeners
+            if (self && self->_hasListeners)
+            {
+                [self sendEventWithName:bluetoothStateEventName body:@{
+                    @"state": toString(state),
+                }];
+            }
+        }];
+        _central.peripheralDiscoveryHandler = ^(CBPeripheral *peripheral, NSDictionary<NSString *,id> *advertisementData, NSNumber *rssi) {
+            BluetoothLe *self = weakSelf;
+            // Check if instance still exist and has listeners
+            if (self && self->_hasListeners)
+            {
+                [self sendEventWithName:scanResultEventName body:@{
+                    @"device": peripheralToDict(peripheral),
+                    @"advertisementData": advertisementToDict(advertisementData, rssi),
+                }];
+            }
+        };
+    }
     resolve(nil);
 }
 
@@ -271,7 +271,7 @@ RCT_EXPORT_METHOD(startScan:(NSString *)requiredServicesUuids
 {
     if (!_central.isBluetoothOn)
     {
-        rejectWithError(SGBleInvalidStateError, reject);
+        rejectWithError(SGBleBluetoothStateError, reject);
     }
     else
     {
@@ -287,13 +287,6 @@ RCT_EXPORT_METHOD(stopScan:(RCTPromiseResolveBlock)resolve
     [_central.centralManager stopScan];
     
     resolve(nil);
-}
-
-RCT_EXPORT_METHOD(getDeviceFromAddress:(nonnull NSNumber *)bluetoothAddress
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-{
-    rejectWithError(SGBleNotImplementedError, reject);
 }
 
 RCT_EXPORT_METHOD(createPeripheral:(NSString *)deviceSystemId

@@ -100,9 +100,9 @@ public final class Serializer {
     public static WritableMap toJS(@Nullable BluetoothDevice device) {
         WritableMap map = Arguments.createMap();
         if (device != null) {
-            map.putString("systemId", String.valueOf(Utils.getDeviceSystemId(device)));
+            map.putString("systemId", Long.toHexString(Utils.addressToNumber(device.getAddress())));
             // 48 bits Bluetooth MAC address fits into the 52 bits mantissa of a double
-            map.putDouble("address", addressToNumber(device.getAddress()));
+            map.putDouble("address", Utils.addressToNumber(device.getAddress()));
             String name = device.getName();
             map.putString("name", name != null ? name : "");
         }
@@ -113,8 +113,8 @@ public final class Serializer {
     public static WritableMap toJS(@Nullable Peripheral peripheral) {
         WritableMap map = Arguments.createMap();
         if (peripheral != null) {
-            map.putString("systemId", String.valueOf(peripheral.getSystemId()));
-            map.putDouble("address", addressToNumber(peripheral.getAddress()));
+            map.putString("systemId", Long.toHexString(Utils.addressToNumber(peripheral.getAddress())));
+            map.putDouble("address", Utils.addressToNumber(peripheral.getAddress()));
             String name = peripheral.getName();
             map.putString("name", name != null ? name : "");
         }
@@ -182,12 +182,11 @@ public final class Serializer {
 
     @NonNull
     public static String toJS(@DisconnectionReason int reason) {
-        // TODO which reason do we get when Bluetooth is turned off?
         switch (reason) {
             case ConnectionObserver.REASON_SUCCESS:
                 return "success";
             case ConnectionObserver.REASON_TERMINATE_LOCAL_HOST:
-                return "host";
+                return "host"; // We get this reason when Bluetooth is turned off
             case ConnectionObserver.REASON_TERMINATE_PEER_USER:
                 return "peripheral";
             case ConnectionObserver.REASON_LINK_LOSS:
@@ -300,14 +299,5 @@ public final class Serializer {
             }
         }
         return arr;
-    }
-
-    @NonNull
-    private static long addressToNumber(String address) {
-        try {
-            return Long.parseLong(address.replace(":", ""), 16);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 }

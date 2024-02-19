@@ -23,7 +23,11 @@ export default class EditConditionFaceCompare extends EditCondition {
   @range(1, 20)
   @name("Than")
   @observable
-  face: number; // Face value
+  face: number;
+
+  get flagName(): string | undefined {
+    return this.getFlagName(this.flags, FaceCompareFlagsValues);
+  }
 
   constructor(opt?: { flags?: number; face?: number }) {
     super();

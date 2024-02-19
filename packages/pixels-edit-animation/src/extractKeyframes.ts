@@ -5,7 +5,7 @@ import { EditRgbKeyframe } from "./edit";
 const KeyframeTimeResolutionMs = 2;
 
 export function extractKeyframes(
-  pixels: Color[],
+  pixels: readonly Color[],
   maxInterpolationError = Math.sqrt(0.2)
 ): EditRgbKeyframe[] {
   const ret: EditRgbKeyframe[] = [];
