@@ -122,7 +122,7 @@ function getWebRequestActionText(
   if (action.url.length) {
     let msg = `Send request to "${getUrlShortText(action.url)}"`;
     if (action.value?.length) {
-      msg += ` and with value "${action.value}"`;
+      msg += ` with value "${action.value}"`;
     }
     return msg;
   } else {

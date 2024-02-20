@@ -198,6 +198,7 @@ function updateAction(
         const data = actionSetData[type][index];
         action.url = data.url;
         action.value = data.value;
+        action.format = data.format;
       }
       break;
     case "speakText":

@@ -20,6 +20,7 @@ import React from "react";
 import { Platform, View } from "react-native";
 import {
   Button,
+  Switch,
   Text,
   ThemeProvider,
   TouchableRipple,
@@ -37,8 +38,12 @@ import {
   SliderWithValueProps,
 } from "~/components/SliderWithTitle";
 import { GradientButton, OutlineButton } from "~/components/buttons";
-import { buildActionURL } from "~/features/profiles";
-import { playRemoteAction } from "~/features/profiles/playRemoteAction";
+import {
+  getWebRequestPayload,
+  getWebRequestURL,
+  playActionMakeWebRequest,
+  playActionSpeakText,
+} from "~/features/profiles";
 import { getAnimationGradient } from "~/features/store/library/animationGradient";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
@@ -619,7 +624,7 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         sentry-label="change-volume"
         onValueChange={(v) => runInAction(() => (action.rate = v))}
       />
-      <OutlineButton onPress={() => playRemoteAction(action)}>
+      <OutlineButton onPress={() => playActionSpeakText(action)}>
         Test Speech
       </OutlineButton>
       {Platform.OS === "android" && (
@@ -634,11 +639,14 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
 const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   action,
   profileName,
+  currentFace,
 }: {
   action: Profiles.ActionMakeWebRequest;
   profileName: string;
+  currentFace: number;
 }) {
-  const urlOpt = { profileName, pixelName: "pixel" } as const;
+  const pixel = { name: "Pixel", currentFace };
+  const payload = getWebRequestPayload(pixel, profileName, action.value);
   const { colors } = useTheme();
   return (
     <>
@@ -652,17 +660,44 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
         value={action.value}
         onChangeText={(t) => runInAction(() => (action.value = t))}
       />
-      <Text style={{ color: colors.onSurfaceDisabled, marginTop: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text variant="titleMedium">Send JSON Payload</Text>
+        <Switch
+          value={action.format === "json"}
+          onValueChange={(v) => {
+            runInAction(() => (action.format = v ? "json" : "parameters"));
+          }}
+          thumbColor={colors.onSurface}
+          trackColor={{
+            false: colors.onSurfaceDisabled,
+            true: colors.primary,
+          }}
+        />
+      </View>
+      <Text style={{ color: colors.onSurfaceDisabled, marginTop: 5 }}>
         The request will look like this:
       </Text>
       <Text style={{ color: colors.onSurfaceDisabled }}>
-        {buildActionURL(action, urlOpt)}
+        {action.format === "json"
+          ? `• url: ${action.url}\n• body: ${JSON.stringify(payload, null, 4)}`
+          : getWebRequestURL(action.url, payload)}
       </Text>
-      <Text style={{ color: colors.onSurfaceDisabled }}>
-        Where "{urlOpt.pixelName}" is replaced by the name of the die that
-        triggered this action.
-      </Text>
-      <OutlineButton onPress={() => playRemoteAction(action, urlOpt)}>
+      {action.format === "parameters" && (
+        <Text style={{ color: colors.onSurfaceDisabled }}>
+          With:
+          {"\n"}• value1: name of the die that triggered this action
+          {"\n"}• value2: value of the action (currently "{action.value}")
+          {"\n"}• value3: value of the die's face up
+          {"\n"}• value4: name of the profile
+        </Text>
+      )}
+      <OutlineButton onPress={() => playActionMakeWebRequest(action, payload)}>
         Test Web Request
       </OutlineButton>
     </>
@@ -757,6 +792,11 @@ export const ConfigureActionBottomSheet = observer(
                 <ConfigureMakeWebRequest
                   action={action}
                   profileName={profileName}
+                  currentFace={
+                    condition instanceof Profiles.ConditionRolled
+                      ? Math.max(...condition.faces)
+                      : DiceUtils.getTopFace(dieType)
+                  }
                 />
               ) : null}
               {condition instanceof Profiles.ConditionRolling ? (

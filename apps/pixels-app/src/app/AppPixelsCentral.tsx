@@ -1,4 +1,4 @@
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
+import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useStore } from "react-redux";
 import { Store } from "redux";
@@ -7,7 +7,11 @@ import { useAppDispatch, useAppSelector } from "./hooks";
 import { RootState } from "./store";
 
 import { PixelsCentral } from "~/features/dice/PixelsCentral";
-import { playRemoteAction } from "~/features/profiles/playRemoteAction";
+import {
+  getWebRequestPayload,
+  playActionMakeWebRequest,
+  playActionSpeakText,
+} from "~/features/profiles";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import { setPairedDieName } from "~/features/store/pairedDiceSlice";
 import { readProfile } from "~/features/store/profiles";
@@ -29,10 +33,16 @@ function remoteActionListener(
       console.log(
         `Got remote action id=${actionId} of type ${action.type} for profile ${profile.name}`
       );
-      playRemoteAction(action, {
-        profileName: profile.name,
-        pixelName: pixel.name,
-      });
+      if (action instanceof Profiles.ActionMakeWebRequest) {
+        playActionMakeWebRequest(
+          action,
+          getWebRequestPayload(pixel, profile.name, action.value)
+        );
+      } else if (action instanceof Profiles.ActionSpeakText) {
+        playActionSpeakText(action);
+      } else {
+        console.log(`Ignoring remote action of type "${action.type}`);
+      }
     } else {
       console.warn(
         `Remote action with id=${actionId} for profile ${profile.name} not found`
