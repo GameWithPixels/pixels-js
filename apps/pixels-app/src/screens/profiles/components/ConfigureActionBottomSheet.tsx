@@ -183,8 +183,8 @@ const ConfigureRollingCondition = observer(function ConfigureRollingCondition({
         unit="s"
         fractionDigits={1}
         value={condition.recheckAfter}
-        minimumValue={1}
-        maximumValue={30}
+        minimumValue={0.1}
+        maximumValue={60}
         step={0.1}
         sentry-label="change-rolling-recheck-after"
         onValueChange={(v) => runInAction(() => (condition.recheckAfter = v))}
@@ -246,8 +246,6 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   // TODO Several animation types may have those keys
   const color = (action.animation as Partial<Profiles.AnimationFlashes>)?.color;
   const keyframes = getAnimationGradient(action.animation)?.keyframes;
-  const repeatCount = (action.animation as Partial<Profiles.AnimationFlashes>)
-    ?.count;
   const fading = (action.animation as Partial<Profiles.AnimationFlashes>)?.fade;
   const intensity = (action.animation as Partial<Profiles.AnimationRainbow>)
     ?.intensity;
@@ -273,6 +271,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
             action.animation = anim as Profiles.Animation; // TODO This cast removes readonly
             // Clear overrides
             action.duration = undefined;
+            action.loopCount = 1;
             action.fade = undefined;
             action.intensity = undefined;
             action.colors.length = 0;
@@ -299,18 +298,16 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       {keyframes && keyframes.length > 1 && (
         <PlayAnimationGradient action={action} defaultKeyframes={keyframes} />
       )}
-      {repeatCount !== undefined && (
-        <PlayAnimationSlider
-          title="Repeat Count"
-          minimumValue={1}
-          maximumValue={10}
-          step={1}
-          value={action.loopCount > 0 ? action.loopCount : repeatCount}
-          isDefault={!action.loopCount}
-          onValueChange={(v) => (action.loopCount = v)}
-          onReset={() => (action.loopCount = 0)}
-        />
-      )}
+      <PlayAnimationSlider
+        title="Repeat Count"
+        minimumValue={1}
+        maximumValue={10}
+        step={1}
+        value={action.loopCount}
+        isDefault={action.loopCount <= 1}
+        onValueChange={(v) => (action.loopCount = v)}
+        onReset={() => (action.loopCount = 1)}
+      />
       {fading !== undefined && (
         <PlayAnimationSlider
           title="Fading"

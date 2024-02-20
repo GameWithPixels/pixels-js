@@ -28,20 +28,10 @@ export function applyActionOverrides(
   const originalAnim = action.animation;
   if (originalAnim) {
     let anim = originalAnim;
-    const getAnim = () => {
-      if (anim === originalAnim) {
-        anim = originalAnim.duplicate();
-      }
-      return anim!;
-    };
+    const getAnim = () =>
+      anim === originalAnim ? (anim = originalAnim.duplicate()) : anim;
     if (action.duration !== undefined) {
       getAnim().duration = action.duration;
-    }
-    if (action.loopCount !== undefined) {
-      const anim = getAnim();
-      if ("count" in anim && typeof anim.count === "number") {
-        (anim.count as number) = action.loopCount;
-      }
     }
     if (action.fade !== undefined) {
       const anim = getAnim();
