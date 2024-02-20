@@ -11,6 +11,8 @@ import EditActionRunOnDevice from "./EditActionRunOnDevice";
 import EditDataSet from "./EditDataSet";
 import { name, observable, widget } from "./decorators";
 
+export type ActionWebRequestFormat = "parameters" | "json";
+
 export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
   readonly type = "makeWebRequest";
 
@@ -24,10 +26,19 @@ export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
   @observable
   value: string;
 
-  constructor(opt?: { url?: string; value?: string }) {
+  @name("Format")
+  @observable
+  format: ActionWebRequestFormat;
+
+  constructor(opt?: {
+    url?: string;
+    value?: string;
+    format: ActionWebRequestFormat;
+  }) {
     super();
     this.url = opt?.url ?? "";
     this.value = opt?.value ?? "";
+    this.format = opt?.format ?? "parameters";
   }
 
   toAction(_editSet: EditDataSet, _set: DataSet, actionId: number): Action {

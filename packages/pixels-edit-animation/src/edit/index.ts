@@ -3,6 +3,7 @@ export * from "./ColorMode";
 export { default as Editable } from "./Editable";
 export { default as EditAction } from "./EditAction";
 export { default as EditActionMakeWebRequest } from "./EditActionMakeWebRequest";
+export { type ActionWebRequestFormat } from "./EditActionMakeWebRequest";
 export { default as EditActionPlayAnimation } from "./EditActionPlayAnimation";
 export { default as EditActionPlayAudioClip } from "./EditActionPlayAudioClip";
 export { default as EditActionRunOnDevice } from "./EditActionRunOnDevice";

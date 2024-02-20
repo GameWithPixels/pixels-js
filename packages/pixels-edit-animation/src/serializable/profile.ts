@@ -6,6 +6,7 @@ import {
 } from "@systemic-games/pixels-core-animation";
 
 import { UniqueNamedData } from "./unique";
+import { ActionWebRequestFormat } from "../edit";
 
 export interface ProfileData extends UniqueNamedData {
   description: string;
@@ -51,6 +52,7 @@ export interface ProfileData extends UniqueNamedData {
     makeWebRequest: {
       url: string;
       value: string;
+      format: ActionWebRequestFormat;
     }[];
     speakText: {
       text: string;

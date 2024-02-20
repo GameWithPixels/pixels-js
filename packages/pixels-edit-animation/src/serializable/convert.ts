@@ -520,6 +520,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
               actions[actType].push({
                 url: act.url,
                 value: act.value,
+                format: act.format,
               });
             }
             break;
