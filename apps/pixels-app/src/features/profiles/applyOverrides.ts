@@ -1,4 +1,7 @@
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  DiceUtils,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 
 import {
   getAnimationGradient,
@@ -13,6 +16,11 @@ export function applyProfileOverrides(
     (r) => r.condition.type !== "handling"
   );
   for (const rule of modified.rules) {
+    if (rule.condition instanceof Profiles.ConditionRolled) {
+      rule.condition.faces = rule.condition.faces.map((f) =>
+        DiceUtils.mapFaceForAnimation(f, profile.dieType)
+      );
+    }
     for (const action of rule.actions) {
       if (action instanceof Profiles.ActionPlayAnimation) {
         action.animation = applyActionOverrides(action);

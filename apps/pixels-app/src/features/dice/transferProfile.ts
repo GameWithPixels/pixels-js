@@ -27,21 +27,25 @@ export function transferProfile(
   console.log(`Transferring profile: ${profile.name} - ${profile.uuid}`);
   for (const rule of modified.rules) {
     console.log(" - Rule of type " + rule.condition.type);
+    if (rule.condition instanceof Profiles.ConditionRolled) {
+      console.log("    Mapped faces: " + rule.condition.faces.join(", "));
+    }
     for (const action of rule.actions) {
       if (action instanceof Profiles.ActionPlayAnimation) {
         const anim = action.animation;
         console.log(
           anim
-            ? `     * Play anim ${anim.name} of type ${anim.type} with a duration of ${anim.duration}`
-            : "     * No animation!"
+            ? `    * Play anim ${anim.name}, type: ${anim.type},` +
+                ` duration: ${anim.duration}, count ${(anim as any).count}`
+            : "    * No animation!"
         );
       } else if (action instanceof Profiles.ActionMakeWebRequest) {
         console.log(
-          `     * Web request to "${action.url}" with value "${action.value}"`
+          `    * Web request to "${action.url}" with value "${action.value}"`
         );
       } else if (action instanceof Profiles.ActionSpeakText) {
         console.log(
-          `     * Speak "${action.text}" with pitch ${action.pitch} and rate ${action.rate}`
+          `    * Speak "${action.text}" with pitch ${action.pitch} and rate ${action.rate}`
         );
       }
     }
