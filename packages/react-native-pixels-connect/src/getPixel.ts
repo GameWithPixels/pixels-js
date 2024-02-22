@@ -19,9 +19,6 @@ class GetPixelError extends Error {
  * The same instance is returned when called multiple times for the same Pixel.
  * @param id Identify which Pixel to use.
  *           It can be either the system id as a string or the Pixel id as a number.
- * @param logFunc Optional function used to log Pixel connection and messaging activity.
- * @param logMessages Optional boolean to request logging messaging activity using the
- *                    passed logger function.
  * @returns A {@link Pixel} instance or undefined.
  */
 export function getPixel(id: string | number): Pixel | undefined {

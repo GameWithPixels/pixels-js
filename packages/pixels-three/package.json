@@ -62,8 +62,5 @@
   },
   "peerDependencies": {
     "three": "*"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

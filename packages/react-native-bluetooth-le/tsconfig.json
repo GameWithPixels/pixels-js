@@ -10,5 +10,10 @@
     {
       "path": "./../pixels-core-utils"
     }
-  ]
+  ],
+  "typedocOptions": {
+    "entryPoints": [
+      "src/index.ts"
+    ]
+  }
 }

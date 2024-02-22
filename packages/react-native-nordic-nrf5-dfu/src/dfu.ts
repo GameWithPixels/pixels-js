@@ -322,8 +322,8 @@ export async function resumeDfu(): Promise<void> {
  * The target identifier type of {@link startDfu} depends on the host OS.
  * This helper function returns the correct identifier for the DFU target
  * in a generic way.
- * @param systemId The Bluetooth peripheral system id assigned by the OS.
- * @param address The Bluetooth peripheral MAC address.
+ * @param opt.systemId The Bluetooth peripheral system id assigned by the OS.
+ * @param opt.address The Bluetooth peripheral MAC address.
  * @returns The DFU target id for the Bluetooth peripheral.
  */
 export function getDfuTargetId({

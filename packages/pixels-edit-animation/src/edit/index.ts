@@ -9,6 +9,7 @@ export { default as EditActionPlayAudioClip } from "./EditActionPlayAudioClip";
 export { default as EditActionRunOnDevice } from "./EditActionRunOnDevice";
 export { default as EditActionSpeakText } from "./EditActionSpeakText";
 export { default as EditAnimation } from "./EditAnimation";
+export { type EditAnimationParams } from "./EditAnimation";
 export { default as EditAnimationCycle } from "./EditAnimationCycle";
 export { default as EditAnimationGradient } from "./EditAnimationGradient";
 export { default as EditAnimationGradientPattern } from "./EditAnimationGradientPattern";

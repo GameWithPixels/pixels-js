@@ -62,8 +62,5 @@
   "dependencies": {
     "@systemic-games/pixels-core-connect": "~1.1.1",
     "@systemic-games/pixels-core-utils": "~1.1.0"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

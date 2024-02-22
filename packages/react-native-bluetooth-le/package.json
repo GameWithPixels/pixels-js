@@ -111,8 +111,5 @@
         }
       ]
     ]
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

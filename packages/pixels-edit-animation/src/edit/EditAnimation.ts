@@ -15,6 +15,9 @@ import EditRgbGradient from "./EditRgbGradient";
 import Editable from "./Editable";
 import { widget, range, unit, name, observable, values } from "./decorators";
 
+/**
+ * Parameters for the {@link EditAnimation} class constructor.
+ */
 export interface EditAnimationParams {
   uuid?: string;
   name?: string;

@@ -25,5 +25,10 @@
     {
       "path": "./../react-native-bluetooth-le"
     }
-  ]
+  ],
+  "typedocOptions": {
+    "entryPoints": [
+      "src/index.ts"
+    ]
+  }
 }

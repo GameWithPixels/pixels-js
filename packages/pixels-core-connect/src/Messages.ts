@@ -199,7 +199,8 @@ export function getMessageTypeValue(
 
 /**
  * Get the message name (as listed in {@link MessageTypeValues}).
- * @param msgOrType A message or a message type value.
+ * @param msgOrTypeOrTypeValue A message or a message type value
+ *                             or the numerical value of a message type.
  * @returns The message name.
  * @category Message
  */
@@ -241,7 +242,8 @@ export function instantiateMessage(type: MessageType): PixelMessage {
 
 /**
  * Serialize the given Pixel message.
- * @param msgOrType A message or a message type value.
+ * @param msgOrTypeOrTypeValue A message or a message type value
+ *                             or the numerical value of a message type.
  * @returns The serialized data.
  * @category Message
  */

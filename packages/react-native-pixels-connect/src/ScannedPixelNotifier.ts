@@ -102,7 +102,7 @@ export class ScannedPixelNotifier<
   }
 
   /**
-   * Instantiate a {@type ScannedPixelNotifier} with the properties
+   * Instantiate a {@link ScannedPixelNotifier} with the properties
    * of a {@link ScannedPixel} object.
    */
   protected constructor(scannedPixel: ScannedPixel) {

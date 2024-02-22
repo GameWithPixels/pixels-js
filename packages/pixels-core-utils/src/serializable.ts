@@ -85,7 +85,7 @@ export function byteSizeOfProp<T extends object>(
   const prop = getSerializableProperties(target)?.find(
     (sp) => sp.propertyKey === propertyKey
   );
-  return prop?.options?.nullTerminated || prop?.options?.terminator
+  return !!prop?.options?.nullTerminated || !!prop?.options?.terminator
     ? "dynamic"
     : prop?.size ?? 0;
 }
@@ -103,7 +103,7 @@ export function byteSizeOfPropWithPadding<T extends object>(
   const prop = getSerializableProperties(target)?.find(
     (sp) => sp.propertyKey === propertyKey
   );
-  if (prop?.options?.nullTerminated || prop?.options?.terminator) {
+  if (!!prop?.options?.nullTerminated || !!prop?.options?.terminator) {
     return "dynamic";
   } else {
     return prop ? prop.size + (prop.options?.padding ?? 0) : 0;
@@ -121,7 +121,7 @@ export function byteSizeOf<T extends object>(objOrArray: T | T[]): number {
   } else {
     return (
       getSerializableProperties(objOrArray)?.reduce((acc, prop) => {
-        if (prop.options?.nullTerminated || prop?.options?.terminator) {
+        if (!!prop.options?.nullTerminated || !!prop?.options?.terminator) {
           throw new SerializationError("Dynamic size");
         }
         return acc + prop.size + (prop.options?.padding ?? 0);
@@ -309,8 +309,8 @@ function internalSerialize<T extends object>(
         const size = prop.options?.nullTerminated
           ? arr.byteLength
           : prop.options?.terminator
-          ? arr.byteLength
-          : Math.min(arr.byteLength, prop.size);
+            ? arr.byteLength
+            : Math.min(arr.byteLength, prop.size);
         for (let i = 0; i < size; ++i) {
           dataView.setUint8(byteOffset, arr[i]);
           ++byteOffset;
@@ -355,8 +355,8 @@ function readNumber(
       return isFloat
         ? dataView.getFloat32(byteOffset, true)
         : isSigned
-        ? dataView.getInt32(byteOffset, true)
-        : dataView.getUint32(byteOffset, true);
+          ? dataView.getInt32(byteOffset, true)
+          : dataView.getUint32(byteOffset, true);
     case 8:
       if (isFloat) {
         return dataView.getFloat64(byteOffset, true);
@@ -444,8 +444,8 @@ function internalDeserialize<T extends object>(
         prop.options?.nullTerminated
           ? findNullIndex(dataView, byteOffset) - 1
           : prop.options?.terminator
-          ? dataView.byteOffset + dataView.byteLength
-          : begin + prop.size
+            ? dataView.byteOffset + dataView.byteLength
+            : begin + prop.size
       );
       try {
         setProp(objOrArray, prop, decodeUtf8(new Uint8Array(strArr)), value);
@@ -482,24 +482,20 @@ function internalDeserialize<T extends object>(
 }
 
 /**
- *
- */
-export interface SerializeOptions {
-  dataView?: DataView;
-  byteOffset?: number;
-}
-
-/**
- *
- * @param objOrArray
- * @param options
- * @returns
+ * Serialize the given object or array of objects into a DataView.
+ * @param objOrArray The object or array of objects to serialize.
+ * @param opt.dataView If provided, the data view to use for serialization.
+ * @param opt.byteOffset If provided, the byte offset to use for serialization.
+ * @returns A tuple with the DataView and the byte offset after serialization.
  */
 export function serialize<T extends object>(
   objOrArray: T | T[],
-  options?: SerializeOptions
+  opt?: {
+    dataView?: DataView;
+    byteOffset?: number;
+  }
 ): [DataView, number] {
-  if (!options?.dataView) {
+  if (!opt?.dataView) {
     const size = byteSizeOf(objOrArray);
     // Create buffer and serialize
     const [dataView, byteOffset] = internalSerialize(
@@ -513,26 +509,21 @@ export function serialize<T extends object>(
     return [dataView, byteOffset];
   } else {
     // Serialize using give data view
-    return internalSerialize(
-      objOrArray,
-      options.dataView,
-      options.byteOffset ?? 0
-    );
+    return internalSerialize(objOrArray, opt.dataView, opt.byteOffset ?? 0);
   }
 }
 
 /**
- *
- * @param source
- * @param dataView
- * @param byteOffset
- * @param stopAt
- * @returns
+ * Deserialize the given DataView into the provided object.
+ * @param obj The object to deserialize into.
+ * @param dataView The DataView to use for deserialization.
+ * @param opt.allowSkipLastProps If true, will allow the last properties to be skipped if there is not enough data left.
+ * @returns The number of bytes read from the DataView.
  */
 export function deserialize<T extends object>(
-  source: T,
+  obj: T,
   dataView: DataView,
   opt?: { allowSkipLastProps?: boolean }
 ): number {
-  return internalDeserialize(source, dataView, opt);
+  return internalDeserialize(obj, dataView, opt);
 }

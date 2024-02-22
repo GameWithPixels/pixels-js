@@ -14,5 +14,10 @@
     {
       "path": "./../pixels-core-animation"
     }
-  ]
+  ],
+  "typedocOptions": {
+    "entryPoints": [
+      "src/index.ts"
+    ]
+  }
 }

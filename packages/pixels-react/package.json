@@ -59,8 +59,5 @@
   },
   "peerDependencies": {
     "@systemic-games/pixels-core-connect": "~1.1.1"
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.ts"
   }
 }

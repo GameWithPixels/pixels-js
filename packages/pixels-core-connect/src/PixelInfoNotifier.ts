@@ -60,46 +60,40 @@ export abstract class PixelInfoNotifier<
   abstract get currentFace(): number; // Face value (not index)
 
   /**
-   * Adds the given listener function to the end of the listeners array
-   * for the event with the given name.
-   * See {@link PixelInfoEventMap} for the list of events and their associated
-   * data.
-   * @param eventName The name of the event.
+   * Adds the given listener function for the specified property.
+   * @param propertyName The name of the property.
    * @param listener The callback function.
    */
   addPropertyListener<K extends string & keyof MutableProps>(
-    eventName: K,
+    propertyName: K,
     listener: EventReceiver<Type>
   ): void {
-    this._infoEvEmitter.addListener(eventName, listener);
+    this._infoEvEmitter.addListener(propertyName, listener);
   }
 
   /**
-   * Removes the specified listener function from the listener array
-   * for the event with the given name.
-   * See {@link PixelInfoEventMap} for the list of events and their associated
-   * data.
-   * @param eventName The name of the event.
+   * Removes the given listener function for the specified property.
+   * @param propertyName The name of the property.
    * @param listener The callback function to unregister.
    */
   removePropertyListener<K extends string & keyof MutableProps>(
-    eventName: K,
+    propertyName: K,
     listener: EventReceiver<Type>
   ): void {
-    this._infoEvEmitter.removeListener(eventName, listener);
+    this._infoEvEmitter.removeListener(propertyName, listener);
   }
 
   /**
-   * Emit a Pixel event. This function should be called by the concrete type
-   * whenever the a property's value changes.
-   * @param eventName Event name.
-   * @param params Event parameters.
+   * Emit a Pixel event for the specified property.
+   * This function should be called by the concrete type whenever
+   * the a property's value changes.
+   * @param propertyName Event name.
    */
   protected emitPropertyEvent<K extends string & keyof MutableProps>(
-    eventName: K
+    propertyName: K
   ): void {
     this._infoEvEmitter.emit(
-      eventName,
+      propertyName,
       //@ts-ignore 'this' is assignable to the constraint of type 'Type', but 'Type' could be instantiated with a different subtype of constraint 'PixelInfo'.ts(2345)
       this
     );

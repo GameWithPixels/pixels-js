@@ -244,7 +244,7 @@ export class PixelScanner {
    * @returns A promise.
    * @remarks Calls to the async methods of this class are queued
    *          and executed in order.
-   * @remarks On Android, BLE scanning will fail without error when started more
+   *          On Android, BLE scanning will fail without error when started more
    *          than 5 times over the last 30 seconds.
    */
   async start(opt?: {

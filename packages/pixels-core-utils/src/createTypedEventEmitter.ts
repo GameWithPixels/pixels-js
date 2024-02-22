@@ -43,7 +43,7 @@ export interface TypedEventEmitter<T extends EventMap> {
    * By default `EventEmitter`s will print a warning if more than `10` listeners are
    * added for a particular event.
    * Use this function to modify the default threshold.
-   * @param n: Number of listeners before printing a warning.
+   * @param n Number of listeners before printing a warning.
    *           The value can be set to`Infinity` (or `0`) to indicate an unlimited number of listeners.
    */
   setMaxListeners(n: number): this;
@@ -60,7 +60,7 @@ export interface TypedEventEmitter<T extends EventMap> {
  * @returns A typed event emitter.
  */
 export function createTypedEventEmitter<
-  T extends EventMap
+  T extends EventMap,
 >(): TypedEventEmitter<T> {
   return new EventEmitter();
 }

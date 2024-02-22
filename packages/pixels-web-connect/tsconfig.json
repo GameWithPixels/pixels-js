@@ -20,5 +20,10 @@
     {
       "path": "./../pixels-core-connect"
     }
-  ]
+  ],
+  "typedocOptions": {
+    "entryPoints": [
+      "src/index.ts"
+    ]
+  }
 }

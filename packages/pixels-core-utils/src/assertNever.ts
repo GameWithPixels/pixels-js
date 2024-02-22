@@ -8,6 +8,6 @@ import { assert } from "./assert";
  * @param x A value of type never.
  * @param message The error message if this function is called.
  */
-export function assertNever(_: never, message?: string): never {
+export function assertNever(x: never, message?: string): never {
   assert(false, message ?? "assertNever() called");
 }

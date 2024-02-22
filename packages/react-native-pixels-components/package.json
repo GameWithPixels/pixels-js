@@ -104,8 +104,5 @@
         }
       ]
     ]
-  },
-  "typedoc": {
-    "entryPoint": "./src/index.tsx"
   }
 }
