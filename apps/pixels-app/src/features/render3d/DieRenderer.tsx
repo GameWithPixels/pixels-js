@@ -18,6 +18,7 @@ import { Text } from "react-native-paper";
 import { UpdateArgs, UpdateCallback } from "./UpdateCallback";
 import { createDie3DAsync } from "./createDie3DAsync";
 import { addPedestal } from "./pedestal";
+import { logError } from "../utils";
 
 import Die3D from "~/pixels-three/Die3D";
 
@@ -246,10 +247,8 @@ class SceneRenderer {
           renderScene();
           requestAnimationFrame(renderLoop);
         } catch (e) {
-          console.error(String(e));
-          console.warn(
-            "Error rendering Die3D, stop rendering to avoid further errors"
-          );
+          logError(`DieRenderer render loop error: ${e}`);
+          console.warn("Stop rendering to avoid further errors");
           // Cleanup
           this._dispose?.();
         }
