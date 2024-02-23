@@ -17,6 +17,7 @@ import {
 import { ColorWheel } from "./ColorWheel";
 import { KeyframeGradient } from "./KeyframeGradient";
 
+import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
@@ -65,9 +66,10 @@ export function EditGradientBottomSheet({
       ref={sheetRef}
       stackBehavior="push"
       enableDynamicSizing
-      backgroundStyle={getBottomSheetBackgroundStyle()}
       onDismiss={onDismiss}
       onChange={onChange}
+      animationConfigs={bottomSheetAnimationConfigFix}
+      backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           appearsOnIndex={0}

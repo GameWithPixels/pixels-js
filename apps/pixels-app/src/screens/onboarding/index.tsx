@@ -64,6 +64,7 @@ import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
+import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
   useActivePixels,
   usePixelScanner,
@@ -376,6 +377,7 @@ function HelpTurnOnDiceModal({
       snapPoints={["92%"]}
       onDismiss={onDismiss}
       onChange={onChange}
+      animationConfigs={bottomSheetAnimationConfigFix}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

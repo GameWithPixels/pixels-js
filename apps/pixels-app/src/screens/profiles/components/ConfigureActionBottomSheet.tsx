@@ -45,7 +45,11 @@ import {
   playActionSpeakText,
 } from "~/features/profiles";
 import { getAnimationGradient } from "~/features/store/library/animationGradient";
-import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
+import {
+  androidBottomSheetSliderFix,
+  bottomSheetAnimationConfigFix,
+  TrailingSpaceFix,
+} from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
@@ -741,6 +745,7 @@ export const ConfigureActionBottomSheet = observer(
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
+        animationConfigs={bottomSheetAnimationConfigFix}
         backgroundStyle={getBottomSheetBackgroundStyle()}
         backdropComponent={(props) => (
           <BottomSheetBackdrop

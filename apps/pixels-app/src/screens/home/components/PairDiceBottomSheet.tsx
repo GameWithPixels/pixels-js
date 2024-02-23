@@ -21,6 +21,7 @@ import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
+import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { usePixelScanner, useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
@@ -180,6 +181,7 @@ export function PairDiceBottomSheet({
       snapPoints={["50%"]}
       onDismiss={dismiss}
       onChange={onChange}
+      animationConfigs={bottomSheetAnimationConfigFix}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

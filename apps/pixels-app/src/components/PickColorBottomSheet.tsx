@@ -9,6 +9,7 @@ import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
 import { ColorWheel } from "./ColorWheel";
 
+import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
@@ -41,9 +42,10 @@ export function PickColorBottomSheet({
       ref={sheetRef}
       stackBehavior="push"
       enableDynamicSizing
-      backgroundStyle={getBottomSheetBackgroundStyle()}
       onDismiss={onDismiss}
       onChange={onChange}
+      animationConfigs={bottomSheetAnimationConfigFix}
+      backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           appearsOnIndex={0}

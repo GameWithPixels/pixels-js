@@ -9,6 +9,7 @@ import { useTheme, Text, ThemeProvider } from "react-native-paper";
 
 import { SelectionButton } from "./buttons";
 
+import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -60,6 +61,7 @@ export function SortBottomSheet({
       enableDynamicSizing
       onDismiss={onDismiss}
       onChange={onChange}
+      animationConfigs={bottomSheetAnimationConfigFix}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

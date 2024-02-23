@@ -1,7 +1,9 @@
 // FIX this file contain various fixes for React Native or other external libraries
 
+import { ANIMATION_CONFIGS } from "@gorhom/bottom-sheet";
 import * as Updates from "expo-updates";
 import { Platform } from "react-native";
+import { ReduceMotion } from "react-native-reanimated";
 
 // https://github.com/facebook/react-native/issues/15114
 // https://www.reactnativeschool.com/fix-react-native-text-cutoff-on-oneplus-oppo-devices
@@ -19,6 +21,12 @@ export function fixForScrollViewPadding(padding: number): void {
 export const androidBottomSheetSliderFix = {
   activeOffsetY: Platform.OS === "android" ? [-1, 1] : undefined,
   failOffsetX: Platform.OS === "android" ? [-5, 5] : undefined,
+};
+
+// https://github.com/gorhom/react-native-bottom-sheet/issues/1674#issuecomment-1959923945
+export const bottomSheetAnimationConfigFix = {
+  ...ANIMATION_CONFIGS,
+  reduceMotion: ReduceMotion.Never,
 };
 
 export function isErrorNoUpdatePublished(error?: string): boolean {

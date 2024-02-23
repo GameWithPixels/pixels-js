@@ -5,6 +5,7 @@ import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
 import { ProfilePicker } from "~/components/ProfilePicker";
+import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -43,6 +44,7 @@ export function PickProfileBottomSheet({
       index={1}
       onDismiss={onDismiss}
       onChange={onChange}
+      animationConfigs={bottomSheetAnimationConfigFix}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop

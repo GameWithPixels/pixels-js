@@ -22,6 +22,7 @@ import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { getDieTypeLabel, getPixelStatusLabel } from "~/features/profiles";
 import { listToText } from "~/features/utils";
+import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
   useActivePixel,
   useBottomSheetPadding,
@@ -111,6 +112,7 @@ export function PickDieBottomSheet({
       snapPoints={["50%"]}
       onDismiss={dismiss}
       onChange={onChange}
+      animationConfigs={bottomSheetAnimationConfigFix}
       backgroundStyle={getBottomSheetBackgroundStyle()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
