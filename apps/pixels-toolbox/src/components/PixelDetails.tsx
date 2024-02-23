@@ -104,11 +104,12 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
         {pixel.pixelId.toString(16).padStart(8, "0")}
         {t("commaSeparator")}
       </TextEntry>
-      <TextEntry title={t("descriptionAbbrev")}>
+      <TextEntry title={t("descriptionShort")}>
         {pixel.dieType === "unknown" ? t("unknownDieType") : t(pixel.dieType)}
+        {t("commaSeparator")}
         {pixel.colorway === "unknown"
-          ? ""
-          : t("commaSeparator") + t(pixel.colorway)}
+          ? t("unknownColorway")
+          : t(pixel.colorway)}
         {t("commaSeparator")}
         {pixel.ledCount} {t("leds")}
       </TextEntry>
@@ -539,9 +540,6 @@ function BottomButtons({
                 {t("playKeyframes")}
               </Button>
               <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
-              <Button onPress={() => pd.dispatch("resetAllSettings")}>
-                {t("resetAllSettings")}
-              </Button>
             </>
           )}
           <Button onPress={onPrintLabel}>{t("printLabel")}</Button>
@@ -586,6 +584,9 @@ function BottomButtons({
               </Button>
               <Button onPress={() => pd.dispatch("rename")}>
                 {t("rename")}
+              </Button>
+              <Button onPress={() => pd.dispatch("resetAllSettings")}>
+                {t("resetAllSettings")}
               </Button>
             </>
           )}
