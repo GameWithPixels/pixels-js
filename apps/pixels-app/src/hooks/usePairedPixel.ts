@@ -1,4 +1,7 @@
 import { Pixel, getPixel } from "@systemic-games/react-native-pixels-connect";
+import React from "react";
+
+import { usePixelsCentral } from "./usePixelsCentral";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
@@ -15,5 +18,21 @@ export function usePairedPixel(
   if (!pairedDice.some((d) => d.pixelId === pixelId)) {
     logError(`Pixel ${unsigned32ToHex(pixelId)} not paired`);
   }
-  return getPixel(pixelId);
+
+  const [pixel, setPixel] = React.useState(getPixel(pixelId));
+  const pixelsCentral = usePixelsCentral();
+  React.useEffect(() => {
+    setPixel(getPixel(pixelId));
+    const onActivePixels = (activePixels: Pixel[]) => {
+      const pixel = activePixels.find((p) => p.pixelId === pixelId);
+      if (pixel) {
+        setPixel(pixel);
+      }
+    };
+    pixelsCentral.addEventListener("activePixels", onActivePixels);
+    return () =>
+      pixelsCentral.removeEventListener("activePixels", onActivePixels);
+  }, [pixelId, pixelsCentral]);
+
+  return pixel;
 }
