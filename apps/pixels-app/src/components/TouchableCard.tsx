@@ -1,13 +1,25 @@
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
 import { StyleProp, ViewStyle } from "react-native";
 import {
   TouchableRipple,
   TouchableRippleProps,
   useTheme,
 } from "react-native-paper";
+import {
+  Easing,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
 import { getBorderColor, makeTransparent } from "./colors";
+
+import { withAnimated } from "~/withAnimated";
 
 export type TouchableCardProps = Omit<
   TouchableRippleProps,
@@ -24,9 +36,12 @@ export type TouchableCardProps = Omit<
     frameless?: boolean;
     gradientBorder?: boolean;
     transparent?: boolean;
+    flash?: boolean;
     style?: StyleProp<ViewStyle>;
     contentStyle?: StyleProp<ViewStyle>;
   }>;
+
+const AnimatedTouchableRipple = withAnimated(TouchableRipple);
 
 export function TouchableCard({
   row,
@@ -39,6 +54,7 @@ export function TouchableCard({
   frameless,
   gradientBorder,
   transparent,
+  flash,
   style,
   contentStyle,
   children,
@@ -61,6 +77,32 @@ export function TouchableCard({
         : props.disabled
           ? 0.2
           : 1;
+
+  const animValue = useSharedValue(0);
+  const animStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      animValue.value,
+      [0, 1],
+      ["transparent", "dimgray"]
+    ),
+  }));
+  React.useEffect(() => {
+    const pingPong = (x0: number, x1: number) =>
+      withSequence(
+        withTiming(x0, {
+          duration: 600,
+          easing: Easing.out(Easing.ease),
+        }),
+        withTiming(x1, { duration: 300, easing: Easing.in(Easing.ease) })
+      );
+    if (flash) {
+      animValue.value = withRepeat(pingPong(0.5, 0), -1);
+      return () => {
+        animValue.value = pingPong(1, 0);
+      };
+    }
+  }, [animValue, flash]);
+
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
@@ -71,7 +113,7 @@ export function TouchableCard({
       ]}
       style={[{ ...cornersStyle, overflow: "hidden" }, style]}
     >
-      <TouchableRipple
+      <AnimatedTouchableRipple
         style={[
           {
             flexDirection: row ? "row" : "column",
@@ -89,11 +131,12 @@ export function TouchableCard({
             ...cornersStyle,
           },
           contentStyle,
+          animStyle,
         ]}
         {...props}
       >
         <>{children}</>
-      </TouchableRipple>
+      </AnimatedTouchableRipple>
     </LinearGradient>
   );
 }
