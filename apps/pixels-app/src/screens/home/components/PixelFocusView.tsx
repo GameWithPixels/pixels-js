@@ -72,6 +72,7 @@ export function PixelFocusViewHeader({
 }) {
   const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
+  console.log(`PixelFocusViewHeader: pixel: ${pixel}, status: ${status}`);
   const [pixelName] = usePixelValue(pixel, "name");
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const disabled = status !== "ready";
@@ -230,12 +231,6 @@ export function PixelFocusView({
 
   const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
-  React.useEffect(
-    () =>
-      // Blink when die is selected
-      blinkDie(pixel),
-    [pixel]
-  );
   const activeProfile = useActiveProfile(pairedDie);
   const transferring = useAppSelector((state) => !!state.diceRolls.transfer);
   const [pickProfile, setPickProfile] = React.useState(false);

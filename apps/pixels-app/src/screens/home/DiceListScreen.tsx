@@ -25,6 +25,7 @@ import {
 } from "~/components/SortBottomSheet";
 import { AnimatedGradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
+import { blinkDie } from "~/features/dice";
 import {
   DiceGrouping,
   DiceGroupingList,
@@ -255,6 +256,7 @@ function DiceListPage({
   const isFocus = viewMode === "focus";
   const selectAndShowDetails = (pairedDie: PairedDie, showDetails = true) => {
     setSelectedDie(pairedDie);
+    blinkDie(pairedDie);
     startScan({ pixelId: pairedDie.pixelId });
     if (showDetails) {
       navigation.navigate("dieDetails", { pixelId: pairedDie.pixelId });
