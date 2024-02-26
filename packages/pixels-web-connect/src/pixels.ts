@@ -46,12 +46,15 @@ export async function requestPixel(): Promise<Pixel> {
  * This function doesn't check the actual availability nor the connection state
  * of the die. The later might be turned off, available or already connected.
  *
- * As of Chrome 114, only Pixels dice authorized by the user during the current
+ * As of Chrome 122, only Pixels dice authorized by the user during the current
  * browser session may be returned.
  *
  * With the "Use the new permissions backend for Web Bluetooth" flag enabled in
  * Chrome, Pixels dice authorized by the user in previous browser sessions (and
- * not revoked since) may also be returned.
+ * not revoked since) will also be returned.
+ * To enable this flag, open the following address in Chrome:
+ * `chrome://flags/#enable-web-bluetooth-new-permissions-backend` and toggle the flag
+ * to `Enabled`.
  *
  * The returned promise will resolve to undefined when there is no authorized
  * Pixel with the given system id.
