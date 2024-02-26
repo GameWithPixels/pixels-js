@@ -251,3 +251,35 @@ export function getRollStateLabel(state?: PixelRollState): string {
       assertNever(state);
   }
 }
+
+export function getNormalsColorOverrideTypeLabel(
+  colorOverrideType: Profiles.NormalsColorOverrideType
+): string {
+  switch (colorOverrideType) {
+    case "none":
+      return "";
+    case "faceToGradient":
+      return "Picks a color in the gradient based on the face up";
+    case "faceToRainbowWheel":
+      return "Picks a color in the rainbow wheel based on the face up";
+    default:
+      assertNever(colorOverrideType);
+  }
+}
+
+export function getNoiseColorOverrideTypeLabel(
+  colorOverrideType: Profiles.NoiseColorOverrideType
+): string {
+  switch (colorOverrideType) {
+    case "none":
+      return "";
+    case "randomFromGradient":
+      return "Picks a random color in the gradient each time";
+    case "faceToGradient":
+      return "Picks a color in the gradient based on the face up";
+    case "faceToRainbowWheel":
+      return "Picks a color in the rainbow wheel based on the face up";
+    default:
+      assertNever(colorOverrideType);
+  }
+}

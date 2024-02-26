@@ -5,7 +5,7 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import { assert } from "@systemic-games/pixels-core-utils";
+import { assert, valuesToKeys } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Color,
@@ -39,6 +39,8 @@ import {
 } from "~/components/SliderWithTitle";
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import {
+  getNoiseColorOverrideTypeLabel,
+  getNormalsColorOverrideTypeLabel,
   getWebRequestPayload,
   getWebRequestURL,
   playActionMakeWebRequest,
@@ -253,6 +255,23 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   const fading = (action.animation as Partial<Profiles.AnimationFlashes>)?.fade;
   const intensity = (action.animation as Partial<Profiles.AnimationRainbow>)
     ?.intensity;
+  const gct1 =
+    action.animation instanceof Profiles.AnimationNormals
+      ? action.animation.gradientColorType
+      : undefined;
+  const gct2 =
+    action.animation instanceof Profiles.AnimationNoise
+      ? action.animation.gradientColorType
+      : undefined;
+  const gradientColorType = gct1
+    ? getNormalsColorOverrideTypeLabel(
+        valuesToKeys([gct1], Profiles.NormalsColorOverrideTypeValues)[0]
+      )
+    : gct2
+      ? getNoiseColorOverrideTypeLabel(
+          valuesToKeys([gct2], Profiles.NoiseColorOverrideTypeValues)[0]
+        )
+      : undefined;
   return (
     <>
       <View>
@@ -296,8 +315,18 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         onValueChange={(v) => (action.duration = v)}
         onReset={() => (action.duration = undefined)}
       />
-      {color && color.mode === "rgb" && (
+      {color?.mode === "rgb" ? (
         <PlayAnimationColor action={action} defaultColor={color.color} />
+      ) : (
+        (color?.mode === "face" || !!gradientColorType) && (
+          <>
+            <Text variant="titleMedium">Color</Text>
+            <Text style={{ paddingLeft: 10, ...AppStyles.greyedOut }}>
+              {gradientColorType ??
+                getNormalsColorOverrideTypeLabel("faceToRainbowWheel")}
+            </Text>
+          </>
+        )
       )}
       {keyframes && keyframes.length > 1 && (
         <PlayAnimationGradient action={action} defaultKeyframes={keyframes} />
