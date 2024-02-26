@@ -1,13 +1,14 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetScrollView,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
+import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 
 import { TabsHeaders } from "~/components/TabsHeaders";
@@ -63,6 +64,7 @@ export function PickAnimationBottomSheet({
       sheetRef.current?.dismiss();
     }
   }, [visible]);
+  const scrollRef = React.useRef<GHScrollView>(null);
   const paddingBottom = useBottomSheetPadding();
   const theme = useTheme();
   return (
@@ -84,23 +86,33 @@ export function PickAnimationBottomSheet({
       )}
     >
       <ThemeProvider theme={theme}>
-        <BottomSheetScrollView
-          contentContainerStyle={{
+        <BottomSheetView
+          style={{
+            flex: 1,
             paddingHorizontal: 10,
             paddingBottom,
             gap: 10,
           }}
         >
           <Text variant="titleMedium">Select Animation</Text>
-          <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
-          <AnimationsGrid
-            animations={sortedAnimations[tabsNames.indexOf(tab)]}
-            dieType={dieType}
-            numColumns={2}
-            selected={animation}
-            onSelectAnimation={onSelectAnimation}
+          <TabsHeaders
+            names={tabsNames}
+            selected={tab}
+            onSelect={(tab) => {
+              scrollRef.current?.scrollTo({ y: 0, animated: false });
+              setTab(tab);
+            }}
           />
-        </BottomSheetScrollView>
+          <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 10 }}>
+            <AnimationsGrid
+              animations={sortedAnimations[tabsNames.indexOf(tab)]}
+              dieType={dieType}
+              numColumns={2}
+              selected={animation}
+              onSelectAnimation={onSelectAnimation}
+            />
+          </GHScrollView>
+        </BottomSheetView>
       </ThemeProvider>
     </BottomSheetModal>
   );
