@@ -1,5 +1,5 @@
 import {
-  Constants,
+  AnimConstants,
   Color,
   GammaUtils,
 } from "@systemic-games/pixels-core-animation";
@@ -29,9 +29,9 @@ export default class EditColor {
       case "rgb":
         return EditColor.toColorIndex(refPalette, this.color ?? Color.black);
       case "face":
-        return Constants.paletteColorFromFace;
+        return AnimConstants.paletteColorFromFace;
       case "random":
-        return Constants.paletteColorFromRandom;
+        return AnimConstants.paletteColorFromRandom;
       default:
         assertNever(this.mode, `Unsupported EditColor type: ${this.mode}`);
     }

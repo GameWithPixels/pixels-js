@@ -1,7 +1,7 @@
 import { byteSizeOf, serialize } from "@systemic-games/pixels-core-utils";
 
 import AnimationPreset from "./AnimationPreset";
-import { Constants } from "./Constants";
+import { AnimConstants } from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 import RgbTrack from "./RgbTrack";
 import SimpleKeyframe from "./SimpleKeyframe";
@@ -27,9 +27,9 @@ export default class AnimationBits {
   }
 
   getColor(colorIndex: number, die: Readonly<VirtualDie>): Color {
-    if (colorIndex === Constants.paletteColorFromFace) {
+    if (colorIndex === AnimConstants.paletteColorFromFace) {
       return new Color(Color32Utils.faceWheel(die.currentFace, die.ledCount));
-    } else if (colorIndex === Constants.paletteColorFromRandom) {
+    } else if (colorIndex === AnimConstants.paletteColorFromRandom) {
       return Color.black; // Not implemented
     } else {
       return this.getArrayItem(this.palette, colorIndex, "color");

@@ -2,7 +2,7 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationRainbow,
-  Constants,
+  AnimConstants,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -52,7 +52,7 @@ export default class EditAnimationRainbow extends EditAnimation {
     }
   ) {
     super(opt);
-    this.faces = opt?.faces ?? Constants.faceMaskAll;
+    this.faces = opt?.faces ?? AnimConstants.faceMaskAll;
     this.count = opt?.count ?? 1;
     this.fade = opt?.fade ?? 0;
     this.intensity = opt?.intensity ?? 0.5;

@@ -1,6 +1,6 @@
 import AnimationInstance from "./AnimationInstance";
 import AnimationSequence from "./AnimationSequence";
-import { Constants } from "./Constants";
+import { AnimConstants } from "./Constants";
 import { Color32Utils } from "../color";
 
 /**
@@ -54,8 +54,8 @@ export default class AnimationInstanceSequence extends AnimationInstance {
     const thisMs = ms - this.startTime;
     this._lastMillis = ms;
     let retCount = 0;
-    const animIndices: number[] = Array(Constants.maxLEDsCount);
-    const animColors: number[] = Array(Constants.maxLEDsCount);
+    const animIndices: number[] = Array(AnimConstants.maxLEDsCount);
+    const animColors: number[] = Array(AnimConstants.maxLEDsCount);
     for (let i = 0; i < preset.animationCount; i++) {
       const delay = this._animInstances[i].delay;
       if (

@@ -1,7 +1,7 @@
 /**
  * @category Animation
  */
-export const Constants = {
+export const AnimConstants = {
   /** Maximum number of LED on a die. */
   maxLEDsCount: 22,
 

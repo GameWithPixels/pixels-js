@@ -3,7 +3,7 @@ import {
   BatteryStateFlagsValues,
   Color,
   ConnectionStateFlagsValues,
-  Constants,
+  AnimConstants,
   DiceUtils,
   getFaceMask,
   HelloGoodbyeFlagsValues,
@@ -146,7 +146,7 @@ export const DefaultRulesAnimations = {
     animFlags:
       AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     duration: 2.0,
-    faces: Constants.faceMaskAll,
+    faces: AnimConstants.faceMaskAll,
     count: 2,
     fade: 200 / 255,
     intensity: 0x80 / 255,
@@ -174,7 +174,7 @@ export const DefaultRulesAnimations = {
     duration: 3,
     fade: 0.5,
     color: new EditColor("face"),
-    faces: Constants.faceMaskAll,
+    faces: AnimConstants.faceMaskAll,
   }),
 
   connection: new AnimFlashes({
@@ -184,7 +184,7 @@ export const DefaultRulesAnimations = {
     duration: 1,
     fade: 0.5,
     color: Color.blue,
-    faces: Constants.faceMaskAll,
+    faces: AnimConstants.faceMaskAll,
   }),
 
   lowBattery: new AnimFlashes({
@@ -193,7 +193,7 @@ export const DefaultRulesAnimations = {
     count: 3,
     duration: 1.5,
     color: Color.red,
-    faces: Constants.faceMaskAll,
+    faces: AnimConstants.faceMaskAll,
   }),
 
   charging: {
@@ -229,7 +229,7 @@ export const DefaultRulesAnimations = {
     duration: 2,
     color: Color.red,
     fade: 0.5,
-    faces: Constants.faceMaskAll,
+    faces: AnimConstants.faceMaskAll,
   }),
 
   chargingError: {
@@ -256,7 +256,7 @@ export function addDefaultRollingRules(
       new EditConditionRolling({ recheckAfter: 0.5 }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.rolling[dieType],
-        face: Constants.currentFaceIndex,
+        face: AnimConstants.currentFaceIndex,
         loopCount: 1,
       })
     )
@@ -269,7 +269,7 @@ export function addDefaultRollingRules(
       }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.rolled,
-        face: Constants.currentFaceIndex,
+        face: AnimConstants.currentFaceIndex,
         loopCount: 1,
       })
     )
@@ -289,7 +289,7 @@ export function addDefaultAdvancedRules(
       new EditConditionHelloGoodbye({ flags: HelloGoodbyeFlagsValues.hello }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.hello,
-        face: Constants.currentFaceIndex,
+        face: AnimConstants.currentFaceIndex,
         loopCount: 1,
       })
     )
@@ -304,7 +304,7 @@ export function addDefaultAdvancedRules(
       }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.connection,
-        face: Constants.currentFaceIndex,
+        face: AnimConstants.currentFaceIndex,
         loopCount: 1,
       })
     )
@@ -318,7 +318,7 @@ export function addDefaultAdvancedRules(
       }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.lowBattery,
-        face: Constants.currentFaceIndex,
+        face: AnimConstants.currentFaceIndex,
         loopCount: 1,
       })
     )

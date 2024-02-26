@@ -13,7 +13,7 @@ import {
   ColorModeValues,
   ColorUtils,
   ConnectionStateFlagsValues,
-  Constants,
+  AnimConstants,
   HelloGoodbyeFlagsValues,
   Json,
   PixelDieTypeValues,
@@ -146,7 +146,7 @@ function toAnimationsAndGradients(
           case "simple":
             push("flashes", {
               ...anim,
-              faces: data.faces ?? Constants.faceMaskAll,
+              faces: data.faces ?? AnimConstants.faceMaskAll,
               color: toColor(data.color),
               count: data.count ?? 1,
               fade: data.fade ?? 0,
@@ -156,7 +156,7 @@ function toAnimationsAndGradients(
             push(type, {
               ...anim,
               animFlags: data.traveling ? ["traveling", "useLedIndices"] : [],
-              faces: data.faces ?? Constants.faceMaskAll,
+              faces: data.faces ?? AnimConstants.faceMaskAll,
               count: data.count ?? 1,
               fade: data.fade ?? 0,
               intensity: data.intensity ?? 0.5,
@@ -181,7 +181,7 @@ function toAnimationsAndGradients(
           case "gradient":
             push(type, {
               ...anim,
-              faces: data.faces ?? Constants.faceMaskAll,
+              faces: data.faces ?? AnimConstants.faceMaskAll,
               gradientUuid: register(data.gradient),
             });
             break;

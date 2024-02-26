@@ -1,5 +1,5 @@
 import {
-  Constants as AnimConstants,
+  AnimConstants,
   PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {

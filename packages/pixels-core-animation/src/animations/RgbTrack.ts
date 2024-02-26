@@ -1,7 +1,7 @@
 import { assert, serializable } from "@systemic-games/pixels-core-utils";
 
 import AnimationBits from "./AnimationBits";
-import { Constants } from "./Constants";
+import { AnimConstants } from "./Constants";
 import RgbKeyframe from "./RgbKeyframe";
 import VirtualDie from "../VirtualDie";
 import { Color32Utils } from "../color";
@@ -75,7 +75,7 @@ export default class RgbTrack {
 
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
+    for (let i = 0; i < AnimConstants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         retColors32[currentCount] = color;
@@ -146,7 +146,7 @@ export default class RgbTrack {
   extractLEDIndices(retIndices: number[]): number {
     // Fill the return arrays
     let currentCount = 0;
-    for (let i = 0; i < Constants.maxLEDsCount; ++i) {
+    for (let i = 0; i < AnimConstants.maxLEDsCount; ++i) {
       if ((this.ledMask & (1 << i)) !== 0) {
         retIndices[currentCount] = i;
         currentCount++;

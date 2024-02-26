@@ -1,6 +1,6 @@
 import AnimationInstance from "./AnimationInstance";
 import AnimationNormals from "./AnimationNormals";
-import { Constants } from "./Constants";
+import { AnimConstants } from "./Constants";
 import { NormalsColorOverrideTypeValues } from "./NormalsColorOverrideType";
 import {
   Vec3,
@@ -257,6 +257,6 @@ export default class AnimationInstanceNormals extends AnimationInstance {
   }
 
   stop(retIndices: number[]): number {
-    return this.setIndices(Constants.faceMaskAll, retIndices);
+    return this.setIndices(AnimConstants.faceMaskAll, retIndices);
   }
 }

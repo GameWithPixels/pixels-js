@@ -21,6 +21,9 @@ export const Constants = {
   /** The maximum byte size for the name of a Pixel. */
   maxNameByteSize: 31,
 
+  /** The maximum byte size for the name of a Pixel in the advertisement data. */
+  maxAdvertisedNameByteSize: 13,
+
   /** Messages and related data structures version number. */
   apiVersion: 256,
 

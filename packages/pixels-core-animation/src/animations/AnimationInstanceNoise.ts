@@ -1,6 +1,6 @@
 import AnimationInstance from "./AnimationInstance";
 import AnimationNoise from "./AnimationNoise";
-import { Constants } from "./Constants";
+import { AnimConstants } from "./Constants";
 import { NoiseColorOverrideTypeValues } from "./NoiseColorOverrideType";
 import VirtualDie from "../VirtualDie";
 import { Color32Utils } from "../color";
@@ -53,7 +53,7 @@ export default class AnimationInstanceNoise extends AnimationInstance {
     );
 
     // initializing the durations and times of each blink
-    for (let i = 0; i < Constants.maxLEDsCount; i++) {
+    for (let i = 0; i < AnimConstants.maxLEDsCount; i++) {
       this.blinkStartTimes[i] = 0;
       this.blinkDurations[i] = 0;
     }
@@ -198,6 +198,6 @@ export default class AnimationInstanceNoise extends AnimationInstance {
   }
 
   stop(retIndices: number[]): number {
-    return this.setIndices(Constants.faceMaskAll, retIndices);
+    return this.setIndices(AnimConstants.faceMaskAll, retIndices);
   }
 }

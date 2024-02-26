@@ -24,7 +24,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   Color,
-  Constants,
+  AnimConstants,
   getPixel,
   usePixelConnect,
   ScannedPixel,
@@ -249,7 +249,7 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
       const facesGroups = [
         range(1, 8),
         range(8, 15),
-        [...range(15, 20), Constants.faceMaskAll],
+        [...range(15, 20), AnimConstants.faceMaskAll],
       ];
       return (
         <>

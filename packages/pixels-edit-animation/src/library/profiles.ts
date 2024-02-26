@@ -1,5 +1,5 @@
 import {
-  Constants,
+  AnimConstants,
   DiceUtils,
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
@@ -64,7 +64,7 @@ export function createLibraryProfile(
         new EditConditionRolling({ recheckAfter: 0.2 }),
         new EditActionPlayAnimation({
           animation: anim,
-          face: Constants.currentFaceIndex,
+          face: AnimConstants.currentFaceIndex,
           loopCount: count,
         })
       )
@@ -88,7 +88,7 @@ export function createLibraryProfile(
         }),
         new EditActionPlayAnimation({
           animation: anim,
-          face: Constants.currentFaceIndex,
+          face: AnimConstants.currentFaceIndex,
           loopCount: count,
           duration,
         })
@@ -108,7 +108,7 @@ export function createLibraryProfile(
         }),
         new EditActionPlayAnimation({
           animation: anim,
-          face: Constants.currentFaceIndex,
+          face: AnimConstants.currentFaceIndex,
           loopCount: count,
         })
       )
@@ -214,7 +214,7 @@ export function createLibraryProfile(
           }),
           new EditActionPlayAnimation({
             animation: PrebuildAnimationsExt.overlappingQuickReds,
-            face: Constants.currentFaceIndex,
+            face: AnimConstants.currentFaceIndex,
           })
         )
       );
@@ -232,7 +232,7 @@ export function createLibraryProfile(
           }),
           new EditActionPlayAnimation({
             animation: PrebuildAnimationsExt.overlappingQuickGreens,
-            face: Constants.currentFaceIndex,
+            face: AnimConstants.currentFaceIndex,
           })
         )
       );
@@ -256,7 +256,7 @@ export function createLibraryProfile(
           }),
           new EditActionPlayAnimation({
             animation: PrebuildAnimations.redBlueWorm,
-            face: Constants.currentFaceIndex,
+            face: AnimConstants.currentFaceIndex,
           })
         )
       );
@@ -275,7 +275,7 @@ export function createLibraryProfile(
           }),
           new EditActionPlayAnimation({
             animation: PrebuildAnimations.pinkWorm,
-            face: Constants.currentFaceIndex,
+            face: AnimConstants.currentFaceIndex,
           })
         )
       );
@@ -293,7 +293,7 @@ export function createLibraryProfile(
           }),
           new EditActionPlayAnimation({
             animation: PrebuildAnimations.greenBlueWorm,
-            face: Constants.currentFaceIndex,
+            face: AnimConstants.currentFaceIndex,
           })
         )
       );
@@ -327,7 +327,7 @@ export function createLibraryProfile(
           new EditActionPlayAnimation({
             animation: PrebuildAnimationsExt.fire,
             // face: fixD4Face(DiceUtils.getTopFace(dieType)),
-            face: Constants.currentFaceIndex,
+            face: AnimConstants.currentFaceIndex,
             loopCount: 1,
           })
         )
@@ -345,7 +345,7 @@ export function createLibraryProfile(
           new EditActionPlayAnimation({
             animation: PrebuildAnimationsExt.doubleSpinningMagic,
             //face: fixD4Face(DiceUtils.getTopFace(dieType)),
-            face: Constants.currentFaceIndex,
+            face: AnimConstants.currentFaceIndex,
             loopCount: 1,
           })
         )

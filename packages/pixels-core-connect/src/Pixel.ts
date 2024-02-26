@@ -1,11 +1,11 @@
 import {
+  AnimConstants,
   Color,
   Color32Utils,
   DataSet,
-  Constants as AnimConstants,
+  DiceUtils,
   PixelDieType,
   PixelDieTypeValues,
-  DiceUtils,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,

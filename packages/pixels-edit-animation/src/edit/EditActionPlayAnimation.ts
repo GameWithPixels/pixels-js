@@ -2,7 +2,7 @@ import {
   DataSet,
   Action,
   ActionPlayAnimation,
-  Constants,
+  AnimConstants,
   Color,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
@@ -56,7 +56,7 @@ export default class EditActionPlayAnimation extends EditAction {
   }) {
     super();
     this.animation = opt?.animation;
-    this.face = opt?.face ?? Constants.currentFaceIndex;
+    this.face = opt?.face ?? AnimConstants.currentFaceIndex;
     this.loopCount = opt?.loopCount ?? 1;
     this.duration = opt?.duration;
     this.fade = opt?.fade;
@@ -68,7 +68,7 @@ export default class EditActionPlayAnimation extends EditAction {
     return safeAssign(new ActionPlayAnimation(), {
       animIndex: this.animation
         ? editSet.animations.indexOf(this.animation)
-        : Constants.currentFaceIndex,
+        : AnimConstants.currentFaceIndex,
       faceIndex: this.face > 0 ? this.face - 1 : this.face,
       loopCount: this.loopCount,
     });

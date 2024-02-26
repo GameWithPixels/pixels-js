@@ -1,6 +1,6 @@
 import AnimationGradientPattern from "./AnimationGradientPattern";
 import AnimationInstance from "./AnimationInstance";
-import { Constants } from "./Constants";
+import { AnimConstants } from "./Constants";
 
 /**
  * @category Animation Instance
@@ -16,7 +16,7 @@ export default class AnimationInstanceGradientPattern extends AnimationInstance 
     super.start(startTime);
     if (this.preset.overrideWithFace) {
       this._rgb = this.bits.getColor32(
-        Constants.paletteColorFromFace,
+        AnimConstants.paletteColorFromFace,
         this.die
       );
     }

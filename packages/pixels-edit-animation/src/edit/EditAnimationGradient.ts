@@ -2,7 +2,7 @@ import {
   AnimationBits,
   AnimationPreset,
   AnimationGradient,
-  Constants,
+  AnimConstants,
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
@@ -32,7 +32,7 @@ export default class EditAnimationGradient extends EditAnimation {
     }
   ) {
     super(opt);
-    this.faces = opt?.faces ?? Constants.faceMaskAll;
+    this.faces = opt?.faces ?? AnimConstants.faceMaskAll;
     this.gradient = opt?.gradient;
   }
 

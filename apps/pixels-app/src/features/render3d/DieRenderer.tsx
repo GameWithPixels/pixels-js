@@ -3,7 +3,7 @@ import {
   AnimationBits,
   AnimationInstance,
   AnimationPreset,
-  Constants,
+  AnimConstants,
   GammaUtils,
   PixelColorway,
   PixelDieType,
@@ -22,8 +22,8 @@ import { logError } from "../utils";
 
 import Die3D from "~/pixels-three/Die3D";
 
-const animIndices: number[] = Array(Constants.maxLEDsCount);
-const animColors: number[] = Array(Constants.maxLEDsCount);
+const animIndices: number[] = Array(AnimConstants.maxLEDsCount);
+const animColors: number[] = Array(AnimConstants.maxLEDsCount);
 
 function renderAnimation(
   die3d: Die3D,
