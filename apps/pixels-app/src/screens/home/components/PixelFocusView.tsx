@@ -1,4 +1,6 @@
+import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
 import {
+  Constants,
   Pixel,
   usePixelStatus,
   usePixelValue,
@@ -49,13 +51,18 @@ const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
       mode="flat"
       dense
       autoFocus
-      maxLength={15}
-      style={{
-        marginHorizontal: 60,
-        textAlign: "center",
-      }}
+      style={{ marginHorizontal: 60, textAlign: "center" }}
       value={name}
-      onChangeText={setName}
+      onChangeText={(t) => {
+        let name = t;
+        while (
+          name.length &&
+          encodeUtf8(name).byteLength > Constants.maxAdvertisedNameByteSize
+        ) {
+          name = name.slice(0, -1);
+        }
+        setName(name);
+      }}
       onEndEditing={() => onEndEditing(name)}
     />
   );
@@ -72,7 +79,6 @@ export function PixelFocusViewHeader({
 }) {
   const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
-  console.log(`PixelFocusViewHeader: pixel: ${pixel}, status: ${status}`);
   const [pixelName] = usePixelValue(pixel, "name");
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const disabled = status !== "ready";
@@ -110,7 +116,7 @@ export function PixelFocusViewHeader({
     : colors.onSurface;
   return (
     <View>
-      {!pixel || !renameVisible ? (
+      {!renameVisible ? (
         <Pressable
           sentry-label="actions-menu"
           style={{
@@ -130,43 +136,40 @@ export function PixelFocusViewHeader({
           >
             {disabled ? getPixelStatusLabel(status) : pixelName}
           </Text>
-          {!!pixel && (
-            <>
-              <ChevronDownIcon
-                size={18}
-                color={color}
-                backgroundColor={makeTransparent(colors.onBackground, 0.2)}
-                style={{ marginBottom: 3 }}
-              />
-              <DieMenu
-                visible={actionsMenuVisible}
-                anchor={{ x: (windowWidth - 230) / 2, y: 80 }}
-                disconnected={disabled}
-                onDismiss={() => setActionsMenuVisible(false)}
-                onUnpair={onUnpair}
-                onUpdateFirmware={
-                  hasFirmwareUpdate ? onFirmwareUpdate : undefined
-                }
-                onRename={() => setRenameVisible(true)}
-                onReset={() => showConfirmReset()}
-                onTurnOff={() => showConfirmTurnOff()}
-              />
-              {hasFirmwareUpdate ? (
-                <Badge style={{ position: "absolute", right: -15, top: 5 }}>
-                  !
-                </Badge>
-              ) : null}
-            </>
-          )}
+          <ChevronDownIcon
+            size={18}
+            color={color}
+            backgroundColor={makeTransparent(colors.onBackground, 0.2)}
+            style={{ marginBottom: 3 }}
+          />
+          <DieMenu
+            visible={actionsMenuVisible}
+            anchor={{ x: (windowWidth - 230) / 2, y: 80 }}
+            disconnected={disabled}
+            onDismiss={() => setActionsMenuVisible(false)}
+            onUnpair={onUnpair}
+            onUpdateFirmware={hasFirmwareUpdate ? onFirmwareUpdate : undefined}
+            onRename={() => setRenameVisible(true)}
+            onReset={() => showConfirmReset()}
+            onTurnOff={() => showConfirmTurnOff()}
+          />
+          {hasFirmwareUpdate ? (
+            <Badge style={{ position: "absolute", right: -15, top: 5 }}>
+              !
+            </Badge>
+          ) : null}
         </Pressable>
       ) : (
-        <PixelNameTextInput
-          pixel={pixel}
-          onEndEditing={(name) => {
-            pixel.rename(name);
-            setRenameVisible(false);
-          }}
-        />
+        pixel && (
+          <PixelNameTextInput
+            ref={textInputRef}
+            pixel={pixel}
+            onEndEditing={(name) => {
+              pixel.rename(name);
+              setRenameVisible(false);
+            }}
+          />
+        )
       )}
     </View>
   );

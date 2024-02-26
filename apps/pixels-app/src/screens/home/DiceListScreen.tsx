@@ -183,25 +183,24 @@ function useUnpairActionSheet(pairedDie?: PairedDie): () => void {
   const { showActionSheetWithOptions } = useActionSheet();
 
   const { colors } = useTheme();
-  const unpairDieWithConfirmation = React.useCallback(
-    () =>
-      showActionSheetWithOptions(
-        {
-          options: [`Unpair ${pairedDie?.name}`, "Keep Die"],
-          destructiveButtonIndex: 0,
-          cancelButtonIndex: 1,
-          destructiveColor: colors.error,
-          containerStyle: { backgroundColor: colors.background },
-          textStyle: { color: colors.onBackground },
-        },
-        (selectedIndex?: number) => {
-          if (pairedDie && selectedIndex === 0) {
-            appDispatch(removePairedDie(pairedDie.pixelId));
-          }
+  const unpairDieWithConfirmation = React.useCallback(() => {
+    console.log("UNPAIR " + JSON.stringify(pairedDie));
+    showActionSheetWithOptions(
+      {
+        options: [`Unpair ${pairedDie?.name}`, "Keep Die"],
+        destructiveButtonIndex: 0,
+        cancelButtonIndex: 1,
+        destructiveColor: colors.error,
+        containerStyle: { backgroundColor: colors.background },
+        textStyle: { color: colors.onBackground },
+      },
+      (selectedIndex?: number) => {
+        if (pairedDie && selectedIndex === 0) {
+          appDispatch(removePairedDie(pairedDie.pixelId));
         }
-      ),
-    [appDispatch, colors, pairedDie, showActionSheetWithOptions]
-  );
+      }
+    );
+  }, [appDispatch, colors, pairedDie, showActionSheetWithOptions]);
 
   return unpairDieWithConfirmation;
 }
@@ -234,28 +233,19 @@ function DiceListPage({
     }, [startScan])
   );
 
-  // Selection
-  const [lastSelectedDie, setSelectedDie] = React.useState<PairedDie>();
+  // Selection (we keep an index to be sure to use the latest values from pairedDice)
+  const [lastSelectedDie, setSelectedDie] = React.useState(0);
   // We don't want to show a Pixel that no longer exists
-  const selectedDie = !pairedDice.length
-    ? // Nothing to select
-      undefined
-    : pairedDice.some((d) => d.pixelId === lastSelectedDie?.pixelId)
-      ? lastSelectedDie
-      : // Select first Pixel
-        pairedDice[0];
-  // Update state to match selectedDie
-  React.useEffect(() => {
-    // TODO this triggers an unneeded re-render and is kind of a hack anyways
-    setSelectedDie(selectedDie);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDie !== lastSelectedDie]);
+  const selectedDie =
+    pairedDice.find((d) => d.pixelId === lastSelectedDie) ??
+    // Select first Pixel
+    pairedDice[0];
 
   // View Mode
   const [viewMode, setViewMode] = React.useState<DiceViewMode>("focus");
   const isFocus = viewMode === "focus";
   const selectAndShowDetails = (pairedDie: PairedDie, showDetails = true) => {
-    setSelectedDie(pairedDie);
+    setSelectedDie(pairedDie.pixelId);
     blinkDie(pairedDie);
     startScan({ pixelId: pairedDie.pixelId });
     if (showDetails) {
