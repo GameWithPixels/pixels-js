@@ -92,8 +92,8 @@ export default class AnimationBits {
 
   serialize(dataView: DataView, byteOffset = 0): [DataView, number] {
     // Copy palette
-    for (const c of this.palette) {
-      [dataView, byteOffset] = c.serialize(dataView, byteOffset);
+    for (const color of this.palette) {
+      [dataView, byteOffset] = color.serialize(dataView, byteOffset);
     }
 
     // Round up to nearest multiple of 4

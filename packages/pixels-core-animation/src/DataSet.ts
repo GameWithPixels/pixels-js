@@ -77,9 +77,8 @@ export default class DataSet {
   toSingleAnimationByteArray(): Uint8Array {
     assert(this.animations.length === 1, "Need exactly one animation");
     assert(
-      this._animationBits.getPaletteSize() <= 127,
-      "Palette has more than 127 colors: " +
-        this._animationBits.getPaletteSize()
+      this._animationBits.palette.length < 128,
+      "Palette has more than 127 colors: " + this._animationBits.palette.length
     );
 
     // Compute size of animation bits + animation
@@ -100,9 +99,8 @@ export default class DataSet {
   toAnimationsByteArray(): Uint8Array {
     assert(this.animations.length > 0, "No animations");
     assert(
-      this._animationBits.getPaletteSize() <= 127,
-      "Palette has more than 127 colors: " +
-        this._animationBits.getPaletteSize()
+      this._animationBits.palette.length < 128,
+      "Palette has more than 127 colors: " + this._animationBits.palette.length
     );
 
     // Compute size of animation bits + animations
@@ -143,9 +141,8 @@ export default class DataSet {
 
   serialize(dataView: DataView, byteOffset = 0): [DataView, number] {
     assert(
-      this._animationBits.getPaletteSize() <= 127,
-      "Palette has more than 127 colors: " +
-        this._animationBits.getPaletteSize()
+      this._animationBits.palette.length < 128,
+      "Palette has more than 127 colors: " + this._animationBits.palette.length
     );
 
     // Copy animation bits
@@ -153,7 +150,7 @@ export default class DataSet {
 
     // Copy animations, offsets first
     let animOffset = 0;
-    // TODO what if there are 0 animations?
+    // TODO what if there are 0 animation?
     this.animations.forEach((anim, i) => {
       // TODO first index is always 0!
       dataView.setUint16(byteOffset + 2 * i, animOffset, true);
