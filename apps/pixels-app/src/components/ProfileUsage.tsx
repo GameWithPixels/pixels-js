@@ -10,15 +10,11 @@ export function ProfileUsage({
 }: {
   profile: Readonly<Profiles.Profile>;
 } & ViewProps) {
-  const size = createDataSetForProfile(profile)
-    .toDataSet()
-    .computeDataSetByteSize();
-  const patternsCount = new Set(
-    profile
-      .collectAnimations()
-      .map((a) => a.collectPatterns())
-      .flat()
-  ).size;
+  const editDataSet = createDataSetForProfile(profile);
+  const dataSet = editDataSet.toDataSet();
+  const patterns = new Set(
+    editDataSet.patterns.concat(editDataSet.rgbPatterns)
+  );
   return (
     <View style={[{ gap: 5 }, style]} {...props}>
       <Text>Date created: {profile.creationDate.toLocaleString()}</Text>
@@ -26,8 +22,11 @@ export function ProfileUsage({
       {profile.lastUsed && (
         <Text>Last used: {profile.lastUsed.toLocaleString()}</Text>
       )}
-      <Text>Memory footprint: {size} bytes</Text>
-      <Text>Number of unique Color Designs: {patternsCount}</Text>
+      <Text>Memory footprint: {dataSet.computeDataSetByteSize()} bytes</Text>
+      <Text>Number of unique Color Designs: {patterns.size}</Text>
+      <Text>
+        Number of unique Colors: {dataSet.animationBits.palette.length}
+      </Text>
       {/* <Text>Number Of Sequences: 12</Text>
       <Text>Number Of Animations: 12</Text>
       <Text>Number Of Gradients: 12</Text>
