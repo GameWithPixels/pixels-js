@@ -11,6 +11,8 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Switch, Text, useTheme } from "react-native-paper";
 
 import RollsPerFaceIcon from "#/icons/home/rolls-per-face";
+import { PairedDie } from "~/app/PairedDie";
+import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { ProfileUsage } from "~/components/ProfileUsage";
@@ -214,20 +216,14 @@ function DieAdvancedInfo({
 }
 
 function DieDetailsPage({
-  pixel,
+  pairedDie,
   navigation,
 }: {
-  pixel: Pixel;
+  pairedDie: PairedDie;
   navigation: DieDetailsScreenProps["navigation"];
 }) {
-  React.useEffect(() => {
-    if (!pixel) {
-      navigation.goBack();
-    }
-  }, [navigation, pixel]);
-
-  // Active profile
-  const activeProfile = useActiveProfile(pixel);
+  const pixel = usePairedPixel(pairedDie);
+  const activeProfile = useActiveProfile(pairedDie);
 
   // Firmware update
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
@@ -237,9 +233,9 @@ function DieDetailsPage({
   return (
     <View style={{ height: "100%" }}>
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
-        {pixel?.name}
+        {pairedDie.name}
       </PageHeader>
-      {pixel && (
+      {pixel ? (
         <GHScrollView
           contentContainerStyle={{
             paddingHorizontal: 10,
@@ -266,6 +262,13 @@ function DieDetailsPage({
           <DieStats pixel={pixel} style={{ marginTop: -10 }} /> */}
           <DieAdvancedInfo pixel={pixel} />
         </GHScrollView>
+      ) : (
+        <Text
+          variant="bodyLarge"
+          style={{ alignSelf: "center", marginTop: 20 }}
+        >
+          No information available.
+        </Text>
       )}
     </View>
   );
@@ -277,10 +280,19 @@ export function DieDetailsScreen({
   },
   navigation,
 }: DieDetailsScreenProps) {
-  const pixel = usePairedPixel(pixelId);
+  const pairedDie = useAppSelector((state) =>
+    state.pairedDice.paired.find((p) => p.pixelId === pixelId)
+  );
+  React.useEffect(() => {
+    if (!pairedDie) {
+      navigation.goBack();
+    }
+  }, [navigation, pairedDie]);
   return (
     <AppBackground>
-      {pixel && <DieDetailsPage pixel={pixel} navigation={navigation} />}
+      {pairedDie && (
+        <DieDetailsPage pairedDie={pairedDie} navigation={navigation} />
+      )}
     </AppBackground>
   );
 }
