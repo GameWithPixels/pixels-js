@@ -4,6 +4,7 @@ import EditAnimation from "./EditAnimation";
 import EditPattern from "./EditPattern";
 import EditProfile from "./EditProfile";
 
+// TODO should also include gradients
 export default class EditDataSet {
   readonly patterns: Readonly<EditPattern>[];
   readonly rgbPatterns: Readonly<EditPattern>[];
