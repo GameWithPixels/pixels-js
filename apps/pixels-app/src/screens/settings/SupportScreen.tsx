@@ -5,8 +5,9 @@ import { Text as PaperText, TextProps } from "react-native-paper";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { OutlineButton } from "~/components/buttons";
-import { TrailingSpaceFix } from "~/fixes";
 import { SupportScreenProps } from "~/navigation";
+
+const supportEmail = "Luna@GameWithPixels.com";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
@@ -44,21 +45,28 @@ function SupportPage({
           gap: 20,
         }}
       >
-        <Text>
-          To report issues or send suggestions, contact us via our website:
-        </Text>
-        <URLButton
+        <Text>To report issues or send suggestions, contact us via email:</Text>
+        {/* <URLButton
           url="https://gamewithpixels.com/contact-us/"
           sentry-label="contact-us"
         >
           {"Contact Us" + TrailingSpaceFix}
+        </URLButton> */}
+        <URLButton
+          url={encodeURI(
+            `mailto:${supportEmail}?` +
+              "subject=App Support Request&body=Please describe your issue or suggestion here."
+          )}
+          sentry-label="send-email"
+        >
+          Email Us at {supportEmail}
         </URLButton>
         <Text style={{ marginTop: 20 }}>Or join us on our Discord server:</Text>
         <URLButton
           url="https://discord.com/invite/9ghxBYQFYA"
           sentry-label="discord-server"
         >
-          Pixels Discord Server
+          Join Pixels Discord Server
         </URLButton>
       </ScrollView>
     </View>
