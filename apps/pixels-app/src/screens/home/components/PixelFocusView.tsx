@@ -27,7 +27,7 @@ import { PixelDieRenderer } from "~/components/DieRenderer";
 import { NewPixelAppBanner } from "~/components/banners";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
-import { blinkDie, transferProfile } from "~/features/dice";
+import { blinkDie, resetDieSettings, transferProfile } from "~/features/dice";
 import { renameDie } from "~/features/dice/renameDie";
 import { FactoryProfile, getPixelStatusLabel } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
@@ -88,9 +88,10 @@ export function PixelFocusViewHeader({
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const disabled = status !== "ready";
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
-  const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
-    pixel?.sendMessage("clearSettings");
-  });
+  const showConfirmReset = useConfirmActionSheet(
+    "Reset Die Settings",
+    () => pixel && resetDieSettings(pixel, appDispatch)
+  );
   const showConfirmTurnOff = useConfirmActionSheet(
     "Turn Die Off",
     () => {
