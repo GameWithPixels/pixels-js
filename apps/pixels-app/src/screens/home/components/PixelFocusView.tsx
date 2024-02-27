@@ -28,6 +28,7 @@ import { NewPixelAppBanner } from "~/components/banners";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
 import { blinkDie, transferProfile } from "~/features/dice";
+import { renameDie } from "~/features/dice/renameDie";
 import { FactoryProfile, getPixelStatusLabel } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
 import {
@@ -35,6 +36,7 @@ import {
   useConfirmActionSheet,
   useHasFirmwareUpdate,
   usePairedPixel,
+  useProfile,
 } from "~/hooks";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
@@ -77,6 +79,9 @@ export function PixelFocusViewHeader({
   onUnpair: () => void;
   onFirmwareUpdate: () => void;
 }) {
+  const appDispatch = useAppDispatch();
+  const profile = useProfile(pairedDie.profileUuid);
+
   const pixel = usePairedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const [pixelName] = usePixelValue(pixel, "name");
@@ -164,9 +169,9 @@ export function PixelFocusViewHeader({
           <PixelNameTextInput
             ref={textInputRef}
             pixel={pixel}
-            onEndEditing={(name) => {
-              pixel.rename(name);
+            onEndEditing={async (name) => {
               setRenameVisible(false);
+              renameDie(pixel, name, profile, appDispatch);
             }}
           />
         )
@@ -302,7 +307,7 @@ export function PixelFocusView({
           onSelectProfile={(profile) => {
             if (!transferring) {
               setPickProfile(false);
-              transferProfile(pixel, profile);
+              transferProfile(pixel, profile, appDispatch);
             } else {
               console.log(
                 "Dropping profile transfer because one is already in progress"

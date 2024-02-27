@@ -39,6 +39,7 @@ export function readProfile(
   if (profileData) {
     runInAction(() => updateProfile(profile, profileData, library));
   } else {
+    // TODO throw error
     logError(`Profile ${profile.uuid} not found in library`);
   }
   return profile;

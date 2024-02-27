@@ -10,21 +10,26 @@ import {
 } from "../store/diceRollsSlice";
 import { setPairedDieProfile } from "../store/pairedDiceSlice";
 
-import { store } from "~/app/store";
+import { AppDispatch } from "~/app/store";
 import { applyProfileOverrides } from "~/features/profiles";
 import { ToastSettings } from "~/themes";
 
 export function transferProfile(
   pixel: Pixel,
-  profile: Readonly<Profiles.Profile>
+  profile: Readonly<Profiles.Profile>,
+  appDispatch: AppDispatch,
+  opt?: { silent?: boolean }
 ): void {
   console.log(
-    `Transferring profile ${profile.name} to die ${pixel.pixelId
-      .toString(16)
-      .padStart(8)}`
+    `Transferring profile ${profile.name} (${
+      profile.uuid
+    }) to die ${pixel.pixelId.toString(16).padStart(8)}`
   );
+
+  // Create new profile with action overrides applied to it
   const modified = applyProfileOverrides(profile);
-  console.log(`Transferring profile: ${profile.name} - ${profile.uuid}`);
+
+  // Log information about the modified profile
   for (const rule of modified.rules) {
     console.log(" - Rule of type " + rule.condition.type);
     if (rule.condition instanceof Profiles.ConditionRolled) {
@@ -50,32 +55,40 @@ export function transferProfile(
       }
     }
   }
-  const ds = createDataSetForProfile(modified);
+
   // TODO update when getting confirmation from the die in AppPixelsCentral
-  store.dispatch(
+  appDispatch(
     setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
   );
-  store.dispatch(
+  appDispatch(
     setProfileTransfer({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
   );
-  const data = ds.toDataSet();
-  pixel
-    .transferDataSet(data)
-    .then(() => {
-      blinkDie(pixel);
-      Toast.show(
-        `\nProfile "${profile.name}" activated on ${pixel.name}\n`,
-        ToastSettings
-      );
-    })
-    .catch((e) => {
-      console.log(`Error while transferring profile: ${e}`);
+
+  // Create the data set for the profile
+  const dataSet = createDataSetForProfile(modified).toDataSet();
+  const task = async () => {
+    try {
+      await pixel.transferDataSet(dataSet);
+
+      // Notify user
+      if (!opt?.silent) {
+        blinkDie(pixel);
+        Toast.show(
+          `\nProfile "${profile.name}" activated on ${pixel.name}\n`,
+          ToastSettings
+        );
+      }
+    } catch (e) {
+      console.log(`Error transferring profile: ${e}`);
       Alert.alert(
         "Failed to Activate Profile",
-        "An error occurred while transferring the profile data to the die. The error is " +
+        "An error occurred while transferring the profile data to the die: " +
           String(e),
         [{ text: "OK" }]
       );
-    })
-    .finally(() => store.dispatch(clearProfileTransfer()));
+    } finally {
+      appDispatch(clearProfileTransfer());
+    }
+  };
+  task();
 }
