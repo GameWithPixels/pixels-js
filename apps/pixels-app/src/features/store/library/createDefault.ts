@@ -1,5 +1,7 @@
 import {
+  AnimationBits,
   DefaultRulesAnimations,
+  EditDataSet,
   PrebuildAnimations,
   PrebuildAnimationsExt,
 } from "@systemic-games/pixels-edit-animation";
@@ -97,6 +99,46 @@ export function createDefault(): LibraryData {
         }
       }
     }
+
+    // Check animations palette size
+    const checkPalette = <T extends keyof Serializable.AnimationSetData>(
+      type: T,
+      data: Readonly<Serializable.AnimationSetData[T][number]>
+    ) => {
+      const anim = Serializable.toAnimation(
+        type,
+        data,
+        () => undefined,
+        (uuid) =>
+          Serializable.toPattern(
+            library.patterns.find((p) => p.uuid === uuid)!
+          ),
+        (uuid) =>
+          Serializable.toGradient(
+            library.gradients.find((p) => p.uuid === uuid)!
+          )
+      );
+      const editSet = new EditDataSet();
+      const animationBits = new AnimationBits();
+      anim
+        .collectPatterns()
+        .rgb?.forEach((p) => p.toRgbTracks(editSet, animationBits));
+      anim.toAnimation(editSet, animationBits);
+      const numColors = animationBits.palette.length;
+      if (numColors >= 10) {
+        console.warn(
+          `Anim '${data.name}' of type ${type} has ${numColors} colors`
+        );
+      }
+    };
+
+    for (const e of Object.entries(library.animations)) {
+      const type = e[0] as keyof Serializable.AnimationSetData;
+      if (type !== "sequence") {
+        e[1].forEach((a: Serializable.AnimationData) => checkPalette(type, a));
+      }
+    }
   }
+
   return library;
 }

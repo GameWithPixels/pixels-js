@@ -90280,16 +90280,6 @@
       }
     },
     {
-      "type": 3,
-      "data": {
-        "name": "Rainbow Waterfall Overlap",
-        "uuid": "8c677768-975f-4544-b3ce-a219f68b9a79",
-        "category": 2,
-        "patternIndex": 22,
-        "duration": 8.061675
-      }
-    },
-    {
       "type": 4,
       "data": {
         "name": "Explosion",
