@@ -55,12 +55,10 @@ const PairedDiceSlice = createSlice({
       >
     ) {
       log("addPairedDie", action.payload);
-      const index = state.paired.findIndex(
-        ({ pixelId }) => pixelId === action.payload.pixelId
-      );
-      const uIndex = state.unpaired.findIndex(
-        ({ pixelId }) => pixelId === action.payload.pixelId
-      );
+      const withId = ({ pixelId }: PairedDie) =>
+        pixelId === action.payload.pixelId;
+      const index = state.paired.findIndex(withId);
+      const uIndex = state.unpaired.findIndex(withId);
       const { systemId, pixelId, name, dieType, colorway } = action.payload;
       const die = {
         systemId,
@@ -69,11 +67,9 @@ const PairedDiceSlice = createSlice({
         dieType,
         colorway,
         profileUuid:
-          index >= 0
-            ? state.paired[uIndex].profileUuid
-            : uIndex >= 0
-              ? state.unpaired[uIndex].profileUuid
-              : FactoryProfile.getUuid(dieType),
+          state.paired[index]?.profileUuid ??
+          state.unpaired[uIndex]?.profileUuid ??
+          FactoryProfile.getUuid(dieType),
       };
       if (index >= 0) {
         state.paired[index] = die;
