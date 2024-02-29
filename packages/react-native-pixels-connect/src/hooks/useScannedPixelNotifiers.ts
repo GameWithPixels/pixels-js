@@ -12,16 +12,18 @@ import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
 /**
  * React hook that creates {@link PixelScanner} to scan for Pixels using Bluetooth.
- * Use this hook if you don't want the hosting React component to re-render every time
- * an already scanned Pixel in the returned list of {@link ScannedPixelNotifier} gets updated.
+ * Use this hook if you don't want the hosting React component to re-render every
+ * time an already scanned Pixel in the returned list of {@link ScannedPixelNotifier}
+ * gets updated.
  * @param opt Optional arguments, see {@link PixelScannerOptions}.
  * @returns An array with:
  * - The list of {@link ScannedPixelNotifier}. The list itself is not modified when
  *   existing items are updated.
  * - A stable reducer like function to dispatch actions to the scanner.
  * - The scan status or the last error.
- * @remarks {@link ScannedPixelNotifier} instances are kept globally, for a given Pixel
- *          the same instance is returned and updated by all scanners.
+ * @remarks
+ * {@link ScannedPixelNotifier} instances are kept globally, for a given Pixel
+ * the same instance is returned and updated by all scanners.
  */
 export function useScannedPixelNotifiers(
   opt?: PixelScannerOptions

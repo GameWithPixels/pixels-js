@@ -13,19 +13,19 @@ export interface PixelInfo {
   /** The unique Pixel id of the device. */
   readonly pixelId: number;
 
-  /** The Pixel name. */
+  /** The Pixels die name. */
   readonly name: string;
 
   /** The number of LEDs of the Pixel. */
   readonly ledCount: number;
 
-  /** The die color. */
+  /** The Pixel color. */
   readonly colorway: PixelColorway;
 
-  /** The type of die. */
+  /** The Pixel die type. */
   readonly dieType: PixelDieType;
 
-  /** The firmware build date of the Pixel. */
+  /** The Pixel firmware build date. */
   readonly firmwareDate: Date;
 
   /** The last RSSI value measured by the Pixel. */

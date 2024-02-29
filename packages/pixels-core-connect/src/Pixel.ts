@@ -271,7 +271,7 @@ export class Pixel extends PixelInfoNotifier {
     return this._info.ledCount;
   }
 
-  /** Gets the design and color of the Pixel. */
+  /** Gets the color of the Pixel. */
   get colorway(): PixelColorway {
     return this._info.colorway;
   }
@@ -301,7 +301,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Get the Pixel battery level (percentage).
-   * @remarks The battery level is automatically updated when connected.
+   * @remarks This value is automatically updated when the die is connected.
    */
   get batteryLevel(): number {
     return this._info.batteryLevel;
@@ -310,7 +310,7 @@ export class Pixel extends PixelInfoNotifier {
   /**
    * Gets whether the Pixel battery is charging or not.
    * Returns 'true' if fully charged but still on charger.
-   * @remarks The charging state is automatically updated when connected.
+   * @remarks This value is automatically updated when the die is connected.
    */
   get isCharging(): boolean {
     return this._info.isCharging;
@@ -318,7 +318,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Get the Pixel roll state.
-   * @remarks The roll state is automatically updated when connected.
+   * @remarks This value is automatically updated when the die is connected.
    */
   get rollState(): PixelRollState {
     return this._info.rollState;

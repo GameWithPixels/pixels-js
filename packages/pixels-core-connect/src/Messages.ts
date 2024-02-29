@@ -1198,7 +1198,7 @@ export class StoreValueAck implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to configure the die design and color.
+ * Message send to a Pixel to configure the die type and color.
  * @category Message
  */
 export class SetDesignAndColor implements PixelMessage {

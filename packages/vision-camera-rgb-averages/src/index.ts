@@ -54,8 +54,7 @@ export interface ImageRgbAverages {
  * @param frame The frame to use.
  * @param opt Optional parameters, see {@link ImageRgbAveragesOptions}.
  * @returns An object with red, green and blue averages,
- *          see {@link ImageRgbAveragesOptions},
- *          or a string with an error message.
+ * see {@link ImageRgbAveragesOptions}, or a string with an error message.
  * @throws Throws an exception when not called inside a worklet.
  */
 export function getImageRgbAverages(

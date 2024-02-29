@@ -6,8 +6,9 @@ import DfuModule from "./module";
  * The underlying type for the device identifier depends on the platform.
  * - iOS: the system id assigned by the OS to the Bluetooth peripheral.
  * - Android: the Bluetooth address of the device.
- * @remarks On Android, the Bluetooth address of the device when in DFU mode
- *          is the normal address + 1.
+ * @remarks
+ * On Android, the Bluetooth address of the device when in DFU mode is
+ * the normal address plus 1.
  */
 export type DfuTargetId = number | string;
 

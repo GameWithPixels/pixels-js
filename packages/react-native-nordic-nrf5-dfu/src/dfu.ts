@@ -89,8 +89,9 @@ export interface StartDfuOptions {
    * This feature requires Legacy DFU Bootloader version 0.6 or newer
    * (SDK 8.0.0+).
    * @defaultValue false.
-   * @remarks This flag is ignored when Secure DFU button-less Service is used.
-   *          Android only.
+   * @remarks
+   * This flag is ignored when Secure DFU button-less Service is used.
+   * Android only.
    */
   keepBond?: boolean;
   /**

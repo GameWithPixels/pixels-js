@@ -8,16 +8,19 @@ import { usePixelStatus } from "./usePixelStatus";
  * React Hook that returns a dispatch function to connect to and disconnect from
  * a given Pixel.
  * Automatically disconnects from the Pixel on dismount.
+ *
  * @returns An array with:
- *          - the Pixel status,
- *          - the Pixel,
- *          - a stable dispatch function that may be called to connect and disconnect,
- *          - the last encountered error.
- * @remarks The Pixel argument of the dispatch function is required only for the
- *          first "connect" action.
- *          Only one Pixel may be connected at a given time with the same
- *          dispatch function. Connecting to another Pixel using the same dispatch
- *          will first disconnect from the previous Pixel.
+ * - the Pixel status,
+ * - the Pixel,
+ * - a stable dispatch function that may be called to connect and disconnect,
+ * - the last encountered error.
+ *
+ * @remarks
+ * The Pixel argument of the dispatch function is required only for the
+ * first "connect" action.
+ * Only one Pixel may be connected at a given time with the same
+ * dispatch function. Connecting to another Pixel using the same dispatch
+ * will first disconnect from the previous Pixel.
  */
 export function usePixelConnect(
   pixel?: Pixel
@@ -25,7 +28,7 @@ export function usePixelConnect(
   PixelStatus | undefined,
   Pixel | undefined,
   (action: "connect" | "disconnect", pixel?: Pixel) => void,
-  Error?
+  Error?,
 ] {
   const [lastError, setLastError] = useState<Error>();
   const [curPixel, setCurPixel] = useState(pixel);

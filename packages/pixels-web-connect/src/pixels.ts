@@ -61,8 +61,9 @@ export async function requestPixel(): Promise<Pixel> {
  *
  * @param systemId A string assigned by the system that uniquely identifies
  *                 a Pixel die.
- * @returns A promise that resolves to a {@link Pixel} instance if the Bluetooth
- *          device was previously authorized, or undefined.
+ * @returns
+ * A promise that resolves to a {@link Pixel} instance if the Bluetooth device
+ * was previously authorized, or undefined.
  *
  * @remarks
  * - See {@link getBluetoothCapabilities} to check Bluetooth availability and

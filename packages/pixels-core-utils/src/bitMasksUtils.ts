@@ -27,7 +27,7 @@ export function bitsToIndices(value?: number): number[] {
 /**
  * Decompose the given value into the corresponding list of flags.
  * @remarks In this context, a flag is a 2^n value.
- * @param value  The value to use.
+ * @param value The value to use.
  * @returns The flags corresponding to the "on" bits.
  */
 export function bitsToFlags(value?: number): number[] {
@@ -37,8 +37,9 @@ export function bitsToFlags(value?: number): number[] {
 /**
  * Combines the given values into a single one by OR-ing them.
  * This is most useful when combining flags.
- * @remarks In this context, a flag is a 2^n value.
- *          Because of the limitations of the OR operator, the given flags must be less than 2^31.
+ * @remarks
+ * In this context, a flag is a 2^n value.
+ * Because of the limitations of the OR operator, the given flags must be less than 2^31.
  * @param flags List of numbers (flags) to combine.
  * @returns The combined value.
  */
@@ -54,8 +55,9 @@ export function combineFlags(flags: number[]): number {
 
 /**
  * Converts a given bit index to the corresponding flag value.
- * @remarks In this context, a flag is a 2^n value.
- *          Because the value is returned as a 64 bits floating point number with a 52 bits mantissa,
+ * @remarks
+ * In this context, a flag is a 2^n value.
+ * Because the value is returned as a 64 bits floating point number with a 52 bits mantissa,
  * the given bit index must be less than 53.
  * @param bitIndex A bit index.
  * @returns The flag value for the given bit index.

@@ -60,11 +60,13 @@ export type PixelScannerFilter =
  * emit information which is picked up by the scanner.
  * Typically the information is send a few times per second.
  *
- * @remarks Even though the roll state and roll face are included in a
- *          {@link ScannedPixel} instance, this data is not emitted in
- *          a reliable way.
- *          To get reliably notified for rolls, first connect to the die
- *          and listen for roll events.
+ * @remarks
+ * Even though the roll state and roll face are included in a
+ * {@link ScannedPixel} instance, this data is not emitted in
+ * a reliable way.
+ *
+ * To get reliably notified for rolls, first connect to the die
+ * and listen for roll events.
  */
 export class PixelScanner {
   // Use a shared queue so start/stop commands across multiple instances
@@ -181,8 +183,9 @@ export class PixelScanner {
    * The duration in milliseconds for which a Scanned Pixel should
    * be considered available since the last received advertisement.
    * A value of 0 keeps the dice forever.
-   * @remarks Removed Scanned Pixels are notified with respect to
-   *          the value of {@link minNotifyInterval}.
+   * @remarks
+   * Removed Scanned Pixels are notified with respect to the value
+   * of {@link minNotifyInterval}.
    * @default 5000.
    */
   get keepAliveDuration(): number {
@@ -242,10 +245,11 @@ export class PixelScanner {
    * @param opt.overrideContinuous Whether a scan with a specified duration can override
    *                               an ongoing continuous scan. Default: false.
    * @returns A promise.
-   * @remarks Calls to the async methods of this class are queued
-   *          and executed in order.
-   *          On Android, BLE scanning will fail without error when started more
-   *          than 5 times over the last 30 seconds.
+   * @remarks
+   * Calls to the async methods of this class are queued and executed in order.
+   *
+   * On Android, BLE scanning will fail without error when started more than 5 times
+   * over the last 30 seconds.
    */
   async start(opt?: {
     duration?: number;
@@ -285,8 +289,8 @@ export class PixelScanner {
   /**
    * Stops scanning for Pixels.
    * @returns A promise.
-   * @remarks Calls to the async methods of this class are queued
-   *          and executed in order.
+   * @remarks
+   * Calls to the async methods of this class are queued and executed in order.
    */
   async stop(): Promise<void> {
     return PixelScanner._queue.run(async () => {
@@ -305,8 +309,8 @@ export class PixelScanner {
   /**
    * Clears the list of scanned Pixels.
    * @returns A promise.
-   * @remarks Calls to the async methods of this class are queued
-   *          and executed in order.
+   * @remarks
+   * Calls to the async methods of this class are queued and executed in order.
    */
   async clear(): Promise<void> {
     return PixelScanner._queue.run(async () => {
