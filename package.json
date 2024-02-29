@@ -39,6 +39,7 @@
     "pub:core": "yarn pk:core && yarn workspace @systemic-games/pixels-core-utils publish && yarn workspace @systemic-games/pixels-core-animation publish && yarn workspace @systemic-games/pixels-core-connect publish && yarn workspace @systemic-games/pixels-edit-animation publish && yarn workspace @systemic-games/pixels-react publish && yarn workspace @systemic-games/pixels-three publish",
     "pub:web": "yarn pk:web && yarn workspace @systemic-games/pixels-web-connect publish",
     "pub:native": "yarn pk:native && yarn workspace @systemic-games/react-native-bluetooth-le publish && yarn workspace @systemic-games/react-native-nordic-nrf5-dfu publish && yarn workspace @systemic-games/vision-camera-rgb-averages publish && yarn workspace @systemic-games/react-native-pixels-connect publish",
+    "link": "yarn workspace link @systemic-games/pixels-core-utils && yarn workspace link @systemic-games/pixels-core-animation && yarn workspace link @systemic-games/pixels-core-connect && yarn workspace link @systemic-games/pixels-edit-animation && yarn workspace link @systemic-games/pixels-react && yarn workspace link @systemic-games/pixels-three && yarn workspace link @systemic-games/pixels-web-connect",
     "prepare": "yarn pk:all",
     "logcat": "adb logcat -s SystemicGames",
     "logcat:errors": "adb logcat *:E",
