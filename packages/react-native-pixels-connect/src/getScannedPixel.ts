@@ -117,6 +117,7 @@ export function getScannedPixel(
         isCharging,
         rollState,
         currentFace,
+        currentFaceIndex: faceIndex,
         timestamp: new Date(),
       };
       ScannedPixelsRegistry.register(scannedPixel);

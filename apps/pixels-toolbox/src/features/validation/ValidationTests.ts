@@ -97,7 +97,7 @@ export class WaitForChargingTimeoutError extends LocalizedError {
 
 export class WaitFaceUpTimeoutError extends LocalizedError {
   readonly face: number;
-  readonly roll: Readonly<RollEvent>;
+  readonly roll: RollEvent;
   constructor(face: number, roll: RollEvent) {
     super(
       `Timeout waiting for face ${face}, face up: ${roll.face}, roll state: ${roll.state}`
@@ -143,20 +143,6 @@ function isBatteryCharging(state: number): "yes" | "no" | "unknown" {
   } else {
     return "unknown";
   }
-}
-
-function mapFace(
-  face: number,
-  dieType: PixelDieType,
-  programmedDieType: PixelDieType
-): number {
-  if (programmedDieType === "d6" && dieType === "d4") {
-    const index = DiceUtils.indexFromFace(face, programmedDieType);
-    face = DiceUtils.faceFromIndex(index, dieType);
-  } else if (programmedDieType === "d10" && dieType === "d00") {
-    face *= 10;
-  }
-  return face;
 }
 
 export const testTimeout = 30000; // 30s;
@@ -315,16 +301,13 @@ export const ValidationTests = {
       async (abortSignal) => {
         // Blink face
         const faceMask = getFaceMask(face, dieType);
-        console.log(
-          `!!! Blinking face: ${face} mask: ${faceMask} dieType: ${dieType} pixel.dieType: ${pixel.dieType}`
-        );
         await withBlink(
           abortSignal,
           pixel,
           blinkColor,
           async () => {
             let rollListener: ((ev: RollEvent) => void) | undefined;
-            let lastMsg: RollEvent | undefined;
+            let lastEv: RollEvent | undefined;
             try {
               await withPromise<void>(
                 abortSignal,
@@ -336,19 +319,24 @@ export const ValidationTests = {
                   function setHoldTimeout() {
                     console.log(`Waiting ${holdDelay}ms before validating`);
                     holdTimeout = setTimeout(() => {
-                      const face = mapFace(
-                        pixel.currentFace,
-                        dieType,
-                        pixel.dieType
+                      // Remap face based on the user selected die type
+                      const face = DiceUtils.faceFromIndex(
+                        pixel.currentFaceIndex,
+                        dieType
                       );
                       console.log(`Validating face up: ${face}`);
                       resolve();
                     }, holdDelay);
                   }
                   // Roll listener that checks if the required face is up
-                  rollListener = ({ state, face: currentFace }: RollEvent) => {
-                    currentFace = mapFace(currentFace, dieType, pixel.dieType);
-                    lastMsg = { state, face: currentFace };
+                  rollListener = (ev: RollEvent) => {
+                    lastEv = ev;
+                    const state = ev.state;
+                    // Remap face based on the user selected die type
+                    const currentFace = DiceUtils.faceFromIndex(
+                      ev.faceIndex,
+                      dieType
+                    );
                     if (state === "onFace" && currentFace === face) {
                       // Required face is up, start hold timer
                       console.log(`Die rolled on required face ${face}`);
@@ -368,7 +356,9 @@ export const ValidationTests = {
                   // Check current face
                   if (
                     pixel.rollState === "onFace" &&
-                    face === mapFace(pixel.currentFace, dieType, pixel.dieType)
+                    face ===
+                      // Remap face based on the user selected die type
+                      DiceUtils.faceFromIndex(pixel.currentFaceIndex, dieType)
                   ) {
                     // Required face is already up, start hold timer
                     console.log(`Die already on face ${face}`);
@@ -382,8 +372,8 @@ export const ValidationTests = {
                 }
               );
             } catch (error) {
-              if (lastMsg && error instanceof SignalTimeoutError) {
-                throw new WaitFaceUpTimeoutError(face, lastMsg);
+              if (lastEv && error instanceof SignalTimeoutError) {
+                throw new WaitFaceUpTimeoutError(face, lastEv);
               } else {
                 throw error;
               }

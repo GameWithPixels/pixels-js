@@ -40,6 +40,7 @@ export abstract class PixelInfoNotifier<
     "isCharging",
     "rollState",
     "currentFace",
+    "currentFaceIndex",
   ];
 
   private readonly _infoEvEmitter = createTypedEventEmitter<{
@@ -57,7 +58,8 @@ export abstract class PixelInfoNotifier<
   abstract get batteryLevel(): number; // Percentage
   abstract get isCharging(): boolean;
   abstract get rollState(): PixelRollState;
-  abstract get currentFace(): number; // Face value (not index)
+  abstract get currentFace(): number; // Face value
+  abstract get currentFaceIndex(): number;
 
   /**
    * Adds the given listener function for the specified property.

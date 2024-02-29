@@ -76,6 +76,9 @@ export class ScannedPixelNotifier<
   get currentFace(): number {
     return this._data.currentFace;
   }
+  get currentFaceIndex(): number {
+    return this._data.currentFaceIndex;
+  }
 
   // Additional ScannedPixel props
   get address(): number {
