@@ -928,6 +928,14 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
+   * Requests the Pixel to stop all currently playing animations.
+   * @returns A promise.
+   */
+  async stopAllAnimations(): Promise<void> {
+    await this.sendMessage("stopAllAnimations");
+  }
+
+  /**
    * Uploads the given data set of animations to the Pixel flash memory.
    * @param dataSet The data set to upload.
    * @param progressCallback An optional callback that is called as the operation progresses
