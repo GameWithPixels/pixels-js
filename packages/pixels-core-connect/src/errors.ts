@@ -42,10 +42,10 @@ export class PixelConnectError extends PixelError {
       typeof msgOrError === "string"
         ? msgOrError
         : isPixelError
-        ? `Connection error, ${(msgOrError as PixelError).description}`
-        : isError
-        ? `Connection error, ${msgOrError.message}`
-        : `Unknown connection error, ${JSON.stringify(msgOrError)}`;
+          ? `Connection error, ${(msgOrError as PixelError).description}`
+          : isError
+            ? `Connection error, ${msgOrError.message}`
+            : `Unknown connection error, ${JSON.stringify(msgOrError)}`;
     const cause = isError ? msgOrError : undefined;
     super(pixel, msg, cause);
     this.name = "PixelConnectError";
@@ -143,5 +143,16 @@ export class PixelIncompatibleMessageError extends PixelConnectError {
       } API version is ${libApiVersion}`
     );
     this.name = "PixelConnectIncompatibleFirmwareError";
+  }
+}
+
+/**
+ * Thrown by {@link Pixel.rename} method when an empty name is passed.
+ * @category Pixels
+ */
+export class PixelEmptyNameError extends PixelConnectError {
+  constructor(pixel: Pixel) {
+    super(pixel, "New Pixel name must have at least one character");
+    this.name = "PixelEmptyNameError";
   }
 }

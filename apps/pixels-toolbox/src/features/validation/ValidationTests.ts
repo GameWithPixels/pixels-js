@@ -438,7 +438,7 @@ export const ValidationTests = {
     const _unused = getRandomDieNameAsync;
     // Disabled until we have a good list of names
     // name ??= await getRandomDieNameAsync();
-    if (name) {
+    if (name?.length) {
       console.log("Setting die name to " + name);
       await pixel.rename(name);
     }

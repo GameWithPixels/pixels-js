@@ -24,5 +24,8 @@ export function renameDie(
       );
     }
   };
-  task();
+  newName = newName.trim();
+  if (newName.length) {
+    task();
+  }
 }

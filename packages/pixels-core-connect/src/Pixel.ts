@@ -66,6 +66,7 @@ import {
   PixelConnectError,
   PixelConnectIdMismatchError,
   PixelConnectTimeoutError,
+  PixelEmptyNameError,
   PixelError,
   PixelIncompatibleMessageError,
   PixelWaitForMessageDisconnectError as WaitMsgDiscoErr,
@@ -805,20 +806,19 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Requests the Pixel to change its name.
-   * @param name New name to assign to the Pixel.
+   * @param name New name to assign to the Pixel. Must have at least one character.
    * @returns A promise that resolves once the die has confirmed being renamed.
    */
   async rename(name: string): Promise<void> {
-    // Remove leading and trailing spaces
-    name = name?.trim() ?? "";
-    // Skip sending message if name is empty or unchanged
-    if (name.length && name !== this.name) {
-      await this.sendAndWaitForResponse(
-        safeAssign(new SetName(), { name }),
-        "setNameAck"
-      );
-      this._updateName(name);
+    // Skip sending message if name is empty
+    if (!name.length) {
+      throw new PixelEmptyNameError(this);
     }
+    await this.sendAndWaitForResponse(
+      safeAssign(new SetName(), { name }),
+      "setNameAck"
+    );
+    this._updateName(name);
   }
 
   /**

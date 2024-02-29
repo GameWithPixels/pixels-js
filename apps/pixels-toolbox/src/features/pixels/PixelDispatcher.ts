@@ -484,7 +484,11 @@ class PixelDispatcher
         break;
       case "rename":
         this._guard(
-          this._pixel.rename((params as string) ?? getDefaultName(this._pixel)),
+          this._pixel.rename(
+            typeof params === "string" && params.length
+              ? params
+              : getDefaultName(this._pixel)
+          ),
           action
         );
         break;
