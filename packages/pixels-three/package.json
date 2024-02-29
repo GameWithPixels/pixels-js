@@ -1,7 +1,7 @@
 {
   "name": "@systemic-games/pixels-three",
   "version": "1.1.0",
-  "description": "",
+  "description": "Mesh and material to render a Pixels die with Three.js.",
   "main": "dist/cjs/index",
   "module": "dist/esm/index",
   "umd:main": "dist/umd/index",
