@@ -27,20 +27,27 @@ export const DiceUtils = {
     }
   },
 
-  // DieType must start by a letter followed by the number of faces
   getFaceCount(dieType: PixelDieType): number {
-    if (!dieType || dieType.length < 2 || dieType[0] !== "d") {
-      return 0;
-    } else if (dieType === "d00") {
-      return 10;
-    } else {
-      let i = 1;
-      while (i < dieType.length) {
-        const c = dieType.charAt(i);
-        if (c < "0" || c > "9") break;
-        ++i;
-      }
-      return Number(dieType.substring(1, i));
+    switch (dieType) {
+      case "unknown":
+        return 0;
+      case "d4":
+        return 4;
+      case "d6":
+      case "d6fudge":
+      case "d6pipped":
+        return 6;
+      case "d8":
+        return 8;
+      case "d10":
+      case "d00":
+        return 10;
+      case "d12":
+        return 12;
+      case "d20":
+        return 20;
+      default:
+        assertNever(dieType);
     }
   },
 
