@@ -145,14 +145,14 @@ async function loadTextureAsync(
 
 async function loadMaterialAsync(
   colorway: PixelColorway,
-  pd6: boolean
+  isPD6: boolean
 ): Promise<THREE.MeshPhysicalMaterial> {
   // Our load function
   const loadMatAsync = async (): Promise<THREE.MeshPhysicalMaterial> => {
     const start = Date.now();
     const material = new THREE.MeshPhysicalMaterial();
     material.color.setRGB(1, 1, 1);
-    if (pd6) {
+    if (isPD6) {
       material.emissiveMap = await loadTextureAsync(
         require("#/textures/dice/pd6-emissive.png"),
         "textures/pd6-emissive.png"
@@ -298,7 +298,7 @@ async function loadMaterialAsync(
     return material;
   };
 
-  const key = colorway + (pd6 ? "/pd6" : "");
+  const key = colorway + (isPD6 ? "/pd6" : "");
   const result = materials.get(key);
   if (result instanceof Error) {
     throw result;
@@ -414,50 +414,40 @@ async function loadAssetsAsync(
   });
 
   // // Check face count
-  // const faceCount = DiceUtils.getFaceCount(dieType);
-  // if (faceMeshes.length !== faceCount) {
-  //   throw new CreateDie3DError(
-  //     `Mesh for ${dieType} has ${faceMeshes.length} face(s) instead of ${faceCount}`
-  //   );
-  // }
+  const isPD6 = dieType === "d6pipped";
+  const faceCount = isPD6
+    ? DiceUtils.getLEDCount(dieType)
+    : DiceUtils.getFaceCount(dieType);
+  if (faceMeshes.length !== faceCount) {
+    throw new CreateDie3DError(
+      `Mesh for ${dieType} has ${faceMeshes.length} faces instead of ${faceCount}`
+    );
+  }
 
   // Get their names
   const faceNames: string[] = Array(DiceUtils.getFaceCount(dieType));
-  if (dieType !== "d6pipped" && faceMeshes.length !== faceNames.length) {
-    throw new CreateDie3DError(
-      `Unexpected number of faces ${faceMeshes.length} instead of ${faceNames.length} for ${dieType}/${colorway}`
-    );
-  }
   faceMeshes.forEach((faceMesh, i) => {
     // Get face index
     const indexAsString = faceMesh.name
       .toLowerCase()
       .split("face")[1]
-      .replace("_", "")
-      .replace(".", "")
-      .replace("mesh", "");
-    // TODO pipped dice
-    const isPipped = indexAsString.includes("led");
-    const indexFromName = indexAsString?.length
-      ? Number(isPipped ? indexAsString.substring(0, 1) : indexAsString)
-      : NaN;
-    let index = isNaN(indexFromName) ? i : indexFromName;
-    if (dieType === "d00") {
-      index /= 10;
-    } else if (dieType !== "d10") {
-      index -= 1;
-    }
+      .split("led")[0];
+    const indexFromName = indexAsString?.length ? Number(indexAsString) : NaN;
     if (isNaN(indexFromName)) {
       console.log(
-        `loadAssetsAsync(): Face index not found in name, using node index ${index}`
+        `loadAssetsAsync(): Face index not found in ${faceMesh.name}, using node index ${i}`
       );
     }
-    if (isNaN(index) || index < 0 || index >= faceNames.length) {
+    const index = isNaN(indexFromName)
+      ? i
+      : DiceUtils.indexFromFace(indexFromName, dieType);
+    if (index < 0 || index >= faceNames.length) {
       throw new CreateDie3DError(
         `Out of bound face index ${index} for face ${faceMesh.name} of ${dieType}/${colorway}`
       );
     }
-    if (!isPipped && faceNames[index]) {
+    // TODO pipped dice
+    if (!isPD6 && faceNames[index]) {
       throw new CreateDie3DError(
         `Duplicate face index ${index} for ${dieType}/${colorway}`
       );
@@ -466,7 +456,7 @@ async function loadAssetsAsync(
   });
 
   // Update materials
-  const mat = await loadMaterialAsync(colorway, dieType === "d6pipped");
+  const mat = await loadMaterialAsync(colorway, isPD6);
   for (const mesh of faceMeshes.concat(baseMeshes)) {
     mesh.material = mat;
   }
