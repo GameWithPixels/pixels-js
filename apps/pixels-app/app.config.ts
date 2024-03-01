@@ -60,7 +60,8 @@ const config = {
     },
     plugins: [
       "./withAndroidPermissions",
-      "./withAsyncStorageDbSize",
+      "./withAndroidAsyncStorageDbSize",
+      "./withAndroidMailto",
       "expo-localization",
       "sentry-expo",
       [

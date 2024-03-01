@@ -1,6 +1,6 @@
 const { withGradleProperties } = require("@expo/config-plugins");
 
-module.exports = function withAsyncStorageDbSize(config) {
+module.exports = function withAndroidAsyncStorageDbSize(config) {
   const newGraddleProperties = [
     {
       type: "property",
