@@ -10,6 +10,7 @@ export interface ValidationSettingsState {
   customFirmwareAndProfile?: boolean; // Select with selectCustomFirmwareAndProfile
   profileName?: PrebuildProfileName; // Select with selectProfileName
   skipPrintLabel?: boolean; // Select with selectSkipPrintLabel
+  skipBatteryLevel?: boolean; // Select with selectSkipBatteryLevel
   boxShipment: {
     asn: string;
     dieType: PixelDieType;
@@ -39,6 +40,9 @@ const validationSettingsSlice = createSlice({
     setSkipPrintLabel(state, action: PayloadAction<boolean>) {
       state.skipPrintLabel = action.payload;
     },
+    setSkipBatteryLevel(state, action: PayloadAction<boolean>) {
+      state.skipBatteryLevel = action.payload;
+    },
     setBoxShipmentAsn(state, action: PayloadAction<string>) {
       state.boxShipment.asn = action.payload;
     },
@@ -55,6 +59,7 @@ export const {
   setCustomFirmwareAndProfile,
   setFactoryProfile,
   setSkipPrintLabel,
+  setSkipBatteryLevel,
   setBoxShipmentAsn,
   setBoxShipmentDieType,
   setBoxShipmentDieColorway,

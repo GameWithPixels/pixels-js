@@ -18,3 +18,7 @@ export function selectProfileName(state: RootState): PrebuildProfileName {
 export function selectSkipPrintLabel(state: RootState): boolean {
   return __DEV__ && (state.validationSettings.skipPrintLabel ?? false);
 }
+
+export function selectSkipBatteryLevel(state: RootState): boolean {
+  return __DEV__ && (state.validationSettings.skipBatteryLevel ?? false);
+}

@@ -315,9 +315,6 @@ export const ValidationTests = {
       async (abortSignal) => {
         // Blink face
         const faceMask = getFaceMask(face, dieType);
-        console.log(
-          `!!! Blinking face: ${face} mask: ${faceMask} dieType: ${dieType} pixel.dieType: ${pixel.dieType}`
-        );
         await withBlink(
           abortSignal,
           pixel,

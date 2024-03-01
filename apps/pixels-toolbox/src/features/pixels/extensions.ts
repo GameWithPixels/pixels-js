@@ -191,10 +191,11 @@ export async function pixelStoreValue(
   // Check result
   const result =
     getValueKeyName(ack.result, StoreValueResultValues) ?? "unknownError";
-  const valHex = "0x" + storeValue.toString(16);
   log(
     pixel,
-    `Store value ${valHex} of type ${valueType} => ${result} (${ack.result}), index: ${ack.index}`
+    `Store value 0x${storeValue.toString(16)} of type` +
+      ` 0x${valueType.toString(16)} => ${result} (${ack.result}),` +
+      ` index: ${ack.index}`
   );
   // Update Pixel instance
   if (result === "success") {

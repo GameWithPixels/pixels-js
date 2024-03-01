@@ -55,6 +55,7 @@ import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
 import {
   selectCustomFirmwareAndProfile,
   selectProfileName,
+  selectSkipBatteryLevel,
 } from "~/features/store/validationSelectors";
 import { setFactoryProfile } from "~/features/store/validationSettingsSlice";
 import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
@@ -281,11 +282,13 @@ async function storeValueChecked(
   opt?: { allowNotPermitted?: boolean }
 ): Promise<void> {
   const result = await pixelStoreValue(pixel, valueType, value);
-  if (
-    result !== "success" &&
-    (!opt?.allowNotPermitted || result !== "notPermitted")
-  ) {
-    throw new Error(`Failed to store value, got response ${result}`);
+  if (result !== "success") {
+    const msg = `Failed to store value, got response ${result}`;
+    if (!opt?.allowNotPermitted || result !== "notPermitted") {
+      throw new Error(msg);
+    } else {
+      console.log("Ignoring error: " + msg);
+    }
   }
 }
 
@@ -699,7 +702,7 @@ export function CheckBoard({
         title: t("resetProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
       }),
-      { skip: setEmptyProfile }
+      { skip: !setEmptyProfile }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -716,6 +719,7 @@ export function WaitCharging({
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
 
+  const skipBatteryLevel = useAppSelector(selectSkipBatteryLevel);
   const taskChain = useTaskChain(action, "WaitCharging")
     .withTask(
       React.useCallback(
@@ -746,13 +750,13 @@ export function WaitCharging({
     )
     .withTask(
       React.useCallback(async () => {
-        if (pixel.batteryLevel < 75) {
+        if (!skipBatteryLevel && pixel.batteryLevel < 75) {
           throw new TaskCanceledError(
             "WaitCharging",
             t("lowBatteryPleaseCharge")
           );
         }
-      }, [pixel, t]),
+      }, [pixel, skipBatteryLevel, t]),
       createTaskStatusContainer(t("batteryLevel")),
       { skip: !notCharging || settings.sequence !== "dieFinal" }
     )
