@@ -21,7 +21,7 @@ export function useActiveProfile(
   //     setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
   //   );
   const activeProfile = useProfile(
-    profileUuid ?? FactoryProfile.get(pixel.dieType).uuid
+    profileUuid ?? FactoryProfile.getUuid(pixel.dieType)
   );
   return activeProfile;
 }

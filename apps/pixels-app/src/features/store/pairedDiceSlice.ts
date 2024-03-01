@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { FactoryProfile } from "../profiles";
-
 import { PairedDie } from "~/app/PairedDie";
+import { FactoryProfile } from "~/features/profiles";
 import { getTimeStringMs, logError, unsigned32ToHex } from "~/features/utils";
 
 export interface PairedDiceState {

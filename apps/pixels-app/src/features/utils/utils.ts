@@ -3,6 +3,9 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
 }
 
 export function areArraysEqual<T>(a: readonly T[], b: readonly T[]): boolean {
+  if (a === b) {
+    return true;
+  }
   const length = a.length;
   if (length !== b.length) {
     return false;

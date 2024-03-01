@@ -7,9 +7,8 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { generateUuid } from "../utils";
-
 import { LibraryState } from "~/app/store";
+import { generateUuid } from "~/features/utils";
 
 export function createProfileTemplates(
   dieType: PixelDieType,

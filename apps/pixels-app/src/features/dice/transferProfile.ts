@@ -4,14 +4,14 @@ import { Alert } from "react-native";
 import Toast from "react-native-root-toast";
 
 import { blinkDie } from "./blinkDie";
-import {
-  clearProfileTransfer,
-  setProfileTransfer,
-} from "../store/diceRollsSlice";
-import { setPairedDieProfile } from "../store/pairedDiceSlice";
 
 import { AppDispatch } from "~/app/store";
 import { applyProfileOverrides } from "~/features/profiles";
+import {
+  clearProfileTransfer,
+  setProfileTransfer,
+} from "~/features/store/diceRollsSlice";
+import { setPairedDieProfile } from "~/features/store/pairedDiceSlice";
 import { ToastSettings } from "~/themes";
 
 export function transferProfile(

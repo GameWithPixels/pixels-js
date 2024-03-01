@@ -8,6 +8,7 @@ import { RootState } from "./store";
 
 import { PixelsCentral } from "~/features/dice/PixelsCentral";
 import {
+  FactoryProfile,
   getWebRequestPayload,
   playActionMakeWebRequest,
   playActionSpeakText,
@@ -26,8 +27,10 @@ function remoteActionListener(
   const profileUuid = state.pairedDice.paired.find(
     (d) => d.pixelId === pixel.pixelId
   )?.profileUuid;
-  const profile = profileUuid && readProfile(profileUuid, state.library);
-  if (profile) {
+  if (profileUuid) {
+    const profile =
+      FactoryProfile.getByUuid(profileUuid) ??
+      readProfile(profileUuid, state.library);
     const action = profile.getRemoteAction(actionId);
     if (action) {
       console.log(
@@ -45,7 +48,7 @@ function remoteActionListener(
       }
     } else {
       console.warn(
-        `Remote action with id=${actionId} for profile ${profile.name} not found`
+        `Remote action with id=${actionId} for profile ${profile.name} (${profileUuid}) not found`
       );
     }
   }
