@@ -86,7 +86,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             final int prepareDataObjectDelay,
             final int rebootTime,
             final int bootloaderScanTimeout,
-            final boolean disallowForeground,
+            final boolean disallowForegroundService,
             final boolean keepBond,
             final boolean restoreBond,
             final Promise promise) {
@@ -146,7 +146,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             if (bootloaderScanTimeout > 0) {
                 init.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
             }
-            init.setForeground(!disallowForeground);
+            init.setForeground(!disallowForegroundService);
             init.setKeepBond(keepBond);
             init.setRestoreBond(restoreBond);
 

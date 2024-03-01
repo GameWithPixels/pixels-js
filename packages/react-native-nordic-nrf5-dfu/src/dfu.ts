@@ -79,10 +79,11 @@ export interface StartDfuOptions {
    */
   bootloaderScanTimeout?: number;
   /**
+   * Sets whether the DFU service should be started as a foreground service.
    * @default false.
    * @remarks Android only.
    */
-  disallowForeground?: boolean;
+  disallowForegroundService?: boolean;
   /**
    * Sets whether the bond information should be preserver after flashing
    * new application.
@@ -238,7 +239,7 @@ export async function startDfu(
         options?.prepareDataObjectDelay ?? 0,
         options?.rebootTime ?? 0,
         options?.bootloaderScanTimeout ?? 0,
-        options?.disallowForeground ?? false,
+        options?.disallowForegroundService ?? false,
         options?.keepBond ?? false,
         options?.restoreBond ?? false
       );
