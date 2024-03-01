@@ -109,7 +109,7 @@ export function getActionTypeDescription(type: Profiles.ActionType): string {
     case "playAudioClip":
       return "Play a sound file on your device";
     case "makeWebRequest":
-      return "Send a web request trough your device";
+      return "Send a web request through your device";
     case "speakText":
       return "Speak a text on your device";
     default:

@@ -76,7 +76,7 @@ function TextInput({
       }}
     >
       <BottomSheetTextInput
-        maxLength={200}
+        maxLength={500}
         value={value}
         onChangeText={onChangeText}
         style={{
