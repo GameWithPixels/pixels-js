@@ -460,8 +460,6 @@ function RunTestsPage({
 
   const { t } = useTranslation();
 
-  const skipPrint = useAppSelector(selectSkipPrintLabel);
-
   const [pixel, setPixel] = React.useState<Pixel>();
   const [ledCount, setLedCount] = React.useState(0);
   const [dieType, setDieType] = React.useState<PixelDieType>("unknown");
@@ -475,6 +473,8 @@ function RunTestsPage({
   const [firmwareUpdateStatus, setFirmwareUpdateStatus] =
     React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
+
+  const skipPrint = useAppSelector(selectSkipPrintLabel);
 
   // We must have a Pixel once past the UpdateFirmware task
   const getPixel = (): Pixel => {

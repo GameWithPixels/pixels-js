@@ -32,6 +32,7 @@ import {
 import { selectCustomFirmwareAndProfile } from "~/features/store/validationSelectors";
 import {
   setCustomFirmwareAndProfile,
+  setSkipBatteryLevel,
   setSkipPrintLabel,
 } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
@@ -155,6 +156,9 @@ function DevOptions() {
   const skipPrint = useAppSelector(
     (state) => state.validationSettings.skipPrintLabel
   );
+  const skipBatteryLevel = useAppSelector(
+    (state) => state.validationSettings.skipBatteryLevel
+  );
   return __DEV__ ? (
     <>
       <BaseHStack alignItems="center" justifyContent="space-between">
@@ -172,6 +176,15 @@ function DevOptions() {
           value={skipPrint}
           onValueChange={(v) => {
             appDispatch(setSkipPrintLabel(v));
+          }}
+        />
+      </BaseHStack>
+      <BaseHStack alignItems="center" justifyContent="space-between">
+        <Text>Skip Battery Level Check</Text>
+        <Switch
+          value={skipBatteryLevel}
+          onValueChange={(v) => {
+            appDispatch(setSkipBatteryLevel(v));
           }}
         />
       </BaseHStack>
