@@ -20,6 +20,7 @@ import React from "react";
 import { Platform, View } from "react-native";
 import {
   Button,
+  IconButton,
   Switch,
   Text,
   ThemeProvider,
@@ -801,14 +802,6 @@ export const ConfigureActionBottomSheet = observer(
               <Text variant="titleMedium" style={AppStyles.selfCentered}>
                 Configure Rule Action
               </Text>
-              <Text
-                style={{
-                  alignSelf: "center",
-                  color: colors.onSurfaceDisabled,
-                }}
-              >
-                Slide down to close
-              </Text>
               {condition instanceof Profiles.ConditionRolled && (
                 <ConfigureRolledCondition
                   condition={condition}
@@ -841,6 +834,13 @@ export const ConfigureActionBottomSheet = observer(
                 <ConfigureBatteryCondition condition={condition} />
               ) : null}
             </BottomSheetScrollView>
+            <IconButton
+              icon="close"
+              iconColor={colors.primary}
+              sentry-label="close-configure-action"
+              style={{ position: "absolute", right: 0, top: -15 }}
+              onPress={onDismiss}
+            />
           </ThemeProvider>
         </RootSiblingParent>
       </BottomSheetModal>

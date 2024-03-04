@@ -9,13 +9,15 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { Text, ThemeProvider, useTheme } from "react-native-paper";
+import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { AnimationsGrid } from "~/components/animation";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 const categories: Profiles.AnimationCategory[] = [
@@ -77,6 +79,7 @@ export function PickAnimationBottomSheet({
   const scrollRef = React.useRef<GHScrollView>(null);
   const paddingBottom = useBottomSheetPadding();
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -95,35 +98,46 @@ export function PickAnimationBottomSheet({
         />
       )}
     >
-      <ThemeProvider theme={theme}>
-        <BottomSheetView
-          style={{
-            flex: 1,
-            paddingHorizontal: 10,
-            paddingBottom,
-            gap: 10,
-          }}
-        >
-          <Text variant="titleMedium">Select Animation</Text>
-          <TabsHeaders
-            names={tabsNames}
-            selected={tab}
-            onSelect={(tab) => {
-              scrollRef.current?.scrollTo({ y: 0, animated: false });
-              setTab(tab);
+      <RootSiblingParent>
+        <ThemeProvider theme={theme}>
+          <BottomSheetView
+            style={{
+              flex: 1,
+              paddingHorizontal: 10,
+              paddingBottom,
+              gap: 10,
             }}
-          />
-          <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 10 }}>
-            <AnimationsGrid
-              animations={sortedAnimations[tabsNames.indexOf(tab)]}
-              dieType={dieType}
-              numColumns={2}
-              selected={animation}
-              onSelectAnimation={onSelectAnimation}
+          >
+            <Text variant="titleMedium" style={AppStyles.selfCentered}>
+              Select Animation
+            </Text>
+            <TabsHeaders
+              names={tabsNames}
+              selected={tab}
+              onSelect={(tab) => {
+                scrollRef.current?.scrollTo({ y: 0, animated: false });
+                setTab(tab);
+              }}
             />
-          </GHScrollView>
-        </BottomSheetView>
-      </ThemeProvider>
+            <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 10 }}>
+              <AnimationsGrid
+                animations={sortedAnimations[tabsNames.indexOf(tab)]}
+                dieType={dieType}
+                numColumns={2}
+                selected={animation}
+                onSelectAnimation={onSelectAnimation}
+              />
+            </GHScrollView>
+          </BottomSheetView>
+          <IconButton
+            icon="close"
+            iconColor={colors.primary}
+            sentry-label="close-pick-animation"
+            style={{ position: "absolute", right: 0, top: -15 }}
+            onPress={onDismiss}
+          />
+        </ThemeProvider>
+      </RootSiblingParent>
     </BottomSheetModal>
   );
 }

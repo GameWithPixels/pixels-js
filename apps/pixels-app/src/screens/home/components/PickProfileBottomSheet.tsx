@@ -1,12 +1,14 @@
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { Text, ThemeProvider, useTheme } from "react-native-paper";
+import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppSelector } from "~/app/hooks";
 import { ProfilePicker } from "~/components/ProfilePicker";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export function PickProfileBottomSheet({
@@ -37,6 +39,7 @@ export function PickProfileBottomSheet({
   }, [visible]);
 
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -55,29 +58,40 @@ export function PickProfileBottomSheet({
         />
       )}
     >
-      <ThemeProvider theme={theme}>
-        <Text
-          variant="titleMedium"
-          style={{ alignSelf: "center", paddingVertical: 10 }}
-        >
-          Select Profile to activate on {pixel.name}
-        </Text>
-        {profileUuid ? (
-          <Text
-            variant="bodyLarge"
-            style={{ alignSelf: "center", paddingVertical: 20 }}
-          >
-            A Profile activation is already in progress.
+      <RootSiblingParent>
+        <ThemeProvider theme={theme}>
+          <Text variant="titleMedium" style={AppStyles.selfCentered}>
+            Select Profile for {pixel.name}
           </Text>
-        ) : (
-          <ProfilePicker
-            selected={profile}
-            dieType={pixel.dieType}
-            onSelectProfile={onSelectProfile}
-            style={{ flex: 1, flexGrow: 1, marginHorizontal: 10 }}
+          {profileUuid ? (
+            <Text
+              variant="bodyLarge"
+              style={{ alignSelf: "center", paddingVertical: 20 }}
+            >
+              A Profile activation is already in progress.
+            </Text>
+          ) : (
+            <ProfilePicker
+              selected={profile}
+              dieType={pixel.dieType}
+              onSelectProfile={onSelectProfile}
+              style={{
+                flex: 1,
+                flexGrow: 1,
+                marginHorizontal: 10,
+                marginTop: 10,
+              }}
+            />
+          )}
+          <IconButton
+            icon="close"
+            iconColor={colors.primary}
+            sentry-label="close-pick-profile"
+            style={{ position: "absolute", right: 0, top: -15 }}
+            onPress={onDismiss}
           />
-        )}
-      </ThemeProvider>
+        </ThemeProvider>
+      </RootSiblingParent>
     </BottomSheetModal>
   );
 }

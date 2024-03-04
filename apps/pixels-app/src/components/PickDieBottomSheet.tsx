@@ -10,7 +10,8 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Text, ThemeProvider, useTheme } from "react-native-paper";
+import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { BluetoothStateWarning } from "./BluetoothWarning";
 import { PixelRollState } from "./PixelRollState";
@@ -106,6 +107,7 @@ export function PickDieBottomSheet({
 
   const paddingBottom = useBottomSheetPadding(0);
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -123,44 +125,55 @@ export function PickDieBottomSheet({
         />
       )}
     >
-      <ThemeProvider theme={theme}>
-        <View
-          style={{
-            flex: 1,
-            flexGrow: 1,
-            paddingHorizontal: 10,
-            paddingBottom,
-            gap: 20,
-          }}
-        >
-          <Text variant="titleMedium" style={AppStyles.selfCentered}>
-            Select a{" "}
-            {dieTypes ? listToText(dieTypes.map(getDieTypeLabel), "or") : "Die"}
-          </Text>
-          <BluetoothStateWarning>
-            <BottomSheetScrollView
-              contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
-            >
-              {pairedDice.map((d) => (
-                <PairedDieCard
-                  key={d.pixelId}
-                  pairedDie={d}
-                  onSelect={dismiss}
-                />
-              ))}
-              {pairedDice.length ? (
-                <Text
-                  style={{ marginTop: 10 }}
-                >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>
-              ) : (
-                <Text variant="bodyLarge">
-                  {`You don't have any paired ${dieTypesStrSpace}die.`}
-                </Text>
-              )}
-            </BottomSheetScrollView>
-          </BluetoothStateWarning>
-        </View>
-      </ThemeProvider>
+      <RootSiblingParent>
+        <ThemeProvider theme={theme}>
+          <View
+            style={{
+              flex: 1,
+              flexGrow: 1,
+              paddingHorizontal: 10,
+              paddingBottom,
+              gap: 20,
+            }}
+          >
+            <Text variant="titleMedium" style={AppStyles.selfCentered}>
+              Select a{" "}
+              {dieTypes
+                ? listToText(dieTypes.map(getDieTypeLabel), "or")
+                : "Die"}
+            </Text>
+            <BluetoothStateWarning>
+              <BottomSheetScrollView
+                contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
+              >
+                {pairedDice.map((d) => (
+                  <PairedDieCard
+                    key={d.pixelId}
+                    pairedDie={d}
+                    onSelect={dismiss}
+                  />
+                ))}
+                {pairedDice.length ? (
+                  <Text
+                    style={{ marginTop: 10 }}
+                  >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>
+                ) : (
+                  <Text variant="bodyLarge">
+                    {`You don't have any paired ${dieTypesStrSpace}die.`}
+                  </Text>
+                )}
+              </BottomSheetScrollView>
+            </BluetoothStateWarning>
+          </View>
+          <IconButton
+            icon="close"
+            iconColor={colors.primary}
+            sentry-label="close-pick-die"
+            style={{ position: "absolute", right: 0, top: -15 }}
+            onPress={() => dismiss()}
+          />
+        </ThemeProvider>
+      </RootSiblingParent>
     </BottomSheetModal>
   );
 }

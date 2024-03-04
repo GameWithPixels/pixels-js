@@ -5,7 +5,8 @@ import {
 } from "@gorhom/bottom-sheet";
 import { ColorUtils } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { Text, ThemeProvider, useTheme } from "react-native-paper";
+import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { ColorWheel } from "./ColorWheel";
 
@@ -37,6 +38,7 @@ export function PickColorBottomSheet({
   }, [visible]);
   const paddingBottom = useBottomSheetPadding();
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -55,24 +57,33 @@ export function PickColorBottomSheet({
         />
       )}
     >
-      <ThemeProvider theme={theme}>
-        <BottomSheetScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 10,
-            paddingBottom,
-            gap: 20,
-          }}
-        >
-          <Text variant="titleMedium" style={AppStyles.selfCentered}>
-            Select Color
-          </Text>
-          <ColorWheel
-            color={color}
-            style={{ width: "100%", alignItems: "center", gap: 20 }}
-            onColorChange={onSelectColor}
+      <RootSiblingParent>
+        <ThemeProvider theme={theme}>
+          <BottomSheetScrollView
+            contentContainerStyle={{
+              paddingHorizontal: 10,
+              paddingBottom,
+              gap: 20,
+            }}
+          >
+            <Text variant="titleMedium" style={AppStyles.selfCentered}>
+              Select Color
+            </Text>
+            <ColorWheel
+              color={color}
+              style={{ width: "100%", alignItems: "center", gap: 20 }}
+              onColorChange={onSelectColor}
+            />
+          </BottomSheetScrollView>
+          <IconButton
+            icon="close"
+            iconColor={colors.primary}
+            sentry-label="close-pick-color"
+            style={{ position: "absolute", right: 0, top: -15 }}
+            onPress={onDismiss}
           />
-        </BottomSheetScrollView>
-      </ThemeProvider>
+        </ThemeProvider>
+      </RootSiblingParent>
     </BottomSheetModal>
   );
 }

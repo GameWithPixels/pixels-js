@@ -8,11 +8,13 @@ import { Color, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import {
+  IconButton,
   Text,
   ThemeProvider,
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { ColorWheel } from "./ColorWheel";
 import { KeyframeGradient } from "./KeyframeGradient";
@@ -79,75 +81,86 @@ export function EditGradientBottomSheet({
         />
       )}
     >
-      <ThemeProvider theme={theme}>
-        <BottomSheetScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 10,
-            paddingBottom,
-            gap: 10,
-          }}
-        >
-          <Text variant="titleMedium" style={AppStyles.selfCentered}>
-            Edit Gradient
-          </Text>
-          <Text
-            style={{ alignSelf: "center", color: colors.onSurfaceDisabled }}
-          >
-            Tap on circle to modify color
-          </Text>
-          <View
-            style={{
-              overflow: "hidden",
-              flexGrow: 1,
-              height: 32,
-              alignItems: "center",
-              justifyContent: "center",
-              margin: 10,
-              borderRadius,
+      <RootSiblingParent>
+        <ThemeProvider theme={theme}>
+          <BottomSheetScrollView
+            contentContainerStyle={{
+              paddingHorizontal: 10,
+              paddingBottom,
+              gap: 10,
             }}
           >
-            <KeyframeGradient keyframes={keyframes} />
-            <View style={StyleSheet.absoluteFill}>
-              {filteredKeyframes.map((kf, i) => (
-                <TouchableRipple
-                  key={kf.time}
-                  style={{
-                    position: "absolute",
-                    left: `${kf.time * 100}%`,
-                    marginLeft: -16,
-                    width: 32,
-                    aspectRatio: 1,
-                    borderRadius: 16,
-                    borderWidth: 2,
-                    borderColor:
-                      selectedKeyframe === i
-                        ? colors.primary
-                        : colors.onSurface,
-                  }}
-                  onPress={() => setSelectedKeyframe(i)}
-                >
-                  <></>
-                </TouchableRipple>
-              ))}
+            <Text variant="titleMedium" style={AppStyles.selfCentered}>
+              Edit Gradient
+            </Text>
+            <Text
+              style={{ alignSelf: "center", color: colors.onSurfaceDisabled }}
+            >
+              Tap on circle to modify color
+            </Text>
+            <View
+              style={{
+                overflow: "hidden",
+                flexGrow: 1,
+                height: 32,
+                alignItems: "center",
+                justifyContent: "center",
+                margin: 10,
+                borderRadius,
+              }}
+            >
+              <KeyframeGradient keyframes={keyframes} />
+              <View style={StyleSheet.absoluteFill}>
+                {filteredKeyframes.map((kf, i) => (
+                  <TouchableRipple
+                    key={kf.time}
+                    style={{
+                      position: "absolute",
+                      left: `${kf.time * 100}%`,
+                      marginLeft: -16,
+                      width: 32,
+                      aspectRatio: 1,
+                      borderRadius: 16,
+                      borderWidth: 2,
+                      borderColor:
+                        selectedKeyframe === i
+                          ? colors.primary
+                          : colors.onSurface,
+                    }}
+                    onPress={() => setSelectedKeyframe(i)}
+                  >
+                    <></>
+                  </TouchableRipple>
+                ))}
+              </View>
             </View>
-          </View>
-          <ColorWheel
-            color={color}
-            style={{ width: "100%", alignItems: "center", gap: 20 }}
-            onColorChange={(c) => {
-              const i = keyframes.indexOf(filteredKeyframes[selectedKeyframe]);
-              if (onChangeKeyframes && i >= 0) {
-                const newKeyframes = [...keyframes];
-                newKeyframes[i] = {
-                  ...newKeyframes[i],
-                  color: new Color(c),
-                };
-                onChangeKeyframes(newKeyframes);
-              }
-            }}
+            <ColorWheel
+              color={color}
+              style={{ width: "100%", alignItems: "center", gap: 20 }}
+              onColorChange={(c) => {
+                const i = keyframes.indexOf(
+                  filteredKeyframes[selectedKeyframe]
+                );
+                if (onChangeKeyframes && i >= 0) {
+                  const newKeyframes = [...keyframes];
+                  newKeyframes[i] = {
+                    ...newKeyframes[i],
+                    color: new Color(c),
+                  };
+                  onChangeKeyframes(newKeyframes);
+                }
+              }}
+            />
+          </BottomSheetScrollView>
+          <IconButton
+            icon="close"
+            iconColor={colors.primary}
+            sentry-label="close-edit-gradient"
+            style={{ position: "absolute", right: 0, top: -15 }}
+            onPress={onDismiss}
           />
-        </BottomSheetScrollView>
-      </ThemeProvider>
+        </ThemeProvider>
+      </RootSiblingParent>
     </BottomSheetModal>
   );
 }

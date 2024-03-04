@@ -31,6 +31,7 @@ import {
   ActivityIndicator,
   Button,
   ButtonProps,
+  IconButton,
   Switch,
   SwitchProps,
   Text as PaperText,
@@ -371,6 +372,7 @@ function HelpTurnOnDiceModal({
 
   const { bottom } = useSafeAreaInsets();
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -397,6 +399,13 @@ function HelpTurnOnDiceModal({
           <TurnOnDiceHelp />
           <LightUpYourGameImage />
         </BottomSheetScrollView>
+        <IconButton
+          icon="close"
+          iconColor={colors.primary}
+          sentry-label="close-turn-on-dice-help"
+          style={{ position: "absolute", right: 0, top: -15 }}
+          onPress={onDismiss}
+        />
       </ThemeProvider>
     </BottomSheetModal>
   );

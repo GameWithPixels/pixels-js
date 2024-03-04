@@ -5,7 +5,8 @@ import {
 } from "@gorhom/bottom-sheet";
 import React from "react";
 import { View } from "react-native";
-import { useTheme, Text, ThemeProvider } from "react-native-paper";
+import { useTheme, Text, ThemeProvider, IconButton } from "react-native-paper";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { SelectionButton } from "./buttons";
 
@@ -55,6 +56,7 @@ export function SortBottomSheet({
   }, [visible]);
 
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -72,41 +74,52 @@ export function SortBottomSheet({
         />
       )}
     >
-      <ThemeProvider theme={theme}>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20, gap: 10 }}>
-          <Text variant="titleMedium">Group By</Text>
-          <View>
-            {groups.map((g, i) => (
-              <SelectionButton
-                key={g}
-                selected={groupBy === g}
-                noTopBorder={i > 0}
-                squaredTopBorder={i > 0}
-                squaredBottomBorder={i < 2}
-                onPress={() => onChangeGroupBy(g)}
-              >
-                {getGroupingLabel?.(g) ?? g}
-              </SelectionButton>
-            ))}
-          </View>
-          <Text variant="titleMedium">Sort</Text>
-          <View>
-            {sortModes.map((s, i) => (
-              <SelectionButton
-                key={s}
-                selected={sortMode === s}
-                noTopBorder={i > 0}
-                squaredTopBorder={i > 0}
-                squaredBottomBorder={i < 1}
-                icon={getSortModeIcon?.(s)}
-                onPress={() => onChangeSortMode(s)}
-              >
-                {getSortModeLabel?.(s) ?? s}
-              </SelectionButton>
-            ))}
-          </View>
-        </BottomSheetScrollView>
-      </ThemeProvider>
+      <RootSiblingParent>
+        <ThemeProvider theme={theme}>
+          <BottomSheetScrollView
+            contentContainerStyle={{ padding: 20, gap: 10 }}
+          >
+            <Text variant="titleMedium">Group By</Text>
+            <View>
+              {groups.map((g, i) => (
+                <SelectionButton
+                  key={g}
+                  selected={groupBy === g}
+                  noTopBorder={i > 0}
+                  squaredTopBorder={i > 0}
+                  squaredBottomBorder={i < 2}
+                  onPress={() => onChangeGroupBy(g)}
+                >
+                  {getGroupingLabel?.(g) ?? g}
+                </SelectionButton>
+              ))}
+            </View>
+            <Text variant="titleMedium">Sort</Text>
+            <View>
+              {sortModes.map((s, i) => (
+                <SelectionButton
+                  key={s}
+                  selected={sortMode === s}
+                  noTopBorder={i > 0}
+                  squaredTopBorder={i > 0}
+                  squaredBottomBorder={i < 1}
+                  icon={getSortModeIcon?.(s)}
+                  onPress={() => onChangeSortMode(s)}
+                >
+                  {getSortModeLabel?.(s) ?? s}
+                </SelectionButton>
+              ))}
+            </View>
+          </BottomSheetScrollView>
+          <IconButton
+            icon="close"
+            iconColor={colors.primary}
+            sentry-label="close-sort"
+            style={{ position: "absolute", right: 0, top: -15 }}
+            onPress={onDismiss}
+          />
+        </ThemeProvider>
+      </RootSiblingParent>
     </BottomSheetModal>
   );
 }

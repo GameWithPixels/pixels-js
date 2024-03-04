@@ -8,11 +8,13 @@ import React from "react";
 import { View } from "react-native";
 import {
   ActivityIndicator,
+  IconButton,
   Text,
   ThemeProvider,
   useTheme,
 } from "react-native-paper";
 import { FadeIn } from "react-native-reanimated";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppDispatch } from "~/app/hooks";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
@@ -175,6 +177,7 @@ export function PairDiceBottomSheet({
 
   const paddingBottom = useBottomSheetPadding(0);
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -192,26 +195,35 @@ export function PairDiceBottomSheet({
         />
       )}
     >
-      <ThemeProvider theme={theme}>
-        <View
-          style={{
-            flex: 1,
-            flexGrow: 1,
-            paddingHorizontal: 10,
-            paddingBottom,
-            gap: 20,
-          }}
-        >
-          <Text variant="titleMedium" style={AppStyles.selfCentered}>
-            Select Pixels Dice to Pair
-          </Text>
-          {visible && (
-            <BluetoothStateWarning>
-              <SelectPixels pixels={availablePixels} onPairDice={pairDice} />
-            </BluetoothStateWarning>
-          )}
-        </View>
-      </ThemeProvider>
+      <RootSiblingParent>
+        <ThemeProvider theme={theme}>
+          <View
+            style={{
+              flex: 1,
+              flexGrow: 1,
+              paddingHorizontal: 10,
+              paddingBottom,
+              gap: 20,
+            }}
+          >
+            <Text variant="titleMedium" style={AppStyles.selfCentered}>
+              Select Pixels Dice to Pair
+            </Text>
+            {visible && (
+              <BluetoothStateWarning>
+                <SelectPixels pixels={availablePixels} onPairDice={pairDice} />
+              </BluetoothStateWarning>
+            )}
+          </View>
+          <IconButton
+            icon="close"
+            iconColor={colors.primary}
+            sentry-label="close-pair-dice"
+            style={{ position: "absolute", right: 0, top: -15 }}
+            onPress={() => dismiss()}
+          />
+        </ThemeProvider>
+      </RootSiblingParent>
     </BottomSheetModal>
   );
 }
