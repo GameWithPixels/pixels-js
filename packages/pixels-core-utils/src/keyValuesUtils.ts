@@ -6,11 +6,11 @@
  * @param onMissingKey Called when no value was found for a given key.
  * @returns List of corresponding values.
  */
-export function keysToValues<V>(
+export function keysToValues<T>(
   keys: string[],
-  keyValues: { [key: string]: V },
-  onMissingKey?: (key: string) => V
-): V[] {
+  keyValues: { [key: string]: T },
+  onMissingKey?: (key: string) => T
+): T[] {
   return keys.map((key) => {
     const v = keyValues[key];
     if (v !== undefined) {
@@ -31,25 +31,23 @@ export function keysToValues<V>(
  * @param onMissingKey Called when no key was found for a given value.
  * @returns List of corresponding keys.
  */
-export function valuesToKeys<V, T extends { [key: string]: V }>(
-  values: V[],
-  keyValues: T,
-  onMissingKey?: (value: V) => string
-): (keyof T)[] {
-  const valueToKey = new Map<V, string>();
-  for (const e of Object.entries(keyValues)) {
-    valueToKey.set(e[1], e[0]);
-  }
-  return values.map((value) => {
-    const k = valueToKey.get(value);
+export function valuesToKeys<T, KeyValuesType extends { [key: string]: T }>(
+  values: T[],
+  keyValues: KeyValuesType,
+  onMissingKey?: (value: T) => string
+): (keyof KeyValuesType)[] {
+  const ret: (keyof KeyValuesType)[] = [];
+  for (const value of values) {
+    const k = getValueKeyName(value, keyValues);
     if (k !== undefined) {
-      return k;
+      ret.push(k);
     } else if (onMissingKey) {
-      return onMissingKey(value);
+      ret.push(onMissingKey(value));
     } else {
       throw new Error(`valuesToKeys: Missing key for value ${value}`);
     }
-  });
+  }
+  return ret;
 }
 
 /**
