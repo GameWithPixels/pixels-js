@@ -6,6 +6,7 @@ import {
   Reducer,
   ThunkAction,
 } from "@reduxjs/toolkit";
+import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import {
   createMigrate,
   FLUSH,
@@ -64,9 +65,57 @@ const MyStorage = !__DEV__
 const migrations = {
   2: (state: PersistedState) => {
     if (state?._persist?.version === 1) {
-      console.warn("Migrating from version 1, clearing state");
+      console.warn("Migrating from version 1 to 2: Clearing state");
       return { _persist: state._persist };
     }
+    return state;
+  },
+  3: (state: PersistedState) => {
+    const ver = state?._persist?.version;
+    if (ver) {
+      switch (ver) {
+        case 1:
+          console.warn("Migrating from version 1 to 3: Clearing state");
+          return { _persist: state._persist };
+        case 2: {
+          const animId = "8c677768-975f-4544-b3ce-a219f68b9a79"; // Rainbow Waterfall Overlap
+          if ("ids" in state && Array.isArray(state.ids)) {
+            const animIndex = state.ids.indexOf(animId);
+            if (animIndex >= 0) {
+              console.warn(
+                "Migrating from version 2 to 3: Removing Rainbow Waterfall Overlap"
+              );
+              const animState = state as unknown as ReturnType<
+                typeof animationsRainbowReducer
+              >;
+              animState.ids.splice(animIndex, 1);
+              delete animState.entities[animId];
+            } else if (
+              "entities" in state &&
+              state.entities &&
+              typeof state.entities === "object"
+            ) {
+              const values = Object.values(state.entities);
+              if (values.length && "actions" in values[0]) {
+                // Profiles
+                for (const v of values) {
+                  const profile = v as Serializable.ProfileData;
+                  for (const playAnim of profile.actions.playAnimation) {
+                    if (playAnim.animationUuid === animId) {
+                      console.warn(
+                        `Migrating from version 2 to 3: Removing Rainbow Waterfall Overlap from profile ${profile.name} (${profile.uuid})`
+                      );
+                      playAnim.animationUuid = undefined;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return state;
   },
 } as const;
 
@@ -76,7 +125,7 @@ function persist<S, A extends Action = Action>(
 ) {
   return persistReducer(
     {
-      version: 2,
+      version: 3,
       storage: MyStorage,
       key,
       debug: __DEV__,
