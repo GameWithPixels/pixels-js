@@ -654,14 +654,14 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         sentry-label="change-volume"
         onValueChange={(v) => runInAction(() => (action.rate = v))}
       />
+      <Text style={{ color: colors.onSurfaceDisabled, marginVertical: 5 }}>
+        {Platform.OS === "android"
+          ? "Only works if you have Google Play on your device."
+          : "Please make sure that your device is not in silent mode."}
+      </Text>
       <OutlineButton onPress={() => playActionSpeakText(action)}>
         Test Speech
       </OutlineButton>
-      {Platform.OS === "android" && (
-        <Text style={{ color: colors.onSurfaceDisabled }}>
-          This feature only works if you have Google Play on your device.
-        </Text>
-      )}
     </>
   );
 });
@@ -727,7 +727,10 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
           {"\n"}• value4: name of the profile
         </Text>
       )}
-      <OutlineButton onPress={() => playActionMakeWebRequest(action, payload)}>
+      <OutlineButton
+        onPress={() => playActionMakeWebRequest(action, payload)}
+        style={{ marginTop: 5 }}
+      >
         Test Web Request
       </OutlineButton>
     </>
