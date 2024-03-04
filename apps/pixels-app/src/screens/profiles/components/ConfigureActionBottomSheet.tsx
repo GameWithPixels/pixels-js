@@ -5,7 +5,7 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import { assert, valuesToKeys } from "@systemic-games/pixels-core-utils";
+import { assert, getValueKeyName } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Color,
@@ -265,11 +265,11 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       : undefined;
   const gradientColorType = gct1
     ? getNormalsColorOverrideTypeLabel(
-        valuesToKeys([gct1], Profiles.NormalsColorOverrideTypeValues)[0]
+        getValueKeyName(gct1, Profiles.NormalsColorOverrideTypeValues) ?? "none"
       )
     : gct2
       ? getNoiseColorOverrideTypeLabel(
-          valuesToKeys([gct2], Profiles.NoiseColorOverrideTypeValues)[0]
+          getValueKeyName(gct2, Profiles.NoiseColorOverrideTypeValues) ?? "none"
         )
       : undefined;
   return (

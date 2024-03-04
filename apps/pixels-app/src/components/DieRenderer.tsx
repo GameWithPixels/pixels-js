@@ -1,6 +1,5 @@
 import {
   ActionPlayAnimation,
-  ActionTypeValues,
   createDataSetForProfile,
 } from "@systemic-games/pixels-edit-animation";
 import {
@@ -48,8 +47,8 @@ export const ProfileDieRenderer = observer(function ProfileDieRenderer({
           // Only play animations triggered by action
           animations: dataSet.actions
             .map((a) =>
-              a.type === ActionTypeValues.playAnimation
-                ? dataSet.animations[(a as ActionPlayAnimation).animIndex]
+              a instanceof ActionPlayAnimation
+                ? dataSet.animations[a.animIndex]
                 : undefined
             )
             .filter(notEmpty),
