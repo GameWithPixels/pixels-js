@@ -51,6 +51,16 @@ export function PickAnimationBottomSheet({
               (!dieType || a.dieType === "unknown" || a.dieType === dieType)
           )
           .sort((a, b) => a.name.localeCompare(b.name))
+          // Remove duplicates
+          // TODO this will breaks once users can create custom animations
+          .filter(
+            (a) =>
+              a.dieType !== "unknown" ||
+              allAnimations.reduce(
+                (acc, anim) => acc + (a.name === anim.name ? 1 : 0),
+                0
+              ) <= 1
+          )
       ),
     [allAnimations, dieType]
   );
