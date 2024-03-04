@@ -79,18 +79,15 @@ const Header = observer(function Header({
               </Button>
             )
       }
-      rightElement={
-        noDiscard ?? isModified
-          ? () => (
-              <Button
-                sentry-label="commit-edit-profile"
-                onPress={onCommitChanges}
-              >
-                Done
-              </Button>
-            )
-          : undefined
-      }
+      rightElement={() => (
+        <Button
+          sentry-label="commit-edit-profile"
+          onPress={onCommitChanges}
+          disabled={!noDiscard && !isModified}
+        >
+          Done
+        </Button>
+      )}
     >
       {renameVisible ? (
         <TextInput
