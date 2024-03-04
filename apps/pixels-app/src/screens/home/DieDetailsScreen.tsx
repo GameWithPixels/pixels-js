@@ -55,19 +55,25 @@ export function DieStatus({
   const transferring = transferProgress >= 0 && transferProgress < 100;
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
-      <SectionTitle>Status</SectionTitle>
+      <SectionTitle>General</SectionTitle>
       <View style={styles.paragraph}>
         <Text>Connection Status: {status}</Text>
-        <Text>RSSI: {rssi ?? 0} dBm</Text>
-        <Text>Battery: {battery?.level ?? 0}%</Text>
-        <Text>Charging: {battery?.isCharging ? "yes" : "no"}</Text>
-        <Text>
-          Roll Status: {getRollStateLabel(rollState?.state).toLocaleLowerCase()}
-        </Text>
-        <Text>Face Up: {rollState?.face ?? ""}</Text>
-        <Text>
-          Activating Profile: {transferring ? `${transferProgress}%` : "done"}
-        </Text>
+        {status === "ready" && (
+          <>
+            <Text>RSSI: {rssi ?? 0} dBm</Text>
+            <Text>Battery: {battery?.level ?? 0}%</Text>
+            <Text>Charging: {battery?.isCharging ? "yes" : "no"}</Text>
+            <Text>
+              Roll Status:{" "}
+              {getRollStateLabel(rollState?.state).toLocaleLowerCase()}
+            </Text>
+            <Text>Face Up: {rollState?.face ?? ""}</Text>
+            <Text>
+              Activating Profile:{" "}
+              {transferring ? `${transferProgress}%` : "done"}
+            </Text>
+          </>
+        )}
       </View>
     </View>
   );
@@ -204,7 +210,12 @@ function DieAdvancedInfo({
       </View>
       <SectionTitle>Firmware</SectionTitle>
       <View style={styles.paragraph}>
-        <Text>Build Timestamp: {pixel.firmwareDate.toLocaleString()}</Text>
+        <Text>
+          Build Timestamp:{" "}
+          {pixel.firmwareDate.getTime()
+            ? pixel.firmwareDate.toLocaleString()
+            : "unknown"}
+        </Text>
         {/* <Text>Firmware Version: 12.3</Text>
         <Text>Settings Version: 12.3</Text>
         <Text>Compat Standard Api Version: 12.3</Text>
