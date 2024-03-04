@@ -1396,13 +1396,18 @@ export class Pixel extends PixelInfoNotifier {
   private _updateRoll(state: PixelRollState, faceIndex: number) {
     const ev = this._createRollEvent(state, faceIndex);
     const stateChanged = this._info.rollState !== ev.state;
-    const faceChanged = this._info.currentFaceIndex !== ev.faceIndex;
+    const indexChanged = this._info.currentFaceIndex !== ev.faceIndex;
+    const faceChanged = this._info.currentFace !== ev.face;
 
     this._info.rollState = ev.state;
+    this._info.currentFaceIndex = ev.faceIndex;
     this._info.currentFace = ev.face;
 
     if (stateChanged) {
       this.emitPropertyEvent("rollState");
+    }
+    if (indexChanged) {
+      this.emitPropertyEvent("currentFaceIndex");
     }
     if (faceChanged) {
       this.emitPropertyEvent("currentFace");
