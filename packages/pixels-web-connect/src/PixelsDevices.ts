@@ -9,7 +9,7 @@ export const PixelsDevices = {
    * scanned Pixels dice.
    * @returns A promise resolving to a BluetoothDevice for a Pixel.
    */
-  requestDevice: async (): Promise<BluetoothDevice> => {
+  async requestDevice(): Promise<BluetoothDevice> {
     if (!navigator?.bluetooth?.requestDevice) {
       throw new Error(
         "Bluetooth is not available, check that you're running in a secure environment" +
@@ -30,7 +30,7 @@ export const PixelsDevices = {
    * @param id The unique id of the Bluetooth device as assigned by the system.
    * @returns The corresponding BluetoothDevice if found, or undefined.
    */
-  getKnownDevice: (id: string): BluetoothDevice | undefined => {
+  getKnownDevice(id: string): BluetoothDevice | undefined {
     return _devices.get(id);
   },
 
@@ -40,7 +40,7 @@ export const PixelsDevices = {
    * @param id The unique id of the Bluetooth device as assigned by the system.
    * @returns The corresponding BluetoothDevice if found, or undefined.
    */
-  getDevice: async (id: string): Promise<BluetoothDevice | undefined> => {
+  async getDevice(id: string): Promise<BluetoothDevice | undefined> {
     let device = _devices.get(id);
     if (!device && navigator?.bluetooth?.getDevices) {
       const authorizedDevices = await navigator.bluetooth.getDevices();
