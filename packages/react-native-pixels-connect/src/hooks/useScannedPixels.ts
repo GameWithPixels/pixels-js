@@ -36,9 +36,6 @@ export function useScannedPixels(
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "cleared":
-            retItems.length = 0;
-            break;
           case "scanned": {
             const index = retItems.findIndex(
               (sp) => sp.pixelId === op.scannedPixel.pixelId

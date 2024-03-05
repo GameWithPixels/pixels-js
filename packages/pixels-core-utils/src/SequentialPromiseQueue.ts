@@ -13,7 +13,7 @@ export class SequentialPromiseQueue {
    * @param promise The promise to run.
    * @returns A promise matching the state of the promise given to be run.
    */
-  run(promise: () => Promise<void>): Promise<void> {
+  run(promise: () => Promise<void> | void): Promise<void> {
     // Create a new promise to be returned
     return new Promise<void>((resolve, reject) => {
       // The task to run, it will be queued

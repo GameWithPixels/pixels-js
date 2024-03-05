@@ -76,7 +76,7 @@ export function usePixelScannerNotify<T>(
 
   // Hook updateItems to scan events
   React.useEffect(() => {
-    scanner.addListener("scanListOperations", ({ ops }) => {
+    scanner.addEventListener("scanListOperations", ({ ops }) => {
       // Note: we don't do setItems(items => updateItems(items, ...))
       // because that would run updateItems() callback while rendering the component
       // hosting this hook, and thus preventing the callback from modifying other
@@ -101,11 +101,12 @@ export function usePixelScannerNotify<T>(
       const dispatchAsync = async () => {
         switch (action) {
           case "start":
-            return scanner.start();
+            return scanner.startAsync();
           case "stop":
-            return scanner.stop();
+            return scanner.stopAsync();
           case "clear":
-            return scanner.clear();
+            setItems([]);
+            break;
           default:
             assertNever(action);
         }
@@ -135,7 +136,7 @@ export function usePixelScannerNotify<T>(
       return () => {
         // We call the scanner directly so to catch and log an eventual error
         scanner
-          .stop()
+          .stopAsync()
           .catch((e) =>
             console.error("usePixelScanner: Error while unmounting", e)
           );

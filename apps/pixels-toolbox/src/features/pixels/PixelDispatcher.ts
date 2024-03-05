@@ -410,17 +410,17 @@ class PixelDispatcher
   }
 
   addEventListener<K extends keyof PixelDispatcherEventMap>(
-    eventName: K,
+    type: K,
     listener: EventReceiver<PixelDispatcherEventMap[K]>
   ): void {
-    this._evEmitter.addListener(eventName, listener);
+    this._evEmitter.addListener(type, listener);
   }
 
   removeEventListener<K extends keyof PixelDispatcherEventMap>(
-    eventName: K,
+    type: K,
     listener: EventReceiver<PixelDispatcherEventMap[K]>
   ): void {
-    this._evEmitter.removeListener(eventName, listener);
+    this._evEmitter.removeListener(type, listener);
   }
 
   dispatch<T extends keyof PixelDispatcherActionMap>(

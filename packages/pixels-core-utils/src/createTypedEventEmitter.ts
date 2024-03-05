@@ -12,44 +12,57 @@ export interface TypedEventEmitter<T extends EventMap> {
   /**
    * Adds the specified listener function to the end of the listeners array
    * for the event of the given type.
-   * @param eventType The type of the event.
+   * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
+   * @returns A reference to the `EventEmitter`.
    */
   addListener<K extends EventKey<T>>(
-    eventType: K,
+    type: K,
     listener: EventReceiver<T[K]>
-  ): void;
+  ): this;
 
   /**
    * Removes the specified listener function from the listener array
    * for the event of the given type.
-   * @param eventType The type of the event.
+   * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
+   * @returns A reference to the `EventEmitter`.
    */
   removeListener<K extends EventKey<T>>(
-    eventType: K,
+    type: K,
     listener: EventReceiver<T[K]>
-  ): void;
+  ): this;
 
   /**
-   * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
-   * with the given name.
-   * @param eventName The name of the event.
+   * Synchronously calls each of the listeners registered for the given
+   * event type, in the order they were registered, passing the supplied
+   * arguments.
+   * @param type A case-sensitive string representing the event type.
    * @param params Optional parameters.
+   * @returns Whether the event had listeners.
    */
-  emit<K extends EventKey<T>>(eventName: K, params: T[K]): void;
+  emit<K extends EventKey<T>>(type: K, params: T[K]): boolean;
 
   /**
-   * By default `EventEmitter`s will print a warning if more than `10` listeners are
-   * added for a particular event.
+   * Returns the number of listeners for the event of the given type.
+   * @param type A case-sensitive string representing the event type.
+   * @returns The number of listeners.
+   */
+  listenerCount<K extends EventKey<T>>(type: K): number;
+
+  /**
+   * By default `EventEmitter`s will print a warning if more than 10
+   * listeners are added for a particular event.
    * Use this function to modify the default threshold.
    * @param n Number of listeners before printing a warning.
-   *           The value can be set to`Infinity` (or `0`) to indicate an unlimited number of listeners.
+   *          The value can be set to`Infinity` (or `0`) to indicate
+   *          an unlimited number of listeners.
+   * @returns A reference to the `EventEmitter`.
    */
   setMaxListeners(n: number): this;
 
   /**
-   * Returns the current max listener value for this `EventEmitter`.
+   * Gets the current max listener value for this `EventEmitter`.
    */
   getMaxListeners(): number;
 }

@@ -1,3 +1,5 @@
+import { BluetoothState } from "./events";
+
 /** Base class for errors thrown by this package. */
 export class BluetoothLEError extends Error {
   constructor(message?: string) {
@@ -20,31 +22,36 @@ export abstract class ScanError extends BluetoothLEError {
   }
 }
 
-export class ScanCancelledError extends ScanError {
+export class ScanAlreadyInProgressError extends ScanError {
   constructor() {
-    super("Scan cancelled");
-    this.name = "ScanCancelledError";
+    super("Scan already in progress");
+    this.name = "ScanAlreadyInProgressError";
   }
 }
 
-export class BluetoothPermissionsDeniedError extends ScanError {
-  constructor() {
-    super("Bluetooth permissions denied");
-    this.name = "BluetoothPermissionsDeniedError";
+export class ScanStartFailed extends ScanError {
+  readonly bluetoothState: BluetoothState;
+  constructor(bluetoothState: BluetoothState, message?: string) {
+    super(
+      message ??
+        `Scan failed to start for unknown reason, Bluetooth state is ${bluetoothState}`
+    );
+    this.name = "ScanStartFailed";
+    this.bluetoothState = bluetoothState;
   }
 }
 
-export class BluetoothUnavailableError extends ScanError {
+export class BluetoothNotAuthorizedError extends ScanStartFailed {
+  constructor() {
+    super("unauthorized", "Bluetooth not authorized or denied by user");
+    this.name = "BluetoothNotAuthorizedError";
+  }
+}
+
+export class BluetoothUnavailableError extends ScanStartFailed {
   constructor(state: "off" | "resetting" | "unknown") {
-    super(`Bluetooth unavailable, state is ${state}`);
+    super(state, `Bluetooth unavailable, state is ${state}`);
     this.name = "BluetoothUnavailableError";
-  }
-}
-
-export class ScanUnspecifiedStartError extends ScanError {
-  constructor() {
-    super("Unspecified error on starting scan");
-    this.name = "UnspecifiedScanStartError";
   }
 }
 

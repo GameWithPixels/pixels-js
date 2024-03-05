@@ -41,9 +41,6 @@ export function useScannedPixelNotifiers(
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "cleared":
-            retItems = [];
-            break;
           case "scanned": {
             // The same instance will always be returned for a given Pixel id
             const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
