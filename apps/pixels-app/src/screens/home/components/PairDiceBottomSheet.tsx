@@ -3,7 +3,10 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { ScannedPixel } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelRollState,
+  ScannedPixelNotifier,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import {
@@ -22,6 +25,7 @@ import { DieStaticInfo } from "~/components/ScannedDieStatus";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton, SelectionButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
+import { getRollStateLabel } from "~/features/profiles";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { usePixelScanner, useBottomSheetPadding } from "~/hooks";
@@ -32,12 +36,36 @@ import { withAnimated } from "~/withAnimated";
 
 const AnimatedSelectionButton = withAnimated(SelectionButton);
 
+function DieInfo({ pixel }: { pixel: ScannedPixelNotifier }) {
+  const [face, setFace] = React.useState(pixel.currentFace);
+  const [rollState, setRollState] = React.useState<PixelRollState>(
+    pixel.rollState
+  );
+  React.useEffect(() => {
+    const onFace = () => setFace(pixel.currentFace);
+    pixel.addPropertyListener("currentFace", onFace);
+    const onRoll = () => setRollState(pixel.rollState);
+    pixel.addPropertyListener("rollState", onRoll);
+    return () => {
+      pixel.removePropertyListener("currentFace", onFace);
+      pixel.removePropertyListener("rollState", onRoll);
+    };
+  }, [pixel]);
+  return (
+    <DieStaticInfo pixel={pixel} style={{ flex: 1 }} disabled={false}>
+      <Text variant="bodySmall">
+        {getRollStateLabel(rollState)} {face}
+      </Text>
+    </DieStaticInfo>
+  );
+}
+
 function SelectPixels({
   pixels,
   onPairDice,
 }: {
-  pixels: ScannedPixel[];
-  onPairDice: (pixels: ScannedPixel[]) => void;
+  pixels: ScannedPixelNotifier[];
+  onPairDice: (pixels: ScannedPixelNotifier[]) => void;
 }) {
   const dieCount = pixels.length;
   const noAvailableDie = dieCount === 0;
@@ -52,7 +80,7 @@ function SelectPixels({
     }
   }, [noAvailableDie]);
 
-  const [selection, setSelection] = React.useState<ScannedPixel[]>([]);
+  const [selection, setSelection] = React.useState<ScannedPixelNotifier[]>([]);
 
   return (
     <>
@@ -102,7 +130,7 @@ function SelectPixels({
               );
             }}
           >
-            <DieStaticInfo pixel={sp} />
+            <DieInfo pixel={sp} />
           </AnimatedSelectionButton>
         ))}
       </BottomSheetScrollView>
@@ -127,7 +155,7 @@ export function PairDiceBottomSheet({
   onDismiss,
 }: {
   visible: boolean;
-  onDismiss?: (pixels?: ScannedPixel[]) => void;
+  onDismiss?: (pixels?: ScannedPixelNotifier[]) => void;
 }) {
   const appDispatch = useAppDispatch();
   const { availablePixels, startScan, stopScan } = usePixelScanner();
@@ -140,7 +168,7 @@ export function PairDiceBottomSheet({
   }, [startScan, visible]);
 
   const dismiss = React.useCallback(
-    (pixels?: ScannedPixel[]) => {
+    (pixels?: ScannedPixelNotifier[]) => {
       stopScan();
       onDismiss?.(pixels);
     },
@@ -148,7 +176,7 @@ export function PairDiceBottomSheet({
   );
 
   const pairDice = React.useCallback(
-    (pixels: ScannedPixel[]) => {
+    (pixels: ScannedPixelNotifier[]) => {
       for (const pixel of pixels) {
         appDispatch(
           addPairedDie({
