@@ -5,10 +5,10 @@ import { usePixelsCentral } from "./usePixelsCentral";
 
 export function useActivePixels(): Pixel[] {
   const central = usePixelsCentral();
-  const [pixels, setPixels] = React.useState(central.activePixels);
+  const [pixels, setPixels] = React.useState(central.pixels);
   React.useEffect(() => {
-    central.addEventListener("activePixels", setPixels);
-    return () => central.removeEventListener("activePixels", setPixels);
+    central.addEventListener("pixels", setPixels);
+    return () => central.removeEventListener("pixels", setPixels);
   }, [central]);
   return pixels;
 }
@@ -16,15 +16,15 @@ export function useActivePixels(): Pixel[] {
 export function useActivePixel(pixelId?: number): Pixel | undefined {
   const central = usePixelsCentral();
   const [pixel, setPixel] = React.useState(
-    central.activePixels.find((p) => p.pixelId === pixelId)
+    central.pixels.find((p) => p.pixelId === pixelId)
   );
   React.useEffect(() => {
     const findPixel = (pixels: Pixel[]) => {
       setPixel(pixels.find((p) => p.pixelId === pixelId));
     };
-    findPixel(central.activePixels);
-    central.addEventListener("activePixels", findPixel);
-    return () => central.removeEventListener("activePixels", findPixel);
+    findPixel(central.pixels);
+    central.addEventListener("pixels", findPixel);
+    return () => central.removeEventListener("pixels", findPixel);
   }, [central, pixelId]);
   return pixel;
 }

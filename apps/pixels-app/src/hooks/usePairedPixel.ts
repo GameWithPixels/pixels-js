@@ -23,15 +23,14 @@ export function usePairedPixel(
   const pixelsCentral = usePixelsCentral();
   React.useEffect(() => {
     setPixel(getPixel(pixelId));
-    const onActivePixels = (activePixels: Pixel[]) => {
-      const pixel = activePixels.find((p) => p.pixelId === pixelId);
+    const onPixels = (pixels: Pixel[]) => {
+      const pixel = pixels.find((p) => p.pixelId === pixelId);
       if (pixel) {
         setPixel(pixel);
       }
     };
-    pixelsCentral.addEventListener("activePixels", onActivePixels);
-    return () =>
-      pixelsCentral.removeEventListener("activePixels", onActivePixels);
+    pixelsCentral.addEventListener("pixels", onPixels);
+    return () => pixelsCentral.removeEventListener("pixels", onPixels);
   }, [pixelId, pixelsCentral]);
 
   return pixel;

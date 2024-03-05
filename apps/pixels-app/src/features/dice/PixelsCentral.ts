@@ -26,7 +26,7 @@ export interface PixelsCentralEventMap {
   isScanning: boolean;
   lastError: ScanError;
   availablePixels: ScannedPixelNotifier[];
-  activePixels: Pixel[];
+  pixels: Pixel[];
   dieRoll: { pixel: Pixel; roll: number };
   dieRename: { pixel: Pixel; name: string };
   dieProfile: { pixel: Pixel; hash: number };
@@ -44,7 +44,7 @@ export class PixelsCentral {
     number,
     "watched" | { pixel: Pixel; connect: () => void; unwatch: () => void }
   >();
-  private _dispose: () => void;
+  private _disposer: () => void;
 
   get lastError(): ScanError | undefined {
     return this._lastError;
@@ -64,7 +64,7 @@ export class PixelsCentral {
   }
 
   // Only includes Pixels that are being watched and have been found
-  get activePixels(): Pixel[] {
+  get pixels(): Pixel[] {
     const pixels: Pixel[] = [];
     for (const entry of this._watched.values()) {
       if (typeof entry === "object") {
@@ -114,7 +114,7 @@ export class PixelsCentral {
     this._scanner.addListener("isScanning", onScanning);
     this._scanner.addListener("scanStatus", onStatus);
     this._scanner.addListener("scanListOperations", onScanOps);
-    this._dispose = () => {
+    this._disposer = () => {
       this._scanner.removeListener("isAvailable", onAvailable);
       this._scanner.removeListener("isScanning", onScanning);
       this._scanner.removeListener("scanStatus", onStatus);
@@ -123,7 +123,7 @@ export class PixelsCentral {
   }
 
   dispose(): void {
-    this._dispose();
+    this._disposer();
     this.setWatchedDice([]);
   }
 
@@ -201,7 +201,7 @@ export class PixelsCentral {
       this._watched.delete(pixelId);
       if (typeof entry === "object") {
         entry.unwatch();
-        this._emitEvent("activePixels", this.activePixels);
+        this._emitEvent("pixels", this.pixels);
       }
     }
   }
@@ -323,8 +323,8 @@ export class PixelsCentral {
       // Connect to die
       connect();
 
-      // Notify we've got a new monitored Pixel
-      this._emitEvent("activePixels", this.activePixels);
+      // Notify we've got a new active Pixel
+      this._emitEvent("pixels", this.pixels);
     }
 
     return this._watched.get(pixelId) !== "watched";
