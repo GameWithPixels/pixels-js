@@ -5,7 +5,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { Badge, BadgeProps, Text } from "react-native-paper";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -22,7 +22,11 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
 import { PairedDie } from "~/app/PairedDie";
 import { getPixelStatusLabel } from "~/features/profiles";
-import { useActiveProfile, usePairedPixel } from "~/hooks";
+import {
+  useActiveProfile,
+  useHasFirmwareUpdate,
+  usePairedPixel,
+} from "~/hooks";
 
 function AnimatedNameWithRoll({
   pixel,
@@ -96,6 +100,14 @@ function VCardLabel({
   );
 }
 
+function FirmwareUpdateBadge({
+  pixel,
+  ...props
+}: { pixel?: Pixel } & Omit<BadgeProps, "children">) {
+  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
+  return hasFirmwareUpdate ? <Badge {...props}> !</Badge> : null;
+}
+
 export function PixelVCard({
   pairedDie,
   dieIconRatio = 0.5,
@@ -156,6 +168,10 @@ export function PixelVCard({
         <PixelDieRenderer key={dieRenderWidth} pixel={pairedDie} />
       </View>
       <VCardLabel pairedDie={pairedDie} pixel={pixel} miniCards={miniCards} />
+      <FirmwareUpdateBadge
+        pixel={pixel}
+        style={{ position: "absolute", right: 5, top: 5 }}
+      />
     </TouchableCard>
   );
 }
@@ -213,6 +229,10 @@ export function PixelHCard({
           <PixelBattery pixel={pixel} size={22} />
         </View>
       )}
+      <FirmwareUpdateBadge
+        pixel={pixel}
+        style={{ position: "absolute", right: 5, top: 5 }}
+      />
     </TouchableCard>
   );
 }
