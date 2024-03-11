@@ -131,7 +131,6 @@ export function createLibraryProfile(
       profile.name = "Speak Numbers";
       profile.description =
         "This profile has your device say the rolled numbers out loud (when the app is open)";
-      addDefaultRollingRules(profile, dieType);
       pushRolledAnimNonTopFaceRule(PrebuildAnimations.noise);
       pushRolledAnimTopFaceRule(PrebuildAnimations.noiseRainbow);
       profile.rules.push(
