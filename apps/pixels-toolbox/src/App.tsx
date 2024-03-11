@@ -120,9 +120,6 @@ function AppContent() {
       >
         <NavigationContainer theme={theme}>
           <Drawer.Navigator
-            initialRouteName={
-              store.getState().appSettings.openPageOnStart as AppRootPageName
-            }
             screenOptions={{
               headerTitleStyle: {
                 fontWeight: "bold",
@@ -132,32 +129,9 @@ function AppContent() {
             }}
           >
             <Drawer.Screen
-              name="HomeNavigator"
-              component={HomeNavigator}
-              options={{ title: t("pixelsScanner") }}
-            />
-            <Drawer.Screen
               name="Validation"
               component={ValidationScreen}
               options={{ title: t("factoryValidation") }}
-            />
-            <Drawer.Screen
-              name="CartonLabel"
-              component={CartonLabelScreen}
-              options={{ title: t("cartonLabel") }}
-            />
-            <Drawer.Screen
-              name="FirmwareUpdateNavigator"
-              component={FirmwareUpdateNavigator}
-              options={{ title: t("firmwareUpdate") }}
-            />
-            <Drawer.Screen name="Roll" component={RollScreen} />
-            <Drawer.Screen name="Animations" component={AnimationsScreen} />
-            <Drawer.Screen name="Batch" component={BatchScreen} />
-            <Drawer.Screen
-              name="Settings"
-              component={SettingsScreen}
-              options={{ title: t("settings") }}
             />
           </Drawer.Navigator>
         </NavigationContainer>

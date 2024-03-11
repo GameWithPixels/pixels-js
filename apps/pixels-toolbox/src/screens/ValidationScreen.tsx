@@ -190,7 +190,7 @@ function SelectSequencePage({
           </Text>
         </BaseVStack>
       )}
-      {ValidationSequences.map((s) => (
+      {ValidationSequences.filter((d) => d === "dieFinal").map((s) => (
         <LargeTonalButton
           key={s}
           disabled={!!dfuFilesError || !dfuFilesBundle}
@@ -212,7 +212,7 @@ function SelectDieTypePage({
   onSelectDieType: (type: PixelDieType) => void;
   onBack?: () => void;
 }) {
-  const types = isBoard(sequence) ? ValidationBoardTypes : ValidationDieTypes;
+  const types: PixelDieType[] = ["d20"]; //isBoard(sequence) ? ValidationBoardTypes : ValidationDieTypes;
   const items =
     types.length > 6
       ? range(types.length / 2).map((i) => [types[2 * i], types[2 * i + 1]]) // Breaks in 2 columns
@@ -519,39 +519,10 @@ function RunTestsPage({
       skipIfFwUpdate
     )
     .withTask(
-      ...useTaskComponent("WaitCharging", cancel, (p) => (
-        <WaitCharging {...p} settings={settings} pixel={getPixel()} />
-      )),
-      skipIfNoCoil
-    )
-    .withTask(
       ...useTaskComponent("CheckBoard", cancel, (p) => (
         <CheckBoard {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfFwUpdate
-    )
-    .withTask(
-      ...useTaskComponent("WaitNotCharging", cancel, (p) => (
-        <WaitCharging
-          {...p}
-          settings={settings}
-          pixel={getPixel()}
-          notCharging
-        />
-      )),
-      skipIfNoCoil
-    )
-    .withTask(
-      ...useTaskComponent("CheckLEDs", cancel, (p) => (
-        <CheckLEDs {...p} settings={settings} pixel={getPixel()} />
-      )),
-      skipIfFwUpdate
-    )
-    .withTask(
-      ...useTaskComponent("WaitFaceUp", cancel, (p) => (
-        <WaitFaceUp {...p} settings={settings} pixel={getPixel()} />
-      )),
-      skipIfBoard
     )
     .withTask(
       ...useTaskComponent("StoreSettings", cancel, (p) => (
@@ -575,35 +546,6 @@ function RunTestsPage({
         />
       )),
       skipIfNotDieFinal
-    )
-    .withTask(
-      ...useTaskComponent("ConnectPixel", cancel, (p) => (
-        <ConnectPixel
-          {...p}
-          settings={settings}
-          pixel={pixel}
-          ledCount={ledCount}
-        />
-      )),
-      skipIfNotDieFinal
-    )
-    .withTask(
-      ...useTaskComponent("WaitDieInCase", cancel, (p) => (
-        <WaitDieInCase {...p} settings={settings} pixel={getPixel()} />
-      )),
-      skipIfNotDieFinal
-    )
-    .withTask(
-      ...useTaskComponent("CheckLabel", cancel, (p) => (
-        <LabelPrinting
-          {...p}
-          settings={settings}
-          pixel={getPixel()}
-          printResult={printStatus}
-          onPrintStatus={setPrintStatus}
-        />
-      )),
-      { skip: skipIfNotDieFinal.skip || skipPrint }
     );
 
   // Get result
