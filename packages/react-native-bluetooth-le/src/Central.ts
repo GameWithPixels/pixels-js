@@ -234,7 +234,7 @@ export const Central = {
               case "disconnected":
                 if (pInf.state !== "disconnecting") {
                   console.log(
-                    `[BLE ${pInf.scannedPeripheral.name}] Unexpected disconnection, last known state is ${pInf.state})`
+                    `[BLE ${pInf.scannedPeripheral.name}] Unexpected disconnection, last known state is ${pInf.state}`
                   );
                 }
                 pInf.state = connectionStatus;
@@ -705,6 +705,9 @@ export const Central = {
       if (error.message !== "Peripheral not in required state to disconnect") {
         throw error;
       }
+      console.warn(
+        `[BLE ${pInf.scannedPeripheral.name}] Got exception when disconnecting while in state ${pInf.state}`
+      );
     } finally {
       // Always remove callback and release peripheral
       pInf.connStatusCallbacks.length = 0;

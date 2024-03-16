@@ -39,6 +39,7 @@ export default class BleSession extends PixelSession {
         this._name = name;
       }
     } catch (error) {
+      // Will fail if peripheral was released
       console.log(
         `Error getting Pixel name (which was ${this._name}): ${error}`
       );

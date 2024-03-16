@@ -144,7 +144,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             init.setNumberOfRetries(numberOfRetries);
             init.setRebootTime(rebootTime); //  Default is 0
             if (bootloaderScanTimeout > 0) {
-                init.setScanTimeout(bootloaderScanTimeout);  //  Default is 5000
+                init.setScanTimeout(bootloaderScanTimeout); //  Default is 5000
             }
             init.setForeground(!disallowForegroundService);
             init.setKeepBond(keepBond);

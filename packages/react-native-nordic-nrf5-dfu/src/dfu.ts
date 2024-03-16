@@ -35,14 +35,24 @@ export interface StartDfuOptions {
    */
   dfuProgressListener?: (ev: DfuProgressEvent) => void;
   /**
+   * When set to true, disable using the experimental buttonless
+   * feature in Secure DFU.
    * @default false
    */
   disableButtonlessServiceInSecureDfu?: boolean;
   /**
+   * Setting force DFU to true will prevent from jumping to the DFU
+   * Bootloader mode in case there is no DFU Version characteristic
+   * (Legacy DFU only!).
+   * Use it if the DFU operation can be handled by your device running
+   * in the application mode.
    * @default false
    */
   forceDfu?: boolean;
   /**
+   * When set to true, the Legacy Buttonless Service will scan for
+   * the device advertising with an incremented MAC address, instead of
+   * trying to reconnect to the same device.
    * @default false
    */
   forceScanningForNewAddressInLegacyDfu?: boolean;
@@ -52,40 +62,40 @@ export interface StartDfuOptions {
    */
   deviceName?: string;
   /**
-   * Sets the number of retries that the DFU service will use to complete
-   * DFU.
+   * Number of retries that the DFU service will use to complete DFU.
    * @defaultValue 2 retries.
    * @remarks Android only.
    */
   retries?: number;
   /**
-   * This method sets the duration of a delay, that the service will wait
-   * before sending each data object in Secure DFU. The delay will be done
-   * after a data object is created, and before any data byte is sent.
+   * Delay that the service will wait before sending each data object
+   * in Secure DFU. The delay will be done after a data object is created,
+   * and before any data byte is sent.
    * @defaultValue 0 (meaning 400 ms for the first packet and 0ms for the others).
+   * @remarks Android only.
    */
   prepareDataObjectDelay?: number;
   /**
-   * The reboot time in milliseconds.
+   * Time required by the device to reboot. The library will wait for
+   * this time before scanning for the device in bootloader mode.
    * @defaultValue 0 ms.
    * @remarks Android only.
    */
   rebootTime?: number;
   /**
-   * Sets the scan duration (in milliseconds) when scanning for DFU
-   * Bootloader.
+   * Scan duration (in milliseconds) when scanning for DFU Bootloader.
    * @defaultValue 5000 ms.
    * @remarks Android only.
    */
   bootloaderScanTimeout?: number;
   /**
-   * Sets whether the DFU service should be started as a foreground service.
+   * Whether the DFU service should be started as a foreground service.
    * @default false.
    * @remarks Android only.
    */
   disallowForegroundService?: boolean;
   /**
-   * Sets whether the bond information should be preserver after flashing
+   * Whether the bond information should be preserver after flashing
    * new application.
    * This feature requires Legacy DFU Bootloader version 0.6 or newer
    * (SDK 8.0.0+).
@@ -96,11 +106,16 @@ export interface StartDfuOptions {
    */
   keepBond?: boolean;
   /**
+   * Whether a new bond should be created after the DFU is complete.
+   * The old bond information will be removed before.
    * @defaultValue false.
+   * @remarks
+   * This flag is ignored when Secure DFU button-less Service is used.
+   * Android only.
    */
   restoreBond?: boolean;
   /**
-   * Specifies the alternative name to use in Bootloader mode.
+   * Alternative name to use in Bootloader mode.
    * If not specified then a random name is generated.
    *
    * The maximum length of the alternative advertising name is 20 bytes.
@@ -110,11 +125,15 @@ export interface StartDfuOptions {
    */
   alternativeAdvertisingName?: string;
   /**
+   * When the DFU target does not connect before the time runs out,
+   * a timeout error is reported.
    * @default 10.
    * @remarks iOS only.
    */
   connectionTimeout?: number;
   /**
+   * Disable the ability for the Secure DFU process to resume
+   * from where it was.
    * @default false.
    * @remarks iOS only.
    */
