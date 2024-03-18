@@ -195,11 +195,11 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
       {hasAnim && (
         <ActionTypeIcon type="playAnimation" size={16} color={iconColor} />
       )}
-      {hasSound && (
-        <ActionTypeIcon type="playAudioClip" size={16} color={iconColor} />
-      )}
       {hasSpeak && (
         <ActionTypeIcon type="speakText" size={16} color={iconColor} />
+      )}
+      {hasSound && (
+        <ActionTypeIcon type="playAudioClip" size={16} color={iconColor} />
       )}
       {hasWeb && (
         <ActionTypeIcon type="makeWebRequest" size={16} color={iconColor} />
