@@ -296,12 +296,12 @@ export class PixelsCentral {
     };
     updatePixelInDFU(pixel);
     try {
-      let counter = 0;
+      let attemptsCount = 0;
       let wasUploading = false;
       while (true) {
         try {
           const recoverFromUploadError = wasUploading;
-          ++counter;
+          ++attemptsCount;
           wasUploading = false;
           await updateFirmware({
             recoverFromUploadError,
@@ -323,7 +323,7 @@ export class PixelsCentral {
           break;
         } catch (e) {
           logError(`DFU error ${e}${wasUploading ? " (was uploading)" : ""}`);
-          if (!wasUploading || Platform.OS !== "android" || counter > 5) {
+          if (!wasUploading || Platform.OS !== "android" || attemptsCount > 5) {
             this._emitEvent("pixelDfuError", {
               pixel,
               error: e instanceof Error ? e : new Error(String(e)),
@@ -554,12 +554,12 @@ export class PixelsCentral {
         unwatch,
       });
 
-      // Connect to die
-      connect();
-
       // Notify we've got a new active Pixel
       this._emitEvent("pixelFound", { pixel });
       this._emitEvent("pixels", this.pixels);
+
+      // Connect to die
+      connect();
     }
 
     return this._watched.get(pixelId) !== "watched";

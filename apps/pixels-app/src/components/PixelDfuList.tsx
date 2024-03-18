@@ -1,3 +1,4 @@
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
@@ -8,7 +9,12 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
-import { Text, TextProps, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Text,
+  TextProps,
+  useTheme,
+} from "react-native-paper";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 import { ViewFlashOnRoll } from "./ViewFlashOnRoll";
@@ -20,8 +26,10 @@ import {
   useWatchedPixel,
   usePixelDfuAvailability,
   usePixelDfuState,
+  useRollStateLabel,
+  useBatteryStateLabel,
 } from "~/hooks";
-import { useRollStateLabel } from "~/hooks/useRollStateLabel";
+import { useIsDieUpdatingFirmware } from "~/hooks/useIsDieUpdating";
 
 function getDfuStatusText(
   availability: DfuAvailability,
@@ -44,31 +52,10 @@ function getDfuStatusText(
       return "Update Required";
     case "up-to-date":
       return "Up-To-Date";
-    // case "updating":
-    //   return !state
-    //     ? "Preparing to update"
-    //     : `State: ${state}${state === "uploading" ? ` ${progress ?? 0}%` : ""}`;
     default:
       assertNever(availability, `Unsupported availability: ${availability}`);
   }
 }
-
-// function usePixelFirmwareDate(pixel?: PixelInfoNotifier): string | undefined {
-//   const [firmwareDate, setFirmwareDate] = React.useState(
-//     pixel?.firmwareDate.toLocaleString()
-//   );
-//   React.useEffect(() => {
-//     if (pixel) {
-//       const onDate = () => setFirmwareDate(pixel.firmwareDate.toLocaleString());
-//       onDate();
-//       pixel.addPropertyListener("firmwareDate", onDate);
-//       return () => pixel.removePropertyListener("firmwareDate", onDate);
-//     } else {
-//       setFirmwareDate(undefined);
-//     }
-//   }, [pixel]);
-//   return firmwareDate;
-// }
 
 function TextStatus({
   pixel,
@@ -77,12 +64,15 @@ function TextStatus({
 }: { pixel: Pixel; updating?: boolean } & Omit<TextProps<string>, "children">) {
   const status = usePixelStatus(pixel);
   const rollLabel = useRollStateLabel(pixel);
+  const batteryLabel = useBatteryStateLabel(pixel);
   return (
     <Text {...props}>
       {updating
         ? "Updating Firmware"
         : status === "ready"
-          ? rollLabel
+          ? (batteryLabel ?? "") +
+            (batteryLabel && rollLabel ? ", " : "") +
+            (rollLabel ?? "")
           : getPixelStatusLabel(status)}
     </Text>
   );
@@ -131,7 +121,8 @@ function PixelDfuItem({
 } & Omit<TouchableCardProps, "children">) {
   const availability = usePixelDfuAvailability(pairedDie.pixelId);
   const pixel = useWatchedPixel(pairedDie.pixelId);
-  const { roundness } = useTheme();
+  const updating = useIsDieUpdatingFirmware(pairedDie.pixelId);
+  const { roundness, colors } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <ViewFlashOnRoll pixel={pixel} style={{ borderRadius }}>
@@ -157,6 +148,17 @@ function PixelDfuItem({
             availability={availability}
           />
         </View>
+        {updating ? (
+          <ActivityIndicator />
+        ) : availability === "outdated" ? (
+          <FontAwesome5 name="download" size={24} color={colors.onSurface} />
+        ) : availability === "up-to-date" ? (
+          <Ionicons
+            name="checkmark-circle"
+            size={24}
+            color={colors.onSurface}
+          />
+        ) : null}
       </TouchableCard>
     </ViewFlashOnRoll>
   );

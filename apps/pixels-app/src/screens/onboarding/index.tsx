@@ -67,6 +67,8 @@ import { DieWireframe } from "~/components/icons";
 import { getDieDfuAvailability } from "~/features/dice/getDieDfuAvailability";
 import {
   getDieTypeAndColorwayLabel,
+  getKeepAllDiceUpToDate,
+  getKeepDiceNearDevice,
   getPixelStatusLabel,
 } from "~/features/profiles";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
@@ -81,9 +83,10 @@ import {
   usePixelsCentralOnReady,
   useUpdateDice,
   DfuFilesInfo,
+  useRollStateLabel,
+  useBatteryStateLabel,
+  useBottomSheetBackHandler,
 } from "~/hooks";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
-import { useRollStateLabel } from "~/hooks/useRollStateLabel";
 import { OnboardingScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -402,8 +405,9 @@ function PixelItem({
 }) {
   const status = usePixelStatus(pixel);
   const [name] = usePixelValue(pixel, "name");
+  const batteryLabel = useBatteryStateLabel(pixel);
   const rollLabel = useRollStateLabel(pixel);
-  const animStyle = useFlashAnimationStyleOnRoll();
+  const animStyle = useFlashAnimationStyleOnRoll(pixel);
   return (
     <AnimatedDieWireframeCard
       entering={FadeIn.duration(300)}
@@ -417,7 +421,11 @@ function PixelItem({
         {getDieTypeAndColorwayLabel(status === "ready" ? pixel : scannedPixel)}
       </SmallText>
       <SmallText>
-        {status === "ready" ? rollLabel : getPixelStatusLabel(status)}
+        {status === "ready"
+          ? (batteryLabel ?? "") +
+            (batteryLabel && rollLabel ? ", " : "") +
+            (rollLabel ?? "")
+          : getPixelStatusLabel(status)}
       </SmallText>
     </AnimatedDieWireframeCard>
   );
@@ -661,12 +669,12 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
 function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
   // List of monitored pixels
   const pixels = useWatchedPixels();
+  const diceStr = pixels.length <= 1 ? "die" : "dice";
 
   // DFU
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const updateDice = useUpdateDice();
   const [step, setStep] = React.useState<"wait" | "update" | "done">("wait");
-
   return (
     <Slide title="Update Dice Firmware">
       <LightUpYourGameImage marginVertical={40} />
@@ -676,16 +684,9 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
           exiting={FadeOut.duration(300)}
           style={{ flexGrow: 1, flexShrink: 1, alignItems: "center", gap: 40 }}
         >
-          <Text>We have a firmware update for your dice!</Text>
-          <Text>
-            We recommend to keep all dice up-to-date to ensure that they stay
-            compatible with the app.
-          </Text>
-          <Text>
-            Keep the Pixels app opened and your dice near your device during the
-            update process. They may stay in open chargers but avoid moving
-            charger lids or other magnets as it may turn the dice off.
-          </Text>
+          <Text>We have a firmware update for your {diceStr}!</Text>
+          <Text>{getKeepAllDiceUpToDate()}</Text>
+          <Text>{getKeepDiceNearDevice(pixels.length)}</Text>
           <DfuFilesGate
             dfuFilesInfo={dfuFilesInfo}
             dfuFilesError={dfuFilesError}
@@ -714,16 +715,10 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
         >
           <Text>
             {step === "update"
-              ? "Updating your dice..."
-              : "Your dice are up-to-date."}
-            {/* {toUpdateCount
-              ? `Remaining dice to update: ${toUpdateCount}`
-              : erroredCount
-                ? ""
-                : (statuses.length <= 1 ? "Your die is" : "All your dice are") +
-                  " up-to-date."}
-            {erroredCount > 0 &&
-              ` ${erroredCount} ${diceStr(erroredCount)} failed to update.`} */}
+              ? `Updating your ${diceStr}...`
+              : `Your ${
+                  pixels.length <= 1 ? "dice are" : "die is"
+                } up-to-date.`}
           </Text>
           <ScrollView contentContainerStyle={{ paddingVertical: 10, gap: 20 }}>
             <PixelDfuList pairedDice={pixels} />
@@ -747,7 +742,7 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
 
 function ReadySlide({ onDone }: { onDone: () => void }) {
   const pixelsCount = useAppSelector((state) => state.pairedDice.paired.length);
-  const dice = pixelsCount <= 1 ? "die" : "dice";
+  const diceStr = pixelsCount <= 1 ? "die" : "dice";
   const { fonts } = useTheme();
   return (
     <Slide title="You are all set!">
@@ -759,10 +754,12 @@ function ReadySlide({ onDone }: { onDone: () => void }) {
             textAlign: "center",
           }}
         >
-          Your Pixels {dice} light{pixelsCount <= 1 ? "s" : ""} up accordingly
-          to the settings of {pixelsCount <= 1 ? "its" : "their"} Profile.
+          Your Pixels {diceStr} light{pixelsCount <= 1 ? "s" : ""} up
+          accordingly to the settings of {pixelsCount <= 1 ? "its" : "their"}{" "}
+          Profile.
           {"\n"}
-          With the app you may customize your {dice} Profile or create new ones.
+          With the app you may customize your {diceStr} Profile or create new
+          ones.
         </Text>
       </View>
       <GradientButton sentry-label="onboarding-done" onPress={onDone}>

@@ -44,8 +44,7 @@ export function DieMenu({
       {onUpdateFirmware && (
         <>
           <Menu.Item
-            title="Update Firmware!"
-            disabled={disconnected}
+            title="Update Firmware"
             style={{
               backgroundColor: colors.errorContainer,
               borderRadius,

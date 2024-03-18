@@ -31,7 +31,7 @@ export function useUpdateDice(): (
         try {
           const pixel = central.getPixel(pixelId);
           if (
-            pixel &&
+            pixel?.isReady &&
             getDieDfuAvailability(
               pixel.firmwareDate.getTime(),
               filesInfo.timestamp

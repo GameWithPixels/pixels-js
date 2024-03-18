@@ -349,12 +349,14 @@ export function GradientButton({
   children,
   disabled,
   outline,
+  icon,
   style,
   contentStyle,
   labelStyle,
   ...props
 }: React.PropsWithChildren<{
   outline?: boolean;
+  icon?: () => React.ReactNode;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
@@ -386,27 +388,38 @@ export function GradientButton({
       <TouchableRipple
         disabled={disabled}
         rippleColor={colors.onPrimary}
-        style={contentStyle}
+        style={[
+          {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          contentStyle,
+        ]}
         {...props}
       >
-        <Text
-          variant="labelLarge"
-          numberOfLines={1}
-          style={[
-            {
-              textAlign: "center",
-              marginVertical: 10,
-              marginHorizontal: 24,
-              color: disabled
-                ? colors.onSurfaceDisabled
-                : outline
-                  ? colors.onSurface
-                  : colors.onPrimary,
-            },
-            labelStyle,
-          ]}
-          children={children}
-        />
+        <>
+          <Text
+            variant="labelLarge"
+            numberOfLines={1}
+            style={[
+              {
+                textAlign: "center",
+                marginVertical: 10,
+                marginLeft: 24,
+                marginRight: icon ? 10 : 24,
+                color: disabled
+                  ? colors.onSurfaceDisabled
+                  : outline
+                    ? colors.onSurface
+                    : colors.onPrimary,
+              },
+              labelStyle,
+            ]}
+            children={children}
+          />
+          {icon && icon()}
+        </>
       </TouchableRipple>
     </LinearGradient>
   );

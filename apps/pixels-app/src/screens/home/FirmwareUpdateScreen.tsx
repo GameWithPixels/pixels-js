@@ -1,7 +1,7 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
@@ -10,13 +10,17 @@ import { PageHeader } from "~/components/PageHeader";
 import { PixelDfuList } from "~/components/PixelDfuList";
 import { GradientButton } from "~/components/buttons";
 import {
+  getKeepAllDiceUpToDate,
+  getKeepDiceNearDevice,
+} from "~/features/profiles";
+import {
   DfuFilesInfo,
   useBottomSheetPadding,
   useAppDfuFiles,
-  useHasFirmwareUpdateCount,
-  usePixelsCentral,
+  useOutdatedPixelsCount,
   useUpdateDice,
 } from "~/hooks";
+import { useIsAppUpdatingFirmware } from "~/hooks/useIsDieUpdating";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
 export function useConfirmStopUpdatingActionSheet(
@@ -52,20 +56,6 @@ export function useConfirmStopUpdatingActionSheet(
   };
 }
 
-function useIsUpdatingFirmware(): boolean {
-  const central = usePixelsCentral();
-  const [updating, setUpdating] = React.useState(!!central.pixelInDFU);
-  React.useEffect(() => {
-    const onPixelInDFU = () => setUpdating(!!central.pixelInDFU);
-    onPixelInDFU();
-    central.addEventListener("pixelInDFU", onPixelInDFU);
-    return () => {
-      central.removeEventListener("pixelInDFU", onPixelInDFU);
-    };
-  }, [central]);
-  return updating;
-}
-
 function usePreventRemovingScreen(
   navigation: FirmwareUpdateScreenProps["navigation"],
   updating: boolean
@@ -88,14 +78,14 @@ function FirmwareUpdatePage({
   navigation: FirmwareUpdateScreenProps["navigation"];
 }) {
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-  const updating = useIsUpdatingFirmware();
+  const updating = useIsAppUpdatingFirmware();
   const updateDice = useUpdateDice();
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
-  const [stopUpdating, setStopUpdating] = React.useState<() => void>();
+  const [stopRequester, setStopUpdating] = React.useState<() => void>();
   const cancelUpdating = useConfirmStopUpdatingActionSheet(
-    () => stopUpdating?.()
+    () => stopRequester?.()
   );
-  const outdatedCount = useHasFirmwareUpdateCount();
+  const outdatedCount = useOutdatedPixelsCount();
   usePreventRemovingScreen(navigation, updating);
   const bottom = useBottomSheetPadding();
   return (
@@ -113,31 +103,33 @@ function FirmwareUpdatePage({
         style={{ flex: 1, marginHorizontal: 20 }}
         contentContainerStyle={{ paddingBottom: bottom, gap: 20 }}
       >
+        <Text variant="bodyLarge">{getKeepAllDiceUpToDate()}</Text>
         <Text variant="bodyLarge">
-          We recommend to keep all dice up-to-date to ensure that they stay
-          compatible with the app.
-        </Text>
-        <Text variant="bodyLarge">
-          Keep the Pixels app opened and your dice near your device during the
-          update process. They may stay in open chargers but avoid moving
-          charger lids or other magnets as it may turn the dice off.
+          {getKeepDiceNearDevice(pairedDice.length)}
         </Text>
         <DfuFilesGate dfuFilesInfo={dfuFilesInfo} dfuFilesError={dfuFilesError}>
           {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
             <GradientButton
               outline={updating}
-              disabled={!outdatedCount}
+              disabled={!outdatedCount || (updating && !stopRequester)}
+              icon={() =>
+                updating && !stopRequester ? <ActivityIndicator /> : undefined
+              }
               onPress={() => {
                 if (updating) {
                   cancelUpdating();
                 } else if (outdatedCount) {
                   let stop = false;
-                  setStopUpdating(() => () => (stop = true));
+                  setStopUpdating(() => () => {
+                    stop = true;
+                    setStopUpdating(undefined);
+                  });
                   updateDice(
                     pairedDice.map((d) => d.pixelId),
                     dfuFilesInfo,
                     () => stop
-                  ); // No error should be thrown
+                  ).finally(() => setStopUpdating(undefined));
+                  // No error should be thrown
                 }
               }}
             >
@@ -145,7 +137,7 @@ function FirmwareUpdatePage({
                 ? "Stop Updating"
                 : outdatedCount
                   ? `Start Updating (${outdatedCount})`
-                  : "Done"}
+                  : "All Dice Up-to-date"}
             </GradientButton>
           )}
         </DfuFilesGate>

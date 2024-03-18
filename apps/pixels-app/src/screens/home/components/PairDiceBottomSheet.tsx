@@ -25,9 +25,9 @@ import {
   usePixelScanner,
   useBottomSheetPadding,
   usePixelsCentralOnReady,
+  useRollStateLabel,
+  useBottomSheetBackHandler,
 } from "~/hooks";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
-import { useRollStateLabel } from "~/hooks/useRollStateLabel";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
@@ -72,7 +72,7 @@ function ScannedPixelItem({
       <View style={{ flex: 1, justifyContent: "space-around" }}>
         <Text variant="bodyLarge">{name}</Text>
         <Text>{getDieTypeAndColorwayLabel(scannedPixel)}</Text>
-        <Text>{rollLabel}</Text>
+        <Text>{rollLabel ?? ""}</Text>
       </View>
     </AnimatedSelectionButton>
   );

@@ -27,7 +27,7 @@ export function useHasFirmwareUpdate(
   return usePixelDfuAvailability(pixel) === "outdated";
 }
 
-export function useHasFirmwareUpdateCount(): number {
+export function useOutdatedPixelsCount(): number {
   const { dfuFilesInfo } = useAppDfuFiles();
   return useAppSelector((state) =>
     state.pairedDice.paired

@@ -4,8 +4,7 @@ export function getDieDfuAvailability(
   onDieFirmwareTimestamp?: number,
   comparisonTimestamp?: number
 ): DfuAvailability {
-  return onDieFirmwareTimestamp === undefined ||
-    comparisonTimestamp === undefined
+  return !onDieFirmwareTimestamp || !comparisonTimestamp
     ? "unknown"
     : onDieFirmwareTimestamp < comparisonTimestamp
       ? "outdated"

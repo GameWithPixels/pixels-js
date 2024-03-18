@@ -11,7 +11,7 @@ import { RootSiblingParent } from "react-native-root-siblings";
 import { SelectionButton } from "./buttons";
 
 import { bottomSheetAnimationConfigFix } from "~/fixes";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { useBottomSheetBackHandler } from "~/hooks";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 
 export type SortBottomSheetSortIcon = (props: {

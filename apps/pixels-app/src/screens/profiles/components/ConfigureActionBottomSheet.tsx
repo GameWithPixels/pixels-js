@@ -53,8 +53,7 @@ import {
   bottomSheetAnimationConfigFix,
   TrailingSpaceFix,
 } from "~/fixes";
-import { useBottomSheetPadding } from "~/hooks";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 

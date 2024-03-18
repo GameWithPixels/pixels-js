@@ -47,7 +47,7 @@ export function TabsHeaders({
             <GradientButton
               outline={n !== selected}
               sentry-label={"tab-" + n.toLocaleLowerCase().replace(" ", "-")}
-              labelStyle={{ marginHorizontal: 0 }}
+              labelStyle={{ marginLeft: 0, marginRight: 0 }}
               style={{
                 borderWidth: 0,
                 borderRadius,

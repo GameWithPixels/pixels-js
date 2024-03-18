@@ -11,7 +11,7 @@ import { resetAppSettings } from "~/features/store/appSettingsSlice";
 import { resetAppUpdate } from "~/features/store/appUpdateSlice";
 import { resetRollsHistory } from "~/features/store/diceRollsSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
-import { useConfirmActionSheet } from "~/hooks";
+import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -80,7 +80,9 @@ function SettingsMenuPage({
   navigation: SettingsMenuScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
+  const central = usePixelsCentral();
   const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
+    central.stopScan();
     appDispatch(resetAppSettings());
     appDispatch(resetPairedDice());
     appDispatch(resetRollsHistory());

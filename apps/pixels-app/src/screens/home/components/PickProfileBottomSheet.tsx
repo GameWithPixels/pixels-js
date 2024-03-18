@@ -7,7 +7,7 @@ import { RootSiblingParent } from "react-native-root-siblings";
 import { useAppSelector } from "~/app/hooks";
 import { ProfilePicker } from "~/components/ProfilePicker";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { useBottomSheetBackHandler } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 

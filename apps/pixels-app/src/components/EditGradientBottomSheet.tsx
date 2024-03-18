@@ -20,8 +20,7 @@ import { ColorWheel } from "./ColorWheel";
 import { KeyframeGradient } from "./KeyframeGradient";
 
 import { bottomSheetAnimationConfigFix } from "~/fixes";
-import { useBottomSheetPadding } from "~/hooks";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 

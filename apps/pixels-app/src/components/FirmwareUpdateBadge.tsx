@@ -1,11 +1,21 @@
+import { AntDesign } from "@expo/vector-icons";
 import { Pixel } from "@systemic-games/react-native-pixels-connect";
-import { Badge, BadgeProps } from "react-native-paper";
+import { TextProps } from "react-native";
+import { useTheme } from "react-native-paper";
 
 import { useHasFirmwareUpdate } from "~/hooks";
 
 export function FirmwareUpdateBadge({
   pixel,
   ...props
-}: { pixel: Pixel } & Omit<BadgeProps, "children">) {
-  return useHasFirmwareUpdate(pixel) ? <Badge {...props}>!</Badge> : null;
+}: { pixel: Pixel } & Omit<TextProps, "children">) {
+  const { colors } = useTheme();
+  return useHasFirmwareUpdate(pixel) ? (
+    <AntDesign
+      name="exclamationcircle"
+      size={20}
+      color={colors.onErrorContainer}
+      {...props}
+    />
+  ) : null;
 }

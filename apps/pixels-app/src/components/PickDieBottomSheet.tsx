@@ -27,8 +27,8 @@ import {
   useWatchedPixel,
   useBottomSheetPadding,
   usePixelScanner,
+  useBottomSheetBackHandler,
 } from "~/hooks";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 

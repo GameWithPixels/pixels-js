@@ -15,8 +15,11 @@ import { RootSiblingParent } from "react-native-root-siblings";
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { AnimationsGrid } from "~/components/animation";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
-import { useAnimationsList, useBottomSheetPadding } from "~/hooks";
-import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import {
+  useAnimationsList,
+  useBottomSheetBackHandler,
+  useBottomSheetPadding,
+} from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
 

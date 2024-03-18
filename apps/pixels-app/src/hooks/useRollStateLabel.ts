@@ -1,16 +1,13 @@
-import {
-  PixelInfoNotifier,
-  PixelRollState,
-} from "@systemic-games/react-native-pixels-connect";
+import { PixelInfoNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { getRollStateLabel } from "~/features/profiles";
 
-export function useRollStateLabel(pixel: PixelInfoNotifier) {
+export function useRollStateLabel(
+  pixel: PixelInfoNotifier
+): string | undefined {
   const [face, setFace] = React.useState(pixel.currentFace);
-  const [rollState, setRollState] = React.useState<PixelRollState>(
-    pixel.rollState
-  );
+  const [rollState, setRollState] = React.useState(pixel.rollState);
   React.useEffect(() => {
     const onFace = () => setFace(pixel.currentFace);
     onFace();
@@ -25,5 +22,5 @@ export function useRollStateLabel(pixel: PixelInfoNotifier) {
   }, [pixel]);
   return rollState !== "unknown"
     ? `${getRollStateLabel(rollState)} ${face}`
-    : "";
+    : undefined;
 }
