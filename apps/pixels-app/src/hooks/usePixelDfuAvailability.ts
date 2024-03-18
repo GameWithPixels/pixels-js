@@ -1,40 +1,43 @@
 import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
-import React from "react";
 
-import { useDfuNotifier } from "./useDfuNotifier";
+import { useAppDfuFiles } from "./useDfuFiles";
 
+import { useAppSelector } from "~/app/hooks";
 import {
   DfuAvailability,
-  DfuNotifierAvailabilityEvent,
-} from "~/features/dfu/DfuNotifier";
+  getDieDfuAvailability,
+} from "~/features/dice/getDieDfuAvailability";
 
 export function usePixelDfuAvailability(
-  pixel: Pick<PixelInfo, "pixelId"> | number
+  pixel: Pick<PixelInfo, "pixelId"> | number | undefined
 ): DfuAvailability {
-  const pixelId = typeof pixel === "number" ? pixel : pixel.pixelId;
-  const dfuNotifier = useDfuNotifier();
-  const [dfuAvailability, setDfuAvailability] = React.useState(
-    dfuNotifier.getDfuAvailability(pixelId)
+  const { dfuFilesInfo } = useAppDfuFiles();
+  const pixelId = typeof pixel === "number" ? pixel : pixel?.pixelId;
+  const pixelTimestamp = useAppSelector(
+    (state) =>
+      state.pairedDice.paired.find((d) => d.pixelId === pixelId)
+        ?.firmwareTimestamp
   );
-  React.useEffect(() => {
-    setDfuAvailability(dfuNotifier.getDfuAvailability(pixelId));
-    if (pixelId) {
-      const onDfuAvailability = ({
-        pixel,
-        dfuAvailability,
-      }: DfuNotifierAvailabilityEvent) =>
-        pixelId === pixel.pixelId && setDfuAvailability(dfuAvailability);
-      dfuNotifier.addEventListener("dfuAvailability", onDfuAvailability);
-      return () => {
-        dfuNotifier.removeEventListener("dfuAvailability", onDfuAvailability);
-      };
-    }
-  }, [dfuNotifier, pixelId]);
-  return dfuAvailability;
+  return getDieDfuAvailability(pixelTimestamp, dfuFilesInfo?.timestamp);
 }
 
 export function useHasFirmwareUpdate(
   pixel: Pick<PixelInfo, "pixelId"> | number
 ): boolean {
   return usePixelDfuAvailability(pixel) === "outdated";
+}
+
+export function useHasFirmwareUpdateCount(): number {
+  const { dfuFilesInfo } = useAppDfuFiles();
+  return useAppSelector((state) =>
+    state.pairedDice.paired
+      .map(
+        (d) =>
+          getDieDfuAvailability(
+            d.firmwareTimestamp,
+            dfuFilesInfo?.timestamp
+          ) === "outdated"
+      )
+      .reduce((acc, val) => acc + (val ? 1 : 0), 0)
+  );
 }

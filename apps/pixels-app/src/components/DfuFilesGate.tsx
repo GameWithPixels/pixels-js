@@ -1,7 +1,7 @@
 import React from "react";
 import { Text } from "react-native-paper";
 
-import { DfuFilesInfo } from "~/features/dfu/DfuNotifier";
+import { DfuFilesInfo } from "~/hooks";
 
 export function DfuFilesGate({
   children,

@@ -20,8 +20,9 @@ function log(
     | "removePairedDie"
     | "resetPairedDice"
     | "resetPairedDice"
-    | "setPairedDieName"
-    | "setPairedDieProfile",
+    | "updatePairedDieName"
+    | "updatePairedDieProfile"
+    | "updatePairedDieFirmwareTimestamp",
   payload?: any
 ) {
   if (__DEV__) {
@@ -49,22 +50,29 @@ const PairedDiceSlice = createSlice({
       action: PayloadAction<
         Pick<
           PairedDie,
-          "systemId" | "pixelId" | "name" | "dieType" | "colorway"
+          | "systemId"
+          | "pixelId"
+          | "name"
+          | "dieType"
+          | "colorway"
+          | "firmwareTimestamp"
         >
       >
     ) {
-      log("addPairedDie", action.payload);
-      const withId = ({ pixelId }: PairedDie) =>
-        pixelId === action.payload.pixelId;
+      const { payload } = action;
+      log("addPairedDie", payload);
+      const withId = ({ pixelId }: PairedDie) => pixelId === payload.pixelId;
       const index = state.paired.findIndex(withId);
       const uIndex = state.unpaired.findIndex(withId);
-      const { systemId, pixelId, name, dieType, colorway } = action.payload;
+      const { systemId, pixelId, name, dieType, colorway, firmwareTimestamp } =
+        payload;
       const die = {
         systemId,
         pixelId,
         name,
         dieType,
         colorway,
+        firmwareTimestamp,
         profileUuid:
           state.paired[index]?.profileUuid ??
           state.unpaired[uIndex]?.profileUuid ??
@@ -81,20 +89,21 @@ const PairedDiceSlice = createSlice({
     },
 
     removePairedDie(state, action: PayloadAction<number>) {
-      log("removePairedDie", action.payload);
+      const { payload } = action;
+      log("removePairedDie", payload);
       const index = state.paired.findIndex(
-        ({ pixelId }) => pixelId === action.payload
+        ({ pixelId }) => pixelId === payload
       );
       if (index >= 0) {
         const pairedDie = state.paired[index];
         state.paired.splice(index, 1);
         const uIndex = state.unpaired.findIndex(
-          ({ pixelId }) => pixelId === action.payload
+          ({ pixelId }) => pixelId === payload
         );
         if (uIndex >= 0) {
           logError(
             `PairedDiceSlice.removePairedDie: die was both paired and unpaired, pixelId is ${unsigned32ToHex(
-              action.payload
+              payload
             )}`
           );
           state.unpaired[uIndex] = pairedDie;
@@ -104,35 +113,54 @@ const PairedDiceSlice = createSlice({
       }
     },
 
-    setPairedDieName(
+    updatePairedDieName(
       state,
       action: PayloadAction<{
         pixelId: number;
         name: string;
       }>
     ) {
-      log("setPairedDieName", action.payload);
+      const { payload } = action;
+      log("updatePairedDieName", payload);
       const pairedDie = state.paired.find(
-        ({ pixelId }) => pixelId === action.payload.pixelId
+        ({ pixelId }) => pixelId === payload.pixelId
       );
       if (pairedDie) {
-        pairedDie.name = action.payload.name;
+        pairedDie.name = payload.name;
       }
     },
 
-    setPairedDieProfile(
+    updatePairedDieProfile(
       state,
       action: PayloadAction<{
         pixelId: number;
         profileUuid: string;
       }>
     ) {
-      log("setPairedDieProfile", action.payload);
+      const { payload } = action;
+      log("updatePairedDieProfile", payload);
       const pairedDie = state.paired.find(
-        ({ pixelId }) => pixelId === action.payload.pixelId
+        ({ pixelId }) => pixelId === payload.pixelId
       );
       if (pairedDie) {
-        pairedDie.profileUuid = action.payload.profileUuid;
+        pairedDie.profileUuid = payload.profileUuid;
+      }
+    },
+
+    updatePairedDieFirmwareTimestamp(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        timestamp: number;
+      }>
+    ) {
+      const { payload } = action;
+      log("updatePairedDieFirmwareTimestamp", payload);
+      const pairedDie = state.paired.find(
+        ({ pixelId }) => pixelId === payload.pixelId
+      );
+      if (pairedDie && payload.timestamp > 0) {
+        pairedDie.firmwareTimestamp = payload.timestamp;
       }
     },
   },
@@ -142,7 +170,8 @@ export const {
   addPairedDie,
   removePairedDie,
   resetPairedDice,
-  setPairedDieName,
-  setPairedDieProfile,
+  updatePairedDieName,
+  updatePairedDieProfile,
+  updatePairedDieFirmwareTimestamp,
 } = PairedDiceSlice.actions;
 export default PairedDiceSlice.reducer;

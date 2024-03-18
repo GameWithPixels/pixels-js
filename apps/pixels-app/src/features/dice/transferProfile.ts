@@ -11,7 +11,7 @@ import {
   clearProfileTransfer,
   setProfileTransfer,
 } from "~/features/store/diceRollsSlice";
-import { setPairedDieProfile } from "~/features/store/pairedDiceSlice";
+import { updatePairedDieProfile } from "~/features/store/pairedDiceSlice";
 import { ToastSettings } from "~/themes";
 
 export function transferProfile(
@@ -58,7 +58,10 @@ export function transferProfile(
 
   // TODO update when getting confirmation from the die in AppPixelsCentral
   appDispatch(
-    setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
+    updatePairedDieProfile({
+      pixelId: pixel.pixelId,
+      profileUuid: profile.uuid,
+    })
   );
   appDispatch(
     setProfileTransfer({ pixelId: pixel.pixelId, profileUuid: profile.uuid })

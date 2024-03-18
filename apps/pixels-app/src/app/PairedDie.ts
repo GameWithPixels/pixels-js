@@ -9,5 +9,6 @@ export interface PairedDie {
   name: string;
   dieType: PixelDieType;
   colorway: PixelColorway;
+  firmwareTimestamp: number;
   profileUuid: string;
 }

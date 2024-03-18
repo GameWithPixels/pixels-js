@@ -1,6 +1,7 @@
 import {
   Pixel,
   PixelInfo,
+  PixelStatus,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -18,7 +19,10 @@ import {
   playActionSpeakText,
 } from "~/features/profiles";
 import { addDieRoll } from "~/features/store/diceRollsSlice";
-import { setPairedDieName } from "~/features/store/pairedDiceSlice";
+import {
+  updatePairedDieFirmwareTimestamp,
+  updatePairedDieName,
+} from "~/features/store/pairedDiceSlice";
 import { readProfile } from "~/features/store/profiles";
 import {
   PixelsCentralContext,
@@ -90,20 +94,34 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       // Clean up previous event listeners
       disposers.get(pixel.pixelId)?.();
 
-      // Rolls
-      const onRoll = (roll: number) =>
-        appDispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
-      pixel.addEventListener("roll", onRoll);
-
       // Die name
       const onRename = ({ name }: PixelInfo) =>
         appDispatch(
-          setPairedDieName({
+          updatePairedDieName({
             pixelId: pixel.pixelId,
             name,
           })
         );
       pixel.addPropertyListener("name", onRename);
+
+      // Firmware date
+      const onFwDate = ({ firmwareDate }: PixelInfo) =>
+        appDispatch(
+          updatePairedDieFirmwareTimestamp({
+            pixelId: pixel.pixelId,
+            timestamp: firmwareDate.getTime(),
+          })
+        );
+      pixel.addPropertyListener("firmwareDate", onFwDate);
+
+      // Update name and firmware timestamp on connection
+      const onStatus = (status: PixelStatus) => {
+        if (status === "ready") {
+          onRename(pixel);
+          onFwDate(pixel);
+        }
+      };
+      pixel.addEventListener("status", onStatus);
 
       // Profile
       const onProfileHash = (hash: number) => {
@@ -124,15 +142,22 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       };
       pixel.addEventListener("profileHash", onProfileHash);
 
+      // Rolls
+      const onRoll = (roll: number) =>
+        appDispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
+      pixel.addEventListener("roll", onRoll);
+
       // Remote action
       const onRemoteAction = (actionId: number) =>
         remoteActionListener(pixel, actionId, store);
       pixel.addEventListener("remoteAction", onRemoteAction);
 
       disposers.set(pixel.pixelId, () => {
-        pixel.removeEventListener("roll", onRoll);
         pixel.removePropertyListener("name", onRename);
+        pixel.removePropertyListener("firmwareDate", onFwDate);
+        pixel.removeEventListener("status", onStatus);
         pixel.removeEventListener("profileHash", onProfileHash);
+        pixel.removeEventListener("roll", onRoll);
         pixel.removeEventListener("remoteAction", onRemoteAction);
       });
     };

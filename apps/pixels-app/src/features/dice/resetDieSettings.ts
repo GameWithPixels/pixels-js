@@ -2,7 +2,7 @@ import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { Alert } from "react-native";
 
 import { FactoryProfile } from "../profiles";
-import { setPairedDieProfile } from "../store/pairedDiceSlice";
+import { updatePairedDieProfile } from "../store/pairedDiceSlice";
 
 import { AppDispatch } from "~/app/store";
 
@@ -14,7 +14,7 @@ export function resetDieSettings(pixel: Pixel, appDispatch: AppDispatch): void {
       // @ts-ignore Calling private function
       pixel._updateName("Pixel" + pixel.pixelId.toString(16));
       appDispatch(
-        setPairedDieProfile({
+        updatePairedDieProfile({
           pixelId: pixel.pixelId,
           profileUuid: FactoryProfile.getUuid(pixel.dieType),
         })

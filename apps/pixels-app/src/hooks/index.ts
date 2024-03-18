@@ -6,7 +6,6 @@ export * from "./useBottomSheetPadding";
 export * from "./useConfirmActionSheet";
 export * from "./useConnectToMissingPixels";
 export * from "./useDfuFiles";
-export * from "./useDfuNotifier";
 export * from "./useEditableProfile";
 export * from "./useFilteredProfiles";
 export * from "./usePatternsList";

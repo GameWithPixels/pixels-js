@@ -14,7 +14,7 @@ import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 import { ViewFlashOnRoll } from "./ViewFlashOnRoll";
 import { DieWireframe } from "./icons";
 
-import { DfuAvailability } from "~/features/dfu/DfuNotifier";
+import { DfuAvailability } from "~/features/dice/getDieDfuAvailability";
 import { getPixelStatusLabel } from "~/features/profiles";
 import {
   useWatchedPixel,

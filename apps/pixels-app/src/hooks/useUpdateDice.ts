@@ -1,18 +1,19 @@
 import React from "react";
 
-import { useDfuNotifier } from "./useDfuNotifier";
+import { DfuFilesInfo } from "./useDfuFiles";
 import { usePixelsCentral } from "./usePixelsCentral";
 
-import { useAppSelector } from "~/app/hooks";
-import { DfuFilesInfo } from "~/features/dfu/DfuNotifier";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { getDieDfuAvailability } from "~/features/dice/getDieDfuAvailability";
+import { updatePairedDieFirmwareTimestamp } from "~/features/store/pairedDiceSlice";
 
 export function useUpdateDice(): (
   pixelsIds: readonly number[],
   filesInfo: DfuFilesInfo,
   stopRequested?: () => boolean
 ) => Promise<number[]> {
+  const appDispatch = useAppDispatch();
   const central = usePixelsCentral();
-  const dfuNotifier = useDfuNotifier();
   const updateBootloader = useAppSelector(
     (state) => state.appSettings.updateBootloader
   );
@@ -29,7 +30,13 @@ export function useUpdateDice(): (
         }
         try {
           const pixel = central.getPixel(pixelId);
-          if (pixel && dfuNotifier.getDfuAvailability(pixelId) === "outdated") {
+          if (
+            pixel &&
+            getDieDfuAvailability(
+              pixel.firmwareDate.getTime(),
+              filesInfo.timestamp
+            ) === "outdated"
+          ) {
             await central.updatePixelAsync({
               pixel,
               bootloaderPath: updateBootloader
@@ -37,6 +44,13 @@ export function useUpdateDice(): (
                 : undefined,
               firmwarePath: filesInfo.firmwarePath,
             });
+            // Update stored timestamp
+            appDispatch(
+              updatePairedDieFirmwareTimestamp({
+                pixelId,
+                timestamp: filesInfo.timestamp,
+              })
+            );
           }
         } catch {
           // Error logged in PixelsCentral and notified as an event
@@ -45,6 +59,6 @@ export function useUpdateDice(): (
       }
       return failedPixelsIds;
     },
-    [central, dfuNotifier, updateBootloader]
+    [central, appDispatch, updateBootloader]
   );
 }

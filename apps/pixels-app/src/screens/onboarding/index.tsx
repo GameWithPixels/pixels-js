@@ -64,7 +64,7 @@ import {
 } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
 import { DieWireframe } from "~/components/icons";
-import { DfuFilesInfo } from "~/features/dfu/DfuNotifier";
+import { getDieDfuAvailability } from "~/features/dice/getDieDfuAvailability";
 import {
   getDieTypeAndColorwayLabel,
   getPixelStatusLabel,
@@ -73,14 +73,14 @@ import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
-  useDfuFiles,
-  useDfuNotifier,
+  useAppDfuFiles,
   useWatchedPixels,
   usePixelScanner,
   usePixelScannerStatus,
   usePixelsCentral,
   usePixelsCentralOnReady,
   useUpdateDice,
+  DfuFilesInfo,
 } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { useRollStateLabel } from "~/hooks/useRollStateLabel";
@@ -424,8 +424,6 @@ function PixelItem({
 }
 
 function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
-  const dfuNotifier = useDfuNotifier();
-
   // Monitor all scanned dice so that they are automatically connected
   const scanStatus = usePixelScannerStatus();
   const { availablePixels, startScan, stopScan, scanError } = usePixelScanner();
@@ -453,14 +451,21 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
   const diceCount = pixels.length;
 
   // On leaving page
+  const { dfuFilesInfo } = useAppDfuFiles();
   const leavePage = (action: "pair" | "skip") => {
     stopScan();
     if (action === "skip") {
       central.unwatchAll();
       onNext(false); // Skip updating dice
     } else {
-      // Update dice if needed
-      onNext(dfuNotifier.outdatedPixels.length > 0);
+      const needUpdate = [...scannedPixels.values()].some(
+        (p) =>
+          getDieDfuAvailability(
+            p.firmwareDate.getTime(),
+            dfuFilesInfo?.timestamp
+          ) !== "up-to-date"
+      );
+      onNext(needUpdate);
     }
   };
 
@@ -658,7 +663,7 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
   const pixels = useWatchedPixels();
 
   // DFU
-  const { dfuFilesInfo, dfuFilesError } = useDfuFiles();
+  const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const updateDice = useUpdateDice();
   const [step, setStep] = React.useState<"wait" | "update" | "done">("wait");
 
@@ -803,6 +808,7 @@ function OnboardingPage({
           name: p.name,
           dieType: p.dieType,
           colorway: p.colorway,
+          firmwareTimestamp: p.firmwareDate.getTime(),
         })
       );
     }

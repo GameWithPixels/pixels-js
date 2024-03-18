@@ -7,6 +7,5 @@ export function FirmwareUpdateBadge({
   pixel,
   ...props
 }: { pixel: Pixel } & Omit<BadgeProps, "children">) {
-  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
-  return hasFirmwareUpdate ? <Badge {...props}>!</Badge> : null;
+  return useHasFirmwareUpdate(pixel) ? <Badge {...props}>!</Badge> : null;
 }

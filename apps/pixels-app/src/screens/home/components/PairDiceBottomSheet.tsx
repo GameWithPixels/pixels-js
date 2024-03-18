@@ -181,6 +181,7 @@ export function PairDiceBottomSheet({
             name: pixel.name,
             dieType: pixel.dieType,
             colorway: pixel.colorway,
+            firmwareTimestamp: pixel.firmwareDate.getTime(),
           })
         );
       }

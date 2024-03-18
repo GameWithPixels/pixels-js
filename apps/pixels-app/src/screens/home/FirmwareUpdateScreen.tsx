@@ -9,11 +9,11 @@ import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
 import { PixelDfuList } from "~/components/PixelDfuList";
 import { GradientButton } from "~/components/buttons";
-import { DfuFilesInfo } from "~/features/dfu/DfuNotifier";
 import {
+  DfuFilesInfo,
   useBottomSheetPadding,
-  useDfuFiles,
-  useDfuNotifier,
+  useAppDfuFiles,
+  useHasFirmwareUpdateCount,
   usePixelsCentral,
   useUpdateDice,
 } from "~/hooks";
@@ -66,20 +66,6 @@ function useIsUpdatingFirmware(): boolean {
   return updating;
 }
 
-function useOutdatedCount(): number {
-  const dfuNotifier = useDfuNotifier();
-  const [count, setCount] = React.useState(0);
-  React.useEffect(() => {
-    const onOutdated = () => setCount(dfuNotifier.outdatedPixels.length);
-    onOutdated();
-    dfuNotifier.addEventListener("outdatedPixels", onOutdated);
-    return () => {
-      dfuNotifier.removeEventListener("outdatedPixels", onOutdated);
-    };
-  }, [dfuNotifier]);
-  return count;
-}
-
 function usePreventRemovingScreen(
   navigation: FirmwareUpdateScreenProps["navigation"],
   updating: boolean
@@ -104,12 +90,12 @@ function FirmwareUpdatePage({
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
   const updating = useIsUpdatingFirmware();
   const updateDice = useUpdateDice();
-  const { dfuFilesInfo, dfuFilesError } = useDfuFiles();
+  const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const [stopUpdating, setStopUpdating] = React.useState<() => void>();
   const cancelUpdating = useConfirmStopUpdatingActionSheet(
     () => stopUpdating?.()
   );
-  const outdatedCount = useOutdatedCount();
+  const outdatedCount = useHasFirmwareUpdateCount();
   usePreventRemovingScreen(navigation, updating);
   const bottom = useBottomSheetPadding();
   return (

@@ -110,6 +110,15 @@ const migrations = {
                 }
               }
             }
+          } else if ("paired" in state && Array.isArray(state.paired)) {
+            console.warn(
+              "Migrating from version 2 to 3: Setting firmwareTimestamp to 0 for all paired dice"
+            );
+            for (const pairedDie of state.paired) {
+              if (pairedDie.firmwareTimestamp === undefined) {
+                pairedDie.firmwareTimestamp = 0;
+              }
+            }
           }
         }
       }

@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { setUpdateBootloader } from "~/features/store/appSettingsSlice";
-import { useDfuFiles } from "~/hooks";
+import { useAppDfuFiles } from "~/hooks";
 import { FirmwareInfoScreenProps } from "~/navigation";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
@@ -27,7 +27,7 @@ function FirmwareInfoPage({
   const updateBootloader = useAppSelector(
     (state) => state.appSettings.updateBootloader
   );
-  const { dfuFilesInfo, dfuFilesError } = useDfuFiles();
+  const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const date = new Date(dfuFilesInfo?.timestamp ?? 0);
   const { colors } = useTheme();
   return (
