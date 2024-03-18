@@ -17,5 +17,6 @@ export * from "./usePixelScanner";
 export * from "./usePixelsCentral";
 export * from "./useProfile";
 export * from "./useProfilesList";
+export * from "./useUpdateDice";
 export * from "./useWatchedPixel";
 export * from "./useWatchedPixels";

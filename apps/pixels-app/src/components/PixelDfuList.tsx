@@ -3,6 +3,7 @@ import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import {
   Pixel,
+  PixelInfo,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -13,7 +14,6 @@ import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 import { ViewFlashOnRoll } from "./ViewFlashOnRoll";
 import { DieWireframe } from "./icons";
 
-import { PairedDie } from "~/app/PairedDie";
 import { DfuAvailability } from "~/features/dfu/DfuNotifier";
 import { getPixelStatusLabel } from "~/features/profiles";
 import {
@@ -126,7 +126,7 @@ function PixelDfuItem({
   contentStyle,
   ...props
 }: {
-  pairedDie: PairedDie;
+  pairedDie: Pick<PixelInfo, "pixelId" | "name" | "dieType">;
   selected?: boolean;
 } & Omit<TouchableCardProps, "children">) {
   const availability = usePixelDfuAvailability(pairedDie.pixelId);
@@ -167,7 +167,7 @@ export function PixelDfuList({
   style,
   ...props
 }: {
-  pairedDice: readonly PairedDie[];
+  pairedDice: readonly Pick<PixelInfo, "pixelId" | "name" | "dieType">[];
 } & ViewProps) {
   return (
     <View style={[{ gap: 10 }, style]} {...props}>

@@ -118,6 +118,10 @@ export class DfuNotifier {
           pixel.removePropertyListener("firmwareDate", onFirmwareDate);
         },
       });
+      this._emitEvent("dfuAvailability", { pixel, dfuAvailability });
+      if (dfuAvailability === "outdated") {
+        this._emitEvent("outdatedPixels", this.outdatedPixels);
+      }
     }
   }
 

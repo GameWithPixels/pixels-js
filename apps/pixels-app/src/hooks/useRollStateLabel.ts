@@ -23,5 +23,7 @@ export function useRollStateLabel(pixel: PixelInfoNotifier) {
       pixel.removePropertyListener("rollState", onRoll);
     };
   }, [pixel]);
-  return `${getRollStateLabel(rollState)} ${face}`;
+  return rollState !== "unknown"
+    ? `${getRollStateLabel(rollState)} ${face}`
+    : "";
 }

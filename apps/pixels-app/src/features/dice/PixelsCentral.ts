@@ -258,8 +258,8 @@ export class PixelsCentral {
       this._watched.delete(pixelId);
       if (typeof entry === "object") {
         entry.unwatch();
-        this._emitEvent("pixels", this.pixels);
         this._emitEvent("pixelRemoved", { pixel: entry.pixel });
+        this._emitEvent("pixels", this.pixels);
       }
     }
   }
@@ -393,11 +393,6 @@ export class PixelsCentral {
     // Hook up to scanner events
     const onStatus = ({ status, stopReason }: PixelScannerStatusEvent) => {
       if (status === "stopped") {
-        // Clear scan list
-        if (this._scannedPixels.length) {
-          this._scannedPixels.length = 0;
-          this._emitEvent("availablePixels", this.availablePixels);
-        }
         // Unhook event listeners when scanner is stopped
         if (!this._scannerUnhook) {
           console.warn(
@@ -437,6 +432,11 @@ export class PixelsCentral {
       this._connectFromScan.clear();
       this._scanner.removeEventListener("scanStatus", onStatus);
       this._scanner.removeEventListener("scanListOperations", onScanOps);
+      // Clear scan list
+      if (this._scannedPixels.length) {
+        this._scannedPixels.length = 0;
+        this._emitEvent("availablePixels", this.availablePixels);
+      }
     };
   }
 
@@ -521,13 +521,11 @@ export class PixelsCentral {
     if (pixel && this._watched.get(pixelId) === "watched") {
       // Connection function that catches errors
       const connect = () => {
-        if (pixel !== this._pixelInDFU) {
+        if (pixel !== this._pixelInDFU && this._watched.has(pixelId)) {
           pixelLog(pixel, "Connecting...");
-          if (this._watched.has(pixelId)) {
-            pixel.connect().catch((e: Error) => {
-              pixelLog(pixel, `Connection error => ${e}`);
-            });
-          }
+          pixel.connect().catch((e: Error) => {
+            pixelLog(pixel, `Connection error => ${e}`);
+          });
         }
       };
 
@@ -560,8 +558,8 @@ export class PixelsCentral {
       connect();
 
       // Notify we've got a new active Pixel
-      this._emitEvent("pixels", this.pixels);
       this._emitEvent("pixelFound", { pixel });
+      this._emitEvent("pixels", this.pixels);
     }
 
     return this._watched.get(pixelId) !== "watched";

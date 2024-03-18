@@ -36,7 +36,6 @@ import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
-import { useConnectToMissingPixels, usePixelsCentralOnReady } from "./hooks";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -108,17 +107,6 @@ function getTabBarStyle<T extends object>(
 function AppPage() {
   const showOnboarding = useAppSelector(
     (state) => state.appSettings.showOnboarding
-  );
-
-  // Scan for paired dice as soon as Central is ready
-  const connectToMissingPixels = useConnectToMissingPixels();
-  usePixelsCentralOnReady(
-    React.useCallback(
-      (ready: boolean) => {
-        ready && connectToMissingPixels();
-      },
-      [connectToMissingPixels]
-    )
   );
 
   const theme = useTheme();

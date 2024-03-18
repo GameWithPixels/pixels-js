@@ -2,13 +2,14 @@ import React from "react";
 
 import { DfuFilesInfo } from "~/features/dfu/DfuNotifier";
 
-export interface DfuFilesAndLoadError {
+// Both fields are undefined when the dfu files are not loaded yet
+export interface DfuFilesLoadStatus {
   readonly dfuFilesInfo?: DfuFilesInfo;
   readonly dfuFilesError?: Error;
 }
 
-export const DfuFilesContext = React.createContext<DfuFilesAndLoadError>({});
+export const DfuFilesContext = React.createContext<DfuFilesLoadStatus>({});
 
-export function useDfuFiles(): DfuFilesAndLoadError {
+export function useDfuFiles(): DfuFilesLoadStatus {
   return React.useContext(DfuFilesContext);
 }

@@ -20,7 +20,11 @@ import {
 import { addDieRoll } from "~/features/store/diceRollsSlice";
 import { setPairedDieName } from "~/features/store/pairedDiceSlice";
 import { readProfile } from "~/features/store/profiles";
-import { PixelsCentralContext } from "~/hooks";
+import {
+  PixelsCentralContext,
+  useConnectToMissingPixels,
+  usePixelsCentralOnReady,
+} from "~/hooks";
 
 function remoteActionListener(
   pixel: Pixel,
@@ -58,9 +62,23 @@ function remoteActionListener(
   }
 }
 
+function ConnectToMissingPixels({ children }: React.PropsWithChildren) {
+  // Scan for paired dice as soon as Central is ready
+  const connectToMissingPixels = useConnectToMissingPixels();
+  usePixelsCentralOnReady(
+    React.useCallback(
+      (ready: boolean) => {
+        ready && connectToMissingPixels();
+      },
+      [connectToMissingPixels]
+    )
+  );
+  return <>{children}</>;
+}
+
 export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   const appDispatch = useAppDispatch();
-  const central = React.useState(() => new PixelsCentral())[0];
+  const central = React.useMemo(() => new PixelsCentral(), []);
   const store = useStore<RootState>();
 
   // Setup event handlers
@@ -128,13 +146,13 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     central.addEventListener("pixelRemoved", onPixelRemoved);
 
     return () => {
+      for (const dispose of disposers.values()) {
+        dispose();
+      }
       central.removeEventListener("pixelFound", onPixelFound);
       central.removeEventListener("pixelRemoved", onPixelRemoved);
       central.stopScan();
       central.unwatchAll();
-      for (const dispose of disposers.values()) {
-        dispose();
-      }
     };
   }, [appDispatch, central, store]);
 
@@ -154,7 +172,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
   return (
     <PixelsCentralContext.Provider value={central}>
-      {children}
+      <ConnectToMissingPixels>{children}</ConnectToMissingPixels>
     </PixelsCentralContext.Provider>
   );
 }

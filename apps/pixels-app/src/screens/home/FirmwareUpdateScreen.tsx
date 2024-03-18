@@ -5,6 +5,7 @@ import { Button, Text, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
+import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
 import { PixelDfuList } from "~/components/PixelDfuList";
 import { GradientButton } from "~/components/buttons";
@@ -14,6 +15,7 @@ import {
   useDfuFiles,
   useDfuNotifier,
   usePixelsCentral,
+  useUpdateDice,
 } from "~/hooks";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
@@ -48,46 +50,6 @@ export function useConfirmStopUpdatingActionSheet(
       }
     );
   };
-}
-
-function useUpdateDice(): (
-  pixelsIds: readonly number[],
-  filesInfo: DfuFilesInfo,
-  stopRequested?: () => boolean
-) => Promise<void> {
-  const central = usePixelsCentral();
-  const dfuNotifier = useDfuNotifier();
-  const updateBootloader = useAppSelector(
-    (state) => state.appSettings.updateBootloader
-  );
-  return React.useCallback(
-    async (
-      pixelsIds: readonly number[],
-      filesInfo: DfuFilesInfo,
-      stopRequested?: () => boolean
-    ) => {
-      for (const pixelId of pixelsIds) {
-        try {
-          if (stopRequested?.()) {
-            return;
-          }
-          const pixel = central.getPixel(pixelId);
-          if (pixel && dfuNotifier.getDfuAvailability(pixelId) === "outdated") {
-            await central.updatePixelAsync({
-              pixel,
-              bootloaderPath: updateBootloader
-                ? filesInfo.bootloaderPath
-                : undefined,
-              firmwarePath: filesInfo.firmwarePath,
-            });
-          }
-        } catch {
-          // Error logged in PixelsCentral and notified as an event
-        }
-      }
-    },
-    [central, dfuNotifier, updateBootloader]
-  );
 }
 
 function useIsUpdatingFirmware(): boolean {
@@ -174,37 +136,33 @@ function FirmwareUpdatePage({
           update process. They may stay in open chargers but avoid moving
           charger lids or other magnets as it may turn the dice off.
         </Text>
-        {dfuFilesInfo ? (
-          <GradientButton
-            outline={updating}
-            disabled={!outdatedCount}
-            onPress={() => {
-              if (updating) {
-                cancelUpdating();
-              } else if (outdatedCount) {
-                let stop = false;
-                setStopUpdating(() => () => (stop = true));
-                updateDice(
-                  pairedDice.map((d) => d.pixelId),
-                  dfuFilesInfo,
-                  () => stop
-                );
-              }
-            }}
-          >
-            {updating
-              ? "Stop Updating"
-              : outdatedCount
-                ? `Start Updating (${outdatedCount})`
-                : "Done"}
-          </GradientButton>
-        ) : (
-          <Text variant="bodyLarge">
-            {dfuFilesError
-              ? `Error reading firmware file: ${dfuFilesError}`
-              : "Preparing firmware file..."}
-          </Text>
-        )}
+        <DfuFilesGate dfuFilesInfo={dfuFilesInfo} dfuFilesError={dfuFilesError}>
+          {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
+            <GradientButton
+              outline={updating}
+              disabled={!outdatedCount}
+              onPress={() => {
+                if (updating) {
+                  cancelUpdating();
+                } else if (outdatedCount) {
+                  let stop = false;
+                  setStopUpdating(() => () => (stop = true));
+                  updateDice(
+                    pairedDice.map((d) => d.pixelId),
+                    dfuFilesInfo,
+                    () => stop
+                  ); // No error should be thrown
+                }
+              }}
+            >
+              {updating
+                ? "Stop Updating"
+                : outdatedCount
+                  ? `Start Updating (${outdatedCount})`
+                  : "Done"}
+            </GradientButton>
+          )}
+        </DfuFilesGate>
         <PixelDfuList pairedDice={pairedDice} />
       </ScrollView>
     </View>

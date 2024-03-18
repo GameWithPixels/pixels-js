@@ -6,7 +6,7 @@ import { DfuFilesInfo, DfuNotifier } from "~/features/dfu/DfuNotifier";
 import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
 import {
-  DfuFilesAndLoadError,
+  DfuFilesLoadStatus,
   DfuFilesContext,
   DfuNotifierContext,
   usePixelsCentral,
@@ -40,7 +40,7 @@ async function loadDfuFiles(): Promise<DfuFilesInfo | Error> {
 export function AppDfuFiles({ children }: React.PropsWithChildren) {
   // const dfuNotifier = React.useState(() => new DfuNotifier())[0];
   const dfuNotifier = React.useMemo(() => new DfuNotifier(), []);
-  const [dfuFiles, setDfuFiles] = React.useState<DfuFilesAndLoadError>({});
+  const [dfuFiles, setDfuFiles] = React.useState<DfuFilesLoadStatus>({});
 
   // Load DFU files
   React.useEffect(() => {
@@ -65,12 +65,10 @@ export function AppDfuFiles({ children }: React.PropsWithChildren) {
     for (const pixel of central.pixels) {
       dfuNotifier.watch(pixel);
     }
-    const onPixelFound = ({ pixel }: { pixel: Pixel }) => {
+    const onPixelFound = ({ pixel }: { pixel: Pixel }) =>
       dfuNotifier.watch(pixel);
-    };
-    const onPixelRemoved = ({ pixel }: { pixel: Pixel }) => {
+    const onPixelRemoved = ({ pixel }: { pixel: Pixel }) =>
       dfuNotifier.unwatch(pixel.pixelId);
-    };
     central.addEventListener("pixelFound", onPixelFound);
     central.addEventListener("pixelRemoved", onPixelRemoved);
     return () => {
