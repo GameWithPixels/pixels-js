@@ -39,13 +39,13 @@ function FirmwareInfoPage({
         contentContainerStyle={{
           paddingVertical: 20,
           paddingHorizontal: 20,
-          gap: 20,
+          gap: 10,
         }}
       >
         {dfuFilesInfo ? (
           <>
             <PaperText variant="titleLarge">Available Dice Firmware</PaperText>
-            <View style={{ marginLeft: 10, gap: 10 }}>
+            <View style={{ marginLeft: 10, marginTop: 10, gap: 10 }}>
               <Text>Date: {date.toUTCString()}</Text>
               <Text>Timestamp: {date.getTime()}</Text>
               <Text>Firmware: {dfuFilesInfo.firmwarePath ? "yes" : "no"}</Text>
@@ -53,27 +53,25 @@ function FirmwareInfoPage({
                 Bootloader: {dfuFilesInfo.bootloaderPath ? "yes" : "no"}
               </Text>
             </View>
-            <Divider style={{ marginVertical: 5 }} />
-            <View style={{ gap: 10 }}>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Switch
-                  value={updateBootloader}
-                  onValueChange={(v) => {
-                    appDispatch(setUpdateBootloader(v));
-                  }}
-                  trackColor={{
-                    false: colors.onSurfaceDisabled,
-                    true: colors.primary,
-                  }}
-                />
-                <Text>Also Update Bootloader</Text>
-              </View>
-              <PaperText>
-                Don't turn this setting on unless you know what you're doing ;)
-              </PaperText>
+            <Divider style={{ marginVertical: 10 }} />
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Switch
+                value={updateBootloader}
+                onValueChange={(v) => {
+                  appDispatch(setUpdateBootloader(v));
+                }}
+                trackColor={{
+                  false: colors.onSurfaceDisabled,
+                  true: colors.primary,
+                }}
+              />
+              <Text>Also Update Bootloader</Text>
             </View>
+            <PaperText style={{ marginLeft: 10 }}>
+              Don't turn this setting on unless you know what you're doing ;)
+            </PaperText>
           </>
         ) : dfuFilesError ? (
           <Text>Error reading firmware files: {String(dfuFilesError)}</Text>
