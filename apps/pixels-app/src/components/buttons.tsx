@@ -209,10 +209,14 @@ export function MenuButton({
   children,
   style,
   icon,
-  iconSize = 16,
+  caretSize = 16,
   ...props
-}: { iconSize?: number; icon?: () => React.ReactNode } & TouchableCardProps) {
-  const { colors } = useTheme();
+}: {
+  caretSize?: number;
+  icon?: (props: { size: number; color: string }) => React.ReactNode;
+} & TouchableCardProps) {
+  const { colors, isV3 } = useTheme();
+  const iconSize = isV3 ? 18 : 16;
   return (
     <TouchableCard
       row
@@ -227,9 +231,9 @@ export function MenuButton({
     >
       <Text variant="bodyLarge">{children}</Text>
       <View style={{ flexGrow: 1 }} />
-      {icon?.()}
-      {iconSize > 0 && (
-        <CaretRightIcon size={iconSize} color={colors.onSurface} />
+      {icon?.({ size: iconSize, color: colors.onSurface })}
+      {caretSize > 0 && (
+        <CaretRightIcon size={caretSize} color={colors.onSurface} />
       )}
     </TouchableCard>
   );
@@ -356,13 +360,19 @@ export function GradientButton({
   ...props
 }: React.PropsWithChildren<{
   outline?: boolean;
-  icon?: () => React.ReactNode;
+  icon?: (props: { size: number; color: string }) => React.ReactNode;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
 }> &
   Omit<TouchableRippleProps, "children" | "style">) {
-  const { colors, roundness } = useTheme();
+  const { colors, roundness, isV3 } = useTheme();
+  const color = disabled
+    ? colors.onSurfaceDisabled
+    : outline
+      ? colors.onSurface
+      : colors.onPrimary;
+  const iconSize = isV3 ? 18 : 16;
   const borderRadius = getBorderRadius(roundness);
   return (
     <LinearGradient
@@ -408,17 +418,13 @@ export function GradientButton({
                 marginVertical: 10,
                 marginLeft: 24,
                 marginRight: icon ? 10 : 24,
-                color: disabled
-                  ? colors.onSurfaceDisabled
-                  : outline
-                    ? colors.onSurface
-                    : colors.onPrimary,
+                color,
               },
               labelStyle,
             ]}
             children={children}
           />
-          {icon && icon()}
+          {icon?.({ size: iconSize, color })}
         </>
       </TouchableRipple>
     </LinearGradient>
@@ -515,9 +521,10 @@ export function Chip({
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
 } & React.PropsWithChildren<Omit<TouchableRippleProps, "children" | "style">>) {
-  const { colors, roundness } = useTheme();
+  const { colors, roundness, isV3 } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
+  const iconSize = isV3 ? 18 : 16;
   return (
     <TouchableRipple
       disabled={disabled}
@@ -552,7 +559,7 @@ export function Chip({
             children={children}
           />
         )}
-        {icon?.({ size: 18, color })}
+        {icon?.({ size: iconSize, color })}
       </>
     </TouchableRipple>
   );
@@ -574,9 +581,10 @@ export function GradientChip({
   labelStyle?: StyleProp<TextStyle>;
 }> &
   Omit<TouchableRippleProps, "children" | "style">) {
-  const { colors, roundness } = useTheme();
+  const { colors, roundness, isV3 } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
+  const iconSize = isV3 ? 18 : 16;
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
@@ -618,7 +626,7 @@ export function GradientChip({
             ]}
             children={children}
           />
-          {icon?.({ size: 18, color })}
+          {icon?.({ size: iconSize, color })}
         </>
       </TouchableRipple>
     </LinearGradient>
@@ -661,7 +669,8 @@ export function SelectionButton({
   iconSize?: number;
   icon?: (props: { size: number; color: string }) => React.ReactNode;
 } & TouchableCardProps) {
-  const { colors } = useTheme();
+  const { colors, isV3 } = useTheme();
+  const iconSize = isV3 ? 18 : 16;
   return (
     <TouchableCard
       row
@@ -679,7 +688,7 @@ export function SelectionButton({
       {/* We need this extra view to get around some extra right padding
       that is added when the touchable is pressed */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-        {icon?.({ size: 20, color: colors.onSurface })}
+        {icon?.({ size: iconSize, color: colors.onSurface })}
         <View style={{ flex: 1, flexGrow: 1 }}>
           {typeof children === "string" ? (
             <Text variant="bodyLarge" style={{ color: colors.onSurface }}>

@@ -58,7 +58,7 @@ function MenuSection({
         {pages.slice(start, end).map((p, i) => (
           <MenuButton
             key={p}
-            iconSize={i >= supPagesCount ? 0 : undefined}
+            caretSize={i >= supPagesCount ? 0 : undefined}
             noTopBorder={i > 0}
             squaredTopBorder={i > 0}
             squaredBottomBorder={i < (end ?? pages.length) - start - 1}
