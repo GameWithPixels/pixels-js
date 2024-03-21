@@ -132,9 +132,9 @@ function get24BitsTimestamp(): number {
 }
 
 // List of faces to test, last face is the one with the copper counter weight
-function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
+function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
   let faces: number[];
-  switch (pixel.dieType) {
+  switch (dieType) {
     case "d4":
       faces = [2, 3, 4];
       break;
@@ -159,9 +159,7 @@ function getFaceUp(pixel: Pixel, step: "1" | "2" | "3"): number {
       faces = [5, 10, 20];
       break;
     default:
-      throw new Error(
-        `Unsupported die type ${pixel.dieType} (${pixel.ledCount} LEDs)`
-      );
+      throw new Error(`Unsupported die type ${dieType}`);
   }
   assert(faces.length === 3, "getFaceUp: Need 3 faces");
   switch (step) {
@@ -269,11 +267,13 @@ async function storeValueChecked(
   opt?: { allowNotPermitted?: boolean }
 ): Promise<void> {
   const result = await pixelStoreValue(pixel, valueType, value);
-  if (
-    result !== "success" &&
-    (!opt?.allowNotPermitted || result !== "notPermitted")
-  ) {
-    throw new Error(`Failed to store value, got response ${result}`);
+  if (result !== "success") {
+    const msg = `Failed to store value, got response ${result}`;
+    if (!opt?.allowNotPermitted || result !== "notPermitted") {
+      throw new Error(msg);
+    } else {
+      console.log("Ignoring error: " + msg);
+    }
   }
 }
 
@@ -397,6 +397,10 @@ export function UpdateFirmware({
         const dfuTarget = scannedPixel;
         try {
           // Use firmware date from scanned data as it is the most up-to-date
+          console.log(
+            "Validation firmware build timestamp is",
+            toLocaleDateTimeString(settings.dfuFilesBundle.date)
+          );
           console.log(
             "On device firmware build timestamp is",
             toLocaleDateTimeString(dfuTarget.firmwareDate)
@@ -552,13 +556,33 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
+          assert(pixel, "No Pixel instance");
+          // Try to connect with a few attempts
+          await repeatConnect(
+            abortSignal,
+            t,
+            (timeout) => pixel.connect(timeout),
+            () => pixel.disconnect()
+          );
+          // Make sure we don't have any animation playing
+          await pixelStopAllAnimations(pixel);
+        },
+        [pixel, t]
+      ),
+      createTaskStatusContainer(t("connect"))
+    )
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          assert(pixel, "No Pixel instance");
           if (
             dieType &&
             dieType !== "unknown" &&
             dieType !== settings.dieType
           ) {
-            const update = await withTimeout<boolean>(
+            const update = await withTimeoutAndDisconnect<boolean>(
               abortSignal,
+              pixel,
               testTimeout,
               (abortSignal) =>
                 withPromise<boolean>(
@@ -579,7 +603,7 @@ export function ConnectPixel({
             }
           }
         },
-        [dieType, settings.dieType, t]
+        [dieType, pixel, settings.dieType, t]
       ),
       createTaskStatusContainer({
         title: t("checkDieType"),
@@ -600,24 +624,6 @@ export function ConnectPixel({
         ),
       })
     )
-    .withTask(
-      React.useCallback(
-        async (abortSignal) => {
-          assert(pixel, "No Pixel instance");
-          // Try to connect with a few attempts
-          await repeatConnect(
-            abortSignal,
-            t,
-            (timeout) => pixel.connect(timeout),
-            () => pixel.disconnect()
-          );
-          // Make sure we don't have any animation playing
-          await pixelStopAllAnimations(pixel);
-        },
-        [pixel, t]
-      ),
-      createTaskStatusContainer(t("connect"))
-    )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
@@ -629,13 +635,16 @@ export function CheckBoard({
   onTaskStatus,
   settings,
   pixel,
-  firmwareUpdated,
-}: ValidationTestProps & {
-  firmwareUpdated: boolean;
-}) {
+}: ValidationTestProps) {
   const { t } = useTranslation();
 
   const taskChain = useTaskChain(action, "CheckBoard")
+    .withTask(
+      React.useCallback(async () => {
+        await pixelClearSettings(pixel);
+      }, [pixel]),
+      createTaskStatusContainer(t("clearSettings"))
+    )
     .withTask(
       React.useCallback(
         () => ValidationTests.checkAccelerationValid(pixel),
@@ -654,14 +663,6 @@ export function CheckBoard({
       React.useCallback(() => ValidationTests.checkRssi(pixel), [pixel]),
       createTaskStatusContainer(t("rssi")),
       { skip: isBoard(settings.sequence) }
-    )
-    .withTask(
-      React.useCallback(async () => {
-        if (firmwareUpdated) {
-          await pixelClearSettings(pixel);
-        }
-      }, [pixel, firmwareUpdated]),
-      createTaskStatusContainer(t("clearSettings"))
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -684,11 +685,12 @@ export function WaitCharging({
         async (abortSignal) =>
           ValidationTests.waitCharging(
             pixel,
+            settings.dieType,
             !notCharging,
             notCharging ? Color.dimGreen : Color.dimOrange,
             abortSignal
           ),
-        [notCharging, pixel]
+        [notCharging, pixel, settings.dieType]
       ),
       createTaskStatusContainer({
         children: (
@@ -771,9 +773,7 @@ export function CheckLEDs({
       createTaskStatusContainer({
         children: (
           <MessageYesNo
-            message={t("areAllLEDsWhiteWithCount", {
-              count: pixel.ledCount,
-            })}
+            message={t("areAllLEDsWhite")}
             hideButtons={!resolvePromise}
             onYes={() => resolvePromise?.()}
             onNo={() => userAbort?.()}
@@ -790,6 +790,7 @@ export function CheckLEDs({
 export function WaitFaceUp({
   action,
   onTaskStatus,
+  settings,
   pixel,
 }: ValidationTestProps) {
   const { t } = useTranslation();
@@ -800,11 +801,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "1"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "1"),
             Color.dimMagenta,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeBlinkingFaceUp"))
     )
@@ -814,11 +816,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "2"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "2"),
             Color.dimYellow,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -828,11 +831,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            getFaceUp(pixel, "3"),
+            settings.dieType,
+            getFaceUp(settings.dieType, "3"),
             Color.dimCyan,
             abortSignal
           ),
-        [pixel]
+        [pixel, settings.dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -923,7 +927,6 @@ export function StoreSettings({
                   PixelValueStoreType.Colorway,
                   value
                 );
-                pixel._updateColorway(colorway);
               }
             }
           ),
