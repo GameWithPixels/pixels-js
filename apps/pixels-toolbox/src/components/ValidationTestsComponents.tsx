@@ -815,9 +815,7 @@ export function CheckLEDs({
       createTaskStatusContainer({
         children: (
           <MessageYesNo
-            message={t("areAllLEDsWhite", {
-              count: pixel.ledCount,
-            })}
+            message={t("areAllLEDsWhite")}
             hideButtons={!resolvePromise}
             onYes={() => resolvePromise?.()}
             onNo={() => userAbort?.()}

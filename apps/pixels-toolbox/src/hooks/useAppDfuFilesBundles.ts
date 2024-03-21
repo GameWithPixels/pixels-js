@@ -16,7 +16,7 @@ export class NoDfuFileLoadedError extends Error {
 export function useAppDfuFilesBundles(): [
   DfuFilesBundle | undefined, // undefined until DFU bundles are loaded
   DfuFilesBundle[],
-  Error?
+  Error?,
 ] {
   const { selected, available } = useAppSelector((state) => state.dfuBundles);
   const dispatch = useAppDispatch();
@@ -41,7 +41,8 @@ export function useAppDfuFilesBundles(): [
         const allBundles = factory.concat(others);
         const getTime = (b: DfuFilesBundle) =>
           b.date.getTime() +
-          (b.firmware?.comment !== "sdk17" ? -Date.now() : 0); // Make sdk17 FW top choice
+          // Make sdk17 FW top choice
+          (b.firmware?.comment !== "sdk17" ? -Date.now() : 0);
         const selected = allBundles.indexOf(
           allBundles.reduce((a, b) => (getTime(a) >= getTime(b) ? a : b))
         );

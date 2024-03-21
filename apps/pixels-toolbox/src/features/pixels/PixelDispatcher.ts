@@ -17,24 +17,24 @@ import {
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
+  getMessageType,
+  getPixelOrThrow,
+  MessageOrType,
+  MessageTypeValues,
   Pixel,
+  PixelBatteryControllerMode,
   PixelColorway,
+  PixelColorwayValues,
+  PixelDieType,
+  PixelDieTypeValues,
+  PixelInfo,
+  PixelInfoNotifier,
   PixelRollState,
   PixelStatus,
-  PixelInfoNotifier,
-  ScannedPixelNotifier,
-  MessageOrType,
-  getMessageType,
-  Telemetry,
-  MessageTypeValues,
   ScannedPixel,
-  PixelDieType,
+  ScannedPixelNotifier,
   ScannedPixelNotifierMutableProps,
-  PixelInfo,
-  PixelBatteryControllerMode,
-  getPixelOrThrow,
-  PixelColorwayValues,
-  PixelDieTypeValues,
+  Telemetry,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -43,10 +43,10 @@ import { TelemetryData, toTelemetryData } from "./TelemetryData";
 import {
   pixelBlinkId,
   pixelDischarge,
-  pixelSetBatteryControllerMode,
   pixelPlayProfileAnimation,
   pixelReprogramDefaultBehavior,
   pixelResetAllSettings,
+  pixelSetBatteryControllerMode,
   pixelStoreValue,
   PixelValueStoreType,
 } from "./extensions";

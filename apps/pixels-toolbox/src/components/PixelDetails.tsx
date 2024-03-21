@@ -13,20 +13,20 @@ import {
   useVisibility,
 } from "@systemic-games/react-native-base-components";
 import {
+  DiceUtils,
   Pixel,
   PixelBatteryControllerMode,
   PixelBatteryControllerModeValues,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
+  PixelColorway,
+  PixelColorwayValues,
+  PixelDieType,
+  PixelDieTypeValues,
   PixelInfoNotifier,
   PixelRollStateValues,
   usePixelStatus,
   usePixelValue,
-  PixelDieTypeValues,
-  PixelColorwayValues,
-  PixelColorway,
-  PixelDieType,
-  DiceUtils,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
@@ -37,13 +37,13 @@ import {
   ButtonProps,
   Card,
   Divider,
+  Menu,
   Modal,
+  ModalProps,
   Portal,
   Switch,
   Text,
   useTheme,
-  ModalProps,
-  Menu,
 } from "react-native-paper";
 
 import {
@@ -452,7 +452,6 @@ function BottomButtons({
                   />
                 ))}
               </Menu>
-
               <Menu
                 visible={playAnimMenuVisible}
                 onDismiss={hidePlayAnimMenu}

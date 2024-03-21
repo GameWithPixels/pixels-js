@@ -70,9 +70,9 @@ export function ScannedPixelsList({
       </BaseHStack>
       <Text style={AppStyles.bold}>
         {matchingPixels.length
-          ? t("scannedPixelsWithCount", { count: scannedPixels.length })
+          ? t("scannedPixelsWithCount", { count: matchingPixels.length })
           : t("noPixelsFound")}
-        {(dieType || ledCount) && (
+        {(dieType ?? ledCount) && (
           <Text>
             {" ("}
             {dieType ? t(dieType) : ledCount ? `${ledCount} ${t("leds")}` : ""})
