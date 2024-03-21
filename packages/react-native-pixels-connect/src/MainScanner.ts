@@ -32,8 +32,8 @@ const _scanEvEmitter = createTypedEventEmitter<{
 }>();
 
 // Callback given to Central for scan events
-function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
-  const advData = ev.peripheral.advertisementData;
+function _onScannedPeripheral({ peripheral }: ScannedPeripheralEvent): void {
+  const advData = peripheral.advertisementData;
   if (!advData.services?.includes(PixelBleUuids.service)) {
     // We got an event from another scan (since Central scanning is global)
     return;
@@ -60,7 +60,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
     let batteryLevel: number;
     let isCharging = false;
     let rollStateValue: number;
-    let currentFace: number;
+    let faceIndex: number;
 
     // Create a Scanned Pixel object with some default values
     const manufBuffer = new Uint8Array(manufacturerData.data);
@@ -85,7 +85,7 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       colorwayValue = designAndColor & 0xf;
       dieTypeValue = (designAndColor >> 4) & 0xf;
       rollStateValue = manufReader.readU8();
-      currentFace = DiceUtils.faceFromIndex(manufReader.readU8(), ledCount);
+      faceIndex = manufReader.readU8();
       const battery = manufReader.readU8();
       // MSB is battery charging
       batteryLevel = battery & 0x7f;
@@ -102,14 +102,14 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
 
       pixelId = manufReader.readU32();
       rollStateValue = manufReader.readU8();
-      currentFace = DiceUtils.faceFromIndex(manufReader.readU8(), ledCount);
+      faceIndex = manufReader.readU8();
       batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
 
       firmwareDate = new Date();
     }
 
     if (pixelId) {
-      const systemId = ev.peripheral.systemId;
+      const systemId = peripheral.systemId;
       const colorway =
         getValueKeyName(colorwayValue, PixelColorwayValues) ?? "unknown";
       const dieType = dieTypeValue
@@ -117,11 +117,12 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
         : DiceUtils.estimateDieType(ledCount);
       const rollState =
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
+      const currentFace = DiceUtils.faceFromIndex(faceIndex, dieType);
       const scannedPixel = {
         systemId,
         pixelId,
-        address: ev.peripheral.address,
-        name: ev.peripheral.name,
+        address: peripheral.address,
+        name: peripheral.name,
         ledCount,
         colorway,
         dieType,
@@ -137,14 +138,14 @@ function _onScannedPeripheral(ev: ScannedPeripheralEvent): void {
       _scanEvEmitter.emit("scannedPixel", scannedPixel);
     } else {
       console.error(
-        `Pixel ${ev.peripheral.name}: Received invalid advertising data`
+        `Pixel ${peripheral.name}: Received invalid advertising data`
       );
     }
   } else if (!hasServiceData) {
     // After a reboot we may receive a onetime advertisement payload without the manufacturer data
     console.error(
       `Pixel ${
-        ev.peripheral.name
+        peripheral.name
       }: Received unsupported advertising data (manufacturerData: ${
         manufacturerData?.data.length ?? -1
       }, serviceData: ${serviceData?.data.length ?? -1})`
