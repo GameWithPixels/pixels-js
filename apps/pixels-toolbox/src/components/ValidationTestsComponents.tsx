@@ -66,6 +66,33 @@ import {
   withTimeoutAndDisconnect,
 } from "~/features/validation";
 
+function dieTypeStr(dieType: PixelDieType): string {
+  switch (dieType) {
+    case "unknown":
+      return "";
+    case "d4":
+      return "D4";
+    case "d6":
+      return "D6";
+    case "d6fudge":
+      return "FD6";
+    case "d6pipped":
+      return "PD6";
+    case "d8":
+      return "D8";
+    case "d10":
+      return "D10";
+    case "d00":
+      return "D00";
+    case "d12":
+      return "D12";
+    case "d20":
+      return "D20";
+    default:
+      assertNever(dieType);
+  }
+}
+
 export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
   // We use a PixelDispatcher to get our Pixel instance so to enable message logging
   return PixelDispatcher.getDispatcher(scannedPixel).pixel;
@@ -985,25 +1012,28 @@ export function PrepareDie({
   const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
       React.useCallback(async () => {
+        await ValidationTests.renameDie(
+          pixel,
+          `Pixels ${dieTypeStr(settings.dieType)}`
+        );
+      }, [pixel, settings.dieType]),
+      createTaskStatusContainer(t("setDieName"))
+    )
+    .withTask(
+      React.useCallback(async () => {
         // Update profile
         await ValidationTests.updateProfile(
           pixel,
           getDefaultProfile(settings.dieType),
           setProgress
         );
-      }, [pixel, settings.dieType]),
+        // Start printing ahead of time
+        printLabel(pixel, settings.dieType, onPrintStatus);
+      }, [onPrintStatus, pixel, settings.dieType]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
       })
-    )
-    .withTask(
-      React.useCallback(async () => {
-        await ValidationTests.renameDie(pixel);
-        // Start printing ahead of time
-        printLabel(pixel, settings.dieType, onPrintStatus);
-      }, [onPrintStatus, pixel, settings.dieType]),
-      createTaskStatusContainer(t("setDieName"))
     )
     .withTask(
       React.useCallback(
