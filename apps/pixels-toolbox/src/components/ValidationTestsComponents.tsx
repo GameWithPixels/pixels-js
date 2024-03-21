@@ -163,7 +163,7 @@ function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
   let faces: number[];
   switch (dieType) {
     case "d4":
-      faces = [2, 3, 4];
+      faces = [1, 2, 4];
       break;
     case "d6":
     case "d6pipped":
@@ -171,7 +171,7 @@ function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
       faces = [2, 3, 6];
       break;
     case "d8":
-      faces = [2, 4, 8];
+      faces = [4, 2, 8];
       break;
     case "d10":
       faces = [1, 4, 0];
@@ -180,7 +180,7 @@ function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
       faces = [10, 40, 0];
       break;
     case "d12":
-      faces = [3, 6, 12];
+      faces = [6, 3, 12];
       break;
     case "d20":
       faces = [5, 10, 20];
