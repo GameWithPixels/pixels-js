@@ -97,7 +97,7 @@ export class WaitForChargingTimeoutError extends LocalizedError {
 
 export class WaitFaceUpTimeoutError extends LocalizedError {
   readonly face: number;
-  readonly roll: Readonly<RollEvent>;
+  readonly roll: RollEvent;
   constructor(face: number, roll: RollEvent) {
     super(
       `Timeout waiting for face ${face}, face up: ${roll.face}, roll state: ${roll.state}`
@@ -321,10 +321,7 @@ export const ValidationTests = {
                     holdTimeout = setTimeout(() => {
                       // Remap face based on the user selected die type
                       const face = DiceUtils.faceFromIndex(
-                        DiceUtils.indexFromFace(
-                          pixel.currentFace,
-                          pixel.dieType
-                        ),
+                        pixel.currentFaceIndex,
                         dieType
                       );
                       console.log(`Validating face up: ${face}`);
@@ -333,13 +330,13 @@ export const ValidationTests = {
                   }
                   // Roll listener that checks if the required face is up
                   rollListener = (ev: RollEvent) => {
-                    lastEv = ev;
                     const state = ev.state;
                     // Remap face based on the user selected die type
                     const currentFace = DiceUtils.faceFromIndex(
-                      DiceUtils.indexFromFace(ev.face, pixel.dieType),
+                      ev.faceIndex,
                       dieType
                     );
+                    lastEv = { ...ev, face: currentFace };
                     if (state === "onFace" && currentFace === face) {
                       // Required face is up, start hold timer
                       console.log(`Die rolled on required face ${face}`);
@@ -351,7 +348,7 @@ export const ValidationTests = {
                       holdTimeout = undefined;
                     }
                     console.log(
-                      `Die roll state is ${state} and face = ${currentFace}`
+                      `Die roll state is ${state}, face = ${currentFace} and index = ${ev.faceIndex}`
                     );
                   };
                   // Listen to roll events to detect when required face is up
@@ -361,13 +358,7 @@ export const ValidationTests = {
                     pixel.rollState === "onFace" &&
                     face ===
                       // Remap face based on the user selected die type
-                      DiceUtils.faceFromIndex(
-                        DiceUtils.indexFromFace(
-                          pixel.currentFace,
-                          pixel.dieType
-                        ),
-                        dieType
-                      )
+                      DiceUtils.faceFromIndex(pixel.currentFaceIndex, dieType)
                   ) {
                     // Required face is already up, start hold timer
                     console.log(`Die already on face ${face}`);

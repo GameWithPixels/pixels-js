@@ -240,6 +240,10 @@ class PixelDispatcher
     return this._info.currentFace;
   }
 
+  get currentFaceIndex(): number {
+    return this._info.currentFaceIndex;
+  }
+
   get address(): number {
     return this._info.address;
   }
@@ -327,6 +331,7 @@ class PixelDispatcher
       isCharging: scannedPixel.isCharging,
       rollState: scannedPixel.rollState,
       currentFace: scannedPixel.currentFace,
+      currentFaceIndex: scannedPixel.currentFaceIndex,
       address: scannedPixel.address,
       timestamp: scannedPixel.timestamp,
     };
