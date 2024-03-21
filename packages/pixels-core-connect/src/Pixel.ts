@@ -1136,10 +1136,12 @@ export class Pixel extends PixelInfoNotifier {
       info: Omit<LegacyIAmADie, "type" | "dataSetHash" | "availableFlashSize">
     ): void => {
       this._info.ledCount = info.ledCount;
-      this._info.colorway =
-        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown";
-      this._info.dieType =
-        getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown";
+      this._updateColorway(
+        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown"
+      );
+      this._updateDieType(
+        getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown"
+      );
       this._info.pixelId = info.pixelId;
       this._updateFirmwareDate(1000 * info.buildTimestamp);
       this._updateBatteryInfo({
@@ -1197,11 +1199,17 @@ export class Pixel extends PixelInfoNotifier {
     }
   }
 
-  // TODO private
-  _updateColorway(colorway: PixelColorway) {
+  private _updateColorway(colorway: PixelColorway) {
     if (this._info.colorway !== colorway) {
       this._info.colorway = colorway;
       this.emitPropertyEvent("colorway");
+    }
+  }
+
+  private _updateDieType(dieType: PixelDieType) {
+    if (this._info.dieType !== dieType) {
+      this._info.dieType = dieType;
+      this.emitPropertyEvent("dieType");
     }
   }
 

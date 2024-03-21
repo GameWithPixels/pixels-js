@@ -1,6 +1,17 @@
 import { assertNever, range } from "@systemic-games/pixels-core-utils";
 
-import { PixelDieType } from "./Messages";
+// TODO duplicated
+type PixelDieType =
+  | "unknown"
+  | "d4"
+  | "d6"
+  | "d8"
+  | "d10"
+  | "d00"
+  | "d12"
+  | "d20"
+  | "d6pipped"
+  | "d6fudge";
 
 export const DiceUtils = {
   getLEDCount(dieType: PixelDieType): number {
@@ -27,20 +38,27 @@ export const DiceUtils = {
     }
   },
 
-  // DieType must start by a letter followed by the number of faces
   getFaceCount(dieType: PixelDieType): number {
-    if (!dieType || dieType.length < 2 || dieType[0] !== "d") {
-      return 0;
-    } else if (dieType === "d00") {
-      return 10;
-    } else {
-      let i = 1;
-      while (i < dieType.length) {
-        const c = dieType.charAt(i);
-        if (c < "0" || c > "9") break;
-        ++i;
-      }
-      return Number(dieType.substring(1, i));
+    switch (dieType) {
+      case "unknown":
+        return 0;
+      case "d4":
+        return 4;
+      case "d6":
+      case "d6fudge":
+      case "d6pipped":
+        return 6;
+      case "d8":
+        return 8;
+      case "d10":
+      case "d00":
+        return 10;
+      case "d12":
+        return 12;
+      case "d20":
+        return 20;
+      default:
+        assertNever(dieType);
     }
   },
 
@@ -74,8 +92,42 @@ export const DiceUtils = {
     }
   },
 
-  faceFromIndex(faceIndex: number, ledCount: number): number {
-    return faceIndex + (ledCount === 10 ? 0 : 1);
+  // TODO fix for D4 rolling as D6 and D00 rolling as D10
+  faceFromIndex(faceIndex: number, dieType: PixelDieType): number {
+    switch (dieType) {
+      case "d4":
+        if (faceIndex === 2) return 2;
+        if (faceIndex === 3) return 3;
+        if (faceIndex === 5) return 4;
+        return 1;
+      case "d10":
+        return faceIndex;
+      case "d00":
+        return faceIndex * 10;
+      case "unknown":
+        return faceIndex;
+      default:
+        return faceIndex + 1;
+    }
+  },
+
+  // TODO fix for D4 rolling as D6 and D00 rolling as D10
+  indexFromFace(face: number, dieType: PixelDieType): number {
+    switch (dieType) {
+      case "d4":
+        if (face === 2) return 2;
+        if (face === 3) return 3;
+        if (face === 4) return 5;
+        return 0;
+      case "d10":
+        return face;
+      case "d00":
+        return Math.floor(face / 10);
+      case "unknown":
+        return face;
+      default:
+        return face - 1;
+    }
   },
 
   getDieFaces(dieType: PixelDieType): number[] {
@@ -101,5 +153,10 @@ export const DiceUtils = {
       default:
         assertNever(dieType);
     }
+  },
+
+  // TODO fix for edit animations taking a face value instead of an index
+  mapFaceForAnimation(face: number, dieType: PixelDieType): number {
+    return 1 + DiceUtils.indexFromFace(face, dieType);
   },
 } as const;
