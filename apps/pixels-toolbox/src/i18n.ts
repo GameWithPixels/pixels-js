@@ -150,6 +150,8 @@ i18n
           sendingAsPrintStatus: "Sending label to printer...",
           doneAsPrintStatus: "Print successful!",
           playKeyframes: "Play Keyframes",
+          setDieType: "Set Die Type",
+          setDieColorway: "Set Colorway",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",

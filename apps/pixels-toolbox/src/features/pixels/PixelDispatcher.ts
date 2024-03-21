@@ -38,6 +38,8 @@ import {
   ScannedPixelNotifierMutableProps,
   PixelInfo,
   PixelBatteryControllerMode,
+  PixelColorwayValues,
+  PixelDieTypeValues,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
@@ -51,6 +53,8 @@ import {
   pixelPlayProfileAnimation,
   pixelReprogramDefaultBehavior,
   pixelResetAllSettings,
+  pixelStoreValue,
+  PixelValueStoreType,
 } from "./extensions";
 import { getDefaultProfile } from "./getDefaultProfile";
 
@@ -90,6 +94,8 @@ export interface PixelDispatcherActionMap {
   resetAllSettings: undefined;
   queueDFU: undefined;
   dequeueDFU: undefined;
+  setDieType: PixelDieType;
+  setColorway: PixelColorway;
 }
 
 /** List of possible DFU actions. */
@@ -498,6 +504,30 @@ class PixelDispatcher
         break;
       case "dequeueDFU":
         this._dequeueDFU();
+        break;
+      case "setDieType":
+        if (PixelDieTypeValues[params as PixelDieType]) {
+          this._guard(
+            pixelStoreValue(
+              this._pixel,
+              PixelValueStoreType.DieType,
+              PixelDieTypeValues[params as PixelDieType]
+            ),
+            action
+          );
+        }
+        break;
+      case "setColorway":
+        if (PixelColorwayValues[params as PixelColorway]) {
+          this._guard(
+            pixelStoreValue(
+              this._pixel,
+              PixelValueStoreType.Colorway,
+              PixelColorwayValues[params as PixelColorway]
+            ),
+            action
+          );
+        }
         break;
       default:
         assertNever(action, `Unknown action ${action}`);

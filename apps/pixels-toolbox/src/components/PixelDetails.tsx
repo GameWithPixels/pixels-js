@@ -8,11 +8,16 @@ import {
   useVisibility,
 } from "@systemic-games/react-native-base-components";
 import {
+  DiceUtils,
   Pixel,
   PixelBatteryControllerMode,
   PixelBatteryControllerModeValues,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
+  PixelColorway,
+  PixelColorwayValues,
+  PixelDieType,
+  PixelDieTypeValues,
   PixelInfoNotifier,
   PixelRollStateValues,
   usePixelStatus,
@@ -313,11 +318,15 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             {t("dBmWithValue", { value: telemetry?.rssi ?? 0 })}
           </TextEntry>
           <TextEntry title={t("rollState")}>
-            {telemetry ? telemetry.faceIndex + 1 : 0},{" "}
-            {t(
-              getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
-                "unknown"
-            )}
+            {telemetry
+              ? `${t(
+                  getValueKeyName(telemetry?.rollState, PixelRollStateValues) ??
+                    "unknown"
+                )}, ${DiceUtils.faceFromIndex(
+                  telemetry.faceIndex,
+                  pixel.dieType
+                )} (index: ${telemetry.faceIndex})`
+              : "unknown"}
           </TextEntry>
           <TextEntry title={t("accelerometer")}>{acc}</TextEntry>
         </>
@@ -379,6 +388,18 @@ function BottomButtons({
     hide: hideDischarge,
   } = useVisibility();
 
+  const {
+    visible: setDieTypeMenuVisible,
+    show: showSetDieTypeMenu,
+    hide: hideSetDieTypeMenu,
+  } = useVisibility();
+
+  const {
+    visible: setDieColorwayMenuVisible,
+    show: showSetDieColorwayMenu,
+    hide: hideSetDieColorwayMenu,
+  } = useVisibility();
+
   const { t } = useTranslation();
   return (
     <>
@@ -424,10 +445,53 @@ function BottomButtons({
               >
                 {t("playKeyframes")}
               </Button>
+              <Menu
+                visible={setDieTypeMenuVisible}
+                onDismiss={hideSetDieTypeMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showSetDieTypeMenu}>
+                    {t("setDieType")}
+                  </Button>
+                }
+              >
+                {(Object.keys(PixelDieTypeValues) as PixelDieType[])
+                  .filter((dt) => dt !== "unknown")
+                  .map((dieType) => (
+                    <Menu.Item
+                      key={dieType}
+                      title={dieType}
+                      onPress={() => {
+                        pd.dispatch("setDieType", dieType);
+                        hideSetDieTypeMenu();
+                      }}
+                    />
+                  ))}
+              </Menu>
+              <Menu
+                visible={setDieColorwayMenuVisible}
+                onDismiss={hideSetDieColorwayMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showSetDieColorwayMenu}>
+                    {t("setDieColorway")}
+                  </Button>
+                }
+              >
+                {(Object.keys(PixelColorwayValues) as PixelColorway[])
+                  .filter((dt) => dt !== "unknown")
+                  .map((colorway) => (
+                    <Menu.Item
+                      key={colorway}
+                      title={colorway}
+                      onPress={() => {
+                        pd.dispatch("setColorway", colorway);
+                        hideSetDieColorwayMenu();
+                      }}
+                    />
+                  ))}
+              </Menu>
               <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
-              <Button onPress={() => pd.dispatch("resetAllSettings")}>
-                {t("resetAllSettings")}
-              </Button>
             </>
           )}
           <Button onPress={onPrintLabel}>{t("printLabel")}</Button>
@@ -493,6 +557,9 @@ function BottomButtons({
               </Button>
               <Button onPress={() => pd.dispatch("rename")}>
                 {t("rename")}
+              </Button>
+              <Button onPress={() => pd.dispatch("resetAllSettings")}>
+                {t("resetAllSettings")}
               </Button>
             </>
           )}
