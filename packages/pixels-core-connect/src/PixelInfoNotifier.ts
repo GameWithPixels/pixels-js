@@ -29,13 +29,16 @@ export abstract class PixelInfoNotifier<
 {
   static MutablePropsList: readonly (keyof PixelInfo)[] = [
     "name",
-    "firmwareDate",
+    "ledCount",
     "colorway",
+    "dieType",
+    "firmwareDate",
     "rssi",
     "batteryLevel",
     "isCharging",
     "rollState",
     "currentFace",
+    "currentFaceIndex",
   ];
 
   private readonly _infoEvEmitter = createTypedEventEmitter<{
@@ -53,7 +56,8 @@ export abstract class PixelInfoNotifier<
   abstract get batteryLevel(): number; // Percentage
   abstract get isCharging(): boolean;
   abstract get rollState(): PixelRollState;
-  abstract get currentFace(): number; // Face value (not index)
+  abstract get currentFace(): number; // Face value
+  abstract get currentFaceIndex(): number;
 
   /**
    * Adds the given listener function to the end of the listeners array

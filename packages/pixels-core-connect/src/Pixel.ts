@@ -106,8 +106,18 @@ export type PixelStatus =
  * @category Pixels
  */
 export interface RollEvent {
-  state: PixelRollState;
-  face: number;
+  /** The roll state of the Pixel when this event was raised. */
+  readonly state: PixelRollState;
+  /**
+   * The value of the Pixel face that is currently facing up.
+   * @remarks Fudge die will return -1, 0 or 1.
+   **/
+  readonly face: number;
+  /**
+   * The 0-based index of the Pixel face that is currently facing up.
+   * @see {@link PixelInfo.currentFaceIndex} for more details.
+   **/
+  readonly faceIndex: number;
 }
 
 /**
@@ -116,8 +126,8 @@ export interface RollEvent {
  * @category Pixels
  */
 export interface BatteryEvent {
-  level: number; // Percentage
-  isCharging: boolean;
+  readonly level: number; // Percentage
+  readonly isCharging: boolean;
 }
 
 /**
@@ -126,9 +136,9 @@ export interface BatteryEvent {
  * @category Pixels
  */
 export interface UserMessageEvent {
-  message: string;
-  withCancel: boolean;
-  response: (okCancel: boolean) => Promise<void>;
+  readonly message: string;
+  readonly withCancel: boolean;
+  readonly response: (okCancel: boolean) => Promise<void>;
 }
 
 /**
@@ -252,7 +262,7 @@ export class Pixel extends PixelInfoNotifier {
     return this._info.ledCount;
   }
 
-  /** Gets the design and color of the Pixel. */
+  /** Gets the color of the Pixel. */
   get colorway(): PixelColorway {
     return this._info.colorway;
   }
@@ -282,7 +292,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Get the Pixel battery level (percentage).
-   * @remarks The battery level is automatically updated when connected.
+   * @remarks This value is automatically updated when the die is connected.
    */
   get batteryLevel(): number {
     return this._info.batteryLevel;
@@ -291,7 +301,7 @@ export class Pixel extends PixelInfoNotifier {
   /**
    * Gets whether the Pixel battery is charging or not.
    * Returns 'true' if fully charged but still on charger.
-   * @remarks The charging state is automatically updated when connected.
+   * @remarks This value is automatically updated when the die is connected.
    */
   get isCharging(): boolean {
     return this._info.isCharging;
@@ -299,7 +309,7 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Get the Pixel roll state.
-   * @remarks The roll state is automatically updated when connected.
+   * @remarks This value is automatically updated when the die is connected.
    */
   get rollState(): PixelRollState {
     return this._info.rollState;
@@ -307,10 +317,22 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Get the Pixel face value that is currently facing up.
-   * @remarks The current face is automatically updated when connected.
+   * @remarks
+   * Fudge die returns +1, 0 and -1.
+   * This value is automatically updated when the die is connected.
    */
   get currentFace(): number {
     return this._info.currentFace;
+  }
+
+  /**
+   * Get the 0-based index of the Pixel face that is currently facing up.
+   * @remarks
+   * This value is automatically updated when the die is connected.
+   * @see {@link PixelInfo.currentFaceIndex} for more details.
+   */
+  get currentFaceIndex(): number {
+    return this._info.currentFaceIndex;
   }
 
   /**
@@ -334,6 +356,7 @@ export class Pixel extends PixelInfoNotifier {
       isCharging: false,
       rollState: "unknown",
       currentFace: 0,
+      currentFaceIndex: 0,
     };
     this._versions = {
       firmwareVersion: 0,
@@ -367,20 +390,17 @@ export class Pixel extends PixelInfoNotifier {
     // Subscribe to battery messages and emit battery event
     const batteryLevelListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as BatteryLevel;
-      this._updateBatteryInfo({
-        level: msg.levelPercent,
-        isCharging: isPixelChargingOrDone(msg.state),
-      });
+      this._updateBattery(msg.levelPercent, isPixelChargingOrDone(msg.state));
     };
     this.addMessageListener("batteryLevel", batteryLevelListener);
 
     // Subscribe to roll messages and emit roll event
     const rollStateListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as RollState;
-      this._updateRollInfo({
-        state: getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
-        face: msg.faceIndex + (this.ledCount === 10 ? 0 : 1),
-      });
+      this._updateRoll(
+        getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
+        msg.faceIndex
+      );
     };
     this.addMessageListener("rollState", rollStateListener);
 
@@ -431,36 +451,56 @@ export class Pixel extends PixelInfoNotifier {
   /**
    * Update Pixel info from an external source such as scanning data.
    * @param info The updated info.
-   * @remarks The info will be updated only when disconnected.
+   * @remarks
+   * The info will be updated only if the die is disconnected.
+   * Roll state and face index are updated only if both are provided.
    */
-  updateInfo(info: Partial<PixelInfo>): void {
+  updateInfo(info: Partial<Omit<PixelInfo, "ledCount" | "currentFace">>): void {
     if (this.status === "disconnected" && this.pixelId === info.pixelId) {
       // Name
       if (info.name) {
         this._updateName(info.name);
       }
       // Colorway
-      if (info.colorway) {
+      if (
+        info.colorway &&
+        info.colorway !== "unknown" &&
+        this.colorway === "unknown"
+      ) {
         this._updateColorway(info.colorway);
       }
+      // Die type
+      if (
+        info.dieType &&
+        info.dieType !== "unknown" &&
+        this.dieType === "unknown"
+      ) {
+        this._updateDieType(info.dieType);
+      }
       // Firmware data
-      if (info.firmwareDate) {
+      if (info.firmwareDate && info.firmwareDate.getTime() > 0) {
         this._updateFirmwareDate(info.firmwareDate.getTime());
       }
       // RSSI
-      if (info.rssi !== undefined) {
+      if (info.rssi !== undefined && info.rssi < 0) {
         this._updateRssi(info.rssi);
       }
       // Battery
-      this._updateBatteryInfo({
-        level: info.batteryLevel,
-        isCharging: info.isCharging,
-      });
+      if (
+        info.batteryLevel === undefined ||
+        (info.batteryLevel >= 0 && info.batteryLevel <= 100)
+      ) {
+        this._updateBattery(info.batteryLevel, info.isCharging);
+      }
       // Roll
-      this._updateRollInfo({
-        state: info.rollState,
-        face: info.currentFace,
-      });
+      if (
+        info.rollState !== undefined &&
+        info.currentFaceIndex !== undefined &&
+        info.currentFaceIndex >= 0 &&
+        info.currentFaceIndex < this.dieFaceCount
+      ) {
+        this._updateRoll(info.rollState, info.currentFaceIndex);
+      }
     }
   }
 
@@ -1139,20 +1179,25 @@ export class Pixel extends PixelInfoNotifier {
       this._updateColorway(
         getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown"
       );
+      const dieType =
+        getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown";
       this._updateDieType(
-        getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown"
+        dieType !== "unknown"
+          ? dieType
+          : // Try to guess the die type if we got "unknown" from the message
+            DiceUtils.estimateDieType(this.ledCount)
       );
       this._info.pixelId = info.pixelId;
       this._updateFirmwareDate(1000 * info.buildTimestamp);
-      this._updateBatteryInfo({
-        level: info.batteryLevelPercent,
-        isCharging: isPixelChargingOrDone(info.batteryState),
-      });
-      this._updateRollInfo({
-        state:
-          getValueKeyName(info.rollState, PixelRollStateValues) ?? "unknown",
-        face: info.currentFaceIndex + (this.ledCount === 10 ? 0 : 1),
-      });
+      this._updateBattery(
+        info.batteryLevelPercent,
+        isPixelChargingOrDone(info.batteryState)
+      );
+      this._updateRoll(
+        getValueKeyName(info.rollState, PixelRollStateValues) ?? "unknown",
+        info.currentFaceIndex,
+        { skipEvents: true }
+      );
     };
 
     if (iAmADie instanceof LegacyIAmADie) {
@@ -1228,77 +1273,81 @@ export class Pixel extends PixelInfoNotifier {
     }
   }
 
-  private _updateBatteryInfo(
-    info: Partial<{
-      level: number;
-      isCharging: boolean;
-    }>
-  ) {
+  private _updateBattery(level?: number, isCharging?: boolean) {
     const levelChanged =
-      info.level !== undefined && this._info.batteryLevel !== info.level;
+      level !== undefined && this._info.batteryLevel !== level;
     const chargingChanged =
-      info.isCharging !== undefined &&
-      this._info.isCharging !== info.isCharging;
+      isCharging !== undefined && this._info.isCharging !== isCharging;
     if (levelChanged) {
-      this._info.batteryLevel = info.level!;
+      this._info.batteryLevel = level;
       this.emitPropertyEvent("batteryLevel");
     }
     if (chargingChanged) {
-      this._info.isCharging = info.isCharging!;
+      this._info.isCharging = isCharging;
       this.emitPropertyEvent("isCharging");
     }
     if (levelChanged || chargingChanged) {
-      this._evEmitter.emit("battery", { ...info } as BatteryEvent);
+      this._evEmitter.emit("battery", {
+        level: level ?? this.batteryLevel,
+        isCharging: isCharging ?? this.isCharging,
+      });
     }
   }
 
-  private _updateRollInfo(
-    info: Partial<{ state: PixelRollState; face: number }>
-  ) {
-    if (info.face !== undefined) {
-      info.face = this._fixDieFace(info.face);
-      if (info.face === undefined) {
-        console.log(
-          this._tagLogString(
-            `/!\\ Dropping ${this.dieType} roll event for face ${info.face}`
-          )
+  private _createRollEvent(
+    state: PixelRollState,
+    faceIndex: number
+  ): RollEvent {
+    if (this.dieType === "d4") {
+      // TODO fix for D4 rolling as D6
+      if (faceIndex === 1 || faceIndex === 4) {
+        // Those faces are not valid for a D4, reuse last valid face instead
+        faceIndex = DiceUtils.indexFromFace(
+          this.currentFace > 0 ? this.currentFace : 1,
+          "d4"
         );
-        return;
+        if (state === "onFace") {
+          state = "crooked";
+        }
       }
     }
-    const stateChanged =
-      info.state !== undefined && this._info.rollState !== info.state;
-    const faceChanged =
-      info.face !== undefined && this._info.currentFace !== info.face;
+    // Convert face index to face value
+    const face = DiceUtils.faceFromIndex(faceIndex, this.dieType);
+    return { state, face, faceIndex };
+  }
+
+  private _updateRoll(
+    state: PixelRollState,
+    faceIndex: number,
+    opt?: { skipEvents?: boolean }
+  ) {
+    const ev = this._createRollEvent(state, faceIndex);
+    const stateChanged = this._info.rollState !== ev.state;
+    const indexChanged = this._info.currentFaceIndex !== ev.faceIndex;
+    const faceChanged = this._info.currentFace !== ev.face;
+
+    this._info.rollState = ev.state;
+    this._info.currentFaceIndex = ev.faceIndex;
+    this._info.currentFace = ev.face;
+
     if (stateChanged) {
-      this._info.rollState = info.state!;
       this.emitPropertyEvent("rollState");
     }
+    if (indexChanged) {
+      this.emitPropertyEvent("currentFaceIndex");
+    }
     if (faceChanged) {
-      this._info.currentFace = info.face!;
       this.emitPropertyEvent("currentFace");
     }
-    if (info.state !== undefined) {
-      // Notify all die roll events
-      this._evEmitter.emit("rollState", { ...info } as RollEvent);
-      if (info.state === "onFace" && info.face !== undefined) {
-        this._evEmitter.emit("roll", info.face);
+
+    // Notify all die roll events
+    if (!opt?.skipEvents) {
+      const emitRoll = ev.state === "onFace" ? ev.face : undefined;
+      this._evEmitter.emit("rollState", ev);
+      if (emitRoll !== undefined) {
+        this._evEmitter.emit("roll", emitRoll);
       }
     }
-  }
-
-  // TODO Temporary - Fix face value for d4 and d00
-  private _fixDieFace(face: number): number | undefined {
-    switch (this.dieType) {
-      case "d4":
-        if (face === 1) return 1;
-        if (face === 3 || face === 4) return face - 1;
-        if (face === 6) return 4;
-        return undefined;
-      case "d00":
-        return face * 10;
-    }
-    return face;
   }
 
   // Callback on notify characteristic value change

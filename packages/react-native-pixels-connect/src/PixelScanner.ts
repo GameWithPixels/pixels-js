@@ -291,6 +291,7 @@ export class PixelScanner {
 
   private static _generateScannedPixel(index: number): ScannedPixel {
     assert(index > 0);
+    const currentFaceIndex = Math.round(Math.random() * 19);
     return {
       systemId: "system-id-" + index,
       pixelId: index,
@@ -311,7 +312,8 @@ export class PixelScanner {
           Math.ceil(Math.random() * PixelScanner._maxRollState),
           PixelRollStateValues
         ) ?? "unknown",
-      currentFace: 1 + Math.round(Math.random() * 19),
+      currentFace: 1 + currentFaceIndex,
+      currentFaceIndex,
       address: index + (index << 16) + (index << 32),
       timestamp: new Date(),
     };

@@ -132,6 +132,7 @@ function _onScannedPeripheral({ peripheral }: ScannedPeripheralEvent): void {
         isCharging,
         rollState,
         currentFace,
+        currentFaceIndex: faceIndex,
         timestamp: new Date(),
       };
       ScannedPixelsRegistry.register(scannedPixel);
