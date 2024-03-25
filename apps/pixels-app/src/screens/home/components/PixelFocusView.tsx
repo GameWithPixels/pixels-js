@@ -13,7 +13,7 @@ import {
   View,
   ViewProps,
 } from "react-native";
-import { Badge, Text, TextInput, useTheme } from "react-native-paper";
+import { Text, TextInput, useTheme } from "react-native-paper";
 
 import { DieMenu } from "./DieMenu";
 import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
@@ -24,6 +24,7 @@ import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PixelDieRenderer } from "~/components/DieRenderer";
+import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
 import { NewPixelAppBanner } from "~/components/banners";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
@@ -35,7 +36,7 @@ import {
   useActiveProfile,
   useConfirmActionSheet,
   useHasFirmwareUpdate,
-  usePairedPixel,
+  useWatchedPixel,
   useProfile,
 } from "~/hooks";
 
@@ -82,11 +83,11 @@ export function PixelFocusViewHeader({
   const appDispatch = useAppDispatch();
   const profile = useProfile(pairedDie.profileUuid);
 
-  const pixel = usePairedPixel(pairedDie);
+  const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
-  const [pixelName] = usePixelValue(pixel, "name");
-  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   const disabled = status !== "ready";
+  const [pixelName] = usePixelValue(pixel, "name");
+  const hasFirmwareUpdate = useHasFirmwareUpdate(pairedDie.pixelId);
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const showConfirmReset = useConfirmActionSheet(
     "Reset Die Settings",
@@ -99,7 +100,8 @@ export function PixelFocusViewHeader({
     },
     {
       message:
-        "Reminder: your die will stay off until placed back in its case with the lid closed.Alternatively you can turn it back on by holding a magnet to its upper face.",
+        "Reminder: your die will stay off until placed back in its case with the lid closed. " +
+        "Alternatively you can turn it back on by holding a magnet to its upper face.",
     }
   );
   const [renameVisible, setRenameVisible] = React.useState(false);
@@ -159,11 +161,12 @@ export function PixelFocusViewHeader({
             onReset={() => showConfirmReset()}
             onTurnOff={() => showConfirmTurnOff()}
           />
-          {hasFirmwareUpdate ? (
-            <Badge style={{ position: "absolute", right: -15, top: 5 }}>
-              !
-            </Badge>
-          ) : null}
+          {pixel && (
+            <FirmwareUpdateBadge
+              pixel={pixel}
+              style={{ position: "absolute", right: -15, top: 5 }}
+            />
+          )}
         </Pressable>
       ) : (
         pixel && (
@@ -188,7 +191,7 @@ function RollingDie({
   pairedDie: PairedDie;
   disabled: boolean;
 }) {
-  const pixel = usePairedPixel(pairedDie);
+  const pixel = useWatchedPixel(pairedDie);
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";
@@ -238,7 +241,7 @@ export function PixelFocusView({
 } & Omit<ViewProps, "children">) {
   const appDispatch = useAppDispatch();
 
-  const pixel = usePairedPixel(pairedDie);
+  const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const activeProfile = useActiveProfile(pairedDie);
   const transferring = useAppSelector((state) => !!state.diceRolls.transfer);

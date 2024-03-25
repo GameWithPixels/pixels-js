@@ -15,7 +15,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
-import { useActiveProfile, usePairedPixel } from "~/hooks";
+import { useActiveProfile, useWatchedPixel } from "~/hooks";
 import { EditDieProfileScreenProps } from "~/navigation";
 
 function EditDieProfilePage({
@@ -92,7 +92,7 @@ export function EditDieProfileScreen({
   },
   navigation,
 }: EditDieProfileScreenProps) {
-  const pixel = usePairedPixel(pixelId);
+  const pixel = useWatchedPixel(pixelId);
   return (
     <AppBackground>
       {pixel && <EditDieProfilePage pixel={pixel} navigation={navigation} />}

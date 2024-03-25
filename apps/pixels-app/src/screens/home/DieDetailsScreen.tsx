@@ -28,7 +28,7 @@ import { unsigned32ToHex } from "~/features/utils";
 import {
   useActiveProfile,
   useHasFirmwareUpdate,
-  usePairedPixel,
+  useWatchedPixel,
   usePixelDataTransfer,
 } from "~/hooks";
 import { DieDetailsScreenProps } from "~/navigation";
@@ -226,6 +226,29 @@ function DieAdvancedInfo({
   );
 }
 
+function FirmwareUpdateBanner({
+  pixel,
+  onAction,
+}: {
+  pixel: Pixel;
+  onAction?: () => void;
+}) {
+  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
+  const [firmwareUpdateVisible, setFirmwareUpdateVisible] =
+    React.useState(true);
+  return hasFirmwareUpdate ? (
+    <Banner
+      visible={firmwareUpdateVisible}
+      title="Update Available!"
+      actionText="Update Now"
+      onAction={onAction}
+      onDismiss={() => setFirmwareUpdateVisible(false)}
+    >
+      A firmware update is available for your die.
+    </Banner>
+  ) : null;
+}
+
 function DieDetailsPage({
   pairedDie,
   navigation,
@@ -233,13 +256,8 @@ function DieDetailsPage({
   pairedDie: PairedDie;
   navigation: DieDetailsScreenProps["navigation"];
 }) {
-  const pixel = usePairedPixel(pairedDie);
+  const pixel = useWatchedPixel(pairedDie);
   const activeProfile = useActiveProfile(pairedDie);
-
-  // Firmware update
-  const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
-  const [firmwareUpdateVisible, setFirmwareUpdateVisible] =
-    React.useState(true);
 
   return (
     <View style={{ height: "100%" }}>
@@ -254,18 +272,11 @@ function DieDetailsPage({
             gap: 10,
           }}
         >
-          {hasFirmwareUpdate && (
-            <Banner
-              visible={firmwareUpdateVisible}
-              title="Update Available!"
-              actionText="Update Now"
-              onAction={() =>
-                navigation.replace("firmwareUpdate", { pixelId: pixel.pixelId })
-              }
-              onDismiss={() => setFirmwareUpdateVisible(false)}
-            >
-              A firmware update is available for your die.
-            </Banner>
+          {pixel && (
+            <FirmwareUpdateBanner
+              pixel={pixel}
+              onAction={() => navigation.replace("firmwareUpdate")}
+            />
           )}
           <DieStatus pixel={pixel} style={{ marginTop: 10 }} />
           <DieProfile profile={activeProfile} />

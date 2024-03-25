@@ -16,12 +16,13 @@ export function AppInit({ children }: React.PropsWithChildren) {
   // Library defaults
   React.useEffect(() => {
     if (!initialized) {
-      // Init sequence
+      // Init library
       const hasStuff = store.getState().library.gradients.ids.length > 0;
       if (!hasStuff) {
         console.warn("Resetting library");
         Library.dispatchReset(appDispatch);
       }
+      // Set as initialized
       setInitialized(true);
     }
   }, [appDispatch, initialized, store]);

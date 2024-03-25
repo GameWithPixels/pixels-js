@@ -17,7 +17,7 @@ import { useAppSelector } from "~/app/hooks";
 import { Card, CardProps } from "~/components/Card";
 import { AnimatedText } from "~/components/animated";
 import { makeTransparent } from "~/components/colors";
-import { usePairedPixel } from "~/hooks";
+import { useWatchedPixel } from "~/hooks";
 
 function useLastRolls({
   pixelId,
@@ -43,7 +43,7 @@ function PixelRollState({
 }: {
   pairedDie: PairedDie;
 } & Omit<TextProps<string>, "children">) {
-  const pixel = usePairedPixel(pairedDie);
+  const pixel = useWatchedPixel(pairedDie);
   const [rollState] = usePixelValue(pixel, "rollState");
   const rolling =
     rollState?.state === "rolling" || rollState?.state === "handling";

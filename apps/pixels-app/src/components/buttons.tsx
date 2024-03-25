@@ -677,12 +677,18 @@ export function SelectionButton({
           )}
         </View>
         {selected && (
-          <MaterialIcons name="check" size={24} color={colors.onSurface} />
+          <MaterialIcons
+            name="check"
+            size={24}
+            color={props.disabled ? colors.onSurfaceDisabled : colors.onSurface}
+          />
         )}
       </View>
     </TouchableCard>
   );
 }
+
+export const AnimatedSelectionButton = withAnimated(SelectionButton);
 
 export function AddDieButton({ contentStyle, ...props }: TouchableCardProps) {
   const { colors } = useTheme();

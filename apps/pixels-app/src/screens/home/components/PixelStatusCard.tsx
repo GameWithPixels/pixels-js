@@ -19,7 +19,7 @@ import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
-import { usePairedPixel, usePixelDataTransfer } from "~/hooks";
+import { useWatchedPixel, usePixelDataTransfer } from "~/hooks";
 
 function AnimatedConnectionIcon({
   size,
@@ -94,7 +94,7 @@ function AnimatedChargingIcon({
 }
 
 function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
-  const pixel = usePairedPixel(pairedDie);
+  const pixel = useWatchedPixel(pairedDie);
   const [battery] = usePixelValue(pixel, "battery");
   const needCharging = (battery?.level ?? 100) < 10;
   const transferProgress = usePixelDataTransfer(pixel);
@@ -132,7 +132,7 @@ export function PixelStatusCard({
 }: {
   pairedDie: PairedDie;
 } & Omit<TouchableCardProps, "contentStyle">) {
-  const pixel = usePairedPixel(pairedDie);
+  const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const { colors } = useTheme();
   return (

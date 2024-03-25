@@ -12,7 +12,6 @@ import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
 
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
-import { getTextColorStyle } from "./colors";
 
 import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 
@@ -25,9 +24,9 @@ const AnimationName = observer(function AnimationName({
   colors: MD3Theme["colors"];
   disabled?: boolean;
 }) {
-  const textStyle = getTextColorStyle(colors, disabled);
+  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
   return (
-    <Text numberOfLines={1} style={textStyle} variant="titleMedium">
+    <Text numberOfLines={1} style={{ color }} variant="titleMedium">
       {animation.name}
     </Text>
   );

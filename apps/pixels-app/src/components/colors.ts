@@ -1,17 +1,17 @@
 import Color from "color";
 import { MD3Theme } from "react-native-paper";
 
-export function getTextColorStyle(
-  colors: MD3Theme["colors"],
-  disabled?: boolean,
-  defaultColor?: string
-): { color: string } | undefined {
-  return disabled
-    ? { color: colors.surfaceDisabled }
-    : defaultColor
-      ? { color: defaultColor }
-      : undefined;
-}
+// export function getTextColorStyle(
+//   colors: MD3Theme["colors"],
+//   disabled?: boolean,
+//   defaultColor?: string
+// ): { color: string } | undefined {
+//   return disabled
+//     ? { color: colors.surfaceDisabled }
+//     : defaultColor
+//       ? { color: defaultColor }
+//       : undefined;
+// }
 
 export function getIconColor(
   colors: MD3Theme["colors"],

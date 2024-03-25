@@ -8,15 +8,14 @@ import { useFocusEffect } from "@react-navigation/native";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
-  BluetoothPermissionsDeniedError,
-  BluetoothUnavailableError,
-  getPixel,
+  BluetoothNotAuthorizedError,
   Pixel,
   PixelDieType,
   PixelInfo,
+  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import { Image, ImageProps } from "expo-image";
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import {
@@ -28,7 +27,6 @@ import {
   ViewStyle,
 } from "react-native";
 import {
-  ActivityIndicator,
   Button,
   ButtonProps,
   IconButton,
@@ -49,10 +47,15 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  getBluetoothScanErrorMessage,
+  getNoAvailableDiceMessage,
+} from "~/app/messages";
 import { AppBackground } from "~/components/AppBackground";
 import { NavigationRoot } from "~/components/NavigationRoot";
-import { DieStaticInfo } from "~/components/ScannedDieStatus";
+import { ScannedPixelsCount } from "~/components/ScannedPixelsCount";
 import { TurnOnDiceHelp } from "~/components/TunOnDiceHelp";
+import { useFlashAnimationStyleOnRoll } from "~/components/ViewFlashOnRoll";
 import { AnimatedText } from "~/components/animated";
 import {
   AnimatedGradientButton,
@@ -62,17 +65,22 @@ import {
 import { makeTransparent } from "~/components/colors";
 import { DieWireframe } from "~/components/icons";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
-import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
+import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
+import { notEmpty } from "~/features/utils";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
-  useActivePixels,
+  useDfuFiles,
+  useDfuNotifier,
+  useWatchedPixels,
   usePixelScanner,
-  useDfuBundle,
+  usePixelScannerStatus,
   usePixelsCentral,
+  usePixelsCentralOnReady,
 } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { useRollStateLabel } from "~/hooks/useRollStateLabel";
 import { OnboardingScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -81,17 +89,14 @@ function diceStr(count: number): string {
   return count <= 1 ? "die" : "dice";
 }
 
-// function connectPixel(sp: Pick<PixelInfo, "pixelId">): Pixel | undefined {
-//   const pixel = getPixel(sp.pixelId);
-//   pixel?.connect().catch((e: Error) => console.log(`Connection error: ${e}`));
-//   return pixel;
-// }
-
-function shouldUpdateFirmware(
+// TODO use Central!
+function isFirmwareUpToDate(
   pixel?: Pick<PixelInfo, "firmwareDate">,
-  bundle?: { readonly timestamp: number }
+  dfuBundle?: { readonly timestamp: number }
 ) {
-  return bundle && pixel && pixel.firmwareDate.getTime() < bundle.timestamp;
+  return (
+    dfuBundle && pixel && pixel.firmwareDate.getTime() >= dfuBundle.timestamp
+  );
 }
 
 function LightUpYourGameImage({
@@ -145,18 +150,6 @@ function Text({ style, ...props }: Omit<TextProps<never>, "variant">) {
   );
 }
 
-function FadeInOutText({ style, ...props }: Omit<TextProps<never>, "variant">) {
-  return (
-    <AnimatedText
-      variant="bodyLarge"
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(300)}
-      style={[{ textAlign: "center" }, style]}
-      {...props}
-    />
-  );
-}
-
 function SmallText(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodySmall" {...props} />;
 }
@@ -177,7 +170,7 @@ function AnimatedDieWireframeCard({
       {typeof children === "string" ? (
         <Text style={{ textAlign: "auto" }} children={children} />
       ) : (
-        <View style={{ flex: 1 }} children={children} />
+        <View style={{ flex: 1, flexGrow: 1 }} children={children} />
       )}
     </Animated.View>
   );
@@ -411,28 +404,54 @@ function HelpTurnOnDiceModal({
   );
 }
 
-function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
+function PixelItem({ pixel }: { pixel: Pixel }) {
+  const [name] = usePixelValue(pixel, "name");
+  const rollLabel = useRollStateLabel(pixel);
+  const animStyle = useFlashAnimationStyleOnRoll();
+  return (
+    <AnimatedDieWireframeCard
+      entering={FadeIn.duration(300)}
+      dieType={pixel.dieType}
+      style={animStyle}
+    >
+      <View style={{ flex: 1, justifyContent: "space-around" }}>
+        <Text>{name}</Text>
+        <SmallText>{getDieTypeAndColorwayLabel(pixel)}</SmallText>
+        <SmallText>{rollLabel}</SmallText>
+      </View>
+    </AnimatedDieWireframeCard>
+  );
+}
+
+function ScanSlide({ onNext }: { onNext: (skipUpdate: boolean) => void }) {
   const appDispatch = useAppDispatch();
+  const dfuNotifier = useDfuNotifier();
 
   // Monitor all scanned dice so that they are automatically connected
-  const { availablePixels, isScanning, lastScanError, startScan, stopScan } =
-    usePixelScanner();
+  const scanStatus = usePixelScannerStatus();
+  const { availablePixels, startScan, stopScan, scanError } = usePixelScanner();
+
+  // Connect to all dice
   const central = usePixelsCentral();
   React.useEffect(
     () => availablePixels.forEach((p) => central.watch(p.pixelId)),
     [availablePixels, central]
   );
+  // And unwatch all if Bluetooth becomes unavailable
+  usePixelsCentralOnReady(
+    React.useCallback((ready) => !ready && central.unwatchAll(), [central])
+  );
 
   // List of monitored pixels
-  const pixels = useActivePixels();
+  const pixels = useWatchedPixels();
   const diceCount = pixels.length;
 
   // On leaving page
   const leavePage = (action: "pair" | "skip") => {
     stopScan();
     if (action === "skip") {
-      central.setWatchedDice([]);
-      onNext([]);
+      central.unwatchAll();
+      onNext(true); // Skip updating dice
     } else {
       for (const p of pixels) {
         appDispatch(
@@ -445,7 +464,7 @@ function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
           })
         );
       }
-      onNext(pixels);
+      onNext(dfuNotifier.outdatedPixels.length > 0); // Update dice if needed
     }
   };
 
@@ -458,13 +477,13 @@ function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
   const [showHelp, setShowHelp] = React.useState(false);
   const [showTurnOn, setShowTurnOn] = React.useState(false);
   React.useEffect(() => {
-    if (isScanning) {
+    if (scanStatus === "scanning") {
       const id = setTimeout(() => setShowHelp(true), 3000);
       return () => clearTimeout(id);
     } else {
       setShowHelp(false);
     }
-  }, [isScanning]);
+  }, [scanStatus]);
 
   const { colors } = useTheme();
   return (
@@ -478,7 +497,7 @@ function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
         }}
         source={require("#/temp/dice-row.jpg")}
       />
-      {!isScanning ? (
+      {scanStatus !== "scanning" ? (
         <Animated.ScrollView
           key="stopped"
           exiting={FadeOut.duration(300)}
@@ -487,66 +506,74 @@ function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
             flexShrink: 1,
             marginVertical: 10,
           }}
-          contentContainerStyle={{
-            alignItems: "center",
-            gap: 40,
-          }}
+          contentContainerStyle={{ alignItems: "center", gap: 40 }}
         >
           <Text>
             To customize your Pixels Dice the app needs to establish a Bluetooth
             connection.
           </Text>
-          {!lastScanError ? (
-            <MaterialCommunityIcons
-              name="bluetooth"
-              size={40}
-              color={colors.onSurface}
-            />
-          ) : (
-            <MaterialIcons
-              name={
-                lastScanError instanceof BluetoothPermissionsDeniedError
-                  ? "block"
-                  : "bluetooth-disabled"
-              }
-              size={40}
-              color="red"
-            />
-          )}
-          {!lastScanError ? (
-            <FadeInOutText key="no-error">
-              {"Please ensure you have Bluetooth turned on and grant permissions " +
-                "through your device settings. Tap the Continue button to allow " +
-                "the app to request access."}
-            </FadeInOutText>
-          ) : lastScanError instanceof BluetoothPermissionsDeniedError ? (
-            <FadeInOutText key="permissions-denied">
-              {"❌ The Pixels app does not have Bluetooth access and is unable " +
-                "to connect to your dice. Please grant permissions through your " +
-                "device settings and tap the Continue button."}
-            </FadeInOutText>
-          ) : lastScanError instanceof BluetoothUnavailableError ? (
-            <FadeInOutText key="bluetooth-unavailable">
-              {"❌ Bluetooth doesn't appear to be turned on. Please enable Bluetooth " +
-                "through your device settings and grant the Pixels app access. " +
-                "Then tap the Continue button."}
-            </FadeInOutText>
-          ) : (
-            <FadeInOutText key="unexpected-error">
-              {"❌ Got an unexpected error while trying to scan for Bluetooth devices: " +
-                lastScanError.message}
-            </FadeInOutText>
-          )}
-          <GradientButton
-            style={{
-              marginTop: 20,
-              alignItems: "flex-start",
-              alignSelf: "center",
-            }}
-            onPress={() => startScan()}
+          <Animated.View
+            key={scanError ? "error" : "ok"}
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(300)}
+            style={{ alignItems: "center", gap: 40 }}
           >
-            Continue
-          </GradientButton>
+            {!scanError ? (
+              <>
+                <View style={{ height: 40 }}>
+                  <MaterialCommunityIcons
+                    name="bluetooth"
+                    size={40}
+                    color={colors.onSurface}
+                  />
+                </View>
+                {scanStatus === "stopped" && (
+                  <Text>
+                    {"Please ensure you have Bluetooth turned on and grant permissions " +
+                      "through your device settings. Tap the Continue button to allow " +
+                      "the app to request access."}
+                  </Text>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Encapsulate icon in a fixed size view so the layout doesn't change when the icon is loaded */}
+                <View style={{ height: 40 }}>
+                  <MaterialIcons
+                    name={
+                      scanError instanceof BluetoothNotAuthorizedError
+                        ? "block"
+                        : "bluetooth-disabled"
+                    }
+                    size={40}
+                    color={colors.error}
+                  />
+                </View>
+                <Text>
+                  {getBluetoothScanErrorMessage(scanError, {
+                    withContinue: true,
+                  })}
+                </Text>
+              </>
+            )}
+          </Animated.View>
+          {scanStatus === "stopped" && (
+            <Animated.View
+              entering={FadeIn.duration(300)}
+              exiting={FadeOut.duration(300)}
+            >
+              <GradientButton
+                style={{
+                  marginTop: 20,
+                  alignItems: "flex-start",
+                  alignSelf: "center",
+                }}
+                onPress={() => startScan()}
+              >
+                Continue
+              </GradientButton>
+            </Animated.View>
+          )}
         </Animated.ScrollView>
       ) : (
         <Animated.View
@@ -554,16 +581,7 @@ function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
           entering={FadeIn.duration(300).delay(200)}
           style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 10 }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-            <Text>
-              {diceCount
-                ? `We have found ${diceCount} Pixels ${diceStr(
-                    diceCount
-                  )} so far:`
-                : "Looking for Pixels dice..."}
-            </Text>
-            {!diceCount && <ActivityIndicator />}
-          </View>
+          <ScannedPixelsCount diceCount={diceCount} />
           <ScrollView contentContainerStyle={{ paddingBottom: 10, gap: 20 }}>
             <View
               style={{
@@ -574,13 +592,7 @@ function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
               }}
             >
               {pixels.map((p) => (
-                <AnimatedDieWireframeCard
-                  key={p.pixelId}
-                  entering={FadeIn.duration(300)}
-                  dieType={p.dieType}
-                >
-                  <DieStaticInfo pixel={p} />
-                </AnimatedDieWireframeCard>
+                <PixelItem key={p.pixelId} pixel={p} />
               ))}
             </View>
             {showHelp && (
@@ -589,22 +601,30 @@ function ScanSlide({ onNext }: { onNext: (pixels: Pixel[]) => void }) {
                 layout={CurvedTransition.easingY(Easing.linear).duration(300)}
               >
                 {diceCount ? (
-                  <SmallText>Don't see all your dice?</SmallText>
+                  <SmallText>Not all dice are listed above?</SmallText>
                 ) : (
-                  <Text style={{ textAlign: "auto" }}>
-                    No available dice found so far.
-                  </Text>
+                  <AnimatedText
+                    variant="bodyLarge"
+                    entering={FadeIn.duration(300)}
+                    exiting={FadeOut.duration(300)}
+                    style={{ marginBottom: 10 }}
+                  >
+                    {getNoAvailableDiceMessage()}
+                  </AnimatedText>
                 )}
                 <TightTextButton
                   underline
                   sentry-label="show-help"
-                  style={{ marginLeft: -10, alignSelf: "flex-start" }}
+                  style={{
+                    marginLeft: -8,
+                    alignSelf: "flex-start",
+                  }}
                   onPress={() => setShowTurnOn(true)}
                 >
                   Tap to get help turning on your dice.
                 </TightTextButton>
                 <SmallText style={{ marginTop: 20 }}>
-                  You can also scan for dice later in the app.
+                  You can also pair your dice later in the app.
                 </SmallText>
               </Animated.View>
             )}
@@ -636,41 +656,6 @@ interface TargetDfuStatus
   extends Pick<PixelInfo, "systemId" | "name" | "firmwareDate"> {
   state: DfuState | "pending";
   progress: number;
-}
-
-// TODO duplicated from FirmwareUpdateScreen.tsx
-async function updateDiceAsync(
-  statuses: TargetDfuStatus[],
-  dfuBundle: DfuPathnamesBundle,
-  updateBootloader: boolean
-): Promise<void> {
-  console.log(
-    `DFU bundle date: ${new Date(dfuBundle.timestamp).toLocaleDateString()}`
-  );
-  let i = 0;
-  while (i < statuses.length) {
-    const status = statuses[i++];
-    try {
-      await updateFirmware({
-        systemId: status.systemId,
-        bootloaderPath: updateBootloader ? dfuBundle.bootloader : undefined,
-        firmwarePath: dfuBundle.firmware,
-        dfuStateCallback: (state: DfuState) =>
-          runInAction(() => (status.state = state)),
-        dfuProgressCallback: (progress: number) =>
-          runInAction(() => (status.progress = progress)),
-      });
-    } catch (e) {
-      console.log(`DFU error with ${status.name}: ${e}`);
-    }
-  }
-}
-
-function getToUpdateCount(statuses: TargetDfuStatus[]): number {
-  return statuses.filter(
-    (s) =>
-      s.state !== "completed" && s.state !== "aborted" && s.state !== "errored"
-  ).length;
 }
 
 const AnimatedPixelDfuCard = observer(function AnimatedPixelDfuCard({
@@ -724,17 +709,14 @@ const StatusText = observer(function StatusText({
   );
 });
 
-function UpdateDiceSlide({
-  dfuBundle,
-  onNext,
-}: {
-  dfuBundle?: DfuPathnamesBundle;
-  onNext: () => void;
-}) {
-  // List of monitored pixels
-  const pixels = useActivePixels();
+function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
+  const central = usePixelsCentral();
 
-  // DFU related data
+  // List of monitored pixels
+  const pixels = useWatchedPixels();
+
+  // DFU files
+  const { dfuFilesInfo, dfuFilesError } = useDfuFiles();
   const updateBootloader = useAppSelector(
     (state) => state.appSettings.updateBootloader
   );
@@ -747,7 +729,7 @@ function UpdateDiceSlide({
       const index = statusesRef.current.findIndex(
         (s) => s.systemId === p.systemId
       );
-      if (index < 0 && shouldUpdateFirmware(p, dfuBundle)) {
+      if (index < 0 && !isFirmwareUpToDate(p, dfuFilesInfo)) {
         statusesRef.current.push(
           makeAutoObservable({
             systemId: p.systemId,
@@ -759,7 +741,7 @@ function UpdateDiceSlide({
         );
       }
     }
-  }, [dfuBundle, pixels]);
+  }, [dfuFilesInfo, pixels]);
 
   return (
     <Slide title="Update Dice Firmware">
@@ -776,20 +758,31 @@ function UpdateDiceSlide({
             compatible with the app.
           </Text>
           <Text>
-            Keep your dice near your device during the update process. They may
-            stay in open chargers but avoid moving charger lids or other magnets
-            as it may turn the dice off.
+            Keep the Pixels app opened and your dice near your device during the
+            update process. They may stay in open chargers but avoid moving
+            charger lids or other magnets as it may turn the dice off.
           </Text>
-          {dfuBundle ? (
+          {dfuFilesInfo ? (
             <GradientButton
               style={{ alignItems: "flex-start", alignSelf: "center" }}
               onPress={() => {
                 setStep("update");
-                updateDiceAsync(
-                  statusesRef.current,
-                  dfuBundle,
-                  updateBootloader
-                ).then(() => setStep("done"));
+                const pixels = statusesRef.current
+                  .map((s) => central.getPixel(s.systemId))
+                  .filter(notEmpty);
+                const task = async () => {
+                  for (const pixel of pixels) {
+                    central.updatePixelAsync({
+                      pixel,
+                      bootloaderPath: updateBootloader
+                        ? dfuFilesInfo.bootloaderPath
+                        : undefined,
+                      firmwarePath: dfuFilesInfo.firmwarePath,
+                    });
+                    setStep("done");
+                  }
+                };
+                task();
               }}
             >
               Update
@@ -861,15 +854,13 @@ function ReadySlide({ onDone }: { onDone: () => void }) {
   );
 }
 
+// Note: this screen should be unmounted when leaving it
 function OnboardingPage({
   navigation,
 }: {
   navigation: OnboardingScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-
-  // DFU files
-  const [bundle] = useDfuBundle(); // TODO handle error
 
   // Page scrolling
   const [index, setIndex] = React.useState(0);
@@ -879,6 +870,8 @@ function OnboardingPage({
     scrollRef.current?.scrollTo({ x: page * width });
 
   // Scroll back to first slide when showing this screen
+  // (ony used in DEV when doing a fast refresh as this screen
+  // is otherwise unmounted when leaving it)
   useFocusEffect(
     React.useCallback(
       () => scrollRef.current?.scrollTo({ x: 0, animated: false }),
@@ -886,8 +879,6 @@ function OnboardingPage({
     )
   );
 
-  const shouldUpdate = (pixels: Pixel[]) =>
-    pixels.some((d) => shouldUpdateFirmware(getPixel(d.pixelId), bundle));
   const leave = () => {
     appDispatch(setShowOnboarding(false));
     navigation.navigate("home");
@@ -908,8 +899,8 @@ function OnboardingPage({
         <WelcomeSlide onNext={() => scrollTo(1)} />
         <HealthSlide onNext={() => scrollTo(2)} />
         {/* <SettingsSlide onNext={() => scrollTo(3)} /> */}
-        <ScanSlide onNext={(pxs) => scrollTo(shouldUpdate(pxs) ? 3 : 4)} />
-        <UpdateDiceSlide dfuBundle={bundle} onNext={() => scrollTo(4)} />
+        <ScanSlide onNext={(skipUpdate) => scrollTo(skipUpdate ? 4 : 3)} />
+        <UpdateDiceSlide onNext={() => scrollTo(4)} />
         <ReadySlide onDone={leave} />
       </ScrollView>
       {/* Bottom page indicator */}

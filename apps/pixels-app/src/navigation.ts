@@ -70,7 +70,7 @@ export type EditAdvancedSettingsScreenProps = NativeStackScreenProps<
 // Home screens
 export type HomeStackParamList = {
   diceList: undefined;
-  firmwareUpdate: { pixelId?: number };
+  firmwareUpdate: undefined;
   dieDetails: { pixelId: number };
   editDieProfileStack: NavigatorScreenParams<EditDieProfileStackParamList>;
 };

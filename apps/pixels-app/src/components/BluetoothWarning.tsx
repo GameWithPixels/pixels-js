@@ -4,8 +4,10 @@ import { Card, Text } from "react-native-paper";
 
 export function BluetoothStateWarning({ children }: React.PropsWithChildren) {
   const bluetoothState = useBluetoothState();
-  const unauthorized = bluetoothState === "unauthorized";
-  return bluetoothState === "ready" ? (
+  // Render children if Bluetooth is ready or unknown. The later is reported
+  // when the app hasn't yet initialized Central, so we don't want to allow
+  // the children to render and try a scan or else that will initialize Central.
+  return bluetoothState === "ready" || bluetoothState === "unknown" ? (
     children ? (
       <>{children}</>
     ) : null
@@ -14,14 +16,14 @@ export function BluetoothStateWarning({ children }: React.PropsWithChildren) {
       <Card.Title
         title={
           "❌ " +
-          (unauthorized
+          (bluetoothState === "unauthorized"
             ? "Bluetooth is not authorized"
             : "Bluetooth is not enabled")
         }
       />
       <Card.Content>
         <Text variant="bodyMedium">
-          {unauthorized
+          {bluetoothState === "unauthorized"
             ? "The Pixels app does not have Bluetooth access and is unable " +
               "to connect to your dice. Please grant permissions through your " +
               "device settings."

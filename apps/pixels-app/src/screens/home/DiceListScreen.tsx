@@ -40,7 +40,7 @@ import {
   setDiceSortMode,
 } from "~/features/store/appSettingsSlice";
 import { removePairedDie } from "~/features/store/pairedDiceSlice";
-import { usePairedDiceScanner } from "~/hooks";
+import { useConnectToMissingPixels } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -224,13 +224,13 @@ function DiceListPage({
   );
 
   // Reconnect
-  const { startScan } = usePairedDiceScanner();
+  const connectToMissingPixels = useConnectToMissingPixels();
 
   // Scan for missing dice on showing page
   useFocusEffect(
     React.useCallback(() => {
-      startScan();
-    }, [startScan])
+      connectToMissingPixels();
+    }, [connectToMissingPixels])
   );
 
   // Selection (we keep an index to be sure to use the latest values from pairedDice)
@@ -247,7 +247,7 @@ function DiceListPage({
   const selectAndShowDetails = (pairedDie: PairedDie, showDetails = true) => {
     setSelectedDie(pairedDie.pixelId);
     blinkDie(pairedDie);
-    startScan({ pixelId: pairedDie.pixelId });
+    connectToMissingPixels(pairedDie.pixelId);
     if (showDetails) {
       navigation.navigate("dieDetails", { pixelId: pairedDie.pixelId });
     }
@@ -263,11 +263,7 @@ function DiceListPage({
           <PixelFocusViewHeader
             pairedDie={selectedDie}
             onUnpair={showUnpairActionSheet}
-            onFirmwareUpdate={() =>
-              navigation.navigate("firmwareUpdate", {
-                pixelId: selectedDie?.pixelId,
-              })
-            }
+            onFirmwareUpdate={() => navigation.navigate("firmwareUpdate")}
           />
         )}
         <ScrollView
@@ -281,7 +277,7 @@ function DiceListPage({
           {isFocus && selectedDie ? (
             <PixelFocusView
               pairedDie={selectedDie}
-              onPress={startScan}
+              onPress={() => connectToMissingPixels(selectedDie.pixelId)}
               onShowDetails={() => selectAndShowDetails(selectedDie)}
               onEditProfile={() =>
                 navigation.navigate("editDieProfileStack", {

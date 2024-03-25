@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { setUpdateBootloader } from "~/features/store/appSettingsSlice";
-import { useDfuBundle } from "~/hooks";
+import { useDfuFiles } from "~/hooks";
 import { FirmwareInfoScreenProps } from "~/navigation";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
@@ -27,8 +27,8 @@ function FirmwareInfoPage({
   const updateBootloader = useAppSelector(
     (state) => state.appSettings.updateBootloader
   );
-  const [dfuBundle, error] = useDfuBundle();
-  const date = new Date(dfuBundle?.timestamp ?? 0);
+  const { dfuFilesInfo, dfuFilesError } = useDfuFiles();
+  const date = new Date(dfuFilesInfo?.timestamp ?? 0);
   const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
@@ -42,14 +42,16 @@ function FirmwareInfoPage({
           gap: 20,
         }}
       >
-        {dfuBundle ? (
+        {dfuFilesInfo ? (
           <>
             <PaperText variant="titleLarge">Available Dice Firmware</PaperText>
             <View style={{ marginLeft: 10, gap: 10 }}>
               <Text>Date: {date.toUTCString()}</Text>
               <Text>Timestamp: {date.getTime()}</Text>
-              <Text>Firmware: {dfuBundle.firmware ? "yes" : "no"}</Text>
-              <Text>Bootloader: {dfuBundle.bootloader ? "yes" : "no"}</Text>
+              <Text>Firmware: {dfuFilesInfo.firmwarePath ? "yes" : "no"}</Text>
+              <Text>
+                Bootloader: {dfuFilesInfo.bootloaderPath ? "yes" : "no"}
+              </Text>
             </View>
             <Divider style={{ marginVertical: 5 }} />
             <View style={{ gap: 10 }}>
@@ -73,10 +75,10 @@ function FirmwareInfoPage({
               </PaperText>
             </View>
           </>
-        ) : error ? (
-          <Text>Error reading files: {error}</Text>
+        ) : dfuFilesError ? (
+          <Text>Error reading firmware files: {String(dfuFilesError)}</Text>
         ) : (
-          <Text>Preparing files...</Text>
+          <Text>Preparing firmware files...</Text>
         )}
       </ScrollView>
     </View>

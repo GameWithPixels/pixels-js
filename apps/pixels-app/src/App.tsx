@@ -29,13 +29,14 @@ import { PersistGate } from "redux-persist/integration/react";
 import * as Sentry from "sentry-expo";
 
 import { AnimatedSplashScreen } from "./app/AnimatedSplashScreen";
+import { AppDfuFiles } from "./app/AppDfuFiles";
 import { AppInit } from "./app/AppInit";
 import { AppPixelsCentral } from "./app/AppPixelsCentral";
 import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
-import { usePairedDiceScanner, usePixelsCentral } from "./hooks";
+import { useConnectToMissingPixels, usePixelsCentralOnReady } from "./hooks";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -109,21 +110,16 @@ function AppPage() {
     (state) => state.appSettings.showOnboarding
   );
 
-  // Immediately start scanning for paired dice
-  const { startScan } = usePairedDiceScanner();
-  React.useEffect(() => {
-    startScan();
-  }, [startScan]);
-  const central = usePixelsCentral();
-  React.useEffect(() => {
-    const isAvailable = (available: boolean) => {
-      if (available) {
-        startScan();
-      }
-    };
-    central.addEventListener("isAvailable", isAvailable);
-    return () => central.removeEventListener("isAvailable", isAvailable);
-  }, [central, startScan]);
+  // Scan for paired dice as soon as Central is ready
+  const connectToMissingPixels = useConnectToMissingPixels();
+  usePixelsCentralOnReady(
+    React.useCallback(
+      (ready: boolean) => {
+        ready && connectToMissingPixels();
+      },
+      [connectToMissingPixels]
+    )
+  );
 
   const theme = useTheme();
   return (
@@ -260,15 +256,17 @@ function App() {
                   <PersistGate persistor={persistor}>
                     <AppInit>
                       <AppPixelsCentral>
-                        <AnimatedSplashScreen>
-                          <RootSiblingParent>
-                            <ActionSheetProvider>
-                              <BottomSheetModalProvider>
-                                <AppPage />
-                              </BottomSheetModalProvider>
-                            </ActionSheetProvider>
-                          </RootSiblingParent>
-                        </AnimatedSplashScreen>
+                        <AppDfuFiles>
+                          <AnimatedSplashScreen>
+                            <RootSiblingParent>
+                              <ActionSheetProvider>
+                                <BottomSheetModalProvider>
+                                  <AppPage />
+                                </BottomSheetModalProvider>
+                              </ActionSheetProvider>
+                            </RootSiblingParent>
+                          </AnimatedSplashScreen>
+                        </AppDfuFiles>
                       </AppPixelsCentral>
                     </AppInit>
                   </PersistGate>

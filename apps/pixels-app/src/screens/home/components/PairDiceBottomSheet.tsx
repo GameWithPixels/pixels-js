@@ -3,60 +3,78 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import {
-  PixelRollState,
-  ScannedPixelNotifier,
-} from "@systemic-games/react-native-pixels-connect";
+import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import {
-  ActivityIndicator,
-  IconButton,
-  Text,
-  ThemeProvider,
-  useTheme,
-} from "react-native-paper";
+import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppDispatch } from "~/app/hooks";
+import { getNoAvailableDiceMessage } from "~/app/messages";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
-import { DieStaticInfo } from "~/components/ScannedDieStatus";
+import { ScannedPixelsCount } from "~/components/ScannedPixelsCount";
+import { useFlashAnimationStyleOnRoll } from "~/components/ViewFlashOnRoll";
 import { AnimatedText } from "~/components/animated";
-import { GradientButton, SelectionButton } from "~/components/buttons";
+import { AnimatedSelectionButton, GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
-import { getRollStateLabel } from "~/features/profiles";
+import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
-import { usePixelScanner, useBottomSheetPadding } from "~/hooks";
+import {
+  usePixelScanner,
+  useBottomSheetPadding,
+  usePixelsCentralOnReady,
+} from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
+import { useRollStateLabel } from "~/hooks/useRollStateLabel";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
-import { withAnimated } from "~/withAnimated";
 
-const AnimatedSelectionButton = withAnimated(SelectionButton);
-
-function DieInfo({ pixel }: { pixel: ScannedPixelNotifier }) {
-  const [face, setFace] = React.useState(pixel.currentFace);
-  const [rollState, setRollState] = React.useState<PixelRollState>(
-    pixel.rollState
-  );
-  React.useEffect(() => {
-    const onFace = () => setFace(pixel.currentFace);
-    pixel.addPropertyListener("currentFace", onFace);
-    const onRoll = () => setRollState(pixel.rollState);
-    pixel.addPropertyListener("rollState", onRoll);
-    return () => {
-      pixel.removePropertyListener("currentFace", onFace);
-      pixel.removePropertyListener("rollState", onRoll);
-    };
-  }, [pixel]);
+function NoAvailableDice() {
   return (
-    <DieStaticInfo pixel={pixel} style={{ flex: 1 }} disabled={false}>
-      <Text variant="bodySmall">
-        {getRollStateLabel(rollState)} {face}
-      </Text>
-    </DieStaticInfo>
+    <AnimatedText entering={FadeIn.duration(300)} style={{ marginLeft: 10 }}>
+      {getNoAvailableDiceMessage()}
+      {"\n\n"}For help about turning on your dice go in the "More" tab.
+    </AnimatedText>
+  );
+}
+
+function ScannedPixelItem({
+  scannedPixel,
+  selected,
+  onToggleSelect,
+}: {
+  scannedPixel: ScannedPixelNotifier;
+  selected?: boolean;
+  onToggleSelect?: () => void;
+}) {
+  const [name, setName] = React.useState(scannedPixel.name);
+  React.useEffect(() => {
+    const onName = () => setName(scannedPixel.name);
+    onName();
+    scannedPixel.addPropertyListener("name", onName);
+    return () => {
+      scannedPixel.removePropertyListener("name", onName);
+    };
+  }, [scannedPixel]);
+  const rollLabel = useRollStateLabel(scannedPixel);
+  const animStyle = useFlashAnimationStyleOnRoll(scannedPixel);
+  return (
+    <AnimatedSelectionButton
+      icon={() => <DieWireframe dieType={scannedPixel.dieType} size={40} />}
+      selected={selected}
+      entering={FadeIn.duration(300)}
+      style={[animStyle, { marginVertical: 5 }]}
+      contentStyle={{ paddingVertical: 5 }}
+      onPress={onToggleSelect}
+    >
+      <View style={{ flex: 1, justifyContent: "space-around" }}>
+        <Text variant="bodyLarge">{name}</Text>
+        <Text>{getDieTypeAndColorwayLabel(scannedPixel)}</Text>
+        <Text>{rollLabel}</Text>
+      </View>
+    </AnimatedSelectionButton>
   );
 }
 
@@ -67,8 +85,8 @@ function SelectPixels({
   pixels: ScannedPixelNotifier[];
   onPairDice: (pixels: ScannedPixelNotifier[]) => void;
 }) {
-  const dieCount = pixels.length;
-  const noAvailableDie = dieCount === 0;
+  const diceCount = pixels.length;
+  const noAvailableDie = diceCount === 0;
 
   const [showNoDie, setShowNoDie] = React.useState(false);
   React.useEffect(() => {
@@ -84,68 +102,39 @@ function SelectPixels({
 
   return (
     <>
+      <ScannedPixelsCount
+        diceCount={diceCount}
+        style={{ marginVertical: 10 }}
+      />
       <BottomSheetScrollView>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginLeft: 10,
-            marginBottom: 20,
-            gap: 20,
-          }}
+        <GradientButton
+          disabled={!selection.length}
+          sentry-label="pair-dice"
+          style={{ marginBottom: 10 }}
+          onPress={() => onPairDice(selection)}
         >
-          <Text variant="titleSmall">
-            {dieCount
-              ? `${dieCount} available Pixels ${
-                  dieCount <= 1 ? "die" : "dice"
-                }, scanning for more...`
-              : "Looking for Pixels dice..."}
-          </Text>
-          <ActivityIndicator />
-        </View>
-        {showNoDie && dieCount === 0 && (
-          <AnimatedText
-            entering={FadeIn.duration(300)}
-            style={{ marginLeft: 10 }}
-          >
-            No available dice found so far. Check that your available dice are
-            turned on and not connected to another device.{"\n\n"}
-            For help about turning on your dice go in the "More" tab.
-          </AnimatedText>
-        )}
-        {pixels.map((sp, i) => (
-          <AnimatedSelectionButton
-            key={sp.pixelId}
-            icon={() => <DieWireframe dieType={sp.dieType} size={40} />}
+          {!selection.length
+            ? "No Die Selected"
+            : selection.length === 1
+              ? "Pair 1 Pixels Die"
+              : `Pair ${selection.length} Pixels Dice`}
+        </GradientButton>
+        {showNoDie && diceCount === 0 && <NoAvailableDice />}
+        {pixels.map((sp) => (
+          <ScannedPixelItem
+            key={sp.systemId + sp.pixelId}
+            scannedPixel={sp}
             selected={selection.includes(sp)}
-            noTopBorder={i > 0}
-            squaredTopBorder={i > 0}
-            squaredBottomBorder={i < dieCount - 1}
-            entering={FadeIn.duration(300)}
-            onPress={() => {
+            onToggleSelect={() =>
               setSelection((selected) =>
                 selected.includes(sp)
                   ? selected.filter((other) => other !== sp)
                   : [...selected, sp]
-              );
-            }}
-          >
-            <DieInfo pixel={sp} />
-          </AnimatedSelectionButton>
+              )
+            }
+          />
         ))}
       </BottomSheetScrollView>
-      <GradientButton
-        disabled={!selection.length}
-        sentry-label="pair-dice"
-        style={{ marginBottom: 20 }}
-        onPress={() => onPairDice(selection)}
-      >
-        {!selection.length
-          ? "No Die Selected"
-          : selection.length === 1
-            ? "Pair 1 Pixels Die"
-            : `Pair ${selection.length} Pixels Dice`}
-      </GradientButton>
     </>
   );
 }
@@ -158,15 +147,21 @@ export function PairDiceBottomSheet({
   onDismiss?: (pixels?: ScannedPixelNotifier[]) => void;
 }) {
   const appDispatch = useAppDispatch();
-  const { availablePixels, startScan, stopScan } = usePixelScanner();
+  const { availablePixels, startScan, stopScan, scanError } = usePixelScanner();
 
+  // Start scan on opening bottom sheet
+  // and resume scan on BLE enabled
+  usePixelsCentralOnReady(
+    React.useCallback(
+      (ready: boolean) => ready && visible && startScan(),
+      [startScan, visible]
+    )
+  );
   React.useEffect(() => {
-    if (visible) {
-      // Start scanning for dice
-      startScan();
-    }
+    visible && startScan();
   }, [startScan, visible]);
 
+  // Stop scan on closing bottom sheet
   const dismiss = React.useCallback(
     (pixels?: ScannedPixelNotifier[]) => {
       stopScan();
@@ -175,6 +170,7 @@ export function PairDiceBottomSheet({
     [onDismiss, stopScan]
   );
 
+  // Pair selected dice
   const pairDice = React.useCallback(
     (pixels: ScannedPixelNotifier[]) => {
       for (const pixel of pixels) {
@@ -231,7 +227,7 @@ export function PairDiceBottomSheet({
               flexGrow: 1,
               paddingHorizontal: 10,
               paddingBottom,
-              gap: 20,
+              gap: 10,
             }}
           >
             <Text variant="titleMedium" style={AppStyles.selfCentered}>
@@ -239,7 +235,17 @@ export function PairDiceBottomSheet({
             </Text>
             {visible && (
               <BluetoothStateWarning>
-                <SelectPixels pixels={availablePixels} onPairDice={pairDice} />
+                {scanError ? (
+                  <Text variant="bodyLarge" style={{ padding: 10 }}>
+                    ❌ Error trying to scan for dice!{"\n"}
+                    {scanError.message}.
+                  </Text>
+                ) : (
+                  <SelectPixels
+                    pixels={availablePixels}
+                    onPairDice={pairDice}
+                  />
+                )}
               </BluetoothStateWarning>
             )}
           </View>

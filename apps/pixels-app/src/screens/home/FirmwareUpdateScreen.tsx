@@ -1,34 +1,21 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
-import { getPixel, Pixel } from "@systemic-games/react-native-pixels-connect";
-import { makeAutoObservable, runInAction } from "mobx";
-import { observer } from "mobx-react-lite";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import {
-  Button,
-  Text as PaperText,
-  TextProps,
-  useTheme,
-} from "react-native-paper";
-import { FadeIn, FadeOut } from "react-native-reanimated";
+import { Button, Text, useTheme } from "react-native-paper";
 
-import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { AnimatedText } from "~/components/animated";
-import { AnimatedGradientButton, SelectionButton } from "~/components/buttons";
-import { DieWireframe } from "~/components/icons";
-import { updateFirmware } from "~/features/dfu/updateFirmware";
-import { DfuPathnamesBundle } from "~/features/store/appDfuFilesSlice";
-import { useBottomSheetPadding, useDfuBundle, useForceUpdate } from "~/hooks";
+import { PixelDfuList } from "~/components/PixelDfuList";
+import { GradientButton } from "~/components/buttons";
+import { DfuFilesInfo } from "~/features/dfu/DfuNotifier";
+import {
+  useBottomSheetPadding,
+  useDfuFiles,
+  useDfuNotifier,
+  usePixelsCentral,
+} from "~/hooks";
 import { FirmwareUpdateScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
-
-function Text(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="bodyLarge" {...props} />;
-}
 
 export function useConfirmStopUpdatingActionSheet(
   onConfirm?: () => void,
@@ -63,147 +50,105 @@ export function useConfirmStopUpdatingActionSheet(
   };
 }
 
-type ExtendedDfuState = DfuState | "pending" | "unknown";
-
-interface TargetDfuStatus {
-  pairedDie: PairedDie;
-  state: ExtendedDfuState;
-  progress: number;
-}
-
-async function updateDiceAsync(
-  statuses: TargetDfuStatus[],
-  dfuBundle: DfuPathnamesBundle,
-  updateBootloader: boolean,
-  onUpdated?: (target: TargetDfuStatus) => void
-): Promise<void> {
-  console.log(
-    `DFU bundle date: ${new Date(dfuBundle.timestamp).toLocaleDateString()}`
-  );
-  let i = 0;
-  while (i < statuses.length) {
-    const targetStatus = statuses[i++];
-    try {
-      await updateFirmware({
-        systemId: targetStatus.pairedDie.systemId,
-        bootloaderPath: updateBootloader ? dfuBundle.bootloader : undefined,
-        firmwarePath: dfuBundle.firmware,
-        dfuStateCallback: (state: DfuState) =>
-          runInAction(() => (targetStatus.state = state)),
-        dfuProgressCallback: (progress: number) =>
-          runInAction(() => (targetStatus.progress = progress)),
-      });
-      try {
-        onUpdated?.(targetStatus);
-      } catch {}
-    } catch (e) {
-      console.log(`DFU error with ${targetStatus.pairedDie.name}: ${e}`);
-    }
-  }
-}
-
-function getDfuStatusText(targetStatus: TargetDfuStatus): string {
-  const state = targetStatus.state;
-  return state === "unknown"
-    ? "Not Connected"
-    : state === "pending"
-      ? "Update Required"
-      : state === "completed"
-        ? "Up-To-Date"
-        : state === "aborted" || state === "errored"
-          ? "Update Failed"
-          : `State ${state}, ${targetStatus?.progress ?? 0}%`;
-}
-
-const DieInfo = observer(function DieInfo({
-  targetStatus,
-}: {
-  targetStatus: TargetDfuStatus;
-}) {
-  return (
-    <View style={{ flex: 1, justifyContent: "space-around" }}>
-      <Text>{targetStatus.pairedDie.name}</Text>
-      <PaperText>{getDfuStatusText(targetStatus)}</PaperText>
-    </View>
-  );
-});
-
-function getInitialDfuState(
-  pixel?: Pixel,
-  timestamp?: number
-): ExtendedDfuState {
-  if (!pixel) {
-    return "unknown";
-  }
-  if (!timestamp || pixel.firmwareDate.getTime() >= timestamp) {
-    return "completed";
-  }
-  return "pending";
-}
-
-function FirmwareUpdatePage({
-  pixelId,
-  navigation,
-}: {
-  pixelId?: number;
-  navigation: FirmwareUpdateScreenProps["navigation"];
-}) {
-  // TODO we refresh every 3 seconds to pick up newly connected dice
-  const forceUpdate = useForceUpdate();
-  React.useEffect(() => {
-    const id = setInterval(forceUpdate, 3000);
-    return () => clearInterval(id);
-  }, [forceUpdate]);
-
-  // Get list of paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-
-  // Build DFU statuses
-  const [dfuBundle, error] = useDfuBundle();
-  const targetStatusesRef = React.useRef(new Map<number, TargetDfuStatus>());
-  const targetStatuses = React.useMemo(
-    () =>
-      pairedDice.map((d) => {
-        const target =
-          targetStatusesRef.current.get(d.pixelId) ??
-          makeAutoObservable({
-            pairedDie: d,
-            state: getInitialDfuState(
-              getPixel(d.pixelId),
-              dfuBundle?.timestamp
-            ),
-            progress: 0,
-          } as TargetDfuStatus);
-        targetStatusesRef.current.set(d.pixelId, target);
-        return target;
-      }),
-    [pairedDice, dfuBundle?.timestamp]
-  );
-  const [selection, setSelection] = React.useState<TargetDfuStatus[]>(() => {
-    const targetStatus = targetStatusesRef.current.get(pixelId ?? 0);
-    return targetStatus?.state === "pending" ? [targetStatus] : [];
-  });
-
-  // Update function
+function useUpdateDice(): (
+  pixelsIds: readonly number[],
+  filesInfo: DfuFilesInfo,
+  stopRequested?: () => boolean
+) => Promise<void> {
+  const central = usePixelsCentral();
+  const dfuNotifier = useDfuNotifier();
   const updateBootloader = useAppSelector(
     (state) => state.appSettings.updateBootloader
   );
-  const [updating, setUpdating] = React.useState(false);
-  const update = () => {
-    if (dfuBundle) {
-      setUpdating(true);
-      updateDiceAsync([...selection], dfuBundle, updateBootloader, (t) =>
-        setSelection((selection) => selection.filter((other) => other !== t))
-      ).then(() => setUpdating(false));
-    }
-  };
-
-  const pendingCount = targetStatuses.filter(
-    (t) => t.state === "pending"
-  ).length;
-  const allUpdated = targetStatuses.every(
-    (t) => t.state === "completed" || t.state === "unknown"
+  return React.useCallback(
+    async (
+      pixelsIds: readonly number[],
+      filesInfo: DfuFilesInfo,
+      stopRequested?: () => boolean
+    ) => {
+      for (const pixelId of pixelsIds) {
+        try {
+          if (stopRequested?.()) {
+            return;
+          }
+          const pixel = central.getPixel(pixelId);
+          if (pixel && dfuNotifier.getDfuAvailability(pixelId) === "outdated") {
+            await central.updatePixelAsync({
+              pixel,
+              bootloaderPath: updateBootloader
+                ? filesInfo.bootloaderPath
+                : undefined,
+              firmwarePath: filesInfo.firmwarePath,
+            });
+          }
+        } catch {
+          // Error logged in PixelsCentral and notified as an event
+        }
+      }
+    },
+    [central, dfuNotifier, updateBootloader]
   );
+}
+
+function useIsUpdatingFirmware(): boolean {
+  const central = usePixelsCentral();
+  const [updating, setUpdating] = React.useState(!!central.pixelInDFU);
+  React.useEffect(() => {
+    const onPixelInDFU = () => setUpdating(!!central.pixelInDFU);
+    onPixelInDFU();
+    central.addEventListener("pixelInDFU", onPixelInDFU);
+    return () => {
+      central.removeEventListener("pixelInDFU", onPixelInDFU);
+    };
+  }, [central]);
+  return updating;
+}
+
+function useOutdatedCount(): number {
+  const dfuNotifier = useDfuNotifier();
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    const onOutdated = () => setCount(dfuNotifier.outdatedPixels.length);
+    onOutdated();
+    dfuNotifier.addEventListener("outdatedPixels", onOutdated);
+    return () => {
+      dfuNotifier.removeEventListener("outdatedPixels", onOutdated);
+    };
+  }, [dfuNotifier]);
+  return count;
+}
+
+function usePreventRemovingScreen(
+  navigation: FirmwareUpdateScreenProps["navigation"],
+  updating: boolean
+) {
+  React.useEffect(() => {
+    if (updating) {
+      const onRemove = (e: { preventDefault: () => void }) =>
+        e.preventDefault();
+      navigation.addListener("beforeRemove", onRemove);
+      return () => {
+        navigation.removeListener("beforeRemove", onRemove);
+      };
+    }
+  }, [navigation, updating]);
+}
+
+function FirmwareUpdatePage({
+  navigation,
+}: {
+  navigation: FirmwareUpdateScreenProps["navigation"];
+}) {
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
+  const updating = useIsUpdatingFirmware();
+  const updateDice = useUpdateDice();
+  const { dfuFilesInfo, dfuFilesError } = useDfuFiles();
+  const [stopUpdating, setStopUpdating] = React.useState<() => void>();
+  const cancelUpdating = useConfirmStopUpdatingActionSheet(
+    () => stopUpdating?.()
+  );
+  const outdatedCount = useOutdatedCount();
+  usePreventRemovingScreen(navigation, updating);
   const bottom = useBottomSheetPadding();
   return (
     <View style={{ height: "100%", gap: 10 }}>
@@ -214,92 +159,64 @@ function FirmwareUpdatePage({
             : undefined
         }
       >
-        Select Dice to Update
+        Update Dice Firmware
       </PageHeader>
       <ScrollView
         style={{ flex: 1, marginHorizontal: 20 }}
-        contentContainerStyle={{ paddingBottom: bottom, gap: 10 }}
+        contentContainerStyle={{ paddingBottom: bottom, gap: 20 }}
       >
-        <Text>
+        <Text variant="bodyLarge">
           We recommend to keep all dice up-to-date to ensure that they stay
           compatible with the app.
         </Text>
-        <Text>
-          Keep your dice near your device during the update process. They may
-          stay in open chargers but avoid moving charger lids or other magnets
-          as it may turn the dice off.
+        <Text variant="bodyLarge">
+          Keep the Pixels app opened and your dice near your device during the
+          update process. They may stay in open chargers but avoid moving
+          charger lids or other magnets as it may turn the dice off.
         </Text>
-        <View style={{ height: 70, width: "100%", justifyContent: "center" }}>
-          {!allUpdated ? (
-            <AnimatedGradientButton
-              exiting={FadeOut.duration(300)}
-              disabled={updating || !pendingCount || !selection.length}
-              onPress={update}
-            >
-              Update Selected {selection.length <= 1 ? "Die" : "Dice"}
-            </AnimatedGradientButton>
-          ) : (
-            <AnimatedText
-              entering={FadeIn.duration(300).delay(200)}
-              variant="bodyLarge"
-              style={AppStyles.selfCentered}
-            >
-              {`Your${
-                targetStatuses.filter((t) => t.state === "unknown").length
-                  ? " connected"
-                  : ""
-              } ${
-                targetStatuses.length <= 1 ? "die is" : "dice are"
-              } up-to-date!`}
-            </AnimatedText>
-          )}
-        </View>
-        {dfuBundle ? (
-          <View>
-            {targetStatuses.map((t, i) => (
-              <SelectionButton
-                key={t.pairedDie.pixelId}
-                icon={() => (
-                  <DieWireframe dieType={t.pairedDie.dieType} size={40} />
-                )}
-                selected={selection.includes(t)}
-                noTopBorder={i > 0}
-                squaredTopBorder={i > 0}
-                squaredBottomBorder={i < targetStatuses.length - 1}
-                onPress={
-                  t.state === "pending"
-                    ? () =>
-                        setSelection((selection) =>
-                          selection.includes(t)
-                            ? selection.filter((other) => other !== t)
-                            : [...selection, t]
-                        )
-                    : undefined
-                }
-              >
-                <DieInfo targetStatus={t} />
-              </SelectionButton>
-            ))}
-          </View>
+        {dfuFilesInfo ? (
+          <GradientButton
+            outline={updating}
+            disabled={!outdatedCount}
+            onPress={() => {
+              if (updating) {
+                cancelUpdating();
+              } else if (outdatedCount) {
+                let stop = false;
+                setStopUpdating(() => () => (stop = true));
+                updateDice(
+                  pairedDice.map((d) => d.pixelId),
+                  dfuFilesInfo,
+                  () => stop
+                );
+              }
+            }}
+          >
+            {updating
+              ? "Stop Updating"
+              : outdatedCount
+                ? `Start Updating (${outdatedCount})`
+                : "Done"}
+          </GradientButton>
         ) : (
-          <Text>
-            {error ? `Error reading files: ${error}` : "Preparing files..."}
+          <Text variant="bodyLarge">
+            {dfuFilesError
+              ? `Error reading firmware file: ${dfuFilesError}`
+              : "Preparing firmware file..."}
           </Text>
         )}
+        <PixelDfuList pairedDice={pairedDice} />
       </ScrollView>
     </View>
   );
 }
 
 export function FirmwareUpdateScreen({
-  route: {
-    params: { pixelId },
-  },
   navigation,
 }: FirmwareUpdateScreenProps) {
   return (
     <AppBackground>
-      <FirmwareUpdatePage navigation={navigation} pixelId={pixelId} />
+      <FirmwareUpdatePage navigation={navigation} />
     </AppBackground>
   );
 }

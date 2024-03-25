@@ -20,7 +20,6 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
-import dfuFilesReducer from "~/features/store/appDfuFilesSlice";
 import appSettingsReducer from "~/features/store/appSettingsSlice";
 import appUpdateReducer from "~/features/store/appUpdateSlice";
 import diceRollsReducer from "~/features/store/diceRollsSlice";
@@ -179,7 +178,6 @@ const rootReducer = combineReducers({
   }),
   // Transient data
   diceRolls: diceRollsReducer,
-  dfuFiles: dfuFilesReducer,
   appUpdate: appUpdateReducer,
 });
 

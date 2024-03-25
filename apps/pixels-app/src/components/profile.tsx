@@ -21,7 +21,7 @@ import { ProfileDieRenderer } from "./DieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
 import { Chip, GradientChip } from "./buttons";
-import { darken, getBorderColor, getTextColorStyle } from "./colors";
+import { darken, getBorderColor } from "./colors";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -251,7 +251,7 @@ export function ProfileCard({
     borderTopRightRadius: row ?? squaredTopBorder ? 0 : borderRadius,
     borderBottomLeftRadius: !row || squaredBottomBorder ? 0 : borderRadius,
   };
-  const textStyle = getTextColorStyle(colors, disabled);
+  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
 
   const animTopLeftStyle = useAnimatedStyle(
     () => ({
@@ -362,7 +362,7 @@ export function ProfileCard({
             row={row}
             description={description}
             numberOfLines={2}
-            textStyle={textStyle}
+            textStyle={{ color }}
           />
           <ProfileActionsIcons
             profile={profile}

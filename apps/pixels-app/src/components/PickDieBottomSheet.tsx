@@ -16,7 +16,6 @@ import { RootSiblingParent } from "react-native-root-siblings";
 import { BluetoothStateWarning } from "./BluetoothWarning";
 import { PixelRollState } from "./PixelRollState";
 import { TouchableCard } from "./TouchableCard";
-import { getTextColorStyle } from "./colors";
 import { DieWireframe } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
@@ -25,9 +24,9 @@ import { getDieTypeLabel, getPixelStatusLabel } from "~/features/profiles";
 import { listToText } from "~/features/utils";
 import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
-  useActivePixel,
+  useWatchedPixel,
   useBottomSheetPadding,
-  usePairedDiceScanner,
+  usePixelScanner,
 } from "~/hooks";
 import { useBottomSheetBackHandler } from "~/hooks/useBottomSheetBackHandler";
 import { AppStyles } from "~/styles";
@@ -40,11 +39,11 @@ function PairedDieCard({
   pairedDie: PairedDie;
   onSelect?: (pixel: Pixel) => void;
 }) {
-  const pixel = useActivePixel(pairedDie.pixelId);
+  const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
   const { colors } = useTheme();
-  const textColor = getTextColorStyle(colors, disabled);
+  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
   return (
     <TouchableCard
       row
@@ -60,12 +59,12 @@ function PairedDieCard({
           marginHorizontal: 10, // Using padding on the contentStyle moves the views to the right on touch
         }}
       >
-        <Text variant="bodyLarge" style={textColor}>
+        <Text variant="bodyLarge" style={{ color }}>
           {pairedDie.name}
         </Text>
         {pixel && !disabled && <PixelRollState pixel={pixel} />}
       </View>
-      <Text style={textColor}>{getPixelStatusLabel(status)}</Text>
+      <Text style={{ color }}>{getPixelStatusLabel(status)}</Text>
     </TouchableCard>
   );
 }
@@ -79,14 +78,15 @@ export function PickDieBottomSheet({
   visible: boolean;
   onDismiss: (pixel?: Pixel) => void;
 }) {
-  const { startScan, stopScan } = usePairedDiceScanner();
+  const { startScan, stopScan } = usePixelScanner();
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
-      startScan({ noTimeout: true });
+      // Try to reconnect to all dice while the bottom sheet is open
+      startScan();
     } else {
       sheetRef.current?.dismiss();
     }
