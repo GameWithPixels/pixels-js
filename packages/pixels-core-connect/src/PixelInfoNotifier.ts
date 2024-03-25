@@ -1,10 +1,13 @@
-import { PixelDieType } from "@systemic-games/pixels-core-animation";
+import {
+  PixelColorway,
+  PixelDieType,
+} from "@systemic-games/pixels-core-animation";
 import {
   createTypedEventEmitter,
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 
-import { PixelRollState, PixelColorway } from "./Messages";
+import { PixelRollState } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
 
 /**

@@ -1,6 +1,8 @@
-import { PixelDieType } from "@systemic-games/pixels-core-animation";
 import {
   PixelColorway,
+  PixelDieType,
+} from "@systemic-games/pixels-core-animation";
+import {
   PixelInfoNotifier,
   PixelInfoNotifierMutableProps,
   PixelRollState,

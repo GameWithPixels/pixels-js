@@ -1,10 +1,10 @@
 import {
   DiceUtils,
+  PixelColorwayValues,
   PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
   PixelBleUuids,
-  PixelColorwayValues,
   PixelRollStateValues,
 } from "@systemic-games/pixels-core-connect";
 import { assert, getValueKeyName } from "@systemic-games/pixels-core-utils";

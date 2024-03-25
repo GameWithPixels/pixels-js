@@ -3,6 +3,7 @@ export * from "./animations/Constants";
 export * from "./color";
 export * from "./DiceUtils";
 export * from "./faceUtils";
+export * from "./PixelColorway";
 export * from "./PixelDieType";
 export * from "./profiles";
 

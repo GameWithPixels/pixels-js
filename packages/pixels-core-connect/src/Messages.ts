@@ -1,5 +1,6 @@
 import {
   AnimConstants,
+  PixelColorwayValues,
   PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
@@ -330,27 +331,6 @@ export const PixelChipModelValues = {
  * @category Message
  */
 export type PixelChipModel = keyof typeof PixelChipModelValues;
-
-/**
- * Available Pixels dice colorways.
- * @enum
- * @category Message
- */
-export const PixelColorwayValues = {
-  unknown: enumValue(0),
-  onyxBlack: enumValue(),
-  hematiteGrey: enumValue(),
-  midnightGalaxy: enumValue(),
-  auroraSky: enumValue(),
-  clear: enumValue(),
-  custom: 0xff,
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelColorwayValues}.
- * @category Message
- */
-export type PixelColorway = keyof typeof PixelColorwayValues;
 
 export interface MessageChunk {
   // On initialization: size of serializable object

@@ -1,5 +1,8 @@
-import { PixelColorway, PixelInfo } from "@systemic-games/pixels-core-connect";
 import { BaseVStack } from "@systemic-games/react-native-base-components";
+import {
+  PixelColorway,
+  PixelInfo,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
