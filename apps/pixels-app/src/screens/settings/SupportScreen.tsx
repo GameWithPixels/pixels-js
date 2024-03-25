@@ -46,7 +46,7 @@ function SupportPage({
           gap: 20,
         }}
       >
-        <Text>To report issues or send suggestions, contact us via email:</Text>
+        <Text>To send suggestions:</Text>
         {/* <URLButton
           url="https://gamewithpixels.com/contact-us/"
           sentry-label="contact-us"
@@ -56,7 +56,17 @@ function SupportPage({
         <URLButton
           url={encodeURI(
             `mailto:${supportEmail}?` +
-              "subject=App Support Request&body=Please describe your issue or suggestion here."
+              "subject=Pixels App Suggestion&body=Please describe your suggestion here."
+          )}
+          sentry-label="send-email"
+        >
+          Email Us at {supportEmail}
+        </URLButton>
+        <Text>To report issues:</Text>
+        <URLButton
+          url={encodeURI(
+            `mailto:${supportEmail}?` +
+              "subject=Pixels App Issue&body=Please describe your issue here."
           )}
           sentry-label="send-email"
         >
