@@ -71,6 +71,7 @@ const Header = observer(function Header({
           : () => (
               <Button
                 sentry-label="cancel-edit-profile"
+                disabled={!isModified}
                 onPress={
                   isModified ? () => showConfirmDiscard() : onDiscardChanges
                 }
@@ -82,8 +83,7 @@ const Header = observer(function Header({
       rightElement={() => (
         <Button
           sentry-label="commit-edit-profile"
-          onPress={onCommitChanges}
-          disabled={!noDiscard && !isModified}
+          onPress={isModified ? onCommitChanges : onDiscardChanges}
         >
           Done
         </Button>
