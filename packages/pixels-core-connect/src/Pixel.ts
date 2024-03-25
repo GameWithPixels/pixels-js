@@ -638,38 +638,38 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Register a listener function to be invoked on raising the event
-   * identified by the given event name.
+   * Registers a listener function that will be called when the specified
+   * event is raised.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
-   * @param eventName The name of the event.
+   * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
    */
   addEventListener<K extends keyof PixelEventMap>(
-    eventName: K,
+    type: K,
     listener: EventReceiver<PixelEventMap[K]>
   ): void {
-    this._evEmitter.addListener(eventName, listener);
+    this._evEmitter.addListener(type, listener);
   }
 
   /**
-   * Unregister a listener from receiving events identified by
+   * Unregisters a listener from receiving events identified by
    * the given event name.
    * See {@link PixelEventMap} for the list of events and their
    * associated data.
-   * @param eventName The name of the event.
+   * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
    */
   removeEventListener<K extends keyof PixelEventMap>(
-    eventName: K,
+    type: K,
     listener: EventReceiver<PixelEventMap[K]>
   ): void {
-    this._evEmitter.removeListener(eventName, listener);
+    this._evEmitter.removeListener(type, listener);
   }
 
   /**
-   * Register a listener function to be invoked on receiving raw messages
-   * of a given type from the Pixel.
+   * Registers a listener function that will be called on receiving
+   * raw messages of a given type from the Pixel.
    * @param msgType The type of message to watch for.
    * @param listener The callback function.
    */
@@ -681,7 +681,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Unregister a listener from receiving raw messages of a given type.
+   * Unregisters a listener from receiving raw messages of a given type.
    * @param msgType The type of message to watch for.
    * @param listener The callback function to unregister.
    */
@@ -1260,7 +1260,8 @@ export class Pixel extends PixelInfoNotifier {
       );
       this._updateRoll(
         getValueKeyName(info.rollState, PixelRollStateValues) ?? "unknown",
-        info.currentFaceIndex
+        info.currentFaceIndex,
+        { skipEvents: true }
       );
     };
 
@@ -1393,7 +1394,11 @@ export class Pixel extends PixelInfoNotifier {
     return { state, face, faceIndex };
   }
 
-  private _updateRoll(state: PixelRollState, faceIndex: number) {
+  private _updateRoll(
+    state: PixelRollState,
+    faceIndex: number,
+    opt?: { skipEvents?: boolean }
+  ) {
     const ev = this._createRollEvent(state, faceIndex);
     const stateChanged = this._info.rollState !== ev.state;
     const indexChanged = this._info.currentFaceIndex !== ev.faceIndex;
@@ -1414,10 +1419,12 @@ export class Pixel extends PixelInfoNotifier {
     }
 
     // Notify all die roll events
-    const emitRoll = ev.state === "onFace" ? ev.face : undefined;
-    this._evEmitter.emit("rollState", ev);
-    if (emitRoll !== undefined) {
-      this._evEmitter.emit("roll", emitRoll);
+    if (!opt?.skipEvents) {
+      const emitRoll = ev.state === "onFace" ? ev.face : undefined;
+      this._evEmitter.emit("rollState", ev);
+      if (emitRoll !== undefined) {
+        this._evEmitter.emit("roll", emitRoll);
+      }
     }
   }
 

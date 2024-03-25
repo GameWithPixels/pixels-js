@@ -8,7 +8,7 @@ import DfuModule from "./module";
  * - Android: the Bluetooth address of the device.
  * @remarks
  * On Android, the Bluetooth address of the device when in DFU mode is
- * the normal address plus 1.
+ * the normal address plus or minus 1.
  */
 export type DfuTargetId = number | string;
 
@@ -109,8 +109,8 @@ export interface DfuEventMap {
 const dfuEventEmitter = new NativeEventEmitter(DfuModule);
 
 export function addDfuEventListener<K extends keyof DfuEventMap>(
-  eventName: K,
+  type: K,
   listener: (ev: DfuEventMap[K]) => void
 ): EmitterSubscription {
-  return dfuEventEmitter.addListener(eventName, listener);
+  return dfuEventEmitter.addListener(type, listener);
 }
