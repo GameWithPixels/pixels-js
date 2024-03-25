@@ -500,7 +500,7 @@ const PlayAnimationGradient = observer(function PlayAnimationGradient({
   defaultKeyframes,
 }: {
   action: Profiles.ActionPlayAnimation;
-  defaultKeyframes: Profiles.RgbKeyframe[];
+  defaultKeyframes: readonly Readonly<Profiles.RgbKeyframe>[];
 }) {
   assert(defaultKeyframes.length > 1, "Must have at least 2 keyframes");
   const [gradientEditorVisible, setGradientEditorVisible] =

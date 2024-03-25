@@ -35,16 +35,8 @@ export function EditGradientBottomSheet({
   onDismiss: () => void;
   visible: boolean;
 }) {
-  const filteredKeyframes = React.useMemo(
-    () =>
-      keyframes.filter(
-        (kf) =>
-          (kf.time !== 0 && kf.time !== 1) || !kf.color.equals(Color.black)
-      ),
-    [keyframes]
-  );
   const [selectedKeyframe, setSelectedKeyframe] = React.useState(0);
-  const color = filteredKeyframes[selectedKeyframe]?.color ?? Color.black;
+  const color = keyframes[selectedKeyframe]?.color ?? Color.black;
 
   // Reset selected keyframe when sheet is opened
   React.useEffect(() => setSelectedKeyframe(0), [visible]);
@@ -62,6 +54,8 @@ export function EditGradientBottomSheet({
   const theme = useTheme();
   const { colors } = theme;
   const borderRadius = getBorderRadius(theme.roundness);
+  const height = 32;
+  const radius = height / 2 + 2;
   return (
     <BottomSheetModal
       ref={sheetRef}
@@ -97,39 +91,46 @@ export function EditGradientBottomSheet({
             >
               Tap on circle to modify color
             </Text>
-            <View
-              style={{
-                overflow: "hidden",
-                flexGrow: 1,
-                height: 32,
-                alignItems: "center",
-                justifyContent: "center",
-                margin: 10,
-                borderRadius,
-              }}
-            >
-              <KeyframeGradient keyframes={keyframes} />
-              <View style={StyleSheet.absoluteFill}>
-                {filteredKeyframes.map((kf, i) => (
+            <View>
+              <View
+                style={{
+                  overflow: "hidden",
+                  flexGrow: 1,
+                  height,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: 10,
+                  borderRadius,
+                }}
+              >
+                <KeyframeGradient keyframes={keyframes} />
+              </View>
+              <View
+                style={{
+                  ...StyleSheet.absoluteFillObject,
+                  margin: 10,
+                }}
+              >
+                {keyframes.map((kf, i) => (
                   <TouchableRipple
                     key={kf.time}
                     style={{
                       position: "absolute",
                       left: `${kf.time * 100}%`,
-                      marginLeft: -16,
-                      width: 32,
+                      marginTop: height / 2 - radius,
+                      marginLeft: -radius,
+                      width: 2 * radius,
                       aspectRatio: 1,
-                      borderRadius: 16,
-                      borderWidth: 2,
+                      borderRadius: radius,
+                      borderWidth: 3,
                       borderColor:
                         selectedKeyframe === i
                           ? colors.primary
                           : colors.onSurface,
                     }}
                     onPress={() => setSelectedKeyframe(i)}
-                  >
-                    <></>
-                  </TouchableRipple>
+                    children={<View />}
+                  />
                 ))}
               </View>
             </View>
@@ -137,9 +138,7 @@ export function EditGradientBottomSheet({
               color={color}
               style={{ width: "100%", alignItems: "center", gap: 20 }}
               onColorChange={(c) => {
-                const i = keyframes.indexOf(
-                  filteredKeyframes[selectedKeyframe]
-                );
+                const i = keyframes.indexOf(keyframes[selectedKeyframe]);
                 if (onChangeKeyframes && i >= 0) {
                   const newKeyframes = [...keyframes];
                   newKeyframes[i] = {
