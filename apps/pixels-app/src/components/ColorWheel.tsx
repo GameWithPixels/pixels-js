@@ -1,6 +1,6 @@
 import { Color, ColorUtils } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { View, ViewProps } from "react-native";
+import { Pressable, View, ViewProps } from "react-native";
 import { RadioButton, useTheme } from "react-native-paper";
 import Svg, { Defs, G, Polygon, RadialGradient, Stop } from "react-native-svg";
 
@@ -72,9 +72,14 @@ export function ColorWheel({
 }: ColorWheelProps) {
   const [selectedBrightness, setSelectedBrightness] =
     React.useState<ColorWheelBrightness>("normal");
+
+  const isWhite = color?.r === 1 && color?.g === 1 && color?.b === 1;
+  const isBlack = color?.r === 0 && color?.g === 0 && color?.b === 0;
+  const isOnWheel = !isWhite && !isBlack;
+
   const { params, brightness, selectionPoints } = React.useMemo(() => {
     const params = getParams(wheelParams);
-    if (!color) {
+    if (!color || !isOnWheel) {
       return { params, brightness: selectedBrightness };
     } else {
       const wheelPos = toColorWheelPosition(
@@ -92,7 +97,7 @@ export function ColorWheel({
       );
       return { params, brightness, selectionPoints };
     }
-  }, [color, selectedBrightness, wheelParams]);
+  }, [color, isOnWheel, selectedBrightness, wheelParams]);
 
   const { colors } = useTheme();
   return (
@@ -115,25 +120,53 @@ export function ColorWheel({
               fill="none"
               stroke={colors.primary}
               strokeWidth="1"
-              onPress={() => onColorChange?.(new Color(color))}
+              // onPress={() => onColorChange?.(new Color(color))}
             />
           )}
         </Svg>
+      </View>
+      {/* Black, white & face */}
+      <View style={{ flexDirection: "row", gap: 20 }}>
+        <Pressable
+          style={{
+            width: 100,
+            height: 30,
+            borderRadius: 5,
+            borderWidth: isBlack ? 3 : 0,
+            borderColor: colors.primary,
+            backgroundColor: "black",
+          }}
+          onPress={() => onColorChange?.(new Color(0))}
+        />
+        <Pressable
+          style={{
+            width: 100,
+            height: 30,
+            borderRadius: 5,
+            borderWidth: isWhite ? 3 : 0,
+            borderColor: colors.primary,
+            backgroundColor: "white",
+          }}
+          onPress={() => onColorChange?.(new Color(0xffffff))}
+        />
       </View>
       {/* Dimness */}
       <RadioButton.Group
         onValueChange={setSelectedBrightness as (value: string) => void}
         value={selectedBrightness}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-          }}
-        >
+        <View style={{ flexDirection: "row" }}>
           {/* <RadioButton.Item value="bright" label="Bright" /> */}
-          <RadioButton.Item value="normal" label="Normal" />
-          <RadioButton.Item value="dim" label="Dim" />
+          <RadioButton.Item
+            value="normal"
+            label="Normal"
+            style={{ paddingVertical: 0 }}
+          />
+          <RadioButton.Item
+            value="dim"
+            label="Dim"
+            style={{ paddingVertical: 0 }}
+          />
         </View>
       </RadioButton.Group>
     </View>
