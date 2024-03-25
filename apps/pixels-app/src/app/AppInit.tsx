@@ -52,8 +52,8 @@ export function AppInit({ children }: React.PropsWithChildren) {
     if (hasUpdate) {
       // Inform user
       Alert.alert(
-        "App Update Available",
-        "An update is available, would you like to install it now?\n" +
+        "App Patch Available",
+        "An patch is available, would you like to install it now?\n" +
           "You can always install it later from the More tab.",
         [
           {

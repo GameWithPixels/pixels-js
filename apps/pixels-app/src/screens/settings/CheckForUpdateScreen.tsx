@@ -53,16 +53,14 @@ function CheckForUpdatePage({
         }}
       >
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <Text>Update status:</Text>
+          <Text>Patch Status:</Text>
           {checking || !appUpdate.gotResponse ? (
             <ActivityIndicator />
           ) : (
             <Text>
               {appUpdate.error
                 ? "unknown"
-                : appUpdate.manifest
-                  ? `update available`
-                  : "up-to-date"}
+                : `${appUpdate.manifest ? "" : "no "}patch available`}
             </Text>
           )}
         </View>
@@ -73,6 +71,10 @@ function CheckForUpdatePage({
             <Text>Date: {toUserDate(appUpdate.manifest.createdAt)}</Text>
           )
         )}
+        <PaperText>
+          Patches are delivered directly to your app, on top of app store
+          updates.
+        </PaperText>
         <Button
           mode="outlined"
           disabled={checking || !appUpdate.gotResponse}
