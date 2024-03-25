@@ -278,7 +278,6 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       <View>
         <Text variant="titleMedium">Play</Text>
         <GradientButton
-          outline
           sentry-label="select-animation"
           style={{ marginHorizontal: 10 }}
           onPress={() => setAnimPickerVisible(true)}
