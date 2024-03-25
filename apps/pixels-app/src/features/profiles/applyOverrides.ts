@@ -3,10 +3,7 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
-import {
-  getAnimationGradient,
-  setAnimationGradient,
-} from "~/features/store/library/animationGradient";
+import { AnimationUtils } from "~/features/store/library/AnimationUtils";
 
 export function applyProfileOverrides(
   profile: Readonly<Profiles.Profile>
@@ -60,9 +57,9 @@ export function applyActionOverrides(
           action.colors[0].duplicate()
         );
       } else {
-        const gradient = getAnimationGradient(anim);
+        const gradient = AnimationUtils.getEditableGradient(anim);
         if (gradient && gradient.keyframes.length === action.colors.length) {
-          setAnimationGradient(
+          AnimationUtils.setEditableGradient(
             anim,
             new Profiles.RgbGradient({
               keyframes: action.colors.map((c, i) => {

@@ -5,7 +5,7 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import { assert, getValueKeyName } from "@systemic-games/pixels-core-utils";
+import { assert } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Color,
@@ -41,14 +41,14 @@ import {
 } from "~/components/SliderWithTitle";
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import {
-  getNoiseColorOverrideTypeLabel,
-  getNormalsColorOverrideTypeLabel,
+  getColorOverrideLabel,
+  getDieTypeLabel,
   getWebRequestPayload,
   getWebRequestURL,
   playActionMakeWebRequest,
   playActionSpeakText,
 } from "~/features/profiles";
-import { getAnimationGradient } from "~/features/store/library/animationGradient";
+import { AnimationUtils } from "~/features/store/library/AnimationUtils";
 import {
   androidBottomSheetSliderFix,
   bottomSheetAnimationConfigFix,
@@ -250,29 +250,13 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   dieType?: PixelDieType;
 }) {
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
-  // TODO Several animation types may have those keys
-  const color = (action.animation as Partial<Profiles.AnimationFlashes>)?.color;
-  const keyframes = getAnimationGradient(action.animation)?.keyframes;
-  const fading = (action.animation as Partial<Profiles.AnimationFlashes>)?.fade;
-  const intensity = (action.animation as Partial<Profiles.AnimationRainbow>)
-    ?.intensity;
-  const gct1 =
-    action.animation instanceof Profiles.AnimationNormals
-      ? action.animation.gradientColorType
-      : undefined;
-  const gct2 =
-    action.animation instanceof Profiles.AnimationNoise
-      ? action.animation.gradientColorType
-      : undefined;
-  const gradientColorType = gct1
-    ? getNormalsColorOverrideTypeLabel(
-        getValueKeyName(gct1, Profiles.NormalsColorOverrideTypeValues) ?? "none"
-      )
-    : gct2
-      ? getNoiseColorOverrideTypeLabel(
-          getValueKeyName(gct2, Profiles.NoiseColorOverrideTypeValues) ?? "none"
-        )
-      : undefined;
+  const color = AnimationUtils.getColor(action.animation);
+  const fading = AnimationUtils.getFading(action.animation);
+  const intensity = AnimationUtils.getIntensity(action.animation);
+  const keyframes = AnimationUtils.getGradientKeyframes(action.animation);
+  const gradientColorType = AnimationUtils.getGradientColorType(
+    action.animation
+  );
   return (
     <>
       <View>
@@ -318,12 +302,12 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       {color?.mode === "rgb" ? (
         <PlayAnimationColor action={action} defaultColor={color.color} />
       ) : (
-        (color?.mode === "face" || !!gradientColorType) && (
+        (gradientColorType || color?.mode === "face") && (
           <>
             <Text variant="titleMedium">Color</Text>
             <Text style={{ paddingLeft: 10, ...AppStyles.greyedOut }}>
-              {gradientColorType ??
-                getNormalsColorOverrideTypeLabel("faceToRainbowWheel")}
+              {getColorOverrideLabel(gradientColorType ?? "faceToRainbowWheel")}
+              .
             </Text>
           </>
         )
@@ -669,13 +653,15 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
 const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   action,
   profileName,
+  dieType,
   currentFace,
 }: {
   action: Profiles.ActionMakeWebRequest;
   profileName: string;
+  dieType: PixelDieType;
   currentFace: number;
 }) {
-  const pixel = { name: "Pixel", currentFace };
+  const pixel = { name: "Pixels " + getDieTypeLabel(dieType), currentFace };
   const payload = getWebRequestPayload(pixel, profileName, action.value);
   const { colors } = useTheme();
   return (
@@ -828,6 +814,7 @@ export const ConfigureActionBottomSheet = observer(
                 <ConfigureMakeWebRequest
                   action={action}
                   profileName={profileName}
+                  dieType={dieType}
                   currentFace={
                     condition instanceof Profiles.ConditionRolled
                       ? Math.max(...condition.faces)

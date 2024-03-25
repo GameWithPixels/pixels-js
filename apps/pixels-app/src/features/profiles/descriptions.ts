@@ -252,33 +252,20 @@ export function getRollStateLabel(state?: PixelRollState): string {
   }
 }
 
-export function getNormalsColorOverrideTypeLabel(
-  colorOverrideType: Profiles.NormalsColorOverrideType
-): string {
-  switch (colorOverrideType) {
-    case "none":
-      return "";
-    case "faceToGradient":
-      return "Picks a color in the gradient based on the face up";
-    case "faceToRainbowWheel":
-      return "Picks a color in the rainbow wheel based on the face up";
-    default:
-      assertNever(colorOverrideType);
-  }
-}
-
-export function getNoiseColorOverrideTypeLabel(
-  colorOverrideType: Profiles.NoiseColorOverrideType
+export function getColorOverrideLabel(
+  colorOverrideType:
+    | Profiles.NormalsColorOverrideType
+    | Profiles.NoiseColorOverrideType
 ): string {
   switch (colorOverrideType) {
     case "none":
       return "";
     case "randomFromGradient":
-      return "Picks a random color in the gradient each time";
+      return "Color is randomly selected from the gradient";
     case "faceToGradient":
-      return "Picks a color in the gradient based on the face up";
+      return "Color is selected in the gradient based on face up";
     case "faceToRainbowWheel":
-      return "Picks a color in the rainbow wheel based on the face up";
+      return "Color depends on face up";
     default:
       assertNever(colorOverrideType);
   }
