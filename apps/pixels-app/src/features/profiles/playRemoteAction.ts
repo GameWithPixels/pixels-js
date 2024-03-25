@@ -2,6 +2,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import * as Speech from "expo-speech";
 import Toast from "react-native-root-toast";
 
+import type { EmbedsDiscordWebhookPayload } from "./discord-webhook";
 import {
   ActionMakeWebRequestPayload,
   getWebRequestURL,
@@ -9,11 +10,36 @@ import {
 
 import { ToastSettings } from "~/themes";
 
+export function getDiscordWebhookPayload(
+  payload: ActionMakeWebRequestPayload
+): EmbedsDiscordWebhookPayload {
+  const { pixelName, profileName, actionValue, faceValue } = payload;
+  return {
+    embeds: [
+      {
+        title: `${pixelName} rolled a ${faceValue}`,
+        type: "rich",
+        thumbnail: {
+          url: `https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes/d20.png`,
+        },
+        description: actionValue,
+        footer: { text: `profile: ${profileName}` },
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  };
+}
+
 export function playActionMakeWebRequest(
   action: Profiles.ActionMakeWebRequest,
   payload: ActionMakeWebRequestPayload
 ): void {
-  const body = action.format === "json" ? JSON.stringify(payload) : undefined;
+  const body =
+    action.format === "json"
+      ? JSON.stringify(payload)
+      : action.format === "discord"
+        ? JSON.stringify(getDiscordWebhookPayload(payload))
+        : undefined;
   const url = body ? action.url.trim() : getWebRequestURL(action.url, payload);
   console.log(
     `Playing Web Request: ${url} with payload ${JSON.stringify(payload)}`

@@ -5,7 +5,7 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import { assert } from "@systemic-games/pixels-core-utils";
+import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Color,
@@ -21,7 +21,6 @@ import { Platform, View } from "react-native";
 import {
   Button,
   IconButton,
-  Switch,
   Text,
   ThemeProvider,
   TouchableRipple,
@@ -39,10 +38,12 @@ import {
   SliderWithValue,
   SliderWithValueProps,
 } from "~/components/SliderWithTitle";
+import { TabsHeaders } from "~/components/TabsHeaders";
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import {
   getColorOverrideLabel,
   getDieTypeLabel,
+  getDiscordWebhookPayload,
   getWebRequestPayload,
   getWebRequestURL,
   playActionMakeWebRequest,
@@ -650,6 +651,35 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
   );
 });
 
+const NamedFormatsValues = ["Parameters", "JSON", "Discord"] as const;
+type NamedFormat = (typeof NamedFormatsValues)[number];
+
+function toNamedFormat(format: Profiles.ActionWebRequestFormat): NamedFormat {
+  switch (format) {
+    case "parameters":
+      return "Parameters";
+    case "json":
+      return "JSON";
+    case "discord":
+      return "Discord";
+    default:
+      assertNever(format, `Unsupported WebRequest format: ${format}`);
+  }
+}
+
+function fromNamedFormat(format: NamedFormat): Profiles.ActionWebRequestFormat {
+  switch (format) {
+    case "Parameters":
+      return "parameters";
+    case "JSON":
+      return "json";
+    case "Discord":
+      return "discord";
+    default:
+      assertNever(format, `Unsupported WebRequest named format: ${format}`);
+  }
+}
+
 const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   action,
   profileName,
@@ -676,33 +706,28 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
         value={action.value}
         onChangeText={(t) => runInAction(() => (action.value = t))}
       />
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Text variant="titleMedium">Send JSON Payload</Text>
-        <Switch
-          value={action.format === "json"}
-          onValueChange={(v) => {
-            runInAction(() => (action.format = v ? "json" : "parameters"));
-          }}
-          thumbColor={colors.onSurface}
-          trackColor={{
-            false: colors.onSurfaceDisabled,
-            true: colors.primary,
-          }}
-        />
-      </View>
+      <Text variant="titleMedium">Format</Text>
+      <TabsHeaders
+        names={NamedFormatsValues}
+        selected={toNamedFormat(action.format)}
+        onSelect={(f) =>
+          runInAction(() => (action.format = fromNamedFormat(f as NamedFormat)))
+        }
+      />
       <Text style={{ color: colors.onSurfaceDisabled, marginTop: 5 }}>
-        The request will look like this:
+        The request {action.format === "parameters" ? "parameters" : "payload"}{" "}
+        will look like this:
       </Text>
       <Text style={{ color: colors.onSurfaceDisabled }}>
-        {action.format === "json"
-          ? `• url: ${action.url}\n• body: ${JSON.stringify(payload, null, 4)}`
-          : getWebRequestURL(action.url, payload)}
+        {action.format === "parameters"
+          ? getWebRequestURL("", payload)
+          : JSON.stringify(
+              action.format === "json"
+                ? payload
+                : getDiscordWebhookPayload(payload),
+              null,
+              4
+            )}
       </Text>
       {action.format === "parameters" && (
         <Text style={{ color: colors.onSurfaceDisabled }}>

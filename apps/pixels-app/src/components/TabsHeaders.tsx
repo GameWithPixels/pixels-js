@@ -9,7 +9,7 @@ export function TabsHeaders({
   selected,
   onSelect,
 }: {
-  names: string[];
+  names: readonly string[];
   selected?: string;
   onSelect?: (name: string) => void;
 }) {

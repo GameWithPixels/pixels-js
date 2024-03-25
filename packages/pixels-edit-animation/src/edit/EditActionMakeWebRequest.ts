@@ -11,7 +11,7 @@ import EditActionRunOnDevice from "./EditActionRunOnDevice";
 import EditDataSet from "./EditDataSet";
 import { name, observable, widget } from "./decorators";
 
-export type ActionWebRequestFormat = "parameters" | "json";
+export type ActionWebRequestFormat = "parameters" | "json" | "discord";
 
 export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
   readonly type = "makeWebRequest";
