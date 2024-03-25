@@ -9,12 +9,15 @@ export function renameDie(
   pixel: Pixel,
   newName: string,
   profile: Readonly<Profiles.Profile>,
+  brightnessFactor: number,
   appDispatch: AppDispatch
 ): void {
   const task = async () => {
     try {
       await pixel.rename(newName);
-      transferProfile(pixel, profile, appDispatch, { silent: true });
+      transferProfile(pixel, profile, brightnessFactor, appDispatch, {
+        silent: true,
+      });
     } catch (e) {
       console.log(`Error renaming die: ${e}`);
       Alert.alert(

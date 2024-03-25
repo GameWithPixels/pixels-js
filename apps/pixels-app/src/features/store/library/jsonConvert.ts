@@ -341,6 +341,8 @@ function toProfile(
     name: profile.name ?? "",
     description: profile.description ?? "",
     dieType: "d20",
+    colorway: "onyxBlack",
+    brightness: 1,
     hash: 0,
     creationDate: defaultCreationTime,
     lastChanged: defaultCreationTime,

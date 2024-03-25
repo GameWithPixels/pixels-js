@@ -2,6 +2,7 @@ import {
   BatteryStateFlags,
   ConnectionStateFlags,
   HelloGoodbyeFlags,
+  PixelColorway,
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 
@@ -11,6 +12,8 @@ import { ActionWebRequestFormat } from "../edit";
 export interface ProfileData extends UniqueNamedData {
   description: string;
   dieType: PixelDieType;
+  colorway: PixelColorway;
+  brightness: number;
   hash: number;
   creationDate: number;
   lastChanged: number;

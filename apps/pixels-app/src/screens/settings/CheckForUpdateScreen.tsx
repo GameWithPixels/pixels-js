@@ -18,6 +18,10 @@ function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
 }
 
+function TextSmall(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText {...props} />;
+}
+
 function toUserDate(dateString: string): string {
   try {
     return new Date(dateString).toUTCString();
@@ -71,10 +75,10 @@ function CheckForUpdatePage({
             <Text>Date: {toUserDate(appUpdate.manifest.createdAt)}</Text>
           )
         )}
-        <PaperText>
+        <TextSmall>
           Patches are delivered directly to your app, on top of app store
           updates.
-        </PaperText>
+        </TextSmall>
         <Button
           mode="outlined"
           disabled={checking || !appUpdate.gotResponse}

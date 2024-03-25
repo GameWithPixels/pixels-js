@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ProfileDieRenderer } from "~/components/DieRenderer";
 import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
 import { SlideInView } from "~/components/SlideInView";
+import { SliderWithValue } from "~/components/SliderWithTitle";
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
 import {
@@ -64,6 +65,20 @@ function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
     </Text>
   );
 }
+
+const BrightnessSlider = observer(function BrightnessSlider({
+  profile,
+}: {
+  profile: Profiles.Profile;
+}) {
+  return (
+    <SliderWithValue
+      value={profile.brightness}
+      percentage
+      onValueChange={(v) => runInAction(() => (profile.brightness = v))}
+    />
+  );
+});
 
 function TransferProfileButton({ onPress }: { onPress: () => void }) {
   const profileUuid = useAppSelector(
@@ -156,6 +171,8 @@ export function EditProfile({
               die.
             </Banner>
           )}
+          <SectionTitle>Brightness</SectionTitle>
+          <BrightnessSlider profile={profile} />
           <SectionTitle>Roll Rules</SectionTitle>
           {EditorRollRulesTypes.map((ct) => (
             <RuleCard

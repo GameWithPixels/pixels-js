@@ -21,6 +21,7 @@ export interface AppSettingsState {
   animationsGrouping: AnimationsGrouping;
   animationsSortMode: SortMode;
   updateBootloader: boolean;
+  diceBrightnessFactor: number;
 }
 
 const initialState: AppSettingsState = {
@@ -35,6 +36,7 @@ const initialState: AppSettingsState = {
   animationsGrouping: "type",
   animationsSortMode: "alphabetical",
   updateBootloader: false,
+  diceBrightnessFactor: 1,
 };
 
 // Redux slice that stores app settings
@@ -78,6 +80,9 @@ const appSettingsSlice = createSlice({
     setUpdateBootloader(state, action: PayloadAction<boolean>) {
       state.updateBootloader = action.payload;
     },
+    setDiceBrightnessFactor(state, action: PayloadAction<number>) {
+      state.diceBrightnessFactor = action.payload;
+    },
   },
 });
 
@@ -94,5 +99,6 @@ export const {
   setAnimationsGrouping,
   setAnimationsSortMode,
   setUpdateBootloader,
+  setDiceBrightnessFactor,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

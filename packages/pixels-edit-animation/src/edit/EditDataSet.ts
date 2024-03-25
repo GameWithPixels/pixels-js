@@ -10,17 +10,20 @@ export default class EditDataSet {
   readonly rgbPatterns: Readonly<EditPattern>[];
   readonly animations: Readonly<EditAnimation>[];
   readonly profile: Readonly<EditProfile>;
+  brightness: number;
 
   constructor(opt?: {
     patterns?: Readonly<EditPattern>[];
     rgbPatterns?: Readonly<EditPattern>[];
     animations?: Readonly<EditAnimation>[];
     profile?: Readonly<EditProfile>;
+    brightness?: number;
   }) {
     this.patterns = opt?.patterns ?? [];
     this.rgbPatterns = opt?.rgbPatterns ?? [];
     this.animations = opt?.animations ?? [];
     this.profile = opt?.profile ?? new EditProfile();
+    this.brightness = opt?.brightness ?? 1;
   }
 
   getPatternTrackOffset(pattern: Readonly<EditPattern>): number {
@@ -74,6 +77,11 @@ export default class EditDataSet {
         set.animations.push(anim);
       }
     }
+
+    // Brightness
+    set.brightness = Math.round(
+      Math.min(1, Math.max(0, this.brightness)) * 255
+    );
 
     // Now convert
     set.profile = this.profile.toProfile(this, set);

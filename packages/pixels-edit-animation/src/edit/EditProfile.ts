@@ -1,6 +1,7 @@
 import {
   ActionType,
   DataSet,
+  PixelColorway,
   PixelDieType,
   Profile,
 } from "@systemic-games/pixels-core-animation";
@@ -23,6 +24,12 @@ export default class EditProfile extends Editable {
   @observable
   dieType: PixelDieType;
 
+  @observable
+  colorway: PixelColorway;
+
+  @observable
+  brightness: number;
+
   // TODO The properties below should be moved to a separate class
 
   @observable
@@ -40,6 +47,8 @@ export default class EditProfile extends Editable {
     description?: string;
     rules?: EditRule[];
     dieType?: PixelDieType;
+    colorway?: PixelColorway;
+    brightness?: number;
     creationDate?: Date;
     lastChanged?: Date;
     lastUsed?: Date;
@@ -48,6 +57,8 @@ export default class EditProfile extends Editable {
     this.description = opt?.description ?? "";
     this.rules = opt?.rules ?? [];
     this.dieType = opt?.dieType ?? "d20";
+    this.colorway = opt?.colorway ?? "onyxBlack";
+    this.brightness = opt?.brightness ?? 1;
     this.creationDate = opt?.creationDate ?? new Date();
     this.lastChanged = opt?.lastChanged ?? new Date();
     this.lastUsed = opt?.lastUsed;

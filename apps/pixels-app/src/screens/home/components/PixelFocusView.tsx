@@ -81,6 +81,9 @@ export function PixelFocusViewHeader({
   onFirmwareUpdate: () => void;
 }) {
   const appDispatch = useAppDispatch();
+  const brightness = useAppSelector(
+    (state) => state.appSettings.diceBrightnessFactor
+  );
   const profile = useProfile(pairedDie.profileUuid);
 
   const pixel = useWatchedPixel(pairedDie);
@@ -175,7 +178,7 @@ export function PixelFocusViewHeader({
             pixel={pixel}
             onEndEditing={async (name) => {
               setRenameVisible(false);
-              renameDie(pixel, name, profile, appDispatch);
+              renameDie(pixel, name, profile, brightness, appDispatch);
             }}
           />
         )
@@ -240,6 +243,9 @@ export function PixelFocusView({
   onEditProfile: () => void;
 } & Omit<ViewProps, "children">) {
   const appDispatch = useAppDispatch();
+  const brightness = useAppSelector(
+    (state) => state.appSettings.diceBrightnessFactor
+  );
 
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
@@ -311,7 +317,7 @@ export function PixelFocusView({
           onSelectProfile={(profile) => {
             if (!transferring) {
               setPickProfile(false);
-              transferProfile(pixel, profile, appDispatch);
+              transferProfile(pixel, profile, brightness, appDispatch);
             } else {
               console.log(
                 "Dropping profile transfer because one is already in progress"

@@ -53,6 +53,8 @@ function updateProfile(
   profile.name = profileData.name;
   profile.description = profileData.description;
   profile.dieType = profileData.dieType;
+  profile.colorway = profileData.colorway;
+  profile.brightness = profileData.brightness;
   profile.creationDate.setTime(profileData.creationDate);
   profile.lastChanged.setTime(profileData.lastChanged);
   if (profile.lastUsed?.getTime() !== profileData.lastUsed) {

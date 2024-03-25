@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 
+import { AppSettingsScreen } from "./AppSettingsScreen";
 import { CheckForUpdateScreen } from "./CheckForUpdateScreen";
 import { FirmwareInfoScreen } from "./FirmwareInfoScreen";
 import { SettingsMenuScreen } from "./SettingsMenuScreen";
@@ -27,6 +28,7 @@ export function SettingsStack({ route }: SettingsStackProps) {
         <Stack.Screen name="support" component={SupportScreen} />
         <Stack.Screen name="turnOnDice" component={TurnOnDiceScreen} />
         <Stack.Screen name="checkForUpdate" component={CheckForUpdateScreen} />
+        <Stack.Screen name="appSettings" component={AppSettingsScreen} />
       </Stack.Navigator>
     </NavigationRoot>
   );

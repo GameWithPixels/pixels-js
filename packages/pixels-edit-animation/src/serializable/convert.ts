@@ -552,6 +552,8 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     name: profile.name,
     description: profile.description,
     dieType: profile.dieType,
+    colorway: profile.colorway,
+    brightness: profile.brightness,
     hash,
     creationDate: profile.creationDate.getTime(),
     lastChanged: profile.lastChanged.getTime(),

@@ -14,8 +14,16 @@ import { setUpdateBootloader } from "~/features/store/appSettingsSlice";
 import { useAppDfuFiles } from "~/hooks";
 import { FirmwareInfoScreenProps } from "~/navigation";
 
+function Title(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText variant="titleLarge" {...props} />;
+}
+
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
+}
+
+function TextSmall(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText {...props} />;
 }
 
 function FirmwareInfoPage({
@@ -44,7 +52,7 @@ function FirmwareInfoPage({
       >
         {dfuFilesInfo ? (
           <>
-            <PaperText variant="titleLarge">Available Dice Firmware</PaperText>
+            <Title>Available Dice Firmware</Title>
             <View style={{ marginLeft: 10, marginTop: 10, gap: 10 }}>
               <Text>Date: {date.toUTCString()}</Text>
               <Text>Timestamp: {date.getTime()}</Text>
@@ -69,9 +77,9 @@ function FirmwareInfoPage({
               />
               <Text>Also Update Bootloader</Text>
             </View>
-            <PaperText style={{ marginLeft: 10 }}>
+            <TextSmall style={{ marginLeft: 10 }}>
               Don't turn this setting on unless you know what you're doing ;)
-            </PaperText>
+            </TextSmall>
           </>
         ) : dfuFilesError ? (
           <Text>Error reading firmware files: {String(dfuFilesError)}</Text>

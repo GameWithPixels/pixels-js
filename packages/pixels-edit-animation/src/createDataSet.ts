@@ -62,9 +62,11 @@ export function createDataSetForAnimations(
 }
 
 export function createDataSetForProfile(
-  profile: Readonly<EditProfile>
+  profile: Readonly<EditProfile>,
+  brightnessFactor?: number
 ): EditDataSet {
-  const dataSet = new EditDataSet({ profile });
+  const brightness = (brightnessFactor ?? 1) * profile.brightness;
+  const dataSet = new EditDataSet({ profile, brightness });
 
   // Add the animations and patterns that the profile uses
   addAnimations(dataSet, dataSet.profile.collectAnimations());

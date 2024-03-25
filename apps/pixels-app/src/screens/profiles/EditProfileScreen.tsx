@@ -154,6 +154,9 @@ function EditProfilePage({
   navigation: EditProfileScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
+  const brightness = useAppSelector(
+    (state) => state.appSettings.diceBrightnessFactor
+  );
 
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();
@@ -206,7 +209,7 @@ function EditProfilePage({
           onEditRule={editRule}
           onTransfer={(pixel) => {
             commitProfile(profileUuid);
-            transferProfile(pixel, profile, appDispatch);
+            transferProfile(pixel, profile, brightness, appDispatch);
           }}
         />
       </GHScrollView>

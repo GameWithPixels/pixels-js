@@ -3,15 +3,8 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 
-import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
-import { Library } from "~/features/store";
-import { resetAppSettings } from "~/features/store/appSettingsSlice";
-import { resetAppUpdate } from "~/features/store/appUpdateSlice";
-import { resetRollsHistory } from "~/features/store/diceRollsSlice";
-import { resetPairedDice } from "~/features/store/pairedDiceSlice";
-import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
 import { SettingsMenuScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -28,7 +21,7 @@ const pages = [
   "App & System Information",
   "Dice Firmware Information",
   "Check for Update",
-  "Reset App Settings",
+  "App Settings",
 ] as const;
 
 type PageName = (typeof pages)[number];
@@ -79,17 +72,6 @@ function SettingsMenuPage({
 }: {
   navigation: SettingsMenuScreenProps["navigation"];
 }) {
-  const appDispatch = useAppDispatch();
-  const central = usePixelsCentral();
-  const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
-    central.stopScan();
-    appDispatch(resetAppSettings());
-    appDispatch(resetPairedDice());
-    appDispatch(resetRollsHistory());
-    appDispatch(resetAppUpdate());
-    Library.dispatchReset(appDispatch);
-    navigation.navigate("onboarding");
-  });
   const openPage = (page: PageName) => {
     switch (page) {
       case "How To Turn On Your Dice":
@@ -110,8 +92,8 @@ function SettingsMenuPage({
       case "Check for Update":
         navigation.navigate("checkForUpdate");
         break;
-      case "Reset App Settings":
-        showConfirmReset();
+      case "App Settings":
+        navigation.navigate("appSettings");
         break;
     }
   };
@@ -135,7 +117,7 @@ function SettingsMenuPage({
         title="Settings"
         start={3}
         end={7}
-        supPagesCount={3}
+        supPagesCount={4}
         openPage={openPage}
       />
     </ScrollView>

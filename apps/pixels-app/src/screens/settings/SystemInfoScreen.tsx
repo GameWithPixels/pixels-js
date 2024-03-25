@@ -21,6 +21,10 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SettingsInfoScreenProps } from "~/navigation";
 
+function Title(props: Omit<TextProps<never>, "variant">) {
+  return <PaperText variant="titleLarge" {...props} />;
+}
+
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
 }
@@ -51,7 +55,7 @@ function SystemInfoPage({
           gap: 20,
         }}
       >
-        <PaperText variant="titleLarge">App Information</PaperText>
+        <Title>App Information</Title>
         <View style={{ marginLeft: 10, gap: 10 }}>
           <Text>Name: {Application.applicationName}</Text>
           <Text>Version: {Application.nativeApplicationVersion}</Text>
@@ -61,9 +65,7 @@ function SystemInfoPage({
           )}
           {Updates.isEmergencyLaunch && <Text>Using Fallback Version</Text>}
         </View>
-        <PaperText variant="titleLarge" style={{ marginTop: 20 }}>
-          System Information
-        </PaperText>
+        <Title style={{ marginTop: 20 }}>System Information</Title>
         <View style={{ marginLeft: 10, gap: 10 }}>
           <Text>OS: {Platform.OS}</Text>
           <Text>Version: {Platform.Version}</Text>

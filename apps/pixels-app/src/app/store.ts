@@ -107,6 +107,13 @@ const migrations = {
                       playAnim.animationUuid = undefined;
                     }
                   }
+                  if (profile.brightness === undefined) {
+                    console.warn(
+                      `Migrating from version 2 to 3: Adding profile ${profile.name} brightness and colorway`
+                    );
+                    profile.brightness = 1;
+                    profile.colorway = "onyxBlack";
+                  }
                 }
               }
             }

@@ -17,6 +17,7 @@ import { ToastSettings } from "~/themes";
 export function transferProfile(
   pixel: Pixel,
   profile: Readonly<Profiles.Profile>,
+  brightnessFactor: number,
   appDispatch: AppDispatch,
   opt?: { silent?: boolean }
 ): void {
@@ -56,6 +57,12 @@ export function transferProfile(
     }
   }
 
+  console.log(
+    ` - Brightness: ${brightnessFactor} * ${modified.brightness} = ${
+      brightnessFactor * modified.brightness
+    }`
+  );
+
   // TODO update when getting confirmation from the die in AppPixelsCentral
   appDispatch(
     updatePairedDieProfile({
@@ -68,7 +75,10 @@ export function transferProfile(
   );
 
   // Create the data set for the profile
-  const dataSet = createDataSetForProfile(modified).toDataSet();
+  const dataSet = createDataSetForProfile(
+    modified,
+    brightnessFactor
+  ).toDataSet();
   const task = async () => {
     try {
       await pixel.transferDataSet(dataSet);

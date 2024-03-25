@@ -27,6 +27,7 @@ export default class DataSet {
   private readonly _actions: Action[] = [];
   private readonly _rules: Rule[] = [];
   private _profile = new Profile();
+  private _brightness = 255;
 
   get animationBits(): AnimationBits {
     return this._animationBits;
@@ -46,6 +47,13 @@ export default class DataSet {
 
   get rules(): Rule[] {
     return this._rules;
+  }
+
+  get brightness(): number {
+    return this._brightness;
+  }
+  set brightness(value: number) {
+    this._brightness = value;
   }
 
   get profile(): Profile {
@@ -70,7 +78,8 @@ export default class DataSet {
       align32bits(this._actions.length * 2) + // offsets are 16 bits
       byteSizeOf(this._actions) + // actions data
       byteSizeOf(this._rules) +
-      (this._profile ? byteSizeOf(this._profile) : 0)
+      (this._profile ? byteSizeOf(this._profile) : 0) +
+      1 // brightness
     );
   }
 

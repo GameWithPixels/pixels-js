@@ -765,6 +765,8 @@ export class TransferAnimationSet implements PixelMessage {
   actionSize = 0;
   @serializable(2)
   ruleCount = 0;
+  @serializable(1)
+  brightness = 0;
 }
 
 /**

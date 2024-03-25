@@ -156,6 +156,9 @@ function ProfilesListPage({
   navigation: ProfilesListScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
+  const brightness = useAppSelector(
+    (state) => state.appSettings.diceBrightnessFactor
+  );
 
   const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
@@ -259,7 +262,7 @@ function ProfilesListPage({
         visible={!!profileToActivate}
         onDismiss={(pixel) => {
           if (pixel && profileToActivate) {
-            transferProfile(pixel, profileToActivate, appDispatch);
+            transferProfile(pixel, profileToActivate, brightness, appDispatch);
           }
           setProfileToActivate(undefined);
         }}

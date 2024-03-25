@@ -982,6 +982,7 @@ export class Pixel extends PixelInfoNotifier {
           0
         ),
         ruleCount: dataSet.rules.length,
+        brightness: dataSet.brightness,
       });
 
       const transferAck = await this.sendAndWaitForTypedResponse(
