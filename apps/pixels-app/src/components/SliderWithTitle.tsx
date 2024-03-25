@@ -1,7 +1,21 @@
 import Slider, { SliderProps } from "@react-native-community/slider";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
-import { Platform, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import React from "react";
+import {
+  Platform,
+  StyleSheet,
+  TextInput as RNTextInput,
+  View,
+} from "react-native";
+import {
+  Button,
+  Dialog,
+  Portal,
+  Text,
+  TextInput,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 
 type SliderWrapperProps = SliderProps & {
   scaleIOS: number;
@@ -11,18 +25,14 @@ type SliderWrapperProps = SliderProps & {
 
 function SliderWrapper({ style, ...props }: SliderWrapperProps) {
   const { scaleIOS, scaleAndroid, height } = props;
-  const widthIOS = 100 * (1 / scaleIOS);
-  const widthAndroid = 100 * (1 / scaleAndroid);
+  const scale = Platform.OS === "ios" ? scaleIOS : scaleAndroid;
   return (
     <View style={{ width: "100%", height }}>
       <View
         style={{
           height,
           marginHorizontal: Platform.OS === "android" ? -15 : 0, // TODO negative margin to account for the scaling
-          transform: [
-            { scaleX: Platform.OS === "ios" ? scaleIOS : scaleAndroid },
-            { scaleY: Platform.OS === "ios" ? scaleIOS : scaleAndroid },
-          ],
+          transform: [{ scaleX: scale }, { scaleY: scale }],
         }}
       >
         <Slider
@@ -30,7 +40,9 @@ function SliderWrapper({ style, ...props }: SliderWrapperProps) {
             {
               flex: 1,
               height,
-              width: `${Platform.OS === "ios" ? widthIOS : widthAndroid}%`,
+              width: `${
+                100 * (1 / (Platform.OS === "ios" ? scaleIOS : scaleAndroid))
+              }%`,
               alignSelf: "center",
             },
             style,
@@ -67,7 +79,7 @@ export function SliderWithTitle({
       )}
       <SliderWrapper
         scaleIOS={1}
-        scaleAndroid={1.2}
+        scaleAndroid={1.4}
         height={Platform.OS === "ios" ? 30 : 20}
         minimumTrackTintColor={colors.primary}
         maximumTrackTintColor={colors.onSurfaceDisabled}
@@ -84,12 +96,72 @@ export interface SliderWithValueProps extends SliderProps {
   percentage?: boolean;
 }
 
+// https://stackoverflow.com/a/19722641
+function round(value: number, places: number): number {
+  return Number(Math.round(Number(value + "e+" + places)) + "e-" + places);
+}
+
+function valueToString(
+  value?: number,
+  fractionDigits?: number,
+  percentage?: boolean
+): string {
+  const v = value && percentage ? value * 100 : value;
+  return v !== undefined ? round(v, fractionDigits ?? 0).toString() : "";
+}
+
+function stringToValue(
+  str: string,
+  percentage?: boolean,
+  min?: number,
+  max?: number
+): number {
+  let v = parseFloat(str);
+  if (percentage) v /= 100;
+  if (min !== undefined) v = Math.max(min, v);
+  if (max !== undefined) v = Math.min(max, v);
+  return v;
+}
+
+function boundsString(
+  min?: number,
+  max?: number,
+  fractionDigits?: number,
+  percentage?: boolean
+): string {
+  const f = fractionDigits;
+  const p = percentage;
+  return min !== undefined && max !== undefined
+    ? ` Between ${valueToString(min, f, p)} And ${valueToString(max, f, p)}`
+    : min !== undefined
+      ? ` Greater Than ${valueToString(min, f, p)}`
+      : max !== undefined
+        ? ` Less Than ${valueToString(max, f, p)}`
+        : "";
+}
+
 export function SliderWithValue({
   unit,
-  fractionDigits,
+  fractionDigits: fDigits,
   percentage,
   ...props
 }: SliderWithValueProps) {
+  const min = props.minimumValue ?? (percentage ? 0 : undefined);
+  const max = props.maximumValue ?? (percentage ? 1 : undefined);
+  const [showDialog, setShowDialog] = React.useState(false);
+  const inputRef = React.useRef<RNTextInput>(null);
+  const [inputValue, setInputValue] = React.useState(
+    valueToString(props.value, fDigits, percentage)
+  );
+  React.useEffect(
+    () => setInputValue(valueToString(props.value, fDigits, percentage)),
+    [fDigits, percentage, props.value]
+  );
+  const validateInput = () => {
+    const v = stringToValue(inputValue, percentage, min, max);
+    props.onValueChange?.(v);
+    setShowDialog(false);
+  };
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
@@ -97,7 +169,7 @@ export function SliderWithValue({
       <View style={{ flexGrow: 1 }}>
         <SliderWrapper
           scaleIOS={1}
-          scaleAndroid={1.2}
+          scaleAndroid={1.4}
           height={Platform.OS === "ios" ? 30 : 20}
           minimumTrackTintColor={colors.primary}
           maximumTrackTintColor={colors.onSurfaceDisabled}
@@ -107,20 +179,50 @@ export function SliderWithValue({
       </View>
       <View
         style={{
-          width: Math.max(2, fractionDigits ?? 0) * 20,
-          paddingVertical: 10,
+          width: Math.max(2, fDigits ?? 0) * 20,
+          paddingVertical: 8,
           alignItems: "center",
-          borderWidth: 1,
-          borderColor: colors.outline,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.onSurface,
           borderRadius,
         }}
       >
-        <Text>
-          {percentage
-            ? ((props.value ?? 0) * 100).toFixed() + "%"
-            : (props.value ?? 0).toFixed(fractionDigits) + (unit ?? "")}
-        </Text>
+        <TouchableRipple
+          onPress={() => {
+            setShowDialog(true);
+            // Schedule the focus to the next frame otherwise it won't work
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }}
+        >
+          <Text>
+            {percentage
+              ? ((props.value ?? 0) * 100).toFixed() + "%"
+              : (props.value ?? 0).toFixed(fDigits) + (unit ?? "")}
+          </Text>
+        </TouchableRipple>
       </View>
+      <Portal>
+        <Dialog visible={showDialog}>
+          <Dialog.Content style={{ gap: 10 }}>
+            <Text variant="bodyMedium">
+              Enter a Value
+              {boundsString(min, max, fDigits, percentage)}
+            </Text>
+            <TextInput
+              ref={inputRef}
+              mode="outlined"
+              dense
+              keyboardType={fDigits ? "decimal-pad" : "number-pad"}
+              value={inputValue}
+              onChangeText={setInputValue}
+              onEndEditing={validateInput}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={validateInput}>Done</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
