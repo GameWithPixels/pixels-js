@@ -12,6 +12,9 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { AnimationDieRenderer } from "./DieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
+import GradientIcon from "#/icons/animations/gradient";
+import PaletteIcon from "#/icons/animations/palette";
+import { AnimationUtils } from "~/features/store/library/AnimationUtils";
 
 const AnimationName = observer(function AnimationName({
   animation,
@@ -47,6 +50,11 @@ export function AnimationCard({
   fadeInDuration?: number;
   fadeInDelay?: number;
 } & Omit<TouchableCardProps, "children">) {
+  const iconStyle = {
+    position: "absolute",
+    top: row ? "auto" : 5,
+    left: row ? 10 : 5,
+  } as const;
   const { colors } = useTheme();
   return (
     <Animated.View
@@ -67,15 +75,11 @@ export function AnimationCard({
           colors={colors}
           disabled={disabled}
         />
-        {/* <FavoriteIcon
-          style={{
-            position: "absolute",
-            top: row ? "auto" : 5,
-            right: row ? 10 : 5,
-          }}
-          size={20}
-          color={getIconColor(colors, disabled)}
-        /> */}
+        {AnimationUtils.hasEditableColor(animation) ? (
+          <PaletteIcon size={20} color={colors.onPrimary} style={iconStyle} />
+        ) : AnimationUtils.hasEditableGradient(animation) ? (
+          <GradientIcon size={20} color={colors.onPrimary} style={iconStyle} />
+        ) : null}
       </TouchableCard>
     </Animated.View>
   );

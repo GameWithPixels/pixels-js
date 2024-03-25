@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -23,6 +23,7 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { IconProps } from "./icons";
 
 import AddNewIcon from "#/icons/common/fab-add-with-gradient";
+import PairIcon from "#/icons/dice/pair";
 import ChartColumnIcon from "#/icons/home/chart-column";
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
@@ -571,6 +572,7 @@ export function GradientChip({
   outline,
   icon,
   style,
+  contentStyle,
   labelStyle,
   ...props
 }: React.PropsWithChildren<{
@@ -578,6 +580,7 @@ export function GradientChip({
   outline?: boolean;
   icon?: (props: IconProps) => React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
 }> &
   Omit<TouchableRippleProps, "children" | "style">) {
@@ -600,16 +603,19 @@ export function GradientChip({
     >
       <TouchableRipple
         disabled={disabled}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingHorizontal: 16 - (outline ? 1 : 0),
-          paddingVertical: 6 - (outline ? 1 : 0),
-          borderColor: colors.outline,
-          borderWidth: outline ? 1 : 0,
-          borderRadius,
-        }}
+        style={[
+          {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 16 - (outline ? 1 : 0),
+            paddingVertical: 6 - (outline ? 1 : 0),
+            borderColor: colors.outline,
+            borderWidth: outline ? 1 : 0,
+            borderRadius,
+          },
+          contentStyle,
+        ]}
         {...props}
       >
         <>
@@ -725,15 +731,7 @@ export function AddDieButton({ contentStyle, ...props }: TouchableCardProps) {
       ]}
       {...props}
     >
-      <View style={{ width: 54, height: 54 }}>
-        <MaterialIcons name="add" size={40} color={colors.onSurfaceVariant} />
-        <MaterialCommunityIcons
-          name="dice-multiple-outline"
-          size={28}
-          color={colors.onSurfaceVariant}
-          style={{ position: "absolute", right: 0, bottom: 0 }}
-        />
-      </View>
+      <PairIcon size={40} color={colors.onSurfaceVariant} />
     </TouchableCard>
   );
 }

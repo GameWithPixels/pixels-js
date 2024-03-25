@@ -5,7 +5,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { useWindowDimensions, View, ViewProps } from "react-native";
+import { View, ViewProps } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 import Animated, {
   FadeIn,
@@ -23,6 +23,8 @@ import { ActionTypeIcon } from "./actions";
 import { Chip, GradientChip } from "./buttons";
 import { darken, getBorderColor } from "./colors";
 
+import EditIcon from "#/icons/profiles/edit";
+import LinkIcon from "#/icons/profiles/link";
 import { useAppSelector } from "~/app/hooks";
 import {
   groupAndSortProfiles,
@@ -127,39 +129,30 @@ function ProfileActions({
     profile: Readonly<Profiles.Profile>
   ) => void;
 }) {
-  const { width } = useWindowDimensions();
   return (
     <View
       style={{
         flexDirection: "row",
-        marginLeft: -5,
         marginRight: 20,
         marginVertical: 5,
         justifyContent: "space-around",
+        gap: 5,
       }}
     >
-      {/* TODO make button smaller? */}
-      {width > 350 && (
-        <GradientChip
-          // icon={({ size, color }) => (
-          //   <MaterialCommunityIcons name="upload" size={size} color={color} />
-          // )}
-          disabled={transferring}
-          sentry-label="activate-on-die"
-          onPress={() => onAction?.("activate", profile)}
-        >
-          Activate
-        </GradientChip>
-      )}
+      <GradientChip
+        icon={({ size, color }) => <LinkIcon size={size} color={color} />}
+        disabled={transferring}
+        sentry-label="activate-on-die"
+        onPress={() => onAction?.("activate", profile)}
+        style={{ flexGrow: 1, flex: 1 }}
+        contentStyle={{ paddingHorizontal: 2 }}
+      >
+        Activate
+      </GradientChip>
       <Chip
-        icon={({ size, color }) => (
-          <MaterialCommunityIcons
-            name="movie-open-edit-outline"
-            size={size}
-            color={color}
-          />
-        )}
+        icon={({ size, color }) => <EditIcon size={size} color={color} />}
         onPress={() => onAction?.("edit", profile)}
+        style={{ flexGrow: 1, flex: 1, paddingHorizontal: 2 }}
       >
         Edit
       </Chip>
