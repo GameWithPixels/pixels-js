@@ -19,6 +19,7 @@ import {
   ScanStartFailed,
   Central,
 } from "@systemic-games/react-native-pixels-connect";
+import { Platform } from "expo-modules-core";
 
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { logError, unsigned32ToHex } from "~/features/utils";
@@ -273,45 +274,56 @@ export class PixelsCentral {
     pixel,
     bootloaderPath,
     firmwarePath,
-    numRetries = 2,
   }: {
     readonly pixel: Pixel;
     readonly bootloaderPath?: string;
     readonly firmwarePath: string;
-    readonly numRetries?: number;
   }): Promise<void> {
     if (this._pixelInDFU) {
       throw new Error("DFU in progress");
     }
     const updatePixelInDFU = (pixel?: Pixel) => {
       if (this._pixelInDFU !== pixel) {
+        const entry =
+          this._pixelInDFU && this._watched.get(this._pixelInDFU.pixelId);
         this._pixelInDFU = pixel;
+        if (typeof entry === "object") {
+          // Auto re-connect to die after DFU
+          entry.connect();
+        }
         this._emitEvent("pixelInDFU", pixel);
       }
     };
     updatePixelInDFU(pixel);
     try {
-      const update = () =>
-        updateFirmware({
-          bootloaderPath,
-          firmwarePath,
-          systemId: pixel.systemId,
-          dfuStateCallback: (state) =>
-            this._emitEvent("pixelDfuState", { pixel, state }),
-          dfuProgressCallback: (progress) =>
-            this._emitEvent("pixelDfuProgress", { pixel, progress }),
-        });
-      let retry = true;
-      while (retry) {
+      let counter = 0;
+      let wasUploading = false;
+      while (true) {
         try {
-          await update();
-          retry = false;
+          const recoverFromUploadError = wasUploading;
+          ++counter;
+          wasUploading = false;
+          await updateFirmware({
+            recoverFromUploadError,
+            systemId: pixel.systemId,
+            pixelId: pixel.pixelId,
+            bootloaderPath,
+            firmwarePath,
+            dfuStateCallback: (state) => {
+              if (state === "uploading") {
+                wasUploading = true;
+              } else if (state === "disconnecting") {
+                wasUploading = false;
+              }
+              this._emitEvent("pixelDfuState", { pixel, state });
+            },
+            dfuProgressCallback: (progress) =>
+              this._emitEvent("pixelDfuProgress", { pixel, progress }),
+          });
+          break;
         } catch (e) {
-          --numRetries;
-          retry = numRetries > 0;
-          pixelLog(pixel, `DFU error ${e} (retries left ${numRetries})`);
-          logError(String(e));
-          if (!retry) {
+          logError(`DFU error ${e}${wasUploading ? " (was uploading)" : ""}`);
+          if (!wasUploading || Platform.OS !== "android" || counter > 5) {
             this._emitEvent("pixelDfuError", {
               pixel,
               error: e instanceof Error ? e : new Error(String(e)),
@@ -509,11 +521,13 @@ export class PixelsCentral {
     if (pixel && this._watched.get(pixelId) === "watched") {
       // Connection function that catches errors
       const connect = () => {
-        pixelLog(pixel, "Connecting...");
-        if (this._watched.has(pixelId)) {
-          pixel.connect().catch((e: Error) => {
-            pixelLog(pixel, `Connection error => ${e}`);
-          });
+        if (pixel !== this._pixelInDFU) {
+          pixelLog(pixel, "Connecting...");
+          if (this._watched.has(pixelId)) {
+            pixel.connect().catch((e: Error) => {
+              pixelLog(pixel, `Connection error => ${e}`);
+            });
+          }
         }
       };
 

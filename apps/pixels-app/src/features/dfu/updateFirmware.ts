@@ -9,6 +9,8 @@ import {
   startDfu,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 
+import { unsigned32ToHex } from "../utils";
+
 function idToString(targetId: DfuTargetId): string {
   return typeof targetId === "number"
     ? targetId.toString(16).match(/.{2}/g)?.join(":") ?? ""
@@ -23,18 +25,22 @@ export function isDfuDone(dfuState: DfuState): boolean {
 
 export async function updateFirmware({
   systemId,
+  pixelId,
   bootloaderPath,
   firmwarePath,
   dfuStateCallback,
   dfuProgressCallback,
   isBootloaderMacAddress,
+  recoverFromUploadError,
 }: {
   systemId: string;
+  pixelId?: number; // iOS only
   bootloaderPath?: string;
   firmwarePath?: string;
   dfuStateCallback?: (state: DfuState) => void;
   dfuProgressCallback?: (progress: number) => void;
   isBootloaderMacAddress?: boolean;
+  recoverFromUploadError?: boolean;
 }): Promise<void> {
   const hasFirmware = !!firmwarePath?.length;
   const hasBootloader = !!bootloaderPath?.length;
@@ -67,7 +73,13 @@ export async function updateFirmware({
         ((c - pendingDfuCount - 1) / c) * 100 + percent / (pendingDfuCount + 1);
       dfuProgressCallback?.(p);
     },
+    alternativeAdvertisingName:
+      // Name advertised by Bootloader
+      pixelId !== undefined ? "PXL" + unsigned32ToHex(pixelId) : undefined,
   };
+
+  const pixelIdStr =
+    pixelId !== undefined ? ` (${unsigned32ToHex(pixelId)})` : "";
 
   // Update bootloader
   if (hasBootloader) {
@@ -75,7 +87,7 @@ export async function updateFirmware({
       console.log(
         `Starting DFU for device ${idToString(
           targetId
-        )} with bootloader ${bootloaderPath}`
+        )}${pixelIdStr} with bootloader ${bootloaderPath}`
       );
       pendingDfuCount -= 1;
       await startDfu(targetId, bootloaderPath, dfuOptions);
@@ -100,32 +112,37 @@ export async function updateFirmware({
 
   // Update firmware
   if (hasFirmware && !abort) {
-    const update = async (allowRetry = true) => {
+    const update = async (retryOnVersionError = true) => {
       try {
         // After attempting to update the bootloader, device stays in bootloader mode
-        // Bootloader address = firmware address + 1
+        // Bootloader address = firmware address + 1 on Android
+        const useBlAddress =
+          (hasBootloader || recoverFromUploadError) && !isBootloaderMacAddress;
         const fwTargetId =
           typeof targetId === "number"
-            ? targetId + (hasBootloader && !isBootloaderMacAddress ? 1 : 0)
+            ? targetId + (useBlAddress ? 1 : 0)
             : targetId;
         console.log(
           `Starting DFU for device ${idToString(
             fwTargetId
-          )} with firmware ${firmwarePath}`
+          )}${pixelIdStr} with firmware ${firmwarePath}${
+            useBlAddress ? " (using Bootloader address)" : ""
+          }`
         );
         pendingDfuCount -= 1;
         await startDfu(fwTargetId, firmwarePath, dfuOptions);
       } catch (error) {
         if (
-          allowRetry &&
-          bootloaderSkipped &&
+          retryOnVersionError &&
           error instanceof DfuFirmwareVersionFailureError
         ) {
           // We sometime get this error, it looks like "left over" from the
           // bootloader update attempt that was performed just before
           console.warn(`DFU firmware version error, trying a second time`);
           pendingDfuCount += 1;
-          await delay(500); // Experimental, hopefully is delay is enough to not get the same error again
+          // Experimental, hopefully this delay is long enough to not get the
+          // same error again
+          await delay(500);
           await update(false);
         } else {
           console.log(`DFU firmware error: ${error}`);
@@ -134,6 +151,6 @@ export async function updateFirmware({
         }
       }
     };
-    await update();
+    await update(bootloaderSkipped);
   }
 }
