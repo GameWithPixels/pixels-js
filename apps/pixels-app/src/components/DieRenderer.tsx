@@ -1,5 +1,6 @@
 import {
   ActionPlayAnimation,
+  createDataSetForAnimation,
   createDataSetForProfile,
 } from "@systemic-games/pixels-edit-animation";
 import {
@@ -11,6 +12,7 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 
 import {
+  applyActionOverrides,
   applyProfileOverrides,
   getCompatibleDiceTypes,
 } from "~/features/profiles";
@@ -20,6 +22,56 @@ import {
 } from "~/features/render3d/DieRenderer";
 import { notEmpty } from "~/features/utils";
 import { useActiveProfile } from "~/hooks";
+
+export const AnimationDieRenderer = observer(function AnimationDieRenderer({
+  animation,
+  dieType,
+  colorway = "onyxBlack",
+  pedestal,
+  speed,
+}: {
+  animation: Readonly<Profiles.Animation>;
+} & Pick<DieRendererProps, "pedestal" | "speed" | "dieType"> &
+  Partial<Pick<DieRendererProps, "colorway">>) {
+  const animationsData = React.useMemo(
+    () =>
+      computed(() => {
+        const dataSet = createDataSetForAnimation(animation).toDataSet();
+        return {
+          animations: dataSet.animations,
+          bits: dataSet.animationBits,
+        };
+      }),
+    [animation]
+  ).get();
+  return (
+    <DieRendererWithFocus
+      dieType={dieType}
+      colorway={colorway}
+      animationsData={animationsData}
+      pedestal={pedestal}
+      speed={speed}
+    />
+  );
+});
+
+export const ActionPlayAnimDieRenderer = observer(
+  function ActionPlayAnimDieRenderer({
+    action,
+    ...props
+  }: {
+    action: Readonly<Profiles.ActionPlayAnimation>;
+  } & Pick<DieRendererProps, "pedestal" | "speed" | "dieType"> &
+    Partial<Pick<DieRendererProps, "colorway">>) {
+    const animation = React.useMemo(
+      () => computed(() => applyActionOverrides(action)),
+      [action]
+    ).get();
+    return animation ? (
+      <AnimationDieRenderer animation={animation} {...props} />
+    ) : null;
+  }
+);
 
 export const ProfileDieRenderer = observer(function ProfileDieRenderer({
   profile,

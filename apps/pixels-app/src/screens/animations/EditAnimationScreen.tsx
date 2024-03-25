@@ -13,9 +13,9 @@ import {
 } from "react-native-paper";
 
 import { AppBackground } from "~/components/AppBackground";
+import { AnimationDieRenderer } from "~/components/DieRenderer";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithTitle } from "~/components/SliderWithTitle";
-import { AnimationDieRenderer } from "~/components/animation";
 import {
   ButtonWithCarets,
   GradientButton,

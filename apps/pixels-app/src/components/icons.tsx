@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
-import { ColorValue, TextProps, View, ViewProps } from "react-native";
+import { ColorValue, View, ViewProps } from "react-native";
 import { useTheme } from "react-native-paper";
 
 import { getIconColor } from "./colors";
@@ -109,21 +109,6 @@ export function BatteryIcon({
             ? BatteryThreeQuartersIcon
             : BatteryFullIcon;
   return <Icon size={size} color={color ?? getIconColor(colors, disabled)} />;
-}
-
-export function getFavoriteIcon(favorite = true) {
-  return ({
-    size,
-    color,
-    ...props
-  }: { size?: number; color?: string } & TextProps) => (
-    <MaterialIcons
-      name={favorite ? "favorite" : "favorite-outline"}
-      size={size}
-      color={color}
-      {...props}
-    />
-  );
 }
 
 export function DieWireframe({

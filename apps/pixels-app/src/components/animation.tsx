@@ -1,19 +1,17 @@
 import { range } from "@systemic-games/pixels-core-utils";
-import { createDataSetForAnimation } from "@systemic-games/pixels-edit-animation";
 import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
-import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
 
+import { AnimationDieRenderer } from "./DieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
-import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 
 const AnimationName = observer(function AnimationName({
   animation,
@@ -29,33 +27,6 @@ const AnimationName = observer(function AnimationName({
     <Text numberOfLines={1} style={{ color }} variant="titleMedium">
       {animation.name}
     </Text>
-  );
-});
-
-export const AnimationDieRenderer = observer(function ActionDieRenderer({
-  animation,
-  dieType,
-}: {
-  animation: Readonly<Profiles.Animation>;
-  dieType: PixelDieType;
-}) {
-  const animationsData = React.useMemo(
-    () =>
-      computed(() => {
-        const dataSet = createDataSetForAnimation(animation).toDataSet();
-        return {
-          animations: dataSet.animations.slice(0, 1),
-          bits: dataSet.animationBits,
-        };
-      }),
-    [animation]
-  ).get();
-  return (
-    <DieRendererWithFocus
-      dieType={dieType}
-      colorway="onyxBlack"
-      animationsData={animationsData}
-    />
   );
 });
 

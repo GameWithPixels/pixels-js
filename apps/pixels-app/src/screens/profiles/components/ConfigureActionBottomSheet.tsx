@@ -29,6 +29,7 @@ import {
 } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
+import { ActionPlayAnimDieRenderer } from "~/components/DieRenderer";
 import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
 import { KeyframeGradient } from "~/components/KeyframeGradient";
@@ -800,6 +801,16 @@ export const ConfigureActionBottomSheet = observer(
               <Text variant="titleMedium" style={AppStyles.selfCentered}>
                 Configure Rule Action
               </Text>
+              {action instanceof Profiles.ActionPlayAnimation && (
+                <View
+                  style={{ width: 200, aspectRatio: 1, alignSelf: "center" }}
+                >
+                  <ActionPlayAnimDieRenderer
+                    action={action}
+                    dieType={dieType}
+                  />
+                </View>
+              )}
               {condition instanceof Profiles.ConditionRolled && (
                 <ConfigureRolledCondition
                   condition={condition}
