@@ -57,8 +57,7 @@ export function useFlashAnimationStyleOnRoll(pixel?: PixelInfoNotifier) {
     }
   }, [pixel]);
   return useFlashAnimationStyle(
-    (rollState === "rolling" || rollState === "handling") &&
-      (!status || status === "ready")
+    status === "ready" && (rollState === "rolling" || rollState === "handling")
   );
 }
 

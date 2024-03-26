@@ -121,7 +121,10 @@ export function PixelVCard({
 
   return (
     <TouchableCard
-      flash={rollEv?.state === "rolling" || rollEv?.state === "handling"}
+      flash={
+        status === "ready" &&
+        (rollEv?.state === "rolling" || rollEv?.state === "handling")
+      }
       contentStyle={[
         {
           aspectRatio: 1,
@@ -182,7 +185,10 @@ export function PixelHCard({
   return (
     <TouchableCard
       row
-      flash={rollEv?.state === "rolling" || rollEv?.state === "handling"}
+      flash={
+        status === "ready" &&
+        (rollEv?.state === "rolling" || rollEv?.state === "handling")
+      }
       {...props}
     >
       <View style={{ width: 70, aspectRatio: 1, padding: 5 }}>
