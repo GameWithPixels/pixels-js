@@ -2,7 +2,6 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { store } from "~/app/store";
 import { readAnimation } from "~/features/store/profiles";
 
 export function useAnimation(
@@ -12,11 +11,13 @@ export function useAnimation(
   return readAnimation(animationUuid, library);
 }
 
+// Returns an observable animation that is editable
 export function useEditableAnimation(
   animationUuid: string
 ): Profiles.Animation {
+  const library = useAppSelector((state) => state.library);
   return React.useMemo(
-    () => readAnimation(animationUuid, store.getState().library, true),
-    [animationUuid]
+    () => readAnimation(animationUuid, library, true),
+    [animationUuid, library]
   );
 }
