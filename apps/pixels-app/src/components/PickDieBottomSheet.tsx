@@ -28,6 +28,7 @@ import {
   useBottomSheetPadding,
   usePixelScanner,
   useBottomSheetBackHandler,
+  usePixelsCentral,
 } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetBackgroundStyle } from "~/themes";
@@ -39,6 +40,7 @@ function PairedDieCard({
   pairedDie: PairedDie;
   onSelect?: (pixel: Pixel) => void;
 }) {
+  const central = usePixelsCentral();
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
@@ -47,9 +49,14 @@ function PairedDieCard({
   return (
     <TouchableCard
       row
-      disabled={disabled}
       contentStyle={{ padding: 10 }}
-      onPress={() => pixel && onSelect?.(pixel)}
+      onPress={() => {
+        if (pixel?.isReady) {
+          onSelect?.(pixel);
+        } else {
+          central.connectToMissingPixels(pairedDie.pixelId);
+        }
+      }}
     >
       <DieWireframe size={40} dieType={pairedDie.dieType} disabled={disabled} />
       <View

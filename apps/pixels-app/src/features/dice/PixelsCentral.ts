@@ -223,7 +223,8 @@ export class PixelsCentral {
   // Notes:
   // - If called multiple times before the scan stops then the Pixel ids accumulates.
   // - Will be interrupted if stopScan() is called.
-  connectToMissingPixels(pixelsIds: readonly number[]): void {
+  connectToMissingPixels(pixelsIds: readonly number[] | number): void {
+    pixelsIds = Array.isArray(pixelsIds) ? pixelsIds : [pixelsIds];
     const missingPixels = pixelsIds.filter(
       (id) => this._watched.get(id) === "watched"
     );

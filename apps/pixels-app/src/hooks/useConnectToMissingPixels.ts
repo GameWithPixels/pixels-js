@@ -10,11 +10,7 @@ export function useConnectToMissingPixels(): (
   // It will automatically stop after a little while anyways
   return React.useCallback(
     (pixelsIds?: number[] | number) => {
-      central.connectToMissingPixels(
-        typeof pixelsIds === "number"
-          ? [pixelsIds]
-          : pixelsIds ?? central.watchedPixelsIds
-      );
+      central.connectToMissingPixels(pixelsIds ?? central.watchedPixelsIds);
     },
     [central]
   );
