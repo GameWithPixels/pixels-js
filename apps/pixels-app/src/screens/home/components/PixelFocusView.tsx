@@ -164,12 +164,10 @@ export function PixelFocusViewHeader({
             onReset={() => showConfirmReset()}
             onTurnOff={() => showConfirmTurnOff()}
           />
-          {pixel && (
-            <FirmwareUpdateBadge
-              pixel={pixel}
-              style={{ position: "absolute", right: -15, top: 5 }}
-            />
-          )}
+          <FirmwareUpdateBadge
+            pairedDie={pairedDie}
+            style={{ position: "absolute", right: -15, top: 5 }}
+          />
         </Pressable>
       ) : (
         pixel && (

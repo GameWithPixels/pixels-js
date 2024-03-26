@@ -1,7 +1,6 @@
-import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
-
 import { useAppDfuFiles } from "./useDfuFiles";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import {
   DfuAvailability,
@@ -9,10 +8,11 @@ import {
 } from "~/features/dice/getDieDfuAvailability";
 
 export function usePixelDfuAvailability(
-  pixel: Pick<PixelInfo, "pixelId"> | number | undefined
+  pairedDie: Pick<PairedDie, "pixelId"> | number
 ): DfuAvailability {
   const { dfuFilesInfo } = useAppDfuFiles();
-  const pixelId = typeof pixel === "number" ? pixel : pixel?.pixelId;
+  const pixelId =
+    typeof pairedDie === "number" ? pairedDie : pairedDie?.pixelId;
   const pixelTimestamp = useAppSelector(
     (state) =>
       state.pairedDice.paired.find((d) => d.pixelId === pixelId)
@@ -22,9 +22,9 @@ export function usePixelDfuAvailability(
 }
 
 export function useHasFirmwareUpdate(
-  pixel: Pick<PixelInfo, "pixelId"> | number
+  pairedDie: Pick<PairedDie, "pixelId"> | number
 ): boolean {
-  return usePixelDfuAvailability(pixel) === "outdated";
+  return usePixelDfuAvailability(pairedDie) === "outdated";
 }
 
 export function useOutdatedPixelsCount(): number {

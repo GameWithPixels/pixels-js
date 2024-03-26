@@ -1,16 +1,18 @@
 import { AntDesign } from "@expo/vector-icons";
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import { TextProps } from "react-native";
 import { useTheme } from "react-native-paper";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useHasFirmwareUpdate } from "~/hooks";
 
 export function FirmwareUpdateBadge({
-  pixel,
+  pairedDie,
   ...props
-}: { pixel: Pixel } & Omit<TextProps, "children">) {
+}: {
+  pairedDie: Pick<PairedDie, "pixelId">;
+} & Omit<TextProps, "children">) {
   const { colors } = useTheme();
-  return useHasFirmwareUpdate(pixel) ? (
+  return useHasFirmwareUpdate(pairedDie) ? (
     <AntDesign
       name="exclamationcircle"
       size={20}

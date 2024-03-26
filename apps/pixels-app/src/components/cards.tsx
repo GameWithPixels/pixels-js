@@ -157,12 +157,10 @@ export function PixelVCard({
         <PixelDieRenderer key={dieRenderWidth} pixel={pairedDie} />
       </View>
       <VCardLabel pairedDie={pairedDie} pixel={pixel} miniCards={miniCards} />
-      {pixel && (
-        <FirmwareUpdateBadge
-          pixel={pixel}
-          style={{ position: "absolute", right: 5, top: 5 }}
-        />
-      )}
+      <FirmwareUpdateBadge
+        pairedDie={pairedDie}
+        style={{ position: "absolute", right: 5, top: 5 }}
+      />
     </TouchableCard>
   );
 }
@@ -220,12 +218,10 @@ export function PixelHCard({
           <PixelBattery pixel={pixel} size={22} />
         </View>
       )}
-      {pixel && (
-        <FirmwareUpdateBadge
-          pixel={pixel}
-          style={{ position: "absolute", right: 5, top: 5 }}
-        />
-      )}
+      <FirmwareUpdateBadge
+        pairedDie={pairedDie}
+        style={{ position: "absolute", right: 5, top: 5 }}
+      />
     </TouchableCard>
   );
 }
