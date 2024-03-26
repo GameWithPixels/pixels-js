@@ -18,7 +18,9 @@ export function usePixelDfuAvailability(
       state.pairedDice.paired.find((d) => d.pixelId === pixelId)
         ?.firmwareTimestamp
   );
-  return getDieDfuAvailability(pixelTimestamp, dfuFilesInfo?.timestamp);
+  return pixelTimestamp !== undefined
+    ? getDieDfuAvailability(pixelTimestamp, dfuFilesInfo?.timestamp)
+    : "unknown";
 }
 
 export function useHasFirmwareUpdate(
