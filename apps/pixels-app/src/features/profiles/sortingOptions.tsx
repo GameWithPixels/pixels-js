@@ -167,11 +167,11 @@ export function sortProfiles(
       return profiles.sort((a, b) => b.name.localeCompare(a.name));
     case "chronological":
       return profiles.sort(
-        (a, b) => b.creationDate.getTime() - a.creationDate.getTime()
+        (a, b) => a.creationDate.getTime() - b.creationDate.getTime()
       );
     case "chronological-reverse":
       return profiles.sort(
-        (a, b) => a.creationDate.getTime() - b.creationDate.getTime()
+        (a, b) => b.creationDate.getTime() - a.creationDate.getTime()
       );
     default:
       assertNever(sortMode, `No sorting for ${sortMode}`);
@@ -368,9 +368,9 @@ function sortGroupedByTime<T extends { name: string }>(
         values: values.sort((a, b) => b.name.localeCompare(a.name)),
       }));
     case undefined:
-    case "chronological":
-      return groups;
     case "chronological-reverse":
+      return groups;
+    case "chronological":
       groups.reverse();
       for (const { values } of groups) {
         values.reverse();

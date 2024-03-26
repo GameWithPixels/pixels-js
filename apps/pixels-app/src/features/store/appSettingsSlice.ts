@@ -32,7 +32,7 @@ const initialState: AppSettingsState = {
   diceGrouping: "dieType",
   diceSortMode: "alphabetical",
   profilesGrouping: "dieType",
-  profilesSortMode: "alphabetical",
+  profilesSortMode: "chronological-reverse",
   animationsGrouping: "type",
   animationsSortMode: "alphabetical",
   updateBootloader: false,
