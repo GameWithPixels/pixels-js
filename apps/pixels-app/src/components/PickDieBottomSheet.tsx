@@ -7,6 +7,7 @@ import {
   Pixel,
   PixelDieType,
   usePixelStatus,
+  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
@@ -43,12 +44,17 @@ function PairedDieCard({
   const central = usePixelsCentral();
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
+  const [rollEv] = usePixelValue(pixel, "rollState");
   const disabled = status !== "ready";
   const { colors } = useTheme();
   const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
   return (
     <TouchableCard
       row
+      flash={
+        status === "ready" &&
+        (rollEv?.state === "rolling" || rollEv?.state === "handling")
+      }
       contentStyle={{ padding: 10 }}
       onPress={() => {
         if (pixel?.isReady) {
