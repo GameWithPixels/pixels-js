@@ -102,23 +102,8 @@ function SelectPixels({
 
   return (
     <>
-      <ScannedPixelsCount
-        diceCount={diceCount}
-        style={{ marginVertical: 10 }}
-      />
+      <ScannedPixelsCount diceCount={diceCount} style={{ marginTop: 5 }} />
       <BottomSheetScrollView>
-        <GradientButton
-          disabled={!selection.length}
-          sentry-label="pair-dice"
-          style={{ marginBottom: 10 }}
-          onPress={() => onPairDice(selection)}
-        >
-          {!selection.length
-            ? "No Die Selected"
-            : selection.length === 1
-              ? "Pair 1 Pixels Die"
-              : `Pair ${selection.length} Pixels Dice`}
-        </GradientButton>
         {showNoDie && diceCount === 0 && <NoAvailableDice />}
         {pixels.map((sp) => (
           <ScannedPixelItem
@@ -135,6 +120,18 @@ function SelectPixels({
           />
         ))}
       </BottomSheetScrollView>
+      <GradientButton
+        disabled={!selection.length}
+        sentry-label="pair-dice"
+        style={{ marginBottom: 10 }}
+        onPress={() => onPairDice(selection)}
+      >
+        {!selection.length
+          ? "No Die Selected"
+          : selection.length === 1
+            ? "Pair 1 Pixels Die"
+            : `Pair ${selection.length} Pixels Dice`}
+      </GradientButton>
     </>
   );
 }
