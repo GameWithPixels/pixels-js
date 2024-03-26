@@ -30,7 +30,7 @@ import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
 import { blinkDie, resetDieSettings, transferProfile } from "~/features/dice";
 import { renameDie } from "~/features/dice/renameDie";
-import { FactoryProfile, getPixelStatusLabel } from "~/features/profiles";
+import { FactoryProfile } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
 import {
   useActiveProfile,
@@ -89,7 +89,6 @@ export function PixelFocusViewHeader({
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
-  const [pixelName] = usePixelValue(pixel, "name");
   const hasFirmwareUpdate = useHasFirmwareUpdate(pairedDie.pixelId);
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const showConfirmReset = useConfirmActionSheet(
@@ -122,9 +121,10 @@ export function PixelFocusViewHeader({
 
   const { width: windowWidth } = useWindowDimensions();
   const { colors } = useTheme();
-  const color = actionsMenuVisible
-    ? colors.onSurfaceDisabled
-    : colors.onSurface;
+  const textColor =
+    actionsMenuVisible || disabled
+      ? colors.onSurfaceDisabled
+      : colors.onSurface;
   return (
     <View>
       {!renameVisible ? (
@@ -142,14 +142,16 @@ export function PixelFocusViewHeader({
             style={{
               paddingTop: 10,
               paddingHorizontal: 5,
-              color,
+              color: textColor,
             }}
           >
-            {disabled ? getPixelStatusLabel(status) : pixelName}
+            {pairedDie.name}
           </Text>
           <ChevronDownIcon
             size={18}
-            color={color}
+            color={
+              actionsMenuVisible ? colors.onSurfaceDisabled : colors.onSurface
+            }
             backgroundColor={makeTransparent(colors.onBackground, 0.2)}
             style={{ marginBottom: 3 }}
           />

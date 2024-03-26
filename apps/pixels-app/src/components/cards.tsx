@@ -5,7 +5,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -56,12 +56,13 @@ function AnimatedNameWithRoll({
     }
   }, [animValue, roll]);
 
+  const { colors } = useTheme();
+  const color =
+    status === "ready" ? colors.onSurface : colors.onSurfaceDisabled;
   return (
     <Animated.View style={animStyle}>
-      <Text variant="labelSmall">
-        {status && status !== "ready" && status !== "disconnected"
-          ? getPixelStatusLabel(status)
-          : rollText ?? pixelName}
+      <Text variant="labelSmall" style={{ color }}>
+        {status === "ready" && rollText ? rollText : pixelName}
       </Text>
     </Animated.View>
   );
