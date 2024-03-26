@@ -1,4 +1,4 @@
-import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
@@ -6,10 +6,9 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppSelector } from "~/app/hooks";
 import { ProfilePicker } from "~/components/ProfilePicker";
-import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetBackHandler } from "~/hooks";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 export function PickProfileBottomSheet({
   pixel,
@@ -43,20 +42,10 @@ export function PickProfileBottomSheet({
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={["50%", "92%"]}
-      index={1}
+      snapPoints={["92%"]}
       onDismiss={onDismiss}
       onChange={onChange}
-      animationConfigs={bottomSheetAnimationConfigFix}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={1}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
+      {...getBottomSheetProps(colors)}
     >
       <RootSiblingParent>
         <ThemeProvider theme={theme}>

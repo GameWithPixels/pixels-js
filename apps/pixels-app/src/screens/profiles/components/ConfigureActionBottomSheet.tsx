@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
   BottomSheetTextInput,
@@ -50,14 +49,10 @@ import {
   playActionSpeakText,
 } from "~/features/profiles";
 import { AnimationUtils } from "~/features/store/library/AnimationUtils";
-import {
-  androidBottomSheetSliderFix,
-  bottomSheetAnimationConfigFix,
-  TrailingSpaceFix,
-} from "~/fixes";
+import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 function TextInput({
   value,
@@ -788,16 +783,7 @@ export const ConfigureActionBottomSheet = observer(
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
-        animationConfigs={bottomSheetAnimationConfigFix}
-        backgroundStyle={getBottomSheetBackgroundStyle()}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop
-            appearsOnIndex={0}
-            disappearsOnIndex={-1}
-            pressBehavior="close"
-            {...props}
-          />
-        )}
+        {...getBottomSheetProps(colors)}
         {...androidBottomSheetSliderFix}
       >
         <RootSiblingParent>

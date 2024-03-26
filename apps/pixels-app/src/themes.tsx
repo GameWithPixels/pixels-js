@@ -1,4 +1,8 @@
-import { BottomSheetProps } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+  BottomSheetProps,
+} from "@gorhom/bottom-sheet";
 import {
   DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
@@ -13,6 +17,7 @@ import {
 import Toast from "react-native-root-toast";
 
 import { makeTransparent } from "./components/colors";
+import { bottomSheetAnimationConfigFix } from "./fixes";
 import { RootScreenName } from "./navigation";
 
 function createTheme(
@@ -105,12 +110,6 @@ export function backgroundImageFromColor(color: string): number {
   }
 }
 
-export function getBottomSheetBackgroundStyle(): BottomSheetProps["backgroundStyle"] {
-  return {
-    backgroundColor: Colors.grey900, // grey900 - before: colors.elevation.level2,
-  };
-}
-
 // From react-native-paper\src\styles\themes\v2\colors.tsx
 export const Colors = {
   grey50: "#fafafa",
@@ -132,3 +131,33 @@ export const ToastSettings = {
   backgroundColor: AppDarkTheme.colors.elevation.level3,
   textColor: AppDarkTheme.colors.onSurface,
 } as const;
+
+const bottomSheetBackgroundStyle = { backgroundColor: Colors.grey900 } as const; // grey900 - before: colors.elevation.level2,
+
+function BottomSheetBackdropComponent(props: BottomSheetBackdropProps) {
+  return (
+    <BottomSheetBackdrop
+      appearsOnIndex={0}
+      disappearsOnIndex={-1}
+      pressBehavior="close"
+      {...props}
+    />
+  );
+}
+
+export function getBottomSheetProps(
+  colors: MD3Theme["colors"]
+): Pick<
+  BottomSheetProps,
+  | "animationConfigs"
+  | "backgroundStyle"
+  | "handleIndicatorStyle"
+  | "backdropComponent"
+> {
+  return {
+    animationConfigs: bottomSheetAnimationConfigFix,
+    backgroundStyle: bottomSheetBackgroundStyle,
+    handleIndicatorStyle: { backgroundColor: colors.primary },
+    backdropComponent: BottomSheetBackdropComponent,
+  };
+}

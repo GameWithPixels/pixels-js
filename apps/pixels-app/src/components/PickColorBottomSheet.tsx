@@ -1,8 +1,4 @@
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { ColorUtils } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
@@ -10,10 +6,9 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { ColorWheel } from "./ColorWheel";
 
-import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 export function PickColorBottomSheet({
   color,
@@ -45,16 +40,7 @@ export function PickColorBottomSheet({
       enableDynamicSizing
       onDismiss={onDismiss}
       onChange={onChange}
-      animationConfigs={bottomSheetAnimationConfigFix}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
+      {...getBottomSheetProps(colors)}
     >
       <RootSiblingParent>
         <ThemeProvider theme={theme}>

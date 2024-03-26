@@ -1,9 +1,5 @@
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
@@ -73,7 +69,6 @@ import {
 } from "~/features/profiles";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
-import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
   useAppDfuFiles,
   useWatchedPixels,
@@ -89,7 +84,7 @@ import {
 } from "~/hooks";
 import { OnboardingScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 function LightUpYourGameImage({
   height = 80,
@@ -364,16 +359,7 @@ function HelpTurnOnDiceModal({
       snapPoints={["92%"]}
       onDismiss={onDismiss}
       onChange={onChange}
-      animationConfigs={bottomSheetAnimationConfigFix}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
+      {...getBottomSheetProps(colors)}
     >
       <ThemeProvider theme={theme}>
         <BottomSheetScrollView

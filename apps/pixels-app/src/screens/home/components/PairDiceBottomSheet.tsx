@@ -1,8 +1,4 @@
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
@@ -20,7 +16,6 @@ import { AnimatedSelectionButton, GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 import { addPairedDie } from "~/features/store/pairedDiceSlice";
-import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
   usePixelScanner,
   useBottomSheetPadding,
@@ -29,7 +24,7 @@ import {
   useBottomSheetBackHandler,
 } from "~/hooks";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 function NoAvailableDice() {
   return (
@@ -206,16 +201,7 @@ export function PairDiceBottomSheet({
       snapPoints={["50%"]}
       onDismiss={dismiss}
       onChange={onChange}
-      animationConfigs={bottomSheetAnimationConfigFix}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
+      {...getBottomSheetProps(colors)}
     >
       <RootSiblingParent>
         <ThemeProvider theme={theme}>

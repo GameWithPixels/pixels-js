@@ -1,8 +1,4 @@
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import {
   PixelDieType,
   Profiles,
@@ -14,14 +10,13 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { AnimationsGrid } from "~/components/animation";
-import { bottomSheetAnimationConfigFix } from "~/fixes";
 import {
   useAnimationsList,
   useBottomSheetBackHandler,
   useBottomSheetPadding,
 } from "~/hooks";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 const categories: Profiles.AnimationCategory[] = [
   "colorful",
@@ -90,16 +85,7 @@ export function PickAnimationBottomSheet({
       snapPoints={["92%"]}
       onDismiss={onDismiss}
       onChange={onChange}
-      animationConfigs={bottomSheetAnimationConfigFix}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
+      {...getBottomSheetProps(colors)}
     >
       <RootSiblingParent>
         <ThemeProvider theme={theme}>

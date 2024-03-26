@@ -1,8 +1,4 @@
-import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import React from "react";
 import { View } from "react-native";
 import { useTheme, Text, ThemeProvider, IconButton } from "react-native-paper";
@@ -10,9 +6,8 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { SelectionButton } from "./buttons";
 
-import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetBackHandler } from "~/hooks";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 export type SortBottomSheetSortIcon = (props: {
   size: number;
@@ -63,16 +58,7 @@ export function SortBottomSheet({
       enableDynamicSizing
       onDismiss={onDismiss}
       onChange={onChange}
-      animationConfigs={bottomSheetAnimationConfigFix}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
+      {...getBottomSheetProps(colors)}
     >
       <RootSiblingParent>
         <ThemeProvider theme={theme}>

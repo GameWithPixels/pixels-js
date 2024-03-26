@@ -1,8 +1,4 @@
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { Color, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -19,10 +15,9 @@ import { RootSiblingParent } from "react-native-root-siblings";
 import { ColorWheel } from "./ColorWheel";
 import { KeyframeGradient } from "./KeyframeGradient";
 
-import { bottomSheetAnimationConfigFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 import { AppStyles } from "~/styles";
-import { getBottomSheetBackgroundStyle } from "~/themes";
+import { getBottomSheetProps } from "~/themes";
 
 export function EditGradientBottomSheet({
   keyframes,
@@ -63,16 +58,7 @@ export function EditGradientBottomSheet({
       enableDynamicSizing
       onDismiss={onDismiss}
       onChange={onChange}
-      animationConfigs={bottomSheetAnimationConfigFix}
-      backgroundStyle={getBottomSheetBackgroundStyle()}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          {...props}
-        />
-      )}
+      {...getBottomSheetProps(colors)}
     >
       <RootSiblingParent>
         <ThemeProvider theme={theme}>
