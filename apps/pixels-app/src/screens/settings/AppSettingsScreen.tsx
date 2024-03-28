@@ -12,8 +12,8 @@ import {
   resetAppSettings,
   setDiceBrightnessFactor,
 } from "~/features/store/appSettingsSlice";
-import { resetAppUpdate } from "~/features/store/appUpdateSlice";
-import { resetRollsHistory } from "~/features/store/diceRollsSlice";
+import { resetAppTransientState } from "~/features/store/appTransientSlice";
+import { resetDiceTransientState } from "~/features/store/diceTransientSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
 import { AppSettingsScreenProps, SettingsMenuScreenProps } from "~/navigation";
@@ -40,8 +40,8 @@ function AppSettingsPage({
     central.stopScan();
     appDispatch(resetAppSettings());
     appDispatch(resetPairedDice());
-    appDispatch(resetRollsHistory());
-    appDispatch(resetAppUpdate());
+    appDispatch(resetDiceTransientState());
+    appDispatch(resetAppTransientState());
     Library.dispatchReset(appDispatch);
     navigation.navigate("onboarding");
   });

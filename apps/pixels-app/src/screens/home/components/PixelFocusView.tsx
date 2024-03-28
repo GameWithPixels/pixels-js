@@ -250,7 +250,7 @@ export function PixelFocusView({
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const activeProfile = useActiveProfile(pairedDie);
-  const transferring = useAppSelector((state) => !!state.diceRolls.transfer);
+  const transferring = useAppSelector((state) => !!state.diceTransient.transfer);
   const [pickProfile, setPickProfile] = React.useState(false);
 
   const showNewPixelsAppBanner = useAppSelector(

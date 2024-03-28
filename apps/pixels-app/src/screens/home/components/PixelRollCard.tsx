@@ -23,7 +23,7 @@ function useLastRolls({
   pixelId,
 }: Pick<PairedDie, "pixelId">): { key: number; roll: number }[] {
   const rolls = useAppSelector(
-    (state) => state.diceRolls.dice.find((d) => d.pixelId === pixelId)?.rolls
+    (state) => state.diceStats.entities[pixelId]?.rolls
   );
   return React.useMemo(() => {
     const count = rolls?.length ?? 0;

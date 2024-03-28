@@ -24,7 +24,7 @@ export function PickProfileBottomSheet({
   onDismiss: () => void;
 }) {
   const profileUuid = useAppSelector(
-    (state) => state.diceRolls.transfer?.profileUuid
+    (state) => state.diceTransient.transfer?.profileUuid
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);

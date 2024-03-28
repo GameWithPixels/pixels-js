@@ -7,7 +7,7 @@ import {
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
 import { LibraryData } from "../LibraryData";
-import { log } from "../log";
+import { logWrite } from "../logWrite";
 
 export type AnimationsState<T extends Serializable.AnimationData> =
   EntityState<T>;
@@ -26,7 +26,7 @@ export function createSliceGenerator<T extends Serializable.AnimationData>(
       reset(_, action: PayloadAction<LibraryData>) {
         const state = animationsAdapter.getInitialState();
         const animations = action.payload.animations[name];
-        log("reset", "animation", `type=${name}, count=${animations.length}`);
+        logWrite("reset", "animation", `type=${name}, count=${animations.length}`);
         return animationsAdapter.addMany(
           state,
           animations
@@ -37,7 +37,7 @@ export function createSliceGenerator<T extends Serializable.AnimationData>(
       add(state, action: PayloadAction<T>) {
         const data = action.payload;
         animationsAdapter.addOne(state, data);
-        log("add", "animation", data.uuid, `type=${name}`);
+        logWrite("add", "animation", data.uuid, `type=${name}`);
       },
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

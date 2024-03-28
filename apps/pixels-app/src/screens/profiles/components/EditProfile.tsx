@@ -82,7 +82,7 @@ const BrightnessSlider = observer(function BrightnessSlider({
 
 function TransferProfileButton({ onPress }: { onPress: () => void }) {
   const profileUuid = useAppSelector(
-    (state) => state.diceRolls.transfer?.profileUuid
+    (state) => state.diceTransient.transfer?.profileUuid
   );
   const { colors } = useTheme();
   return (

@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LibraryState, RootState } from "~/app/store";
 import { FactoryProfile } from "~/features/profiles";
 import { Library } from "~/features/store";
-import { log } from "~/features/store/library/log";
+import { logWrite } from "~/features/store/library/logWrite";
 import { readProfile } from "~/features/store/profiles";
 
 const editableProfiles = new Map<
@@ -67,7 +67,7 @@ export function useCommitEditableProfile(): {
             Library.Profiles.update(Serializable.fromProfile(profile))
           );
           // Update original profile
-          log(
+          logWrite(
             "update",
             "profile",
             profile.uuid,

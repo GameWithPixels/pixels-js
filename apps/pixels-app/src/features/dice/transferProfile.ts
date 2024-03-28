@@ -10,7 +10,7 @@ import { applyProfileOverrides } from "~/features/profiles";
 import {
   clearProfileTransfer,
   setProfileTransfer,
-} from "~/features/store/diceRollsSlice";
+} from "~/features/store/diceTransientSlice";
 import { updatePairedDieProfile } from "~/features/store/pairedDiceSlice";
 import { ToastSettings } from "~/themes";
 

@@ -7,7 +7,7 @@ import {
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
 import { LibraryData } from "./LibraryData";
-import { log } from "./log";
+import { logWrite } from "./logWrite";
 
 export type GradientsState = EntityState<Serializable.GradientData>;
 
@@ -21,20 +21,20 @@ const gradientsSlice = createSlice({
   reducers: {
     reset(_, action: PayloadAction<LibraryData>) {
       const state = gradientsAdapter.getInitialState();
-      log("reset", "gradient", "count=" + action.payload.gradients.length);
+      logWrite("reset", "gradient", "count=" + action.payload.gradients.length);
       return gradientsAdapter.addMany(state, action.payload.gradients);
     },
 
     add(state, action: PayloadAction<Serializable.GradientData>) {
       const gradient = action.payload;
       gradientsAdapter.addOne(state, gradient);
-      log("add", "gradient", gradient.uuid);
+      logWrite("add", "gradient", gradient.uuid);
     },
 
     update(state, action: PayloadAction<Serializable.GradientData>) {
       const gradient = action.payload;
       gradientsAdapter.setOne(state, gradient);
-      log("update", "gradient", gradient.uuid);
+      logWrite("update", "gradient", gradient.uuid);
       // const index = state.patterns.findIndex((p) => p.uuid === gradient.uuid);
       // if (index >= 0) {
       //   state.gradients[index] = gradient;
@@ -47,7 +47,7 @@ const gradientsSlice = createSlice({
     remove(state, action: PayloadAction<string>) {
       const uuid = action.payload;
       gradientsAdapter.removeOne(state, uuid);
-      log("remove", "gradient", uuid);
+      logWrite("remove", "gradient", uuid);
       // const index = state.patterns.findIndex((p) => p.uuid === uuid);
       // if (index >= 0) {
       //   state.patterns.splice(index, 1);

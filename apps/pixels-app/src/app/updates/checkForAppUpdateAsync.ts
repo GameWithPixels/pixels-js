@@ -2,7 +2,7 @@ import * as Updates from "expo-updates";
 
 import { AppDispatch } from "../store";
 
-import { setAppUpdateResponse } from "~/features/store/appUpdateSlice";
+import { setAppUpdateResponse } from "~/features/store/appTransientSlice";
 import { isErrorNoUpdatePublished } from "~/fixes";
 
 // Never throws

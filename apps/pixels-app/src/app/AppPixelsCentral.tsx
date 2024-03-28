@@ -18,7 +18,7 @@ import {
   playActionMakeWebRequest,
   playActionSpeakText,
 } from "~/features/profiles";
-import { addDieRoll } from "~/features/store/diceRollsSlice";
+import { addDieRoll } from "~/features/store/diceStatsSlice";
 import {
   updatePairedDieFirmwareTimestamp,
   updatePairedDieName,

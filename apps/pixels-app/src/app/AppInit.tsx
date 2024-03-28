@@ -47,7 +47,9 @@ export function AppInit({ children }: React.PropsWithChildren) {
       return () => clearInterval(id);
     }
   }, [appDispatch, active]);
-  const hasUpdate = useAppSelector((state) => !!state.appUpdate.manifest);
+  const hasUpdate = useAppSelector(
+    (state) => !!state.appTransient.update.manifest
+  );
   React.useEffect(() => {
     if (hasUpdate) {
       // Inform user

@@ -1,8 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { logWrite } from "./logWrite";
+
 import { PairedDie } from "~/app/PairedDie";
 import { FactoryProfile } from "~/features/profiles";
-import { getTimeStringMs, logError, unsigned32ToHex } from "~/features/utils";
+import { logError, unsigned32ToHex } from "~/features/utils";
 
 export interface PairedDiceState {
   paired: PairedDie[];
@@ -25,13 +27,7 @@ function log(
     | "updatePairedDieFirmwareTimestamp",
   payload?: any
 ) {
-  if (__DEV__) {
-    console.log(
-      `[${getTimeStringMs()}] Store Write ${action}, payload: ${JSON.stringify(
-        payload
-      )}`
-    );
-  }
+  logWrite(`${action}, payload: ${JSON.stringify(payload)}`);
 }
 
 // Redux slice that stores information about paired dice

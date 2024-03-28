@@ -36,7 +36,7 @@ function CheckForUpdatePage({
   navigation: CheckForUpdateScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-  const appUpdate = useAppSelector((state) => state.appUpdate);
+  const appUpdate = useAppSelector((state) => state.appTransient.update);
 
   // Immediately check for update if we don't have a response yet
   React.useEffect(() => {

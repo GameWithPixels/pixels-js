@@ -7,7 +7,7 @@ import {
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
 import { LibraryData } from "./LibraryData";
-import { log } from "./log";
+import { logWrite } from "./logWrite";
 
 export type PatternsState = EntityState<Serializable.PatternData>;
 
@@ -21,20 +21,20 @@ const patternsSlice = createSlice({
   reducers: {
     reset(_, action: PayloadAction<LibraryData>) {
       const state = patternsAdapter.getInitialState();
-      log("reset", "pattern", "count=" + action.payload.patterns.length);
+      logWrite("reset", "pattern", "count=" + action.payload.patterns.length);
       return patternsAdapter.addMany(state, action.payload.patterns);
     },
 
     add(state, action: PayloadAction<Serializable.PatternData>) {
       const pattern = action.payload;
       patternsAdapter.addOne(state, pattern);
-      log("add", "pattern", pattern.uuid, pattern.name);
+      logWrite("add", "pattern", pattern.uuid, pattern.name);
     },
 
     update(state, action: PayloadAction<Serializable.PatternData>) {
       const pattern = action.payload;
       patternsAdapter.setOne(state, pattern);
-      log("update", "pattern", pattern.uuid, pattern.name);
+      logWrite("update", "pattern", pattern.uuid, pattern.name);
       // const index = state.patterns.findIndex((p) => p.uuid === pattern.uuid);
       // if (index >= 0) {
       //   state.patterns[index] = pattern;
@@ -47,7 +47,7 @@ const patternsSlice = createSlice({
     remove(state, action: PayloadAction<string>) {
       const uuid = action.payload;
       patternsAdapter.removeOne(state, uuid);
-      log("remove", "pattern", uuid);
+      logWrite("remove", "pattern", uuid);
       // const index = state.patterns.findIndex((p) => p.uuid === uuid);
       // if (index >= 0) {
       //   state.patterns.splice(index, 1);

@@ -235,7 +235,7 @@ export function ProfileCard({
   ...props
 }: ProfileCardProps) {
   const transferredProfileUuid = useAppSelector(
-    (state) => state.diceRolls.transfer?.profileUuid
+    (state) => state.diceTransient.transfer?.profileUuid
   );
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });

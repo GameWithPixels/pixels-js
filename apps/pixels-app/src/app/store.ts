@@ -21,8 +21,9 @@ import {
 } from "redux-persist";
 
 import appSettingsReducer from "~/features/store/appSettingsSlice";
-import appUpdateReducer from "~/features/store/appUpdateSlice";
-import diceRollsReducer from "~/features/store/diceRollsSlice";
+import appTransientReducer from "~/features/store/appTransientSlice";
+import diceStatsReducer from "~/features/store/diceStatsSlice";
+import diceTransientReducer from "~/features/store/diceTransientSlice";
 import animationsCycleReducer from "~/features/store/library/animations/cycleSlice";
 import animationsFlashesReducer from "~/features/store/library/animations/flashesSlice";
 import animationsGradientPatternReducer from "~/features/store/library/animations/gradientPatternSlice";
@@ -172,6 +173,7 @@ const rootReducer = combineReducers({
   appSettings: persist("appSettings", appSettingsReducer),
   // Dice data
   pairedDice: persist("pairedDice", pairedDiceReducer),
+  diceStats: persist("diceStats", diceStatsReducer),
   // Library data
   library: combineReducers({
     profiles: persist("library/profiles", profilesReducer),
@@ -193,8 +195,8 @@ const rootReducer = combineReducers({
     gradients: persist("library/gradients", gradientsReducer),
   }),
   // Transient data
-  diceRolls: diceRollsReducer,
-  appUpdate: appUpdateReducer,
+  diceTransient: diceTransientReducer,
+  appTransient: appTransientReducer,
 });
 
 export const store = configureStore({

@@ -7,7 +7,7 @@ import {
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
 import { LibraryData } from "./LibraryData";
-import { log } from "./log";
+import { logWrite } from "./logWrite";
 
 export type ProfilesState = EntityState<Serializable.ProfileData>;
 
@@ -21,20 +21,20 @@ const profilesSlice = createSlice({
   reducers: {
     reset(_, action: PayloadAction<LibraryData>) {
       const state = profilesAdapter.getInitialState();
-      log("reset", "profile", "count=" + action.payload.profiles.length);
+      logWrite("reset", "profile", "count=" + action.payload.profiles.length);
       return profilesAdapter.addMany(state, action.payload.profiles);
     },
 
     add(state, action: PayloadAction<Serializable.ProfileData>) {
       const profile = action.payload;
       profilesAdapter.addOne(state, profile);
-      log("add", "profile", profile.uuid, profile.name);
+      logWrite("add", "profile", profile.uuid, profile.name);
     },
 
     update(state, action: PayloadAction<Serializable.ProfileData>) {
       const profile = action.payload;
       profilesAdapter.setOne(state, profile);
-      log("update", "profile", profile.uuid, profile.name);
+      logWrite("update", "profile", profile.uuid, profile.name);
       // const index = state.profiles.findIndex((p) => p.uuid === profile.uuid);
       // if (index >= 0) {
       //   state.profiles[index] = profile;
@@ -46,7 +46,7 @@ const profilesSlice = createSlice({
     remove(state, action: PayloadAction<string>) {
       const uuid = action.payload;
       profilesAdapter.removeOne(state, uuid);
-      log("remove", "profile", uuid);
+      logWrite("remove", "profile", uuid);
       // const index = state.profiles.findIndex((p) => p.uuid === uuid);
       // if (index >= 0) {
       //   state.profiles.splice(index, 1);

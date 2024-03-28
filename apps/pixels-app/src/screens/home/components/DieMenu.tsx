@@ -30,7 +30,9 @@ export function DieMenu({
   onReset?: () => void;
   onTurnOff?: () => void;
 } & Omit<MenuProps, "children" | "theme" | "containerStyle">) {
-  const transferring = useAppSelector((state) => !!state.diceRolls.transfer);
+  const transferring = useAppSelector(
+    (state) => !!state.diceTransient.transfer
+  );
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
   return (
