@@ -1,5 +1,51 @@
+// https://discord.com/developers/docs/reference#snowflakes
+export type Snowflake = string; // TODO
+
+type AllowedMentionTypes = "roles" | "users" | "everyone";
+
+enum DiscordComponentType {
+  ACTION_ROW = 1,
+  BUTTON = 2,
+  STRING_SELECT = 3,
+  TEXT_INPUT = 4,
+  USER_SELECT = 5,
+  ROLE_SELECT = 6,
+  MENTIONABLE_SELECT = 7,
+  CHANNEL_SELECT = 8,
+}
+
+interface DiscordComponent {
+  type: DiscordComponentType;
+}
+
+interface DiscordNonActionRowComponent {
+  type: Exclude<DiscordComponentType, DiscordComponentType.ACTION_ROW>;
+  custom_id: string; // Max 100 characters, https://discord.com/developers/docs/interactions/message-components#custom-id
+}
+
+interface DiscordActionRowComponent extends DiscordComponent {
+  type: DiscordComponentType.ACTION_ROW;
+  components: DiscordNonActionRowComponent[];
+}
+
+export interface DiscordAttachment {
+  id: Snowflake;
+  filename: string;
+  description?: string;
+  content_type?: string;
+  size: number; // int
+  url: string;
+  proxy_url: string;
+  height?: number; // int
+  width?: number; // int
+  ephemeral?: boolean;
+  duration_secs?: number; // float
+  waveform?: string; // base64 encoded bytearray
+  flags?: number; // int, see https://discord.com/developers/docs/resources/channel#attachment-object-attachment-flags
+}
+
 // According to https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
-interface BaseDiscordWebhookPayload {
+export interface BaseDiscordWebhookPayload {
   username?: string;
   avatar_url?: string;
   tts?: boolean;
@@ -18,7 +64,7 @@ interface BaseDiscordWebhookPayload {
 }
 
 // https://discord.com/developers/docs/resources/channel#embed-object
-interface DiscordWebhookEmbed {
+export interface DiscordWebhookEmbed {
   title?: string; // Max 256 characters
   type: "rich"; // The type is always "rich" for webhook embeds
   description?: string; // Max 4096 characters
@@ -66,6 +112,6 @@ interface DiscordWebhookEmbed {
   }[];
 }
 
-interface EmbedsDiscordWebhookPayload extends BaseDiscordWebhookPayload {
+export interface EmbedsDiscordWebhookPayload extends BaseDiscordWebhookPayload {
   embeds: DiscordWebhookEmbed[]; // Up to 10 embedded objects allowed
 }

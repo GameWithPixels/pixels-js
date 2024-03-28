@@ -5,7 +5,10 @@ import {
 import * as Speech from "expo-speech";
 import Toast from "react-native-root-toast";
 
-import type { EmbedsDiscordWebhookPayload } from "./discord-webhook";
+import type {
+  DiscordWebhookEmbed,
+  EmbedsDiscordWebhookPayload,
+} from "./discordWebhook";
 import {
   ActionMakeWebRequestPayload,
   getWebRequestURL,
@@ -41,14 +44,14 @@ export function getSimplifyDiscordWebhookPayload(
   dieType: PixelDieType,
   payload: ActionMakeWebRequestPayload
 ): DiscordWebhookEmbed {
-  const obj = getDiscordWebhookPayload(dieType, payload);
+  const obj = getDiscordWebhookPayload(dieType, payload).embeds[0];
   if (obj.thumbnail?.url) {
     obj.thumbnail.url = obj.thumbnail.url.replace(
       baseDiceIconUrl,
       "https://[...]"
     );
   }
-  return obj["embeds"][0];
+  return obj;
 }
 
 export function playActionMakeWebRequest(

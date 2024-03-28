@@ -171,8 +171,6 @@ export function EditProfile({
               die.
             </Banner>
           )}
-          <SectionTitle>Brightness</SectionTitle>
-          <BrightnessSlider profile={profile} />
           <SectionTitle>Roll Rules</SectionTitle>
           {EditorRollRulesTypes.map((ct) => (
             <RuleCard
@@ -184,6 +182,8 @@ export function EditProfile({
               {getConditionTypeLabel(ct)}
             </RuleCard>
           ))}
+          <SectionTitle>Brightness</SectionTitle>
+          <BrightnessSlider profile={profile} />
           <SectionTitle>Description</SectionTitle>
           <EditProfileDescription profile={profile} colors={colors} />
           <RulesSection
