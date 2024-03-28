@@ -42,7 +42,7 @@ import { GradientButton, OutlineButton } from "~/components/buttons";
 import {
   getColorOverrideLabel,
   getDieTypeLabel,
-  getDiscordWebhookPayload,
+  getSimplifyDiscordWebhookPayload,
   getWebRequestPayload,
   getWebRequestURL,
   playActionMakeWebRequest,
@@ -711,15 +711,13 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
       />
       <Text style={{ color: colors.onSurfaceDisabled, marginTop: 5 }}>
         The request {action.format === "parameters" ? "parameters" : "payload"}{" "}
-        will look like this:
-      </Text>
-      <Text style={{ color: colors.onSurfaceDisabled }}>
+        will look like this:{action.format === "parameters" ? "\n" : " "}
         {action.format === "parameters"
           ? getWebRequestURL("", payload)
           : JSON.stringify(
               action.format === "json"
                 ? payload
-                : getDiscordWebhookPayload(payload),
+                : getSimplifyDiscordWebhookPayload(dieType, payload),
               null,
               4
             )}
@@ -734,7 +732,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
         </Text>
       )}
       <OutlineButton
-        onPress={() => playActionMakeWebRequest(action, payload)}
+        onPress={() => playActionMakeWebRequest(action, dieType, payload)}
         style={{ marginTop: 5 }}
       >
         Test Web Request

@@ -51,6 +51,7 @@ function remoteActionListener(
       if (action instanceof Profiles.ActionMakeWebRequest) {
         playActionMakeWebRequest(
           action,
+          pixel.dieType,
           getWebRequestPayload(pixel, profile.name, action.value)
         );
       } else if (action instanceof Profiles.ActionSpeakText) {

@@ -1,4 +1,7 @@
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import * as Speech from "expo-speech";
 import Toast from "react-native-root-toast";
 
@@ -10,7 +13,11 @@ import {
 
 import { ToastSettings } from "~/themes";
 
+const baseDiceIconUrl =
+  "https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes";
+
 export function getDiscordWebhookPayload(
+  dieType: PixelDieType,
   payload: ActionMakeWebRequestPayload
 ): EmbedsDiscordWebhookPayload {
   const { pixelName, profileName, actionValue, faceValue } = payload;
@@ -20,7 +27,7 @@ export function getDiscordWebhookPayload(
         title: `${pixelName} rolled a ${faceValue}`,
         type: "rich",
         thumbnail: {
-          url: `https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes/d20.png`,
+          url: `${baseDiceIconUrl}/${dieType}.png`,
         },
         description: actionValue,
         footer: { text: `profile: ${profileName}` },
@@ -30,21 +37,38 @@ export function getDiscordWebhookPayload(
   };
 }
 
+export function getSimplifyDiscordWebhookPayload(
+  dieType: PixelDieType,
+  payload: ActionMakeWebRequestPayload
+): DiscordWebhookEmbed {
+  const obj = getDiscordWebhookPayload(dieType, payload);
+  if (obj.thumbnail?.url) {
+    obj.thumbnail.url = obj.thumbnail.url.replace(
+      baseDiceIconUrl,
+      "https://[...]"
+    );
+  }
+  return obj["embeds"][0];
+}
+
 export function playActionMakeWebRequest(
   action: Profiles.ActionMakeWebRequest,
+  dieType: PixelDieType,
   payload: ActionMakeWebRequestPayload
 ): void {
   const body =
     action.format === "json"
       ? JSON.stringify(payload)
       : action.format === "discord"
-        ? JSON.stringify(getDiscordWebhookPayload(payload))
+        ? JSON.stringify(getDiscordWebhookPayload(dieType, payload))
         : undefined;
   const url = body ? action.url.trim() : getWebRequestURL(action.url, payload);
   console.log(
     `Playing Web Request: ${url} with payload ${JSON.stringify(payload)}`
   );
-  const toastMsg = `\n\nURL: ${url}${body ? `\nbody: ${body}` : ""}\n\n`;
+  const toastMsg = `\n\nURL: ${url}${
+    action.format === "json" ? `\nbody: ${body}` : ""
+  }\n\n`;
   const forPixelMsg = payload.pixelName ? ` for "${payload.pixelName}"` : "";
   fetch(url, {
     method: "POST",
