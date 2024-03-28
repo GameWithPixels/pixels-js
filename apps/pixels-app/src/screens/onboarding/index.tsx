@@ -597,8 +597,8 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
             </View>
             {showHelp && (
               <Animated.View
-                entering={FadeIn.duration(300)}
                 layout={CurvedTransition.easingY(Easing.linear).duration(300)}
+                entering={FadeIn.duration(300)}
               >
                 {diceCount ? (
                   <SmallText>Not all dice are listed above?</SmallText>

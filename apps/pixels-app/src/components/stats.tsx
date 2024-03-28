@@ -11,23 +11,25 @@ import { DieIcon } from "./icons";
 export function StatsBarGraph({
   rollStats,
   ...props
-}: { rollStats: number[] } & ViewProps) {
+}: { rollStats: Readonly<{ [key: number]: number }> } & ViewProps) {
+  const faces = Object.keys(rollStats).map(Number);
+  const rolls = React.useMemo(() => Object.values(rollStats), [rollStats]);
   // Animation values
-  const max = React.useMemo(() => Math.max(...rollStats), [rollStats]);
+  const max = React.useMemo(() => Math.max(...rolls), [rolls]);
   const [values, setValues] = React.useState([
-    rollStats.map(() => 1),
-    rollStats.map(() => 1),
+    faces.map(() => 1),
+    faces.map(() => 1),
   ]);
   const anim = React.useRef(new Animated.Value(0)).current;
   React.useEffect(() => {
-    setValues((values) => [values[1], rollStats.map((v) => v / max)]);
+    setValues((values) => [values[1], rolls.map((v) => v / max)]);
     anim.resetAnimation();
     Animated.timing(anim, {
       toValue: 1,
       duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, [anim, rollStats, max]);
+  }, [anim, max, rolls]);
 
   // Width of the animated bars
   const [width, setWidth] = React.useState(0);
@@ -35,7 +37,7 @@ export function StatsBarGraph({
   const { colors } = useTheme();
   return (
     <View {...props}>
-      {rollStats.map((n, i) => {
+      {faces.map((f, i) => {
         const newValue = values[1][i];
         const oldValue = values[0][i];
         const scaleX = anim.interpolate({
@@ -60,7 +62,7 @@ export function StatsBarGraph({
                 borderColor: colors.onSurface,
               }}
             >
-              {i + 1}
+              {f}
             </Text>
             <Animated.View
               onLayout={({ nativeEvent: { layout } }) => setWidth(layout.width)}
@@ -84,7 +86,7 @@ export function StatsBarGraph({
                 transform: [{ translateX: Animated.multiply(translateX, 2) }],
               }}
             >
-              <Text>{n}</Text>
+              <Text>{rollStats[f]}</Text>
             </Animated.View>
           </View>
         );
@@ -98,9 +100,15 @@ export function StatsBarGraph({
           borderColor: colors.onSurface,
         }}
       >
-        {range(0, width, 80).map((i) => (
-          <Text key={i} style={{ position: "absolute", left: i }}>
-            {Math.round((i / width) * max)}
+        {range(0, max + 1, Math.ceil(max / 10)).map((i) => (
+          <Text
+            key={i}
+            style={{
+              position: i === 0 ? "relative" : "absolute",
+              left: (i * width) / max - 5,
+            }}
+          >
+            {i}
           </Text>
         ))}
       </View>
@@ -113,13 +121,14 @@ export function StatsList({
   dieType,
   ...props
 }: {
-  rollStats: number[];
+  rollStats: Readonly<{ [key: number]: number }>;
   dieType: PixelDieType;
 } & ViewProps) {
+  const faces = Object.keys(rollStats).map(Number);
   const { colors } = useTheme();
   return (
     <View {...props}>
-      {rollStats.map((n, i) => (
+      {faces.map((f, i) => (
         <LinearGradient
           key={i}
           start={{ x: 0, y: 0 }}
@@ -139,9 +148,9 @@ export function StatsList({
           }}
         >
           <DieIcon dieType={dieType} size={16} />
-          <Text>{i + 1}</Text>
+          <Text>{f}</Text>
           <View style={{ flexGrow: 1 }} />
-          <Text>{n}</Text>
+          <Text>{rollStats[f]}</Text>
         </LinearGradient>
       ))}
     </View>
@@ -153,20 +162,21 @@ export function StatsGrid({
   dieType,
   ...props
 }: {
-  rollStats: number[];
+  rollStats: Readonly<{ [key: number]: number }>;
   dieType: PixelDieType;
 } & ViewProps) {
+  const faces = Object.keys(rollStats).map(Number);
   const chunkSize = 6;
-  const chunks = [];
-  for (let i = 0; i < rollStats.length; i += chunkSize) {
-    chunks.push(rollStats.slice(i, i + chunkSize));
+  const chunks: number[][] = [];
+  for (let i = 0; i < faces.length; i += chunkSize) {
+    chunks.push(faces.slice(i, i + chunkSize));
   }
   const { colors } = useTheme();
   return (
     <View {...props}>
       {chunks.map((chunk, i) => (
         <View key={i} style={{ flexDirection: "row", width: "100%" }}>
-          {chunk.map((n, j) => (
+          {chunk.map((f, j) => (
             <View
               key={j}
               style={{
@@ -190,7 +200,7 @@ export function StatsGrid({
                 }}
               >
                 <DieIcon dieType={dieType} size={16} color={colors.onSurface} />
-                <Text style={{ color: colors.onSurface }}>{6 * i + j + 1}</Text>
+                <Text style={{ color: colors.onSurface }}>{f}</Text>
               </LinearGradient>
               <Text
                 style={{
@@ -199,7 +209,7 @@ export function StatsGrid({
                   backgroundColor: colors.surface,
                 }}
               >
-                {n}
+                {rollStats[f]}
               </Text>
             </View>
           ))}

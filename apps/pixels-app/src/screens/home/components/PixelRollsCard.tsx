@@ -3,18 +3,18 @@ import React from "react";
 import { View } from "react-native";
 import { Text, TextProps, useTheme } from "react-native-paper";
 import Animated, {
-  useSharedValue,
-  withTiming,
-  Easing,
-  useAnimatedStyle,
   CurvedTransition,
+  Easing,
   FadeIn,
   FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
-import { Card, CardProps } from "~/components/Card";
+import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
 import { makeTransparent } from "~/components/colors";
 import { useWatchedPixel } from "~/hooks";
@@ -23,7 +23,7 @@ function useLastRolls({
   pixelId,
 }: Pick<PairedDie, "pixelId">): { key: number; roll: number }[] {
   const rolls = useAppSelector(
-    (state) => state.diceStats.entities[pixelId]?.rolls
+    (state) => state.diceStats.entities[pixelId]?.lastRolls
   );
   return React.useMemo(() => {
     const count = rolls?.length ?? 0;
@@ -92,21 +92,22 @@ function AnimatedDieIcon({
   );
 }
 
-export function PixelRollCard({
+export function PixelRollsCard({
   pairedDie,
   ...props
 }: {
   pairedDie: PairedDie;
-} & Omit<CardProps, "contentStyle">) {
+} & Omit<TouchableCardProps, "contentStyle">) {
   const lastRolls = useLastRolls(pairedDie);
   const { colors } = useTheme();
   return (
-    <Card
+    <TouchableCard
       contentStyle={{
         flexGrow: 1,
         padding: 10,
+        paddingBottom: 0,
         alignItems: "flex-start",
-        justifyContent: "space-around",
+        justifyContent: "space-between",
       }}
       {...props}
     >
@@ -117,6 +118,7 @@ export function PixelRollCard({
             style={{
               flexDirection: "row",
               width: "100%",
+              marginTop: -10,
               alignItems: "center",
               justifyContent: "flex-end",
               gap: 8,
@@ -142,6 +144,12 @@ export function PixelRollCard({
       ) : (
         <Text>Rolls will be displayed here</Text>
       )}
-    </Card>
+      <Text
+        variant="labelSmall"
+        style={{ alignSelf: "flex-end", color: colors.onSurfaceDisabled }}
+      >
+        Tap to show stats
+      </Text>
+    </TouchableCard>
   );
 }

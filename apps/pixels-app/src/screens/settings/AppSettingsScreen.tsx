@@ -13,6 +13,7 @@ import {
   setDiceBrightnessFactor,
 } from "~/features/store/appSettingsSlice";
 import { resetAppTransientState } from "~/features/store/appTransientSlice";
+import { resetDiceStats } from "~/features/store/diceStatsSlice";
 import { resetDiceTransientState } from "~/features/store/diceTransientSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
@@ -40,6 +41,7 @@ function AppSettingsPage({
     central.stopScan();
     appDispatch(resetAppSettings());
     appDispatch(resetPairedDice());
+    appDispatch(resetDiceStats());
     appDispatch(resetDiceTransientState());
     appDispatch(resetAppTransientState());
     Library.dispatchReset(appDispatch);

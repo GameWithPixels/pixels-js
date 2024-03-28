@@ -17,7 +17,7 @@ import { Text, TextInput, useTheme } from "react-native-paper";
 
 import { DieMenu } from "./DieMenu";
 import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
-import { PixelRollCard } from "./PixelRollCard";
+import { PixelRollsCard } from "./PixelRollsCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
 import { PairedDie } from "~/app/PairedDie";
@@ -233,6 +233,7 @@ export function PixelFocusView({
   pairedDie,
   onPress,
   onShowDetails,
+  onShowRollsHistory,
   onEditProfile,
   style,
   ...props
@@ -240,6 +241,7 @@ export function PixelFocusView({
   pairedDie: PairedDie;
   onPress: () => void;
   onShowDetails: () => void;
+  onShowRollsHistory: () => void;
   onEditProfile: () => void;
 } & Omit<ViewProps, "children">) {
   const appDispatch = useAppDispatch();
@@ -250,7 +252,9 @@ export function PixelFocusView({
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const activeProfile = useActiveProfile(pairedDie);
-  const transferring = useAppSelector((state) => !!state.diceTransient.transfer);
+  const transferring = useAppSelector(
+    (state) => !!state.diceTransient.transfer
+  );
   const [pickProfile, setPickProfile] = React.useState(false);
 
   const showNewPixelsAppBanner = useAppSelector(
@@ -270,8 +274,8 @@ export function PixelFocusView({
           />
         )}
         <Pressable
-          sentry-label="header-bar-select"
           disabled={disabled}
+          sentry-label="header-bar-select"
           style={{
             width: "60%",
             aspectRatio: 1,
@@ -292,13 +296,16 @@ export function PixelFocusView({
             gap: 10,
           }}
         >
-          <PixelRollCard
+          <PixelRollsCard
             pairedDie={pairedDie}
+            onPress={onShowRollsHistory}
+            sentry-label="show-rolls-history"
             style={{ flex: 1, flexGrow: 1 }}
           />
           <PixelStatusCard
             pairedDie={pairedDie}
             onPress={onShowDetails}
+            sentry-label="show-details"
             style={{ flex: 1, flexGrow: 1 }}
           />
         </View>

@@ -279,6 +279,11 @@ function DiceListPage({
               pairedDie={selectedDie}
               onPress={() => connectToMissingPixels(selectedDie.pixelId)}
               onShowDetails={() => selectAndShowDetails(selectedDie)}
+              onShowRollsHistory={() =>
+                navigation.navigate("rollsHistory", {
+                  pixelId: selectedDie.pixelId,
+                })
+              }
               onEditProfile={() =>
                 navigation.navigate("editDieProfileStack", {
                   screen: "editDieProfile",

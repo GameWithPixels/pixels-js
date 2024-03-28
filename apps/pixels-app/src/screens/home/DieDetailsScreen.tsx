@@ -1,4 +1,3 @@
-import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   Pixel,
   Profiles,
@@ -8,17 +7,14 @@ import {
 import React from "react";
 import { StyleSheet, View, ViewProps } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { Switch, Text, useTheme } from "react-native-paper";
+import { Text } from "react-native-paper";
 
-import RollsPerFaceIcon from "#/icons/home/rolls-per-face";
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { ProfileUsage } from "~/components/ProfileUsage";
 import { Banner } from "~/components/banners";
-import { StatsViewMode, StatsViewModeButton } from "~/components/buttons";
-import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
 import {
   getColorwayLabel,
   getDieTypeLabel,
@@ -32,7 +28,6 @@ import {
   usePixelDataTransfer,
 } from "~/hooks";
 import { DieDetailsScreenProps } from "~/navigation";
-import { Colors } from "~/themes";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
   return (
@@ -98,92 +93,6 @@ export function DieProfile({
         )}
       </View>
     </>
-  );
-}
-
-export function DieStats({
-  pixel,
-  style,
-  ...props
-}: { pixel: Pixel } & ViewProps) {
-  const [viewType, setViewType] = React.useState<"session" | "lifetime">(
-    "session"
-  );
-  const sessionValues = React.useMemo(() => [1, 2, 3, 4, 5], []);
-  const lifetimeValues = React.useMemo(() => [1, 2, 3, 4, 5], []);
-  const values = viewType === "session" ? sessionValues : lifetimeValues;
-  const isSession = viewType === "session";
-  const [viewMode, setViewMode] = React.useState<StatsViewMode>("bars");
-  const { colors } = useTheme();
-  const textColor = { color: colors.primary };
-  return (
-    <View style={style} {...props}>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            gap: 10,
-          }}
-        >
-          <Text style={isSession ? textColor : undefined}>Session</Text>
-          <Switch
-            value={!isSession}
-            color={Colors.grey400}
-            onValueChange={() =>
-              setViewType((t) => (t === "lifetime" ? "session" : "lifetime"))
-            }
-          />
-          <Text style={isSession ? undefined : textColor}>Lifetime</Text>
-        </View>
-        <View style={{ flexGrow: 1 }} />
-        {["bars", "list", "grid"].map((vm) => (
-          <StatsViewModeButton
-            key={vm}
-            viewMode={vm as StatsViewMode}
-            activeMode={viewMode}
-            sentry-label="view-mode"
-            style={{ padding: 10 }}
-            onChange={setViewMode}
-          />
-        ))}
-      </View>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <FontAwesome5
-          name="dice"
-          size={16}
-          color={colors.onSurface}
-          style={{ marginRight: 10 }}
-        />
-        <Text>Die Rolls: 328</Text>
-        <View style={{ flexGrow: 1 }} />
-        <MaterialCommunityIcons
-          name="clock-time-four"
-          size={15}
-          color={colors.onSurface}
-          style={{ marginRight: 10 }}
-        />
-        <Text>Usage Time: 2h 23m</Text>
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingVertical: 10,
-        }}
-      >
-        <RollsPerFaceIcon style={{ marginRight: 10 }} size={15} />
-        <Text>Rolls Per Face</Text>
-      </View>
-      {viewMode === "bars" ? (
-        <StatsBarGraph rollStats={values} />
-      ) : viewMode === "list" ? (
-        <StatsList rollStats={values} dieType={pixel.dieType} />
-      ) : (
-        <StatsGrid rollStats={values} dieType={pixel.dieType} />
-      )}
-    </View>
   );
 }
 
@@ -272,16 +181,12 @@ function DieDetailsPage({
             gap: 10,
           }}
         >
-          {pixel && (
-            <FirmwareUpdateBanner
-              pixel={pixel}
-              onAction={() => navigation.replace("firmwareUpdate")}
-            />
-          )}
+          <FirmwareUpdateBanner
+            pixel={pixel}
+            onAction={() => navigation.replace("firmwareUpdate")}
+          />
           <DieStatus pixel={pixel} style={{ marginTop: 10 }} />
           <DieProfile profile={activeProfile} />
-          {/* <SectionTitle>Rolls Statistics</SectionTitle>
-          <DieStats pixel={pixel} style={{ marginTop: -10 }} /> */}
           <DieAdvancedInfo pixel={pixel} />
         </GHScrollView>
       ) : (
@@ -289,7 +194,7 @@ function DieDetailsPage({
           variant="bodyLarge"
           style={{ alignSelf: "center", marginTop: 20 }}
         >
-          No information available.
+          Die not found, no information available.
         </Text>
       )}
     </View>

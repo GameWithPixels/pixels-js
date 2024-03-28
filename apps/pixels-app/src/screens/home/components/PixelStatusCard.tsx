@@ -142,7 +142,7 @@ export function PixelStatusCard({
         padding: 10,
         paddingBottom: 0,
         alignItems: "flex-start",
-        justifyContent: "space-around",
+        justifyContent: "space-between",
         gap: 10,
       }}
       {...props}
@@ -167,7 +167,7 @@ export function PixelStatusCard({
         variant="labelSmall"
         style={{ alignSelf: "flex-end", color: colors.onSurfaceDisabled }}
       >
-        Tap for more details
+        Tap for more info
       </Text>
     </TouchableCard>
   );

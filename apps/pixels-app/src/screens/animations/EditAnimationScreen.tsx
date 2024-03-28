@@ -66,7 +66,7 @@ function EditAnimationPage({
   navigation: EditAnimationScreenProps["navigation"];
 }) {
   const animation = useEditableAnimation(animationUuid);
-  const showConfirmDelete = useConfirmActionSheet("Delete", () => {
+  const showConfirmDelete = useConfirmActionSheet("Delete Animation", () => {
     //removeAnimation(animationUuid);
     navigation.popToTop();
   });

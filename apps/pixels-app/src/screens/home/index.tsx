@@ -5,6 +5,7 @@ import { DiceListScreen } from "./DiceListScreen";
 import { DieDetailsScreen } from "./DieDetailsScreen";
 import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
+import { RollsHistoryScreen } from "./RollsHistoryScreen";
 
 import { NavigationRoot } from "~/components/NavigationRoot";
 import {
@@ -31,6 +32,11 @@ export function HomeStack({ route }: HomeStackProps) {
         <Stack.Screen
           name="dieDetails"
           component={DieDetailsScreen}
+          options={getStackNavigationOptions("bottom-sheet")}
+        />
+        <Stack.Screen
+          name="rollsHistory"
+          component={RollsHistoryScreen}
           options={getStackNavigationOptions("bottom-sheet")}
         />
         <Stack.Screen

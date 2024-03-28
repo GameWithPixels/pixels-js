@@ -177,7 +177,7 @@ export function StatsViewModeButton({
     >
       <Icon
         size={16}
-        color={viewMode === activeMode ? colors.primary : "#FFF"}
+        color={viewMode === activeMode ? colors.primary : colors.onSurface}
       />
     </TouchableRipple>
   );
