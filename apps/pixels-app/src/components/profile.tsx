@@ -150,7 +150,13 @@ function ProfileActions({
         Activate
       </GradientChip>
       <Chip
-        icon={({ size, color }) => <EditIcon size={size} color={color} />}
+        icon={({ size, color }) => (
+          <MaterialCommunityIcons
+            name="movie-open-edit-outline"
+            size={size}
+            color={color}
+          />
+        )}
         onPress={() => onAction?.("edit", profile)}
         style={{ flexGrow: 1, flex: 1, paddingHorizontal: 2 }}
       >
