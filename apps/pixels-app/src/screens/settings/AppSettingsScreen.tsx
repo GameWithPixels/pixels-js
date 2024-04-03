@@ -1,5 +1,6 @@
+import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { AppState, ScrollView, View } from "react-native";
 import { Divider, Text as PaperText, TextProps } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -32,11 +33,27 @@ function AppSettingsPage({
 }: {
   navigation: SettingsMenuScreenProps["navigation"];
 }) {
-  const appDispatch = useAppDispatch();
-  const brightness = useAppSelector(
-    (state) => state.appSettings.diceBrightnessFactor
-  );
   const central = usePixelsCentral();
+  const appDispatch = useAppDispatch();
+
+  const [brightness, setBrightness] = React.useState(
+    useAppSelector((state) => state.appSettings.diceBrightnessFactor)
+  );
+  const brightnessValue = React.useRef(brightness);
+  useFocusEffect(
+    React.useCallback(() => {
+      const subs = AppState.addEventListener("change", (state) => {
+        if (state !== "active") {
+          appDispatch(setDiceBrightnessFactor(brightnessValue.current));
+        }
+      });
+      return () => {
+        appDispatch(setDiceBrightnessFactor(brightnessValue.current));
+        subs.remove();
+      };
+    }, [appDispatch])
+  );
+
   const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
     central.stopScan();
     appDispatch(resetAppSettings());
@@ -63,7 +80,10 @@ function AppSettingsPage({
           <SliderWithValue
             value={brightness}
             percentage
-            onValueChange={(v) => appDispatch(setDiceBrightnessFactor(v))}
+            onValueChange={(v) => {
+              setBrightness(v);
+              brightnessValue.current = v;
+            }}
           />
         </View>
         <Divider style={{ marginVertical: 10 }} />
