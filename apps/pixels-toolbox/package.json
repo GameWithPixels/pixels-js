@@ -86,7 +86,6 @@
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
-    "reflect-metadata": "^0.1.13",
     "sentry-expo": "~7.1.1"
   },
   "devDependencies": {
