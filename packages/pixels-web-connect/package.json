@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/pixels-web-connect",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "Connect to Pixels dice using Web Bluetooth.",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -61,7 +61,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
-    "@systemic-games/pixels-core-connect": "~1.2.0",
-    "@systemic-games/pixels-core-utils": "~1.2.0"
+    "@systemic-games/pixels-core-connect": "~1.2.2",
+    "@systemic-games/pixels-core-utils": "~1.2.2"
   }
 }

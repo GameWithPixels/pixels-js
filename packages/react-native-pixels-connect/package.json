@@ -45,10 +45,10 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/vision-camera-rgb-averages",
   "dependencies": {
-    "@systemic-games/pixels-core-connect": "~1.2.0",
-    "@systemic-games/pixels-core-utils": "~1.2.0",
-    "@systemic-games/pixels-edit-animation": "~1.2.0",
-    "@systemic-games/pixels-react": "~1.2.0"
+    "@systemic-games/pixels-core-connect": "~1.2.2",
+    "@systemic-games/pixels-core-utils": "~1.2.2",
+    "@systemic-games/pixels-edit-animation": "~1.2.2",
+    "@systemic-games/pixels-react": "~1.2.2"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^5.0.0",

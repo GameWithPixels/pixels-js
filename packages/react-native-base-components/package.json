@@ -45,7 +45,7 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/react-native-base-components",
   "dependencies": {
-    "@systemic-games/pixels-core-animation": "~1.2.0"
+    "@systemic-games/pixels-core-animation": "~1.2.2"
   },
   "devDependencies": {
     "@expo/react-native-action-sheet": "^4.0.1",
