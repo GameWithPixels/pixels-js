@@ -5,7 +5,7 @@ import { assert } from "./assert";
 import { decodeUtf8, DecodeUtf8Error } from "./decodeUtf8";
 import { encodeUtf8 } from "./encodeUtf8";
 
-const serializableKey = Symbol("pixelAnimationSerializable");
+const serializableKey = Symbol.for("PixelsAnimationSerializable");
 
 /** Error thrown during (de)serialization. */
 export class SerializationError extends Error {

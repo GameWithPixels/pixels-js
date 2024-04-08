@@ -40,7 +40,7 @@ function createDecorator<T extends PropertyData>(
 // Name property
 //
 
-const nameKey = Symbol("pixelEditAnimationName");
+const nameKey = Symbol.for("PixelsEditAnimationName");
 
 export interface NameProperty extends PropertyData {
   name: string;
@@ -62,7 +62,7 @@ export function getPropsWithName(target: object): NameProperty[] {
 // Range property
 //
 
-const rangeKey = Symbol("pixelEditAnimationRange");
+const rangeKey = Symbol.for("PixelsEditAnimationRange");
 
 export interface RangeProperty extends PropertyData {
   min: number;
@@ -92,7 +92,7 @@ export function getPropsWithRange(target: object): RangeProperty[] {
 // Unit property
 //
 
-const unitKey = Symbol("pixelEditAnimationUnit");
+const unitKey = Symbol.for("PixelsEditAnimationUnit");
 
 export type UnitType = "s" | "ms";
 
@@ -116,7 +116,7 @@ export function getPropsWithUnit(target: object): UnitProperty[] {
 // Values property
 //
 
-const valuesKey = Symbol("pixelEditAnimationValues");
+const valuesKey = Symbol.for("PixelsEditAnimationValues");
 
 export type ValuesType = { [key: string]: number };
 
@@ -140,7 +140,7 @@ export function getPropsWithValues(target: object): ValuesProperty[] {
 // Widget property
 //
 
-const widgetKey = Symbol("pixelEditAnimationWidget");
+const widgetKey = Symbol.for("PixelsEditAnimationWidget");
 
 export type WidgetType =
   | "toggle"
@@ -179,7 +179,7 @@ export function getPropsWithWidget(target: object): WidgetProperty[] {
 // Display Order property
 //
 
-const displayOrderKey = Symbol("pixelEditAnimationDisplayOrder");
+const displayOrderKey = Symbol.for("PixelsEditAnimationDisplayOrder");
 
 export interface DisplayOrderProperty extends PropertyData {
   index: number;
@@ -203,7 +203,7 @@ export function getPropsWithDisplayOrder(
 // Skip Enum property
 //
 
-const skipEnumKey = Symbol("pixelEditAnimationSkipEnum");
+const skipEnumKey = Symbol.for("PixelsEditAnimationSkipEnum");
 
 // Skip decorator
 export function skipEnum(target: object, propertyKey: string): void {
@@ -219,7 +219,7 @@ export function getPropsWithSkipEnum(target: object): PropertyData[] {
 // Observable property
 //
 
-const observableKey = Symbol("pixelObservable");
+const observableKey = Symbol.for("PixelsObservable");
 
 // Skip decorator
 export function observable(target: object, propertyKey: string): void {
