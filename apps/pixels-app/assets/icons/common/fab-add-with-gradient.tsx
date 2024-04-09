@@ -34,7 +34,7 @@ const SvgComponent = ({
     <G transform={`scale(${size / 30.42})`}>
       <Circle fill="url(#linear-gradient)" cx={17.26} cy={15.21} r={13.9} />
       <Path
-        fill={props.color ?? "#FFF"}
+        fill={props.color ?? "#fff"}
         d="M21.17 15.35c0 .33-.27.6-.6.6h-2.71v2.71c0 .33-.27.6-.6.6s-.6-.27-.6-.6v-2.71h-2.71c-.33 0-.6-.27-.6-.6s.27-.6.6-.6h2.71v-2.71c0-.33.27-.6.6-.6s.6.27.6.6v2.71h2.71c.33 0 .6.27.6.6Z"
       />
     </G>

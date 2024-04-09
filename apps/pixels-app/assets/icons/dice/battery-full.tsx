@@ -6,7 +6,7 @@ const SvgComponent = ({
   <Svg width={(size / 30.42) * 34.51} height={size} {...props}>
     <G transform={`scale(${size / 30.42})`}>
       <Path
-        fill={props.color ?? "#FFF"}
+        fill={props.color ?? "#fff"}
         d="M26.26 11.61H6.46v7.2h19.8v-7.2Zm5.4 0v-1.8c0-1.99-1.61-3.6-3.6-3.6H4.66c-1.99 0-3.6 1.61-3.6 3.6v10.8c0 1.99 1.61 3.6 3.6 3.6h23.4c1.99 0 3.6-1.61 3.6-3.6v-1.8c.99 0 1.8-.81 1.8-1.8v-3.6c0-1-.8-1.8-1.8-1.8Zm-3.6 9H4.66V9.81h23.4v10.8Z"
       />
     </G>

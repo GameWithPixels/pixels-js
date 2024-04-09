@@ -10,7 +10,7 @@ const SvgComponent = ({
     strokeLinecap="round"
     strokeLinejoin="bevel"
     strokeMiterlimit={1.5}
-    width={size}
+    width={(size * 3277) / 2462}
     height={size}
     {...props}
   >
