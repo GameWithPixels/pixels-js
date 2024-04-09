@@ -58,6 +58,7 @@ export const AnimationDieRenderer = observer(function AnimationDieRenderer({
 export const ActionPlayAnimDieRenderer = observer(
   function ActionPlayAnimDieRenderer({
     action,
+    colorway = "onyxBlack",
     ...props
   }: {
     action: Readonly<Profiles.ActionPlayAnimation>;
@@ -68,8 +69,14 @@ export const ActionPlayAnimDieRenderer = observer(
       [action]
     ).get();
     return animation ? (
-      <AnimationDieRenderer animation={animation} {...props} />
-    ) : null;
+      <AnimationDieRenderer
+        animation={animation}
+        colorway={colorway}
+        {...props}
+      />
+    ) : (
+      <DieRendererWithFocus colorway={colorway} {...props} />
+    );
   }
 );
 

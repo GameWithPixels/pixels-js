@@ -688,6 +688,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
 }) {
   const pixel = { name: "Pixels " + getDieTypeLabel(dieType), currentFace };
   const payload = getWebRequestPayload(pixel, profileName, action.value);
+  const isParams = !action.format || action.format === "parameters"; // Format is undefined in actions from v2.1
   const { colors } = useTheme();
   return (
     <>
@@ -704,17 +705,17 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
       <Text variant="titleMedium">Format</Text>
       <TabsHeaders
         names={NamedFormatsValues}
-        selected={toNamedFormat(action.format)}
+        selected={toNamedFormat(action.format ?? "parameters")} // Format is undefined in actions from v2.1
         onSelect={(f) =>
           runInAction(() => (action.format = fromNamedFormat(f as NamedFormat)))
         }
       />
       <Text style={{ color: colors.onSurfaceDisabled, marginTop: 5 }}>
-        The request {action.format === "parameters" ? "parameters" : "payload"}{" "}
-        will look like this:{action.format === "parameters" ? "\n" : " "}
-        {action.format === "parameters"
-          ? getWebRequestURL("", payload)
-          : JSON.stringify(
+        The request {isParams ? "parameters" : "payload"} will look like this:
+        {isParams
+          ? "\n" + getWebRequestURL("", payload)
+          : " " +
+            JSON.stringify(
               action.format === "json"
                 ? payload
                 : getSimplifyDiscordWebhookPayload(dieType, payload),
@@ -722,7 +723,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
               4
             )}
       </Text>
-      {action.format === "parameters" && (
+      {isParams && (
         <Text style={{ color: colors.onSurfaceDisabled }}>
           With:
           {"\n"}• value1: name of the die that triggered this action
