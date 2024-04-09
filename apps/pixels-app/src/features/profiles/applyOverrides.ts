@@ -39,25 +39,28 @@ export function applyActionOverrides(
       getAnim().duration = action.duration;
     }
     if (action.fade !== undefined) {
-      const anim = getAnim();
+      getAnim();
       if ("fade" in anim && typeof anim.fade === "number") {
         (anim.fade as number) = action.fade;
       }
     }
     if (action.intensity !== undefined) {
-      const anim = getAnim();
+      getAnim();
       if ("intensity" in anim && typeof anim.intensity === "number") {
         (anim.intensity as number) = action.intensity;
       }
     }
     if (action.colors.length) {
-      const anim = getAnim();
+      getAnim();
       if ("color" in anim && anim.color instanceof Profiles.FaceColor) {
         (anim.color as Profiles.FaceColor) = new Profiles.FaceColor(
           action.colors[0].duplicate()
         );
       } else {
-        const gradient = AnimationUtils.getEditableGradient(anim);
+        const gradient = AnimationUtils.getEditableGradient(
+          anim,
+          originalAnim.uuid
+        );
         if (gradient && gradient.keyframes.length === action.colors.length) {
           AnimationUtils.setEditableGradient(
             anim,
@@ -67,7 +70,8 @@ export function applyActionOverrides(
                 kf.color = c.duplicate();
                 return kf;
               }),
-            })
+            }),
+            originalAnim.uuid
           );
         }
       }

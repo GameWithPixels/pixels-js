@@ -42,7 +42,7 @@ export function transferProfile(
         console.log(
           anim
             ? `    * Play anim ${anim.name}, type: ${anim.type},` +
-                ` duration: ${anim.duration}, count ${(anim as any).count}`
+                ` duration: ${anim.duration}, count ${action.loopCount}`
             : "    * No animation!"
         );
       } else if (action instanceof Profiles.ActionMakeWebRequest) {

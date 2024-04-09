@@ -75,18 +75,20 @@ export const AnimationUtils = {
   },
 
   getEditableGradient(
-    anim?: Readonly<Profiles.Animation>
+    anim?: Readonly<Profiles.Animation>,
+    animUuid?: string
   ): Readonly<Profiles.RgbGradient> | undefined {
     if (anim instanceof Profiles.AnimationGradient) {
       return anim.gradient;
     } else if (anim instanceof Profiles.AnimationGradientPattern) {
       return anim.gradient;
     } else if (anim instanceof Profiles.AnimationNormals) {
-      if (mainGradient.includes(anim.uuid)) {
+      animUuid ??= anim.uuid;
+      if (mainGradient.includes(animUuid)) {
         return anim.gradient;
-      } else if (angleGradient.includes(anim.uuid)) {
+      } else if (angleGradient.includes(animUuid)) {
         return anim.angleGradient;
-      } else if (!noGradient.includes(anim.uuid)) {
+      } else if (!noGradient.includes(animUuid)) {
         return anim.axisGradient;
       }
     } else if (anim instanceof Profiles.AnimationCycle) {
@@ -98,16 +100,18 @@ export const AnimationUtils = {
 
   setEditableGradient(
     anim?: Profiles.Animation,
-    gradient?: Profiles.RgbGradient
+    gradient?: Profiles.RgbGradient,
+    animUuid?: string
   ): void {
     if (anim instanceof Profiles.AnimationGradient) {
       anim.gradient = gradient;
     } else if (anim instanceof Profiles.AnimationGradientPattern) {
       anim.gradient = gradient;
     } else if (anim instanceof Profiles.AnimationNormals) {
-      if (mainGradient.includes(anim.uuid)) {
+      animUuid ??= anim.uuid;
+      if (mainGradient.includes(animUuid)) {
         anim.gradient = gradient;
-      } else if (angleGradient.includes(anim.uuid)) {
+      } else if (angleGradient.includes(animUuid)) {
         anim.angleGradient = gradient;
       } else {
         anim.axisGradient = gradient;
