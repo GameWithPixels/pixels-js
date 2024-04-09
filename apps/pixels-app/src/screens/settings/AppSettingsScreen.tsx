@@ -36,18 +36,26 @@ function AppSettingsPage({
   const central = usePixelsCentral();
   const appDispatch = useAppDispatch();
 
-  const [brightness, setBrightness] = React.useState(
-    useAppSelector((state) => state.appSettings.diceBrightnessFactor)
+  const settingsBrightness = useAppSelector(
+    (state) => state.appSettings.diceBrightnessFactor
   );
+  const [brightness, setBrightness] = React.useState(settingsBrightness);
   const brightnessValue = React.useRef(brightness);
+  React.useEffect(() => {
+    // Reload brightness from redux store
+    setBrightness(settingsBrightness);
+    brightnessValue.current = settingsBrightness;
+  }, [settingsBrightness]);
   useFocusEffect(
     React.useCallback(() => {
       const subs = AppState.addEventListener("change", (state) => {
         if (state !== "active") {
+          // Store brightness on app leaving foreground
           appDispatch(setDiceBrightnessFactor(brightnessValue.current));
         }
       });
       return () => {
+        // Store brightness on unmount / blur
         appDispatch(setDiceBrightnessFactor(brightnessValue.current));
         subs.remove();
       };
