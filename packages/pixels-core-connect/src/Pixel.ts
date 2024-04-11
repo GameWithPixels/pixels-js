@@ -196,7 +196,7 @@ export class Pixel extends PixelInfoNotifier {
   private readonly _msgEvEmitter = new EventEmitter();
 
   // Log function
-  private _logFunc: (msg: string) => void = console.log;
+  private _logFunc: ((msg: string) => void) | undefined | null;
   private _logMessages = false;
   private _logData = false;
 
@@ -231,10 +231,10 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /** Set logger to use by this instance. */
-  get logger(): (msg: string) => void {
+  get logger(): ((msg: string) => void) | undefined | null {
     return this._logFunc;
   }
-  set logger(logger: (msg: string) => void) {
+  set logger(logger: ((msg: string) => void) | undefined | null) {
     this._logFunc = logger;
   }
 
@@ -580,9 +580,7 @@ export class Pixel extends PixelInfoNotifier {
         } catch (error) {
           // Note: the error may be cause by a call to disconnect
           try {
-            console.log(
-              this._tagLogString(`Disconnecting after getting error: ${error}`)
-            );
+            this._warn(`Disconnecting after getting error: ${error}`);
             await this._session.disconnect();
           } catch {}
           // Ignore any disconnection error and throw the error
@@ -951,9 +949,7 @@ export class Pixel extends PixelInfoNotifier {
         this._evEmitter.emit("dataTransfer", { progress });
         progressCallback?.(progress);
       } catch (error) {
-        console.log(
-          this._tagLogString(`Error in transfer progress callback: ${error}`)
-        );
+        this._warn(`Error in transfer progress callback: ${error}`);
       }
     };
     try {
@@ -1186,13 +1182,20 @@ export class Pixel extends PixelInfoNotifier {
 
   // Log the given message prepended with a timestamp and the Pixel name
   private _log(msg: unknown): void {
-    if (this._logFunc) {
-      this._logFunc(
-        this._tagLogString(
-          (msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg)
-        )
-      );
-    }
+    this._logFunc?.(
+      this._tagLogString(
+        (msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg)
+      )
+    );
+  }
+
+  private _warn(msg: unknown): void {
+    this._logFunc?.(
+      this._tagLogString(
+        "WARN: " +
+          ((msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg))
+      )
+    );
   }
 
   private _logArray(arr: ArrayBuffer) {
@@ -1474,10 +1477,8 @@ export class Pixel extends PixelInfoNotifier {
         assert(typeof value === "object" && "chunkSize" in value);
         const dataSize = dataView.getUint8(offset);
         if (value.chunkSize > 0 && dataSize !== value.chunkSize) {
-          console.log(
-            this._tagLogString(
-              `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
-            )
+          this._warn(
+            `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
           );
         }
         deserialize(
