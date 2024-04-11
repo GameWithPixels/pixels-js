@@ -40,7 +40,11 @@ export function readProfile(
     runInAction(() => updateProfile(profile, profileData, library));
   } else {
     // TODO throw error
-    logError(`Profile ${profile.uuid} not found in library`);
+    logError(
+      `Profile ${profile.uuid} not found in library [${JSON.stringify(
+        profile.uuid // Got some Sentry report about this being an object rather than a string
+      )}]`
+    );
   }
   return profile;
 }
