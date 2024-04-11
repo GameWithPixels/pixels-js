@@ -47,7 +47,7 @@ export interface PixelInfo {
   readonly rollState: PixelRollState;
 
   /**
-   * The value of the Pixel face that is currently facing up.
+   * The value of the die face that is currently facing up.
    * @remarks
    * - This value is always an integer number.
    * - D10 returns values ranging from 0 to 9 included.
@@ -57,7 +57,7 @@ export interface PixelInfo {
   readonly currentFace: number;
 
   /**
-   * The 0-based index of the Pixel face that is currently facing up.
+   * The 0-based index of the die face that is currently facing up.
    * @remarks
    * Indices are continuous and follow the numerical order of the die faces values.
    *

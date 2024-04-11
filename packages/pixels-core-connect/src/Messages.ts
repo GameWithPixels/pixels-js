@@ -476,7 +476,7 @@ export class LegacyIAmADie implements PixelMessage {
   @serializable(1)
   ledCount = 0;
 
-  /** Die look. */
+  /** Die color. */
   @serializable(1)
   colorway = PixelColorwayValues.unknown;
 
@@ -506,7 +506,7 @@ export class LegacyIAmADie implements PixelMessage {
   @serializable(1)
   rollState = PixelRollStateValues.unknown;
 
-  /** Face index, starts at 0. */
+  /** Index of the face that is currently facing up. */
   @serializable(1)
   currentFaceIndex = 0;
 
@@ -944,7 +944,7 @@ export class Blink implements PixelMessage {
   @serializable(1)
   fade = 0;
 
-  /** How many time to loop the animation. */
+  /** How many times to loop the animation. */
   @serializable(1)
   loopCount = 1;
 }
@@ -1298,7 +1298,7 @@ export class PlayInstantAnimation implements PixelMessage {
   @serializable(1)
   faceIndex = 0;
 
-  /** How many time to loop the animation. */
+  /** How many times to loop the animation. */
   @serializable(1)
   loopCount = 1;
 }
@@ -1373,7 +1373,7 @@ export class BlinkId implements PixelMessage {
   @serializable(1)
   brightness = 0;
 
-  /** How many time to loop the animation. */
+  /** How many times to loop the animation. */
   @serializable(1)
   loopCount = 1;
 }
@@ -1411,7 +1411,7 @@ export class PlayProfileAnimation implements PixelMessage {
   @serializable(1)
   remapToFace = 0;
 
-  /** How many time to loop the animation. */
+  /** How many times to loop the animation. */
   @serializable(1)
   loopCount = 1;
 }

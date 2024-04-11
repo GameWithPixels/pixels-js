@@ -57,10 +57,8 @@ export const DiceUtils = {
       : DiceUtils.getFaceCount(dieType);
   },
 
-  // Try to get die type from number of LEDs
+  // Try to derive the die type from number of LEDs
   estimateDieType(ledCount: number): PixelDieType {
-    // For now we infer the die type from the number of LEDs, but eventually
-    // that value will be part of identification data.
     switch (ledCount) {
       case 4:
         return "d4";

@@ -110,12 +110,12 @@ export interface RollEvent {
   /** The roll state of the Pixel when this event was raised. */
   readonly state: PixelRollState;
   /**
-   * The value of the Pixel face that is currently facing up.
+   * The value of the die face that is currently facing up.
    * @remarks Fudge die will return -1, 0 or 1.
    **/
   readonly face: number;
   /**
-   * The 0-based index of the Pixel face that is currently facing up.
+   * The 0-based index of the die face that is currently facing up.
    * @see {@link PixelInfo.currentFaceIndex} for more details.
    **/
   readonly faceIndex: number;
@@ -325,7 +325,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Get the Pixel face value that is currently facing up.
+   * Get the die face value that is currently facing up.
    * @remarks
    * Fudge die returns +1, 0 and -1.
    * This value is automatically updated when the die is connected.
@@ -335,7 +335,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Get the 0-based index of the Pixel face that is currently facing up.
+   * Get the 0-based index of the die face that is currently facing up.
    * @remarks
    * This value is automatically updated when the die is connected.
    * @see {@link PixelInfo.currentFaceIndex} for more details.
@@ -772,7 +772,7 @@ export class Pixel extends PixelInfoNotifier {
         "firmware"
       );
     }
-    // Deserialize message
+    // Serialize message
     const data = serializeMessage(msgOrType);
     if (this._logData) {
       this._logArray(data);
