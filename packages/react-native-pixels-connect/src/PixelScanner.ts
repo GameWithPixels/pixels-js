@@ -97,14 +97,15 @@ export class PixelScanner {
   }
 
   /**
-   * Whether this instance is scanning or preparing to scan.
+   * The scan status of this instance.
    */
   get status(): ScanStatus {
     return this._status;
   }
 
   /**
-   * A copy of the list of scanned Pixels since the last call to {@link PixelScanner.clearAsync}.
+   * A copy of the list of scanned Pixels (cleared on loosing Bluetooth access
+   * if {@link PixelScanner.keepAliveDuration} is greater than zero).
    * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
    */
   get scannedPixels(): ScannedPixel[] {
