@@ -147,17 +147,13 @@ export function DieWireframe({
   };
   const { colors } = useTheme();
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size,
-        backgroundColor: disabled
-          ? colors.onSurfaceDisabled
-          : colors.onBackground,
-      }}
-    >
-      <Image contentFit="cover" style={{ flex: 1 }} source={getImage()} />
+    <View style={{ width: size, height: size }}>
+      <Image
+        contentFit="cover"
+        style={{ flex: 1 }}
+        source={getImage()}
+        tintColor={disabled ? colors.onSurfaceDisabled : undefined}
+      />
     </View>
   );
 }
