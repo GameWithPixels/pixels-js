@@ -1,3 +1,6 @@
+import * as Firmware from "./firmware";
+export { Firmware };
+
 export * from "./animations";
 export * from "./animations/Constants";
 export * from "./color";
