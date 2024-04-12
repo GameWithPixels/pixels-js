@@ -3,12 +3,12 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 const mainGradient: readonly string[] = [
   "3ac00114-1867-4b8f-97d5-86783521c48b",
-  "79aa20f2-9e6c-4071-a063-3d66cd7e8075",
+  "0488c178-ecbb-4929-a633-e5b5ec27e39c",
 ];
 const angleGradient: readonly string[] = [
-  "c89728f7-4ddf-4d05-818d-e57e200f9741",
+  "c7a041f3-f9e1-448c-94d3-a7f019ced0c4",
   "d0e73d74-333e-4634-b30e-e078b376d789",
-  "c4aed08c-1c79-48e8-b759-f030f278f679",
+  "c6b97f93-97af-4719-a16d-85d9e9c1b71f",
   "befad69b-6b16-4a43-8ffe-243c7e0014d0",
 ];
 const noGradient: readonly string[] = [
