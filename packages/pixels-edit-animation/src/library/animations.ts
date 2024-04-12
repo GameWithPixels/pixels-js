@@ -350,11 +350,11 @@ export const PrebuildAnimations = {
     gradient: new EditRgbGradient({
       uuid: "b6357964-3c51-4c6e-8192-754ba1154526",
       keyframes: [
-        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.0, color: Color.brightRed }),
         new RgbKf({ time: 0.1, color: Color.brightRed }),
         new RgbKf({ time: 0.5, color: Color.brightYellow }),
         new RgbKf({ time: 0.9, color: Color.brightGreen }),
-        new RgbKf({ time: 1.0, color: Color.black }),
+        new RgbKf({ time: 1.0, color: Color.brightGreen }),
       ],
     }),
     axisGradient: new EditRgbGradient({
@@ -475,8 +475,6 @@ export const PrebuildAnimations = {
     angleGradient: new EditRgbGradient({
       uuid: "c89728f7-4ddf-4d05-818d-e57e200f9741",
       keyframes: [
-        // new RgbKf({ time: 0.0, color: Col.brightWhite}),
-        // new RgbKf({ time: 1.0, color: Col.brightWhite}),
         new RgbKf({ time: 0.0, color: Color.brightRed }),
         new RgbKf({ time: 0.333, color: Color.brightGreen }),
         new RgbKf({ time: 0.666, color: Color.brightBlue }),
@@ -512,8 +510,6 @@ export const PrebuildAnimations = {
     angleGradient: new EditRgbGradient({
       uuid: "6fafcb4e-4d53-458a-8435-261830ca19a9",
       keyframes: [
-        // new RgbKf({ time: 0.0, color: Col.brightWhite}),
-        // new RgbKf({ time: 1.0, color: Col.brightWhite}),
         new RgbKf({ time: 0.0, color: Color.brightRed }),
         new RgbKf({ time: 0.333, color: Color.brightGreen }),
         new RgbKf({ time: 0.666, color: Color.brightBlue }),
@@ -543,7 +539,6 @@ export const PrebuildAnimations = {
         new RgbKf({ time: 0.0, color: new Color(1, 0, 0.2) }),
         new RgbKf({ time: 0.5, color: new Color(1, 0.5, 0.5) }),
         new RgbKf({ time: 1, color: Color.brightWhite }),
-        //new RgbKf({ time: 1.0, color: new Col(1, 0, 0.2)}),
       ],
     }),
     axisScrollSpeed: 0,
@@ -783,8 +778,6 @@ export const PrebuildAnimations = {
     axisGradient: new EditRgbGradient({
       uuid: "772cca69-27ad-4278-80ef-c879e7f0f621",
       keyframes: [
-        // new RgbKf({ time: 0, color: Col.brightWhite }),
-        // new RgbKf({ time: 1, color: Col.brightWhite }),
         new RgbKf({ time: 0, color: Color.brightRed }),
         new RgbKf({ time: 0.2, color: Color.brightYellow }),
         new RgbKf({ time: 0.4, color: Color.brightGreen }),
@@ -1345,7 +1338,6 @@ export const PrebuildAnimations = {
         new RgbKf({ time: 0.0, color: Color.fromString("#5e3097") }),
         new RgbKf({ time: 0.4, color: Color.black }),
         new RgbKf({ time: 0.5, color: Color.fromString("#e5a8f5") }),
-        //new RgbKf({ time: 0.5, color: Color.brightPurple }),
         new RgbKf({ time: 0.6, color: Color.black }),
         new RgbKf({ time: 1.0, color: Color.fromString("#5e3097") }),
       ],
@@ -1384,8 +1376,6 @@ export const PrebuildAnimations = {
         new RgbKf({ time: 0.0, color: Color.fromString("#5e3097") }),
         new RgbKf({ time: 0.45, color: Color.black }),
         new RgbKf({ time: 0.5, color: Color.fromString("#9f63a9") }),
-        // new RgbKf({ time: 0.5, color: new Color(0.5, 0, 1) }),
-        // new RgbKf({ time: 0.7, color: new Color(0.8, 0, 1) }),
         new RgbKf({ time: 0.55, color: Color.black }),
         new RgbKf({ time: 1.0, color: Color.fromString("#5e3097") }),
       ],
