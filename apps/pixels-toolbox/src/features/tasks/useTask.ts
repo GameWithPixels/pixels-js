@@ -1,5 +1,5 @@
+import * as Sentry from "@sentry/react-native";
 import React from "react";
-import * as Sentry from "sentry-expo";
 
 export type TaskStatus =
   | "pending"
@@ -68,7 +68,7 @@ export function useTask(
           }
           // Report error to Sentry
           if (name) {
-            Sentry.Native.captureMessage(errorMsg, "warning");
+            Sentry.captureMessage(errorMsg, "warning");
           }
         });
       return () => {

@@ -6,6 +6,7 @@ import {
   NavigationContainer,
   RouteProp,
 } from "@react-navigation/native";
+import * as Sentry from "@sentry/react-native";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import Constants from "expo-constants";
 import { useFonts } from "expo-font";
@@ -26,7 +27,6 @@ import { RootSiblingParent } from "react-native-root-siblings";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import * as Sentry from "sentry-expo";
 
 import { AnimatedSplashScreen } from "./app/AnimatedSplashScreen";
 import { AppDfuFiles } from "./app/AppDfuFiles";
@@ -58,7 +58,7 @@ LogBox.ignoreLogs([
 ]);
 
 const routingInstrumentation = !__DEV__
-  ? new Sentry.Native.ReactNavigationInstrumentation()
+  ? new Sentry.ReactNavigationInstrumentation()
   : undefined;
 if (routingInstrumentation) {
   const loggingUri = Constants.expoConfig?.hostUri
@@ -70,10 +70,9 @@ if (routingInstrumentation) {
       ? "https://4b7872190c6f2fb2c5ae87721f0e550d@o1258420.ingest.sentry.io/4506547864666112"
       : "https://0a1c5f5b8bc2d93b005d30e6254e0681@o1258420.ingest.sentry.io/4506415846588416",
     tracesSampleRate: 1.0, // TODO Set to a lower value in production
-    enableInExpoDevelopment: true,
     debug: __DEV__,
     integrations: [
-      new Sentry.Native.ReactNativeTracing({
+      new Sentry.ReactNativeTracing({
         enableUserInteractionTracing: true,
         idleTimeoutMs: 5000,
         routingInstrumentation,
@@ -228,7 +227,7 @@ function App() {
 
   return (
     <React.StrictMode>
-      <Sentry.Native.TouchEventBoundary>
+      <Sentry.TouchEventBoundary>
         <ReduxProvider store={store}>
           <SafeAreaProvider>
             <GestureHandlerRootView style={StyleSheet.absoluteFill}>
@@ -263,10 +262,10 @@ function App() {
             </GestureHandlerRootView>
           </SafeAreaProvider>
         </ReduxProvider>
-      </Sentry.Native.TouchEventBoundary>
+      </Sentry.TouchEventBoundary>
     </React.StrictMode>
   );
 }
 
 // For instrumentation
-export default routingInstrumentation ? Sentry.Native.wrap(App) : App;
+export default routingInstrumentation ? Sentry.wrap(App) : App;

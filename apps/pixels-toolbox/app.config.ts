@@ -56,7 +56,13 @@ const config = {
       "expo-localization",
       "expo-font",
       "react-native-vision-camera",
-      "sentry-expo",
+      [
+        "@sentry/react-native/expo",
+        {
+          organization: "systemic-games",
+          project: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
+        },
+      ],
       [
         "expo-build-properties",
         {
@@ -66,17 +72,6 @@ const config = {
         },
       ],
     ],
-    hooks: {
-      postPublish: [
-        {
-          file: "sentry-expo/upload-sourcemaps",
-          config: {
-            organization: "systemic-games",
-            project: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
-          },
-        },
-      ],
-    },
     extra: {
       eas: {
         projectId: prod

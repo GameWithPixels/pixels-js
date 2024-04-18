@@ -1,9 +1,9 @@
-import * as Sentry from "sentry-expo";
+import * as Sentry from "@sentry/react-native";
 
 export function logError(msg: string): void {
   console.error(msg);
   try {
-    Sentry.Native.captureMessage(msg, "error");
+    Sentry.captureMessage(msg, "error");
   } catch (e) {
     console.error(`Error logging to Sentry: ${e}`);
   }

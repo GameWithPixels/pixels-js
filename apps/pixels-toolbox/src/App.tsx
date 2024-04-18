@@ -5,6 +5,7 @@ import {
   DefaultTheme as NavDefaultTheme,
   NavigationContainer,
 } from "@react-navigation/native";
+import * as Sentry from "@sentry/react-native";
 import { BaseVStack } from "@systemic-games/react-native-base-components";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
@@ -22,7 +23,6 @@ import {
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import * as Sentry from "sentry-expo";
 
 import { useAppSelector } from "~/app/hooks";
 import { persistor, store } from "~/app/store";
@@ -55,7 +55,6 @@ if (!__DEV__) {
     // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
     // We recommend adjusting this value in production.
     tracesSampleRate: 1.0,
-    enableInExpoDevelopment: true,
     // Getting a lot of spam messages in the console... debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
   });
 }
@@ -180,4 +179,4 @@ function App() {
   );
 }
 
-export default Sentry.Native.wrap(App);
+export default Sentry.wrap(App);

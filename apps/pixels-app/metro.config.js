@@ -1,5 +1,5 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
-const { getDefaultConfig } = require("expo/metro-config");
+const { getSentryExpoConfig } = require("@sentry/react-native/metro");
 const findWorkspaceRoot = require("find-yarn-workspace-root");
 const path = require("path");
 
@@ -7,7 +7,7 @@ const path = require("path");
 const projectRoot = __dirname;
 const workspaceRoot = findWorkspaceRoot(__dirname);
 
-const config = getDefaultConfig(projectRoot);
+const config = getSentryExpoConfig(projectRoot);
 
 // Let Metro know we have assets with the following extensions
 config.resolver.assetExts.push("zip");

@@ -85,8 +85,7 @@
     "react-native-zip-archive": "^6.1.0",
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
-    "redux-persist": "^6.0.0",
-    "sentry-expo": "~7.2.0"
+    "redux-persist": "^6.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",

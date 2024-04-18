@@ -64,7 +64,13 @@ const config = {
       "./withAndroidMailto",
       "expo-localization",
       "expo-font",
-      "sentry-expo",
+      [
+        "@sentry/react-native/expo",
+        {
+          organization: "systemic-games",
+          project: prod ? "pixels-app" : "pixels-app-dev",
+        },
+      ],
       [
         "expo-build-properties",
         {
@@ -87,17 +93,6 @@ const config = {
     //     ],
     //   },
     // },
-    hooks: {
-      postPublish: [
-        {
-          file: "sentry-expo/upload-sourcemaps",
-          config: {
-            organization: "systemic-games",
-            project: prod ? "pixels-app" : "pixels-app-dev",
-          },
-        },
-      ],
-    },
     extra: {
       eas: {
         projectId: prod
