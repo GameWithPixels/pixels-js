@@ -227,45 +227,44 @@ function App() {
   updateThemesFonts();
 
   return (
-    // TODO enable with reanimated 3.6
-    // <React.StrictMode>
-    <Sentry.Native.TouchEventBoundary>
-      <ReduxProvider store={store}>
-        <SafeAreaProvider>
-          <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-            <PaperProvider theme={AppDarkTheme}>
-              <ErrorBoundary FallbackComponent={ErrorFallback}>
-                <NavigationContainer
-                  ref={navigation}
-                  theme={AppDarkTheme}
-                  onReady={onReady}
-                >
-                  <StatusBar style="light" />
-                  <PersistGate persistor={persistor}>
-                    <AppInit>
-                      <AppPixelsCentral>
-                        <AppDfuFiles>
-                          <AnimatedSplashScreen>
-                            <RootSiblingParent>
-                              <ActionSheetProvider>
-                                <BottomSheetModalProvider>
-                                  <AppPage />
-                                </BottomSheetModalProvider>
-                              </ActionSheetProvider>
-                            </RootSiblingParent>
-                          </AnimatedSplashScreen>
-                        </AppDfuFiles>
-                      </AppPixelsCentral>
-                    </AppInit>
-                  </PersistGate>
-                </NavigationContainer>
-              </ErrorBoundary>
-            </PaperProvider>
-          </GestureHandlerRootView>
-        </SafeAreaProvider>
-      </ReduxProvider>
-    </Sentry.Native.TouchEventBoundary>
-    // </React.StrictMode>
+    <React.StrictMode>
+      <Sentry.Native.TouchEventBoundary>
+        <ReduxProvider store={store}>
+          <SafeAreaProvider>
+            <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+              <PaperProvider theme={AppDarkTheme}>
+                <ErrorBoundary FallbackComponent={ErrorFallback}>
+                  <NavigationContainer
+                    ref={navigation}
+                    theme={AppDarkTheme}
+                    onReady={onReady}
+                  >
+                    <StatusBar style="light" />
+                    <PersistGate persistor={persistor}>
+                      <AppInit>
+                        <AppPixelsCentral>
+                          <AppDfuFiles>
+                            <AnimatedSplashScreen>
+                              <RootSiblingParent>
+                                <ActionSheetProvider>
+                                  <BottomSheetModalProvider>
+                                    <AppPage />
+                                  </BottomSheetModalProvider>
+                                </ActionSheetProvider>
+                              </RootSiblingParent>
+                            </AnimatedSplashScreen>
+                          </AppDfuFiles>
+                        </AppPixelsCentral>
+                      </AppInit>
+                    </PersistGate>
+                  </NavigationContainer>
+                </ErrorBoundary>
+              </PaperProvider>
+            </GestureHandlerRootView>
+          </SafeAreaProvider>
+        </ReduxProvider>
+      </Sentry.Native.TouchEventBoundary>
+    </React.StrictMode>
   );
 }
 

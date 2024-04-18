@@ -1,6 +1,7 @@
 import React from "react";
 import { LayoutChangeEvent, View, ViewProps } from "react-native";
 import Animated, {
+  LayoutAnimationConfig,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -41,10 +42,11 @@ export function CollapsableContainer({
       marginBottom: animatedHeight.value > 0 ? 0 : collapsedMarginBottom ?? 0,
     };
   }, [animatedHeight, collapsedMarginBottom, height, visible]);
-  // TODO use LayoutAnimationConfig with reanimated 3.6
   return (
-    <Animated.View style={[collapsableStyle, { overflow: "hidden" }]}>
-      <View onLayout={onCustomLayout} {...props} />
-    </Animated.View>
+    <LayoutAnimationConfig skipEntering>
+      <Animated.View style={[collapsableStyle, { overflow: "hidden" }]}>
+        <View onLayout={onCustomLayout} {...props} />
+      </Animated.View>
+    </LayoutAnimationConfig>
   );
 }
