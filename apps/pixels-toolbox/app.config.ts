@@ -54,6 +54,7 @@ const config = {
     plugins: [
       "./withAndroidPermissions",
       "expo-localization",
+      "expo-font",
       "react-native-vision-camera",
       "sentry-expo",
       [

@@ -12,7 +12,7 @@ export async function checkForAppUpdateAsync(
   const check = async () => {
     try {
       const { isAvailable, manifest } = await Updates.checkForUpdateAsync();
-      if (isAvailable && manifest) {
+      if (isAvailable && manifest && "createdAt" in manifest) {
         const { id, createdAt } = manifest;
         return { id, createdAt };
       }

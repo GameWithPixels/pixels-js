@@ -63,6 +63,7 @@ const config = {
       "./withAndroidAsyncStorageDbSize",
       "./withAndroidMailto",
       "expo-localization",
+      "expo-font",
       "sentry-expo",
       [
         "expo-build-properties",
