@@ -52,7 +52,7 @@
     "expo": "~50.0.17",
     "expo-application": "~5.8.4",
     "expo-asset": "~9.0.2",
-    "expo-av": "~13.10.5",
+    "expo-av": "~13.10.6",
     "expo-build-properties": "~0.11.1",
     "expo-constants": "~15.4.6",
     "expo-dev-client": "~3.3.11",
@@ -81,7 +81,7 @@
     "react-native-safe-area-context": "4.8.2",
     "react-native-screens": "~3.29.0",
     "react-native-svg": "14.1.0",
-    "react-native-vision-camera": "~2.16.5",
+    "react-native-vision-camera": "~2.16.8",
     "react-native-zip-archive": "^6.1.0",
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
@@ -90,7 +90,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.2",
     "@redux-devtools/core": "^3.13.1",
-    "@types/react": "~18.2.29",
+    "@types/react": "18.2.79",
     "@types/three": "0.146.0",
     "babel-plugin-root-import": "^6.6.0",
     "babel-plugin-transform-remove-console": "^6.9.4"
