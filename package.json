@@ -56,7 +56,7 @@
     "@commitlint/config-conventional": "^18.4.3",
     "@evilmartians/lefthook": "^1.5.5",
     "eslint": "^8.55.0",
-    "eslint-config-universe": "^12.0.0",
+    "eslint-config-universe": "^12.0.1",
     "eslint-plugin-jest": "^27.6.0",
     "expo": "~50.0.17",
     "find-yarn-workspace-root": "^2.0.0",
