@@ -3,15 +3,15 @@ const prod =
   !process.env.SYSTEMIC_PX_DEV &&
   process.env.EAS_BUILD_PROFILE !== "development";
 
-const version = "2.2.1"; // Version number must have 3 parts
-const buildNumber = 2201;
+const version = "2.2.2"; // Version number must have 3 parts
+const buildNumber = 2202;
 
 const config = {
   expo: {
     name: prod ? "Pixels" : "Pixels Dev",
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "49.3", // Major is Expo version, minor is native code revision
+    runtimeVersion: "50.0", // Major is Expo version, minor is native code revision
     version,
     platforms: ["ios", "android"],
     orientation: "portrait",
