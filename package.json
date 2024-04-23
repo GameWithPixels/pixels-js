@@ -42,6 +42,7 @@
     "pub:native": "yarn pk:native && yarn workspace @systemic-games/react-native-bluetooth-le publish && yarn workspace @systemic-games/react-native-nordic-nrf5-dfu publish && yarn workspace @systemic-games/vision-camera-rgb-averages publish && yarn workspace @systemic-games/react-native-pixels-connect publish",
     "link-packages": "yarn workspace @systemic-games/pixels-core-utils link && yarn workspace @systemic-games/pixels-core-animation link && yarn workspace @systemic-games/pixels-core-connect link && yarn workspace @systemic-games/pixels-edit-animation link && yarn workspace @systemic-games/pixels-react link && yarn workspace @systemic-games/pixels-three link && yarn workspace @systemic-games/pixels-web-connect link",
     "prepare": "yarn pk:all",
+    "postinstall": "patch-package",
     "logcat": "adb logcat -s SystemicGames",
     "logcat:errors": "adb logcat *:E",
     "types": "tsc --build",
@@ -60,6 +61,8 @@
     "eslint-plugin-jest": "^27.6.0",
     "expo": "~50.0.17",
     "find-yarn-workspace-root": "^2.0.0",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
     "prettier": "^3.1.1",
     "typedoc": "^0.25.8",
     "typescript": "^5.1.3"
