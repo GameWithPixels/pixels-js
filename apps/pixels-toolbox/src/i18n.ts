@@ -193,6 +193,7 @@ i18n
           validateBoard: "Validate FPC Board",
           validateDie: "Validate Resin Die",
           validateDieFinal: "Final Validation",
+          validateDieReconfigure: "Reconfigure Die",
           startingCamera: "Starting camera...",
           needCameraPermission: "Enable camera permissions",
           die: "die",
@@ -200,9 +201,12 @@ i18n
           board: "board",
           coil: "coil",
           boardNoCoil: "board without coil",
-          testingSequence: "Testing {{sequence}}",
-          testingDieTypeWithSequence: "Testing {{dieType}} {{sequence}}",
           scan: "Scan",
+          enterSNFromLabel: "Enter SN written on label, starting by PXL",
+          numberMadeOf8CharactersNoCase:
+            "This number is made of 8 characters, case doesn't matter",
+          invalidSN: "Invalid SN",
+          pressOkOrReturnToValidate: "Press Ok or Return to validate",
           resetUsingMagnetWithFormFactor:
             "Reset {{formFactor}} using magnet and point camera at it",
           firmwareUpdate: "Firmware Update",
@@ -428,8 +432,6 @@ i18n
           board: "板",
           coil: "线圈",
           boardNoCoil: "没有线圈的板子",
-          testingSequence: "测试 {{sequence}}",
-          testingDieTypeWithSequence: "测试 {{dieType}} {{sequence}}",
           scan: "扫描",
           resetUsingMagnetWithFormFactor:
             "使用磁铁重置 {{formFactor}}，然后使用摄像头对准",

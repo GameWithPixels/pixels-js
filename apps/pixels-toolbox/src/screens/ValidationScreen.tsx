@@ -2,6 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { range } from "@systemic-games/pixels-core-utils";
 import {
   BaseBox,
+  BaseHStack,
   BaseVStack,
   getBorderRadius,
 } from "@systemic-games/react-native-base-components";
@@ -22,6 +23,7 @@ import {
   ButtonProps,
   Card,
   Text,
+  TextInput,
   TouchableRipple,
   TouchableRippleProps,
   useTheme,
@@ -42,9 +44,9 @@ import {
   CheckBoard,
   CheckLEDs,
   ConnectPixel,
-  getPixelThroughDispatcher,
   LabelPrinting,
   PrepareDie,
+  ScanAndUpdateFirmware,
   StoreSettings,
   TurnOffDevice,
   UpdateFirmware,
@@ -54,6 +56,7 @@ import {
   WaitDieInCase,
   WaitFaceUp,
 } from "~/components/ValidationTestsComponents";
+import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrintStatus } from "~/features/print";
 import { selectSkipPrintLabel } from "~/features/store/validationSelectors";
 import {
@@ -79,14 +82,24 @@ import {
 import { usePixelIdDecoderFrameProcessor } from "~/hooks/usePixelIdDecoderFrameProcessor";
 import { capitalize } from "~/i18n";
 
-function getTestingMessage(
+function getValidationSequenceName(
+  t: TFunction<"translation", undefined>,
+  sequence: ValidationSequence
+): string {
+  return t(
+    sequence === "firmwareUpdate" ? sequence : "validate" + capitalize(sequence)
+  );
+}
+
+function getDieValidationSequenceName(
   t: TFunction<"translation", undefined>,
   settings: Pick<ValidationTestsSettings, "dieType" | "sequence">
 ): string {
-  return t("testingDieTypeWithSequence", {
-    dieType: t(settings.dieType),
-    sequence: t(settings.sequence),
-  });
+  return (
+    getValidationSequenceName(t, settings.sequence) +
+    t("colonSeparator") +
+    t(settings.dieType)
+  );
 }
 
 function BottomButton({ children, ...props }: Omit<ButtonProps, "style">) {
@@ -198,7 +211,7 @@ function SelectSequencePage({
           disabled={!!dfuFilesError || !dfuFilesBundle}
           onPress={() => onSelectSequence(s)}
         >
-          {t(s === "firmwareUpdate" ? s : "validate" + capitalize(s))}
+          {getValidationSequenceName(t, s)}
         </LargeTonalButton>
       ))}
     </BaseVStack>
@@ -230,7 +243,7 @@ function SelectDieTypePage({
       paddingVertical={10}
     >
       <Text variant="headlineSmall" style={AppStyles.textCentered}>
-        {t("testingSequence", { sequence: t(sequence) })}
+        {getValidationSequenceName(t, sequence)}
       </Text>
       {items.map((items, i) => (
         <View key={i} style={{ flex: 1, flexDirection: "row", gap: 20 }}>
@@ -260,12 +273,12 @@ type CameraStatus =
   | "ready";
 
 function DecodePixelIdPage({
-  onDecodedPixelId,
   settings,
+  onDecodePixelId,
   onBack,
 }: {
-  onDecodedPixelId: (pixelId: number) => void;
   settings: Pick<ValidationTestsSettings, "dieType" | "sequence">;
+  onDecodePixelId: (pixelId: number) => void;
   onBack?: () => void;
 }) {
   const { colors } = useTheme();
@@ -325,9 +338,9 @@ function DecodePixelIdPage({
   // Notify when pixel id has been decoded
   React.useEffect(() => {
     if (decoderState.pixelId) {
-      onDecodedPixelId(decoderState.pixelId);
+      onDecodePixelId(decoderState.pixelId);
     }
-  }, [onDecodedPixelId, decoderState.pixelId]);
+  }, [onDecodePixelId, decoderState.pixelId]);
 
   // Monitor color changes
   const lastColorChangesRef = React.useRef<number[]>([]);
@@ -356,8 +369,8 @@ function DecodePixelIdPage({
   const [showScanList, setShowScanList] = React.useState(false);
 
   const onSelect = React.useCallback(
-    (sp: ScannedPixel) => onDecodedPixelId(sp.pixelId),
-    [onDecodedPixelId]
+    (sp: ScannedPixel) => onDecodePixelId(sp.pixelId),
+    [onDecodePixelId]
   );
   const onClose = React.useCallback(() => setShowScanList(false), []);
 
@@ -439,12 +452,76 @@ function DecodePixelIdPage({
             gap: 2,
           }}
         >
-          <Text variant="bodyLarge">{getTestingMessage(t, settings)}</Text>
+          <Text variant="bodyLarge">
+            {getDieValidationSequenceName(t, settings)}
+          </Text>
           {!!decoderState.info && <Text>{decoderState.info}</Text>}
           <BottomButton onPress={onBack}>{t("back")}</BottomButton>
         </Card>
       </BaseBox>
     </BaseVStack>
+  );
+}
+
+function InputPixelIdPage({
+  settings,
+  onEnterPixelId,
+  onBack,
+}: {
+  settings: ValidationTestsSettings;
+  onEnterPixelId: (pixelId: number) => void;
+  onBack?: () => void;
+}) {
+  const { t } = useTranslation();
+  const [text, setText] = React.useState("PXL");
+  const hex = text.startsWith("PXL") ? text.substring(3) : text;
+  const pixelId = hex.length !== 8 ? NaN : Number("0x" + hex);
+  const validate = () => !isNaN(pixelId) && onEnterPixelId(pixelId);
+  return (
+    <BaseBox w="100%" h="100%">
+      <BaseVStack w="100%" h="100%" px={5} gap={20}>
+        <Text variant="titleLarge" style={{ alignSelf: "center" }}>
+          {getDieValidationSequenceName(t, settings)}
+        </Text>
+        <Text variant="bodyLarge">
+          {t("enterSNFromLabel")}
+          {t("colonSeparator")}
+        </Text>
+        <BaseHStack w="100%" alignItems="center" gap={10}>
+          <TextInput
+            autoFocus
+            dense
+            mode="outlined"
+            inputMode="text"
+            keyboardAppearance="dark"
+            value={text}
+            onChangeText={(text) => setText(text)}
+            onEndEditing={validate}
+            style={{ flex: 1 }}
+          />
+          <Button
+            mode="contained-tonal"
+            disabled={isNaN(pixelId)}
+            onPress={validate}
+            style={{ alignSelf: "center" }}
+          >
+            {t("ok")}
+          </Button>
+        </BaseHStack>
+        <Text>
+          {text === "PXL"
+            ? t("numberMadeOf8CharactersNoCase")
+            : isNaN(pixelId)
+              ? t("invalidSN")
+              : t("pressOkOrReturnToValidate")}
+          .
+        </Text>
+      </BaseVStack>
+      {/* Bottom button */}
+      <BaseBox position="absolute" bottom={0} w="100%" px={15} py={10}>
+        <BottomButton onPress={onBack}>{t("back")}</BottomButton>
+      </BaseBox>
+    </BaseBox>
   );
 }
 
@@ -463,12 +540,12 @@ function RunTestsPage({
   const { t } = useTranslation();
 
   const [pixel, setPixel] = React.useState<Pixel>();
-  const [ledCount, setLedCount] = React.useState(0);
-  const [dieType, setDieType] = React.useState<PixelDieType>("unknown");
+  const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
   const onPixelFound = React.useCallback((scannedPixel: ScannedPixel) => {
-    setLedCount(scannedPixel.ledCount);
-    setDieType(scannedPixel.dieType);
-    setPixel(getPixelThroughDispatcher(scannedPixel));
+    setScannedPixel({ ...scannedPixel });
+    // Going through the PixelDispatcher to retrieve the Pixel instance
+    // to ensure that logging is enabled
+    setPixel(PixelDispatcher.getDispatcher(scannedPixel).pixel);
   }, []);
 
   const [cancel, setCancel] = React.useState(false);
@@ -476,7 +553,7 @@ function RunTestsPage({
     React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
-  const skipPrint = useAppSelector(selectSkipPrintLabel);
+  const noPrint = useAppSelector(selectSkipPrintLabel);
 
   // We must have a Pixel once past the UpdateFirmware task
   const getPixel = (): Pixel => {
@@ -487,20 +564,26 @@ function RunTestsPage({
   // Some conditions to filter tests
   const seq = settings.sequence;
   const isFwUpdate = seq === "firmwareUpdate";
+  const isFinal = seq === "dieFinal";
+  const isReconfig = seq === "dieReconfigure";
   const skipIfFwUpdate = { skip: isFwUpdate };
-  const skipIfBoard = { skip: isBoard(seq) };
-  const skipIfNoCoil = { skip: isFwUpdate || seq === "boardNoCoil" };
-  const skipIfDieFinal = { skip: isFwUpdate || seq === "dieFinal" };
-  const skipIfNotDieFinal = { skip: isFwUpdate || seq !== "dieFinal" };
+  const skipCharging = {
+    skip: isFwUpdate || seq === "boardNoCoil" || isReconfig,
+  };
+  const skipFaceUp = { skip: isBoard(seq) || isReconfig };
+  const skipTurnOff = { skip: isFwUpdate || isFinal || isReconfig };
+  const skipPrepare = { skip: !isFinal && !isReconfig };
+  const skipIfNotReconfig = { skip: !isReconfig };
 
   // The entire test sequence
   const taskChain = useTaskChain(cancel ? "cancel" : "run")
     .withTask(
       ...useTaskComponent("UpdateFirmware", cancel, (p) => (
-        <UpdateFirmware
+        <ScanAndUpdateFirmware
           {...p}
           settings={settings}
           pixelId={pixelId}
+          reconfigure={isReconfig}
           onPixelFound={onPixelFound}
           onFirmwareUpdate={setFirmwareUpdateStatus}
         />
@@ -511,11 +594,9 @@ function RunTestsPage({
         <ConnectPixel
           {...p}
           settings={settings}
-          pixelId={pixelId}
-          pixel={pixel}
-          onPixelFound={onPixelFound}
-          ledCount={ledCount}
-          dieType={seq === "dieFinal" ? dieType : undefined}
+          pixel={getPixel()}
+          ledCount={scannedPixel?.ledCount ?? 0}
+          dieType={isFinal ? scannedPixel?.dieType : undefined}
         />
       )),
       skipIfFwUpdate
@@ -524,7 +605,7 @@ function RunTestsPage({
       ...useTaskComponent("WaitCharging", cancel, (p) => (
         <WaitCharging {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfNoCoil
+      skipCharging
     )
     .withTask(
       ...useTaskComponent("CheckBoard", cancel, (p) => (
@@ -541,19 +622,19 @@ function RunTestsPage({
           notCharging
         />
       )),
-      skipIfNoCoil
+      skipCharging
     )
     .withTask(
       ...useTaskComponent("CheckLEDs", cancel, (p) => (
         <CheckLEDs {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfFwUpdate
+      { skip: isFwUpdate || isReconfig }
     )
     .withTask(
       ...useTaskComponent("WaitFaceUp", cancel, (p) => (
         <WaitFaceUp {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfBoard
+      skipFaceUp
     )
     .withTask(
       ...useTaskComponent("StoreSettings", cancel, (p) => (
@@ -565,7 +646,7 @@ function RunTestsPage({
       ...useTaskComponent("TurnOffDevice", cancel, (p) => (
         <TurnOffDevice {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfDieFinal
+      skipTurnOff
     )
     .withTask(
       ...useTaskComponent("PrepareDie", cancel, (p) => (
@@ -573,27 +654,33 @@ function RunTestsPage({
           {...p}
           settings={settings}
           pixel={getPixel()}
-          onPrintStatus={skipPrint ? undefined : setPrintStatus}
+          onPrintStatus={noPrint ? undefined : setPrintStatus}
         />
       )),
-      skipIfNotDieFinal
+      skipPrepare
+    )
+    .withTask(
+      ...useTaskComponent("UpdateFirmware", cancel, (p) => (
+        <UpdateFirmware
+          {...p}
+          settings={settings}
+          scannedPixel={scannedPixel}
+          onFirmwareUpdate={setFirmwareUpdateStatus}
+        />
+      )),
+      skipIfNotReconfig
     )
     .withTask(
       ...useTaskComponent("ConnectPixel", cancel, (p) => (
-        <ConnectPixel
-          {...p}
-          settings={settings}
-          pixel={pixel}
-          ledCount={ledCount}
-        />
+        <ConnectPixel {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfNotDieFinal
+      skipPrepare
     )
     .withTask(
       ...useTaskComponent("WaitDieInCase", cancel, (p) => (
         <WaitDieInCase {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfNotDieFinal
+      skipPrepare
     )
     .withTask(
       ...useTaskComponent("CheckLabel", cancel, (p) => (
@@ -605,7 +692,7 @@ function RunTestsPage({
           onPrintStatus={setPrintStatus}
         />
       )),
-      { skip: skipIfNotDieFinal.skip || skipPrint }
+      { skip: noPrint || skipPrepare.skip }
     );
 
   // Get result
@@ -653,7 +740,9 @@ function RunTestsPage({
       justifyContent="center"
       paddingBottom={10}
     >
-      <Text variant="titleLarge">{getTestingMessage(t, settings)}</Text>
+      <Text variant="titleLarge">
+        {getDieValidationSequenceName(t, settings)}
+      </Text>
       <ScrollView
         style={AppStyles.fullWidth}
         contentContainerStyle={AppStyles.listContentContainer}
@@ -717,14 +806,25 @@ function ValidationPage() {
       onBack={() => setSequence(undefined)}
     />
   ) : !pixelId ? (
-    <DecodePixelIdPage
-      settings={{ sequence, dieType }}
-      onDecodedPixelId={(pixelId) => {
-        console.log("Decoded PixelId:", pixelId);
-        setPixelId(pixelId);
-      }}
-      onBack={() => setDieType(undefined)}
-    />
+    sequence !== "dieReconfigure" ? (
+      <DecodePixelIdPage
+        settings={{ sequence, dieType }}
+        onDecodePixelId={(pixelId) => {
+          console.log("Decoded PixelId:", pixelId);
+          setPixelId(pixelId);
+        }}
+        onBack={() => setDieType(undefined)}
+      />
+    ) : (
+      <InputPixelIdPage
+        settings={{ sequence, dieType, dfuFilesBundle }}
+        onEnterPixelId={(pixelId) => {
+          console.log("Entered PixelId:", pixelId);
+          setPixelId(pixelId);
+        }}
+        onBack={() => setDieType(undefined)}
+      />
+    )
   ) : (
     <RunTestsPage
       settings={{ sequence, dieType, dfuFilesBundle }}

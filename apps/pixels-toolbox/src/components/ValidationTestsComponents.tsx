@@ -81,11 +81,6 @@ import {
 } from "~/features/validation";
 import { FactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
 
-export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
-  // We use a PixelDispatcher to get our Pixel instance so to enable message logging
-  return PixelDispatcher.getDispatcher(scannedPixel).pixel;
-}
-
 function printLabel(
   pixel: Pixel,
   dieType: PixelDieType,
@@ -276,6 +271,83 @@ async function scanForPixelWithTimeout(
   return scannedPixel;
 }
 
+async function updateFactoryFirmware(
+  scannedPixel: ScannedPixel,
+  dfuFilesBundle: FactoryDfuFilesBundle,
+  setDfuState: (state: DfuState | undefined) => void,
+  setDfuProgress: (progress: number) => void,
+  onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void,
+  reconfigure?: boolean
+): Promise<void> {
+  // Get our Pixel and prepare for DFU
+  // We're using the latest known firmware date (scannedPixel might be outdated)
+  const dfuTarget = PixelDispatcher.getDispatcher(scannedPixel);
+  // Use firmware date from scanned data as it is the most up-to-date
+  console.log(
+    "Validation firmware build timestamp is",
+    toLocaleDateTimeString(dfuFilesBundle.date)
+  );
+  console.log(
+    "On device firmware build timestamp is",
+    toLocaleDateTimeString(dfuTarget.firmwareDate)
+  );
+  // Start DFU
+  if (
+    !!reconfigure ||
+    (!areSameFirmwareDates(dfuFilesBundle.date, dfuTarget.firmwareDate) &&
+      dfuFilesBundle.date > dfuTarget.firmwareDate)
+  ) {
+    onFirmwareUpdate?.("updating");
+    // Prepare for updating firmware
+    const blPath = reconfigure ? "" : dfuFilesBundle.bootloader.pathname;
+    const fwPath = reconfigure
+      ? dfuFilesBundle.reconfigFirmware.pathname
+      : dfuFilesBundle.firmware.pathname;
+    const updateFW = async (blAddr?: number) => {
+      let dfuState: DfuState | undefined;
+      await updateFirmware(
+        blAddr ?? dfuTarget,
+        blPath,
+        fwPath,
+        (s) => {
+          dfuState = s;
+          setDfuState(s);
+        },
+        setDfuProgress,
+        !!blAddr
+      );
+      if (dfuState === "aborted") {
+        throw new Error("Firmware update aborted");
+      }
+      onFirmwareUpdate?.("success");
+    };
+    // Update firmware
+    try {
+      await updateFW();
+    } catch (error) {
+      let lastError: any = error;
+      if (dfuTarget.address && error instanceof DfuCommunicationError) {
+        console.log("Error updating FW, trying again with BL address...");
+        setDfuState(undefined);
+        setDfuProgress(0);
+        // Switch to bootloader address (only available on Android)
+        try {
+          await updateFW(dfuTarget.address + 1);
+          lastError = undefined;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (lastError) {
+        onFirmwareUpdate?.("error");
+        throw error;
+      }
+    }
+  } else {
+    console.log("Skipping firmware update");
+  }
+}
+
 async function storeValueChecked(
   pixel: Pixel,
   valueType: number,
@@ -347,15 +419,17 @@ export interface ValidationTestProps extends TaskComponentProps {
 export type UpdateFirmwareStatus = "updating" | "success" | "error";
 
 // Note: Pixel should be disconnected by parent component
-export function UpdateFirmware({
+export function ScanAndUpdateFirmware({
   action,
   onTaskStatus,
   settings,
   pixelId,
+  reconfigure,
   onPixelFound,
   onFirmwareUpdate,
 }: Omit<ValidationTestProps, "pixel"> & {
   pixelId: number;
+  reconfigure?: boolean;
   onPixelFound?: (scannedPixel: ScannedPixel) => void;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
@@ -409,78 +483,79 @@ export function UpdateFirmware({
     .withTask(
       React.useCallback(async () => {
         assert(scannedPixel, "No scanned Pixel");
-        // Get our Pixel and prepare for DFU
-        const dfuTarget = scannedPixel;
         try {
-          // Use firmware date from scanned data as it is the most up-to-date
-          console.log(
-            "Validation firmware build timestamp is",
-            toLocaleDateTimeString(settings.dfuFilesBundle.date)
+          await updateFactoryFirmware(
+            scannedPixel,
+            settings.dfuFilesBundle,
+            setDfuState,
+            setDfuProgress,
+            onFirmwareUpdate,
+            reconfigure
           );
-          console.log(
-            "On device firmware build timestamp is",
-            toLocaleDateTimeString(dfuTarget.firmwareDate)
+        } catch (error) {
+          throw new TaskFaultedError(`${t("dfuErrorTryAgain")} ${error}`);
+        }
+      }, [
+        reconfigure,
+        scannedPixel,
+        settings.dfuFilesBundle,
+        onFirmwareUpdate,
+        t,
+      ]),
+      createTaskStatusContainer({
+        title: t("firmwareUpdate"),
+        children: (
+          <>
+            {dfuState && dfuState !== "completed" && (
+              <Text variant="bodyLarge">
+                {t("dfuStateWithStatus", {
+                  status: t(dfuState),
+                })}
+              </Text>
+            )}
+            {dfuState === "uploading" && <ProgressBar percent={dfuProgress} />}
+          </>
+        ),
+      })
+    )
+    .withStatusChanged(playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskChainComponent title={t("firmwareUpdate")} taskChain={taskChain} />
+  );
+}
+
+export function UpdateFirmware({
+  action,
+  onTaskStatus,
+  settings,
+  scannedPixel,
+  onFirmwareUpdate,
+}: Omit<ValidationTestProps, "pixel"> & {
+  scannedPixel?: ScannedPixel;
+  onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
+}) {
+  const { t } = useTranslation();
+
+  // Firmware update state and progress
+  const [dfuState, setDfuState] = React.useState<DfuState>();
+  const [dfuProgress, setDfuProgress] = React.useState(0);
+
+  const taskChain = useTaskChain(action, "UpdateFirmware")
+    .withTask(
+      React.useCallback(async () => {
+        assert(scannedPixel, "No scanned Pixel");
+        try {
+          await updateFactoryFirmware(
+            scannedPixel,
+            settings.dfuFilesBundle,
+            setDfuState,
+            setDfuProgress,
+            onFirmwareUpdate
           );
-          // Start DFU
-          if (
-            !areSameFirmwareDates(
-              settings.dfuFilesBundle.date,
-              dfuTarget.firmwareDate
-            ) &&
-            settings.dfuFilesBundle.date > dfuTarget.firmwareDate
-          ) {
-            onFirmwareUpdate?.("updating");
-            // Prepare for updating firmware
-            const blPath = settings.dfuFilesBundle.bootloader?.pathname;
-            const fwPath = settings.dfuFilesBundle.firmware.pathname;
-            const updateFW = async (blAddr?: number) => {
-              let dfuState: DfuState | undefined;
-              await updateFirmware(
-                blAddr ?? dfuTarget,
-                blPath,
-                fwPath,
-                (s) => {
-                  dfuState = s;
-                  setDfuState(s);
-                },
-                setDfuProgress,
-                !!blAddr
-              );
-              if (dfuState === "aborted") {
-                throw new Error("Firmware update aborted");
-              }
-              onFirmwareUpdate?.("success");
-            };
-            // Update firmware
-            try {
-              await updateFW();
-            } catch (error) {
-              let lastError: any = error;
-              if (dfuTarget.address && error instanceof DfuCommunicationError) {
-                console.log(
-                  "Error updating FW, trying again with BL address..."
-                );
-                setDfuState(undefined);
-                setDfuProgress(0);
-                // Switch to bootloader address (only available on Android)
-                try {
-                  await updateFW(dfuTarget.address + 1);
-                  lastError = undefined;
-                } catch (error) {
-                  lastError = error;
-                }
-              }
-              if (lastError) {
-                onFirmwareUpdate?.("error");
-                throw new TaskFaultedError(`${t("dfuErrorTryAgain")} ${error}`);
-              }
-            }
-          } else {
-            console.log("Skipping firmware update");
-          }
-        } finally {
-          // Leave Pixel connected to save time on the next connected test
-          //await Central.disconnectPeripheral(dfuTarget.systemId);
+        } catch (error) {
+          throw new TaskFaultedError(`${t("dfuErrorTryAgain")} ${error}`);
         }
       }, [scannedPixel, settings.dfuFilesBundle, onFirmwareUpdate, t]),
       createTaskStatusContainer({
@@ -512,18 +587,13 @@ export function ConnectPixel({
   action,
   onTaskStatus,
   settings,
-  pixelId,
   pixel,
-  onPixelFound,
   ledCount,
   dieType,
 }: Omit<ValidationTestProps, "pixel"> & {
-  pixelId?: number;
-  pixel?: Pixel;
-  ledCount: number;
+  pixel: Pixel;
+  ledCount?: number;
   dieType?: PixelDieType;
-  onPixelFound?: (scannedPixel: ScannedPixel) => void;
-  onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
   const { t } = useTranslation();
 
@@ -532,47 +602,30 @@ export function ConnectPixel({
 
   const taskChain = useTaskChain(action, "ConnectPixel")
     .withTask(
-      React.useCallback(
-        async (abortSignal) => {
-          if (!pixel) {
-            assert(pixelId, "No Pixel instance and no Pixel id");
-            // Start scanning for our Pixel
-            const scannedPixel = await scanForPixelWithTimeout(
-              abortSignal,
-              t,
-              pixelId
-            );
-            // Notify parent
-            onPixelFound?.(scannedPixel);
-          }
-        },
-        [onPixelFound, pixel, pixelId, t]
-      ),
-      createTaskStatusContainer(t("bluetoothScan"))
-    )
-    .withTask(
       React.useCallback(async () => {
-        if (ledCount <= 0) {
-          throw new TaskFaultedError(
-            t("invalidLedCountWithValue", { value: ledCount })
-          );
-        }
-        // Check LED count
-        if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
-          throw new TaskFaultedError(
-            t("dieTypeMismatchWithTypeAndLedCount", {
-              dieType: t(settings.dieType),
-              ledCount,
-            })
-          );
+        if (ledCount !== undefined) {
+          if (ledCount <= 0) {
+            throw new TaskFaultedError(
+              t("invalidLedCountWithValue", { value: ledCount })
+            );
+          }
+          // Check LED count
+          if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
+            throw new TaskFaultedError(
+              t("dieTypeMismatchWithTypeAndLedCount", {
+                dieType: t(settings.dieType),
+                ledCount,
+              })
+            );
+          }
         }
       }, [ledCount, settings.dieType, t]),
-      createTaskStatusContainer(t("checkLEDCount"))
+      createTaskStatusContainer(t("checkLEDCount")),
+      { skip: ledCount === undefined }
     )
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          assert(pixel, "No Pixel instance");
           // Try to connect with a few attempts
           await repeatConnect(
             abortSignal,
@@ -590,7 +643,6 @@ export function ConnectPixel({
     .withTask(
       React.useCallback(
         async (abortSignal) => {
-          assert(pixel, "No Pixel instance");
           if (
             dieType &&
             dieType !== "unknown" &&
@@ -638,7 +690,8 @@ export function ConnectPixel({
             )}
           </>
         ),
-      })
+      }),
+      { skip: dieType === undefined }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
