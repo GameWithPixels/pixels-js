@@ -1,15 +1,15 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import DfuFilesBundle from "../dfu/DfuFilesBundle";
-import { DfuFileInfo } from "../dfu/getDfuFileInfo";
+import { DfuFileInfo, getDfuFileInfo } from "../dfu/getDfuFileInfo";
 import { unzipFactoryDfuFilesAsync } from "../dfu/unzip";
 import { toLocaleDateTimeString } from "../toLocaleDateTimeString";
-
-import { useAppSelector } from "~/app/hooks";
 
 export interface FactoryDfuBundleFiles {
   readonly bootloader: DfuFileInfo;
   readonly firmware: DfuFileInfo;
+  readonly reconfigFirmware: DfuFileInfo;
   readonly date: Date;
 }
 
@@ -17,26 +17,34 @@ export function useFactoryDfuFilesBundle(): [
   FactoryDfuBundleFiles | undefined,
   Error | undefined
 ] {
-  const dfuBundles = useAppSelector((state) => state.dfuBundles);
   const [dfuBundle, setDfuBundle] = React.useState<FactoryDfuBundleFiles>();
   const [error, setError] = React.useState<Error>();
   React.useEffect(() => {
     const task = async () => {
       setError(undefined);
       // Get the DFU files bundles from the zip file
-      const dfuBundle = DfuFilesBundle.create({
-        pathnames: await unzipFactoryDfuFilesAsync(),
-      });
-      if (!dfuBundle.bootloader) {
+      const bundles = await DfuFilesBundle.createMany(
+        (await unzipFactoryDfuFilesAsync()).map((p) => getDfuFileInfo(p))
+      );
+      const dfuBundle = bundles.find((b) => b.bootloader);
+      if (!dfuBundle?.bootloader) {
+        throw new Error("Validation DFU bootloader file not found");
+      }
+      if (dfuBundle.firmware?.comment !== "sdk17") {
+        throw new Error("Validation DFU firmware file not found");
+      }
+      const reconfigDfuBundle = bundles.find((b) =>
+        b.firmware?.comment?.includes("reconfigure")
+      );
+      if (!reconfigDfuBundle?.firmware) {
         throw new Error(
-          "Validation DFU bootloader file not found or problematic"
+          "Validation DFU firmware file for reconfiguration not found"
         );
       }
-      if (!dfuBundle.firmware) {
-        throw new Error(
-          "Validation DFU firmware file not found or problematic"
-        );
-      }
+      assert(
+        reconfigDfuBundle !== dfuBundle,
+        "Reconfig DFU bundle is the same as main one"
+      );
       console.log(
         "Validation DFU files loaded, firmware/bootloader build date is",
         toLocaleDateTimeString(dfuBundle.date)
@@ -44,11 +52,12 @@ export function useFactoryDfuFilesBundle(): [
       setDfuBundle({
         bootloader: dfuBundle.bootloader,
         firmware: dfuBundle.firmware,
+        reconfigFirmware: reconfigDfuBundle.firmware,
         date: dfuBundle.date,
       });
     };
     task().catch(setError);
-  }, [dfuBundles]);
+  }, []);
 
   return [dfuBundle, error];
 }
