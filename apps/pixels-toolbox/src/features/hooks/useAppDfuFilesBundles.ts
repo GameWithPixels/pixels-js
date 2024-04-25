@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
-import { resetEmbeddedDfuBundles } from "~/features/store/dfuBundlesSlice";
+import { resetEmbeddedDfuFiles } from "~/features/store/dfuFilesSlice";
 
 export class NoDfuFileLoadedError extends Error {
   constructor() {
@@ -18,7 +18,7 @@ export function useAppDfuFilesBundles(): [
   DfuFilesBundle[],
   Error?
 ] {
-  const { selected, available } = useAppSelector((state) => state.dfuBundles);
+  const { selected, available } = useAppSelector((state) => state.dfuFiles);
   const dispatch = useAppDispatch();
   const [error, setError] = React.useState<Error>();
   React.useEffect(() => {
@@ -47,7 +47,7 @@ export function useAppDfuFilesBundles(): [
           allBundles.reduce((a, b) => (getTime(a) >= getTime(b) ? a : b))
         );
         dispatch(
-          resetEmbeddedDfuBundles({
+          resetEmbeddedDfuFiles({
             selected,
             bundles: factory.concat(others).map((b) => ({
               pathnames: b.items.map((i) => i.pathname),

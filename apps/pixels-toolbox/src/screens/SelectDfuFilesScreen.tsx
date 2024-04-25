@@ -16,9 +16,9 @@ import { AppPage } from "~/components/AppPage";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { useAppDfuFilesBundles } from "~/features/hooks/useAppDfuFilesBundles";
 import {
-  addImportedDfuBundle,
-  setSelectedDfuBundle,
-} from "~/features/store/dfuBundlesSlice";
+  addImportedDfuFiles,
+  setSelectedDfuFile,
+} from "~/features/store/dfuFilesSlice";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { SelectDfuFilesScreenProps } from "~/navigation";
 
@@ -34,7 +34,7 @@ async function importDfuFile() {
       from: file.uri,
       to: pathname,
     });
-    store.dispatch(addImportedDfuBundle([pathname]));
+    store.dispatch(addImportedDfuFiles([pathname]));
   }
 }
 
@@ -91,7 +91,7 @@ function SelectDfuFilePage({ navigation }: SelectDfuFilesScreenProps) {
           key={bundle?.bootloader?.pathname ?? bundle?.firmware?.pathname}
           style={AppStyles.flex}
           onPress={() => {
-            appDispatch(setSelectedDfuBundle(availableBundles.indexOf(bundle)));
+            appDispatch(setSelectedDfuFile(availableBundles.indexOf(bundle)));
             navigation.goBack();
           }}
         >

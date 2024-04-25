@@ -56,7 +56,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   const errorHandler = useErrorHandler();
 
   // DFU files bundles are loaded asynchronously
-  const { selected, available } = useAppSelector((state) => state.dfuBundles);
+  const { selected, available } = useAppSelector((state) => state.dfuFiles);
   const bundle = React.useMemo(
     () =>
       available[selected]

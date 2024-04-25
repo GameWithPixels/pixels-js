@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { DfuFilesBundleKind } from "~/features/dfu/DfuFilesBundle";
+import { DfuFileSource } from "~/features/dfu/DfuFilesBundle";
 
-export interface DfuBundleState {
+export interface AppDfuFiles {
+  available: { pathnames: string[]; kind: DfuFileSource }[];
   selected: number;
-  available: { pathnames: string[]; kind: DfuFilesBundleKind }[];
 }
 
-const initialState: DfuBundleState = { selected: -1, available: [] };
+const initialState: AppDfuFiles = { available: [], selected: -1 };
 
 function hasUniqueValue(strings: string[]): boolean {
   return strings.every(
@@ -16,21 +16,21 @@ function hasUniqueValue(strings: string[]): boolean {
 }
 
 // Redux slice that stores theme mode
-const dfuBundlesSlice = createSlice({
-  name: "dfuBundles",
+const dfuFilesSlice = createSlice({
+  name: "dfuFiles",
   initialState,
   reducers: {
     // Change index of selected bundle
-    setSelectedDfuBundle(state, action: PayloadAction<number>) {
+    setSelectedDfuFile(state, action: PayloadAction<number>) {
       state.selected = action.payload;
     },
 
     // Replace embedded bundles by a new list
-    resetEmbeddedDfuBundles(
+    resetEmbeddedDfuFiles(
       state,
       action: PayloadAction<{
         selected: number;
-        bundles: { pathnames: string[]; kind: DfuFilesBundleKind }[];
+        bundles: { pathnames: string[]; kind: DfuFileSource }[];
       }>
     ) {
       const { selected, bundles } = action.payload;
@@ -46,8 +46,8 @@ const dfuBundlesSlice = createSlice({
       };
     },
 
-    // Add an imported bundle (it will remove other imported bundles with same files)
-    addImportedDfuBundle(state, action: PayloadAction<string[]>) {
+    // Add an imported bundle
+    addImportedDfuFiles(state, action: PayloadAction<string[]>) {
       if (action.payload.length) {
         // Remove duplicates
         // TODO
@@ -72,8 +72,8 @@ const dfuBundlesSlice = createSlice({
 });
 
 export const {
-  setSelectedDfuBundle,
-  resetEmbeddedDfuBundles,
-  addImportedDfuBundle,
-} = dfuBundlesSlice.actions;
-export default dfuBundlesSlice.reducer;
+  setSelectedDfuFile,
+  resetEmbeddedDfuFiles,
+  addImportedDfuFiles,
+} = dfuFilesSlice.actions;
+export default dfuFilesSlice.reducer;
