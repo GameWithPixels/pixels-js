@@ -10,6 +10,7 @@ export const ValidationSequences = [
   "board",
   "die",
   "dieFinal",
+  "dieReconfigure",
 ] as const;
 
 export type ValidationSequence = (typeof ValidationSequences)[number];

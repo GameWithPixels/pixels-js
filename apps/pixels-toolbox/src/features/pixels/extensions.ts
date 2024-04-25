@@ -167,6 +167,11 @@ export async function pixelPlayProfileAnimation(
 export async function pixelClearSettings(pixel: Pixel): Promise<void> {
   log(pixel, "Clearing settings");
   await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
+  // @ts-expect-error Private function
+  pixel._updateName(
+    // Pass function parameter on next line to have TS check typing
+    "Pixel" + pixel.pixelId.toString(16).padStart(8, "0")
+  );
 }
 
 /* List of codes for the store values' types. */
