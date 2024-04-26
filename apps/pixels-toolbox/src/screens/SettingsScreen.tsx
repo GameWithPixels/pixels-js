@@ -22,6 +22,7 @@ import {
 } from "react-native-paper";
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
+import { enableDevSettings } from "~/app/enableDevSettings";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
 import {
@@ -159,7 +160,7 @@ function DevOptions() {
   const skipBatteryLevel = useAppSelector(
     (state) => state.validationSettings.skipBatteryLevel
   );
-  return __DEV__ ? (
+  return enableDevSettings() ? (
     <>
       <BaseHStack alignItems="center" justifyContent="space-between">
         <Text>Select Firmware & Profile</Text>
