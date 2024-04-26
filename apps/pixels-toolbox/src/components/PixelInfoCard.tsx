@@ -116,9 +116,11 @@ function PixelRollState({ pixel, t }: PixelAndTranslation) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
+    pixel.addPropertyListener("dieType", listener);
     pixel.addPropertyListener("rollState", listener);
     pixel.addPropertyListener("currentFace", listener);
     return () => {
+      pixel.removePropertyListener("dieType", listener);
       pixel.removePropertyListener("rollState", listener);
       pixel.removePropertyListener("currentFace", listener);
     };
