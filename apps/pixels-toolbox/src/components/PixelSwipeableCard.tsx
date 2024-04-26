@@ -431,13 +431,14 @@ export function PixelSwipeableCard({
           >
             {!!onPrintLabel && (
               <RenderRightItem
-                label={t("printLabel")}
+                label="DFU & Turn Off"
                 color="#274fcd"
                 position={numButtons * buttonWidth}
                 width={buttonWidth}
                 progress={progress}
                 onPress={() => {
-                  onPrintLabel(pixelDispatcher);
+                  //onPrintLabel(pixelDispatcher);
+                  pixelDispatcher.dispatch("queueDFU", "turnOff");
                   swipeableRef.current?.close();
                 }}
               />

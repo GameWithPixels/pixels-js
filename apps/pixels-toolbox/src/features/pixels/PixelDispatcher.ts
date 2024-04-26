@@ -80,7 +80,7 @@ export interface PixelDispatcherActionMap {
   uploadProfile: PrebuildProfileName;
   reprogramDefaultBehavior: undefined;
   resetAllSettings: undefined;
-  queueDFU: undefined;
+  queueDFU: undefined | "turnOff";
   dequeueDFU: undefined;
   setDieType: PixelDieType;
   setColorway: PixelColorway;
@@ -180,6 +180,7 @@ class PixelDispatcher
   private _updateLastActivityTimeout?: ReturnType<typeof setTimeout>;
   private _isUpdatingProfile = false;
   private _hasAvailableDFU: DfuAction = "none";
+  private _turnOffAfterDFU = false;
   private _messagesLogFilePath;
   private _telemetryData: TelemetryData[] = [];
   // Our own event emitter
@@ -500,7 +501,7 @@ class PixelDispatcher
         this._guard(pixelResetAllSettings(this._pixel), action);
         break;
       case "queueDFU":
-        this._queueDFU();
+        this._queueDFU(params === "turnOff");
         break;
       case "dequeueDFU":
         this._dequeueDFU();
@@ -670,9 +671,10 @@ class PixelDispatcher
   // DFU
   //
 
-  private _queueDFU(): void {
+  private _queueDFU(turnOff = false): void {
     if (this.hasAvailableDFU && !Static.dfuQueue.pending.includes(this)) {
       // Queue DFU request
+      this._turnOffAfterDFU = turnOff;
       Static.dfuQueue.pending.push(this);
       this._evEmitter.emit("hasQueuedDFU", true);
       // Run update immediately if it's the only pending request
@@ -680,6 +682,18 @@ class PixelDispatcher
         this._guard(this._startDFU(), "startDfu");
       } else {
         console.log(`DFU queued for Pixel ${this.name}`);
+        // Connect so Pixel doesn't go to sleep
+        this._guard(
+          this._pixel.connect().then(() =>
+            this._pixel.blink(new Color(0, 0.15, 0.15), {
+              duration: 0xffff,
+              count: 20,
+              loopCount: 0xff,
+              fade: 1,
+            })
+          ),
+          "connect"
+        );
       }
     }
   }
@@ -694,6 +708,7 @@ class PixelDispatcher
 
   private async _startDFU(): Promise<void> {
     const bundle = this._getSelectedDfuBundle();
+    const turnOff = this._turnOffAfterDFU;
     try {
       this._dequeueDFU();
       if (!bundle) {
@@ -718,6 +733,17 @@ class PixelDispatcher
         pixel._guard(pixel._startDFU(), "startDfu");
       }
     }
+    // Reconnect after DFU (but don't block)
+    console.log(`Pixel ${this.name} connecting after DFU` + turnOff);
+    this._guard(
+      this._pixel.connect().then(() => {
+        if (turnOff) {
+          this._pixel.turnOff();
+          console.log(`Pixel ${this.name} turned off after DFU`);
+        }
+      }),
+      "connect"
+    );
   }
 }
 
