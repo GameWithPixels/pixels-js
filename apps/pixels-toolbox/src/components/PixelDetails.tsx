@@ -63,6 +63,7 @@ import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { useAppBackgroundState } from "~/hooks/useAppBackgroundState";
+import { useForceUpdate } from "~/hooks/useForceUpdate";
 import { capitalize } from "~/i18n";
 
 interface TextEntryBaseProps extends React.PropsWithChildren {
@@ -97,6 +98,18 @@ function Button({ ...props }: Omit<ButtonProps, "style">) {
 
 function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
   const { t } = useTranslation();
+  const forceUpdate = useForceUpdate();
+  React.useEffect(() => {
+    const listener = () => forceUpdate();
+    pixel.addPropertyListener("dieType", listener);
+    pixel.addPropertyListener("colorway", listener);
+    pixel.addPropertyListener("firmwareDate", listener);
+    return () => {
+      pixel.removePropertyListener("dieType", listener);
+      pixel.removePropertyListener("colorway", listener);
+      pixel.removePropertyListener("firmwareDate", listener);
+    };
+  }, [pixel, forceUpdate]);
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
     <>
