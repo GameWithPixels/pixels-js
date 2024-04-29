@@ -7,9 +7,5 @@ module.exports = function (api) {
         plugins: ["react-native-paper/babel", "transform-remove-console"],
       },
     },
-    plugins: [
-      // react-native-reanimated/plugin has to be listed last.
-      "react-native-reanimated/plugin",
-    ],
   };
 };
