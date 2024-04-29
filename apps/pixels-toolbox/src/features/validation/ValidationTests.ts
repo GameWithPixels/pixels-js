@@ -16,6 +16,7 @@ import {
   DiceUtils,
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
+import { useTranslation } from "react-i18next";
 
 import {
   withTimeoutAndDisconnect,
@@ -40,7 +41,7 @@ export class AccelerationInvalidValueError extends LocalizedError {
     this.y = y;
     this.z = z;
   }
-  toLocalizedString(t: (key: string, params: any) => string): string {
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
     return t("invalidAccelerometerValue", {
       value: vectToString(this.x, this.y, this.z),
     });
@@ -54,7 +55,7 @@ export class BatteryOutOfRangeVoltageError extends LocalizedError {
     this.name = "BatteryOutOfRangeVoltageError";
     this.voltage = voltage;
   }
-  toLocalizedString(t: (key: string, params: any) => string): string {
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
     return t("outOfRangeBatteryVoltage", { value: this.voltage.toFixed(2) });
   }
 }
@@ -79,7 +80,7 @@ export class WaitForChargingTimeoutError extends LocalizedError {
     this.shouldBeCharging = shouldBeCharging;
     this.telemetry = { ...telemetry };
   }
-  toLocalizedString(t: (key: string, params: any) => string): string {
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
     const state =
       getValueKeyName(
         this.telemetry.batteryControllerState,
@@ -106,7 +107,7 @@ export class WaitFaceUpTimeoutError extends LocalizedError {
     this.face = face;
     this.roll = { ...roll };
   }
-  toLocalizedString(t: (key: string, params: any) => string): string {
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
     return t("timeoutWaitingForFace", {
       face: this.face,
       rollFace: this.roll.face,

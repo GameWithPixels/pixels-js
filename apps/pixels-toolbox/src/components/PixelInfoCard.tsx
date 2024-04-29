@@ -8,7 +8,7 @@ import {
   PixelInfoNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { TFunction, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { Easing, View } from "react-native";
 import { Card, Text } from "react-native-paper";
 import Animated, {
@@ -47,7 +47,7 @@ function getColorwayInitials(colorway: PixelColorway): string | undefined {
 
 interface PixelAndTranslation {
   pixel: PixelInfoNotifier;
-  t: TFunction;
+  t: ReturnType<typeof useTranslation>["t"];
 }
 
 function PixelName({ pixel }: Pick<PixelAndTranslation, "pixel">) {

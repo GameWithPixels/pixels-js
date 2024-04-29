@@ -8,6 +8,7 @@ import {
   MessageOrType,
   TelemetryRequestModeValues,
 } from "@systemic-games/react-native-pixels-connect";
+import { useTranslation } from "react-i18next";
 
 import { LocalizedError } from "../LocalizedError";
 import { pixelStopAllAnimations } from "../pixels/extensions";
@@ -21,7 +22,7 @@ export class SignalTimeoutError extends LocalizedError {
     this.name = "SignalTimeoutError";
     this.timeout = ms;
   }
-  toLocalizedString(t: (key: string, params: any) => string): string {
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
     return t("timedOutWithValue", { value: Math.round(this.timeout / 1000) });
   }
 }
@@ -33,7 +34,7 @@ export class SignalDisconnectedError extends LocalizedError {
     this.name = "SignalDisconnectedError";
     this.pixel = pixel;
   }
-  toLocalizedString(t: (key: string, params: any) => string): string {
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
     return t("disconnectedFromPixel", {});
   }
 }

@@ -29,7 +29,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
 import React from "react";
-import { useTranslation, TFunction } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Button, Menu, Text } from "react-native-paper";
 
@@ -186,7 +186,7 @@ function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
 
 async function repeatConnect(
   abortSignal: AbortSignal,
-  t: TFunction,
+  t: ReturnType<typeof useTranslation>["t"],
   connect: (timeout: number) => Promise<void | Pixel>,
   disconnect: () => Promise<void | Pixel>
 ) {
@@ -223,7 +223,7 @@ async function repeatConnect(
 
 async function scanForPixelWithTimeout(
   abortSignal: AbortSignal,
-  t: TFunction,
+  t: ReturnType<typeof useTranslation>["t"],
   pixelId: number,
   timeout = 10000 // 10s
 ): Promise<ScannedPixel> {

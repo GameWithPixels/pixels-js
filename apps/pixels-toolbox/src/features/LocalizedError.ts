@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
+
 /** Base class for errors with a localized message. */
 export abstract class LocalizedError extends Error {
-  abstract toLocalizedString(t: (key: string, params: any) => string): string;
+  abstract toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string;
 }

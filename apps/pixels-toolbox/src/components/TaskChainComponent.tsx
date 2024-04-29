@@ -25,8 +25,8 @@ export function TaskChainComponent({
     error instanceof LocalizedError
       ? (error as LocalizedError).toLocalizedString(t)
       : error instanceof TaskCanceledError
-      ? (error as TaskCanceledError).userMessage ?? t("canceled")
-      : error?.message ?? (error ? String(error) : "");
+        ? (error as TaskCanceledError).userMessage ?? t("canceled")
+        : error?.message ?? (error ? String(error) : "");
   return (
     <Card>
       <Card.Content>

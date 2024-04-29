@@ -15,7 +15,7 @@ import {
 import { useKeepAwake } from "expo-keep-awake";
 import React from "react";
 import { useErrorBoundary } from "react-error-boundary";
-import { useTranslation, type TFunction } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { ScrollView, TextStyle, View } from "react-native";
 import {
   Banner,
@@ -83,7 +83,7 @@ import { usePixelIdDecoderFrameProcessor } from "~/hooks/usePixelIdDecoderFrameP
 import { capitalize } from "~/i18n";
 
 function getValidationSequenceName(
-  t: TFunction<"translation", undefined>,
+  t: ReturnType<typeof useTranslation>["t"],
   sequence: ValidationSequence
 ): string {
   return t(
@@ -92,7 +92,7 @@ function getValidationSequenceName(
 }
 
 function getDieValidationSequenceName(
-  t: TFunction<"translation", undefined>,
+  t: ReturnType<typeof useTranslation>["t"],
   settings: Pick<ValidationTestsSettings, "dieType" | "sequence">
 ): string {
   return (
