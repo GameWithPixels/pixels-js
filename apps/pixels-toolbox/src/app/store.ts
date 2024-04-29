@@ -14,7 +14,7 @@ import {
 import appSettingsReducer, {
   AppSettingsState,
 } from "~/features/store/appSettingsSlice";
-import dfuBundlesReducer from "~/features/store/dfuBundlesSlice";
+import dfuFilesReducer from "~/features/store/dfuFilesSlice";
 import validationSettingsReducer, {
   ValidationSettingsState,
 } from "~/features/store/validationSettingsSlice";
@@ -30,7 +30,7 @@ export const store = configureStore({
   reducer: {
     // Don't persist DFU bundles so they are always updated
     // and imported ones are removed on reload
-    dfuBundles: dfuBundlesReducer,
+    dfuFiles: dfuFilesReducer,
     appSettings: persistReducer<AppSettingsState>(
       conf("appSettings"),
       appSettingsReducer

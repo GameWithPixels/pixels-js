@@ -669,7 +669,7 @@ class PixelDispatcher
   }
 
   private _getSelectedDfuBundle(): DfuFilesBundle | undefined {
-    const dfuBundles = store.getState().dfuBundles;
+    const dfuBundles = store.getState().dfuFiles;
     const serializedBundle = dfuBundles.available[dfuBundles.selected];
     if (serializedBundle) {
       return DfuFilesBundle.create(serializedBundle);

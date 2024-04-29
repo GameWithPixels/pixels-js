@@ -2,14 +2,14 @@ import { assert } from "@systemic-games/pixels-core-utils";
 
 import { DfuFileInfo, getDfuFileInfo } from "./getDfuFileInfo";
 
-export type DfuFilesBundleKind = "app" | "factory" | "imported";
+export type DfuFileSource = "app" | "factory" | "imported";
 
 // Firmware and/or bootloader DFU files of the same date
 export default class DfuFilesBundle {
   private readonly _main: DfuFileInfo;
   private readonly _bootloader?: DfuFileInfo;
   private readonly _firmware?: DfuFileInfo;
-  private readonly _kind: DfuFilesBundleKind;
+  private readonly _kind: DfuFileSource;
 
   get date(): Date {
     return this._main.date;
@@ -40,13 +40,13 @@ export default class DfuFilesBundle {
     return !!this._bootloader && !!this._firmware;
   }
 
-  get kind(): DfuFilesBundleKind {
+  get kind(): DfuFileSource {
     return this._kind;
   }
 
   static create(params: {
     pathnames: string[];
-    kind?: DfuFilesBundleKind;
+    kind?: DfuFileSource;
   }): DfuFilesBundle {
     if (!params.pathnames.length) {
       throw new Error("DfuFilesBundle.create: Empty pathnames");
@@ -61,7 +61,7 @@ export default class DfuFilesBundle {
   constructor(params: {
     fileInfo: DfuFileInfo;
     otherFileInfo?: DfuFileInfo;
-    kind?: DfuFilesBundleKind;
+    kind?: DfuFileSource;
   }) {
     this._kind = params.kind ?? "app";
     const obj1 = params.fileInfo;
@@ -96,7 +96,7 @@ export default class DfuFilesBundle {
 
   static async createMany(
     filesInfo: DfuFileInfo[],
-    kind: DfuFilesBundleKind = "app"
+    kind: DfuFileSource = "app"
   ): Promise<DfuFilesBundle[]> {
     // Group files with same date and in same directory
     const dfuBundles: DfuFilesBundle[] = [];
