@@ -1,4 +1,3 @@
-import { ImageRgbAverages } from "@systemic-games/vision-camera-rgb-averages";
 import React from "react";
 
 import PixelIdDecoder, { RbgColor } from "~/features/pixels/PixelIdDecoder";
@@ -11,7 +10,7 @@ export interface PixelIdDecoderState {
 }
 
 export interface PixelIdDecoderAction {
-  rgbAverages?: ImageRgbAverages;
+  rgbAverages?: any;
   reset?: boolean;
 }
 

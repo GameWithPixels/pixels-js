@@ -37,6 +37,8 @@ import { SettingsScreen } from "~/screens/SettingsScreen";
 import { ValidationScreen } from "~/screens/ValidationScreen";
 
 import "~/i18n"; // Import internationalization file so it's initialized
+import { ErrorBoundary } from "react-error-boundary";
+import { ErrorFallback } from "./components/ErrorFallback";
 
 LogBox.ignoreLogs([
   // Ignore Sentry warnings
@@ -170,9 +172,11 @@ function App() {
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <ReduxProvider store={store}>
       <SafeAreaProvider>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
         <ActionSheetProvider>
           <AppContent />
         </ActionSheetProvider>
+        </ErrorBoundary>
       </SafeAreaProvider>
     </ReduxProvider>
     // </StrictMode>

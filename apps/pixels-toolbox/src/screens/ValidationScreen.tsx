@@ -28,12 +28,6 @@ import {
   TouchableRippleProps,
   useTheme,
 } from "react-native-paper";
-import {
-  Camera,
-  CameraPermissionStatus,
-  FrameProcessorPerformanceSuggestion,
-  useCameraDevices,
-} from "react-native-vision-camera";
 
 import { AppStyles } from "~/AppStyles";
 import { useAppSelector } from "~/app/hooks";
@@ -285,86 +279,6 @@ function DecodePixelIdPage({
   const { t } = useTranslation();
   const { showBoundary } = useErrorBoundary();
 
-  // Camera
-  const [cameraPermission, setCameraPermission] =
-    React.useState<CameraPermissionStatus>();
-  const devices = useCameraDevices("wide-angle-camera");
-  const cameraRef = React.useRef<Camera>(null);
-
-  // Camera permissions
-  useFocusEffect(
-    React.useCallback(() => {
-      setCameraPermission(undefined); // Reset permission when re-showing screen
-      console.log("Requesting camera permission");
-      Camera.requestCameraPermission().then((perm) => {
-        console.log(`Camera permission: ${perm}`);
-        setCameraPermission(perm);
-        return perm;
-      });
-    }, [])
-  );
-
-  // We use the back camera
-  const device = devices.back;
-
-  // Camera status
-  const [cameraStatus, setCameraStatus] =
-    React.useState<CameraStatus>("initializing");
-
-  // Update camera status
-  React.useEffect(() => {
-    if (!cameraPermission) {
-      setCameraStatus("initializing");
-    } else if (cameraPermission === "denied") {
-      setCameraStatus("needPermission");
-      showBoundary(new Error(t("needCameraPermission")));
-    } else if (cameraPermission === "authorized" && device) {
-      setCameraStatus("ready");
-    }
-  }, [cameraPermission, device, showBoundary, t]);
-
-  // Frame processor for decoding PixelId
-  const [frameProcessor, decoderState, lastError] =
-    usePixelIdDecoderFrameProcessor();
-
-  // Log FPS suggestions for frame processor
-  const onSuggestion = React.useCallback(
-    (suggestion: FrameProcessorPerformanceSuggestion) =>
-      console.log(
-        `Frame processor suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
-      ),
-    []
-  );
-  // Notify when pixel id has been decoded
-  React.useEffect(() => {
-    if (decoderState.pixelId) {
-      onDecodePixelId(decoderState.pixelId);
-    }
-  }, [onDecodePixelId, decoderState.pixelId]);
-
-  // Monitor color changes
-  const lastColorChangesRef = React.useRef<number[]>([]);
-  const [readingColors, setReadingColors] = React.useState(false);
-  React.useEffect(() => {
-    const lastColorsChanges = lastColorChangesRef.current;
-    if (decoderState.scanColor) {
-      const now = Date.now();
-      lastColorsChanges.push(now);
-      if (lastColorsChanges.length >= 5) {
-        lastColorsChanges.shift();
-        const maxDelay = 1000;
-        const readingColors = now - lastColorsChanges[0] < maxDelay;
-        setReadingColors(readingColors);
-        if (readingColors) {
-          const timeoutId = setTimeout(() => {
-            setReadingColors(false);
-          }, maxDelay);
-          return () => clearTimeout(timeoutId);
-        }
-      }
-    }
-  }, [decoderState.scanColor]);
-
   // Scan list
   const [showScanList, setShowScanList] = React.useState(false);
 
@@ -384,64 +298,9 @@ function DecodePixelIdPage({
     </BaseBox>
   ) : (
     <BaseVStack w="100%" h="100%" alignItems="center" justifyContent="center">
-      {device && cameraStatus === "ready" ? (
-        <Camera
-          ref={cameraRef}
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-          device={device}
-          isActive
-          hdr={false}
-          lowLightBoost={false}
-          videoStabilizationMode="off"
-          frameProcessor={frameProcessor}
-          fps={30}
-          frameProcessorFps={30}
-          onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
-        />
-      ) : (
+      
         <Text variant="headlineSmall">{t("startingCamera")}</Text>
-      )}
-      {/* Show message on top */}
-      <BaseBox position="absolute" top={0} w="100%" p={5}>
-        <Card
-          contentStyle={{
-            ...AppStyles.centered,
-            flexDirection: "row",
-            padding: 10,
-            gap: 10,
-          }}
-        >
-          {!readingColors || lastError ? (
-            <>
-              {lastError ? (
-                <Card.Content style={{ flex: 1 }}>
-                  <Text
-                    variant="bodyLarge"
-                    style={{ flex: 1, color: colors.error }}
-                  >{`${lastError}`}</Text>
-                </Card.Content>
-              ) : (
-                <Text variant="bodyLarge" style={{ flex: 1 }}>
-                  {t("resetUsingMagnetWithFormFactor", {
-                    formFactor: t(getBoardOrDie(settings.sequence)),
-                  })}
-                </Text>
-              )}
-              <Button
-                mode="contained-tonal"
-                onPress={() => setShowScanList(true)}
-              >
-                {t("scan")}
-              </Button>
-            </>
-          ) : (
-            <ProgressBar percent={Math.round(100 * decoderState.progress)} />
-          )}
-        </Card>
-      </BaseBox>
+
       {/* Bottom button */}
       <BaseBox position="absolute" bottom={0} w="100%" p={5}>
         <Card
@@ -455,7 +314,6 @@ function DecodePixelIdPage({
           <Text variant="bodyLarge">
             {getDieValidationSequenceName(t, settings)}
           </Text>
-          {!!decoderState.info && <Text>{decoderState.info}</Text>}
           <BottomButton onPress={onBack}>{t("back")}</BottomButton>
         </Card>
       </BaseBox>
