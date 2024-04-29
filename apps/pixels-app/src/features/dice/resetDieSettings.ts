@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 
 import { FactoryProfile } from "../profiles";
 import { updatePairedDieProfile } from "../store/pairedDiceSlice";
+import { unsigned32ToHex } from "../utils";
 
 import { AppDispatch } from "~/app/store";
 
@@ -12,7 +13,7 @@ export function resetDieSettings(pixel: Pixel, appDispatch: AppDispatch): void {
       await pixel.sendMessage("clearSettings");
       // TODO force default name
       // @ts-ignore Calling private function
-      pixel._updateName("Pixel" + pixel.pixelId.toString(16));
+      pixel._updateName("Pixel" + unsigned32ToHex(pixel.pixelId));
       appDispatch(
         updatePairedDieProfile({
           pixelId: pixel.pixelId,
