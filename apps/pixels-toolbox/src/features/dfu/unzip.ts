@@ -13,13 +13,11 @@ export async function unzipDfuFilesAsync(
   opt?: { clearCache?: boolean }
 ): Promise<string[]> {
   // Delete cache directory
-  if (opt?.clearCache) {
+  const clearCache = !!opt?.clearCache;
+  if (clearCache) {
     await FileSystem.deleteAsync(cacheDirectory, { idempotent: true });
   }
-  if (
-    opt?.clearCache ||
-    !(await FileSystem.getInfoAsync(cacheDirectory)).exists
-  ) {
+  if (clearCache || !(await FileSystem.getInfoAsync(cacheDirectory)).exists) {
     // (Re)Create cache directory
     await FileSystem.makeDirectoryAsync(cacheDirectory);
   }
@@ -71,8 +69,4 @@ export async function unzipEmbeddedDfuFilesAsync(): Promise<{
   // Factory files last so we're sure that its content isn't overwritten
   const factory = await unzipDfuFilesFromAssetsAsync(factoryDfuFiles);
   return { factory, others };
-}
-
-export async function unzipFactoryDfuFilesAsync(): Promise<string[]> {
-  return await unzipDfuFilesFromAssetsAsync(factoryDfuFiles);
 }

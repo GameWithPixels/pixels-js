@@ -42,18 +42,17 @@ import {
   CheckBoard,
   CheckLEDs,
   ConnectPixel,
+  getPixelThroughDispatcher,
+  LabelPrinting,
   PrepareDie,
-  ValidationTestsSettings,
+  StoreSettings,
+  TurnOffDevice,
   UpdateFirmware,
+  UpdateFirmwareStatus,
+  ValidationTestsSettings,
   WaitCharging,
   WaitDieInCase,
   WaitFaceUp,
-  TurnOffDevice,
-  StoreSettings,
-  LabelPrinting,
-  UpdateFirmwareStatus,
-  getPixelThroughDispatcher,
-  FactoryDfuFilesBundle,
 } from "~/components/ValidationTestsComponents";
 import { PrintStatus } from "~/features/print";
 import { selectSkipPrintLabel } from "~/features/store/validationSelectors";
@@ -73,7 +72,10 @@ import {
   ValidationSequence,
   ValidationSequences,
 } from "~/features/validation";
-import { useFactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
+import {
+  FactoryDfuFilesBundle,
+  useFactoryDfuFilesBundle,
+} from "~/hooks/useFactoryDfuFilesBundle";
 import { usePixelIdDecoderFrameProcessor } from "~/hooks/usePixelIdDecoderFrameProcessor";
 import { capitalize } from "~/i18n";
 

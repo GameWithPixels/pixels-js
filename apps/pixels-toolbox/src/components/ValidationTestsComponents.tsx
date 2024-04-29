@@ -41,7 +41,6 @@ import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
 import { TaskChainComponent } from "~/components/TaskChainComponent";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
-import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import {
@@ -80,6 +79,7 @@ import {
   withTimeout,
   withTimeoutAndDisconnect,
 } from "~/features/validation";
+import { FactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
 
 export function getPixelThroughDispatcher(scannedPixel: ScannedPixel): Pixel {
   // We use a PixelDispatcher to get our Pixel instance so to enable message logging
@@ -331,12 +331,6 @@ function MessageYesNo({
       )}
     </BaseVStack>
   );
-}
-
-export interface FactoryDfuFilesBundle {
-  readonly bootloader?: DfuFileInfo;
-  readonly firmware: DfuFileInfo;
-  readonly date: Date;
 }
 
 export interface ValidationTestsSettings {
