@@ -1,7 +1,5 @@
 import { enumValue, serializable } from "@systemic-games/pixels-core-utils";
 
-import { Pointer } from "./profileBuffer";
-
 /**
  * Scalar types.
  * @category Animation
@@ -12,12 +10,14 @@ export const ScalarTypeValues = {
   u16: enumValue(), // 16-bit value
   global: enumValue(),
   lookup: enumValue(),
-  // After this are Curve types
-  curveTwoUInt8: enumValue(0xf), // simple interpolation between two 8 bit values
-  curveTwoUInt16: enumValue(), // simple interpolation between two 16 bit values
-  curveTrapezeUInt8: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
-  curveTrapezeUInt16: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
-  curveU16Keyframes: enumValue(),
+} as const;
+
+export const CurveTypeValues = {
+  twoU8: enumValue(0xf), // simple interpolation between two 8 bit values
+  twoU16: enumValue(), // simple interpolation between two 16 bit values
+  trapezeU8: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
+  trapezeU16: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
+  u16Keyframes: enumValue(),
 } as const;
 
 /**
@@ -35,10 +35,12 @@ export const ColorTypeValues = {
   palette: enumValue(), // uses the global palette
   rgb: enumValue(), // stores actual rgb values
   lookup: enumValue(), // uses a scalar to lookup the color in a gradient
-  // After this are gradient types
-  gradientRainbow: enumValue(0xf), // basic programmatic rainbow gradient
-  gradientTwoColors: enumValue(), // simple two-color gradient
-  gradientKeyframes: enumValue(), // gradient with a few keyframes
+} as const;
+
+export const GradientTypeValues = {
+  rainbow: enumValue(0xf), // basic programmatic rainbow gradient
+  twoColors: enumValue(), // simple two-color gradient
+  keyframes: enumValue(), // gradient with a few keyframes
 } as const;
 
 /**
@@ -82,80 +84,125 @@ export const EasingTypeValues = {
  */
 export type EasingType = keyof typeof EasingTypeValues;
 
-export class DScalar {
-  @serializable(1)
-  type = ScalarTypeValues.unknown;
+export interface DScalar {
+  /** See {@link ScalarTypeValues} for possible values. */
+  type: number;
 }
 
-export class DScalarUInt8 extends DScalar {
+export class DScalarUInt8 implements DScalar {
+  @serializable(1)
+  type = ScalarTypeValues.u8;
+
   @serializable(1)
   value = 0;
 }
 
-export class DScalarUInt16 extends DScalar {
+export class DScalarUInt16 implements DScalar {
+  @serializable(1)
+  type = ScalarTypeValues.u16;
+
   @serializable(2)
   value = 0;
 }
 
-export class DScalarUInt32 extends DScalar {
-  @serializable(4)
-  value = 0;
-}
+// export class DScalarUInt32 implements DScalar {
+//   @serializable(1)
+//   type = ScalarTypeValues.u32;
 
-export class DScalarGlobal extends DScalar {
+//   @serializable(4)
+//   value = 0;
+// }
+
+export class DScalarGlobal implements DScalar {
+  @serializable(1)
+  type = ScalarTypeValues.global;
+
+  @serializable(1)
   globalType = GlobalTypeValues.unknown;
 }
 
-export class DScalarLookup extends DScalar {
-  lookupCurve = new Pointer<DCurve>();
-  parameter = new Pointer<DScalar>();
+export class DScalarLookup implements DScalar {
+  @serializable(1)
+  type = ScalarTypeValues.lookup;
+
+  lookupCurve?: DCurve;
+  @serializable(2)
+  lookupCurveIndex = 0;
+
+  parameter?: DScalar;
+  @serializable(2)
+  parameterIndex = 0;
 }
 
-export class DCurve extends DScalar {
+export interface DCurve extends DScalar {
   // Base class for curves doesn't have any additional data
   // because we re-use the type identifier from DScalar
 }
 
-export class DCurveTwoUInt8 extends DCurve {
+export class DCurveTwoUInt8 implements DCurve {
+  @serializable(1)
+  type = CurveTypeValues.twoU8;
+
   @serializable(1)
   start = 0;
+
   @serializable(1)
   end = 0;
+
   @serializable(1)
   easing = EasingTypeValues.unknown;
 }
 
-export class DCurveTwoUInt16 extends DCurve {
+export class DCurveTwoUInt16 implements DCurve {
+  @serializable(1)
+  type = CurveTypeValues.twoU16;
+
   @serializable(2)
   start = 0;
+
   @serializable(2)
   end = 0;
+
   @serializable(1)
   easing = EasingTypeValues.unknown;
 }
 
-export class DCurveTrapezeUInt8 extends DCurve {
+export class DCurveTrapezeUInt8 implements DCurve {
+  @serializable(1)
+  type = CurveTypeValues.trapezeU8;
+
   @serializable(1)
   value = 0;
+
   @serializable(1)
   rampUpScale = 0;
+
   @serializable(1)
   rampDownScale = 0;
+
   @serializable(1)
   rampUpEasing = EasingTypeValues.unknown;
+
   @serializable(1)
   rampDownEasing = EasingTypeValues.unknown;
 }
 
-export class DCurveTrapezeUInt16 extends DCurve {
+export class DCurveTrapezeUInt16 implements DCurve {
+  @serializable(1)
+  type = CurveTypeValues.trapezeU16;
+
   @serializable(2)
   value = 0;
+
   @serializable(1)
   rampUpScale = 0;
+
   @serializable(1)
   rampDownScale = 0;
+
   @serializable(1)
   rampUpEasing = EasingTypeValues.unknown;
+
   @serializable(1)
   rampDownEasing = EasingTypeValues.unknown;
 }
@@ -163,73 +210,109 @@ export class DCurveTrapezeUInt16 extends DCurve {
 export class KeyframeUInt16 {
   @serializable(2)
   time = 0;
+
   @serializable(2)
   value = 0;
 }
 
-export class DCurveUInt16Keyframes extends DCurve {
-  keyframes: KeyframeUInt16[] = [];
-}
-
-export class DColor {
+export class DCurveUInt16Keyframes implements DCurve {
   @serializable(1)
-  type = ColorTypeValues.unknown;
+  type = CurveTypeValues.u16Keyframes;
+
+  keyframes?: KeyframeUInt16[];
+  @serializable(2)
+  keyframesOffset = 0;
+  @serializable(1)
+  keyframesLength = 0;
 }
 
-export class DColorPalette extends DColor {
+export interface DColor {
+  /** See {@link ColorTypeValues} for possible values. */
+  type: number;
+}
+
+export class DColorPalette implements DColor {
+  @serializable(1)
+  type = ColorTypeValues.palette;
+
   @serializable(1)
   index = 0;
 }
-// size: 2 bytes
 
-export class DColorRGB extends DColor {
+export class DColorRGB implements DColor {
+  @serializable(1)
+  type = ColorTypeValues.rgb;
+
   @serializable(1)
   rValue = 0;
+
   @serializable(1)
   gValue = 0;
+
   @serializable(1)
   bValue = 0;
 }
-// size: 4 bytes
 
-export class DColorLookup extends DColor {
-  lookupGradient = new Pointer<DGradient>();
-  parameter = new Pointer<DScalar>();
+export class DColorLookup implements DColor {
+  @serializable(1)
+  type = ColorTypeValues.lookup;
+
+  lookupGradient?: DGradient;
+  @serializable(2)
+  lookupGradientIndex = 0;
+
+  parameter?: DScalar;
+  @serializable(2)
+  parameterIndex = 0;
 }
 
 // Etc...
-export class DGradient extends DColor {
+export interface DGradient extends DColor {
   // Base class for gradients doesn't have any additional data
   // because we re-use the type identifier from DGradient
 }
 
-export class DGradientRainbow extends DGradient {
+export class DGradientRainbow implements DGradient {
+  @serializable(1)
+  type = GradientTypeValues.rainbow;
+
   // No data for now
 }
-// size: 1 bytes
 
-export class DGradientTwoColors extends DGradient {
-  start = new Pointer<DColor>(); // 2 bytes
-  end = new Pointer<DColor>(); // 2 bytes
+export class DGradientTwoColors implements DGradient {
+  @serializable(1)
+  type = GradientTypeValues.twoColors;
+
+  start?: DColor;
+  @serializable(2)
+  startIndex = 0;
+
+  end?: DColor;
+  @serializable(2)
+  endIndex = 0;
+
   @serializable(1)
   easing = EasingTypeValues.unknown;
 }
-// size: 6 bytes
 
 export class KeyframeUInt16Easing {
   @serializable(2)
   time = 0;
+
   @serializable(1)
   index = 0; // palette index
+
   @serializable(1)
   easing = EasingTypeValues.unknown;
 }
 
-export class DGradientKeyframes extends DGradient {
-  keyframes: KeyframeUInt16Easing[] = [];
-}
+export class DGradientKeyframes implements DGradient {
+  @serializable(1)
+  type = GradientTypeValues.keyframes;
 
-export class DScalarPtr extends Pointer<DScalar> {}
-export class DCurvePtr extends Pointer<DCurve> {}
-export class DColorPtr extends Pointer<DColor> {}
-export class DGradientPtr extends Pointer<DGradient> {}
+  keyframes?: KeyframeUInt16Easing[];
+  @serializable(2)
+  keyframesOffset = 0;
+  @serializable(1)
+  keyframesLength = 0;
+}

@@ -4,51 +4,117 @@ import {
   serializable,
 } from "@systemic-games/pixels-core-utils";
 
-import { DColorPtr } from "./parameters";
+import { ANIM_FACEMASK_ALL_LEDS } from "./constants";
+import { DColor } from "./parameters";
 
 export const AnimationTypeValues = {
-  AnimationType_Unknown: enumValue(0),
-  AnimationType_Simple: enumValue(),
-  AnimationType_Rainbow: enumValue(),
-  AnimationType_BlinkID: enumValue(),
-  AnimationType_Pattern: enumValue(),
-  AnimationType_Sequence: enumValue(),
+  unknown: enumValue(0),
+  simple: enumValue(),
+  rainbow: enumValue(),
+  blinkID: enumValue(),
+  pattern: enumValue(),
+  sequence: enumValue(),
   // etc...
 } as const;
 
+/**
+ * The names for the "enum" type {@link AnimationTypeValues}.
+ * @category Animation
+ */
+export type AnimationType = keyof typeof AnimationTypeValues;
+
 // Flags for the animations, they can be combined.
-export const AnimationFlags = {
-  AnimationFlags_None: 0,
-  AnimationFlags_Traveling: enumFlag(0),
-  AnimationFlags_UseLedIndices: enumFlag(),
-  AnimationFlags_HighestLED: enumFlag(),
+export const AnimationFlagsValues = {
+  traveling: enumFlag(0),
+  useLedIndices: enumFlag(),
+  highestLed: enumFlag(),
 } as const;
+
+/**
+ * The names for the "enum" type {@link AnimationFlagsValues}.
+ * @category Animation
+ */
+export type AnimationFlags = keyof typeof AnimationFlagsValues;
 
 // Base struct for animation presets. All presets have a few properties in common.
 // Presets are stored in flash, so do not have methods or vtables or anything like that.
-export class Animation {
-  @serializable(1)
-  type = AnimationTypeValues.AnimationType_Unknown;
-  @serializable(1)
-  animFlags = 0; // Combination of AnimationFlags
-  @serializable(2)
-  duration = 0; // in ms
+export interface Animation {
+  /** See {@link AnimationTypeValues} for possible values. */
+  type: number;
+
+  /** See {@link AnimationFlagsValues} for possible values. */
+  animFlags: number;
+
+  /** Animation duration in milliseconds. */
+  duration: number;
+
+  intensity: number;
 }
 
-export const AnimationSimpleFlags = {
-  AnimationSimpleFlags_None: 0,
-  AnimationSimpleFlags_CaptureColor: enumFlag(0),
+export const AnimationSimpleFlagsValues = {
+  captureColor: enumFlag(0),
 } as const;
 
-/// Procedural on off animation
-export class AnimationSimple extends Animation {
+/**
+ * The names for the "enum" type {@link AnimationSimpleFlagsValues}.
+ * @category Animation
+ */
+export type AnimationSimpleFlags = keyof typeof AnimationSimpleFlagsValues;
+
+// Procedural on off animation
+export class AnimationSimple implements Animation {
   @serializable(1)
-  colorFlag = 0;
+  type = AnimationTypeValues.simple;
+
+  @serializable(1)
+  animFlags = 0; // Combination of AnimationFlags
+
+  @serializable(2)
+  duration = 0; // in ms
+
   @serializable(4)
-  faceMask = 0;
-  color = new DColorPtr();
+  faceMask = ANIM_FACEMASK_ALL_LEDS;
+
   @serializable(1)
-  count = 0;
+  intensity = 128;
+
   @serializable(1)
-  fade = 0;
+  colorFlags = 0;
+
+  color?: DColor;
+  @serializable(2)
+  colorIndex = 0;
+
+  @serializable(1)
+  count = 1;
+
+  @serializable(1)
+  fade = 128;
+}
+
+// Procedural rainbow animation data
+export class AnimationRainbow implements Animation {
+  @serializable(1)
+  type = AnimationTypeValues.rainbow;
+
+  @serializable(1)
+  animFlags = 0; // Combination of AnimationFlags
+
+  @serializable(2)
+  duration = 0; // in ms
+
+  @serializable(4)
+  faceMask = ANIM_FACEMASK_ALL_LEDS;
+
+  @serializable(1)
+  intensity = 128;
+
+  @serializable(1)
+  count = 1;
+
+  @serializable(1)
+  fade = 128;
+
+  @serializable(1)
+  cyclesTimes10 = 0;
 }
