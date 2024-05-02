@@ -10,6 +10,7 @@ import { BaseVStack } from "@systemic-games/react-native-base-components";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 import { LogBox, useColorScheme } from "react-native";
 import {
@@ -26,6 +27,7 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import { useAppSelector } from "~/app/hooks";
 import { persistor, store } from "~/app/store";
+import { ErrorFallback } from "~/components/ErrorFallback";
 import { AppRootPageName, type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";
 import { BatchScreen } from "~/screens/BatchScreen";
@@ -170,13 +172,15 @@ function App() {
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <ReduxProvider store={store}>
       <SafeAreaProvider>
-        <ActionSheetProvider>
-          <AppContent />
-        </ActionSheetProvider>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <ActionSheetProvider>
+            <AppContent />
+          </ActionSheetProvider>
+        </ErrorBoundary>
       </SafeAreaProvider>
     </ReduxProvider>
     // </StrictMode>
   );
 }
 
-export default Sentry.wrap(App);
+export default __DEV__ ? App : Sentry.wrap(App);
