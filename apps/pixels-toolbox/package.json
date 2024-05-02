@@ -4,11 +4,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "prebuild": "expo prebuild",
-    "start": "expo start --dev-client",
-    "no-dev": "expo start --dev-client --no-dev --minify",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "start": "expo start",
+    "no-dev": "expo start --no-dev --minify",
+    "android": "expo start --android",
+    "ios": "expo start --ios"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

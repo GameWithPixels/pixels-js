@@ -21,7 +21,7 @@ eas build -p android --profile development
 Then run Metro on your local development machine:
 
 ```sh
-yarn expo start --dev-client 
+yarn expo start
 ```
 
 ### Local Build
