@@ -10,6 +10,7 @@ import { BaseVStack } from "@systemic-games/react-native-base-components";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 import { LogBox, useColorScheme } from "react-native";
 import {
@@ -26,6 +27,7 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import { useAppSelector } from "~/app/hooks";
 import { persistor, store } from "~/app/store";
+import { ErrorFallback } from "~/components/ErrorFallback";
 import { AppRootPageName, type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";
 import { BatchScreen } from "~/screens/BatchScreen";
@@ -37,8 +39,6 @@ import { SettingsScreen } from "~/screens/SettingsScreen";
 import { ValidationScreen } from "~/screens/ValidationScreen";
 
 import "~/i18n"; // Import internationalization file so it's initialized
-import { ErrorBoundary } from "react-error-boundary";
-import { ErrorFallback } from "./components/ErrorFallback";
 
 LogBox.ignoreLogs([
   // Ignore Sentry warnings
@@ -172,10 +172,10 @@ function App() {
     // <StrictMode> Disabled because of warnings caused by AnimatedComponent <StrictMode>
     <ReduxProvider store={store}>
       <SafeAreaProvider>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <ActionSheetProvider>
-          <AppContent />
-        </ActionSheetProvider>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <ActionSheetProvider>
+            <AppContent />
+          </ActionSheetProvider>
         </ErrorBoundary>
       </SafeAreaProvider>
     </ReduxProvider>
@@ -183,4 +183,4 @@ function App() {
   );
 }
 
-export default Sentry.wrap(App);
+export default __DEV__ ? App : Sentry.wrap(App);
