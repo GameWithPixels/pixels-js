@@ -56,12 +56,11 @@ type Arr<T> = ArrayPtr<T>;
 
 export class ProfileBuilder {
   readonly _objects: object[] = [];
-  readonly _variables: Ptr<DScalar>[] = [];
   readonly _animations: Ptr<Animation>[] = [];
   readonly _rules: Rule[] = [];
 
   addGlobal(type: GlobalType): Ptr<DScalarGlobal> {
-    return this._allocateVar(
+    return this._allocate(
       safeAssign(new DScalarGlobal(), {
         globalType: GlobalTypeValues[type],
       })
@@ -69,11 +68,11 @@ export class ProfileBuilder {
   }
 
   addRainbow(): Ptr<DGradientRainbow> {
-    return this._allocateVar(safeAssign(new DGradientRainbow(), {}));
+    return this._allocate(safeAssign(new DGradientRainbow(), {}));
   }
 
   addLookup(g: Ptr<DGradient>, p: Ptr<DScalar>): Ptr<DColorLookup> {
-    return this._allocateVar(
+    return this._allocate(
       safeAssign(new DColorLookup(), {
         lookupGradient: g.obj,
         lookupGradientIndex: g.offset,
@@ -84,7 +83,7 @@ export class ProfileBuilder {
   }
 
   addRGB(r: number, g: number, b: number): Ptr<DColorRGB> {
-    return this._allocateVar(
+    return this._allocate(
       safeAssign(new DColorRGB(), {
         rValue: r,
         gValue: g,
@@ -102,7 +101,7 @@ export class ProfileBuilder {
       faceMask?: number;
     }
   ): Ptr<AnimationRainbow> {
-    return this._allocateAnim(
+    return this._allocate(
       safeAssign(new AnimationRainbow(), {
         animFlags:
           AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
@@ -127,7 +126,7 @@ export class ProfileBuilder {
       faceMask?: number;
     }
   ): Ptr<AnimationSimple> {
-    return this._allocateAnim(
+    return this._allocate(
       safeAssign(new AnimationSimple(), {
         animFlags: opt?.animFlags
           ? combineFlags(keysToValues(opt.animFlags, AnimationFlagsValues))
@@ -163,7 +162,7 @@ export class ProfileBuilder {
   addCondHello(
     flags?: ConditionHelloGoodbyeFlags[]
   ): Ptr<ConditionHelloGoodbye> {
-    return this._allocateCond(
+    return this._allocate(
       safeAssign(new ConditionHelloGoodbye(), {
         flags: flags
           ? combineFlags(keysToValues(flags, ConditionHelloGoodbyeFlagsValues))
@@ -175,7 +174,7 @@ export class ProfileBuilder {
   addCondConn(
     flags?: ConditionConnectionStateFlags[]
   ): Ptr<ConditionConnectionState> {
-    return this._allocateCond(
+    return this._allocate(
       safeAssign(new ConditionConnectionState(), {
         flags: flags
           ? combineFlags(
@@ -187,11 +186,11 @@ export class ProfileBuilder {
   }
 
   addCondHandling(): Ptr<ConditionHandling> {
-    return this._allocateCond(safeAssign(new ConditionHandling(), {}));
+    return this._allocate(safeAssign(new ConditionHandling(), {}));
   }
 
   addCondRolling(repeatPeriod: number): Ptr<ConditionRolling> {
-    return this._allocateCond(
+    return this._allocate(
       safeAssign(new ConditionRolling(), {
         repeatPeriod,
       })
@@ -202,7 +201,7 @@ export class ProfileBuilder {
     flags: ConditionFaceCompareFlags[],
     faceIndex: number
   ): Ptr<ConditionFaceCompare> {
-    return this._allocateCond(
+    return this._allocate(
       safeAssign(new ConditionFaceCompare(), {
         flags: combineFlags(
           keysToValues(flags, ConditionFaceCompareFlagsValues)
@@ -216,7 +215,7 @@ export class ProfileBuilder {
     flags: ConditionBatteryStateFlags[],
     repeatPeriod: number
   ): Ptr<ConditionBatteryState> {
-    return this._allocateCond(
+    return this._allocate(
       safeAssign(new ConditionBatteryState(), {
         flags: combineFlags(
           keysToValues(flags, ConditionBatteryStateFlagsValues)
@@ -231,7 +230,7 @@ export class ProfileBuilder {
     faceIndex = FACE_INDEX_HIGHEST_FACE
   ): Arr<Ptr<Action>> {
     const arr = this._allocateArray([
-      this._allocateAction(
+      this._allocate(
         safeAssign(new ActionPlayAnimation(), {
           faceIndex,
           animation: anim.obj,
@@ -246,9 +245,6 @@ export class ProfileBuilder {
     dataView: DataView;
     hash: number;
   } {
-    console.log("Variables count = " + this._variables.length);
-    const variables = this._variables.map((p) => p.obj!);
-
     console.log("Animations count = " + this._animations.length);
     this._allocateArray<Ptr<Animation>>(this._animations);
     const animations = this._animations.map((p) => p.obj!);
@@ -256,43 +252,41 @@ export class ProfileBuilder {
     console.log("Rules count = " + this._rules.length);
     this._allocateArray<Rule>(this._rules);
 
-    const header = new ProfileHeader();
-    const bufferSize =
-      variables.map(byteSizeOf).reduce((a, b) => a + b, 0) +
-      animations.map(byteSizeOf).reduce((a, b) => a + b, 0) +
-      this._animations.map(byteSizeOf).reduce((a, b) => a + b, 0) +
-      this._rules.map(byteSizeOf).reduce((a, b) => a + b, 0) +
-      this._rules
-        .map(
-          (r) =>
-            byteSizeOf(r.condition!) + 2 + byteSizeOf(r.actions!.array![0].obj!)
-        )
-        .reduce((a, b) => a + b, 0);
-
+    const bufferSize = this._objects.map(byteSizeOf).reduce((a, b) => a + b, 0);
     console.log("bufferSize = " + bufferSize);
 
-    header.bufferSize = bufferSize;
-    header.animationsOffset = this._addressOf(this._animations);
-    header.animationsLength = animations.length;
-    header.rulesOffset = this._addressOf(this._rules);
-    header.rulesLength = this._rules.length;
+    const header = safeAssign(new ProfileHeader(), {
+      bufferSize,
+      animationsOffset: this._addressOf(this._animations),
+      animationsLength: animations.length,
+      rulesOffset: this._addressOf(this._rules),
+      rulesLength: this._rules.length,
+    });
 
-    console.log("DataView");
+    // Serialize
     let dataView = new DataView(
       new ArrayBuffer(byteSizeOf(header) + bufferSize + 4)
     );
     let byteOffset = 0;
     [dataView, byteOffset] = serialize(header, { dataView, byteOffset });
-
     for (const obj of this._objects) {
       [dataView, byteOffset] = serialize(obj, { dataView, byteOffset });
     }
 
     assert(byteOffset + 4 === dataView.byteLength, "Buffer size mismatch");
 
+    // Add hash
     const hash = bernsteinHash(new Uint8Array(dataView.buffer, 0, byteOffset));
     const footer = safeAssign(new ProfileFooter(), { hash });
     [dataView, byteOffset] = serialize(footer, { dataView, byteOffset });
+
+    // const arr: string[] = [];
+    // for (let i = 0; i < dataView.byteLength; i++) {
+    //   arr.push(
+    //     "0x" + dataView.getUint8(i).toString(16).padStart(2, "0").toUpperCase()
+    //   );
+    // }
+    // console.log(arr.join(", "));
 
     return {
       dataView,
@@ -309,41 +303,15 @@ export class ProfileBuilder {
       .reduce((a, b) => a + b, 0);
   }
 
-  private _allocateVar<T extends object & DScalar>(obj: T): Ptr<T> {
+  private _allocate<T extends object>(obj: T): Ptr<T> {
     this._objects.push(obj);
     const ptr = safeAssign(new ObjectPtr<T>(), {
       offset: this._addressOf(obj),
       obj,
     });
-    this._variables.push(ptr);
-    return ptr;
-  }
-
-  private _allocateAnim<T extends object & Animation>(obj: T): Ptr<T> {
-    this._objects.push(obj);
-    const ptr = safeAssign(new ObjectPtr<T>(), {
-      offset: this._addressOf(obj),
-      obj,
-    });
-    this._animations.push(ptr);
-    return ptr;
-  }
-
-  private _allocateCond<T extends object & Condition>(obj: T): Ptr<T> {
-    this._objects.push(obj);
-    const ptr = safeAssign(new ObjectPtr<T>(), {
-      offset: this._addressOf(obj),
-      obj,
-    });
-    return ptr;
-  }
-
-  private _allocateAction<T extends object & Action>(obj: T): Ptr<T> {
-    this._objects.push(obj);
-    const ptr = safeAssign(new ObjectPtr<T>(), {
-      offset: this._addressOf(obj),
-      obj,
-    });
+    if (obj.constructor.name.startsWith("Animation")) {
+      this._animations.push(ptr as Ptr<Animation>);
+    }
     return ptr;
   }
 

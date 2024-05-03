@@ -3,6 +3,7 @@ import {
   Color,
   Color32Utils,
   DiceUtils,
+  Firmware,
   PixelColorway,
   PixelColorwayValues,
   PixelDieType,
@@ -930,14 +931,13 @@ export class Pixel extends PixelInfoNotifier {
 
   /**
    * Uploads the given data set of animations to the Pixel flash memory.
-   * @param dataSet The data set to upload.
+   * @param profileBuilder The profile data to program.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..
-   * @returns A promise that resolves once the transfer has completed.
+   * @returns A promise that resolves once the profile has been programmed.
    */
-  async applyProfile(
-    data: Uint8Array,
-    hash: number,
+  async programProfile(
+    profileBuilder: Firmware.ProfileBuilder,
     progressCallback?: (progress: number) => void
   ): Promise<void> {
     const notifyProgress = (progress: number) => {
@@ -949,10 +949,13 @@ export class Pixel extends PixelInfoNotifier {
       }
     };
     try {
+      const { dataView, hash } = profileBuilder.serialize();
+      const data = new Uint8Array(dataView.buffer);
+      const dataSize = data.length;
+
       // Notify that we're starting
       notifyProgress(0);
 
-      const dataSize = data.length;
       const transferMsg = safeAssign(new TransferProfile(), { dataSize, hash });
       const transferAck = await this.sendAndWaitForTypedResponse(
         transferMsg,

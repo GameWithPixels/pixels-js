@@ -20,23 +20,37 @@ async function programProfile(pixel: Pixel): Promise<void> {
     rainbowGradient,
     currentFaceScalar
   );
+
+  // Some colors
   const redColor = builder.addRGB(8, 0, 0);
   const greenColor = builder.addRGB(0, 8, 0);
   const blueColor = builder.addRGB(0, 0, 16);
   const yellowColor = builder.addRGB(6, 6, 0);
 
-  // const variablesArray = [
-  //   currentFaceScalar,
-  //   rainbowGradient,
-  //   lookupGradientFromFace,
-  //   redColor,
-  //   greenColor,
-  //   blueColor,
-  //   yellowColor,
-  // ];
-
-  // Allocate our Hello animation
+  // Hello animation
   const animationRainbow = builder.addAnimRainbow(3000, { count: 3 });
+
+  // Roll animations
+  const animationHandling = builder.addAnimSimple(
+    1000,
+    lookupGradientFromFace,
+    {
+      fade: 255,
+      animFlags: ["highestLed"],
+      colorFlags: ["captureColor"],
+    }
+  );
+  const animationRolling = builder.addAnimSimple(500, lookupGradientFromFace, {
+    fade: 255,
+    animFlags: ["highestLed"],
+    colorFlags: ["captureColor"],
+  });
+  const animationOnFace = builder.addAnimSimple(3000, lookupGradientFromFace, {
+    fade: 255,
+    colorFlags: ["captureColor"],
+  });
+
+  // Battery & temp animations
   const animationCharging = builder.addAnimSimple(3000, redColor, {
     fade: 255,
     animFlags: ["highestLed"],
@@ -57,45 +71,13 @@ async function programProfile(pixel: Pixel): Promise<void> {
   const animationConnection = builder.addAnimSimple(1000, blueColor, {
     fade: 255,
   });
-  const animationHandling = builder.addAnimSimple(
-    1000,
-    lookupGradientFromFace,
-    {
-      fade: 255,
-      animFlags: ["highestLed"],
-      colorFlags: ["captureColor"],
-    }
-  );
-  const animationRolling = builder.addAnimSimple(500, lookupGradientFromFace, {
-    fade: 255,
-    animFlags: ["highestLed"],
-    colorFlags: ["captureColor"],
-  });
-  const animationOnFace = builder.addAnimSimple(3000, lookupGradientFromFace, {
-    fade: 255,
-    colorFlags: ["captureColor"],
-  });
   const animationTempError = builder.addAnimSimple(1000, yellowColor, {
     count: 3,
     fade: 255,
     animFlags: ["highestLed"],
   });
 
-  // // Allocate animation array
-  // const animationsArray = allocateArray<Ptr<FW.Animation>>([
-  //   animationRainbow,
-  //   animationCharging,
-  //   animationLowBattery,
-  //   animationChargingProblem,
-  //   animationFullyCharged,
-  //   animationConnection,
-  //   animationHandling,
-  //   animationRolling,
-  //   animationOnFace,
-  //   animationTempError,
-  // ]);
-
-  // Allocate rule array
+  // Rules
   builder.addRule(
     builder.addCondHello(["hello"]),
     builder.addPlayAnimActionAsArray(animationRainbow)
@@ -143,23 +125,10 @@ async function programProfile(pixel: Pixel): Promise<void> {
     builder.addPlayAnimActionAsArray(animationTempError)
   );
 
-  const { dataView, hash } = builder.serialize();
-
-  // const arr: string[] = [];
-  // for (let i = 0; i < dataView.byteLength; i++) {
-  //   arr.push(
-  //     "0x" + dataView.getUint8(i).toString(16).padStart(2, "0").toUpperCase()
-  //   );
-  // }
-  // console.log(arr.join(", "));
-
-  const notifyProgress = (p: number) => console.log("Transfer: " + p);
-
-  // Upload data
-  const data = new Uint8Array(dataView.buffer);
-  console.log("Size = " + data.length);
-  console.log("Hash = " + hash.toString(16));
-  await pixel.applyProfile(data, hash, notifyProgress);
+  // Program the profile
+  await pixel.programProfile(builder, (p: number) =>
+    console.log("Transfer: " + p)
+  );
 }
 
 export async function testNewAnim(pixel: Pixel): Promise<void> {
