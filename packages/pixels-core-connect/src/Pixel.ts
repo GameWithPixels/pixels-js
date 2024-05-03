@@ -2,7 +2,6 @@ import {
   AnimConstants,
   Color,
   Color32Utils,
-  DataSet,
   DiceUtils,
   PixelColorway,
   PixelColorwayValues,
@@ -11,7 +10,6 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
-  byteSizeOf,
   createTypedEventEmitter,
   deserialize,
   EventReceiver,
@@ -40,7 +38,6 @@ import {
   PixelPowerOperationValues,
   PixelRollState,
   PixelRollStateValues,
-  PlayInstantAnimation,
   PowerOperation,
   RemoteAction,
   RequestRssi,
@@ -49,13 +46,11 @@ import {
   serializeMessage,
   SetName,
   TelemetryRequestModeValues,
-  TransferAnimationSet,
-  TransferAnimationSetAck,
-  TransferInstantAnimationSet,
-  TransferInstantAnimationSetAck,
-  TransferInstantAnimationsSetAckTypeValues,
-  TransferTestAnimationSet,
-  TransferTestAnimationSetAck,
+  TransferProfile,
+  TransferProfileAck,
+  TransferProfileAckTypeValues,
+  TransferProfileFinished,
+  TransferProfileFinishedTypeValues,
   VersionInfoChunk,
 } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
@@ -940,8 +935,9 @@ export class Pixel extends PixelInfoNotifier {
    *                         with the progress in percent..
    * @returns A promise that resolves once the transfer has completed.
    */
-  async transferDataSet(
-    dataSet: DataSet,
+  async applyProfile(
+    data: Uint8Array,
+    hash: number,
     progressCallback?: (progress: number) => void
   ): Promise<void> {
     const notifyProgress = (progress: number) => {
@@ -956,63 +952,45 @@ export class Pixel extends PixelInfoNotifier {
       // Notify that we're starting
       notifyProgress(0);
 
-      const transferMsg = safeAssign(new TransferAnimationSet(), {
-        paletteSize: dataSet.animationBits.getPaletteSize(),
-        rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-        rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-        keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-        trackCount: dataSet.animationBits.getTrackCount(),
-        animationCount: dataSet.animations.length,
-        animationSize: dataSet.animations.reduce(
-          (acc, anim) => acc + byteSizeOf(anim),
-          0
-        ),
-        conditionCount: dataSet.conditions.length,
-        conditionSize: dataSet.conditions.reduce(
-          (acc, cond) => acc + byteSizeOf(cond),
-          0
-        ),
-        actionCount: dataSet.actions.length,
-        actionSize: dataSet.actions.reduce(
-          (acc, action) => acc + byteSizeOf(action),
-          0
-        ),
-        ruleCount: dataSet.rules.length,
-        brightness: dataSet.brightness,
-      });
-
+      const dataSize = data.length;
+      const transferMsg = safeAssign(new TransferProfile(), { dataSize, hash });
       const transferAck = await this.sendAndWaitForTypedResponse(
         transferMsg,
-        TransferAnimationSetAck
+        TransferProfileAck
       );
-      if (transferAck.result) {
-        // Upload data
-        const data = dataSet.toByteArray();
-        assert(
-          data.length === dataSet.computeDataSetByteSize(),
-          "Incorrect computation of computeDataSetByteSize()"
-        );
-        const hash = DataSet.computeHash(data);
+
+      if (transferAck.result === TransferProfileAckTypeValues.download) {
         const hashStr = (hash >>> 0)
           .toString(16)
           .toUpperCase()
           .padStart(8, "0");
         this._log(
           "Ready to receive dataset, " +
-            `byte array should be ${data.length} bytes ` +
+            `byte array should be ${dataSize} bytes ` +
             `and hash 0x${hashStr}`
         );
 
-        await this.uploadBulkDataWithAck(
-          "transferAnimationSetFinished",
+        // Upload data
+        const ack = (await this.uploadBulkDataWithAck(
+          "transferProfileFinished",
           data,
           notifyProgress
-        );
+        )) as TransferProfileFinished;
+
+        // Check if profile was accepted
+        if (ack.result !== TransferProfileFinishedTypeValues.success) {
+          throw new PixelError(
+            this,
+            "Profile rejected after successful transfer"
+          );
+        }
 
         // Notify profile hash
         this._evEmitter.emit("profileHash", hash);
+      } else if (transferAck.result === TransferProfileAckTypeValues.download) {
+        // Nothing to do
+        this._log("Profile is already up-to-date");
       } else {
-        const dataSize = dataSet.computeDataSetByteSize();
         throw new PixelError(
           this,
           `Not enough memory to transfer ${dataSize} bytes`
@@ -1022,158 +1000,6 @@ export class Pixel extends PixelInfoNotifier {
       notifyProgress(-1);
       throw error;
     }
-  }
-
-  /**
-   * Plays the (single) LEDs animation included in the given data set.
-   * @param dataSet The data set containing just one animation to play.
-   * @param progressCallback An optional callback that is called as the operation progresses
-   *                         with the progress in percent..
-   * @returns A promise that resolves once the transfer has completed.
-   */
-  async playTestAnimation(
-    dataSet: DataSet,
-    progressCallback?: (progress: number) => void
-  ): Promise<void> {
-    assert(dataSet.animations.length >= 1, "No animation in DataSet");
-
-    // Notify that we're starting
-    progressCallback?.(0);
-
-    // Prepare the Pixel
-    const data = dataSet.toAnimationsByteArray();
-    const hash = DataSet.computeHash(data);
-
-    const prepareDie = safeAssign(new TransferTestAnimationSet(), {
-      paletteSize: dataSet.animationBits.getPaletteSize(),
-      rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-      rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-      keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-      trackCount: dataSet.animationBits.getTrackCount(),
-      animationCount: dataSet.animations.length,
-      animationSize: dataSet.animations.reduce(
-        (acc, anim) => acc + byteSizeOf(anim),
-        0
-      ),
-      hash,
-    });
-
-    const ack = await this.sendAndWaitForTypedResponse(
-      prepareDie,
-      TransferTestAnimationSetAck
-    );
-
-    switch (ack.ackType) {
-      case TransferInstantAnimationsSetAckTypeValues.download:
-        {
-          // Upload data
-          const hashStr = (hash >>> 0)
-            .toString(16)
-            .toUpperCase()
-            .padStart(8, "0");
-          this._log(
-            "Ready to receive test dataset, " +
-              `byte array should be: ${data.length} bytes ` +
-              `and hash 0x${hashStr}`
-          );
-          await this.uploadBulkDataWithAck(
-            "transferTestAnimationSetFinished",
-            data,
-            progressCallback
-          );
-        }
-        break;
-
-      case TransferInstantAnimationsSetAckTypeValues.upToDate:
-        // Nothing to do
-        this._log("Test animation is already up-to-date");
-        break;
-
-      default:
-        throw new PixelError(this, `Got unknown ackType: ${ack.ackType}`);
-    }
-  }
-
-  /**
-   * Uploads the given data set of animations to the Pixel RAM memory.
-   * Those animations are lost when the Pixel goes to sleep, is turned off or is restarted.
-   * @param dataSet The data set to upload.
-   * @param progressCallback An optional callback that is called as the operation progresses
-   *                         with the progress in percent..
-   * @returns A promise that resolves once the transfer has completed.
-   */
-  async transferInstantAnimations(
-    dataSet: DataSet,
-    progressCallback?: (progress: number) => void
-  ): Promise<void> {
-    assert(dataSet.animations.length >= 1, "No animation in DataSet");
-
-    // Notify that we're starting
-    progressCallback?.(0);
-
-    // Prepare the Pixel
-    const data = dataSet.toAnimationsByteArray();
-    const hash = DataSet.computeHash(data);
-    const prepareDie = safeAssign(new TransferInstantAnimationSet(), {
-      paletteSize: dataSet.animationBits.getPaletteSize(),
-      rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-      rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-      keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-      trackCount: dataSet.animationBits.getTrackCount(),
-      animationCount: dataSet.animations.length,
-      animationSize: dataSet.animations.reduce(
-        (acc, anim) => acc + byteSizeOf(anim),
-        0
-      ),
-      hash,
-    });
-
-    const ack = await this.sendAndWaitForTypedResponse(
-      prepareDie,
-      TransferInstantAnimationSetAck
-    );
-
-    switch (ack.ackType) {
-      case TransferInstantAnimationsSetAckTypeValues.download:
-        {
-          // Upload data
-          const hashStr = (hash >>> 0)
-            .toString(16)
-            .toUpperCase()
-            .padStart(8, "0");
-          this._log(
-            "Ready to receive instant animations, " +
-              `byte array should be: ${data.length} bytes ` +
-              `and hash 0x${hashStr}`
-          );
-          await this.uploadBulkDataWithAck(
-            "transferInstantAnimationSetFinished",
-            data,
-            progressCallback
-          );
-        }
-        break;
-
-      case TransferInstantAnimationsSetAckTypeValues.upToDate:
-        // Nothing to do
-        this._log("Instant animations are already up-to-date");
-        break;
-
-      default:
-        throw new PixelError(this, `Got unknown ackType: ${ack.ackType}`);
-    }
-  }
-
-  /**
-   * Plays the instant animation at the given index.
-   * See @see transferInstantAnimations().
-   * @param animIndex The index of the instant animation to play.
-   * @returns A promise that resolves once the message has been send.
-   */
-  async playInstantAnimation(animIndex: number): Promise<void> {
-    await this.sendMessage(
-      safeAssign(new PlayInstantAnimation(), { animation: animIndex })
-    );
   }
 
   private _tagLogString(str: string): string {
@@ -1512,11 +1338,11 @@ export class Pixel extends PixelInfoNotifier {
     data: ArrayBuffer,
     progressCallback?: (progress: number) => void,
     progressMode: "percent" | "bytes" = "percent"
-  ): Promise<void> {
-    let programmingFinished = false;
+  ): Promise<MessageOrType> {
     let stopWaiting: (() => void) | undefined;
-    const onFinished = () => {
-      programmingFinished = true;
+    let receivedAck: MessageOrType | undefined;
+    const onFinished = (msg: MessageOrType) => {
+      receivedAck = msg;
       if (stopWaiting) {
         stopWaiting();
         stopWaiting = undefined;
@@ -1530,7 +1356,7 @@ export class Pixel extends PixelInfoNotifier {
       );
 
       const promise = new Promise<void>((resolve, reject) => {
-        if (programmingFinished) {
+        if (receivedAck) {
           // Programming may already be finished
           resolve();
         } else {
@@ -1549,7 +1375,9 @@ export class Pixel extends PixelInfoNotifier {
         }
       });
       await promise;
+      assert(receivedAck, "No ack message received despite promise resolving");
       this._log("Programming done");
+      return receivedAck;
     } finally {
       this.removeMessageListener(ackType, onFinished);
     }

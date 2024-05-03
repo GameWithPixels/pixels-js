@@ -32,18 +32,18 @@ export const MessageTypeValues = {
   bulkSetupAck: enumValue(),
   bulkData: enumValue(),
   bulkDataAck: enumValue(),
-  transferAnimationSet: enumValue(),
-  transferAnimationSetAck: enumValue(),
-  transferAnimationSetFinished: enumValue(),
-  transferSettings: enumValue(),
-  transferSettingsAck: enumValue(),
-  transferSettingsFinished: enumValue(),
-  transferTestAnimationSet: enumValue(),
-  transferTestAnimationSetAck: enumValue(),
-  transferTestAnimationSetFinished: enumValue(),
+  transferProfile: enumValue(),
+  transferProfileAck: enumValue(),
+  transferProfileFinished: enumValue(),
+  _unused001: enumValue(),
+  _unused002: enumValue(),
+  _unused003: enumValue(),
+  _unused012: enumValue(),
+  _unused013: enumValue(),
+  _unused014: enumValue(),
   debugLog: enumValue(),
   playAnimation: enumValue(),
-  playAnimationEvent: enumValue(),
+  _unused004: enumValue(),
   stopAnimation: enumValue(),
   remoteAction: enumValue(),
   requestRollState: enumValue(),
@@ -54,8 +54,8 @@ export const MessageTypeValues = {
   programDefaultAnimationSetFinished: enumValue(),
   blink: enumValue(),
   blinkAck: enumValue(),
-  requestDefaultAnimationSetColor: enumValue(),
-  defaultAnimationSetColor: enumValue(),
+  _unused005: enumValue(),
+  _unused006: enumValue(),
   requestBatteryLevel: enumValue(),
   batteryLevel: enumValue(),
   requestRssi: enumValue(),
@@ -72,15 +72,15 @@ export const MessageTypeValues = {
   programDefaultParametersFinished: enumValue(),
   setDesignAndColor: enumValue(),
   setDesignAndColorAck: enumValue(),
-  setCurrentBehavior: enumValue(),
-  setCurrentBehaviorAck: enumValue(),
+  _unused007: enumValue(),
+  _unused008: enumValue(),
   setName: enumValue(),
   setNameAck: enumValue(),
   powerOperation: enumValue(),
   exitValidation: enumValue(),
-  transferInstantAnimationSet: enumValue(),
-  transferInstantAnimationSetAck: enumValue(),
-  transferInstantAnimationSetFinished: enumValue(),
+  _unused009: enumValue(),
+  _unused010: enumValue(),
+  _unused011: enumValue(),
   playInstantAnimation: enumValue(),
   stopAllAnimations: enumValue(),
   requestTemperature: enumValue(),
@@ -732,117 +732,95 @@ export class BulkDataAck implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to request a transfer of a
- * full animation data set (stored in flash memory).
+ * The different modes for storing a profile.
+ * @enum
  * @category Message
  */
-export class TransferAnimationSet implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferAnimationSet;
-
-  @serializable(2)
-  paletteSize = 0;
-  @serializable(2)
-  rgbKeyFrameCount = 0;
-  @serializable(2)
-  rgbTrackCount = 0;
-  @serializable(2)
-  keyFrameCount = 0;
-  @serializable(2)
-  trackCount = 0;
-  @serializable(2)
-  animationCount = 0;
-  @serializable(2)
-  animationSize = 0;
-  @serializable(2)
-  conditionCount = 0;
-  @serializable(2)
-  conditionSize = 0;
-  @serializable(2)
-  actionCount = 0;
-  @serializable(2)
-  actionSize = 0;
-  @serializable(2)
-  ruleCount = 0;
-  @serializable(1)
-  brightness = 0;
-}
+export const TransferProfileModeValues = {
+  persistent: enumValue(0),
+  instant: enumValue(),
+};
 
 /**
- * Message send by a Pixel after receiving a TransferAnimationSet request.
+ * The names for the "enum" type {@link TransferProfileModeValues}.
  * @category Message
  */
-export class TransferAnimationSetAck implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferAnimationSetAck;
-
-  @serializable(1)
-  result = 0;
-}
+export type TransferProfileMode = keyof typeof TransferProfileModeValues;
 
 /**
  * Message send to a Pixel to request a transfer of a
- * test animation (stored in RAM memory).
+ * profile to be stored in flash memory.
  * @category Message
  */
-export class TransferTestAnimationSet implements PixelMessage {
+export class TransferProfile implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.transferTestAnimationSet;
+  readonly type = MessageTypeValues.transferProfile;
 
-  @serializable(2)
-  paletteSize = 0;
-  @serializable(2)
-  rgbKeyFrameCount = 0;
-  @serializable(2)
-  rgbTrackCount = 0;
-  @serializable(2)
-  keyFrameCount = 0;
-  @serializable(2)
-  trackCount = 0;
-  @serializable(2)
-  animationCount = 0;
-  @serializable(2)
-  animationSize = 0;
+  @serializable(1)
+  mode = TransferProfileModeValues.persistent;
+
+  @serializable(4)
+  dataSize = 0;
+
   @serializable(4)
   hash = 0;
 }
 
 /**
- * Transfer animation ack values.
+ * The different types of transfer profile acknowledgements.
  * @enum
  * @category Message
  */
-export const TransferInstantAnimationsSetAckTypeValues = {
-  /** Die is ready to download animation set. */
+export const TransferProfileAckTypeValues = {
   download: enumValue(0),
-  /** Die already has the contents of the animation set. */
   upToDate: enumValue(),
-  /** Die doesn't have enough memory to store animation set. */
   noMemory: enumValue(),
-} as const;
+};
 
 /**
- * The names for the "enum" type {@link TransferInstantAnimationsSetAckTypeValues}.
+ * The names for the "enum" type {@link TransferProfileAckTypeValues}.
  * @category Message
  */
-export type TransferInstantAnimationsSetAckType =
-  keyof typeof TransferInstantAnimationsSetAckTypeValues;
+export type TransferProfileAckType = keyof typeof TransferProfileAckTypeValues;
 
 /**
- * Message send by a Pixel after receiving a TransferTestAnimationSet request.
+ * Message send by a Pixel after receiving a TransferProfile request.
  * @category Message
  */
-export class TransferTestAnimationSetAck implements PixelMessage {
+export class TransferProfileAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.transferTestAnimationSetAck;
+  readonly type = MessageTypeValues.transferProfileAck;
 
-  /** The expected action to be taken upon receiving this message. */
   @serializable(1)
-  ackType = TransferInstantAnimationsSetAckTypeValues.download;
+  result = TransferProfileAckTypeValues.download;
+}
+
+/**
+ * The different types of transfer profile acknowledgements.
+ * @enum
+ * @category Message
+ */
+export const TransferProfileFinishedTypeValues = {
+  success: enumValue(0),
+  error: enumValue(),
+};
+
+/**
+ * The names for the "enum" type {@link TransferProfileFinishedTypeValues}.
+ * @category Message
+ */
+export type TransferProfileFinishedType =
+  keyof typeof TransferProfileFinishedTypeValues;
+
+export class TransferProfileFinished implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = MessageTypeValues.transferProfileFinished;
+
+  @serializable(1)
+  result = TransferProfileFinishedTypeValues.success;
 }
 
 /**
@@ -1240,48 +1218,6 @@ export class PowerOperation implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to request a transfer of a set of
- * instant animations (stored in RAM memory)
- * @category Message
- */
-export class TransferInstantAnimationSet implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferInstantAnimationSet;
-
-  @serializable(2)
-  paletteSize = 0;
-  @serializable(2)
-  rgbKeyFrameCount = 0;
-  @serializable(2)
-  rgbTrackCount = 0;
-  @serializable(2)
-  keyFrameCount = 0;
-  @serializable(2)
-  trackCount = 0;
-  @serializable(2)
-  animationCount = 0;
-  @serializable(2)
-  animationSize = 0;
-  @serializable(4)
-  hash = 0;
-}
-
-/**
- * Message send by a Pixel after receiving a TransferInstantAnimationSet request.
- * @category Message
- */
-export class TransferInstantAnimationSetAck implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferInstantAnimationSetAck;
-
-  /** The expected action to be taken upon receiving this message. */
-  @serializable(1)
-  ackType = TransferInstantAnimationsSetAckTypeValues.download;
-}
-
-/**
  * Message send to a Pixel to have it play an already uploaded instant animation.
  * @category Message
  */
@@ -1425,10 +1361,9 @@ function _getMessageClasses(): MessageClass[] {
     BulkSetup,
     BulkData,
     BulkDataAck,
-    TransferAnimationSet,
-    TransferAnimationSetAck,
-    TransferTestAnimationSet,
-    TransferTestAnimationSetAck,
+    TransferProfile,
+    TransferProfileAck,
+    TransferProfileFinished,
     DebugLog,
     RemoteAction,
     Blink,
@@ -1442,8 +1377,6 @@ function _getMessageClasses(): MessageClass[] {
     SetDesignAndColor,
     SetName,
     PowerOperation,
-    TransferInstantAnimationSet,
-    TransferInstantAnimationSetAck,
     PlayInstantAnimation,
     Temperature,
     SetBatteryControllerMode,
