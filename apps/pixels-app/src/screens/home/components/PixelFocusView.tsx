@@ -39,6 +39,7 @@ import {
   useWatchedPixel,
   useProfile,
 } from "~/hooks";
+import { testNewAnim } from "~/features/testNewAnim";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
   {
@@ -282,7 +283,7 @@ export function PixelFocusView({
             alignSelf: "center",
           }}
           onPress={() => {
-            blinkDie(pixel);
+            pixel && testNewAnim(pixel);
             onPress?.();
           }}
         >
