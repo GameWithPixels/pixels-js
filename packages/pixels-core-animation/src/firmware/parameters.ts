@@ -12,6 +12,16 @@ export const ScalarTypeValues = {
   lookup: enumValue(),
 } as const;
 
+/**
+ * The names for the "enum" type {@link ScalarTypeValues}.
+ * @category Animation
+ */
+export type ScalarType = keyof typeof ScalarTypeValues;
+
+/**
+ * Curve types.
+ * @category Animation
+ */
 export const CurveTypeValues = {
   twoU8: enumValue(0xf), // simple interpolation between two 8 bit values
   twoU16: enumValue(), // simple interpolation between two 16 bit values
@@ -21,10 +31,10 @@ export const CurveTypeValues = {
 } as const;
 
 /**
- * The names for the "enum" type {@link ScalarTypeValues}.
+ * The names for the "enum" type {@link CurveTypeValues}.
  * @category Animation
  */
-export type ScalarType = keyof typeof ScalarTypeValues;
+export type CurveType = keyof typeof CurveTypeValues;
 
 /**
  * Color types.
@@ -37,6 +47,16 @@ export const ColorTypeValues = {
   lookup: enumValue(), // uses a scalar to lookup the color in a gradient
 } as const;
 
+/**
+ * The names for the "enum" type {@link ColorTypeValues}.
+ * @category Animation
+ */
+export type ColorType = keyof typeof ColorTypeValues;
+
+/**
+ * Gradient types.
+ * @category Animation
+ */
 export const GradientTypeValues = {
   rainbow: enumValue(0xf), // basic programmatic rainbow gradient
   twoColors: enumValue(), // simple two-color gradient
@@ -44,10 +64,10 @@ export const GradientTypeValues = {
 } as const;
 
 /**
- * The names for the "enum" type {@link ColorTypeValues}.
+ * The names for the "enum" type {@link GradientTypeValues}.
  * @category Animation
  */
-export type ColorType = keyof typeof ColorTypeValues;
+export type GradientType = keyof typeof GradientTypeValues;
 
 /**
  * Global types.
