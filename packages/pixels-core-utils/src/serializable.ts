@@ -248,7 +248,7 @@ function writeNumber(
       } else if (isSigned) {
         dataView.setInt32(byteOffset, getNumber(value, "int32"), true);
       } else {
-        dataView.setInt32(byteOffset, getNumber(value, "uint32"), true);
+        dataView.setUint32(byteOffset, getNumber(value, "uint32"), true);
       }
       break;
     case 8:
