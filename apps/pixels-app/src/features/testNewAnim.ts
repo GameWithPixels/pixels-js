@@ -1,14 +1,15 @@
+import { range } from "@systemic-games/pixels-core-utils";
 import {
   Firmware as FW,
   Pixel,
 } from "@systemic-games/react-native-pixels-connect";
 
 // Notes:
-// Check byte values >= 0 and <= 255
-// Anim Simple => Flash
-// Missing scalar type u32
-// Add condition rolled
-// Rainbow anim duration should be total including count
+// v Anim Simple => Flash
+// v Rainbow anim duration should be total including count
+
+// State animation like charging, handled
+// Stop anims on roll -> stop with fading?
 
 async function programProfile(pixel: Pixel): Promise<void> {
   const builder = new FW.ProfileBuilder();
@@ -77,7 +78,7 @@ async function programProfile(pixel: Pixel): Promise<void> {
     animFlags: ["highestLed"],
   });
 
-  // Rules
+  // Roll rules
   builder.addRule(
     builder.addCondHello(["hello"]),
     builder.addPlayAnimActionAsArray(animationRainbow)
@@ -97,9 +98,15 @@ async function programProfile(pixel: Pixel): Promise<void> {
     )
   );
   builder.addRule(
-    builder.addCondFace(["equal", "greater"], 0),
+    builder.addCondRolled(range(1, 21)),
     builder.addPlayAnimActionAsArray(animationOnFace)
   );
+  // builder.addRule(
+  //   builder.addCondFace(["equal", "greater"], 0),
+  //   builder.addPlayAnimActionAsArray(animationOnFace)
+  // );
+
+  // Battery & temp rules
   builder.addRule(
     builder.addCondBatt(["charging"], 5000),
     builder.addPlayAnimActionAsArray(animationCharging)

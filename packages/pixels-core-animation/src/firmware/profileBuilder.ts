@@ -33,6 +33,7 @@ import {
   ConditionConnectionState,
   ConditionHandling,
   ConditionRolling,
+  ConditionRolled,
   ConditionFaceCompare,
   ConditionBatteryState,
 } from "./conditions";
@@ -42,7 +43,7 @@ import {
   DScalarGlobal,
   GlobalTypeValues,
   DGradientRainbow,
-  DGradient,
+  ColorCurve,
   DScalar,
   DColorLookup,
   DColorRGB,
@@ -71,7 +72,7 @@ export class ProfileBuilder {
     return this._allocate(safeAssign(new DGradientRainbow(), {}));
   }
 
-  addLookup(g: Ptr<DGradient>, p: Ptr<DScalar>): Ptr<DColorLookup> {
+  addLookup(g: Ptr<ColorCurve>, p: Ptr<DScalar>): Ptr<DColorLookup> {
     return this._allocate(
       safeAssign(new DColorLookup(), {
         lookupGradient: g.obj,
@@ -193,6 +194,14 @@ export class ProfileBuilder {
     return this._allocate(
       safeAssign(new ConditionRolling(), {
         repeatPeriod,
+      })
+    );
+  }
+
+  addCondRolled(faces: number[]): Ptr<ConditionRolled> {
+    return this._allocate(
+      safeAssign(new ConditionRolled(), {
+        faceMask: combineFlags(faces.map((f) => 1 << (f - 1))),
       })
     );
   }

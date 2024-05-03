@@ -25,8 +25,13 @@ export type AnimationType = keyof typeof AnimationTypeValues;
 
 // Flags for the animations, they can be combined.
 export const AnimationFlagsValues = {
+  /** Make the animation travel around the dice, only available for the Rainbow animation */
   traveling: enumFlag(0),
+
+  /** Play animation is using LED indices, not face indices */
   useLedIndices: enumFlag(),
+
+  /** Illuminate just the up face with the animation color corresponding to the highest LED */
   highestLed: enumFlag(),
 } as const;
 

@@ -930,7 +930,7 @@ export class Pixel extends PixelInfoNotifier {
   }
 
   /**
-   * Uploads the given data set of animations to the Pixel flash memory.
+   * Program the die with the given profile.
    * @param profileBuilder The profile data to program.
    * @param progressCallback An optional callback that is called as the operation progresses
    *                         with the progress in percent..

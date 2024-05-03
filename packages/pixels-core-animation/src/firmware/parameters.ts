@@ -5,8 +5,7 @@ import { enumValue, serializable } from "@systemic-games/pixels-core-utils";
  * @category Animation
  */
 export const ScalarTypeValues = {
-  unknown: enumValue(0),
-  u8: enumValue(), // 8-bit value
+  u8: enumValue(0), // 8-bit value
   u16: enumValue(), // 16-bit value
   global: enumValue(),
   lookup: enumValue(),
@@ -17,92 +16,6 @@ export const ScalarTypeValues = {
  * @category Animation
  */
 export type ScalarType = keyof typeof ScalarTypeValues;
-
-/**
- * Curve types.
- * @category Animation
- */
-export const CurveTypeValues = {
-  twoU8: enumValue(0xf), // simple interpolation between two 8 bit values
-  twoU16: enumValue(), // simple interpolation between two 16 bit values
-  trapezeU8: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
-  trapezeU16: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
-  u16Keyframes: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link CurveTypeValues}.
- * @category Animation
- */
-export type CurveType = keyof typeof CurveTypeValues;
-
-/**
- * Color types.
- * @category Animation
- */
-export const ColorTypeValues = {
-  unknown: enumValue(0),
-  palette: enumValue(), // uses the global palette
-  rgb: enumValue(), // stores actual rgb values
-  lookup: enumValue(), // uses a scalar to lookup the color in a gradient
-} as const;
-
-/**
- * The names for the "enum" type {@link ColorTypeValues}.
- * @category Animation
- */
-export type ColorType = keyof typeof ColorTypeValues;
-
-/**
- * Gradient types.
- * @category Animation
- */
-export const GradientTypeValues = {
-  rainbow: enumValue(0xf), // basic programmatic rainbow gradient
-  twoColors: enumValue(), // simple two-color gradient
-  keyframes: enumValue(), // gradient with a few keyframes
-} as const;
-
-/**
- * The names for the "enum" type {@link GradientTypeValues}.
- * @category Animation
- */
-export type GradientType = keyof typeof GradientTypeValues;
-
-/**
- * Global types.
- * @category Animation
- */
-export const GlobalTypeValues = {
-  unknown: enumValue(0),
-  normalizedCurrentFace: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link GlobalTypeValues}.
- * @category Animation
- */
-export type GlobalType = keyof typeof GlobalTypeValues;
-
-/**
- * Easing types.
- * @category Animation
- */
-export const EasingTypeValues = {
-  unknown: enumValue(0),
-  step: enumValue(),
-  linear: enumValue(),
-  easeIn: enumValue(),
-  easeOut: enumValue(),
-  easeInEaseOut: enumValue(), // S curve
-  // Etc...
-} as const;
-
-/**
- * The names for the "enum" type {@link EasingTypeValues}.
- * @category Animation
- */
-export type EasingType = keyof typeof EasingTypeValues;
 
 export interface DScalar {
   /** See {@link ScalarTypeValues} for possible values. */
@@ -125,20 +38,26 @@ export class DScalarUInt16 implements DScalar {
   value = 0;
 }
 
-// export class DScalarUInt32 implements DScalar {
-//   @serializable(1)
-//   type = ScalarTypeValues.u32;
+/**
+ * Global types.
+ * @category Animation
+ */
+export const GlobalTypeValues = {
+  normalizedCurrentFace: enumValue(0),
+} as const;
 
-//   @serializable(4)
-//   value = 0;
-// }
+/**
+ * The names for the "enum" type {@link GlobalTypeValues}.
+ * @category Animation
+ */
+export type GlobalType = keyof typeof GlobalTypeValues;
 
 export class DScalarGlobal implements DScalar {
   @serializable(1)
   type = ScalarTypeValues.global;
 
   @serializable(1)
-  globalType = GlobalTypeValues.unknown;
+  globalType = GlobalTypeValues.normalizedCurrentFace;
 }
 
 export class DScalarLookup implements DScalar {
@@ -154,10 +73,46 @@ export class DScalarLookup implements DScalar {
   parameterIndex = 0;
 }
 
-export interface DCurve extends DScalar {
-  // Base class for curves doesn't have any additional data
-  // because we re-use the type identifier from DScalar
+/**
+ * Curve types.
+ * @category Animation
+ */
+export const CurveTypeValues = {
+  twoU8: enumValue(0), // simple interpolation between two 8 bit values
+  twoU16: enumValue(), // simple interpolation between two 16 bit values
+  trapezeU8: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
+  trapezeU16: enumValue(), // trapeze shaped interpolation from 0 to a given value and back to 0
+  u16Keyframes: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link CurveTypeValues}.
+ * @category Animation
+ */
+export type CurveType = keyof typeof CurveTypeValues;
+
+export interface DCurve {
+  /** See {@link CurveTypeValues} for possible values. */
+  type: number;
 }
+
+/**
+ * Easing types.
+ * @category Animation
+ */
+export const EasingTypeValues = {
+  step: enumValue(0),
+  linear: enumValue(),
+  easeIn: enumValue(),
+  easeOut: enumValue(),
+  easeInEaseOut: enumValue(), // S curve
+} as const;
+
+/**
+ * The names for the "enum" type {@link EasingTypeValues}.
+ * @category Animation
+ */
+export type EasingType = keyof typeof EasingTypeValues;
 
 export class DCurveTwoUInt8 implements DCurve {
   @serializable(1)
@@ -170,7 +125,7 @@ export class DCurveTwoUInt8 implements DCurve {
   end = 0;
 
   @serializable(1)
-  easing = EasingTypeValues.unknown;
+  easing = EasingTypeValues.step;
 }
 
 export class DCurveTwoUInt16 implements DCurve {
@@ -184,7 +139,7 @@ export class DCurveTwoUInt16 implements DCurve {
   end = 0;
 
   @serializable(1)
-  easing = EasingTypeValues.unknown;
+  easing = EasingTypeValues.step;
 }
 
 export class DCurveTrapezeUInt8 implements DCurve {
@@ -201,10 +156,10 @@ export class DCurveTrapezeUInt8 implements DCurve {
   rampDownScale = 0;
 
   @serializable(1)
-  rampUpEasing = EasingTypeValues.unknown;
+  rampUpEasing = EasingTypeValues.step;
 
   @serializable(1)
-  rampDownEasing = EasingTypeValues.unknown;
+  rampDownEasing = EasingTypeValues.step;
 }
 
 export class DCurveTrapezeUInt16 implements DCurve {
@@ -221,10 +176,10 @@ export class DCurveTrapezeUInt16 implements DCurve {
   rampDownScale = 0;
 
   @serializable(1)
-  rampUpEasing = EasingTypeValues.unknown;
+  rampUpEasing = EasingTypeValues.step;
 
   @serializable(1)
-  rampDownEasing = EasingTypeValues.unknown;
+  rampDownEasing = EasingTypeValues.step;
 }
 
 export class KeyframeUInt16 {
@@ -245,6 +200,22 @@ export class DCurveUInt16Keyframes implements DCurve {
   @serializable(1)
   keyframesLength = 0;
 }
+
+/**
+ * Color types.
+ * @category Animation
+ */
+export const ColorTypeValues = {
+  palette: enumValue(0), // uses the global palette
+  rgb: enumValue(), // stores actual rgb values
+  lookup: enumValue(), // uses a scalar to lookup the color in a gradient
+} as const;
+
+/**
+ * The names for the "enum" type {@link ColorTypeValues}.
+ * @category Animation
+ */
+export type ColorType = keyof typeof ColorTypeValues;
 
 export interface DColor {
   /** See {@link ColorTypeValues} for possible values. */
@@ -277,7 +248,7 @@ export class DColorLookup implements DColor {
   @serializable(1)
   type = ColorTypeValues.lookup;
 
-  lookupGradient?: DGradient;
+  lookupGradient?: ColorCurve;
   @serializable(2)
   lookupGradientIndex = 0;
 
@@ -286,22 +257,37 @@ export class DColorLookup implements DColor {
   parameterIndex = 0;
 }
 
-// Etc...
-export interface DGradient extends DColor {
-  // Base class for gradients doesn't have any additional data
-  // because we re-use the type identifier from DGradient
+/**
+ * Gradient types.
+ * @category Animation
+ */
+export const ColorCurveTypeValues = {
+  rainbow: enumValue(0), // basic programmatic rainbow gradient
+  twoColors: enumValue(), // simple two-color gradient
+  keyframes: enumValue(), // gradient with a few keyframes
+} as const;
+
+/**
+ * The names for the "enum" type {@link ColorCurveTypeValues}.
+ * @category Animation
+ */
+export type ColorCurveType = keyof typeof ColorCurveTypeValues;
+
+export interface ColorCurve {
+  /** See {@link ColorCurveTypeValues} for possible values. */
+  type: number;
 }
 
-export class DGradientRainbow implements DGradient {
+export class DGradientRainbow implements ColorCurve {
   @serializable(1)
-  type = GradientTypeValues.rainbow;
+  type = ColorCurveTypeValues.rainbow;
 
   // No data for now
 }
 
-export class DGradientTwoColors implements DGradient {
+export class DGradientTwoColors implements ColorCurve {
   @serializable(1)
-  type = GradientTypeValues.twoColors;
+  type = ColorCurveTypeValues.twoColors;
 
   start?: DColor;
   @serializable(2)
@@ -312,7 +298,7 @@ export class DGradientTwoColors implements DGradient {
   endIndex = 0;
 
   @serializable(1)
-  easing = EasingTypeValues.unknown;
+  easing = EasingTypeValues.step;
 }
 
 export class KeyframeUInt16Easing {
@@ -323,12 +309,12 @@ export class KeyframeUInt16Easing {
   index = 0; // palette index
 
   @serializable(1)
-  easing = EasingTypeValues.unknown;
+  easing = EasingTypeValues.step;
 }
 
-export class DGradientKeyframes implements DGradient {
+export class DGradientKeyframes implements ColorCurve {
   @serializable(1)
-  type = GradientTypeValues.keyframes;
+  type = ColorCurveTypeValues.keyframes;
 
   keyframes?: KeyframeUInt16Easing[];
   @serializable(2)
