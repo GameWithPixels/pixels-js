@@ -85,7 +85,7 @@ export class PixelScanner {
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
   private _keepAliveDuration = 5000;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
-  private _lastUpdate = new Date();
+  private _lastUpdateMs = 0;
   private readonly _touched = new Set<number>();
   private _onBluetoothState?: (ev: { state: BluetoothState }) => void;
 
@@ -141,7 +141,7 @@ export class PixelScanner {
       if (this._notifyTimeoutId) {
         clearTimeout(this._notifyTimeoutId);
         const now = Date.now();
-        const nextUpdate = Math.max(now, this._lastUpdate.getTime() + interval);
+        const nextUpdate = Math.max(now, this._lastUpdateMs + interval);
         this._notifyTimeoutId = setTimeout(
           () => this._notify(nextUpdate),
           nextUpdate - now
@@ -320,7 +320,7 @@ export class PixelScanner {
         break;
       case "scanning":
         // Ensure that first scanned Pixel will be immediately notified
-        this._lastUpdate.setTime(0);
+        this._lastUpdateMs = 0;
         break;
       case "stopped":
         if (
@@ -373,7 +373,7 @@ export class PixelScanner {
     // Prepare for user notification
     const now = Date.now();
     // Are we're past the given interval since the last notification?
-    const nextUpdate = this._lastUpdate.getTime() + this._minNotifyInterval;
+    const nextUpdate = this._lastUpdateMs + this._minNotifyInterval;
     if (now >= nextUpdate) {
       // Yes, notify immediately
       this._notify(now);
@@ -391,7 +391,7 @@ export class PixelScanner {
       clearTimeout(this._notifyTimeoutId);
       this._notifyTimeoutId = undefined;
     }
-    this._lastUpdate.setTime(now);
+    this._lastUpdateMs = now;
     const ops: PixelScannerListOperation[] = [];
     if (this._touched.size) {
       for (const pixelId of this._touched) {

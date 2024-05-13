@@ -126,7 +126,7 @@ export class ScannedPixelNotifier<
         props.timestamp !== undefined &&
         this.timestamp.getTime() !== props.timestamp.getTime()
       ) {
-        this._data.timestamp.setTime(props.timestamp.getTime());
+        this._data.timestamp = new Date(props.timestamp.getTime());
         this.emitPropertyEvent("timestamp");
       }
       // Other props
@@ -136,7 +136,7 @@ export class ScannedPixelNotifier<
             props.firmwareDate &&
             this.firmwareDate.getTime() !== props.firmwareDate.getTime()
           ) {
-            this._data.firmwareDate.setTime(props.firmwareDate.getTime());
+            this._data.firmwareDate = new Date(props.firmwareDate.getTime());
             this.emitPropertyEvent("firmwareDate");
           }
         } else {
