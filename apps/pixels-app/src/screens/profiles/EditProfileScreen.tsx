@@ -10,7 +10,11 @@ import { EditProfile } from "./components/EditProfile";
 import { ProfileMenu } from "./components/ProfileMenu";
 import { RuleIndex } from "./components/RuleCard";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  useAppDiceBrightnessGetter,
+  useAppDispatch,
+  useAppSelector,
+} from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
@@ -21,7 +25,6 @@ import {
   useConfirmActionSheet,
   useEditableProfile,
   useEditProfilesList,
-  useProfile,
 } from "~/hooks";
 import { EditProfileScreenProps } from "~/navigation";
 
@@ -54,9 +57,13 @@ const Header = observer(function Header({
     onDiscardChanges
   );
 
-  const initialLastChanged = useProfile(profile.uuid).lastChanged;
+  const initialLastChanged = React.useMemo(
+    () => profile.lastChanged,
+    [profile]
+  );
   const isModified =
     profile.lastChanged.getTime() !== initialLastChanged.getTime();
+  console.log("isModified " + isModified);
   const activatedDiceCount = useAppSelector(
     (state) =>
       state.pairedDice.paired.filter((d) => d.profileUuid === profile.uuid)
@@ -154,9 +161,7 @@ function EditProfilePage({
   navigation: EditProfileScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-  const brightness = useAppSelector(
-    (state) => state.appSettings.diceBrightnessFactor
-  );
+  const getBrightness = useAppDiceBrightnessGetter();
 
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();
@@ -209,7 +214,7 @@ function EditProfilePage({
           onEditRule={editRule}
           onTransfer={(pixel) => {
             commitProfile(profileUuid);
-            transferProfile(pixel, profile, brightness, appDispatch);
+            transferProfile(pixel, profile, getBrightness(), appDispatch);
           }}
         />
       </GHScrollView>

@@ -21,7 +21,11 @@ import { PixelRollsCard } from "./PixelRollsCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  useAppDiceBrightnessGetter,
+  useAppDispatch,
+  useAppSelector,
+} from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PixelDieRenderer } from "~/components/DieRenderer";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
@@ -81,9 +85,7 @@ export function PixelFocusViewHeader({
   onFirmwareUpdate: () => void;
 }) {
   const appDispatch = useAppDispatch();
-  const brightness = useAppSelector(
-    (state) => state.appSettings.diceBrightnessFactor
-  );
+  const getBrightness = useAppDiceBrightnessGetter();
   const profile = useProfile(pairedDie.profileUuid);
 
   const pixel = useWatchedPixel(pairedDie);
@@ -178,7 +180,7 @@ export function PixelFocusViewHeader({
             pixel={pixel}
             onEndEditing={async (name) => {
               setRenameVisible(false);
-              renameDie(pixel, name, profile, brightness, appDispatch);
+              renameDie(pixel, name, profile, getBrightness(), appDispatch);
             }}
           />
         )
@@ -245,9 +247,7 @@ export function PixelFocusView({
   onEditProfile: () => void;
 } & Omit<ViewProps, "children">) {
   const appDispatch = useAppDispatch();
-  const brightness = useAppSelector(
-    (state) => state.appSettings.diceBrightnessFactor
-  );
+  const getBrightness = useAppDiceBrightnessGetter();
 
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
@@ -324,7 +324,7 @@ export function PixelFocusView({
           onSelectProfile={(profile) => {
             if (!transferring) {
               setPickProfile(false);
-              transferProfile(pixel, profile, brightness, appDispatch);
+              transferProfile(pixel, profile, getBrightness(), appDispatch);
             } else {
               console.log(
                 "Dropping profile transfer because one is already in progress"

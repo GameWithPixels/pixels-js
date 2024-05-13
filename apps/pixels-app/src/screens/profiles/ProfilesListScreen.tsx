@@ -10,7 +10,11 @@ import Animated, {
 
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  useAppDiceBrightnessGetter,
+  useAppDispatch,
+  useAppSelector,
+} from "~/app/hooks";
 import {
   AnimatedProfileSearchbar,
   profileSearchbarMinHeight,
@@ -156,9 +160,7 @@ function ProfilesListPage({
   navigation: ProfilesListScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-  const brightness = useAppSelector(
-    (state) => state.appSettings.diceBrightnessFactor
-  );
+  const getBrightness = useAppDiceBrightnessGetter();
 
   const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
@@ -262,7 +264,12 @@ function ProfilesListPage({
         visible={!!profileToActivate}
         onDismiss={(pixel) => {
           if (pixel && profileToActivate) {
-            transferProfile(pixel, profileToActivate, brightness, appDispatch);
+            transferProfile(
+              pixel,
+              profileToActivate,
+              getBrightness(),
+              appDispatch
+            );
           }
           setProfileToActivate(undefined);
         }}
