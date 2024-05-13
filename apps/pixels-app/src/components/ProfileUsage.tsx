@@ -18,7 +18,7 @@ export function ProfileUsage({
   return (
     <View style={[{ gap: 5 }, style]} {...props}>
       <Text>Date created: {profile.creationDate.toLocaleString()}</Text>
-      <Text>Last modified: {profile.lastChanged.toLocaleString()}</Text>
+      <Text>Last modified: {profile.lastModified.toLocaleString()}</Text>
       {profile.lastUsed && (
         <Text>Last used: {profile.lastUsed.toLocaleString()}</Text>
       )}

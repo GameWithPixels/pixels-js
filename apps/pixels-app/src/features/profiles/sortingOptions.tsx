@@ -110,7 +110,7 @@ export const ProfilesGroupingList = [
   "none",
   "dieType",
   "creationDate",
-  "lastChanged",
+  "lastChanged", // TODO Should be lastModified
   "lastUsed",
 ] as const;
 
@@ -419,7 +419,7 @@ export function groupAndSortProfiles(
         return sortGroupedByTime(
           groupByTime(
             profiles.map((p) => ({
-              date: p.lastChanged,
+              date: p.lastModified,
               value: p,
             }))
           ),

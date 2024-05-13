@@ -95,7 +95,7 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
   );
 });
 
-const ProfileLastChanged = observer(function ProfileDiceNames({
+const ProfileLastModified = observer(function ProfileDiceNames({
   profile,
   iconColor,
 }: {
@@ -112,7 +112,7 @@ const ProfileLastChanged = observer(function ProfileDiceNames({
       }}
     >
       <Fontisto name="date" size={16} color={iconColor} />
-      <Text>{profile.lastChanged.toLocaleString()}</Text>
+      <Text>{profile.lastModified.toLocaleString()}</Text>
     </View>
   );
 });
@@ -381,7 +381,7 @@ export function ProfileCard({
                 profile={profile}
                 iconColor={colors.onSurface}
               />
-              <ProfileLastChanged
+              <ProfileLastModified
                 profile={profile}
                 iconColor={colors.onSurface}
               />

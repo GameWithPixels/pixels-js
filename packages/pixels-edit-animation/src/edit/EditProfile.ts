@@ -36,7 +36,7 @@ export default class EditProfile extends Editable {
   creationDate: Date;
 
   @observable
-  lastChanged: Date;
+  lastModified: Date;
 
   @observable
   lastUsed?: Date;
@@ -50,7 +50,7 @@ export default class EditProfile extends Editable {
     colorway?: PixelColorway;
     brightness?: number;
     creationDate?: Date;
-    lastChanged?: Date;
+    lastModified?: Date;
     lastUsed?: Date;
   }) {
     super(opt);
@@ -60,7 +60,7 @@ export default class EditProfile extends Editable {
     this.colorway = opt?.colorway ?? "onyxBlack";
     this.brightness = opt?.brightness ?? 1;
     this.creationDate = opt?.creationDate ?? new Date();
-    this.lastChanged = opt?.lastChanged ?? new Date();
+    this.lastModified = opt?.lastModified ?? new Date();
     this.lastUsed = opt?.lastUsed;
   }
 
@@ -91,7 +91,7 @@ export default class EditProfile extends Editable {
       uuid,
       rules: this.rules.map((r) => r.duplicate()),
       creationDate: now,
-      lastChanged: now,
+      lastModified: now,
       lastUsed: undefined,
     });
   }

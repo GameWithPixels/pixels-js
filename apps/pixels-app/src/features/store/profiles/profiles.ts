@@ -62,8 +62,8 @@ function updateProfile(
   if (profile.creationDate.getTime() !== profileData.creationDate) {
     profile.creationDate = new Date(profileData.creationDate);
   }
-  if (profile.lastChanged.getTime() !== profileData.lastChanged) {
-    profile.lastChanged = new Date(profileData.lastChanged);
+  if (profile.lastModified.getTime() !== profileData.lastChanged) {
+    profile.lastModified = new Date(profileData.lastChanged);
   }
   if (profile.lastUsed?.getTime() !== profileData.lastUsed) {
     profile.lastUsed = profileData.lastUsed

@@ -57,12 +57,12 @@ const Header = observer(function Header({
     onDiscardChanges
   );
 
-  const initialLastChanged = React.useMemo(
-    () => profile.lastChanged,
+  const initialLastModified = React.useMemo(
+    () => profile.lastModified,
     [profile]
   );
   const isModified =
-    profile.lastChanged.getTime() !== initialLastChanged.getTime();
+    profile.lastModified.getTime() !== initialLastModified.getTime();
   console.log("isModified " + isModified);
   const activatedDiceCount = useAppSelector(
     (state) =>
