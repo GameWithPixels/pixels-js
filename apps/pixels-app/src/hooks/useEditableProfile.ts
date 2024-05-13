@@ -32,6 +32,7 @@ function create(profileUuid: string, library: LibraryState): Profiles.Profile {
       firstAutorun = false;
     } else {
       disposer();
+      // TODO we should store the "modified" state separately instead
       runInAction(() => (profile.lastChanged = new Date()));
     }
   });
@@ -63,6 +64,8 @@ export function useCommitEditableProfile(): {
           const { profile, disposer } = item;
           disposer();
           editableProfiles.delete(profileUuid);
+          // Update profile date to now
+          runInAction(() => (profile.lastChanged = new Date()));
           appDispatch(
             Library.Profiles.update(Serializable.fromProfile(profile))
           );
