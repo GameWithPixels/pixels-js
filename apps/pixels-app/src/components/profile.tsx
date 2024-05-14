@@ -279,6 +279,8 @@ export function ProfileCard({
     [expanded]
   );
 
+  const die3dWidth = row ? 120 : "100%";
+  const height = 100;
   return (
     <Animated.View
       entering={FadeIn.duration(fadeInDuration ?? 300).delay(fadeInDelay ?? 0)}
@@ -293,48 +295,39 @@ export function ProfileCard({
         noBorder
         {...props}
       >
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          colors={[darken(colors.primary, 0.4), darken(colors.secondary, 0.4)]}
-          style={{ width: row ? undefined : "100%", ...dieViewCornersStyle }}
+        <Animated.View
+          style={[
+            {
+              alignItems: "center",
+              justifyContent: "center",
+              width: die3dWidth,
+              // Borders (having issues on iOS with those borders applied on the LinearGradient)
+              borderWidth: noBorder ? 0 : 1,
+              borderRightWidth: noBorder ?? row ? 0 : 1,
+              borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
+              borderBottomWidth:
+                noBorder ?? noBottomBorder ?? !row ? 0 : undefined,
+              borderColor: getBorderColor(colors, selected),
+              // Corners
+              ...dieViewCornersStyle,
+            },
+            row ? animTopLeftStyle : undefined,
+          ]}
         >
-          <Animated.View
-            style={[
-              {
-                alignItems: "center",
-                justifyContent: "center",
-                // Borders (having issues on iOS with those borders applied on the LinearGradient)
-                borderWidth: noBorder ? 0 : 1,
-                borderRightWidth: noBorder ?? row ? 0 : 1,
-                borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
-                borderBottomWidth:
-                  noBorder ?? noBottomBorder ?? !row ? 0 : undefined,
-                borderColor: getBorderColor(colors, selected),
-                // Corners
-                ...dieViewCornersStyle,
-              },
-              row ? animTopLeftStyle : undefined,
-            ]}
+          <View
+            style={{
+              width: "100%",
+              height,
+              paddingHorizontal: 2,
+              paddingVertical: 2,
+            }}
           >
-            <View
-              style={{
-                width: row ? 120 : "100%",
-                height: 100,
-                paddingHorizontal: 2,
-                paddingVertical: 2,
-              }}
-            >
-              <ProfileDieRenderer profile={profile} pedestal />
-            </View>
-            {(transferring ?? transferredProfileUuid === profile.uuid) && (
-              <ActivityIndicator
-                size="large"
-                style={{ position: "absolute" }}
-              />
-            )}
-          </Animated.View>
-        </LinearGradient>
+            <ProfileDieRenderer profile={profile} pedestal />
+          </View>
+          {(transferring ?? transferredProfileUuid === profile.uuid) && (
+            <ActivityIndicator size="large" style={{ position: "absolute" }} />
+          )}
+        </Animated.View>
         <View
           style={{
             alignSelf: "stretch",
@@ -372,7 +365,7 @@ export function ProfileCard({
               style={{
                 position: "absolute",
                 width: "100%",
-                height: 100,
+                height,
                 paddingBottom: 5,
                 justifyContent: "space-between",
               }}
@@ -408,6 +401,29 @@ export function ProfileCard({
           )}
         </View>
       </TouchableCard>
+      {/* Render gradient outside of touchable so the ripple effects works */}
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            zIndex: -1,
+            width: die3dWidth,
+            ...dieViewCornersStyle,
+          },
+          row ? animTopLeftStyle : { height },
+        ]}
+      >
+        <LinearGradient
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          colors={[darken(colors.primary, 0.4), darken(colors.secondary, 0.4)]}
+          style={{
+            width: "100%",
+            height: "100%",
+            ...dieViewCornersStyle,
+          }}
+        />
+      </Animated.View>
     </Animated.View>
   );
 }
