@@ -4,6 +4,7 @@ import { Alert } from "react-native";
 import Toast from "react-native-root-toast";
 
 import { blinkDie } from "./blinkDie";
+import { unsigned32ToHex } from "../utils";
 
 import { AppDispatch } from "~/app/store";
 import { applyProfileOverrides } from "~/features/profiles";
@@ -14,7 +15,7 @@ import {
 import { updatePairedDieProfile } from "~/features/store/pairedDiceSlice";
 import { ToastSettings } from "~/themes";
 
-export function transferProfile(
+export function programProfile(
   pixel: Pixel,
   profile: Readonly<Profiles.Profile>,
   brightnessFactor: number,
@@ -22,9 +23,9 @@ export function transferProfile(
   opt?: { silent?: boolean }
 ): void {
   console.log(
-    `Transferring profile ${profile.name} (${
+    `Programming profile ${profile.name} (${
       profile.uuid
-    }) to die ${pixel.pixelId.toString(16).padStart(8)}`
+    }) to die ${unsigned32ToHex(pixel.pixelId)}`
   );
 
   // Create new profile with action overrides applied to it

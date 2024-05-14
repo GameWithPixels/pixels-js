@@ -80,7 +80,7 @@ const BrightnessSlider = observer(function BrightnessSlider({
   );
 });
 
-function TransferProfileButton({ onPress }: { onPress: () => void }) {
+function ProgramProfileButton({ onPress }: { onPress: () => void }) {
   const profileUuid = useAppSelector(
     (state) => state.diceTransient.transfer?.profileUuid
   );
@@ -152,7 +152,7 @@ export function EditProfile({
             >
               Preview
             </OutlineButton> */}
-            <TransferProfileButton onPress={() => setPickDieVisible(true)} />
+            <ProgramProfileButton onPress={() => setPickDieVisible(true)} />
           </View>
         )}
         <SlideInView

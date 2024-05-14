@@ -1,7 +1,7 @@
 import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import { Alert } from "react-native";
 
-import { transferProfile } from "./transferProfile";
+import { programProfile } from "./programProfile";
 
 import { AppDispatch } from "~/app/store";
 
@@ -15,7 +15,7 @@ export function renameDie(
   const task = async () => {
     try {
       await pixel.rename(newName);
-      transferProfile(pixel, profile, brightnessFactor, appDispatch, {
+      programProfile(pixel, profile, brightnessFactor, appDispatch, {
         silent: true,
       });
     } catch (e) {

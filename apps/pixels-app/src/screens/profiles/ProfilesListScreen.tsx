@@ -29,7 +29,7 @@ import {
 import { CreateProfileBanner } from "~/components/banners";
 import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
-import { transferProfile } from "~/features/dice";
+import { programProfile } from "~/features/dice";
 import {
   getCompatibleDiceTypes,
   getProfilesGroupingLabel,
@@ -264,7 +264,7 @@ function ProfilesListPage({
         visible={!!profileToActivate}
         onDismiss={(pixel) => {
           if (pixel && profileToActivate) {
-            transferProfile(
+            programProfile(
               pixel,
               profileToActivate,
               getBrightness(),

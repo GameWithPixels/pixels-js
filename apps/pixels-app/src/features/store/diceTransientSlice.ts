@@ -2,13 +2,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { logWrite } from "./logWrite";
 
-export interface ProfileTransfer {
-  pixelId: number;
-  profileUuid: string;
-}
-
 export interface DiceTransientState {
-  transfer?: ProfileTransfer;
+  transfer?: {
+    pixelId: number;
+    profileUuid: string;
+  };
 }
 
 const initialState: DiceTransientState = {};

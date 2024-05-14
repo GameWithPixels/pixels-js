@@ -32,7 +32,7 @@ import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
 import { NewPixelAppBanner } from "~/components/banners";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard, ProfileCardProps } from "~/components/profile";
-import { blinkDie, resetDieSettings, transferProfile } from "~/features/dice";
+import { blinkDie, resetDieSettings, programProfile } from "~/features/dice";
 import { renameDie } from "~/features/dice/renameDie";
 import { FactoryProfile } from "~/features/profiles";
 import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
@@ -324,10 +324,10 @@ export function PixelFocusView({
           onSelectProfile={(profile) => {
             if (!transferring) {
               setPickProfile(false);
-              transferProfile(pixel, profile, getBrightness(), appDispatch);
+              programProfile(pixel, profile, getBrightness(), appDispatch);
             } else {
               console.log(
-                "Dropping profile transfer because one is already in progress"
+                "Skip programming profile because one is already in progress"
               );
             }
           }}

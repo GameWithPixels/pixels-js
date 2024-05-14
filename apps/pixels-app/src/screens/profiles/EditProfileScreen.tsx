@@ -19,7 +19,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
-import { transferProfile } from "~/features/dice";
+import { programProfile } from "~/features/dice";
 import {
   useCommitEditableProfile,
   useConfirmActionSheet,
@@ -214,7 +214,7 @@ function EditProfilePage({
           onEditRule={editRule}
           onTransfer={(pixel) => {
             commitProfile(profileUuid);
-            transferProfile(pixel, profile, getBrightness(), appDispatch);
+            programProfile(pixel, profile, getBrightness(), appDispatch);
           }}
         />
       </GHScrollView>
