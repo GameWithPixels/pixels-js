@@ -4,14 +4,14 @@ import { useTheme } from "react-native-paper";
 
 import { GradientButton } from "./buttons";
 
-export function TabsHeaders({
+export function TabsHeaders<T extends string>({
   names,
   selected,
   onSelect,
 }: {
-  names: readonly string[];
-  selected?: string;
-  onSelect?: (name: string) => void;
+  names: readonly T[];
+  selected?: T;
+  onSelect?: (name: T) => void;
 }) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });

@@ -9,12 +9,24 @@ import { Library } from "~/features/store";
 import { readProfile } from "~/features/store/profiles";
 
 // Returns a list of observable profiles from Redux store
+// Dice custom profiles are excluded
 export function useProfilesList(): Readonly<Profiles.Profile>[] {
   const library = useAppSelector((state) => state.library);
+  const paired = useAppSelector((state) => state.pairedDice.paired);
+  const unpaired = useAppSelector((state) => state.pairedDice.unpaired);
+  const customProfiles = React.useMemo(
+    () =>
+      paired
+        .map((p) => p.profileUuid)
+        .concat(unpaired.map((p) => p.profileUuid)),
+    [paired, unpaired]
+  );
   return React.useMemo(
     () =>
-      library.profiles.ids.map((uuid) => readProfile(uuid as string, library)),
-    [library]
+      library.profiles.ids
+        .map((uuid) => readProfile(uuid as string, library))
+        .filter((p) => !customProfiles.includes(p.uuid)),
+    [customProfiles, library]
   );
 }
 

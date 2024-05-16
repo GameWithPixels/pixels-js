@@ -3,7 +3,6 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { logWrite } from "./logWrite";
 
 import { PairedDie } from "~/app/PairedDie";
-import { FactoryProfile } from "~/features/profiles";
 import { logError, unsigned32ToHex } from "~/features/utils";
 
 export interface PairedDiceState {
@@ -23,7 +22,6 @@ function log(
     | "resetPairedDice"
     | "resetPairedDice"
     | "updatePairedDieName"
-    | "updatePairedDieProfile"
     | "updatePairedDieFirmwareTimestamp",
   payload?: any
 ) {
@@ -41,46 +39,19 @@ const PairedDiceSlice = createSlice({
       state.unpaired = [];
     },
 
-    addPairedDie(
-      state,
-      action: PayloadAction<
-        Pick<
-          PairedDie,
-          | "systemId"
-          | "pixelId"
-          | "name"
-          | "dieType"
-          | "colorway"
-          | "firmwareTimestamp"
-        >
-      >
-    ) {
+    addPairedDie(state, action: PayloadAction<PairedDie>) {
       const { payload } = action;
       log("addPairedDie", payload);
       const withId = ({ pixelId }: PairedDie) => pixelId === payload.pixelId;
       const index = state.paired.findIndex(withId);
-      const uIndex = state.unpaired.findIndex(withId);
-      const { systemId, pixelId, name, dieType, colorway, firmwareTimestamp } =
-        payload;
-      const die = {
-        systemId,
-        pixelId,
-        name,
-        dieType,
-        colorway,
-        firmwareTimestamp,
-        profileUuid:
-          state.paired[index]?.profileUuid ??
-          state.unpaired[uIndex]?.profileUuid ??
-          FactoryProfile.getUuid(dieType),
-      };
       if (index >= 0) {
-        state.paired[index] = die;
+        state.paired[index] = payload;
       } else {
-        state.paired.push(die);
+        state.paired.push(payload);
       }
-      if (uIndex >= 0) {
-        state.unpaired.splice(uIndex, 1);
+      const unpairIndex = state.unpaired.findIndex(withId);
+      if (unpairIndex >= 0) {
+        state.unpaired.splice(unpairIndex, 1);
       }
     },
 
@@ -126,23 +97,6 @@ const PairedDiceSlice = createSlice({
       }
     },
 
-    updatePairedDieProfile(
-      state,
-      action: PayloadAction<{
-        pixelId: number;
-        profileUuid: string;
-      }>
-    ) {
-      const { payload } = action;
-      log("updatePairedDieProfile", payload);
-      const pairedDie = state.paired.find(
-        ({ pixelId }) => pixelId === payload.pixelId
-      );
-      if (pairedDie) {
-        pairedDie.profileUuid = payload.profileUuid;
-      }
-    },
-
     updatePairedDieFirmwareTimestamp(
       state,
       action: PayloadAction<{
@@ -167,7 +121,6 @@ export const {
   removePairedDie,
   resetPairedDice,
   updatePairedDieName,
-  updatePairedDieProfile,
   updatePairedDieFirmwareTimestamp,
 } = PairedDiceSlice.actions;
 export default PairedDiceSlice.reducer;

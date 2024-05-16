@@ -10,11 +10,7 @@ import { EditProfile } from "./components/EditProfile";
 import { ProfileMenu } from "./components/ProfileMenu";
 import { RuleIndex } from "./components/RuleCard";
 
-import {
-  useAppDiceBrightnessGetter,
-  useAppDispatch,
-  useAppSelector,
-} from "~/app/hooks";
+import { useAppSelector, useAppStore } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
@@ -160,8 +156,7 @@ function EditProfilePage({
   noDiscard?: boolean;
   navigation: EditProfileScreenProps["navigation"];
 }) {
-  const appDispatch = useAppDispatch();
-  const getBrightness = useAppDiceBrightnessGetter();
+  const store = useAppStore();
 
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();
@@ -214,7 +209,7 @@ function EditProfilePage({
           onEditRule={editRule}
           onTransfer={(pixel) => {
             commitProfile(profileUuid);
-            programProfile(pixel, profile, getBrightness(), appDispatch);
+            programProfile(pixel, profile, store);
           }}
         />
       </GHScrollView>

@@ -4,6 +4,7 @@ import {
   EntityState,
   PayloadAction,
 } from "@reduxjs/toolkit";
+import { assert } from "@systemic-games/pixels-core-utils";
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
 import { LibraryData } from "./LibraryData";
@@ -27,12 +28,14 @@ const profilesSlice = createSlice({
 
     add(state, action: PayloadAction<Serializable.ProfileData>) {
       const profile = action.payload;
+      assert(profile.uuid?.length, "Profile must have a uuid");
       profilesAdapter.addOne(state, profile);
       logWrite("add", "profile", profile.uuid, profile.name);
     },
 
     update(state, action: PayloadAction<Serializable.ProfileData>) {
       const profile = action.payload;
+      assert(profile.uuid?.length, "Profile must have a uuid");
       profilesAdapter.setOne(state, profile);
       logWrite("update", "profile", profile.uuid, profile.name);
       // const index = state.profiles.findIndex((p) => p.uuid === profile.uuid);

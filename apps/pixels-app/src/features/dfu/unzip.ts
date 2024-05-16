@@ -16,7 +16,7 @@ export async function unzipDfuFilesAsync(
     await FileSystem.deleteAsync(cacheDirectory, { idempotent: true });
   }
   if (
-    opt?.clearCache ||
+    !!opt?.clearCache ||
     !(await FileSystem.getInfoAsync(cacheDirectory)).exists
   ) {
     // (Re)Create cache directory

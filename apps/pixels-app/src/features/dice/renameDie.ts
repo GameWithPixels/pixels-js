@@ -3,19 +3,18 @@ import { Alert } from "react-native";
 
 import { programProfile } from "./programProfile";
 
-import { AppDispatch } from "~/app/store";
+import { AppStore } from "~/app/store";
 
 export function renameDie(
   pixel: Pixel,
   newName: string,
   profile: Readonly<Profiles.Profile>,
-  brightnessFactor: number,
-  appDispatch: AppDispatch
+  store: AppStore
 ): void {
   const task = async () => {
     try {
       await pixel.rename(newName);
-      programProfile(pixel, profile, brightnessFactor, appDispatch, {
+      programProfile(pixel, profile, store, {
         silent: true,
       });
     } catch (e) {

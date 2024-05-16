@@ -5,91 +5,65 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { autorun, runInAction } from "mobx";
 import React from "react";
-import { useStore } from "react-redux";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { LibraryState, RootState } from "~/app/store";
-import { FactoryProfile } from "~/features/profiles";
+import { useAppStore } from "~/app/hooks";
 import { Library } from "~/features/store";
-import { logWrite } from "~/features/store/library/logWrite";
+import {
+  clearEditableProfile,
+  touchEditableProfile,
+} from "~/features/store/appTransientSlice";
 import { readProfile } from "~/features/store/profiles";
 
-const editableProfiles = new Map<
-  string,
-  {
-    profile: Profiles.Profile;
-    disposer: () => void;
-  }
->();
+// Only one profile can be edited at a time
+let editableProfile: Profiles.Profile | undefined;
+let editableProfileDisposer: (() => void) | undefined;
 
-function create(profileUuid: string, library: LibraryState): Profiles.Profile {
-  const profile = readProfile(profileUuid, library, true);
-  let firstAutorun = true;
-  const disposer = autorun(() => {
-    if (firstAutorun) {
+// Returns an observable profile that is editable
+export function useEditableProfile(profileUuid: string): Profiles.Profile {
+  const store = useAppStore();
+  if (!editableProfile) {
+    const profile = readProfile(profileUuid, store.getState().library, true);
+    const disposer = autorun(() => {
+      store.dispatch(touchEditableProfile({ profileUuid }));
       // `JSON.stringify` will touch all properties of the profile` so they are automatically observed.
       JSON.stringify(profile);
-      firstAutorun = false;
-    } else {
+    });
+    editableProfile = profile;
+    editableProfileDisposer = () => {
+      editableProfile = undefined;
+      editableProfileDisposer = undefined;
       disposer();
-      // TODO we should store the "modified" state separately instead
-      runInAction(() => (profile.lastModified = new Date()));
-    }
-  });
-  editableProfiles.set(profileUuid, { profile, disposer });
-  return profile;
-}
-
-export function getEditableProfile(
-  profileUuid: string,
-  library: LibraryState
-): Profiles.Profile {
-  assert(!FactoryProfile.isFactory(profileUuid), "Can't edit factory profile");
-  return (
-    editableProfiles.get(profileUuid)?.profile ?? create(profileUuid, library)
-  );
+      store.dispatch(clearEditableProfile());
+    };
+  }
+  assert(editableProfile?.uuid === profileUuid, "Profile mismatch");
+  return editableProfile;
 }
 
 export function useCommitEditableProfile(): {
   commitProfile: (profileUuid: string) => void;
   discardProfile: (profileUuid: string) => void;
 } {
-  const appDispatch = useAppDispatch();
-  const store = useStore(); // We use the store because don't want to react on every state change
+  const store = useAppStore();
   return {
     commitProfile: React.useCallback(
       (profileUuid: string) => {
-        const item = editableProfiles.get(profileUuid);
-        if (item) {
-          const { profile, disposer } = item;
-          disposer();
-          editableProfiles.delete(profileUuid);
-          // Update profile date to now
-          runInAction(() => (profile.lastModified = new Date()));
-          appDispatch(
-            Library.Profiles.update(Serializable.fromProfile(profile))
-          );
-          // Update original profile
-          logWrite(
-            "update",
-            "profile",
-            profile.uuid,
-            `=> ${profile.dieType}, "${profile.name}"`
-          );
-          readProfile(profileUuid, (store.getState() as RootState).library);
-        }
+        assert(editableProfile?.uuid === profileUuid, "Profile mismatch");
+        const profile = editableProfile;
+        editableProfileDisposer?.();
+        // Store profile
+        runInAction(() => (profile.lastModified = new Date()));
+        store.dispatch(
+          Library.Profiles.update(Serializable.fromProfile(profile))
+        );
+        // Update readonly profile
+        readProfile(profileUuid, store.getState().library);
       },
-      [appDispatch, store]
+      [store]
     ),
-    discardProfile: React.useCallback(
-      (profileUuid: string) => editableProfiles.delete(profileUuid),
-      []
-    ),
+    discardProfile: React.useCallback((profileUuid: string) => {
+      assert(editableProfile?.uuid === profileUuid, "Profile mismatch");
+      editableProfileDisposer?.();
+    }, []),
   };
-}
-
-// Returns an observable profile that is editable
-export function useEditableProfile(profileUuid: string): Profiles.Profile {
-  const library = useAppSelector((state) => state.library);
-  return getEditableProfile(profileUuid, library);
 }

@@ -24,7 +24,7 @@ const categories: Profiles.AnimationCategory[] = [
   "flashy",
   "uniform",
   "system",
-];
+] as const;
 const tabsNames = categories.map((c) => c[0].toUpperCase() + c.slice(1));
 
 export function PickAnimationBottomSheet({

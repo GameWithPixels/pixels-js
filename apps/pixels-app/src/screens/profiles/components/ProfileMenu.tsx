@@ -36,7 +36,7 @@ export function ProfileMenu({
         />
       ) : (
         <Menu.Item
-          title="Save As New Profile"
+          title="Save To Library"
           trailingIcon={({ size, color }) => (
             <MaterialCommunityIcons
               name="content-save-outline"

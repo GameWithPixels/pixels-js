@@ -82,8 +82,8 @@ function FirmwareUpdatePage({
   const updateDice = useUpdateDice();
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const [stopRequester, setStopUpdating] = React.useState<() => void>();
-  const cancelUpdating = useConfirmStopUpdatingActionSheet(
-    () => stopRequester?.()
+  const cancelUpdating = useConfirmStopUpdatingActionSheet(() =>
+    stopRequester?.()
   );
   const outdatedCount = useOutdatedPixelsCount();
   usePreventRemovingScreen(navigation, updating);

@@ -4,7 +4,6 @@ export * from "./descriptions";
 export * from "./EditorActionTypes";
 export * from "./EditorAnimationFlags";
 export * from "./EditorRollRulesTypes";
-export * from "./FactoryProfile";
 export * from "./getWebRequestURL";
 export * from "./playRemoteAction";
 export * from "./ProfileDieTypes";

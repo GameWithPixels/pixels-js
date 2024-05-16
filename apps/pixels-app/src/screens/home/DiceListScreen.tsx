@@ -1,20 +1,14 @@
-import { useActionSheet } from "@expo/react-native-action-sheet";
 import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Card, Divider, IconButton, Text, useTheme } from "react-native-paper";
+import { Card, Divider, IconButton, Text } from "react-native-paper";
 import { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
-import {
-  PixelFocusView,
-  PixelFocusViewHeader,
-} from "./components/PixelFocusView";
 
 import FocusIcon from "#/icons/home/focus";
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
-import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
@@ -24,8 +18,7 @@ import {
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { AnimatedGradientButton } from "~/components/buttons";
-import { DiceGrid, DiceList } from "~/components/dice";
-import { blinkDie } from "~/features/dice";
+import { DiceGrid } from "~/components/dice";
 import {
   DiceGrouping,
   DiceGroupingList,
@@ -39,7 +32,6 @@ import {
   setDiceGrouping,
   setDiceSortMode,
 } from "~/features/store/appSettingsSlice";
-import { removePairedDie } from "~/features/store/pairedDiceSlice";
 import { useConnectToMissingPixels } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -178,33 +170,6 @@ function NoPairedDie({
   );
 }
 
-function useUnpairActionSheet(pairedDie?: PairedDie): () => void {
-  const appDispatch = useAppDispatch();
-  const { showActionSheetWithOptions } = useActionSheet();
-
-  const { colors } = useTheme();
-  const unpairDieWithConfirmation = React.useCallback(() => {
-    console.log("UNPAIR " + JSON.stringify(pairedDie));
-    showActionSheetWithOptions(
-      {
-        options: [`Unpair ${pairedDie?.name}`, "Keep Die"],
-        destructiveButtonIndex: 0,
-        cancelButtonIndex: 1,
-        destructiveColor: colors.error,
-        containerStyle: { backgroundColor: colors.background },
-        textStyle: { color: colors.onBackground },
-      },
-      (selectedIndex?: number) => {
-        if (pairedDie && selectedIndex === 0) {
-          appDispatch(removePairedDie(pairedDie.pixelId));
-        }
-      }
-    );
-  }, [appDispatch, colors, pairedDie, showActionSheetWithOptions]);
-
-  return unpairDieWithConfirmation;
-}
-
 function DiceListPage({
   navigation,
 }: {
@@ -223,49 +188,12 @@ function DiceListPage({
     }, [hasPairedDice])
   );
 
-  // Reconnect
-  const connectToMissingPixels = useConnectToMissingPixels();
-
   // Scan for missing dice on showing page
-  useFocusEffect(
-    React.useCallback(() => {
-      connectToMissingPixels();
-    }, [connectToMissingPixels])
-  );
-
-  // Selection (we keep an index to be sure to use the latest values from pairedDice)
-  const [lastSelectedDie, setSelectedDie] = React.useState(0);
-  // We don't want to show a Pixel that no longer exists
-  const selectedDie =
-    pairedDice.find((d) => d.pixelId === lastSelectedDie) ??
-    // Select first Pixel
-    pairedDice[0];
-
-  // View Mode
-  const [viewMode, setViewMode] = React.useState<DiceViewMode>("focus");
-  const isFocus = viewMode === "focus";
-  const selectAndShowDetails = (pairedDie: PairedDie, showDetails = true) => {
-    setSelectedDie(pairedDie.pixelId);
-    blinkDie(pairedDie);
-    connectToMissingPixels(pairedDie.pixelId);
-    if (showDetails) {
-      navigation.navigate("dieDetails", { pixelId: pairedDie.pixelId });
-    }
-  };
-
-  // Unpair
-  const showUnpairActionSheet = useUnpairActionSheet(selectedDie);
+  useFocusEffect(useConnectToMissingPixels());
 
   return (
     <>
       <View style={{ height: "100%" }}>
-        {isFocus && selectedDie && (
-          <PixelFocusViewHeader
-            pairedDie={selectedDie}
-            onUnpair={showUnpairActionSheet}
-            onFirmwareUpdate={() => navigation.navigate("firmwareUpdate")}
-          />
-        )}
         <ScrollView
           contentContainerStyle={{
             padding: 10,
@@ -273,54 +201,24 @@ function DiceListPage({
             gap: 10,
           }}
         >
+          <Text variant="headlineMedium">My Pixels Dice</Text>
           <BluetoothStateWarning />
-          {isFocus && selectedDie ? (
-            <PixelFocusView
-              pairedDie={selectedDie}
-              onPress={() => connectToMissingPixels(selectedDie.pixelId)}
-              onShowDetails={() => selectAndShowDetails(selectedDie)}
-              onShowRollsHistory={() =>
-                navigation.navigate("rollsHistory", {
-                  pixelId: selectedDie.pixelId,
-                })
-              }
-              onEditProfile={() =>
-                navigation.navigate("editDieProfileStack", {
-                  screen: "editDieProfile",
-                  params: { pixelId: selectedDie.pixelId },
-                })
-              }
-            />
-          ) : (
-            <View style={{ marginTop: 30 }} />
-          )}
           {!pairedDice.length ? (
             <NoPairedDie
               showPairDice={showPairDice}
               onPairDice={() => setShowPairDice(true)}
             />
-          ) : viewMode === "list" ? (
-            <DiceList
-              dice={pairedDice}
-              onSelectDie={selectAndShowDetails}
-              onPressNewDie={() => setShowPairDice(true)}
-            />
           ) : (
             <DiceGrid
-              selection={isFocus ? selectedDie : undefined}
-              numColumns={isFocus ? 4 : 2}
-              miniCards={isFocus}
               dice={pairedDice}
-              onSelectDie={(d) => selectAndShowDetails(d, !isFocus)}
+              onSelectDie={(d) =>
+                navigation.navigate("dieFocus", { pixelId: d.pixelId })
+              }
               onPressNewDie={() => setShowPairDice(true)}
             />
           )}
         </ScrollView>
       </View>
-      <PageHeader
-        viewMode={viewMode}
-        onSelectViewMode={(vm) => setViewMode(vm)}
-      />
       <PairDiceBottomSheet
         visible={showPairDice}
         onDismiss={() => setShowPairDice(false)}

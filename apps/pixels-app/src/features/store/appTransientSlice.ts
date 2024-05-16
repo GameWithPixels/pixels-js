@@ -11,12 +11,23 @@ export interface AppTransientState {
     };
     error?: string;
   };
+  editableProfile?: {
+    profileUuid: string;
+    version: number;
+  };
 }
 
 const initialState: AppTransientState = { update: { gotResponse: false } };
 
-function log(action: "resetAppTransientState" | "setAppUpdateResponse") {
-  logWrite(action);
+function log(
+  action:
+    | "resetAppTransientState"
+    | "setAppUpdateResponse"
+    | "touchEditableProfile"
+    | "clearEditableProfile",
+  value?: unknown
+) {
+  logWrite(action + (value !== undefined ? `: ${value}` : ""));
 }
 
 // Redux slice that stores app settings
@@ -48,9 +59,31 @@ const appUpdateSlice = createSlice({
         update.manifest = undefined;
       }
     },
+    touchEditableProfile(
+      state,
+      action: PayloadAction<{ profileUuid: string }>
+    ) {
+      if (state.editableProfile?.profileUuid === action.payload.profileUuid) {
+        state.editableProfile.version++;
+      } else {
+        state.editableProfile = {
+          profileUuid: action.payload.profileUuid,
+          version: 0,
+        };
+      }
+      log("touchEditableProfile", state.editableProfile?.version);
+    },
+    clearEditableProfile(state) {
+      log("clearEditableProfile");
+      state.editableProfile = undefined;
+    },
   },
 });
 
-export const { resetAppTransientState, setAppUpdateResponse } =
-  appUpdateSlice.actions;
+export const {
+  resetAppTransientState,
+  setAppUpdateResponse,
+  touchEditableProfile,
+  clearEditableProfile,
+} = appUpdateSlice.actions;
 export default appUpdateSlice.reducer;

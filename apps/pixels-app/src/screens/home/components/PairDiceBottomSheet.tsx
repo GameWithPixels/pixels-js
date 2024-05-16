@@ -6,7 +6,7 @@ import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppStore } from "~/app/hooks";
 import { getNoAvailableDiceMessage } from "~/app/messages";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { ScannedPixelsCount } from "~/components/ScannedPixelsCount";
@@ -14,8 +14,8 @@ import { useFlashAnimationStyleOnRoll } from "~/components/ViewFlashOnRoll";
 import { AnimatedText } from "~/components/animated";
 import { AnimatedSelectionButton, GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
+import { pairDie } from "~/features/dice";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
-import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import {
   usePixelScanner,
   useBottomSheetPadding,
@@ -138,7 +138,7 @@ export function PairDiceBottomSheet({
   visible: boolean;
   onDismiss?: (pixels?: ScannedPixelNotifier[]) => void;
 }) {
-  const appDispatch = useAppDispatch();
+  const store = useAppStore();
   const { availablePixels, startScan, stopScan, scanError } = usePixelScanner();
 
   // Start scan on opening bottom sheet
@@ -166,20 +166,11 @@ export function PairDiceBottomSheet({
   const pairDice = React.useCallback(
     (pixels: ScannedPixelNotifier[]) => {
       for (const pixel of pixels) {
-        appDispatch(
-          addPairedDie({
-            systemId: pixel.systemId,
-            pixelId: pixel.pixelId,
-            name: pixel.name,
-            dieType: pixel.dieType,
-            colorway: pixel.colorway,
-            firmwareTimestamp: pixel.firmwareDate.getTime(),
-          })
-        );
+        pairDie(pixel, store);
       }
       dismiss(pixels);
     },
-    [appDispatch, dismiss]
+    [store, dismiss]
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);

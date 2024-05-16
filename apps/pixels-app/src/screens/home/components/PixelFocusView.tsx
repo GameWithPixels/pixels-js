@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
 import {
   Constants,
@@ -13,7 +14,7 @@ import {
   View,
   ViewProps,
 } from "react-native";
-import { Text, TextInput, useTheme } from "react-native-paper";
+import { Text, TextInput, TouchableRipple, useTheme } from "react-native-paper";
 
 import { DieMenu } from "./DieMenu";
 import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
@@ -21,21 +22,15 @@ import { PixelRollsCard } from "./PixelRollsCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
 import { PairedDie } from "~/app/PairedDie";
-import {
-  useAppDiceBrightnessGetter,
-  useAppDispatch,
-  useAppSelector,
-} from "~/app/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PixelDieRenderer } from "~/components/DieRenderer";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
-import { NewPixelAppBanner } from "~/components/banners";
+import { SlideInView } from "~/components/SlideInView";
 import { makeTransparent } from "~/components/colors";
-import { ProfileCard, ProfileCardProps } from "~/components/profile";
+import { ProfileCard } from "~/components/profile";
 import { blinkDie, resetDieSettings, programProfile } from "~/features/dice";
 import { renameDie } from "~/features/dice/renameDie";
-import { FactoryProfile } from "~/features/profiles";
-import { setShowNewPixelsAppBanner } from "~/features/store/appSettingsSlice";
 import {
   useActiveProfile,
   useConfirmActionSheet,
@@ -85,7 +80,8 @@ export function PixelFocusViewHeader({
   onFirmwareUpdate: () => void;
 }) {
   const appDispatch = useAppDispatch();
-  const getBrightness = useAppDiceBrightnessGetter();
+  const store = useAppStore();
+
   const profile = useProfile(pairedDie.profileUuid);
 
   const pixel = useWatchedPixel(pairedDie);
@@ -95,7 +91,7 @@ export function PixelFocusViewHeader({
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const showConfirmReset = useConfirmActionSheet(
     "Reset Die Settings",
-    () => pixel && resetDieSettings(pixel, appDispatch)
+    () => pixel && resetDieSettings(pixel, pairedDie.profileUuid, appDispatch)
   );
   const showConfirmTurnOff = useConfirmActionSheet(
     "Turn Die Off",
@@ -180,7 +176,7 @@ export function PixelFocusViewHeader({
             pixel={pixel}
             onEndEditing={async (name) => {
               setRenameVisible(false);
-              renameDie(pixel, name, profile, getBrightness(), appDispatch);
+              renameDie(pixel, name, profile, store);
             }}
           />
         )
@@ -208,29 +204,6 @@ function RollingDie({
   );
 }
 
-function PixelProfile({ ...props }: Omit<ProfileCardProps, "row">) {
-  const { colors } = useTheme();
-  const description = FactoryProfile.isFactory(props.profile.uuid)
-    ? "Your die is configured with the factory Profile."
-    : undefined;
-  return (
-    <View>
-      <ProfileCard row description={description} {...props} />
-      <Text
-        variant="labelSmall"
-        style={{
-          position: "absolute",
-          right: 10,
-          bottom: 0,
-          color: colors.onSurfaceDisabled,
-        }}
-      >
-        Tap to switch Profile
-      </Text>
-    </View>
-  );
-}
-
 export function PixelFocusView({
   pairedDie,
   onPress,
@@ -246,85 +219,107 @@ export function PixelFocusView({
   onShowRollsHistory: () => void;
   onEditProfile: () => void;
 } & Omit<ViewProps, "children">) {
-  const appDispatch = useAppDispatch();
-  const getBrightness = useAppDiceBrightnessGetter();
+  const store = useAppStore();
 
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
+  const disabled = status !== "ready";
+
   const activeProfile = useActiveProfile(pairedDie);
   const transferring = useAppSelector(
     (state) => !!state.diceTransient.transfer
   );
   const [pickProfile, setPickProfile] = React.useState(false);
 
-  const showNewPixelsAppBanner = useAppSelector(
-    (state) => state.appSettings.showNewPixelsAppBanner
-  );
-  const wasBannerInitiallyVisible = React.useState(showNewPixelsAppBanner)[0];
-
-  const disabled = status !== "ready";
+  const { colors } = useTheme();
   return (
-    <>
-      <View {...props} style={[{ gap: 10 }, style]}>
-        {wasBannerInitiallyVisible && (
-          <NewPixelAppBanner
-            visible={showNewPixelsAppBanner}
-            collapsedMarginBottom={-10}
-            onHide={() => appDispatch(setShowNewPixelsAppBanner(false))}
-          />
-        )}
-        <Pressable
-          disabled={disabled}
-          sentry-label="header-bar-select"
-          style={{
-            width: "60%",
-            aspectRatio: 1,
-            alignSelf: "center",
-          }}
-          onPress={() => {
-            blinkDie(pixel);
-            onPress?.();
-          }}
-        >
-          <RollingDie pairedDie={pairedDie} disabled={disabled} />
-        </Pressable>
-        <View
-          style={{
-            flexDirection: "row",
-            width: "100%",
-            marginTop: 10,
-            gap: 10,
-          }}
-        >
-          <PixelRollsCard
-            pairedDie={pairedDie}
-            onPress={onShowRollsHistory}
-            sentry-label="show-rolls-history"
-            style={{ flex: 1, flexGrow: 1 }}
-          />
-          <PixelStatusCard
-            pairedDie={pairedDie}
-            onPress={onShowDetails}
-            sentry-label="show-details"
-            style={{ flex: 1, flexGrow: 1 }}
-          />
-        </View>
-        <Text variant="titleMedium">Active Profile</Text>
-        <PixelProfile
-          profile={activeProfile}
-          transferring={transferring}
-          onPress={() => pixel && setPickProfile(true)}
+    <SlideInView {...props} style={[{ gap: 10 }, style]}>
+      <Pressable
+        disabled={disabled}
+        sentry-label="header-bar-select"
+        style={{
+          width: "70%",
+          aspectRatio: 1,
+          alignSelf: "center",
+        }}
+        onPress={() => {
+          blinkDie(pixel);
+          onPress?.();
+        }}
+      >
+        <RollingDie pairedDie={pairedDie} disabled={disabled} />
+      </Pressable>
+      <View
+        style={{
+          flexDirection: "row",
+          width: "100%",
+          marginVertical: 10,
+          gap: 10,
+        }}
+      >
+        <PixelRollsCard
+          pairedDie={pairedDie}
+          onPress={onShowRollsHistory}
+          sentry-label="show-rolls-history"
+          style={{ flex: 1, flexGrow: 1 }}
         />
-        <Text variant="titleMedium">Available Dice</Text>
+        <PixelStatusCard
+          pairedDie={pairedDie}
+          onPress={onShowDetails}
+          sentry-label="show-details"
+          style={{ flex: 1, flexGrow: 1 }}
+        />
       </View>
+      <Text variant="titleMedium">Active Profile</Text>
+      <ProfileCard
+        row
+        profile={activeProfile}
+        transferring={transferring}
+        // onPress={() => pixel && setPickProfile(true)}
+      />
+      <View style={{ flexDirection: "row", justifyContent: "center", gap: 40 }}>
+        <TouchableRipple
+          style={{ alignItems: "center" }}
+          onPress={() => pixel && setPickProfile(true)}
+        >
+          <View style={{ alignItems: "center" }}>
+            <MaterialCommunityIcons
+              name="swap-horizontal-circle-outline"
+              size={32}
+              color={colors.onPrimary}
+            />
+            <Text variant="bodyMedium">Replace</Text>
+          </View>
+        </TouchableRipple>
+        <TouchableRipple onPress={onEditProfile}>
+          <View style={{ alignItems: "center" }}>
+            <MaterialCommunityIcons
+              name="circle-edit-outline"
+              size={32}
+              color={colors.onPrimary}
+            />
+            <Text variant="bodyMedium">Customize</Text>
+          </View>
+        </TouchableRipple>
+        <TouchableRipple onPress={() => {}}>
+          <View style={{ alignItems: "center" }}>
+            <MaterialCommunityIcons
+              name="export-variant"
+              size={32}
+              color={colors.onPrimary}
+            />
+            <Text variant="bodyMedium">Export</Text>
+          </View>
+        </TouchableRipple>
+      </View>
+      {/* Pick Profile Bottom Sheet */}
       {pixel && (
         <PickProfileBottomSheet
           pixel={pixel}
-          profile={activeProfile}
           onSelectProfile={(profile) => {
             if (!transferring) {
               setPickProfile(false);
-              programProfile(pixel, profile, getBrightness(), appDispatch);
+              programProfile(pixel, profile, store);
             } else {
               console.log(
                 "Skip programming profile because one is already in progress"
@@ -335,6 +330,6 @@ export function PixelFocusView({
           onDismiss={() => setPickProfile(false)}
         />
       )}
-    </>
+    </SlideInView>
   );
 }

@@ -6,9 +6,8 @@ import React from "react";
 import { View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Button, Text, TextInput } from "react-native-paper";
-import { useStore } from "react-redux";
 
-import { RootState } from "~/app/store";
+import { useAppStore } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TabsHeaders } from "~/components/TabsHeaders";
@@ -27,7 +26,7 @@ import {
 } from "~/hooks";
 import { CreateProfileScreenProps } from "~/navigation";
 
-const tabsNames = ["Templates", "Profiles"];
+const tabsNames = ["Builtin", "Custom"] as const;
 
 function DieTypesSelector({
   selected,
@@ -68,18 +67,20 @@ function CreateProfilePage({
   const { addProfile } = useEditProfilesList();
   const [dieType, setDieType] = React.useState<PixelDieType>("d20");
   const [profileName, setProfileName] = React.useState("");
-  const [tab, setTab] = React.useState(tabsNames[0]);
+  const [tab, setTab] = React.useState<(typeof tabsNames)[number]>(
+    tabsNames[0]
+  );
   const [selectedProfile, setSelectedProfile] =
     React.useState<Readonly<Profiles.Profile>>();
 
-  const store = useStore<RootState>();
+  const store = useAppStore();
   const templates = React.useMemo(
     () => createProfileTemplates(dieType, store.getState().library),
     [dieType, store]
   );
   const profiles = React.useMemo(
     () =>
-      (tab === "Templates" ? templates : allProfiles)
+      (tab === "Builtin" ? templates : allProfiles)
         .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
         .sort((a, b) => a.name.localeCompare(b.name)),
     [allProfiles, dieType, tab, templates]

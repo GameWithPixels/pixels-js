@@ -17,7 +17,7 @@ export function createAnimation(name: string): Profiles.Animation {
   });
 }
 
-const tabsNames = ["Templates", "Animations"];
+const tabsNames = ["Builtin", "Custom"] as const;
 
 function CreateAnimationPage({
   navigation,
@@ -39,7 +39,9 @@ function CreateAnimationPage({
     ],
     [animations]
   );
-  const [tab, setTab] = React.useState(tabsNames[0]);
+  const [tab, setTab] = React.useState<(typeof tabsNames)[number]>(
+    tabsNames[0]
+  );
   return (
     <View style={{ height: "100%", gap: 10 }}>
       <PageHeader

@@ -3,6 +3,7 @@ import React from "react";
 
 import { DiceListScreen } from "./DiceListScreen";
 import { DieDetailsScreen } from "./DieDetailsScreen";
+import { DieFocusScreen } from "./DieFocusScreen";
 import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
 import { RollsHistoryScreen } from "./RollsHistoryScreen";
@@ -28,6 +29,11 @@ export function HomeStack({ route }: HomeStackProps) {
             ...getStackNavigationOptions("bottom-sheet"),
             gestureEnabled: false,
           }}
+        />
+        <Stack.Screen
+          name="dieFocus"
+          component={DieFocusScreen}
+          options={getStackNavigationOptions("bottom-sheet")}
         />
         <Stack.Screen
           name="dieDetails"

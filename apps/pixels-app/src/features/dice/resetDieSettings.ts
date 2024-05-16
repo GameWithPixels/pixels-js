@@ -1,13 +1,19 @@
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
+import { createLibraryProfile } from "@systemic-games/pixels-edit-animation";
+import {
+  Pixel,
+  Serializable,
+} from "@systemic-games/react-native-pixels-connect";
 import { Alert } from "react-native";
 
-import { FactoryProfile } from "../profiles";
-import { updatePairedDieProfile } from "../store/pairedDiceSlice";
-import { unsigned32ToHex } from "../utils";
-
 import { AppDispatch } from "~/app/store";
+import { Library } from "~/features/store";
+import { unsigned32ToHex } from "~/features/utils";
 
-export function resetDieSettings(pixel: Pixel, appDispatch: AppDispatch): void {
+export function resetDieSettings(
+  pixel: Pixel,
+  profileUuid: string,
+  appDispatch: AppDispatch
+): void {
   const task = async () => {
     try {
       await pixel.sendMessage("clearSettings");
@@ -15,10 +21,11 @@ export function resetDieSettings(pixel: Pixel, appDispatch: AppDispatch): void {
       // @ts-ignore Calling private function
       pixel._updateName("Pixel" + unsigned32ToHex(pixel.pixelId));
       appDispatch(
-        updatePairedDieProfile({
-          pixelId: pixel.pixelId,
-          profileUuid: FactoryProfile.getUuid(pixel.dieType),
-        })
+        Library.Profiles.update(
+          Serializable.fromProfile(
+            createLibraryProfile("default", pixel.dieType, profileUuid)
+          )
+        )
       );
     } catch (e) {
       console.log(`Error renaming die: ${e}`);

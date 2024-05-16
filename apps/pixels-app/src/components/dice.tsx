@@ -104,6 +104,7 @@ export function DiceColumn({
       {onPressNewDie && (
         <AddDieButton
           sentry-label="new-die-from-column"
+          iconSize={miniCards ? 40 : undefined}
           contentStyle={{ aspectRatio: 1 }}
           onPress={onPressNewDie}
         />

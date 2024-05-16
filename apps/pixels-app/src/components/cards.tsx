@@ -163,7 +163,10 @@ export function PixelVCard({
       <VCardLabel pairedDie={pairedDie} pixel={pixel} miniCards={miniCards} />
       <FirmwareUpdateBadge
         pairedDie={pairedDie}
-        style={{ position: "absolute", right: 5, top: 5 }}
+        style={[
+          { position: "absolute", top: 5 },
+          miniCards ? { right: 5 } : { left: 5 },
+        ]}
       />
     </TouchableCard>
   );

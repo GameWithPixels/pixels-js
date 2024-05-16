@@ -71,6 +71,7 @@ export type EditAdvancedSettingsScreenProps = NativeStackScreenProps<
 export type HomeStackParamList = {
   diceList: undefined;
   firmwareUpdate: undefined;
+  dieFocus: { pixelId: number };
   dieDetails: { pixelId: number };
   rollsHistory: { pixelId: number };
   editDieProfileStack: NavigatorScreenParams<EditDieProfileStackParamList>;
@@ -84,6 +85,11 @@ export type DiceListScreenProps = NativeStackScreenProps<
 export type FirmwareUpdateScreenProps = NativeStackScreenProps<
   HomeStackParamList,
   "firmwareUpdate"
+>;
+
+export type DieFocusScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "dieFocus"
 >;
 
 export type DieDetailsScreenProps = NativeStackScreenProps<

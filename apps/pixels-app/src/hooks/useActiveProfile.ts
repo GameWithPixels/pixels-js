@@ -1,3 +1,4 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import {
   PixelInfo,
   Profiles,
@@ -6,7 +7,7 @@ import {
 import { useProfile } from "./useProfile";
 
 import { useAppSelector } from "~/app/hooks";
-import { FactoryProfile } from "~/features/profiles";
+import { unsigned32ToHex } from "~/features/utils";
 
 export function useActiveProfile(
   pixel: Pick<PixelInfo, "pixelId" | "dieType">
@@ -20,8 +21,9 @@ export function useActiveProfile(
   //   appDispatch(
   //     setPairedDieProfile({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
   //   );
-  const activeProfile = useProfile(
-    profileUuid ?? FactoryProfile.getUuid(pixel.dieType)
+  assert(
+    profileUuid?.length,
+    `No active profile found for pixel ${unsigned32ToHex(pixel.pixelId)}`
   );
-  return activeProfile;
+  return useProfile(profileUuid);
 }

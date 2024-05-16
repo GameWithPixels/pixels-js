@@ -4,6 +4,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ViewProps } from "react-native";
+import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 import Animated, {
   useAnimatedRef,
@@ -14,68 +15,95 @@ import {
   AnimatedProfileSearchbar,
   profileSearchbarMinHeight,
 } from "./AnimatedProfileSearchbar";
+import { TabsHeaders } from "./TabsHeaders";
 import { ProfilesList } from "./profile";
 
-import { getDieTypeLabel } from "~/features/profiles";
+import { useAppStore } from "~/app/hooks";
+import { createProfileTemplates, getDieTypeLabel } from "~/features/profiles";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 
+const tabsNames = ["Builtin", "Dice", "Library"] as const;
+
 export function ProfilePicker({
-  selected,
   dieType,
   onSelectProfile,
-  style,
   ...props
 }: {
-  selected?: Readonly<Profiles.Profile>;
-  dieType?: PixelDieType;
+  dieType: PixelDieType;
   onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
 } & ViewProps) {
-  const profiles = useProfilesList();
-  const aref = useAnimatedRef<Animated.ScrollView>();
-  const scrollHandler = useScrollViewOffset(aref);
-  const searchbarHeight = profileSearchbarMinHeight;
+  const allProfiles = useProfilesList();
+
+  const [tab, setTab] = React.useState<(typeof tabsNames)[number]>(
+    tabsNames[0]
+  );
+  const store = useAppStore();
+  const templates = React.useMemo(
+    () =>
+      createProfileTemplates(
+        dieType,
+        store.getState().library // TODO
+      ),
+    [dieType, store]
+  );
+  const profiles = React.useMemo(
+    () =>
+      (tab === "Builtin" ? templates : tab === "Dice" ? [] : allProfiles)
+        .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [allProfiles, dieType, tab, templates]
+  );
 
   const [filter, setFilter] = React.useState("");
   const filteredProfiles = useFilteredProfiles(profiles, filter, dieType);
 
+  const aref = useAnimatedRef<Animated.ScrollView>();
+  const scrollHandler = useScrollViewOffset(aref);
+  const searchbarHeight = profileSearchbarMinHeight;
+
   return (
-    <View style={[{ gap: 10 }, style]} {...props}>
-      <Animated.ScrollView
-        ref={aref}
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ paddingBottom: 10 }}
-        scrollEventThrottle={16}
-        contentOffset={{ x: 0, y: searchbarHeight }}
-        snapToOffsets={[0, searchbarHeight]}
-        snapToEnd={false}
-      >
-        {filteredProfiles.length ? (
-          <>
-            {/* <View style={{ height: searchbarHeight }}>
-              <AnimatedProfileSearchbar
-                filter={filter}
-                setFilter={setFilter}
-                positionY={scrollHandler}
-                headerHeight={searchbarHeight}
-              />
-            </View> */}
-            <ProfilesList
-              profiles={filteredProfiles}
-              selected={selected}
-              onSelectProfile={onSelectProfile}
-            />
-          </>
-        ) : (
-          <Text
-            variant="bodyLarge"
-            style={{ marginTop: 10, marginHorizontal: 10 }}
-          >
-            There is no existing profile
-            {dieType ? ` for ${getDieTypeLabel(dieType)}'s` : ""}, go in the
-            Profiles tab to create one.
-          </Text>
-        )}
-      </Animated.ScrollView>
-    </View>
+    <GHScrollView
+      ref={aref}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: 10, gap: 20 }}
+      scrollEventThrottle={16}
+      contentOffset={{ x: 0, y: searchbarHeight }}
+      snapToOffsets={[0, searchbarHeight]}
+      snapToEnd={false}
+      {...props}
+    >
+      <View style={{ height: searchbarHeight }}>
+        <AnimatedProfileSearchbar
+          filter={filter}
+          setFilter={setFilter}
+          positionY={scrollHandler}
+          headerHeight={searchbarHeight}
+        />
+      </View>
+      {/* <Text variant="titleMedium" style={{ marginTop: 10 }}>
+          Select a template or an existing Profile to activate on your die:
+        </Text> */}
+      <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
+      {filteredProfiles.length ? (
+        <ProfilesList
+          profiles={filteredProfiles}
+          onSelectProfile={onSelectProfile}
+        />
+      ) : (
+        <Text
+          variant="bodyLarge"
+          style={{ marginTop: 10, marginHorizontal: 10 }}
+        >
+          {tab === "Library"
+            ? "You do not have any saved profile" +
+              (dieType ? ` for ${getDieTypeLabel(dieType)}'s` : "") +
+              " in your library.\n" +
+              "To create one, export your die's profile or go to the Profiles tab."
+            : tab === "Dice"
+              ? `No other ${getDieTypeLabel(dieType)} die.`
+              : ""}
+        </Text>
+      )}
+    </GHScrollView>
   );
 }

@@ -40,7 +40,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import {
   getBluetoothScanErrorMessage,
   getNoAvailableDiceMessage,
@@ -60,6 +60,7 @@ import {
 } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
 import { DieWireframe } from "~/components/icons";
+import { pairDie } from "~/features/dice";
 import { getDieDfuAvailability } from "~/features/dice/getDieDfuAvailability";
 import {
   getDieTypeAndColorwayLabel,
@@ -68,7 +69,6 @@ import {
   getPixelStatusLabel,
 } from "~/features/profiles";
 import { setShowOnboarding } from "~/features/store/appSettingsSlice";
-import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import {
   useAppDfuFiles,
   useWatchedPixels,
@@ -761,6 +761,7 @@ function OnboardingPage({
 }: {
   navigation: OnboardingScreenProps["navigation"];
 }) {
+  const store = useAppStore();
   const appDispatch = useAppDispatch();
   const central = usePixelsCentral();
 
@@ -784,16 +785,7 @@ function OnboardingPage({
   const storeDiceAndScrollTo = (page: number) => {
     // Add all paired dice to the store
     for (const p of central.pixels) {
-      appDispatch(
-        addPairedDie({
-          systemId: p.systemId,
-          pixelId: p.pixelId,
-          name: p.name,
-          dieType: p.dieType,
-          colorway: p.colorway,
-          firmwareTimestamp: p.firmwareDate.getTime(),
-        })
-      );
+      pairDie(p, store);
     }
     // Don't show onboarding again
     appDispatch(setShowOnboarding(false));

@@ -4,22 +4,20 @@ import { Alert } from "react-native";
 import Toast from "react-native-root-toast";
 
 import { blinkDie } from "./blinkDie";
-import { unsigned32ToHex } from "../utils";
 
-import { AppDispatch } from "~/app/store";
+import { AppStore } from "~/app/store";
 import { applyProfileOverrides } from "~/features/profiles";
 import {
   clearProfileTransfer,
   setProfileTransfer,
 } from "~/features/store/diceTransientSlice";
-import { updatePairedDieProfile } from "~/features/store/pairedDiceSlice";
+import { unsigned32ToHex } from "~/features/utils";
 import { ToastSettings } from "~/themes";
 
 export function programProfile(
   pixel: Pixel,
   profile: Readonly<Profiles.Profile>,
-  brightnessFactor: number,
-  appDispatch: AppDispatch,
+  store: AppStore,
   opt?: { silent?: boolean }
 ): void {
   console.log(
@@ -58,6 +56,7 @@ export function programProfile(
     }
   }
 
+  const brightnessFactor = store.getState().appSettings.diceBrightnessFactor;
   console.log(
     ` - Brightness: ${brightnessFactor} * ${modified.brightness} = ${
       brightnessFactor * modified.brightness
@@ -65,13 +64,7 @@ export function programProfile(
   );
 
   // TODO update when getting confirmation from the die in AppPixelsCentral
-  appDispatch(
-    updatePairedDieProfile({
-      pixelId: pixel.pixelId,
-      profileUuid: profile.uuid,
-    })
-  );
-  appDispatch(
+  store.dispatch(
     setProfileTransfer({ pixelId: pixel.pixelId, profileUuid: profile.uuid })
   );
 
@@ -101,7 +94,7 @@ export function programProfile(
         [{ text: "OK" }]
       );
     } finally {
-      appDispatch(clearProfileTransfer());
+      store.dispatch(clearProfileTransfer());
     }
   };
   task();

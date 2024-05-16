@@ -5,15 +5,12 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { useStore } from "react-redux";
-import { Store } from "redux";
 
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { RootState } from "./store";
+import { useAppDispatch, useAppSelector, useAppStore } from "./hooks";
+import { AppStore } from "./store";
 
 import { PixelsCentral } from "~/features/dice/PixelsCentral";
 import {
-  FactoryProfile,
   getWebRequestPayload,
   playActionMakeWebRequest,
   playActionSpeakText,
@@ -33,16 +30,14 @@ import {
 function remoteActionListener(
   pixel: Pixel,
   actionId: number,
-  store: Store<RootState>
+  store: AppStore
 ): void {
   const state = store.getState();
   const profileUuid = state.pairedDice.paired.find(
     (d) => d.pixelId === pixel.pixelId
   )?.profileUuid;
   if (profileUuid) {
-    const profile =
-      FactoryProfile.getByUuid(profileUuid) ??
-      readProfile(profileUuid, state.library);
+    const profile = readProfile(profileUuid, state.library);
     const action = profile.getRemoteAction(actionId);
     if (action) {
       console.log(
@@ -84,7 +79,7 @@ function ConnectToMissingPixels({ children }: React.PropsWithChildren) {
 export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   const appDispatch = useAppDispatch();
   const central = React.useMemo(() => new PixelsCentral(), []);
-  const store = useStore<RootState>();
+  const store = useAppStore();
 
   // Setup event handlers
   React.useEffect(() => {

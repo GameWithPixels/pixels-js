@@ -718,7 +718,11 @@ export function SelectionButton({
 
 export const AnimatedSelectionButton = withAnimated(SelectionButton);
 
-export function AddDieButton({ contentStyle, ...props }: TouchableCardProps) {
+export function AddDieButton({
+  iconSize = 60,
+  contentStyle,
+  ...props
+}: { iconSize?: number } & TouchableCardProps) {
   const { colors } = useTheme();
   return (
     <TouchableCard
@@ -731,7 +735,7 @@ export function AddDieButton({ contentStyle, ...props }: TouchableCardProps) {
       ]}
       {...props}
     >
-      <PairIcon size={40} color={colors.onSurfaceVariant} />
+      <PairIcon size={iconSize} color={colors.onSurfaceVariant} />
     </TouchableCard>
   );
 }

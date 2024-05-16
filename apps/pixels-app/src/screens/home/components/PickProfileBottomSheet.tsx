@@ -1,5 +1,8 @@
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelInfo,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
@@ -12,15 +15,13 @@ import { getBottomSheetProps } from "~/themes";
 
 export function PickProfileBottomSheet({
   pixel,
-  profile,
-  onSelectProfile,
   visible,
+  onSelectProfile,
   onDismiss,
 }: {
-  pixel: Pixel;
-  profile?: Readonly<Profiles.Profile>;
-  onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
+  pixel: PixelInfo;
   visible: boolean;
+  onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
   onDismiss: () => void;
 }) {
   const profileUuid = useAppSelector(
@@ -61,7 +62,6 @@ export function PickProfileBottomSheet({
             </Text>
           ) : (
             <ProfilePicker
-              selected={profile}
               dieType={pixel.dieType}
               onSelectProfile={onSelectProfile}
               style={{

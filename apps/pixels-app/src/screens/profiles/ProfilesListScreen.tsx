@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
+import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Divider, IconButton, Menu, Text, useTheme } from "react-native-paper";
 import Animated, {
   useAnimatedRef,
@@ -10,11 +11,7 @@ import Animated, {
 
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
-import {
-  useAppDiceBrightnessGetter,
-  useAppDispatch,
-  useAppSelector,
-} from "~/app/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import {
   AnimatedProfileSearchbar,
   profileSearchbarMinHeight,
@@ -159,8 +156,7 @@ function ProfilesListPage({
 }: {
   navigation: ProfilesListScreenProps["navigation"];
 }) {
-  const appDispatch = useAppDispatch();
-  const getBrightness = useAppDiceBrightnessGetter();
+  const store = useAppStore();
 
   const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
@@ -204,7 +200,7 @@ function ProfilesListPage({
 
   return (
     <>
-      <Animated.ScrollView
+      <GHScrollView
         ref={aref}
         style={{ height: "100%" }}
         contentContainerStyle={{
@@ -246,7 +242,7 @@ function ProfilesListPage({
             sortMode={sortMode}
           />
         )}
-      </Animated.ScrollView>
+      </GHScrollView>
       <PageHeader
         viewMode={viewMode}
         onSelectViewMode={(vm) => setViewMode(vm)}
@@ -264,12 +260,7 @@ function ProfilesListPage({
         visible={!!profileToActivate}
         onDismiss={(pixel) => {
           if (pixel && profileToActivate) {
-            programProfile(
-              pixel,
-              profileToActivate,
-              getBrightness(),
-              appDispatch
-            );
+            programProfile(pixel, profileToActivate, store);
           }
           setProfileToActivate(undefined);
         }}

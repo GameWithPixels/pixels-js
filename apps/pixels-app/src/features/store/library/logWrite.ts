@@ -10,7 +10,7 @@ export function logWrite(
     | "gradient"
     | "audioClip",
   uuid: string,
-  message?: string
+  message?: unknown
 ) {
   logWriteUntyped(`${action} ${type}: ${uuid} ${message ?? ""}`);
 }
