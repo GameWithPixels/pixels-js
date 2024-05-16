@@ -5,6 +5,7 @@ module.exports = {
     "universe/shared/typescript-analysis",
   ],
   ignorePatterns: [
+    "/docs/",
     "/apps/*/android/",
     "/apps/*/dist/",
     "/apps/*/ios/",
