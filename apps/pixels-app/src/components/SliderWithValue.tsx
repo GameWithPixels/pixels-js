@@ -17,85 +17,6 @@ import {
   useTheme,
 } from "react-native-paper";
 
-type SliderWrapperProps = SliderProps & {
-  scaleIOS: number;
-  scaleAndroid: number;
-  height: number;
-};
-
-function SliderWrapper({ style, ...props }: SliderWrapperProps) {
-  const { scaleIOS, scaleAndroid, height } = props;
-  const scale = Platform.OS === "ios" ? scaleIOS : scaleAndroid;
-  return (
-    <View style={{ width: "100%", height }}>
-      <View
-        style={{
-          height,
-          marginHorizontal: Platform.OS === "android" ? -15 : 0, // TODO negative margin to account for the scaling
-          transform: [{ scaleX: scale }, { scaleY: scale }],
-        }}
-      >
-        <Slider
-          style={[
-            {
-              flex: 1,
-              height,
-              width: `${
-                100 * (1 / (Platform.OS === "ios" ? scaleIOS : scaleAndroid))
-              }%`,
-              alignSelf: "center",
-            },
-            style,
-          ]}
-          {...props}
-        />
-      </View>
-    </View>
-  );
-}
-
-export function SliderWithTitle({
-  title,
-  unit,
-  fractionDigits,
-  ...props
-}: { title?: string; unit?: string; fractionDigits?: number } & SliderProps) {
-  const { colors } = useTheme();
-  return (
-    <>
-      {title && (
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text>{title}</Text>
-          <Text>
-            {(props.value ?? 0).toFixed(fractionDigits) + (unit ?? "")}
-          </Text>
-        </View>
-      )}
-      <SliderWrapper
-        scaleIOS={1}
-        scaleAndroid={1.4}
-        height={Platform.OS === "ios" ? 30 : 20}
-        minimumTrackTintColor={colors.primary}
-        maximumTrackTintColor={colors.onSurfaceDisabled}
-        thumbTintColor={colors.onSurface}
-        {...props}
-      />
-    </>
-  );
-}
-
-export interface SliderWithValueProps extends SliderProps {
-  unit?: string;
-  fractionDigits?: number;
-  percentage?: boolean;
-}
-
 // https://stackoverflow.com/a/19722641
 function round(value: number, places: number): number {
   return Number(Math.round(Number(value + "e+" + places)) + "e-" + places);
@@ -140,10 +61,56 @@ function boundsString(
         : "";
 }
 
+type SliderWrapperProps = SliderProps & {
+  scaleIOS: number;
+  scaleAndroid: number;
+  height: number;
+};
+
+// Slider with bigger thumb for easier touch
+function SliderWrapper({ style, ...props }: SliderWrapperProps) {
+  const { scaleIOS, scaleAndroid, height } = props;
+  const scale = Platform.OS === "ios" ? scaleIOS : scaleAndroid;
+  return (
+    <View style={{ width: "100%", height }}>
+      <View
+        style={{
+          height,
+          marginHorizontal: Platform.OS === "android" ? -15 : 0, // TODO negative margin to account for the scaling
+          transform: [{ scaleX: scale }, { scaleY: scale }],
+        }}
+      >
+        <Slider
+          style={[
+            {
+              flex: 1,
+              height,
+              width: `${
+                100 * (1 / (Platform.OS === "ios" ? scaleIOS : scaleAndroid))
+              }%`,
+              alignSelf: "center",
+            },
+            style,
+          ]}
+          {...props}
+        />
+      </View>
+    </View>
+  );
+}
+
+export interface SliderWithValueProps extends SliderProps {
+  unit?: string;
+  fractionDigits?: number;
+  percentage?: boolean;
+  onEndEditing?: (value: number) => void;
+}
+
 export function SliderWithValue({
   unit,
   fractionDigits: fDigits,
   percentage,
+  onEndEditing,
   ...props
 }: SliderWithValueProps) {
   const min = props.minimumValue ?? (percentage ? 0 : undefined);
@@ -160,6 +127,7 @@ export function SliderWithValue({
   const validateInput = () => {
     const v = stringToValue(inputValue, percentage, min, max);
     props.onValueChange?.(v);
+    onEndEditing?.(v);
     setShowDialog(false);
   };
   const { colors, roundness } = useTheme();
@@ -175,9 +143,17 @@ export function SliderWithValue({
           maximumTrackTintColor={colors.onSurfaceDisabled}
           thumbTintColor={colors.onSurface}
           {...props}
+          onValueChange={(v) => {
+            props.onValueChange?.(v);
+            setInputValue(valueToString(v, fDigits, percentage));
+          }}
+          onSlidingComplete={(v) => {
+            props.onSlidingComplete?.(v);
+            onEndEditing?.(v);
+          }}
         />
       </View>
-      <View
+      <TouchableRipple
         style={{
           width: Math.max(2, fDigits ?? 0) * 20,
           paddingVertical: 8,
@@ -186,23 +162,22 @@ export function SliderWithValue({
           borderColor: colors.onSurface,
           borderRadius,
         }}
+        onPress={() => {
+          setShowDialog(true);
+          // Schedule the focus to the next frame otherwise it won't work
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }}
       >
-        <TouchableRipple
-          onPress={() => {
-            setShowDialog(true);
-            // Schedule the focus to the next frame otherwise it won't work
-            setTimeout(() => inputRef.current?.focus(), 0);
+        <Text>{inputValue + (percentage ? "%" : unit ?? "")}</Text>
+      </TouchableRipple>
+      <Portal>
+        <Dialog
+          visible={showDialog}
+          onDismiss={() => {
+            validateInput();
+            setShowDialog(false);
           }}
         >
-          <Text>
-            {percentage
-              ? ((props.value ?? 0) * 100).toFixed() + "%"
-              : (props.value ?? 0).toFixed(fDigits) + (unit ?? "")}
-          </Text>
-        </TouchableRipple>
-      </View>
-      <Portal>
-        <Dialog visible={showDialog}>
           <Dialog.Content style={{ gap: 10 }}>
             <Text variant="bodyMedium">
               Enter a Value

@@ -1,12 +1,11 @@
-import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
-import { AppState, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Divider, Text as PaperText, TextProps } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { SliderWithValue } from "~/components/SliderWithTitle";
+import { SliderWithValue } from "~/components/SliderWithValue";
 import { OutlineButton } from "~/components/buttons";
 import { Library } from "~/features/store";
 import {
@@ -36,32 +35,9 @@ function AppSettingsPage({
   const central = usePixelsCentral();
   const appDispatch = useAppDispatch();
 
-  const settingsBrightness = useAppSelector(
+  const brightness = useAppSelector(
     (state) => state.appSettings.diceBrightnessFactor
   );
-  const [brightness, setBrightness] = React.useState(settingsBrightness);
-  const brightnessValue = React.useRef(brightness);
-  React.useEffect(() => {
-    // Reload brightness from redux store
-    setBrightness(settingsBrightness);
-    brightnessValue.current = settingsBrightness;
-  }, [settingsBrightness]);
-  useFocusEffect(
-    React.useCallback(() => {
-      const subs = AppState.addEventListener("change", (state) => {
-        if (state !== "active") {
-          // Store brightness on app leaving foreground
-          appDispatch(setDiceBrightnessFactor(brightnessValue.current));
-        }
-      });
-      return () => {
-        // Store brightness on unmount / blur
-        appDispatch(setDiceBrightnessFactor(brightnessValue.current));
-        subs.remove();
-      };
-    }, [appDispatch])
-  );
-
   const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
     central.stopScan();
     appDispatch(resetAppSettings());
@@ -86,12 +62,9 @@ function AppSettingsPage({
           <Text>Global Dice Brightness</Text>
           <TextSmall>(Applied on top of Profile's brightness)</TextSmall>
           <SliderWithValue
-            value={brightness}
             percentage
-            onValueChange={(v) => {
-              setBrightness(v);
-              brightnessValue.current = v;
-            }}
+            value={brightness}
+            onEndEditing={(v) => appDispatch(setDiceBrightnessFactor(v))}
           />
         </View>
         <Divider style={{ marginVertical: 10 }} />

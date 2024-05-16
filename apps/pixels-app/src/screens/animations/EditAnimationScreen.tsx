@@ -15,7 +15,7 @@ import {
 import { AppBackground } from "~/components/AppBackground";
 import { AnimationDieRenderer } from "~/components/DieRenderer";
 import { PageHeader } from "~/components/PageHeader";
-import { SliderWithTitle } from "~/components/SliderWithTitle";
+import { SliderWithValue } from "~/components/SliderWithValue";
 import {
   ButtonWithCarets,
   GradientButton,
@@ -101,15 +101,15 @@ function EditAnimationPage({
           </GradientButton>
           <Text>Animation Name</Text>
           <EditAnimationName animation={animation} colors={colors} />
-          <SliderWithTitle
-            title="Duration"
+          <Text>Duration</Text>
+          <SliderWithValue
             unit="s"
             fractionDigits={1}
             value={duration}
             minimumValue={1}
             maximumValue={15}
             step={0.1}
-            onValueChange={setDuration}
+            onEndEditing={setDuration}
           />
           <Text>Apply to Faces</Text>
           <ButtonWithCarets onLeftPress={() => {}} onRightPress={() => {}}>

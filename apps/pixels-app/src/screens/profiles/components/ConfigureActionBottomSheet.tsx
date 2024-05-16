@@ -36,7 +36,7 @@ import { PickColorBottomSheet } from "~/components/PickColorBottomSheet";
 import {
   SliderWithValue,
   SliderWithValueProps,
-} from "~/components/SliderWithTitle";
+} from "~/components/SliderWithValue";
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import {
@@ -185,12 +185,11 @@ const ConfigureRollingCondition = observer(function ConfigureRollingCondition({
       <SliderWithValue
         unit="s"
         fractionDigits={1}
-        value={condition.recheckAfter}
         minimumValue={0.1}
         maximumValue={60}
         step={0.1}
-        sentry-label="change-rolling-recheck-after"
-        onValueChange={(v) => runInAction(() => (condition.recheckAfter = v))}
+        value={condition.recheckAfter}
+        onEndEditing={(v) => runInAction(() => (condition.recheckAfter = v))}
       />
     </>
   );
@@ -206,12 +205,11 @@ const ConfigureIdleCondition = observer(function ConfigureIdleCondition({
       <Text variant="titleMedium">Period</Text>
       <SliderWithValue
         unit="s"
-        value={condition.period}
         minimumValue={0.5}
         maximumValue={30}
         step={0.1}
-        sentry-label="change-idle-period"
-        onValueChange={(v) => runInAction(() => (condition.period = v))}
+        value={condition.period}
+        onEndEditing={(v) => runInAction(() => (condition.period = v))}
       />
     </>
   );
@@ -227,12 +225,11 @@ const ConfigureBatteryCondition = observer(function ConfigureBatteryCondition({
       <Text variant="titleMedium">Recheck After</Text>
       <SliderWithValue
         unit="s"
-        value={condition.recheckAfter}
         minimumValue={5}
         maximumValue={60}
         step={1}
-        sentry-label="change-battery-recheck-after"
-        onValueChange={(v) => runInAction(() => (condition.recheckAfter = v))}
+        value={condition.recheckAfter}
+        onEndEditing={(v) => runInAction(() => (condition.recheckAfter = v))}
       />
     </>
   );
@@ -355,17 +352,15 @@ const PlayAnimationSlider = observer(function Slider({
   title,
   value,
   isDefault,
-  onValueChange,
   onReset,
+  onValueChange,
   ...props
 }: {
   title: string;
   value: number;
   isDefault: boolean;
-  onValueChange: (value: number) => void;
   onReset: () => void;
-} & Omit<SliderWithValueProps, "value" | "onValueChange">) {
-  const sentryLabel = title.toLowerCase().replace(" ", "-");
+} & Omit<SliderWithValueProps, "onEndEditing">) {
   const { colors } = useTheme();
   return (
     <View>
@@ -375,7 +370,6 @@ const PlayAnimationSlider = observer(function Slider({
       >
         <TouchableRipple
           disabled={isDefault}
-          sentry-label={"reset-animation-" + sentryLabel}
           style={{ padding: 10, paddingRight: 20, zIndex: 10 }} // Render on top of scaled slider
           onPress={() => runInAction(onReset)}
         >
@@ -388,8 +382,7 @@ const PlayAnimationSlider = observer(function Slider({
         <View style={{ flexGrow: 1 }}>
           <SliderWithValue
             value={value}
-            sentry-label={"edit-animation-" + sentryLabel}
-            onValueChange={(v) => runInAction(() => onValueChange(v))}
+            onEndEditing={(v) => runInAction(() => onValueChange?.(v))}
             {...props}
           />
         </View>
@@ -590,12 +583,12 @@ const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
       </GradientButton>
       <Text variant="titleMedium">Volume</Text>
       <SliderWithValue
-        value={action.volume}
         minimumValue={0}
         maximumValue={1}
         step={0.01}
         percentage
-        onValueChange={(v) => runInAction(() => (action.volume = v))}
+        value={action.volume}
+        onEndEditing={(v) => runInAction(() => (action.volume = v))}
       />
     </>
   );
@@ -616,23 +609,21 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
       />
       <Text variant="titleMedium">Voice Pitch</Text>
       <SliderWithValue
-        value={action.pitch}
         minimumValue={0}
         maximumValue={2}
         step={0.01}
         percentage
-        sentry-label="change-volume"
-        onValueChange={(v) => runInAction(() => (action.pitch = v))}
+        value={action.pitch}
+        onEndEditing={(v) => runInAction(() => (action.pitch = v))}
       />
       <Text variant="titleMedium">Voice Rate</Text>
       <SliderWithValue
-        value={action.rate}
         minimumValue={0}
         maximumValue={2}
         step={0.01}
         percentage
-        sentry-label="change-volume"
-        onValueChange={(v) => runInAction(() => (action.rate = v))}
+        value={action.rate}
+        onEndEditing={(v) => runInAction(() => (action.rate = v))}
       />
       <Text style={{ color: colors.onSurfaceDisabled, marginVertical: 5 }}>
         {Platform.OS === "android"

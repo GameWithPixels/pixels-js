@@ -18,7 +18,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ProfileDieRenderer } from "~/components/DieRenderer";
 import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
 import { SlideInView } from "~/components/SlideInView";
-import { SliderWithValue } from "~/components/SliderWithTitle";
+import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
 import {
@@ -73,9 +73,9 @@ const BrightnessSlider = observer(function BrightnessSlider({
 }) {
   return (
     <SliderWithValue
-      value={profile.brightness}
       percentage
-      onValueChange={(v) => runInAction(() => (profile.brightness = v))}
+      value={profile.brightness}
+      onEndEditing={(v) => runInAction(() => (profile.brightness = v))}
     />
   );
 });
