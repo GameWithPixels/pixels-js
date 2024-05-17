@@ -128,7 +128,7 @@ export class PixelWaitForMessageDisconnectError extends PixelError {
  * is incompatible with the current firmware running on the die.
  * @category Pixels
  */
-export class PixelIncompatibleMessageError extends PixelConnectError {
+export class PixelIncompatibleMessageError extends PixelError {
   constructor(
     pixel: Pixel,
     name: string,
@@ -152,9 +152,67 @@ export class PixelIncompatibleMessageError extends PixelConnectError {
  * Thrown by {@link Pixel.rename} method when an empty name is passed.
  * @category Pixels
  */
-export class PixelEmptyNameError extends PixelConnectError {
+export class PixelEmptyNameError extends PixelError {
   constructor(pixel: Pixel) {
     super(pixel, "New Pixel name must have at least one character");
     this.name = "PixelEmptyNameError";
+  }
+}
+
+/**
+ * Base class for errors thrown by {@link Pixel} data transfer instance methods.
+ * @category Pixels
+ */
+export class PixelTransferError extends PixelError {
+  constructor(pixel: Pixel, message: string, cause?: Error) {
+    super(pixel, message, cause);
+    this.name = "PixelTransferError";
+  }
+}
+
+/**
+ * Thrown by {@link Pixel} data transfer instance methods.
+ * @category Pixels
+ */
+export class PixelTransferInProgressError extends PixelTransferError {
+  constructor(pixel: Pixel) {
+    super(pixel, "A data transfer is already in progress");
+    this.name = "PixelTransferInProgressError";
+  }
+}
+
+/**
+ * Thrown by {@link Pixel} data transfer instance methods.
+ * @category Pixels
+ */
+export class PixelTransferInvalidDataError extends PixelTransferError {
+  constructor(pixel: Pixel) {
+    super(pixel, "Invalid data to transfer");
+    this.name = "PixelTransferInvalidDataError";
+  }
+}
+
+/**
+ * Thrown by {@link Pixel} data transfer instance methods.
+ * @category Pixels
+ */
+export class PixelTransferCompletedTimeoutError extends PixelTransferError {
+  constructor(pixel: Pixel, ackType: MessageType) {
+    super(
+      pixel,
+      `Timeout waiting on device to confirm completed data transfer with ${ackType} message`
+    );
+    this.name = "PixelTransferAckTimeoutError";
+  }
+}
+
+/**
+ * Thrown by {@link Pixel} data transfer instance methods.
+ * @category Pixels
+ */
+export class PixelTransferOutOfMemoryError extends PixelTransferError {
+  constructor(pixel: Pixel, dataSize: number) {
+    super(pixel, `Not enough memory on die to store ${dataSize} bytes`);
+    this.name = "PixelTransferOutOfMemoryError";
   }
 }

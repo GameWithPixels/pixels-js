@@ -47,7 +47,6 @@ export function DieStatus({
   const [battery] = usePixelValue(pixel, "battery");
   const [rollState] = usePixelValue(pixel, "rollState");
   const transferProgress = usePixelDataTransfer(pixel);
-  const transferring = transferProgress >= 0 && transferProgress < 100;
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>General</SectionTitle>
@@ -65,7 +64,7 @@ export function DieStatus({
             <Text>Face Up: {rollState?.face ?? ""}</Text>
             <Text>
               Activating Profile:{" "}
-              {transferring ? `${transferProgress}%` : "done"}
+              {transferProgress >= 0 ? `${transferProgress}%` : "done"}
             </Text>
           </>
         )}

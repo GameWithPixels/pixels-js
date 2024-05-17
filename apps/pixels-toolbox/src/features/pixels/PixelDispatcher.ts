@@ -27,6 +27,7 @@ import {
   PixelColorwayValues,
   PixelDieType,
   PixelDieTypeValues,
+  PixelEventMap,
   PixelInfo,
   PixelInfoNotifier,
   PixelRollState,
@@ -617,15 +618,24 @@ class PixelDispatcher
     await this._pixel.disconnect();
   }
 
-  private async _playAnimation(anim: EditAnimation): Promise<void> {
-    this._evEmitter.emit("profileUploadProgress", 0);
-    const editDataSet = createDataSetForAnimation(anim);
-    try {
-      await this._pixel.playTestAnimation(editDataSet.toDataSet(), (p) =>
-        this._evEmitter.emit("profileUploadProgress", p)
-      );
-    } finally {
+  private async _onUploadProgress(ev: PixelEventMap["dataTransfer"]) {
+    if (ev.type === "preparing" || ev.type === "starting") {
+      this._evEmitter.emit("profileUploadProgress", 0);
+    } else if (ev.type === "progress") {
+      this._evEmitter.emit("profileUploadProgress", ev.progress);
+    } else if (ev.type === "completed" || ev.type === "failed") {
       this._evEmitter.emit("profileUploadProgress", undefined);
+    }
+  }
+
+  private async _playAnimation(anim: EditAnimation): Promise<void> {
+    const dataSet = createDataSetForAnimation(anim).toDataSet();
+    const onProgress = this._onUploadProgress.bind(this);
+    try {
+      this._pixel.addEventListener("dataTransfer", onProgress);
+      await this._pixel.playTestAnimation(dataSet);
+    } finally {
+      this._pixel.removeEventListener("dataTransfer", onProgress);
     }
   }
 
@@ -638,18 +648,16 @@ class PixelDispatcher
   }
 
   private async _uploadProfile(type: PrebuildProfileName): Promise<void> {
-    const notifyProgress = (p?: number) => {
-      this._evEmitter.emit("profileUploadProgress", p);
-    };
+    const profile = createLibraryProfile(type, this.dieType);
+    const dataSet = createDataSetForProfile(profile).toDataSet();
+    const onProgress = this._onUploadProgress.bind(this);
     try {
       this._isUpdatingProfile = true;
-      notifyProgress(0);
-      const profile = createLibraryProfile(type, this.dieType);
-      const dataSet = createDataSetForProfile(profile).toDataSet();
-      await this._pixel.transferDataSet(dataSet, notifyProgress);
+      this._pixel.addEventListener("dataTransfer", onProgress);
+      await this._pixel.transferDataSet(dataSet);
     } finally {
       this._isUpdatingProfile = false;
-      notifyProgress(undefined);
+      this._pixel.removeEventListener("dataTransfer", onProgress);
     }
   }
 

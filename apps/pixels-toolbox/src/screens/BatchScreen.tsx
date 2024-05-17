@@ -103,9 +103,14 @@ async function testAnimation(pixel: Pixel): Promise<void> {
     pattern,
   });
   const dataSet = createDataSetForAnimation(anim).toDataSet();
-  await pixel.playTestAnimation(dataSet, (progress) =>
-    console.log(`Animation upload progress: ${progress}%`)
-  );
+  const onProgress = (ev: unknown) =>
+    console.log(`Animation transfer: ${JSON.stringify(ev)}`);
+  try {
+    pixel.addEventListener("dataTransfer", onProgress);
+    await pixel.playTestAnimation(dataSet);
+  } finally {
+    pixel.removeEventListener("dataTransfer", onProgress);
+  }
 }
 
 function BatchPage() {

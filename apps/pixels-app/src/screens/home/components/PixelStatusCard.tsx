@@ -98,7 +98,7 @@ function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
   const [battery] = usePixelValue(pixel, "battery");
   const needCharging = (battery?.level ?? 100) < 10;
   const transferProgress = usePixelDataTransfer(pixel);
-  const transferring = transferProgress >= 0 && transferProgress < 100;
+  const transferring = transferProgress >= 0;
   const { colors } = useTheme();
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>

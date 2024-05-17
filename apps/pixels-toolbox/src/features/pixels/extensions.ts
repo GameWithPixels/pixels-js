@@ -11,6 +11,7 @@ import {
   PixelBatteryControllerModeValues,
   PixelColorwayValues,
   PixelDieTypeValues,
+  PixelEventMap,
   PlayProfileAnimation,
   SetBatteryControllerMode,
   StoreValue,
@@ -82,21 +83,26 @@ export async function pixelTransferTest(
   size: number,
   sendBytesCallback?: (bytesCount: number) => void
 ): Promise<void> {
-  // Notify that we're starting
-  //sendBytesCallback?.(0);
+  const onTransfer = (ev: PixelEventMap["dataTransfer"]) => {
+    if (ev.type === "progress") {
+      sendBytesCallback?.(ev.bytesTransferred);
+    }
+  };
 
-  const transferMsg = safeAssign(new TransferTest(), {
-    size,
-  });
+  const transferMsg = safeAssign(new TransferTest(), { size });
   await pixel.sendAndWaitForResponse(transferMsg, "transferTestAck");
 
   const data = Array(size).fill(0);
-  await pixel.uploadBulkDataWithAck(
-    "transferTestFinished",
-    new Uint8Array(data),
-    sendBytesCallback,
-    "bytes"
-  );
+  try {
+    pixel.addEventListener("dataTransfer", onTransfer);
+    //@ts-expect-error Private function
+    await pixel._uploadBulkDataWithAck(
+      "transferTestFinished",
+      new Uint8Array(data)
+    );
+  } finally {
+    pixel.removeEventListener("dataTransfer", onTransfer);
+  }
 }
 
 /**

@@ -15,6 +15,7 @@ import {
   PixelBatteryControllerStateValues,
   DiceUtils,
   PixelDieType,
+  PixelEventMap,
 } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 
@@ -414,14 +415,21 @@ export const ValidationTests = {
     progressCallback?: (progress: number) => void
     // TODO abortSignal: AbortSignal
   ): Promise<void> {
-    // Reset progress
-    progressCallback?.(-1);
+    const onProgress = (ev: PixelEventMap["dataTransfer"]) => {
+      if (ev.type === "preparing" || ev.type === "starting") {
+        progressCallback?.(-1);
+      } else if (ev.type === "progress") {
+        progressCallback?.(ev.progress);
+      } else if (ev.type === "completed" || ev.type === "failed") {
+        progressCallback?.(-1);
+      }
+    };
     // Upload profile
     try {
-      await pixel.transferDataSet(profile, progressCallback);
+      pixel.addEventListener("dataTransfer", onProgress);
+      await pixel.transferDataSet(profile);
     } finally {
-      // Reset progress
-      progressCallback?.(-1);
+      pixel.removeEventListener("dataTransfer", onProgress);
     }
   },
 
