@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   BaseBox,
   BaseHStack,
@@ -25,7 +26,7 @@ import { useUpdateFirmware } from "~/hooks/useUpdateFirmware";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
 function formatAddress(address: number): string {
-  return address.toString(16).toUpperCase().padStart(8, "0");
+  return unsigned32ToHex(address).toUpperCase();
 }
 
 function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {

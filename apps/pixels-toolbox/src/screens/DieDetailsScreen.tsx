@@ -1,3 +1,4 @@
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import React from "react";
 import { useErrorBoundary } from "react-error-boundary";
 
@@ -14,9 +15,7 @@ export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {
   React.useEffect(() => {
     if (!pixelDispatcher) {
       showBoundary(
-        new Error(
-          `Unknown given Pixel Id: ${pixelId.toString(16).padStart(8, "0")}`
-        )
+        new Error(`Unknown given Pixel Id: ${unsigned32ToHex(pixelId)}`)
       );
     }
   }, [pixelDispatcher, pixelId, showBoundary]);

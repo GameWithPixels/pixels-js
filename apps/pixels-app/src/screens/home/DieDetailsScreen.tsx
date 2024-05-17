@@ -1,3 +1,4 @@
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   Profiles,
@@ -20,7 +21,6 @@ import {
   getDieTypeLabel,
   getRollStateLabel,
 } from "~/features/profiles";
-import { unsigned32ToHex } from "~/features/utils";
 import {
   useActiveProfile,
   useHasFirmwareUpdate,

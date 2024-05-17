@@ -1,6 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
-import { getValueKeyName, range } from "@systemic-games/pixels-core-utils";
+import {
+  getValueKeyName,
+  range,
+  unsigned32ToHex,
+} from "@systemic-games/pixels-core-utils";
 import {
   EditAnimationKeyframed,
   PrebuildAnimations,
@@ -114,7 +118,7 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
   return (
     <>
       <TextEntry title={t("pixelId")}>
-        {pixel.pixelId.toString(16).padStart(8, "0")}
+        {unsigned32ToHex(pixel.pixelId)}
         {t("commaSeparator")}
       </TextEntry>
       <TextEntry title={t("descriptionShort")}>

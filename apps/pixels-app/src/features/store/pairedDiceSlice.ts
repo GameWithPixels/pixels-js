@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 
 import { logWrite } from "./logWrite";
 
 import { PairedDie } from "~/app/PairedDie";
-import { logError, unsigned32ToHex } from "~/features/utils";
+import { logError } from "~/features/utils";
 
 export interface PairedDiceState {
   paired: PairedDie[];

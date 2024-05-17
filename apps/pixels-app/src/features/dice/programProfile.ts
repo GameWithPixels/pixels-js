@@ -1,3 +1,4 @@
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
 import { Alert } from "react-native";
@@ -11,7 +12,6 @@ import {
   clearProfileTransfer,
   setProfileTransfer,
 } from "~/features/store/diceTransientSlice";
-import { unsigned32ToHex } from "~/features/utils";
 import { ToastSettings } from "~/themes";
 
 export function programProfile(

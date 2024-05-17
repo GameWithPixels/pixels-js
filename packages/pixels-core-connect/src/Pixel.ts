@@ -18,6 +18,7 @@ import {
   getValueKeyName,
   Mutable,
   safeAssign,
+  unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
@@ -993,14 +994,10 @@ export class Pixel extends PixelInfoNotifier {
           "Incorrect computation of computeDataSetByteSize()"
         );
         const hash = DataSet.computeHash(data);
-        const hashStr = (hash >>> 0)
-          .toString(16)
-          .toUpperCase()
-          .padStart(8, "0");
         this._log(
           "Ready to receive dataset, " +
             `byte array should be ${data.length} bytes ` +
-            `and hash 0x${hashStr}`
+            `and hash 0x${unsigned32ToHex(hash)}`
         );
 
         await this.uploadBulkDataWithAck(
@@ -1065,23 +1062,17 @@ export class Pixel extends PixelInfoNotifier {
 
     switch (ack.ackType) {
       case TransferInstantAnimationsSetAckTypeValues.download:
-        {
-          // Upload data
-          const hashStr = (hash >>> 0)
-            .toString(16)
-            .toUpperCase()
-            .padStart(8, "0");
-          this._log(
-            "Ready to receive test dataset, " +
-              `byte array should be: ${data.length} bytes ` +
-              `and hash 0x${hashStr}`
-          );
-          await this.uploadBulkDataWithAck(
-            "transferTestAnimationSetFinished",
-            data,
-            progressCallback
-          );
-        }
+        // Upload data
+        this._log(
+          "Ready to receive test dataset, " +
+            `byte array should be: ${data.length} bytes ` +
+            `and hash 0x${unsigned32ToHex(hash)}`
+        );
+        await this.uploadBulkDataWithAck(
+          "transferTestAnimationSetFinished",
+          data,
+          progressCallback
+        );
         break;
 
       case TransferInstantAnimationsSetAckTypeValues.upToDate:
@@ -1135,23 +1126,17 @@ export class Pixel extends PixelInfoNotifier {
 
     switch (ack.ackType) {
       case TransferInstantAnimationsSetAckTypeValues.download:
-        {
-          // Upload data
-          const hashStr = (hash >>> 0)
-            .toString(16)
-            .toUpperCase()
-            .padStart(8, "0");
-          this._log(
-            "Ready to receive instant animations, " +
-              `byte array should be: ${data.length} bytes ` +
-              `and hash 0x${hashStr}`
-          );
-          await this.uploadBulkDataWithAck(
-            "transferInstantAnimationSetFinished",
-            data,
-            progressCallback
-          );
-        }
+        // Upload data
+        this._log(
+          "Ready to receive instant animations, " +
+            `byte array should be: ${data.length} bytes ` +
+            `and hash 0x${unsigned32ToHex(hash)}`
+        );
+        await this.uploadBulkDataWithAck(
+          "transferInstantAnimationSetFinished",
+          data,
+          progressCallback
+        );
         break;
 
       case TransferInstantAnimationsSetAckTypeValues.upToDate:

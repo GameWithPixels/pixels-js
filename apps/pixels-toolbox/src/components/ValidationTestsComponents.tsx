@@ -1,4 +1,9 @@
-import { assert, assertNever, delay } from "@systemic-games/pixels-core-utils";
+import {
+  assert,
+  assertNever,
+  delay,
+  unsigned32ToHex,
+} from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForProfile,
   createLibraryProfile,
@@ -245,7 +250,7 @@ async function scanForPixelWithTimeout(
           reject(
             new TaskFaultedError(
               t("timeoutScanningTryAgainWithId", {
-                id: pixelId.toString(16).padStart(8, "0"),
+                id: unsigned32ToHex(pixelId),
               })
             )
           ),

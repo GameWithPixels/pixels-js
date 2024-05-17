@@ -1,17 +1,18 @@
 export * from "./assert";
 export * from "./assertNever";
 export * from "./bernsteinHash";
+export * from "./bitMasksUtils";
 export * from "./createTypedEventEmitter";
 export * from "./decodeUtf8";
-export * from "./encodeUtf8";
 export * from "./delay";
+export * from "./encodeUtf8";
 export * from "./enum";
-export * from "./safeAssign";
-export * from "./serializable";
-export * from "./SequentialPromiseQueue";
-export * from "./bitMasksUtils";
 export * from "./keyValuesUtils";
 export * from "./range";
+export * from "./safeAssign";
+export * from "./SequentialPromiseQueue";
+export * from "./serializable";
+export * from "./unsigned32ToHex";
 
 //
 // TypeScript helpers

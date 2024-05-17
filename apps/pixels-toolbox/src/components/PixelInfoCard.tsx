@@ -1,4 +1,7 @@
-import { assertNever } from "@systemic-games/pixels-core-utils";
+import {
+  assertNever,
+  unsigned32ToHex,
+} from "@systemic-games/pixels-core-utils";
 import {
   BaseBox,
   BaseHStack,
@@ -153,7 +156,6 @@ function PixelFirmwareDate({ pixel, t }: PixelAndTranslation) {
 
 function PixelMoreInfo(props: PixelAndTranslation) {
   const { pixel, t } = props;
-  const pixIdHex = pixel.pixelId.toString(16).padStart(8, "0");
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -166,7 +168,7 @@ function PixelMoreInfo(props: PixelAndTranslation) {
     <>
       <PixelFirmwareDate {...props} />
       <BaseHStack mt={5} w="100%" justifyContent="space-around">
-        <Text>{`🆔 ${pixIdHex}`}</Text>
+        <Text>{`🆔 ${unsigned32ToHex(pixel.pixelId)}`}</Text>
         <Text>{`${pixel.ledCount}🚦`}</Text>
         <Text>{pixel.colorway !== "unknown" ? t(pixel.colorway) : ""}</Text>
       </BaseHStack>

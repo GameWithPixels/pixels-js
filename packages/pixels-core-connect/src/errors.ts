@@ -1,3 +1,5 @@
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
+
 import { MessageType } from "./Messages";
 import { Pixel } from "./Pixel";
 
@@ -86,9 +88,9 @@ export class PixelConnectIdMismatchError extends PixelConnectError {
     super(
       pixel,
       "Identification mismatch, expecting " +
-        pixel.pixelId.toString(16).padStart(8, "0") +
+        unsigned32ToHex(pixel.pixelId) +
         " but got " +
-        pixelId.toString(16).padStart(8, "0")
+        unsigned32ToHex(pixelId)
     );
     this.name = "PixelIdMismatchError";
   }

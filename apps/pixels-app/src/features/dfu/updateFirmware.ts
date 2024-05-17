@@ -1,4 +1,4 @@
-import { delay } from "@systemic-games/pixels-core-utils";
+import { delay, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   DfuFirmwareVersionFailureError,
   DfuProgressEvent,
@@ -8,8 +8,6 @@ import {
   getDfuTargetId,
   startDfu,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
-
-import { unsigned32ToHex } from "../utils";
 
 function idToString(targetId: DfuTargetId): string {
   return typeof targetId === "number"

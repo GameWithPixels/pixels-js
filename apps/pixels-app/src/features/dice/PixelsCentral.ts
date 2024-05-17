@@ -2,6 +2,7 @@ import {
   assertNever,
   createTypedEventEmitter,
   EventReceiver,
+  unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -22,7 +23,7 @@ import {
 import { Platform } from "expo-modules-core";
 
 import { updateFirmware } from "~/features/dfu/updateFirmware";
-import { logError, unsigned32ToHex } from "~/features/utils";
+import { logError } from "~/features/utils";
 
 function pixelLog(pixel: Pick<PixelInfo, "name">, message: string) {
   console.log(`[PixelsCentral ${pixel.name}]: ${message}`);

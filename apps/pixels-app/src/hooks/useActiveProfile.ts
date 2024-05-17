@@ -1,4 +1,4 @@
-import { assert } from "@systemic-games/pixels-core-utils";
+import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   PixelInfo,
   Profiles,
@@ -7,7 +7,6 @@ import {
 import { useProfile } from "./useProfile";
 
 import { useAppSelector } from "~/app/hooks";
-import { unsigned32ToHex } from "~/features/utils";
 
 export function useActiveProfile(
   pixel: Pick<PixelInfo, "pixelId" | "dieType">

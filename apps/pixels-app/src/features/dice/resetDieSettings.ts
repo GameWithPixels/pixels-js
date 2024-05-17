@@ -1,3 +1,4 @@
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import { createLibraryProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Pixel,
@@ -7,7 +8,6 @@ import { Alert } from "react-native";
 
 import { AppDispatch } from "~/app/store";
 import { Library } from "~/features/store";
-import { unsigned32ToHex } from "~/features/utils";
 
 export function resetDieSettings(
   pixel: Pixel,
