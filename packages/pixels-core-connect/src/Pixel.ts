@@ -427,6 +427,13 @@ export class Pixel extends PixelInfoNotifier {
     };
     this.addMessageListener("rollState", rollStateListener);
 
+    // Reset name on "clear settings" and "program default" ack
+    const resetListener = () => {
+      this._updateName("Pixel" + unsigned32ToHex(this._info.pixelId));
+    };
+    this.addMessageListener("clearSettingsAck", resetListener);
+    this.addMessageListener("programDefaultParametersFinished", resetListener);
+
     // Subscribe to user message requests
     const notifyUserListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as NotifyUser;
@@ -459,6 +466,11 @@ export class Pixel extends PixelInfoNotifier {
       this.removeMessageListener("rollState", rollStateListener);
       this.removeMessageListener("notifyUser", notifyUserListener);
       this.removeMessageListener("remoteAction", remoteActionListener);
+      this.removeMessageListener("clearSettingsAck", resetListener);
+      this.removeMessageListener(
+        "programDefaultParametersFinished",
+        resetListener
+      );
     };
   }
 
@@ -834,6 +846,8 @@ export class Pixel extends PixelInfoNotifier {
     if (!name.length) {
       throw new PixelEmptyNameError(this);
     }
+    // Note: we reprogram the name even if its the same as the one kept
+    // in cache in case it is out of date
     await this.sendAndWaitForResponse(
       safeAssign(new SetName(), { name }),
       "setNameAck"

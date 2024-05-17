@@ -1,4 +1,3 @@
-import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import { createLibraryProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Pixel,
@@ -16,10 +15,7 @@ export function resetDieSettings(
 ): void {
   const task = async () => {
     try {
-      await pixel.sendMessage("clearSettings");
-      // TODO force default name
-      // @ts-ignore Calling private function
-      pixel._updateName("Pixel" + unsigned32ToHex(pixel.pixelId));
+      await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
       appDispatch(
         Library.Profiles.update(
           Serializable.fromProfile(

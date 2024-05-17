@@ -126,11 +126,6 @@ export async function pixelResetAllSettings(pixel: Pixel): Promise<void> {
     "programDefaultParameters",
     "programDefaultParametersFinished"
   );
-  // @ts-expect-error Private function
-  pixel._updateName(
-    // Pass function parameter on next line to have TS check typing
-    "Pixel" + pixel.pixelId.toString(16).padStart(8, "0")
-  );
 }
 
 /**
