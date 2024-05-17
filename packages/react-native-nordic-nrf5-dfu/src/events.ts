@@ -68,31 +68,31 @@ export type DfuState =
  * Data structure for DFU state events,
  * see {@link DfuEventMap}.
  */
-export interface DfuStateEvent {
+export type DfuStateEvent = Readonly<{
   /** Identifier of the target device. */
-  readonly targetId: DfuTargetId;
+  targetId: DfuTargetId;
   /** New state of the DFU operations. */
-  readonly state: DfuState;
-}
+  state: DfuState;
+}>;
 
 /**
  * Data structure for DFU upload progress events,
  * see {@link DfuEventMap}.
  */
-export interface DfuProgressEvent {
+export type DfuProgressEvent = Readonly<{
   /** Identifier of the target device. */
-  readonly targetId: DfuTargetId;
+  targetId: DfuTargetId;
   /** Upload progress in percent. */
-  readonly percent: number;
+  percent: number;
   /** Current part being uploaded. */
-  readonly part: number;
+  part: number;
   /** Total number of parts to upload. */
-  readonly partsTotal: number;
+  partsTotal: number;
   /** Upload speed in bytes per second. */
-  readonly speed: number;
+  speed: number;
   /** Average upload speed in bytes per second. */
-  readonly averageSpeed: number;
-}
+  averageSpeed: number;
+}>;
 
 /**
  * Event map for {@link Pixel} class.
@@ -100,10 +100,10 @@ export interface DfuProgressEvent {
  * is the event name and the property type the event data type.
  * @category Pixels
  */
-export interface DfuEventMap {
-  readonly state: DfuStateEvent;
-  readonly progress: DfuProgressEvent;
-}
+export type DfuEventMap = {
+  state: DfuStateEvent;
+  progress: DfuProgressEvent;
+};
 
 // Native event emitter
 const dfuEventEmitter = new NativeEventEmitter(DfuModule);

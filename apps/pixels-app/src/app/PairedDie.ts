@@ -3,7 +3,7 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
-export interface PairedDie {
+export type PairedDie = Readonly<{
   systemId: string;
   pixelId: number;
   name: string;
@@ -11,4 +11,4 @@ export interface PairedDie {
   colorway: PixelColorway;
   firmwareTimestamp: number;
   profileUuid: string;
-}
+}>;

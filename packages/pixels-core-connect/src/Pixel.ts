@@ -114,41 +114,41 @@ export type PixelStatus =
  * see {@link PixelEventMap}.
  * @category Pixels
  */
-export interface RollEvent {
+export type RollEvent = Readonly<{
   /** The roll state of the Pixel when this event was raised. */
-  readonly state: PixelRollState;
+  state: PixelRollState;
   /**
    * The value of the die face that is currently facing up.
    * @remarks Fudge die will return -1, 0 or 1.
    **/
-  readonly face: number;
+  face: number;
   /**
    * The 0-based index of the die face that is currently facing up.
    * @see {@link PixelInfo.currentFaceIndex} for more details.
    **/
-  readonly faceIndex: number;
-}
+  faceIndex: number;
+}>;
 
 /**
  * Data structure for {@link Pixel} battery events,
  * see {@link PixelEventMap}.
  * @category Pixels
  */
-export interface BatteryEvent {
-  readonly level: number; // Percentage
-  readonly isCharging: boolean;
-}
+export type BatteryEvent = Readonly<{
+  level: number; // Percentage
+  isCharging: boolean;
+}>;
 
 /**
  * Data structure for {@link Pixel} user message events,
  * see {@link PixelEventMap}.
  * @category Pixels
  */
-export interface UserMessageEvent {
-  readonly message: string;
-  readonly withCancel: boolean;
-  readonly response: (okCancel: boolean) => Promise<void>;
-}
+export type UserMessageEvent = Readonly<{
+  message: string;
+  withCancel: boolean;
+  response: (okCancel: boolean) => Promise<void>;
+}>;
 
 /**
  * Event map for {@link Pixel} class.
@@ -179,21 +179,22 @@ export interface PixelEventMap {
   /** Profile data hash */
   profileHash: number;
   /** Data transfer. */
-  dataTransfer:
+  dataTransfer: Readonly<
     | {
-        readonly type: "preparing" | "starting" | "completed";
-        readonly totalBytes: number;
+        type: "preparing" | "starting" | "completed";
+        totalBytes: number;
       }
     | {
-        readonly type: "failed";
-        readonly error: "timeout" | "outOfMemory" | "disconnected" | "unknown";
+        type: "failed";
+        error: "timeout" | "outOfMemory" | "disconnected" | "unknown";
       }
     | {
-        readonly type: "progress";
-        readonly progress: number;
-        readonly bytesTransferred: number;
-        readonly totalBytes: number;
-      };
+        type: "progress";
+        progress: number;
+        bytesTransferred: number;
+        totalBytes: number;
+      }
+  >;
 }
 
 /**
@@ -996,7 +997,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
    * @param dataSet The data set to upload.
    * @returns A promise that resolves once the transfer has completed.
    */
-  async transferDataSet(dataSet: DataSet): Promise<void> {
+  async transferDataSet(dataSet: Readonly<DataSet>): Promise<void> {
     if (this._transferring) {
       throw new PixelTransferInProgressError(this);
     }
@@ -1053,7 +1054,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
    * @param dataSet The data set containing just one animation to play.
    * @returns A promise that resolves once the transfer has completed.
    */
-  async playTestAnimation(dataSet: DataSet): Promise<void> {
+  async playTestAnimation(dataSet: Readonly<DataSet>): Promise<void> {
     if (this._transferring) {
       throw new PixelTransferInProgressError(this);
     }
@@ -1100,7 +1101,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
    * @param dataSet The data set to upload.
    * @returns A promise that resolves once the transfer has completed.
    */
-  async transferInstantAnimations(dataSet: DataSet): Promise<void> {
+  async transferInstantAnimations(dataSet: Readonly<DataSet>): Promise<void> {
     if (this._transferring) {
       throw new PixelTransferInProgressError(this);
     }

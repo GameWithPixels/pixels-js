@@ -6,12 +6,12 @@ import { useAppSelector } from "~/app/hooks";
 import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { selectCustomFirmwareAndProfile } from "~/features/store/validationSelectors";
 
-export interface FactoryDfuFilesBundle {
+export type FactoryDfuFilesBundle = Readonly<{
   readonly bootloader: DfuFileInfo;
   readonly firmware: DfuFileInfo;
   readonly reconfigFirmware: DfuFileInfo;
   readonly date: Date;
-}
+}>;
 
 function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;

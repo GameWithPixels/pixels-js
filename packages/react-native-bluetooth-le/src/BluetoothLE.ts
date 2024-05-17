@@ -20,37 +20,37 @@ export const BluetoothLE: NativeBluetoothLE = NativeModules.BluetoothLe
 // 48 bits Bluetooth MAC address fits into the 52 bits mantissa
 // of a number(64 bits floating point)
 // TODO rename to Peripheral?
-export interface Device {
-  readonly systemId: string;
-  readonly address: number; // Not available on iOS
-  readonly name: string;
-}
+export type Device = Readonly<{
+  systemId: string;
+  address: number; // Not available on iOS
+  name: string;
+}>;
 
-export interface ManufacturerData {
-  readonly companyId: number;
-  readonly data: number[];
-}
+export type ManufacturerData = Readonly<{
+  companyId: number;
+  data: number[];
+}>;
 
-export interface ServiceData {
-  readonly service: string;
-  readonly data: number[];
-}
+export type ServiceData = Readonly<{
+  service: string;
+  data: number[];
+}>;
 
-export interface AdvertisementData {
-  readonly isConnectable: boolean;
-  readonly rssi: number;
-  readonly txPowerLevel: number;
-  readonly services?: string[];
-  readonly solicitedServices?: string[];
-  readonly manufacturersData?: ManufacturerData[];
-  readonly servicesData?: ServiceData[];
-}
+export type AdvertisementData = Readonly<{
+  isConnectable: boolean;
+  rssi: number;
+  txPowerLevel: number;
+  services?: string[];
+  solicitedServices?: string[];
+  manufacturersData?: ManufacturerData[];
+  servicesData?: ServiceData[];
+}>;
 
-export interface Characteristic {
-  readonly serviceUuid: string;
-  readonly uuid: string;
-  readonly instanceIndex: number;
-}
+export type Characteristic = Readonly<{
+  serviceUuid: string;
+  uuid: string;
+  instanceIndex: number;
+}>;
 
 export type ConnectionStatus =
   | "connecting"

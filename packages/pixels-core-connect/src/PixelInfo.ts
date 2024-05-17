@@ -9,42 +9,42 @@ import { PixelRollState } from "./Messages";
  * Common accessible values for all Pixel implementations.
  * @category Pixels
  */
-export interface PixelInfo {
+export type PixelInfo = Readonly<{
   /** The unique id assigned by the system to the Pixel Bluetooth peripheral. */
-  readonly systemId: string;
+  systemId: string;
 
   /** The unique Pixel id of the device. */
-  readonly pixelId: number;
+  pixelId: number;
 
   /** The Pixels die name. */
-  readonly name: string;
+  name: string;
 
   /** The number of LEDs of the Pixel. */
-  readonly ledCount: number;
+  ledCount: number;
 
   /** The Pixel color. */
-  readonly colorway: PixelColorway;
+  colorway: PixelColorway;
 
   /** The Pixel die type. */
-  readonly dieType: PixelDieType;
+  dieType: PixelDieType;
 
   /** The Pixel firmware build date. */
-  readonly firmwareDate: Date;
+  firmwareDate: Date;
 
   /** The last RSSI value measured by the Pixel. */
-  readonly rssi: number;
+  rssi: number;
 
   /** The Pixel battery level (percentage). */
-  readonly batteryLevel: number; // Percentage
+  batteryLevel: number; // Percentage
 
   /**
    * Whether the Pixel battery is charging or not.
    * Set to 'true' if fully charged but still on charger.
    */
-  readonly isCharging: boolean;
+  isCharging: boolean;
 
   /** The Pixel roll state. */
-  readonly rollState: PixelRollState;
+  rollState: PixelRollState;
 
   /**
    * The value of the die face that is currently facing up.
@@ -54,7 +54,7 @@ export interface PixelInfo {
    * - D00 returns 0, 10, 20, ..., 90.
    * - Fudge die returns +1, 0 and -1.
    **/
-  readonly currentFace: number;
+  currentFace: number;
 
   /**
    * The 0-based index of the die face that is currently facing up.
@@ -74,5 +74,5 @@ export interface PixelInfo {
    * - 1 and 4 for the "-" face.
    * - 2 and 3 for the "blank" face.
    */
-  readonly currentFaceIndex: number;
-}
+  currentFaceIndex: number;
+}>;

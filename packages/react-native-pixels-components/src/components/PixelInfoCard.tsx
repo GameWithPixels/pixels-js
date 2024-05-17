@@ -15,15 +15,15 @@ import {
 import { BatteryLevel } from "./BatteryLevel";
 import { RSSIStrength } from "./RSSIStrength";
 
-export interface PixelInfo {
-  readonly name: string;
-  readonly ledCount: number;
-  readonly firmwareDate: Date;
-  readonly rssi: number;
-  readonly batteryLevel: number; // Percentage
-  readonly isCharging: boolean;
-  readonly currentFace: number; // Face value (not index)
-}
+export type PixelInfo = Readonly<{
+  name: string;
+  ledCount: number;
+  firmwareDate: Date;
+  rssi: number;
+  batteryLevel: number; // Percentage
+  isCharging: boolean;
+  currentFace: number; // Face value (not index)
+}>;
 
 /**
  * Props for components displaying dice information.

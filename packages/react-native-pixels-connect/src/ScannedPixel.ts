@@ -10,7 +10,8 @@ import type { PixelInfo } from "@systemic-games/pixels-core-connect";
  * To get reliably notified for rolls, first connect to the die and listen
  * for roll events.
  **/
-export interface ScannedPixel extends PixelInfo {
-  readonly address: number; // Not available on iOS
-  readonly timestamp: Date; // Timestamp when the advertisement data was received
-}
+export type ScannedPixel = PixelInfo &
+  Readonly<{
+    readonly address: number; // Not available on iOS
+    readonly timestamp: Date; // Timestamp when the advertisement data was received
+  }>;

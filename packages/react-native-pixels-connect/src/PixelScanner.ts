@@ -17,17 +17,18 @@ import { getScannedPixel } from "./getScannedPixel";
 /**
  * The different possible operations on a {@link PixelScanner} list.
  */
-export type PixelScannerListOperation =
-  | { readonly type: "scanned"; readonly scannedPixel: ScannedPixel }
-  | { readonly type: "removed"; readonly pixelId: number };
+export type PixelScannerListOperation = Readonly<
+  | { type: "scanned"; scannedPixel: ScannedPixel }
+  | { type: "removed"; pixelId: number }
+>;
 
 /**
  * Event data for the "scanStatus" event of {@link PixelScannerEventMap}.
  */
-export interface PixelScannerStatusEvent {
-  readonly status: ScanStatus;
-  readonly stopReason?: ScanStopReason;
-}
+export type PixelScannerStatusEvent = Readonly<{
+  status: ScanStatus;
+  stopReason?: ScanStopReason;
+}>;
 
 /**
  * Event map for {@link PixelScanner} class.
@@ -39,7 +40,7 @@ export interface PixelScannerEventMap {
   status: ScanStatus; // Property change event
   scanStatus: PixelScannerStatusEvent;
   scannedPixels: ScannedPixel[]; // Property change event
-  scanListOperations: { readonly ops: PixelScannerListOperation[] };
+  scanListOperations: Readonly<{ ops: PixelScannerListOperation[] }>;
 }
 
 /**

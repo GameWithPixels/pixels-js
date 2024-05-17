@@ -1,11 +1,11 @@
 import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
 
-export interface ActionMakeWebRequestPayload {
-  readonly pixelName: string;
-  readonly profileName: string;
-  readonly actionValue: string;
-  readonly faceValue: number;
-}
+export type ActionMakeWebRequestPayload = Readonly<{
+  pixelName: string;
+  profileName: string;
+  actionValue: string;
+  faceValue: number;
+}>;
 
 export function getWebRequestPayload(
   pixel: Pick<PixelInfo, "name" | "currentFace">,

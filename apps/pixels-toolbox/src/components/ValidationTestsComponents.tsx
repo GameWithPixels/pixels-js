@@ -410,11 +410,11 @@ function MessageYesNo({
   );
 }
 
-export interface ValidationTestsSettings {
+export type ValidationTestsSettings = Readonly<{
   readonly sequence: ValidationSequence;
   readonly dieType: PixelDieType;
   readonly dfuFilesBundle: FactoryDfuFilesBundle;
-}
+}>;
 
 export interface ValidationTestProps extends TaskComponentProps {
   settings: ValidationTestsSettings;

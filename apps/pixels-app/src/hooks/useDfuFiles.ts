@@ -1,17 +1,17 @@
 import React from "react";
 
-export interface DfuFilesInfo {
-  readonly timestamp: number;
-  readonly firmwarePath: string;
-  readonly bootloaderPath?: string;
-}
+export type DfuFilesInfo = Readonly<{
+  timestamp: number;
+  firmwarePath: string;
+  bootloaderPath?: string;
+}>;
 
 // Both fields are undefined until the files are loaded or until
 // an error occurred during loading
-export interface DfuFilesStatus {
-  readonly dfuFilesInfo?: DfuFilesInfo;
-  readonly dfuFilesError?: Error;
-}
+export type DfuFilesStatus = Readonly<{
+  dfuFilesInfo?: DfuFilesInfo;
+  dfuFilesError?: Error;
+}>;
 
 export const DfuFilesContext = React.createContext<DfuFilesStatus>({});
 

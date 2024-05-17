@@ -41,46 +41,48 @@ function errToStr(error: unknown): string {
   }
 }
 
-export interface BluetoothStateEvent {
-  readonly state: BluetoothState;
-}
+export type BluetoothStateEvent = Readonly<{
+  state: BluetoothState;
+}>;
 
 export type ScanStatus = "stopped" | "starting" | "scanning";
 
 // A scanned peripheral is BLE device and its advertisement data
-export interface ScannedPeripheral extends Device {
-  readonly advertisementData: AdvertisementData;
-}
+export type ScannedPeripheral = Device &
+  Readonly<{
+    advertisementData: AdvertisementData;
+  }>;
 
 export type ScanStopReason =
   | Exclude<BluetoothState, "ready">
   | "failedToStart"
   | "success"; // Scan was stopped by a call to stopScan() or shutdown()
 
-export type ScanEvent =
+export type ScanEvent = Readonly<
   | {
-      readonly type: "peripheral";
-      readonly peripheral: ScannedPeripheral;
+      type: "peripheral";
+      peripheral: ScannedPeripheral;
     }
   | {
-      readonly type: "status";
-      readonly scanStatus: ScanStatus;
-      readonly stopReason?: ScanStopReason;
-    };
+      type: "status";
+      scanStatus: ScanStatus;
+      stopReason?: ScanStopReason;
+    }
+>;
 
-export interface PeripheralConnectionEvent {
-  readonly peripheral: ScannedPeripheral;
-  readonly connectionStatus: ConnectionStatus;
-  readonly reason: ConnectionEventReason;
-}
+export type PeripheralConnectionEvent = Readonly<{
+  peripheral: ScannedPeripheral;
+  connectionStatus: ConnectionStatus;
+  reason: ConnectionEventReason;
+}>;
 
-export interface PeripheralCharacteristicValueChangedEvent {
-  readonly peripheral: ScannedPeripheral;
-  readonly service: string;
-  readonly characteristic: string;
-  readonly characteristicIndex: number;
-  readonly value: number[]; // Array of bytes
-}
+export type PeripheralCharacteristicValueChangedEvent = Readonly<{
+  peripheral: ScannedPeripheral;
+  service: string;
+  characteristic: string;
+  characteristicIndex: number;
+  value: number[]; // Array of bytes
+}>;
 
 export type PeripheralOrSystemId = ScannedPeripheral | string;
 
@@ -89,10 +91,10 @@ export type PeripheralOrSystemId = ScannedPeripheral | string;
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  */
-export interface CentralEventMap {
-  bluetoothState: { readonly state: BluetoothState };
-  scanStatus: { readonly status: ScanStatus };
-}
+export type CentralEventMap = {
+  bluetoothState: Readonly<{ state: BluetoothState }>;
+  scanStatus: Readonly<{ status: ScanStatus }>;
+};
 
 // Our native event emitter and subscriptions
 let _nativeEmitter: NativeEventEmitter | undefined;

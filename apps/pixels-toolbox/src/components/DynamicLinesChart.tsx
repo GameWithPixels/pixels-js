@@ -7,17 +7,17 @@ import { LineChartProps } from "./LineChart";
 
 import { useForceUpdate } from "~/hooks/useForceUpdate";
 
-export interface LineInfo {
+export type LineInfo = Readonly<{
   title: string;
   color: string;
   min?: number;
   max?: number;
-}
+}>;
 
-export interface DynamicLinesChartEntry {
+export type DynamicLinesChartEntry = Readonly<{
   x: number;
   yValues: number[];
-}
+}>;
 
 export interface DynamicLinesChartProps
   extends Omit<LineChartProps, "points" | "lineColor" | "minY" | "maxY"> {

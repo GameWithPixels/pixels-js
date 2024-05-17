@@ -75,10 +75,10 @@ export type EditWidgetData =
  */
 export function getEditWidgetsData<T extends object>(
   editObj: T,
-  opt?: {
-    exclude?: readonly string[];
+  opt?: Readonly<{
+    exclude?: string[];
     onUpdate?: (key: keyof T, value: T[keyof T], oldValue: T[keyof T]) => void;
-  }
+  }>
 ): EditWidgetData[] {
   const exclude = opt?.exclude;
   const onUpdate = opt?.onUpdate;

@@ -23,28 +23,28 @@ export type BluetoothState =
   | "unauthorized"
   | "ready";
 
-export interface BleBluetoothStateEvent {
-  readonly state: BluetoothState;
-}
+export type BleBluetoothStateEvent = Readonly<{
+  state: BluetoothState;
+}>;
 
-export interface ScanResult {
-  readonly device: Device;
-  readonly advertisementData: AdvertisementData;
-}
+export type ScanResult = Readonly<{
+  device: Device;
+  advertisementData: AdvertisementData;
+}>;
 
-export type BleScanResultEvent = ScanResult | { error: string };
+export type BleScanResultEvent = ScanResult | Readonly<{ error: string }>;
 
-export interface BleConnectionEvent {
-  readonly device: Device;
-  readonly connectionStatus: ConnectionStatus;
-  readonly reason: ConnectionEventReason;
-}
+export type BleConnectionEvent = Readonly<{
+  device: Device;
+  connectionStatus: ConnectionStatus;
+  reason: ConnectionEventReason;
+}>;
 
-export interface BleCharacteristicValueChangedEvent {
-  readonly device: Device;
-  readonly characteristic: Characteristic;
-  readonly data: number[];
-}
+export type BleCharacteristicValueChangedEvent = Readonly<{
+  device: Device;
+  characteristic: Characteristic;
+  data: number[];
+}>;
 
 /**
  * Event map for {@link Pixel} class.

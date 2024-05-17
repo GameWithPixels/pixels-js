@@ -9,8 +9,8 @@ export interface Point2D {
 }
 
 export interface LineChartProps {
-  readonly style?: ViewStyle;
-  readonly points: readonly Point2D[];
+  style?: Readonly<ViewStyle>;
+  points: readonly Readonly<Point2D>[];
   lineColor: string;
   textColor: string;
   fontSize: number;
