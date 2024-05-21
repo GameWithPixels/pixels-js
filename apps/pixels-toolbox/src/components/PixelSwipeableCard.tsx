@@ -415,10 +415,10 @@ export function PixelSwipeableCard({
         ? dfuActive
           ? ""
           : dfuQueued
-          ? t("cancelFirmwareUpdate")
-          : dfuAvailable !== "none"
-          ? t("updateFirmware")
-          : ""
+            ? t("cancelFirmwareUpdate")
+            : dfuAvailable !== "none"
+              ? t("updateFirmware")
+              : ""
         : t("blink");
       const numButtons = (label.length ? 1 : 0) + (onPrintLabel ? 1 : 0);
       return (

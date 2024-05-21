@@ -14,7 +14,9 @@ import { ensureAssetReadableAsync } from "~/features/duplicated/ensureAssetReada
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function checkLegacyPattern(name: string): void {
-  const originalData: Json.DataSet = require(`!/profiles/default-profile-d20.json`);
+  const originalData: Json.DataSet = require(
+    `!/profiles/default-profile-d20.json`
+  );
   const originalPattern = originalData.patterns?.find((p) => p.name === name);
   if (originalPattern) {
     originalPattern?.gradients?.forEach((g, i) =>

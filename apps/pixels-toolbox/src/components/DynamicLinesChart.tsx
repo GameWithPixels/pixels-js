@@ -185,7 +185,7 @@ export const DynamicLinesChart = React.forwardRef(function (
 
   // Render points
   React.useEffect(() => {
-    if (points?.length || dataRef.current?.source.xValues.length) {
+    if (!!points?.length || dataRef.current?.source.xValues.length) {
       dataRef.current = getDefaultDataRef();
       points?.forEach((p) => pushData(p.x, p.yValues));
       update();

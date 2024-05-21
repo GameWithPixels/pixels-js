@@ -27,8 +27,8 @@ export function useFactoryDfuFilesBundle(): [
   const pickedBundle = useCustomFirmware
     ? selectedBundle
     : availableBundles.find((b) => b.kind === "factory");
-  const reconfigDfuBundle = availableBundles.find(
-    (b) => b.firmware?.comment?.includes("reconfigure")
+  const reconfigDfuBundle = availableBundles.find((b) =>
+    b.firmware?.comment?.includes("reconfigure")
   );
   const hasBL = notEmpty(pickedBundle?.bootloader);
   const hasFW = notEmpty(pickedBundle?.firmware);

@@ -70,8 +70,8 @@ function DfuBundleSelection({
                 {selectedDfuBundle
                   ? dateLabel ?? t("tapToSelectFirmware")
                   : noDFUFilesError
-                  ? "No DFU files loaded"
-                  : "Loading DFU files..."}
+                    ? "No DFU files loaded"
+                    : "Loading DFU files..."}
               </Text>
               {selectedDfuBundle && (
                 <Text>

@@ -10,7 +10,8 @@ import VirtualDie from "../VirtualDie";
  */
 export default class RgbKeyframe {
   @serializable(2)
-  timeAndColor = 0; /** The time and color index combined in one value for serialization. */
+  timeAndColor =
+    0; /** The time and color index combined in one value for serialization. */
 
   /**
    * Gets the color index, from to 0 to 128 excluded.

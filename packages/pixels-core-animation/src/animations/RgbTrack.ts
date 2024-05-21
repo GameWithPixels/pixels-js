@@ -19,7 +19,8 @@ export default class RgbTrack {
   keyFrameCount = 0; /** Keyframe count. */
 
   @serializable(4)
-  ledMask = 0; /** Each bit indicates whether the led is included in the animation track. */
+  ledMask =
+    0; /** Each bit indicates whether the led is included in the animation track. */
 
   /**
    * Gets the track duration.

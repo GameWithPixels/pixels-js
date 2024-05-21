@@ -10,7 +10,7 @@ export type FrameProcessor = (frame: Frame) => void;
 export function usePixelIdDecoderFrameProcessor(): [
   FrameProcessor,
   PixelIdDecoderState,
-  Error?
+  Error?,
 ] {
   const [lastError, setLastError] = React.useState<Error>();
 

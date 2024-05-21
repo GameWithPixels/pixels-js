@@ -7,7 +7,8 @@ import { serializable } from "@systemic-games/pixels-core-utils";
  */
 export default class SimpleKeyframe {
   @serializable(2)
-  timeAndIntensity = 0; /** The time and intensity combined in one value for serialization. */
+  timeAndIntensity =
+    0; /** The time and intensity combined in one value for serialization. */
 
   /**
    * Gets the time in milliseconds, from to 0 to 1024 excluded.

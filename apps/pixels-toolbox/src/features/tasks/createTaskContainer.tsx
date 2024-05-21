@@ -19,7 +19,7 @@ export function createTaskStatusContainer(
   const alwaysShowChildren = isStr ? false : args.alwaysShowChildren;
   return (props) => (
     <TaskContainer title={title} {...props} isSubTask>
-      {(alwaysShowChildren || props.taskStatus === "running") && children}
+      {(props.taskStatus === "running" || alwaysShowChildren) && children}
     </TaskContainer>
   );
 }

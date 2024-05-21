@@ -95,8 +95,8 @@ export default function App() {
     if (onlyPixels) {
       // Keep only Pixels
       setScannedPeripherals((peripherals) =>
-        peripherals.filter(
-          (p) => p.advertisementData.services?.includes(pixelServiceUuid)
+        peripherals.filter((p) =>
+          p.advertisementData.services?.includes(pixelServiceUuid)
         )
       );
     }

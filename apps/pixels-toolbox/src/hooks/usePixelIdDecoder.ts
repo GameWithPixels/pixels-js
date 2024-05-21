@@ -18,7 +18,7 @@ export interface PixelIdDecoderAction {
 // Returned dispatch function is stable
 export function usePixelIdDecoder(): [
   PixelIdDecoderState,
-  (action: PixelIdDecoderAction) => void
+  (action: PixelIdDecoderAction) => void,
 ] {
   // Store internal data, we don't want it to trigger updates
   const dataRef = React.useRef({

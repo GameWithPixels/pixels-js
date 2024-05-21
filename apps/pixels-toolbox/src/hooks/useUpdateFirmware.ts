@@ -21,7 +21,7 @@ export function useUpdateFirmware(): [
   ) => void,
   DfuState | undefined,
   number,
-  Error | undefined
+  Error | undefined,
 ] {
   // DFU state and progress
   const [dfuState, setDfuState] = React.useState<DfuState>();

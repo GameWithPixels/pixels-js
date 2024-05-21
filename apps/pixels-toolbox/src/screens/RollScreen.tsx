@@ -28,10 +28,10 @@ function RollPage() {
     !status || isConnecting
       ? "yellow"
       : status !== "ready"
-      ? "red"
-      : rollState?.state !== "onFace"
-      ? "blue"
-      : "green";
+        ? "red"
+        : rollState?.state !== "onFace"
+          ? "blue"
+          : "green";
   return (
     <>
       {!pixel ? (

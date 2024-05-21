@@ -88,10 +88,10 @@ export default class PixelIdDecoder {
         rd - gd > threshold && rd - bd > threshold
           ? "red"
           : gd - rd > threshold && gd - bd > threshold
-          ? "green"
-          : bd - rd > threshold && bd - gd > threshold
-          ? "blue"
-          : undefined;
+            ? "green"
+            : bd - rd > threshold && bd - gd > threshold
+              ? "blue"
+              : undefined;
       if (!lastColorTime) {
         this._lastFrameColor = color;
       }

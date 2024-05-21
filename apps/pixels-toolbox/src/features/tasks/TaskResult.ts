@@ -23,8 +23,8 @@ export function getTaskResultEmoji(
   return taskStatus === "succeeded"
     ? "☑️"
     : taskStatus === "faulted"
-    ? "❌"
-    : taskStatus === "canceled"
-    ? "⚠️"
-    : "";
+      ? "❌"
+      : taskStatus === "canceled"
+        ? "⚠️"
+        : "";
 }

@@ -192,8 +192,8 @@ function toColorWheelPosition(
     hsv.v + epsilon >= 1
       ? "bright"
       : Math.abs(hsv.v - dimBrightness) <= epsilon
-      ? "dim"
-      : undefined;
+        ? "dim"
+        : undefined;
   return { sliceIndex, layerIndex, colorWheel };
 }
 
