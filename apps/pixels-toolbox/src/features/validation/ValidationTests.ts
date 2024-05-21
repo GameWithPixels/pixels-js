@@ -419,7 +419,7 @@ export const ValidationTests = {
       if (ev.type === "preparing" || ev.type === "starting") {
         progressCallback?.(-1);
       } else if (ev.type === "progress") {
-        progressCallback?.(ev.progress);
+        progressCallback?.(ev.progressPercent);
       } else if (ev.type === "completed" || ev.type === "failed") {
         progressCallback?.(-1);
       }

@@ -136,7 +136,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         //   })
         // );
       };
-      pixel.addEventListener("profileHash", onProfileHash);
+      pixel.addPropertyListener("profileHash", onProfileHash);
 
       // Rolls
       const onRoll = (roll: number) =>
@@ -152,7 +152,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         pixel.removePropertyListener("name", onRename);
         pixel.removePropertyListener("firmwareDate", onFwDate);
         pixel.removeEventListener("status", onStatus);
-        pixel.removeEventListener("profileHash", onProfileHash);
+        pixel.removePropertyListener("profileHash", onProfileHash);
         pixel.removeEventListener("roll", onRoll);
         pixel.removeEventListener("remoteAction", onRemoteAction);
       });

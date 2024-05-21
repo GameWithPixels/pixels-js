@@ -622,7 +622,7 @@ class PixelDispatcher
     if (ev.type === "preparing" || ev.type === "starting") {
       this._evEmitter.emit("profileUploadProgress", 0);
     } else if (ev.type === "progress") {
-      this._evEmitter.emit("profileUploadProgress", ev.progress);
+      this._evEmitter.emit("profileUploadProgress", ev.progressPercent);
     } else if (ev.type === "completed" || ev.type === "failed") {
       this._evEmitter.emit("profileUploadProgress", undefined);
     }

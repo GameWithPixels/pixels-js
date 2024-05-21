@@ -140,7 +140,8 @@ export type BatteryEvent = Readonly<{
 }>;
 
 /**
- * Data structure for {@link Pixel} user message events,
+ * Data structure for {@link Pixel} data transfer events,
+ * and for {@link Pixel.dataTransferProgress}.
  * see {@link PixelEventMap}.
  * @category Pixels
  */
@@ -148,6 +149,17 @@ export type UserMessageEvent = Readonly<{
   message: string;
   withCancel: boolean;
   response: (okCancel: boolean) => Promise<void>;
+}>;
+
+/**
+ * Data structure for {@link Pixel} user message events,
+ * see {@link PixelEventMap}.
+ * @category Pixels
+ */
+export type DataTransferProgress = Readonly<{
+  progressPercent: number; // Integer between 0 and 100
+  transferredBytes: number;
+  totalBytes: number;
 }>;
 
 /**
@@ -176,8 +188,6 @@ export interface PixelEventMap {
   userMessage: UserMessageEvent;
   /** Remote action request. */
   remoteAction: number; // Remote action id
-  /** Profile data hash */
-  profileHash: number;
   /** Data transfer. */
   dataTransfer: Readonly<
     | {
@@ -188,12 +198,9 @@ export interface PixelEventMap {
         type: "failed";
         error: "timeout" | "outOfMemory" | "disconnected" | "unknown";
       }
-    | {
+    | ({
         type: "progress";
-        progress: number;
-        bytesTransferred: number;
-        totalBytes: number;
-      }
+      } & DataTransferProgress)
   >;
 }
 
@@ -202,7 +209,10 @@ export interface PixelEventMap {
  * @category Pixels
  */
 export interface PixelMutableProps extends PixelInfoNotifierMutableProps {
-  isTransferringData: boolean;
+  /** On-die profile hash value. */
+  profileHash: number;
+  /** Ongoing data transfer progress (such as programming a profile). */
+  transferProgress: DataTransferProgress | undefined;
 }
 
 /**
@@ -217,7 +227,13 @@ export interface PixelMutableProps extends PixelInfoNotifierMutableProps {
  *
  * @category Pixels
  */
-export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
+export class Pixel extends PixelInfoNotifier<
+  PixelMutableProps,
+  PixelInfo & {
+    profileHash: number;
+    isTransferringData: boolean;
+  }
+> {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
@@ -238,8 +254,9 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     "chunkSize" | "buildTimestamp"
   >;
 
-  // Transfer data status
-  private _transferring = false;
+  // Profile
+  private _profileHash = 0;
+  private _transferProgress?: DataTransferProgress;
 
   // Clean-up
   private _disposeFunc: () => void;
@@ -375,11 +392,18 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
   }
 
   /**
-   * Gets whether the Pixel is currently transferring data from or
-   * to the connected device.
+   * Gets the on-die profile hash value.
+   * This can be used as an identifier for the current profile.
    */
-  get isTransferringData(): boolean {
-    return this._transferring;
+  get profileHash(): number {
+    return this._profileHash;
+  }
+
+  /**
+   * Gets an ongoing data transfer progress (such as programming a profile).
+   */
+  get transferProgress(): DataTransferProgress | undefined {
+    return this._transferProgress;
   }
 
   /**
@@ -430,7 +454,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     session.setConnectionEventListener(({ connectionStatus }) => {
       if (connectionStatus === "connected" || connectionStatus === "ready") {
         // It's possible that we skip some steps and get a "ready" without
-        // getting a "connecting" before that if the device was already connected
+        // getting first a "connecting" if the device was already connected
         this._updateStatus("connecting");
       } else {
         this._updateStatus(
@@ -438,13 +462,13 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
             ? "disconnected"
             : connectionStatus
         );
-      }
-      // Reset transferring state
-      if (this._transferring) {
-        this._updateTransferStatus({
-          type: "failed",
-          error: "disconnected",
-        });
+        // Reset transfer progress on disconnect
+        if (this._transferProgress) {
+          this._updateTransferProgress({
+            type: "failed",
+            error: "disconnected",
+          });
+        }
       }
     });
 
@@ -998,7 +1022,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
    * @returns A promise that resolves once the transfer has completed.
    */
   async transferDataSet(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferring) {
+    if (this._transferProgress) {
       throw new PixelTransferInProgressError(this);
     }
 
@@ -1046,7 +1070,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     );
 
     // Notify profile hash
-    this._evEmitter.emit("profileHash", hash);
+    this._updateHash(hash);
   }
 
   /**
@@ -1055,7 +1079,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
    * @returns A promise that resolves once the transfer has completed.
    */
   async playTestAnimation(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferring) {
+    if (this._transferProgress) {
       throw new PixelTransferInProgressError(this);
     }
     if (!dataSet.animations.length) {
@@ -1102,7 +1126,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
    * @returns A promise that resolves once the transfer has completed.
    */
   async transferInstantAnimations(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferring) {
+    if (this._transferProgress) {
       throw new PixelTransferInProgressError(this);
     }
     if (!dataSet.animations.length) {
@@ -1278,7 +1302,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     const profileDataHash =
       (iAmADie as LegacyIAmADie).dataSetHash ??
       (iAmADie as IAmADie).settingsInfo.profileDataHash;
-    this._evEmitter.emit("profileHash", profileDataHash);
+    this._updateHash(profileDataHash);
   }
 
   private _updateStatus(status: PixelStatus): void {
@@ -1409,12 +1433,36 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     }
   }
 
-  private _updateTransferStatus(ev: PixelEventMap["dataTransfer"]) {
+  private _updateHash(profileHash: number) {
+    if (profileHash !== this._profileHash) {
+      this._profileHash = profileHash;
+      this.emitPropertyEvent("profileHash");
+    }
+  }
+
+  private _updateTransferProgress(ev: PixelEventMap["dataTransfer"]) {
+    // Update progress
+    const progress =
+      ev.type === "completed" || ev.type === "failed"
+        ? undefined
+        : ev.type === "progress"
+          ? {
+              progressPercent: ev.progressPercent,
+              transferredBytes: ev.transferredBytes,
+              totalBytes: ev.totalBytes,
+            }
+          : {
+              progressPercent: 0,
+              transferredBytes: 0,
+              totalBytes: ev.totalBytes,
+            };
+    const progressChanged = this._transferProgress !== progress;
+    this._transferProgress = progress;
+
+    // Send events
     this._evEmitter.emit("dataTransfer", ev);
-    const transferring = ev.type !== "completed" && ev.type !== "failed";
-    if (this._transferring !== transferring) {
-      this._transferring = transferring;
-      this.emitPropertyEvent("isTransferringData");
+    if (progressChanged) {
+      this.emitPropertyEvent("transferProgress");
     }
   }
 
@@ -1490,7 +1538,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     data: Uint8Array
   ): Promise<void> {
     // Notify that we're starting
-    this._updateTransferStatus({
+    this._updateTransferProgress({
       type: "preparing",
       totalBytes: data.byteLength,
     });
@@ -1500,7 +1548,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
       ackResult = await prepareDie();
     } catch (error) {
       // Notify failed transfer
-      this._updateTransferStatus({
+      this._updateTransferProgress({
         type: "failed",
         error: "timeout",
       });
@@ -1519,7 +1567,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
         // Nothing to do
         this._log("Animations are already up-to-date");
         // Notify no transfer
-        this._updateTransferStatus({
+        this._updateTransferProgress({
           type: "completed",
           totalBytes: 0,
         });
@@ -1531,7 +1579,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
           "Not enough memory to store animations of size " + data.byteLength
         );
         // Notify no transfer
-        this._updateTransferStatus({
+        this._updateTransferProgress({
           type: "failed",
           error: "outOfMemory",
         });
@@ -1543,7 +1591,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
           `Got unknown transfer result: ${ackResult}`
         );
         // Notify failed transfer
-        this._updateTransferStatus({
+        this._updateTransferProgress({
           type: "failed",
           error: "unknown",
         });
@@ -1562,7 +1610,7 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     ackType: MessageType,
     data: ArrayBuffer
   ): Promise<void> {
-    this._updateTransferStatus({
+    this._updateTransferProgress({
       type: "starting",
       totalBytes: data.byteLength,
     });
@@ -1601,13 +1649,13 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
       await promise;
       this._log("Programming done");
 
-      this._updateTransferStatus({
+      this._updateTransferProgress({
         type: "completed",
         totalBytes: data.byteLength,
       });
     } catch (error) {
       // Notify failed transfer
-      this._updateTransferStatus({
+      this._updateTransferProgress({
         type: "failed",
         error: "timeout",
       });
@@ -1628,10 +1676,10 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
     await this.sendAndWaitForResponse(setupMsg, "bulkSetupAck");
     this._log("Ready for receiving data");
 
-    this._updateTransferStatus({
+    this._updateTransferProgress({
       type: "progress",
-      progress: 0,
-      bytesTransferred: 0,
+      progressPercent: 0,
+      transferredBytes: 0,
       totalBytes: data.byteLength,
     });
 
@@ -1651,10 +1699,10 @@ export class Pixel extends PixelInfoNotifier<PixelMutableProps> {
       const progress = Math.round((100 * offset) / data.byteLength);
       if (progress > lastProgress) {
         // Notify that we're starting
-        this._updateTransferStatus({
+        this._updateTransferProgress({
           type: "progress",
-          progress,
-          bytesTransferred: offset,
+          progressPercent: progress,
+          transferredBytes: offset,
           totalBytes: data.byteLength,
         });
         lastProgress = progress;
