@@ -7,7 +7,7 @@ import { unzipFactoryDfuFilesAsync } from "../dfu/unzip";
 import { toLocaleDateTimeString } from "../toLocaleDateTimeString";
 
 export interface FactoryDfuBundleFiles {
-  readonly bootloader: DfuFileInfo;
+  readonly bootloader?: DfuFileInfo;
   readonly firmware: DfuFileInfo;
   readonly reconfigFirmware: DfuFileInfo;
   readonly date: Date;
@@ -26,9 +26,11 @@ export function useFactoryDfuFilesBundle(): [
       const bundles = await DfuFilesBundle.createMany(
         (await unzipFactoryDfuFilesAsync()).map((p) => getDfuFileInfo(p))
       );
-      const dfuBundle = bundles.find((b) => b.bootloader);
-      if (!dfuBundle?.bootloader) {
-        throw new Error("Validation DFU bootloader file not found");
+      const dfuBundle = bundles.find(
+        (b) => b.firmware && b.firmware.comment === "sdk17"
+      );
+      if (!dfuBundle) {
+        throw new Error("Validation DFU files not found");
       }
       if (dfuBundle.firmware?.comment !== "sdk17") {
         throw new Error("Validation DFU firmware file not found");

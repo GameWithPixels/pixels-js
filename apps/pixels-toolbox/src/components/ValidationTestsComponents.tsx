@@ -310,7 +310,9 @@ async function updateFactoryFirmware(
   ) {
     onFirmwareUpdate?.("updating");
     // Prepare for updating firmware
-    const blPath = reconfigure ? "" : dfuFilesBundle.bootloader.pathname;
+    const blPath = reconfigure
+      ? undefined
+      : dfuFilesBundle.bootloader?.pathname;
     const fwPath = reconfigure
       ? dfuFilesBundle.reconfigFirmware.pathname
       : dfuFilesBundle.firmware.pathname;
