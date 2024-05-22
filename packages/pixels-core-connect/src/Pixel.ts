@@ -1321,6 +1321,11 @@ export class Pixel extends PixelInfoNotifier {
     faceIndex: number,
     opt?: { skipEvents?: boolean }
   ) {
+    // Fix for accelerometer being slightly tilted on some D6/D4/Fudge
+    if (this._info.ledCount === 6 && state === "crooked") {
+      state = "onFace";
+    }
+
     const ev = this._createRollEvent(state, faceIndex);
     const stateChanged = this._info.rollState !== ev.state;
     const indexChanged = this._info.currentFaceIndex !== ev.faceIndex;
