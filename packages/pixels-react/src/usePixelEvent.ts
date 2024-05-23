@@ -1,113 +1,62 @@
 import {
-  Pixel,
-  MessageOrType,
-  Telemetry,
-  RequestTelemetry,
-  PixelStatus,
-  Temperature,
-  RollEvent,
   BatteryEvent,
+  MessageOrType,
   MessageType,
-  PixelEventMap,
+  Pixel,
+  PixelMutableProps,
+  RequestTelemetry,
+  RollEvent,
+  Telemetry,
   TelemetryRequestModeValues,
+  Temperature,
 } from "@systemic-games/pixels-core-connect";
-import {
-  assertNever,
-  EventReceiver,
-  safeAssign,
-} from "@systemic-games/pixels-core-utils";
+import { assertNever, safeAssign } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
-import { useForceUpdate } from "./useForceUpdate";
+import { usePixelStatus } from "./usePixelStatus";
 
-function _autoRequest(
-  pixel: Pixel,
-  refreshInt: number,
-  request: () => Promise<unknown>,
-  forceUpdate: () => void
-): () => void {
-  // Force updating on status change
-  const onStatus = (status: PixelStatus) => {
-    if (status === "ready" || status === "disconnected") {
-      forceUpdate();
-    }
-  };
-  // Request value with given interval
-  const id = setInterval(request, refreshInt);
-  // And request value immediately
-  request();
-  return () => {
-    // Cleanup
-    clearInterval(id);
-    pixel.removeEventListener("status", onStatus);
-  };
-}
-
-function _requestValue(
+function repeatSendMessage(
   pixel: Pixel,
   refreshInt: number,
   msgType: MessageType,
   msgToSend: MessageType,
   msgHandler: (msg: MessageOrType) => void,
-  setLastError: (error: Error) => void,
-  forceUpdate: () => void
+  setLastError: (error: Error) => void
 ): () => void {
-  // Value requester
+  // Message sending function
   const request = () => pixel.sendMessage(msgToSend).catch(setLastError);
-  // Listen for the given response message
+  // Listen for the response message
   pixel.addMessageListener(msgType, msgHandler);
-  // Setup auto requesting
-  const unsubscribe = _autoRequest(pixel, refreshInt, request, forceUpdate);
+  // Send message with given interval when Pixel is ready
+  const id = setInterval(request, refreshInt);
+  // And request value immediately
+  request();
+  // Unsubscribe from listeners
   return () => {
     pixel.removeMessageListener(msgType, msgHandler);
-    unsubscribe();
-  };
-}
-
-function _requestProp<T extends keyof PixelEventMap>(
-  pixel: Pixel,
-  refreshInt: number,
-  propEvent: T,
-  queryFunc: () => Promise<unknown>,
-  evHandler: EventReceiver<PixelEventMap[T]>,
-  setLastError: (error: Error) => void,
-  forceUpdate: () => void
-): () => void {
-  // Listen for the given event
-  pixel.addEventListener(propEvent, evHandler);
-  // Value requester
-  const request = () => queryFunc().catch(setLastError);
-  // Setup auto requesting
-  const unsubscribe = _autoRequest(pixel, refreshInt, request, forceUpdate);
-  return () => {
-    pixel.removeEventListener(propEvent, evHandler);
-    unsubscribe();
+    clearInterval(id);
   };
 }
 
 /**
- * Pixel value names map for {@link usePixelValue} function.
+ * Pixel value names map for {@link usePixelEvent} function.
  * Maps the value name with the corresponding data type.
  */
 export interface UsePixelValueNamesMap {
-  /** Updated when the die is renamed. */
-  name: string;
   /** Updates with the result of a roll.
    *  @remarks
    *  - The value is an object with the face number rather than just a number
    *    so rolling the same face will trigger a state change nonetheless.
    *  - No value is returned until a roll is made. */
-  roll: Pick<RollEvent, "face">;
+  rollFace: Pick<RollEvent, "face">;
   /** Updates with the roll state and face on any roll event but not more often
    *  than specified by the refresh interval argument, except when there is a
    *  roll result (i.e. `state === 'onFace'`) in which case it updates
    *  immediately.
    *  @remarks No value is returned until a roll event occurs. */
-  rollState: RollEvent;
+  roll: RollEvent;
   /** Updates with the battery level and charging status. */
   battery: BatteryEvent;
-  /** Updates with the RSSI value. */
-  rssi: number;
   /** Updates with the temperature in Celsius. */
   temperature: {
     mcuTemperature: number; // Microcontroller temperature in celsius
@@ -115,6 +64,8 @@ export interface UsePixelValueNamesMap {
   };
   /** Updates with the telemetry data. */
   telemetry: Telemetry;
+  /** Updates with the received signal strength indicator (RSSI) in dBm. */
+  rssi: number;
 }
 
 /**
@@ -133,9 +84,9 @@ export interface UsePixelValueNamesMap {
  *   See the function arguments to change that behavior.
  * - The returned value is kept even after a disconnection event.
  */
-export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
-  pixel?: Pixel,
-  valueName?: T,
+export function usePixelEvent<T extends keyof UsePixelValueNamesMap>(
+  pixel: Pixel | undefined,
+  valueName: T,
   options?: {
     /** The minimum time interval in milliseconds between two updates.
      *  Ignored for "roll" value.
@@ -166,12 +117,11 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
     lastTime: number;
     timeoutId?: ReturnType<typeof setTimeout>;
   }>({ lastTime: 0 });
-  const forceUpdate = useForceUpdate();
 
   // Options default values
   const minInterval = options?.minInterval ?? 5000;
 
-  const status = pixel?.status;
+  const isReady = usePixelStatus(pixel) === "ready";
   React.useEffect(() => {
     if (
       stateRef.current.lastPixel !== pixel ||
@@ -183,21 +133,9 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
       stateRef.current.lastPixel = pixel;
       setValue(undefined);
     }
-    if (pixel && valueName && status === "ready" && isActive) {
+    if (pixel && valueName && isReady && isActive) {
       switch (valueName) {
-        case "name": {
-          // Set the state value with the current name
-          setValue(pixel.name as ValueType);
-          // Create name property listener
-          const onName = () => setValue(pixel.name as ValueType);
-          // Listen to name changes
-          pixel.addPropertyListener("name", onName);
-          return () => {
-            pixel.removePropertyListener("name", onName);
-          };
-        }
-
-        case "roll": {
+        case "rollFace": {
           // We don't immediately set the state value,
           // rather we wait on the next roll to update it
           const onRoll = (roll: number) =>
@@ -208,7 +146,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           };
         }
 
-        case "rollState": {
+        case "roll": {
           // Set the state value with the current roll state
           setValue({
             face: pixel.currentFace,
@@ -275,24 +213,8 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           };
         }
 
-        case "rssi": {
-          // We don't immediately set the state value as the current
-          // RSSI value available with the Pixel instance is probably
-          // outdated.
-          // Create RSSI event listener
-          const onRssi = (rssi: number) => setValue(rssi as ValueType);
-          // Listen to battery events
-          pixel.addEventListener("rssi", onRssi);
-          // Request Pixel to send RSSI
-          pixel.reportRssi(true, minInterval).catch(setLastError);
-          return () => {
-            pixel.removeEventListener("rssi", onRssi);
-            pixel.reportRssi(false).catch(() => {});
-          };
-        }
-
         case "temperature":
-          return _requestValue(
+          return repeatSendMessage(
             pixel,
             minInterval,
             "temperature",
@@ -305,8 +227,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
               };
               setValue(val as ValueType);
             },
-            setLastError,
-            forceUpdate
+            setLastError
           );
 
         case "telemetry": {
@@ -332,11 +253,27 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           };
         }
 
+        case "rssi": {
+          // We don't immediately set the state value for RSSI as the value
+          // stored in the Pixel instance is probably outdated.
+          // Create RSSI event listener
+          const onRssi = ({ rssi }: PixelMutableProps) =>
+            setValue(rssi as ValueType);
+          // Listen to battery events
+          pixel.addPropertyListener("rssi", onRssi);
+          // Request Pixel to send RSSI
+          pixel.reportRssi(true, minInterval).catch(setLastError);
+          return () => {
+            pixel.removePropertyListener("rssi", onRssi);
+            pixel.reportRssi(false).catch(() => {});
+          };
+        }
+
         default:
-          assertNever(valueName);
+          assertNever(valueName, `Unknown value name: ${valueName}`);
       }
     }
-  }, [isActive, pixel, minInterval, status, valueName, forceUpdate]);
+  }, [isActive, pixel, minInterval, valueName, isReady]);
 
   // Create the dispatch function
   const dispatch = React.useCallback(

@@ -9,7 +9,7 @@ export function usePixelDataTransfer(pixel?: Pixel): number {
         if (ev.type === "preparing" || ev.type === "starting") {
           setProgress(0);
         } else if (ev.type === "progress") {
-          setProgress(ev.progress);
+          setProgress(ev.progressPercent);
         } else if (ev.type === "completed" || ev.type === "failed") {
           setProgress(-1);
         }

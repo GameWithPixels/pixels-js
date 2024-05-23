@@ -1,4 +1,8 @@
-import { usePixelStatus, usePixelValue } from "@systemic-games/pixels-react";
+import {
+  usePixelEvent,
+  usePixelProp,
+  usePixelStatus,
+} from "@systemic-games/pixels-react";
 import {
   Pixel,
   PixelStatus,
@@ -40,9 +44,9 @@ function AnimatedNameWithRoll({
   }));
 
   const [rollText, setRollText] = React.useState<string>();
-  const [roll] = usePixelValue(pixel, "roll");
+  const [rollEv] = usePixelEvent(pixel, "roll");
   React.useEffect(() => {
-    if (roll) {
+    if (rollEv) {
       animValue.value = withSequence(
         withTiming(1.2, {
           duration: 400,
@@ -50,11 +54,11 @@ function AnimatedNameWithRoll({
         }),
         withTiming(1, { duration: 200, easing: Easing.in(Easing.ease) })
       );
-      setRollText("Rolled a " + roll.face);
+      setRollText("Rolled a " + rollEv.face);
       const id = setTimeout(() => setRollText(undefined), 3000);
       return () => clearTimeout(id);
     }
-  }, [animValue, roll]);
+  }, [animValue, rollEv]);
 
   const { colors } = useTheme();
   const color =
@@ -79,7 +83,7 @@ function VCardLabel({
 }) {
   const status = usePixelStatus(pixel);
   const isReady = pixel && status === "ready";
-  const [thePixelName] = usePixelValue(pixel, "name");
+  const thePixelName = usePixelProp(pixel, "name");
   const pixelName = thePixelName ?? pairedDie.name;
   const activeProfile = useActiveProfile(pairedDie);
 
@@ -116,7 +120,7 @@ export function PixelVCard({
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const isReady = pixel && status === "ready";
-  const [rollEv] = usePixelValue(pixel, "rollState");
+  const [rollEv] = usePixelEvent(pixel, "roll");
   const [containerSize, setContainerSize] = React.useState(0);
   const dieRenderWidth = containerSize * dieIconRatio;
 
@@ -181,8 +185,8 @@ export function PixelHCard({
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const isReady = pixel && status === "ready";
-  const [rollEv] = usePixelValue(pixel, "rollState");
-  const [thePixelName] = usePixelValue(pixel, "name");
+  const [rollEv] = usePixelEvent(pixel, "roll");
+  const thePixelName = usePixelProp(pixel, "name");
   const pixelName = thePixelName ?? pairedDie.name;
   const activeProfile = useActiveProfile(pairedDie);
   const dieRenderWidth = 70;

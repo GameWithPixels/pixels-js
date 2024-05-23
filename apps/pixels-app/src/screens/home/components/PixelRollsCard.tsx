@@ -1,4 +1,4 @@
-import { usePixelValue } from "@systemic-games/react-native-pixels-connect";
+import { usePixelEvent } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Text, TextProps, useTheme } from "react-native-paper";
@@ -44,9 +44,8 @@ function PixelRollState({
   pairedDie: PairedDie;
 } & Omit<TextProps<string>, "children">) {
   const pixel = useWatchedPixel(pairedDie);
-  const [rollState] = usePixelValue(pixel, "rollState");
-  const rolling =
-    rollState?.state === "rolling" || rollState?.state === "handling";
+  const [rollEv] = usePixelEvent(pixel, "roll");
+  const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
   return <Text {...props}>{rolling ? "Die is rolling" : "Last rolls"}</Text>;
 }
 

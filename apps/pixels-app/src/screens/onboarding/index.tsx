@@ -7,8 +7,8 @@ import {
   Pixel,
   PixelDieType,
   ScannedPixel,
+  usePixelProp,
   usePixelStatus,
-  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import { Image, ImageProps } from "expo-image";
 import React from "react";
@@ -390,7 +390,7 @@ function PixelItem({
   pixel: Pixel;
 }) {
   const status = usePixelStatus(pixel);
-  const [name] = usePixelValue(pixel, "name");
+  const name = usePixelProp(pixel, "name");
   const batteryLabel = useBatteryStateLabel(pixel);
   const rollLabel = useRollStateLabel(pixel);
   const animStyle = useFlashAnimationStyleOnRoll(pixel);

@@ -1,7 +1,6 @@
 import {
   Pixel,
-  PixelInfo,
-  PixelStatus,
+  PixelMutableProps,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -91,7 +90,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       disposers.get(pixel.pixelId)?.();
 
       // Die name
-      const onRename = ({ name }: PixelInfo) =>
+      const onRename = ({ name }: PixelMutableProps) =>
         appDispatch(
           updatePairedDieName({
             pixelId: pixel.pixelId,
@@ -101,7 +100,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       pixel.addPropertyListener("name", onRename);
 
       // Firmware date
-      const onFwDate = ({ firmwareDate }: PixelInfo) =>
+      const onFwDate = ({ firmwareDate }: PixelMutableProps) =>
         appDispatch(
           updatePairedDieFirmwareTimestamp({
             pixelId: pixel.pixelId,
@@ -111,18 +110,18 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       pixel.addPropertyListener("firmwareDate", onFwDate);
 
       // Update name and firmware timestamp on connection
-      const onStatus = (status: PixelStatus) => {
+      const onStatus = ({ status }: PixelMutableProps) => {
         if (status === "ready") {
           onRename(pixel);
           onFwDate(pixel);
         }
       };
-      pixel.addEventListener("status", onStatus);
+      pixel.addPropertyListener("status", onStatus);
 
       // Profile
-      const onProfileHash = (hash: number) => {
+      const onProfileHash = ({ profileHash }: PixelMutableProps) => {
         console.log(
-          `Got profile hash ${(hash >>> 0).toString(16)} for ${pixel.name}`
+          `Got profile hash ${(profileHash >>> 0).toString(16)} for ${pixel.name}`
         );
         // const profile =
         //   store
@@ -151,7 +150,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       disposers.set(pixel.pixelId, () => {
         pixel.removePropertyListener("name", onRename);
         pixel.removePropertyListener("firmwareDate", onFwDate);
-        pixel.removeEventListener("status", onStatus);
+        pixel.removePropertyListener("status", onStatus);
         pixel.removePropertyListener("profileHash", onProfileHash);
         pixel.removeEventListener("roll", onRoll);
         pixel.removeEventListener("remoteAction", onRemoteAction);

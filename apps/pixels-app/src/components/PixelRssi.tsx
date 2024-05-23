@@ -1,6 +1,6 @@
 import {
   Pixel,
-  usePixelValue,
+  usePixelEvent,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { RssiIcon } from "./icons";
@@ -14,6 +14,6 @@ export function PixelRssi({
   size: number;
   disabled?: boolean;
 }) {
-  const [rssi] = usePixelValue(pixel, "rssi");
+  const [rssi] = usePixelEvent(pixel, "rssi");
   return <RssiIcon value={rssi} size={size} disabled={disabled} />;
 }

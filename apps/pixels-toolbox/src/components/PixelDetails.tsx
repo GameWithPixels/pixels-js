@@ -30,21 +30,22 @@ import {
   PixelInfoNotifier,
   PixelRollStateValues,
   useForceUpdate,
+  usePixelEvent,
+  usePixelProp,
   usePixelStatus,
-  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
 import {
-  Button as PaperButton,
   ButtonProps,
   Card,
   Divider,
   Menu,
   Modal,
   ModalProps,
+  Button as PaperButton,
   Portal,
   Switch,
   Text,
@@ -260,7 +261,7 @@ const TelemetryLinesInfo = [
 ] as const;
 
 function TelemetryInfo({ pixel }: { pixel: Pixel }) {
-  const [telemetry, dispatch] = usePixelValue(pixel, "telemetry", {
+  const [telemetry, dispatch] = usePixelEvent(pixel, "telemetry", {
     minInterval: 200, // Fast updates
   });
   const status = usePixelStatus(pixel);
@@ -740,7 +741,7 @@ export function PixelDetails({
   // Pixel
   const pixel = pd.pixel;
   const status = usePixelStatus(pixel);
-  const [name] = usePixelValue(pixel, "name");
+  const name = usePixelProp(pixel, "name");
 
   // Connect on mount
   React.useEffect(() => {

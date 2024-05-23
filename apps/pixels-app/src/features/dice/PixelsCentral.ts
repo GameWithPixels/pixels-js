@@ -10,7 +10,6 @@ import {
   Pixel,
   PixelInfo,
   PixelScanner,
-  PixelStatus,
   ScannedPixelNotifier,
   PixelScannerEventMap,
   PixelScannerStatusEvent,
@@ -19,6 +18,7 @@ import {
   ScanStatus,
   ScanStartFailed,
   Central,
+  PixelOwnMutableProps,
 } from "@systemic-games/react-native-pixels-connect";
 import { Platform } from "expo-modules-core";
 
@@ -532,17 +532,17 @@ export class PixelsCentral {
       };
 
       // Add event listeners
-      const onStatus = (status: PixelStatus) => {
+      const onStatus = ({ status }: PixelOwnMutableProps) => {
         if (status === "disconnected") {
           // TODO Delay reconnecting because our previous call to connect() might still be cleaning up
           setTimeout(connect, 2000);
         }
       };
-      pixel.addEventListener("status", onStatus);
+      pixel.addPropertyListener("status", onStatus);
 
       // Callback to unsubscribe from all event listeners
       const unwatch = () => {
-        pixel.removeEventListener("status", onStatus);
+        pixel.removePropertyListener("status", onStatus);
         // Catch errors on disconnect
         pixel.disconnect().catch((e: Error) => {
           pixelLog(pixel, `Disconnection error => ${e}`);

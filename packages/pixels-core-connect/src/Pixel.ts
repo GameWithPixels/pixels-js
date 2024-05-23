@@ -170,8 +170,6 @@ export type DataTransferProgress = Readonly<{
  * @category Pixels
  */
 export interface PixelEventMap {
-  /** Connection status update. */
-  status: PixelStatus;
   /** Message received notification. */
   message: MessageOrType;
   /** Message send notification. */
@@ -182,8 +180,6 @@ export interface PixelEventMap {
   roll: number;
   /** Battery state changed notification. */
   battery: BatteryEvent;
-  /** RSSI change notification. */
-  rssi: number;
   /** User message request. */
   userMessage: UserMessageEvent;
   /** Remote action request. */
@@ -205,15 +201,25 @@ export interface PixelEventMap {
 }
 
 /**
- * The mutable properties of {@link Pixel}.
+ * The mutable properties of {@link Pixel} not inherited from parent
+ * class {@link PixelInfoNotifier}.
  * @category Pixels
  */
-export interface PixelMutableProps extends PixelInfoNotifierMutableProps {
+export interface PixelOwnMutableProps {
+  /** Connection status. */
+  status: PixelStatus;
   /** On-die profile hash value. */
   profileHash: number;
   /** Ongoing data transfer progress (such as programming a profile). */
   transferProgress: DataTransferProgress | undefined;
 }
+
+/**
+ * The mutable properties of {@link Pixel}.
+ * @category Pixels
+ */
+export type PixelMutableProps = PixelInfoNotifierMutableProps &
+  PixelOwnMutableProps;
 
 /**
  * Represents a Pixels die.
@@ -227,13 +233,10 @@ export interface PixelMutableProps extends PixelInfoNotifierMutableProps {
  *
  * @category Pixels
  */
-export class Pixel extends PixelInfoNotifier<
-  PixelMutableProps,
-  PixelInfo & {
-    profileHash: number;
-    isTransferringData: boolean;
-  }
-> {
+export class Pixel
+  extends PixelInfoNotifier<PixelMutableProps, PixelInfo & PixelOwnMutableProps>
+  implements PixelOwnMutableProps
+{
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
@@ -673,13 +676,13 @@ export class Pixel extends PixelInfoNotifier<
         // just wait for status change (in this case we ignore the timeout)
         // since the connection process is driven from another call to connect)
         await new Promise<void>((resolve) => {
-          const onStatusChange = (status: PixelStatus) => {
+          const onStatusChange = ({ status }: PixelOwnMutableProps) => {
             if (status !== "identifying") {
-              this.removeEventListener("status", onStatusChange);
+              this.removePropertyListener("status", onStatusChange);
               resolve();
             }
           };
-          this.addEventListener("status", onStatusChange);
+          this.addPropertyListener("status", onStatusChange);
         });
       }
 
@@ -792,14 +795,14 @@ export class Pixel extends PixelInfoNotifier<
       // 2. Hook connection status listener
       // Note: We don't check for the initial status so this method
       // may be called before completing the connection sequence.
-      const statusListener = (status: PixelStatus) => {
+      const statusListener = ({ status }: PixelOwnMutableProps) => {
         if (status === "disconnecting" || status === "disconnected") {
           // We got disconnected, stop waiting for message
           cleanup();
           reject(new WaitMsgDiscoErr(this, expectedMsgType));
         }
       };
-      this.addEventListener("status", statusListener);
+      this.addPropertyListener("status", statusListener);
       // 3. Setup timeout
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
       timeoutId = setTimeout(() => {
@@ -813,7 +816,7 @@ export class Pixel extends PixelInfoNotifier<
           clearTimeout(timeoutId);
         }
         this.removeMessageListener(expectedMsgType, messageListener);
-        this.removeEventListener("status", statusListener);
+        this.removePropertyListener("status", statusListener);
       };
     });
   }
@@ -1309,7 +1312,7 @@ export class Pixel extends PixelInfoNotifier<
     if (status !== this._status) {
       this._status = status;
       this._log(`Status changed to ${status}`);
-      this._evEmitter.emit("status", status); // TODO pass this as first argument to listener
+      this.emitPropertyEvent("status");
     }
   }
 
@@ -1352,7 +1355,6 @@ export class Pixel extends PixelInfoNotifier<
     if (rssi && rssi !== this._info.rssi) {
       this._info.rssi = rssi;
       this.emitPropertyEvent("rssi");
-      this._evEmitter.emit("rssi", rssi);
     }
   }
 

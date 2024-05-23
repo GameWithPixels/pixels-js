@@ -2,8 +2,8 @@ import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   Profiles,
+  usePixelEvent,
   usePixelStatus,
-  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleSheet, View, ViewProps } from "react-native";
@@ -43,9 +43,9 @@ export function DieStatus({
   ...props
 }: { pixel: Pixel } & ViewProps) {
   const status = usePixelStatus(pixel);
-  const [rssi] = usePixelValue(pixel, "rssi");
-  const [battery] = usePixelValue(pixel, "battery");
-  const [rollState] = usePixelValue(pixel, "rollState");
+  const [rssi] = usePixelEvent(pixel, "rssi");
+  const [batteryEv] = usePixelEvent(pixel, "battery");
+  const [rollEv] = usePixelEvent(pixel, "roll");
   const transferProgress = usePixelDataTransfer(pixel);
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
@@ -55,13 +55,13 @@ export function DieStatus({
         {status === "ready" && (
           <>
             <Text>RSSI: {rssi ?? 0} dBm</Text>
-            <Text>Battery: {battery?.level ?? 0}%</Text>
-            <Text>Charging: {battery?.isCharging ? "yes" : "no"}</Text>
+            <Text>Battery: {batteryEv?.level ?? 0}%</Text>
+            <Text>Charging: {batteryEv?.isCharging ? "yes" : "no"}</Text>
             <Text>
               Roll Status:{" "}
-              {getRollStateLabel(rollState?.state).toLocaleLowerCase()}
+              {getRollStateLabel(rollEv?.state).toLocaleLowerCase()}
             </Text>
-            <Text>Face Up: {rollState?.face ?? ""}</Text>
+            <Text>Face Up: {rollEv?.face ?? ""}</Text>
             <Text>
               Activating Profile:{" "}
               {transferProgress >= 0 ? `${transferProgress}%` : "done"}

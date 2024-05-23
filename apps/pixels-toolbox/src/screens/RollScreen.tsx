@@ -3,7 +3,7 @@ import {
   ScannedPixel,
   getPixel,
   usePixelConnect,
-  usePixelValue,
+  usePixelEvent,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { Pressable, StyleSheet } from "react-native";
@@ -15,7 +15,7 @@ import { useErrorWithHandler } from "~/hooks/useErrorWithHandler";
 
 function RollPage() {
   const [status, pixel, connectDispatch, lastError] = usePixelConnect();
-  const [rollState] = usePixelValue(pixel, "rollState");
+  const [rollEv] = usePixelEvent(pixel, "roll");
   useErrorWithHandler(lastError);
 
   const onSelect = React.useCallback(
@@ -29,7 +29,7 @@ function RollPage() {
       ? "yellow"
       : status !== "ready"
         ? "red"
-        : rollState?.state !== "onFace"
+        : rollEv?.state !== "onFace"
           ? "blue"
           : "green";
   return (
@@ -51,9 +51,9 @@ function RollPage() {
               <Text style={styles.text}>...</Text>
             ) : (
               status === "ready" &&
-              rollState &&
-              rollState.state !== "unknown" && (
-                <Text style={styles.text}>{rollState.face}</Text>
+              rollEv &&
+              rollEv.state !== "unknown" && (
+                <Text style={styles.text}>{rollEv.face}</Text>
               )
             )}
           </BaseVStack>

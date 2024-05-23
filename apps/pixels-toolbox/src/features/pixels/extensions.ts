@@ -85,7 +85,7 @@ export async function pixelTransferTest(
 ): Promise<void> {
   const onTransfer = (ev: PixelEventMap["dataTransfer"]) => {
     if (ev.type === "progress") {
-      sendBytesCallback?.(ev.bytesTransferred);
+      sendBytesCallback?.(ev.transferredBytes);
     }
   };
 

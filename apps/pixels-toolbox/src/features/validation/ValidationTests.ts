@@ -1,32 +1,32 @@
 import { getValueKeyName, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
   Color,
-  Pixel,
-  PixelStatus,
-  RequestTelemetry,
-  Telemetry,
   DataSet,
-  TelemetryRequestModeValues,
-  RequestRssi,
-  Rssi,
-  PixelBatteryStateValues,
-  getFaceMask,
-  RollEvent,
-  PixelBatteryControllerStateValues,
   DiceUtils,
+  getFaceMask,
+  Pixel,
+  PixelBatteryControllerStateValues,
+  PixelBatteryStateValues,
   PixelDieType,
   PixelEventMap,
+  PixelMutableProps,
+  RequestRssi,
+  RequestTelemetry,
+  RollEvent,
+  Rssi,
+  Telemetry,
+  TelemetryRequestModeValues,
 } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 
 import {
-  withTimeoutAndDisconnect,
+  SignalTimeoutError,
   withBlink,
-  withTelemetry,
   withPromise,
   withSolidColor,
+  withTelemetry,
   withTimeout,
-  SignalTimeoutError,
+  withTimeoutAndDisconnect,
 } from "./signalHelpers";
 import { LocalizedError } from "../LocalizedError";
 import { getRandomDieNameAsync } from "../getRandomDieNameAsync";
@@ -462,7 +462,7 @@ export const ValidationTests = {
     timeout = testTimeout
   ) {
     await withTimeout(abortSignal, timeout, async (abortSignal) => {
-      let statusListener: ((status: PixelStatus) => void) | undefined;
+      let statusListener: (({ status }: PixelMutableProps) => void) | undefined;
       // Blink all faces
       await withBlink(abortSignal, pixel, blinkColor, async () =>
         withPromise(
@@ -473,17 +473,17 @@ export const ValidationTests = {
               resolve();
             } else {
               // Wait on connection status change
-              statusListener = (status: PixelStatus) => {
+              statusListener = ({ status }) => {
                 if (status === "disconnected") {
                   resolve();
                 }
               };
-              pixel.addEventListener("status", statusListener);
+              pixel.addPropertyListener("status", statusListener);
             }
           },
           () => {
             if (statusListener) {
-              pixel.removeEventListener("status", statusListener);
+              pixel.removePropertyListener("status", statusListener);
             }
           }
         )

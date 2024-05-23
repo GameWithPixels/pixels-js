@@ -3,14 +3,14 @@ import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
 import {
   Constants,
   Pixel,
+  usePixelEvent,
   usePixelStatus,
-  usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import {
   Pressable,
-  useWindowDimensions,
   TextInput as RNTextInput,
+  useWindowDimensions,
   View,
   ViewProps,
 } from "react-native";
@@ -193,9 +193,8 @@ function RollingDie({
   disabled: boolean;
 }) {
   const pixel = useWatchedPixel(pairedDie);
-  const [rollState] = usePixelValue(pixel, "rollState");
-  const rolling =
-    rollState?.state === "rolling" || rollState?.state === "handling";
+  const [rollEv] = usePixelEvent(pixel, "roll");
+  const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
   return (
     <PixelDieRenderer
       pixel={pairedDie}

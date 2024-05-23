@@ -1,11 +1,11 @@
 import { delay, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
   Color,
+  MessageOrType,
   Pixel,
-  PixelStatus,
+  PixelMutableProps,
   RequestTelemetry,
   Telemetry,
-  MessageOrType,
   TelemetryRequestModeValues,
 } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
@@ -69,15 +69,15 @@ export function connectedSignal(
     controller.abortWithReason(new SignalDisconnectedError(pixel));
     return [controller.signal, undefined];
   } else {
-    const listener = (status: PixelStatus) => {
+    const listener = ({ status }: PixelMutableProps) => {
       if (status === "disconnecting" || status === "disconnected") {
         controller.abortWithReason(new SignalDisconnectedError(pixel));
       }
     };
-    pixel.addEventListener("status", listener);
+    pixel.addPropertyListener("status", listener);
     return [
       controller.signal,
-      () => pixel.removeEventListener("status", listener),
+      () => pixel.removePropertyListener("status", listener),
     ];
   }
 }

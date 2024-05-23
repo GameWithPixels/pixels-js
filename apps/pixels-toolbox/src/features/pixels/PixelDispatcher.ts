@@ -390,7 +390,7 @@ class PixelDispatcher
       });
     }
     // Forward and monitor status
-    this._pixel.addEventListener("status", (status) => {
+    this._pixel.addPropertyListener("status", ({ status }) => {
       this._evEmitter.emit("status", status);
       if (status === "disconnected") {
         this._lastDiscoTime = Date.now();

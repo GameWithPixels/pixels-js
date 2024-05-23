@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   PixelStatus,
-  usePixelValue,
+  usePixelEvent,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -95,8 +95,8 @@ function AnimatedChargingIcon({
 
 function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
   const pixel = useWatchedPixel(pairedDie);
-  const [battery] = usePixelValue(pixel, "battery");
-  const needCharging = (battery?.level ?? 100) < 10;
+  const [batteryEv] = usePixelEvent(pixel, "battery");
+  const needCharging = (batteryEv?.level ?? 100) < 10;
   const transferProgress = usePixelDataTransfer(pixel);
   const transferring = transferProgress >= 0;
   const { colors } = useTheme();
@@ -105,13 +105,13 @@ function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
       <Text>
         {transferring
           ? `Activating Profile: ${transferProgress}%`
-          : battery?.isCharging
+          : batteryEv?.isCharging
             ? "Charging..."
             : needCharging
               ? "Need charging!"
               : getDieTypeAndColorwayLabel(pairedDie)}
       </Text>
-      {!transferring && battery?.isCharging ? (
+      {!transferring && batteryEv?.isCharging ? (
         <AnimatedChargingIcon size={16} color={colors.onSurface} />
       ) : (
         needCharging && (

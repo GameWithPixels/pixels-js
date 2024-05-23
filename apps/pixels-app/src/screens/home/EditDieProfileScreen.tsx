@@ -1,6 +1,6 @@
 import {
   Pixel,
-  usePixelValue,
+  usePixelProp,
 } from "@systemic-games/react-native-pixels-connect";
 import React, { useEffect } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
@@ -52,7 +52,7 @@ function EditDieProfilePage({
   pixel: Pixel;
   navigation: EditDieProfileScreenProps["navigation"];
 }) {
-  const [pixelName] = usePixelValue(pixel, "name");
+  const pixelName = usePixelProp(pixel, "name");
   const activeProfile = useActiveProfile(pixel);
 
   // Discard changes when leaving the screen
