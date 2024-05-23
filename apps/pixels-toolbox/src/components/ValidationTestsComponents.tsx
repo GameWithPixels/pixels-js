@@ -17,8 +17,8 @@ import {
   useVisibility,
 } from "@systemic-games/react-native-base-components";
 import {
-  DfuCommunicationError,
   DfuState,
+  DfuUpdateError,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Central,
@@ -331,8 +331,10 @@ async function updateFactoryFirmware(
       await updateFW();
     } catch (error) {
       let lastError: any = error;
-      if (dfuTarget.address && error instanceof DfuCommunicationError) {
-        console.log("Error updating FW, trying again with BL address...");
+      if (dfuTarget.address && error instanceof DfuUpdateError) {
+        console.warn(
+          `Error updating FW, trying again with BL address: ${lastError}`
+        );
         setDfuState(undefined);
         setDfuProgress(0);
         // Switch to bootloader address (only available on Android)
