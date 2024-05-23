@@ -30,38 +30,6 @@ export class DfuInvalidArgumentError extends DfuError {
   }
 }
 
-/** A DFU is already on-going. */
-export class DfuBusyError extends DfuError {
-  constructor(target: DfuTargetId, message?: string) {
-    super(target, message);
-    this.name = "DfuBusyError";
-  }
-}
-
-/** Bluetooth connection error. */
-export class DfuConnectionError extends DfuError {
-  constructor(target: DfuTargetId, message?: string) {
-    super(target, message);
-    this.name = "DfuConnectionError";
-  }
-}
-
-/** Bluetooth communication error. */
-export class DfuCommunicationError extends DfuError {
-  constructor(target: DfuTargetId, message?: string) {
-    super(target, message);
-    this.name = "DfuCommunicationError";
-  }
-}
-
-/** Error during DFU originating from the target device. */
-export class DfuRemoteError extends DfuError {
-  constructor(target: DfuTargetId, message?: string) {
-    super(target, message);
-    this.name = "DfuRemoteError";
-  }
-}
-
 /** DFU error thrown when the given file is invalid or wasn't found. */
 export class DfuFileInvalidError extends DfuError {
   constructor(target: DfuTargetId, message?: string) {
@@ -70,14 +38,11 @@ export class DfuFileInvalidError extends DfuError {
   }
 }
 
-/**
- * DFU error thrown when the Nordic DFU BLE service hasn't been discovered
- * on the target device.
- */
-export class DfuDeviceNotSupportedError extends DfuCommunicationError {
+/** A DFU is already on-going. */
+export class DfuBusyError extends DfuError {
   constructor(target: DfuTargetId, message?: string) {
     super(target, message);
-    this.name = "DfuDeviceNotSupportedError";
+    this.name = "DfuBusyError";
   }
 }
 
@@ -89,10 +54,53 @@ export class DfuFirmwareVersionFailureError extends DfuError {
   }
 }
 
+/** Base class for errors that occur during the update process. */
+export class DfuUpdateError extends DfuError {
+  constructor(target: DfuTargetId, message?: string) {
+    super(target, message);
+    this.name = "DfuUpdateError";
+  }
+}
+
+/** Bluetooth connection error. */
+export class DfuConnectionError extends DfuUpdateError {
+  constructor(target: DfuTargetId, message?: string) {
+    super(target, message);
+    this.name = "DfuConnectionError";
+  }
+}
+
 /** DFU error thrown when the update fails because of the device disconnected. */
-export class DfuDeviceDisconnectedError extends DfuError {
+export class DfuDeviceDisconnectedError extends DfuUpdateError {
   constructor(target: DfuTargetId, message?: string) {
     super(target, message);
     this.name = "DfuDeviceDisconnectedError";
+  }
+}
+
+/**
+ * DFU error thrown when the Nordic DFU BLE service hasn't been discovered
+ * on the target device.
+ */
+export class DfuDeviceNotSupportedError extends DfuUpdateError {
+  constructor(target: DfuTargetId, message?: string) {
+    super(target, message);
+    this.name = "DfuDeviceNotSupportedError";
+  }
+}
+
+/** Bluetooth communication error. */
+export class DfuCommunicationError extends DfuUpdateError {
+  constructor(target: DfuTargetId, message?: string) {
+    super(target, message);
+    this.name = "DfuCommunicationError";
+  }
+}
+
+/** Error during DFU originating from the target device. */
+export class DfuRemoteError extends DfuUpdateError {
+  constructor(target: DfuTargetId, message?: string) {
+    super(target, message);
+    this.name = "DfuRemoteError";
   }
 }
