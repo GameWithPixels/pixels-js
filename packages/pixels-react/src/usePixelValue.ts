@@ -18,6 +18,8 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
+import { useForceUpdate } from "./useForceUpdate";
+
 function _autoRequest(
   pixel: Pixel,
   refreshInt: number,
@@ -164,7 +166,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
     lastTime: number;
     timeoutId?: ReturnType<typeof setTimeout>;
   }>({ lastTime: 0 });
-  const [_, forceUpdate] = React.useReducer((x) => x + 1, 0);
+  const forceUpdate = useForceUpdate();
 
   // Options default values
   const minInterval = options?.minInterval ?? 5000;
@@ -334,7 +336,7 @@ export function usePixelValue<T extends keyof UsePixelValueNamesMap>(
           assertNever(valueName);
       }
     }
-  }, [isActive, pixel, minInterval, status, valueName]);
+  }, [isActive, pixel, minInterval, status, valueName, forceUpdate]);
 
   // Create the dispatch function
   const dispatch = React.useCallback(

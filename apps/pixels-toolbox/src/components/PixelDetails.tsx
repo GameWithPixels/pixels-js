@@ -29,6 +29,7 @@ import {
   PixelDieTypeValues,
   PixelInfoNotifier,
   PixelRollStateValues,
+  useForceUpdate,
   usePixelStatus,
   usePixelValue,
 } from "@systemic-games/react-native-pixels-connect";
@@ -67,7 +68,6 @@ import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { useAppBackgroundState } from "~/hooks/useAppBackgroundState";
-import { useForceUpdate } from "~/hooks/useForceUpdate";
 import { capitalize } from "~/i18n";
 
 interface TextEntryBaseProps extends React.PropsWithChildren {

@@ -28,6 +28,7 @@ import {
   getPixel,
   usePixelConnect,
   ScannedPixel,
+  useForceUpdate,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { FlatList, StyleSheet } from "react-native";
@@ -38,7 +39,6 @@ import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import { useErrorWithHandler } from "~/hooks/useErrorWithHandler";
-import { useForceUpdate } from "~/hooks/useForceUpdate";
 
 // function test() {
 //   try {

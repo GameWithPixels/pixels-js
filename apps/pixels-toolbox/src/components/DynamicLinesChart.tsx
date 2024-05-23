@@ -1,11 +1,10 @@
 import { assert, range } from "@systemic-games/pixels-core-utils";
+import { useForceUpdate } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import Svg, { Polyline, Text as SvgText } from "react-native-svg";
 
 import { LineChartProps } from "./LineChart";
-
-import { useForceUpdate } from "~/hooks/useForceUpdate";
 
 export type LineInfo = Readonly<{
   title: string;

@@ -9,6 +9,7 @@ import {
 import {
   PixelColorway,
   PixelInfoNotifier,
+  useForceUpdate,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -26,7 +27,6 @@ import Animated, {
 
 import { AppStyles } from "~/AppStyles";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
-import { useForceUpdate } from "~/hooks/useForceUpdate";
 
 function getColorwayInitials(colorway: PixelColorway): string | undefined {
   switch (colorway) {
