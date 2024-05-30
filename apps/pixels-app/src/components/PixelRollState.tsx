@@ -14,7 +14,9 @@ export function PixelRollState({
   return (
     <Text {...props}>
       Die is{" "}
-      {rolling ? "rolling" : `on face ${rollEv?.face ?? pixel.currentFace}`}
+      {rolling
+        ? "rolling"
+        : `on face ${rollEv ? rollEv.face : pixel.currentFace}`}
     </Text>
   );
 }

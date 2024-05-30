@@ -1,6 +1,7 @@
 import {
   Pixel,
   PixelInfoNotifier,
+  usePixelInfoProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -45,17 +46,7 @@ export function useFlashAnimationStyle(flash: boolean) {
 
 export function useFlashAnimationStyleOnRoll(pixel?: PixelInfoNotifier) {
   const status = usePixelStatus(pixel instanceof Pixel ? pixel : undefined);
-  const [rollState, setRollState] = React.useState(pixel?.rollState);
-  React.useEffect(() => {
-    setRollState(pixel?.rollState);
-    if (pixel) {
-      const onRoll = () => setRollState(pixel.rollState);
-      pixel.addPropertyListener("rollState", onRoll);
-      return () => {
-        pixel.removePropertyListener("rollState", onRoll);
-      };
-    }
-  }, [pixel]);
+  const rollState = usePixelInfoProp(pixel, "rollState");
   return useFlashAnimationStyle(
     status === "ready" && (rollState === "rolling" || rollState === "handling")
   );

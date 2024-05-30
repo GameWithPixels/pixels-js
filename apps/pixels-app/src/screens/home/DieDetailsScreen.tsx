@@ -3,6 +3,7 @@ import {
   Pixel,
   Profiles,
   usePixelEvent,
+  usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -103,15 +104,19 @@ function DieAdvancedInfo({
   pixel: Pixel;
   onUnpair?: (pixel: Pixel) => void;
 } & ViewProps) {
+  const ledCount = usePixelProp(pixel, "ledCount");
+  const dieType = usePixelProp(pixel, "dieType");
+  const colorway = usePixelProp(pixel, "colorway");
+  const firmwareDate = usePixelProp(pixel, "firmwareDate");
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>Die</SectionTitle>
       <View style={styles.paragraph}>
         <Text>Pixel ID: {unsigned32ToHex(pixel.pixelId)}</Text>
         <Text>Chip Model: nRF52810</Text>
-        <Text>LED Count: {pixel.ledCount}</Text>
-        <Text>Die Type: {getDieTypeLabel(pixel.dieType)}</Text>
-        <Text>Colorway: {getColorwayLabel(pixel.colorway)}</Text>
+        <Text>LED Count: {ledCount ?? 0}</Text>
+        <Text>Die Type: {getDieTypeLabel(dieType ?? "unknown")}</Text>
+        <Text>Colorway: {getColorwayLabel(colorway ?? "unknown")}</Text>
         <Text>Total Usable Flash: 8192kB</Text>
         {/* <Text>Available Flash: 1212kB</Text>
         <Text>Last Connected: {new Date().toLocaleString()}</Text> */}
@@ -120,9 +125,7 @@ function DieAdvancedInfo({
       <View style={styles.paragraph}>
         <Text>
           Build Timestamp:{" "}
-          {pixel.firmwareDate.getTime()
-            ? pixel.firmwareDate.toLocaleString()
-            : "unknown"}
+          {firmwareDate?.getTime() ? firmwareDate.toLocaleString() : "unknown"}
         </Text>
         {/* <Text>Firmware Version: 12.3</Text>
         <Text>Settings Version: 12.3</Text>

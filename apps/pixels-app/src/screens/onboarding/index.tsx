@@ -391,13 +391,14 @@ function PixelItem({
 }) {
   const status = usePixelStatus(pixel);
   const name = usePixelProp(pixel, "name");
+  const dieType = usePixelProp(pixel, "dieType");
   const batteryLabel = useBatteryStateLabel(pixel);
   const rollLabel = useRollStateLabel(pixel);
   const animStyle = useFlashAnimationStyleOnRoll(pixel);
   return (
     <AnimatedDieWireframeCard
       entering={FadeIn.duration(300)}
-      dieType={pixel.dieType}
+      dieType={dieType ?? "unknown"}
       style={animStyle}
     >
       <Text style={{ textAlign: "auto" }}>
